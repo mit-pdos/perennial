@@ -22,19 +22,16 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : semantics.Assumptions]
 
-/-- This doesn't formally mean anything, but if panic is opaque it tells you
-the code has a panic. -/
+/-- `shouldPanic` panics: its outcome is the panic `PanicV p` with `p` the value
+`"bad"` converted to an `interface{}`. -/
 theorem wp_shouldPanic (Φ : val → IProp GF) :
-    ⊢ (∀ (Ψ : val → IProp GF) (v : val), WP (App (Val (@! go.panic)) (Val v)) {{ Ψ }}) -∗
+    Φ (PanicV #(interface.mkOk go.string #go!"bad")) ⊢
       WP (App (Val (@! shouldPanic)) (Val #())) {{ Φ }} := by
-  iintro Hpanic
-  -- `wp_func_call` would rewrite the first `#(functions _ _)` in the goal,
-  -- which is the `go.panic` in `Hpanic`
-  rw [func_unfold (f := shouldPanic)]
+  iintro HΦ
+  wp_func_call
   wp_call
-  -- `wp_apply Hpanic` fails with "no remaining Iris goal" when the lemma
-  -- leaves no goal
-  wp_apply_core Hpanic
+  wp_apply wp_panic
+  iexact HΦ
 
 end wps
 

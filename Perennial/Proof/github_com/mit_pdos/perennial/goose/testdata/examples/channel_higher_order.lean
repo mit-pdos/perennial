@@ -31,7 +31,7 @@ instance request_countable [FfiSyntax] : Pos.Countable request :=
 section proof
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics] [package_sem : channel.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel
@@ -61,6 +61,7 @@ theorem wp_mkRequest (f : GoFunc) (Q : GoString → IProp GF) :
   imod start_future (V := GoString) ch γ (.Buffered []) (.inr rfl) $$ Hch Hown
     with ⟨%γfut, #Hfut, HAwait⟩
   imod future_alloc_promise (V := GoString) γfut ch Q [] $$ Hfut HAwait with ⟨Hpromise, HAwait⟩
+  rw [List.nil_append]
   imodintro
   iapply HΦ
   unfold doRequest awaitRequest

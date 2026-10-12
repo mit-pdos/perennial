@@ -142,6 +142,8 @@ theorem wp_mulOverflows (x y : w64) (Φ : val → IProp GF) :
       iexact HΦ
     · simp only [decide_eq_false hy, Bool.false_eq_true, ↓reduceIte]
       wp_pures
+      rw [if_neg (by intro h; apply hy; word)]
+      wp_pures
       have hx' : uint.Z x ≠ 0 := by intro h; apply hx; word
       have hy' : uint.Z y ≠ 0 := by intro h; apply hy; word
       have hc := mul_overflow_check_correct x y hx' hy'

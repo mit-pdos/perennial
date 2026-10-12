@@ -22,9 +22,9 @@ variable [GoSemanticsFunctions] [go.PreSemantics]
 /-- `exceptionSeq v executeVal` runs the
 continuation `v`. -/
 instance pure_execute_val (v : val) :
-    PureWp (G := G) (L := L) True (App (App (Val exceptionSeq) (Val v)) (Val executeVal))
-      (App (Val v) (Val #())) where
-  pure_wp_wp s E Φ K _ := by
+    PureWp (G := G) (L := L) (v.isPanic = false)
+      (App (App (Val exceptionSeq) (Val v)) (Val executeVal)) (App (Val v) (Val #())) where
+  pure_wp_wp s E Φ K hv := by
     rw [exceptionSeq_unseal, executeVal_unseal]
     simp only [executeValDef]
     iintro Hwp
@@ -32,8 +32,9 @@ instance pure_execute_val (v : val) :
     iapply Hwp $$ Hlc
 
 instance pure_do_execute_val (v : val) :
-    PureWp (G := G) (L := L) True (App (Val doExecute) (Val v)) (Val executeVal) where
-  pure_wp_wp s E Φ K _ := by
+    PureWp (G := G) (L := L) (v.isPanic = false) (App (Val doExecute) (Val v))
+      (Val executeVal) where
+  pure_wp_wp s E Φ K hv := by
     rw [doExecute_unseal, executeVal_unseal]
     simp only [executeValDef]
     iintro Hwp
@@ -41,9 +42,9 @@ instance pure_do_execute_val (v : val) :
     iapply Hwp $$ Hlc
 
 instance pure_return_val (v1 v : val) :
-    PureWp (G := G) (L := L) True (App (App (Val exceptionSeq) (Val v1)) (Val (returnVal v)))
-      (Val (returnVal v)) where
-  pure_wp_wp s E Φ K _ := by
+    PureWp (G := G) (L := L) (v1.isPanic = false)
+      (App (App (Val exceptionSeq) (Val v1)) (Val (returnVal v))) (Val (returnVal v)) where
+  pure_wp_wp s E Φ K hv := by
     rw [exceptionSeq_unseal, returnVal_unseal]
     simp only [returnValDef]
     iintro Hwp
@@ -51,8 +52,9 @@ instance pure_return_val (v1 v : val) :
     iapply Hwp $$ Hlc
 
 instance pure_do_return_val (v : val) :
-    PureWp (G := G) (L := L) True (App (Val doReturn) (Val v)) (Val (returnVal v)) where
-  pure_wp_wp s E Φ K _ := by
+    PureWp (G := G) (L := L) (v.isPanic = false) (App (Val doReturn) (Val v))
+      (Val (returnVal v)) where
+  pure_wp_wp s E Φ K hv := by
     rw [doReturn_unseal, returnVal_unseal]
     simp only [returnValDef]
     iintro Hwp

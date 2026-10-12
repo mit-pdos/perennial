@@ -798,13 +798,14 @@ instance pure_wp_slice_cap {st t : go.GoType} [st ↓u go.SliceType t] (sl : GoS
     iapply HΦ $$ Hlc1
 
 instance pure_wp_slice_for_range (sl : GoSlice) (body : val) (t : go.GoType) :
-    PureWp (G := G) (L := L) True (App (App (Val (slice.forRange t)) (Val #sl)) (Val body))
+    PureWp (G := G) (L := L) (body.isPanic = false)
+      (App (App (Val (slice.forRange t)) (Val #sl)) (Val body))
       gl(let: "i" := GoAlloc go.int #(W64 0) in
         for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (FuncResolve go.len [go.SliceType t]) #() #sl) ;
              (λ: <>, "i" <-[go.int] (![go.int] "i") +⟨go.int⟩ #(W64 1)) :=
           (λ: <>, body (![go.int] "i")
             (![t] (IndexRef (go.SliceType t) (#sl, (![go.int] "i")))))) where
-  pure_wp_wp s E Φ K _ := by
+  pure_wp_wp s E Φ K hb := by
     unfold slice.forRange
     iintro H
     wp_call_lc Hlc

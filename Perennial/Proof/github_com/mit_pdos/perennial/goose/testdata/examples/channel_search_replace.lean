@@ -87,7 +87,7 @@ theorem searchReplace_take_append (x y : w64) (xs : List w64) (o n : Nat) (h : o
 section proof
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics] [package_sem : parallel_search_replace.Assumptions]
 
 local notation "pkg" =>

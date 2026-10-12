@@ -120,7 +120,9 @@ theorem wp_MulNoOverflow (x y : w64) :
     wp_if_destruct
     · rw [decide_eq_true (by simp [uint.Z])]
       iapply HΦ; itrivial
-    · have hx : uint.Z x ≠ 0 := fun h => Hx (by word)
+    · rw [if_neg (show ¬ uint.Z y = 0 from fun h => Hif (by word))]
+      wp_auto
+      have hx : uint.Z x ≠ 0 := fun h => Hx (by word)
       have h : (uint.Z x ≤ uint.Z (W64 18446744073709551615 / y)) ↔
           (uint.Z (x * y) = uint.Z x * uint.Z y) := by
         have hy : uint.Z y ≠ 0 := fun h => Hif (by word)
@@ -180,6 +182,8 @@ theorem wp_Shuffle (s : GoSlice) (xs : List w64) :
   have hlen' := Hperm.length_eq
   wp_if_destruct
   · wp_apply github_com.goose_lang.primitive.wp_RandomUint64 as %x _
+    rw [if_neg (show ¬ uint.Z (i + W64 1) = 0 by have := HI.1; have := HI.2; word)]
+    wp_auto
     have hj := umod_succ_bound x i HI.1
     list_elem xs' (sint.nat i) as x_i
     list_elem xs' (sint.nat (x % (i + W64 1))) as x_j

@@ -27,9 +27,9 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : G
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 instance pure_continue_val (v1 : val) :
-    PureWp (G := G) (L := L) True (App (App (Val exceptionSeq) (Val v1)) (Val continueVal))
-      (Val continueVal) where
-  pure_wp_wp s E Φ K _ := by
+    PureWp (G := G) (L := L) (v1.isPanic = false)
+      (App (App (Val exceptionSeq) (Val v1)) (Val continueVal)) (Val continueVal) where
+  pure_wp_wp s E Φ K hv := by
     rw [exceptionSeq_unseal, continueVal_unseal]
     simp only [continueValDef]
     iintro Hwp
@@ -37,9 +37,9 @@ instance pure_continue_val (v1 : val) :
     iapply Hwp $$ Hlc
 
 instance pure_break_val (v1 : val) :
-    PureWp (G := G) (L := L) True (App (App (Val exceptionSeq) (Val v1)) (Val breakVal))
-      (Val breakVal) where
-  pure_wp_wp s E Φ K _ := by
+    PureWp (G := G) (L := L) (v1.isPanic = false)
+      (App (App (Val exceptionSeq) (Val v1)) (Val breakVal)) (Val breakVal) where
+  pure_wp_wp s E Φ K hv := by
     rw [exceptionSeq_unseal, breakVal_unseal]
     simp only [breakValDef]
     iintro Hwp
@@ -75,10 +75,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 to prove it). -/
 def forPostconditionDef (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
     (Φ : val → IProp GF) (bv : val) : IProp GF :=
-  iprop((⌜bv = continueVal⌝ ∗ WP (App (Val post) (Val #())) @ s; E {{ _v, P }}) ∨
-    (⌜bv = executeVal⌝ ∗ WP (App (Val post) (Val #())) @ s; E {{ _v, P }}) ∨
+  iprop((⌜bv = continueVal⌝ ∗ WP (App (Val post) (Val #())) @ s; E {{ v, ⌜v.isPanic = false⌝ ∗ P }}) ∨
+    (⌜bv = executeVal⌝ ∗ WP (App (Val post) (Val #())) @ s; E {{ v, ⌜v.isPanic = false⌝ ∗ P }}) ∨
     (⌜bv = breakVal⌝ ∗ Φ executeVal) ∨
-    (∃ v, ⌜bv = returnVal v⌝ ∗ Φ bv))
+    (∃ v, ⌜bv = returnVal v⌝ ∗ Φ bv) ∨
+    (∃ p, ⌜bv = PanicV p⌝ ∗ Φ bv))
 
 @[irreducible] def forPostcondition (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
     (Φ : val → IProp GF) (bv : val) : IProp GF :=
@@ -121,7 +122,8 @@ attribute [local instance] pure_test_execute pure_test_continue pure_test_break
 /-- The loop rule: given the invariant `P`, a persistent proof that from `P`
 the condition evaluates to a boolean, after which (if `true`) the body runs
 with postcondition `forPostcondition`. -/
-theorem wp_for (P : IProp GF) (s : Stuckness) (E : CoPset) (cond body post : val) (Φ : val → IProp GF) :
+theorem wp_for (P : IProp GF) (s : Stuckness) (E : CoPset) (cond body post : val) (Φ : val → IProp GF)
+    (hcond : cond.isPanic = false) (hbody : body.isPanic = false) (hpost : post.isPanic = false) :
     P ⊢ □ (P -∗ WP (App (Val cond) (Val #())) @ s; E {{ v,
             if decide (v = #true) then
               WP (App (Val body) (Val #())) @ s; E {{ forPostcondition s E post P Φ }}
@@ -141,27 +143,35 @@ theorem wp_for (P : IProp GF) (s : Stuckness) (E : CoPset) (cond body post : val
     wp_pures
     wp_apply_core wp_wand $$ Hbody
     iintro %bc Hb
-    icases Hb with (⟨%Hbc, HP⟩ | ⟨%Hbc, HP⟩ | ⟨%Hbc, HΦ⟩ | ⟨%v, %Hbc, HΦ⟩)
+    icases Hb with (⟨%Hbc, HP⟩ | ⟨%Hbc, HP⟩ | ⟨%Hbc, HΦ⟩ | ⟨%v, %Hbc, HΦ⟩ | ⟨%p, %Hbc, HΦ⟩)
     · subst Hbc
       wp_pures
       wp_apply_core wp_wand $$ HP
-      iintro %_ HP
+      iintro %_ ⟨%_, HP⟩
       ihave HIH := IH $$ HP
       wp_pures
       wp_apply_core wp_wand $$ HIH
       iintro %v HΦ
-      wp_pures
-      iexact HΦ
+      cases hv : v.isPanic
+      · wp_pures
+        iexact HΦ
+      · obtain ⟨p, rfl⟩ := val.isPanic_eq_true hv
+        wp_pures
+        iexact HΦ
     · subst Hbc
       wp_pures
       wp_apply_core wp_wand $$ HP
-      iintro %_ HP
+      iintro %_ ⟨%_, HP⟩
       ihave HIH := IH $$ HP
       wp_pures
       wp_apply_core wp_wand $$ HIH
       iintro %v HΦ
-      wp_pures
-      iexact HΦ
+      cases hv : v.isPanic
+      · wp_pures
+        iexact HΦ
+      · obtain ⟨p, rfl⟩ := val.isPanic_eq_true hv
+        wp_pures
+        iexact HΦ
     · subst Hbc
       wp_pures
       iexact HΦ
@@ -170,10 +180,13 @@ theorem wp_for (P : IProp GF) (s : Stuckness) (E : CoPset) (cond body post : val
       simp only [returnValDef]
       wp_pures
       iexact HΦ
+    · subst Hbc
+      wp_pures
+      iexact HΦ
   · by_cases hc' : c = #false
     · subst hc'
       have : (#false : val) ≠ #true := fun h => absurd (GoGlobalContext.intoVal_inj_bool h) (by decide)
-      simp only [decide_true, ite_true, this, decide_false, Bool.false_eq_true, ite_false]
+      simp only [_root_.decide_true, ite_true, this, decide_false, Bool.false_eq_true, ite_false]
       wp_pures
       iexact Hbody
     · simp only [hc, hc', decide_false, Bool.false_eq_true, ite_false]
@@ -182,7 +195,7 @@ theorem wp_for (P : IProp GF) (s : Stuckness) (E : CoPset) (cond body post : val
 
 theorem wp_for_post_do (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
     (Φ : val → IProp GF) :
-    WP (App (Val post) (Val #())) @ s; E {{ _v, P }} ⊢
+    WP (App (Val post) (Val #())) @ s; E {{ v, ⌜v.isPanic = false⌝ ∗ P }} ⊢
       forPostcondition s E post P Φ executeVal := by
   rw [forPostcondition_unseal]; unfold forPostconditionDef
   iintro H
@@ -192,7 +205,7 @@ theorem wp_for_post_do (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
 
 theorem wp_for_post_continue (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
     (Φ : val → IProp GF) :
-    WP (App (Val post) (Val #())) @ s; E {{ _v, P }} ⊢
+    WP (App (Val post) (Val #())) @ s; E {{ v, ⌜v.isPanic = false⌝ ∗ P }} ⊢
       forPostcondition s E post P Φ continueVal := by
   rw [forPostcondition_unseal]; unfold forPostconditionDef
   iintro H
@@ -214,8 +227,19 @@ theorem wp_for_post_return (s : Stuckness) (E : CoPset) (post : val) (P : IProp 
     Φ (returnVal v) ⊢ forPostcondition s E post P Φ (returnVal v) := by
   rw [forPostcondition_unseal]; unfold forPostconditionDef
   iintro H
-  iright; iright; iright
+  iright; iright; iright; ileft
   iexists v
+  iframe H
+  ipureintro; rfl
+
+/-- A loop body that panics: the loop panics. -/
+theorem wp_for_post_panic (s : Stuckness) (E : CoPset) (post : val) (P : IProp GF)
+    (Φ : val → IProp GF) (p : val) :
+    Φ (PanicV p) ⊢ forPostcondition s E post P Φ (PanicV p) := by
+  rw [forPostcondition_unseal]; unfold forPostconditionDef
+  iintro H
+  iright; iright; iright; iright
+  iexists p
   iframe H
   ipureintro; rfl
 
@@ -279,7 +303,10 @@ generalizing the whole spatial context into the invariant with `iNamedAccu`,
 and introduce the loop-body goal with the invariant destructed by `iNamed`. -/
 macro "wp_for_core" : tactic => `(tactic| (
   wp_bind (App (App (App (Val doFor) _) _) _)
-  iapply wp_for _ _ _ _ _ _ _ $$ [-] []
+  iapply wp_for _ _ _ _ _ _ _ ?hcond ?hbody ?hpost $$ [-] []
+  case hcond => rfl
+  case hbody => rfl
+  case hpost => rfl
   iNamedAccu
   iintro !> __CTX
   iNamed __CTX))
@@ -291,6 +318,7 @@ macro "wp_for_post_core" : tactic => `(tactic|
   | (iapply wp_for_post_do; wp_pures)
   | iapply wp_for_post_continue
   | iapply wp_for_post_break
-  | iapply wp_for_post_return)
+  | iapply wp_for_post_return
+  | iapply wp_for_post_panic)
 
 end Perennial

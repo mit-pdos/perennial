@@ -65,6 +65,7 @@ def substEnv (σ : String → Option val) : Expr → Expr
   | ResolveProph e1 e2 => ResolveProph (substEnv σ e1) (substEnv σ e2)
   | LiteralValue l => LiteralValue (substEnvKes σ l)
   | SelectStmtClauses d l => SelectStmtClauses (substEnvOpt σ d) (substEnvCcs σ l)
+  | Catch e h k => Catch (substEnv σ e) (substEnv σ h) (substEnv σ k)
 
 def substEnvOpt (σ : String → Option val) : Option Expr → Option Expr
   | none => none
@@ -171,6 +172,8 @@ theorem subst_substEnv (x : String) (v : val) (σ : String → Option val) :
   | LiteralValue l => by simp only [substEnv, subst, subst_substEnv_kes x v σ l]
   | SelectStmtClauses d l => by
     simp only [substEnv, subst, subst_substEnv_opt x v σ d, subst_substEnv_ccs x v σ l]
+  | Catch a b c => by
+    simp only [substEnv, subst, subst_substEnv x v σ a, subst_substEnv x v σ b, subst_substEnv x v σ c]
 
 theorem subst_substEnv_opt (x : String) (v : val) (σ : String → Option val) :
     ∀ d : Option Expr, substOpt x v (substEnvOpt (envDel (BNamed x) σ) d) = substEnvOpt (envIns x v σ) d
@@ -242,6 +245,7 @@ theorem substEnv_nil : ∀ e : Expr, substEnv envNil e = e
   | ResolveProph a b => by simp only [substEnv, substEnv_nil a, substEnv_nil b]
   | LiteralValue l => by simp only [substEnv, substEnv_nil_kes l]
   | SelectStmtClauses d l => by simp only [substEnv, substEnv_nil_opt d, substEnv_nil_ccs l]
+  | Catch a b c => by simp only [substEnv, substEnv_nil a, substEnv_nil b, substEnv_nil c]
 
 theorem substEnv_nil_opt : ∀ d : Option Expr, substEnvOpt envNil d = d
   | none => by simp only [substEnvOpt]

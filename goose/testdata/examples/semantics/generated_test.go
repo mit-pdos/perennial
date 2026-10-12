@@ -296,6 +296,10 @@ func (suite *GoTestSuite) TestNestedGoStyleLoopsNoComparison() {
 	suite.Equal(true, testNestedGoStyleLoopsNoComparison())
 }
 
+func (suite *GoTestSuite) TestRangeInt() {
+	suite.Equal(true, testRangeInt())
+}
+
 func (suite *GoTestSuite) TestLoopVarClosures() {
 	suite.Equal(true, testLoopVarClosures())
 }
@@ -462,6 +466,14 @@ func (suite *GoTestSuite) TestShiftMod() {
 
 func (suite *GoTestSuite) TestLinearize() {
 	suite.Equal(true, testLinearize())
+}
+
+func (suite *GoTestSuite) TestRecoverNamed() {
+	suite.Equal(true, testRecoverNamed())
+}
+
+func (suite *GoTestSuite) TestCatchTwoDeep() {
+	suite.Equal(true, testCatchTwoDeep())
 }
 
 func (suite *GoTestSuite) TestShortcircuitAndTF() {

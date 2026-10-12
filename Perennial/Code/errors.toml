@@ -6,7 +6,12 @@ translate = [
   "asType",
   "errorString*",
   "ErrUnsupported",
+  "is",
 ]
+# `Is` calls `reflectlite.TypeOf(target).Comparable()` (`internal/reflectlite` is not
+# translated): a model in TrustedCode/errors.lean, with that call replaced by
+# `reflectliteComparable` (a function without a body, specified in Proof/errors.lean).
+trusted = ["Is"]
 imports = ["!*"]
 
 # translate the definitions of all type declarations goose supports

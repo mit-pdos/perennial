@@ -14,6 +14,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.nil
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.panic
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.precedence
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.recover
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.structs
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.type_equality
 

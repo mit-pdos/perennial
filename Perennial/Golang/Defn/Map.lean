@@ -23,6 +23,7 @@ at named map types.
 module
 
 public import Perennial.Golang.Defn.Loop
+public import Perennial.Golang.Defn.Assume
 public import Perennial.Golang.Defn.Predeclared
 
 @[expose] public section
@@ -81,9 +82,14 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
   internal_map_delete_step_pure (m k : val) :
     ⟦InternalMapDelete, (m, k)⟧ ⤳ (mapDelete m k)
   /-- Not an instance in Lean: `ks` and `H` cannot be found by typeclass
-  search. -/
+  search.
+
+  A map has fewer than `2^63` keys (its length is a non-negative `int`): the
+  model assumes it, as `append` assumes its length does not overflow
+  (`sumAssumeNoOverflowSigned`): `len` of a larger map does not return. -/
   internal_map_length_step_pure (m : val) (ks : List val) (H : is_map_domain m ks) :
-    ⟦InternalMapLength, m⟧ ⤳ #(W64 ks.length)
+    ⟦InternalMapLength, m⟧ ⤳
+      (if ks.length < 2 ^ 63 then Val #(W64 ks.length) else App (Val assume) (Val #false))
   internal_map_domain_literal_step_pure (mv : val) (m : val → Bool × val) (body : val)
     (key_type elem_type : go.GoType) (Hm : is_map_pure mv m) :
     is_go_step_pure (InternalMapForRange key_type elem_type) glv((mv, body)) =
@@ -126,6 +132,9 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
     is_map_pure (mapDelete mv k)
       (fun k' => if k' = k then (false, mapDefault mv) else m k')
   is_map_pure_map_empty (dv : val) : is_map_pure (mapEmpty dv) (fun _ => (false, dv))
+  /-- A map value is not a panic. -/
+  is_map_pure_not_panic (mv : val) (m : val → Bool × val) (H : is_map_pure mv m) :
+    mv.isPanic = false
 
   mapDefault_map_empty (dv : val) : mapDefault (mapEmpty dv) = dv
   mapDefault_map_insert (m k v : val) : mapDefault (mapInsert m k v) = mapDefault m
@@ -205,7 +214,8 @@ export MapSemantics (internal_map_lookup_step_pure internal_map_insert_step_pure
   internal_map_domain_literal_step_pure internal_map_make_step_pure internal_map_check_key_step
   is_go_op_go_equals_map_nil_l is_go_op_go_equals_map_nil_r internal_map_lookup_step
   internal_map_insert_step internal_map_delete_step internal_map_make_step mapLookup_pure
-  is_map_pure_map_insert is_map_pure_map_delete is_map_pure_map_empty mapDefault_map_empty
+  is_map_pure_map_insert is_map_pure_map_delete is_map_pure_map_empty is_map_pure_not_panic
+  mapDefault_map_empty
   mapDefault_map_insert mapDefault_map_delete is_map_domain_exists is_map_domain_map_empty
   is_map_domain_pure clear_map delete_map make2_map make1_map len_map composite_literal_map)
 

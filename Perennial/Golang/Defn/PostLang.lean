@@ -74,8 +74,15 @@ class FloatOps where
 
   float64ToFloat32 : w64 → w32
 
+  -- integer to float conversions (`float64(n)`), uninterpreted: a float is an opaque bit pattern
+  int64ToFloat64 : w64 → w64
+  uint64ToFloat64 : w64 → w64
+  int32ToFloat64 : w32 → w64
+  uint32ToFloat64 : w32 → w64
+
 export FloatOps (float64Neg float64Add float64Sub float64Mul float64Div float64Leb
-  float32Neg float32Add float32Sub float32Mul float32Div float32Leb float64ToFloat32)
+  float32Neg float32Add float32Sub float32Mul float32Div float32Leb float64ToFloat32
+  int64ToFloat64 uint64ToFloat64 int32ToFloat64 uint32ToFloat64)
 
 class GoSemanticsFunctions [FfiSyntax] where
   underlying : go.GoType → go.GoType

@@ -1,6 +1,8 @@
 /-
-`encoding/binary` little-endian
-`Uint64`/`PutUint64`/`Uint32`/`PutUint32`.
+`encoding/binary` little- and big-endian
+`Uint64`/`PutUint64`/`Uint32`/`PutUint32`. The big-endian encoding of `v` is the
+little-endian one reversed (`(u64Le v).reverse`), and big-endian decoding of `bs` is
+little-endian decoding of `bs.reverse`.
 -/
 module
 
@@ -76,15 +78,15 @@ theorem u64Le_8 (v : w64) :
     first | trivial | (apply BitVec.eq_of_toNat_eq; simp; omega)
 
 theorem u32Le_4 (v : w32) :
-    u32Le v = [W8 (uint.Z v), W8 (uint.Z (v >>> W32 8)), W8 (uint.Z (v >>> W32 16)),
-      W8 (uint.Z (v >>> W32 24))] := by
+    u32Le v = [W8 (uint.Z v), W8 (uint.Z (v >>> W64 8)), W8 (uint.Z (v >>> W64 16)),
+      W8 (uint.Z (v >>> W64 24))] := by
   simp only [u32Le, u32LeDef, LittleEndian.split, W8, uint.Z, BitVec.ofInt_natCast, List.cons.injEq]
   refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> first | trivial | (apply BitVec.eq_of_toNat_eq; simp; omega)
 
 theorem leToU32_4 (w0 w1 w2 w3 : w8) :
     leToU32 [w0, w1, w2, w3] =
-      W32 (uint.Z w0) ||| (W32 (uint.Z w1) <<< W32 8) ||| (W32 (uint.Z w2) <<< W32 16) |||
-      (W32 (uint.Z w3) <<< W32 24) := by
+      W32 (uint.Z w0) ||| (W32 (uint.Z w1) <<< W64 8) ||| (W32 (uint.Z w2) <<< W64 16) |||
+      (W32 (uint.Z w3) <<< W64 24) := by
   simp only [leToU32, leToU32Def, LittleEndian.combine, W32, uint.Z, BitVec.ofInt_natCast,
     BitVec.ofNat_toNat, BitVec.shiftLeft_eq', BitVec.toNat_ofInt, Nat.reducePow, Int.cast_ofNat_Int,
     Int.reduceMod, Int.reduceToNat]
@@ -135,6 +137,7 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   iintro Hown
   wp_auto
   wp_apply wp_GlobalAlloc (V := GoInterface) errOverflow go.error as _
+  wp_apply wp_GlobalAlloc (V := bigEndian) BigEndian bigEndian.ty as _
   wp_apply wp_GlobalAlloc (V := littleEndian) LittleEndian littleEndian.ty as Hlit
   ipersist Hlit
   wp_apply wp_GlobalAlloc (V := GoInterface) errBufferTooSmall go.error as _
@@ -147,6 +150,27 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   wp_apply errors.wp_New as %_ _
   iframe Hown
   is_pkg_init_finish
+
+/-- Loading a struct with no fields reads no memory: it needs no points-to (the
+`bigEndian` methods of the global `BigEndian` load it). -/
+theorem wp_load_struct_nofields {V : Type} [ZeroVal V] {fds : List go.field_decl}
+    [EqualsUnfold fds []] [go.TypeReprUnderlying (go.StructType fds) V]
+    {s : Stuckness} {E : CoPset} {t : go.GoType} [t ↓u go.StructType fds] (l : Loc) :
+    {{ (emp : IProp GF) }} (App (Val (GoInstruction (GoLoad t))) (Val #l)) @ s; E
+    {{ RET #(zero_val V); emp }} := by
+  iintro %Φ _ HΦ
+  have hpw : PureWp (hlc := hlc) (GF := GF) ((#l : val).isPanic = false)
+      (App (Val (GoInstruction (GoLoad t))) (Val #l))
+      (loadStructRaw fds #l []) := by
+    have _tagged := @go.tagged_internal_inst
+    infer_instance
+  iapply (wp_pure_raw_step (Hwp := hpw) (by simp))
+  inext
+  rw [loadStructRaw_eq]
+  simp only [List.foldl_nil]
+  wp_pures
+  iapply HΦ
+  itrivial
 
 theorem wp_littleEndian_Uint64 (le : littleEndian) (b : GoSlice) (bs rem : List w8) (dq : DFrac)
     (Hlen_bs : bs.length = 8) :
@@ -421,6 +445,278 @@ theorem wp_LittleEndian_Uint32 (b : GoSlice) (bs : List w8) (dq : DFrac) (rem : 
   ihave #Hle := isPkgInit_access (PROP := IProp GF) pkg_id.encoding.binary $$ Hpkg
   wp_auto
   wp_apply wp_littleEndian_Uint32 _ b bs rem dq Hlen $$ [$Hb] as Hb
+  iapply HΦ $$ Hb
+
+theorem wp_bigEndian_Uint64 (be : bigEndian) (b : GoSlice) (bs rem : List w8) (dq : DFrac)
+    (Hlen_bs : bs.length = 8) :
+    {{ (b ↦*{dq} (bs ++ rem) : IProp GF) }}
+      (App (Val (be @!! bigEndian.ty @!! go!"Uint64")) (Val #b))
+    {{ RET #(leToU64 bs.reverse); b ↦*{dq} (bs ++ rem) }} := by
+  obtain ⟨w0, w1, w2, w3, w4, w5, w6, w7, rfl⟩ :
+      ∃ w0 w1 w2 w3 w4 w5 w6 w7, bs = [w0, w1, w2, w3, w4, w5, w6, w7] := by
+    match bs, Hlen_bs with
+    | [w0, w1, w2, w3, w4, w5, w6, w7], _ => exact ⟨w0, w1, w2, w3, w4, w5, w6, w7, rfl⟩
+  wp_start as Hb
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hb
+  wp_auto
+  (try wp_auto)
+  idx_if
+  wp_apply wp_load_slice_index b _ _ dq w7 (by decide) $$ [Hb] with Hb
+  · iframe Hb; ipureintro; rfl
+  (try wp_auto)
+  idx_if
+  wp_apply wp_load_slice_index b _ _ dq w7 (by decide) $$ [Hb] with Hb
+  · iframe Hb; ipureintro; rfl
+  (try wp_auto)
+  idx_if
+  wp_apply wp_load_slice_index b _ _ dq w6 (by decide) $$ [Hb] with Hb
+  · iframe Hb; ipureintro; rfl
+  (try wp_auto)
+  idx_if
+  wp_apply wp_load_slice_index b _ _ dq w5 (by decide) $$ [Hb] with Hb
+  · iframe Hb; ipureintro; rfl
+  (try wp_auto)
+  idx_if
+  wp_apply wp_load_slice_index b _ _ dq w4 (by decide) $$ [Hb] with Hb
+  · iframe Hb; ipureintro; rfl
+  (try wp_auto)
+  idx_if
+  wp_apply wp_load_slice_index b _ _ dq w3 (by decide) $$ [Hb] with Hb
+  · iframe Hb; ipureintro; rfl
+  (try wp_auto)
+  idx_if
+  wp_apply wp_load_slice_index b _ _ dq w2 (by decide) $$ [Hb] with Hb
+  · iframe Hb; ipureintro; rfl
+  (try wp_auto)
+  idx_if
+  wp_apply wp_load_slice_index b _ _ dq w1 (by decide) $$ [Hb] with Hb
+  · iframe Hb; ipureintro; rfl
+  (try wp_auto)
+  idx_if
+  wp_apply wp_load_slice_index b _ _ dq w0 (by decide) $$ [Hb] with Hb
+  · iframe Hb; ipureintro; rfl
+  simp only [List.reverse_cons, List.reverse_nil, List.nil_append, List.cons_append,
+    List.singleton_append]
+  rw [leToU64_8]
+  iapply HΦ $$ Hb
+
+theorem wp_bigEndian_PutUint64 (be : bigEndian) (b : GoSlice) (space rem : List w8)
+    (v : w64) (Hlen_space : space.length = 8) :
+    {{ (b ↦* (space ++ rem) : IProp GF) }}
+      (App (App (Val (be @!! bigEndian.ty @!! go!"PutUint64")) (Val #b)) (Val #v))
+    {{ RET #(); b ↦* ((u64Le v).reverse ++ rem) }} := by
+  obtain ⟨w0, w1, w2, w3, w4, w5, w6, w7, rfl⟩ :
+      ∃ w0 w1 w2 w3 w4 w5 w6 w7, space = [w0, w1, w2, w3, w4, w5, w6, w7] := by
+    match space, Hlen_space with
+    | [w0, w1, w2, w3, w4, w5, w6, w7], _ => exact ⟨w0, w1, w2, w3, w4, w5, w6, w7, rfl⟩
+  wp_start as Hb
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hb
+  wp_auto
+  idx_if
+  wp_apply wp_load_slice_index b _ _ _ w7 (by decide) $$ [Hb] with Hb
+  · iframe Hb; ipureintro; rfl
+  (try wp_auto)
+  idx_if
+  wp_pures
+  wp_apply wp_store_slice_index b _ _ _ $$ [Hb] with Hb
+  · iframe Hb; ipureintro
+    simp (disch := decide) only [sint_W64_lit]
+    simp only [List.length_set, List.length_append, List.length_cons, List.length_nil]
+    omega
+  (try wp_auto)
+  idx_if
+  wp_pures
+  wp_apply wp_store_slice_index b _ _ _ $$ [Hb] with Hb
+  · iframe Hb; ipureintro
+    simp (disch := decide) only [sint_W64_lit]
+    simp only [List.length_set, List.length_append, List.length_cons, List.length_nil]
+    omega
+  (try wp_auto)
+  idx_if
+  wp_pures
+  wp_apply wp_store_slice_index b _ _ _ $$ [Hb] with Hb
+  · iframe Hb; ipureintro
+    simp (disch := decide) only [sint_W64_lit]
+    simp only [List.length_set, List.length_append, List.length_cons, List.length_nil]
+    omega
+  (try wp_auto)
+  idx_if
+  wp_pures
+  wp_apply wp_store_slice_index b _ _ _ $$ [Hb] with Hb
+  · iframe Hb; ipureintro
+    simp (disch := decide) only [sint_W64_lit]
+    simp only [List.length_set, List.length_append, List.length_cons, List.length_nil]
+    omega
+  (try wp_auto)
+  idx_if
+  wp_pures
+  wp_apply wp_store_slice_index b _ _ _ $$ [Hb] with Hb
+  · iframe Hb; ipureintro
+    simp (disch := decide) only [sint_W64_lit]
+    simp only [List.length_set, List.length_append, List.length_cons, List.length_nil]
+    omega
+  (try wp_auto)
+  idx_if
+  wp_pures
+  wp_apply wp_store_slice_index b _ _ _ $$ [Hb] with Hb
+  · iframe Hb; ipureintro
+    simp (disch := decide) only [sint_W64_lit]
+    simp only [List.length_set, List.length_append, List.length_cons, List.length_nil]
+    omega
+  (try wp_auto)
+  idx_if
+  wp_pures
+  wp_apply wp_store_slice_index b _ _ _ $$ [Hb] with Hb
+  · iframe Hb; ipureintro
+    simp (disch := decide) only [sint_W64_lit]
+    simp only [List.length_set, List.length_append, List.length_cons, List.length_nil]
+    omega
+  (try wp_auto)
+  idx_if
+  wp_pures
+  wp_apply wp_store_slice_index b _ _ _ $$ [Hb] with Hb
+  · iframe Hb; ipureintro
+    simp (disch := decide) only [sint_W64_lit]
+    simp only [List.length_set, List.length_append, List.length_cons, List.length_nil]
+    omega
+  iapply HΦ
+  rw [u64Le_8]
+  simp only [Int.reduceToNat, List.reverse_cons, List.reverse_nil, List.nil_append,
+    List.cons_append, List.singleton_append, List.set_cons_succ, List.set_cons_zero]
+  iexact Hb
+
+theorem wp_bigEndian_Uint32 (be : bigEndian) (b : GoSlice) (bs rem : List w8) (dq : DFrac)
+    (Hlen_bs : bs.length = 4) :
+    {{ (b ↦*{dq} (bs ++ rem) : IProp GF) }}
+      (App (Val (be @!! bigEndian.ty @!! go!"Uint32")) (Val #b))
+    {{ RET #(leToU32 bs.reverse); b ↦*{dq} (bs ++ rem) }} := by
+  obtain ⟨w0, w1, w2, w3, rfl⟩ :
+      ∃ w0 w1 w2 w3, bs = [w0, w1, w2, w3] := by
+    match bs, Hlen_bs with
+    | [w0, w1, w2, w3], _ => exact ⟨w0, w1, w2, w3, rfl⟩
+  wp_start as Hb
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hb
+  wp_auto
+  (try wp_auto)
+  idx_if
+  wp_apply wp_load_slice_index b _ _ dq w3 (by decide) $$ [Hb] with Hb
+  · iframe Hb; ipureintro; rfl
+  (try wp_auto)
+  idx_if
+  wp_apply wp_load_slice_index b _ _ dq w3 (by decide) $$ [Hb] with Hb
+  · iframe Hb; ipureintro; rfl
+  (try wp_auto)
+  idx_if
+  wp_apply wp_load_slice_index b _ _ dq w2 (by decide) $$ [Hb] with Hb
+  · iframe Hb; ipureintro; rfl
+  (try wp_auto)
+  idx_if
+  wp_apply wp_load_slice_index b _ _ dq w1 (by decide) $$ [Hb] with Hb
+  · iframe Hb; ipureintro; rfl
+  (try wp_auto)
+  idx_if
+  wp_apply wp_load_slice_index b _ _ dq w0 (by decide) $$ [Hb] with Hb
+  · iframe Hb; ipureintro; rfl
+  simp only [List.reverse_cons, List.reverse_nil, List.nil_append, List.cons_append,
+    List.singleton_append]
+  rw [leToU32_4]
+  iapply HΦ $$ Hb
+
+theorem wp_bigEndian_PutUint32 (be : bigEndian) (b : GoSlice) (space rem : List w8)
+    (v : w32) (Hlen_space : space.length = 4) :
+    {{ (b ↦* (space ++ rem) : IProp GF) }}
+      (App (App (Val (be @!! bigEndian.ty @!! go!"PutUint32")) (Val #b)) (Val #v))
+    {{ RET #(); b ↦* ((u32Le v).reverse ++ rem) }} := by
+  obtain ⟨w0, w1, w2, w3, rfl⟩ :
+      ∃ w0 w1 w2 w3, space = [w0, w1, w2, w3] := by
+    match space, Hlen_space with
+    | [w0, w1, w2, w3], _ => exact ⟨w0, w1, w2, w3, rfl⟩
+  wp_start as Hb
+  ihave %Hlen := ownSlice_len _ _ _ $$ Hb
+  wp_auto
+  idx_if
+  wp_apply wp_load_slice_index b _ _ _ w3 (by decide) $$ [Hb] with Hb
+  · iframe Hb; ipureintro; rfl
+  (try wp_auto)
+  idx_if
+  wp_pures
+  wp_apply wp_store_slice_index b _ _ _ $$ [Hb] with Hb
+  · iframe Hb; ipureintro
+    simp (disch := decide) only [sint_W64_lit]
+    simp only [List.length_set, List.length_append, List.length_cons, List.length_nil]
+    omega
+  (try wp_auto)
+  idx_if
+  wp_pures
+  wp_apply wp_store_slice_index b _ _ _ $$ [Hb] with Hb
+  · iframe Hb; ipureintro
+    simp (disch := decide) only [sint_W64_lit]
+    simp only [List.length_set, List.length_append, List.length_cons, List.length_nil]
+    omega
+  (try wp_auto)
+  idx_if
+  wp_pures
+  wp_apply wp_store_slice_index b _ _ _ $$ [Hb] with Hb
+  · iframe Hb; ipureintro
+    simp (disch := decide) only [sint_W64_lit]
+    simp only [List.length_set, List.length_append, List.length_cons, List.length_nil]
+    omega
+  (try wp_auto)
+  idx_if
+  wp_pures
+  wp_apply wp_store_slice_index b _ _ _ $$ [Hb] with Hb
+  · iframe Hb; ipureintro
+    simp (disch := decide) only [sint_W64_lit]
+    simp only [List.length_set, List.length_append, List.length_cons, List.length_nil]
+    omega
+  iapply HΦ
+  rw [u32Le_4]
+  simp only [Int.reduceToNat, List.reverse_cons, List.reverse_nil, List.nil_append,
+    List.cons_append, List.singleton_append, List.set_cons_succ, List.set_cons_zero]
+  iexact Hb
+
+theorem wp_BigEndian_Uint64 (b : GoSlice) (bs : List w8) (dq : DFrac) (rem : List w8)
+    (Hlen : bs.length = 8) :
+    {{ (b ↦*{dq} (bs ++ rem) : IProp GF) }}
+      (App (Val ((globalAddr BigEndian) @!! go.GoType.PointerType bigEndian.ty @!! go!"Uint64"))
+        (Val #b))
+    {{ RET #(leToU64 bs.reverse); b ↦*{dq} (bs ++ rem) }} := by
+  wp_start as Hb
+  wp_apply (wp_load_struct_nofields (V := bigEndian)) as -
+  wp_apply wp_bigEndian_Uint64 _ b bs rem dq Hlen $$ [$Hb] as Hb
+  iapply HΦ $$ Hb
+
+theorem wp_BigEndian_PutUint64 (b : GoSlice) (space rem : List w8) (v : w64)
+    (Hlen : space.length = 8) :
+    {{ (b ↦* (space ++ rem) : IProp GF) }}
+      (App (App (Val ((globalAddr BigEndian) @!! go.GoType.PointerType bigEndian.ty @!! go!"PutUint64"))
+        (Val #b)) (Val #v))
+    {{ RET #(); b ↦* ((u64Le v).reverse ++ rem) }} := by
+  wp_start as Hb
+  wp_apply (wp_load_struct_nofields (V := bigEndian)) as -
+  wp_apply wp_bigEndian_PutUint64 _ b space rem v Hlen $$ [$Hb] as Hb
+  iapply HΦ $$ Hb
+
+theorem wp_BigEndian_Uint32 (b : GoSlice) (bs : List w8) (dq : DFrac) (rem : List w8)
+    (Hlen : bs.length = 4) :
+    {{ (b ↦*{dq} (bs ++ rem) : IProp GF) }}
+      (App (Val ((globalAddr BigEndian) @!! go.GoType.PointerType bigEndian.ty @!! go!"Uint32"))
+        (Val #b))
+    {{ RET #(leToU32 bs.reverse); b ↦*{dq} (bs ++ rem) }} := by
+  wp_start as Hb
+  wp_apply (wp_load_struct_nofields (V := bigEndian)) as -
+  wp_apply wp_bigEndian_Uint32 _ b bs rem dq Hlen $$ [$Hb] as Hb
+  iapply HΦ $$ Hb
+
+theorem wp_BigEndian_PutUint32 (b : GoSlice) (space rem : List w8) (v : w32)
+    (Hlen : space.length = 4) :
+    {{ (b ↦* (space ++ rem) : IProp GF) }}
+      (App (App (Val ((globalAddr BigEndian) @!! go.GoType.PointerType bigEndian.ty @!! go!"PutUint32"))
+        (Val #b)) (Val #v))
+    {{ RET #(); b ↦* ((u32Le v).reverse ++ rem) }} := by
+  wp_start as Hb
+  wp_apply (wp_load_struct_nofields (V := bigEndian)) as -
+  wp_apply wp_bigEndian_PutUint32 _ b space rem v Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
 
 end wps

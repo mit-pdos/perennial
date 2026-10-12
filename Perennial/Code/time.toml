@@ -5,6 +5,7 @@ trusted = [
   "runtimeNano", # go:linkname runtimeNano
   "newTimer",    # go:linkname newTimer
   "syncTimer",
+  "runtimeIsBubbled", # go:linkname runtimeIsBubbled (true only inside a synctest bubble)
   # "sendTime",
 
   "After",
@@ -24,8 +25,23 @@ translate = [
   "Time.nsec",
   "Time.unixSec",
   "Time.sec",
+  "Time.Add",
+  "Time.addSec",
+  "Time.stripMono",
+  "Time.Sub",
+  "Time.Before",
+  "Time.Equal",
+  "subMono",
+  "minDuration",
+  "maxDuration",
+  "Since",
+  "Until",
+  "AfterFunc",
+  "when",
+  "goFunc",
   "wallToInternal",
   "nsecMask",
+  "nsecShift",
   "hasMonotonic",
   "internalToUnix",
 ]

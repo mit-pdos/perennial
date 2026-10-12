@@ -512,6 +512,9 @@ noncomputable def testNestedGoStyleLoops [FfiSyntax] [GoGlobalContext] : GoStrin
 noncomputable def testNestedGoStyleLoopsNoComparison [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testNestedGoStyleLoopsNoComparison"
 
+noncomputable def testRangeInt [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeInt"
+
 noncomputable def testLoopVarClosures [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testLoopVarClosures"
 
@@ -673,6 +676,27 @@ noncomputable def testShiftMod [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def testLinearize [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testLinearize"
+
+noncomputable def recoverNamed [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.recoverNamed"
+
+noncomputable def panicInLoop [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.panicInLoop"
+
+noncomputable def panicTwoDeep [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.panicTwoDeep"
+
+noncomputable def catchTwoDeep [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.catchTwoDeep"
+
+noncomputable def panicUnrecovered [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.panicUnrecovered"
+
+noncomputable def testRecoverNamed [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRecoverNamed"
+
+noncomputable def testCatchTwoDeep [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCatchTwoDeep"
 
 noncomputable def CheckTrue [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.CheckTrue"
@@ -3411,6 +3435,85 @@ noncomputable def testNestedGoStyleLoopsNoComparison.impl [FfiSyntax] [GoGlobalC
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
+/-- go: loops.go:164:6 -/
+noncomputable def testRangeInt.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (Let "sum" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 0))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "k" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "m" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (If (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")) (Val #(W64 10)))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 3)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "k")) (Val #(W64 0)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "m")) (Val #(W32 6)))) (Val #false)))))
+  (Let "$range" (Val #(W32 4))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (Let "$range_i" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "$range_i")) (Var "$range"))))) (Lam BAnon
+  (Let "$key" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "$range_i"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "m") (App (Val (GoInstruction (GoOp GoPlus go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "m")) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "i")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "i") (Var "$key"))))))))
+  (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Val #())))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "$range_i") (App (Val (GoInstruction (GoOp GoPlus go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "$range_i")) (Val #(W32 1)))))))))))))))))
+  (Let "$range" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2 : Int))))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Let "$range_i" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "$range_i")) (Var "$range"))))) (Lam BAnon
+  (Let "$key" (App (Val (GoInstruction (GoLoad go.int64))) (Var "$range_i"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "k") (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "k")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "i")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "i") (Var "$key"))))))))
+  (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Val #())))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$range_i") (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "$range_i")) (Val #(W64 1)))))))))))))))))
+  (Let "$range" (Val #(W64 3))
+  (Let "$range_i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$range_i")) (Var "$range"))))) (Lam BAnon
+  (Let "$key" (App (Val (GoInstruction (GoLoad go.int))) (Var "$range_i"))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1))))))))))
+  (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Val #())))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$range_i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$range_i")) (Val #(W64 1)))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))
+  (Let "$range" (Val #(W64 5))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$range_i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$range_i")) (Var "$range"))))) (Lam BAnon
+  (Let "$key" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$range_i"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "sum") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sum")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$key"))))))))
+  (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Val #())))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$range_i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$range_i")) (Val #(W64 1)))))))))))))))))
+
 /-- the example of the Go spec: the copy for the next iteration is made before
     the post statement, from the current value
 
@@ -4559,7 +4662,7 @@ noncomputable def testBitAddAnd.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "n" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "tid")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")) (Val #(W64 1))))))) (Val #(W64 32)))))))
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "tid")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")))) (App (Val (GoInstruction (GoUnOp GoComplement go.uint64))) (App (Val (GoInstruction (GoOp GoSub go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")) (Val #(W64 1))))))) (Val #(W64 32)))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "n") (Var "$r0")))))))))
   (App (Val doExecute)
@@ -4682,6 +4785,157 @@ noncomputable def testLinearize.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "m"))) (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Pair (Var "m") (Var "$r0")))))))))
+
+/-- recoverNamed panics; the deferred function recovers and sets the named result.
+
+    go: recover.go:4:6 -/
+noncomputable def recoverNamed.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res_x" (Var "x")
+  (Seq (App (App (Val wrapDeferRecover) (Lam BAnon
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res_x"))))
+  (Lam "$defer"
+  (Lam "$panic"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"boom")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$r0" (App (Val recoverPanic)
+  (Var "$panic"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.InterfaceType [])))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.InterfaceType [])))) (Val UntypedNil))))))
+  (Let "$r0" (Val #(W64 42))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "r") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #())))))))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res_x"))))))
+
+/-- go: recover.go:13:6 -/
+noncomputable def panicInLoop.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$r0" (Val #(W64 0))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (Val #true))) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 3)))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"loop")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #())))))
+  (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i")) (Val #(W64 1)))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))))
+
+/-- go: recover.go:21:6 -/
+noncomputable def panicTwoDeep.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve panicInLoop []))) (Val #())) (Val #()))))))
+
+/-- catchTwoDeep recovers a panic raised two calls down, inside a loop.
+
+    go: recover.go:26:6 -/
+noncomputable def catchTwoDeep.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res_ok" (Var "ok")
+  (Seq (App (App (Val wrapDeferRecover) (Lam BAnon
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res_ok"))))
+  (Lam "$defer"
+  (Lam "$panic"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$nr0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res_ok")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res_ok") (Var "$nr0"))))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve panicTwoDeep []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.InterfaceType [])))) (Pair (App (Val recoverPanic)
+  (Var "$panic")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.InterfaceType [])))) (Val UntypedNil))))))
+  (Let "$r0" (Val #true)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #())))))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res_ok"))))))
+
+/-- panicUnrecovered runs its deferred function and keeps panicking.
+
+    go: recover.go:37:6 -/
+noncomputable def panicUnrecovered.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val wrapDefer)
+  (Lam "$defer"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"unrecovered")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #()))))))))))))))
+
+/-- go: recover.go:42:6 -/
+noncomputable def testRecoverNamed.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve recoverNamed []))) (Val #())) (Val #())) (Val #(W64 42)))))))
+
+/-- go: recover.go:46:6 -/
+noncomputable def testCatchTwoDeep.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (App (App (Val (GoInstruction (FuncResolve catchTwoDeep []))) (Val #())) (Val #())))))
 
 /-- go: shortcircuiting.go:11:6 -/
 noncomputable def CheckTrue.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -7689,6 +7943,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   testNestedLoops_unfold : FuncUnfold testNestedLoops [] testNestedLoops.impl
   testNestedGoStyleLoops_unfold : FuncUnfold testNestedGoStyleLoops [] testNestedGoStyleLoops.impl
   testNestedGoStyleLoopsNoComparison_unfold : FuncUnfold testNestedGoStyleLoopsNoComparison [] testNestedGoStyleLoopsNoComparison.impl
+  testRangeInt_unfold : FuncUnfold testRangeInt [] testRangeInt.impl
   testLoopVarClosures_unfold : FuncUnfold testLoopVarClosures [] testLoopVarClosures.impl
   testLoopVarAddress_unfold : FuncUnfold testLoopVarAddress [] testLoopVarAddress.impl
   testLoopVarContinue_unfold : FuncUnfold testLoopVarContinue [] testLoopVarContinue.impl
@@ -7743,6 +7998,13 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   testAndCompare_unfold : FuncUnfold testAndCompare [] testAndCompare.impl
   testShiftMod_unfold : FuncUnfold testShiftMod [] testShiftMod.impl
   testLinearize_unfold : FuncUnfold testLinearize [] testLinearize.impl
+  recoverNamed_unfold : FuncUnfold recoverNamed [] recoverNamed.impl
+  panicInLoop_unfold : FuncUnfold panicInLoop [] panicInLoop.impl
+  panicTwoDeep_unfold : FuncUnfold panicTwoDeep [] panicTwoDeep.impl
+  catchTwoDeep_unfold : FuncUnfold catchTwoDeep [] catchTwoDeep.impl
+  panicUnrecovered_unfold : FuncUnfold panicUnrecovered [] panicUnrecovered.impl
+  testRecoverNamed_unfold : FuncUnfold testRecoverNamed [] testRecoverNamed.impl
+  testCatchTwoDeep_unfold : FuncUnfold testCatchTwoDeep [] testCatchTwoDeep.impl
   CheckTrue_unfold : FuncUnfold CheckTrue [] CheckTrue.impl
   CheckFalse_unfold : FuncUnfold CheckFalse [] CheckFalse.impl
   testShortcircuitAndTF_unfold : FuncUnfold testShortcircuitAndTF [] testShortcircuitAndTF.impl
@@ -7920,6 +8182,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testNestedLoops_unfold
   Assumptions.testNestedGoStyleLoops_unfold
   Assumptions.testNestedGoStyleLoopsNoComparison_unfold
+  Assumptions.testRangeInt_unfold
   Assumptions.testLoopVarClosures_unfold
   Assumptions.testLoopVarAddress_unfold
   Assumptions.testLoopVarContinue_unfold
@@ -7974,6 +8237,13 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testAndCompare_unfold
   Assumptions.testShiftMod_unfold
   Assumptions.testLinearize_unfold
+  Assumptions.recoverNamed_unfold
+  Assumptions.panicInLoop_unfold
+  Assumptions.panicTwoDeep_unfold
+  Assumptions.catchTwoDeep_unfold
+  Assumptions.panicUnrecovered_unfold
+  Assumptions.testRecoverNamed_unfold
+  Assumptions.testCatchTwoDeep_unfold
   Assumptions.CheckTrue_unfold
   Assumptions.CheckFalse_unfold
   Assumptions.testShortcircuitAndTF_unfold

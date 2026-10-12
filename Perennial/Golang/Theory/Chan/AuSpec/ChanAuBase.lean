@@ -141,7 +141,7 @@ def ChanCapValid {V : Type} (s : ChanState V) (cap : Int) : Prop :=
 section au_defns
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable (γ : ChanNames) (V : Type) [Pos.Countable V]
 
 def chanstate (q : Qp) (s : ChanState V) : IProp GF :=
@@ -324,7 +324,7 @@ end au_defns
 section defns
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
 variable (ch : Loc) (γ : ChanNames) (V : Type) [Pos.Countable V]
 variable [ZeroVal V] [TypedPointsto (GF := GF) V]
@@ -471,7 +471,7 @@ end defns
 section lemmas
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable (γ : ChanNames) (V : Type) [Pos.Countable V]
 
 theorem blocking_rcv_implies_nonblocking [ZeroVal V] (Φ : V → Bool → IProp GF) :
@@ -687,7 +687,7 @@ end lemmas
 section ghost_lemmas
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
 variable (ch : Loc) (γ : ChanNames) (V : Type) [Pos.Countable V]
 
@@ -919,7 +919,7 @@ theorem val_bool_eq [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsF
 section lc_lemmas
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable (γ : ChanNames) (V : Type) [Pos.Countable V]
 
 theorem savedOffer_lc_agree (lock1 : Option (OfferLock V)) (parked1 cont1 : IProp GF)

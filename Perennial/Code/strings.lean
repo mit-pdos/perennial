@@ -749,7 +749,11 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   byteStringReplacer_instance : byteStringReplacer.TypeAssumptions
   stringFinder_instance : stringFinder.TypeAssumptions
   asciiSet_instance : asciiSet.TypeAssumptions
+  Compare_unfold : FuncUnfold Compare [] Compare.impl
+  Split_unfold : FuncUnfold Split [] Split.impl
   Join_unfold : FuncUnfold Join [] Join.impl
+  HasPrefix_unfold : FuncUnfold HasPrefix [] HasPrefix.impl
+  TrimPrefix_unfold : FuncUnfold TrimPrefix [] TrimPrefix.impl
 
 attribute [instance] Assumptions.Builder_instance
   Assumptions.Reader_instance
@@ -764,7 +768,11 @@ attribute [instance] Assumptions.Builder_instance
   Assumptions.byteStringReplacer_instance
   Assumptions.stringFinder_instance
   Assumptions.asciiSet_instance
+  Assumptions.Compare_unfold
+  Assumptions.Split_unfold
   Assumptions.Join_unfold
+  Assumptions.HasPrefix_unfold
+  Assumptions.TrimPrefix_unfold
 
 end strings
 

@@ -2,6 +2,7 @@
 module
 
 public import Perennial.Golang.Defn
+public import Perennial.TrustedCode.errors
 
 @[expose] public section
 
@@ -120,6 +121,90 @@ noncomputable def Unwrap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])))) (Pair (Var "u") (Var "$r0")))))))))))))))
+
+/-- go: wrap.go:54:6 -/
+noncomputable def is.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "err"
+  (Lam "target"
+  (Lam "targetComparable"
+  (App (Val exceptionDo)
+  (Let "targetComparable" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "targetComparable"))
+  (Let "target" (App (Val (GoInstruction (GoAlloc go.error))) (Var "target"))
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
+  (App (App (App (Val doFor) (Lam BAnon
+  (Val #true))) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$y" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])))) (Var "$y"))
+  (Let "$x" (Fst (Var "__p"))
+  (Let "$ok" (Snd (Var "__p"))
+  (If (Var "$ok")
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])))) (Var "$x"))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))]) go!"Unwrap"))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])))) (Var "x"))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil)))))
+  (App (Val doReturn)
+  (Val #false))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r0")))))))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [(go.GoType.SliceType go.error)]))])))) (Var "$y"))
+  (Let "$x" (Fst (Var "__p"))
+  (Let "$ok" (Snd (Var "__p"))
+  (If (Var "$ok")
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [(go.GoType.SliceType go.error)]))])))) (Var "$x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #false))))
+  (Let "$range" (App (App (Val (GoInstruction (MethodResolve (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [(go.GoType.SliceType go.error)]))]) go!"Unwrap"))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [(go.GoType.SliceType go.error)]))])))) (Var "x"))) (Val #()))
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (App (App (Val (slice.forRange go.error)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (Let "$a0" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.error))) (Var "target"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad go.bool))) (Var "targetComparable"))
+  (App (App (App (App (Val (GoInstruction (FuncResolve is' []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (Val doReturn)
+  (Val #true))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$value"))))))))))))
+  (App (Val doReturn)
+  (Val #false)))))))))))))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Is" (go.signature.Signature [go.error] false [go.bool]))])))) (App (Val (GoInstruction (GoLoad go.error))) (Var "err")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Is" (go.signature.Signature [go.error] false [go.bool]))])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Is" (go.signature.Signature [go.error] false [go.bool]))])))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.error))) (Var "target"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Is" (go.signature.Signature [go.error] false [go.bool]))]) go!"Is"))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Is" (go.signature.Signature [go.error] false [go.bool]))])))) (Var "x"))) (Var "$a0"))) (Val #false))
+  (App (Val doReturn)
+  (Val #true))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Is" (go.signature.Signature [go.error] false [go.bool]))])))) (Pair (Var "x") (Var "$r0")))))))))))))))
+  (If (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "targetComparable")) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (GoLoad go.error))) (Var "target")))) (Val #false))
+  (App (Val doReturn)
+  (Val #true))
+  (App (Val doExecute)
+  (Val #()))))))
+  (Lam BAnon
+  (Val #()))))))))))
 
 /-- AsType finds the first error in err's tree that matches the type E, and
     if one is found, returns that error value and true. Otherwise, it
@@ -373,6 +458,8 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   joinError_instance : joinError.TypeAssumptions
   New_unfold : FuncUnfold New [] New.impl
   Unwrap_unfold : FuncUnfold Unwrap [] Unwrap.impl
+  Is_unfold : FuncUnfold Is [] Is.impl
+  is_unfold : FuncUnfold is' [] is.impl
   AsType_unfold : ∀ (E : go.GoType), FuncUnfold AsType [E] (AsType.impl E)
   asType_unfold : ∀ (E : go.GoType), FuncUnfold asType [E] (asType.impl E)
 
@@ -380,6 +467,8 @@ attribute [instance] Assumptions.errorString_instance
   Assumptions.joinError_instance
   Assumptions.New_unfold
   Assumptions.Unwrap_unfold
+  Assumptions.Is_unfold
+  Assumptions.is_unfold
   Assumptions.AsType_unfold
   Assumptions.asType_unfold
 

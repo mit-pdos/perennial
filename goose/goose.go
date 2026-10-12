@@ -84,6 +84,15 @@ type Ctx struct {
 	// body defers (`namedResultsWithDefer`): its `return`s store their values into
 	// them, and it returns them after the deferred calls.
 	namedResults []namedResult
+	// Set when the function's own body defers a function literal that calls
+	// recover(): the function is wrapped with `with_defer_recover:`, which binds
+	// the `$panic` cell that recover() reads and clears.
+	usesRecover bool
+	// recover() is translated only when this is set: directly in a function
+	// literal that is the operand of a `defer` statement.
+	recoverOK bool
+	// the next function literal translated is the operand of a `defer`
+	nextFuncLitDeferred bool
 
 	globalVars     []*ast.Ident
 	functions      []*ast.FuncDecl
@@ -465,6 +474,12 @@ func (ctx *Ctx) maybeHandleSpecialBuiltin(s *ast.CallExpr) (glang.Expr, bool) {
 			e = ctx.expr(s.Args[0])
 		}
 		return glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), ty, e), true
+	case "recover":
+		if !ctx.recoverOK {
+			ctx.unsupported(s, "recover() is supported only directly in a function literal "+
+				"deferred by a defer statement (defer func() { ... recover() ... }())")
+		}
+		return glang.NewCallExpr(glang.VerbatimExpr("recoverPanic"), glang.IdentExpr("$panic")), true
 	case "len", "cap":
 		// go/types gives the builtin a signature type exactly when the call is
 		// not constant-folded; then the ordinary call path applies the operand.
@@ -803,19 +818,44 @@ func (ctx *Ctx) binExpr(e *ast.BinaryExpr) (expr glang.Expr) {
 			return ctx.constantLiteral(e)
 		}
 	}
+	var y glang.Expr
+	if _, ok := shiftOps[e.Op]; ok {
+		y = ctx.shiftCount(e.Y, yT)
+	} else {
+		y = ctx.handleImplicitConversion(e.Y, yT, compType, ctx.expr(e.Y))
+	}
 	expr = glang.BinaryExpr{
 		X: ctx.handleImplicitConversion(e.X, xT, compType, ctx.expr(e.X)),
 		Op: glang.BinOp{
 			OpId: op,
 			Type: ctx.glangType(e, compType),
 		},
-		Y: ctx.handleImplicitConversion(e.Y, yT, compType, ctx.expr(e.Y)),
+		Y: y,
 	}
 
 	// FIXME: might need to do a conversion here. Handle e.g. interface
 	// conversion of (x < 10) as well as conversion of (x + 10).
 	// expr = ctx.handleImplicitConversion(e, compType, ctx.typeOf(e), expr)
 	return expr
+}
+
+// shiftCount translates the count y of a shift x << y or x >> y to the uint64
+// that the shift rules of the semantics take, whatever the types of x and y (a
+// count of at least x's width shifts every bit out; converting y to x's type
+// would truncate it). An unsigned or untyped constant y is converted; a signed
+// y goes through go.shiftCount, which panics if it is negative. A count whose
+// type is a type parameter is not supported: whether it is signed depends on
+// the instantiation.
+func (ctx *Ctx) shiftCount(y ast.Expr, yT types.Type) glang.Expr {
+	b, ok := yT.Underlying().(*types.Basic)
+	if !ok {
+		ctx.unsupported(y, "shift count of type %v (not a basic integer type)", yT)
+	}
+	e := ctx.expr(y)
+	if b.Info()&types.IsInteger != 0 && b.Info()&(types.IsUnsigned|types.IsUntyped) == 0 {
+		return glang.NewCallExpr(glang.VerbatimExpr("go.shiftCount"), ctx.glangType(y, yT), e)
+	}
+	return ctx.handleImplicitConversion(y, yT, types.Typ[types.Uint64], e)
 }
 
 func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
@@ -875,9 +915,6 @@ func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
 
 func (ctx *Ctx) unaryExpr(e *ast.UnaryExpr, multipleBindings bool) glang.Expr {
 	if e.Op == token.NOT {
-		return glang.NotExpr{X: ctx.expr(e.X)}
-	}
-	if e.Op == token.XOR {
 		return glang.NotExpr{X: ctx.expr(e.X)}
 	}
 	if e.Op == token.AND {
@@ -1008,8 +1045,7 @@ func (ctx *Ctx) builtinIdent(e *ast.Ident) glang.Expr {
 	case "iota":
 		return ctx.constantLiteral(e)
 	case "recover":
-		return glang.NewCallExpr(glang.VerbatimExpr("FuncResolve"),
-			glang.VerbatimExpr("go."+e.Name), glang.ListExpr{}, glang.Tt)
+		ctx.nope(e, "recover should be handled elsewhere")
 	default:
 		ctx.unsupported(e, "builtin identifier of type %v", ctx.typeOf(e))
 	}
@@ -1166,6 +1202,13 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 
 	ctx.usesDefer = false
 	ctx.namedResults = ctx.namedResultsWithDefer(e.Type, e.Body)
+	defer func(b, ok bool) {
+		ctx.usesRecover = b
+		ctx.recoverOK = ok
+	}(ctx.usesRecover, ctx.recoverOK)
+	ctx.usesRecover = false
+	ctx.recoverOK = ctx.nextFuncLitDeferred
+	ctx.nextFuncLitDeferred = false
 
 	// Assemble the `defaultReturn` expr so the body's `return` statements can use it.
 	var defaultRetExpr glang.TupleExpr
@@ -1214,28 +1257,7 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 			}
 		}
 	}
-	if e.Type.Results != nil && ctx.namedResults == nil {
-		for _, r := range e.Type.Results.List {
-			t := ctx.glangType(r.Type, ctx.typeOf(r.Type))
-			for _, name := range r.Names {
-				fl.Body = glang.LetExpr{
-					Names: []string{name.Name},
-					ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), t,
-						glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt)),
-					Cont: fl.Body,
-				}
-			}
-		}
-	}
-
-	if ctx.usesDefer {
-		fl.Body = glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), fl.Body)
-	} else {
-		fl.Body = glang.NewCallExpr(glang.VerbatimExpr("exception_do"), fl.Body)
-	}
-	if ctx.namedResults != nil {
-		fl.Body = ctx.wrapNamedResults(fl.Body)
-	}
+	fl.Body = ctx.wrapFuncBody(fl.Body, e.Type.Results)
 
 	return fl
 }
@@ -1594,8 +1616,56 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 			})
 		}
 		e = arr
+	case *types.Basic:
+		// `for i := range n` (Go 1.22): `n`, of an integer type (an untyped
+		// constant counts as an `int`), is evaluated once (`$range`), and the
+		// iterations bind `$key` to `0`, `1`, ..., `n - 1` (none if `n <= 0`),
+		// counted in a cell `$range_i` of that type: the three-clause loop
+		// `for $range_i := 0; $range_i < $range; $range_i++`.
+		if isPtr || t.Info()&types.IsInteger == 0 {
+			ctx.unsupported(s, "range over %v (only integers, maps, slices, channels and arrays are supported)", t)
+			return nil
+		}
+		nT := ctx.typeOf(s.X)
+		if t.Info()&types.IsUntyped != 0 {
+			nT = types.Typ[types.Int]
+		}
+		ty := ctx.glangType(s.X, nT)
+		var one glang.Expr
+		switch nT.Underlying().(*types.Basic).Kind() {
+		case types.Uint64, types.Int64, types.Int, types.Uint:
+			one = glang.Int64Val{Value: glang.ZLiteral{Value: big.NewInt(1)}}
+		case types.Uint32, types.Int32:
+			one = glang.Int32Val{Value: glang.ZLiteral{Value: big.NewInt(1)}}
+		case types.Uint8, types.Int8:
+			one = glang.Int8Val{Value: glang.ZLiteral{Value: big.NewInt(1)}}
+		default:
+			ctx.unsupported(s, "range over %v", t)
+			return nil
+		}
+		cell := glang.IdentExpr("$range_i")
+		load := glang.DerefExpr{X: cell, Ty: ty}
+		e = glang.LetExpr{
+			Names: []string{"$range_i"},
+			ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), ty,
+				glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), ty, glang.Tt)),
+			Cont: glang.ForLoopExpr{
+				Cond: glang.BinaryExpr{X: load,
+					Op: glang.BinOp{OpId: glang.OpLessThan, Type: ty}, Y: glang.IdentExpr("$range")},
+				Post: glang.NewDoSeq(glang.StoreStmt{Dst: cell, Ty: ty,
+					X: glang.BinaryExpr{X: load, Op: glang.BinOp{OpId: glang.OpPlus, Type: ty}, Y: one}},
+					glang.Tt),
+				Body: glang.LetExpr{Names: []string{"$key"}, ValExpr: load, Cont: body},
+			},
+		}
+		if t.Info()&types.IsUntyped != 0 {
+			// bind `$range` to the constant as an `int`
+			evalRange = false
+			e = glang.LetExpr{Names: []string{"$range"},
+				ValExpr: ctx.handleImplicitConversion(s.X, ctx.typeOf(s.X), nT, ctx.expr(s.X)), Cont: e}
+		}
 	default:
-		ctx.unsupported(s, "range over %v (only maps, slices, channels and arrays are supported)", t)
+		ctx.unsupported(s, "range over %v (only integers, maps, slices, channels and arrays are supported)", t)
 		return nil
 	}
 
@@ -2121,9 +2191,9 @@ func (ctx *Ctx) namedResultsTuple() glang.TupleExpr {
 	return es
 }
 
-// wrapNamedResults: `body` (already under `with_defer:`) in a function with
-// `namedResults`: they are allocated around it, and their values (as the deferred
-// calls left them) are what the function returns.
+// wrapNamedResults: `body` (under `with_defer:` or `with_defer_recover:`) in a
+// function with `namedResults`: they are allocated around it, and their values (as
+// the deferred calls left them) are what the function returns.
 func (ctx *Ctx) wrapNamedResults(body glang.Expr) glang.Expr {
 	var e glang.Expr = glang.LetExpr{ValExpr: body, Cont: ctx.namedResultsTuple()}
 	for _, r := range slices.Backward(ctx.namedResults) {
@@ -2136,6 +2206,82 @@ func (ctx *Ctx) wrapNamedResults(body glang.Expr) glang.Expr {
 		}
 	}
 	return e
+}
+
+// callsRecoverDirectly reports whether body calls the builtin recover() outside
+// any nested function literal.
+func (ctx *Ctx) callsRecoverDirectly(body *ast.BlockStmt) bool {
+	found := false
+	ast.Inspect(body, func(n ast.Node) bool {
+		switch n := n.(type) {
+		case *ast.FuncLit:
+			return false
+		case *ast.CallExpr:
+			if id, ok := n.Fun.(*ast.Ident); ok && id.Name == "recover" &&
+				ctx.info.Types[n.Fun].IsBuiltin() {
+				found = true
+			}
+		}
+		return !found
+	})
+	return found
+}
+
+// wrapFuncBody wraps the body of a function (with its parameters' allocations)
+// with the allocations of its named results and with `with_defer:` (if it
+// defers), `with_defer_recover:` (if a deferred function literal calls
+// recover()) or `exception_do`. For `with_defer_recover:` the named results are
+// allocated outside, so that the results expression (what a bare `return`
+// returns, or the zero values of unnamed results) can read them. A function with
+// `namedResults` has its results allocated by `wrapNamedResults`, around the
+// deferred calls.
+func (ctx *Ctx) wrapFuncBody(body glang.Expr, results *ast.FieldList) glang.Expr {
+	if ctx.namedResults != nil {
+		if ctx.usesRecover {
+			return ctx.wrapNamedResults(glang.NewCallExpr(glang.VerbatimExpr("with_defer_recover:"),
+				ctx.namedResultsTuple(), body))
+		}
+		return ctx.wrapNamedResults(glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), body))
+	}
+	allocResults := func(body glang.Expr) glang.Expr {
+		if results != nil {
+			for _, r := range results.List {
+				t := ctx.glangType(r.Type, ctx.typeOf(r.Type))
+				for _, name := range r.Names {
+					body = glang.LetExpr{
+						Names: []string{name.Name},
+						ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), t,
+							glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt)),
+						Cont: body,
+					}
+				}
+			}
+		}
+		return body
+	}
+	if ctx.usesRecover {
+		var res glang.TupleExpr
+		if results != nil {
+			for _, r := range results.List {
+				if r.Names == nil {
+					t := ctx.glangType(r.Type, ctx.typeOf(r.Type))
+					res = append(res, glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt))
+				}
+				for _, name := range r.Names {
+					res = append(res, ctx.namedResultValue(name, r.Type))
+				}
+			}
+		}
+		if len(res) == 0 {
+			res = glang.TupleExpr{glang.Tt}
+		}
+		return allocResults(glang.NewCallExpr(glang.VerbatimExpr("with_defer_recover:"), res, body))
+	}
+	body = allocResults(body)
+	if ctx.usesDefer {
+		return glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), body)
+	}
+	return glang.NewCallExpr(glang.VerbatimExpr("exception_do"), body)
 }
 
 // namedResultValue is the value of the named result `name` (of type `ty`) on a
@@ -2258,9 +2404,20 @@ func (ctx *Ctx) deferStmt(s *ast.DeferStmt, cont glang.Expr) (expr glang.Expr) {
 		X:   expr,
 	}
 
+	var fun glang.Expr
+	if fl, ok := s.Call.Fun.(*ast.FuncLit); ok {
+		if ctx.callsRecoverDirectly(fl.Body) {
+			ctx.usesRecover = true
+		}
+		ctx.nextFuncLitDeferred = true
+		fun = ctx.expr(s.Call.Fun)
+		ctx.nextFuncLitDeferred = false
+	} else {
+		fun = ctx.expr(s.Call.Fun)
+	}
 	expr = glang.LetExpr{
 		Names:   []string{"$f"},
-		ValExpr: ctx.expr(s.Call.Fun),
+		ValExpr: fun,
 		Cont:    expr,
 	}
 
@@ -2642,6 +2799,9 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 	}
 
 	ctx.usesDefer = false
+	ctx.usesRecover = false
+	ctx.recoverOK = false
+	ctx.nextFuncLitDeferred = false
 	var fd glang.FuncDecl
 	addSourceDoc(d.Doc, &fd.Comment)
 	ctx.addSourceFile(d, &fd.Comment)
@@ -2745,6 +2905,9 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 
 	if d.Recv == nil && d.Name.Name == "init" {
 		// a package initializer (a method may also be named init)
+		if ctx.usesRecover {
+			ctx.unsupported(d, "recover() in a package init function")
+		}
 		if ctx.usesDefer {
 			body = glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), body)
 		} else {
@@ -2771,28 +2934,7 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		}
 	}
 	maybeAddReceiver()
-	if d.Type.Results != nil && ctx.namedResults == nil {
-		for _, r := range d.Type.Results.List {
-			t := ctx.glangType(r.Type, ctx.typeOf(r.Type))
-			for _, name := range r.Names {
-				fd.Body = glang.LetExpr{
-					Names: []string{name.Name},
-					ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), t,
-						glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt)),
-					Cont: fd.Body,
-				}
-			}
-		}
-	}
-
-	if ctx.usesDefer {
-		fd.Body = glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), fd.Body)
-	} else {
-		fd.Body = glang.NewCallExpr(glang.VerbatimExpr("exception_do"), fd.Body)
-	}
-	if ctx.namedResults != nil {
-		fd.Body = ctx.wrapNamedResults(fd.Body)
-	}
+	fd.Body = ctx.wrapFuncBody(fd.Body, d.Type.Results)
 
 	ctx.out.funcImplDecls = append(ctx.out.funcImplDecls, fd)
 }
