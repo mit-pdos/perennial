@@ -1,5 +1,0 @@
-# `MakeNoZero` is implemented in the runtime (linkname, no Go body): a model in
-# TrustedCode/internal/bytealg.lean.
-translate = ["!*"]
-trusted = ["MakeNoZero"]
-imports = ["!*"]

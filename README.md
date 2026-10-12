@@ -86,9 +86,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   program *can* reach are not assumed away. `strings.Join` is one: Go sums the
   elements' lengths and panics before allocating anything, so a few gigabytes
   of aliased elements (`make([]string, 1<<30+1)` with a long separator) reach
-  the panic. `Join` is Goose's translation of the real source, and
-  `strings.wp_Join` asks its caller for `JoinFits` (the result is at most
-  `internal/bytealg.maxAlloc` bytes). `sync.WaitGroup`'s
+  the panic. **Known, not yet fixed:** `Join` is still a trusted model that
+  omits that panic, and `strings.wp_Join` has no premise excluding it (a fix
+  that translates the real `Join` is on branch `join-translation`; its model of
+  `strings.Builder.String` must first be made stuck where Go's `String`
+  aliases the builder's buffer). `sync.WaitGroup`'s
   `int32` counter is another (two `Add(1 << 30)` calls panic in Go): `WaitGroup.Add`
   is Goose's translation, and `WaitGroup.wp_Add` asks its caller to bound the
   new counter by `2^31`. A caller whose counter is backed by one goroutine per

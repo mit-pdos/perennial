@@ -16,36 +16,56 @@ namespace strings
 section code
 variable [FfiSyntax] [GoGlobalContext]
 
-/-- `b.String()`: the bytes written to the builder `b`. Go's `String` is
+/-- `Join(elems, sep)`: the elements of `elems` separated by `sep`. Go's `Join` sums the
+lengths, panics if the total overflows `int`, and copies into a `strings.Builder` (whose
+`String()` is `unsafe.String`, which Goose does not translate). The model is goose's
+translation of the same result computed with `+`:
 
 ```go
-func (b *Builder) String() string {
-	return unsafe.String(unsafe.SliceData(b.buf), len(b.buf))
+func Join(elems []string, sep string) string {
+	var s string
+	for i, e := range elems {
+		if i > 0 {
+			s += sep
+		}
+		s += e
+	}
+	return s
 }
 ```
 
-which goose does not translate (`unsafe.String`: "builtin that isn't an ident"). The model is
-goose's translation of
-
-```go
-func (b *Builder) String() string {
-	return string(b.buf)
-}
-```
-
-(the receiver's type written out as `strings.Builder`'s named type, which this file cannot refer
-to by its generated name `Builder.ty`). The two return the same string: Go's shares `b.buf`'s
-bytes where the model copies them, which is unobservable because a `Builder` never changes a
-byte once written (`WriteString`, `Write`, `WriteByte` and `WriteRune` append; `grow` copies to
-a new buffer; `Reset` drops the buffer). Both dereference `b` (a nil `b` panics in Go and is
-stuck in the model). -/
-noncomputable def Builder.String.impl : val :=
-  (LamV "b"
-  (Lam BAnon
+So it does not model the length-overflow panic: like `append` (`sumAssumeNoOverflowSigned`)
+and string `+`, the model assumes a string's length fits in an `int`. -/
+noncomputable def Join.impl : val :=
+  (LamV "elems"
+  (Lam "sep"
   (App (Val exceptionDo)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))
+  (Let "sep" (App (Val (GoInstruction (GoAlloc go.string))) (Var "sep"))
+  (Let "elems" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "elems"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"strings.Builder" []) go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "s")))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "elems"))
+  (Let "e" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val (slice.forRange go.string)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (App (Val (GoInstruction (GoLoad go.string))) (Var "e")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 0)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (App (Val (GoInstruction (GoLoad go.string))) (Var "sep")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "e") (Var "$value"))))))))))))))))))
 
 /-- `HasPrefix(s, prefix)`: whether `s` begins with `prefix`. Go's `HasPrefix` is
 `len(s) >= len(prefix) && s[:len(prefix)] == prefix` (in `internal/stringslite`); Goose's Go
