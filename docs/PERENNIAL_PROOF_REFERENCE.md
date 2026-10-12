@@ -503,7 +503,7 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty
 | Lemma | |
 |:--|:--|
 | `wp_for`, `wp_for_post_do/continue/break/return/panic` | loops (used by the tactics) |
-| `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `Once.wp_doSlow`); the deferred chain runs after the body, whatever its outcome |
+| `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `Once.wp_doSlow`; `wp_auto` first to allocate the result cells); the deferred chain runs after the body, whatever its outcome, then the function returns its results read from their cells |
 | `wp_with_defer_recover`, `wp_recoverPanic` | functions whose deferred function literal calls `recover()` (introduce `%defer %pnc defer pnc`) and the `recover()` |
 | `wp_panic`, `wp_exceptionDo_panic` | `panic(p)`, and an unrecovered panic at the end of a function (stuck); see "Panics" |
 | `wp_fork` | `go` statements: `▷ WP e {{ True }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}` |
@@ -630,14 +630,22 @@ What happens to the outcome depends on the function:
   stuck (`wp_exceptionDo_panic : ▷ False ⊢ WP ..`), like a run-time panic of a
   builtin (`Panic "msg"`, `wp_PanicOp`); the proof must show that the panic is
   unreachable (`semantics_proof/panic.lean`);
-* `defer` (`with_defer:`, `wp_with_defer`): the deferred chain runs after the
-  body whatever its outcome, then `exceptionDo` as above;
+* `defer` (`with_defer: r; e`, `wp_with_defer`): the deferred chain runs after
+  the body whatever its outcome; a panic is then stuck (`exceptionDo` as
+  above), and otherwise the function returns `r`, which reads its results'
+  cells. In a function that defers, every result has a cell `$res<i>` (a named
+  result's own variable, a fresh cell for an unnamed or blank result, bound
+  outside the `with_defer:`), and `return e1, ..., en` evaluates the `ei`,
+  stores them in the cells and is `return: #()` (a bare `return` is
+  `return: #()`), so that, as in Go, the function returns its results' values
+  *after* the deferred functions ran, which may read and modify named results
+  (`semantics_proof/defer.lean`);
 * `defer` of a function literal that calls `recover()` (`with_defer_recover:`,
   `wp_with_defer_recover`): the panic's value is stored in the `$panic` cell
   (`pnc ↦ nil` while not panicking) before the chain runs; `recover()`
   (`recoverPanic`, `wp_recoverPanic`) reads and clears it; if the chain cleared
-  it, the function returns its results (the named results, read after the
-  chain), and otherwise `exceptionDo` as above. `wp_auto` steps through these
+  it, or the body did not panic, the function returns its results (read from
+  their cells after the chain), and otherwise `exceptionDo` as above. `wp_auto` steps through these
   checks once the body's outcome is a `returnVal`/`panicVal`
   (`semantics_proof/recover.lean`):
 
@@ -667,7 +675,10 @@ stuck (Go 1.21 turns it into a run-time panic with a `*runtime.PanicNilError`,
 and a `nil` in the `$panic` cell means "not panicking"), so `wp_panic` takes a
 non-nil value `.ok i`. Goose does not translate a `panic(..)` as the post
 statement of a `for` (`doFor` runs the post statement under `do:`, which would
-drop the panic), nor `defer panic(..)` or `go panic(..)`.
+drop the panic), nor `defer panic(..)` or `go panic(..)`, nor a `recover()` in a
+deferred function literal that itself defers a literal calling `recover()` (the
+inner `with_defer_recover:` would bind its own `$panic` cell, hiding the one the
+outer `recover()` must read).
 
 A loop body that panics proves its `forPostcondition` with `wp_for_post`
 (`wp_for_post_panic`). Run-time panics of builtins (`Panic "msg"`: an index out

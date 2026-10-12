@@ -367,7 +367,8 @@ noncomputable def Once.Do.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def Once.doSlow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "o"
   (Lam "f"
-  (App (Val wrapDefer)
+  (App (App (Val wrapDefer) (Lam BAnon
+  (Val #())))
   (Lam "$defer"
   (Let "o" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Once.ty)))) (Var "o"))
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f"))
@@ -832,7 +833,8 @@ noncomputable def rlocker.Unlock.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def WaitGroup.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "wg"
   (Lam "delta"
-  (App (Val wrapDefer)
+  (App (App (Val wrapDefer) (Lam BAnon
+  (Val #())))
   (Lam "$defer"
   (Let "wg" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))
   (Let "delta" (App (Val (GoInstruction (GoAlloc go.int))) (Var "delta"))

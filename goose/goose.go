@@ -75,10 +75,16 @@ type Ctx struct {
 	curFuncType   *types.Signature
 	defaultReturn glang.Expr // this handles
 
-	// Should be set to true when encountering a defer statement in the body of
-	// a function to communicate to its top-level funcDecl that it should
-	// include a defer prelude+prologue.
+	// The function's own body (outside nested function literals) has a defer
+	// statement: set by beginFuncBody before the body is translated. Such a
+	// function is wrapped with `with_defer:` (or `with_defer_recover:`), its
+	// `return e1, ..., en` assigns its results, and it returns the results'
+	// values after its deferred calls have run (which may modify named results).
 	usesDefer bool
+	// The types of the current function's results. In a function that defers,
+	// result i is held by the cell `$res<i>` (a named result's own variable, a
+	// fresh one for an unnamed or blank result).
+	resultTypes []glang.Expr
 
 	// Set when the function's own body defers a function literal that calls
 	// recover(): the function is wrapped with `with_defer_recover:`, which binds
@@ -1122,14 +1128,14 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 	fl := glang.FuncLit{}
 
 	// reset to original value after translating this FuncLit
-	defer func(b bool) {
+	defer func(b bool, rs []glang.Expr) {
 		ctx.usesDefer = b
-	}(ctx.usesDefer)
+		ctx.resultTypes = rs
+	}(ctx.usesDefer, ctx.resultTypes)
 	defer func(defaultReturn glang.Expr) {
 		ctx.defaultReturn = defaultReturn
 	}(ctx.defaultReturn)
 
-	ctx.usesDefer = false
 	defer func(b, ok bool) {
 		ctx.usesRecover = b
 		ctx.recoverOK = ok
@@ -1138,24 +1144,13 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 	ctx.recoverOK = ctx.nextFuncLitDeferred
 	ctx.nextFuncLitDeferred = false
 
-	// Assemble the `defaultReturn` expr so the body's `return` statements can use it.
-	var defaultRetExpr glang.TupleExpr
-	if e.Type.Results == nil || len(e.Type.Results.List) == 0 {
-		defaultRetExpr = append(defaultRetExpr, glang.Tt)
-	} else {
-		for _, r := range e.Type.Results.List {
-			if r.Names == nil {
-
-			} else {
-				for _, name := range r.Names {
-					defaultRetExpr = append(defaultRetExpr,
-						ctx.namedResultValue(name, r.Type))
-				}
-			}
-		}
-	}
-	ctx.defaultReturn = glang.ReturnExpr{
-		Value: defaultRetExpr,
+	ctx.beginFuncBody(e.Body, e.Type.Results)
+	if ctx.recoverOK && ctx.callsRecoverDirectly(e.Body) && ctx.defersRecover(e.Body) {
+		// the literal's own `with_defer_recover:` would bind a fresh `$panic`,
+		// hiding the cell of the function that deferred it, which its
+		// recover() must read
+		ctx.unsupported(e, "recover() in a deferred function literal that itself "+
+			"defers a function literal calling recover()")
 	}
 
 	defer func(oldFuncType *types.Signature) {
@@ -2171,12 +2166,79 @@ func (ctx *Ctx) callsRecoverDirectly(body *ast.BlockStmt) bool {
 	return found
 }
 
+// defersRecover reports whether body defers (outside any nested function
+// literal) a function literal that calls recover() directly.
+func (ctx *Ctx) defersRecover(body *ast.BlockStmt) bool {
+	found := false
+	ast.Inspect(body, func(n ast.Node) bool {
+		switch n := n.(type) {
+		case *ast.FuncLit:
+			return false
+		case *ast.DeferStmt:
+			if fl, ok := n.Call.Fun.(*ast.FuncLit); ok && ctx.callsRecoverDirectly(fl.Body) {
+				found = true
+			}
+		}
+		return !found
+	})
+	return found
+}
+
+// defersDirectly reports whether body has a defer statement outside any nested
+// function literal.
+func defersDirectly(body *ast.BlockStmt) bool {
+	found := false
+	ast.Inspect(body, func(n ast.Node) bool {
+		switch n.(type) {
+		case *ast.FuncLit:
+			return false
+		case *ast.DeferStmt:
+			found = true
+		}
+		return !found
+	})
+	return found
+}
+
+// beginFuncBody sets up the translation of a function body with results
+// `results`: usesDefer, resultTypes and defaultReturn (what a bare `return`
+// is). In a function that defers a bare `return` is `return: #()`, since the
+// function returns the values of its result cells after its deferred calls.
+func (ctx *Ctx) beginFuncBody(body *ast.BlockStmt, results *ast.FieldList) {
+	ctx.usesDefer = defersDirectly(body)
+	ctx.resultTypes = nil
+	var defaultRetExpr glang.TupleExpr
+	if results != nil {
+		for _, r := range results.List {
+			t := ctx.glangType(r.Type, ctx.typeOf(r.Type))
+			if r.Names == nil {
+				ctx.resultTypes = append(ctx.resultTypes, t)
+			}
+			for _, name := range r.Names {
+				ctx.resultTypes = append(ctx.resultTypes, t)
+				defaultRetExpr = append(defaultRetExpr, ctx.namedResultValue(name, r.Type))
+			}
+		}
+	}
+	if len(ctx.resultTypes) == 0 || ctx.usesDefer {
+		defaultRetExpr = glang.TupleExpr{glang.Tt}
+	}
+	ctx.defaultReturn = glang.ReturnExpr{Value: defaultRetExpr}
+}
+
+// resultCell is the name of the cell holding result i in a function that
+// defers.
+func resultCell(i int) string {
+	return fmt.Sprintf("$res%d", i)
+}
+
 // wrapFuncBody wraps the body of a function (with its parameters' allocations)
 // with the allocations of its named results and with `with_defer:` (if it
 // defers), `with_defer_recover:` (if a deferred function literal calls
-// recover()) or `exception_do`. For `with_defer_recover:` the named results are
-// allocated outside, so that the results expression (what a bare `return`
-// returns, or the zero values of unnamed results) can read them.
+// recover()) or `exception_do`. A function that defers also binds the cells
+// `$res<i>` of its results (a named result's variable, or a fresh cell),
+// outside the `with_defer:`, whose first argument reads them: the function's
+// results after its deferred calls have run.
 func (ctx *Ctx) wrapFuncBody(body glang.Expr, results *ast.FieldList) glang.Expr {
 	allocResults := func(body glang.Expr) glang.Expr {
 		if results != nil {
@@ -2194,29 +2256,48 @@ func (ctx *Ctx) wrapFuncBody(body glang.Expr, results *ast.FieldList) glang.Expr
 		}
 		return body
 	}
+	if !ctx.usesDefer {
+		return glang.NewCallExpr(glang.VerbatimExpr("exception_do"), allocResults(body))
+	}
+	var res glang.TupleExpr
+	for i, t := range ctx.resultTypes {
+		res = append(res, glang.DerefExpr{X: glang.IdentExpr(resultCell(i)), Ty: t})
+	}
+	if len(res) == 0 {
+		res = glang.TupleExpr{glang.Tt}
+	}
+	head := "with_defer:"
 	if ctx.usesRecover {
-		var res glang.TupleExpr
-		if results != nil {
-			for _, r := range results.List {
-				if r.Names == nil {
-					t := ctx.glangType(r.Type, ctx.typeOf(r.Type))
-					res = append(res, glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt))
+		head = "with_defer_recover:"
+	}
+	body = glang.NewCallExpr(glang.VerbatimExpr(head), res, body)
+	// bind the result cells, innermost last
+	var cells []glang.LetExpr
+	i := 0
+	if results != nil {
+		for _, r := range results.List {
+			t := ctx.glangType(r.Type, ctx.typeOf(r.Type))
+			fresh := glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), t,
+				glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt))
+			if r.Names == nil {
+				cells = append(cells, glang.LetExpr{Names: []string{resultCell(i)}, ValExpr: fresh})
+				i++
+			}
+			for _, name := range r.Names {
+				var v glang.Expr = glang.IdentExpr(name.Name)
+				if name.Name == "_" {
+					v = fresh
 				}
-				for _, name := range r.Names {
-					res = append(res, ctx.namedResultValue(name, r.Type))
-				}
+				cells = append(cells, glang.LetExpr{Names: []string{resultCell(i)}, ValExpr: v})
+				i++
 			}
 		}
-		if len(res) == 0 {
-			res = glang.TupleExpr{glang.Tt}
-		}
-		return allocResults(glang.NewCallExpr(glang.VerbatimExpr("with_defer_recover:"), res, body))
 	}
-	body = allocResults(body)
-	if ctx.usesDefer {
-		return glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), body)
+	for j := len(cells) - 1; j >= 0; j-- {
+		cells[j].Cont = body
+		body = cells[j]
 	}
-	return glang.NewCallExpr(glang.VerbatimExpr("exception_do"), body)
+	return allocResults(body)
 }
 
 // namedResultValue is the value of the named result `name` (of type `ty`) on a
@@ -2294,6 +2375,23 @@ func (ctx *Ctx) returnStmt(s *ast.ReturnStmt, cont glang.Expr) glang.Expr {
 			exprs = []glang.Expr{glang.Tt}
 		}
 		retExpr = glang.ReturnExpr{Value: glang.TupleExpr(exprs)}
+		if ctx.usesDefer {
+			// evaluate the results, assign them to the result cells, and return:
+			// the function returns the cells' values after its deferred calls
+			var names []string
+			for i := range exprs {
+				names = append(names, fmt.Sprintf("$rv%d", i))
+			}
+			var assign glang.Expr = glang.ReturnExpr{Value: glang.Tt}
+			for i := len(exprs) - 1; i >= 0; i-- {
+				assign = glang.LetExpr{
+					ValExpr: glang.StoreStmt{Dst: glang.IdentExpr(resultCell(i)),
+						Ty: ctx.resultTypes[i], X: glang.IdentExpr(names[i])},
+					Cont: assign,
+				}
+			}
+			retExpr = glang.LetExpr{Names: names, ValExpr: glang.TupleExpr(exprs), Cont: assign}
+		}
 	}()
 
 	return glang.SeqExpr{Expr: retExpr, Cont: cont}
@@ -2306,7 +2404,9 @@ func (ctx *Ctx) deferStmt(s *ast.DeferStmt, cont glang.Expr) (expr glang.Expr) {
 		// translated, and is stuck at the end of the literal)
 		ctx.unsupported(s, "defer of panic")
 	}
-	ctx.usesDefer = true
+	if !ctx.usesDefer {
+		ctx.nope(s, "defer statement missed by defersDirectly")
+	}
 	args := make([]glang.Expr, 0, len(s.Call.Args))
 	for i := range len(s.Call.Args) {
 		args = append(args, glang.IdentExpr(fmt.Sprintf("$a%d", i)))
@@ -2740,7 +2840,6 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		}
 	}
 
-	ctx.usesDefer = false
 	ctx.usesRecover = false
 	ctx.recoverOK = false
 	ctx.nextFuncLitDeferred = false
@@ -2815,25 +2914,7 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		ctx.unsupported(d, "external function")
 	}
 
-	// Assemble the `defaultReturn` expr so the body's `return` statements can use it.
-	var defaultRetExpr glang.TupleExpr
-	if d.Type.Results == nil || len(d.Type.Results.List) == 0 {
-		defaultRetExpr = append(defaultRetExpr, glang.Tt)
-	} else {
-		for _, r := range d.Type.Results.List {
-			if r.Names == nil {
-
-			} else {
-				for _, name := range r.Names {
-					defaultRetExpr = append(defaultRetExpr,
-						ctx.namedResultValue(name, r.Type))
-				}
-			}
-		}
-	}
-	ctx.defaultReturn = glang.ReturnExpr{
-		Value: defaultRetExpr,
-	}
+	ctx.beginFuncBody(d.Body, d.Type.Results)
 
 	var cont glang.Expr = nil
 	if d.Type.Results == nil {
@@ -2847,7 +2928,7 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 			ctx.unsupported(d, "recover() in a package init function")
 		}
 		if ctx.usesDefer {
-			body = glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), body)
+			body = glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), glang.Tt, body)
 		} else {
 			body = glang.NewCallExpr(glang.VerbatimExpr("exception_do"), body)
 		}

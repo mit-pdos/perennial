@@ -9,6 +9,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.control_flow
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.evalorder
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.conversions
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.defer
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.int_conversions
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.interfaces_complex
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics_proof.loopvars

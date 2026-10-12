@@ -3540,7 +3540,8 @@ noncomputable def methodValues.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
   (Lam "e"
   (Lam "ep"
-  (App (Val wrapDefer)
+  (App (App (Val wrapDefer) (Lam BAnon
+  (Val #())))
   (Lam "$defer"
   (Let "ep" (App (Val (GoInstruction (GoAlloc mvEmbedPtr.ty))) (Var "ep"))
   (Let "e" (App (Val (GoInstruction (GoAlloc mvEmbed.ty))) (Var "e"))
