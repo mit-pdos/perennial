@@ -7,11 +7,12 @@ The initializer allocates the package's variables, initializes `errors`, `sync`,
 `init()`, which closes `closedchan`. It establishes `isInit` (the `goroutines` counter in an
 invariant, the fixed `closedchan` and `Canceled`).
 
-One premise is not a fact of the model: `Canceled`'s dynamic type (`*errors.errorString`) is
-in the type set of `error` (`isTypedErr`). That is a method-set fact (`*errorString` has
-`Error() string`), and method sets are uninterpreted in the semantics (`methodSet` is a
-parameter of `GoSemanticsFunctions` that no assumption constrains), so it is the class
-`ErrorStringIsError`, an assumption about the semantics like the packages' `Assumptions`.
+Two premises are not facts of the model: `Canceled`'s dynamic type (`*errors.errorString`)
+and `DeadlineExceeded`'s (`deadlineExceededError`) are in the type set of `error`
+(`isTypedErr`). These are method-set facts (both types have `Error() string`), and method sets
+are uninterpreted in the semantics (`methodSet` is a parameter of `GoSemanticsFunctions` that no
+assumption constrains), so they are the classes `ErrorStringIsError` and
+`DeadlineExceededIsError`, assumptions about the semantics like the packages' `Assumptions`.
 -/
 module
 
@@ -34,6 +35,11 @@ a fact about the method sets, which the semantics leaves uninterpreted. -/
 class ErrorStringIsError [FfiSyntax] [GoGlobalContext] [GoSemanticsFunctions] : Prop where
   is_error : go.typeSetContains (go.GoType.PointerType errors.errorString.ty) go.error = true
 
+/-- `context.deadlineExceededError` is in the type set of `error` (it has the method
+`Error() string`): a fact about the method sets, which the semantics leaves uninterpreted. -/
+class DeadlineExceededIsError [FfiSyntax] [GoGlobalContext] [GoSemanticsFunctions] : Prop where
+  is_error : go.typeSetContains context.deadlineExceededError.ty go.error = true
+
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
@@ -41,6 +47,7 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : context.Assumptions]
 variable [hErr : ErrorStringIsError]
+variable [hDE : DeadlineExceededIsError]
 
 /-- `errors.New(msg)`, with the exact type of what it returns (`errors.wp_New_ptr` keeps the
 pointer type abstract; `isTypedErr` needs `*errorString`): a pointer to an `errorString`
@@ -80,7 +87,7 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   wp_apply wp_GlobalAlloc (V := GoChan) closedchan _ as Hcl
   wp_apply wp_GlobalAlloc (V := w64) cancelCtxKey go.int as _
   wp_apply wp_GlobalAlloc (V := sync.atomic.Int32) goroutines sync.atomic.Int32.ty as Hgo
-  wp_apply wp_GlobalAlloc (V := GoInterface) DeadlineExceeded go.error as _
+  wp_apply wp_GlobalAlloc (V := GoInterface) DeadlineExceeded go.error as HDE
   wp_apply wp_GlobalAlloc (V := GoInterface) Canceled go.error as HC
   wp_apply time.wp_initialize' _ Hinit.2.2.2.2.1 $$ Hown as ⟨Hown, #H1⟩
   wp_apply sync.atomic.wp_initialize' _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #H2⟩
@@ -89,6 +96,7 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   wp_apply wp_New_errorString as %x _
   wp_apply chan.wp_make1 (V := Unit) as %ch %γ ⟨#His_ch, %Hcap, Hch⟩
   ipersist HC
+  ipersist HDE
   ipersist Hcl
   ihave Hgo : sync.atomic.ownInt32 (globalAddr goroutines) (DFrac.own 1) (W32 0) $$ [Hgo]
   · rw [sync.atomic.ownInt32_unseal]
@@ -127,6 +135,11 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
     iframe HC
     ipureintro
     exact hErr.is_error
+  isplitr
+  · iexists _
+    iframe HDE
+    ipureintro
+    exact hDE.is_error
   itrivial
 
 end wps

@@ -49,8 +49,15 @@ this skill, whose mechanical half is `etc/land.sh`.
    rebuilds, and fast-forwards `origin/lean` to HEAD. A rejected push means
    origin/lean moved during the build: rerun the command.
 
-5. **Report**: the landed commit, what the review found and fixed, anything
-   skipped (`--no-build`), and the branch name.
+5. **Delete the branch.** Once it has landed, the branch is merged into
+   `lean`: delete it. Remove its worktree if it had one (`git worktree remove
+   <path>`, from another checkout), the local branch (`git branch -d
+   <branch>`, which refuses a branch that is not merged), and its remote copy
+   if it was ever pushed (`git push origin --delete <branch>`). Delete only
+   branches you created.
+
+6. **Report**: the landed commit, what the review found and fixed, anything
+   skipped (`--no-build`), and the branch name (deleted).
 
 ## Rules
 

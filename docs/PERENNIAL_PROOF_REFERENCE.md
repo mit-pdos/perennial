@@ -641,8 +641,13 @@ theorem wp_recoverNamed :
 
 A loop body that panics proves its `forPostcondition` with `wp_for_post`
 (`wp_for_post_panic`). Run-time panics of builtins (`Panic "msg"`: an index out
-of range, a failed type assertion) are stuck, not unwinding: proofs show they
-are unreachable (`wp_PanicOp : ▷ False ⊢ WP (Panic msg)`).
+of range, a failed type assertion, an integer division or remainder by zero, a
+negative shift count) are stuck, not unwinding: proofs show they are unreachable
+(`wp_PanicOp : ▷ False ⊢ WP (Panic msg)`). A division `x / y` steps to
+`if uint.Z y = 0 then Panic "integer divide by zero" else #(x / y)` (`sint.Z` at
+signed types): a literal divisor is decided by `wp_pures`, another needs
+`rw [if_neg (show ¬ uint.Z y = 0 by ...)]`. A shift by a signed count goes
+through `go.shiftCount` (`wp_shiftCount_int`).
 
 **Binding a value needs it not to be a panic.** A step that binds or pairs a
 value (a call, a `let:`, a pair, a Go instruction's argument, a frame holding an

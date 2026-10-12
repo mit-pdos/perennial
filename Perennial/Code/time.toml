@@ -1,15 +1,14 @@
 imports = ["!*"]
 trusted = [
-  "runtimeNano", # go:linkname runtimeNano (a clock reading)
-  "stopTimer",   # go:linkname stopTimer
-  "resetTimer",  # go:linkname resetTimer
-  # `NewTimer` is modelled rather than translated: its real body makes `chan Time` with
-  # capacity 1, which the runtime (`newTimer` with `syncTimer(c) != nil`) turns into a
-  # channel with `cap` and `len` 0; goose's channel semantics cannot express that.
-  "NewTimer",
-  # `Since` translates (with `runtimeIsBubbled`, `runtimeNow` trusted) but cannot be verified:
-  # it reads `startNano` and `Local` (package init blocked) and calls `Time.Add` (`&^`)
-  "Since",
+  # TODO: these are for verifying (rather than modeling) `After`, but the proof
+  # would be blocked by the lack of support for type assertions (needed in time.sendTime)
+  "runtimeNano", # go:linkname runtimeNano
+  "newTimer",    # go:linkname newTimer
+  "syncTimer",
+  "runtimeIsBubbled", # go:linkname runtimeIsBubbled (true only inside a synctest bubble)
+  # "sendTime",
+
+  "After",
   "Sleep",
 ]
 translate = [
@@ -22,19 +21,27 @@ translate = [
   "Microsecond",
   "Nanosecond",
   "Timer",
-  "Timer.Stop",
-  "Timer.Reset",
-  "when",
-  "After",
   "Time.UnixNano",
   "Time.nsec",
   "Time.unixSec",
   "Time.sec",
-  # for `ptr_Add_unfold` (`(*Time).Add`); `Time.wp_Add` stays an axiom: the body uses `&^`,
-  # which Go's semantics here does not define, and calls the untranslated `addSec`, `stripMono`
   "Time.Add",
+  "Time.addSec",
+  "Time.stripMono",
+  "Time.Sub",
+  "Time.Before",
+  "Time.Equal",
+  "subMono",
+  "minDuration",
+  "maxDuration",
+  "Since",
+  "Until",
+  "AfterFunc",
+  "when",
+  "goFunc",
   "wallToInternal",
   "nsecMask",
+  "nsecShift",
   "hasMonotonic",
   "internalToUnix",
 ]

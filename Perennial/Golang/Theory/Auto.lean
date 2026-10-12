@@ -526,7 +526,7 @@ meta partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($p
     return (← k pf', lc', true)
   let res0 ← IO.mkRef lc
   -- (`solve_into_val_typed_struct`) an `if:` with an angelic `else` branch
-  if ← autoAngelicIf.get then
+  if (← getOptions).getBool autoAngelicIfOpt then
     if let some ((P, e1), K, _) ← findAngelicIf wp.e then
       binderSteps.modify (· + 1)
       let pf ← withLocalDeclD (← mkFreshUserName `Hif) P fun h => do
@@ -590,9 +590,8 @@ open Lean Elab Tactic in
 `if: #(decide P) then e else AngelicExit #()` (with an inaccessible hypothesis
 `P`). -/
 elab "wp_auto_angelic" : tactic => do
-  let saved ← autoAngelicIf.get
-  autoAngelicIf.set true
-  try evalTactic (← `(tactic| wp_auto)) finally autoAngelicIf.set saved
+  let tac ← `(tactic| wp_auto)
+  withOptions (·.setBool autoAngelicIfOpt true) <| evalTactic tac
 
 /-! ## `wp_apply` -/
 
