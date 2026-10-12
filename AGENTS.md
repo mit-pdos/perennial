@@ -38,7 +38,9 @@ script enforces the review.
    `etc/land.sh mark-reviewed`; then `etc/land.sh push`, which refuses
    without that record and fast-forwards `origin/lean`. Nothing else pushes
    to `lean`: no `git push origin lean`, no `HEAD:lean`, no force pushes, no
-   `--no-verify`.
+   `--no-verify`. Once landed, delete the branch: its worktree, the local
+   branch (`git branch -d`) and its remote copy if it was pushed
+   (`git push origin --delete <branch>`); only branches you created.
 4. **Changes to the trusted base** (the Go semantics in `Perennial/GooseLang`
    and `Perennial/Golang/Defn`, `goose/`, `Perennial/TrustedCode`, the `.toml`
    trust lists, adequacy statements, any `assume`/`axiom`/`sorry` outside
