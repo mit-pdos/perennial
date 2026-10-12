@@ -187,7 +187,7 @@ include hG in
 theorem eface_val (t d : w64) : PairV #false (PairV #t #d) = #(⟨t, d⟩ : GoEface) := by
   rw [intoVal_unfold GoEface]
 
-theorem wp_boxBytes {V : Type} [ZeroVal V] [ByteRepr V] (T : go.GoType) [TypeRepr T V] (x : V) :
+theorem wp_boxBytes {V : Type} [ZeroVal V] [ByteRepr V] (T : go.GoType) [TypeRepr T V] [TypeBytes T V] (x : V) :
     {{ (True : IProp GF) }} (App (Val (boxBytes T)) (Val #x)) @ s; E
     {{ (d : w64), RET #d; bytesPointsto d .discard (ByteRepr.encode x) }} := by
   iintro %Φ _ HΦ
@@ -196,7 +196,7 @@ theorem wp_boxBytes {V : Type} [ZeroVal V] [ByteRepr V] (T : go.GoType) [TypeRep
   wp_apply wp_balloc_frozen (ByteRepr.encode x) as %d #Hd
   iapply HΦ $$ Hd
 
-theorem wp_unbox {V : Type} [ZeroVal V] [ByteRepr V] (T : go.GoType) [TypeRepr T V] (d : w64)
+theorem wp_unbox {V : Type} [ZeroVal V] [ByteRepr V] (T : go.GoType) [TypeRepr T V] [TypeBytes T V] (d : w64)
     (dq : DFrac) (x : V) (hsz : ByteRepr.size V < 2 ^ 64) :
     {{ bytesPointsto (GF := GF) d dq (ByteRepr.encode x) }}
       (App (Val (unboxV T)) (Val #d)) @ s; E
@@ -215,7 +215,7 @@ theorem wp_unbox {V : Type} [ZeroVal V] [ByteRepr V] (T : go.GoType) [TypeRepr T
 
 /-- `I(x)` for a concrete `x : T` and a non-empty interface `I`. -/
 theorem wp_convert_iface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder I : go.GoType}
-    [TypeRepr T V] [T ↓u Tunder] {elems : List go.InterfaceElem} [I ≤u go.InterfaceType elems]
+    [TypeRepr T V] [TypeBytes T V] [T ↓u Tunder] {elems : List go.InterfaceElem} [I ≤u go.InterfaceType elems]
     {m : GoString} {ms : List GoString} [IfaceMethods I (m :: ms)] [StaticItab T I]
     [Implements T I] (hT : isInterfaceType Tunder = false) (hN : isUntypedNil Tunder = false)
     (x : V) :
@@ -238,7 +238,7 @@ theorem wp_convert_iface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder I : go.Go
 
 /-- `I(x)` for a concrete `x : T` and an empty interface `I`. -/
 theorem wp_convert_eface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder I : go.GoType}
-    [TypeRepr T V] [T ↓u Tunder] {elems : List go.InterfaceElem} [I ≤u go.InterfaceType elems]
+    [TypeRepr T V] [TypeBytes T V] [T ↓u Tunder] {elems : List go.InterfaceElem} [I ≤u go.InterfaceType elems]
     [IfaceMethods I []] (hT : isInterfaceType Tunder = false)
     (hN : isUntypedNil Tunder = false) (x : V) :
     {{ (True : IProp GF) }} (App (Val (GoInstruction (Convert T I))) (Val #x)) @ s; E
@@ -258,7 +258,7 @@ theorem wp_convert_eface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder I : go.Go
 
 /-- `i.m` on an interface holding `x : T` resolves to `T`'s method `m` on `x`. -/
 theorem wp_iface_method_resolve {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder I : go.GoType}
-    [TypeRepr T V] [T ↓u Tunder] [NotInterface Tunder] {elems : List go.InterfaceElem}
+    [TypeRepr T V] [TypeBytes T V] [T ↓u Tunder] [NotInterface Tunder] {elems : List go.InterfaceElem}
     [I ≤u go.InterfaceType elems] (m : GoString) (i : GoIface) (x : V)
     (hm : m ∈ itabMethods I) (hsz : ByteRepr.size V < 2 ^ 64) :
     {{ isIface (GF := GF) i I T x }}
@@ -292,7 +292,7 @@ theorem wp_iface_method_resolve {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder I 
 
 /-- `i.(T)` for a non-empty interface holding `x : T`. -/
 theorem wp_type_assert_iface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder : go.GoType}
-    [TypeRepr T V] [T ↓u Tunder] (hT : isInterfaceType Tunder = false)
+    [TypeRepr T V] [TypeBytes T V] [T ↓u Tunder] (hT : isInterfaceType Tunder = false)
     (i : GoIface) (I : go.GoType) (x : V) (hsz : ByteRepr.size V < 2 ^ 64) :
     {{ isIface (GF := GF) i I T x }} (App (Val (GoInstruction (TypeAssert T))) (Val #i)) @ s; E
     {{ RET #x; True }} := by
@@ -323,7 +323,7 @@ theorem wp_type_assert_iface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder : go.
 
 /-- `i.(T)` for an empty interface holding `x : T`. -/
 theorem wp_type_assert_eface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder : go.GoType}
-    [TypeRepr T V] [T ↓u Tunder] (hT : isInterfaceType Tunder = false)
+    [TypeRepr T V] [TypeBytes T V] [T ↓u Tunder] (hT : isInterfaceType Tunder = false)
     (i : GoEface) (x : V) (hsz : ByteRepr.size V < 2 ^ 64) :
     {{ isEface (GF := GF) i T x }} (App (Val (GoInstruction (TypeAssert T))) (Val #i)) @ s; E
     {{ RET #x; True }} := by

@@ -419,8 +419,13 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
   underlying_not_named {t : go.GoType} [NotNamed t] : t ↓u t
 
   -- Underlying-respecting instructions
+  /-- A conversion is the conversion of the underlying types, except to an
+  interface type: there the representation may depend on the named type (an
+  itab is for the interface type `I` itself), so the interface semantics gives
+  those conversions. -/
   convert_underlying {from_ from_under to to_under : go.GoType} [from_ ↓u from_under]
-    [to ↓u to_under] (v : val) (e : Expr) [⟦Convert from_under to_under, v⟧ ⤳[under] e] :
+    [to ↓u to_under] [NotInterface to_under] (v : val) (e : Expr)
+    [⟦Convert from_under to_under, v⟧ ⤳[under] e] :
     ⟦Convert from_ to, v⟧ ⤳ e
   go_un_op_underlying (o : GoUnaryOperator) {t t_under : go.GoType} [t ↓u t_under] (v : val)
     (e : Expr) [⟦GoUnOp o t_under, v⟧ ⤳[under] e] : ⟦GoUnOp o t, v⟧ ⤳ e

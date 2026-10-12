@@ -145,13 +145,16 @@ end NumStruct
 /-! ## The package's static data (goose would generate this class) -/
 
 class StaticAssumptions [GoGlobalContext] [GoSemanticsFunctions] [StaticSymbols] : Prop where
+  SquareStruct_bytes : TypeBytes SquareStruct.ty SquareStruct
+  NumStruct_bytes : TypeBytes NumStruct.ty NumStruct
   geometryInterface_methods : IfaceMethods geometryInterface.ty [go!"Square", go!"Volume"]
   geometryInterface_underlying_methods :
     IfaceMethods geometryInterface.underlying [go!"Square", go!"Volume"]
   SquareStruct_geometryInterface_itab : StaticItab SquareStruct.ty geometryInterface.ty
   SquareStruct_geometryInterface : Implements SquareStruct.ty geometryInterface.ty
 
-attribute [instance] StaticAssumptions.geometryInterface_methods
+attribute [instance] StaticAssumptions.SquareStruct_bytes StaticAssumptions.NumStruct_bytes
+  StaticAssumptions.geometryInterface_methods
   StaticAssumptions.geometryInterface_underlying_methods
   StaticAssumptions.SquareStruct_geometryInterface_itab
   StaticAssumptions.SquareStruct_geometryInterface

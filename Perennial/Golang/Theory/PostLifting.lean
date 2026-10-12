@@ -116,6 +116,31 @@ instance notInterface_ChannelType (d : go.ChanDir) (t : go.GoType) :
     go.NotInterface (go.ChannelType d t) := ⟨trivial⟩
 instance notInterface_UntypedType (n : go.TypeName) : go.NotInterface (go.UntypedType n) :=
   ⟨trivial⟩
+
+/-- The predeclared types are not interfaces (they are definitions, which instance
+search does not unfold to `go.Named`). -/
+instance notInterface_bool : go.NotInterface go.bool := ⟨by unfold go.bool; trivial⟩
+instance notInterface_complex64 : go.NotInterface go.complex64 := ⟨by unfold go.complex64; trivial⟩
+instance notInterface_complex128 : go.NotInterface go.complex128 := ⟨by unfold go.complex128; trivial⟩
+instance notInterface_float32 : go.NotInterface go.float32 := ⟨by unfold go.float32; trivial⟩
+instance notInterface_float64 : go.NotInterface go.float64 := ⟨by unfold go.float64; trivial⟩
+instance notInterface_int : go.NotInterface go.int := ⟨by unfold go.int; trivial⟩
+instance notInterface_int8 : go.NotInterface go.int8 := ⟨by unfold go.int8; trivial⟩
+instance notInterface_int16 : go.NotInterface go.int16 := ⟨by unfold go.int16; trivial⟩
+instance notInterface_int32 : go.NotInterface go.int32 := ⟨by unfold go.int32; trivial⟩
+instance notInterface_int64 : go.NotInterface go.int64 := ⟨by unfold go.int64; trivial⟩
+instance notInterface_string : go.NotInterface go.string := ⟨by unfold go.string; trivial⟩
+instance notInterface_uint : go.NotInterface go.uint := ⟨by unfold go.uint; trivial⟩
+instance notInterface_uint8 : go.NotInterface go.uint8 := ⟨by unfold go.uint8; trivial⟩
+instance notInterface_uint16 : go.NotInterface go.uint16 := ⟨by unfold go.uint16; trivial⟩
+instance notInterface_uint32 : go.NotInterface go.uint32 := ⟨by unfold go.uint32; trivial⟩
+instance notInterface_uint64 : go.NotInterface go.uint64 := ⟨by unfold go.uint64; trivial⟩
+instance notInterface_uintptr : go.NotInterface go.uintptr := ⟨by unfold go.uintptr; trivial⟩
+instance notInterface_untypedInt : go.NotInterface go.untypedInt := ⟨by unfold go.untypedInt; trivial⟩
+instance notInterface_untypedNil : go.NotInterface go.untypedNil := ⟨by unfold go.untypedNil; trivial⟩
+instance notInterface_untypedFloat : go.NotInterface go.untypedFloat := ⟨by unfold go.untypedFloat; trivial⟩
+instance notInterface_prophId : go.NotInterface go.prophId := ⟨by unfold go.prophId; trivial⟩
+instance notInterface_unsafe_Pointer : go.NotInterface «unsafe».Pointer := ⟨by unfold «unsafe».Pointer; trivial⟩
 end not_named
 
 /-! ## Typed points-to -/
