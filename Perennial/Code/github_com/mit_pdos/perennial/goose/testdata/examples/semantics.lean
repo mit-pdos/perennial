@@ -371,6 +371,18 @@ noncomputable def testDefer [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def testDeferFuncLit [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testDeferFuncLit"
 
+noncomputable def namedResultDefer [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.namedResultDefer"
+
+noncomputable def testNamedResultDefer [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testNamedResultDefer"
+
+noncomputable def namedResultShadowed [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.namedResultShadowed"
+
+noncomputable def testNamedResultShadowed [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testNamedResultShadowed"
+
 noncomputable def FirstClassFunction [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.FirstClassFunction"
 
@@ -2035,6 +2047,99 @@ noncomputable def testDeferFuncLit.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (Var "f") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (Var "$r0")))))))))
+
+/-- a deferred call sees (and may change) the value a `return` gives a named result
+
+    go: defer.go:29:6 -/
+noncomputable def namedResultDefer.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res_x" (Var "x")
+  (Seq (App (Val wrapDefer)
+  (Lam "$defer"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$nr0" (Val #(W64 10))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res_x")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res_x") (Var "$nr0"))))))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 1))))))))))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #()))))))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res_x"))))))
+
+/-- go: defer.go:36:6 -/
+noncomputable def testNamedResultDefer.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve namedResultDefer []))) (Val #())) (Val #())) (Val #(W64 11)))))))
+
+/-- the named result gets the returned value even in the scope of a variable hiding it
+
+    go: defer.go:41:6 -/
+noncomputable def namedResultShadowed.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res_x" (Var "x")
+  (Seq (App (Val wrapDefer)
+  (Lam "$defer"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$nr0" (Val #(W64 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res_x")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res_x") (Var "$nr0"))))))))
+  (Let "$r0" (Val #(W64 5))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 0)))))
+  (Let "$nr0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res_x")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res_x") (Var "$nr0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 5)))))
+  (Let "$r0" (Val #(W64 7))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #()))))))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res_x"))))))
+
+/-- go: defer.go:53:6 -/
+noncomputable def testNamedResultShadowed.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve namedResultShadowed []))) (Val #())) (Val #())) (Val #(W64 7)))))))
 
 /-- go: first_class_function.go:3:6 -/
 noncomputable def FirstClassFunction.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -7537,6 +7642,10 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   deferSimple_unfold : FuncUnfold deferSimple [] deferSimple.impl
   testDefer_unfold : FuncUnfold testDefer [] testDefer.impl
   testDeferFuncLit_unfold : FuncUnfold testDeferFuncLit [] testDeferFuncLit.impl
+  namedResultDefer_unfold : FuncUnfold namedResultDefer [] namedResultDefer.impl
+  testNamedResultDefer_unfold : FuncUnfold testNamedResultDefer [] testNamedResultDefer.impl
+  namedResultShadowed_unfold : FuncUnfold namedResultShadowed [] namedResultShadowed.impl
+  testNamedResultShadowed_unfold : FuncUnfold testNamedResultShadowed [] testNamedResultShadowed.impl
   FirstClassFunction_unfold : FuncUnfold FirstClassFunction [] FirstClassFunction.impl
   ApplyF_unfold : FuncUnfold ApplyF [] ApplyF.impl
   testFirstClassFunction_unfold : FuncUnfold testFirstClassFunction [] testFirstClassFunction.impl
@@ -7764,6 +7873,10 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.deferSimple_unfold
   Assumptions.testDefer_unfold
   Assumptions.testDeferFuncLit_unfold
+  Assumptions.namedResultDefer_unfold
+  Assumptions.testNamedResultDefer_unfold
+  Assumptions.namedResultShadowed_unfold
+  Assumptions.testNamedResultShadowed_unfold
   Assumptions.FirstClassFunction_unfold
   Assumptions.ApplyF_unfold
   Assumptions.testFirstClassFunction_unfold

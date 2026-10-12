@@ -148,6 +148,14 @@ func (suite *GoTestSuite) TestDeferFuncLit() {
 	suite.Equal(true, testDeferFuncLit())
 }
 
+func (suite *GoTestSuite) TestNamedResultDefer() {
+	suite.Equal(true, testNamedResultDefer())
+}
+
+func (suite *GoTestSuite) TestNamedResultShadowed() {
+	suite.Equal(true, testNamedResultShadowed())
+}
+
 func (suite *GoTestSuite) TestFirstClassFunction() {
 	suite.Equal(true, testFirstClassFunction())
 }

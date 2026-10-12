@@ -80,6 +80,11 @@ type Ctx struct {
 	// include a defer prelude+prologue.
 	usesDefer bool
 
+	// The named results of the function being translated, if it has some and its
+	// body defers (`namedResultsWithDefer`): its `return`s store their values into
+	// them, and it returns them after the deferred calls.
+	namedResults []namedResult
+
 	globalVars     []*ast.Ident
 	functions      []*ast.FuncDecl
 	namedTypeSpecs []*ast.TypeSpec
@@ -1155,8 +1160,12 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 	defer func(defaultReturn glang.Expr) {
 		ctx.defaultReturn = defaultReturn
 	}(ctx.defaultReturn)
+	defer func(nr []namedResult) {
+		ctx.namedResults = nr
+	}(ctx.namedResults)
 
 	ctx.usesDefer = false
+	ctx.namedResults = ctx.namedResultsWithDefer(e.Type, e.Body)
 
 	// Assemble the `defaultReturn` expr so the body's `return` statements can use it.
 	var defaultRetExpr glang.TupleExpr
@@ -1205,7 +1214,7 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 			}
 		}
 	}
-	if e.Type.Results != nil {
+	if e.Type.Results != nil && ctx.namedResults == nil {
 		for _, r := range e.Type.Results.List {
 			t := ctx.glangType(r.Type, ctx.typeOf(r.Type))
 			for _, name := range r.Names {
@@ -1223,6 +1232,9 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 		fl.Body = glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), fl.Body)
 	} else {
 		fl.Body = glang.NewCallExpr(glang.VerbatimExpr("exception_do"), fl.Body)
+	}
+	if ctx.namedResults != nil {
+		fl.Body = ctx.wrapNamedResults(fl.Body)
 	}
 
 	return fl
@@ -2051,6 +2063,81 @@ func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
 	return expr
 }
 
+// A named result of a function: its name and its type.
+type namedResult struct {
+	name string
+	ty   glang.Expr
+}
+
+// The variable holding named result `name` under a name no inner declaration
+// shadows (a `return` may be in the scope of an inner `err` hiding the result).
+func namedResultCell(name string) string { return "$res_" + name }
+
+// namedResultsWithDefer: the named results of a function whose body has a `defer`
+// (outside nested function literals), or nil (also if a result is blank). Go
+// assigns a `return`'s values to the named results before the deferred calls run,
+// which may read or assign them, and returns their values after: such a function
+// stores into them (`returnStmt`) and returns them after `with_defer:`
+// (`wrapNamedResults`).
+func (ctx *Ctx) namedResultsWithDefer(ft *ast.FuncType, body *ast.BlockStmt) []namedResult {
+	if ft.Results == nil || body == nil {
+		return nil
+	}
+	var rs []namedResult
+	for _, r := range ft.Results.List {
+		if r.Names == nil {
+			return nil
+		}
+		t := ctx.glangType(r.Type, ctx.typeOf(r.Type))
+		for _, n := range r.Names {
+			if n.Name == "_" {
+				return nil
+			}
+			rs = append(rs, namedResult{n.Name, t})
+		}
+	}
+	defers := false
+	ast.Inspect(body, func(n ast.Node) bool {
+		switch n.(type) {
+		case *ast.FuncLit:
+			return false
+		case *ast.DeferStmt:
+			defers = true
+		}
+		return !defers
+	})
+	if !defers {
+		return nil
+	}
+	return rs
+}
+
+// namedResultsReturn returns the named results' values (through their cells).
+func (ctx *Ctx) namedResultsTuple() glang.TupleExpr {
+	var es glang.TupleExpr
+	for _, r := range ctx.namedResults {
+		es = append(es, glang.DerefExpr{X: glang.IdentExpr(namedResultCell(r.name)), Ty: r.ty})
+	}
+	return es
+}
+
+// wrapNamedResults: `body` (already under `with_defer:`) in a function with
+// `namedResults`: they are allocated around it, and their values (as the deferred
+// calls left them) are what the function returns.
+func (ctx *Ctx) wrapNamedResults(body glang.Expr) glang.Expr {
+	var e glang.Expr = glang.LetExpr{ValExpr: body, Cont: ctx.namedResultsTuple()}
+	for _, r := range slices.Backward(ctx.namedResults) {
+		e = glang.LetExpr{
+			Names: []string{r.name},
+			ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), r.ty,
+				glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), r.ty, glang.Tt)),
+			Cont: glang.LetExpr{Names: []string{namedResultCell(r.name)},
+				ValExpr: glang.IdentExpr(r.name), Cont: e},
+		}
+	}
+	return e
+}
+
 // namedResultValue is the value of the named result `name` (of type `ty`) on a
 // bare `return`: the contents of its local variable, or the zero value for a
 // blank result `_`, which has no variable (the binding of `_` is anonymous, and
@@ -2124,6 +2211,20 @@ func (ctx *Ctx) returnStmt(s *ast.ReturnStmt, cont glang.Expr) glang.Expr {
 		}
 		if len(exprs) == 0 { // return #()
 			exprs = []glang.Expr{glang.Tt}
+		}
+		if ctx.namedResults != nil {
+			// evaluate the values, store them into the named results, return those
+			var e glang.Expr = glang.ReturnExpr{Value: ctx.namedResultsTuple()}
+			for i := len(exprs) - 1; i >= 0; i-- {
+				r := ctx.namedResults[i]
+				e = glang.NewDoSeq(glang.StoreStmt{Dst: glang.IdentExpr(namedResultCell(r.name)),
+					Ty: r.ty, X: glang.IdentExpr(fmt.Sprintf("$nr%d", i))}, e)
+			}
+			for i := len(exprs) - 1; i >= 0; i-- {
+				e = glang.LetExpr{Names: []string{fmt.Sprintf("$nr%d", i)}, ValExpr: exprs[i], Cont: e}
+			}
+			retExpr = e
+			return
 		}
 		retExpr = glang.ReturnExpr{Value: glang.TupleExpr(exprs)}
 	}()
@@ -2612,6 +2713,9 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		ctx.unsupported(d, "external function")
 	}
 
+	ctx.namedResults = ctx.namedResultsWithDefer(d.Type, d.Body)
+	defer func() { ctx.namedResults = nil }()
+
 	// Assemble the `defaultReturn` expr so the body's `return` statements can use it.
 	var defaultRetExpr glang.TupleExpr
 	if d.Type.Results == nil || len(d.Type.Results.List) == 0 {
@@ -2667,7 +2771,7 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		}
 	}
 	maybeAddReceiver()
-	if d.Type.Results != nil {
+	if d.Type.Results != nil && ctx.namedResults == nil {
 		for _, r := range d.Type.Results.List {
 			t := ctx.glangType(r.Type, ctx.typeOf(r.Type))
 			for _, name := range r.Names {
@@ -2685,6 +2789,9 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		fd.Body = glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), fd.Body)
 	} else {
 		fd.Body = glang.NewCallExpr(glang.VerbatimExpr("exception_do"), fd.Body)
+	}
+	if ctx.namedResults != nil {
+		fd.Body = ctx.wrapNamedResults(fd.Body)
 	}
 
 	ctx.out.funcImplDecls = append(ctx.out.funcImplDecls, fd)
