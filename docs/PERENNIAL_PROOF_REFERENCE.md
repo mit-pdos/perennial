@@ -656,10 +656,18 @@ reached at such a value becomes `Q` (and `⌜v.isPanic = false⌝` is closed by
 `wp_auto` and `itrivial`).
 
 **Goroutines must not panic.** `wp_fork` asks for `WP e {{ v, ⌜v.isPanic = false⌝ }}`
-(`forkPost`), and `goose_adequacy_nopanic` concludes that no thread of an execution
-ends in a panic when the main thread's `φ` excludes panics (the convention
-`φ (PanicV _) = False`): an unrecovered panic, which kills a Go program, is a
-verification failure.
+(`forkPost`), and `goose_adequacy` requires the main thread's postcondition `φ`
+to exclude panics (`hφ : ∀ p, ¬ φ (PanicV p)`; a client with nothing to say
+about the result takes `φ v := v.isPanic = false`, or `v = #()`). It concludes
+that no thread of the execution has an unrecovered panic (`UnrecoveredPanic e`:
+`e` is `PanicV p` under evaluation frames none of which is a `Catch`), whether
+the thread has finished unwinding or is still unwinding when the execution
+stops: an unrecovered panic, which kills a Go program, is a verification
+failure. The proof (`goose_no_unrecovered_panic_blang`) unwinds such a thread
+to `PanicV p` in the bounded language, where unwinding steps are plain and take
+no fuel (`unrecoveredPanic_steps`), and then uses the postconditions of the
+threads (`goose_adequacy_nopanic_blang`, iris-lean's `wp_strong_adequacy`), so
+it needs no larger step bound and no thread bound for the extra steps.
 
 ### Ghost state and invariants
 
@@ -819,11 +827,14 @@ stated for the real semantics and every bound `N` (and every thread bound `T`,
 next section): the WP premise `Hwp` is proved under the hypothesis
 `receiptBound GF = N` (and `threadBound GF = T`, with the main thread's token),
 and the conclusion is about executions of fewer than `N` steps (along which
-fewer than `T` threads are live):
+fewer than `T` threads are live). The postcondition `φ` must exclude panics
+(`hφ`, see "Panics"); the conclusion is that the main thread's final value
+satisfies `φ`, that no thread is stuck, and that no thread has an unrecovered
+panic:
 
 ```
 theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
-    (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
+    (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
@@ -837,7 +848,8 @@ theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
     (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
     (Hbound : n < N) (Hthreads : g.threads = 1)
     (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
-    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2)
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
+      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2)
 ```
 
 A client chooses `N` and discharges the premises its proof makes about it from
@@ -845,7 +857,7 @@ A client chooses `N` and discharges the premises its proof makes about it from
 `N = 2^64` (or anything smaller) works (`TimeReceiptsTest.lean`):
 
 ```
-  goose_adequacy (2 ^ 64) T e σ g φ Hinitg Hinit
+  goose_adequacy (2 ^ 64) T e σ g φ hφ Hinitg Hinit
     (@fun hG HN _ Hlctx => Hwp (hG := hG) (Nat.le_of_eq HN) Hlctx) n κs t2 σ2 Hsteps Hn
     Hthreads Hlive
 ```
