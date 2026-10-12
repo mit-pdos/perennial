@@ -52,6 +52,31 @@ theorem wp_New (msg : GoString) :
   wp_auto
   iexact HΦ
 
+/-- `wp_New`, with the error's shape: an interface holding a pointer (comparing it with another
+error of its type compares the pointers, `err == io.EOF`). -/
+theorem wp_New_ptr (msg : GoString) :
+    {{ (True : IProp GF) }}
+      (App (Val (@! New)) (Val #msg))
+    {{ (err : GoInterfaceOk), RET #(interface.ok err);
+        ⌜∃ (t : go.GoType) (p : Loc), err = ⟨go.GoType.PointerType t, #p⟩⌝ ∗
+        □ ∀ Φ : val → IProp GF, ▷ Φ #msg -∗
+          WP (App (Val #(methods err.ty go!"Error" err.v)) (Val #())) {{ Φ }} }} := by
+  wp_start
+  wp_auto
+  wp_alloc x as Hx
+  iStructNamed Hx
+  ipersist s
+  wp_auto
+  iapply HΦ
+  isplitr
+  · ipureintro; exact ⟨_, x, rfl⟩
+  imodintro
+  iintro %Φ HΦ
+  dsimp only
+  rw [method_unfold]
+  wp_auto
+  iexact HΦ
+
 theorem wp_errorType_init :
     {{ (True : IProp GF) }}
       (App (Val errorType.init) (Val #()))

@@ -125,10 +125,10 @@ theorem wp_mapInsert (key_type : go.GoType) (l : Loc) (m : GMap K V) (k : K) (v 
     · simp only [h, ite_false]; exact Hdom kv
   · rw [go.mapDefault_map_insert]; exact Hdefault
 
-theorem wp_mapDelete (l : Loc) (m : GMap K V) (k : K) (key_type elem_type : go.GoType)
-    [Hsafe : SafeMapKey (GF := GF) key_type k] :
+theorem wp_mapDelete {t : go.GoType} (l : Loc) (m : GMap K V) (k : K) (key_type elem_type : go.GoType)
+    [t ↓u go.MapType key_type elem_type] [Hsafe : SafeMapKey (GF := GF) key_type k] :
     {{ (l ↦$ m : IProp GF) }}
-      (App (App (Val #(functions go.delete [go.MapType key_type elem_type])) (Val #l)) (Val #k)) @ s; E
+      (App (App (Val #(functions go.delete [t])) (Val #l)) (Val #k)) @ s; E
     {{ RET #(); l ↦$ (GMap.delete k m) }} := by
   wp_start as Hm
   rw [ownMap_unseal]
@@ -244,10 +244,11 @@ theorem wp_map_make1 (key_type elem_type : go.GoType) [TypeRepr key_type K]
   wp_apply (wp_map_make2 (K := K) (V := V) (W64 0) key_type elem_type) with %mref Hm
   iapply HΦ $$ Hm
 
-theorem wp_map_clear (mref : Loc) (m : GMap K V) (key_type elem_type : go.GoType)
+theorem wp_map_clear {t : go.GoType} (mref : Loc) (m : GMap K V) (key_type elem_type : go.GoType)
+    [t ↓u go.MapType key_type elem_type]
     [TypeRepr key_type K] [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V elem_type] :
     {{ (mref ↦$ m : IProp GF) }}
-      (App (Val #(functions go.clear [go.MapType key_type elem_type])) (Val #mref)) @ s; E
+      (App (Val #(functions go.clear [t])) (Val #mref)) @ s; E
     {{ RET #(); mref ↦$ (∅ : GMap K V) }} := by
   wp_start as Hm
   wp_apply (wp_map_make1 (K := K) (V := V) key_type elem_type) with %m' Hm'

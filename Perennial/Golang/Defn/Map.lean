@@ -139,12 +139,14 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
     is_map_domain mv ks →
     ks.Nodup ∧ (∀ k, (m k).1 = true ↔ k ∈ ks)
 
-  clear_map (key_type elem_type : go.GoType) :
-    FuncUnfold go.clear [go.MapType key_type elem_type]
+  /-- Like `len_map`, `clear` and `delete` take any type whose underlying type is a map (a
+  named map type, `type M map[K]V`, would otherwise be stuck). -/
+  clear_map {t key_type elem_type : go.GoType} [t ↓u go.MapType key_type elem_type] :
+    FuncUnfold go.clear [t]
     (λ: "m", Store "m" (Read
                (FuncResolve go.make1 [go.MapType key_type elem_type] #() #())) : val)
-  delete_map (key_type elem_type : go.GoType) :
-    FuncUnfold go.delete [go.MapType key_type elem_type]
+  delete_map {t key_type elem_type : go.GoType} [t ↓u go.MapType key_type elem_type] :
+    FuncUnfold go.delete [t]
     (λ: "m" "k",
        InternalMapCheckKey key_type "k" ;;
        Store "m" (InternalMapDelete (Read "m", "k")) : val)
