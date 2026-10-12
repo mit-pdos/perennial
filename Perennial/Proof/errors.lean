@@ -269,12 +269,6 @@ theorem wp_asType (S : GoError → Prop) (err : GoError) (ppe pe : Loc)
     dsimp only
     obtain ⟨x, hx⟩ := asTypeTyped_val Htyped
     rw [hx]
-    -- (the value bound by the type assertion is `#x` only after `hx`)
-    wp_pures
-    wp_alloc ok_ptr as ok
-    wp_pures
-    wp_alloc e_ptr as e
-    wp_pures
     generalize (if go.isInterfaceType (underlying T) = true then go.typeSetContains ii.ty T
       else decide (ii.ty = T)) = b
     cases b
@@ -710,7 +704,7 @@ theorem wp_is (S : GoError → Prop) (M : GoInterfaceOk → Prop) (err target : 
     wp_join (Q := fun v => iprop(
         (⌜v = executeVal⌝ ∗ "err" ∷ err_ptr ↦ (interface.ok ii : GoError) ∗
           "target" ∷ target_ptr ↦ target ∗ "targetComparable" ∷ targetComparable_ptr ↦ c) ∨
-        ⌜v = returnVal #true ∧ M ii⌝)) at next with [err target targetComparable]
+        ⌜v = returnVal #true ∧ M ii⌝)) at next 2 with [err target targetComparable x ok]
     cases hIs : go.typeSetContains ii.ty
       (go.InterfaceType [go.MethodElem go!"Is" (go.Signature [go.error] false [go.bool])])
     case' true =>

@@ -1,5 +1,5 @@
 /-
-"Exception monad" for modeling function returns.
+"Exception monad" for modeling function returns and panics.
 
 This is not really a monad (there is no bind), but it implements
 short-circuiting evaluation where function returns halt execution of subsequent
@@ -14,15 +14,27 @@ which have other short-circuiting constructs `loop_op ;;; m2 == loop_op`, namely
 `continue` and `break`. These also halt execution, and are then consumed by the
 loop combinator to decide how to proceed for the next iteration.
 
+A panic is a third such outcome: `panic(v)` (`go.panic`, whose body `panic.impl`
+is in `Defn/Predeclared.lean`) is `panicVal v`, and `panicVal v ;;; m2 ==
+panicVal v`, so that, like a `return:`, it skips the rest of the function body
+(the loop combinators pass it on too). The deferred functions of the function
+then run (`wrapDefer`, `Defn/Defer.lean`), and if one of them calls `recover()`
+the function returns normally (`wrapDeferRecover`).
+
 A function block is executed with `exceptionDo m`, which strips both `do:` and
 `return:`; a function can terminate without having used return. You can think
 of `return:` as raising an exception and `exceptionDo` as catching and
-unwrapping that exception.
+unwrapping that exception. A panic that reaches `exceptionDo`, i.e. one that no
+deferred function of the function recovered, is stuck (`Panic`, like the
+run-time panics of the builtins): the model does not propagate a panic to the
+caller (where Go would run the caller's deferred functions, which could recover
+it), so a proof shows that every panic of a function is recovered in that
+function.
 
 The implementation of these primitives is very simple. `do: e` is
-`("execute", e)` and `return: e` is `("return", e)`. Sequencing is defined as
-expected for the rules above. `exceptionDo m` is simply `Snd m` to remove the
-label.
+`("execute", e)`, `return: e` is `("return", e)` and `panic(e)` is
+`("panic", e)`. Sequencing is defined as expected for the rules above.
+`exceptionDo m` is `Snd m` to remove the label, after the check for `"panic"`.
 -/
 module
 
@@ -70,8 +82,17 @@ def doReturnDef : val :=
 @[irreducible] def doReturn : val := doReturnDef
 theorem doReturn_unseal : doReturn = doReturnDef := by with_unfolding_all rfl
 
+def panicValDef (v : val) : val := glv((#"panic", v))
+/-- The outcome of `panic(v)`: `go.panic` (`panic.impl`) returns it. -/
+@[irreducible] def panicVal : val → val := panicValDef
+theorem panicVal_unseal : panicVal = panicValDef := by with_unfolding_all rfl
+
+/-- The outcome of a function body: the value of its `return:` (or `#()` after
+the last `do:`). A `panicVal` outcome, a panic that no deferred function of the
+function recovered, is stuck. -/
 def exceptionDoDef : val :=
-  λ: "v", Snd "v"
+  λ: "v",
+    if: (Fst "v") =⟨go.string⟩ #"panic" then Panic "unrecovered panic" else Snd "v"
 
 @[irreducible] def exceptionDo : val := exceptionDoDef
 theorem exceptionDo_unseal : exceptionDo = exceptionDoDef := by with_unfolding_all rfl

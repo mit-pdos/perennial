@@ -1362,6 +1362,10 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 	}
 	var post glang.Expr = glang.Tt
 	if s.Post != nil {
+		if p, ok := s.Post.(*ast.ExprStmt); ok && ctx.isBuiltinCall(p.X, "panic") {
+			// doFor runs the post statement under `do:`, which would drop the panic
+			ctx.unsupported(s.Post, "panic in a for post statement")
+		}
 		post = ctx.stmt(s.Post, nil)
 	}
 	body := ctx.blockStmt(s.Body, nil)
@@ -1964,6 +1968,10 @@ func breaksOut(body *ast.BlockStmt) bool {
 }
 
 func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
+	if ctx.isBuiltinCall(e.Call, "panic") {
+		// the goroutine's value is dropped, so the panic would be lost
+		ctx.unsupported(e, "go of panic")
+	}
 	args := make([]glang.Expr, 0, len(e.Call.Args))
 	for i := range len(e.Call.Args) {
 		args = append(args, glang.IdentExpr(fmt.Sprintf("$a%d", i)))
@@ -1982,6 +1990,17 @@ func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
 	expr = ctx.callExprPrelude(e.Call, expr)
 
 	return expr
+}
+
+// isBuiltinCall reports whether e is a call of the builtin function name,
+// possibly parenthesized (`(panic(v))` is a valid expression statement).
+func (ctx *Ctx) isBuiltinCall(e ast.Expr, name string) bool {
+	call, ok := ast.Unparen(e).(*ast.CallExpr)
+	if !ok {
+		return false
+	}
+	id, ok := call.Fun.(*ast.Ident)
+	return ok && id.Name == name && ctx.info.Types[call.Fun].IsBuiltin()
 }
 
 // callsRecoverDirectly reports whether body calls the builtin recover() outside
@@ -2132,6 +2151,12 @@ func (ctx *Ctx) returnStmt(s *ast.ReturnStmt, cont glang.Expr) glang.Expr {
 }
 
 func (ctx *Ctx) deferStmt(s *ast.DeferStmt, cont glang.Expr) (expr glang.Expr) {
+	if ctx.isBuiltinCall(s.Call, "panic") {
+		// the deferred chain drops the outcome of a deferred call, so the panic
+		// would be lost (a `panic` statement in a deferred function literal is
+		// translated, and is stuck at the end of the literal)
+		ctx.unsupported(s, "defer of panic")
+	}
 	ctx.usesDefer = true
 	args := make([]glang.Expr, 0, len(s.Call.Args))
 	for i := range len(s.Call.Args) {
@@ -2464,6 +2489,12 @@ func (ctx *Ctx) stmt(s ast.Stmt, cont glang.Expr) glang.Expr {
 	case *ast.GoStmt:
 		return ctx.goStmt(s, cont)
 	case *ast.ExprStmt:
+		if ctx.isBuiltinCall(s.X, "panic") {
+			// `panic(v)` is the outcome `("panic", v)` of the exception monad,
+			// like a `return`: it is not wrapped in `do:` (which would make it an
+			// ordinary statement whose value is dropped).
+			return glang.SeqExpr{Expr: ctx.expr(s.X), Cont: cont}
+		}
 		return glang.NewDoSeq(ctx.expr(s.X), cont)
 	case *ast.AssignStmt:
 		if s.Tok == token.DEFINE {

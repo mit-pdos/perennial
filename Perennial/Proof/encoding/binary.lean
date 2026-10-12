@@ -159,12 +159,12 @@ theorem wp_load_struct_nofields {V : Type} [ZeroVal V] {fds : List go.field_decl
     {{ (emp : IProp GF) }} (App (Val (GoInstruction (GoLoad t))) (Val #l)) @ s; E
     {{ RET #(zero_val V); emp }} := by
   iintro %Φ _ HΦ
-  have hpw : PureWp (hlc := hlc) (GF := GF) ((#l : val).isPanic = false)
+  have hpw : PureWp (hlc := hlc) (GF := GF) True
       (App (Val (GoInstruction (GoLoad t))) (Val #l))
       (loadStructRaw fds #l []) := by
     have _tagged := @go.tagged_internal_inst
     infer_instance
-  iapply (wp_pure_raw_step (Hwp := hpw) (by simp))
+  iapply (wp_pure_raw_step (Hwp := hpw) trivial)
   inext
   rw [loadStructRaw_eq]
   simp only [List.foldl_nil]

@@ -512,8 +512,8 @@ func (suite *GoTestSuite) TestRecoverNamed() {
 	suite.Equal(true, testRecoverNamed())
 }
 
-func (suite *GoTestSuite) TestCatchTwoDeep() {
-	suite.Equal(true, testCatchTwoDeep())
+func (suite *GoTestSuite) TestRecoverInLoop() {
+	suite.Equal(true, testRecoverInLoop())
 }
 
 func (suite *GoTestSuite) TestShortcircuitAndTF() {

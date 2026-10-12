@@ -48,9 +48,19 @@ def max.impl (t : go.GoType) (n : Nat) : val :=
   | 2 => λ: "x" "y", if: "x" >⟨t⟩ "y" then "x" else "y"
   | _ => LitV LitPoison
 
-/-- `panic(v)` starts a panic with the value `v` (`Raise`), which unwinds the
-evaluation context up to a `Catch` (a function with `defer`s, `wrapDefer`). -/
-def panic.impl : val := λ: "v", Raise "v"
+/-- `panic(v)` is the outcome `("panic", v)` of the exception monad (`panicVal v`,
+`Defn/Exception.lean`), which ends the function body like a `return:`; the
+function's deferred functions then run and may `recover()` it (`Defn/Defer.lean`).
+
+`panic(nil)` is stuck: Go (since 1.21) replaces it by a run-time panic with a
+`*runtime.PanicNilError`, which the model does not have, and a `nil` in the
+`$panic` cell of `wrapDeferRecover` means "not panicking", so a `nil` panic
+value would read as recovered. The argument is always an `interface{}` (Goose
+converts it). -/
+def panic.impl : val :=
+  λ: "v",
+    if: "v" =⟨go.InterfaceType []⟩ #interface.nil then Panic "panic called with nil argument"
+    else (#"panic", Var "v")
 
 end helpers
 
