@@ -1,0 +1,47 @@
+/-
+`context.initialize'`'s spec.
+-/
+module
+
+public import Perennial.Proof.context.Base
+
+@[expose] public section
+
+noncomputable section
+
+namespace Perennial
+
+open Iris Iris.BI Iris.ProgramLogic Iris.Std
+
+section spec
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [go_gctx : GoGlobalContext]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
+variable [sem : go.Semantics]
+variable [package_sem : context.Assumptions]
+
+/-- `context`'s package initialization (`wp_initialize'`).
+
+The initializer allocates the package's variables, initializes `errors`, `sync`,
+`sync/atomic` and `time`, sets `Canceled = errors.New("context canceled")`,
+`DeadlineExceeded = deadlineExceededError{}` and `closedchan = make(chan struct{})`, and runs
+`init()`, which closes `closedchan`. It establishes `isInit` (the `goroutines` counter in an
+invariant, the fixed `closedchan` and `Canceled`).
+
+Two premises are not facts of the model: `Canceled`'s dynamic type (`*errors.errorString`)
+and `DeadlineExceeded`'s (`deadlineExceededError`) are in the type set of `error`
+(`isTypedErr`). These are method-set facts (both types have `Error() string`), and method sets
+are uninterpreted in the semantics (`methodSet` is a parameter of `GoSemanticsFunctions` that no
+assumption constrains), so they are the classes `ErrorStringIsError` and
+`DeadlineExceededIsError`, assumptions about the semantics like the packages' `Assumptions`. -/
+abbrev context.initialize'.spec : Prop :=
+  ∀ [ErrorStringIsError] [DeadlineExceededIsError] (get_is_pkg_init : GoString → IProp GF),
+    GetIsPkgInitProp pkg_id.context get_is_pkg_init →
+    {{ ownInitializing get_is_pkg_init }}
+      (App (Val initialize') (Val #()))
+    {{ RET #(); ownInitializing get_is_pkg_init ∗
+        isPkgInit (PROP := IProp GF) pkg_id.context }}
+
+end spec
+
+end Perennial

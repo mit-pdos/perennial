@@ -6,7 +6,7 @@
 #   -g GROUPS      comma-separated subset of: framework,code,genproof,proof,other
 #                  (default: all).  framework = `lake build Perennial` (the
 #                  closure of Perennial.lean); code = Perennial/Code/**;
-#                  genproof = Perennial/GeneratedProof/**; proof = Perennial/Proof/**;
+#                  genproof = Perennial/GeneratedProof/**; proof = Perennial/{Spec,Proof}/**;
 #                  other = every remaining Perennial/**/*.lean not reached from
 #                  Perennial.lean (ManualProof, TrustedCode, ...).
 #   -o LOG         full lake log (default: .lake/lean-ci.log)
@@ -84,7 +84,7 @@ for f in Perennial.lean $(find Perennial -name '*.lean' | sort); do
   case "$f" in
     Perennial/Code/*) g=code;;
     Perennial/GeneratedProof/*) g=genproof;;
-    Perennial/Proof/*) g=proof;;
+    Perennial/Proof/*|Perennial/Spec/*) g=proof;;
     *) if [ -n "${FW[$m]+x}" ]; then g=framework; else g=other; fi;;
   esac
   want "$g" || continue

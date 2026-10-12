@@ -13,6 +13,69 @@ authoritative.
 
 ---
 
+## 0. Layout of the program proofs
+
+The proofs of Go packages (everything under `Perennial/Proof/` but the framework
+files `ProofPrelude`, `DiskPrelude`, `GrovePrelude`, `TokSet`) follow one
+discipline, so that every Go function has exactly one specification, at a
+predictable place, and every proof sees only the *specifications* of what it
+calls. For a Go package with directory `P` (its path as under `Perennial/Code/`:
+`sync`, `sync/atomic`, `github_com/goose_lang/std`):
+
+| File | Contents |
+|:--|:--|
+| `Perennial/Spec/P/F.lean` | the one Hoare triple of the Go function or method `F`: `abbrev <F>.spec : Prop` |
+| `Perennial/Proof/P/F.lean` | `theorem <F>.wp_proof (callee specs) : <F>.spec`; `axiom` at the trust boundary |
+| `Perennial/Proof/P/Base.lean`, other UpperCamelCase files | shared definitions: `isPkgInit`, predicates, ghost state, pure lemmas |
+| `Perennial/Proof/P/Link.lean` | **generated** by `etc/gen-link.py`: every proof applied to its callees' results |
+| `Perennial/Proof/P/Results.lean` | (optional) what is derived from the linked results: variants of a spec, interface lemmas |
+| `Perennial/Proof/P.lean` | the package's umbrella, the module clients import: the shared files, `Link`, `Results` |
+
+* **File names.** `F` is the function's name (`Join.lean`), `T__M` for a method `M`
+  of `T` with either receiver (`Mutex__Lock.lean`), `initialize` for the package's
+  `initialize'`. Of two names that differ only in case, the lower-case one gets a
+  trailing `_` (`errors/is_.lean` next to `errors/Is.lean`), for case-insensitive
+  file systems.
+* **Names.** The spec is declared with its full name below `Perennial`
+  (`abbrev sync.Mutex.Lock.spec`), which opens the package's namespace for its
+  body. `Link.lean` names the result of `<pre>.<f>.spec` `<pre>.wp_<f>`:
+  `sync.Mutex.wp_Lock`, `strings.wp_Join`, `sync.wp_initialize'`. Clients use
+  these, from the umbrella.
+* **Statements.** A spec is `∀ binders, {{ P }} e {{ Q }}`, all its binders
+  (implicit and instance ones too) in the `∀`; the section variables are only the
+  instance block (`ext`, `ffi`, `go_gctx`, `hlc`, `GF`, `hG`, `sem`, `package_sem`,
+  and instances such as `[StorageModel GF]`). `Link.lean` applies a spec as
+  `X.spec (GF := GF) (hG := hG)`.
+* **Callees are hypotheses.** A proof takes the spec of every Go function it calls
+  (of its own package or another) as a hypothesis, `(wp_Lock : sync.Mutex.Lock.spec
+  (GF := GF) (hG := hG))`, and uses it with `wp_apply wp_Lock`. It imports its own
+  Spec file, its callees' Spec files and shared files, never another function's
+  proof, a `Link.lean` or an umbrella; so a proof is checked against the
+  specifications of its callees only, and the proofs build in parallel. A shared
+  lemma that needs a spec takes it as a hypothesis too (named `X_of`). What is not a
+  Go function of the package (a builtin such as `len`, a closure, a goose-generated
+  pointer-receiver wrapper, the framework's lemmas) is an ordinary lemma, used
+  directly.
+* **One triple per function.** A second triple of the same function (a special
+  case, a weaker or a differently packaged form) is derived from the spec, in
+  `Results.lean` under its own name, or as an `X_of` lemma if a proof needs it.
+* **Recursion** is proved inside the function's own proof (Löb induction); a proof
+  never takes its own spec as a hypothesis, and `etc/gen-link.py` rejects
+  circular hypotheses.
+
+`etc/gen-link.py [PKG...]` regenerates the `Link.lean` files and checks the
+layout: one spec per Spec file and one proof per Proof file, matching file names,
+a proof for every spec, the imports above, no circular hypotheses, no file names
+that clash case-insensitively. `etc/gen-link.py --check` (run by `etc/land.sh
+prepare`) only checks. `Perennial/Proof/strings/` and `Perennial/Spec/strings/`
+are a small complete example; `Perennial/Proof/sync/` a larger one.
+
+Write a proof as `theorem X.wp_proof … : X.spec … := fun args => by …` rather than
+`:= by intro args; …`: after `intro`, `wp_apply` can fail without an error and
+leave a `sorry` (the theorem then only warns "declaration uses `sorry`").
+
+---
+
 ## 1. Specifications
 
 ### Texan triples
@@ -30,7 +93,7 @@ is notation (from iris-lean's `Iris/BI/WeakestPre.lean`) for
 
 Inside `iprop(...)` (e.g. as an argument of another spec) a triple means
 `□ (∀ Φ, ...)`, so a triple is persistent. Some proofs state specs directly in
-the wand form, which `wp_start` handles too (`Perennial/Proof/sync_proof/sema.lean`):
+the wand form, which `wp_start` handles too (`Perennial/Spec/sync/runtime_Semacquire.lean`):
 
 ```
 ⊢ ∀ Φ : val → IProp GF, iprop(isPkgInit pkg_id.sync ∗ isSema sema γ N) -∗
@@ -79,7 +142,7 @@ def isMutexDef (m : Loc) (R : IProp GF) : IProp GF := isLock m R
 theorem isMutex_unseal : @isMutex = @isMutexDef := by funext; with_unfolding_all rfl
 ```
 
-(`Perennial/Proof/sync_proof/mutex.lean`) and unfolded in proofs with
+(`Perennial/Proof/sync/Base.lean`) and unfolded in proofs with
 `simp only [isMutex_unseal, isMutexDef]`. Typeclass facts (`Persistent`,
 `Timeless`) are proved by unsealing and `infer_instance`.
 
@@ -105,7 +168,7 @@ the wand form above):
 
 Use `wp_start_folded` to prove a spec of a closure or a function value that
 should not be unfolded (e.g. `predImplements_adapt` in
-`Perennial/Proof/sort_proof/search.lean`).
+`Perennial/Proof/sort/SearchBasics.lean`).
 
 Proof state of `S.wp_writeB'` before `wp_start as Hs`:
 
@@ -357,7 +420,7 @@ a cell `«$iter_x»`, which the condition and body load; the post statement firs
 replaces it by a copy (the next iteration's variable) and runs with the copy as
 `x`. The invariant quantifies over the current pointer (`∃ p, «$iter_x_ptr» ↦ p
 ∗ p ↦ v`), and earlier iterations' variables stay in the context
-(`wp_testLoopVarCapture`, `semantics_proof/loopvars.lean`).
+(`wp_testLoopVarCapture`, `Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics/testLoopVarCapture.lean`).
 
 Proof state of `wp_intSliceLoop'` after `wp_for HI` (abbreviated):
 
@@ -511,29 +574,30 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty
 | `wp_assume`, `wp_sumAssumeNoOverflow`, ... | `primitive.Assume*`; the model's overflow assumptions (`append`) are listed in `README.md`, "Model assumptions (overflow)" |
 | `wp_package_init` | package initialization (in `wp_initialize'`) |
 
-### `sync` (`Perennial/Proof/sync_proof/*.lean`, `Perennial/Proof/sync/atomic.lean`)
+### `sync` (`import Perennial.Proof.sync`; specs in `Perennial/Spec/sync/`, `Perennial/Spec/sync/atomic/`)
 
 | Lemma | |
 |:--|:--|
 | `sync.init_Mutex R E m` | `m ↦ zero_val Mutex -∗ ▷ R ={E}=∗ isMutex m R` |
 | `sync.Mutex.wp_Lock`, `Mutex.wp_Unlock`, `Mutex.wp_TryLock` | `Lock`: `{{ isMutex m R }} {{ ownMutex m ∗ R }}`; `Unlock` takes `ownMutex m ∗ ▷ R` |
-| `sync.Mutex_is_Locker` | a `*Mutex` implements `Locker` |
-| `sync.wp_NewCond`, `Cond.wp_Wait`, `Cond.wp_Signal`, `Cond.wp_Broadcast` | condition variables |
+| `sync.Mutex_is_Locker` | a `*Mutex` implements `Locker` (`Results.lean`) |
+| `sync.wp_NewCond`, `Cond.wp_Wait`, `Cond.wp_Signal`, `Cond.wp_Broadcast` | condition variables (`Cond.wp_Wait_with`: on any `isLockerWith`) |
 | `sync.init_Once`, `Once.wp_Do` | `sync.Once` |
-| `sync.wp_RWMutex__*` | `RWMutex` |
+| `sync.rwmutex.RWMutex.wp_*` | `RWMutex`, logically atomic (the specs); `sync.RWMutex.wp_*`: the guarded forms (`Results.lean`) |
 | `sync.wp_runtime_Semacquire`, `wp_runtime_Semrelease` | runtime semaphores (atomic-update style specs) |
 | `sync.atomic.wp_*` (`Uint64.wp_Load`, `Bool.wp_Store`, `wp_CompareAndSwapInt32`, ...) | `sync/atomic` |
 
 ### Other proved packages
 
-`Perennial/Proof/{sort,slices,math,bytes,strings,errors,cmp,unsafe}.lean` and
-their `*_proof` directories (`wp_Search`, `wp_SearchInts`, `wp_Find`, the
-`pdqSort` family, ...); `Perennial/Proof/math/big.lean` (`math.big.ownInt`,
-`wp_NewInt`, `wp_Int64`); `Perennial/Proof/strings.lean` with
-`Perennial/Proof/internal/{stringslite,bytealg}.lean` (`strings.wp_Split`,
-`wp_Count`, `wp_Index`, `wp_HasPrefix`, `wp_TrimPrefix`, `wp_Compare`, `wp_Join`,
-`Builder.wp_String`; the first occurrence of a substring is
-`internal.bytealg.firstOcc`, Go's `Index` result `indexResult`).
+Every package under `Perennial/Spec/` (`sort`, `slices`, `math`, `math/bits`,
+`math/big`, `bytes`, `strings`, `errors`, `cmp`, `time`, `context`, `fmt`, `io`,
+`encoding/binary`, `github_com/goose_lang/std`, ...); `import Perennial.Proof.<pkg>`
+gives its results (`sort.wp_Search`, `sort.wp_SearchInts`, `sort.wp_Find`, the
+`pdqsort` family, `math.big.ownInt`, `math.big.wp_NewInt`, ...). `strings` with
+`internal/stringslite` and `internal/bytealg` gives `strings.wp_Split`, `wp_Count`,
+`wp_Index`, `wp_HasPrefix`, `wp_TrimPrefix`, `wp_Compare`, `wp_Join`; the first
+occurrence of a substring is `internal.bytealg.firstOcc`, and Go's `Index` result
+`indexResult`.
 
 ---
 
@@ -543,7 +607,7 @@ their `*_proof` directories (`wp_Search`, `wp_SearchInts`, `wp_Find`, the
 
 A Go function value `f : GoFunc` is specified by a persistent Texan triple about
 `App (Val #f) (Val #i)`; see `predImplements` in
-`Perennial/Proof/sort_proof/search.lean`, where the caller proves the triple for
+`Perennial/Proof/sort/SearchBasics.lean` and its use in `Perennial/Proof/sort/Search.lean`, where the caller proves the triple for
 a closure with `iintro %i; wp_start as ...; wp_auto; ...` and the callee uses it
 with `wp_apply Hf $$ [I] with %r ⟨I, %Hf_result⟩`.
 
@@ -629,7 +693,7 @@ What happens to the outcome depends on the function:
 * no `defer`: the body is `exceptionDo body`, and `exceptionDo (panicVal p)` is
   stuck (`wp_exceptionDo_panic : ▷ False ⊢ WP ..`), like a run-time panic of a
   builtin (`Panic "msg"`, `wp_PanicOp`); the proof must show that the panic is
-  unreachable (`semantics_proof/panic.lean`);
+  unreachable (`Perennial/{Spec,Proof}/github_com/mit_pdos/perennial/goose/testdata/examples/semantics/shouldPanic.lean`);
 * `defer` (`with_defer: r; e`, `wp_with_defer`): the deferred chain runs after
   the body whatever its outcome; a panic is then stuck (`exceptionDo` as
   above), and otherwise the function returns `r`, which reads its results'
@@ -639,7 +703,7 @@ What happens to the outcome depends on the function:
   stores them in the cells and is `return: #()` (a bare `return` is
   `return: #()`), so that, as in Go, the function returns its results' values
   *after* the deferred functions ran, which may read and modify named results
-  (`semantics_proof/defer.lean`);
+  (the `testDefer*` tests in `Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics/`);
 * `defer` of a function literal that calls `recover()` (`with_defer_recover:`,
   `wp_with_defer_recover`): the panic's value is stored in the `$panic` cell
   (`pnc ↦ nil` while not panicking) before the chain runs; `recover()`
@@ -647,7 +711,7 @@ What happens to the outcome depends on the function:
   it, or the body did not panic, the function returns its results (read from
   their cells after the chain), and otherwise `exceptionDo` as above. `wp_auto` steps through these
   checks once the body's outcome is a `returnVal`/`panicVal`
-  (`semantics_proof/recover.lean`):
+  (`recoverNamed.lean` and `recoverInLoop.lean` in `Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics/`):
 
 ```lean
 theorem wp_recoverNamed :
@@ -1007,7 +1071,7 @@ that assumed `threadBound GF ≤ 2 ^ 31` takes `T = 2 ^ 31`
 
 ```lean
 -- The two instances every package proof defines (here as `example`s, since
--- `sync_proof/base.lean` already declares them for `sync`):
+-- `Perennial/Proof/sync/Base.lean` already declares them for `sync`):
 example : IsPkgInit (IProp GF) pkg_id.sync := define_is_pkg_init iprop(True)
 example : GetIsPkgInitWf (IProp GF) pkg_id.sync := build_get_is_pkg_init_wf
 

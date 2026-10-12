@@ -1,16 +1,14 @@
 /-
-Imports all channel example proofs.
+Imports all channel example proofs: the umbrellas of the packages `channel`, `channel/lock`,
+`channel/elimination_stack`, `channel/parallel_search_replace`, `channel/etcd_session` and
+`channel/workq`.
 -/
 module
 
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel
-public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_fibonacci
-public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_google
-public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_higher_order
-public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_search_replace
-public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel_select_tricky_examples
-public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.elimination_stack
-public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.lock
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq
 

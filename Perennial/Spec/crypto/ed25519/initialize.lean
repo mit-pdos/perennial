@@ -1,0 +1,34 @@
+/-
+`crypto/ed25519.initialize'`'s spec.
+-/
+module
+
+public import Perennial.Proof.crypto.ed25519.Base
+
+@[expose] public section
+
+noncomputable section
+
+namespace Perennial
+
+open Iris Iris.BI Iris.ProgramLogic Iris.Std
+
+section spec
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem : crypto.ed25519.Assumptions]
+
+/-- The package's `initialize'`. -/
+abbrev crypto.ed25519.initialize'.spec : Prop :=
+  ∀ (get_is_pkg_init : GoString → IProp GF),
+  GetIsPkgInitProp pkg_id.crypto.ed25519 get_is_pkg_init →
+    {{ ownInitializing get_is_pkg_init }}
+      (App (Val initialize') (Val #()))
+    {{ RET #(); ownInitializing get_is_pkg_init ∗
+        isPkgInit (PROP := IProp GF) pkg_id.crypto.ed25519 }}
+
+end spec
+
+end Perennial

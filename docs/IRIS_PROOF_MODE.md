@@ -289,7 +289,7 @@ the later of timeless parts) and destructs the closing view shift (which takes
 `▷ P` back and restores the mask) with `Hclose`; close with
 `imod Hclose $$ [..] with _`. Without the second pattern, giving `▷ P` back
 becomes part of the goal instead (in `wp_runtime_Semacquire`,
-`Perennial/Proof/sync_proof/sema.lean`, it is proved with `isplitl [..]` after
+`Perennial/Proof/sync/runtime_Semacquire.lean`, it is proved with `isplitl [..]` after
 the atomic step). See the ghost-state example in
 `PERENNIAL_PROOF_TUTORIAL.md` §10. The mask side condition (`↑N ⊆ E`, e.g.
 `↑(N.@"inv") ⊆ ⊤ ∖ ↑(N.@"sema")`) is proved by `solve_ndisj` (Perennial's

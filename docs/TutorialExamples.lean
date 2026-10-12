@@ -12,7 +12,7 @@ The examples verify functions of goose's unit-test package
 `Perennial/Code/github_com/mit_pdos/perennial/goose/testdata/examples/unittest.lean`.
 -/
 import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
-import Perennial.Proof.sync_proof.mutex
+import Perennial.Proof.sync
 
 set_option linter.iris.style.nameCheck false
 -- (the library sets this in `lakefile.toml`; `lake env lean` does not read it)
@@ -588,7 +588,7 @@ example (P Q : IProp GF) : iprop(▷ P ∗ Q) = iprop((▷ P) ∗ Q) := rfl
 
 end ipm_mod
 
-/-! ## Package initialization (the shape of `Perennial/Proof/sync_proof/base.lean`) -/
+/-! ## Package initialization (the shape of `Perennial/Proof/sync/Base.lean` and `initialize.lean`) -/
 
 namespace sync
 
@@ -601,7 +601,7 @@ variable [package_sem : sync.Assumptions]
 
 -- ANCHOR: pkg_init
 -- The two instances every package proof defines (here as `example`s, since
--- `sync_proof/base.lean` already declares them for `sync`):
+-- `Perennial/Proof/sync/Base.lean` already declares them for `sync`):
 example : IsPkgInit (IProp GF) pkg_id.sync := define_is_pkg_init iprop(True)
 example : GetIsPkgInitWf (IProp GF) pkg_id.sync := build_get_is_pkg_init_wf
 

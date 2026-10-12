@@ -26,7 +26,7 @@ it, and a proof cannot get past the panic).
 
 It does not read `rand`. Go returns `rand`'s read error, if any; the package's own
 `Reader` never returns one (since Go 1.24 a failing system RNG crashes the program), and
-`wp_Int` (`Perennial/Proof/crypto/rand.lean`) is stated only for that reader. -/
+`wp_Int` (`Perennial/Spec/crypto/rand/Int.lean`) is stated only for that reader. -/
 noncomputable def Int.impl : val :=
   λ: "rand" "max",
     let: "abs" := ![math.big.nat.ty] (StructFieldRef math.big.Int'.ty go!"abs" "max") in
