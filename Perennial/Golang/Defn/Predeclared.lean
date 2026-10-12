@@ -1023,6 +1023,8 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
     ⟦Convert go.untypedNil (go.MapType key elem), UntypedNil⟧ ⤳[under] #map.nil
   convert_nil_interface (elems : List go.InterfaceElem) :
     ⟦Convert go.untypedNil (go.InterfaceType elems), UntypedNil⟧ ⤳[under] #interface.nil
+  convert_nil_unsafe_pointer :
+    ⟦Convert go.untypedNil «unsafe».Pointer, UntypedNil⟧ ⤳[under] #null
 
   type_repr_empty_struct : TypeReprUnderlying (go.StructType []) Unit
 
@@ -1046,6 +1048,7 @@ attribute [instance] PredeclaredSemantics.alloc_predeclared PredeclaredSemantics
   PredeclaredSemantics.convert_nil_pointer PredeclaredSemantics.convert_nil_function
   PredeclaredSemantics.convert_nil_slice PredeclaredSemantics.convert_nil_chan
   PredeclaredSemantics.convert_nil_map PredeclaredSemantics.convert_nil_interface
+  PredeclaredSemantics.convert_nil_unsafe_pointer
   PredeclaredSemantics.type_repr_empty_struct
 export PredeclaredSemantics (alloc_predeclared load_predeclared store_predeclared
   predeclared_underlying len_underlying cap_underlying clear_underlying copy_underlying
@@ -1057,7 +1060,8 @@ export PredeclaredSemantics (alloc_predeclared load_predeclared store_predeclare
   prophid_semantics
   comparable_string go_eq_string underlying_string plus_string go_zero_val_string
   underlying_untyped_nil convert_nil_pointer convert_nil_function convert_nil_slice
-  convert_nil_chan convert_nil_map convert_nil_interface type_repr_empty_struct)
+  convert_nil_chan convert_nil_map convert_nil_interface convert_nil_unsafe_pointer
+  type_repr_empty_struct)
 
 end defs
 end go
