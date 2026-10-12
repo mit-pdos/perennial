@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Git pre-commit hook (activated by etc/setup-hooks.sh): no commits on lean/master.
+# Work on a branch and land it with etc/land.sh (AGENTS.md, Workflow).
+# Humans who must commit on lean directly can pass --no-verify; agents must not.
+br=$(git symbolic-ref --short -q HEAD) || exit 0
+case "$br" in
+  lean|master)
+    echo "perennial: refusing to commit on '$br'." >&2
+    echo "perennial: work on a branch (git switch -c <topic>, or a worktree) and land it with etc/land.sh; see AGENTS.md, Workflow." >&2
+    exit 1;;
+esac
+exit 0
