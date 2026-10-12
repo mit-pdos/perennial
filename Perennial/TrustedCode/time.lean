@@ -34,12 +34,6 @@ def newTimer.impl : val :=
         if: "period" =⟨go.int64⟩ #(W64 0) then #() else "fire" #()) #()) ;;
     "t"
 
-/-- The runtime's `stopTimer(t)` (a `go:linkname`): stops the timer if it has not fired, and
-reports whether it did. Modeled as an arbitrary boolean with no effect (the model's timer
-goroutine runs regardless; see `newTimer`). -/
-def stopTimer.impl : val :=
-  λ: "t", ArbitraryInt =⟨go.int64⟩ #(W64 0)
-
 def runtimeNano.impl : val :=
   λ: <>, ArbitraryInt
 

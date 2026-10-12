@@ -6,7 +6,6 @@ trusted = [
   "newTimer",    # go:linkname newTimer
   "syncTimer",
   "runtimeIsBubbled", # go:linkname runtimeIsBubbled (true only inside a synctest bubble)
-  "stopTimer",   # go:linkname stopTimer
   # "sendTime",
 
   "After",
@@ -40,7 +39,6 @@ translate = [
   "AfterFunc",
   "when",
   "goFunc",
-  "Timer.Stop",
   "wallToInternal",
   "nsecMask",
   "nsecShift",

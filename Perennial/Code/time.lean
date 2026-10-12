@@ -820,43 +820,6 @@ noncomputable def when.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #())))))))
 
-/-- Stop prevents the [Timer] from firing.
-    It returns true if the call stops the timer, false if the timer has already
-    expired or been stopped.
-
-    For a func-based timer created with [AfterFunc](d, f),
-    if t.Stop returns false, then the timer has already expired
-    and the function f has been started in its own goroutine;
-    Stop does not wait for f to complete before returning.
-    If the caller needs to know whether f is completed,
-    it must coordinate with f explicitly.
-
-    For a chan-based timer created with NewTimer(d), as of Go 1.23,
-    any receive from t.C after Stop has returned is guaranteed to block
-    rather than receive a stale time value from before the Stop;
-    if the program has not received from t.C already and the timer is
-    running, Stop is guaranteed to return true.
-    Before Go 1.23, the only safe way to use Stop was insert an extra
-    <-t.C if Stop returned false to drain a potential stale value.
-    See the [NewTimer] documentation for more details.
-
-    go: sleep.go:113:17 -/
-noncomputable def Timer.Stop.impl [FfiSyntax] [GoGlobalContext] : val :=
-  (LamV "t"
-  (Lam BAnon
-  (App (Val exceptionDo)
-  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Timer.ty)))) (Var "t"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Timer.ty)))) (Var "t"))
-  (App (App (Val (GoInstruction (FuncResolve stopTimer []))) (Val #())) (Var "$a0"))))))
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef Timer.ty go!"initTimer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Timer.ty)))) (Var "t")))))
-  (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"time: Stop called on uninitialized Timer")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
-  (App (Val doExecute)
-  (Val #()))))))))
-
 /-- AfterFunc waits for the duration to elapse and then calls f
     in its own goroutine. It returns a [Timer] that can
     be used to cancel the call using its Stop method.
@@ -1422,7 +1385,6 @@ class Timer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_C : ∀ (x : Timer) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Timer)))
   get_initTimer : ∀ (x : Timer), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"initTimer") #x (Val #(x.initTimer'))
   set_initTimer : ∀ (x : Timer) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"initTimer") (PairV #x #y) (Val #(({ x with initTimer' := y } : Timer)))
-  ptr_Stop_unfold : MethodUnfold (go.GoType.PointerType Timer.ty) go!"Stop" Timer.Stop.impl
 
 attribute [instance] Timer.TypeAssumptions.type_repr
   Timer.TypeAssumptions.underlying
@@ -1430,7 +1392,6 @@ attribute [instance] Timer.TypeAssumptions.type_repr
   Timer.TypeAssumptions.set_C
   Timer.TypeAssumptions.get_initTimer
   Timer.TypeAssumptions.set_initTimer
-  Timer.TypeAssumptions.ptr_Stop_unfold
 
 structure Ticker [FfiSyntax] where
   mk ::
@@ -1956,7 +1917,6 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   syncTimer_unfold : FuncUnfold syncTimer [] syncTimer.impl
   when_unfold : FuncUnfold when [] when.impl
   newTimer_unfold : FuncUnfold newTimer [] newTimer.impl
-  stopTimer_unfold : FuncUnfold stopTimer [] stopTimer.impl
   After_unfold : FuncUnfold After [] After.impl
   AfterFunc_unfold : FuncUnfold AfterFunc [] AfterFunc.impl
   goFunc_unfold : FuncUnfold goFunc [] goFunc.impl
@@ -1993,7 +1953,6 @@ attribute [instance] Assumptions.ParseError_instance
   Assumptions.syncTimer_unfold
   Assumptions.when_unfold
   Assumptions.newTimer_unfold
-  Assumptions.stopTimer_unfold
   Assumptions.After_unfold
   Assumptions.AfterFunc_unfold
   Assumptions.goFunc_unfold
