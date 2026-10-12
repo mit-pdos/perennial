@@ -705,33 +705,37 @@ func (ctx *Ctx) binExpr(e *ast.BinaryExpr) (expr glang.Expr) {
 			return ctx.constantLiteral(e)
 		}
 	}
-	if _, ok := shiftOps[e.Op]; ok {
-		// The count keeps its own type: the semantics decides what a count of
-		// that type means (sign, width), whatever the type of the shifted
-		// operand.
-		return glang.BinaryExpr{
-			X: ctx.handleImplicitConversion(e.X, xT, compType, ctx.expr(e.X)),
-			Op: glang.BinOp{
-				OpId:      op,
-				Type:      ctx.glangType(e, compType),
-				CountType: ctx.glangType(e.Y, yT),
-			},
-			Y: ctx.expr(e.Y),
-		}
-	}
-	expr = glang.BinaryExpr{
-		X: ctx.handleImplicitConversion(e.X, xT, compType, ctx.expr(e.X)),
-		Op: glang.BinOp{
-			OpId: op,
-			Type: ctx.glangType(e, compType),
-		},
-		Y: ctx.handleImplicitConversion(e.Y, yT, compType, ctx.expr(e.Y)),
-	}
+	expr = ctx.binOpExpr(e, op, compType,
+		ctx.handleImplicitConversion(e.X, xT, compType, ctx.expr(e.X)), ctx.expr(e.Y), yT)
 
 	// FIXME: might need to do a conversion here. Handle e.g. interface
 	// conversion of (x < 10) as well as conversion of (x + 10).
 	// expr = ctx.handleImplicitConversion(e, compType, ctx.typeOf(e), expr)
 	return expr
+}
+
+// binOpExpr is x op y with x (already translated, of type xT) and y (translated,
+// of type yT).
+func (ctx *Ctx) binOpExpr(n locatable, op glang.OpId, xT types.Type, x, y glang.Expr, yT types.Type) glang.Expr {
+	if op == glang.OpShl || op == glang.OpShr {
+		// The count keeps its own type: the semantics decides what a count of
+		// that type means (sign, width), whatever the type of the shifted
+		// operand.
+		return glang.BinaryExpr{
+			X: x,
+			Op: glang.BinOp{
+				OpId:      op,
+				Type:      ctx.glangType(n, xT),
+				CountType: ctx.glangType(n, yT),
+			},
+			Y: y,
+		}
+	}
+	return glang.BinaryExpr{
+		X:  x,
+		Op: glang.BinOp{OpId: op, Type: ctx.glangType(n, xT)},
+		Y:  ctx.handleImplicitConversion(n, yT, xT, y),
+	}
 }
 
 func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
@@ -1856,47 +1860,76 @@ func (ctx *Ctx) assignOpStmt(s *ast.AssignStmt, cont glang.Expr) glang.Expr {
 	if !ok {
 		ctx.unsupported(s, "unsupported assign+update operation %v", s.Tok)
 	}
-	// construct s.lhs + s.rhs as a Go AST fragment
-	rhs := ctx.binExpr(&ast.BinaryExpr{
-		X:  s.Lhs[0],
-		Op: op,
-		Y:  s.Rhs[0],
-	})
-	// finish by constructing lhs = rhs
-	return ctx.assignFromTo(s.Lhs[0], rhs, cont)
+	return ctx.updateStmt(s.Lhs[0], gooseLangOps[op], ctx.expr(s.Rhs[0]), ctx.typeOf(s.Rhs[0]),
+		ctx.info.Types[s.Rhs[0]].Value != nil, cont)
 }
 
+// incDecStmt translates x++ and x--, which are x += 1 and x -= 1 with an
+// untyped constant 1 (spec, "IncDec statements"): the 1 is a constant of x's
+// type, or for a type parameter the untyped 1, converted by the semantics.
 func (ctx *Ctx) incDecStmt(stmt *ast.IncDecStmt, cont glang.Expr) glang.Expr {
-	opId := glang.OpPlus
+	op := glang.OpPlus
 	if stmt.Tok == token.DEC {
-		opId = glang.OpMinus
+		op = glang.OpMinus
 	}
-	op := glang.BinOp{
-		OpId: opId,
-		Type: ctx.glangType(stmt.X, ctx.typeOf(stmt.X)),
+	xT := ctx.typeOf(stmt.X)
+	if _, ok := xT.Underlying().(*types.Basic); ok {
+		return ctx.updateStmt(stmt.X, op, ctx.constantValue(stmt, constant.MakeInt64(1), xT), xT, true, cont)
 	}
+	one := glang.ToVal{Value: glang.ZLiteral{Value: big.NewInt(1)}}
+	return ctx.updateStmt(stmt.X, op, one, types.Typ[types.UntypedInt], true, cont)
+}
 
-	one := glang.ZLiteral{Value: big.NewInt(1)}
-	var y glang.Expr
-
-	switch t := ctx.typeOf(stmt.X).Underlying().(type) {
-	case *types.Basic:
-		switch t.Kind() {
-		case types.Uint64, types.Int64, types.Int, types.Uint:
-			y = glang.Int64Val{Value: one}
-		case types.Uint32, types.Int32:
-			y = glang.Int32Val{Value: one}
-		case types.Uint8, types.Int8:
-			y = glang.Int8Val{Value: one}
+// updateStmt translates x op= y. Go evaluates the operands of x's index
+// expression or pointer indirection once, then y, and only then reads x
+// (spec, "Assignment statements"), so the target (an address, or a map and a
+// key) and y are bound before x is read and written back. A variable's address
+// and a constant y (yConst) are not bound: evaluating them is pure.
+func (ctx *Ctx) updateStmt(lhs ast.Expr, op glang.OpId, y glang.Expr, yT types.Type,
+	yConst bool, cont glang.Expr) glang.Expr {
+	xT := ctx.typeOf(lhs)
+	ty := ctx.glangType(lhs, xT)
+	var yv glang.Expr = glang.IdentExpr("$opy")
+	if yConst {
+		yv = y
+	}
+	var binds []glang.LetExpr
+	var update glang.Expr
+	if ix, ok := ast.Unparen(lhs).(*ast.IndexExpr); ok {
+		if mapTy, ok := ctx.typeOf(ix.X).Underlying().(*types.Map); ok {
+			kTy := ctx.glangType(ix.Index, mapTy.Key())
+			m, k := glang.IdentExpr("$opm"), glang.IdentExpr("$opk")
+			binds = []glang.LetExpr{
+				{Names: []string{"$opm"}, ValExpr: ctx.expr(ix.X)},
+				{Names: []string{"$opk"}, ValExpr: ctx.exprIntoType(ix.Index, mapTy.Key())},
+			}
+			read := glang.NewCallExpr(glang.VerbatimExpr("map.lookup1"), kTy, ty, m, k)
+			update = glang.NewCallExpr(glang.VerbatimExpr("map.insert"), kTy, m, k,
+				ctx.binOpExpr(lhs, op, xT, read, yv, yT))
 		}
-	default:
-		ctx.unsupported(stmt.X, "inc or dec statement with unsupported type %v", ctx.typeOf(stmt.X))
 	}
-	return ctx.assignFromTo(stmt.X, glang.BinaryExpr{
-		X:  ctx.expr(stmt.X),
-		Op: op,
-		Y:  y,
-	}, cont)
+	if update == nil {
+		var a glang.Expr = glang.IdentExpr("$opa")
+		if _, ok := ast.Unparen(lhs).(*ast.Ident); ok {
+			a = ctx.exprAddr(lhs)
+		} else {
+			binds = []glang.LetExpr{{Names: []string{"$opa"}, ValExpr: ctx.exprAddr(lhs)}}
+		}
+		update = glang.StoreStmt{
+			Dst: a,
+			X:   ctx.binOpExpr(lhs, op, xT, glang.DerefExpr{X: a, Ty: ty}, yv, yT),
+			Ty:  ty,
+		}
+	}
+	if !yConst {
+		binds = append(binds, glang.LetExpr{Names: []string{"$opy"}, ValExpr: y})
+	}
+	var e glang.Expr = update
+	for i := len(binds) - 1; i >= 0; i-- {
+		binds[i].Cont = e
+		e = binds[i]
+	}
+	return glang.NewDoSeq(e, cont)
 }
 
 func (ctx *Ctx) branchStmt(s *ast.BranchStmt, cont glang.Expr) glang.Expr {
@@ -2655,13 +2688,17 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 
 // this should only be used for untyped constant literals
 func (ctx *Ctx) constantLiteral(e ast.Expr) glang.Expr {
-	// FIXME: emit `Convert` rather than doing it all statically here.
 	val := ctx.info.Types[e].Value
 	if e, ok := e.(*ast.Ident); ok {
 		val = ctx.info.ObjectOf(e).(*types.Const).Val()
 	}
+	return ctx.constantValue(e, val, ctx.typeOf(e))
+}
+
+// constantValue is the constant val at type t.
+func (ctx *Ctx) constantValue(e locatable, val constant.Value, t types.Type) glang.Expr {
+	// FIXME: emit `Convert` rather than doing it all statically here.
 	v := constant.Val(val)
-	t := ctx.typeOf(e)
 	constInt := func(cons string) glang.Expr {
 		switch v := v.(type) {
 		case *big.Int:

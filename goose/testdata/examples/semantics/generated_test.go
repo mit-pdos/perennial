@@ -168,6 +168,34 @@ func (suite *GoTestSuite) TestSelectSendOrder() {
 	suite.Equal(true, testSelectSendOrder())
 }
 
+func (suite *GoTestSuite) TestOpAssignIndexOnce() {
+	suite.Equal(true, testOpAssignIndexOnce())
+}
+
+func (suite *GoTestSuite) TestIncIndexOnce() {
+	suite.Equal(true, testIncIndexOnce())
+}
+
+func (suite *GoTestSuite) TestOpAssignMapOnce() {
+	suite.Equal(true, testOpAssignMapOnce())
+}
+
+func (suite *GoTestSuite) TestOpAssignReadsAfterRhs() {
+	suite.Equal(true, testOpAssignReadsAfterRhs())
+}
+
+func (suite *GoTestSuite) TestOpAssignMapReadsAfterRhs() {
+	suite.Equal(true, testOpAssignMapReadsAfterRhs())
+}
+
+func (suite *GoTestSuite) TestIncDecNarrow() {
+	suite.Equal(true, testIncDecNarrow())
+}
+
+func (suite *GoTestSuite) TestIncGeneric() {
+	suite.Equal(true, testIncGeneric())
+}
+
 func (suite *GoTestSuite) TestFirstClassFunction() {
 	suite.Equal(true, testFirstClassFunction())
 }
