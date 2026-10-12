@@ -11,6 +11,9 @@ for each proved function `F`. By Go source file:
 * `interfaces_complex.go`, `type_equality.go`, `structs.go`, `new.go`, `slices.go`.
 * `loopvars.go`: each iteration of a loop has its own iteration variables.
 * `nil.go`: comparisons with `nil`.
+* `defer.go`: the results of a function that defers: `return e` assigns the results,
+  the deferred functions run (and may read and modify the named results), and the
+  function returns the results' final values.
 * `method_values.go`: `x.M` saves its receiver when it is evaluated (a copy of it for a
   value-receiver method, the pointer for a pointer-receiver one), and calls of the method
   value use the saved receiver.

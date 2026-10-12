@@ -16,6 +16,13 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testComparePointerWrappedDefaultToNil
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testComparePointerWrappedToNil
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCompareSliceToNil
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferAssignResult
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferIncrResult
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferReadResult
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferRecoverResult
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferShadowedResult
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferSwapResults
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferUnnamedResults
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDefinedStrTypesEqual
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testEmptyBlock
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testEmptyInterface
@@ -110,6 +117,27 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testC
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testCompareSliceToNil : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCompareSliceToNil.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCompareSliceToNil.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testDeferAssignResult : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferAssignResult.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferAssignResult.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testDeferIncrResult : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferIncrResult.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferIncrResult.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testDeferReadResult : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferReadResult.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferReadResult.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testDeferRecoverResult : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferRecoverResult.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferRecoverResult.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testDeferShadowedResult : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferShadowedResult.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferShadowedResult.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testDeferSwapResults : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferSwapResults.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferSwapResults.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testDeferUnnamedResults : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferUnnamedResults.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeferUnnamedResults.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testDefinedStrTypesEqual : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDefinedStrTypesEqual.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDefinedStrTypesEqual.wp_proof

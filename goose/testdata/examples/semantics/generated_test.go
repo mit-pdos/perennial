@@ -148,6 +148,34 @@ func (suite *GoTestSuite) TestDeferFuncLit() {
 	suite.Equal(true, testDeferFuncLit())
 }
 
+func (suite *GoTestSuite) TestDeferAssignResult() {
+	suite.Equal(true, testDeferAssignResult())
+}
+
+func (suite *GoTestSuite) TestDeferIncrResult() {
+	suite.Equal(true, testDeferIncrResult())
+}
+
+func (suite *GoTestSuite) TestDeferRecoverResult() {
+	suite.Equal(true, testDeferRecoverResult())
+}
+
+func (suite *GoTestSuite) TestDeferReadResult() {
+	suite.Equal(true, testDeferReadResult())
+}
+
+func (suite *GoTestSuite) TestDeferUnnamedResults() {
+	suite.Equal(true, testDeferUnnamedResults())
+}
+
+func (suite *GoTestSuite) TestDeferShadowedResult() {
+	suite.Equal(true, testDeferShadowedResult())
+}
+
+func (suite *GoTestSuite) TestDeferSwapResults() {
+	suite.Equal(true, testDeferSwapResults())
+}
+
 func (suite *GoTestSuite) TestSliceOperandOnce() {
 	suite.Equal(true, testSliceOperandOnce())
 }
