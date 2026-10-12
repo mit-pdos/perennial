@@ -4983,7 +4983,8 @@ noncomputable def testMethodValueEmbeddedPointer.impl [FfiSyntax] [GoGlobalConte
 /-- go: method_values.go:63:6 -/
 noncomputable def mvDeferGet.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "out"
-  (App (Val wrapDefer)
+  (App (App (Val wrapDefer) (Lam BAnon
+  (Val #())))
   (Lam "$defer"
   (Let "out" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (Var "out"))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -5018,7 +5019,8 @@ noncomputable def mvDeferGet.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- go: method_values.go:69:6 -/
 noncomputable def mvDeferMethod.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "out"
-  (App (Val wrapDefer)
+  (App (App (Val wrapDefer) (Lam BAnon
+  (Val #())))
   (Lam "$defer"
   (Let "out" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (Var "out"))
   (App (App (Val exceptionSeq) (Lam BAnon
