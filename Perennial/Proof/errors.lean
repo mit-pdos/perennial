@@ -509,9 +509,8 @@ what an `Is` method's `true` means.
 
 The tree walk `is(err, target, targetComparable)` is translated (`wp_is`). `Is` itself is a
 trusted model (`TrustedCode/errors.lean`): Go's `Is` with its one reflection call,
-`reflectlite.TypeOf(target).Comparable()`, replaced by a call of `reflectliteComparable`, which
-has no body and whose spec is an axiom (`wp_reflectliteComparable`: `true` for a pointer
-type). -/
+`reflectlite.TypeOf(target).Comparable()`, replaced by `true`, which is Go's answer for the
+`nil` and pointer targets `wp_Is` admits. -/
 
 /-- A pointer error: a non-nil error whose dynamic type is a pointer type `*T` and whose value
 is a pointer, such as `errors.New`'s `*errorString` (`wp_New_ptr`). Go's `==` on two such errors
@@ -827,20 +826,9 @@ theorem wp_is (S : GoError → Prop) (M : GoInterfaceOk → Prop) (err target : 
         ipureintro
         exact ⟨fun h => absurd h (by decide), fun _ => Hfalse⟩
 
-/-- Spec of `reflectliteComparable(target)` (axiom), the model's name for Go's
-`reflectlite.TypeOf(target).Comparable()` in `Is` (`TrustedCode/errors.lean`): it returns
-whether `target`'s dynamic type is comparable, so `true` for a pointer type (Go's pointers are
-comparable). It does not say more of other types. -/
-axiom wp_reflectliteComparable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
-    [FfiSemantics ext ffi] [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors}
-    [hG : HeapGS hlc GF] [sem : go.Semantics] (tii : GoInterfaceOk) :
-    {{ (True : IProp GF) }}
-      (App (Val (@! reflectliteComparable)) (Val #(interface.ok tii)))
-    {{ (c : Bool), RET #c; ⌜(∃ T, tii.ty = go.PointerType T) → c = true⌝ }}
-
 /-- Spec of `errors.Is(err, target)`, for a `nil` or pointer `target` (`IsPointerError`, such as
-an `errors.New` error), whose type Go's `reflectlite` finds comparable
-(`wp_reflectliteComparable`). Its precondition is the error tree of `err`
+an `errors.New` error), whose type Go's `reflectlite` finds comparable (the model's `true`).
+Its precondition is the error tree of `err`
 (`errorIsTree S M target ∗ ⌜S err⌝`), whose errors of `target`'s type hold pointers
 (`TreeTyped`, Go's typing). It returns `err == target` if either is `nil`; otherwise `true` if
 `err == target` (its first check), and `true` only if some error of the tree is `target` or has
@@ -890,9 +878,6 @@ theorem wp_Is (S : GoError → Prop) (M : GoInterfaceOk → Prop) (err target : 
       dsimp only
       wp_auto
       obtain ⟨T, l, hT, hl⟩ := htarget tii rfl
-      wp_apply wp_reflectliteComparable tii as %c %Hc
-      have hc : c = true := Hc ⟨T, hT⟩
-      subst hc
       (try wp_auto)
       rw [show (go!"errors.is" : GoString) = is' from rfl]
       wp_apply wp_is S M (interface.ok ii) (interface.ok tii) true HS

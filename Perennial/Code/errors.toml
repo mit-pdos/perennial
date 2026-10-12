@@ -9,8 +9,8 @@ translate = [
   "is",
 ]
 # `Is` calls `reflectlite.TypeOf(target).Comparable()` (`internal/reflectlite` is not
-# translated): a model in TrustedCode/errors.lean, with that call replaced by
-# `reflectliteComparable` (a function without a body, specified in Proof/errors.lean).
+# translated): a model in TrustedCode/errors.lean, with that call replaced by `true`
+# (documented there: the model is stuck where Go skips comparing an uncomparable target).
 trusted = ["Is"]
 imports = ["!*"]
 
