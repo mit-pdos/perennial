@@ -827,6 +827,9 @@ noncomputable def Negative [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def PanicAtTheDisco [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.PanicAtTheDisco"
 
+noncomputable def PanicParen [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.PanicParen"
+
 noncomputable def Oracle [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Oracle"
 
@@ -3796,6 +3799,16 @@ noncomputable def PanicAtTheDisco.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"disco")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
 
+/-- go: panic.go:7:6 -/
+noncomputable def PanicParen.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"paren")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
+
 /-- go: proph.go:5:6 -/
 noncomputable def Oracle.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -6446,6 +6459,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   BitwiseAndNot_unfold : FuncUnfold BitwiseAndNot [] BitwiseAndNot.impl
   Negative_unfold : FuncUnfold Negative [] Negative.impl
   PanicAtTheDisco_unfold : FuncUnfold PanicAtTheDisco [] PanicAtTheDisco.impl
+  PanicParen_unfold : FuncUnfold PanicParen [] PanicParen.impl
   Oracle_unfold : FuncUnfold Oracle [] Oracle.impl
   ReassignVars_unfold : FuncUnfold ReassignVars [] ReassignVars.impl
   recur_unfold : FuncUnfold recur [] recur.impl
@@ -6703,6 +6717,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.BitwiseAndNot_unfold
   Assumptions.Negative_unfold
   Assumptions.PanicAtTheDisco_unfold
+  Assumptions.PanicParen_unfold
   Assumptions.Oracle_unfold
   Assumptions.ReassignVars_unfold
   Assumptions.recur_unfold

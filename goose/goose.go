@@ -1369,6 +1369,10 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 	}
 	var post glang.Expr = glang.Tt
 	if s.Post != nil {
+		if p, ok := s.Post.(*ast.ExprStmt); ok && ctx.isBuiltinCall(p.X, "panic") {
+			// doFor runs the post statement under `do:`, which would drop the panic
+			ctx.unsupported(s.Post, "panic in a for post statement")
+		}
 		post = ctx.stmt(s.Post, nil)
 	}
 	body := ctx.blockStmt(s.Body, nil)
@@ -1966,9 +1970,10 @@ func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
 	return expr
 }
 
-// isBuiltinCall reports whether e is a call of the builtin function name.
+// isBuiltinCall reports whether e is a call of the builtin function name,
+// possibly parenthesized (`(panic(v))` is a valid expression statement).
 func (ctx *Ctx) isBuiltinCall(e ast.Expr, name string) bool {
-	call, ok := e.(*ast.CallExpr)
+	call, ok := ast.Unparen(e).(*ast.CallExpr)
 	if !ok {
 		return false
 	}
