@@ -1,0 +1,37 @@
+/-
+Package initialization of `internal/runtime/sys` (only its types are
+translated, for `runtime`, which imports it): its `isPkgInit`.
+-/
+module
+
+public import Perennial.Proof.ProofPrelude
+public import Perennial.Code.internal.runtime.sys
+public import Perennial.GeneratedProof.internal.runtime.sys
+
+@[expose] public section
+
+noncomputable section
+
+namespace Perennial
+
+open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
+
+namespace internal.runtime.sys
+
+section init
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem : internal.runtime.sys.Assumptions]
+
+instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.internal.runtime.sys :=
+  define_is_pkg_init iprop(True)
+instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.internal.runtime.sys :=
+  build_get_is_pkg_init_wf
+
+end init
+
+end internal.runtime.sys
+
+end Perennial

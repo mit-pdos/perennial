@@ -3,16 +3,18 @@
 `Perennial/Spec` and `Perennial/Proof` (docs/PERENNIAL_PROOF_REFERENCE.md, "Layout of
 the program proofs").
 
-Every Go function or method `F` of a package `P` (a directory, the Go import path
-with `.`, `/` and `-` replaced as in `Perennial/Code`) has
+Every Go function or method `F` of a package `P` (a directory, the package's path as
+under `Perennial/Code`) has
 
 * `Perennial/Spec/P/F.lean`, holding its one Hoare triple, `abbrev <F>.spec : Prop`;
 * `Perennial/Proof/P/F.lean`, holding `theorem <F>.wp_proof (callee specs) : <F>.spec`
   (or `axiom <F>.wp_proof : <F>.spec` at the trust boundary), which imports only
-  the `Spec` files of its callees.
+  the `Spec` files of its callees and shared files.
 
 The file name `F` is the function's name, `T__M` for a method `M` of `T` (either
-receiver), and `initialize` for the package's `initialize'`. The spec's name is
+receiver), and `initialize` for the package's `initialize'`, with a trailing `_` for
+the lower-case one of two names that differ only in case (`asType_` next to `AsType`,
+for case-insensitive file systems). The spec's name is
 written in full below `Perennial` (`sync.Mutex.Lock.spec`), and ends in the
 components of `F` (`Mutex.Lock`).
 
@@ -26,9 +28,14 @@ the result of `<pre>.<f>.spec` being `<pre>.wp_<f>`. A callee of another package
 is that package's result, from its `Link.lean`. The callees are read from the
 hypotheses of `wp_proof`, `(name : <G>.spec ...)`, in order.
 
-usage: etc/gen-link.py           regenerate every Link.lean
-       etc/gen-link.py --check   exit 1 if a Link.lean is out of date or the layout
-                                 is broken (nothing is written)
+It also checks the imports: a Spec file, a Proof file or a shared file of a package
+imports no Proof file of a Go function, no `Link.lean` and no package umbrella
+(`Perennial/Proof/P.lean`, for a package `P` with a `Link.lean`).
+
+usage: etc/gen-link.py [PKG...]           regenerate every Link.lean (or those of the
+                                          package directories PKG, e.g. `sync/atomic`)
+       etc/gen-link.py --check [PKG...]   exit 1 if a Link.lean is out of date or the
+                                          layout is broken (nothing is written)
 """
 import os
 import re
@@ -37,19 +44,18 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SPEC = os.path.join(ROOT, "Perennial", "Spec")
 PROOF = os.path.join(ROOT, "Perennial", "Proof")
-# Files of a package directory that are not a Go function's.
-SHARED_OK = re.compile(r"^[A-Z][A-Za-z0-9]*$")
 
 NAME = r"[A-Za-z_«][A-Za-z0-9_'.«»!?]*"
 SPEC_DECL = re.compile(r"^\s*(?:@\[[^\]]*\]\s*)?(?:abbrev|def)\s+(" + NAME + r")\.spec\b", re.M)
 PROOF_DECL = re.compile(r"^\s*(theorem|axiom)\s+(" + NAME + r")\.wp_proof\b", re.M)
 HYP = re.compile(r"\(\s*(" + NAME + r")\s*:\s*(" + NAME + r")\.spec\b")
+IMPORT = re.compile(r"^(?:public )?import (Perennial\.Proof\.\S+)", re.M)
 
 errors = []
 
 
-def err(msg):
-    errors.append(msg)
+def err(msg, pkg=None):
+    errors.append((pkg, msg))
 
 
 def rel(path):
@@ -72,7 +78,7 @@ def strip_guillemets(s):
 
 
 def components(name):
-    # split a Lean name on dots outside «»
+    """A Lean name's components (dots inside «» do not split)."""
     out, cur, quoted = [], "", False
     for c in name:
         if c == "«":
@@ -88,16 +94,19 @@ def components(name):
     return out
 
 
-def check_file_name(path, name):
+def check_file_name(path, name, pkg):
     """`F` (the file name) is the last components of `name`, joined by `__`."""
     f = os.path.basename(path)[: -len(".lean")]
     parts = [strip_guillemets(c) for c in components(name)]
     if parts[-1] == "initialize'":
         parts[-1] = "initialize"
-    want = f.split("__")
+    # a trailing `_` keeps apart names that differ only in case (`asType_.lean` next to
+    # `AsType.lean`), for case-insensitive file systems
+    want = (f[:-1] if f.endswith("_") and not f.endswith("__") else f).split("__")
     if parts[-len(want):] != want:
         err(f"{rel(path)}: the file of `{name}` should be named after it "
-            f"(`{'__'.join(parts[-2:])}.lean` for a method, `{parts[-1]}.lean` for a function)")
+            f"(`{'__'.join(parts[-2:])}.lean` for a method, `{parts[-1]}.lean` for a "
+            f"function)", pkg)
 
 
 def result_name(spec):
@@ -107,54 +116,102 @@ def result_name(spec):
 
 def proof_signature(text, start):
     """The text from `theorem X.wp_proof` to its `:=` (or the end of the axiom's statement)."""
-    m = re.compile(r":=|\n\s*\n").search(text, start)
-    return text[start : m.start() if m else len(text)]
+    # the `:=` outside brackets (not the `(GF := GF)` of a hypothesis)
+    depth = 0
+    for i in range(start, len(text)):
+        c = text[i]
+        if c in "([{":
+            depth += 1
+        elif c in ")]}":
+            depth -= 1
+        elif depth == 0 and (text.startswith(":=", i) or text.startswith("\n\n", i)):
+            return text[start:i]
+    return text[start:]
 
 
 def main():
-    check = "--check" in sys.argv[1:]
+    argv = sys.argv[1:]
+    check = "--check" in argv
+    selected = {a.strip("/") for a in argv if not a.startswith("--")}
 
     # specs: name -> (package dir, file)
     specs = {}
     for path in lean_files(SPEC):
         text = open(path, encoding="utf-8").read()
         names = SPEC_DECL.findall(text)
+        pkg = os.path.relpath(os.path.dirname(path), SPEC)
         if len(names) != 1:
-            err(f"{rel(path)}: a Spec file holds exactly one `<fn>.spec` (found {len(names)})")
+            err(f"{rel(path)}: a Spec file holds exactly one `<fn>.spec` (found {len(names)})", pkg)
             continue
         name = names[0]
-        check_file_name(path, name)
-        pkg = os.path.relpath(os.path.dirname(path), SPEC)
+        check_file_name(path, name, pkg)
         specs[name] = (pkg, path)
 
-    # proofs, by package: name -> (file, hypotheses [(hyp name, callee spec)])
+    # proofs, by package: name -> (file, hypotheses [(hyp name, callee spec)], open/variable lines)
     packages = {}
     for path in lean_files(PROOF):
         text = open(path, encoding="utf-8").read()
         decls = list(PROOF_DECL.finditer(text))
         if not decls:
             continue
+        pkg = os.path.relpath(os.path.dirname(path), PROOF)
         if len(decls) != 1:
-            err(f"{rel(path)}: a Proof file holds exactly one `<fn>.wp_proof` (found {len(decls)})")
+            err(f"{rel(path)}: a Proof file holds exactly one `<fn>.wp_proof` "
+                f"(found {len(decls)})", pkg)
             continue
         d = decls[0]
         name = d.group(2)
-        pkg = os.path.relpath(os.path.dirname(path), PROOF)
         spec_path = os.path.join(SPEC, os.path.relpath(path, PROOF))
         if specs.get(name, (None, None))[1] != spec_path:
-            err(f"{rel(path)}: `{name}.wp_proof` has no spec `{name}.spec` in {rel(spec_path)}")
-        sig = proof_signature(text, d.start())
-        hyps = HYP.findall(sig)
-        variables = re.findall(r"^open .*$|^variable .*$", text, re.M)
-        packages.setdefault(pkg, {})[name] = (path, hyps, variables)
+            err(f"{rel(path)}: `{name}.wp_proof` has no spec `{name}.spec` in "
+                f"{rel(spec_path)}", pkg)
+        hyps = HYP.findall(proof_signature(text, d.start()))
+        context = re.findall(r"^open .*$|^variable .*$", text, re.M)
+        packages.setdefault(pkg, {})[name] = (path, hyps, context)
 
     for name, (pkg, path) in specs.items():
         if name not in packages.get(pkg, {}):
             err(f"{rel(path)}: `{name}.spec` has no proof in "
-                f"{rel(os.path.join(PROOF, os.path.relpath(path, SPEC)))}")
+                f"{rel(os.path.join(PROOF, os.path.relpath(path, SPEC)))}", pkg)
+
+    # the imports of the discipline
+    fn_proofs = {module_of(p) for ps in packages.values() for (p, _, _) in ps.values()}
+    links = {module_of(os.path.join(PROOF, pkg, "Link.lean")) for pkg in packages}
+    umbrellas = {module_of(os.path.join(PROOF, pkg + ".lean")) for pkg in packages}
+    for base in (SPEC, PROOF):
+        for path in lean_files(base):
+            pkg = os.path.relpath(os.path.dirname(path), base)
+            if base == PROOF:
+                if pkg not in packages:
+                    continue  # not a package of this layout (yet), or an umbrella
+                if (os.path.basename(path) in ("Link.lean", "Results.lean")
+                        or module_of(path) in umbrellas):
+                    continue
+                # a shared file is UpperCamelCase; a lower-case file that is not a
+                # function's proof is another package's module not in this layout yet
+                if module_of(path) not in fn_proofs and not os.path.basename(path)[0].isupper():
+                    continue
+            for imp in IMPORT.findall(open(path, encoding="utf-8").read()):
+                imp = strip_guillemets(imp)
+                if imp in fn_proofs or imp in links or imp in umbrellas:
+                    err(f"{rel(path)}: imports {imp}; import the Spec files of callees "
+                        f"and shared files only", pkg)
+
+    # file names that differ only in case clash on case-insensitive file systems
+    for base in (SPEC, PROOF):
+        for d, _, fs in os.walk(base):
+            seen = {}
+            for f in fs:
+                if f.lower() in seen:
+                    err(f"{rel(os.path.join(d, f))}: clashes with {seen[f.lower()]} on a "
+                        f"case-insensitive file system; add a trailing `_` to the "
+                        f"lower-case name", os.path.relpath(d, base))
+                seen[f.lower()] = f
 
     outputs = {}
     for pkg, proofs in sorted(packages.items()):
+        if selected and pkg not in selected:
+            continue
         # dependency order within the package
         order, state = [], {}
 
@@ -162,7 +219,8 @@ def main():
             if state.get(n) == "done":
                 return
             if state.get(n) == "active":
-                err(f"package {pkg}: the proofs' hypotheses are circular: {' -> '.join(stack + [n])}")
+                err(f"package {pkg}: the proofs' hypotheses are circular: "
+                    f"{' -> '.join(stack + [n])}", pkg)
                 return
             state[n] = "active"
             for _, callee in proofs[n][1]:
@@ -174,16 +232,17 @@ def main():
         for n in sorted(proofs):
             visit(n, [])
 
-        imports, variables = set(), []
+        imports, context = set(), []
         for n in order:
-            path, hyps, vs = proofs[n]
+            path, hyps, ctx = proofs[n]
             imports.add(module_of(path))
-            for v in vs:
-                if v not in variables:
-                    variables.append(v)
+            for v in ctx:
+                if v not in context:
+                    context.append(v)
             for hname, callee in hyps:
                 if callee not in specs:
-                    err(f"{rel(path)}: hypothesis `{hname}`: no Spec file defines `{callee}.spec`")
+                    err(f"{rel(path)}: hypothesis `{hname}`: no Spec file defines "
+                        f"`{callee}.spec`", pkg)
                     continue
                 cpkg = specs[callee][0]
                 if cpkg != pkg:
@@ -200,25 +259,27 @@ def main():
         ]
         lines += [f"public import {m}" for m in sorted(imports)]
         lines += ["", "@[expose] public section", "", "namespace Perennial", ""]
-        lines += [v for v in variables if v.startswith("open ")]
+        lines += [v for v in context if v.startswith("open ")]
         lines += ["", "section link"]
-        lines += [v for v in variables if v.startswith("variable ")]
+        lines += [v for v in context if v.startswith("variable ")]
         for n in order:
             _, hyps, _ = proofs[n]
-            r = result_name(n)
             args = "".join(f" {result_name(c)}" for _, c in hyps)
-            lines += ["", f"theorem {r} : {n}.spec (GF := GF) (hG := hG) :=",
+            lines += ["", f"theorem {result_name(n)} : {n}.spec (GF := GF) (hG := hG) :=",
                       f"  {n}.wp_proof{args}"]
         lines += ["", "end link", "", "end Perennial", ""]
         outputs[os.path.join(PROOF, pkg, "Link.lean")] = "\n".join(lines)
 
     # Link files of packages that no longer have proofs
     for path in lean_files(PROOF):
-        if os.path.basename(path) == "Link.lean" and path not in outputs:
-            err(f"{rel(path)}: a Link.lean for a package with no proofs")
+        pkg = os.path.relpath(os.path.dirname(path), PROOF)
+        if os.path.basename(path) == "Link.lean" and pkg not in packages:
+            err(f"{rel(path)}: a Link.lean for a package with no proofs", pkg)
 
+    if selected:
+        errors[:] = [(p, m) for (p, m) in errors if p is None or p in selected]
     if errors:
-        for e in errors:
+        for _, e in errors:
             print(e, file=sys.stderr)
         sys.exit(1)
 

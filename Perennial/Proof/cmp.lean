@@ -1,72 +1,11 @@
 /-
-Package initialization for `cmp`.
+The proofs of the Go `cmp` package: the shared definitions (`Base`) and the linked
+results (`Link`), and what is derived from them (`Results`).
 -/
 module
 
-public import Perennial.Proof.ProofPrelude
-public import Perennial.Code.cmp
-public import Perennial.GeneratedProof.cmp
+public import Perennial.Proof.cmp.Base
+public import Perennial.Proof.cmp.Link
+public import Perennial.Proof.cmp.Results
 
 @[expose] public section
-
-noncomputable section
-
-namespace Perennial
-
-open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
-
-namespace cmp
-
-section wps
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem : cmp.Assumptions]
-
-instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.cmp :=
-  define_is_pkg_init iprop(True)
-instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.cmp :=
-  build_get_is_pkg_init_wf
-
-theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
-    (Hinit : GetIsPkgInitProp pkg_id.cmp get_is_pkg_init) :
-    {{ ownInitializing get_is_pkg_init }}
-      (App (Val initialize') (Val #()))
-    {{ RET #(); ownInitializing get_is_pkg_init ∗
-        isPkgInit (PROP := IProp GF) pkg_id.cmp }} := by
-  wp_start as Hown
-  iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
-  iframe Hown
-  iintro Hown
-  wp_auto
-  iframe Hown
-  is_pkg_init_finish
-
-/-- `isNaN` on `uint64` is `false`: `x != x` never holds for an integer. -/
-theorem wp_isNaN_uint64 (x : w64) :
-    {{ (True : IProp GF) }}
-      (App (Val #(functions isNaN [go.uint64])) (Val #x))
-    {{ RET #false; True }} := by
-  wp_start
-  wp_auto
-  wp_end
-
-/-- `Less` on `uint64` is `<` on the unsigned values. -/
-theorem wp_Less_uint64 (x y : w64) :
-    {{ (True : IProp GF) }}
-      (App (App (Val #(functions Less [go.uint64])) (Val #x)) (Val #y))
-    {{ (b : Bool), RET #b; ⌜b = true ↔ uint.Z x < uint.Z y⌝ }} := by
-  wp_start
-  wp_auto
-  wp_apply wp_isNaN_uint64
-  iapply HΦ
-  ipureintro
-  simp
-
-end wps
-
-end cmp
-
-end Perennial
-end

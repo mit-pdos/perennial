@@ -1,51 +1,10 @@
 /-
-Package initialization of `unsafe`.
+The proofs of the Go `unsafe` package: the shared definitions (`Base`) and the linked
+results (`Link`), `unsafe.wp_<F>` for each function `F`.
 -/
 module
 
-public import Perennial.Proof.ProofPrelude
-public import Perennial.Code.«unsafe»
-public import Perennial.GeneratedProof.«unsafe»
+public import Perennial.Proof.«unsafe».Base
+public import Perennial.Proof.«unsafe».Link
 
 @[expose] public section
-
-noncomputable section
-
-namespace Perennial
-
-open Iris Iris.BI Iris.ProgramLogic Iris.Std
-
-namespace «unsafe»
-
-section wps
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
-variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem : «unsafe».Assumptions]
-
-instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.«unsafe» :=
-  define_is_pkg_init iprop(True)
-instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.«unsafe» :=
-  build_get_is_pkg_init_wf
-
-theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
-    (Hinit : GetIsPkgInitProp pkg_id.«unsafe» get_is_pkg_init) :
-    {{ ownInitializing get_is_pkg_init }}
-      (App (Val initialize') (Val #()))
-    {{ RET #(); ownInitializing get_is_pkg_init ∗
-        isPkgInit (PROP := IProp GF) pkg_id.«unsafe» }} := by
-  wp_start as Hown
-  iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
-  iframe Hown
-  iintro Hown
-  wp_auto
-  iframe Hown
-  is_pkg_init_finish
-
-end wps
-
-end «unsafe»
-
-end Perennial
-end

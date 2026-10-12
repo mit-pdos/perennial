@@ -743,7 +743,7 @@ theorem wp_Errorf (format : GoString) (args_sl : GoSlice) (args : List GoAny)
         □ ∀ Φ : val → IProp GF, ▷ (∀ str : GoString, Φ #str) -∗
           WP (App (Val #(methods err.ty go!"Error" err.v)) (Val #())) {{ Φ }} }} := by
   wp_start as _
-  wp_apply errors.wp_New as %err #Herr
+  wp_apply errors.wp_New as %err ⟨-, #Herr⟩
   iapply HΦ
   imodintro
   iintro %Φ HΦ
