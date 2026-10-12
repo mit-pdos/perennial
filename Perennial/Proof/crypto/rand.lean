@@ -94,6 +94,7 @@ theorem wp_Int (rdr : GoInterface) (max : Loc) (mz : Int) (Hmz : 0 < mz ∧ mz <
   rw [decide_eq_false (show ¬ uint.Z (W64 (2 ^ 63)) ≤ uint.Z m by word)]
   wp_auto
   wp_apply wp_ArbitraryInt as %r _
+  rw [if_neg (show ¬ uint.Z m = 0 by omega)]
   wp_apply math.big.wp_NewInt as %v Hv
   ispecialize HΦ $$ %v %(sint.Z (r % m))
   iapply HΦ

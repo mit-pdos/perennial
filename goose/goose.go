@@ -698,19 +698,39 @@ func (ctx *Ctx) binExpr(e *ast.BinaryExpr) (expr glang.Expr) {
 			return ctx.constantLiteral(e)
 		}
 	}
+	var y glang.Expr
+	if _, ok := shiftOps[e.Op]; ok {
+		y = ctx.shiftCount(e.Y, yT)
+	} else {
+		y = ctx.handleImplicitConversion(e.Y, yT, compType, ctx.expr(e.Y))
+	}
 	expr = glang.BinaryExpr{
 		X: ctx.handleImplicitConversion(e.X, xT, compType, ctx.expr(e.X)),
 		Op: glang.BinOp{
 			OpId: op,
 			Type: ctx.glangType(e, compType),
 		},
-		Y: ctx.handleImplicitConversion(e.Y, yT, compType, ctx.expr(e.Y)),
+		Y: y,
 	}
 
 	// FIXME: might need to do a conversion here. Handle e.g. interface
 	// conversion of (x < 10) as well as conversion of (x + 10).
 	// expr = ctx.handleImplicitConversion(e, compType, ctx.typeOf(e), expr)
 	return expr
+}
+
+// shiftCount translates the count y of a shift x << y or x >> y to the uint64
+// that the shift rules of the semantics take, whatever the types of x and y (a
+// count of at least x's width shifts every bit out; converting y to x's type
+// would truncate it). An unsigned or untyped constant y is converted; a signed
+// y goes through go.shiftCount, which panics if it is negative.
+func (ctx *Ctx) shiftCount(y ast.Expr, yT types.Type) glang.Expr {
+	e := ctx.expr(y)
+	if b, ok := yT.Underlying().(*types.Basic); ok &&
+		b.Info()&types.IsInteger != 0 && b.Info()&(types.IsUnsigned|types.IsUntyped) == 0 {
+		return glang.NewCallExpr(glang.VerbatimExpr("go.shiftCount"), ctx.glangType(y, yT), e)
+	}
+	return ctx.handleImplicitConversion(y, yT, types.Typ[types.Uint64], e)
 }
 
 func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
@@ -760,9 +780,6 @@ func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
 
 func (ctx *Ctx) unaryExpr(e *ast.UnaryExpr, multipleBindings bool) glang.Expr {
 	if e.Op == token.NOT {
-		return glang.NotExpr{X: ctx.expr(e.X)}
-	}
-	if e.Op == token.XOR {
 		return glang.NotExpr{X: ctx.expr(e.X)}
 	}
 	if e.Op == token.AND {

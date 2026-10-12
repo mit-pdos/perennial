@@ -354,11 +354,11 @@ noncomputable def xorshift.Next.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift.ty))) (Val #(17 : Int)))))))))))))
+  (App (Val (GoInstruction (GoStore xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(17 : Int)))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftr xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift.ty))) (Val #(7 : Int)))))))))))))
+  (App (Val (GoInstruction (GoStore xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftr xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(7 : Int)))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt xorshift.ty))) (Val #(13 : Int)))))))))))))))
+  (App (Val (GoInstruction (GoStore xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(13 : Int)))))))))))))))
 
 /-- go: sort.go:188:6 -/
 noncomputable def nextPowerOfTwo.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -366,7 +366,7 @@ noncomputable def nextPowerOfTwo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (Let "length" (App (Val (GoInstruction (GoAlloc go.int))) (Var "length"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoShiftl go.uint))) (Pair (Val #(W64 1)) (App (Val (GoInstruction (Convert go.int go.uint))) (Let "$a0" (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoLoad go.int))) (Var "length")))
+  (App (Val (GoInstruction (GoOp GoShiftl go.uint))) (Pair (Val #(W64 1)) (App (Val (go.shiftCount go.int)) (Let "$a0" (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoLoad go.int))) (Var "length")))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.math.bits.Len []))) (Val #())) (Var "$a0"))))))))))
 
 /-- insertionSortCmpFunc sorts data[a:b] using insertion sort.
@@ -1599,7 +1599,7 @@ noncomputable def symMergeCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoT
   (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val #(1 : Int))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
   (Let "mid" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "mid")) (App (Val (GoInstruction (GoLoad go.int))) (Var "m"))))
@@ -1651,7 +1651,7 @@ noncomputable def symMergeCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoT
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "end") (Var "$r0")))))))))
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (App (Val (GoInstruction (GoLoad go.int))) (Var "r")))))) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (App (Val (GoInstruction (GoLoad go.int))) (Var "r"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val #(1 : Int))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (App (Val (GoInstruction (GoLoad go.int))) (Var "r"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
   (Let "c" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "p")) (App (Val (GoInstruction (GoLoad go.int))) (Var "c")))))))
@@ -1718,7 +1718,7 @@ noncomputable def symMergeCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoT
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "k") (Var "$r0"))))))))))
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val #(1 : Int))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
   (Let "h" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "m")))))
@@ -1770,7 +1770,7 @@ noncomputable def symMergeCmpFunc.impl [FfiSyntax] [GoGlobalContext] (E : go.GoT
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "k") (Var "$r0"))))))))))
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val #(1 : Int))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
   (Let "h" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "h")))))
@@ -3032,7 +3032,7 @@ noncomputable def symMergeOrdered.impl [FfiSyntax] [GoGlobalContext] (E : go.GoT
   (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val #(1 : Int))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "b"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
   (Let "mid" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "mid")) (App (Val (GoInstruction (GoLoad go.int))) (Var "m"))))
@@ -3081,7 +3081,7 @@ noncomputable def symMergeOrdered.impl [FfiSyntax] [GoGlobalContext] (E : go.GoT
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "end") (Var "$r0")))))))))
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (App (Val (GoInstruction (GoLoad go.int))) (Var "r")))))) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (App (Val (GoInstruction (GoLoad go.int))) (Var "r"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val #(1 : Int))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "start")) (App (Val (GoInstruction (GoLoad go.int))) (Var "r"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
   (Let "c" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "p")) (App (Val (GoInstruction (GoLoad go.int))) (Var "c")))))))
@@ -3148,7 +3148,7 @@ noncomputable def symMergeOrdered.impl [FfiSyntax] [GoGlobalContext] (E : go.GoT
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "k") (Var "$r0"))))))))))
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val #(1 : Int))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
   (Let "h" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "m")))))
@@ -3200,7 +3200,7 @@ noncomputable def symMergeOrdered.impl [FfiSyntax] [GoGlobalContext] (E : go.GoT
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "k") (Var "$r0"))))))))))
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j")))))) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint))) (Val #(1 : Int))))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint go.int))) (App (Val (GoInstruction (GoOp GoShiftr go.uint))) (Pair (App (Val (GoInstruction (Convert go.int go.uint))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))))
   (Let "h" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (Let "$a0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType E)))) (Var "data")) (App (Val (GoInstruction (GoLoad go.int))) (Var "h")))))

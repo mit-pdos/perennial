@@ -712,6 +712,7 @@ var leanHeads = map[string]leanHead{
 	"map.insert":          {kind: headValFn, name: "map.insert", nTerm: 1},
 	"package.init":        {kind: headValFn, name: "package.init", nTerm: 1},
 	"go.GlobalAlloc":      {kind: headValFn, name: "go.GlobalAlloc", nTerm: 2},
+	"go.shiftCount":       {kind: headValFn, name: "go.shiftCount", nTerm: 1},
 	"exception_do":        {kind: headVal, name: "exceptionDo"},
 	"with_defer:":         {kind: headWithDefer},
 	"with_defer_recover:": {kind: headWithDeferRecover},

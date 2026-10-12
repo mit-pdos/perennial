@@ -9,8 +9,26 @@ func LogicalAndEqualityOperators(b1 bool, x uint64) bool {
 }
 
 func ArithmeticShifts(x uint32, y uint64) uint64 {
-	return 0
-	// return uint64(x<<3) + (y << uint64(x)) + (y << 1)
+	return uint64(x<<3) + (y << uint64(x)) + (y << 1)
+}
+
+// The count of a shift is a uint64, not converted to the type of the shifted
+// operand: uint8(1) << uint64(256) is 0.
+func ShiftWideCount(x uint8, s uint64) uint8 {
+	return x << s
+}
+
+// A signed count goes through go.shiftCount, which panics if it is negative.
+func ShiftSignedCount(x uint32, s int) uint32 {
+	return x >> s
+}
+
+func SignedShiftRight(x int8, s uint8) int8 {
+	return x >> s
+}
+
+func Complement(x uint64, y int32) uint64 {
+	return ^x + uint64(^y)
 }
 
 func BitwiseOps(x uint32, y uint64) uint64 {

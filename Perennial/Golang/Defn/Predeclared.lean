@@ -3,9 +3,22 @@ Go's predeclared identifiers and the
 semantics of the predeclared types.
 
 Word operations: add/sub/mul are `+ - *`, unsigned div/mod are `/ %`, signed
-div/mod are `BitVec.sdiv/srem`, and/or/xor are `&&& ||| ^^^`, left and logical
-right shift are `<<< >>>`, arithmetic right shift is `BitVec.sshiftRight'`,
-negation is `-` and bitwise not is `~~~`.
+div/mod are `BitVec.sdiv/srem` (truncated: Go's `/` rounds towards zero and `%`
+has the sign of the dividend; `MinInt / -1` wraps to `MinInt`, remainder 0),
+and/or/xor are `&&& ||| ^^^`, left and logical right shift are `<<< >>>`,
+arithmetic right shift is `BitVec.sshiftRight'`, negation is `-` and bitwise
+not is `~~~`.
+
+Integer division and remainder by zero are a run-time panic in Go (spec,
+"Integer operators"): `Panic "integer divide by zero"` (stuck, like the other
+run-time panics of the model). The condition is `uint.Z v2 = 0` (`sint.Z v2 = 0`
+at the signed types), the form arithmetic facts about the divisor take.
+
+Shifts (spec, "Operators" and "Integer operators"): the count of `x << y` and
+`x >> y` is a `w64` whatever the types of `x` and `y`: goose converts an
+unsigned (or constant) `y` to `uint64`, and a signed one through `shiftCount`,
+which panics on a negative count. A count of at least the width of `x` shifts
+every bit out (`<<<`, `>>>` give `0`, `sshiftRight'` the sign).
 -/
 module
 
@@ -177,6 +190,18 @@ class ProphIdSemantics [GoSemanticsFunctions] : Prop where
 attribute [instance] ProphIdSemantics.underlying_proph_id ProphIdSemantics.go_zero_val_proph_id
 export ProphIdSemantics (underlying_proph_id go_zero_val_proph_id)
 
+section shift_count
+
+/-- The count of a shift `x << y` or `x >> y` whose right operand `y` has the signed integer
+type `t` (goose applies it to `y`): Go panics if `y` is negative ("negative shift amount"),
+and otherwise shifts by `y`'s value, here as the `uint64` that the shift rules take
+(`go.Int32Semantics.shiftl_int32`, ...). An unsigned `y` is converted to `uint64` directly. -/
+def shiftCount (t : go.GoType) : val :=
+  λ: "y", if: Convert t go.int64 "y" <⟨go.int64⟩ #(W64 0) then Panic "negative shift amount"
+    else Convert t go.uint64 "y"
+
+end shift_count
+
 class UntypedIntSemantics [GoSemanticsFunctions] : Prop where
   underlying_untyped_int : go.untypedInt ↓u go.untypedInt
   neg_untyped_int (v : Int) : ⟦GoUnOp GoNeg go.untypedInt, #v⟧ ⤳ #(-v)
@@ -216,8 +241,10 @@ class IntSemantics [GoSemanticsFunctions] : Prop where
   plus_int (v1 v2 : w64) : ⟦GoOp GoPlus go.int, (#v1, #v2)⟧ ⤳[under] #(v1 + v2)
   sub_int (v1 v2 : w64) : ⟦GoOp GoSub go.int, (#v1, #v2)⟧ ⤳[under] #(v1 - v2)
   mul_int (v1 v2 : w64) : ⟦GoOp GoMul go.int, (#v1, #v2)⟧ ⤳[under] #(v1 * v2)
-  div_int (v1 v2 : w64) : ⟦GoOp GoDiv go.int, (#v1, #v2)⟧ ⤳[under] #(BitVec.sdiv v1 v2)
-  remainder_int (v1 v2 : w64) : ⟦GoOp GoRemainder go.int, (#v1, #v2)⟧ ⤳[under] #(BitVec.srem v1 v2)
+  div_int (v1 v2 : w64) : ⟦GoOp GoDiv go.int, (#v1, #v2)⟧
+    ⤳[under] (if sint.Z v2 = 0 then Panic "integer divide by zero" else #(BitVec.sdiv v1 v2))
+  remainder_int (v1 v2 : w64) : ⟦GoOp GoRemainder go.int, (#v1, #v2)⟧
+    ⤳[under] (if sint.Z v2 = 0 then Panic "integer divide by zero" else #(BitVec.srem v1 v2))
   and_int (v1 v2 : w64) : ⟦GoOp GoAnd go.int, (#v1, #v2)⟧ ⤳[under] #(v1 &&& v2)
   bitclear_int (v1 v2 : w64) : ⟦GoOp GoBitClear go.int, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_int (v1 v2 : w64) : ⟦GoOp GoOr go.int, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
@@ -273,9 +300,10 @@ class Int64Semantics [GoSemanticsFunctions] : Prop where
   plus_int64 (v1 v2 : w64) : ⟦GoOp GoPlus go.int64, (#v1, #v2)⟧ ⤳[under] #(v1 + v2)
   sub_int64 (v1 v2 : w64) : ⟦GoOp GoSub go.int64, (#v1, #v2)⟧ ⤳[under] #(v1 - v2)
   mul_int64 (v1 v2 : w64) : ⟦GoOp GoMul go.int64, (#v1, #v2)⟧ ⤳[under] #(v1 * v2)
-  div_int64 (v1 v2 : w64) : ⟦GoOp GoDiv go.int64, (#v1, #v2)⟧ ⤳[under] #(BitVec.sdiv v1 v2)
+  div_int64 (v1 v2 : w64) : ⟦GoOp GoDiv go.int64, (#v1, #v2)⟧
+    ⤳[under] (if sint.Z v2 = 0 then Panic "integer divide by zero" else #(BitVec.sdiv v1 v2))
   remainder_int64 (v1 v2 : w64) : ⟦GoOp GoRemainder go.int64, (#v1, #v2)⟧
-    ⤳[under] #(BitVec.srem v1 v2)
+    ⤳[under] (if sint.Z v2 = 0 then Panic "integer divide by zero" else #(BitVec.srem v1 v2))
   and_int64 (v1 v2 : w64) : ⟦GoOp GoAnd go.int64, (#v1, #v2)⟧ ⤳[under] #(v1 &&& v2)
   bitclear_int64 (v1 v2 : w64) : ⟦GoOp GoBitClear go.int64, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_int64 (v1 v2 : w64) : ⟦GoOp GoOr go.int64, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
@@ -333,15 +361,16 @@ class Int32Semantics [GoSemanticsFunctions] : Prop where
   plus_int32 (v1 v2 : w32) : ⟦GoOp GoPlus go.int32, (#v1, #v2)⟧ ⤳[under] #(v1 + v2)
   sub_int32 (v1 v2 : w32) : ⟦GoOp GoSub go.int32, (#v1, #v2)⟧ ⤳[under] #(v1 - v2)
   mul_int32 (v1 v2 : w32) : ⟦GoOp GoMul go.int32, (#v1, #v2)⟧ ⤳[under] #(v1 * v2)
-  div_int32 (v1 v2 : w32) : ⟦GoOp GoDiv go.int32, (#v1, #v2)⟧ ⤳[under] #(BitVec.sdiv v1 v2)
+  div_int32 (v1 v2 : w32) : ⟦GoOp GoDiv go.int32, (#v1, #v2)⟧
+    ⤳[under] (if sint.Z v2 = 0 then Panic "integer divide by zero" else #(BitVec.sdiv v1 v2))
   remainder_int32 (v1 v2 : w32) : ⟦GoOp GoRemainder go.int32, (#v1, #v2)⟧
-    ⤳[under] #(BitVec.srem v1 v2)
+    ⤳[under] (if sint.Z v2 = 0 then Panic "integer divide by zero" else #(BitVec.srem v1 v2))
   and_int32 (v1 v2 : w32) : ⟦GoOp GoAnd go.int32, (#v1, #v2)⟧ ⤳[under] #(v1 &&& v2)
   bitclear_int32 (v1 v2 : w32) : ⟦GoOp GoBitClear go.int32, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_int32 (v1 v2 : w32) : ⟦GoOp GoOr go.int32, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_int32 (v1 v2 : w32) : ⟦GoOp GoXor go.int32, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_int32 (v1 v2 : w32) : ⟦GoOp GoShiftl go.int32, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_int32 (v1 v2 : w32) : ⟦GoOp GoShiftr go.int32, (#v1, #v2)⟧
+  shiftl_int32 (v1 : w32) (v2 : w64) : ⟦GoOp GoShiftl go.int32, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
+  shiftr_int32 (v1 : w32) (v2 : w64) : ⟦GoOp GoShiftr go.int32, (#v1, #v2)⟧
     ⤳[under] #(BitVec.sshiftRight' v1 v2)
 
   neg_int32 (v : w32) : ⟦GoUnOp GoNeg go.int32, #v⟧ ⤳[under] #(-v)
@@ -393,15 +422,16 @@ class Int16Semantics [GoSemanticsFunctions] : Prop where
   plus_int16 (v1 v2 : w16) : ⟦GoOp GoPlus go.int16, (#v1, #v2)⟧ ⤳[under] #(v1 + v2)
   sub_int16 (v1 v2 : w16) : ⟦GoOp GoSub go.int16, (#v1, #v2)⟧ ⤳[under] #(v1 - v2)
   mul_int16 (v1 v2 : w16) : ⟦GoOp GoMul go.int16, (#v1, #v2)⟧ ⤳[under] #(v1 * v2)
-  div_int16 (v1 v2 : w16) : ⟦GoOp GoDiv go.int16, (#v1, #v2)⟧ ⤳[under] #(BitVec.sdiv v1 v2)
+  div_int16 (v1 v2 : w16) : ⟦GoOp GoDiv go.int16, (#v1, #v2)⟧
+    ⤳[under] (if sint.Z v2 = 0 then Panic "integer divide by zero" else #(BitVec.sdiv v1 v2))
   remainder_int16 (v1 v2 : w16) : ⟦GoOp GoRemainder go.int16, (#v1, #v2)⟧
-    ⤳[under] #(BitVec.srem v1 v2)
+    ⤳[under] (if sint.Z v2 = 0 then Panic "integer divide by zero" else #(BitVec.srem v1 v2))
   and_int16 (v1 v2 : w16) : ⟦GoOp GoAnd go.int16, (#v1, #v2)⟧ ⤳[under] #(v1 &&& v2)
   bitclear_int16 (v1 v2 : w16) : ⟦GoOp GoBitClear go.int16, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_int16 (v1 v2 : w16) : ⟦GoOp GoOr go.int16, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_int16 (v1 v2 : w16) : ⟦GoOp GoXor go.int16, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_int16 (v1 v2 : w16) : ⟦GoOp GoShiftl go.int16, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_int16 (v1 v2 : w16) : ⟦GoOp GoShiftr go.int16, (#v1, #v2)⟧
+  shiftl_int16 (v1 : w16) (v2 : w64) : ⟦GoOp GoShiftl go.int16, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
+  shiftr_int16 (v1 : w16) (v2 : w64) : ⟦GoOp GoShiftr go.int16, (#v1, #v2)⟧
     ⤳[under] #(BitVec.sshiftRight' v1 v2)
 
   neg_int16 (v : w16) : ⟦GoUnOp GoNeg go.int16, #v⟧ ⤳[under] #(-v)
@@ -449,14 +479,16 @@ class Int8Semantics [GoSemanticsFunctions] : Prop where
   plus_int8 (v1 v2 : w8) : ⟦GoOp GoPlus go.int8, (#v1, #v2)⟧ ⤳[under] #(v1 + v2)
   sub_int8 (v1 v2 : w8) : ⟦GoOp GoSub go.int8, (#v1, #v2)⟧ ⤳[under] #(v1 - v2)
   mul_int8 (v1 v2 : w8) : ⟦GoOp GoMul go.int8, (#v1, #v2)⟧ ⤳[under] #(v1 * v2)
-  div_int8 (v1 v2 : w8) : ⟦GoOp GoDiv go.int8, (#v1, #v2)⟧ ⤳[under] #(BitVec.sdiv v1 v2)
-  remainder_int8 (v1 v2 : w8) : ⟦GoOp GoRemainder go.int8, (#v1, #v2)⟧ ⤳[under] #(BitVec.srem v1 v2)
+  div_int8 (v1 v2 : w8) : ⟦GoOp GoDiv go.int8, (#v1, #v2)⟧
+    ⤳[under] (if sint.Z v2 = 0 then Panic "integer divide by zero" else #(BitVec.sdiv v1 v2))
+  remainder_int8 (v1 v2 : w8) : ⟦GoOp GoRemainder go.int8, (#v1, #v2)⟧
+    ⤳[under] (if sint.Z v2 = 0 then Panic "integer divide by zero" else #(BitVec.srem v1 v2))
   and_int8 (v1 v2 : w8) : ⟦GoOp GoAnd go.int8, (#v1, #v2)⟧ ⤳[under] #(v1 &&& v2)
   bitclear_int8 (v1 v2 : w8) : ⟦GoOp GoBitClear go.int8, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_int8 (v1 v2 : w8) : ⟦GoOp GoOr go.int8, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_int8 (v1 v2 : w8) : ⟦GoOp GoXor go.int8, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_int8 (v1 v2 : w8) : ⟦GoOp GoShiftl go.int8, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_int8 (v1 v2 : w8) : ⟦GoOp GoShiftr go.int8, (#v1, #v2)⟧
+  shiftl_int8 (v1 : w8) (v2 : w64) : ⟦GoOp GoShiftl go.int8, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
+  shiftr_int8 (v1 : w8) (v2 : w64) : ⟦GoOp GoShiftr go.int8, (#v1, #v2)⟧
     ⤳[under] #(BitVec.sshiftRight' v1 v2)
 
   neg_int8 (v : w8) : ⟦GoUnOp GoNeg go.int8, #v⟧ ⤳[under] #(-v)
@@ -502,8 +534,10 @@ class UintSemantics [GoSemanticsFunctions] : Prop where
   plus_uint (v1 v2 : w64) : ⟦GoOp GoPlus go.uint, (#v1, #v2)⟧ ⤳[under] #(v1 + v2)
   sub_uint (v1 v2 : w64) : ⟦GoOp GoSub go.uint, (#v1, #v2)⟧ ⤳[under] #(v1 - v2)
   mul_uint (v1 v2 : w64) : ⟦GoOp GoMul go.uint, (#v1, #v2)⟧ ⤳[under] #(v1 * v2)
-  div_uint (v1 v2 : w64) : ⟦GoOp GoDiv go.uint, (#v1, #v2)⟧ ⤳[under] #(v1 / v2)
-  remainder_uint (v1 v2 : w64) : ⟦GoOp GoRemainder go.uint, (#v1, #v2)⟧ ⤳[under] #(v1 % v2)
+  div_uint (v1 v2 : w64) : ⟦GoOp GoDiv go.uint, (#v1, #v2)⟧
+    ⤳[under] (if uint.Z v2 = 0 then Panic "integer divide by zero" else #(v1 / v2))
+  remainder_uint (v1 v2 : w64) : ⟦GoOp GoRemainder go.uint, (#v1, #v2)⟧
+    ⤳[under] (if uint.Z v2 = 0 then Panic "integer divide by zero" else #(v1 % v2))
   and_uint (v1 v2 : w64) : ⟦GoOp GoAnd go.uint, (#v1, #v2)⟧ ⤳[under] #(v1 &&& v2)
   bitclear_uint (v1 v2 : w64) : ⟦GoOp GoBitClear go.uint, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_uint (v1 v2 : w64) : ⟦GoOp GoOr go.uint, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
@@ -558,8 +592,10 @@ class Uint64Semantics [GoSemanticsFunctions] : Prop where
   plus_uint64 (v1 v2 : w64) : ⟦GoOp GoPlus go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 + v2)
   sub_uint64 (v1 v2 : w64) : ⟦GoOp GoSub go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 - v2)
   mul_uint64 (v1 v2 : w64) : ⟦GoOp GoMul go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 * v2)
-  div_uint64 (v1 v2 : w64) : ⟦GoOp GoDiv go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 / v2)
-  remainder_uint64 (v1 v2 : w64) : ⟦GoOp GoRemainder go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 % v2)
+  div_uint64 (v1 v2 : w64) : ⟦GoOp GoDiv go.uint64, (#v1, #v2)⟧
+    ⤳[under] (if uint.Z v2 = 0 then Panic "integer divide by zero" else #(v1 / v2))
+  remainder_uint64 (v1 v2 : w64) : ⟦GoOp GoRemainder go.uint64, (#v1, #v2)⟧
+    ⤳[under] (if uint.Z v2 = 0 then Panic "integer divide by zero" else #(v1 % v2))
   and_uint64 (v1 v2 : w64) : ⟦GoOp GoAnd go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 &&& v2)
   bitclear_uint64 (v1 v2 : w64) : ⟦GoOp GoBitClear go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_uint64 (v1 v2 : w64) : ⟦GoOp GoOr go.uint64, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
@@ -616,14 +652,16 @@ class Uint32Semantics [GoSemanticsFunctions] : Prop where
   plus_uint32 (v1 v2 : w32) : ⟦GoOp GoPlus go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 + v2)
   sub_uint32 (v1 v2 : w32) : ⟦GoOp GoSub go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 - v2)
   mul_uint32 (v1 v2 : w32) : ⟦GoOp GoMul go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 * v2)
-  div_uint32 (v1 v2 : w32) : ⟦GoOp GoDiv go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 / v2)
-  remainder_uint32 (v1 v2 : w32) : ⟦GoOp GoRemainder go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 % v2)
+  div_uint32 (v1 v2 : w32) : ⟦GoOp GoDiv go.uint32, (#v1, #v2)⟧
+    ⤳[under] (if uint.Z v2 = 0 then Panic "integer divide by zero" else #(v1 / v2))
+  remainder_uint32 (v1 v2 : w32) : ⟦GoOp GoRemainder go.uint32, (#v1, #v2)⟧
+    ⤳[under] (if uint.Z v2 = 0 then Panic "integer divide by zero" else #(v1 % v2))
   and_uint32 (v1 v2 : w32) : ⟦GoOp GoAnd go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 &&& v2)
   bitclear_uint32 (v1 v2 : w32) : ⟦GoOp GoBitClear go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_uint32 (v1 v2 : w32) : ⟦GoOp GoOr go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_uint32 (v1 v2 : w32) : ⟦GoOp GoXor go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_uint32 (v1 v2 : w32) : ⟦GoOp GoShiftl go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_uint32 (v1 v2 : w32) : ⟦GoOp GoShiftr go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
+  shiftl_uint32 (v1 : w32) (v2 : w64) : ⟦GoOp GoShiftl go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
+  shiftr_uint32 (v1 : w32) (v2 : w64) : ⟦GoOp GoShiftr go.uint32, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
 
   complement_uint32 (v : w32) : ⟦GoUnOp GoComplement go.uint32, #v⟧ ⤳[under] #(~~~v)
   neg_uint32 (v : w32) : ⟦GoUnOp GoNeg go.uint32, #v⟧ ⤳[under] #(-v)
@@ -674,14 +712,16 @@ class Uint16Semantics [GoSemanticsFunctions] : Prop where
   plus_uint16 (v1 v2 : w16) : ⟦GoOp GoPlus go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 + v2)
   sub_uint16 (v1 v2 : w16) : ⟦GoOp GoSub go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 - v2)
   mul_uint16 (v1 v2 : w16) : ⟦GoOp GoMul go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 * v2)
-  div_uint16 (v1 v2 : w16) : ⟦GoOp GoDiv go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 / v2)
-  remainder_uint16 (v1 v2 : w16) : ⟦GoOp GoRemainder go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 % v2)
+  div_uint16 (v1 v2 : w16) : ⟦GoOp GoDiv go.uint16, (#v1, #v2)⟧
+    ⤳[under] (if uint.Z v2 = 0 then Panic "integer divide by zero" else #(v1 / v2))
+  remainder_uint16 (v1 v2 : w16) : ⟦GoOp GoRemainder go.uint16, (#v1, #v2)⟧
+    ⤳[under] (if uint.Z v2 = 0 then Panic "integer divide by zero" else #(v1 % v2))
   and_uint16 (v1 v2 : w16) : ⟦GoOp GoAnd go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 &&& v2)
   bitclear_uint16 (v1 v2 : w16) : ⟦GoOp GoBitClear go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_uint16 (v1 v2 : w16) : ⟦GoOp GoOr go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_uint16 (v1 v2 : w16) : ⟦GoOp GoXor go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_uint16 (v1 v2 : w16) : ⟦GoOp GoShiftl go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_uint16 (v1 v2 : w16) : ⟦GoOp GoShiftr go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
+  shiftl_uint16 (v1 : w16) (v2 : w64) : ⟦GoOp GoShiftl go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
+  shiftr_uint16 (v1 : w16) (v2 : w64) : ⟦GoOp GoShiftr go.uint16, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
 
   complement_uint16 (v : w16) : ⟦GoUnOp GoComplement go.uint16, #v⟧ ⤳[under] #(~~~v)
   neg_uint16 (v : w16) : ⟦GoUnOp GoNeg go.uint16, #v⟧ ⤳[under] #(-v)
@@ -732,14 +772,16 @@ class Uint8Semantics [GoSemanticsFunctions] : Prop where
   plus_uint8 (v1 v2 : w8) : ⟦GoOp GoPlus go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 + v2)
   sub_uint8 (v1 v2 : w8) : ⟦GoOp GoSub go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 - v2)
   mul_uint8 (v1 v2 : w8) : ⟦GoOp GoMul go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 * v2)
-  div_uint8 (v1 v2 : w8) : ⟦GoOp GoDiv go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 / v2)
-  remainder_uint8 (v1 v2 : w8) : ⟦GoOp GoRemainder go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 % v2)
+  div_uint8 (v1 v2 : w8) : ⟦GoOp GoDiv go.uint8, (#v1, #v2)⟧
+    ⤳[under] (if uint.Z v2 = 0 then Panic "integer divide by zero" else #(v1 / v2))
+  remainder_uint8 (v1 v2 : w8) : ⟦GoOp GoRemainder go.uint8, (#v1, #v2)⟧
+    ⤳[under] (if uint.Z v2 = 0 then Panic "integer divide by zero" else #(v1 % v2))
   and_uint8 (v1 v2 : w8) : ⟦GoOp GoAnd go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 &&& v2)
   bitclear_uint8 (v1 v2 : w8) : ⟦GoOp GoBitClear go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_uint8 (v1 v2 : w8) : ⟦GoOp GoOr go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)
   xor_uint8 (v1 v2 : w8) : ⟦GoOp GoXor go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 ^^^ v2)
-  shiftl_uint8 (v1 v2 : w8) : ⟦GoOp GoShiftl go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
-  shiftr_uint8 (v1 v2 : w8) : ⟦GoOp GoShiftr go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
+  shiftl_uint8 (v1 : w8) (v2 : w64) : ⟦GoOp GoShiftl go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 <<< v2)
+  shiftr_uint8 (v1 : w8) (v2 : w64) : ⟦GoOp GoShiftr go.uint8, (#v1, #v2)⟧ ⤳[under] #(v1 >>> v2)
 
   complement_uint8 (v : w8) : ⟦GoUnOp GoComplement go.uint8, #v⟧ ⤳[under] #(~~~v)
   neg_uint8 (v : w8) : ⟦GoUnOp GoNeg go.uint8, #v⟧ ⤳[under] #(-v)
@@ -811,8 +853,10 @@ class UintptrSemantics [GoSemanticsFunctions] : Prop where
   plus_uintptr (v1 v2 : w64) : ⟦GoOp GoPlus go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 + v2)
   sub_uintptr (v1 v2 : w64) : ⟦GoOp GoSub go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 - v2)
   mul_uintptr (v1 v2 : w64) : ⟦GoOp GoMul go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 * v2)
-  div_uintptr (v1 v2 : w64) : ⟦GoOp GoDiv go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 / v2)
-  remainder_uintptr (v1 v2 : w64) : ⟦GoOp GoRemainder go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 % v2)
+  div_uintptr (v1 v2 : w64) : ⟦GoOp GoDiv go.uintptr, (#v1, #v2)⟧
+    ⤳[under] (if uint.Z v2 = 0 then Panic "integer divide by zero" else #(v1 / v2))
+  remainder_uintptr (v1 v2 : w64) : ⟦GoOp GoRemainder go.uintptr, (#v1, #v2)⟧
+    ⤳[under] (if uint.Z v2 = 0 then Panic "integer divide by zero" else #(v1 % v2))
   and_uintptr (v1 v2 : w64) : ⟦GoOp GoAnd go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 &&& v2)
   bitclear_uintptr (v1 v2 : w64) : ⟦GoOp GoBitClear go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)
   or_uintptr (v1 v2 : w64) : ⟦GoOp GoOr go.uintptr, (#v1, #v2)⟧ ⤳[under] #(v1 ||| v2)

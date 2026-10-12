@@ -708,6 +708,54 @@ example (Φ : val → IProp GF) :
   rw [show W64 (uint.Z (W8 0xFF)) = W64 255 by decide]
   iexact H
 
+/-- Integer division and remainder by zero are the run-time panic "integer divide by
+zero" (stuck: `wp_PanicOp`). -/
+example (Φ : val → IProp GF) (x : w32) :
+    WP (Panic "integer divide by zero") {{ Φ }} ⊢ WP gl(#x /⟨go.uint32⟩ #(W32 0)) {{ Φ }} := by
+  iintro H
+  wp_auto
+  iexact H
+
+example (Φ : val → IProp GF) (x : w64) :
+    WP (Panic "integer divide by zero") {{ Φ }} ⊢ WP gl(#x %⟨go.int⟩ #(W64 0)) {{ Φ }} := by
+  iintro H
+  wp_auto
+  iexact H
+
+/-- Shift counts are `w64`, not truncated to the shifted operand's width:
+`uint8(1) << uint64(256) == 0`, `int8(-128) >> uint64(256) == -1`. -/
+example (Φ : val → IProp GF) :
+    Φ #(W8 0) ⊢ WP gl(#(W8 1) <<⟨go.uint8⟩ #(W64 256)) {{ Φ }} := by
+  iintro H
+  wp_auto
+  rw [show (W8 1 <<< W64 256 : w8) = W8 0 by decide]
+  iexact H
+
+example (Φ : val → IProp GF) :
+    Φ #(W8 (-1)) ⊢ WP gl(#(W8 (-128)) >>⟨go.int8⟩ #(W64 256)) {{ Φ }} := by
+  iintro H
+  wp_auto
+  rw [show BitVec.sshiftRight' (W8 (-128)) (W64 256) = W8 (-1) by decide]
+  iexact H
+
+/-- A signed shift count goes through `go.shiftCount`: a negative one panics (stuck), a
+non-negative one is its value. -/
+example (Φ : val → IProp GF) :
+    WP (Panic "negative shift amount") {{ Φ }} ⊢
+      WP (App (Val (go.shiftCount go.int)) (Val #(W64 (-1)))) {{ Φ }} := by
+  iintro H
+  unfold go.shiftCount
+  wp_auto
+  iexact H
+
+example (Φ : val → IProp GF) :
+    Φ #(W64 3) ⊢ WP (App (Val (go.shiftCount go.int8)) (Val #(W8 3))) {{ Φ }} := by
+  iintro H
+  unfold go.shiftCount
+  wp_auto
+  rw [show W64 (sint.Z (W8 3)) = W64 3 by decide]
+  iexact H
+
 end int_op_tests
 
 end Perennial
