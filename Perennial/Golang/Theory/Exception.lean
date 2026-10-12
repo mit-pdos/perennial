@@ -72,17 +72,6 @@ instance pure_panic_val (v1 p : val) :
     wp_call_lc Hlc
     iapply Hwp $$ Hlc
 
-/-- The body of `go.panic`: `panic(p)` is the outcome `panicVal p`. -/
-instance pure_panic_impl (p : val) :
-    PureWp (G := G) (L := L) True (App (Val panic.impl) (Val p)) (Val (panicVal p)) where
-  pure_wp_wp s E Φ K _ := by
-    rw [panicVal_unseal]
-    simp only [panicValDef]
-    unfold panic.impl
-    iintro Hwp
-    wp_call_lc Hlc
-    iapply Hwp $$ Hlc
-
 instance pure_exception_do_return_v (v : val) :
     PureWp (G := G) (L := L) True (App (Val exceptionDo) (Val (returnVal v))) (Val v) where
   pure_wp_wp s E Φ K _ := by

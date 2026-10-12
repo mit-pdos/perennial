@@ -67,14 +67,19 @@ theorem wp_with_defer_recover (r e : Expr) (Φ : val → IProp GF) :
   wp_pures
   iapply Hwp $$ Hdefer Hpnc
 
-/-- `panic(p)` (`p` an `interface{}`, to which Goose converts the argument): its
-outcome is `panicVal p`, which ends the function body (`;;;` and the loops pass
-it on, `pure_panic_val`, `wp_for_post_panic`). -/
-theorem wp_panic (p : val) (Φ : val → IProp GF) :
-    Φ (panicVal p) ⊢ WP (App (Val (@! go.panic)) (Val p)) {{ Φ }} := by
+/-- `panic(p)` (`p` an `interface{}`, to which Goose converts the argument), for
+a non-nil `p = .ok i` (`panic(nil)` is stuck, `panic.impl`): its outcome is
+`panicVal #p`, which ends the function body (`;;;` and the loops pass it on,
+`pure_panic_val`, `wp_for_post_panic`). -/
+theorem wp_panic (i : GoInterfaceOk) (Φ : val → IProp GF) :
+    Φ (panicVal #(GoInterface.ok i)) ⊢
+      WP (App (Val (@! go.panic)) (Val #(GoInterface.ok i))) {{ Φ }} := by
   iintro HΦ
   rw [func_unfold]
+  unfold panic.impl
   wp_pures
+  rw [panicVal_unseal]
+  simp only [panicValDef]
   iexact HΦ
 
 /-- `recover()` in a deferred function: it returns the value of the panic being

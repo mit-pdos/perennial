@@ -614,8 +614,8 @@ theorem wp_simpleSpawn' [sync.Assumptions] :
 GooseLang has no panic construct: `panic(p)` is an outcome of the exception
 monad of function bodies (`Golang/Defn/Exception.lean`), `panicVal p =
 ("panic", p)`, next to `executeVal` (`do:`) and `returnVal v` (`return:`).
-`wp_panic : Φ (panicVal p) ⊢ WP (@! go.panic p) {{ Φ }}` (`p` is the argument
-converted to an `interface{}`), and `;;;` passes the outcome on
+`wp_panic : Φ (panicVal #(.ok i)) ⊢ WP (@! go.panic #(.ok i)) {{ Φ }}` (the
+argument converted to an `interface{}`, not `nil`), and `;;;` passes the outcome on
 (`pure_panic_val`), as `return:` is: the rest of the body is skipped. In a loop
 body, `wp_for_post` (`wp_for_post_panic`) ends the loop with it, and a
 `for range` over a map likewise (`forMapPostcondition`).
@@ -658,10 +658,12 @@ to a value or is stuck, so a program that recovers a callee's panic (Go runs the
 caller's deferred functions, which may recover it) is not provable, and neither
 is one that lets a panic escape a goroutine or `main` (in Go, it crashes the
 program). A specification `{{ P }} f args {{ RET v; Q }}` therefore says that
-`f` does not panic, except where its own deferred functions recover it. Note
-also that `panic(nil)` (an `interface{}` `nil`) is indistinguishable from not
-panicking in the `$panic` cell, so it is recovered without a `recover()` (Go
-1.21 turns it into a `*runtime.PanicNilError`).
+`f` does not panic, except where its own deferred functions recover it. `panic(nil)` is
+stuck (Go 1.21 turns it into a run-time panic with a `*runtime.PanicNilError`,
+and a `nil` in the `$panic` cell means "not panicking"), so `wp_panic` takes a
+non-nil value `.ok i`. Goose does not translate a `panic(..)` as the post
+statement of a `for` (`doFor` runs the post statement under `do:`, which would
+drop the panic), nor `defer panic(..)` or `go panic(..)`.
 
 ### Ghost state and invariants
 
