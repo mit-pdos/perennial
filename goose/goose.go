@@ -104,6 +104,8 @@ type Ctx struct {
 	importAssumptions map[string]string
 
 	inits []glang.Expr
+	// whether an init function is trusted (its model is `init.impl`)
+	trustedInit bool
 
 	filter declfilter.DeclFilter
 	out    outputDecls
@@ -2507,6 +2509,17 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 			})
 			ctx.functions = append(ctx.functions, d)
 		}
+	}
+
+	if d.Recv == nil && d.Name.Name == "init" && ctx.filter.GetAction(funcName) == declfilter.Trust {
+		// A trusted init's model is `init.impl` in the package's trusted code,
+		// run in the init's place; one name cannot stand for several inits.
+		if ctx.trustedInit {
+			ctx.unsupported(d, "more than one trusted init function")
+		}
+		ctx.trustedInit = true
+		ctx.inits = append(ctx.inits, glang.VerbatimExpr("init.impl"))
+		return
 	}
 
 	if ctx.filter.GetAction(funcName) != declfilter.Translate {
