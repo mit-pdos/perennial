@@ -25,8 +25,13 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : io.Assumptions]
 
+/-- The package-initialized state: `Discard` holds a fixed `Writer` (Go never writes it
+after initialization; `go.etcd.io/raft/v3`'s initializer loads it). -/
+abbrev isInit : IProp GF :=
+  iprop(∃ w : GoInterface, typedPointsto (globalAddr Discard) w DFrac.discard)
+
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.io :=
-  define_is_pkg_init iprop(True)
+  define_is_pkg_init isInit
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.io :=
   build_get_is_pkg_init_wf
 
@@ -44,16 +49,19 @@ theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
   repeat (wp_apply wp_GlobalAlloc (V := GoInterface) _ go.error as _)
   wp_apply wp_GlobalAlloc (V := sync.Pool) blackHolePool sync.Pool.ty as _
   repeat (wp_apply wp_GlobalAlloc (V := GoInterface) _ go.error as _)
-  wp_apply wp_GlobalAlloc (V := GoInterface) Discard Writer.ty as _
+  wp_apply wp_GlobalAlloc (V := GoInterface) Discard Writer.ty as HD
   repeat (wp_apply wp_GlobalAlloc (V := GoInterface) _ go.error as _)
   wp_apply sync.wp_initialize' _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hsync⟩
   wp_apply errors.wp_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #Herrors⟩
   repeat (wp_apply errors.wp_New as %_ _)
   rw [recv_eq_func_mk BAnon BAnon]
   wp_auto
+  ipersist HD
   wp_apply errors.wp_New as %_ _
   iframe Hown
   is_pkg_init_finish
+  iexists _
+  iexact HD
 
 end wps
 
