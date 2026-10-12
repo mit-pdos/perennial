@@ -478,10 +478,9 @@ theorem isErrorTree_leaf (ii : GoInterfaceOk) {T' : Type} [ZeroVal T']
 `err` as `AsType[T]` does (its precondition is `wp_AsType`'s), calling the `As` methods with
 `target` itself, and stores a matching error in `*l`; it finds the target's type by reflection
 (`internal/reflectlite`, not translated). Go's `As` panics if `T` is neither an interface type
-nor implements `error` (`errors: *target must be interface or implement error`), so the axiom
-is false as stated for such a `T`; a caller must only use it for a `T` that is one or the other
-(`go vet` checks it). The premise is not stated because the model's method sets
-(`methodSet`) are uninterpreted, so that a caller could not discharge it.
+nor implements `error` (`errors: *target must be interface or implement error`); the premise
+`hT` excludes that case. (A caller discharges it from method-set facts about `T`, as it does
+for `isLeafError`. `As` also panics on a `nil` target, which `l ↦ v` excludes.)
 
 It is not proved from a translation of `As` as `Is` is (`wp_Is`): `As` and `as` use reflection
 throughout (`reflectlite.ValueOf(target)`, `Kind`, `IsNil`, `Elem`, `Implements(errorType)`,
@@ -492,7 +491,8 @@ axiom wp_As [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext
     [go_gctx : GoGlobalContext] {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
     [sem : go.Semantics] [package_sem : errors.Assumptions]
     (S : GoError → Prop) (err : GoError) (l : Loc) {T' : Type} [ZeroVal T']
-    [TypedPointsto (GF := GF) T'] {T : go.GoType} [IntoValTyped (GF := GF) T' T] (v : T') :
+    [TypedPointsto (GF := GF) T'] {T : go.GoType} [IntoValTyped (GF := GF) T' T] (v : T')
+    (hT : go.isInterfaceType (underlying T) = true ∨ go.typeSetContains T go.error = true) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.errors ∗ isErrorTree (GF := GF) S T' T ∗ ⌜S err⌝ ∗
         l ↦ v }}
       (App (App (Val (@! As)) (Val #err)) (Val #(interface.mkOk (go.PointerType T) #l)))
