@@ -649,7 +649,7 @@ instance intoVal_typed_slice (t : go.GoType) :
     IntoValTypedUnderlying (GF := GF) GoSlice (go.SliceType t) := by
   solve_into_val_typed
 
-instance intoVal_typed_interface (elems : List go.InterfaceElem) :
+instance intoVal_typed_interface [go.InterfaceReprSemantics] (elems : List go.InterfaceElem) :
     IntoValTypedUnderlying (GF := GF) GoInterface (go.InterfaceType elems) := by
   solve_into_val_typed
 

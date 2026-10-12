@@ -118,7 +118,7 @@ variable [FfiSemantics ext ffi] [GoGlobalContext] {GF : BundledGFunctors}
 example [GooseGpreS ffi GF] (T : Nat) (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
     (hφ : ∀ p, ¬ φ (PanicV p))
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
-    (Hbm : σ.bmem = default)
+    (Hbm : σ.bmem = staticImage)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF ≤ 2 ^ 64 →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →

@@ -41,6 +41,7 @@ noncomputable def typeSetContains (t t' : go.GoType) : Bool :=
   | _ => decide (t = t')
 
 class InterfaceSemantics : Prop where
+  [iface_repr : InterfaceReprSemantics]
   is_comparable_interface (elems : List go.InterfaceElem) :
     ⟦CheckComparable (go.InterfaceType elems), #()⟧ ⤳[under] #()
   go_eq_interface (elems : List go.InterfaceElem) (i1 i2 : GoInterface) :
@@ -95,7 +96,7 @@ class InterfaceSemantics : Prop where
      | interface.nil => Panic "nil interface"
      | interface.ok i => #(methods i.ty m i.v))
 
-attribute [instance] InterfaceSemantics.is_comparable_interface InterfaceSemantics.go_eq_interface
+attribute [instance] InterfaceSemantics.iface_repr InterfaceSemantics.is_comparable_interface InterfaceSemantics.go_eq_interface
   InterfaceSemantics.convert_to_interface InterfaceSemantics.type_assert_step
   InterfaceSemantics.type_assert2_interface_step InterfaceSemantics.method_interface_ok
 export InterfaceSemantics (is_comparable_interface go_eq_interface convert_to_interface

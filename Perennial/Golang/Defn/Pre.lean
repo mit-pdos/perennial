@@ -23,15 +23,14 @@ proof actually uses the below semantics. -/
 class PreSemantics [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] :
     Prop where
   [core_sem : go.CoreSemantics]
-  [interface_sem : go.InterfaceSemantics]
   [array_sem : go.ArraySemantics]
   [map_sem : go.MapSemantics]
   [slice_sem : go.SliceSemantics]
   [predeclared_sem : go.PredeclaredSemantics]
 
-attribute [instance] PreSemantics.core_sem PreSemantics.interface_sem PreSemantics.array_sem
+attribute [instance] PreSemantics.core_sem PreSemantics.array_sem
   PreSemantics.map_sem PreSemantics.slice_sem PreSemantics.predeclared_sem
-export PreSemantics (interface_sem array_sem map_sem slice_sem predeclared_sem)
+export PreSemantics (array_sem map_sem slice_sem predeclared_sem)
 
 end go
 

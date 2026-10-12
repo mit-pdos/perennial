@@ -61,7 +61,7 @@ a final value of the main thread satisfies `φ`, no thread is stuck, and no
 thread has an unrecovered panic. -/
 theorem grove_ffi_single_node_adequacy [GoGlobalContext] {GF : BundledGFunctors}
     [hPre : GooseGpreS grove_model GF] (N T : Nat) (e : Expr) (σ : state) (g : GlobalState)
-    (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p)) (Hbm : σ.bmem = default)
+    (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p)) (Hbm : σ.bmem = staticImage)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →

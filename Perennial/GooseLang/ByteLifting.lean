@@ -441,15 +441,65 @@ theorem frozen_insertRange_frozen (m : GMap w64 ByteCell) (a : w64) (bs : List w
     iapply (BigSepL.bigSepL_lookup (Φ := fun i b => bytePointsto (byteAddr a i) .discard b)
       (i := i) (x := b) (by rw [List.getElem?_eq_getElem hi', hc.2])) $$ Hbs
 
-theorem bmemWf_writeRange {m : ByteMem} (a : w64) (cs : List ByteCell) (h : BmemWf m) :
-    BmemWf (m.writeRange a cs) :=
+/-- Rewriting a range keeps the static bytes when no frozen cell of it changes
+its byte or stops being frozen. -/
+theorem staticAgree_insertRange {m : ByteMem} {a : w64} {old new : List ByteCell}
+    (h : StaticAgree m) (hcs : LookupRange m.bytes a old) (hlen : old.length < 2 ^ 64)
+    (hnew : new.length = old.length)
+    (hf : ∀ i (hi : i < old.length) (hi' : i < new.length), old[i].1.IsFrozen →
+      ∃ n, new[i] = (.Frozen n, old[i].2)) :
+    StaticAgree (m.writeRange a new) := by
+  intro x b hx
+  obtain ⟨n, hn⟩ := h x b hx
+  show ∃ n, insertRange m.bytes a new !! x = some (.Frozen n, b)
+  by_cases hin : ∃ i < new.length, x = byteAddr a i
+  · obtain ⟨i, hi, rfl⟩ := hin
+    have hi0 : i < old.length := hnew ▸ hi
+    have hold := (lookupRange_iff _ _ _).1 hcs i hi0
+    rw [hn] at hold
+    have hold' : old[i] = (.Frozen n, b) := (Option.some.inj hold).symm
+    obtain ⟨n', hn'⟩ := hf i hi0 hi (by rw [hold']; trivial)
+    refine ⟨n', ?_⟩
+    rw [lookup_insertRange_getElem _ _ _ (by omega) i hi, hn', hold']
+  · refine ⟨n, ?_⟩
+    rw [lookup_insertRange_of_ne _ _ _ _ (fun i hi he => hin ⟨i, hi, he.symm⟩)]; exact hn
+
+/-- `staticAgree_insertRange`'s side condition when no old cell is frozen. -/
+theorem frozenKept_of_notFrozen {old new : List ByteCell} (hnf : ∀ c ∈ old, ¬ c.1.IsFrozen) :
+    ∀ i (hi : i < old.length) (hi' : i < new.length), old[i].1.IsFrozen →
+      ∃ n, new[i] = (.Frozen n, old[i].2) :=
+  fun i hi _ hfz => absurd hfz (hnf _ (List.getElem_mem hi))
+
+/-- `staticAgree_insertRange`'s side condition for a cellwise update. -/
+theorem frozenKept_of_map {old : List ByteCell} (f : ByteCell → ByteCell)
+    (hf : ∀ c, c.1.IsFrozen → ∃ n, f c = (.Frozen n, c.2)) :
+    ∀ i (hi : i < old.length) (hi' : i < (old.map f).length), old[i].1.IsFrozen →
+      ∃ n, (old.map f)[i] = (.Frozen n, old[i].2) := by
+  intro i hi hi' hfz; simp only [List.getElem_map]; exact hf _ hfz
+
+/-- Allocating a fresh range keeps the static bytes. -/
+theorem staticAgree_allocRange {m : ByteMem} {a : w64} {cs : List ByteCell} (h : StaticAgree m)
+    (hfree : ∀ i < cs.length, m.bytes !! byteAddr a i = none) :
+    StaticAgree (m.allocRange a cs) := by
+  intro x b hx
+  obtain ⟨n, hn⟩ := h x b hx
+  refine ⟨n, ?_⟩
+  show insertRange m.bytes a cs !! x = _
+  rw [lookup_insertRange_of_ne]
+  · exact hn
+  · intro i hi he; rw [← he, hfree i hi] at hn; cases hn
+
+theorem bmemWf_writeRange {m : ByteMem} (a : w64) (cs : List ByteCell) (h : BmemWf m)
+    (hs : StaticAgree (m.writeRange a cs)) : BmemWf (m.writeRange a cs) :=
   ⟨fun b sz hb => ⟨(h.1 b sz hb).1, fun i hi =>
       insertRange_isSome _ _ _ _ ((h.1 b sz hb).2 i hi)⟩,
-   fun t p ht => insertRange_isSome _ _ _ _ (h.2 t p ht)⟩
+   fun t p ht => insertRange_isSome _ _ _ _ (h.2.1 t p ht), hs⟩
 
 theorem bmemWf_allocRange {m : ByteMem} (a : w64) (cs : List ByteCell) (h : BmemWf m)
-    (hlen : cs.length ≤ 2 ^ 64) : BmemWf (m.allocRange a cs) := by
-  refine ⟨fun b sz hb => ?_, fun t p ht => insertRange_isSome _ _ _ _ (h.2 t p ht)⟩
+    (hlen : cs.length ≤ 2 ^ 64) (hfree : ∀ i < cs.length, m.bytes !! byteAddr a i = none) :
+    BmemWf (m.allocRange a cs) := by
+  refine ⟨fun b sz hb => ?_, fun t p ht => insertRange_isSome _ _ _ _ (h.2.1 t p ht),
+    staticAgree_allocRange h.2.2 hfree⟩
   simp only [addBlock] at hb ⊢
   split at hb
   · exact ⟨(h.1 b sz hb).1, fun i hi => insertRange_isSome _ _ _ _ ((h.1 b sz hb).2 i hi)⟩
@@ -711,6 +761,76 @@ theorem wp_lift_bmem_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal e₁ 
   iapply BigSepL.bigSepL_nil.2
   itrivial
 
+/-! ### Static bytes
+
+The static bytes (`staticBytes`, the program image's read-only data) are frozen
+bytes of the memory from the start (`staticImage`, `Adequacy.lean`), and the
+interpretation keeps persistent fragments of all frozen bytes, so a proof can
+take `a ↦∗□ bs` for any static range at any step (`wp_static_bytes`). -/
+
+/-- Persistent ownership of a static range, from the interpretation's frozen bytes. -/
+theorem static_bytes_of (m : ByteMem) (a : w64) (bs : List w8) (hagree : StaticAgree m)
+    (hs : ∀ i (hi : i < bs.length), staticBytes !! byteAddr a i = some bs[i]) :
+    (□ ∀ a b n, ⌜m.bytes !! a = some (.Frozen n, b)⌝ → bytePointsto (GF := GF) a .discard b) ⊢
+      bytesPointsto a .discard bs := by
+  induction bs generalizing a with
+  | nil => iintro _; iapply (bytesPointsto_nil a _).2; itrivial
+  | cons b bs ih =>
+    have h0 : staticBytes !! a = some b := by
+      have := hs 0 (by simp); rwa [byteAddr_zero, List.getElem_cons_zero] at this
+    obtain ⟨n, hn⟩ := hagree a b h0
+    iintro #Hfr
+    iapply (bytesPointsto_cons a _ b bs).2
+    isplitl
+    · iapply Hfr $$ %a %b %n %hn
+    · iapply ih (a + 1) (fun i hi => by
+        have := hs (i + 1) (by simp; omega)
+        rwa [byteAddr_succ, ← List.getElem_cons_succ (a := b)]) $$ Hfr
+
+/-- The interpretation gives the frozen bytes persistently, and its invariants. -/
+theorem stateInterp_frozen_acc (σ : BcfgState) (ns : Nat) (κs : List Observation) (nt : Nat) :
+    stateInterp (GF := GF) σ ns κs nt ⊢ stateInterp σ ns κs nt ∗
+      (□ ∀ a b n, ⌜σ.1.1.bmem.bytes !! a = some (.Frozen n, b)⌝ →
+        bytePointsto (GF := GF) a .discard b) ∗ ⌜BmemWf σ.1.1.bmem⌝ := by
+  rcases σ with ⟨σ, c⟩
+  iintro Hσ
+  icases (goose_bstateInterp_eq σ c ns κs nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
+  icases (goose_stateInterp_eq σ ns κs nt).mp $$ Hσ with
+    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph, Hbm⟩
+  icases (bmemCtx_eq _).1 $$ Hbm with ⟨Hbytes, #Hfr, Hbl, Hfwd, Hty, Hfn, %Hwf⟩
+  isplitl
+  · iapply (goose_bstateInterp_eq σ c ns κs nt).2
+    iframe Hc Ht
+    iapply (goose_stateInterp_eq σ ns κs nt).mpr
+    iframe
+    isplitr
+    · ipureintro; exact Hlctx
+    iapply (bmemCtx_eq _).2
+    iframe
+    isplitr
+    · iexact Hfr
+    ipureintro; exact Hwf
+  isplitr
+  · iexact Hfr
+  · ipureintro; exact Hwf
+
+/-- A static range, persistently, before any step. -/
+theorem wp_static_bytes {e : Expr} {Φ : val → IProp GF} (a : w64) (bs : List w8)
+    (hs : ∀ i (hi : i < bs.length), staticBytes !! byteAddr a i = some bs[i])
+    (he : toVal e = none) :
+    (bytesPointsto (GF := GF) a .discard bs -∗ WP e @ s; E {{ Φ }}) ⊢ WP e @ s; E {{ Φ }} := by
+  have h1 := wp_unfold (s := s) (E := E) (e := e) (Φ := Φ)
+  simp only [wp.pre] at h1
+  rw [show ToVal.toVal e = none from he] at h1
+  iintro H
+  iapply h1.2
+  iintro %σ %ns %obs %obs' %nt Hσ
+  icases stateInterp_frozen_acc σ ns (obs ++ obs') nt $$ Hσ with ⟨Hσ, #Hfr, %Hwf⟩
+  ihave #Hl := static_bytes_of σ.1.1.bmem a bs Hwf.2.2 hs $$ Hfr
+  ihave H := H $$ Hl
+  icases h1.1 $$ H with H
+  iapply H $$ Hσ
+
 /-! ### Allocation -/
 
 /-- Persistent ownership of a frozen range, from the interpretation. -/
@@ -806,7 +926,8 @@ theorem wp_balloc (al : w64) (bs : List w8) :
       isplitr
       · iapply frozen_insertRange_unfrozen _ a _ hlen
           (notFrozen_map _ _ fun _ => by simp [ByteMode.IsFrozen]) $$ Hfr
-      ipureintro; exact bmemWf_allocRange a _ Hwf hlen
+      ipureintro
+      exact bmemWf_allocRange a _ Hwf hlen (fun i hi => hf.2.2 i (by simpa using hi))
     iapply wp_value'
     iapply HΦ
     simp only [List.map_map, Function.comp_def, List.map_id', List.length_map,
@@ -871,7 +992,9 @@ theorem wp_balloc_frozen (bs : List w8) :
       iframe
       isplitr
       · iapply frozen_insertRange_frozen _ a bs 0 hlen $$ Hfr Hl
-      ipureintro; exact bmemWf_allocRange a _ Hwf (by simpa using hlen)
+      ipureintro
+      exact bmemWf_allocRange a _ Hwf (by simpa using hlen)
+        (fun i hi => hf.2.2 i (by simpa using hi))
     iapply wp_value'
     iapply HΦ $$ Hl
   | BAllocFrozenReuseS bs' a cs _ hcs hfz hmap =>
@@ -982,7 +1105,10 @@ theorem wp_bstart_read (a n : w64) (dq : DFrac) (bs : List w8) (hn : bs.length =
           (fun c h => by
             obtain ⟨md, b⟩ := c
             cases md <;> simp_all [ByteMode.rl, ByteMode.IsFrozen]) $$ Hfr
-      ipureintro; exact bmemWf_writeRange a _ Hwf
+      ipureintro
+      exact bmemWf_writeRange a _ Hwf
+        (staticAgree_insertRange Hwf.2.2 Hcs Hlt (by simp) (frozenKept_of_map _ fun c h => by
+          obtain ⟨md, b⟩ := c; cases md <;> simp_all [ByteMode.rl, ByteMode.IsFrozen]))
     iexists blobV (cs.map Prod.snd)
     isplit
     · ipureintro; rfl
@@ -1030,7 +1156,14 @@ theorem wp_bfinish_read (a n : w64) (dq : DFrac) (bs : List w8) (hn : bs.length 
             | Rd k => cases k <;> simp_all [ByteMode.url, ByteMode.IsFrozen]
             | Wr => simp_all [ByteMode.url, ByteMode.IsFrozen]
             | Frozen k => cases k <;> simp_all [ByteMode.url, ByteMode.IsFrozen]) $$ Hfr
-      ipureintro; exact bmemWf_writeRange a _ Hwf
+      ipureintro
+      exact bmemWf_writeRange a _ Hwf
+        (staticAgree_insertRange Hwf.2.2 Hcs Hlt (by simp) (frozenKept_of_map _ fun c h => by
+          obtain ⟨md, b⟩ := c
+          cases md with
+          | Rd k => simp_all [ByteMode.IsFrozen]
+          | Wr => simp_all [ByteMode.IsFrozen]
+          | Frozen k => cases k <;> simp_all [ByteMode.url]))
     iexists #()
     isplit
     · ipureintro; rfl
@@ -1077,7 +1210,10 @@ theorem wp_bprepare_write (a n : w64) (bs : List w8) (hn : bs.length = n.toNat) 
       isplitr
       · iapply frozen_insertRange_unfrozen _ a _ Hcl
           (notFrozen_map _ _ fun _ => by simp [ByteMode.IsFrozen]) $$ Hfr
-      ipureintro; exact bmemWf_writeRange a _ Hwf
+      ipureintro
+      exact bmemWf_writeRange a _ Hwf
+        (staticAgree_insertRange Hwf.2.2 Hcs (by have := n.isLt; omega) (by simp)
+          (frozenKept_of_notFrozen fun c hc => by rw [Hrd c hc]; simp [ByteMode.IsFrozen]))
     iexists #()
     isplit
     · ipureintro; rfl
@@ -1125,7 +1261,11 @@ theorem wp_bfinish_write (a : w64) (bs bs' : List w8) (hlen : bs'.length = bs.le
       isplitr
       · iapply frozen_insertRange_unfrozen _ a _ Hcl
           (notFrozen_map _ _ fun _ => by simp [ByteMode.IsFrozen]) $$ Hfr
-      ipureintro; exact bmemWf_writeRange a _ Hwf
+      ipureintro
+      exact bmemWf_writeRange a _ Hwf
+        (staticAgree_insertRange Hwf.2.2 Hcs (by simpa using hlt) (by simp [hlen])
+          (frozenKept_of_notFrozen fun c hc => by
+            obtain ⟨_, _, rfl⟩ := List.mem_map.mp hc; simp [ByteMode.IsFrozen]))
     iexists #()
     isplit
     · ipureintro; rfl
@@ -1173,7 +1313,10 @@ theorem wp_bswap (a : w64) (bs bs' : List w8) (hlen : bs'.length = bs.length)
       isplitr
       · iapply frozen_insertRange_unfrozen _ a _ Hcl
           (notFrozen_map _ _ fun _ => by simp [ByteMode.IsFrozen]) $$ Hfr
-      ipureintro; exact bmemWf_writeRange a _ Hwf
+      ipureintro
+      exact bmemWf_writeRange a _ Hwf
+        (staticAgree_insertRange Hwf.2.2 Hcs (by omega) (by simp; omega)
+          (frozenKept_of_notFrozen fun c hc => by rw [Hrd c hc]; simp [ByteMode.IsFrozen]))
     iexists blobV bs
     isplit
     · ipureintro; rw [Hmap]; rfl
@@ -1223,7 +1366,10 @@ theorem wp_bfreeze (a n : w64) (bs : List w8) (hn : bs.length = n.toNat) :
       iframe
       isplitr
       · iapply frozen_insertRange_frozen _ a bs 0 Hbl $$ Hfr Hl
-      ipureintro; exact bmemWf_writeRange a _ Hwf
+      ipureintro
+      exact bmemWf_writeRange a _ Hwf
+        (staticAgree_insertRange Hwf.2.2 Hcs (by have := n.isLt; omega) (by rw [← Hmap]; simp)
+          (frozenKept_of_notFrozen fun c hc => by rw [Hrd c hc]; simp [ByteMode.IsFrozen]))
     iexists #()
     isplit
     · ipureintro; rfl
@@ -1467,7 +1613,7 @@ theorem wp_type_intern (t : go.GoType) (bs : List w8) (hbs : bs ≠ []) :
     have ha0 : σ₁.1.bmem.bytes !! a = none := by
       have := freshRange_lookup hf (i := 0) hpos; rwa [byteAddr_zero] at this
     have hnotA : ∀ t', σ₁.1.bmem.types !! t' ≠ some a := by
-      intro t' ht'; have := Hwf.2 t' a ht'; rw [ha0] at this; cases this
+      intro t' ht'; have := Hwf.2.1 t' a ht'; rw [ha0] at this; cases this
     have hra : rev !! a = none := by
       cases hr : rev !! a with
       | none => rfl
@@ -1496,7 +1642,8 @@ theorem wp_type_intern (t : go.GoType) (bs : List w8) (hbs : bs ≠ []) :
     have hwf' : BmemWf { σ₁.1.bmem.allocRange a (bs.map (ByteMode.Frozen 0, ·)) with
         types := <[t := a]> σ₁.1.bmem.types } := by
       have h0 := bmemWf_allocRange a (bs.map (ByteMode.Frozen 0, ·)) Hwf (by simpa using hlen)
-      refine ⟨h0.1, fun t'' p'' ht => ?_⟩
+        (fun i hi => hf.2.2 i (by simpa using hi))
+      refine ⟨h0.1, fun t'' p'' ht => ?_, h0.2.2⟩
       rw [GMap.lookup_insert_eq_iff] at ht
       split at ht
       · cases ht
@@ -1505,7 +1652,7 @@ theorem wp_type_intern (t : go.GoType) (bs : List w8) (hbs : bs ≠ []) :
           (by simpa using hlen) 0 (by simpa using hpos)
         rw [byteAddr_zero] at this
         rw [this]; rfl
-      · exact h0.2 t'' p'' ht
+      · exact h0.2.1 t'' p'' ht
     imodintro
     isplitr
     · ipureintro; simp

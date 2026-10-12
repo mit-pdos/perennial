@@ -400,6 +400,16 @@ attribute [instance] BasicIntoValInj.intoVal_inj_loc BasicIntoValInj.intoVal_inj
   BasicIntoValInj.intoVal_inj_bool BasicIntoValInj.intoVal_inj_string
   BasicIntoValInj.intoVal_inj_interface BasicIntoValInj.intoVal_inj_proph_id
 
+/-- The representation of interface values as `GoInterface`s (a dynamic type and
+a `val`), separate from `CoreSemantics` so that a byte-memory representation
+(`go.InterfaceSemanticsB`, `Defn/StaticImage.lean`) can replace it. -/
+class InterfaceReprSemantics [GoSemanticsFunctions] : Prop where
+  go_zero_val_interface (elems : List go.InterfaceElem) :
+    TypeReprUnderlying (go.InterfaceType elems) GoInterface
+
+attribute [instance] InterfaceReprSemantics.go_zero_val_interface
+export InterfaceReprSemantics (go_zero_val_interface)
+
 /-- `go.CoreSemantics` defines the basics of when a GoContext is valid,
 excluding predeclared types (including primitives), arrays, slice, map, and
 channels, each of which is in their own file. -/
@@ -477,8 +487,6 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
   go_zero_val_pointer (t : go.GoType) : TypeReprUnderlying (go.PointerType t) Loc
   go_zero_val_function (sig : go.signature) : TypeReprUnderlying (go.FunctionType sig) GoFunc
   go_zero_val_slice (elem_type : go.GoType) : TypeReprUnderlying (go.SliceType elem_type) GoSlice
-  go_zero_val_interface (elems : List go.InterfaceElem) :
-    TypeReprUnderlying (go.InterfaceType elems) GoInterface
   go_zero_val_channel (dir : go.ChanDir) (elem_type : go.GoType) :
     TypeReprUnderlying (go.ChannelType dir elem_type) GoChan
   go_zero_val_map (key_type elem_type : go.GoType) :
@@ -597,7 +605,7 @@ attribute [instance] CoreSemantics.basic_into_val_inj CoreSemantics.underlying_n
   CoreSemantics.intoVal_unfold_loc CoreSemantics.intoVal_unfold_unit
   CoreSemantics.go_zero_val_step CoreSemantics.go_zero_val_pointer
   CoreSemantics.go_zero_val_function CoreSemantics.go_zero_val_slice
-  CoreSemantics.go_zero_val_interface CoreSemantics.go_zero_val_channel
+  CoreSemantics.go_zero_val_channel
   CoreSemantics.go_zero_val_map CoreSemantics.core_comparison_sem
   CoreSemantics.composite_literal_pointer CoreSemantics.composite_literal_struct
   CoreSemantics.alloc_underlying CoreSemantics.load_underlying CoreSemantics.store_underlying
@@ -615,7 +623,7 @@ export CoreSemantics (basic_into_val_inj underlying_not_named convert_underlying
   intoVal_unfold_bool intoVal_unfold_w64 intoVal_unfold_w32 intoVal_unfold_w16
   intoVal_unfold_w8 intoVal_unfold_string intoVal_unfold_loc intoVal_unfold_unit
   go_zero_val_step go_zero_val_pointer go_zero_val_function go_zero_val_slice
-  go_zero_val_interface go_zero_val_channel go_zero_val_map core_comparison_sem
+  go_zero_val_channel go_zero_val_map core_comparison_sem
   composite_literal_pointer composite_literal_struct alloc_underlying load_underlying
   store_underlying alloc_primitive alloc_struct load_primitive load_struct store_primitive
   store_struct is_convert_underlying_same convert_same convert_pointer_same_underlying)

@@ -328,10 +328,15 @@ def btls : ByteMode → LockState
 @[simp] theorem btls_Wr : btls .Wr = WSt := rfl
 @[simp] theorem btls_Frozen (n : Nat) : btls (.Frozen n) = RSt n := rfl
 
+/-- The static bytes are frozen bytes of the memory, with their values. -/
+def StaticAgree [GoGlobalContext] (m : ByteMem) : Prop :=
+  ∀ a b, staticBytes !! a = some b → ∃ n, m.bytes !! a = some (.Frozen n, b)
+
 /-- The pure invariants of the byte memory. -/
-def BmemWf (m : ByteMem) : Prop :=
+def BmemWf [GoGlobalContext] (m : ByteMem) : Prop :=
   (∀ b sz, m.blocks !! b = some sz → 0 < sz ∧ ∀ i < sz, (m.bytes !! byteAddr b i).isSome) ∧
-  (∀ t p, m.types !! t = some p → (m.bytes !! p).isSome)
+  (∀ t p, m.types !! t = some p → (m.bytes !! p).isSome) ∧
+  StaticAgree m
 
 /-- `rev` is the inverse of the type table `types` (which is thus injective). -/
 def TypesRev (types : GMap go.GoType w64) (rev : GMap w64 go.GoType) : Prop :=
@@ -351,7 +356,7 @@ def isType [hB : ByteMemGS GF] (p : w64) (t : go.GoType) : IProp GF :=
 /-- The byte memory interpretation. Frozen bytes and interned types are kept
 persistently (`□ ∀ ...`), since a step may return them to a thread that does
 not own them (`BAllocFrozenReuseS`, `TypeInternHitS`). -/
-def bmemCtx [hB : ByteMemGS GF] (m : ByteMem) : IProp GF :=
+def bmemCtx [GoGlobalContext] [hB : ByteMemGS GF] (m : ByteMem) : IProp GF :=
   iprop(naHeapCtx btls m.bytes ∗
     (□ ∀ a b n, ⌜m.bytes !! a = some (.Frozen n, b)⌝ → bytePointsto a .discard b) ∗
     ghostMapAuth hB.bm_blocksName 1 m.blocks ∗
@@ -432,7 +437,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors}
 
 /-- The GooseLang state interpretation: the per-generation part together with
 the global part (FFI global state and prophecy map). -/
-def gooseStateInterp [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+def gooseStateInterp [GoGlobalContext] [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
     (σ : CfgState) (κs : List Observation) : IProp GF :=
   iprop(naHeapCtx tls σ.1.heap ∗
     ffiLocalCtx L.gooseFfiLocalGS σ.1.world ∗
@@ -445,11 +450,11 @@ def gooseStateInterp [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 /-- The state interpretation of the bounded language: `gooseStateInterp` of
 the real configuration, the authoritative receipt counter for the step fuel and
 the thread tokens of the thread fuel. -/
-def gooseBstateInterp [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+def gooseBstateInterp [GoGlobalContext] [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
     (σ : BcfgState) (κs : List Observation) : IProp GF :=
   iprop(gooseStateInterp σ.1 κs ∗ receiptFuel σ.2.steps ∗ threadFuel σ.2.threads)
 
-instance goose_stateInterp [GooseGlobalGS hlc GF] [GooseLocalGS GF] :
+instance goose_stateInterp [GoGlobalContext] [GooseGlobalGS hlc GF] [GooseLocalGS GF] :
     StateInterp BcfgState Observation GF where
   stateInterp σ _ κs _ := gooseBstateInterp σ κs
 

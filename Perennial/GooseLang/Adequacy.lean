@@ -97,12 +97,19 @@ variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiInterpAdequacy f
 variable [FfiSemantics ext ffi] [GoGlobalContext]
 variable {GF : BundledGFunctors}
 
+/-- The byte-memory ghost state for the initial memory `staticImage`: the auth
+of the static bytes, with a persistent fragment of each (the interpretation's
+frozen bytes). -/
+theorem bmem_init {GF : BundledGFunctors} [AllG GF] (hpre : ByteMemPreG GF) :
+    ⊢@{IProp GF} |==> ∃ hB : ByteMemGS GF, bmemCtx (hB := hB) staticImage := by
+  sorry -- by `GMap.map_ind` over `staticBytes`: `na_heap_alloc` and persist each byte
+
 /-- Allocate all of GooseLang's ghost state for an initial configuration, and
 run a WP proof under it. This is the common core of the adequacy theorems. -/
 theorem goose_init [hPre : GooseGpreS ffi GF] [Hinv : InvGS_gen .hasLC GF]
     (N T : Nat) (hN : 0 < N) (hT : 1 < T) (σ : state) (g : GlobalState) (κs : List Observation)
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
-    (Hbm : σ.bmem = default)
+    (Hbm : σ.bmem = staticImage)
     (P : HeapGS .hasLC GF → IProp GF)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       hG.goose_globalGS.gooseInvGS = Hinv →
@@ -125,18 +132,12 @@ theorem goose_init [hPre : GooseGpreS ffi GF] [Hinv : InvGS_gen .hasLC GF]
   letI := hPre.goosePreGAllG
   imod receipt_init N hN with ⟨%γR, %γL, HR⟩
   imod thread_init T hT with ⟨%γT, HT⟩
-  imod na_heap_init (L := w64) (V := w8)
-    (hG := ⟨hPre.goose_preG_bmem.bm_heap_preG.na_heap_preG_inG, default⟩) btls
-    (∅ : GMap w64 ByteCell) with ⟨%hBytes, Hbytes⟩
-  imod ghost_map_alloc_empty (K := w64) (V := Nat) with ⟨%γblocks, Hblocks⟩
-  imod ghost_map_alloc_empty (K := w64) (V := go.GoType) with ⟨%γtypes, Htypes⟩
-  imod ghost_map_alloc_empty (K := go.GoType) (V := w64) with ⟨%γtypesFwd, HtypesFwd⟩
-  imod ghost_map_alloc_empty (K := w64) (V := val) with ⟨%γfuncs, Hfuncs⟩
+  imod bmem_init (GF := GF) hPre.goose_preG_bmem with ⟨%hB, Hbmem⟩
   let G : GooseGlobalGS .hasLC GF :=
     ⟨Hinv, hPre.goosePreGAllG, hProph, hFG, ⟨γR, γL, N, hN⟩, ⟨γT, T, hT⟩⟩
   let L : GooseLocalGS GF :=
     ⟨hFL, σ.goState.goLctx, hHeap, goStateGSUpdatePre GF hPre.goose_preG_go_state γ,
-      ⟨hBytes, γblocks, γtypes, γtypesFwd, γfuncs⟩⟩
+      hB⟩
   let hG : HeapGS .hasLC GF := ⟨G, L⟩
   -- the main thread's token and the thread fuel
   have Hsplit := (threadToks_add (hT := ⟨γT, T, hT⟩) (T - 2) 1).1
@@ -148,25 +149,10 @@ theorem goose_init [hPre : GooseGpreS ffi GF] [Hinv : InvGS_gen .hasLC GF]
   isplitr
   · ipureintro; rfl
   iframe HP
-  unfold gooseBstateInterp gooseStateInterp threadFuel bmemCtx
+  unfold gooseBstateInterp gooseStateInterp threadFuel
   rw [Hbm]
   iframe
-  isplitr
-  · ipureintro; rfl
-  isplitr
-  · imodintro; iintro %a %b %n %h
-    exact absurd h (by show (∅ : GMap w64 ByteCell) !! a ≠ _; simp)
-  isplitr
-  · isplitr
-    · ipureintro; intro t p
-      show (∅ : GMap go.GoType w64) !! t = some p ↔ (∅ : GMap w64 go.GoType) !! p = some t
-      simp
-    · imodintro; iintro %p %t %h
-      exact absurd h (by show (∅ : GMap w64 go.GoType) !! p ≠ _; simp)
-  ipureintro
-  refine ⟨fun b sz h => ?_, fun t p h => ?_⟩
-  · exact absurd h (by show (∅ : GMap w64 Nat) !! b ≠ some sz; simp)
-  · exact absurd h (by show (∅ : GMap go.GoType w64) !! t ≠ some p; simp)
+  ipureintro; rfl
 
 /-- Adequacy of the bounded GooseLang language (the one the program logic is
 built for): a WP proved for `e` under any instantiation of the GooseLang ghost
@@ -178,7 +164,7 @@ for the real semantics. -/
 theorem goose_adequacy_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < N) (hT : 1 < T)
     (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
-    (Hbm : σ.bmem = default)
+    (Hbm : σ.bmem = staticImage)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
@@ -210,7 +196,7 @@ theorem goose_adequacy_nopanic_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN 
     (hT : 1 < T) (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
     (hφ : ∀ p, ¬ φ (PanicV p))
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
-    (Hbm : σ.bmem = default)
+    (Hbm : σ.bmem = staticImage)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
@@ -263,7 +249,7 @@ theorem goose_no_unrecovered_panic_blang [hPre : GooseGpreS ffi GF] (N T : Nat) 
     (hT : 1 < T) (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
     (hφ : ∀ p, ¬ φ (PanicV p))
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
-    (Hbm : σ.bmem = default)
+    (Hbm : σ.bmem = staticImage)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
@@ -303,7 +289,7 @@ postcondition `φ` that excludes panics (`hφ`), then in every real execution of
 theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
     (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
-    (Hbm : σ.bmem = default)
+    (Hbm : σ.bmem = staticImage)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
@@ -337,7 +323,7 @@ interpretation holds in every reachable configuration of the bounded semantics. 
 theorem goose_invariance_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < N) (hT : 1 < T)
     (e : Expr) (σ : state) (g : GlobalState) (φinv : ffi_global_state → Prop)
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
-    (Hbm : σ.bmem = default)
+    (Hbm : σ.bmem = staticImage)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
@@ -379,7 +365,7 @@ along which fewer than `T` threads are live. -/
 theorem goose_invariance [hPre : GooseGpreS ffi GF] (N T : Nat)
     (e : Expr) (σ : state) (g : GlobalState) (φinv : ffi_global_state → Prop)
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
-    (Hbm : σ.bmem = default)
+    (Hbm : σ.bmem = staticImage)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →

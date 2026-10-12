@@ -18,10 +18,12 @@ semantics guarantees. -/
 class Semantics [FfiSyntax] [GoLocalContext] [GoGlobalContext] where
   [sem_fn : GoSemanticsFunctions]
   [core_sem : go.PreSemantics]
+  [interface_sem : go.InterfaceSemantics]
   [chan_sem : go.ChanSemantics]
   [string_sem : go.StringSemantics]
 
-attribute [instance] Semantics.sem_fn Semantics.core_sem Semantics.chan_sem Semantics.string_sem
+attribute [instance] Semantics.sem_fn Semantics.core_sem Semantics.interface_sem Semantics.chan_sem
+  Semantics.string_sem
 export Semantics (sem_fn chan_sem string_sem)
 
 end go

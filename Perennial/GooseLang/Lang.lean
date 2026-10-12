@@ -421,8 +421,16 @@ class GoGlobalContext [FfiSyntax] where
   intoVal_inj_w8 : Function.Injective (intoVal (V := w8))
   /-- No Go value is a panic outcome. -/
   intoVal_not_panic : ∀ {V : Type} (x : V), (intoVal x).isPanic = false
+  /-- The read-only data of the program image (type descriptors, itabs, string
+  literals, ...: what the compiler and linker emit statically). The byte memory
+  starts with these bytes, frozen (`staticImage`); which bytes are there is left
+  abstract, and packages state facts about their own static data. -/
+  staticBytes : GMap w64 w8
+  /-- The code of the program image: the closure at each function's entry
+  address (functions and methods, at their `codeAddr`). -/
+  staticFuncs : GMap w64 val
 
-export GoGlobalContext (intoVal)
+export GoGlobalContext (intoVal staticBytes staticFuncs)
 
 /-- `# x` is `intoVal x`. -/
 scoped prefix:max "#" => intoVal
@@ -593,6 +601,11 @@ structure ByteMem where
   funcs : GMap w64 val
 
 instance : Inhabited ByteMem := ⟨⟨∅, ∅, ∅, ∅⟩⟩
+
+/-- The initial byte memory: the program image (its static bytes, frozen, and
+its code) and nothing else. -/
+def staticImage [GoGlobalContext] : ByteMem :=
+  ⟨GMap.fmap (fun b => (.Frozen 0, b)) staticBytes, ∅, ∅, staticFuncs⟩
 
 /-- `a + i`, the `i`-th byte from `a`. -/
 abbrev byteAddr (a : w64) (i : Nat) : w64 := a + BitVec.ofNat 64 i

@@ -117,7 +117,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   allocation blocks for `unsafe.Add`, interned type descriptors and func
   pointers. The Go model does not use it yet; `docs/BYTE_MEMORY.md` describes
   the design, what the prototype confirms and the migration plan. The adequacy
-  theorems start from an empty byte memory (`σ.bmem = default`).
+  theorems start from the program image (`σ.bmem = staticImage`: the abstract
+  `GoGlobalContext.staticBytes`, frozen, and `staticFuncs`). A sketch of
+  interfaces over it (`Golang/Defn/StaticImage.lean`, `go.SemanticsB`) proves
+  the interface semantics tests.
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
   `etc/update-goose-new.py` rather than editing them by hand.

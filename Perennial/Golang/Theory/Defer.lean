@@ -20,7 +20,7 @@ section proof
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [GoSemanticsFunctions] [go.PreSemantics]
+variable [GoSemanticsFunctions] [go.PreSemantics] [go.InterfaceReprSemantics]
 
 /-- `with_defer: e`: the body runs under a `Catch` whose handlers run the deferred
 chain, then return the body's value (`wp_catch_val`) or raise its panic again
