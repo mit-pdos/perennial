@@ -69,7 +69,8 @@ theorem wp_Len64 (x : w64) :
   all_goals split
   all_goals first
     | (wp_auto; wp_end)
-    | (exfalso; rename_i h; exact h _ (List.getElem?_eq_getElem (by rw [hlen]; word)))
+    | (exfalso; rename_i h; exact h _ (by
+        rw [ite_eq_left (by word), List.getElem?_eq_getElem (by rw [hlen]; word)]))
 
 theorem wp_Len (x : w64) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.math.bits }}

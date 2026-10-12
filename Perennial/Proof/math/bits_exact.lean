@@ -146,7 +146,7 @@ theorem wp_Len64_exact (x : w64) :
   obtain ⟨hi, hx3, hn3, hpos⟩ := Hinv
   have hx3' : uint.nat x3 < 256 := hx3
   have hidx : sint.nat (W64 (uint.Z (W8 (uint.Z x3)))) = uint.nat x3 := by word
-  rw [hidx, htab _ hx3']
+  rw [ite_eq_left (show 0 ≤ sint.Z (W64 (uint.Z (W8 (uint.Z x3)))) by word), hidx, htab _ hx3']
   wp_auto
   wp_end
   ipureintro
