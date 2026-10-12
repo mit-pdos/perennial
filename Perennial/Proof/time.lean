@@ -241,11 +241,11 @@ theorem Time.wp_Sub (t u : time.Time) :
     wp_apply Time.wp_sec $$ [$u] as %us u
     wp_apply Time.wp_nsec $$ [$t] as %tn t
     wp_apply Time.wp_nsec $$ [$u] as %un u
-    wp_apply Time.wp_ptr_Add $$ [$u] as %u' u
+    wp_apply Time.wp_Add as %u' -
     wp_apply Time.wp_Equal as %b -
     wp_if_destruct
     · wp_end
-    · wp_apply Time.wp_ptr_Before $$ [$t] as %b' t
+    · wp_apply Time.wp_Before as %b' -
       wp_if_destruct <;> wp_end
   · wp_apply wp_subMono as %d -
     wp_end

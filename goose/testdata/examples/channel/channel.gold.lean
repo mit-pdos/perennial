@@ -260,11 +260,11 @@ noncomputable def Cond.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef Cond.ty go!"L"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c")))) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.ty go!"Lock"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.ty))) (App (Val (GoInstruction (StructFieldRef Cond.ty go!"L"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c"))))) (Val #())))))
   (App (Val doExecute)
   (Fst (App (Val (chan.receive (go.GoType.StructType []))) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "ch"))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.ty) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef Cond.ty go!"L"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c")))) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.ty go!"Unlock"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.ty))) (App (Val (GoInstruction (StructFieldRef Cond.ty go!"L"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c"))))) (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))))) (Pair (App (Val (GoInstruction (StructFieldRef Cond.ty go!"waiters"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c"))) (Var "$r0"))))))))
   (App (Val doExecute)
@@ -416,7 +416,7 @@ noncomputable def Cond.WaitFor.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef Cond.ty go!"L"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c")))) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.ty go!"Lock"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.ty))) (App (Val (GoInstruction (StructFieldRef Cond.ty go!"L"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c"))))) (Val #()))))))
   (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "ch"))
   (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "done"))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (RecvCase (go.GoType.StructType []) (Var "$ch0")) (Lam "$recvVal"
@@ -435,7 +435,7 @@ noncomputable def Cond.WaitFor.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "done") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.ty) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef Cond.ty go!"L"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c")))) (Val #()))))))
+  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.ty go!"Unlock"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.ty))) (App (Val (GoInstruction (StructFieldRef Cond.ty go!"L"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c"))))) (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))))) (Pair (App (Val (GoInstruction (StructFieldRef Cond.ty go!"waiters"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c"))) (Var "$r0"))))))))
   (App (Val doExecute)

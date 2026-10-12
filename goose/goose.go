@@ -552,25 +552,48 @@ func (ctx *Ctx) selectorExpr(e *ast.SelectorExpr) glang.Expr {
 		return expr
 
 	case types.MethodVal:
-		// 2*2 cases: receiver type could be (T) or (*T), and e.X type
-		// (including embedded fields) could be (T) or (*T).
-
+		// x.M, with M promoted through embedded fields f1...fk, is x.f1...fk.M.
+		// Go evaluates the receiver r = x.f1...fk here and saves it, and calls
+		// of the method value, whenever they run, use the saved copy (Go spec,
+		// "Method values"): for a value-receiver method, a copy of r (of *r if
+		// r is a pointer, dereferenced here); for a pointer-receiver method,
+		// the pointer r, or &r if r is addressable. So the receiver is
+		// evaluated to that value now, and the method resolved on its type.
 		f := selection.Obj().(*types.Func)
-		receiverType := types.Unalias(ctx.typeOf(e.X))
-		receiver := ctx.expr(e.X)
-		methodExpr := glang.StringLiteral{Value: e.Sel.Name}
-
-		// If x is addressable and &x's method set contains m, x.m() is shorthand for (&x).m().
-		if ctx.info.Types[e.X].Addressable() {
-			ptrType := types.NewPointer(receiverType)
-			if obj, _, _ := types.LookupFieldOrMethod(ptrType, false, f.Pkg(), f.Name()); obj != nil {
-				receiverType = ptrType
-				receiver = ctx.exprAddr(e.X)
-			}
+		_, ptrRecv := f.Type().(*types.Signature).Recv().Type().(*types.Pointer)
+		path := selection.Index()[:len(selection.Index())-1]
+		var expr glang.Expr
+		curType := selection.Recv()
+		// haveAddr: expr is r's address (expr : ptr<curType>), else r's value
+		haveAddr := ctx.info.Types[e.X].Addressable()
+		if haveAddr {
+			expr = ctx.exprAddr(e.X)
+		} else {
+			expr = ctx.expr(e.X)
+			ctx.fieldSelection(e.X, &path, &curType, &expr)
 		}
-		typeExpr := ctx.glangType(e.X, receiverType)
-
-		return glang.NewCallExpr(glang.VerbatimExpr("MethodResolve"), typeExpr, methodExpr, receiver)
+		if len(path) > 0 {
+			haveAddr = true
+			ctx.fieldAddrSelection(e.X, path, &curType, &expr)
+		}
+		_, rIsPtr := curType.Underlying().(*types.Pointer)
+		// The saved receiver is &r, the case Go writes x.M for (&x).M, ...
+		needAddr := ptrRecv && !rIsPtr
+		if haveAddr && !needAddr {
+			expr = glang.DerefExpr{X: expr, Ty: ctx.glangType(e.X, curType)}
+		} else if !haveAddr && needAddr {
+			ctx.nope(e, "pointer-receiver method value of a non-addressable value")
+		}
+		receiverType := types.Unalias(curType)
+		if needAddr {
+			receiverType = types.NewPointer(receiverType)
+		} else if !ptrRecv && rIsPtr {
+			// ... or *r, the case Go writes p.M for (*p).M
+			receiverType = types.Unalias(curType.Underlying().(*types.Pointer).Elem())
+			expr = glang.DerefExpr{X: expr, Ty: ctx.glangType(e.X, receiverType)}
+		}
+		return glang.NewCallExpr(glang.VerbatimExpr("MethodResolve"),
+			ctx.glangType(e.X, receiverType), glang.StringLiteral{Value: e.Sel.Name}, expr)
 	}
 	panic("unreachable")
 }
