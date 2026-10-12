@@ -1,0 +1,35 @@
+/-
+`strings.Split`'s spec.
+-/
+module
+
+public import Perennial.Proof.strings.Base
+
+@[expose] public section
+
+noncomputable section
+
+namespace Perennial
+
+open Iris Iris.BI Iris.ProgramLogic Iris.Std
+
+section spec
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem : strings.Assumptions]
+
+/-- `strings.Split(s, sep)`, for a non-empty `sep`: a new slice of the fields
+`split s sep`. -/
+abbrev strings.Split.spec : Prop :=
+  ∀ (s sep : GoString),
+  sep ≠ [] →
+    {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
+      (App (App (Val (@! Split)) (Val #s)) (Val #sep))
+    {{ (sl : GoSlice), RET #sl;
+        sl ↦* split s sep ∗ ownSliceCap GoString sl (DFrac.own 1) }}
+
+end spec
+
+end Perennial
