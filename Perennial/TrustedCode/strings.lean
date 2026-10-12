@@ -46,22 +46,24 @@ func (b *Builder) String() string {
 
 (the receiver's type written out as `strings.Builder`'s named type, which this file cannot refer
 to by its generated name `Builder.ty`), with `b.buf` bound to `buf` and `lockBytes buf 0` run
-after the conversion. Go's result shares `b.buf`'s
-bytes where the model's is a copy. The two differ only if one of those bytes is written later,
-which a `Builder` used through one address never does (`WriteString` appends past `len(b.buf)`,
-`grow` copies to a new buffer); a copy of the struct can: after `saved := b`, `b.WriteString`,
-`s := b.String()`, `b = saved`, a `b.WriteString` writes into the bytes `s` aliases, changing `s`
-in Go. `lockBytes` leaves those bytes read-locked, so that write is stuck in the model. Both
-dereference `b` (a nil `b` panics in Go and is stuck in the model). -/
+before the conversion. Go's result shares `b.buf`'s bytes where the model's is a copy. The two
+differ only if one of those bytes is written after `String` reads `b.buf`, which a `Builder` used
+through one address never does (`WriteString` appends past `len(b.buf)`, `grow` copies to a new
+buffer). A copy of the struct can: after `saved := b`, `b.WriteString`, `s := b.String()`,
+`b = saved`, a `b.WriteString` writes into the bytes `s` aliases, changing `s` in Go; so can a
+write through `saved` in another goroutine while `String` runs on a third copy (no race in Go:
+`String` reads only the header). `lockBytes` read-locks those bytes before the conversion reads
+them, so every such write either lands before the copy (and Go's `s` sees it too) or is stuck.
+Both dereference `b` (a nil `b` panics in Go and is stuck in the model). -/
 noncomputable def Builder.String.impl : val :=
   (LamV "b"
   (Lam BAnon
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))
   (Let "buf" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (StructFieldRef (go.GoType.Named go!"strings.Builder" []) go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.Named go!"strings.Builder" []))))) (Var "b"))))
-  (Let "s" (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Var "buf"))
   (Seq (App (App (Val Builder.String.lockBytes) (Var "buf")) (Val #(W64 0)))
-  (App (Val doReturn) (Var "s")))))))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Var "buf")))))))))
 
 /-- `HasPrefix(s, prefix)`: whether `s` begins with `prefix`. Go's `HasPrefix` is
 `len(s) >= len(prefix) && s[:len(prefix)] == prefix` (in `internal/stringslite`); Goose's Go

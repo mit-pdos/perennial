@@ -254,10 +254,10 @@ theorem typedPointsto_w8_heap (l : Loc) (v : w8) (dq : DFrac) :
 
 /-- `lockBytes buf i` (`TrustedCode/strings.lean`), given the bytes of `buf` from index `i` on,
 read-locks them and keeps them. -/
-theorem Builder.wp_lockBytes (buf : GoSlice) :
+theorem Builder.wp_lockBytes (buf : GoSlice) (dq : DFrac) :
     ∀ (k : Nat) (i : w64) (vs : List w8), vs.length = k → 0 ≤ sint.Z i →
     sint.Z i + vs.length = sint.Z buf.len →
-    {{ (arrayElems (GF := GF) (arrayIndexRef w8 (sint.Z i) buf.ptr) vs (DFrac.own 1)) }}
+    {{ (arrayElems (GF := GF) (arrayIndexRef w8 (sint.Z i) buf.ptr) vs dq) }}
       (App (App (Val Builder.String.lockBytes) (Val #buf)) (Val #i))
     {{ RET #(); True }} := by
   intro k
@@ -295,8 +295,8 @@ theorem Builder.wp_lockBytes (buf : GoSlice) :
     iapply hrec $$ Hl HΦ
 
 /-- The bytes of `sl`, as element points-tos from its start. -/
-theorem ownSlice_arrayElems (sl : GoSlice) (vs : List w8) :
-    (sl ↦* vs : IProp GF) ⊢ arrayElems (arrayIndexRef w8 0 sl.ptr) vs (DFrac.own 1) := by
+theorem ownSlice_arrayElems (sl : GoSlice) (vs : List w8) (dq : DFrac) :
+    (sl ↦*{dq} vs : IProp GF) ⊢ arrayElems (arrayIndexRef w8 0 sl.ptr) vs dq := by
   rw [ownSlice_unseal]; unfold ownSliceDef
   iintro (%H | ⟨H, %_⟩)
   · obtain ⟨-, rfl⟩ := H
@@ -306,8 +306,8 @@ theorem ownSlice_arrayElems (sl : GoSlice) (vs : List w8) :
     icases H with ⟨⟨-, H⟩, -⟩
     iexact H
 
-/-- `b.String()` returns the bytes written. The model leaves them read-locked (so that a later
-write through a copy of the builder is stuck), so the builder is used up. -/
+/-- `b.String()` returns the bytes written. The model leaves them read-locked (so that a write
+to them through a copy of the builder is stuck), so the builder is used up. -/
 theorem Builder.wp_String (b : Loc) (s : GoString) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.strings ∗ ownBuilder b s }}
       (App (Val (b @!! go.GoType.PointerType Builder.ty @!! go!"String")) (Val #()))
@@ -317,11 +317,15 @@ theorem Builder.wp_String (b : Loc) (s : GoString) :
   icases Hb with ⟨%addr, %buf, Hb, %Haddr, Hs, Hcap⟩
   rw [Builder_ty_eq]
   wp_auto
-  wp_apply wp_bytes_to_string $$ Hs as Hs
   ihave %Hlen := ownSlice_len _ _ _ $$ Hs
-  ihave Hs := ownSlice_arrayElems _ _ $$ Hs
-  wp_apply Builder.wp_lockBytes buf s.length (W64 0) s rfl (by decide) (by word) $$ [Hs]
-  · rw [show sint.Z (W64 0) = 0 from rfl]; iexact Hs
+  ihave Hs' : iprop(buf ↦*{.own (1 : Qp).half} s ∗ buf ↦*{.own (1 : Qp).half} s) $$ [Hs]
+  · iapply ((ownSlice_dfractional buf s).dfractional _ _).1
+    rw [DFrac.op_own, Qp.half_add_half]; iexact Hs
+  icases Hs' with ⟨Hs1, Hs2⟩
+  ihave Hs1 := ownSlice_arrayElems _ _ _ $$ Hs1
+  wp_apply Builder.wp_lockBytes buf _ s.length (W64 0) s rfl (by decide) (by word) $$ [Hs1]
+  · rw [show sint.Z (W64 0) = 0 from rfl]; iexact Hs1
+  wp_apply wp_bytes_to_string $$ Hs2 as -
   iapply HΦ; itrivial
 
 /-- A join with one more element at the end. -/
