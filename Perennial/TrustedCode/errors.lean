@@ -19,7 +19,15 @@ variable [FfiSyntax] [GoGlobalContext]
 /-- The name of `reflectlite.TypeOf(target).Comparable()` in the model of `Is` (a helper of
 the model, not a function of package `errors`): whether the dynamic type of the (non-nil)
 interface `target` is comparable. It has no body (`internal/reflectlite` is not translated);
-`errors.wp_reflectliteComparable` (`Proof/errors.lean`) specifies it. -/
+`errors.wp_reflectliteComparable` (`Proof/errors.lean`) specifies it.
+
+Why an axiom: GooseLang has no operation that inspects the dynamic type of an interface value
+(only type assertions against a static type), so neither goose's translation of
+`internal/reflectlite` nor hand-written GooseLang can compute it. The lower rung would be a new
+rule of the Go semantics (a comparability test on an interface's dynamic type, refining
+`CheckComparable`), which would make this function translatable and remove the axiom; that is
+a change to the semantics, left as a proposal. The axiom replaces the larger one it allowed to
+prove (`errors.wp_Is`, formerly an axiom about all of `Is`). -/
 noncomputable def reflectliteComparable : GoString := go!"errors.reflectliteComparable"
 
 /-- `Is(err, target)`. Go's `Is` is
