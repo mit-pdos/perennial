@@ -45,8 +45,9 @@ like `make`'s), and otherwise is `make([]byte, n, c)` for an arbitrary `c` with
 `n ≤ c ≤ maxAlloc` (`slice._new_cap`, kept at most `maxAlloc`), which includes every capacity
 `roundupsize` can give: it rounds up to a size class or a multiple of the page size, and
 `maxAlloc` is a multiple of the page size, so `roundupsize(n) ≤ maxAlloc`. Go does not zero the
-bytes (`mallocgc(cap, nil, false)`): the model writes an arbitrary byte into each of the `n`
-(`fillArbitrary`), so a caller learns nothing of them. Go's `maxAlloc` is smaller on some
+bytes (`mallocgc(cap, nil, false)`, "including the bytes between len and cap"): the model
+allocates `c` bytes, writes an arbitrary byte into each (`fillArbitrary`), and returns the
+first `n`, so a caller learns nothing of them, nor of the capacity's. Go's `maxAlloc` is smaller on some
 other platforms (`2^40` on iOS); the model follows 64-bit Linux. -/
 def MakeNoZero.impl : val :=
   λ: "n",
@@ -54,9 +55,9 @@ def MakeNoZero.impl : val :=
     if: #(W64 maxAlloc) <⟨go.int⟩ "n" then Panic "makeslice: len out of range" else #() ;;
     let: "c" := slice._new_cap "n" in
     let: "c" := (if: #(W64 maxAlloc) <⟨go.int⟩ "c" then "n" else "c") in
-    let: "s" := FuncResolve go.make3 [go.SliceType go.byte] #() "n" "c" in
-    fillArbitrary #(W64 0) "s" "n" ;;
-    "s"
+    let: "s" := FuncResolve go.make3 [go.SliceType go.byte] #() "c" "c" in
+    fillArbitrary #(W64 0) "s" "c" ;;
+    Slice (go.SliceType go.byte) ("s", #(W64 0), "n")
 
 /-- The address of `MaxLen` (`internal/bytealg.MaxLen`, an `int`), which the generated package
 names `MaxLen`; this file is imported by the generated package, so it cannot refer to that. -/

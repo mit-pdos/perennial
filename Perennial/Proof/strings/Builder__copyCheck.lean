@@ -22,8 +22,7 @@ variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
 
 /-- Proved from the model of `copyCheck` (`Perennial/TrustedCode/strings.lean`). -/
-theorem strings.Builder.copyCheck.wp_proof
-    (wp_NoEscape : internal.abi.NoEscape.spec (GF := GF) (hG := hG)) :
+theorem strings.Builder.copyCheck.wp_proof :
     strings.Builder.copyCheck.spec (GF := GF) (hG := hG) := fun b addr buf Haddr => by
   wp_start as Hb
   rw [Builder_ty_eq]

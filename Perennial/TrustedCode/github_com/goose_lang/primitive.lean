@@ -55,7 +55,7 @@ def ResolveProph.impl : val := λ: "p" "val", ResolveProph (Var "p") (Var "val")
 
 def Linearize.impl : val := λ: <>, #()
 
-/-- The lock model's type (`go.mutex`, `Golang/Defn/Lock.lean`): gc's size and alignment
+/-- The lock model's type (`go.mutex`, `Golang/Defn/Mutex.lean`): gc's size and alignment
 (8, 4), the lock in its first cell. -/
 @[reducible] def Mutex.underlying : go.GoType := go.mutex
 

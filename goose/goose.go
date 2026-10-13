@@ -443,7 +443,7 @@ func (ctx *Ctx) pointerConversionOperand(e ast.Expr) (ast.Expr, bool) {
 // stackStable reports whether evaluating e cannot move the goroutine's stack, so that a
 // uintptr taken before it is still the address after it: e is built only from constants,
 // variables, fields, dereferences, &, indexes of arrays and slices, integer arithmetic,
-// and conversions between pointer and integer types. Anything else (a call, a receive, a
+// and conversions between integers and of pointers to unsafe.Pointer. Anything else (a call, a receive, a
 // map index, a conversion that allocates, a string concatenation) may call the runtime,
 // which may grow and move the stack.
 func (ctx *Ctx) stackStable(e ast.Expr) bool {
@@ -491,9 +491,19 @@ func (ctx *Ctx) stackStable(e ast.Expr) bool {
 		return isIntOrPtr(ctx.typeOf(e.X)) && isIntOrPtr(ctx.typeOf(e.Y)) &&
 			ctx.stackStable(e.X) && ctx.stackStable(e.Y)
 	case *ast.CallExpr:
-		if ctx.info.Types[e.Fun].IsType() && len(e.Args) == 1 &&
-			isIntOrPtr(ctx.typeOf(e)) && isIntOrPtr(ctx.typeOf(e.Args[0])) {
-			return ctx.stackStable(e.Args[0])
+		// conversions between integers, and of a pointer to unsafe.Pointer; not from
+		// unsafe.Pointer to a pointer or from a uintptr to unsafe.Pointer, which a build
+		// with checkptr (-race, -d=checkptr) turns into runtime calls
+		if ctx.info.Types[e.Fun].IsType() && len(e.Args) == 1 {
+			to, from := ctx.typeOf(e), ctx.typeOf(e.Args[0])
+			isInt := func(t types.Type) bool {
+				b, ok := t.Underlying().(*types.Basic)
+				return ok && b.Info()&types.IsInteger != 0
+			}
+			_, fromPtr := from.Underlying().(*types.Pointer)
+			if (isInt(to) && isInt(from)) || (isUnsafePointer(to) && fromPtr) {
+				return ctx.stackStable(e.Args[0])
+			}
 		}
 	}
 	return false
@@ -830,6 +840,25 @@ func (ctx *Ctx) compositeLiteralWithBindings(e *ast.CompositeLit, bindings *[]co
 			ctx.glangType(ev, ctx.typeOf(ev)), glang.IdentExpr(name))
 	}
 
+	// a slice literal whose length would be 2^63 or more (an element at index math.MaxInt,
+	// keyed or not) is miscompiled by gc; the semantics does not model that length
+	if _, ok := underlyingType(ctx.typeOf(e)).(*types.Slice); ok {
+		next := int64(0)
+		for _, el := range e.Elts {
+			if kv, ok := el.(*ast.KeyValueExpr); ok {
+				if tv, ok := ctx.info.Types[kv.Key]; ok && tv.Value != nil {
+					if idx, exact := constant.Int64Val(constant.ToInt(tv.Value)); exact {
+						next = idx
+					}
+				}
+			}
+			if next == math.MaxInt64 {
+				ctx.unsupported(el, "composite literal index math.MaxInt")
+			}
+			next++
+		}
+	}
+
 	for _, el := range e.Elts {
 		var k glang.Expr = glang.VerbatimExpr("None")
 		var v glang.Expr
@@ -851,11 +880,6 @@ func (ctx *Ctx) compositeLiteralWithBindings(e *ast.CompositeLit, bindings *[]co
 				case *types.Array, *types.Slice:
 					if tv, ok := ctx.info.Types[el.Key]; ok && tv.Value != nil {
 						if idx, exact := constant.Int64Val(constant.ToInt(tv.Value)); exact {
-							if idx == math.MaxInt64 {
-								// the literal's length would be 2^63: gc miscompiles it (to an
-								// empty slice); the semantics does not model that length
-								ctx.unsupported(el.Key, "composite literal index math.MaxInt")
-							}
 							k = glang.NewCallExpr(glang.VerbatimExpr("KeyInteger"), glang.IntToZ(idx))
 							done = true
 						}

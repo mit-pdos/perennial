@@ -41,7 +41,7 @@ variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
 
 theorem strings.Builder.wp_copyCheck : strings.Builder.copyCheck.spec (GF := GF) (hG := hG) :=
-  strings.Builder.copyCheck.wp_proof internal.abi.wp_NoEscape
+  strings.Builder.copyCheck.wp_proof
 
 theorem strings.Builder.wp_grow : strings.Builder.grow.spec (GF := GF) (hG := hG) :=
   strings.Builder.grow.wp_proof internal.bytealg.wp_MakeNoZero

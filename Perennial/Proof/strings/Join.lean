@@ -25,7 +25,7 @@ variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
 
 /-- Proved from goose's translation of Go's `Join` and of the `strings.Builder` methods it calls,
-with `Builder.String`, `internal/bytealg.MakeNoZero` and `internal/abi.NoEscape` trusted
+with `Builder.String`, `Builder.copyCheck` and `internal/bytealg.MakeNoZero` trusted
 (`Perennial/TrustedCode`). -/
 theorem strings.Join.wp_proof
     (wp_Grow : strings.Builder.Grow.spec (GF := GF) (hG := hG))

@@ -67,21 +67,8 @@ theorem internal.bytealg.MakeNoZero.wp_proof :
   wp_auto
   wp_apply wp_new_cap with %cap %Hcap
   wp_if_destruct
-  · wp_apply wp_slice_make3 (V := w8) n n ⟨Hn.1, Int.le_refl _⟩
-      (make_cap_ok (by rw [go.typeSize_w8]; unfold internal.bytealg.maxAlloc at Hn; omega))
-      with %sl ⟨Hsl, Hsl_cap, -⟩
-    ihave %Hlen := ownSlice_len $$ Hsl
-    simp only [List.length_replicate] at Hlen
-    wp_pures
-    wp_apply wp_fillArbitrary sl n (by simp only [sint.nat, sint.Z] at *; omega) (W64 0) _ (by decide) $$ [Hsl]
-      as ⟨%bs, %hbs, Hsl⟩
-    · iframe; ipureintro; simp
-    wp_pures
-    iapply HΦ
-    iexists bs
-    iframe
-    ipureintro; exact hbs
-  · wp_apply wp_slice_make3 (V := w8) n cap ⟨Hn.1, Hcap⟩
+  · have Hn1 := Hn.1
+    wp_apply wp_slice_make3 (V := w8) n n ⟨Hn1, Int.le_refl _⟩
       (make_cap_ok (by rw [go.typeSize_w8]; rw [Hmax] at *; unfold internal.bytealg.maxAlloc at *; omega))
       with %sl ⟨Hsl, Hsl_cap, -⟩
     ihave %Hlen := ownSlice_len $$ Hsl
@@ -90,11 +77,44 @@ theorem internal.bytealg.MakeNoZero.wp_proof :
     wp_apply wp_fillArbitrary sl n (by simp only [sint.nat, sint.Z] at *; omega) (W64 0) _ (by decide) $$ [Hsl]
       as ⟨%bs, %hbs, Hsl⟩
     · iframe; ipureintro; simp
+    ihave %Hwf := ownSlice_wf $$ Hsl
+    have Hb : 0 ≤ sint.Z (W64 0) ∧ sint.Z (W64 0) ≤ sint.Z n ∧ sint.Z n ≤ sint.Z sl.len :=
+      ⟨by word, by word, by simp only [sint.nat, sint.Z] at *; omega⟩
+    try wp_auto
+    rw [ite_eq_left ⟨Hb.1, Hb.2.1, by omega⟩]
+    icases ownSlice_slice_with_cap (W64 0) n sl bs Hb $$ [Hsl Hsl_cap] with ⟨-, Hnew, Hnewcap⟩
+    · iframe
     wp_pures
     iapply HΦ
-    iexists bs
+    iexists _
     iframe
-    ipureintro; exact hbs
+    ipureintro
+    simp only [subslice, List.length_take, List.length_drop, hbs, show sint.nat (W64 0) = 0 from rfl]
+    simp only [sint.nat, sint.Z] at *; omega
+  · have Hc1 : 0 ≤ sint.Z cap := by omega
+    wp_apply wp_slice_make3 (V := w8) cap cap ⟨Hc1, Int.le_refl _⟩
+      (make_cap_ok (by rw [go.typeSize_w8]; rw [Hmax] at *; unfold internal.bytealg.maxAlloc at *; omega))
+      with %sl ⟨Hsl, Hsl_cap, -⟩
+    ihave %Hlen := ownSlice_len $$ Hsl
+    simp only [List.length_replicate] at Hlen
+    wp_pures
+    wp_apply wp_fillArbitrary sl cap (by simp only [sint.nat, sint.Z] at *; omega) (W64 0) _ (by decide) $$ [Hsl]
+      as ⟨%bs, %hbs, Hsl⟩
+    · iframe; ipureintro; simp
+    ihave %Hwf := ownSlice_wf $$ Hsl
+    have Hb : 0 ≤ sint.Z (W64 0) ∧ sint.Z (W64 0) ≤ sint.Z n ∧ sint.Z n ≤ sint.Z sl.len :=
+      ⟨by word, by word, by simp only [sint.nat, sint.Z] at *; omega⟩
+    try wp_auto
+    rw [ite_eq_left ⟨Hb.1, Hb.2.1, by omega⟩]
+    icases ownSlice_slice_with_cap (W64 0) n sl bs Hb $$ [Hsl Hsl_cap] with ⟨-, Hnew, Hnewcap⟩
+    · iframe
+    wp_pures
+    iapply HΦ
+    iexists _
+    iframe
+    ipureintro
+    simp only [subslice, List.length_take, List.length_drop, hbs, show sint.nat (W64 0) = 0 from rfl]
+    simp only [sint.nat, sint.Z] at *; omega
 
 end proof
 

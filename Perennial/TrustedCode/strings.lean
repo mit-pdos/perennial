@@ -75,7 +75,11 @@ func (b *Builder) copyCheck() {
 Goose translates it, but the semantics does not convert an `unsafe.Pointer` to a
 `*Builder` (`go.Reinterpretable`: a `Builder` holds a pointer). The conversion is a round
 trip of `b` (`abi.NoEscape` returns its argument), so the model stores `b`, the comment's
-`b.addr = b`. The panic is stuck in the model (a spec shows `addr` is unset or `b`). -/
+`b.addr = b`. A lower rung would need `unsafe.Pointer` values to carry the type they were
+converted from, which the semantics does not model. The model loads `b.addr` once where the
+source reads it twice (gc compiles the two reads as one load, and nothing writes it in
+between in a `Builder` used through one address). The panic, not recovered, is stuck, as in
+goose's translation. -/
 noncomputable def Builder.copyCheck.impl : val :=
   λ: "b" <>,
     let: "addr" := StructFieldRef (go.GoType.Named go!"strings.Builder" []) go!"addr" "b" in

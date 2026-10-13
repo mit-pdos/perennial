@@ -160,14 +160,15 @@ variable [FfiSyntax] [GoSemanticsFunctions]
 
 mutual
 /-- `Reinterpretable t`: memory reached through an `unsafe.Pointer` may be accessed as a `t`
-(the conversion `(*t)(p)`, `UnsafeSemantics.convert_unsafe_to_pointer`): numbers, `bool`,
-strings, and slices, arrays and structs of them. The model's memory keeps these apart where
-Go's does (`decode` checks the cells, `WriteCompat` the stores). Not pointers or
-`unsafe.Pointer`s, which could read the location inside a map or a channel (a `Loc` in the
-model, like a pointer) and reach the model's representation of it; not interfaces, maps,
-channels or functions, which the model represents by the same value whatever their static
-type, where Go's representation depends on it (an interface's method table, a map's key
-type). -/
+(the conversion `(*t)(p)`, `UnsafeSemantics.convert_unsafe_to_pointer`): numbers, and
+slices, arrays and structs of them. A number is its bytes, as in Go; a slice header is the
+only value of 24 cells (`decode` checks a value's cells, `WriteCompat` the stores). Nothing
+else: a pointer could read the location inside a map or a channel (a `Loc` in the model)
+and reach the model's representation of it; a string shares its encoding (16 cells) with
+an interface, and a `bool` (one cell) is also the head of a mutex's value, so either could
+read or write another type's value whole where Go sees words of it; interfaces, maps,
+channels and functions are represented by the same value whatever their static type, where
+Go's representation depends on it. -/
 inductive Reinterpretable : go.GoType → Prop
   | uint8 : Reinterpretable go.uint8
   | uint16 : Reinterpretable go.uint16
@@ -182,8 +183,6 @@ inductive Reinterpretable : go.GoType → Prop
   | int : Reinterpretable go.int
   | float32 : Reinterpretable go.float32
   | float64 : Reinterpretable go.float64
-  | bool : Reinterpretable go.bool
-  | string : Reinterpretable go.string
   | slice (t : go.GoType) (h : Reinterpretable t) : Reinterpretable (go.SliceType t)
   | array (n : Int) (t : go.GoType) (h : Reinterpretable t) : Reinterpretable (go.ArrayType n t)
   | struct (fds fds' : List go.field_decl) (heq : EqualsUnfold fds fds')
@@ -203,7 +202,7 @@ attribute [class] Reinterpretable ReinterpretableFields
 attribute [instance] Reinterpretable.uint8 Reinterpretable.uint16 Reinterpretable.uint32
   Reinterpretable.uint64 Reinterpretable.uint Reinterpretable.uintptr Reinterpretable.int8
   Reinterpretable.int16 Reinterpretable.int32 Reinterpretable.int64 Reinterpretable.int
-  Reinterpretable.float32 Reinterpretable.float64 Reinterpretable.bool Reinterpretable.string
+  Reinterpretable.float32 Reinterpretable.float64
   ReinterpretableFields.nil
 
 instance (n : Int) (t : go.GoType) [h : Reinterpretable t] : Reinterpretable (go.ArrayType n t) :=

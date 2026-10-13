@@ -115,10 +115,17 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `p`'s allocation; `unsafe.Slice` checks what `runtime.unsafeslice` checks, and
   that the slice lies in `ptr`'s allocation; `(*T)(p)` for an `unsafe.Pointer`
   `p` keeps the location, and is stuck unless `p` is `nil` or `T` is
-  `go.Reinterpretable` (numbers, `bool`, strings, and slices, arrays and structs
-  of them; not pointers, which could reach the model's representation of a map
-  or a channel, nor interfaces, maps, channels or funcs, whose model
-  representation does not depend on their type as Go's does). Any other conversion of a `uintptr` to a
+  `go.Reinterpretable` (numbers, and slices, arrays and structs of them: what
+  the model keeps exactly as Go does; not pointers, which could reach the model's
+  representation of a map or a channel, nor strings or `bool`s, whose encodings
+  are shared with interfaces and mutexes, nor interfaces, maps, channels or
+  funcs, whose model representation does not depend on their type as Go's does).
+  The lock models' `Unlock` of an unlocked lock is stuck (Go: a fatal error).
+  `atomic.Pointer[T]`'s `Load` and `Swap` convert an `unsafe.Pointer` back to `*T`,
+  so their specs require `go.Reinterpretable T`; `strings.Builder.copyCheck`, which
+  does the same round trip for `*Builder`, is a trusted model of it
+  (`TrustedCode/strings.lean`). goose also refuses the `uintptr` patterns whose
+  operands a checkptr build (`-race`, `-d=checkptr`) turns into runtime calls. Any other conversion of a `uintptr` to a
   pointer is stuck. A model may be less defined than Go: what is stuck here is
   what a proof shows does not happen.
 * **Evaluation order.** The Go spec orders a statement's calls and receives

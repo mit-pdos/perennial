@@ -50,10 +50,10 @@ trusted = [
   "CompareAndSwapPointer",
 
   # `Value`'s methods call `runtime_procPin`/`runtime_procUnpin` (external
-  # functions, which goose rejects) and reinterpret the `any` field as two
-  # `unsafe.Pointer` words (`efaceWords`), a memory layout the semantics does
-  # not have (an interface is one value). They are modeled in
-  # TrustedCode/sync/atomic.lean as atomic operations on the field `v`.
+  # functions, which goose rejects; it translates the methods themselves) and
+  # reinterpret the `any` field as two `unsafe.Pointer` words (`efaceWords`), which
+  # the semantics does not (an interface is one value; `go.Reinterpretable`). They
+  # are modeled in TrustedCode/sync/atomic.lean as atomic operations on the field `v`.
   "Value.*",
 ]
 

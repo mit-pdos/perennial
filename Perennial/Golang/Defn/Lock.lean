@@ -25,8 +25,12 @@ def lock : val :=
     else
       "lock" "m"
 
+/-- Unlocking an unlocked lock is stuck (Go: `fatal error: sync: unlock of unlocked
+mutex`). -/
 def unlock : val :=
-  λ: "m", exceptionDo (do: CmpXchg "m" #true #false ;;; return: #())
+  λ: "m", exceptionDo
+    (do: (if: Snd (CmpXchg "m" #true #false) then #()
+          else Panic "sync: unlock of unlocked mutex") ;;; return: #())
 
 end code
 end lock

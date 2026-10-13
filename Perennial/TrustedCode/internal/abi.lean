@@ -25,8 +25,11 @@ func NoEscape(p unsafe.Pointer) unsafe.Pointer {
 ```
 
 which returns `p` itself (it only hides `p` from escape analysis). Goose does not translate it:
-the semantics deliberately has no conversion between pointers and `uintptr`. The model is the
-identity, exactly what the function computes. -/
+the only conversion of a `uintptr` back to an `unsafe.Pointer` goose translates is
+`unsafe.Pointer(uintptr(p) + n)` (as `unsafe.Add`), and `x ^ 0` is not that form; nor would
+the semantics give the round trip through a separate `uintptr(p)` (each conversion is an
+unspecified address). The model is the identity, exactly what the function computes. No
+translated code calls it (`strings.Builder.copyCheck`, its caller, is trusted). -/
 def NoEscape.impl : val := λ: "p", "p"
 
 end code
