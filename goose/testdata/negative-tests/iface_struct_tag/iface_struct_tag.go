@@ -7,7 +7,7 @@ func f() int {
 	var e any = struct {
 		X int `json:"a"`
 	}{1}
-	return e.(struct { // ERROR its identity is lost in translation
+	return e.(struct { // ERROR identity is lost in translation
 		X int `json:"b"`
 	}).X
 }

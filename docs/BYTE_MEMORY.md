@@ -251,6 +251,17 @@ live only in `go.Semantics` (`convert_nil_interface`) and
   their terms (`any(struct{X int "a"}{1}).(struct{X int "b"})` panics in Go).
   Encoding tags and package paths in goose's types would lift the
   restriction.
+  Likewise a literal interface identical to `error` (which goose translates
+  as its underlying interface), an instantiation whose type arguments are such
+  types (inside generic code they can become dynamic types), and a type
+  declared in a generic function (Go has one per instantiation, goose one).
+  Composite literals with an interface slot check their elements too.
+* Not fixed (the old `go.Semantics` only; `SemanticsB` is less defined there):
+  goose's interface types are not canonical (embedded interfaces are not
+  flattened, `interface{ error }` and `interface{ Error() string }` differ),
+  and the old type-set check treats an embedded interface as one type, so
+  `x.(interface{ io.Reader; io.Writer })` is `ok = false` where Go says true.
+  Canonical interface types in goose fix both.
 * (Done.) `TypeAssert`/`TypeAssert2` carry the source type. The interface
   values' tag (`(false, _)`/`(true, _)`) is no longer read by any lowering and
   can go.

@@ -603,6 +603,10 @@ func (ctx *Ctx) compositeLiteralWithBindings(e *ast.CompositeLit, bindings *[]co
 			}
 		}
 
+		// the semantics converts the value to the slot's type
+		if hasInterfaceSlot(ctx.typeOf(e)) {
+			ctx.checkDynamicTypes(ev, ctx.typeOf(ev))
+		}
 		name := fmt.Sprintf("$v%d", len(*bindings))
 		*bindings = append(*bindings, compositeBinding{name: name, val: ctx.expr(ev)})
 		return glang.NewCallExpr(glang.VerbatimExpr("ElementExpression"),
@@ -1734,10 +1738,11 @@ func (ctx *Ctx) assignFromTo(lhs ast.Expr, rhs glang.Expr, cont glang.Expr) glan
 }
 
 // typeIdentityLost reports whether the GoLang term for t may denote more than
-// one Go type: struct tags are dropped and unexported field and method names
-// are not qualified by their package, so in an unnamed type they do not
-// distinguish types that Go does. Named types are qualified by their package
-// (only their type arguments are checked).
+// one Go type: struct tags are dropped, unexported field and method names are
+// not qualified by their package, and the predeclared error is its underlying
+// interface, so in an unnamed type these do not distinguish types that Go
+// does. Named types are qualified by their package (only their type arguments
+// are checked).
 func typeIdentityLost(t types.Type) bool {
 	switch t := types.Unalias(t).(type) {
 	case *types.Named:
@@ -1777,6 +1782,11 @@ func typeIdentityLost(t types.Type) bool {
 		}
 		return false
 	case *types.Interface:
+		// the predeclared error is translated as its underlying interface, so a
+		// literal interface identical to it gets the same term
+		if types.Identical(t, types.Universe.Lookup("error").Type().Underlying()) {
+			return true
+		}
 		for i := 0; i < t.NumExplicitMethods(); i++ {
 			m := t.ExplicitMethod(i)
 			if !m.Exported() || typeIdentityLost(m.Type()) {
@@ -1800,9 +1810,49 @@ func typeIdentityLost(t types.Type) bool {
 func (ctx *Ctx) checkDynamicTypes(n locatable, ts ...types.Type) {
 	for _, t := range ts {
 		if typeIdentityLost(t) {
-			ctx.unsupported(n, "interface conversion or type assertion on %v, an unnamed type with a struct tag or an unexported field or method name (its identity is lost in translation)", t)
+			ctx.unsupported(n, "interface conversion or type assertion on %v, whose identity is lost in translation (an unnamed type with a struct tag, an unexported field or method name, or a literal interface identical to error)", t)
 		}
 	}
+}
+
+// checkInstances refuses an instantiation in n whose type arguments lose
+// their identity in translation: inside the generic code they may become
+// dynamic types (`any(x)`, `x.(T)` for a type parameter `T`).
+func (ctx *Ctx) checkInstances(n ast.Node) {
+	ast.Inspect(n, func(n ast.Node) bool {
+		if id, ok := n.(*ast.Ident); ok {
+			if inst, ok := ctx.info.Instances[id]; ok && inst.TypeArgs != nil {
+				for i := 0; i < inst.TypeArgs.Len(); i++ {
+					if t := inst.TypeArgs.At(i); typeIdentityLost(t) {
+						ctx.unsupported(id, "instantiation with %v, whose identity is lost in translation (an unnamed type with a struct tag, an unexported field or method name, or a literal interface identical to error)", t)
+					}
+				}
+			}
+		}
+		return true
+	})
+}
+
+// hasInterfaceSlot reports whether a composite literal of type t has an
+// element, key or field of interface type, which converts its value.
+func hasInterfaceSlot(t types.Type) bool {
+	switch t := t.Underlying().(type) {
+	case *types.Struct:
+		for i := 0; i < t.NumFields(); i++ {
+			if types.IsInterface(t.Field(i).Type()) {
+				return true
+			}
+		}
+	case *types.Slice:
+		return types.IsInterface(t.Elem())
+	case *types.Array:
+		return types.IsInterface(t.Elem())
+	case *types.Map:
+		return types.IsInterface(t.Key()) || types.IsInterface(t.Elem())
+	case *types.Pointer:
+		return hasInterfaceSlot(t.Elem())
+	}
+	return false
 }
 
 // This handles conversions arising from the notion of "assignability" in the Go spec.
@@ -2598,9 +2648,20 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		return
 	}
 
+	ctx.checkInstances(d)
 	// A type declared in a translated function is translated as a package-level
-	// type of the same name, which must therefore be unique in the package.
+	// type of the same name, which must therefore be unique in the package; in a
+	// generic function it would be one type for all instantiations, where Go has
+	// one per instantiation.
+	generic := false
+	if fn, ok := ctx.info.Defs[d.Name].(*types.Func); ok {
+		sig := fn.Type().(*types.Signature)
+		generic = sig.TypeParams().Len() > 0 || sig.RecvTypeParams().Len() > 0
+	}
 	for _, g := range util.TypeDecls(d) {
+		if generic {
+			ctx.unsupported(g, "local type in a generic function (one type per instantiation in Go)")
+		}
 		for _, spec := range g.Specs {
 			spec := spec.(*ast.TypeSpec)
 			name := spec.Name.Name
@@ -3083,6 +3144,7 @@ func (ctx *Ctx) decl(d ast.Decl) {
 		case token.CONST:
 			ctx.constDecl(d)
 		case token.VAR:
+			ctx.checkInstances(d)
 			ctx.globalVarDecl(d)
 		case token.TYPE:
 			for _, spec := range d.Specs {

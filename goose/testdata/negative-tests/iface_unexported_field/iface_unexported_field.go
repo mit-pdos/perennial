@@ -5,5 +5,5 @@ package iface_unexported_field
 // type.
 
 func f() any {
-	return struct{ x int }{1} // ERROR its identity is lost in translation
+	return struct{ x int }{1} // ERROR identity is lost in translation
 }
