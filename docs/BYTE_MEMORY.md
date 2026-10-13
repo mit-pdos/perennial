@@ -107,7 +107,9 @@ and the adequacy theorems shows only `propext`, `Classical.choice` and
    dead object, while Go's allocator may reuse it. A program that saves
    `uintptr(p)` and compares it with a later allocation could rely on
    inequality, which is more defined than Go. Without `uintptr` conversions
-   this is unobservable. Options:
+   reuse is unobservable, but sharing is not: `&b[0] == unsafe.StringData(s)`
+   for `b := []byte(s)` can be true in gc (no copy since Go 1.22), so the Go
+   layer must keep the sharing such conversions may have. Options:
    * keep pointer → `uintptr` conversions out (as today);
    * make that conversion return an arbitrary value except where its use is
      modelled directly (`unsafe.Add`, alignment checks);

@@ -387,3 +387,43 @@ old semantics has no step for the conversion.
 
 **NOTE: `ByteRepr` laws.** Layouts now satisfy Go's alignment laws, and
 `TypeBytes` requires the zero value to be zero bytes (`ZeroBytes`).
+
+### Round 11 adversaries (after the fixes above)
+
+**Fixed (goose).** A type-switch case list tested its first type repeatedly
+and never its last (`case int, bool:` missed `bool`; `context.value`'s
+`case backgroundCtx, todoCtx:` never tested `todoCtx`). `interface{ Error() T }`
+with `T = string` is error's literal interface (`x.([]interface{ Error() T })`
+on a `[]error`: Go `false`, the model `true`). `chanElem` picked the first
+`chan` term of an intersection constraint, so a send to a `chan error` kept an
+`I2` itab (wrong method).
+
+**Documented (byte memory, Go-layer rules).** Misaligned atomics tear on amd64
+(`BLoad`/`BSwap` are atomic at any alignment); `[]byte(s)` may share `s`'s
+bytes; empty slices keep their base pointer; the image has no blocks.
+
+**BLOCK, open (byte semantics): itab method entries are false of real
+binaries.** The linker points an itab's `Fun[k]` at `runtime.unreachableMethod`
+when no reachable code calls the method through an interface, and gc
+devirtualizes interface calls whose dynamic type it knows. For
+`testBasicInterface` itself both entries of `go:itab.SquareStruct,
+geometryInterface` are `unreachableMethod`, so `StaticMethod`/`Implements`
+(different code at one address) cannot hold of that binary: the proof says
+nothing about it. Likewise `itab(T,I).Fun[0]` and `itab(*T,I).Fun[0]` are one
+wrapper, which will contradict `StaticMethod T m` and `StaticMethod (*T) m`.
+
+**BLOCK, open (byte semantics): `TypeEqual` is false when types share an
+equality function.** gc gives `int`, `uint64`, `type MyInt int` and `uintptr`
+one `Equal` (`memequal64`), `float64` and named floats `f64equal`, and
+memory-comparable types of one size one `memequal`; `TypeEqual go.int` and
+`TypeEqual go.uint64` require different code at that one address.
+
+Both come from facts about static *code*, which the compiler and linker share
+and prune by whole-program analysis. The type descriptors' identity and the
+itabs' `Inter` and `Type` words are never pruned. Options: dispatch method
+calls and `==` by the dynamic type from the type word (an abstract partial
+inverse of `typeAddr`, with a goose-generated fact per dynamic type, true when
+goose's terms are canonical), leaving `Fun` and `Equal` unconstrained; or key
+the code facts by the runtime function gc shares (`memequal64`, `f64equal`,
+...) and state method code only for methods the binary calls through an
+interface, which devirtualization makes unknowable from the source.
