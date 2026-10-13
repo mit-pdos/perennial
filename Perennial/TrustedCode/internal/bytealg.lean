@@ -33,8 +33,10 @@ func bytealg_MakeNoZero(len int) []byte {
 ```
 
 The model panics where Go does (`n` negative or above `maxAlloc`; a run-time panic, so stuck,
-like `make`'s), and otherwise is `make([]byte, n, c)` for an arbitrary `c ≥ n`
-(`slice._new_cap`), which includes every capacity `roundupsize` can give. Go does not zero the
+like `make`'s), and otherwise is `make([]byte, n, c)` for an arbitrary `c` with
+`n ≤ c ≤ maxAlloc` (`slice._new_cap`, kept at most `maxAlloc`), which includes every capacity
+`roundupsize` can give: it rounds up to a size class or a multiple of the page size, and
+`maxAlloc` is a multiple of the page size, so `roundupsize(n) ≤ maxAlloc`. Go does not zero the
 bytes; the model does. That is unobservable to a caller that writes every byte before reading
 it, as the only translated caller, `strings.Builder.grow`, does (it reads nothing past what
 `copy` and `append` wrote); a new caller must be checked for the same. Go's `maxAlloc` is
@@ -43,7 +45,9 @@ def MakeNoZero.impl : val :=
   λ: "n",
     if: "n" <⟨go.int⟩ #(W64 0) then Panic "makeslice: len out of range" else #() ;;
     if: #(W64 maxAlloc) <⟨go.int⟩ "n" then Panic "makeslice: len out of range" else #() ;;
-    FuncResolve go.make3 [go.SliceType go.byte] #() "n" (slice._new_cap "n")
+    let: "c" := slice._new_cap "n" in
+    let: "c" := (if: #(W64 maxAlloc) <⟨go.int⟩ "c" then "n" else "c") in
+    FuncResolve go.make3 [go.SliceType go.byte] #() "n" "c"
 
 /-- The address of `MaxLen` (`internal/bytealg.MaxLen`, an `int`), which the generated package
 names `MaxLen`; this file is imported by the generated package, so it cannot refer to that. -/

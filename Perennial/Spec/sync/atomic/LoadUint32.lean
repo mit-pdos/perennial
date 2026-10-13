@@ -23,7 +23,7 @@ variable [sem : go.Semantics]
 variable [package_sem : sync.atomic.Assumptions]
 
 abbrev sync.atomic.LoadUint32.spec : Prop :=
-  ∀ (addr : Loc) (dq : DFrac),
+  ∀ (addr : Loc) (dq : DFrac), Aligned (.word 4) addr →
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ v : w32, addr ↦{dq} v ∗ (addr ↦{dq} v ={∅,⊤}=∗ Φ #v)) -∗
     WP (App (Val (@! LoadUint32)) (Val #addr)) {{ Φ }}

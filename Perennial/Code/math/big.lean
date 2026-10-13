@@ -656,6 +656,7 @@ instance equals_unfold_decimal [FfiSyntax] [GoGlobalContext] :
 class decimal.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying decimal.underlying decimal
   underlying : go.UnderlyingDirectedEq decimal.ty decimal.underlying
+  layout : go.StructLayout decimal [(go!"mant", typeSize GoSlice, typeAlign GoSlice), (go!"exp", typeSize w64, typeAlign w64)]
   get_mant : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"mant") #x (Val #(x.mant'))
   set_mant : ∀ (x : decimal) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"mant") (PairV #x #y) (Val #(({ x with mant' := y } : decimal)))
   get_exp : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"exp") #x (Val #(x.exp'))
@@ -663,6 +664,7 @@ class decimal.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 
 attribute [instance] decimal.TypeAssumptions.type_repr
   decimal.TypeAssumptions.underlying
+  decimal.TypeAssumptions.layout
   decimal.TypeAssumptions.get_mant
   decimal.TypeAssumptions.set_mant
   decimal.TypeAssumptions.get_exp
@@ -743,6 +745,7 @@ instance equals_unfold_Float [FfiSyntax] [GoGlobalContext] :
 class Float.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Float.underlying Float
   underlying : go.UnderlyingDirectedEq Float.ty Float.underlying
+  layout : go.StructLayout Float [(go!"prec", typeSize w32, typeAlign w32), (go!"mode", typeSize RoundingMode, typeAlign RoundingMode), (go!"acc", typeSize Accuracy, typeAlign Accuracy), (go!"form", typeSize form, typeAlign form), (go!"neg", typeSize Bool, typeAlign Bool), (go!"mant", typeSize nat, typeAlign nat), (go!"exp", typeSize w32, typeAlign w32)]
   get_prec : ∀ (x : Float), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"prec") #x (Val #(x.prec'))
   set_prec : ∀ (x : Float) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Float.underlying go!"prec") (PairV #x #y) (Val #(({ x with prec' := y } : Float)))
   get_mode : ∀ (x : Float), go.IsGoStepPureDetTagged under (StructFieldGet Float.underlying go!"mode") #x (Val #(x.mode'))
@@ -760,6 +763,7 @@ class Float.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Float.TypeAssumptions.type_repr
   Float.TypeAssumptions.underlying
+  Float.TypeAssumptions.layout
   Float.TypeAssumptions.get_prec
   Float.TypeAssumptions.set_prec
   Float.TypeAssumptions.get_mode
@@ -798,11 +802,13 @@ instance equals_unfold_ErrNaN [FfiSyntax] [GoGlobalContext] :
 class ErrNaN.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ErrNaN.underlying ErrNaN
   underlying : go.UnderlyingDirectedEq ErrNaN.ty ErrNaN.underlying
+  layout : go.StructLayout ErrNaN [(go!"msg", typeSize GoString, typeAlign GoString)]
   get_msg : ∀ (x : ErrNaN), go.IsGoStepPureDetTagged under (StructFieldGet ErrNaN.underlying go!"msg") #x (Val #(x.msg'))
   set_msg : ∀ (x : ErrNaN) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ErrNaN.underlying go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : ErrNaN)))
 
 attribute [instance] ErrNaN.TypeAssumptions.type_repr
   ErrNaN.TypeAssumptions.underlying
+  ErrNaN.TypeAssumptions.layout
   ErrNaN.TypeAssumptions.get_msg
   ErrNaN.TypeAssumptions.set_msg
 
@@ -831,6 +837,7 @@ instance equals_unfold_Int [FfiSyntax] [GoGlobalContext] :
 class Int.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Int'.underlying Int'
   underlying : go.UnderlyingDirectedEq Int'.ty Int'.underlying
+  layout : go.StructLayout Int' [(go!"neg", typeSize Bool, typeAlign Bool), (go!"abs", typeSize nat, typeAlign nat)]
   get_neg : ∀ (x : Int'), go.IsGoStepPureDetTagged under (StructFieldGet Int'.underlying go!"neg") #x (Val #(x.neg'))
   set_neg : ∀ (x : Int') (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Int'.underlying go!"neg") (PairV #x #y) (Val #(({ x with neg' := y } : Int')))
   get_abs : ∀ (x : Int'), go.IsGoStepPureDetTagged under (StructFieldGet Int'.underlying go!"abs") #x (Val #(x.abs'))
@@ -839,6 +846,7 @@ class Int.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
 
 attribute [instance] Int.TypeAssumptions.type_repr
   Int.TypeAssumptions.underlying
+  Int.TypeAssumptions.layout
   Int.TypeAssumptions.get_neg
   Int.TypeAssumptions.set_neg
   Int.TypeAssumptions.get_abs
@@ -868,11 +876,13 @@ instance equals_unfold_byteReader [FfiSyntax] [GoGlobalContext] :
 class byteReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying byteReader.underlying byteReader
   underlying : go.UnderlyingDirectedEq byteReader.ty byteReader.underlying
+  layout : go.StructLayout byteReader [(go!"ScanState", typeSize _root_.Perennial.fmt.ScanState, typeAlign _root_.Perennial.fmt.ScanState)]
   get_ScanState : ∀ (x : byteReader), go.IsGoStepPureDetTagged under (StructFieldGet byteReader.underlying go!"ScanState") #x (Val #(x.ScanState'))
   set_ScanState : ∀ (x : byteReader) (y : _root_.Perennial.fmt.ScanState), go.IsGoStepPureDetTagged under (StructFieldSet byteReader.underlying go!"ScanState") (PairV #x #y) (Val #(({ x with ScanState' := y } : byteReader)))
 
 attribute [instance] byteReader.TypeAssumptions.type_repr
   byteReader.TypeAssumptions.underlying
+  byteReader.TypeAssumptions.layout
   byteReader.TypeAssumptions.get_ScanState
   byteReader.TypeAssumptions.set_ScanState
 
@@ -899,11 +909,13 @@ instance equals_unfold_stack [FfiSyntax] [GoGlobalContext] :
 class stack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying stack.underlying stack
   underlying : go.UnderlyingDirectedEq stack.ty stack.underlying
+  layout : go.StructLayout stack [(go!"w", typeSize GoSlice, typeAlign GoSlice)]
   get_w : ∀ (x : stack), go.IsGoStepPureDetTagged under (StructFieldGet stack.underlying go!"w") #x (Val #(x.w'))
   set_w : ∀ (x : stack) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet stack.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : stack)))
 
 attribute [instance] stack.TypeAssumptions.type_repr
   stack.TypeAssumptions.underlying
+  stack.TypeAssumptions.layout
   stack.TypeAssumptions.get_w
   stack.TypeAssumptions.set_w
 
@@ -934,6 +946,7 @@ instance equals_unfold_divisor [FfiSyntax] [GoGlobalContext] :
 class divisor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying divisor.underlying divisor
   underlying : go.UnderlyingDirectedEq divisor.ty divisor.underlying
+  layout : go.StructLayout divisor [(go!"bbb", typeSize nat, typeAlign nat), (go!"nbits", typeSize w64, typeAlign w64), (go!"ndigits", typeSize w64, typeAlign w64)]
   get_bbb : ∀ (x : divisor), go.IsGoStepPureDetTagged under (StructFieldGet divisor.underlying go!"bbb") #x (Val #(x.bbb'))
   set_bbb : ∀ (x : divisor) (y : nat), go.IsGoStepPureDetTagged under (StructFieldSet divisor.underlying go!"bbb") (PairV #x #y) (Val #(({ x with bbb' := y } : divisor)))
   get_nbits : ∀ (x : divisor), go.IsGoStepPureDetTagged under (StructFieldGet divisor.underlying go!"nbits") #x (Val #(x.nbits'))
@@ -943,6 +956,7 @@ class divisor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 
 attribute [instance] divisor.TypeAssumptions.type_repr
   divisor.TypeAssumptions.underlying
+  divisor.TypeAssumptions.layout
   divisor.TypeAssumptions.get_bbb
   divisor.TypeAssumptions.set_bbb
   divisor.TypeAssumptions.get_nbits
@@ -975,6 +989,7 @@ instance equals_unfold_Rat [FfiSyntax] [GoGlobalContext] :
 class Rat.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Rat.underlying Rat
   underlying : go.UnderlyingDirectedEq Rat.ty Rat.underlying
+  layout : go.StructLayout Rat [(go!"a", typeSize Int', typeAlign Int'), (go!"b", typeSize Int', typeAlign Int')]
   get_a : ∀ (x : Rat), go.IsGoStepPureDetTagged under (StructFieldGet Rat.underlying go!"a") #x (Val #(x.a'))
   set_a : ∀ (x : Rat) (y : Int'), go.IsGoStepPureDetTagged under (StructFieldSet Rat.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : Rat)))
   get_b : ∀ (x : Rat), go.IsGoStepPureDetTagged under (StructFieldGet Rat.underlying go!"b") #x (Val #(x.b'))
@@ -982,6 +997,7 @@ class Rat.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
 
 attribute [instance] Rat.TypeAssumptions.type_repr
   Rat.TypeAssumptions.underlying
+  Rat.TypeAssumptions.layout
   Rat.TypeAssumptions.get_a
   Rat.TypeAssumptions.set_a
   Rat.TypeAssumptions.get_b

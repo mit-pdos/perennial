@@ -72,12 +72,13 @@ theorem counter_alloc (l : Loc) :
 /-- Registering a thread (`atomic.AddUint32(l, 1)`) deposits the thread's token
 and returns `n + 1` for some `n + 1 < 2^31`: the counter never reaches `2^31`,
 provided the thread bound is at most `2^31`. -/
-theorem wp_counter_register (Hbound : threadBound GF ≤ 2 ^ 31) (l : Loc) :
+theorem wp_counter_register (Hbound : threadBound GF ≤ 2 ^ 31) (l : Loc)
+    (hal : Aligned (.word 4) l) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync.atomic ∗ inv counterN (counterInv l) ∗ threadTok }}
       (App (App (Val (@! sync.atomic.AddUint32)) (Val #l)) (Val #(W32 1)))
     {{ (n : Nat), RET #(W32 (n + 1)); ⌜n + 1 < 2 ^ 31⌝ }} := by
   iintro %Φ ⟨#Hpkg, #Hinv, Htok⟩ HΦ
-  iapply sync.atomic.wp_AddUint32 l (W32 1) $$ %_ Hpkg
+  iapply sync.atomic.wp_AddUint32 l (W32 1) hal $$ %_ Hpkg
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask

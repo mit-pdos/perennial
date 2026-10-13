@@ -28,9 +28,11 @@ class PreSemantics [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFu
   [map_sem : go.MapSemantics]
   [slice_sem : go.SliceSemantics]
   [predeclared_sem : go.PredeclaredSemantics]
+  [layout_sem : go.LayoutSemantics]
 
 attribute [instance] PreSemantics.core_sem PreSemantics.interface_sem PreSemantics.array_sem
   PreSemantics.map_sem PreSemantics.slice_sem PreSemantics.predeclared_sem
+  PreSemantics.layout_sem
 export PreSemantics (interface_sem array_sem map_sem slice_sem predeclared_sem)
 
 end go

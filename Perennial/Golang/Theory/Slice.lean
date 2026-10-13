@@ -820,13 +820,49 @@ variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 variable {s : Stuckness} {E : CoPset}
 variable {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
 
-theorem wp_slice_make3 {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
+-- `make`'s bound for the built-in representations, for the WP expression simplifier (so
+-- that `make`'s check on a constant capacity is decided).
+section make_bounds
+variable [GoSemanticsFunctions] [go.LayoutSemantics]
+@[goose_wp_simp] theorem makeCapBound_w8 : go.makeCapBound w8 = 2 ^ 48 := by simp [go.makeCapBound]
+@[goose_wp_simp] theorem makeCapBound_w16 : go.makeCapBound w16 = 2 ^ 47 := by
+  simp [go.makeCapBound]
+@[goose_wp_simp] theorem makeCapBound_w32 : go.makeCapBound w32 = 2 ^ 46 := by
+  simp [go.makeCapBound]
+@[goose_wp_simp] theorem makeCapBound_w64 : go.makeCapBound w64 = 2 ^ 45 := by
+  simp [go.makeCapBound]
+@[goose_wp_simp] theorem makeCapBound_bool : go.makeCapBound Bool = 2 ^ 48 := by
+  simp [go.makeCapBound]
+@[goose_wp_simp] theorem makeCapBound_loc : go.makeCapBound Loc = 2 ^ 45 := by
+  simp [go.makeCapBound]
+@[goose_wp_simp] theorem makeCapBound_func : go.makeCapBound GoFunc = 2 ^ 45 := by
+  simp [go.makeCapBound]
+@[goose_wp_simp] theorem makeCapBound_string : go.makeCapBound GoString = 2 ^ 44 := by
+  simp [go.makeCapBound]
+@[goose_wp_simp] theorem makeCapBound_interface : go.makeCapBound GoInterface = 2 ^ 44 := by
+  simp [go.makeCapBound]
+@[goose_wp_simp] theorem makeCapBound_slice : go.makeCapBound GoSlice = 2 ^ 48 / 24 := by
+  simp [go.makeCapBound]
+end make_bounds
+
+/-- The size premise of `wp_slice_make3` from a bound on the bytes. -/
+theorem make_cap_ok {c : w64} {sz : Int} (h : sint.Z c * sz ≤ 2 ^ 48) :
+    0 < sz → sint.Z c ≤ 2 ^ 48 / sz := fun hsz =>
+  (Int.le_ediv_iff_mul_le hsz).2 h
+
+/-- The size premise of `wp_slice_make3` for an empty slice. -/
+theorem make_cap_ok_zero (sz : Int) : 0 < sz → sint.Z (W64 0) ≤ 2 ^ 48 / sz := fun hsz =>
+  Int.ediv_nonneg (by decide) (by omega)
+
+/-- The internal allocation of a slice (`slice.makeUnchecked`). -/
+theorem wp_slice_makeUnchecked {t : go.GoType} [IntoValTyped (GF := GF) V t]
     (len cap : w64) (hle : 0 ≤ sint.Z len ∧ sint.Z len ≤ sint.Z cap) :
     {{ (True : IProp GF) }}
-      (App (App (Val #(functions go.make3 [st])) (Val #len)) (Val #cap)) @ s; E
+      (App (App (Val (slice.makeUnchecked t)) (Val #len)) (Val #cap)) @ s; E
     {{ (sl : GoSlice), RET #sl;
         sl ↦* (List.replicate (sint.nat len) (zero_val V)) ∗
         ownSliceCap V sl (DFrac.own 1) ∗ ⌜sl.cap = cap⌝ }} := by
+  unfold slice.makeUnchecked
   wp_start
   wp_if_destruct
   · exfalso; omega
@@ -870,14 +906,51 @@ theorem wp_slice_make3 {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped
       iexact Hcap
     · ipureintro; rfl
 
+/-- `make([]T, len, cap)`: Go panics when `cap × size(T)` passes `maxAlloc` (`2^48`). -/
+theorem wp_slice_make3 {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
+    (len cap : w64) (hle : 0 ≤ sint.Z len ∧ sint.Z len ≤ sint.Z cap)
+    (hmax : 0 < typeSize V → sint.Z cap ≤ 2 ^ 48 / typeSize V) :
+    {{ (True : IProp GF) }}
+      (App (App (Val #(functions go.make3 [st])) (Val #len)) (Val #cap)) @ s; E
+    {{ (sl : GoSlice), RET #sl;
+        sl ↦* (List.replicate (sint.nat len) (zero_val V)) ∗
+        ownSliceCap V sl (DFrac.own 1) ∗ ⌜sl.cap = cap⌝ }} := by
+  wp_start
+  have hb : sint.Z cap ≤ go.makeCapBound V ∧ go.makeCapBound V < 2 ^ 63 ∧ 0 ≤ go.makeCapBound V := by
+    unfold go.makeCapBound
+    split
+    · rename_i hpos
+      have := hmax hpos
+      have : 2 ^ 48 / typeSize V ≤ 2 ^ 48 := Int.ediv_le_self _ (by decide)
+      have : 0 ≤ 2 ^ 48 / typeSize V := Int.ediv_nonneg (by decide) (by omega)
+      omega
+    · have : sint.Z cap < 2 ^ 63 := by word
+      omega
+  wp_pures
+  wp_if_destruct
+  · exfalso; rename_i h; revert h; word
+  wp_apply wp_slice_makeUnchecked len cap hle as %sl Hsl
+  iapply HΦ $$ Hsl
+
 theorem wp_slice_make2 {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
-    (len : w64) :
+    (len : w64) (hmax : 0 < typeSize V → sint.Z len ≤ 2 ^ 48 / typeSize V) :
     {{ (⌜0 ≤ sint.Z len⌝ : IProp GF) }}
       (App (Val #(functions go.make2 [st])) (Val #len)) @ s; E
     {{ (sl : GoSlice), RET #sl;
         sl ↦* (List.replicate (sint.nat len) (zero_val V)) ∗ ownSliceCap V sl (DFrac.own 1) }} := by
   wp_start as %Hlen
-  wp_apply wp_slice_make3 len len ⟨Hlen, Int.le_refl _⟩ as %sl ⟨Hsl, Hcap, _⟩
+  wp_apply wp_slice_make3 len len ⟨Hlen, Int.le_refl _⟩ hmax as %sl ⟨Hsl, Hcap, _⟩
+  iapply HΦ
+  iframe
+
+/-- `wp_slice_make2` for the internal allocation (`slice.makeUnchecked`, no size check). -/
+theorem wp_slice_makeUnchecked2 {t : go.GoType} [IntoValTyped (GF := GF) V t] (len : w64) :
+    {{ (⌜0 ≤ sint.Z len⌝ : IProp GF) }}
+      (App (App (Val (slice.makeUnchecked t)) (Val #len)) (Val #len)) @ s; E
+    {{ (sl : GoSlice), RET #sl;
+        sl ↦* (List.replicate (sint.nat len) (zero_val V)) ∗ ownSliceCap V sl (DFrac.own 1) }} := by
+  iintro %Φ %Hlen HΦ
+  wp_apply wp_slice_makeUnchecked len len ⟨Hlen, Int.le_refl _⟩ as %sl ⟨Hsl, Hcap, _⟩
   iapply HΦ
   iframe
 
@@ -996,7 +1069,7 @@ theorem wp_slice_copy_of_len_zero {st t : go.GoType} [st ↓u go.SliceType t]
     {{ RET #(W64 0); True }} := by
   wp_start
   rw [h]
-  wp_apply wp_slice_make2 (V := V) (W64 0) $$ [] as %tmp ⟨Htmp, _⟩
+  wp_apply wp_slice_makeUnchecked2 (V := V) (W64 0) $$ [] as %tmp ⟨Htmp, _⟩
   · ipureintro; decide
   ihave %Hlen := ownSlice_len _ _ _ $$ Htmp
   have htmp : tmp.len = W64 0 := by
@@ -1015,7 +1088,7 @@ theorem wp_slice_copy {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped 
         sl ↦* (vs'.take vs.length ++ vs.drop vs'.length) ∗ sl2 ↦*{dq} vs' }} := by
   wp_start as ⟨Hs1, Hs2⟩
   ihave %Hlen2 := ownSlice_len _ _ _ $$ Hs2
-  wp_apply wp_slice_make2 (V := V) sl2.len $$ [] as %tmp ⟨Htmp, _⟩
+  wp_apply wp_slice_makeUnchecked2 (V := V) sl2.len $$ [] as %tmp ⟨Htmp, _⟩
   · ipureintro; exact Hlen2.2
   wp_apply wp_copyForward tmp _ sl2 vs' dq $$ [Htmp Hs2] as %n1 ⟨_, Htmp, Hs2⟩
   · iframe
@@ -1067,7 +1140,7 @@ theorem wp_slice_copy_within {st t : go.GoType} [st ↓u go.SliceType t]
   icases (ownSlice_slice c d sl _ vs hcd).1 $$ Hs with ⟨Hc1, Hc2, Hc3⟩
   ihave %Hlenc := ownSlice_len _ _ _ $$ Hc2
   simp only [slice.slice] at Hlenc
-  wp_apply wp_slice_make2 (V := V) (d - c) $$ [] as %tmp ⟨Htmp, _⟩
+  wp_apply wp_slice_makeUnchecked2 (V := V) (d - c) $$ [] as %tmp ⟨Htmp, _⟩
   · ipureintro; exact Hlenc.2
   wp_apply wp_copyForward tmp _ _ _ (DFrac.own 1) $$ [Htmp Hc2] as %n1 ⟨_, Htmp, Hc2⟩
   · iframe
@@ -1111,7 +1184,7 @@ theorem wp_slice_clear {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped
     {{ RET #(); sl ↦* List.replicate vs.length (zero_val V) }} := by
   wp_start as Hs
   ihave %Hlen := ownSlice_len _ _ _ $$ Hs
-  wp_apply wp_slice_make2 (V := V) sl.len $$ [] with %zsl ⟨Hz, _⟩
+  wp_apply wp_slice_makeUnchecked2 (V := V) sl.len $$ [] with %zsl ⟨Hz, _⟩
   · ipureintro; exact Hlen.2
   wp_apply wp_slice_copy sl vs zsl (List.replicate (sint.nat sl.len) (zero_val V)) (DFrac.own 1) $$ [Hs Hz] with %n ⟨%Hn, Hs, _⟩
   · iframe Hs Hz
@@ -1188,7 +1261,7 @@ theorem wp_slice_append_dfrac {st t : go.GoType} [st ↓u go.SliceType t]
     · iapply ownSliceCap_slice_change_first sl sl.len (W64 0) (sl.len + sl2.len) _
         ⟨Hif, by word, by word, by word, by word⟩ $$ Hcap
   · wp_apply wp_new_cap with %cap %Hcap_ge
-    wp_apply wp_slice_make3 (V := V) (sl.len + sl2.len) cap ⟨by word, Hcap_ge⟩
+    wp_apply wp_slice_makeUnchecked (V := V) (sl.len + sl2.len) cap ⟨by word, Hcap_ge⟩
       with %nsl ⟨Hnew, Hnew_cap, %Hcap⟩
     ihave %Hsl_wf := ownSlice_wf _ _ _ $$ Hnew
     ihave %Hsl_len := ownSlice_len _ _ _ $$ Hnew
@@ -1290,7 +1363,7 @@ theorem wp_slice_append_undo {st t : go.GoType} [st ↓u go.SliceType t]
         ⟨Hlen.2, by word, Hif⟩ Hlen.1
       iframe Hn Hc
   · wp_apply wp_new_cap with %cap %Hcap_ge
-    wp_apply wp_slice_make3 (V := V) (sl.len + sl2.len) cap ⟨by word, Hcap_ge⟩
+    wp_apply wp_slice_makeUnchecked (V := V) (sl.len + sl2.len) cap ⟨by word, Hcap_ge⟩
       with %nsl ⟨Hnew, Hnew_cap, %Hcap⟩
     ihave %Hsl_wf := ownSlice_wf _ _ _ $$ Hnew
     ihave %Hsl_len := ownSlice_len _ _ _ $$ Hnew
@@ -1370,7 +1443,8 @@ theorem wp_slice_literal {st t : go.GoType} [IntoValTyped (GF := GF) V t] [st �
     wp_auto
     have h0 : 0 ≤ go.arrayLiteralSize kvs := by
       unfold go.arrayLiteralSize; split; omega
-    rw [ite_eq_left ⟨by decide, by word, by word⟩]
+    icases typedPointsto_not_null_dup _ _ _ $$ tmp with ⟨tmp, %Hnn⟩
+    rw [if_neg Hnn, ite_eq_left ⟨by decide, by word, by word⟩]
     have hz : W64 (go.arrayLiteralSize kvs) - W64 0 = W64 (go.arrayLiteralSize kvs) := by word
     simp only [show sint.Z (W64 0) = 0 from rfl, go.arrayIndexRef_0, hz]
     wp_pures

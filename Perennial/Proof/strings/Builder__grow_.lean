@@ -45,7 +45,7 @@ theorem strings.Builder.grow.wp_proof
   wp_apply wp_slice_copy (V := w8) (t := go.byte) _ _ buf s (DFrac.own 1) $$ [Hnew Hs]
     as %m ⟨-, Hnew, Hs⟩
   · iframe
-  wp_auto
+  try wp_auto
   iapply HΦ
   iexists _
   iframe

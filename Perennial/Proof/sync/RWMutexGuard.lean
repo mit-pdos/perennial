@@ -503,11 +503,12 @@ theorem replicate_helper (R Q : IProp GF) (γ : GName) (n : Nat) :
     · iapply Hmk $$ Hr Htok
     · iapply ih $$ [$Hmk $Htoks $Hrs]
 
-theorem init_RWMutex (P : Qp → IProp GF) {E : CoPset} (rw : Loc) [HPfrac : Fractional P] :
+theorem init_RWMutex (P : Qp → IProp GF) {E : CoPset} (rw : Loc) [HPfrac : Fractional P]
+    (hal : AllocAligned RWMutex rw) :
     ⊢ ▷ P 1 -∗ typedPointsto (GF := GF) rw (zero_val RWMutex) (DFrac.own 1) ={E}=∗
       [∗list] _x ∈ List.replicate (Int.toNat rwmutex.actualMaxReaders) (), ownRWMutex rw P := by
   iintro HP Hrw
-  imod rwmutex.init_RWMutex (E := E) (nroot.@"rw") rw $$ Hrw with ⟨%γ, #His, Hstate, Hrtoks⟩
+  imod rwmutex.init_RWMutex (E := E) (nroot.@"rw") rw hal $$ Hrw with ⟨%γ, #His, Hstate, Hrtoks⟩
   imod ownTokAuth_alloc (GF := GF) with ⟨%γmax, Hauth⟩
   imod ownTokAuth_add (Int.toNat rwmutex.actualMaxReaders) γmax 0 $$ Hauth with ⟨Hauth, Htoks⟩
   simp only [Nat.zero_add]

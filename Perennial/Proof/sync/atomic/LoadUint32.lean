@@ -24,10 +24,10 @@ variable [package_sem : sync.atomic.Assumptions]
 
 theorem sync.atomic.LoadUint32.wp_proof :
     sync.atomic.LoadUint32.spec (GF := GF) (hG := hG) := by
-  intro addr dq
+  intro addr dq hal
   wp_start as _
   imod HΦ with ⟨%v, >Haddr, HΦ⟩
-  wp_apply_core wp_atomic_load _ _ addr dq v $$ Haddr
+  wp_apply_core typed.wp_atomic_load addr dq v hal $$ Haddr
   iintro Haddr
   iapply HΦ $$ Haddr
 

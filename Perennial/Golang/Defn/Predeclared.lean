@@ -66,6 +66,11 @@ end helpers
 
 namespace «unsafe»
 def Pointer : go.GoType := go.Named go!"unsafe.Pointer" []
+/-- `unsafe.Add(ptr, len)`: `ptr` moved `len` bytes (Goose also emits it for
+`unsafe.Pointer(uintptr(ptr) + len)`, the same thing when it stays in `ptr`'s allocation). -/
+def Add : GoString := go!"unsafe.Add"
+/-- `unsafe.Slice(ptr, len)`: the slice of `len` elements from `ptr`. -/
+def Slice : GoString := go!"unsafe.Slice"
 
 class Semantics [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] : Prop where
   go_zero_val_Pointer : go.TypeReprUnderlying Pointer Loc
@@ -156,6 +161,37 @@ def prophId : go.GoType := go.Named go!"proph id" []
 
 section defs
 variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+
+/-- How the values of a predeclared type occupy memory (`Encoding`), with gc/amd64's sizes
+(`Layout.lean`): the integers, and the floats by their bits, are their little-endian bytes;
+a `bool` (one cell), a `string` (16), an `unsafe.Pointer` (8) or a prophecy id (8) is one
+value followed by tails, which nothing reads as bytes (Go would give the bytes of its
+representation: the model is less defined there). -/
+class inductive PredeclaredEncoding : go.GoType → outParam Encoding → Prop
+  | enc_uint8 : PredeclaredEncoding go.uint8 (.word 1)
+  | enc_int8 : PredeclaredEncoding go.int8 (.word 1)
+  | enc_uint16 : PredeclaredEncoding go.uint16 (.word 2)
+  | enc_int16 : PredeclaredEncoding go.int16 (.word 2)
+  | enc_uint32 : PredeclaredEncoding go.uint32 (.word 4)
+  | enc_int32 : PredeclaredEncoding go.int32 (.word 4)
+  | enc_float32 : PredeclaredEncoding go.float32 (.word 4)
+  | enc_uint64 : PredeclaredEncoding go.uint64 (.word 8)
+  | enc_int64 : PredeclaredEncoding go.int64 (.word 8)
+  | enc_uint : PredeclaredEncoding go.uint (.word 8)
+  | enc_int : PredeclaredEncoding go.int (.word 8)
+  | enc_uintptr : PredeclaredEncoding go.uintptr (.word 8)
+  | enc_float64 : PredeclaredEncoding go.float64 (.word 8)
+  | enc_bool : PredeclaredEncoding go.bool (.cell 1)
+  | enc_string : PredeclaredEncoding go.string (.cell 16)
+  | enc_Pointer : PredeclaredEncoding unsafe.Pointer (.cell 8)
+  | enc_proph_id : PredeclaredEncoding go.prophId (.cell 8)
+
+attribute [instance] PredeclaredEncoding.enc_uint8 PredeclaredEncoding.enc_int8
+  PredeclaredEncoding.enc_uint16 PredeclaredEncoding.enc_int16 PredeclaredEncoding.enc_uint32
+  PredeclaredEncoding.enc_int32 PredeclaredEncoding.enc_float32 PredeclaredEncoding.enc_uint64
+  PredeclaredEncoding.enc_int64 PredeclaredEncoding.enc_uint PredeclaredEncoding.enc_int
+  PredeclaredEncoding.enc_uintptr PredeclaredEncoding.enc_float64 PredeclaredEncoding.enc_bool
+  PredeclaredEncoding.enc_string PredeclaredEncoding.enc_Pointer PredeclaredEncoding.enc_proph_id
 
 /-- These are the predeclareds that are modeled as taking up a single heap
 location. A `class` so that the `[IsPredeclared u]`
@@ -879,17 +915,17 @@ assumption, not a separate choice. So `uintptr` is modelled exactly like `uint`/
 
 * values are `w64` (it shares the `TypeReprUnderlying _ w64` representation with
   `uint`/`uint64`/`int`/`int64`), the zero value is `W64 0`, and it is strictly comparable;
-* it occupies one heap location (`isPredeclared_uintptr`);
+* it occupies 8 byte cells, as `uint64` (`PredeclaredEncoding.enc_uintptr`);
 * arithmetic, bitwise operations and shifts are the unsigned `w64` ones (wrapping mod 2^64,
   `>>` logical), comparisons are unsigned (`uint.Z`), as for `uint64`;
 * conversions to and from the other integer types (and from untyped integer constants) are
   those of `uint64`: identity to/from 64-bit types, truncation to narrower types, sign/zero
   extension from narrower signed/unsigned types.
 
-Conversions between pointers (or `unsafe.Pointer`) and `uintptr` are deliberately *not*
-modelled: there is no `Convert unsafe.Pointer go.uintptr` or `Convert go.uintptr unsafe.Pointer`
-fact, so such a conversion is stuck (a program using one cannot be verified). A `uintptr` value
-is thus only ever an integer, never the address of an object. -/
+The conversion `uintptr(p)` of an `unsafe.Pointer` gives an unspecified address
+(`UnsafeSemantics.convert_pointer_to_uintptr`); the conversion back, `unsafe.Pointer(u)`, is
+not modelled (stuck), except as `unsafe.Pointer(uintptr(p) + n)`, which Goose translates as
+`unsafe.Add(p, n)`. A `uintptr` is thus never turned back into a pointer. -/
 class UintptrSemantics [GoSemanticsFunctions] : Prop where
   go_zero_val_uintptr : TypeReprUnderlying go.uintptr w64
   comparable_uintptr : ⟦CheckComparable go.uintptr, #()⟧ ⤳[under] #()
@@ -1057,13 +1093,84 @@ attribute [instance] Float32Semantics.go_zero_val_float32 Float32Semantics.compa
 export Float32Semantics (go_zero_val_float32 comparable_float32 underlying_float32 go_eq_float32
   le_float32 lt_float32 ge_float32 gt_float32 plus_float32 sub_float32 mul_float32 div_float32)
 
+/-- `uintptr(p)` for a non-null `p` at offset `off` of its block: any address in
+`[8, 2^48)` congruent to `off` modulo 8, chosen anew at each conversion.
+
+Platform facts (linux/amd64): user-space addresses are below `2^48` (the kernel's user
+space; gc's `heapAddrBits`), and no object is at an address below 8 (page 0 is never
+mapped). By the convention of `IsFreshAligned`, offset 0 of a block is 8-aligned, so
+`off % 8` is the address modulo 8: what Go's alignment guarantee gives. Nothing else is
+promised: Go moves goroutine stacks, and "a `uintptr` … will not be updated if the object
+moves" (package `unsafe`), so two conversions of the same pointer may differ. -/
+def pointerAddr (off : Int) : Expr :=
+  gl((((ArbitraryInt %⟨go.uint64⟩ #(W64 (2 ^ 45 - 1))) +⟨go.uint64⟩ #(W64 1)) *⟨go.uint64⟩
+      #(W64 8)) +⟨go.uint64⟩ #(W64 (off % 8)))
+
+/-- The rest of package `unsafe` on linux/amd64: `uintptr(p)`, the difference of two such
+conversions in one expression, `unsafe.Add` and `unsafe.Slice`. The conversion of a
+`uintptr` to an `unsafe.Pointer` is not modeled (stuck), except in the form
+`unsafe.Pointer(uintptr(p) + n)`, which Goose emits as `unsafe.Add(p, n)`. -/
+class UnsafeSemantics [GoSemanticsFunctions] : Prop where
+  /-- `uintptr(p)`: `0` for `nil`, else an unspecified address (`pointerAddr`). -/
+  convert_pointer_to_uintptr (l : Loc) :
+    ⟦Convert «unsafe».Pointer go.uintptr, #l⟧ ⤳[under]
+      (if l = null then #(W64 0) else pointerAddr l.locOff)
+  /-- `uintptr(p) - uintptr(q)` within one expression, with no call or receive in `p` and
+  `q` (Goose emits it as this subtraction of `unsafe.Pointer`s, which Go does not have):
+  nothing moves between the two conversions, so for two pointers into the same
+  allocation it is their distance; otherwise it is only known modulo 8 (`pointerAddr`). -/
+  ptr_diff (l1 l2 : Loc) :
+    ⟦GoOp GoSub «unsafe».Pointer, (#l1, #l2)⟧ ⤳[under]
+      (if l1.locCar = l2.locCar then #(W64 (l1.locOff - l2.locOff))
+       else gl((ArbitraryInt *⟨go.uint64⟩ #(W64 8)) +⟨go.uint64⟩
+         #(W64 ((l1.locOff - l2.locOff) % 8))))
+  /-- `unsafe.Add(ptr, len)`: `ptr` moved `len` bytes, which must stay in `ptr`'s
+  allocation (package `unsafe`'s rules; one past the end is not in it): a non-zero `len`
+  is stuck unless the result is a cell of the heap (`CheckCell`; the cells of a block are
+  exactly those its allocation made, `IsFreshAligned`). -/
+  add_unfold : FuncUnfold «unsafe».Add [] (λ: "p" "n",
+    if: "n" =⟨go.int⟩ #(W64 0) then "p"
+    else
+      let: "q" := GoOp GoPlus (go.PointerType go.uint8) ("p", "n") in
+      CheckCell "q" ;; "q")
+  /-- `unsafe.Slice(ptr, len)` (`len` an `int`) checks what `runtime.unsafeslice` checks: a
+  negative `len`; for a zero-size element, a `nil` `ptr` with a positive `len`; otherwise
+  `len × size` overflowing or running past the end of the address space
+  (`mem > -uintptr(ptr)`, with `uintptr(ptr)` as `convert_pointer_to_uintptr`, so `0` for
+  `nil`). A panic is stuck. -/
+  slice_unfold (t : go.GoType) {V : Type} [ZeroVal V] [TypeRepr t V] :
+    FuncUnfold «unsafe».Slice [t] (λ: "p" "n",
+      if: "n" <⟨go.int⟩ #(W64 0) then Panic "unsafe.Slice: len out of range"
+      else (if typeSize V = 0 then
+        gl(if: "p" =⟨go.PointerType t⟩ #null then
+             (if: "n" =⟨go.int⟩ #(W64 0) then InternalMakeSlice ("p", "n", "n")
+              else Panic "unsafe.Slice: ptr is nil and len is not zero")
+           else InternalMakeSlice ("p", "n", "n"))
+      else gl(
+        let: "a" := Convert «unsafe».Pointer go.uintptr
+          (Convert (go.PointerType t) «unsafe».Pointer "p") in
+        if: ("n" >⟨go.uint64⟩ #(W64 ((2 ^ 64 - 1) / typeSize V))) then
+          (if: "p" =⟨go.PointerType t⟩ #null then Panic "unsafe.Slice: ptr is nil and len is not zero"
+           else Panic "unsafe.Slice: len out of range")
+        else if: ("n" *⟨go.uint64⟩ #(W64 (typeSize V))) >⟨go.uint64⟩ (#(W64 0) -⟨go.uint64⟩ "a") then
+          (if: "p" =⟨go.PointerType t⟩ #null then Panic "unsafe.Slice: ptr is nil and len is not zero"
+           else Panic "unsafe.Slice: len out of range")
+        else InternalMakeSlice ("p", "n", "n"))) : val)
+
+attribute [instance] UnsafeSemantics.convert_pointer_to_uintptr UnsafeSemantics.ptr_diff
+  UnsafeSemantics.add_unfold UnsafeSemantics.slice_unfold
+export UnsafeSemantics (convert_pointer_to_uintptr ptr_diff add_unfold slice_unfold)
+
 class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
-  alloc_predeclared (u : go.GoType) [H : IsPredeclared u] (v : val) :
-    ⟦GoAlloc u, v⟧ ⤳[internalUnder] Alloc v
-  load_predeclared (u : go.GoType) [H : IsPredeclared u] (l : val) :
-    ⟦GoLoad u, l⟧ ⤳[internalUnder] Read l
-  store_predeclared (u : go.GoType) [H : IsPredeclared u] (l v : val) :
-    ⟦GoStore u, (l, v)⟧ ⤳[internalUnder] Store l v
+  /-- A value of a predeclared type is allocated as a block of its size (`allocEncoded`),
+  loaded and stored non-atomically on all its cells (`ReadN`, `StoreN`: a race with an
+  access of any of its cells is stuck). -/
+  alloc_predeclared (u : go.GoType) {enc : Encoding} [H : PredeclaredEncoding u enc] (v : val) :
+    ⟦GoAlloc u, v⟧ ⤳[internalUnder] allocEncoded enc v
+  load_predeclared (u : go.GoType) {enc : Encoding} [H : PredeclaredEncoding u enc] (l : val) :
+    ⟦GoLoad u, l⟧ ⤳[internalUnder] App (Val (ReadN enc)) (Val l)
+  store_predeclared (u : go.GoType) {enc : Encoding} [H : PredeclaredEncoding u enc] (l v : val) :
+    ⟦GoStore u, (l, v)⟧ ⤳[internalUnder] App (App (Val (StoreN enc)) (Val l)) (Val v)
 
   predeclared_underlying (t : go.GoType) (H : IsPredeclared t) : underlying t = t
 
@@ -1081,6 +1188,7 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   panic_unfold : FuncUnfold panic [] panic.impl
 
   [unsafe_sem : unsafe.Semantics]
+  [unsafe_ext_sem : UnsafeSemantics]
 
   comparable_bool : ⟦CheckComparable go.bool, #()⟧ ⤳[under] #()
   go_eq_bool : IsStrictlyComparable go.bool Bool
@@ -1132,6 +1240,7 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
 attribute [instance] PredeclaredSemantics.alloc_predeclared PredeclaredSemantics.load_predeclared
   PredeclaredSemantics.store_predeclared PredeclaredSemantics.min_unfold
   PredeclaredSemantics.max_unfold PredeclaredSemantics.panic_unfold PredeclaredSemantics.unsafe_sem
+  PredeclaredSemantics.unsafe_ext_sem
   PredeclaredSemantics.comparable_bool PredeclaredSemantics.go_eq_bool
   PredeclaredSemantics.underlying_bool PredeclaredSemantics.go_zero_val_bool
   PredeclaredSemantics.go_unop_not_bool PredeclaredSemantics.untypedInt_semantics

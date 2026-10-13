@@ -41,6 +41,7 @@ theorem context.cancelCtx.cancel.wp_proof
   ihave #Hc' := Hc
   iunfold isCancelCtxOf at Hc'
   iNamed Hc'
+  obtain ⟨Hcal_done, Hcal_err⟩ := Hcal
   ihave #Hi := Hcci
   iunfold isClosedchanInit at Hi
   icases Hi with ⟨%cch, %γc, #Hcch, #Hcchan, #Hcinv⟩

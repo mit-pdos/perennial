@@ -93,11 +93,13 @@ instance equals_unfold_Nested [FfiSyntax] [GoGlobalContext] :
 class Nested.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Nested.underlying Nested
   underlying : go.UnderlyingDirectedEq Nested.ty Nested.underlying
+  layout : go.StructLayout Nested [(go!"X", typeSize w64, typeAlign w64)]
   get_X : ∀ (x : Nested), go.IsGoStepPureDetTagged under (StructFieldGet Nested.underlying go!"X") #x (Val #(x.X'))
   set_X : ∀ (x : Nested) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Nested.underlying go!"X") (PairV #x #y) (Val #(({ x with X' := y } : Nested)))
 
 attribute [instance] Nested.TypeAssumptions.type_repr
   Nested.TypeAssumptions.underlying
+  Nested.TypeAssumptions.layout
   Nested.TypeAssumptions.get_X
   Nested.TypeAssumptions.set_X
 

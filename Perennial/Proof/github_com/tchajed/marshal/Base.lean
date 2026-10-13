@@ -4,16 +4,13 @@ helpers: the package's `isPkgInit`, the encoding predicates (`Uint64HasEncoding`
 `Encodes`), and the lemmas about words and slices that the proofs use.
 
 Notes on the statements (in `Perennial/Spec/github_com/tchajed/marshal/`):
-* `reserve.spec`: hypothesis `Hbound : length vs + uint.Z extra ≤ 2^62`.
+* `reserve.spec`: hypothesis `Hbound : length vs + uint.Z extra ≤ 2^47`.
   Without it the spec is false: `reserve` grows to
-  `new_cap = max(2 * cap b, len b + extra)` and `make3` panics when
-  `new_cap ≥ 2^63` (e.g. `cap b = 2^62`, `len b + extra = 2^62 + 1`).
-  The bound is tight: for `extra ≥ 1` and any `len b + extra` in
-  `(2^62, 2^64)` there is a capacity (`len b + extra - 1` or `len b`) that
-  makes `make3` panic. (If `len b + extra` overflows,
-  `SumAssumeNoOverflow` diverges, which is safe.)
+  `new_cap = max(2 * cap b, len b + extra)` (with `cap b < len b + extra`) and `make3`
+  panics when `new_cap` passes `maxAlloc`, `2^48` bytes (`make3_slice`); with the bound,
+  `new_cap ≤ 2 * (len b + extra) ≤ 2^48`.
 * `WriteInt.spec` / `WriteInt32.spec` / `WriteLenPrefixedBytes.spec`:
-  hypothesis `length vs + 8 ≤ 2^62` (`+ 4` for `WriteInt32`), inherited from
+  hypothesis `length vs + 8 ≤ 2^47` (`+ 4` for `WriteInt32`), inherited from
   `reserve.spec` (tight for the same reason). `WriteBytes.spec` and
   `WriteBool.spec` use `append` and need no bound.
 * `compute_new_cap.spec`: the postcondition includes

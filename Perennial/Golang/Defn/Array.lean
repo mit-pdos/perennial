@@ -4,6 +4,7 @@ Semantics of Go arrays.
 module
 
 public import Perennial.Golang.Defn.Predeclared
+public import Perennial.Golang.Defn.Layout
 public import Perennial.Golang.Defn.Loop
 
 @[expose] public section
@@ -29,9 +30,19 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   type_repr_array (ty : go.GoType) (V : Type) (n : Int) [ZeroVal V] [TypeRepr ty V] :
     go.TypeReprUnderlying (go.ArrayType n ty) (GoArray V n)
 
-  -- TODO: implement alloc_array
-  alloc_array (n : Int) (elem : go.GoType) (v : val) :
-    ⟦GoAlloc (go.ArrayType n elem), v⟧ ⤳[internalUnder] AngelicExit #()
+  /-- An array is allocated as one block of `n` elements, at an offset of the element's
+  alignment (`AllocN`), into which the value is stored element by element. A size of
+  `2^63` bytes or more is not considered (`AngelicExit`); no program reaches it: a static
+  array type gc compiles is below `2^50` bytes (`types.MaxWidth`), and a dynamic one
+  (`make`, through `InternalDynamicArrayAlloc`) has passed `makeslice`'s check of
+  `2^48` (`make3_slice`). -/
+  alloc_array (n : Int) (elem : go.GoType) (v : val) {V : Type} [ZeroVal V] [TypeRepr elem V] :
+    ⟦GoAlloc (go.ArrayType n elem), v⟧ ⤳[internalUnder]
+      (if 0 ≤ n ∧ n * typeSize V < 2^63 then
+        (Let "l" (AllocN (Val (PairV (LitV (LitInt (W64 (n * typeSize V))))
+            (LitV (LitInt (W64 (typeAlign V)))))) (Val (LitV LitTail)))
+          gl(GoStore (go.ArrayType n elem) ("l", v) ;; "l") : Expr)
+       else gl(AngelicExit #()))
 
   load_array (n : Int) (elem_type : go.GoType) (l : val) :
     ⟦GoLoad (go.ArrayType n elem_type), l⟧ ⤳[internalUnder]
@@ -65,13 +76,16 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   index_ref_array (n : Int) (elem_type : go.GoType) (i : w64) (l : Loc) {V : Type} [ZeroVal V]
     [TypeRepr elem_type V] :
     ⟦IndexRef (go.ArrayType n elem_type), (#l, #i)⟧ ⤳[under]
-      (if sint.Z i < n then #(arrayIndexRef V (sint.Z i) l) else Panic "index out of range")
+      (if 0 ≤ sint.Z i ∧ sint.Z i < n then #(arrayIndexRef V (sint.Z i) l)
+       else Panic "index out of range")
 
   index_array (n : Int) (elem_type : go.GoType) (i : w64) (V : Type) (a : GoArray V n) :
     ⟦Index (go.ArrayType n elem_type), (#a, #i)⟧ ⤳[under]
-      (match a.arr[sint.nat i]? with
-       | some v => #v
-       | none => Panic "index out of range")
+      (if 0 ≤ sint.Z i then
+         (match a.arr[sint.nat i]? with
+          | some v => #v
+          | none => Panic "index out of range")
+       else Panic "index out of range")
 
   /-- `len` and `cap` of an array are both its length, which is part of its
   type rather than something stored alongside the elements. Go makes such a
@@ -113,7 +127,8 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   slice_array_step (n : Int) (elem_type : go.GoType) (p : Loc) (low high : w64) {V : Type}
     [ZeroVal V] [TypeRepr elem_type V] :
     ⟦Slice (go.ArrayType n elem_type), (#p, #low, #high)⟧ ⤳
-       (if 0 ≤ sint.Z low ∧ sint.Z low ≤ sint.Z high ∧ sint.Z high ≤ n then
+       (if p = null then Panic "invalid memory address or nil pointer dereference"
+        else if 0 ≤ sint.Z low ∧ sint.Z low ≤ sint.Z high ∧ sint.Z high ≤ n then
           #(slice.mk (arrayIndexRef V (sint.Z low) p)
               (high - low)
               (W64 n - low))
@@ -122,23 +137,12 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   fullSlice_array_step_pure (n : Int) (elem_type : go.GoType) (p : Loc) (low high max : w64)
     {V : Type} [ZeroVal V] [TypeRepr elem_type V] :
     ⟦FullSlice (go.ArrayType n elem_type), (#p, #low, #high, #max)⟧ ⤳
-    (if 0 ≤ sint.Z low ∧ sint.Z low ≤ sint.Z high ∧ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ n then
+    (if p = null then Panic "invalid memory address or nil pointer dereference"
+     else if 0 ≤ sint.Z low ∧ sint.Z low ≤ sint.Z high ∧ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ n then
        #(slice.mk (arrayIndexRef V (sint.Z low) p)
            (high - low) (max - low))
      else Panic "slice bounds out of range")
 
-  /-- This requires that arrayIndexRef does not ever end up becoming null due
-  to a negative Z offset. Instead, negative offsets should be thought of as
-  clamped to 0. -/
-  arrayIndexRef_null_inv (t : Type) (i : Int) (l : Loc) :
-    arrayIndexRef t i l = null → l = null
-
-  arrayIndexRef_add (t : Type) (i j : Int) (l : Loc) :
-    arrayIndexRef t (i + j) l = arrayIndexRef t j (arrayIndexRef t i l)
-
-  /-- For disk FFI proof. -/
-  arrayIndexRef_add_loc_add (i : Int) (l : Loc) :
-    arrayIndexRef w8 i l = l +ₗ i
 
   intoVal_inj_array (V : Type) (n : Int) [inj_V : go.IntoValInj V] :
     go.IntoValInj (GoArray V n)
@@ -153,8 +157,33 @@ attribute [instance] ArraySemantics.array_set_step ArraySemantics.array_length_s
 export ArraySemantics (array_set_step array_length_step equals_array type_repr_array alloc_array
   load_array store_array index_ref_array index_array len_array cap_array composite_literal_array
   slice_array_step
-  fullSlice_array_step_pure arrayIndexRef_null_inv arrayIndexRef_add
-  arrayIndexRef_add_loc_add intoVal_inj_array)
+  fullSlice_array_step_pure intoVal_inj_array)
+
+/-- An index never takes a non-null array to `null` (`arrayIndexRef` stays in the block). -/
+theorem arrayIndexRef_null_inv [GoSemanticsFunctions] (t : Type) (i : Int) (l : Loc) :
+    arrayIndexRef t i l = null → l = null := by
+  unfold arrayIndexRef
+  split
+  · exact id
+  · intro h
+    have := congrArg Loc.locCar h
+    simp [Loc.add, null] at this
+    contradiction
+
+theorem arrayIndexRef_add [GoSemanticsFunctions] (t : Type) (i j : Int) (l : Loc) :
+    arrayIndexRef t (i + j) l = arrayIndexRef t j (arrayIndexRef t i l) := by
+  unfold arrayIndexRef
+  split
+  · simp [*]
+  · rename_i h
+    simp only [Loc.add, h, if_false]
+    congr 1
+    simp only [Int.add_mul]; omega
+
+/-- Bytes are consecutive cells (for the disk FFI proof), in a real block. -/
+theorem arrayIndexRef_add_loc_add [GoSemanticsFunctions] [LayoutSemantics] (i : Int) (l : Loc)
+    (h : l.locCar ≠ 0) : arrayIndexRef w8 i l = l +ₗ i := by
+  rw [arrayIndexRef_of_car _ _ _ h, typeSize_w8, Int.mul_one]
 
 end defs
 end go

@@ -120,6 +120,7 @@ instance equals_unfold_FileDisk [FfiSyntax] [GoGlobalContext] :
 class FileDisk.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying FileDisk.underlying FileDisk
   underlying : go.UnderlyingDirectedEq FileDisk.ty FileDisk.underlying
+  layout : go.StructLayout FileDisk [(go!"fd", typeSize w64, typeAlign w64), (go!"numBlocks", typeSize w64, typeAlign w64)]
   get_fd : ∀ (x : FileDisk), go.IsGoStepPureDetTagged under (StructFieldGet FileDisk.underlying go!"fd") #x (Val #(x.fd'))
   set_fd : ∀ (x : FileDisk) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet FileDisk.underlying go!"fd") (PairV #x #y) (Val #(({ x with fd' := y } : FileDisk)))
   get_numBlocks : ∀ (x : FileDisk), go.IsGoStepPureDetTagged under (StructFieldGet FileDisk.underlying go!"numBlocks") #x (Val #(x.numBlocks'))
@@ -127,6 +128,7 @@ class FileDisk.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] FileDisk.TypeAssumptions.type_repr
   FileDisk.TypeAssumptions.underlying
+  FileDisk.TypeAssumptions.layout
   FileDisk.TypeAssumptions.get_fd
   FileDisk.TypeAssumptions.set_fd
   FileDisk.TypeAssumptions.get_numBlocks

@@ -97,7 +97,8 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.Google.wp_
       unfold contractOf PureContractOf
       ipureintro; rfl
     itrivial
-  wp_apply wp_slice_make3 (V := GoString) (W64 0) (W64 3) (by decide) as %sl ⟨Hsl, Hcap_sl, %Hcap⟩
+  wp_apply wp_slice_make3 (V := GoString) (W64 0) (W64 3) (by decide)
+    (make_cap_ok (by rw [go.typeSize_string]; decide)) as %sl ⟨Hsl, Hcap_sl, %Hcap⟩
   ihave HI : (∃ (xs : List GoString) (donek remk : List Kind) (sl0 : GoSlice),
       "i" ∷ i_ptr ↦ W64 xs.length ∗
       "results" ∷ results_ptr ↦ sl0 ∗

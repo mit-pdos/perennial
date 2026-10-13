@@ -317,7 +317,137 @@ func (ctx *Ctx) conversionExpr(s *ast.CallExpr) glang.Expr {
 	}
 	toType := ctx.info.TypeOf(s.Fun)
 	fromType := ctx.info.TypeOf(s.Args[0])
+	if isUnsafePointer(toType) && isUintptr(fromType) {
+		return ctx.uintptrToPointer(s, s.Args[0])
+	}
 	return ctx.handleImplicitConversion(s, fromType, toType, ctx.expr(s.Args[0]))
+}
+
+func isUnsafePointer(t types.Type) bool {
+	b, ok := t.Underlying().(*types.Basic)
+	return ok && b.Kind() == types.UnsafePointer
+}
+
+func isUintptr(t types.Type) bool {
+	b, ok := t.Underlying().(*types.Basic)
+	return ok && b.Kind() == types.Uintptr
+}
+
+// callUnsafe is a call of the model of a function of package unsafe (unsafe.Add,
+// unsafe.Slice; see go.UnsafeSemantics in Golang/Defn/Predeclared.lean).
+func callUnsafe(name string, tyArgs glang.ListExpr, args ...glang.Expr) glang.Expr {
+	return glang.NewCallExpr(
+		glang.NewCallExpr(glang.VerbatimExpr("FuncResolve"),
+			glang.VerbatimExpr("«unsafe»."+name), tyArgs, glang.Tt),
+		args...)
+}
+
+// bindInOrder evaluates es left to right (Go's order for operands), naming their values
+// $u0, $u1, ..., then cont, which refers to them.
+func bindInOrder(es []glang.Expr, cont glang.Expr) glang.Expr {
+	for i := len(es) - 1; i >= 0; i-- {
+		cont = glang.LetExpr{Names: []string{fmt.Sprintf("$u%d", i)}, ValExpr: es[i], Cont: cont}
+	}
+	return cont
+}
+
+func unsafeArg(i int) glang.Expr { return glang.IdentExpr(fmt.Sprintf("$u%d", i)) }
+
+// unsafeBuiltin translates unsafe.Add and unsafe.Slice (Sizeof, Offsetof and Alignof are
+// constants; the other functions of package unsafe are not supported). The length is
+// converted to an int, as the semantics takes it.
+func (ctx *Ctx) unsafeBuiltin(s *ast.CallExpr, name string) (glang.Expr, bool) {
+	var call glang.Expr
+	switch name {
+	case "Add":
+		call = callUnsafe("Add", glang.ListExpr{}, unsafeArg(0), unsafeArg(1))
+	case "Slice":
+		ptrTy, ok := ctx.typeOf(s.Args[0]).Underlying().(*types.Pointer)
+		if !ok {
+			ctx.unsupported(s, "unsafe.Slice of a non-pointer")
+			return nil, true
+		}
+		call = callUnsafe("Slice", glang.ListExpr{ctx.glangType(s, ptrTy.Elem())},
+			unsafeArg(0), unsafeArg(1))
+	default:
+		return nil, false
+	}
+	n := ctx.handleImplicitConversion(s.Args[1], ctx.typeOf(s.Args[1]), types.Typ[types.Int],
+		ctx.expr(s.Args[1]))
+	return bindInOrder([]glang.Expr{ctx.expr(s.Args[0]), n}, call), true
+}
+
+// uintptrToPointer translates unsafe.Pointer(e) for e a uintptr: only the form
+// unsafe.Pointer(uintptr(p) + a + b + ...), with p an unsafe.Pointer, which is
+// unsafe.Add(p, a + b + ...): Go's rules for unsafe.Pointer allow the form only when the
+// result points into p's allocation, as unsafe.Add's do. Another term that converts a
+// pointer is an unspecified address (go.UnsafeSemantics.convert_pointer_to_uintptr).
+func (ctx *Ctx) uintptrToPointer(n locatable, e ast.Expr) glang.Expr {
+	// the terms of the sum, along its left spine
+	var terms []ast.Expr
+	cur := ast.Unparen(e)
+	for {
+		b, ok := cur.(*ast.BinaryExpr)
+		if !ok || b.Op != token.ADD {
+			break
+		}
+		terms = append([]ast.Expr{b.Y}, terms...)
+		cur = ast.Unparen(b.X)
+	}
+	call, ok := cur.(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 || !isUintptr(ctx.typeOf(call)) ||
+		!isUnsafePointer(ctx.typeOf(call.Args[0])) || !ctx.info.Types[call.Fun].IsType() {
+		ctx.unsupported(n, "conversion of a uintptr to unsafe.Pointer other than unsafe.Pointer(uintptr(p) + offset)")
+		return nil
+	}
+	uintptrTy := types.Typ[types.Uintptr]
+	var offset glang.Expr = glang.NewCallExpr(glang.VerbatimExpr("W64"), glang.ZLiteral{Value: big.NewInt(0)})
+	offset = glang.ToVal{Value: offset}
+	for i, t := range terms {
+		te := ctx.handleImplicitConversion(t, ctx.typeOf(t), uintptrTy, ctx.expr(t))
+		if i == 0 {
+			offset = te
+		} else {
+			offset = glang.BinaryExpr{X: offset, Op: glang.BinOp{OpId: glang.OpPlus,
+				Type: ctx.glangType(n, uintptrTy)}, Y: te}
+		}
+	}
+	offsetInt := glang.NewCallExpr(glang.VerbatimExpr("Convert"),
+		ctx.glangType(n, uintptrTy), ctx.glangType(n, types.Typ[types.Int]), offset)
+	return bindInOrder([]glang.Expr{ctx.expr(call.Args[0]), offsetInt},
+		callUnsafe("Add", glang.ListExpr{}, unsafeArg(0), unsafeArg(1)))
+}
+
+// pointerConversionOperand is p for an expression uintptr(p) with p an unsafe.Pointer.
+func (ctx *Ctx) pointerConversionOperand(e ast.Expr) (ast.Expr, bool) {
+	call, ok := ast.Unparen(e).(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 || !ctx.info.Types[call.Fun].IsType() ||
+		!isUintptr(ctx.typeOf(call)) || !isUnsafePointer(ctx.typeOf(call.Args[0])) {
+		return nil, false
+	}
+	return call.Args[0], true
+}
+
+// hasCallOrReceive reports whether e contains a call other than a conversion, or a
+// channel receive: between two such pointer conversions Go may move a goroutine's stack.
+func (ctx *Ctx) hasCallOrReceive(e ast.Expr) bool {
+	found := false
+	ast.Inspect(e, func(n ast.Node) bool {
+		switch n := n.(type) {
+		case *ast.CallExpr:
+			if !ctx.info.Types[n.Fun].IsType() {
+				found = true
+			}
+		case *ast.UnaryExpr:
+			if n.Op == token.ARROW {
+				found = true
+			}
+		case *ast.FuncLit:
+			return false
+		}
+		return !found
+	})
+	return found
 }
 
 // This handles:
@@ -330,6 +460,17 @@ func (ctx *Ctx) maybeHandleSpecialBuiltin(s *ast.CallExpr) (glang.Expr, bool) {
 
 	f, ok := s.Fun.(*ast.Ident)
 	if !ok {
+		// A builtin of package unsafe: unsafe.Sizeof, Offsetof and Alignof are constants,
+		// which go/types computes for linux/amd64 (gc's layout; util.go loads the
+		// packages for that platform).
+		if ctx.info.Types[s].Value != nil {
+			return ctx.constantLiteral(s), true
+		}
+		if sel, ok := s.Fun.(*ast.SelectorExpr); ok {
+			if e, ok := ctx.unsafeBuiltin(s, sel.Sel.Name); ok {
+				return e, true
+			}
+		}
 		ctx.unsupported(s.Fun, "builtin that isn't an ident")
 	}
 
@@ -730,6 +871,22 @@ func (ctx *Ctx) binExpr(e *ast.BinaryExpr) (expr glang.Expr) {
 
 	op := gooseLangOps[e.Op]
 
+	// uintptr(p) - uintptr(q), for unsafe.Pointers p and q without a call or a receive: the
+	// distance between two addresses taken at one instant (go.UnsafeSemantics.ptr_diff),
+	// p and q evaluated left to right.
+	if e.Op == token.SUB {
+		if p, ok := ctx.pointerConversionOperand(e.X); ok {
+			if q, ok := ctx.pointerConversionOperand(e.Y); ok &&
+				!ctx.hasCallOrReceive(p) && !ctx.hasCallOrReceive(q) {
+				return bindInOrder([]glang.Expr{ctx.expr(p), ctx.expr(q)}, glang.BinaryExpr{
+					X:  unsafeArg(0),
+					Op: glang.BinOp{OpId: glang.OpMinus, Type: glang.TermIdent("unsafe.Pointer")},
+					Y:  unsafeArg(1),
+				})
+			}
+		}
+	}
+
 	if t, ok := compType.(*types.Basic); ok {
 		switch t.Kind() {
 		case types.UntypedInt, types.UntypedString:
@@ -773,6 +930,14 @@ func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
 	xT := ctx.typeOf(e.X)
 	ty := ctx.glangType(e, xT)
 	arrayTy, isArray := underlyingType(xT).(*types.Array)
+	// a pointer to an array: p[i:j] is (*p)[i:j], the slice of the array at p (nil
+	// panics: go.ArraySemantics.slice_array_step)
+	var arrayPtr bool
+	if ptrTy, ok := underlyingType(xT).(*types.Pointer); ok {
+		if arrayTy, arrayPtr = underlyingType(ptrTy.Elem()).(*types.Array); arrayPtr {
+			ty = ctx.glangType(e, ptrTy.Elem())
+		}
+	}
 
 	var lowExpr glang.Expr = glang.Int64Val{Value: glang.IntToZ(0)}
 	var highExpr glang.Expr
@@ -782,6 +947,9 @@ func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
 	// wrong. len of an array is its constant length.
 	if isArray {
 		x = ctx.exprAddr(e.X)
+		highExpr = glang.Int64Val{Value: glang.IntToZ(arrayTy.Len())}
+	} else if arrayPtr {
+		x = ctx.expr(e.X)
 		highExpr = glang.Int64Val{Value: glang.IntToZ(arrayTy.Len())}
 	} else {
 		x = ctx.expr(e.X)
@@ -2987,7 +3155,7 @@ func (ctx *Ctx) constantValue(e locatable, val constant.Value, t types.Type) gla
 		switch t.Kind() {
 		case types.Bool, types.UntypedBool:
 			return glang.GooseBoolLiteral(v.(bool))
-		case types.Uint64, types.Int64, types.Int, types.Uint:
+		case types.Uint64, types.Int64, types.Int, types.Uint, types.Uintptr:
 			return constInt("W64")
 		case types.Uint32, types.Int32:
 			return constInt("W32")

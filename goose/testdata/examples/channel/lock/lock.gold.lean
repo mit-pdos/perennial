@@ -137,6 +137,7 @@ instance equals_unfold_Lock [FfiSyntax] [GoGlobalContext] :
 class Lock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Lock.underlying Lock
   underlying : go.UnderlyingDirectedEq Lock.ty Lock.underlying
+  layout : go.StructLayout Lock [(go!"ch", typeSize GoChan, typeAlign GoChan)]
   get_ch : ∀ (x : Lock), go.IsGoStepPureDetTagged under (StructFieldGet Lock.underlying go!"ch") #x (Val #(x.ch'))
   set_ch : ∀ (x : Lock) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Lock.underlying go!"ch") (PairV #x #y) (Val #(({ x with ch' := y } : Lock)))
   Lock_unfold : MethodUnfold Lock.ty go!"Lock" Lock.Lock.impl
@@ -154,6 +155,7 @@ class Lock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 
 attribute [instance] Lock.TypeAssumptions.type_repr
   Lock.TypeAssumptions.underlying
+  Lock.TypeAssumptions.layout
   Lock.TypeAssumptions.get_ch
   Lock.TypeAssumptions.set_ch
   Lock.TypeAssumptions.Lock_unfold

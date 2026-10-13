@@ -27,7 +27,7 @@ abbrev sync.atomic.Int32.Add.spec : Prop :=
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ old : w32, ownInt32 u (DFrac.own 1) old ∗
       (ownInt32 u (DFrac.own 1) (old + delta) ={∅,⊤}=∗ Φ #(old + delta))) -∗
-    ⌜u ≠ null⌝ -∗
+    ⌜u ≠ null⌝ -∗ ⌜Aligned (.word 4) (structFieldRef Int32 go!"v" u)⌝ -∗
     WP (App (Val (u @!! go.GoType.PointerType Int32.ty @!! go!"Add")) (Val #delta)) {{ Φ }}
 
 end spec

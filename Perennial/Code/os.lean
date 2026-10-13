@@ -1096,6 +1096,7 @@ instance equals_unfold_SyscallError [FfiSyntax] [GoGlobalContext] :
 class SyscallError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying SyscallError.underlying SyscallError
   underlying : go.UnderlyingDirectedEq SyscallError.ty SyscallError.underlying
+  layout : go.StructLayout SyscallError [(go!"Syscall", typeSize GoString, typeAlign GoString), (go!"Err", typeSize GoError, typeAlign GoError)]
   get_Syscall : ∀ (x : SyscallError), go.IsGoStepPureDetTagged under (StructFieldGet SyscallError.underlying go!"Syscall") #x (Val #(x.Syscall'))
   set_Syscall : ∀ (x : SyscallError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet SyscallError.underlying go!"Syscall") (PairV #x #y) (Val #(({ x with Syscall' := y } : SyscallError)))
   get_Err : ∀ (x : SyscallError), go.IsGoStepPureDetTagged under (StructFieldGet SyscallError.underlying go!"Err") #x (Val #(x.Err'))
@@ -1103,6 +1104,7 @@ class SyscallError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] SyscallError.TypeAssumptions.type_repr
   SyscallError.TypeAssumptions.underlying
+  SyscallError.TypeAssumptions.layout
   SyscallError.TypeAssumptions.get_Syscall
   SyscallError.TypeAssumptions.set_Syscall
   SyscallError.TypeAssumptions.get_Err
@@ -1209,6 +1211,7 @@ instance equals_unfold_LinkError [FfiSyntax] [GoGlobalContext] :
 class LinkError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying LinkError.underlying LinkError
   underlying : go.UnderlyingDirectedEq LinkError.ty LinkError.underlying
+  layout : go.StructLayout LinkError [(go!"Op", typeSize GoString, typeAlign GoString), (go!"Old", typeSize GoString, typeAlign GoString), (go!"New", typeSize GoString, typeAlign GoString), (go!"Err", typeSize GoError, typeAlign GoError)]
   get_Op : ∀ (x : LinkError), go.IsGoStepPureDetTagged under (StructFieldGet LinkError.underlying go!"Op") #x (Val #(x.Op'))
   set_Op : ∀ (x : LinkError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet LinkError.underlying go!"Op") (PairV #x #y) (Val #(({ x with Op' := y } : LinkError)))
   get_Old : ∀ (x : LinkError), go.IsGoStepPureDetTagged under (StructFieldGet LinkError.underlying go!"Old") #x (Val #(x.Old'))
@@ -1220,6 +1223,7 @@ class LinkError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
 
 attribute [instance] LinkError.TypeAssumptions.type_repr
   LinkError.TypeAssumptions.underlying
+  LinkError.TypeAssumptions.layout
   LinkError.TypeAssumptions.get_Op
   LinkError.TypeAssumptions.set_Op
   LinkError.TypeAssumptions.get_Old
@@ -1251,9 +1255,11 @@ instance equals_unfold_noReadFrom [FfiSyntax] [GoGlobalContext] :
 class noReadFrom.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying noReadFrom.underlying noReadFrom
   underlying : go.UnderlyingDirectedEq noReadFrom.ty noReadFrom.underlying
+  layout : go.StructLayout noReadFrom []
 
 attribute [instance] noReadFrom.TypeAssumptions.type_repr
   noReadFrom.TypeAssumptions.underlying
+  noReadFrom.TypeAssumptions.layout
 
 structure fileWithoutReadFrom [FfiSyntax] where
   mk ::
@@ -1280,6 +1286,7 @@ instance equals_unfold_fileWithoutReadFrom [FfiSyntax] [GoGlobalContext] :
 class fileWithoutReadFrom.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying fileWithoutReadFrom.underlying fileWithoutReadFrom
   underlying : go.UnderlyingDirectedEq fileWithoutReadFrom.ty fileWithoutReadFrom.underlying
+  layout : go.StructLayout fileWithoutReadFrom [(go!"noReadFrom", typeSize noReadFrom, typeAlign noReadFrom), (go!"File", typeSize Loc, typeAlign Loc)]
   get_noReadFrom : ∀ (x : fileWithoutReadFrom), go.IsGoStepPureDetTagged under (StructFieldGet fileWithoutReadFrom.underlying go!"noReadFrom") #x (Val #(x.noReadFrom'))
   set_noReadFrom : ∀ (x : fileWithoutReadFrom) (y : noReadFrom), go.IsGoStepPureDetTagged under (StructFieldSet fileWithoutReadFrom.underlying go!"noReadFrom") (PairV #x #y) (Val #(({ x with noReadFrom' := y } : fileWithoutReadFrom)))
   get_File : ∀ (x : fileWithoutReadFrom), go.IsGoStepPureDetTagged under (StructFieldGet fileWithoutReadFrom.underlying go!"File") #x (Val #(x.File'))
@@ -1287,6 +1294,7 @@ class fileWithoutReadFrom.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocal
 
 attribute [instance] fileWithoutReadFrom.TypeAssumptions.type_repr
   fileWithoutReadFrom.TypeAssumptions.underlying
+  fileWithoutReadFrom.TypeAssumptions.layout
   fileWithoutReadFrom.TypeAssumptions.get_noReadFrom
   fileWithoutReadFrom.TypeAssumptions.set_noReadFrom
   fileWithoutReadFrom.TypeAssumptions.get_File
@@ -1314,9 +1322,11 @@ instance equals_unfold_noWriteTo [FfiSyntax] [GoGlobalContext] :
 class noWriteTo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying noWriteTo.underlying noWriteTo
   underlying : go.UnderlyingDirectedEq noWriteTo.ty noWriteTo.underlying
+  layout : go.StructLayout noWriteTo []
 
 attribute [instance] noWriteTo.TypeAssumptions.type_repr
   noWriteTo.TypeAssumptions.underlying
+  noWriteTo.TypeAssumptions.layout
 
 structure fileWithoutWriteTo [FfiSyntax] where
   mk ::
@@ -1343,6 +1353,7 @@ instance equals_unfold_fileWithoutWriteTo [FfiSyntax] [GoGlobalContext] :
 class fileWithoutWriteTo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying fileWithoutWriteTo.underlying fileWithoutWriteTo
   underlying : go.UnderlyingDirectedEq fileWithoutWriteTo.ty fileWithoutWriteTo.underlying
+  layout : go.StructLayout fileWithoutWriteTo [(go!"noWriteTo", typeSize noWriteTo, typeAlign noWriteTo), (go!"File", typeSize Loc, typeAlign Loc)]
   get_noWriteTo : ∀ (x : fileWithoutWriteTo), go.IsGoStepPureDetTagged under (StructFieldGet fileWithoutWriteTo.underlying go!"noWriteTo") #x (Val #(x.noWriteTo'))
   set_noWriteTo : ∀ (x : fileWithoutWriteTo) (y : noWriteTo), go.IsGoStepPureDetTagged under (StructFieldSet fileWithoutWriteTo.underlying go!"noWriteTo") (PairV #x #y) (Val #(({ x with noWriteTo' := y } : fileWithoutWriteTo)))
   get_File : ∀ (x : fileWithoutWriteTo), go.IsGoStepPureDetTagged under (StructFieldGet fileWithoutWriteTo.underlying go!"File") #x (Val #(x.File'))
@@ -1350,6 +1361,7 @@ class fileWithoutWriteTo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
 
 attribute [instance] fileWithoutWriteTo.TypeAssumptions.type_repr
   fileWithoutWriteTo.TypeAssumptions.underlying
+  fileWithoutWriteTo.TypeAssumptions.layout
   fileWithoutWriteTo.TypeAssumptions.get_noWriteTo
   fileWithoutWriteTo.TypeAssumptions.set_noWriteTo
   fileWithoutWriteTo.TypeAssumptions.get_File
@@ -1424,11 +1436,13 @@ instance equals_unfold_rawConn [FfiSyntax] [GoGlobalContext] :
 class rawConn.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying rawConn.underlying rawConn
   underlying : go.UnderlyingDirectedEq rawConn.ty rawConn.underlying
+  layout : go.StructLayout rawConn [(go!"file", typeSize Loc, typeAlign Loc)]
   get_file : ∀ (x : rawConn), go.IsGoStepPureDetTagged under (StructFieldGet rawConn.underlying go!"file") #x (Val #(x.file'))
   set_file : ∀ (x : rawConn) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet rawConn.underlying go!"file") (PairV #x #y) (Val #(({ x with file' := y } : rawConn)))
 
 attribute [instance] rawConn.TypeAssumptions.type_repr
   rawConn.TypeAssumptions.underlying
+  rawConn.TypeAssumptions.layout
   rawConn.TypeAssumptions.get_file
   rawConn.TypeAssumptions.set_file
 
@@ -1455,11 +1469,13 @@ instance equals_unfold_Root [FfiSyntax] [GoGlobalContext] :
 class Root.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Root.underlying Root
   underlying : go.UnderlyingDirectedEq Root.ty Root.underlying
+  layout : go.StructLayout Root [(go!"root", typeSize Loc, typeAlign Loc)]
   get_root : ∀ (x : Root), go.IsGoStepPureDetTagged under (StructFieldGet Root.underlying go!"root") #x (Val #(x.root'))
   set_root : ∀ (x : Root) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Root.underlying go!"root") (PairV #x #y) (Val #(({ x with root' := y } : Root)))
 
 attribute [instance] Root.TypeAssumptions.type_repr
   Root.TypeAssumptions.underlying
+  Root.TypeAssumptions.layout
   Root.TypeAssumptions.get_root
   Root.TypeAssumptions.set_root
 
@@ -1519,11 +1535,13 @@ instance equals_unfold_File [FfiSyntax] [GoGlobalContext] :
 class File.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying File.underlying File
   underlying : go.UnderlyingDirectedEq File.ty File.underlying
+  layout : go.StructLayout File [(go!"file", typeSize Loc, typeAlign Loc)]
   get_file : ∀ (x : File), go.IsGoStepPureDetTagged under (StructFieldGet File.underlying go!"file") #x (Val #(x.file'))
   set_file : ∀ (x : File) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet File.underlying go!"file") (PairV #x #y) (Val #(({ x with file' := y } : File)))
 
 attribute [instance] File.TypeAssumptions.type_repr
   File.TypeAssumptions.underlying
+  File.TypeAssumptions.layout
   File.TypeAssumptions.get_file
   File.TypeAssumptions.set_file
 

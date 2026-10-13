@@ -28,7 +28,7 @@ abbrev sync.atomic.Pointer.CompareAndSwap.spec : Prop :=
     (|={⊤,∅}=> ▷ ∃ (v : Loc) (dq : DFrac), ownPointer (T' := T') u dq v ∗
       ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
       (ownPointer (T' := T') u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
-    ⌜u ≠ null⌝ -∗
+    ⌜u ≠ null⌝ -∗ ⌜Aligned (.cell 8) (structFieldRef (Pointer T') go!"v" u)⌝ -∗
     WP (App (App (Val (u @!! go.GoType.PointerType (Pointer.ty T) @!! go!"CompareAndSwap")) (Val #old))
       (Val #new)) {{ Φ }}
 

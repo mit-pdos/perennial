@@ -23,7 +23,7 @@ variable [sem : go.Semantics]
 variable [package_sem : sync.atomic.Assumptions]
 
 abbrev sync.atomic.SwapUint64.spec : Prop :=
-  ∀ (addr : Loc) (v : w64),
+  ∀ (addr : Loc) (v : w64), Aligned (.word 8) addr →
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ oldv : w64, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #oldv)) -∗
     WP (App (App (Val (@! SwapUint64)) (Val #addr)) (Val #v)) {{ Φ }}

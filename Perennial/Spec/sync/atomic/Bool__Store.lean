@@ -27,7 +27,7 @@ abbrev sync.atomic.Bool.Store.spec : Prop :=
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ old : Bool, ownBool u (DFrac.own 1) old ∗
       (ownBool u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
-    ⌜u ≠ null⌝ -∗
+    ⌜u ≠ null⌝ -∗ ⌜Aligned (.word 4) (structFieldRef Bool' go!"v" u)⌝ -∗
     WP (App (Val (u @!! go.GoType.PointerType Bool'.ty @!! go!"Store")) (Val #v)) {{ Φ }}
 
 end spec

@@ -78,14 +78,24 @@ theorem arrayElems_w8 (l : Loc) (vs : List w8) (dq : DFrac) :
   constructor
   · apply BigSepL.bigSepL_mono
     intro k x _
-    rw [go.arrayIndexRef_add_loc_add, typedPointsto_unseal_eq, typedPointstoDef_heap]
-    iintro ⟨H, _⟩; iexact H
+    rw [typedPointsto_unseal_eq]
+    iintro ⟨H, _⟩
+    ihave H := (typedPointstoDef_w8 _ _ _).1 $$ H
+    ihave %Hc := heapPointsto_car _ _ _ $$ H
+    rw [arrayIndexRef_car] at Hc
+    rw [go.arrayIndexRef_add_loc_add _ _ Hc]
+    iexact H
   · apply BigSepL.bigSepL_mono
     intro k x _
-    rw [go.arrayIndexRef_add_loc_add, typedPointsto_unseal_eq, typedPointstoDef_heap]
+    rw [typedPointsto_unseal_eq]
     iintro H
+    ihave %Hc := heapPointsto_car _ _ _ $$ H
+    have Hc' : l.locCar ≠ 0 := Hc
+    rw [go.arrayIndexRef_add_loc_add _ _ Hc']
     ihave %Hnn := heapPointsto_non_null _ _ _ $$ H
-    iframe H; ipureintro; exact Hnn
+    isplitl [H]
+    · iapply (typedPointstoDef_w8 _ _ _).2 $$ H
+    · ipureintro; exact Hnn
 
 theorem slice_to_block_array (s : GoSlice) (dq : DFrac) (b : _root_.Perennial.Block) :
     s ↦*{dq} b.toList ⊢ pointstoBlock (GF := GF) s.ptr dq b := by
@@ -100,6 +110,19 @@ theorem slice_to_block_array (s : GoSlice) (dq : DFrac) (b : _root_.Perennial.Bl
     icases H with ⟨⟨_, Ha⟩, _⟩
     unfold pointstoBlock BlockToVals
     iapply (arrayElems_w8 s.ptr b.toList dq).1 $$ Ha
+
+theorem pointstoBlock_non_null (l : Loc) (dq : DFrac) (b : _root_.Perennial.Block) :
+    pointstoBlock (GF := GF) l dq b ⊢ ⌜l ≠ null⌝ := by
+  iintro Hb
+  unfold pointstoBlock BlockToVals
+  obtain ⟨⟨vs⟩, hl⟩ := b
+  cases vs with
+  | nil => simp [blockBytes] at hl
+  | cons x xs =>
+    simp only [Vector.toList_mk, List.map_cons]
+    icases BigSepL.bigSepL_cons.1 $$ Hb with ⟨H0, _⟩
+    rw [show ((0 : Nat) : Int) = 0 from rfl, loc_add_0] at *
+    iapply heapPointsto_non_null $$ H0
 
 theorem block_array_to_slice (s : GoSlice) (dq : DFrac) (b : _root_.Perennial.Block)
     (hlen : b.toList.length = sint.nat s.len) (hcap : 0 ≤ sint.Z s.len ∧ sint.Z s.len ≤ sint.Z s.cap) :

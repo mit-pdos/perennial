@@ -90,7 +90,49 @@ inductive BaseLit where
   | LitLoc (l : Loc)
   | LitProphecy (p : proph_id)
   | LitSlice (s : GoSlice)
+  /-- A cell of memory that holds no value of its own: one of the cells after the first of
+  a value that is not represented as bytes (`Encoding.cell`), padding, or the cells of a
+  fresh allocation before its first store. No load decodes it (`decode`). -/
+  | LitTail
 deriving DecidableEq, Inhabited
+
+/-- How a value occupies the heap cells from its address on (a heap cell is a byte of
+memory, `Golang/Defn/Layout.lean`): `encode`, `decode`. -/
+inductive Encoding where
+  /-- the `n` little-endian bytes (`LitByte` cells) of an integer of `n ∈ {1, 2, 4, 8}`
+  bytes -/
+  | word (n : Nat)
+  /-- the whole value in the first cell and a `LitTail` in each of the `k - 1` cells after
+  it: a value of size `k ≥ 1` that is not represented as bytes (a pointer, a string, …) -/
+  | cell (k : Nat)
+deriving DecidableEq
+
+/-- The number of cells of an encoded value. -/
+def Encoding.size : Encoding → Nat
+  | .word n => n
+  | .cell k => k
+
+/-- The alignment the atomic operations need: an access of `n ≤ 8` bytes is atomic on
+amd64 only if it does not straddle an `n`-byte boundary (`Go memory model`: an access
+of at most a machine word at an aligned address). -/
+def Encoding.align : Encoding → Nat
+  | .word n => n
+  | .cell k => min k 8
+
+/-- The one-operand memory operations on an encoded value (`Encoding`), on all its cells
+at once: the two halves of a non-atomic read (`startRead`, `finishRead`, which count a
+reader on each cell, so that a concurrent write of any of them is stuck), the first half
+of a non-atomic write (`prepareWrite`), and an atomic load (`load`). -/
+inductive MemOp1 where
+  | startRead | finishRead | prepareWrite | load
+deriving DecidableEq
+
+/-- The two-operand memory operations on an encoded value: the second half of a
+non-atomic write (`finishStore`) and the atomic swap, add and compare-exchange (the
+second operand the pair of the old and the new value). -/
+inductive MemOp2 where
+  | finishStore | swap | add | cmpxchg
+deriving DecidableEq
 
 inductive PrimOp0 where
   /-- a stuck expression, to represent undefined behavior -/
@@ -112,6 +154,10 @@ inductive PrimOp1 where
   | LoadOp
   /-- allocation (initial value) -/
   | AllocOp
+  /-- a memory operation on the encoded value at a location (`MemOp1`) -/
+  | MemOp1Op (op : MemOp1) (enc : Encoding)
+  /-- stuck unless the location is a cell of the heap (`unsafe.Add`) -/
+  | CheckCellOp
 deriving DecidableEq
 
 inductive PrimOp2 where
@@ -121,6 +167,11 @@ inductive PrimOp2 where
   | AtomicSwapOp
   /-- pointer, value -/
   | AtomicAddOp
+  /-- allocation of a contiguous block (the pair of the number of cells and the alignment,
+  the initial value of each cell) -/
+  | AllocNOp
+  /-- a memory operation on the encoded value at a location (`MemOp2`) -/
+  | MemOp2Op (op : MemOp2) (enc : Encoding)
 deriving DecidableEq
 
 inductive GoOperator where
@@ -286,7 +337,7 @@ export Element (ElementExpression ElementLiteralValue)
 export comm_clause (CommClause)
 export CommCase (SendCase RecvCase)
 export BaseLit (LitInt LitInt32 LitInt16 LitBool LitByte LitString LitUnit LitPoison LitLoc
-  LitProphecy LitSlice)
+  LitProphecy LitSlice LitTail)
 export GoOperator (GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemainder GoAnd
   GoOr GoXor GoBitClear)
 export GoShiftOperator (GoShiftl GoShiftr)
@@ -319,6 +370,24 @@ abbrev Load (e : Expr) : Expr := Primitive1 .LoadOp e
 abbrev FinishStore (e1 e2 : Expr) : Expr := Primitive2 .FinishStoreOp e1 e2
 abbrev AtomicSwap (e1 e2 : Expr) : Expr := Primitive2 .AtomicSwapOp e1 e2
 abbrev AtomicAdd (e1 e2 : Expr) : Expr := Primitive2 .AtomicAddOp e1 e2
+/-- `AllocN (n, a) v`: a fresh block of `n` cells (one `LitTail` cell if `n = 0`), each
+holding `v`, at an offset aligned to `a` (`AllocNS`). -/
+abbrev AllocN (e1 e2 : Expr) : Expr := Primitive2 .AllocNOp e1 e2
+abbrev StartReadN (enc : Encoding) (e : Expr) : Expr := Primitive1 (.MemOp1Op .startRead enc) e
+abbrev FinishReadN (enc : Encoding) (e : Expr) : Expr := Primitive1 (.MemOp1Op .finishRead enc) e
+abbrev PrepareWriteN (enc : Encoding) (e : Expr) : Expr := Primitive1 (.MemOp1Op .prepareWrite enc) e
+/-- An atomic load of the encoded value at an aligned location. -/
+abbrev LoadN (enc : Encoding) (e : Expr) : Expr := Primitive1 (.MemOp1Op .load enc) e
+abbrev FinishStoreN (enc : Encoding) (e1 e2 : Expr) : Expr := Primitive2 (.MemOp2Op .finishStore enc) e1 e2
+/-- An atomic swap, returning the old value. -/
+abbrev SwapN (enc : Encoding) (e1 e2 : Expr) : Expr := Primitive2 (.MemOp2Op .swap enc) e1 e2
+/-- An atomic add, returning the new value. -/
+abbrev AddN (enc : Encoding) (e1 e2 : Expr) : Expr := Primitive2 (.MemOp2Op .add enc) e1 e2
+/-- `CmpXchgN enc l (old, new)`: an atomic compare-exchange, returning the old value and
+whether it wrote. -/
+abbrev CmpXchgN (enc : Encoding) (e1 e2 : Expr) : Expr := Primitive2 (.MemOp2Op .cmpxchg enc) e1 e2
+/-- `CheckCell l`: `#()` if `l` is a cell of the heap, else stuck. -/
+abbrev CheckCell (e : Expr) : Expr := Primitive1 .CheckCellOp e
 
 abbrev Lam (x : Binder) (e : Expr) : Expr := Rec BAnon x e
 abbrev Let (x : Binder) (e1 e2 : Expr) : Expr := App (Lam x e2) e1
@@ -332,6 +401,16 @@ def Store : val :=
 
 def Read : val :=
   LamV "l" (Let "v" (StartRead (Var "l")) (Seq (FinishRead (Var "l")) (Var "v")))
+
+/-- The non-atomic store of an encoded value: all its cells become `Writing`, then are
+written. -/
+def StoreN (enc : Encoding) : val :=
+  LamV "l" (Lam "v" (Seq (PrepareWriteN enc (Var "l")) (FinishStoreN enc (Var "l") (Var "v"))))
+
+/-- The non-atomic load of an encoded value: a reader is counted on each of its cells
+while it is read. -/
+def ReadN (enc : Encoding) : val :=
+  LamV "l" (Let "v" (StartReadN enc (Var "l")) (Seq (FinishReadN enc (Var "l")) (Var "v")))
 
 end derived
 
@@ -610,11 +689,163 @@ variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalCont
 def stateInitHeap (l : Loc) (v : val) (σ : state) : state :=
   { σ with heap := {[l := Free v]} ∪ σ.heap }
 
+/-- The heap containing `vs` at `l, l +ₗ 1, ...`. -/
+def heapArray {V : Type} (l : Loc) : List V → GMap Loc V
+  | [] => ∅
+  | v :: vs => <[l := v]> (heapArray (l +ₗ 1) vs)
+
+/-- The `n` little-endian bytes of `z` (mod `2^(8n)`). -/
+def leBytes : Nat → Int → List w8
+  | 0, _ => []
+  | n + 1, z => BitVec.ofInt 8 z :: leBytes n (z / 256)
+
+/-- The value of little-endian bytes. -/
+def leInt (bs : List w8) : Int :=
+  bs.foldr (fun b acc => (b.toNat : Int) + 256 * acc) 0
+
+theorem leBytes_length (n : Nat) (z : Int) : (leBytes n z).length = n := by
+  induction n generalizing z with
+  | zero => rfl
+  | succ n ih => simp [leBytes, ih]
+
+theorem emod_256_mul (z m : Int) :
+    z % (256 * m) = z % 256 + 256 * ((z / 256) % m) := by
+  have e1 := Int.emod_def z (256 * m)
+  have e2 := Int.emod_def z 256
+  have e3 := Int.emod_def (z / 256) m
+  rw [← Int.ediv_ediv_of_nonneg (by decide : (0 : Int) ≤ 256)] at e1
+  rw [e1, e2, e3]
+  generalize z / 256 = q
+  generalize q / m = r
+  rw [Int.mul_assoc]
+  generalize m * r = t
+  omega
+
+theorem ofInt8_emod_256_mul (z m : Int) :
+    BitVec.ofInt 8 (z % (256 * m)) = BitVec.ofInt 8 z := by
+  apply BitVec.eq_of_toNat_eq
+  simp only [BitVec.toNat_ofInt]
+  congr 1
+  rw [emod_256_mul]
+  have h0 := Int.emod_nonneg z (by decide : (256 : Int) ≠ 0)
+  have h1 := Int.emod_lt_of_pos z (by decide : (0 : Int) < 256)
+  show (z % 256 + 256 * (z / 256 % m)) % (2 ^ 8 : Nat) = z % (2 ^ 8 : Nat)
+  rw [show ((2 ^ 8 : Nat) : Int) = 256 by decide, Int.add_mul_emod_self_left, Int.emod_emod_of_dvd _ (by decide)]
+
+/-- The bytes of `z` depend only on `z` modulo `2^(8n)`. -/
+theorem leBytes_emod (n : Nat) (z : Int) : leBytes n (z % 2 ^ (8 * n)) = leBytes n z := by
+  induction n generalizing z with
+  | zero => rfl
+  | succ n ih =>
+    rw [show 8 * (n + 1) = 8 + 8 * n by omega, Int.pow_add, show (2 : Int) ^ 8 = 256 by decide]
+    simp only [leBytes, ofInt8_emod_256_mul]
+    congr 1
+    rw [emod_256_mul]
+    have h0 := Int.emod_nonneg z (by decide : (256 : Int) ≠ 0)
+    have h1 := Int.emod_lt_of_pos z (by decide : (0 : Int) < 256)
+    rw [show (z % 256 + 256 * (z / 256 % 2 ^ (8 * n))) / 256 = z / 256 % 2 ^ (8 * n) by
+      rw [Int.add_mul_ediv_left _ _ (by decide)]
+      rw [Int.ediv_eq_zero_of_lt h0 h1, Int.zero_add]]
+    exact ih (z / 256)
+
+/-- Decoding the bytes of `z` gives `z` modulo `2^(8n)`. -/
+theorem leInt_leBytes (n : Nat) (z : Int) : leInt (leBytes n z) = z % 2 ^ (8 * n) := by
+  induction n generalizing z with
+  | zero => simp [leBytes, leInt, Int.emod_one]
+  | succ n ih =>
+    have ih' := ih (z / 256)
+    simp only [leBytes, leInt, List.foldr_cons] at *
+    rw [ih']
+    have h8 : ((BitVec.ofInt 8 z).toNat : Int) = z % 256 := by
+      rw [BitVec.toNat_ofInt]
+      have := Int.emod_nonneg z (by decide : (256 : Int) ≠ 0)
+      simp only [Int.toNat_of_nonneg (by omega : 0 ≤ z % (2 ^ 8 : Nat))]
+      rfl
+    rw [h8, show 8 * (n + 1) = 8 + 8 * n by omega, Int.pow_add,
+      show (2 : Int) ^ 8 = 256 by decide, emod_256_mul]
+
+/-- A word of `n` bytes as a value: a `w8`, `w16`, `w32` or `w64`. -/
+def wordLit (n : Nat) (z : Int) : val :=
+  match n with
+  | 1 => LitV (LitByte (BitVec.ofInt 8 z))
+  | 2 => LitV (LitInt16 (BitVec.ofInt 16 z))
+  | 4 => LitV (LitInt32 (BitVec.ofInt 32 z))
+  | _ => LitV (LitInt (BitVec.ofInt 64 z))
+
+/-- The (unsigned) value of a word value of `n` bytes. -/
+def wordLitZ? (n : Nat) (v : val) : Option Int :=
+  match n, v with
+  | 1, LitV (LitByte x) => some x.toNat
+  | 2, LitV (LitInt16 x) => some x.toNat
+  | 4, LitV (LitInt32 x) => some x.toNat
+  | 8, LitV (LitInt x) => some x.toNat
+  | _, _ => none
+
+/-- The cells of `v` under encoding `enc`, if `v` has that encoding. -/
+noncomputable def encode : Encoding → val → Option (List val)
+  | .word n, v => (wordLitZ? n v).map fun z => (leBytes n z).map fun b => LitV (LitByte b)
+  | .cell k, v => if 1 ≤ k then some (v :: List.replicate (k - 1) (LitV LitTail)) else none
+
+/-- The byte of a cell. -/
+def byteOf? : val → Option w8
+  | LitV (LitByte b) => some b
+  | _ => none
+
+/-- The value that the cells `cs` hold under encoding `enc`, if they hold one: for a word,
+`n` bytes; for a `cell k` value, its first cell followed by `k - 1` tails. A `cell` load of
+cells that do not hold such a value (bytes, or a tail in the first cell) gives a value
+that is not one of the type (`LitByte`, `LitTail`), on which every operation of the type
+is stuck: Go would give the bits of a corrupted value. -/
+noncomputable def decode : Encoding → List val → Option val
+  | .word n, cs =>
+    if n = 1 ∨ n = 2 ∨ n = 4 ∨ n = 8 then
+      (cs.mapM byteOf?).bind fun bs => if bs.length = n then some (wordLit n (leInt bs)) else none
+    else none
+  | .cell k, [] => none
+  | .cell k, v :: ts => if ts = List.replicate (k - 1) (LitV LitTail) then some v else none
+
+/-- The cells `l, l +ₗ 1, …` of the heap `h` are `cs`. -/
+def CellsAt (h : GMap Loc (NonAtomic val)) (l : Loc) (cs : List (NonAtomic val)) : Prop :=
+  ∀ i (hi : i < cs.length), h !! (l +ₗ (i : Int)) = some (cs[i]'hi)
+
+/-- The heap with the cells `l, l +ₗ 1, …` set to `cs`. -/
+def setCells (l : Loc) (cs : List (NonAtomic val)) (σg : CfgState) : CfgState :=
+  ({ σg.1 with heap := heapArray l cs ∪ σg.1.heap }, σg.2)
+
+/-- The read-lock function for `NaMode`. -/
+def naModeRl : NaMode → NaMode
+  | Reading n => Reading (n + 1)
+  | m => m
+
+/-- The read-unlock function for `NaMode`. -/
+def naModeUrl : NaMode → NaMode
+  | Reading (n + 1) => Reading n
+  | m => m
+
+/-- The cells of a fresh allocation of `n` cells holding `v`: a zero-size allocation still
+takes one cell (a `LitTail`, which nothing can load), so that its block is never
+reused, as Go's zero-size variables do not share an address with a later variable. -/
+def allocCells (n : Nat) (v : val) : List val :=
+  if n = 0 then [LitV LitTail] else List.replicate n v
+
 def IsWriting {A} (mna : Option (NonAtomic A)) : Prop := ∃ x, mna = some (Writing, x)
 
 /-- `l` is the start of a fresh block in `σg`. -/
 def IsFresh (σg : CfgState) (l : Loc) : Prop :=
   (∀ i : Int, l +ₗ i ≠ null ∧ σg.1.heap !! (l +ₗ i) = none) ∧ l.addrOffset = 0
+
+/-- `l` is in a fresh block of `σg`, at an offset in `[0, 8)` that is a multiple of `a`.
+By convention, offset `0` of every block is 8-aligned (8 is the largest alignment of a
+gc/amd64 type), so the offset of a location is its address modulo 8: an object at an
+address `A` aligned to `a` is the block based at `A - A % 8`, at offset `A % 8`. Go
+promises a variable only its type's alignment, so the offset is any one with that
+alignment. -/
+def IsFreshAligned (σg : CfgState) (l : Loc) (a : Nat) : Prop :=
+  (∀ i : Int, l +ₗ i ≠ null ∧ σg.1.heap !! (l +ₗ i) = none) ∧
+    0 ≤ l.locOff ∧ l.locOff < 8 ∧ (a : Int) ∣ l.locOff
+
+/-- `l` is aligned for an atomic operation on a value with encoding `enc`. -/
+def Aligned (enc : Encoding) (l : Loc) : Prop := (enc.align : Int) ∣ l.locOff
 
 def atomicAddEval (v1 v2 : val) : Option val :=
   match v1, v2 with
@@ -652,6 +883,68 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
   | AllocS v l σg :
       IsFresh σg l →
       BaseStep (Alloc (Val v)) σg [] (Val #l) (stateInitHeap l v σg.1, σg.2) []
+  /-- A fresh block of `n` cells (`allocCells`) at an offset aligned to `a`. -/
+  | AllocNS (n a : w64) v l σg :
+      IsFreshAligned σg l (uint.nat a) →
+      BaseStep (AllocN (Val (PairV (LitV (LitInt n)) (LitV (LitInt a)))) (Val v)) σg [] (Val #l)
+        (setCells l ((allocCells (uint.nat n) v).map Free) σg) []
+  /-- non-atomic load of an encoded value, part 1: a reader on each of its cells -/
+  | StartReadNS enc l cs v σg :
+      cs.length = enc.size → CellsAt σg.1.heap l cs →
+      (∀ c ∈ cs, ∃ n, c.1 = Reading n) →
+      decode enc (cs.map Prod.snd) = some v →
+      BaseStep (StartReadN enc (Val #l)) σg [] (Val v)
+        (setCells l (cs.map fun c => (naModeRl c.1, c.2)) σg) []
+  /-- non-atomic load of an encoded value, part 2 -/
+  | FinishReadNS enc l cs σg :
+      cs.length = enc.size → CellsAt σg.1.heap l cs →
+      (∀ c ∈ cs, ∃ n, c.1 = Reading (n + 1)) →
+      BaseStep (FinishReadN enc (Val #l)) σg [] (Val #())
+        (setCells l (cs.map fun c => (naModeUrl c.1, c.2)) σg) []
+  /-- non-atomic store of an encoded value, part 1: each of its cells `Writing` -/
+  | PrepareWriteNS enc l cs σg :
+      cs.length = enc.size → CellsAt σg.1.heap l cs →
+      (∀ c ∈ cs, c.1 = Reading 0) →
+      BaseStep (PrepareWriteN enc (Val #l)) σg [] (Val #())
+        (setCells l (cs.map fun c => (Writing, c.2)) σg) []
+  /-- non-atomic store of an encoded value, part 2 -/
+  | FinishStoreNS enc l v cs vs σg :
+      cs.length = enc.size → CellsAt σg.1.heap l cs →
+      (∀ c ∈ cs, c.1 = Writing) →
+      encode enc v = some vs →
+      BaseStep (FinishStoreN enc (Val #l) (Val v)) σg [] (Val #()) (setCells l (vs.map Free) σg) []
+  /-- atomic load of an encoded value at an aligned location -/
+  | LoadNS enc l cs v σg :
+      Aligned enc l → cs.length = enc.size → CellsAt σg.1.heap l cs →
+      (∀ c ∈ cs, ∃ n, c.1 = Reading n) →
+      decode enc (cs.map Prod.snd) = some v →
+      BaseStep (LoadN enc (Val #l)) σg [] (Val v) σg []
+  | SwapNS enc l cs v0 v vs σg :
+      Aligned enc l → cs.length = enc.size → CellsAt σg.1.heap l cs →
+      (∀ c ∈ cs, c.1 = Reading 0) →
+      decode enc (cs.map Prod.snd) = some v0 → encode enc v = some vs →
+      BaseStep (SwapN enc (Val #l) (Val v)) σg [] (Val v0) (setCells l (vs.map Free) σg) []
+  | AddNS n l cs v0 v v' vs σg :
+      Aligned (.word n) l → cs.length = n → CellsAt σg.1.heap l cs →
+      (∀ c ∈ cs, c.1 = Reading 0) →
+      decode (.word n) (cs.map Prod.snd) = some v0 → atomicAddEval v0 v = some v' →
+      encode (.word n) v' = some vs →
+      BaseStep (AddN (.word n) (Val #l) (Val v)) σg [] (Val v') (setCells l (vs.map Free) σg) []
+  | CmpXchgNFailS enc l cs vl v1 v2 σg :
+      Aligned enc l → cs.length = enc.size → CellsAt σg.1.heap l cs →
+      (∀ c ∈ cs, ∃ n, c.1 = Reading n) →
+      decode enc (cs.map Prod.snd) = some vl → vl ≠ v1 →
+      BaseStep (CmpXchgN enc (Val #l) (Val (PairV v1 v2))) σg [] (Val (PairV vl #false)) σg []
+  | CmpXchgNSucS enc l cs vl v1 v2 vs σg :
+      Aligned enc l → cs.length = enc.size → CellsAt σg.1.heap l cs →
+      (∀ c ∈ cs, c.1 = Reading 0) →
+      decode enc (cs.map Prod.snd) = some vl → vl = v1 → encode enc v2 = some vs →
+      BaseStep (CmpXchgN enc (Val #l) (Val (PairV v1 v2))) σg [] (Val (PairV vl #true))
+        (setCells l (vs.map Free) σg) []
+  /-- `CheckCell l` (for `unsafe.Add`): `l` is a cell of the heap. -/
+  | CheckCellS l σg :
+      (σg.1.heap !! l).isSome →
+      BaseStep (CheckCell (Val #l)) σg [] (Val #()) σg []
   /-- non-atomic load part 1 (used for map accesses) -/
   | StartReadS l n v σg :
       σg.1.heap !! l = some (Reading n, v) →

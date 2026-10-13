@@ -24,22 +24,22 @@ variable [package_sem : sync.atomic.Assumptions]
 
 theorem sync.atomic.CompareAndSwapUint64.wp_proof :
     sync.atomic.CompareAndSwapUint64.spec (GF := GF) (hG := hG) := by
-  intro addr old new
+  intro addr old new hal
   wp_start as _
-  wp_bind (CmpXchg _ _ _)
+  wp_bind (CmpXchgN _ _ _)
   imod HΦ with ⟨%v, %dq, >Haddr, >%Hdq, HΦ⟩
   by_cases h : v = old
   · subst h
     simp only [↓reduceIte, decide_true] at Hdq ⊢
     subst Hdq
-    wp_apply_core wp_cmpxchg_suc addr v v new _ _ rfl $$ Haddr
+    wp_apply_core typed.wp_cmpxchg_suc addr v v new hal rfl $$ Haddr
     iintro Haddr
     imod HΦ $$ Haddr with HΦ
     imodintro
     wp_pures
     iexact HΦ
   · simp only [h, ↓reduceIte, decide_false]
-    wp_apply_core wp_cmpxchg_fail addr v old new dq _ _ h $$ Haddr
+    wp_apply_core typed.wp_cmpxchg_fail addr v old new dq hal h $$ Haddr
     iintro Haddr
     imod HΦ $$ Haddr with HΦ
     imodintro

@@ -24,11 +24,11 @@ variable [sem : go.Semantics]
 variable [package_sem : github_com.tchajed.marshal.Assumptions]
 
 /-- `reserve(s, extra)`: `s` with room for `extra` more bytes. The hypothesis
-`length vs + uint.Z extra ≤ 2^62` is needed: without it `make3` can panic on the new
+`length vs + uint.Z extra ≤ 2^47` is needed: without it `make3` panics (past `2^48` bytes) on the new
 capacity `max(2 * cap b, len b + extra)` (see the notes in `Base.lean`). -/
 abbrev github_com.tchajed.marshal.reserve.spec : Prop :=
   ∀ (s : GoSlice) (extra : w64) (vs : List w8),
-  (vs.length : Int) + uint.Z extra ≤ 2 ^ 62 →
+  (vs.length : Int) + uint.Z extra ≤ 2 ^ 47 →
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦* vs ∗
         ownSliceCap w8 s (DFrac.own 1) }}
       (App (App (Val (@! reserve)) (Val #s)) (Val #extra))

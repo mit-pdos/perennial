@@ -32,9 +32,17 @@ theorem internal.bytealg.MakeNoZero.wp_proof :
     rw [Hmax]; omega)]
   wp_auto
   wp_apply wp_new_cap with %cap %Hcap
-  wp_apply wp_slice_make3 (V := w8) n cap ⟨Hn.1, Hcap⟩ with %sl ⟨Hsl, Hsl_cap, -⟩
-  iapply HΦ
-  iframe
+  wp_if_destruct
+  · wp_apply wp_slice_make3 (V := w8) n n ⟨Hn.1, Int.le_refl _⟩
+      (make_cap_ok (by rw [go.typeSize_w8]; unfold internal.bytealg.maxAlloc at Hn; omega))
+      with %sl ⟨Hsl, Hsl_cap, -⟩
+    iapply HΦ
+    iframe
+  · wp_apply wp_slice_make3 (V := w8) n cap ⟨Hn.1, Hcap⟩
+      (make_cap_ok (by rw [go.typeSize_w8]; rw [Hmax] at *; unfold internal.bytealg.maxAlloc at *; omega))
+      with %sl ⟨Hsl, Hsl_cap, -⟩
+    iapply HΦ
+    iframe
 
 end proof
 

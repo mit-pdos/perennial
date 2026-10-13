@@ -28,10 +28,10 @@ theorem sync.atomic.Pointer.Store.wp_proof
     sync.atomic.Pointer.Store.spec (GF := GF) (hG := hG) := by
   intro T' _ _ T _ u v
   wp_start_folded as _
-  iintro %hu
+  iintro %hu %hal
   (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)
   wp_auto
-  wp_apply_core wp_StorePointer $$ [] [HΦ]
+  wp_apply_core (wp_StorePointer _ _ (by first | exact hal | simpa using hal)) $$ [] [HΦ]
   · iPkgInit
   imod HΦ with ⟨%old, Hown, HΦ⟩
   imodintro; inext

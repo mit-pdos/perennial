@@ -62,20 +62,20 @@ func cansemacquire(addr *uint32) bool {
 def runtime_Semacquire.impl : val :=
   λ: "addr", exceptionDo
     (for: (λ: <>, #true) ; (λ: <>, #()) := λ: <>,
-       let: "v" := Load "addr" in
+       let: "v" := LoadN (.word 4) "addr" in
        (if: "v" =⟨go.uint32⟩ #(W32 0) then
           continue: #()
         else
           do: #()
        ) ;;;
-       (if: Snd (CmpXchg "addr" "v" ("v" -⟨go.uint32⟩ #(W32 1))) then
+       (if: Snd (CmpXchgN (.word 4) "addr" ("v", "v" -⟨go.uint32⟩ #(W32 1))) then
           return: #()
         else
           do: #())
     )
 
 def runtime_Semrelease.impl : val :=
-  λ: "addr" "_handoff" "_skipframes", AtomicAdd "addr" #(W32 1) ;; #()
+  λ: "addr" "_handoff" "_skipframes", AddN (.word 4) "addr" #(W32 1) ;; #()
 
 /-- differs from runtime_Semacquire only in the park "reason", used for
 internal concurrency testing -/
@@ -90,9 +90,16 @@ def runtime_SemacquireRWMutex.impl : val :=
 
 /-- `copyChecker` is a `uintptr` (sync/cond.go:
 `type copyChecker uintptr`) that is only ever `0` or its own address
-`uintptr(unsafe.Pointer(c))`. goose supports neither `uintptr` nor
-pointer-to-integer conversions, so it is modeled as an `unsafe.Pointer` (a
-`loc`): `0` is `null`, and `uintptr(unsafe.Pointer(c))` is `c` itself. -/
+`uintptr(unsafe.Pointer(c))`. It is modeled as an `unsafe.Pointer` (a `loc`):
+`0` is `null`, and `uintptr(unsafe.Pointer(c))` is `c` itself.
+
+Goose translates the real `check`, but in the semantics each `uintptr(p)` is a fresh
+unspecified address (`go.UnsafeSemantics.convert_pointer_to_uintptr`: Go may move a
+goroutine's stack between two conversions), so the translation may panic at every
+call. Go's check relies on the address being fixed, which the runtime gives a `Cond`:
+its methods pass `&c.notify` to the runtime (`runtime_notifyListAdd`, …, linknamed),
+so a `Cond` escapes and lives on the heap, which gc does not move. The model is that
+fixed address. -/
 @[reducible] def copyChecker.underlying : go.GoType := «unsafe».Pointer
 
 /-- Model of (sync/cond.go)
@@ -106,13 +113,13 @@ func (c *copyChecker) check() {
 }
 ```
 The two reads of `*c` are plain loads in Go (racing with the CAS; the sync
-package is exempt from the race detector); they are modeled as (atomic)
-`Load`s. -/
+package is exempt from the race detector); they are modeled as atomic loads
+(`LoadN`): an aligned 8-byte load on amd64 does not tear. -/
 def copyChecker.check.impl : val :=
   λ: "c" <>,
-    if: Load "c" =⟨«unsafe».Pointer⟩ "c" then #()
-    else if: Snd (CmpXchg "c" #null "c") then #()
-    else if: Load "c" =⟨«unsafe».Pointer⟩ "c" then #()
+    if: LoadN (.cell 8) "c" =⟨«unsafe».Pointer⟩ "c" then #()
+    else if: Snd (CmpXchgN (.cell 8) "c" (#null, "c")) then #()
+    else if: LoadN (.cell 8) "c" =⟨«unsafe».Pointer⟩ "c" then #()
     else Panic "sync.Cond is copied"
 
 end code

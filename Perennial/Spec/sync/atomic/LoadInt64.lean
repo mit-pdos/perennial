@@ -23,7 +23,7 @@ variable [sem : go.Semantics]
 variable [package_sem : sync.atomic.Assumptions]
 
 abbrev sync.atomic.LoadInt64.spec : Prop :=
-  ∀ (addr : Loc) (dq : DFrac),
+  ∀ (addr : Loc) (dq : DFrac), Aligned (.word 8) addr →
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ v : w64, addr ↦{dq} v ∗ (addr ↦{dq} v ={∅,⊤}=∗ Φ #v)) -∗
     WP (App (Val (@! LoadInt64)) (Val #addr)) {{ Φ }}

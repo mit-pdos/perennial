@@ -122,11 +122,13 @@ instance equals_unfold_c [FfiSyntax] [GoGlobalContext] :
 class c.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying c.underlying c
   underlying : go.UnderlyingDirectedEq c.ty c.underlying
+  layout : go.StructLayout c []
   ptr_Bar_unfold : MethodUnfold (go.GoType.PointerType c.ty) go!"Bar" c.Bar.impl
   ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType c.ty) go!"Foo" c.Foo.impl
 
 attribute [instance] c.TypeAssumptions.type_repr
   c.TypeAssumptions.underlying
+  c.TypeAssumptions.layout
   c.TypeAssumptions.ptr_Bar_unfold
   c.TypeAssumptions.ptr_Foo_unfold
 

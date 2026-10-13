@@ -23,10 +23,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.tchajed.marshal.Assumptions]
 
-/-- `ReadBytesCopy(s, len)`: a fresh copy of the first `len` bytes of `s`, and the rest. -/
+/-- `ReadBytesCopy(s, len)`: a fresh copy of the first `len` bytes of `s`, and the rest.
+`make` refuses a slice of more than `2^48` bytes, so `len ≤ 2^48`. -/
 abbrev github_com.tchajed.marshal.ReadBytesCopy.spec : Prop :=
   ∀ (s : GoSlice) (q : DFrac) (len : w64) (head tail : List w8),
-  head.length = uint.nat len →
+  head.length = uint.nat len → uint.Z len ≤ 2 ^ 48 →
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦*{q} (head ++ tail) }}
       (App (App (Val (@! ReadBytesCopy)) (Val #s)) (Val #len))
     {{ (b s' : GoSlice), RET (PairV #b #s'); b ↦*{DFrac.own 1} head ∗ s' ↦*{q} tail }}

@@ -37,7 +37,8 @@ theorem strings.genSplit.wp_proof
   rw [decide_eq_false (show ¬ sint.Z (W64 s.length + W64 1) <
     sint.Z (W64 (countOcc s sep) + W64 1) by word)]
   wp_auto
-  wp_apply wp_slice_make2 (V := GoString) (W64 (countOcc s sep) + W64 1) as %a ⟨Ha, Hacap⟩
+  wp_apply wp_slice_make2 (V := GoString) (W64 (countOcc s sep) + W64 1)
+    (make_cap_ok (by rw [go.typeSize_string]; word)) as %a ⟨Ha, Hacap⟩
   · ipureintro; word
   rw [show sint.nat (W64 (countOcc s sep) + W64 1) = countOcc s sep + 1 by word,
     show (zero_val GoString) = ([] : GoString) from rfl]
@@ -71,7 +72,7 @@ theorem strings.genSplit.wp_proof
       rw [ite_eq_left ⟨by word, by word⟩]
       wp_apply wp_store_slice_index (V := GoString) a (sint.Z i) _ (cur.take j) $$ [Ha] as Ha
       · iframe; ipureintro; simp only [List.length_append, List.length_replicate]; word
-      wp_auto
+      try wp_auto
       wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %-
       wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %Hcurl
       rw [ite_eq_left ⟨by word, by word, by word⟩,
@@ -117,7 +118,7 @@ theorem strings.genSplit.wp_proof
     rw [ite_eq_left ⟨Hi0, by word⟩]
     wp_apply wp_store_slice_index (V := GoString) a (sint.Z i) _ cur $$ [Ha] as Ha
     · iframe; ipureintro; simp only [List.length_append, List.length_replicate]; word
-    wp_auto
+    try wp_auto
     rw [ite_eq_left ⟨by decide, by word, by word⟩,
       show slice.slice a GoString (W64 0) (i + W64 1) = a by
         rw [show i + W64 1 = a.len by word]; exact (slice_slice_trivial a).symm]

@@ -53,7 +53,7 @@ theorem strings.Join.wp_proof
     rw [ite_eq_left ⟨by word, by simp at Hlen; word⟩]
     wp_apply wp_load_slice_index elems (sint.Z (W64 0)) _ dq x0 (by word) $$ [Hs] as Hs
     · iframe; ipureintro; rfl
-    wp_auto
+    try wp_auto
     rw [show sep.intercalate [x0] = x0 by simp [List.intercalate]]
     iapply HΦ
     iexact Hs

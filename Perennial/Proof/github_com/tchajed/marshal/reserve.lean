@@ -44,7 +44,11 @@ theorem github_com.tchajed.marshal.reserve.wp_proof
       have := Hsz.1
       refine ⟨Hcapwf.1, ?_⟩
       rcases Hnc' with h | h <;> subst h <;> word
-    wp_apply wp_slice_make3 (V := w8) s.len new_cap hlen as %sl ⟨Hsl, Hslcap, %Hslc⟩
+    have hmax : sint.Z new_cap ≤ 2 ^ 48 := by
+      rename_i Hif
+      rcases Hnc' with h | h <;> subst h <;> revert Hif <;> word
+    wp_apply wp_slice_make3 (V := w8) s.len new_cap hlen
+      (make_cap_ok (by rw [go.typeSize_w8]; omega)) as %sl ⟨Hsl, Hslcap, %Hslc⟩
     ihave %Hsllen := ownSlice_len _ _ _ $$ Hsl
     ihave %Hslwf := ownSliceCap_wf _ _ $$ Hslcap
     wp_apply wp_slice_copy (V := w8) (t := go.byte) sl _ s vs (DFrac.own 1) $$ [$Hsl $Hs]

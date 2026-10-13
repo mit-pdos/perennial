@@ -3374,8 +3374,8 @@ elab "inonnull" : tactic =>
 
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
 /-- Internal: post-processing of the goals produced by `wp_apply_raw`: strip a
-leading `▷`, solve trivial `True`/`⌜True⌝`/`emp` goals, and `⌜l ≠ null⌝` goals
-(`inonnull`). -/
+leading `▷`, solve trivial `True`/`⌜True⌝`/`emp` goals, `⌜l ≠ null⌝` goals
+(`inonnull`), and `⌜Aligned enc l⌝` goals that are a Lean hypothesis. -/
 elab "wp_apply_post" : tactic => do
   let gs ← getGoals
   let mut out := []
@@ -3401,6 +3401,11 @@ elab "wp_apply_post" : tactic => do
         if !solved && goal.isAppOfArity ``BIBase.pure 3 then
           if ← isNeNull (goal.getArg! 2) then
             if let some _ ← observing? (evalTactic (← `(tactic| inonnull))) then
+              solved := true
+        -- the alignment of an atomic operation (`⌜Aligned enc l⌝`): from a Lean hypothesis
+        if !solved && goal.isAppOfArity ``BIBase.pure 3 then
+          if (← whnfR (goal.getArg! 2)).isAppOf ``Aligned then
+            if let some _ ← observing? (evalTactic (← `(tactic| ipureintro; assumption))) then
               solved := true
         -- `True -∗ P`: drop the premise
         if goal.isAppOfArity ``BIBase.wand 4 then

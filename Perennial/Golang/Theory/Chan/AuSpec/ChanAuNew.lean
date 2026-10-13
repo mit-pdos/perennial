@@ -45,7 +45,7 @@ theorem wp_NewChannel (cap : w64) :
   simp only [channel.idle, channel.buffered]
   wp_auto
   wp_if_destruct
-  · wp_apply wp_slice_make2 (V := V) $$ [] as %sl ⟨Hsl, Hslcap⟩
+  · wp_apply wp_slice_make2 (V := V) (W64 0) (make_cap_ok_zero _) $$ [] as %sl ⟨Hsl, Hslcap⟩
     · ipureintro; decide
     iapply wp_fupd
     wp_alloc ch as Hch
@@ -99,7 +99,7 @@ theorem wp_NewChannel (cap : w64) :
       constructor <;> word
   · have hcap : cap = W64 0 := by word
     subst hcap
-    wp_apply wp_slice_make2 (V := V) $$ [] as %sl ⟨Hsl, Hslcap⟩
+    wp_apply wp_slice_make2 (V := V) (W64 0) (make_cap_ok_zero _) $$ [] as %sl ⟨Hsl, Hslcap⟩
     · ipureintro; decide
     iapply wp_fupd
     wp_alloc ch as Hch
@@ -170,7 +170,7 @@ theorem wp_NewChannel_unbuffered_ne (l : Loc) (x : w64) :
   wp_auto
   simp only [channel.idle, channel.buffered]
   wp_auto
-  wp_apply wp_slice_make2 (V := V) $$ [] as %sl ⟨Hsl, Hslcap⟩
+  wp_apply wp_slice_make2 (V := V) (W64 0) (make_cap_ok_zero _) $$ [] as %sl ⟨Hsl, Hslcap⟩
   · ipureintro; decide
   iapply wp_fupd
   wp_alloc ch as Hch
@@ -180,11 +180,9 @@ theorem wp_NewChannel_unbuffered_ne (l : Loc) (x : w64) :
   by_cases hcl : ch = l
   · subst hcl
     iexfalso
-    simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap]
-    icases cap with ⟨Hc1, -⟩
-    icases Hl with ⟨Hc2, -⟩
-    icombine Hc1 Hc2 gives %H
-    exact absurd (DFrac.valid_own_op_discard.1 H.1) (by simp)
+    iapply word_pointsto_own_discard (V := w64) _ _ x $$ [cap Hl]
+    iframe cap
+    iexact Hl
   imod ghostVar_alloc (ChanState.Idle (V := V)) with ⟨%state_gname, Hstate⟩
   icases ghostVar_halves _ _ $$ Hstate with ⟨Hstate_auth, Hstate_frag⟩
   imod ghostVar_alloc (none : Option (OfferLock V)) with ⟨%offer_lock_gname, Hoffer_lock⟩

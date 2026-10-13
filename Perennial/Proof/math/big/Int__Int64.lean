@@ -33,7 +33,7 @@ theorem math.big.Int.Int64.wp_proof
   · iexact Hws
   have Hsmall := natValue_small ws (by split at Hz <;> omega)
   generalize ws.headD (W64 0) = w at Hsmall
-  wp_auto
+  try wp_auto
   cases Hneg : x.neg'
   all_goals
     simp only [Hneg, Bool.false_eq_true, ↓reduceIte] at Hz ⊢

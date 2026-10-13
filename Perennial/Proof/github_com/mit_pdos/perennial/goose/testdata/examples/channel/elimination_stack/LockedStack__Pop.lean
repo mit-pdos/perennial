@@ -71,7 +71,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.eliminatio
         simp only [List.length_reverse]; word
       rw [hidx, List.getElem?_append_right (Nat.le_refl _), Nat.sub_self]
       rfl
-    wp_auto
+    try wp_auto
     rw [ite_eq_left (show 0 ≤ sint.Z (W64 0) ∧ sint.Z (W64 0) ≤ sint.Z (stack_sl.len - W64 1) ∧
       sint.Z (stack_sl.len - W64 1) ≤ sint.Z stack_sl.cap by word)]
     icases ownSlice_slice_with_cap (W64 0) (stack_sl.len - W64 1) stack_sl (σ.reverse ++ [v])

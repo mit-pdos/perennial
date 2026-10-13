@@ -664,6 +664,34 @@ abbrev RWWriterSem (rw : Loc) : Loc := structFieldRef RWMutex go!"writerSem" rw
 abbrev RWReaderCount (rw : Loc) : Loc := structFieldRef RWMutex go!"readerCount" rw
 abbrev RWReaderWait (rw : Loc) : Loc := structFieldRef RWMutex go!"readerWait" rw
 
+/-- The atomic counters of an `RWMutex` (the `v` fields of `readerCount` and `readerWait`)
+are aligned. -/
+def RWAligned (rw : Loc) : Prop :=
+  Aligned (.word 4) (structFieldRef _root_.Perennial.sync.atomic.Int32 go!"v" (RWReaderCount (GF := GF) rw)) ∧
+  Aligned (.word 4) (structFieldRef _root_.Perennial.sync.atomic.Int32 go!"v" (RWReaderWait (GF := GF) rw))
+
+include hG sem package_sem in
+/-- An `RWMutex` allocated at its alignment has its counters and semaphores aligned. -/
+theorem rw_fields_aligned (rw : Loc) (hal : AllocAligned RWMutex rw) :
+    RWAligned (GF := GF) rw ∧ Aligned (.word 4) (RWReaderSem (GF := GF) rw) ∧
+      Aligned (.word 4) (RWWriterSem (GF := GF) rw) := by
+  have hrc := go.field_aligned (V := RWMutex) (f := go!"readerCount") (by solve_layout_mem)
+    (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
+  have crc := go.structFieldRef_car' (V := RWMutex) (f := go!"readerCount") hal.1 (by solve_layout_mem)
+  have hrw := go.field_aligned (V := RWMutex) (f := go!"readerWait") (by solve_layout_mem)
+    (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
+  have crw := go.structFieldRef_car' (V := RWMutex) (f := go!"readerWait") hal.1 (by solve_layout_mem)
+  have hrc' := go.field_aligned (V := _root_.Perennial.sync.atomic.Int32) (f := go!"v")
+    (by solve_layout_mem) (by solve_layout_nodup) (by solve_layout_pow2) crc hrc
+  have hrw' := go.field_aligned (V := _root_.Perennial.sync.atomic.Int32) (f := go!"v")
+    (by solve_layout_mem) (by solve_layout_nodup) (by solve_layout_pow2) crw hrw
+  have hrs := go.field_aligned (V := RWMutex) (f := go!"readerSem") (by solve_layout_mem)
+    (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
+  have hws := go.field_aligned (V := RWMutex) (f := go!"writerSem") (by solve_layout_mem)
+    (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
+  exact ⟨⟨by simpa [Aligned, Encoding.align] using hrc', by simpa [Aligned, Encoding.align] using hrw'⟩,
+    by simpa [Aligned, Encoding.align] using hrs, by simpa [Aligned, Encoding.align] using hws⟩
+
 abbrev rwLockedPart (rw : Loc) (γ : RWMutexNames) (state : rwmutex) : IProp GF :=
   match state with
   | .Locked => iprop(ownMutex (RWW (GF := GF) rw) ∗
@@ -692,10 +720,18 @@ def isRWMutexDef (rw : Loc) (γ : RWMutexNames) (N : Namespace) : IProp GF :=
       (ghostVar γ.protGn.wlockGn (1 : Qp).half (WlockState.NotLocked (W32 0))) ∗
     "#His_readerSem" ∷ isSema (RWReaderSem (GF := GF) rw) γ.readerSemGn (N.@"sema") ∗
     "#His_writerSem" ∷ isSema (RWWriterSem (GF := GF) rw) γ.writerSemGn (N.@"sema") ∗
-    "#Hinv" ∷ inv (N.@"inv") (rwInv rw γ))
+    "#Hinv" ∷ inv (N.@"inv") (rwInv rw γ) ∗
+    "%Hal" ∷ ⌜RWAligned (GF := GF) rw⌝)
 @[irreducible] def isRWMutex (rw : Loc) (γ : RWMutexNames) (N : Namespace) : IProp GF :=
   isRWMutexDef rw γ N
 theorem isRWMutex_unseal : @isRWMutex = @isRWMutexDef := by funext; with_unfolding_all rfl
+
+theorem isRWMutex_aligned (rw : Loc) (γ : RWMutexNames) (N : Namespace) :
+    isRWMutex (GF := GF) rw γ N ⊢ ⌜RWAligned (GF := GF) rw⌝ := by
+  rw [isRWMutex_unseal]; unfold isRWMutexDef
+  iintro H
+  iNamed H
+  ipureintro; exact Hal
 
 instance isRWMutex_pers (rw : Loc) (γ : RWMutexNames) (N : Namespace) :
     Persistent (isRWMutex (GF := GF) rw γ N) := by
@@ -714,7 +750,7 @@ theorem ownToks_replicate (γ : GName) (n : Nat) :
     iframe H1
     iapply ih $$ H2
 
-theorem init_RWMutex {E : CoPset} (N : Namespace) (rw : Loc) :
+theorem init_RWMutex {E : CoPset} (N : Namespace) (rw : Loc) (hal : AllocAligned RWMutex rw) :
     typedPointsto (GF := GF) rw (zero_val RWMutex) (DFrac.own 1) ⊢
     |={E}=> ∃ γ : RWMutexNames, isRWMutex rw γ N ∗ ownRWMutex γ (.RLocked 0) ∗
       [∗list] _x ∈ List.replicate (Int.toNat actualMaxReaders) (), ownRLockToken γ := by
@@ -738,8 +774,11 @@ theorem init_RWMutex {E : CoPset} (N : Namespace) (rw : Loc) :
     with ⟨Hst, Hst_inv⟩
   · rw [Qp.half_add_half]; iexact Hst
   imod ghostVar_alloc () with ⟨%γwt, Hwt⟩
-  imod init_sema (E := E) (N.@"sema") (RWReaderSem rw) (W32 0) $$ readerSem with ⟨%γrs, #Hrs, Hrs_own⟩
-  imod init_sema (E := E) (N.@"sema") (RWWriterSem rw) (W32 0) $$ writerSem with ⟨%γws, #Hws, Hws_own⟩
+  obtain ⟨hctr, hrs, hws⟩ := rw_fields_aligned rw hal
+  imod init_sema (E := E) (N.@"sema") (RWReaderSem rw) (W32 0) hrs $$ readerSem
+    with ⟨%γrs, #Hrs, Hrs_own⟩
+  imod init_sema (E := E) (N.@"sema") (RWWriterSem rw) (W32 0) hws $$ writerSem
+    with ⟨%γws, #Hws, Hws_own⟩
   let γ : RWMutexNames := ⟨⟨γread_wait, γrlock, γwl, γwt, γst⟩, γrs, γws⟩
   imod init_Mutex (ghostVar γwl (1 : Qp).half (WlockState.NotLocked (W32 0))) E (RWW rw)
     $$ w [Hwl] with #Hmu
@@ -768,6 +807,8 @@ theorem init_RWMutex {E : CoPset} (N : Namespace) (rw : Loc) :
     ownRLockToken_unseal, ownRLockTokenDef]
   iframe Hst
   iframe #
+  isplitr
+  · ipureintro; exact hctr
   iapply ownToks_replicate $$ Htoks
 
 end wps

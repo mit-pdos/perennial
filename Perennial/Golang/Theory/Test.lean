@@ -400,11 +400,13 @@ instance equals_unfold_pt [FfiSyntax] [GoGlobalContext] : EqualsUnfold pt.fields
 class pt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying pt.underlying pt
   underlying : go.UnderlyingDirectedEq pt.ty pt.underlying
+  layout : go.StructLayout pt [(go!"x", typeSize w64, typeAlign w64), (go!"y", typeSize w64, typeAlign w64)]
   get_x : ∀ (x : pt), go.IsGoStepPureDetTagged under (StructFieldGet pt.underlying go!"x") #x (Val #(x.x'))
   set_x : ∀ (x : pt) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pt.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : pt)))
   get_y : ∀ (x : pt), go.IsGoStepPureDetTagged under (StructFieldGet pt.underlying go!"y") #x (Val #(x.y'))
   set_y : ∀ (x : pt) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pt.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : pt)))
-attribute [instance] pt.TypeAssumptions.type_repr pt.TypeAssumptions.underlying pt.TypeAssumptions.get_x
+attribute [instance] pt.TypeAssumptions.type_repr pt.TypeAssumptions.underlying
+  pt.TypeAssumptions.layout pt.TypeAssumptions.get_x
   pt.TypeAssumptions.set_x pt.TypeAssumptions.get_y pt.TypeAssumptions.set_y
 
 section def_
@@ -462,6 +464,24 @@ example (l : Loc) (v : pt) :
   wp_auto
   iapply HΦ $$ Hl
 
+/-- A load of a field through a fractional struct points-to. -/
+example (l : Loc) (v : pt) (dq : DFrac) :
+    {{ (l ↦{dq} v : IProp GF) }}
+      gl(![go.uint64] (StructFieldRef pt.ty "x" #l))
+    {{ RET #v.x'; l ↦{dq} v }} := by
+  iintro %Φ Hl HΦ
+  wp_auto
+  iapply HΦ $$ Hl
+
+/-- A store of a field's own value (the load instance also matches it). -/
+example (l : Loc) (v : pt) :
+    {{ (l ↦ v : IProp GF) }}
+      gl(StructFieldRef pt.ty "x" #l <-[go.uint64] #v.x')
+    {{ RET #(); l ↦ v }} := by
+  iintro %Φ Hl HΦ
+  wp_auto
+  iapply HΦ $$ Hl
+
 /-- Projections of the zero value of a struct are reduced (extras). -/
 example (Φ : val → IProp GF) : Φ #(0 : w64) ⊢ WP (Val #((zero_val pt).x')) {{ Φ }} := by
   iintro H
@@ -497,9 +517,11 @@ instance equals_unfold_ub [FfiSyntax] [GoGlobalContext] : EqualsUnfold ub.fields
 class ub.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ub.underlying ub
   underlying : go.UnderlyingDirectedEq ub.ty ub.underlying
+  layout : go.StructLayout ub [(go!"p", typeSize w64, typeAlign w64)]
   get_p : ∀ (x : ub), go.IsGoStepPureDetTagged under (StructFieldGet ub.underlying go!"p") #x (Val #(x.p'))
   set_p : ∀ (x : ub) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ub.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : ub)))
 attribute [instance] ub.TypeAssumptions.type_repr ub.TypeAssumptions.underlying
+  ub.TypeAssumptions.layout
   ub.TypeAssumptions.get_p ub.TypeAssumptions.set_p
 
 section def_

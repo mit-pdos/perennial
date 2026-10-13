@@ -168,9 +168,11 @@ instance equals_unfold_nih [FfiSyntax] [GoGlobalContext] :
 class nih.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying nih.underlying nih
   underlying : go.UnderlyingDirectedEq nih.ty nih.underlying
+  layout : go.StructLayout nih []
 
 attribute [instance] nih.TypeAssumptions.type_repr
   nih.TypeAssumptions.underlying
+  nih.TypeAssumptions.layout
 
 structure NotInHeap [FfiSyntax] where
   mk ::
@@ -195,11 +197,13 @@ instance equals_unfold_NotInHeap [FfiSyntax] [GoGlobalContext] :
 class NotInHeap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying NotInHeap.underlying NotInHeap
   underlying : go.UnderlyingDirectedEq NotInHeap.ty NotInHeap.underlying
+  layout : go.StructLayout NotInHeap [(go!"_0", typeSize nih, typeAlign nih)]
   get__0 : ∀ (x : NotInHeap), go.IsGoStepPureDetTagged under (StructFieldGet NotInHeap.underlying go!"_0") #x (Val #(x._0'))
   set__0 : ∀ (x : NotInHeap) (y : nih), go.IsGoStepPureDetTagged under (StructFieldSet NotInHeap.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : NotInHeap)))
 
 attribute [instance] NotInHeap.TypeAssumptions.type_repr
   NotInHeap.TypeAssumptions.underlying
+  NotInHeap.TypeAssumptions.layout
   NotInHeap.TypeAssumptions.get__0
   NotInHeap.TypeAssumptions.set__0
 

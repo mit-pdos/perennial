@@ -22,41 +22,42 @@ variable [GoSemanticsFunctions] [go.PreSemantics]
 attribute [local instance] go.tagged_internal_inst
 
 instance intoVal_typed_uint64 : IntoValTypedUnderlying (GF := GF) w64 go.uint64 := by
-  solve_into_val_typed
+  solve_into_val_typed (Encoding.word 8) (encode_w64 (hG := hG)) go.typeSize_w64 go.typeAlign_w64
 instance intoVal_typed_uint32 : IntoValTypedUnderlying (GF := GF) w32 go.uint32 := by
-  solve_into_val_typed
+  solve_into_val_typed (Encoding.word 4) (encode_w32 (hG := hG)) go.typeSize_w32 go.typeAlign_w32
 instance intoVal_typed_uint16 : IntoValTypedUnderlying (GF := GF) w16 go.uint16 := by
-  solve_into_val_typed
+  solve_into_val_typed (Encoding.word 2) (encode_w16 (hG := hG)) go.typeSize_w16 go.typeAlign_w16
 instance intoVal_typed_uint8 : IntoValTypedUnderlying (GF := GF) w8 go.uint8 := by
-  solve_into_val_typed
+  solve_into_val_typed (Encoding.word 1) (encode_w8 (hG := hG)) go.typeSize_w8 go.typeAlign_w8
 instance intoVal_typed_uint : IntoValTypedUnderlying (GF := GF) w64 go.uint := by
-  solve_into_val_typed
+  solve_into_val_typed (Encoding.word 8) (encode_w64 (hG := hG)) go.typeSize_w64 go.typeAlign_w64
 /-- See `go.UintptrSemantics`. -/
 instance intoVal_typed_uintptr : IntoValTypedUnderlying (GF := GF) w64 go.uintptr := by
-  solve_into_val_typed
+  solve_into_val_typed (Encoding.word 8) (encode_w64 (hG := hG)) go.typeSize_w64 go.typeAlign_w64
 instance intoVal_typed_int64 : IntoValTypedUnderlying (GF := GF) w64 go.int64 := by
-  solve_into_val_typed
+  solve_into_val_typed (Encoding.word 8) (encode_w64 (hG := hG)) go.typeSize_w64 go.typeAlign_w64
 instance intoVal_typed_int32 : IntoValTypedUnderlying (GF := GF) w32 go.int32 := by
-  solve_into_val_typed
+  solve_into_val_typed (Encoding.word 4) (encode_w32 (hG := hG)) go.typeSize_w32 go.typeAlign_w32
 instance intoVal_typed_int16 : IntoValTypedUnderlying (GF := GF) w16 go.int16 := by
-  solve_into_val_typed
+  solve_into_val_typed (Encoding.word 2) (encode_w16 (hG := hG)) go.typeSize_w16 go.typeAlign_w16
 instance intoVal_typed_int8 : IntoValTypedUnderlying (GF := GF) w8 go.int8 := by
-  solve_into_val_typed
+  solve_into_val_typed (Encoding.word 1) (encode_w8 (hG := hG)) go.typeSize_w8 go.typeAlign_w8
 instance intoVal_typed_int : IntoValTypedUnderlying (GF := GF) w64 go.int := by
-  solve_into_val_typed
+  solve_into_val_typed (Encoding.word 8) (encode_w64 (hG := hG)) go.typeSize_w64 go.typeAlign_w64
 instance intoVal_typed_bool : IntoValTypedUnderlying (GF := GF) Bool go.bool := by
-  solve_into_val_typed
+  solve_into_val_typed' (Encoding.cell 1) (fun v => encode_cell 1 (by decide) #v) go.typeSize_bool
+    go.typeAlign_bool typedPointstoDef_bool
 instance intoVal_typed_string : IntoValTypedUnderlying (GF := GF) GoString go.string := by
-  solve_into_val_typed
+  solve_into_val_typed (Encoding.cell 16) (fun v => encode_cell 16 (by decide) #v) go.typeSize_string go.typeAlign_string
 instance intoVal_typed_Pointer : IntoValTypedUnderlying (GF := GF) Loc unsafe.Pointer := by
-  solve_into_val_typed
+  solve_into_val_typed (Encoding.cell 8) (fun v => encode_cell 8 (by decide) #v) go.typeSize_loc go.typeAlign_loc
 instance intoVal_typed_proph_id :
     IntoValTypedUnderlying (GF := GF) Perennial.proph_id go.prophId := by
-  solve_into_val_typed
+  solve_into_val_typed (Encoding.cell 8) (fun v => encode_cell 8 (by decide) #v) go.typeSize_proph_id go.typeAlign_proph_id
 instance intoVal_typed_float64 : IntoValTypedUnderlying (GF := GF) w64 go.float64 := by
-  solve_into_val_typed
+  solve_into_val_typed (Encoding.word 8) (encode_w64 (hG := hG)) go.typeSize_w64 go.typeAlign_w64
 instance intoVal_typed_float32 : IntoValTypedUnderlying (GF := GF) w32 go.float32 := by
-  solve_into_val_typed
+  solve_into_val_typed (Encoding.word 4) (encode_w32 (hG := hG)) go.typeSize_w32 go.typeAlign_w32
 
 end into_val_typed_instances
 

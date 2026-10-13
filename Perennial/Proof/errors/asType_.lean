@@ -51,7 +51,7 @@ theorem errors.asType.wp_proof :
     wp_auto
     wp_for_post
     iapply HΦ
-    iframe
+    iframe Hppe; iframe
   | ok ii =>
     ihave Hnode := Htree $$ %ii %HSe
     iNamed Hnode
@@ -65,7 +65,7 @@ theorem errors.asType.wp_proof :
       wp_auto
       wp_for_post
       iapply HΦ
-      iframe
+      iframe Hppe; iframe
     wp_store; wp_pures; wp_store; wp_pures; wp_load; wp_pures
     -- the `As` statement, joined before the `Unwrap` switch: it either returns
     -- or falls through with an updated `*ppe`
@@ -124,7 +124,7 @@ theorem errors.asType.wp_proof :
       wp_auto
       wp_for_post
       iapply HΦ
-      iframe
+      iframe Hppe; iframe
     subst Hv
     wp_auto
     have hu1 : underlying (go.InterfaceType
@@ -148,7 +148,7 @@ theorem errors.asType.wp_proof :
         wp_auto
         wp_for_post
         iapply HΦ
-        iframe
+        iframe Hppe; iframe
       | ok ii' =>
         wp_auto
         wp_for_post
@@ -207,7 +207,7 @@ theorem errors.asType.wp_proof :
               wp_for_post
               wp_for_post
               iapply HΦ
-              iframe
+              iframe Hppe; iframe
             case false =>
               wp_auto
               wp_for_post
@@ -217,13 +217,13 @@ theorem errors.asType.wp_proof :
               ipureintro; word
         · wp_for_post
           iapply HΦ
-          iframe
+          iframe Hppe; iframe
       case false =>
         simp only [Bool.false_eq_true, ↓reduceIte]
         wp_auto
         wp_for_post
         iapply HΦ
-        iframe
+        iframe Hppe; iframe
 
 end proof
 

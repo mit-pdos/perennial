@@ -408,6 +408,7 @@ instance equals_unfold_wrapError [FfiSyntax] [GoGlobalContext] :
 class wrapError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying wrapError.underlying wrapError
   underlying : go.UnderlyingDirectedEq wrapError.ty wrapError.underlying
+  layout : go.StructLayout wrapError [(go!"msg", typeSize GoString, typeAlign GoString), (go!"err", typeSize GoError, typeAlign GoError)]
   get_msg : ∀ (x : wrapError), go.IsGoStepPureDetTagged under (StructFieldGet wrapError.underlying go!"msg") #x (Val #(x.msg'))
   set_msg : ∀ (x : wrapError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet wrapError.underlying go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : wrapError)))
   get_err : ∀ (x : wrapError), go.IsGoStepPureDetTagged under (StructFieldGet wrapError.underlying go!"err") #x (Val #(x.err'))
@@ -415,6 +416,7 @@ class wrapError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
 
 attribute [instance] wrapError.TypeAssumptions.type_repr
   wrapError.TypeAssumptions.underlying
+  wrapError.TypeAssumptions.layout
   wrapError.TypeAssumptions.get_msg
   wrapError.TypeAssumptions.set_msg
   wrapError.TypeAssumptions.get_err
@@ -445,6 +447,7 @@ instance equals_unfold_wrapErrors [FfiSyntax] [GoGlobalContext] :
 class wrapErrors.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying wrapErrors.underlying wrapErrors
   underlying : go.UnderlyingDirectedEq wrapErrors.ty wrapErrors.underlying
+  layout : go.StructLayout wrapErrors [(go!"msg", typeSize GoString, typeAlign GoString), (go!"errs", typeSize GoSlice, typeAlign GoSlice)]
   get_msg : ∀ (x : wrapErrors), go.IsGoStepPureDetTagged under (StructFieldGet wrapErrors.underlying go!"msg") #x (Val #(x.msg'))
   set_msg : ∀ (x : wrapErrors) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet wrapErrors.underlying go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : wrapErrors)))
   get_errs : ∀ (x : wrapErrors), go.IsGoStepPureDetTagged under (StructFieldGet wrapErrors.underlying go!"errs") #x (Val #(x.errs'))
@@ -452,6 +455,7 @@ class wrapErrors.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] wrapErrors.TypeAssumptions.type_repr
   wrapErrors.TypeAssumptions.underlying
+  wrapErrors.TypeAssumptions.layout
   wrapErrors.TypeAssumptions.get_msg
   wrapErrors.TypeAssumptions.set_msg
   wrapErrors.TypeAssumptions.get_errs
@@ -496,6 +500,7 @@ instance equals_unfold_fmtFlags [FfiSyntax] [GoGlobalContext] :
 class fmtFlags.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying fmtFlags.underlying fmtFlags
   underlying : go.UnderlyingDirectedEq fmtFlags.ty fmtFlags.underlying
+  layout : go.StructLayout fmtFlags [(go!"widPresent", typeSize Bool, typeAlign Bool), (go!"precPresent", typeSize Bool, typeAlign Bool), (go!"minus", typeSize Bool, typeAlign Bool), (go!"plus", typeSize Bool, typeAlign Bool), (go!"sharp", typeSize Bool, typeAlign Bool), (go!"space", typeSize Bool, typeAlign Bool), (go!"zero", typeSize Bool, typeAlign Bool), (go!"plusV", typeSize Bool, typeAlign Bool), (go!"sharpV", typeSize Bool, typeAlign Bool)]
   get_widPresent : ∀ (x : fmtFlags), go.IsGoStepPureDetTagged under (StructFieldGet fmtFlags.underlying go!"widPresent") #x (Val #(x.widPresent'))
   set_widPresent : ∀ (x : fmtFlags) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet fmtFlags.underlying go!"widPresent") (PairV #x #y) (Val #(({ x with widPresent' := y } : fmtFlags)))
   get_precPresent : ∀ (x : fmtFlags), go.IsGoStepPureDetTagged under (StructFieldGet fmtFlags.underlying go!"precPresent") #x (Val #(x.precPresent'))
@@ -517,6 +522,7 @@ class fmtFlags.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] fmtFlags.TypeAssumptions.type_repr
   fmtFlags.TypeAssumptions.underlying
+  fmtFlags.TypeAssumptions.layout
   fmtFlags.TypeAssumptions.get_widPresent
   fmtFlags.TypeAssumptions.set_widPresent
   fmtFlags.TypeAssumptions.get_precPresent
@@ -567,6 +573,7 @@ instance equals_unfold_fmt [FfiSyntax] [GoGlobalContext] :
 class fmt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying fmt.underlying fmt
   underlying : go.UnderlyingDirectedEq fmt.ty fmt.underlying
+  layout : go.StructLayout fmt [(go!"buf", typeSize Loc, typeAlign Loc), (go!"fmtFlags", typeSize fmtFlags, typeAlign fmtFlags), (go!"wid", typeSize w64, typeAlign w64), (go!"prec", typeSize w64, typeAlign w64), (go!"intbuf", typeSize (GoArray w8 68), typeAlign (GoArray w8 68))]
   get_buf : ∀ (x : fmt), go.IsGoStepPureDetTagged under (StructFieldGet fmt.underlying go!"buf") #x (Val #(x.buf'))
   set_buf : ∀ (x : fmt) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet fmt.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : fmt)))
   get_fmtFlags : ∀ (x : fmt), go.IsGoStepPureDetTagged under (StructFieldGet fmt.underlying go!"fmtFlags") #x (Val #(x.fmtFlags'))
@@ -580,6 +587,7 @@ class fmt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
 
 attribute [instance] fmt.TypeAssumptions.type_repr
   fmt.TypeAssumptions.underlying
+  fmt.TypeAssumptions.layout
   fmt.TypeAssumptions.get_buf
   fmt.TypeAssumptions.set_buf
   fmt.TypeAssumptions.get_fmtFlags
@@ -707,11 +715,13 @@ instance equals_unfold_scanError [FfiSyntax] [GoGlobalContext] :
 class scanError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying scanError.underlying scanError
   underlying : go.UnderlyingDirectedEq scanError.ty scanError.underlying
+  layout : go.StructLayout scanError [(go!"err", typeSize GoError, typeAlign GoError)]
   get_err : ∀ (x : scanError), go.IsGoStepPureDetTagged under (StructFieldGet scanError.underlying go!"err") #x (Val #(x.err'))
   set_err : ∀ (x : scanError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet scanError.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : scanError)))
 
 attribute [instance] scanError.TypeAssumptions.type_repr
   scanError.TypeAssumptions.underlying
+  scanError.TypeAssumptions.layout
   scanError.TypeAssumptions.get_err
   scanError.TypeAssumptions.set_err
 
@@ -748,6 +758,7 @@ instance equals_unfold_ssave [FfiSyntax] [GoGlobalContext] :
 class ssave.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ssave.underlying ssave
   underlying : go.UnderlyingDirectedEq ssave.ty ssave.underlying
+  layout : go.StructLayout ssave [(go!"validSave", typeSize Bool, typeAlign Bool), (go!"nlIsEnd", typeSize Bool, typeAlign Bool), (go!"nlIsSpace", typeSize Bool, typeAlign Bool), (go!"argLimit", typeSize w64, typeAlign w64), (go!"limit", typeSize w64, typeAlign w64), (go!"maxWid", typeSize w64, typeAlign w64)]
   get_validSave : ∀ (x : ssave), go.IsGoStepPureDetTagged under (StructFieldGet ssave.underlying go!"validSave") #x (Val #(x.validSave'))
   set_validSave : ∀ (x : ssave) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet ssave.underlying go!"validSave") (PairV #x #y) (Val #(({ x with validSave' := y } : ssave)))
   get_nlIsEnd : ∀ (x : ssave), go.IsGoStepPureDetTagged under (StructFieldGet ssave.underlying go!"nlIsEnd") #x (Val #(x.nlIsEnd'))
@@ -763,6 +774,7 @@ class ssave.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] ssave.TypeAssumptions.type_repr
   ssave.TypeAssumptions.underlying
+  ssave.TypeAssumptions.layout
   ssave.TypeAssumptions.get_validSave
   ssave.TypeAssumptions.set_validSave
   ssave.TypeAssumptions.get_nlIsEnd
@@ -807,6 +819,7 @@ instance equals_unfold_ss [FfiSyntax] [GoGlobalContext] :
 class ss.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ss.underlying ss
   underlying : go.UnderlyingDirectedEq ss.ty ss.underlying
+  layout : go.StructLayout ss [(go!"rs", typeSize _root_.Perennial.io.RuneScanner, typeAlign _root_.Perennial.io.RuneScanner), (go!"buf", typeSize buffer, typeAlign buffer), (go!"count", typeSize w64, typeAlign w64), (go!"atEOF", typeSize Bool, typeAlign Bool), (go!"ssave", typeSize ssave, typeAlign ssave)]
   get_rs : ∀ (x : ss), go.IsGoStepPureDetTagged under (StructFieldGet ss.underlying go!"rs") #x (Val #(x.rs'))
   set_rs : ∀ (x : ss) (y : _root_.Perennial.io.RuneScanner), go.IsGoStepPureDetTagged under (StructFieldSet ss.underlying go!"rs") (PairV #x #y) (Val #(({ x with rs' := y } : ss)))
   get_buf : ∀ (x : ss), go.IsGoStepPureDetTagged under (StructFieldGet ss.underlying go!"buf") #x (Val #(x.buf'))
@@ -820,6 +833,7 @@ class ss.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSeman
 
 attribute [instance] ss.TypeAssumptions.type_repr
   ss.TypeAssumptions.underlying
+  ss.TypeAssumptions.layout
   ss.TypeAssumptions.get_rs
   ss.TypeAssumptions.set_rs
   ss.TypeAssumptions.get_buf

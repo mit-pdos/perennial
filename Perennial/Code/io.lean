@@ -646,6 +646,7 @@ instance equals_unfold_LimitedReader [FfiSyntax] [GoGlobalContext] :
 class LimitedReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying LimitedReader.underlying LimitedReader
   underlying : go.UnderlyingDirectedEq LimitedReader.ty LimitedReader.underlying
+  layout : go.StructLayout LimitedReader [(go!"R", typeSize Reader, typeAlign Reader), (go!"N", typeSize w64, typeAlign w64)]
   get_R : ∀ (x : LimitedReader), go.IsGoStepPureDetTagged under (StructFieldGet LimitedReader.underlying go!"R") #x (Val #(x.R'))
   set_R : ∀ (x : LimitedReader) (y : Reader), go.IsGoStepPureDetTagged under (StructFieldSet LimitedReader.underlying go!"R") (PairV #x #y) (Val #(({ x with R' := y } : LimitedReader)))
   get_N : ∀ (x : LimitedReader), go.IsGoStepPureDetTagged under (StructFieldGet LimitedReader.underlying go!"N") #x (Val #(x.N'))
@@ -653,6 +654,7 @@ class LimitedReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
 
 attribute [instance] LimitedReader.TypeAssumptions.type_repr
   LimitedReader.TypeAssumptions.underlying
+  LimitedReader.TypeAssumptions.layout
   LimitedReader.TypeAssumptions.get_R
   LimitedReader.TypeAssumptions.set_R
   LimitedReader.TypeAssumptions.get_N
@@ -689,6 +691,7 @@ instance equals_unfold_SectionReader [FfiSyntax] [GoGlobalContext] :
 class SectionReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying SectionReader.underlying SectionReader
   underlying : go.UnderlyingDirectedEq SectionReader.ty SectionReader.underlying
+  layout : go.StructLayout SectionReader [(go!"r", typeSize ReaderAt, typeAlign ReaderAt), (go!"base", typeSize w64, typeAlign w64), (go!"off", typeSize w64, typeAlign w64), (go!"limit", typeSize w64, typeAlign w64), (go!"n", typeSize w64, typeAlign w64)]
   get_r : ∀ (x : SectionReader), go.IsGoStepPureDetTagged under (StructFieldGet SectionReader.underlying go!"r") #x (Val #(x.r'))
   set_r : ∀ (x : SectionReader) (y : ReaderAt), go.IsGoStepPureDetTagged under (StructFieldSet SectionReader.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : SectionReader)))
   get_base : ∀ (x : SectionReader), go.IsGoStepPureDetTagged under (StructFieldGet SectionReader.underlying go!"base") #x (Val #(x.base'))
@@ -702,6 +705,7 @@ class SectionReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
 
 attribute [instance] SectionReader.TypeAssumptions.type_repr
   SectionReader.TypeAssumptions.underlying
+  SectionReader.TypeAssumptions.layout
   SectionReader.TypeAssumptions.get_r
   SectionReader.TypeAssumptions.set_r
   SectionReader.TypeAssumptions.get_base
@@ -740,6 +744,7 @@ instance equals_unfold_OffsetWriter [FfiSyntax] [GoGlobalContext] :
 class OffsetWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying OffsetWriter.underlying OffsetWriter
   underlying : go.UnderlyingDirectedEq OffsetWriter.ty OffsetWriter.underlying
+  layout : go.StructLayout OffsetWriter [(go!"w", typeSize WriterAt, typeAlign WriterAt), (go!"base", typeSize w64, typeAlign w64), (go!"off", typeSize w64, typeAlign w64)]
   get_w : ∀ (x : OffsetWriter), go.IsGoStepPureDetTagged under (StructFieldGet OffsetWriter.underlying go!"w") #x (Val #(x.w'))
   set_w : ∀ (x : OffsetWriter) (y : WriterAt), go.IsGoStepPureDetTagged under (StructFieldSet OffsetWriter.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : OffsetWriter)))
   get_base : ∀ (x : OffsetWriter), go.IsGoStepPureDetTagged under (StructFieldGet OffsetWriter.underlying go!"base") #x (Val #(x.base'))
@@ -749,6 +754,7 @@ class OffsetWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] OffsetWriter.TypeAssumptions.type_repr
   OffsetWriter.TypeAssumptions.underlying
+  OffsetWriter.TypeAssumptions.layout
   OffsetWriter.TypeAssumptions.get_w
   OffsetWriter.TypeAssumptions.set_w
   OffsetWriter.TypeAssumptions.get_base
@@ -781,6 +787,7 @@ instance equals_unfold_teeReader [FfiSyntax] [GoGlobalContext] :
 class teeReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying teeReader.underlying teeReader
   underlying : go.UnderlyingDirectedEq teeReader.ty teeReader.underlying
+  layout : go.StructLayout teeReader [(go!"r", typeSize Reader, typeAlign Reader), (go!"w", typeSize Writer, typeAlign Writer)]
   get_r : ∀ (x : teeReader), go.IsGoStepPureDetTagged under (StructFieldGet teeReader.underlying go!"r") #x (Val #(x.r'))
   set_r : ∀ (x : teeReader) (y : Reader), go.IsGoStepPureDetTagged under (StructFieldSet teeReader.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : teeReader)))
   get_w : ∀ (x : teeReader), go.IsGoStepPureDetTagged under (StructFieldGet teeReader.underlying go!"w") #x (Val #(x.w'))
@@ -788,6 +795,7 @@ class teeReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
 
 attribute [instance] teeReader.TypeAssumptions.type_repr
   teeReader.TypeAssumptions.underlying
+  teeReader.TypeAssumptions.layout
   teeReader.TypeAssumptions.get_r
   teeReader.TypeAssumptions.set_r
   teeReader.TypeAssumptions.get_w
@@ -815,9 +823,11 @@ instance equals_unfold_discard [FfiSyntax] [GoGlobalContext] :
 class discard.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying discard.underlying discard
   underlying : go.UnderlyingDirectedEq discard.ty discard.underlying
+  layout : go.StructLayout discard []
 
 attribute [instance] discard.TypeAssumptions.type_repr
   discard.TypeAssumptions.underlying
+  discard.TypeAssumptions.layout
 
 structure nopCloser [FfiSyntax] where
   mk ::
@@ -842,11 +852,13 @@ instance equals_unfold_nopCloser [FfiSyntax] [GoGlobalContext] :
 class nopCloser.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying nopCloser.underlying nopCloser
   underlying : go.UnderlyingDirectedEq nopCloser.ty nopCloser.underlying
+  layout : go.StructLayout nopCloser [(go!"Reader", typeSize Reader, typeAlign Reader)]
   get_Reader : ∀ (x : nopCloser), go.IsGoStepPureDetTagged under (StructFieldGet nopCloser.underlying go!"Reader") #x (Val #(x.Reader'))
   set_Reader : ∀ (x : nopCloser) (y : Reader), go.IsGoStepPureDetTagged under (StructFieldSet nopCloser.underlying go!"Reader") (PairV #x #y) (Val #(({ x with Reader' := y } : nopCloser)))
 
 attribute [instance] nopCloser.TypeAssumptions.type_repr
   nopCloser.TypeAssumptions.underlying
+  nopCloser.TypeAssumptions.layout
   nopCloser.TypeAssumptions.get_Reader
   nopCloser.TypeAssumptions.set_Reader
 
@@ -873,11 +885,13 @@ instance equals_unfold_nopCloserWriterTo [FfiSyntax] [GoGlobalContext] :
 class nopCloserWriterTo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying nopCloserWriterTo.underlying nopCloserWriterTo
   underlying : go.UnderlyingDirectedEq nopCloserWriterTo.ty nopCloserWriterTo.underlying
+  layout : go.StructLayout nopCloserWriterTo [(go!"Reader", typeSize Reader, typeAlign Reader)]
   get_Reader : ∀ (x : nopCloserWriterTo), go.IsGoStepPureDetTagged under (StructFieldGet nopCloserWriterTo.underlying go!"Reader") #x (Val #(x.Reader'))
   set_Reader : ∀ (x : nopCloserWriterTo) (y : Reader), go.IsGoStepPureDetTagged under (StructFieldSet nopCloserWriterTo.underlying go!"Reader") (PairV #x #y) (Val #(({ x with Reader' := y } : nopCloserWriterTo)))
 
 attribute [instance] nopCloserWriterTo.TypeAssumptions.type_repr
   nopCloserWriterTo.TypeAssumptions.underlying
+  nopCloserWriterTo.TypeAssumptions.layout
   nopCloserWriterTo.TypeAssumptions.get_Reader
   nopCloserWriterTo.TypeAssumptions.set_Reader
 
@@ -903,9 +917,11 @@ instance equals_unfold_eofReader [FfiSyntax] [GoGlobalContext] :
 class eofReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying eofReader.underlying eofReader
   underlying : go.UnderlyingDirectedEq eofReader.ty eofReader.underlying
+  layout : go.StructLayout eofReader []
 
 attribute [instance] eofReader.TypeAssumptions.type_repr
   eofReader.TypeAssumptions.underlying
+  eofReader.TypeAssumptions.layout
 
 structure multiReader [FfiSyntax] where
   mk ::
@@ -930,11 +946,13 @@ instance equals_unfold_multiReader [FfiSyntax] [GoGlobalContext] :
 class multiReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying multiReader.underlying multiReader
   underlying : go.UnderlyingDirectedEq multiReader.ty multiReader.underlying
+  layout : go.StructLayout multiReader [(go!"readers", typeSize GoSlice, typeAlign GoSlice)]
   get_readers : ∀ (x : multiReader), go.IsGoStepPureDetTagged under (StructFieldGet multiReader.underlying go!"readers") #x (Val #(x.readers'))
   set_readers : ∀ (x : multiReader) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet multiReader.underlying go!"readers") (PairV #x #y) (Val #(({ x with readers' := y } : multiReader)))
 
 attribute [instance] multiReader.TypeAssumptions.type_repr
   multiReader.TypeAssumptions.underlying
+  multiReader.TypeAssumptions.layout
   multiReader.TypeAssumptions.get_readers
   multiReader.TypeAssumptions.set_readers
 
@@ -961,11 +979,13 @@ instance equals_unfold_multiWriter [FfiSyntax] [GoGlobalContext] :
 class multiWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying multiWriter.underlying multiWriter
   underlying : go.UnderlyingDirectedEq multiWriter.ty multiWriter.underlying
+  layout : go.StructLayout multiWriter [(go!"writers", typeSize GoSlice, typeAlign GoSlice)]
   get_writers : ∀ (x : multiWriter), go.IsGoStepPureDetTagged under (StructFieldGet multiWriter.underlying go!"writers") #x (Val #(x.writers'))
   set_writers : ∀ (x : multiWriter) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet multiWriter.underlying go!"writers") (PairV #x #y) (Val #(({ x with writers' := y } : multiWriter)))
 
 attribute [instance] multiWriter.TypeAssumptions.type_repr
   multiWriter.TypeAssumptions.underlying
+  multiWriter.TypeAssumptions.layout
   multiWriter.TypeAssumptions.get_writers
   multiWriter.TypeAssumptions.set_writers
 
@@ -994,6 +1014,7 @@ instance equals_unfold_onceError [FfiSyntax] [GoGlobalContext] :
 class onceError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying onceError.underlying onceError
   underlying : go.UnderlyingDirectedEq onceError.ty onceError.underlying
+  layout : go.StructLayout onceError [(go!"Mutex", typeSize _root_.Perennial.sync.Mutex, typeAlign _root_.Perennial.sync.Mutex), (go!"err", typeSize GoError, typeAlign GoError)]
   get_Mutex : ∀ (x : onceError), go.IsGoStepPureDetTagged under (StructFieldGet onceError.underlying go!"Mutex") #x (Val #(x.Mutex'))
   set_Mutex : ∀ (x : onceError) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet onceError.underlying go!"Mutex") (PairV #x #y) (Val #(({ x with Mutex' := y } : onceError)))
   get_err : ∀ (x : onceError), go.IsGoStepPureDetTagged under (StructFieldGet onceError.underlying go!"err") #x (Val #(x.err'))
@@ -1001,6 +1022,7 @@ class onceError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
 
 attribute [instance] onceError.TypeAssumptions.type_repr
   onceError.TypeAssumptions.underlying
+  onceError.TypeAssumptions.layout
   onceError.TypeAssumptions.get_Mutex
   onceError.TypeAssumptions.set_Mutex
   onceError.TypeAssumptions.get_err
@@ -1041,6 +1063,7 @@ instance equals_unfold_pipe [FfiSyntax] [GoGlobalContext] :
 class pipe.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying pipe.underlying pipe
   underlying : go.UnderlyingDirectedEq pipe.ty pipe.underlying
+  layout : go.StructLayout pipe [(go!"wrMu", typeSize _root_.Perennial.sync.Mutex, typeAlign _root_.Perennial.sync.Mutex), (go!"wrCh", typeSize GoChan, typeAlign GoChan), (go!"rdCh", typeSize GoChan, typeAlign GoChan), (go!"once", typeSize _root_.Perennial.sync.Once, typeAlign _root_.Perennial.sync.Once), (go!"done", typeSize GoChan, typeAlign GoChan), (go!"rerr", typeSize onceError, typeAlign onceError), (go!"werr", typeSize onceError, typeAlign onceError)]
   get_wrMu : ∀ (x : pipe), go.IsGoStepPureDetTagged under (StructFieldGet pipe.underlying go!"wrMu") #x (Val #(x.wrMu'))
   set_wrMu : ∀ (x : pipe) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet pipe.underlying go!"wrMu") (PairV #x #y) (Val #(({ x with wrMu' := y } : pipe)))
   get_wrCh : ∀ (x : pipe), go.IsGoStepPureDetTagged under (StructFieldGet pipe.underlying go!"wrCh") #x (Val #(x.wrCh'))
@@ -1058,6 +1081,7 @@ class pipe.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 
 attribute [instance] pipe.TypeAssumptions.type_repr
   pipe.TypeAssumptions.underlying
+  pipe.TypeAssumptions.layout
   pipe.TypeAssumptions.get_wrMu
   pipe.TypeAssumptions.set_wrMu
   pipe.TypeAssumptions.get_wrCh
@@ -1096,11 +1120,13 @@ instance equals_unfold_PipeReader [FfiSyntax] [GoGlobalContext] :
 class PipeReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying PipeReader.underlying PipeReader
   underlying : go.UnderlyingDirectedEq PipeReader.ty PipeReader.underlying
+  layout : go.StructLayout PipeReader [(go!"pipe", typeSize pipe, typeAlign pipe)]
   get_pipe : ∀ (x : PipeReader), go.IsGoStepPureDetTagged under (StructFieldGet PipeReader.underlying go!"pipe") #x (Val #(x.pipe'))
   set_pipe : ∀ (x : PipeReader) (y : pipe), go.IsGoStepPureDetTagged under (StructFieldSet PipeReader.underlying go!"pipe") (PairV #x #y) (Val #(({ x with pipe' := y } : PipeReader)))
 
 attribute [instance] PipeReader.TypeAssumptions.type_repr
   PipeReader.TypeAssumptions.underlying
+  PipeReader.TypeAssumptions.layout
   PipeReader.TypeAssumptions.get_pipe
   PipeReader.TypeAssumptions.set_pipe
 
@@ -1127,11 +1153,13 @@ instance equals_unfold_PipeWriter [FfiSyntax] [GoGlobalContext] :
 class PipeWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying PipeWriter.underlying PipeWriter
   underlying : go.UnderlyingDirectedEq PipeWriter.ty PipeWriter.underlying
+  layout : go.StructLayout PipeWriter [(go!"r", typeSize PipeReader, typeAlign PipeReader)]
   get_r : ∀ (x : PipeWriter), go.IsGoStepPureDetTagged under (StructFieldGet PipeWriter.underlying go!"r") #x (Val #(x.r'))
   set_r : ∀ (x : PipeWriter) (y : PipeReader), go.IsGoStepPureDetTagged under (StructFieldSet PipeWriter.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : PipeWriter)))
 
 attribute [instance] PipeWriter.TypeAssumptions.type_repr
   PipeWriter.TypeAssumptions.underlying
+  PipeWriter.TypeAssumptions.layout
   PipeWriter.TypeAssumptions.get_r
   PipeWriter.TypeAssumptions.set_r
 

@@ -107,7 +107,8 @@ theorem context.WithDeadlineCause.wp_proof
       ipersist cause
       ihave HtR : timerR «$r0_ptr» $$ [Ttimer]
       · unfold timerR; iexists _; iframe; ileft; ipureintro; rfl
-      imod cancelCtx_alloc (tcc «$r0_ptr») iprop(True) (timerR «$r0_ptr») $$ Hcci TcancelCtx HtR
+      icases «$r0_al» with %hal
+      imod cancelCtx_alloc (tcc «$r0_ptr») iprop(True) (timerR «$r0_ptr») (tcc_aligned _ hal) $$ Hcci TcancelCtx HtR
         with ⟨%γ, #Hc, Hf⟩
       ipersist Tdeadline
       ihave #Hk := childCancelSpec_timerCtx «$r0_ptr» γ $$ [$Hpkg $Hc]
@@ -199,7 +200,8 @@ theorem context.WithDeadlineCause.wp_proof
     ipersist cause
     ihave HtR : timerR «$r0_ptr» $$ [Ttimer]
     · unfold timerR; iexists _; iframe; ileft; ipureintro; rfl
-    imod cancelCtx_alloc (tcc «$r0_ptr») iprop(True) (timerR «$r0_ptr») $$ Hcci TcancelCtx HtR
+    icases «$r0_al» with %hal
+    imod cancelCtx_alloc (tcc «$r0_ptr») iprop(True) (timerR «$r0_ptr») (tcc_aligned _ hal) $$ Hcci TcancelCtx HtR
       with ⟨%γ, #Hc, Hf⟩
     ipersist Tdeadline
     ihave #Hk := childCancelSpec_timerCtx «$r0_ptr» γ $$ [$Hpkg $Hc]

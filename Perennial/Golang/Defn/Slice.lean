@@ -46,6 +46,22 @@ def copyForward (st elem_type : go.GoType) : val :=
                "i" <-[go.int] "i_val" +⟨go.int⟩ #(W64 1)))) ;;
     ![go.int] "i"
 
+/-- The allocation of a slice of `len` zero elements with capacity `cap` (`make([]T, len,
+cap)` without `makeslice`'s size check). Only for internal use: the temporary buffers of
+`copy` and `clear` (which Go does not allocate) and `append`'s growth (whose own check,
+`growslice`'s, is not modeled: see `SliceSemantics.append_slice`). -/
+def makeUnchecked (elem_type : go.GoType) : val :=
+  λ: "len" "cap",
+    if: ("cap" <⟨go.int⟩ "len") then Panic "makeslice: cap out of range" else #() ;;
+    if: ("len" <⟨go.int⟩ #(W64 0)) then Panic "makeslice: len out of range" else #() ;;
+    if: "cap" =⟨go.int⟩ #(W64 0) then
+      -- XXX: this computes a nondeterministic unallocated address by using
+      -- "(Loc 1 0) +ₗ ArbiraryInt"
+      InternalMakeSlice (#(Loc.mk 1 0) +⟨go.PointerType elem_type⟩ ArbitraryInt, "len", "cap")
+    else
+      let: "p" := (InternalDynamicArrayAlloc elem_type) "cap" in
+      InternalMakeSlice ("p", "len", "cap")
+
 def forRange (elem_type : go.GoType) : val :=
   λ: "s" "body",
   let: "i" := GoAlloc go.int #(W64 0) in
@@ -73,6 +89,11 @@ def arrayLiteralSize (kvs : List keyed_element) : Int :=
                               | _ => (0, 0)
                        ) ((0 : Int), (0 : Int)) kvs)
   Max.max (Max.max last m) 0
+
+/-- The largest capacity `make` allocates for elements of representation `V`: `maxAlloc`
+(`2^48` on linux/amd64, gc's `heapAddrBits`) bytes; any `int` for zero-size elements. -/
+abbrev makeCapBound [GoSemanticsFunctions] (V : Type) : Int :=
+  if 0 < typeSize V then 2 ^ 48 / typeSize V else 2 ^ 63 - 1
 
 class SliceSemantics [GoSemanticsFunctions] : Prop where
   internal_len_step (s : GoSlice) :
@@ -110,7 +131,8 @@ class SliceSemantics [GoSemanticsFunctions] : Prop where
   clear_slice {elem_type st : go.GoType} [st ↓u go.SliceType elem_type] :
     FuncUnfold go.clear [st]
     (λ: "sl",
-       let: "zero_sl" := FuncResolve go.make2 [st] #() (FuncResolve go.len [st] #() "sl") in
+       let: "zero_sl" := slice.makeUnchecked elem_type (FuncResolve go.len [st] #() "sl")
+         (FuncResolve go.len [st] #() "sl") in
        FuncResolve go.copy [st] #() "sl" "zero_sl" ;;
     #() : val)
 
@@ -123,22 +145,21 @@ class SliceSemantics [GoSemanticsFunctions] : Prop where
   copy_slice {st elem_type : go.GoType} [st ↓u go.SliceType elem_type] :
     FuncUnfold go.copy [st]
     (λ: "dst" "src",
-       let: "tmp" := FuncResolve go.make2 [st] #() (FuncResolve go.len [st] #() "src") in
+       let: "tmp" := slice.makeUnchecked elem_type (FuncResolve go.len [st] #() "src")
+         (FuncResolve go.len [st] #() "src") in
        slice.copyForward st elem_type "tmp" "src" ;;
        slice.copyForward st elem_type "dst" "tmp" : val)
 
-  make3_slice {st elem_type : go.GoType} [st ↓u go.SliceType elem_type] :
+  /-- `make([]T, len, cap)` checks what `runtime.makeslice` checks: `len < 0`, `len > cap`,
+  and `cap × size(T)` past `maxAlloc`, which is `2^48` on linux/amd64 (gc's
+  `heapAddrBits`). A panic is stuck. -/
+  make3_slice {st elem_type : go.GoType} [st ↓u go.SliceType elem_type] {V : Type} [ZeroVal V]
+    [TypeRepr elem_type V] :
     FuncUnfold go.make3 [st]
     (λ: "len" "cap",
-       if: ("cap" <⟨go.int⟩ "len") then Panic "makeslice: cap out of range" else #() ;;
-       if: ("len" <⟨go.int⟩ #(W64 0)) then Panic "makeslice: len out of range" else #() ;;
-       if: "cap" =⟨go.int⟩ #(W64 0) then
-         -- XXX: this computes a nondeterministic unallocated address by using
-         -- "(Loc 1 0) +ₗ ArbiraryInt"
-         InternalMakeSlice (#(Loc.mk 1 0) +⟨go.PointerType elem_type⟩ ArbitraryInt, "len", "cap")
-       else
-         let: "p" := (InternalDynamicArrayAlloc elem_type) "cap" in
-         InternalMakeSlice ("p", "len", "cap") : val)
+       if: ("cap" >⟨go.int⟩ #(W64 (makeCapBound V))) then Panic "makeslice: cap out of range"
+       else #() ;;
+       slice.makeUnchecked elem_type "len" "cap" : val)
   is_go_op_pointer_plus (t : go.GoType) (l : Loc) (x : w64) :
     ⟦GoOp GoPlus (go.PointerType t), (#l, #x)⟧ ⤳[under] (#(l +ₗ sint.Z x))
 
@@ -166,6 +187,10 @@ class SliceSemantics [GoSemanticsFunctions] : Prop where
     (λ: "s", InternalSliceCap "s" : val)
 
   append_underlying (t : go.GoType) : functions go.append [t] = functions go.append [underlying t]
+  /-- `append(s, x...)`. When it grows, the new capacity is arbitrary (at least the new
+  length) and is allocated with `slice.makeUnchecked`: the model does not have Go's
+  `growslice` check (a panic when the new capacity's size passes `maxAlloc`, `2^48`), as
+  it does not have its check of the new length (`sumAssumeNoOverflowSigned`). -/
   append_slice {st elem_type : go.GoType} [st ↓u go.SliceType elem_type] :
     FuncUnfold go.append [st]
     (λ: "s" "x",
@@ -180,7 +205,7 @@ class SliceSemantics [GoSemanticsFunctions] : Prop where
          "s_new"
        else
          let: "new_cap" := slice._new_cap "new_len" in
-         let: "s_new" := FuncResolve go.make3 [st] #() "new_len" "new_cap" in
+         let: "s_new" := slice.makeUnchecked elem_type "new_len" "new_cap" in
          FuncResolve go.copy [st] #() "s_new" "s" ;;
          FuncResolve go.copy [st] #() (Slice st ("s_new", FuncResolve go.len [st] #() "s", "new_len"))
            "x" ;;

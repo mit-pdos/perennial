@@ -29,8 +29,9 @@ variable [package_sem : sync.Assumptions]
 abbrev semaInv (x : Loc) (γ : GName) : IProp GF :=
   iprop(∃ v : w32, x ↦ v ∗ ghostVar γ (1 : Qp).half v)
 
+/-- The semaphore at `x`; its atomic operations need `x` aligned to 4. -/
 def isSemaDef (x : Loc) (γ : GName) (N : Namespace) : IProp GF :=
-  iprop(inv N (semaInv x γ) ∗ ⌜x ≠ null⌝)
+  iprop(inv N (semaInv x γ) ∗ ⌜x ≠ null⌝ ∗ ⌜Aligned (.word 4) x⌝)
 @[irreducible] def isSema (x : Loc) (γ : GName) (N : Namespace) : IProp GF := isSemaDef x γ N
 theorem isSema_unseal : @isSema = @isSemaDef := by funext; with_unfolding_all rfl
 
@@ -40,7 +41,7 @@ instance isSema_hypPure (x l : Loc) (γ : GName) (N : Namespace) [h : LocNonNull
     HypPure (isSema (GF := GF) x γ N) (l ≠ null) where
   hyp_pure := by
     rw [isSema_unseal]; unfold isSemaDef
-    iintro ⟨_, %Hnn⟩
+    iintro ⟨_, %Hnn, _⟩
     ipureintro; exact h.ne_null Hnn
 
 instance isSema_persistent (x : Loc) (γ : GName) (N : Namespace) :
@@ -54,7 +55,8 @@ theorem ownSema_unseal : @ownSema = @ownSemaDef := by funext; with_unfolding_all
 instance ownSema_timeless (γ : GName) (v : w32) : Timeless (ownSema (GF := GF) γ v) := by
   rw [ownSema_unseal]; unfold ownSemaDef; infer_instance
 
-theorem init_sema {E : CoPset} (N : Namespace) (sema : Loc) (v : w32) :
+theorem init_sema {E : CoPset} (N : Namespace) (sema : Loc) (v : w32)
+    (hal : Aligned (.word 4) sema) :
     ⊢ typedPointsto (GF := GF) sema v (DFrac.own 1) ={E}=∗
       ∃ γ, isSema sema γ N ∗ ownSema γ v := by
   iintro Hs
@@ -68,7 +70,7 @@ theorem init_sema {E : CoPset} (N : Namespace) (sema : Loc) (v : w32) :
   iexists γ
   simp only [isSema_unseal, isSemaDef, ownSema_unseal, ownSemaDef]
   iframe # ∗
-  ipureintro; exact Hnn
+  ipureintro; exact ⟨Hnn, hal⟩
 
 end wps
 

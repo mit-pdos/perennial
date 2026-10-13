@@ -26,6 +26,7 @@ variable [package_sem : sync.atomic.Assumptions]
 spuriously (see the model). -/
 abbrev sync.atomic.Value.CompareAndSwap.spec : Prop :=
   ∀ (u : Loc) (new : GoInterface),
+  Aligned (.cell 16) (structFieldRef Value go!"v" u) →
   new ≠ interface.nil →
   {{ isPkgInit (PROP := IProp GF) pkg_id.sync.atomic ∗ ownValue u (DFrac.own 1) interface.nil }}
     (App (App (Val (u @!! go.GoType.PointerType Value.ty @!! go!"CompareAndSwap"))

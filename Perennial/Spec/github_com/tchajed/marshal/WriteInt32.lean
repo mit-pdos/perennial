@@ -24,10 +24,10 @@ variable [sem : go.Semantics]
 variable [package_sem : github_com.tchajed.marshal.Assumptions]
 
 /-- `WriteInt32(s, x)`: `s` with the little-endian encoding of `x` appended. The hypothesis
-`length vs + 4 ≤ 2^62` is inherited from `reserve.spec` (tight for the same reason). -/
+`length vs + 4 ≤ 2^47` is inherited from `reserve.spec` (tight for the same reason). -/
 abbrev github_com.tchajed.marshal.WriteInt32.spec : Prop :=
   ∀ (s : GoSlice) (x : w32) (vs : List w8),
-  (vs.length : Int) + 4 ≤ 2 ^ 62 →
+  (vs.length : Int) + 4 ≤ 2 ^ 47 →
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦* vs ∗
         ownSliceCap w8 s (DFrac.own 1) }}
       (App (App (Val (@! WriteInt32)) (Val #s)) (Val #x))

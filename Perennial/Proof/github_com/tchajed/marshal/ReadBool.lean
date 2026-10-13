@@ -38,7 +38,7 @@ theorem github_com.tchajed.marshal.ReadBool.wp_proof :
     rw [show sint.Z (W64 0) = 0 from rfl]; omega⟩)]
   wp_apply wp_load_slice_index s _ _ q bit (by decide) $$ [Hs] with Hs
   · iframe Hs; ipureintro; rfl
-  wp_auto
+  try wp_auto
   rw [ite_eq_left_of_eq_true _ _ (eq_true ⟨by decide, by rw [h1]; exact hs1, Hwf.2⟩)]
   wp_auto
   iapply HΦ

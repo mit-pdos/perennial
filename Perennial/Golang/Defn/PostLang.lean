@@ -99,7 +99,12 @@ class GoSemanticsFunctions [FfiSyntax] where
   TypeRepr : go.GoType → (V : Type) → [ZeroVal V] → Prop
   structFieldRef : Type → GoString → Loc → Loc
 
-  arrayIndexRef (elem_type : Type) (i : Int) (l : Loc) : Loc
+  /-- The size in bytes (heap cells) of a value of Lean representation type `V` in memory:
+  the stride of an array of them (`arrayIndexRef`). Like `structFieldRef`, indexed by the
+  Lean representation, which determines it. -/
+  typeSize : Type → Int
+  /-- The alignment of a value of Lean representation type `V` (`Golang/Defn/Layout.lean`). -/
+  typeAlign : Type → Int
 
   mapEmpty : val → val
   mapLookup : val → val → Bool × val
@@ -114,7 +119,22 @@ class GoSemanticsFunctions [FfiSyntax] where
 attribute [instance] GoSemanticsFunctions.float_ops
 
 export GoSemanticsFunctions (underlying globalAddr functions methods methodSet structFieldRef
-  arrayIndexRef mapEmpty mapLookup mapInsert mapDelete is_map_domain is_map_pure mapDefault)
+  typeSize typeAlign mapEmpty mapLookup mapInsert mapDelete is_map_domain is_map_pure mapDefault)
+
+/-- The address of element `i` of an array of `V`s at `l`: `i` strides of `typeSize V`
+bytes on, within `l`'s block. A location outside any block (`locCar = 0`, which no
+allocation returns: `IsFresh`) has no elements, and stays where it is, so an index never
+reaches `null` from a non-null array. -/
+def arrayIndexRef [FfiSyntax] [GoSemanticsFunctions] (V : Type) (i : Int) (l : Loc) : Loc :=
+  if l.locCar = 0 then l else l +ₗ i * typeSize V
+
+theorem arrayIndexRef_of_car [FfiSyntax] [GoSemanticsFunctions] (V : Type) (i : Int) (l : Loc)
+    (h : l.locCar ≠ 0) : arrayIndexRef V i l = l +ₗ i * typeSize V := by
+  simp [arrayIndexRef, h]
+
+@[simp] theorem arrayIndexRef_car [FfiSyntax] [GoSemanticsFunctions] (V : Type) (i : Int) (l : Loc) :
+    (arrayIndexRef V i l).locCar = l.locCar := by
+  unfold arrayIndexRef; split <;> rfl
 
 /-- The class form of `GoSemanticsFunctions.TypeRepr` (`V` is an output). -/
 class TypeRepr [FfiSyntax] [GoSemanticsFunctions] (t : go.GoType) (V : outParam Type) [ZeroVal V] :
@@ -158,17 +178,26 @@ def GlobalAllocDef (v : GoString) (t : go.GoType) : val :=
 @[irreducible] def GlobalAlloc (v : GoString) (t : go.GoType) : val := GlobalAllocDef v t
 theorem GlobalAlloc_unseal : GlobalAlloc = GlobalAllocDef := by with_unfolding_all rfl
 
-/-- This semantics considers several Go types to be `primitive` in the sense
-that they are modeled as taking a single heap location. Predeclared types are
-in their own file. A `class` so that the premise
-`[IsPrimitive u]` of `alloc_primitive` etc. is found by typeclass search. -/
-class inductive IsPrimitive : go.GoType → Prop
-  | isPrimitive_pointer t : IsPrimitive (go.PointerType t)
-  | isPrimitive_function sig : IsPrimitive (go.FunctionType sig)
-  | isPrimitive_interface elems : IsPrimitive (go.InterfaceType elems)
-  | isPrimitive_slice elem : IsPrimitive (go.SliceType elem)
-  | isPrimitive_map kt vt : IsPrimitive (go.MapType kt vt)
-  | isPrimitive_channel dir t : IsPrimitive (go.ChannelType dir t)
+/-- The Go types other than the predeclared ones (in their own file) whose values are not
+represented as bytes: a value is its first cell, followed by tails (`Encoding.cell`), of
+gc/amd64's size (`Layout.lean`): pointers, functions, maps and channels 8, interfaces 16,
+slices 24. A `class` so that the premise `[IsPrimitive u enc]` of `alloc_primitive` etc. is
+found by typeclass search. -/
+class inductive IsPrimitive : go.GoType → outParam Encoding → Prop
+  | isPrimitive_pointer t : IsPrimitive (go.PointerType t) (.cell 8)
+  | isPrimitive_function sig : IsPrimitive (go.FunctionType sig) (.cell 8)
+  | isPrimitive_interface elems : IsPrimitive (go.InterfaceType elems) (.cell 16)
+  | isPrimitive_slice elem : IsPrimitive (go.SliceType elem) (.cell 24)
+  | isPrimitive_map kt vt : IsPrimitive (go.MapType kt vt) (.cell 8)
+  | isPrimitive_channel dir t : IsPrimitive (go.ChannelType dir t) (.cell 8)
+
+/-- The allocation of a value with encoding `enc`: a fresh block of its size, at an offset
+of its alignment, into which it is stored. The block's cells hold `LitTail` until the
+store, so nothing reads them as bytes. -/
+def allocEncoded (enc : Encoding) (v : val) : Expr :=
+  Let "l" (AllocN (Val (PairV (LitV (LitInt (W64 enc.size))) (LitV (LitInt (W64 enc.align)))))
+    (Val (LitV LitTail)))
+    (Seq (App (App (Val (StoreN enc)) (Var "l")) (Val v)) (Var "l"))
 
 attribute [instance] IsPrimitive.isPrimitive_pointer IsPrimitive.isPrimitive_function
   IsPrimitive.isPrimitive_interface IsPrimitive.isPrimitive_slice IsPrimitive.isPrimitive_map
@@ -547,26 +576,25 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
   store_underlying {t t_under : go.GoType} [t ↓u t_under] (v : val) (e : Expr)
     [⟦GoStore t_under, v⟧ ⤳[internalUnder] e] : ⟦GoStore t, v⟧ ⤳[internal] e
 
-  alloc_primitive (v : val) (u : go.GoType) [H : IsPrimitive u] :
-    ⟦GoAlloc u, v⟧ ⤳[internalUnder] Alloc v
-  alloc_struct (v : val) {fds fds_unsealed : List go.field_decl} [fds =→ fds_unsealed] :
+  alloc_primitive (v : val) (u : go.GoType) {enc : Encoding} [H : IsPrimitive u enc] :
+    ⟦GoAlloc u, v⟧ ⤳[internalUnder] allocEncoded enc v
+  /-- A struct is allocated as one block of its size, at an offset of its alignment
+  (`AllocN`; its fields at their offsets, `go.StructLayout`), into which the value is
+  stored field by field. The padding keeps `LitTail` (Go leaves its contents
+  unspecified). A size of `2^63` or more is not considered (`AngelicExit`): gc rejects a
+  type of `2^50` bytes or more ("type too large", `types.MaxWidth`), so no program
+  reaches it. -/
+  alloc_struct (v : val) {fds : List go.field_decl} {V : Type} [ZeroVal V]
+      [TypeRepr (go.StructType fds) V] :
     ⟦GoAlloc (go.StructType fds), v⟧ ⤳[internalUnder]
-      (let: "l" := GoPrealloc #() in
-       List.foldr (fun fd alloc_rest =>
-                let (field_name, field_type) := match fd with
-                                                | go.FieldDecl n t => (n, t)
-                                                | go.EmbeddedField n t => (n, t)
-                let field_addr := gl(StructFieldRef (go.StructType fds) field_name "l")
-                gl(let: "l_field" :=
-                    GoAlloc field_type (StructFieldGet (go.StructType fds) field_name v) in
-                  (if: ("l_field" =⟨go.PointerType field_type⟩ field_addr) then #()
-                   else AngelicExit #()) ;;
-                  alloc_rest)
-         ) (#() : Expr) fds_unsealed ;;
-       "l")
+      (if typeSize V < 2^63 then
+        (Let "l" (AllocN (Val (PairV (LitV (LitInt (W64 (typeSize V))))
+            (LitV (LitInt (W64 (typeAlign V)))))) (Val (LitV LitTail)))
+          gl(GoStore (go.StructType fds) ("l", v) ;; "l") : Expr)
+       else gl(AngelicExit #()))
 
-  load_primitive (u : go.GoType) [H : IsPrimitive u] (l : val) :
-    ⟦GoLoad u, l⟧ ⤳[internalUnder] Read l
+  load_primitive (u : go.GoType) {enc : Encoding} [H : IsPrimitive u enc] (l : val) :
+    ⟦GoLoad u, l⟧ ⤳[internalUnder] App (Val (ReadN enc)) (Val l)
 
   load_struct (fds : List go.field_decl) (l : val) {fds_unsealed : List go.field_decl}
     [fds =→ fds_unsealed] :
@@ -580,8 +608,8 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
                 gl(StructFieldSet (go.StructType fds) field_name (struct_so_far, field_val))
          ) (GoZeroVal (go.StructType fds) #()) fds_unsealed)
 
-  store_primitive (u : go.GoType) [H : IsPrimitive u] (l v : val) :
-    ⟦GoStore u, (l, v)⟧ ⤳[internalUnder] Store l v
+  store_primitive (u : go.GoType) {enc : Encoding} [H : IsPrimitive u enc] (l v : val) :
+    ⟦GoStore u, (l, v)⟧ ⤳[internalUnder] App (App (Val (StoreN enc)) (Val l)) (Val v)
   store_struct {fds fds_unsealed : List go.field_decl} [fds =→ fds_unsealed] (l v : val) :
     ⟦GoStore (go.StructType fds), (l, v)⟧ ⤳[internalUnder]
       (List.foldl (fun store_so_far fd =>

@@ -23,7 +23,7 @@ variable [sem : go.Semantics]
 variable [package_sem : sync.atomic.Assumptions]
 
 abbrev sync.atomic.SwapPointer.spec : Prop :=
-  ∀ (addr : Loc) (v : Loc),
+  ∀ (addr : Loc) (v : Loc), Aligned (.cell 8) addr →
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ oldv : Loc, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #oldv)) -∗
     WP (App (App (Val (@! SwapPointer)) (Val #addr)) (Val #v)) {{ Φ }}

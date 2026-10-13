@@ -214,7 +214,6 @@ linearization point. -/
 
 instance : Inhabited GoInterface := ⟨interface.nil⟩
 
-instance atomic_wps_interface : AtomicWps (GF := GF) GoInterface := by solve_atomic_wps
 
 /-- The `Value` at `u` holds `x`. -/
 def ownValueDef (u : Loc) (dq : DFrac) (x : GoInterface) : IProp GF :=
@@ -255,6 +254,51 @@ theorem ownValue_zero (u : Loc) (dq : DFrac) :
 which are below `Value.ty`'s definition. -/
 theorem Value_ty_eq : (go.GoType.Named go!"sync/atomic.Value" [] : go.GoType) = Value.ty := by
   unfold Value.ty; rfl
+
+/-! The `v` field of an atomic type allocated at its alignment is aligned for its atomic
+operations (the premise of the method specs). -/
+
+include hG sem package_sem in
+theorem Int32.v_aligned (l : Loc) (hal : AllocAligned Int32 l) :
+    Aligned (.word 4) (structFieldRef Int32 go!"v" l) := by
+  have h := go.field_aligned (V := Int32) (f := go!"v") (by solve_layout_mem)
+    (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
+  simpa [Aligned, Encoding.align] using h
+
+include hG sem package_sem in
+theorem Uint32.v_aligned (l : Loc) (hal : AllocAligned Uint32 l) :
+    Aligned (.word 4) (structFieldRef Uint32 go!"v" l) := by
+  have h := go.field_aligned (V := Uint32) (f := go!"v") (by solve_layout_mem)
+    (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
+  simpa [Aligned, Encoding.align] using h
+
+include hG sem package_sem in
+theorem Int64.v_aligned (l : Loc) (hal : AllocAligned Int64 l) :
+    Aligned (.word 8) (structFieldRef Int64 go!"v" l) := by
+  have h := go.field_aligned (V := Int64) (f := go!"v") (by solve_layout_mem)
+    (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
+  simpa [Aligned, Encoding.align] using h
+
+include hG sem package_sem in
+theorem Uint64.v_aligned (l : Loc) (hal : AllocAligned Uint64 l) :
+    Aligned (.word 8) (structFieldRef Uint64 go!"v" l) := by
+  have h := go.field_aligned (V := Uint64) (f := go!"v") (by solve_layout_mem)
+    (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
+  simpa [Aligned, Encoding.align] using h
+
+include hG sem package_sem in
+theorem Bool'.v_aligned (l : Loc) (hal : AllocAligned Bool' l) :
+    Aligned (.word 4) (structFieldRef Bool' go!"v" l) := by
+  have h := go.field_aligned (V := Bool') (f := go!"v") (by solve_layout_mem)
+    (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
+  simpa [Aligned, Encoding.align] using h
+
+include hG sem package_sem in
+theorem Value.v_aligned (l : Loc) (hal : AllocAligned Value l) :
+    Aligned (.cell 16) (structFieldRef Value go!"v" l) := by
+  have h := go.field_aligned (V := Value) (f := go!"v") (by solve_layout_mem)
+    (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
+  simpa [Aligned, Encoding.align] using h
 
 end wps
 

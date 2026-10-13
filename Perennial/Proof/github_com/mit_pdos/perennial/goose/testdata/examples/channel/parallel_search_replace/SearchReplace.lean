@@ -56,9 +56,18 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_s
     iapply HΦ
     simp only [searchReplace, List.map_nil]
     iexact Hs
-  wp_apply chan.wp_make2 (V := GoSlice) (W64 4) $$ [] as %ch %γch_names ⟨#His_chan, %Hcap4, Hoc⟩
+  wp_apply +noauto chan.wp_make2 (V := GoSlice) (W64 4) $$ [] as %ch %γch_names ⟨#His_chan, %Hcap4, Hoc⟩
   · ipureintro; decide
-  imod sync.init_WaitGroup (sync.join.wgjN.@"wg") wg_ptr $$ wg with ⟨%γwg, H⟩
+  -- (the WaitGroup is allocated explicitly, for its alignment, `init_WaitGroup`)
+  wp_pures
+  wp_alloc c_ptr as c
+  wp_pures
+  wp_store
+  wp_pures
+  wp_apply_core wp_alloc _
+  iintro %wg_ptr ⟨wg, %wg_aligned⟩
+  wp_auto
+  imod sync.init_WaitGroup (sync.join.wgjN.@"wg") wg_ptr wg_aligned $$ wg with ⟨%γwg, H⟩
   imod sync.join.init wg_ptr γwg $$ H with Hwg
   imod start_bag (chanP wg_ptr x y) (.Buffered []) ch γch_names trivial $$ His_chan Hoc with #Hchan
   ihave HH : (∃ i : w64, "i" ∷ i_ptr ↦ i : IProp GF) $$ [i]
@@ -156,7 +165,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_s
     · iframe; ipureintro; exact Hnadded'
     icases (ownSlice_split no s _ (xs.drop (sint.nat offset)) offset s.len
       ⟨Hoffset.1, by omega, by omega⟩).1 $$ Hs with ⟨Hsec, Hs⟩
-    wp_auto
+    try wp_auto
     wp_apply wp_bag_send γch_names ch (slice.slice s w64 offset no) (chanP wg_ptr x y)
       $$ [Hsec Hdone]
     · iframe #

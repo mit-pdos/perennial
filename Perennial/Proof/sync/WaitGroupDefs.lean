@@ -162,6 +162,25 @@ instance ownWaitGroupWaitToken_timeless (γ : WaitGroupNames) :
 abbrev wgState (wg : Loc) : Loc := structFieldRef WaitGroup go!"state" wg
 abbrev wgSema (wg : Loc) : Loc := structFieldRef WaitGroup go!"sema" wg
 
+include hG sem in
+/-- The `v` field of a `WaitGroup`'s `state` (where its atomic operations are). -/
+abbrev wgStateV (wg : Loc) : Loc :=
+  structFieldRef _root_.Perennial.sync.atomic.Uint64 go!"v" (wgState (GF := GF) wg)
+
+include hG sem package_sem in
+/-- A `WaitGroup` allocated at its alignment has its atomic counter and its semaphore
+aligned. -/
+theorem wg_fields_aligned (wg : Loc) (hal : AllocAligned WaitGroup wg) :
+    Aligned (.word 8) (wgStateV (GF := GF) wg) ∧ Aligned (.word 4) (wgSema (GF := GF) wg) := by
+  have h1 := go.field_aligned (V := WaitGroup) (f := go!"state") (by solve_layout_mem)
+    (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
+  have hc1 := go.structFieldRef_car' (V := WaitGroup) (f := go!"state") hal.1 (by solve_layout_mem)
+  have h2 := go.field_aligned (V := _root_.Perennial.sync.atomic.Uint64) (f := go!"v") (by solve_layout_mem)
+    (by solve_layout_nodup) (by solve_layout_pow2) hc1 h1
+  have h3 := go.field_aligned (V := WaitGroup) (f := go!"sema") (by solve_layout_mem)
+    (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
+  exact ⟨by simpa [Aligned, Encoding.align] using h2, by simpa [Aligned, Encoding.align] using h3⟩
+
 /-- The second half of the state, kept in the invariant unless the counter is
 zero and there are waiters (in which case `Add` owns it while waking them). -/
 def wgPtsto2 (wg : Loc) (wait counter : w32) : IProp GF :=
@@ -211,7 +230,8 @@ abbrev isWaitGroupInv (wg : Loc) (γ : WaitGroupNames) (N : Namespace) : IProp G
 
 def isWaitGroupDef (wg : Loc) (γ : WaitGroupNames) (N : Namespace) : IProp GF :=
   iprop("#Hsem" ∷ isSema (wgSema (GF := GF) wg) γ.semaGn (N.@"sema") ∗
-    "#Hinv" ∷ isWaitGroupInv wg γ N)
+    "#Hinv" ∷ isWaitGroupInv wg γ N ∗
+    "%Hal" ∷ ⌜Aligned (.word 8) (wgStateV (GF := GF) wg)⌝)
 @[irreducible] def isWaitGroup (wg : Loc) (γ : WaitGroupNames) (N : Namespace) : IProp GF :=
   isWaitGroupDef wg γ N
 theorem isWaitGroup_unseal : @isWaitGroup = @isWaitGroupDef := by
@@ -220,6 +240,14 @@ theorem isWaitGroup_unseal : @isWaitGroup = @isWaitGroupDef := by
 instance isWaitGroup_hypPure (wg l : Loc) (γ : WaitGroupNames) (N : Namespace)
     [LocNonNullFrom wg l] : HypPure (isWaitGroup (GF := GF) wg γ N) (l ≠ null) := by
   rw [isWaitGroup_unseal]; unfold isWaitGroupDef; infer_instance
+
+/-- The atomic counter of a `WaitGroup` is aligned. -/
+theorem isWaitGroup_aligned (wg : Loc) (γ : WaitGroupNames) (N : Namespace) :
+    isWaitGroup (GF := GF) wg γ N ⊢ ⌜Aligned (.word 8) (wgStateV (GF := GF) wg)⌝ := by
+  rw [isWaitGroup_unseal]; unfold isWaitGroupDef
+  iintro H
+  iNamed H
+  ipureintro; exact Hal
 
 instance isWaitGroup_persistent (wg : Loc) (γ : WaitGroupNames) (N : Namespace) :
     Persistent (isWaitGroup (GF := GF) wg γ N) := by
@@ -326,7 +354,7 @@ theorem dealloc_wait_token (wg : Loc) (γ : WaitGroupNames) (N : Namespace) (w :
   imodintro
   iframe
 
-theorem init_WaitGroup (N : Namespace) (wg_ptr : Loc) :
+theorem init_WaitGroup (N : Namespace) (wg_ptr : Loc) (hal : AllocAligned WaitGroup wg_ptr) :
     typedPointsto (GF := GF) wg_ptr (zero_val WaitGroup) (DFrac.own 1) ⊢
     |={⊤}=> ∃ γ, isWaitGroup wg_ptr γ N ∗ ownWaitGroup γ (W32 0) ∗ ownWaitGroupWaiters γ 0 := by
   iintro H
@@ -335,7 +363,9 @@ theorem init_WaitGroup (N : Namespace) (wg_ptr : Loc) :
   imod ghostVar_alloc (W32 0) with ⟨%counterGn, Hctr⟩
   icases ghostVar_split counterGn (W32 0) (1 : Qp).half (1 : Qp).half $$ [Hctr] with ⟨Hctr1, Hctr2⟩
   · rw [Qp.half_add_half]; iexact Hctr
-  imod init_sema (E := ⊤) (N.@"sema") (wgSema wg_ptr) (W32 0) $$ sema with ⟨%semaGn, #Hs1, Hs2⟩
+  obtain ⟨hstate, hsema⟩ := wg_fields_aligned wg_ptr hal
+  imod init_sema (E := ⊤) (N.@"sema") (wgSema wg_ptr) (W32 0) hsema $$ sema
+    with ⟨%semaGn, #Hs1, Hs2⟩
   imod ownTokAuth_alloc (GF := GF) with ⟨%waiterGn, Hw⟩
   icases (ownTokAuth_fractional (GF := GF) waiterGn 0).fractional
     (1 : Qp).half (1 : Qp).half |>.1 $$ [Hw] with ⟨Hw1, Hw2⟩
@@ -366,6 +396,7 @@ theorem init_WaitGroup (N : Namespace) (wg_ptr : Loc) :
     ownWaitGroupWaiters_unseal, ownWaitGroupWaitersDef, γ, Int.toNat_zero]
   iframe
   iframe #
+  ipureintro; exact hstate
 
 end wps
 

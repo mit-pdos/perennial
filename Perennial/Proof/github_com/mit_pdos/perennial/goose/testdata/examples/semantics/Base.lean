@@ -55,14 +55,8 @@ theorem exact_eq {Φ : val → IProp GF} {v w : val} (h : v = w) : Φ v ⊢ Φ w
 
 /-- Two full points-tos for the same `w64` location are contradictory. -/
 theorem w64_pointsto_excl (l : Loc) (v w : w64) :
-    (typedPointsto l v (DFrac.own 1) : IProp GF) ∗ typedPointsto l w (DFrac.own 1) ⊢ False := by
-  rw [typedPointsto_unseal]; unfold typedPointstoWrap
-  iintro ⟨⟨H1, _⟩, ⟨H2, _⟩⟩
-  have e : ∀ u : w64, typedPointstoDef (GF := GF) l u (DFrac.own 1) =
-      heapPointsto l (DFrac.own 1) #u := fun _ => rfl
-  simp only [e]
-  icombine H1 H2 gives % ⟨Hv, _⟩
-  exact absurd (DFrac.valid_op_own Hv) (by simp)
+    (typedPointsto l v (DFrac.own 1) : IProp GF) ∗ typedPointsto l w (DFrac.own 1) ⊢ False :=
+  word_pointsto_excl l v w
 
 end wps
 

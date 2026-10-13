@@ -160,33 +160,62 @@ local instance : Inhabited GoShiftOperator := ⟨.GoShiftl⟩
 local instance : Inhabited GoUnaryOperator := ⟨.GoPos⟩
 local instance : Inhabited GoInstruction := ⟨.AngelicExit⟩
 
-def PrimOp1.toNat : PrimOp1 → Nat
-  | .PrepareWriteOp => 0
-  | .StartReadOp => 1
-  | .FinishReadOp => 2
-  | .LoadOp => 3
-  | .AllocOp => 4
-def PrimOp1.fromNat : Nat → PrimOp1
-  | 0 => .PrepareWriteOp
-  | 1 => .StartReadOp
-  | 2 => .FinishReadOp
-  | 3 => .LoadOp
-  | 4 => .AllocOp
-  | _ => .PrepareWriteOp
-instance PrimOp1.countable : Pos.Countable PrimOp1 :=
-  countableOfLeftInverse PrimOp1.toNat PrimOp1.fromNat (by intro x; cases x <;> rfl)
+def Encoding.toSum : Encoding → Nat ⊕ Nat
+  | .word n => .inl n
+  | .cell k => .inr k
+def Encoding.fromSum : Nat ⊕ Nat → Encoding
+  | .inl n => .word n
+  | .inr k => .cell k
+instance Encoding.countable : Pos.Countable Encoding :=
+  countableOfLeftInverse Encoding.toSum Encoding.fromSum (by intro x; cases x <;> rfl)
 
-def PrimOp2.toNat : PrimOp2 → Nat
-  | .FinishStoreOp => 0
-  | .AtomicSwapOp => 1
-  | .AtomicAddOp => 2
-def PrimOp2.fromNat : Nat → PrimOp2
-  | 0 => .FinishStoreOp
-  | 1 => .AtomicSwapOp
-  | 2 => .AtomicAddOp
-  | _ => .FinishStoreOp
+def MemOp1.toNat : MemOp1 → Nat
+  | .startRead => 0 | .finishRead => 1 | .prepareWrite => 2 | .load => 3
+def MemOp1.fromNat : Nat → MemOp1
+  | 0 => .startRead | 1 => .finishRead | 2 => .prepareWrite | _ => .load
+instance MemOp1.countable : Pos.Countable MemOp1 :=
+  countableOfLeftInverse MemOp1.toNat MemOp1.fromNat (by intro x; cases x <;> rfl)
+
+def MemOp2.toNat : MemOp2 → Nat
+  | .finishStore => 0 | .swap => 1 | .add => 2 | .cmpxchg => 3
+def MemOp2.fromNat : Nat → MemOp2
+  | 0 => .finishStore | 1 => .swap | 2 => .add | _ => .cmpxchg
+instance MemOp2.countable : Pos.Countable MemOp2 :=
+  countableOfLeftInverse MemOp2.toNat MemOp2.fromNat (by intro x; cases x <;> rfl)
+
+def PrimOp1.toSum : PrimOp1 → Nat ⊕ (MemOp1 × Encoding)
+  | .PrepareWriteOp => .inl 0
+  | .StartReadOp => .inl 1
+  | .FinishReadOp => .inl 2
+  | .LoadOp => .inl 3
+  | .AllocOp => .inl 4
+  | .CheckCellOp => .inl 5
+  | .MemOp1Op op enc => .inr (op, enc)
+def PrimOp1.fromSum : Nat ⊕ (MemOp1 × Encoding) → PrimOp1
+  | .inl 0 => .PrepareWriteOp
+  | .inl 1 => .StartReadOp
+  | .inl 2 => .FinishReadOp
+  | .inl 3 => .LoadOp
+  | .inl 4 => .AllocOp
+  | .inl _ => .CheckCellOp
+  | .inr (op, enc) => .MemOp1Op op enc
+instance PrimOp1.countable : Pos.Countable PrimOp1 :=
+  countableOfLeftInverse PrimOp1.toSum PrimOp1.fromSum (by intro x; cases x <;> rfl)
+
+def PrimOp2.toSum : PrimOp2 → Nat ⊕ (MemOp2 × Encoding)
+  | .FinishStoreOp => .inl 0
+  | .AtomicSwapOp => .inl 1
+  | .AtomicAddOp => .inl 2
+  | .AllocNOp => .inl 3
+  | .MemOp2Op op enc => .inr (op, enc)
+def PrimOp2.fromSum : Nat ⊕ (MemOp2 × Encoding) → PrimOp2
+  | .inl 0 => .FinishStoreOp
+  | .inl 1 => .AtomicSwapOp
+  | .inl 2 => .AtomicAddOp
+  | .inl _ => .AllocNOp
+  | .inr (op, enc) => .MemOp2Op op enc
 instance PrimOp2.countable : Pos.Countable PrimOp2 :=
-  countableOfLeftInverse PrimOp2.toNat PrimOp2.fromNat (by intro x; cases x <;> rfl)
+  countableOfLeftInverse PrimOp2.toSum PrimOp2.fromSum (by intro x; cases x <;> rfl)
 
 def GoOperator.toNat : GoOperator → Nat
   | .GoEquals => 0
@@ -272,6 +301,7 @@ def BaseLit.toTree : BaseLit → GenTree
   | .LitLoc x0 => node 8 [of x0]
   | .LitProphecy x0 => node 9 [of x0]
   | .LitSlice x0 => node 10 [of x0]
+  | .LitTail => node 11 []
 def BaseLit.ofTree : GenTree → BaseLit
   | node 0 [x0] => .LitInt (decLeaf x0)
   | node 1 [x0] => .LitInt32 (decLeaf x0)
@@ -284,6 +314,7 @@ def BaseLit.ofTree : GenTree → BaseLit
   | node 8 [x0] => .LitLoc (decLeaf x0)
   | node 9 [x0] => .LitProphecy (decLeaf x0)
   | node 10 [x0] => .LitSlice (decLeaf x0)
+  | node 11 [] => .LitTail
   | _ => default
 instance BaseLit.countable : Pos.Countable BaseLit :=
   countableOfLeftInverse BaseLit.toTree BaseLit.ofTree

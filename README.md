@@ -74,8 +74,39 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
 * **64-bit platform.** The Go semantics assumes a 64-bit platform: the
   word-sized types `int`, `uint` and `uintptr` are 64-bit (values `w64`).
   `uintptr` (`go.UintptrSemantics`, `Perennial/Golang/Defn/Predeclared.lean`)
-  is an integer type like `uint64`. Pointer/`unsafe.Pointer` to/from `uintptr`
-  conversions are not modelled: they are stuck.
+  is an integer type like `uint64`. The sizes, alignments and field offsets
+  are gc's on linux/amd64 (`Golang/Defn/Layout.lean`; goose emits each struct's
+  layout as a `go.StructLayout` assumption).
+* **Byte-addressed memory and `unsafe`.** A heap location is a block and a byte
+  offset (`Loc`), and each byte of an allocation is a cell
+  (`GooseLang/Lang.lean`, `Encoding`): an integer or float of `n` bytes is
+  stored as its `n` little-endian bytes (`LitByte`), and a value with no byte
+  representation (a pointer, string, slice, interface, func, map, chan, `bool`)
+  as itself in its first cell followed by `LitTail` cells. Typed loads and
+  stores of these go through multi-cell primitives that detect races cell by
+  cell (`StartReadN`/`FinishReadN`, `PrepareWriteN`/`FinishStoreN`: two
+  unsynchronized accesses that overlap, one of them a write, are stuck), and
+  reading cells that do not decode at the type read (a pointer read as an
+  integer, half of an interface) is stuck. Atomic operations (`LoadN`,
+  `SwapN`, `AddN`, `CmpXchgN`, used by `sync/atomic` and `sync`) are stuck
+  unless the location is aligned to the encoding (`Aligned`), as amd64 makes
+  a misaligned atomic non-atomic; an allocation is aligned to its type
+  (`AllocN`, `IsFreshAligned`), and proofs get the alignment of a fresh
+  allocation (`AllocAligned`, the `x_al` hypothesis of the allocation
+  tactics) and of a field of an aligned struct (`go.field_aligned`,
+  `Golang/Theory/Align.lean`). Package `unsafe` (`go.UnsafeSemantics`):
+  `Sizeof`, `Alignof` and `Offsetof` are constants; `uintptr(p)` is an
+  unspecified address in `[8, 2^48)` congruent to `p`'s offset modulo 8 (an
+  allocation's address is 8-aligned), chosen anew at each conversion, so a
+  proof cannot depend on where a block lives; `uintptr(p) - uintptr(q)` in one
+  expression with no call between is exact for two pointers into the same
+  allocation; `unsafe.Add(p, n)` (and `unsafe.Pointer(uintptr(p) + n)`, which
+  goose emits as it) is stuck unless the result is a cell of `p`'s allocation;
+  `unsafe.Slice` checks what `runtime.unsafeslice` checks; converting a
+  pointer to a pointer of another type keeps the location, and reading the
+  cells at the new type is stuck unless they decode. Any other conversion of a
+  `uintptr` to a pointer is stuck. A model may be less defined than Go: what
+  is stuck here is what a proof shows does not happen.
 * **Evaluation order.** The Go spec orders a statement's calls and receives
   (left to right) but leaves the other reads of its operands unordered
   relative to them, and compilers differ: gc reads `m[0]` in `m[0] + f()`
@@ -120,6 +151,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   overflow does not happen, with `assume` (`Golang/Defn/Assume.lean`: an
   `assume` that fails loops forever, so the proofs cover the executions where
   it holds):
+  * A struct or array of `2^63` bytes or more is not allocated (`AngelicExit`,
+    `go.alloc_struct`, `Golang/Defn/PostLang.lean`, and `Golang/Defn/Array.lean`): gc
+    rejects a type of more than `2^50` bytes, and an array whose length is only known
+    at run time (`make`'s backing array) has passed `make`'s check against `maxAlloc`
+    (`2^48` bytes, `go.makeCapBound`), which panics (is stuck) beyond it.
   * `append`'s new length (`sumAssumeNoOverflowSigned`, `Golang/Defn/Slice.lean`).
     **Known to be reachable, not yet fixed:** with zero-size elements no
     memory bounds the length, and Go panics where the model assumes:

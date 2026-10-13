@@ -1394,6 +1394,7 @@ instance equals_unfold_acceptRange [FfiSyntax] [GoGlobalContext] :
 class acceptRange.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying acceptRange.underlying acceptRange
   underlying : go.UnderlyingDirectedEq acceptRange.ty acceptRange.underlying
+  layout : go.StructLayout acceptRange [(go!"lo", typeSize w8, typeAlign w8), (go!"hi", typeSize w8, typeAlign w8)]
   get_lo : ∀ (x : acceptRange), go.IsGoStepPureDetTagged under (StructFieldGet acceptRange.underlying go!"lo") #x (Val #(x.lo'))
   set_lo : ∀ (x : acceptRange) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet acceptRange.underlying go!"lo") (PairV #x #y) (Val #(({ x with lo' := y } : acceptRange)))
   get_hi : ∀ (x : acceptRange), go.IsGoStepPureDetTagged under (StructFieldGet acceptRange.underlying go!"hi") #x (Val #(x.hi'))
@@ -1401,6 +1402,7 @@ class acceptRange.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
 
 attribute [instance] acceptRange.TypeAssumptions.type_repr
   acceptRange.TypeAssumptions.underlying
+  acceptRange.TypeAssumptions.layout
   acceptRange.TypeAssumptions.get_lo
   acceptRange.TypeAssumptions.set_lo
   acceptRange.TypeAssumptions.get_hi
