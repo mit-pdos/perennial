@@ -1,20 +1,26 @@
-// Command perennial-order compiles Go code in Perennial's evaluation order:
+// Command perennial-order compiles the Go code that goose translates in
+// Perennial's evaluation order:
 //
-//	go build -toolexec=perennial-order ./...
+//	go build -toolexec="perennial-order -code DIR [-code DIR ...]" ./...
 //
-// The go command then runs it in front of every tool it invokes. For each
-// compilation of a package (standard library and runtime included) it
-// type-checks the package, rewrites each file whose statements are not in
-// normal form (package order) into one that is, writes the rewritten files to
-// a temporary directory that it removes afterwards, and runs the real
-// compiler on them. The rewritten files carry line directives giving every
-// position in the original source, so error messages, panics and debug
-// information name the original files. Files already in normal form are
-// passed through unchanged; other tools run unchanged.
+// Each DIR is a directory goose translated into (its -out, holding each
+// package's translation <path>.lean, and its -configdir, holding <path>.toml).
+// The go command runs perennial-order in front of every tool it invokes. A
+// package with a translation in some DIR is type-checked, and the
+// declarations goose translates (util.Translated: the functions, methods and
+// package-level variables its configuration's translate list matches) are
+// rewritten into normal form (package order), as goose rewrote them before
+// translating; the rewritten files go to a temporary directory removed
+// afterwards, and the real compiler compiles them. Every other package, and
+// every other declaration, is compiled as it is: code that is not verified
+// keeps the compiler's own order. The rewritten files carry line directives
+// giving every position in the original source, so error messages, panics and
+// debug information name the original files; other tools run unchanged.
 //
-// It adds its own hash to the compiler's version (`compile -V=full`), which
-// the go command uses to key its build cache, so rewritten and ordinary
-// builds are cached separately.
+// It adds its own hash and that of the directories' configurations and
+// translations to the compiler's version (`compile -V=full`), which the go
+// command uses to key its build cache, so builds with other selections are
+// cached separately.
 package main
 
 import (
@@ -35,15 +41,25 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/mit-pdos/perennial/goose/glang"
 	"github.com/mit-pdos/perennial/goose/order"
+	"github.com/mit-pdos/perennial/goose/util"
 )
 
+// codeDirs are the directories goose translated into.
+var codeDirs []string
+
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "usage: go build -toolexec=perennial-order ...")
+	args := os.Args[1:]
+	for len(args) >= 2 && args[0] == "-code" {
+		codeDirs = append(codeDirs, args[1])
+		args = args[2:]
+	}
+	if len(codeDirs) == 0 || len(args) == 0 {
+		fmt.Fprintln(os.Stderr, `usage: go build -toolexec="perennial-order -code DIR [-code DIR ...]" ...`)
 		os.Exit(2)
 	}
-	tool, args := os.Args[1], os.Args[2:]
+	tool, args := args[0], args[1:]
 	if strings.TrimSuffix(filepath.Base(tool), ".exe") != "compile" {
 		os.Exit(run(tool, args))
 	}
@@ -68,7 +84,8 @@ func run(tool string, args []string) int {
 	return 0
 }
 
-// selfHash identifies this rewriter (its executable).
+// selfHash identifies this rewriter (its executable) and what it selects:
+// the code directories' configurations and the translations they hold.
 func selfHash() string {
 	exe, err := os.Executable()
 	if err != nil {
@@ -83,7 +100,59 @@ func selfHash() string {
 	if _, err := io.Copy(h, f); err != nil {
 		fatalf("%v", err)
 	}
+	for _, dir := range codeDirs {
+		abs, _ := filepath.Abs(dir)
+		fmt.Fprintf(h, "dir %s\n", abs)
+		err := filepath.WalkDir(dir, func(p string, d os.DirEntry, err error) error {
+			if err != nil || d.IsDir() {
+				return err
+			}
+			switch filepath.Ext(p) {
+			case ".lean":
+				fmt.Fprintf(h, "lean %s\n", p)
+			case ".toml":
+				b, err := os.ReadFile(p)
+				if err != nil {
+					return err
+				}
+				fmt.Fprintf(h, "toml %s %d\n%s", p, len(b), b)
+			}
+			return nil
+		})
+		if err != nil {
+			fatalf("%v", err)
+		}
+	}
 	return hex.EncodeToString(h.Sum(nil))[:16]
+}
+
+// selection is what goose translates of the package being compiled, or nil
+// if no code directory has a translation of it.
+func selection() order.Selection {
+	// the import path (the compiler's -p is "main" for a command); a test
+	// build adds " [p.test]"
+	path, _, _ := strings.Cut(os.Getenv("TOOLEXEC_IMPORTPATH"), " ")
+	if path == "" {
+		fatalf("TOOLEXEC_IMPORTPATH is not set: run under go build -toolexec")
+	}
+	var found []string
+	for _, dir := range codeDirs {
+		if _, err := os.Stat(filepath.Join(dir, glang.GoPathToIdentPath(path)+".lean")); err == nil {
+			found = append(found, dir)
+		}
+	}
+	switch len(found) {
+	case 0:
+		return nil
+	case 1:
+	default:
+		fatalf("%s is translated in more than one code directory: %v", path, found)
+	}
+	config, err := util.ReadConfig(found[0], path)
+	if err != nil {
+		fatalf("%v", err)
+	}
+	return util.Translated(config)
 }
 
 // version prints the compiler's version line with this rewriter's hash
@@ -235,6 +304,10 @@ func compile(tool string, args []string) int {
 	if len(files) == 0 {
 		return run(tool, args)
 	}
+	sel := selection()
+	if sel == nil {
+		return run(tool, args) // not translated: compiled as it is
+	}
 	pkgPath := flagValue(args, "-p")
 	pkgFiles, importMap := importConfig(flagValue(args, "-importcfg"))
 
@@ -306,7 +379,7 @@ func compile(tool string, args []string) int {
 	trim := flagValue(args, "-trimpath")
 	var trimRules []string
 	for i, f := range syntax {
-		out, changed, err := order.Rewrite(fset, pkg, info, f, srcs[i])
+		out, changed, err := order.Rewrite(fset, pkg, info, f, srcs[i], sel)
 		if err != nil {
 			fatalf("%v", err)
 		}

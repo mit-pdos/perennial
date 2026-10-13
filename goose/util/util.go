@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"go/token"
+	"go/types"
 	"io"
 	"io/fs"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/mit-pdos/perennial/goose/declfilter"
 	"github.com/mit-pdos/perennial/goose/glang"
+	"github.com/mit-pdos/perennial/goose/order"
 	"github.com/pkg/errors"
 	"golang.org/x/tools/go/packages"
 )
@@ -135,6 +137,24 @@ func ReadConfig(configDir string, pkgPath string) (declfilter.FilterConfig, erro
 		)
 	}
 	return config, nil
+}
+
+// Translated selects the declarations goose translates under config: the
+// functions and methods, and the package-level variables (their
+// initializers), that its translate list matches. These, and only these, are
+// put in Perennial's evaluation order, by goose and by cmd/perennial-order.
+// (util.ExtendFilter only adds types, which have no code.)
+func Translated(config declfilter.FilterConfig) order.Selection {
+	df := declfilter.New(config)
+	return func(obj types.Object) bool {
+		switch o := obj.(type) {
+		case *types.Func:
+			return df.GetAction(FuncName(o)) == declfilter.Translate
+		case *types.Var:
+			return df.GetAction(o.Name()) == declfilter.Translate
+		}
+		return false
+	}
 }
 
 func Translate(translatePkg PackageTranslator, pkgPatterns []string, outRootDir string, modDir string, configDir string) {

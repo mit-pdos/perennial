@@ -210,8 +210,9 @@ and after `wp_auto`:
 
 Translated code is in Perennial's evaluation order (README, "Evaluation
 order"): a statement whose order the Go spec leaves open is rewritten before
-translation, its calls bound to locals `_order1`, `_order2`, ... in the order
-they run (`x := a[i] + f()` becomes `_order1 := f(); x := a[i] + _order1`).
+translation, the operands that must be evaluated before a later one bound to
+locals `_order1`, `_order2`, ... in order (`x := a[i] + f()` becomes
+`_order1 := a[i]; x := _order1 + f()`).
 They are ordinary locals: `wp_auto` allocates, stores and loads them like any
 other.
 

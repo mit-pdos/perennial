@@ -38,7 +38,7 @@ func TestRewriteStd(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			out, ch, err := order.Rewrite(p.Fset, p.Types, p.TypesInfo, f, src)
+			out, ch, err := order.Rewrite(p.Fset, p.Types, p.TypesInfo, f, src, nil)
 			if err != nil {
 				t.Errorf("%s: %v", p.PkgPath, err)
 				continue
@@ -74,7 +74,7 @@ func TestRewriteStd(t *testing.T) {
 			continue
 		}
 		for _, f := range files {
-			for _, v := range order.CheckFile(info, f) {
+			for _, v := range order.CheckFile(info, f, nil) {
 				t.Errorf("rewritten statement not in normal form: %v", fset.Position(v.Pos))
 			}
 		}

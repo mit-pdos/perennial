@@ -230,16 +230,16 @@ noncomputable def Bool.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "val"))
-  (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
-  (Let "_order1" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
+  (Let "_order1" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint32)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint32)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "_order1"))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint32)))) (Var "_order1"))
+  (Let "$a1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "val"))
+  (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
   (App (App (App (Val (GoInstruction (FuncResolve StoreUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "_order1") (Var "$r0")))))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint32)))) (Pair (Var "_order1") (Var "$r0")))))))))))))
 
 /-- Swap atomically stores new into x and returns the previous value.
 
@@ -251,21 +251,16 @@ noncomputable def Bool.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "old" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bool'.ty)))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "new"))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "new"))
-  (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
-  (Let "_order2" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "_order2"))
-  (App (App (App (Val (GoInstruction (FuncResolve SwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (Let "_order3" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
+  (Let "_order2" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint32)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint32)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "_order3")) (Val #(W32 0))))))))
+  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint32)))) (Var "_order2"))
+  (Let "$a1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "new"))
+  (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
+  (App (App (App (Val (GoInstruction (FuncResolve SwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W32 0))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "_order3") (Var "$r0")))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "_order2") (Var "$r0")))))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint32)))) (Pair (Var "_order2") (Var "$r0")))))))))))))
 
 /-- CompareAndSwap executes the compare-and-swap operation for the boolean value x.
 
@@ -279,28 +274,18 @@ noncomputable def Bool.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val :
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bool'.ty)))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "new"))
   (Let "old" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "old"))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "old"))
-  (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
-  (Let "_order4" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "new"))
-  (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
-  (Let "_order5" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "_order4"))
-  (Let "$a2" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "_order5"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve CompareAndSwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
-  (Let "_order6" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
+  (Let "_order3" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint32)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint32)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad go.bool))) (Var "_order6")))))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint32)))) (Var "_order3"))
+  (Let "$a1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "old"))
+  (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
+  (Let "$a2" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "new"))
+  (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
+  (App (App (App (App (Val (GoInstruction (FuncResolve CompareAndSwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "_order6") (Var "$r0")))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "_order5") (Var "$r0")))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "_order4") (Var "$r0")))))))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint32)))) (Pair (Var "_order3") (Var "$r0")))))))))))))))
 
 /-- b32 returns a uint32 0 or 1 representing b.
 

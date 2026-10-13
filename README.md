@@ -80,27 +80,38 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   (left to right) but leaves the other reads of its operands unordered
   relative to them, and compilers differ: gc reads `m[0]` in `m[0] + f()`
   after `f` runs, and before it under `-race`. Perennial fixes one order and
-  compiles with it. Within a statement, its *events* (calls that are not
-  conversions or pure builtins, and receives) run first, in lexical
-  left-to-right order, each after its own operands; then the rest of the
-  statement is evaluated and its assignments are carried out.
+  compiles with it: a statement's operands are evaluated strictly left to
+  right, each completely (its operands first) before the next one starts, then
+  its assignments are carried out (`x + f()` reads `x`, then calls `f`; in
+  `{e1, e2}` all of `e1` is evaluated before `e2`, whatever `e2` contains).
   `goose/order` implements it as a source rewrite: a statement is in *normal
   form* when every read of state that a call could change, and every
   operation that can panic (whose panic the model makes stuck, and which a
   compiler must not reach before a call that in the model runs first), is
-  ordered with every event by the spec, so that all orders agree on it (about
-  1.3% of the standard library's statements are not); `order.Rewrite` turns the others
-  into statements in normal form by hoisting their events into temporaries
-  (`_orderN`, which goose translates as ordinary locals). goose translates the
-  rewritten source, and **binaries must be built with the same rewrite**:
-  `go build -toolexec=perennial-order` (`goose/cmd/perennial-order`, built
-  from the same commit as the goose that produced the translation) rewrites
-  every package it compiles, runtime and standard library included, without
-  writing anything to the source tree. What is trusted is goose's check that
-  every statement it translates is in normal form (`order.CheckFile`, the
-  definition of the normal form in `goose/order/normal.go`), and that the
-  wrapper compiles the rewrite of the same source; the rewriter itself is not:
-  a rewriter bug is a goose error, not an unsound translation. goose loads
+  ordered with every call and receive (*event*) by the spec, so that all
+  orders agree on it (about 1.3% of the standard library's statements are
+  not); `order.Rewrite` turns the others into statements in normal form by
+  evaluating, in order, the operands that must come before a later one into
+  temporaries (`_orderN`, which goose translates as ordinary locals; the
+  address, for an operand used as an address). Only the declarations goose
+  translates are rewritten (`util.Translated`: the functions, methods and
+  package-level variables a package's `.toml` translates): code that is not
+  verified keeps the compiler's own order, on which existing Go code may rely
+  (`crypto/x509.ParseOID` returns `o, o.unmarshalOIDText(oid)`, correct only
+  if the call runs first; verifying such a function means rewriting it not to
+  depend on the order). goose translates the rewritten source, and
+  **binaries must be built with the same rewrite**: `go build
+  -toolexec="perennial-order -code DIR"` (`goose/cmd/perennial-order`, built
+  from the same commit as the goose that produced the translation; DIR is
+  goose's output and configuration directory, `-code` repeatable) rewrites, in
+  each package with a translation in a DIR, the declarations its configuration
+  translates, standard-library packages included, without writing anything to
+  the source tree. What is trusted is goose's check that every statement it
+  translates is in normal form (`order.CheckFile`, the definition of the
+  normal form in `goose/order/normal.go`), and that the wrapper compiles the
+  rewrite of the same source with the same selection (a translated package
+  missing from the `-code` directories is compiled unrewritten); the rewriter
+  itself is not: a rewriter bug is a goose error, not an unsound translation. goose loads
   code with the build tag `goose` and `GOARCH=amd64`; a file whose types
   differ between that configuration and the real build may be rewritten
   differently.

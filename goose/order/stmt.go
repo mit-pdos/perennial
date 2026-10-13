@@ -27,16 +27,35 @@ func (a *analysis) lhsReads(e ast.Expr) []ast.Expr {
 			if _, ptr := a.under(x.X).(*types.Pointer); !ptr && !sel.Indirect() {
 				return a.lhsReads(x.X)
 			}
-			if sel.Indirect() && len(sel.Index()) > 1 {
-				// a promoted field through embedded pointers: the operands
-				// of the implicit indirections include x.E (conservatively,
-				// the whole selector)
+			if embeddedPointer(a.info.TypeOf(x.X), sel.Index()) {
+				// a promoted field through an embedded pointer x.E: the
+				// operands of the implicit indirections include x.E
+				// (conservatively, the whole selector)
 				return []ast.Expr{x}
 			}
 		}
 		return []ast.Expr{x.X}
 	}
 	return []ast.Expr{e}
+}
+
+// embeddedPointer reports whether the field path idx from type t goes through
+// an embedded field of pointer type (before its last step).
+func embeddedPointer(t types.Type, idx []int) bool {
+	for i, k := range idx {
+		if p, ok := t.Underlying().(*types.Pointer); ok {
+			t = p.Elem()
+		}
+		st, ok := t.Underlying().(*types.Struct)
+		if !ok {
+			return true // conservatively
+		}
+		t = st.Field(k).Type()
+		if _, ptr := t.Underlying().(*types.Pointer); ptr && i < len(idx)-1 {
+			return true
+		}
+	}
+	return false
 }
 
 // assignUnit is the evaluation unit of an assignment: the operands its left
@@ -195,29 +214,74 @@ type Violation struct {
 	Node ast.Node
 }
 
-// CheckFile lists the statements of file not in normal form, and the
-// package-level variable declarations whose initializer is not.
-func CheckFile(info *types.Info, file *ast.File) []Violation {
-	a := newAnalysis(info, file)
-	var vs []Violation
+// A Selection reports whether the declaration of the function or package-level
+// variable obj is put in Perennial's order (goose translates it); nil
+// selects every declaration.
+type Selection func(obj types.Object) bool
+
+// Selected reports whether sel selects the declaration d (a FuncDecl, or a
+// package-level var spec all of whose variables it selects).
+func Selected(info *types.Info, sel Selection, d ast.Node) bool {
+	if sel == nil {
+		return true
+	}
+	switch d := d.(type) {
+	case *ast.FuncDecl:
+		return sel(info.Defs[d.Name])
+	case *ast.ValueSpec:
+		for _, n := range d.Names {
+			if !sel(info.Defs[n]) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
+
+// selectedDecls are the declarations of file that sel selects: function
+// declarations and package-level var specs.
+func selectedDecls(info *types.Info, file *ast.File, sel Selection) []ast.Node {
+	var ds []ast.Node
 	for _, d := range file.Decls {
-		if gd, ok := d.(*ast.GenDecl); ok && gd.Tok == token.VAR {
-			for _, sp := range gd.Specs {
-				if vsp := sp.(*ast.ValueSpec); !a.unitNormal(vsp.Values) {
-					vs = append(vs, Violation{vsp.Pos(), vsp})
+		switch d := d.(type) {
+		case *ast.FuncDecl:
+			if d.Body != nil && Selected(info, sel, d) {
+				ds = append(ds, d)
+			}
+		case *ast.GenDecl:
+			if d.Tok == token.VAR {
+				for _, sp := range d.Specs {
+					if Selected(info, sel, sp) {
+						ds = append(ds, sp)
+					}
 				}
 			}
 		}
 	}
-	ast.Inspect(file, func(n ast.Node) bool {
-		switch n.(type) {
-		case *ast.BlockStmt, *ast.LabeledStmt, *ast.CaseClause, *ast.CommClause:
+	return ds
+}
+
+// CheckFile lists the statements of the declarations of file that sel
+// selects not in normal form, and the package-level variable declarations
+// whose initializer is not.
+func CheckFile(info *types.Info, file *ast.File, sel Selection) []Violation {
+	a := newAnalysis(info, file)
+	var vs []Violation
+	for _, d := range selectedDecls(info, file, sel) {
+		if vsp, ok := d.(*ast.ValueSpec); ok && !a.unitNormal(vsp.Values) {
+			vs = append(vs, Violation{vsp.Pos(), vsp})
+		}
+		ast.Inspect(d, func(n ast.Node) bool {
+			switch n.(type) {
+			case *ast.BlockStmt, *ast.LabeledStmt, *ast.CaseClause, *ast.CommClause:
+				return true
+			}
+			if s, ok := n.(ast.Stmt); ok && !a.headerNormal(s) {
+				vs = append(vs, Violation{s.Pos(), s})
+			}
 			return true
-		}
-		if s, ok := n.(ast.Stmt); ok && !a.headerNormal(s) {
-			vs = append(vs, Violation{s.Pos(), s})
-		}
-		return true
-	})
+		})
+	}
 	return vs
 }

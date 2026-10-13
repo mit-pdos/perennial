@@ -794,33 +794,28 @@ noncomputable def cancelCtx.propagateCancel.impl [FfiSyntax] [GoGlobalContext] :
   (Let "$r0" (App (App (Val (GoInstruction (MethodResolve Context.ty go!"Done"))) (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent"))) (Val #()))
   (Let "_order7" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve canceler.ty go!"Done"))) (App (Val (GoInstruction (GoLoad canceler.ty))) (Var "child"))) (Val #()))
-  (Let "_order8" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Var "_order7"))
-  (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Var "_order8"))
+  (Let "$ch1" (App (App (Val (GoInstruction (MethodResolve canceler.ty go!"Done"))) (App (Val (GoInstruction (GoLoad canceler.ty))) (Var "child"))) (Val #()))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (RecvCase (go.GoType.StructType []) (Var "$ch0")) (Lam "$recvVal"
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve Context.ty go!"Err"))) (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent"))) (Val #()))
-  (Let "_order5" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (MethodResolve canceler.ty go!"cancel"))) (App (Val (GoInstruction (GoLoad canceler.ty))) (Var "child")))
+  (Let "_order5" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [go.bool, go.error, go.error] false []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [go.bool, go.error, go.error] false []))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent"))
-  (App (App (Val (GoInstruction (FuncResolve Cause []))) (Val #())) (Var "$a0")))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve Context.ty go!"Err"))) (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent"))) (Val #()))
   (Let "_order6" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$a0" (Val #false)
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.error))) (Var "_order5"))
-  (Let "$a2" (App (Val (GoInstruction (GoLoad go.error))) (Var "_order6"))
-  (App (App (App (App (Val (GoInstruction (MethodResolve canceler.ty go!"cancel"))) (App (Val (GoInstruction (GoLoad canceler.ty))) (Var "child"))) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.error))) (Var "_order6"))
+  (Let "$a2" (Let "$a0" (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent"))
+  (App (App (Val (GoInstruction (FuncResolve Cause []))) (Val #())) (Var "$a0")))
+  (App (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [go.bool, go.error, go.error] false []))))) (Var "_order5")) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "_order6") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "_order5") (Var "$r0"))))))))),
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [go.bool, go.error, go.error] false []))))) (Pair (Var "_order5") (Var "$r0"))))))))),
   (CommClause (RecvCase (go.GoType.StructType []) (Var "$ch1")) (Lam "$recvVal"
   (App (Val doExecute)
   (Val #()))))]))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Pair (Var "_order8") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Pair (Var "_order7") (Var "$r0"))))))))))
   (App (Val doExecute)
@@ -845,22 +840,22 @@ noncomputable def cancelCtx.propagateCancel.impl [FfiSyntax] [GoGlobalContext] :
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve Context.ty go!"Err"))) (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent"))) (Val #()))
-  (Let "_order3" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (MethodResolve canceler.ty go!"cancel"))) (App (Val (GoInstruction (GoLoad canceler.ty))) (Var "child")))
+  (Let "_order3" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [go.bool, go.error, go.error] false []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [go.bool, go.error, go.error] false []))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent"))
-  (App (App (Val (GoInstruction (FuncResolve Cause []))) (Val #())) (Var "$a0")))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve Context.ty go!"Err"))) (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent"))) (Val #()))
   (Let "_order4" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$a0" (Val #false)
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.error))) (Var "_order3"))
-  (Let "$a2" (App (Val (GoInstruction (GoLoad go.error))) (Var "_order4"))
-  (App (App (App (App (Val (GoInstruction (MethodResolve canceler.ty go!"cancel"))) (App (Val (GoInstruction (GoLoad canceler.ty))) (Var "child"))) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.error))) (Var "_order4"))
+  (Let "$a2" (Let "$a0" (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent"))
+  (App (App (Val (GoInstruction (FuncResolve Cause []))) (Val #())) (Var "$a0")))
+  (App (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [go.bool, go.error, go.error] false []))))) (Var "_order3")) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "_order4") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "_order3") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [go.bool, go.error, go.error] false []))))) (Pair (Var "_order3") (Var "$r0"))))))))))
   (App (App (Val (GoInstruction (MethodResolve afterFuncer.ty go!"AfterFunc"))) (App (Val (GoInstruction (GoLoad afterFuncer.ty))) (Var "a"))) (Var "$a0")))
   (Let "stop" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false [go.bool]))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false [go.bool]))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -938,22 +933,22 @@ noncomputable def cancelCtx.propagateCancel.impl [FfiSyntax] [GoGlobalContext] :
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve Context.ty go!"Err"))) (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent"))) (Val #()))
-  (Let "_order1" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (MethodResolve canceler.ty go!"cancel"))) (App (Val (GoInstruction (GoLoad canceler.ty))) (Var "child")))
+  (Let "_order1" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [go.bool, go.error, go.error] false []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [go.bool, go.error, go.error] false []))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent"))
-  (App (App (Val (GoInstruction (FuncResolve Cause []))) (Val #())) (Var "$a0")))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve Context.ty go!"Err"))) (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent"))) (Val #()))
   (Let "_order2" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$a0" (Val #false)
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.error))) (Var "_order1"))
-  (Let "$a2" (App (Val (GoInstruction (GoLoad go.error))) (Var "_order2"))
-  (App (App (App (App (Val (GoInstruction (MethodResolve canceler.ty go!"cancel"))) (App (Val (GoInstruction (GoLoad canceler.ty))) (Var "child"))) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.error))) (Var "_order2"))
+  (Let "$a2" (Let "$a0" (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent"))
+  (App (App (Val (GoInstruction (FuncResolve Cause []))) (Val #())) (Var "$a0")))
+  (App (App (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [go.bool, go.error, go.error] false []))))) (Var "_order1")) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "_order2") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "_order1") (Var "$r0"))))))))))]))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [go.bool, go.error, go.error] false []))))) (Pair (Var "_order1") (Var "$r0"))))))))))]))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Var "done")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Val UntypedNil)))))
   (App (Val doReturn)
   (Val #()))
@@ -1217,6 +1212,9 @@ noncomputable def WithDeadlineCause.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (Val #())))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Value.ty) go!"Load"))) (App (Val (GoInstruction (StructFieldRef cancelCtx.ty go!"err"))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"cancelCtx"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))))) (Val #())) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil)))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))
+  (Let "_order8" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType timerCtx.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType timerCtx.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Duration.ty))) (Var "dur"))
   (Let "$a1" (Lam BAnon
   (App (Val exceptionDo)
@@ -1229,13 +1227,10 @@ noncomputable def WithDeadlineCause.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.error))) (Var "cause"))
   (App (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType timerCtx.ty) go!"cancel"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.AfterFunc []))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (Let "_order9" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.time.Timer.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.time.Timer.ty)))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.time.Timer.ty)))) (Var "_order9"))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.time.Timer.ty)))) (Pair (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"timer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))) (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.time.Timer.ty)))) (Pair (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"timer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "_order8"))) (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.time.Timer.ty)))) (Pair (Var "_order9") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType timerCtx.ty)))) (Pair (Var "_order8") (Var "$r0")))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -1330,30 +1325,20 @@ noncomputable def timerCtx.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Lam BAnon
   (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType timerCtx.ty)))) (Var "c"))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad Context.ty))) (App (Val (GoInstruction (StructFieldRef cancelCtx.ty go!"Context"))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"cancelCtx"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c")))))
-  (App (App (Val (GoInstruction (FuncResolve contextName []))) (Val #())) (Var "$a0")))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad Context.ty))) (App (Val (GoInstruction (StructFieldRef cancelCtx.ty go!"Context"))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"cancelCtx"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c")))))
+  (App (App (Val (GoInstruction (FuncResolve contextName []))) (Val #())) (Var "$a0"))) (Val #(go!".WithDeadline("))))
+  (Let "_order9" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "_order9")) (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.time.Time.ty go!"String"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time.ty))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"deadline"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))))) (Val #())))) (Val #(go!" ["))))
   (Let "_order10" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.time.Time.ty go!"String"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time.ty))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"deadline"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))))) (Val #()))
-  (Let "_order11" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time.ty))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"deadline"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))))
-  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.Until []))) (Val #())) (Var "$a0")))
-  (Let "_order12" (App (Val (GoInstruction (GoAlloc _root_.Perennial.time.Duration.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.time.Duration.ty))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.time.Duration.ty go!"String"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Duration.ty))) (Var "_order12"))) (Val #()))
-  (Let "_order13" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "_order10")) (Val #(go!".WithDeadline(")))) (App (Val (GoInstruction (GoLoad go.string))) (Var "_order11")))) (Val #(go!" [")))) (App (Val (GoInstruction (GoLoad go.string))) (Var "_order13")))) (Val #(go!"])")))))))
+  (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "_order10")) (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.time.Duration.ty go!"String"))) (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Time.ty))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"deadline"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "c"))))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.Until []))) (Val #())) (Var "$a0")))) (Val #())))) (Val #(go!"])")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order13") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order10") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore _root_.Perennial.time.Duration.ty))) (Pair (Var "_order12") (Var "$r0")))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order11") (Var "$r0")))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order10") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order9") (Var "$r0")))))))))))
 
 /-- go: context.go:679:20 -/
 noncomputable def timerCtx.cancel.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -1455,26 +1440,21 @@ noncomputable def valueCtx.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Lam BAnon
   (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType valueCtx.ty)))) (Var "c"))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad Context.ty))) (App (Val (GoInstruction (StructFieldRef valueCtx.ty go!"Context"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType valueCtx.ty)))) (Var "c"))))
-  (App (App (Val (GoInstruction (FuncResolve contextName []))) (Val #())) (Var "$a0")))
-  (Let "_order14" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad Context.ty))) (App (Val (GoInstruction (StructFieldRef valueCtx.ty go!"Context"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType valueCtx.ty)))) (Var "c"))))
+  (App (App (Val (GoInstruction (FuncResolve contextName []))) (Val #())) (Var "$a0"))) (Val #(go!".WithValue("))))
+  (Let "_order11" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef valueCtx.ty go!"key"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType valueCtx.ty)))) (Var "c"))))
-  (App (App (Val (GoInstruction (FuncResolve stringify []))) (Val #())) (Var "$a0")))
-  (Let "_order15" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef valueCtx.ty go!"val"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType valueCtx.ty)))) (Var "c"))))
-  (App (App (Val (GoInstruction (FuncResolve stringify []))) (Val #())) (Var "$a0")))
-  (Let "_order16" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "_order11")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef valueCtx.ty go!"key"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType valueCtx.ty)))) (Var "c"))))
+  (App (App (Val (GoInstruction (FuncResolve stringify []))) (Val #())) (Var "$a0"))))) (Val #(go!", "))))
+  (Let "_order12" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "_order14")) (Val #(go!".WithValue(")))) (App (Val (GoInstruction (GoLoad go.string))) (Var "_order15")))) (Val #(go!", ")))) (App (Val (GoInstruction (GoLoad go.string))) (Var "_order16")))) (Val #(go!")")))))))
+  (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "_order12")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef valueCtx.ty go!"val"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType valueCtx.ty)))) (Var "c"))))
+  (App (App (Val (GoInstruction (FuncResolve stringify []))) (Val #())) (Var "$a0"))))) (Val #(go!")")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order16") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order12") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order15") (Var "$r0")))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order14") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order11") (Var "$r0")))))))))))
 
 /-- go: context.go:768:20 -/
 noncomputable def valueCtx.Value.impl [FfiSyntax] [GoGlobalContext] : val :=

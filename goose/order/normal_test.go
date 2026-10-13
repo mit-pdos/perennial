@@ -29,7 +29,7 @@ func check(t *testing.T, src string) (*token.FileSet, *ast.File, *types.Info) {
 func nonNormal(t *testing.T, src string) []int {
 	fset, f, info := check(t, src)
 	var lines []int
-	for _, v := range CheckFile(info, f) {
+	for _, v := range CheckFile(info, f, nil) {
 		lines = append(lines, fset.Position(v.Pos).Line)
 	}
 	return lines
@@ -140,9 +140,15 @@ func gen[T Num, A Arr, B Bs, M Ms](x, y T, a A, b B, m M, u uint) {
 	h(len(m), f())             // 49: not normal: f may grow m
 	_ = s
 }
+
+func ex4(a []int, i int, b bool) {
+	_ = a[i] > 0 && f() > 0       // 54: normal: the left operand is evaluated first
+	_ = f() > 0 || a[i] > 0       // 55: normal: the right operand after the left
+	_ = b && (a[i] > 0) == (f() > 0) // 56: not normal: a[i] and f() are both on the right
+}
 `
 	got := nonNormal(t, src)
-	want := []int{11, 13, 14, 16, 18, 19, 31, 32, 33, 34, 44, 45, 47, 48, 49}
+	want := []int{11, 13, 14, 16, 18, 19, 31, 32, 33, 34, 44, 45, 47, 48, 49, 56}
 	if len(got) != len(want) {
 		t.Fatalf("got %v, want %v", got, want)
 	}

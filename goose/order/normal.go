@@ -7,21 +7,25 @@
 // under -race). Perennial fixes one order, the same for verification and for
 // compilation:
 //
-//	Within a statement, its events (calls, receives) run first, in lexical
-//	left-to-right order, each after the evaluation of its own operands; then
-//	the rest of the statement is evaluated and its assignments are carried
-//	out.
+//	A statement's operands are evaluated strictly left to right, each
+//	completely (its own operands first, then itself) before the next one
+//	starts; then its assignments are carried out. So the evaluation of an
+//	expression does not depend on what the expressions next to it contain.
 //
-// Rewrite implements that order by rewriting a statement into a sequence of
-// statements in normal form (IsNormal): each has at most one event, and
-// nothing outside that event's subtree reads state the event could change.
+// It is one of the orders the spec allows. Rewrite implements it by
+// rewriting a statement into a sequence of statements in normal form (in
+// which every read of state a call could change, and every operation that can
+// panic, is ordered with every call and receive by the spec), evaluating into
+// temporaries, in order, the operands that must come before a later one.
 // Every order the spec allows gives the same result on a statement in normal
 // form, so any compiler compiles it to the behaviour that goose translates.
 // Statements already in normal form are left alone.
 //
-// The rewriter is not trusted: goose checks that what it translates is in
-// normal form (CheckFile), and a binary is compiled from the same rewritten
-// source by cmd/perennial-order (`go build -toolexec`).
+// Only the declarations goose translates are rewritten (a Selection): other
+// code keeps the compiler's order, on which existing Go code may rely. The
+// rewriter is not trusted: goose checks that what it translates is in normal
+// form (CheckFile), and a binary is compiled from the same rewritten source,
+// with the same selection, by cmd/perennial-order (`go build -toolexec`).
 package order
 
 import (
@@ -532,39 +536,70 @@ func contains(outer, inner ast.Node) bool {
 	return outer.Pos() <= inner.Pos() && inner.End() <= outer.End()
 }
 
-// unitNormal reports whether one evaluation unit (expressions evaluated left
-// to right) is in normal form: every shared read is ordered with respect to
-// every event by the spec, so that all orders the spec allows agree. A read r
-// and an event e are ordered when one contains the other (an operand is
-// evaluated before its operation), when r is inside an event that runs before
-// e, or when r contains an event that runs at or after e (calls and receives
-// run in lexical left-to-right order, operands first).
-func (a *analysis) unitNormal(exprs []ast.Expr) bool {
-	var evs []ast.Expr
-	var reads []ast.Node
+// facts are the events and order-sensitive nodes of an evaluation unit.
+type facts struct {
+	evs   []ast.Expr
+	reads []ast.Node
+	logic []*ast.BinaryExpr // the && and || operations
+}
+
+func (a *analysis) facts(exprs []ast.Expr) facts {
+	var f facts
 	for _, e := range exprs {
-		evs = append(evs, a.events(e)...)
-		reads = append(reads, a.sharedReads(e)...)
+		f.evs = append(f.evs, a.events(e)...)
+		f.reads = append(f.reads, a.sharedReads(e)...)
+		ast.Inspect(e, func(n ast.Node) bool {
+			if b, ok := n.(*ast.BinaryExpr); ok && (b.Op == token.LAND || b.Op == token.LOR) {
+				f.logic = append(f.logic, b)
+			}
+			_, lit := n.(*ast.FuncLit)
+			return !lit
+		})
 	}
-	if len(evs) == 0 || len(reads) == 0 {
+	return f
+}
+
+// ordered reports whether the spec orders the read r with respect to the
+// event f.evs[j]: one contains the other (an operand is evaluated before its
+// operation), one is in the left operand of a && or || and the other in its
+// right ("the left operand is evaluated, and then the right if the condition
+// requires it"), r is inside an event that runs before it, or r contains an
+// event that runs at or after it (calls and receives run in lexical
+// left-to-right order, operands first).
+func (f facts) ordered(r ast.Node, j int) bool {
+	e := f.evs[j]
+	if contains(r, e) || contains(e, r) {
 		return true
 	}
-	for _, r := range reads {
-		for j, e := range evs {
-			if contains(r, e) || contains(e, r) {
-				continue
-			}
-			ordered := false
-			for i, e2 := range evs {
-				if (i < j && contains(e2, r)) || (i >= j && contains(r, e2)) {
-					ordered = true
-					break
-				}
-			}
-			if !ordered {
+	for _, l := range f.logic {
+		if contains(l.X, r) && contains(l.Y, e) || contains(l.X, e) && contains(l.Y, r) {
+			return true
+		}
+	}
+	for i, e2 := range f.evs {
+		if (i < j && contains(e2, r)) || (i >= j && contains(r, e2)) {
+			return true
+		}
+	}
+	return false
+}
+
+// allOrdered reports whether every pair of a read and an event selected by
+// sel (all pairs if sel is nil) is ordered.
+func (f facts) allOrdered(sel func(r ast.Node, e ast.Expr) bool) bool {
+	for _, r := range f.reads {
+		for j, e := range f.evs {
+			if (sel == nil || sel(r, e)) && !f.ordered(r, j) {
 				return false
 			}
 		}
 	}
 	return true
+}
+
+// unitNormal reports whether one evaluation unit (expressions evaluated left
+// to right) is in normal form: every shared read is ordered with respect to
+// every event by the spec, so that all orders the spec allows agree.
+func (a *analysis) unitNormal(exprs []ast.Expr) bool {
+	return a.facts(exprs).allOrdered(nil)
 }

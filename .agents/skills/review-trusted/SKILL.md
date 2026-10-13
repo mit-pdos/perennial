@@ -353,7 +353,9 @@ with `order.CheckFile`; binaries are compiled from the same rewrite by
 `cmd/perennial-order` (README, "Evaluation order"). Trusted: the definition of
 the normal form (`goose/order/normal.go`, `stmt.go`: which nodes are events,
 which reads a call could affect, when a read and an event are ordered), and
-the wrapper compiling exactly the rewrite of the source it is given. Not
+the wrapper compiling exactly the rewrite of the source it is given, of the
+same declarations goose translates (`util.Translated`, from the same `.toml`
+and the translations present in its `-code` directories). Not
 trusted: the rewriter (`rewrite.go`), whose bugs surface as goose errors. A
 change that makes the normal form accept more statements is BLOCK unless it
 comes with the spec sentence that orders the newly accepted reads, and an

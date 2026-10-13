@@ -32,28 +32,23 @@ type rewriter struct {
 	fnBody *ast.BlockStmt // the body of the function being rewritten (label scope)
 }
 
-// Rewrite rewrites the statements of file that are not in normal form into
+// Rewrite rewrites the statements of the declarations of file that sel
+// selects (all, if sel is nil) that are not in normal form into
 // sequences of statements that are, implementing Perennial's evaluation order
 // (see the package comment). src is the file's source and info its type
 // information. It returns the new source (with //line directives mapping every
 // position to the original one) and whether anything changed.
-func Rewrite(fset *token.FileSet, pkg *types.Package, info *types.Info, file *ast.File, src []byte) ([]byte, bool, error) {
+func Rewrite(fset *token.FileSet, pkg *types.Package, info *types.Info, file *ast.File, src []byte, sel Selection) ([]byte, bool, error) {
 	r := &rewriter{fset: fset, tf: fset.File(file.Pos()), a: newAnalysis(info, file), file: file, pkg: pkg, src: src}
 	r.prefix = r.freshPrefix()
-	for _, d := range file.Decls {
+	for _, d := range selectedDecls(info, file, sel) {
 		switch d := d.(type) {
 		case *ast.FuncDecl:
-			if d.Body != nil {
-				r.fnBody = d.Body
-				r.block(d.Body)
-			}
-		case *ast.GenDecl:
-			if d.Tok == token.VAR {
-				for _, sp := range d.Specs {
-					r.funcLits(sp)
-					r.pkgVar(sp.(*ast.ValueSpec))
-				}
-			}
+			r.fnBody = d.Body
+			r.block(d.Body)
+		case *ast.ValueSpec:
+			r.funcLits(d)
+			r.pkgVar(d)
 		}
 	}
 	if r.err != nil {
@@ -293,7 +288,7 @@ func (r *rewriter) renameBranches(s ast.Stmt, name, newName string) {
 	})
 }
 
-// hoisting collects the statements that hoisting the events of f emits.
+// hoisting collects the statements that the hoisting done by f emits.
 func (r *rewriter) hoisting(f func()) string {
 	saved := r.pre
 	r.pre = nil
@@ -310,94 +305,309 @@ func (r *rewriter) simple(s ast.Stmt) (pre, res string, declaring bool) {
 	pre = r.hoisting(func() {
 		switch s := s.(type) {
 		case *ast.ExprStmt:
-			r.hoistChildren(ast.Unparen(s.X)) // the call or receive stays
+			r.hoistUnit(val(s.X)) // the call or receive stays
 		case *ast.SendStmt:
-			r.hoistExpr(s.Chan)
-			r.hoistExpr(s.Value)
+			r.hoistUnit(val(s.Chan, s.Value))
 		case *ast.IncDecStmt:
-			r.hoistExpr(s.X)
+			r.hoistUnit(val(s.X))
 		case *ast.AssignStmt:
-			declaring = s.Tok == token.DEFINE
-			if s.Tok != token.DEFINE {
+			switch s.Tok {
+			case token.DEFINE:
+				declaring = true
+				r.hoistUnit(val(s.Rhs...))
+			case token.ASSIGN:
+				var ops []operand
 				for _, l := range s.Lhs {
-					r.hoistExpr(l)
+					ops = append(ops, r.lhsOperands(l)...)
 				}
-			}
-			if recv, ok := ast.Unparen(s.Rhs[0]).(*ast.UnaryExpr); ok && recv.Op == token.ARROW && len(s.Lhs) == 2 && len(s.Rhs) == 1 {
-				r.hoistChildren(recv)
-				t1, t2 := r.temp(), r.temp()
-				r.pre = append(r.pre, r.dir(recv.Pos())+t1+", "+t2+" := "+r.text(recv)+"; ")
-				r.replace(s.Rhs[0], t1+", "+t2)
-			} else {
-				for _, e := range s.Rhs {
-					r.hoistExpr(e)
-				}
+				r.hoistUnit(append(ops, val(s.Rhs...)...))
+			default:
+				res = r.opAssign(s)
 			}
 		case *ast.ReturnStmt:
-			for _, e := range s.Results {
-				r.hoistExpr(e)
-			}
+			r.hoistUnit(val(s.Results...))
 		case *ast.GoStmt:
-			r.hoistChildren(s.Call)
+			r.hoistUnit(r.operands(s.Call)) // the call runs later
 		case *ast.DeferStmt:
-			r.hoistChildren(s.Call)
+			r.hoistUnit(r.operands(s.Call))
 		case *ast.DeclStmt:
 			declaring = true
 			gd := s.Decl.(*ast.GenDecl)
 			if len(gd.Specs) > 1 {
 				return // below
 			}
-			for _, e := range gd.Specs[0].(*ast.ValueSpec).Values {
-				r.hoistExpr(e)
-			}
+			r.hoistUnit(val(gd.Specs[0].(*ast.ValueSpec).Values...))
 		default:
 			r.fail(s, "order: unexpected statement %T", s)
 		}
 	})
 	if ds, ok := s.(*ast.DeclStmt); ok && len(ds.Decl.(*ast.GenDecl).Specs) > 1 {
 		// var ( a = e1; b = e2 ) is var a = e1; var b = e2, in order.
-		res = ""
 		for _, sp := range ds.Decl.(*ast.GenDecl).Specs {
-			p := r.hoisting(func() {
-				for _, e := range sp.(*ast.ValueSpec).Values {
-					r.hoistExpr(e)
-				}
-			})
+			p := r.hoisting(func() { r.hoistUnit(val(sp.(*ast.ValueSpec).Values...)) })
 			res += p + r.dir(sp.Pos()) + "var " + r.text(sp) + "; "
 		}
 		return "", res, true
 	}
-	return pre, r.frag(s), declaring
+	if res == "" {
+		res = r.frag(s)
+	}
+	return pre, res, declaring
 }
 
-// hoistExpr emits the events of e as statements binding temporaries, in the
-// order they run, and replaces each by its temporary.
-func (r *rewriter) hoistExpr(e ast.Expr) {
-	switch x := e.(type) {
-	case nil:
-		return
-	case *ast.FuncLit:
-		return
-	case *ast.BinaryExpr:
-		if (x.Op == token.LAND || x.Op == token.LOR) && len(r.a.events(x.Y)) > 0 {
-			r.shortCircuit(x)
-			return
+// opAssign rewrites x op= y: x's operands are evaluated (into temporaries),
+// x is read, then y is evaluated, and x is assigned. It returns the
+// assignment; the statements before it are hoisted.
+func (r *rewriter) opAssign(s *ast.AssignStmt) string {
+	x, y := s.Lhs[0], s.Rhs[0]
+	ops := r.lhsOperands(x)
+	f := r.a.facts(append(exprsOf(ops), x, y))
+	for _, op := range ops {
+		if r.relevant(f, op.e) {
+			r.hoistFull(f, op)
 		}
-	case *ast.CallExpr:
-		// unsafe.Pointer(u) with u a uintptr from a call must stay one
-		// expression (the unsafe.Pointer rules): hoist the conversion.
-		if r.a.isConversion(x) && len(x.Args) == 1 && isUnsafePointer(r.a.info.TypeOf(x)) {
-			if arg := ast.Unparen(x.Args[0]); r.a.isEvent(arg) {
-				r.hoistChildren(arg)
-				r.emitTemp(x)
-				return
+	}
+	t := r.temp()
+	r.pre = append(r.pre, r.dir(x.Pos())+t+" := "+r.text(x)+"; ")
+	r.hoistInside(f, y)
+	op := strings.TrimSuffix(s.Tok.String(), "=")
+	return r.dir(s.Pos()) + r.text(x) + " = " + t + " " + op + " (" + r.text(y) + ")"
+}
+
+// lhsOperands are the operands that assigning to l evaluates (lhsReads): l
+// itself, or an array in it, is used as an address.
+func (r *rewriter) lhsOperands(l ast.Expr) []operand {
+	var ops []operand
+	for _, x := range r.a.lhsReads(l) {
+		// a promoted field through an embedded pointer (lhsReads keeps the
+		// selector) whose array is indexed
+		promoted := false
+		if se, ok := x.(*ast.SelectorExpr); ok {
+			if s := r.a.info.Selections[se]; s != nil && s.Kind() == types.FieldVal {
+				promoted = embeddedPointer(r.a.info.TypeOf(se.X), s.Index())
 			}
 		}
+		_, arr := r.a.under(x).(*types.Array)
+		ops = append(ops, operand{e: x, lhs: x == ast.Unparen(l), addr: promoted && arr})
 	}
-	r.hoistChildren(e)
-	if r.a.isEvent(e) {
-		r.emitTemp(e)
+	return ops
+}
+
+// An operand is a subexpression that a node (or a statement) evaluates, in
+// order.
+type operand struct {
+	e    ast.Expr
+	addr bool // the node uses e's address (an array indexed or sliced)
+	lhs  bool // e is the left side of an assignment (its address is hoisted)
+	fun  bool // e is the method selector of a method call
+}
+
+func val(es ...ast.Expr) []operand {
+	var ops []operand
+	for _, e := range es {
+		ops = append(ops, operand{e: e})
 	}
+	return ops
+}
+
+func exprsOf(ops []operand) []ast.Expr {
+	var es []ast.Expr
+	for _, op := range ops {
+		es = append(es, op.e)
+	}
+	return es
+}
+
+// hoistUnit rewrites the operands of an evaluation unit that is not in normal
+// form, so that it is, keeping Perennial's order: strictly left to right,
+// each operand evaluated completely (operands first) before the next one
+// starts. Where an operand that contains an event, or a read or operation
+// whose order matters, is followed by another, it is evaluated first into a
+// temporary (its address, for an operand used as an address); otherwise the
+// rewrite goes inside it.
+func (r *rewriter) hoistUnit(ops []operand) {
+	f := r.a.facts(exprsOf(ops))
+	if f.allOrdered(nil) {
+		return
+	}
+	r.hoistOps(f, ops, false)
+}
+
+func within(n ast.Node) func(ast.Node, ast.Expr) bool {
+	return func(rd ast.Node, ev ast.Expr) bool { return contains(n, rd) && contains(n, ev) }
+}
+
+// relevant reports whether e contains an event or an order-sensitive node.
+func (r *rewriter) relevant(f facts, e ast.Expr) bool {
+	for _, ev := range f.evs {
+		if contains(e, ev) {
+			return true
+		}
+	}
+	for _, rd := range f.reads {
+		if contains(e, rd) {
+			return true
+		}
+	}
+	return false
+}
+
+// hoistOps rewrites the operands ops of a node (or a unit), evaluated in
+// order: the last one whose evaluation is not ordered with the operands
+// after it, or that needs a rewrite inside, is J; the relevant operands
+// before it are evaluated into temporaries first, then J is (or the rewrite
+// goes inside it). With all, every operand up to the last one containing an
+// event is evaluated first (the node's own order-sensitive operands, such as
+// a map literal's keys, are only ordered after them).
+func (r *rewriter) hoistOps(f facts, ops []operand, all bool) {
+	inRest := func(j int, n ast.Node) bool {
+		for _, op := range ops[j+1:] {
+			if contains(op.e, n) {
+				return true
+			}
+		}
+		return false
+	}
+	crossOK := func(j int) bool {
+		x := ops[j].e
+		return f.allOrdered(func(rd ast.Node, ev ast.Expr) bool {
+			return contains(x, rd) && inRest(j, ev) || contains(x, ev) && inRest(j, rd)
+		})
+	}
+	J := -1
+	for j, op := range ops {
+		if !f.allOrdered(within(op.e)) || !crossOK(j) {
+			J = j
+		}
+		if all && len(r.a.events(op.e)) > 0 {
+			J = max(J, j)
+		}
+	}
+	if J < 0 {
+		return
+	}
+	for i := range J {
+		if r.relevant(f, ops[i].e) {
+			r.hoistFull(f, ops[i])
+		}
+	}
+	if all || !crossOK(J) {
+		r.hoistFull(f, ops[J])
+	} else {
+		r.hoistInside(f, ops[J].e)
+	}
+}
+
+// hoistInside rewrites e's operands so that e is in normal form; e stays.
+func (r *rewriter) hoistInside(f facts, e ast.Expr) {
+	if f.allOrdered(within(e)) {
+		return
+	}
+	switch x := e.(type) {
+	case *ast.BinaryExpr:
+		if x.Op == token.LAND || x.Op == token.LOR {
+			r.shortCircuit(f, x)
+			return
+		}
+	case *ast.CompositeLit:
+		if m, ok := r.a.under(x).(*types.Map); ok && hasInterface(m.Key(), nil) {
+			r.hoistOps(f, r.operands(x), true)
+			return
+		}
+	}
+	r.hoistOps(f, r.operands(e), false)
+}
+
+// hoistFull evaluates the operand op into a temporary, which replaces it.
+func (r *rewriter) hoistFull(f facts, op operand) {
+	e := op.e
+	switch {
+	case op.fun:
+		r.hoistMethod(f, e.(*ast.SelectorExpr))
+		return
+	case op.lhs, op.addr && r.a.info.Types[e].Addressable():
+		r.hoistInside(f, e)
+		t := r.temp()
+		r.pre = append(r.pre, r.dir(e.Pos())+t+" := &("+r.text(e)+"); ")
+		if op.lhs {
+			r.replace(e, "(*"+t+")")
+		} else {
+			r.replace(e, t) // indexing and slicing a pointer to an array
+		}
+		return
+	}
+	if r.keepsUintptr(e) {
+		// an integer that is (or will be) a pointer must not be held in a
+		// variable (the unsafe.Pointer rules): evaluate its operands
+		for _, op := range r.operands(e) {
+			if r.relevant(f, op.e) {
+				r.hoistFull(f, op)
+			}
+		}
+		return
+	}
+	if x, ok := ast.Unparen(e).(*ast.BinaryExpr); ok && (x.Op == token.LAND || x.Op == token.LOR) && !f.allOrdered(within(x)) {
+		r.shortCircuit(f, x)
+		return
+	}
+	r.hoistInside(f, e)
+	r.emitTemp(e)
+}
+
+// hoistMethod evaluates the receiver of the method call x.M(...) into a
+// temporary: its address for a pointer method of an addressable x, *x for a
+// value method through a pointer, the method value x.M for an interface's
+// method or a promoted one.
+func (r *rewriter) hoistMethod(f facts, sel *ast.SelectorExpr) {
+	s := r.a.info.Selections[sel]
+	recv := s.Obj().Type().(*types.Signature).Recv().Type().Underlying()
+	_, ptrRecv := recv.(*types.Pointer)
+	_, iface := recv.(*types.Interface)
+	_, ptrX := r.a.under(sel.X).(*types.Pointer)
+	if iface || len(s.Index()) > 1 {
+		r.hoistInside(f, sel)
+		r.emitTemp(sel)
+		return
+	}
+	r.hoistInside(f, sel.X)
+	x := r.text(sel.X)
+	switch {
+	case ptrRecv && !ptrX:
+		x = "&(" + x + ")"
+	case !ptrRecv && ptrX:
+		x = "*(" + x + ")"
+	}
+	t := r.temp()
+	r.pre = append(r.pre, r.dir(sel.X.Pos())+t+" := "+x+"; ")
+	r.replace(sel.X, t)
+}
+
+// keepsUintptr reports whether e is a uintptr that the unsafe.Pointer rules
+// require to stay in its expression: computed from a conversion of an
+// unsafe.Pointer (pointer arithmetic, an argument of syscall.Syscall), or
+// from reflect.Value's Pointer or UnsafeAddr.
+func (r *rewriter) keepsUintptr(e ast.Expr) bool {
+	b, ok := r.a.info.TypeOf(e).(*types.Basic)
+	if !ok || b.Kind() != types.Uintptr {
+		return false
+	}
+	found := false
+	ast.Inspect(e, func(n ast.Node) bool {
+		c, ok := n.(*ast.CallExpr)
+		if !ok {
+			return !found
+		}
+		if r.a.isConversion(c) && len(c.Args) == 1 && isUnsafePointer(r.a.info.TypeOf(c.Args[0])) {
+			found = true
+		}
+		if sel, ok := ast.Unparen(c.Fun).(*ast.SelectorExpr); ok && (sel.Sel.Name == "Pointer" || sel.Sel.Name == "UnsafeAddr") {
+			if s := r.a.info.Selections[sel]; s != nil && s.Obj().Pkg() != nil && s.Obj().Pkg().Path() == "reflect" {
+				found = true
+			}
+		}
+		return !found
+	})
+	return found
 }
 
 func isUnsafePointer(t types.Type) bool {
@@ -405,49 +615,152 @@ func isUnsafePointer(t types.Type) bool {
 	return ok && b.Kind() == types.UnsafePointer
 }
 
-// hoistChildren hoists the events in e's operands, in order.
-func (r *rewriter) hoistChildren(e ast.Expr) {
-	ast.Inspect(e, func(n ast.Node) bool {
-		if n == nil || n == e {
-			return n == e
+// operands lists what e evaluates, in order.
+func (r *rewriter) operands(e ast.Expr) []operand {
+	var ops []operand
+	add := func(x ast.Expr, addr bool) {
+		if x == nil {
+			return
 		}
-		if c, ok := n.(ast.Expr); ok {
-			r.hoistExpr(c)
+		if tv, ok := r.a.info.Types[x]; ok && tv.IsType() {
+			return
 		}
-		return false
-	})
+		ops = append(ops, operand{e: x, addr: addr})
+	}
+	isArray := func(x ast.Expr) bool {
+		_, ok := r.a.under(x).(*types.Array)
+		return ok
+	}
+	switch x := e.(type) {
+	case *ast.ParenExpr:
+		add(x.X, false)
+	case *ast.BinaryExpr:
+		add(x.X, false)
+		add(x.Y, false)
+	case *ast.UnaryExpr:
+		add(x.X, x.Op == token.AND)
+	case *ast.StarExpr:
+		add(x.X, false)
+	case *ast.SelectorExpr:
+		if r.a.info.Selections[x] != nil {
+			add(x.X, false)
+		}
+	case *ast.IndexExpr:
+		if _, inst := r.a.under(x.X).(*types.Signature); !inst {
+			add(x.X, isArray(x.X))
+			add(x.Index, false)
+		}
+	case *ast.SliceExpr:
+		add(x.X, isArray(x.X))
+		add(x.Low, false)
+		add(x.High, false)
+		add(x.Max, false)
+	case *ast.TypeAssertExpr:
+		add(x.X, false)
+	case *ast.CallExpr:
+		if !r.a.isConversion(x) && r.a.builtinName(x) == "" {
+			sel, ok := ast.Unparen(x.Fun).(*ast.SelectorExpr)
+			if s := r.a.info.Selections[sel]; ok && s != nil && s.Kind() == types.MethodVal {
+				ops = append(ops, operand{e: sel, fun: true})
+			} else {
+				add(x.Fun, false)
+			}
+		}
+		for _, a := range x.Args {
+			add(a, false)
+		}
+	case *ast.CompositeLit:
+		t := r.a.under(x)
+		if p, ok := t.(*types.Pointer); ok {
+			t = p.Elem().Underlying()
+		}
+		_, isStruct := t.(*types.Struct)
+		for _, el := range x.Elts {
+			if kv, ok := el.(*ast.KeyValueExpr); ok {
+				if !isStruct {
+					add(kv.Key, false)
+				}
+				add(kv.Value, false)
+			} else {
+				add(el, false)
+			}
+		}
+	}
+	return ops
 }
 
-// emitTemp binds the event e (whose operands are hoisted) to temporaries.
+// emitTemp binds e (whose operands are hoisted) to temporaries.
 func (r *rewriter) emitTemp(e ast.Expr) {
-	n := 1
-	if tup, ok := r.a.info.TypeOf(e).(*types.Tuple); ok {
-		n = tup.Len()
+	text := r.text(e)
+	t := r.a.info.TypeOf(e)
+	if cl, ok := ast.Unparen(e).(*ast.CompositeLit); ok && cl.Type == nil {
+		// an element of a composite literal with its type elided
+		if p, ok := t.(*types.Pointer); ok {
+			text = "&" + r.typeText(e, p.Elem()) + text
+		} else {
+			text = r.typeText(e, t) + text
+		}
 	}
-	if n == 0 {
-		r.fail(e, "order: a call with no result inside an expression")
+	if tup, ok := t.(*types.Tuple); ok {
+		if tup.Len() == 0 {
+			r.fail(e, "order: a call with no result inside an expression")
+			return
+		}
+		var names []string
+		for range tup.Len() {
+			names = append(names, r.temp())
+		}
+		ts := strings.Join(names, ", ")
+		r.pre = append(r.pre, r.dir(e.Pos())+ts+" := "+text+"; ")
+		r.replace(e, ts)
 		return
 	}
-	var names []string
-	for range n {
-		names = append(names, r.temp())
+	n := r.temp()
+	if r.untyped(e) {
+		// var t T = e keeps the type an untyped e (a comparison, a shift of
+		// a constant) has in its context
+		r.pre = append(r.pre, r.dir(e.Pos())+"var "+n+" "+r.typeText(e, t)+" = "+text+"; ")
+	} else {
+		r.pre = append(r.pre, r.dir(e.Pos())+n+" := "+text+"; ")
 	}
-	ts := strings.Join(names, ", ")
-	r.pre = append(r.pre, r.dir(e.Pos())+ts+" := "+r.text(e)+"; ")
-	r.replace(e, ts)
+	r.replace(e, n)
 }
 
-// shortCircuit rewrites x && y (or x || y) where y has events into
+// untyped reports whether e is untyped (its type comes from its context), and
+// := would give it another type: a comparison or a logical operation (untyped
+// bool), or a shift of an untyped constant.
+func (r *rewriter) untyped(e ast.Expr) bool {
+	t := r.a.info.TypeOf(e)
+	switch x := ast.Unparen(e).(type) {
+	case *ast.BinaryExpr:
+		switch x.Op {
+		case token.EQL, token.NEQ, token.LSS, token.LEQ, token.GTR, token.GEQ, token.LAND, token.LOR:
+			return !types.Identical(t, types.Typ[types.Bool])
+		case token.SHL, token.SHR:
+			if b, ok := r.a.info.TypeOf(x.X).(*types.Basic); ok && b.Info()&types.IsUntyped != 0 {
+				return true
+			}
+			return r.untyped(x.X)
+		}
+		return r.untyped(x.X) && r.untyped(x.Y)
+	case *ast.UnaryExpr:
+		return x.Op == token.NOT && !types.Identical(t, types.Typ[types.Bool])
+	}
+	return false
+}
+
+// shortCircuit rewrites x && y (or x || y) whose operands need rewriting
+// into
 //
-//	var t T = x; if t { y's events; t = y }
+//	var t T = x; if t { y's hoisted statements; t = y }
 //
 // (if !t for ||), which evaluates y only when the operator does.
-func (r *rewriter) shortCircuit(x *ast.BinaryExpr) {
-	r.hoistExpr(x.X)
+func (r *rewriter) shortCircuit(f facts, x *ast.BinaryExpr) {
+	r.hoistInside(f, x.X)
 	typ := r.typeText(x, r.a.info.TypeOf(x))
 	t := r.temp()
 	r.pre = append(r.pre, r.dir(x.Pos())+"var "+t+" "+typ+" = "+r.text(x.X)+"; ")
-	inner := r.hoisting(func() { r.hoistExpr(x.Y) })
+	inner := r.hoisting(func() { r.hoistInside(f, x.Y) })
 	cond := t
 	if x.Op == token.LOR {
 		cond = "!" + t
@@ -502,7 +815,7 @@ func (r *rewriter) compound(s ast.Stmt) (pre, text string, changed bool) {
 			return "", "", false
 		}
 		pre = r.initPre(s.Init)
-		pre += r.hoisting(func() { r.hoistExpr(s.Cond) })
+		pre += r.hoisting(func() { r.hoistUnit(val(s.Cond)) })
 		text = r.dir(s.Pos()) + "if " + r.frag(s.Cond) + " " + r.frag(s.Body)
 		if s.Else != nil {
 			text += " else " + r.frag(s.Else)
@@ -535,7 +848,7 @@ func (r *rewriter) compound(s ast.Stmt) (pre, text string, changed bool) {
 			if r.a.unitNormal([]ast.Expr{s.Cond}) {
 				cond = r.frag(s.Cond)
 			} else {
-				condPre := r.hoisting(func() { r.hoistExpr(s.Cond) })
+				condPre := r.hoisting(func() { r.hoistUnit(val(s.Cond)) })
 				lb := r.off(s.Body.Lbrace) + 1
 				body = r.dir(s.Body.Lbrace) + "{ " + condPre + "if !(" + r.frag(s.Cond) + ") { break }; " +
 					r.dirOff(lb) + r.render(lb, r.off(s.Body.End()))
@@ -554,7 +867,7 @@ func (r *rewriter) compound(s ast.Stmt) (pre, text string, changed bool) {
 			return "", "", false
 		}
 		if !r.a.unitNormal([]ast.Expr{s.X}) {
-			pre = r.hoisting(func() { r.hoistExpr(s.X) })
+			pre = r.hoisting(func() { r.hoistUnit(val(s.X)) })
 		}
 		if s.Tok == token.ASSIGN && !r.a.headerNormal(&ast.RangeStmt{X: &ast.Ident{}, Key: s.Key, Value: s.Value, Tok: s.Tok}) {
 			r.fail(s, "order: a range statement assigning to operands not in normal form")
@@ -578,7 +891,7 @@ func (r *rewriter) compound(s ast.Stmt) (pre, text string, changed bool) {
 		}
 		if s.Tag != nil {
 			if !r.a.unitNormal([]ast.Expr{s.Tag}) {
-				pre += r.hoisting(func() { r.hoistExpr(s.Tag) })
+				pre += r.hoisting(func() { r.hoistUnit(val(s.Tag)) })
 			}
 			tag = r.frag(s.Tag)
 			if !r.a.casesNormal(s) {
@@ -604,7 +917,7 @@ func (r *rewriter) compound(s ast.Stmt) (pre, text string, changed bool) {
 		}
 		pre = r.initPre(s.Init)
 		x := typeSwitchX(s)
-		pre += r.hoisting(func() { r.hoistExpr(x) })
+		pre += r.hoisting(func() { r.hoistUnit(val(x)) })
 		text = r.dir(s.Pos()) + "switch " + r.frag(s.Assign) + " " + r.frag(s.Body)
 		return pre, text, true
 	case *ast.SelectStmt:
@@ -622,11 +935,7 @@ func (r *rewriter) compound(s ast.Stmt) (pre, text string, changed bool) {
 				return "", "", false
 			}
 		}
-		pre = r.hoisting(func() {
-			for _, e := range selectUnit(s) {
-				r.hoistExpr(e)
-			}
-		})
+		pre = r.hoisting(func() { r.hoistUnit(val(selectUnit(s)...)) })
 		return pre, r.frag(s), true
 	}
 	return "", "", false
@@ -696,7 +1005,7 @@ func (r *rewriter) switchText(head, tag string, clauses []*ast.CaseClause, split
 		m := r.temp()
 		match := ""
 		for i, e := range ck.List {
-			p := r.hoisting(func() { r.hoistExpr(e) })
+			p := r.hoisting(func() { r.hoistUnit(val(e)) })
 			cmp := "bool(" + r.frag(e) + ")"
 			if tag != "" {
 				cmp = "(" + r.frag(e) + ") == " + tag
@@ -714,7 +1023,7 @@ func (r *rewriter) switchText(head, tag string, clauses []*ast.CaseClause, split
 		return out + "default: " + match + inner + " }"
 	}
 	rest = append(rest, clauses[k:]...)
-	pre := r.hoisting(func() { r.hoistExpr(clauses[k].List[0]) })
+	pre := r.hoisting(func() { r.hoistUnit(val(clauses[k].List[0])) })
 	split[clauses[k]] = true
 	return out + "default: " + pre + r.switchText("", tag, rest, split) + " }"
 }
@@ -760,11 +1069,7 @@ func (r *rewriter) pkgVar(sp *ast.ValueSpec) {
 	for _, n := range sp.Names {
 		types_ = append(types_, r.typeText(n, r.a.info.TypeOf(n)))
 	}
-	pre := r.hoisting(func() {
-		for _, e := range sp.Values {
-			r.hoistExpr(e)
-		}
-	})
+	pre := r.hoisting(func() { r.hoistUnit(val(sp.Values...)) })
 	var vals []string
 	for _, e := range sp.Values {
 		vals = append(vals, r.frag(e))
