@@ -239,10 +239,17 @@ func (a *analysis) events(n ast.Node) []ast.Expr {
 	return evs
 }
 
-// sharedReads lists the nodes of n that read state a call could change: a
-// variable other than a safe local, through a pointer, a slice or map
-// element, or a channel's state. Address computations (&x.f, &a[i]) read only
-// their operands.
+// sharedReads lists the order-sensitive nodes of n: those that read state a
+// call could change (a variable other than a safe local, through a pointer, a
+// slice or map element, a channel's or map's size, the elements a conversion
+// from a slice copies), and those that can panic (an index or slice
+// expression's bounds, a nil pointer, a failed type assertion, an integer
+// division by a variable, a signed shift count, a comparison of interfaces, a
+// conversion from a slice to an array). A panic is a stuck state of the model,
+// which a verified program never reaches along the order goose translates; a
+// compiler must not reach it along another, for instance before a call that
+// in the model runs first and never returns. Address computations (&x.f,
+// &a[i]) read only their operands, but still check bounds and nil.
 func (a *analysis) sharedReads(n ast.Node) []ast.Node {
 	var reads []ast.Node
 	var value, addr func(e ast.Expr)
@@ -266,7 +273,8 @@ func (a *analysis) sharedReads(n ast.Node) []ast.Node {
 		case *ast.SelectorExpr:
 			if sel := a.info.Selections[x]; sel != nil && sel.Kind() == types.FieldVal {
 				if _, ptr := a.under(x.X).(*types.Pointer); ptr || sel.Indirect() {
-					value(x.X) // the pointer is read, not the field
+					reads = append(reads, x) // nil check
+					value(x.X)               // the pointer is read, not the field
 				} else {
 					addr(x.X)
 				}
@@ -274,6 +282,9 @@ func (a *analysis) sharedReads(n ast.Node) []ast.Node {
 			}
 			value(e)
 		case *ast.IndexExpr:
+			if !a.constIndex(x) {
+				reads = append(reads, x) // bounds check
+			}
 			switch a.under(x.X).(type) {
 			case *types.Array:
 				addr(x.X)
@@ -282,6 +293,7 @@ func (a *analysis) sharedReads(n ast.Node) []ast.Node {
 			}
 			value(x.Index)
 		case *ast.StarExpr:
+			reads = append(reads, x) // nil check
 			value(x.X)
 		default:
 			value(e)
@@ -297,6 +309,7 @@ func (a *analysis) sharedReads(n ast.Node) []ast.Node {
 				return
 			}
 		case *ast.SliceExpr:
+			reads = append(reads, x) // bounds check
 			if _, ok := a.under(x.X).(*types.Array); ok {
 				addr(x.X) // slicing an array reads no element
 				for _, i := range []ast.Expr{x.Low, x.High, x.Max} {
@@ -319,6 +332,16 @@ func (a *analysis) sharedReads(n ast.Node) []ast.Node {
 			switch a.under(x.X).(type) {
 			case *types.Slice, *types.Map, *types.Pointer:
 				reads = append(reads, x)
+			default:
+				if !a.constIndex(x) {
+					reads = append(reads, x) // bounds check
+				}
+			}
+		case *ast.TypeAssertExpr:
+			reads = append(reads, x)
+		case *ast.BinaryExpr:
+			if a.mayPanic(x) {
+				reads = append(reads, x)
 			}
 		case *ast.SelectorExpr:
 			if sel := a.info.Selections[x]; sel != nil {
@@ -332,8 +355,14 @@ func (a *analysis) sharedReads(n ast.Node) []ast.Node {
 			}
 		case *ast.CallExpr:
 			if b := a.builtinName(x); (b == "len" || b == "cap") && len(x.Args) == 1 {
-				if _, ch := a.under(x.Args[0]).(*types.Chan); ch {
+				switch a.under(x.Args[0]).(type) {
+				case *types.Chan, *types.Map:
 					reads = append(reads, x)
+				}
+			}
+			if a.isConversion(x) && len(x.Args) == 1 {
+				if _, fromSlice := a.under(x.Args[0]).(*types.Slice); fromSlice {
+					reads = append(reads, x) // copies (or checks the length of) the elements
 				}
 			}
 		}
@@ -345,6 +374,77 @@ func (a *analysis) sharedReads(n ast.Node) []ast.Node {
 		children(n)
 	}
 	return reads
+}
+
+// constIndex reports whether the index of x is a constant that the type
+// checker has checked against a constant length (an array's): no bounds check
+// at run time.
+func (a *analysis) constIndex(x *ast.IndexExpr) bool {
+	if _, inst := a.under(x.X).(*types.Signature); inst {
+		return true // F[T], an instantiation
+	}
+	if tv, ok := a.info.Types[x.X]; ok && tv.IsType() {
+		return true // T[int], a type
+	}
+	if _, ok := a.under(x.X).(*types.Array); !ok {
+		if p, ok := a.under(x.X).(*types.Pointer); !ok || !isArray(p.Elem()) {
+			return false
+		}
+	}
+	tv, ok := a.info.Types[x.Index]
+	return ok && tv.Value != nil
+}
+
+func isArray(t types.Type) bool {
+	_, ok := t.Underlying().(*types.Array)
+	return ok
+}
+
+// mayPanic reports whether the binary operation x can panic: an integer
+// division or remainder by a non-constant, a shift by a non-constant signed
+// count, or a comparison of values with interfaces in them.
+func (a *analysis) mayPanic(x *ast.BinaryExpr) bool {
+	if tv, ok := a.info.Types[x]; ok && tv.Value != nil {
+		return false // constant
+	}
+	switch x.Op {
+	case token.QUO, token.REM:
+		b, ok := a.under(x).(*types.Basic)
+		tv := a.info.Types[x.Y]
+		return ok && b.Info()&types.IsInteger != 0 && tv.Value == nil
+	case token.SHL, token.SHR:
+		b, ok := a.under(x.Y).(*types.Basic)
+		tv := a.info.Types[x.Y]
+		return ok && b.Info()&types.IsUnsigned == 0 && tv.Value == nil
+	case token.EQL, token.NEQ:
+		return hasInterface(a.info.TypeOf(x.X), nil) || hasInterface(a.info.TypeOf(x.Y), nil)
+	}
+	return false
+}
+
+// hasInterface reports whether comparing values of type t can compare
+// interfaces (and so panic on an incomparable dynamic type).
+func hasInterface(t types.Type, seen map[types.Type]bool) bool {
+	if t == nil || seen[t] {
+		return false
+	}
+	if seen == nil {
+		seen = map[types.Type]bool{}
+	}
+	seen[t] = true
+	switch u := t.Underlying().(type) {
+	case *types.Interface:
+		return true
+	case *types.Array:
+		return hasInterface(u.Elem(), seen)
+	case *types.Struct:
+		for i := range u.NumFields() {
+			if hasInterface(u.Field(i).Type(), seen) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // selectionReads reports whether the selection x.f reads memory beyond x: a

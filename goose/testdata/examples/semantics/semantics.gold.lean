@@ -3998,8 +3998,18 @@ noncomputable def testDowncastInterface.impl [FfiSyntax] [GoGlobalContext] : val
   (Let "$r0" (App (Val (GoInstruction (Convert Lily.ty Flora.ty))) (App (Val (GoInstruction (GoLoad Lily.ty))) (Var "l")))
   (Let "f" (App (Val (GoInstruction (GoAlloc Flora.ty))) (App (Val (GoInstruction (GoZeroVal Flora.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve Flora.ty go!"Petals"))) (App (Val (GoInstruction (GoLoad Flora.ty))) (Var "f"))) (Val #()))
+  (Let "_order3" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve Flower.ty go!"Petals"))) (App (Val (GoInstruction (TypeAssert Flower.ty))) (App (Val (GoInstruction (GoLoad Flora.ty))) (Var "f")))) (Val #()))
+  (Let "_order4" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve Flora.ty go!"Petals"))) (App (Val (GoInstruction (GoLoad Flora.ty))) (Var "f"))) (Val #())) (App (App (Val (GoInstruction (MethodResolve Flower.ty go!"Petals"))) (App (Val (GoInstruction (TypeAssert Flower.ty))) (App (Val (GoInstruction (GoLoad Flora.ty))) (Var "f")))) (Val #())))))))
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "_order3")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "_order4")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "_order4") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "_order3") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Flora.ty))) (Pair (Var "f") (Var "$r0")))))))))
   (App (Val doExecute)

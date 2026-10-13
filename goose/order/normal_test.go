@@ -61,9 +61,21 @@ func ex(g G, hash int, a []int, i int, p *int) {
 	q := &g                       // 22: g is now address-taken
 	_ = q
 }
+
+func ex2(m map[int]int, b []byte, x, y int, arr [4]int, i int, v any) {
+	_ = len(m) + f()        // 28: not normal: f may grow m
+	_ = string(b) + "a"     // 29: normal: no event
+	_ = len(string(b)) + f() // 30: not normal: f may change b's elements
+	_ = x/y + f()           // 31: not normal: the division may panic
+	_ = x/2 + f()           // 32: normal
+	_ = arr[i] + f()        // 33: not normal: bounds check
+	_ = arr[1] + f()        // 34: normal: checked statically
+	_ = v.(int) + f()       // 35: not normal: the assertion may fail
+	_ = x + f()             // 36: normal
+}
 `
 	got := nonNormal(t, src)
-	want := []int{16, 17, 20}
+	want := []int{16, 17, 20, 28, 30, 31, 33, 35}
 	if len(got) != len(want) {
 		t.Fatalf("got %v, want %v", got, want)
 	}

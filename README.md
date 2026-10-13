@@ -85,9 +85,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   left-to-right order, each after its own operands; then the rest of the
   statement is evaluated and its assignments are carried out.
   `goose/order` implements it as a source rewrite: a statement is in *normal
-  form* when every read of state that a call could change is ordered with
-  every event by the spec, so that all orders agree on it (1.2% of the
-  standard library's statements are not); `order.Rewrite` turns the others
+  form* when every read of state that a call could change, and every
+  operation that can panic (whose panic the model makes stuck, and which a
+  compiler must not reach before a call that in the model runs first), is
+  ordered with every event by the spec, so that all orders agree on it (about
+  1.3% of the standard library's statements are not); `order.Rewrite` turns the others
   into statements in normal form by hoisting their events into temporaries
   (`_orderN`, which goose translates as ordinary locals). goose translates the
   rewritten source, and **binaries must be built with the same rewrite**:
