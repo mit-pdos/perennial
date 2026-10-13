@@ -3839,8 +3839,18 @@ noncomputable def testSharedFunctionsInterface.impl [FfiSyntax] [GoGlobalContext
   (Let "$r0" (App (Val (GoInstruction (Convert Puppy.ty dogInterface.ty))) (Val #(go!"Puppy")))
   (Let "pup" (App (Val (GoInstruction (GoAlloc dogInterface.ty))) (App (Val (GoInstruction (GoZeroVal dogInterface.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve dogInterface.ty go!"Name"))) (App (Val (GoInstruction (GoLoad dogInterface.ty))) (Var "pup"))) (Val #()))
+  (Let "_order3" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve catInterface.ty go!"Name"))) (App (Val (GoInstruction (GoLoad catInterface.ty))) (Var "kit"))) (Val #()))
+  (Let "_order4" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (App (Val (GoInstruction (MethodResolve dogInterface.ty go!"Name"))) (App (Val (GoInstruction (GoLoad dogInterface.ty))) (Var "pup"))) (Val #())) (App (App (Val (GoInstruction (MethodResolve catInterface.ty go!"Name"))) (App (Val (GoInstruction (GoLoad catInterface.ty))) (Var "kit"))) (Val #())))))))
+  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "_order3")) (App (Val (GoInstruction (GoLoad go.string))) (Var "_order4")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order4") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order3") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore dogInterface.ty))) (Pair (Var "pup") (Var "$r0")))))))))
   (App (Val doExecute)
@@ -3883,8 +3893,18 @@ noncomputable def testAcceptAddressInterface.impl [FfiSyntax] [GoGlobalContext] 
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType PaperStruct.ty) printInterface.ty))) (Var "p2"))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve printInterface.ty go!"GetTitle"))) (App (Val (GoInstruction (GoLoad printInterface.ty))) (Var "print1"))) (Val #()))
+  (Let "_order5" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve printInterface.ty go!"GetTitle"))) (App (Val (GoInstruction (GoLoad printInterface.ty))) (Var "print2"))) (Val #()))
+  (Let "_order6" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (App (Val (GoInstruction (MethodResolve printInterface.ty go!"GetTitle"))) (App (Val (GoInstruction (GoLoad printInterface.ty))) (Var "print1"))) (Val #())) (App (App (Val (GoInstruction (MethodResolve printInterface.ty go!"GetTitle"))) (App (Val (GoInstruction (GoLoad printInterface.ty))) (Var "print2"))) (Val #())))))))
+  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "_order5")) (App (Val (GoInstruction (GoLoad go.string))) (Var "_order6")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order6") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order5") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore printInterface.ty))) (Pair (Var "print2") (Var "$r0"))))))))
   (App (Val doExecute)
@@ -4021,17 +4041,17 @@ noncomputable def testDowncastInterface.impl [FfiSyntax] [GoGlobalContext] : val
   (Let "f" (App (Val (GoInstruction (GoAlloc Flora.ty))) (App (Val (GoInstruction (GoZeroVal Flora.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (App (Val (GoInstruction (MethodResolve Flora.ty go!"Petals"))) (App (Val (GoInstruction (GoLoad Flora.ty))) (Var "f"))) (Val #()))
-  (Let "_order3" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "_order7" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (App (Val (GoInstruction (MethodResolve Flower.ty go!"Petals"))) (App (Val (GoInstruction (TypeAssert Flower.ty))) (App (Val (GoInstruction (GoLoad Flora.ty))) (Var "f")))) (Val #()))
-  (Let "_order4" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "_order8" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "_order3")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "_order4")))))))
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "_order7")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "_order8")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "_order4") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "_order8") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "_order3") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "_order7") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Flora.ty))) (Pair (Var "f") (Var "$r0")))))))))
   (App (Val doExecute)

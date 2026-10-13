@@ -215,7 +215,7 @@ noncomputable def SliceSplit.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) 
   (App (Val doReturn)
   (Pair (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "xs"))
   (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))))) (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "xs"))
-  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "xs")))))))))))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (Var "$s"))))))))))))
 
 /-- go: goose_std.go:84:6 -/
 noncomputable def newJoinHandle.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -422,7 +422,7 @@ noncomputable def Multipar.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable def Skip.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (App (Val doExecute)
+  (App (Val doReturn)
   (Val #()))))
 
 /-- WaitTimeout is like cond.Wait(), but waits for a maximum time of timeoutMs
@@ -459,8 +459,11 @@ noncomputable def WaitTimeout.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Cond.ty) go!"Wait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond.ty)))) (Var "cond"))) (Val #())))))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$ch0" (Let "$a0" (App (Val (GoInstruction (GoOp GoMul _root_.Perennial.time.Duration.ty))) (Pair (App (Val (GoInstruction (Convert go.uint64 _root_.Perennial.time.Duration.ty))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "timeoutMs"))) (Val _root_.Perennial.time.Millisecond)))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoMul _root_.Perennial.time.Duration.ty))) (Pair (App (Val (GoInstruction (Convert go.uint64 _root_.Perennial.time.Duration.ty))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "timeoutMs"))) (Val _root_.Perennial.time.Millisecond)))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.After []))) (Val #())) (Var "$a0")))
+  (Let "_order1" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.recvonly _root_.Perennial.time.Time.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.recvonly _root_.Perennial.time.Time.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly _root_.Perennial.time.Time.ty)))) (Var "_order1"))
   (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "done"))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (RecvCase _root_.Perennial.time.Time.ty (Var "$ch0")) (Lam "$recvVal"
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -474,6 +477,8 @@ noncomputable def WaitTimeout.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #()))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.sync.Locker.ty go!"Lock"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.sync.Locker.ty))) (App (Val (GoInstruction (StructFieldRef _root_.Perennial.sync.Cond.ty go!"L"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond.ty)))) (Var "cond"))))) (Val #()))))))]))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.recvonly _root_.Perennial.time.Time.ty)))) (Pair (Var "_order1") (Var "$r0")))))))))
   (App (Val doExecute)
   (Fork
   (App (Var "$go") (Val #()))))))))

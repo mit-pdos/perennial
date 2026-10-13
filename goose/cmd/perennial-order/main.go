@@ -227,6 +227,11 @@ func compile(tool string, args []string) int {
 		first--
 	}
 	files := args[first:]
+	for _, a := range args {
+		if strings.HasPrefix(a, "@") { // a response file could hide the files
+			fatalf("response file %s: not supported, refusing to compile it unordered", a)
+		}
+	}
 	if len(files) == 0 {
 		return run(tool, args)
 	}

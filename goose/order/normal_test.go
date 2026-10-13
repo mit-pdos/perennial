@@ -85,3 +85,55 @@ func ex2(m map[int]int, b []byte, x, y int, arr [4]int, i int, v any) {
 		}
 	}
 }
+
+// Operations that can panic, and type parameters, which stand for any type in
+// their type set.
+func TestNormalPanics(t *testing.T) {
+	src := `package p
+
+import "unsafe"
+
+type I interface{ M(...int) int }
+
+func f() int { return 0 }
+func h(...any) {}
+
+func ex(n int, i I, p *int, k any) {
+	h(make([]int, n), f())          // 11: not normal: make panics on n < 0
+	h(make([]int, 3), f())          // 12: normal
+	h(make(chan int, n), f())       // 13: not normal
+	h(i.M, f())                     // 14: not normal: i.M panics on a nil i
+	_ = i.M() + f()                 // 15: normal: i.M is read in the first call
+	h(i.M(f()))                     // 16: not normal: i.M may be evaluated first
+	h(I.M, f())                     // 17: normal: a method expression
+	h(unsafe.Slice(p, n), f())      // 18: not normal
+	h(map[any]int{k: 0}, f())       // 19: not normal: k may be unhashable
+	h(map[int]int{n: 0}, f())       // 20: normal
+}
+
+type Num interface{ ~int | ~uint }
+type Arr interface{ ~[4]int }
+type Bs interface{ ~[]byte }
+type Ms interface{ ~map[int]int }
+
+func gen[T Num, A Arr, B Bs, M Ms](x, y T, a A, b B, m M, u uint) {
+	_ = x/y + T(f())           // 29: not normal: the division may panic
+	_ = u<<y + uint(f())       // 30: not normal: y may be signed
+	s := a[:]                  // 31: a is now address-taken
+	h(a, f())                  // 32: not normal: f may change a through s
+	h(string(b), f())          // 33: not normal: f may change b's elements
+	h(len(m), f())             // 34: not normal: f may grow m
+	_ = s
+}
+`
+	got := nonNormal(t, src)
+	want := []int{11, 13, 14, 16, 18, 19, 29, 30, 32, 33, 34}
+	if len(got) != len(want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	for i := range got {
+		if got[i] != want[i] {
+			t.Fatalf("got %v, want %v", got, want)
+		}
+	}
+}

@@ -83,7 +83,7 @@ func newAnalysis(info *types.Info, file *ast.File) *analysis {
 				a.markAddressed(n.X)
 			}
 		case *ast.SliceExpr:
-			if _, ok := a.under(n.X).(*types.Array); ok {
+			if a.mayBeArray(n.X) {
 				a.markAddressed(n.X) // slicing an array takes its address
 			}
 		case *ast.SelectorExpr:
@@ -112,6 +112,20 @@ func enclosingFunc(stack []ast.Node) ast.Node {
 		}
 	}
 	return nil
+}
+
+// isTypeParam reports whether e's type is a type parameter: an operation on
+// it may be any of the operations its type set allows.
+func (a *analysis) isTypeParam(e ast.Expr) bool {
+	_, ok := types.Unalias(a.info.TypeOf(e)).(*types.TypeParam)
+	return ok
+}
+
+// mayBeArray reports whether e may be an array (an array, or a type parameter
+// that may be instantiated with one), whose elements are stored in e itself.
+func (a *analysis) mayBeArray(e ast.Expr) bool {
+	_, ok := a.under(e).(*types.Array)
+	return ok || a.isTypeParam(e)
 }
 
 func (a *analysis) under(e ast.Expr) types.Type {
@@ -149,7 +163,7 @@ func (a *analysis) markAddressed(e ast.Expr) {
 			e = x.X
 			continue
 		case *ast.IndexExpr:
-			if _, ok := a.under(x.X).(*types.Array); ok {
+			if a.mayBeArray(x.X) {
 				e = x.X
 				continue
 			}
@@ -243,9 +257,12 @@ func (a *analysis) events(n ast.Node) []ast.Expr {
 // call could change (a variable other than a safe local, through a pointer, a
 // slice or map element, a channel's or map's size, the elements a conversion
 // from a slice copies), and those that can panic (an index or slice
-// expression's bounds, a nil pointer, a failed type assertion, an integer
-// division by a variable, a signed shift count, a comparison of interfaces, a
-// conversion from a slice to an array). A panic is a stuck state of the model,
+// expression's bounds, a nil pointer, a nil interface's method, a failed type
+// assertion, an integer division by a variable, a signed shift count, a
+// comparison of interfaces, a conversion from a slice to an array, make with a
+// variable size, unsafe.Slice and unsafe.String, a map literal with interface
+// keys). An operand whose type is a type parameter counts as any type in its
+// type set. A panic is a stuck state of the model,
 // which a verified program never reaches along the order goose translates; a
 // compiler must not reach it along another, for instance before a call that
 // in the model runs first and never returns. Address computations (&x.f,
@@ -354,16 +371,31 @@ func (a *analysis) sharedReads(n ast.Node) []ast.Node {
 				}
 			}
 		case *ast.CallExpr:
-			if b := a.builtinName(x); (b == "len" || b == "cap") && len(x.Args) == 1 {
+			switch b := a.builtinName(x); b {
+			case "len", "cap":
 				switch a.under(x.Args[0]).(type) {
-				case *types.Chan, *types.Map:
+				case *types.Chan, *types.Map, *types.Interface: // an interface: a type parameter
 					reads = append(reads, x)
 				}
+			case "make":
+				for _, n := range x.Args[1:] {
+					if tv := a.info.Types[n]; tv.Value == nil {
+						reads = append(reads, x) // a negative or too large size panics
+						break
+					}
+				}
+			case "Slice", "String": // unsafe: a negative or too large length, a nil pointer
+				reads = append(reads, x)
 			}
 			if a.isConversion(x) && len(x.Args) == 1 {
-				if _, fromSlice := a.under(x.Args[0]).(*types.Slice); fromSlice {
+				_, fromSlice := a.under(x.Args[0]).(*types.Slice)
+				if fromSlice || a.isTypeParam(x.Args[0]) {
 					reads = append(reads, x) // copies (or checks the length of) the elements
 				}
+			}
+		case *ast.CompositeLit:
+			if m, ok := a.under(x).(*types.Map); ok && hasInterface(m.Key(), nil) {
+				reads = append(reads, x) // hashing an unhashable dynamic key panics
 			}
 		}
 		children(e)
@@ -402,7 +434,8 @@ func isArray(t types.Type) bool {
 
 // mayPanic reports whether the binary operation x can panic: an integer
 // division or remainder by a non-constant, a shift by a non-constant signed
-// count, or a comparison of values with interfaces in them.
+// count, or a comparison of values with interfaces in them (for a type
+// parameter, if some type in its type set can).
 func (a *analysis) mayPanic(x *ast.BinaryExpr) bool {
 	if tv, ok := a.info.Types[x]; ok && tv.Value != nil {
 		return false // constant
@@ -411,11 +444,11 @@ func (a *analysis) mayPanic(x *ast.BinaryExpr) bool {
 	case token.QUO, token.REM:
 		b, ok := a.under(x).(*types.Basic)
 		tv := a.info.Types[x.Y]
-		return ok && b.Info()&types.IsInteger != 0 && tv.Value == nil
+		return (ok && b.Info()&types.IsInteger != 0 || a.isTypeParam(x)) && tv.Value == nil
 	case token.SHL, token.SHR:
 		b, ok := a.under(x.Y).(*types.Basic)
 		tv := a.info.Types[x.Y]
-		return ok && b.Info()&types.IsUnsigned == 0 && tv.Value == nil
+		return (ok && b.Info()&types.IsUnsigned == 0 || a.isTypeParam(x.Y)) && tv.Value == nil
 	case token.EQL, token.NEQ:
 		return hasInterface(a.info.TypeOf(x.X), nil) || hasInterface(a.info.TypeOf(x.Y), nil)
 	}
@@ -447,9 +480,12 @@ func hasInterface(t types.Type, seen map[types.Type]bool) bool {
 	return false
 }
 
-// selectionReads reports whether the selection x.f reads memory beyond x: a
-// field through a pointer, or a method with a value receiver selected through
-// a pointer (which copies *x).
+// selectionReads reports whether the selection x.f reads memory beyond x or
+// can panic: a field through a pointer, a method with a value receiver
+// selected through a pointer (which copies *x), or a method of an interface
+// (of a type parameter's constraint), which panics on a nil interface
+// ("calling or evaluating x.f causes a run-time panic") and, for a type
+// parameter, may copy *x.
 func (a *analysis) selectionReads(sel *types.Selection, x *ast.SelectorExpr) bool {
 	_, ptrX := a.under(x.X).(*types.Pointer)
 	if sel.Kind() == types.FieldVal {
@@ -463,7 +499,7 @@ func (a *analysis) selectionReads(sel *types.Selection, x *ast.SelectorExpr) boo
 		return false
 	}
 	if _, isIface := sig.Recv().Type().Underlying().(*types.Interface); isIface {
-		return false
+		return sel.Kind() == types.MethodVal
 	}
 	return ptrX || sel.Indirect()
 }
