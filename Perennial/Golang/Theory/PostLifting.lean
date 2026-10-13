@@ -500,7 +500,9 @@ theorem rawCells_vals (l : Loc) (n : Nat) :
 /-- Pads may be overwritten by any store. -/
 theorem writeCompat_pads (enc : Encoding) (n : Nat) :
     WriteCompat enc (List.replicate n (LitV LitPad)) := by
-  cases enc <;> simp [WriteCompat, List.mem_replicate] <;> intros <;> simp_all
+  cases enc with
+  | word _ => simp [WriteCompat, List.mem_replicate]
+  | cell _ => left; simp [List.mem_replicate]
 
 /-- The cells of an encoded value may be overwritten by a store of the same encoding. -/
 theorem encode_writeCompat {enc : Encoding} {v : val} {vs : List val}
@@ -512,14 +514,7 @@ theorem encode_writeCompat {enc : Encoding} {v : val} {vs : List val}
     simp only [WriteCompat, List.mem_map]
     rintro _ ⟨b, -, rfl⟩; exact .inl ⟨b, rfl⟩
   | cell k =>
-    simp only [encode] at h
-    split at h
-    · rename_i hk; cases h
-      simp only [WriteCompat, List.mem_cons, List.mem_replicate]
-      rintro w (rfl | ⟨-, rfl⟩) b hb
-      · subst hb; exact absurd hk.2.1 (by simp [byteOf?])
-      · cases hb
-    · cases h
+    right; rw [decode_encode h]; rfl
 
 theorem pointstoVals_non_null (l : Loc) (q : DFrac) (vs : List val) (hne : vs ≠ []) :
     pointstoVals l q vs ⊢ (pointstoVals l q vs ∗ ⌜l.locCar ≠ 0⌝ : IProp GF) := by
@@ -864,9 +859,11 @@ instance [GoGlobalContext] : CellHeadType GoSlice := ⟨GoGlobalContext.intoVal_
 instance [GoGlobalContext] : CellHeadType GoFunc := ⟨GoGlobalContext.intoVal_head_func⟩
 instance [GoGlobalContext] : CellHeadType GoInterface := ⟨GoGlobalContext.intoVal_head_interface⟩
 
-theorem encode_cell (k : Nat) (hk : 1 ≤ k) {V : Type} [CellHeadType V] (v : V) :
+theorem encode_cell (k : Nat) (hk : 2 ≤ k) {V : Type} [CellHeadType V] (v : V) :
     ∃ vs, encode (.cell k) #v = some vs :=
-  ⟨#v :: List.replicate (k - 1) (LitV LitTail), by simp [encode, hk, CellHeadType.head v]⟩
+  ⟨#v :: tails k, by
+    have h : CellHeadOf k #v := ⟨by omega, CellHeadType.head v, fun h => by omega⟩
+    simp only [encode, if_pos h]⟩
 
 include hG in
 theorem encode_w64 (v : w64) : ∃ vs, encode (.word 8) #v = some vs := by
@@ -880,6 +877,13 @@ theorem encode_w16 (v : w16) : ∃ vs, encode (.word 2) #v = some vs := by
 include hG in
 theorem encode_w8 (v : w8) : ∃ vs, encode (.word 1) #v = some vs := by
   rw [go.intoVal_unfold w8]; exact ⟨_, rfl⟩
+include hG in
+theorem encode_bool (v : Bool) : encode (.cell 1) #v = some [ #v ] := by
+  rw [go.intoVal_unfold Bool]
+  simp [encode, CellHeadOf, IsCellHead, isTail, isBoolLit, byteOf?, tails]
+
+include hG in
+theorem encode_bool' (v : Bool) : ∃ vs, encode (.cell 1) #v = some vs := ⟨_, encode_bool (hG := hG) v⟩
 
 instance typedPointsto_loc : TypedPointsto (GF := GF) Loc :=
   encTypedPointsto Loc (.cell 8) go.intoVal_inj (fun v => encode_cell 8 (by decide) v)
@@ -1053,8 +1057,7 @@ macro "solve_into_val_typed" enc:term:max henc:term:max hsize:term:max halign:te
 theorem typedPointstoDef_bool (l : Loc) (v : Bool) (dq : DFrac) :
     @typedPointstoDef GF Bool typedPointsto_bool l v dq ⊣⊢
       pointstoVals l dq (encodeVals (.cell 1) #v) := by
-  have h1 : encode (.cell 1) (#v : val) = some [ (#v : val) ] := by
-    simp [encode, CellHeadType.head v]
+  have h1 : encode (.cell 1) (#v : val) = some [ (#v : val) ] := encode_bool (hG := hG) v
   rw [encodeVals_eq h1,
     typedPointstoDef_heap]
   exact (pointstoVals_single l dq _).symm

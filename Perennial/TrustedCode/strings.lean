@@ -55,6 +55,36 @@ noncomputable def Builder.String.impl : val :=
     Builder.String.lockBytes "buf" #(W64 0) ;;
     Convert (go.SliceType go.byte) go.string "buf"
 
+/-- Model of (strings/builder.go)
+
+```go
+func (b *Builder) copyCheck() {
+	if b.addr == nil {
+		// This hack works around a failing of Go's escape analysis
+		// that was causing b to escape and be heap allocated.
+		// See issue 23382.
+		// TODO: once issue 7921 is fixed, this should be reverted to
+		// just "b.addr = b".
+		b.addr = (*Builder)(abi.NoEscape(unsafe.Pointer(b)))
+	} else if b.addr != b {
+		panic("strings: illegal use of non-zero Builder copied by value")
+	}
+}
+```
+
+Goose translates it, but the semantics does not convert an `unsafe.Pointer` to a
+`*Builder` (`go.Reinterpretable`: a `Builder` holds a pointer). The conversion is a round
+trip of `b` (`abi.NoEscape` returns its argument), so the model stores `b`, the comment's
+`b.addr = b`. The panic is stuck in the model (a spec shows `addr` is unset or `b`). -/
+noncomputable def Builder.copyCheck.impl : val :=
+  λ: "b" <>,
+    let: "addr" := StructFieldRef (go.GoType.Named go!"strings.Builder" []) go!"addr" "b" in
+    let: "a" := ![go.PointerType (go.GoType.Named go!"strings.Builder" [])] "addr" in
+    if: "a" =⟨go.PointerType (go.GoType.Named go!"strings.Builder" [])⟩ #null then
+      "addr" <-[go.PointerType (go.GoType.Named go!"strings.Builder" [])] "b"
+    else if: "a" =⟨go.PointerType (go.GoType.Named go!"strings.Builder" [])⟩ "b" then #()
+    else Panic "strings: illegal use of non-zero Builder copied by value"
+
 end code
 end strings
 

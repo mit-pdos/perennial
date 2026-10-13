@@ -301,7 +301,7 @@ def BaseLit.toTree : BaseLit → GenTree
   | .LitLoc x0 => node 8 [of x0]
   | .LitProphecy x0 => node 9 [of x0]
   | .LitSlice x0 => node 10 [of x0]
-  | .LitTail => node 11 []
+  | .LitTail x0 x1 => node 11 [of x0, of x1]
   | .LitPad => node 12 []
 def BaseLit.ofTree : GenTree → BaseLit
   | node 0 [x0] => .LitInt (decLeaf x0)
@@ -315,7 +315,7 @@ def BaseLit.ofTree : GenTree → BaseLit
   | node 8 [x0] => .LitLoc (decLeaf x0)
   | node 9 [x0] => .LitProphecy (decLeaf x0)
   | node 10 [x0] => .LitSlice (decLeaf x0)
-  | node 11 [] => .LitTail
+  | node 11 [x0, x1] => .LitTail (decLeaf x0) (decLeaf x1)
   | node 12 [] => .LitPad
   | _ => default
 instance BaseLit.countable : Pos.Countable BaseLit :=

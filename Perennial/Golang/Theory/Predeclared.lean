@@ -45,7 +45,7 @@ instance intoVal_typed_int8 : IntoValTypedUnderlying (GF := GF) w8 go.int8 := by
 instance intoVal_typed_int : IntoValTypedUnderlying (GF := GF) w64 go.int := by
   solve_into_val_typed (Encoding.word 8) (encode_w64 (hG := hG)) go.typeSize_w64 go.typeAlign_w64
 instance intoVal_typed_bool : IntoValTypedUnderlying (GF := GF) Bool go.bool := by
-  solve_into_val_typed' (Encoding.cell 1) (fun v => encode_cell 1 (by decide) v) go.typeSize_bool
+  solve_into_val_typed' (Encoding.cell 1) (encode_bool' (hG := hG)) go.typeSize_bool
     go.typeAlign_bool typedPointstoDef_bool
 instance intoVal_typed_string : IntoValTypedUnderlying (GF := GF) GoString go.string := by
   solve_into_val_typed (Encoding.cell 16) (fun v => encode_cell 16 (by decide) v) go.typeSize_string go.typeAlign_string

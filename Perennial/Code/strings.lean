@@ -341,33 +341,6 @@ noncomputable def CutPrefix [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def CutSuffix [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"strings.CutSuffix"
 
-/-- copyCheck implements a dynamic check to prevent modification after
-    copying a non-zero Builder, which would be unsafe (see #25907, #47276).
-
-    We cannot add a noCopy field to Builder, to cause vet's copylocks
-    check to report copying, because copylocks cannot reliably
-    discriminate the zero and nonzero cases.
-
-    go: builder.go:32:19 -/
-noncomputable def Builder.copyCheck.impl [FfiSyntax] [GoGlobalContext] : val :=
-  (LamV "b"
-  (Lam BAnon
-  (App (Val exceptionDo)
-  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Builder.ty)))) (Var "b"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType Builder.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (App (Val (GoInstruction (StructFieldRef Builder.ty go!"addr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b")))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType Builder.ty)))) (Val UntypedNil)))))
-  (Let "$r0" (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType Builder.ty)))) (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Builder.ty) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b")))
-  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.abi.NoEscape []))) (Val #())) (Var "$a0"))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Builder.ty)))) (Pair (App (Val (GoInstruction (StructFieldRef Builder.ty go!"addr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b"))) (Var "$r0")))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType Builder.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (App (Val (GoInstruction (StructFieldRef Builder.ty go!"addr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b")))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b"))))))
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"strings: illegal use of non-zero Builder copied by value")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))
-  (App (Val doExecute)
-  (Val #())))))))))
-
 /-- grow copies the buffer to a new, larger buffer so that there are at least n
     bytes of capacity beyond len(b.buf).
 

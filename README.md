@@ -82,15 +82,15 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   (`GooseLang/Lang.lean`, `Encoding`): an integer or float of `n` bytes is
   stored as its `n` little-endian bytes (`LitByte`), and a value with no byte
   representation (a pointer, string, slice, interface, func, map, chan, `bool`)
-  as itself in its first cell followed by `LitTail` cells; padding and fresh
-  cells are `LitPad`. Typed loads and stores go through multi-cell primitives
+  as itself in its first cell followed by tails `LitTail k i` that record its
+  size and position; padding and fresh cells are `LitPad`. Typed loads and stores go through multi-cell primitives
   that detect races cell by cell (`StartReadN`/`FinishReadN`,
   `PrepareWriteN`/`FinishStoreN`: two unsynchronized accesses that overlap, one
   of them a write, are stuck). A load of cells that do not hold a value of its
-  encoding is stuck (`decode`: bytes read as a pointer, a value's tails read from
-  their middle, a pad), and so is a store of bytes over a non-byte value or of a
-  non-byte value over bytes (`WriteCompat`: Go's garbage collector would read
-  the bytes as a pointer, or not trace the pointer). Atomic operations (`LoadN`,
+  encoding is stuck (`decode`: bytes read as a pointer, part of a longer value, a
+  pad), and so is a store of bytes over a non-byte value, or of a non-byte value
+  over anything but pads or one whole value of its encoding (`WriteCompat`: Go's
+  garbage collector would read the bytes as a pointer, or not trace the pointer). Atomic operations (`LoadN`,
   `SwapN`, `AddN`, `CmpXchgN`, used by `sync/atomic` and `sync`) are stuck
   unless the location is aligned to the encoding (`Aligned`), as amd64 makes
   a misaligned atomic non-atomic; an allocation is aligned to its type
@@ -100,7 +100,8 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `Golang/Theory/Align.lean`). A zero-size allocation is any non-null aligned
   location (gc gives them all `runtime.zerobase`). The lock models
   (`sync.Mutex`, goose_lang/primitive's `Mutex`) have gc's layout (`go.mutex`,
-  `Golang/Defn/Mutex.lean`: 8 bytes, aligned to 4, the lock in the first cell),
+  `Golang/Defn/Mutex.lean`: one 8-byte value aligned to 4, the lock in its first
+  cell),
   so every struct's field offsets are gc's. Package `unsafe`
   (`go.UnsafeSemantics`): `Sizeof`, `Alignof` and `Offsetof` are constants;
   `uintptr(p)` is an unspecified address in `[8, 2^48)` congruent to `p`'s offset
@@ -113,10 +114,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   operands, which goose emits as it) is stuck unless the result is a cell of
   `p`'s allocation; `unsafe.Slice` checks what `runtime.unsafeslice` checks, and
   that the slice lies in `ptr`'s allocation; `(*T)(p)` for an `unsafe.Pointer`
-  `p` keeps the location, and is stuck unless `T` is `go.Reinterpretable`
-  (numbers, `bool`, strings, pointers, slices, and arrays and structs of them;
-  not interfaces, maps, channels or funcs, whose model representation does not
-  depend on their type as Go's does). Any other conversion of a `uintptr` to a
+  `p` keeps the location, and is stuck unless `p` is `nil` or `T` is
+  `go.Reinterpretable` (numbers, `bool`, strings, and slices, arrays and structs
+  of them; not pointers, which could reach the model's representation of a map
+  or a channel, nor interfaces, maps, channels or funcs, whose model
+  representation does not depend on their type as Go's does). Any other conversion of a `uintptr` to a
   pointer is stuck. A model may be less defined than Go: what is stuck here is
   what a proof shows does not happen.
 * **Evaluation order.** The Go spec orders a statement's calls and receives

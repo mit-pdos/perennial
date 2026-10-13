@@ -90,9 +90,10 @@ inductive BaseLit where
   | LitLoc (l : Loc)
   | LitProphecy (p : proph_id)
   | LitSlice (s : GoSlice)
-  /-- One of the cells after the first of a value that is not represented as bytes
-  (`Encoding.cell`). No load decodes it as a value of its own (`decode`). -/
-  | LitTail
+  /-- The cell `i` (`1 ≤ i < k`) of a value of `k` cells that is not represented as bytes
+  (`Encoding.cell k`): the tails say where their value starts and ends, so that no load
+  or store takes part of a value for a whole one (`decode`, `WriteCompat`). -/
+  | LitTail (k i : Nat)
   /-- A cell that holds no value: padding, or a cell of a fresh allocation before its
   first store (Go leaves padding unspecified). No load decodes it. -/
   | LitPad
@@ -104,7 +105,7 @@ inductive Encoding where
   /-- the `n` little-endian bytes (`LitByte` cells) of an integer of `n ∈ {1, 2, 4, 8}`
   bytes -/
   | word (n : Nat)
-  /-- the whole value in the first cell and a `LitTail` in each of the `k - 1` cells after
+  /-- the whole value in the first cell and its `LitTail`s in the `k - 1` cells after
   it: a value of size `k ≥ 1` that is not represented as bytes (a pointer, a string, …) -/
   | cell (k : Nat)
 deriving DecidableEq
@@ -457,11 +458,21 @@ def byteOf? [FfiSyntax] : val → Option w8
   | LitV (LitByte b) => some b
   | _ => none
 
+/-- Whether a cell is a tail. -/
+def isTail [FfiSyntax] : val → Bool
+  | LitV (LitTail _ _) => true
+  | _ => false
+
+/-- Whether a value is a `bool`'s. -/
+def isBoolLit [FfiSyntax] : val → Bool
+  | LitV (LitBool _) => true
+  | _ => false
+
 /-- `v` can be the first cell of an `Encoding.cell` value: it is not a byte, a tail or a
 pad. The values of the types with a cell encoding are cell heads
 (`GoGlobalContext.intoVal_head_loc`, ...). -/
 def IsCellHead [FfiSyntax] (v : val) : Prop :=
-  byteOf? v = none ∧ v ≠ LitV LitTail ∧ v ≠ LitV LitPad
+  byteOf? v = none ∧ isTail v = false ∧ v ≠ LitV LitPad
 
 noncomputable instance [FfiSyntax] (v : val) : Decidable (IsCellHead v) :=
   inferInstanceAs (Decidable (_ ∧ _ ∧ _))
@@ -807,32 +818,43 @@ def wordLitZ? (n : Nat) (v : val) : Option Int :=
   | 8, LitV (LitInt x) => some x.toNat
   | _, _ => none
 
+/-- The tails of a value of `k` cells. -/
+def tails (k : Nat) : List val := (List.range (k - 1)).map fun i => LitV (LitTail k (i + 1))
+
+/-- `v` can be the first cell of a `cell k` value: a cell head, and a `bool` if `k = 1` (the
+only type of one cell that is not a byte). -/
+def CellHeadOf [FfiSyntax] (k : Nat) (v : val) : Prop :=
+  1 ≤ k ∧ IsCellHead v ∧ (k = 1 → isBoolLit v = true)
+
+noncomputable instance [FfiSyntax] (k : Nat) (v : val) : Decidable (CellHeadOf k v) :=
+  inferInstanceAs (Decidable (_ ∧ _ ∧ _))
+
 /-- The cells of `v` under encoding `enc`, if `v` has that encoding. -/
 noncomputable def encode : Encoding → val → Option (List val)
   | .word n, v => (wordLitZ? n v).map fun z => (leBytes n z).map fun b => LitV (LitByte b)
-  | .cell k, v =>
-    if 1 ≤ k ∧ IsCellHead v then some (v :: List.replicate (k - 1) (LitV LitTail)) else none
+  | .cell k, v => if CellHeadOf k v then some (v :: tails k) else none
 
 /-- The value that the cells `cs` hold under encoding `enc`, if they hold one: for a word,
-`n` bytes; for a `cell k` value, a cell head (`IsCellHead`) followed by `k - 1` tails.
-Anything else (bytes read as a pointer, the tails of a value read from their middle, a
-pad) is no value: the load is stuck. -/
+`n` bytes; for a `cell k` value, a head (`CellHeadOf`) followed by its `k - 1` tails.
+Anything else (bytes read as a pointer, part of a longer value, a pad) is no value: the
+load is stuck. -/
 noncomputable def decode : Encoding → List val → Option val
   | .word n, cs =>
     if n = 1 ∨ n = 2 ∨ n = 4 ∨ n = 8 then
       (cs.mapM byteOf?).bind fun bs => if bs.length = n then some (wordLit n (leInt bs)) else none
     else none
   | .cell k, [] => none
-  | .cell k, v :: ts =>
-    if IsCellHead v ∧ ts = List.replicate (k - 1) (LitV LitTail) then some v else none
+  | .cell k, v :: ts => if CellHeadOf k v ∧ ts = tails k then some v else none
 
 /-- A non-atomic store under encoding `enc` may overwrite the cells holding `vs`: a word
-only bytes and pads, a cell value no bytes. So a store through a pointer reinterpreted by
-`unsafe` cannot put bytes into the cells of a pointer (which Go's garbage collector would
-then read as a pointer) nor a pointer into bytes (which it would not trace). -/
+only bytes and pads; a cell value only pads (a fresh allocation's) or one whole value of
+the same encoding. So a store through memory reinterpreted by `unsafe` cannot put bytes
+into a value's cells (a pointer's, which Go's garbage collector reads as a pointer), nor
+a value into bytes, padding or part of another value (which the collector would not
+trace as a pointer). -/
 def WriteCompat : Encoding → List val → Prop
   | .word _, vs => ∀ v ∈ vs, (∃ b, v = LitV (LitByte b)) ∨ v = LitV LitPad
-  | .cell _, vs => ∀ v ∈ vs, ∀ b, v ≠ LitV (LitByte b)
+  | .cell k, vs => (∀ v ∈ vs, v = LitV LitPad) ∨ (decode (.cell k) vs).isSome
 
 /-- The cells `l, l +ₗ 1, …` of the heap `h` are `cs`. -/
 def CellsAt (h : GMap Loc (NonAtomic val)) (l : Loc) (cs : List (NonAtomic val)) : Prop :=

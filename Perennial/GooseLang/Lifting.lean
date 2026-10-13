@@ -2147,7 +2147,7 @@ theorem encode_length {enc : Encoding} {v : val} {vs : List val} (h : encode enc
   | cell k =>
     simp only [encode] at h
     split at h
-    · cases h; simp [Encoding.size]; omega
+    · rename_i hk; cases h; simp [Encoding.size, tails]; have := hk.1; omega
     · cases h
 
 theorem wordLitZ?_spec {n : Nat} {v : val} {z : Int} (h : wordLitZ? n v = some z) :
@@ -2190,7 +2190,7 @@ theorem decode_encode {enc : Encoding} {v : val} {vs : List val} (h : encode enc
   | cell k =>
     simp only [encode] at h
     split at h
-    · rename_i hk; cases h; simp [decode, hk.2]
+    · rename_i hk; cases h; simp [decode, hk]
     · cases h
 
 /-- An encoding is never empty. -/

@@ -160,13 +160,14 @@ variable [FfiSyntax] [GoSemanticsFunctions]
 
 mutual
 /-- `Reinterpretable t`: memory reached through an `unsafe.Pointer` may be accessed as a `t`
-(the conversion `(*t)(p)`, `UnsafeSemantics.convert_unsafe_to_pointer`). Its values are
-bytes, or values whose Go representation the model's memory keeps apart (`decode` checks
-the cells, `WriteCompat` the stores): numbers, `bool`, strings, pointers, `unsafe.Pointer`,
-slices, and arrays and structs of them. Not interfaces, maps, channels or functions, which
-the model represents by the same value whatever their (static) type, where Go's
-representation depends on it (an interface's method table, a map's key type): reading one
-type's memory as another would be defined in the model where Go reads garbage. -/
+(the conversion `(*t)(p)`, `UnsafeSemantics.convert_unsafe_to_pointer`): numbers, `bool`,
+strings, and slices, arrays and structs of them. The model's memory keeps these apart where
+Go's does (`decode` checks the cells, `WriteCompat` the stores). Not pointers or
+`unsafe.Pointer`s, which could read the location inside a map or a channel (a `Loc` in the
+model, like a pointer) and reach the model's representation of it; not interfaces, maps,
+channels or functions, which the model represents by the same value whatever their static
+type, where Go's representation depends on it (an interface's method table, a map's key
+type). -/
 inductive Reinterpretable : go.GoType → Prop
   | uint8 : Reinterpretable go.uint8
   | uint16 : Reinterpretable go.uint16
@@ -183,9 +184,7 @@ inductive Reinterpretable : go.GoType → Prop
   | float64 : Reinterpretable go.float64
   | bool : Reinterpretable go.bool
   | string : Reinterpretable go.string
-  | unsafePointer : Reinterpretable «unsafe».Pointer
-  | pointer (t : go.GoType) : Reinterpretable (go.PointerType t)
-  | slice (t : go.GoType) : Reinterpretable (go.SliceType t)
+  | slice (t : go.GoType) (h : Reinterpretable t) : Reinterpretable (go.SliceType t)
   | array (n : Int) (t : go.GoType) (h : Reinterpretable t) : Reinterpretable (go.ArrayType n t)
   | struct (fds fds' : List go.field_decl) (heq : EqualsUnfold fds fds')
       (h : ReinterpretableFields fds') : Reinterpretable (go.StructType fds)
@@ -205,11 +204,11 @@ attribute [instance] Reinterpretable.uint8 Reinterpretable.uint16 Reinterpretabl
   Reinterpretable.uint64 Reinterpretable.uint Reinterpretable.uintptr Reinterpretable.int8
   Reinterpretable.int16 Reinterpretable.int32 Reinterpretable.int64 Reinterpretable.int
   Reinterpretable.float32 Reinterpretable.float64 Reinterpretable.bool Reinterpretable.string
-  Reinterpretable.unsafePointer Reinterpretable.pointer Reinterpretable.slice
   ReinterpretableFields.nil
 
 instance (n : Int) (t : go.GoType) [h : Reinterpretable t] : Reinterpretable (go.ArrayType n t) :=
   .array n t h
+instance (t : go.GoType) [h : Reinterpretable t] : Reinterpretable (go.SliceType t) := .slice t h
 instance (fds fds' : List go.field_decl) [heq : EqualsUnfold fds fds'] [h : ReinterpretableFields fds'] :
     Reinterpretable (go.StructType fds) := .struct fds fds' heq h
 instance (priority := low) (t u : go.GoType) [hu : IsUnderlying t u] [h : Reinterpretable u] :
@@ -1178,6 +1177,9 @@ class UnsafeSemantics [GoSemanticsFunctions] : Prop where
   (`Reinterpretable`); any other is stuck. -/
   convert_unsafe_to_pointer (elem : go.GoType) [Reinterpretable elem] (l : Loc) :
     ⟦Convert unsafe.Pointer (go.PointerType elem), #l⟧ ⤳[under] #l
+  /-- `(*t)(nil)` is `nil`, for any `t` (nothing is reinterpreted). -/
+  convert_unsafe_nil_to_pointer (elem : go.GoType) :
+    ⟦Convert unsafe.Pointer (go.PointerType elem), #null⟧ ⤳[under] #null
   /-- `uintptr(p)`: `0` for `nil`, else an unspecified address (`pointerAddr`). -/
   convert_pointer_to_uintptr (l : Loc) :
     ⟦Convert «unsafe».Pointer go.uintptr, #l⟧ ⤳[under]
@@ -1233,9 +1235,11 @@ class UnsafeSemantics [GoSemanticsFunctions] : Prop where
           InternalMakeSlice ("p", "n", "n"))) : val)
 
 attribute [instance] UnsafeSemantics.convert_unsafe_to_pointer
+  UnsafeSemantics.convert_unsafe_nil_to_pointer
   UnsafeSemantics.convert_pointer_to_uintptr UnsafeSemantics.ptr_diff
   UnsafeSemantics.add_unfold UnsafeSemantics.slice_unfold
-export UnsafeSemantics (convert_unsafe_to_pointer convert_pointer_to_uintptr ptr_diff add_unfold
+export UnsafeSemantics (convert_unsafe_to_pointer convert_unsafe_nil_to_pointer
+  convert_pointer_to_uintptr ptr_diff add_unfold
   slice_unfold)
 
 class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
