@@ -57,6 +57,23 @@ or trust, and bootstrapping options. `-lean-root PKG=ROOT` places the modules
 of the packages under Go path `PKG` under the Lean module root `ROOT` instead
 of `Perennial`, for projects that translate their own Go packages.
 
+### Evaluation order and building verified programs
+
+goose translates each package after rewriting it into Perennial's evaluation
+order (`order/`, see the README's "Evaluation order"), and checks that every
+statement it translates is in normal form. A verified program must be
+compiled with the same rewrite:
+
+```
+go install github.com/mit-pdos/perennial/goose/cmd/perennial-order
+go build -toolexec=perennial-order ./...   # or go test, go run
+```
+
+Use a `perennial-order` built from the same commit as the goose that
+produced the translation. It rewrites every package in the build (standard
+library and runtime included) in a temporary directory, so the source tree is
+untouched, and keys the build cache by its own hash.
+
 ## Developing goose
 
 The translation from Go is in `goose.go` (expressions and statements),

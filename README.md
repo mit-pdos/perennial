@@ -76,6 +76,32 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `uintptr` (`go.UintptrSemantics`, `Perennial/Golang/Defn/Predeclared.lean`)
   is an integer type like `uint64`. Pointer/`unsafe.Pointer` to/from `uintptr`
   conversions are not modelled: they are stuck.
+* **Evaluation order.** The Go spec orders a statement's calls and receives
+  (left to right) but leaves the other reads of its operands unordered
+  relative to them, and compilers differ: gc reads `m[0]` in `m[0] + f()`
+  after `f` runs, and before it under `-race`. Perennial fixes one order and
+  compiles with it. Within a statement, its *events* (calls that are not
+  conversions or pure builtins, and receives) run first, in lexical
+  left-to-right order, each after its own operands; then the rest of the
+  statement is evaluated and its assignments are carried out.
+  `goose/order` implements it as a source rewrite: a statement is in *normal
+  form* when every read of state that a call could change is ordered with
+  every event by the spec, so that all orders agree on it (1.2% of the
+  standard library's statements are not); `order.Rewrite` turns the others
+  into statements in normal form by hoisting their events into temporaries
+  (`_orderN`, which goose translates as ordinary locals). goose translates the
+  rewritten source, and **binaries must be built with the same rewrite**:
+  `go build -toolexec=perennial-order` (`goose/cmd/perennial-order`, built
+  from the same commit as the goose that produced the translation) rewrites
+  every package it compiles, runtime and standard library included, without
+  writing anything to the source tree. What is trusted is goose's check that
+  every statement it translates is in normal form (`order.CheckFile`, the
+  definition of the normal form in `goose/order/normal.go`), and that the
+  wrapper compiles the rewrite of the same source; the rewriter itself is not:
+  a rewriter bug is a goose error, not an unsound translation. goose loads
+  code with the build tag `goose` and `GOARCH=amd64`; a file whose types
+  differ between that configuration and the real build may be rewritten
+  differently.
 * **Model assumptions (overflow).** Where Go panics on an overflow that a real
   program cannot reach (it would run out of memory first), the model assumes the
   overflow does not happen, with `assume` (`Golang/Defn/Assume.lean`: an

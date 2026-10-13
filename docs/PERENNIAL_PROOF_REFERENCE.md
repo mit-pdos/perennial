@@ -208,6 +208,13 @@ and after `wp_auto`:
 
 (`GoString` literals are displayed as byte lists: `[98#8]` is `go!"b"`.)
 
+Translated code is in Perennial's evaluation order (README, "Evaluation
+order"): a statement whose order the Go spec leaves open is rewritten before
+translation, its calls bound to locals `_order1`, `_order2`, ... in the order
+they run (`x := a[i] + f()` becomes `_order1 := f(); x := a[i] + _order1`).
+They are ordinary locals: `wp_auto` allocates, stores and loads them like any
+other.
+
 ### `wp_func_call`, `wp_method_call`
 
 `Auto.lean`. Rewrite the next `#(functions f ts)` (resp. `#(methods t m v)`)

@@ -479,10 +479,15 @@ noncomputable def HelloWorldAsync.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve sys_hello_world []))) (Val #())) (Val #()))
+  (Let "_order1" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Var "ch"))
-  (Let "$v" (App (App (Val (GoInstruction (FuncResolve sys_hello_world []))) (Val #())) (Val #()))
-  (App (App (Val (chan.send go.string)) (Var "$chan")) (Var "$v"))))))))
+  (Let "$v" (App (Val (GoInstruction (GoLoad go.string))) (Var "_order1"))
+  (App (App (Val (chan.send go.string)) (Var "$chan")) (Var "$v")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order1") (Var "$r0"))))))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Var "ch")))))
@@ -935,33 +940,48 @@ noncomputable def Google.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (App (Val doExecute)
-  (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Var "c"))
-  (Let "$v" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "query"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "query"))
   (App (App (Val (GoInstruction (FuncResolve Web []))) (Val #())) (Var "$a0")))
-  (App (App (Val (chan.send go.string)) (Var "$chan")) (Var "$v"))))))))
+  (Let "_order1" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Var "c"))
+  (Let "$v" (App (Val (GoInstruction (GoLoad go.string))) (Var "_order1"))
+  (App (App (Val (chan.send go.string)) (Var "$chan")) (Var "$v")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order1") (Var "$r0"))))))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$go" (Lam BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (App (Val doExecute)
-  (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Var "c"))
-  (Let "$v" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "query"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "query"))
   (App (App (Val (GoInstruction (FuncResolve Image []))) (Val #())) (Var "$a0")))
-  (App (App (Val (chan.send go.string)) (Var "$chan")) (Var "$v"))))))))
+  (Let "_order2" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Var "c"))
+  (Let "$v" (App (Val (GoInstruction (GoLoad go.string))) (Var "_order2"))
+  (App (App (Val (chan.send go.string)) (Var "$chan")) (Var "$v")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order2") (Var "$r0"))))))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$go" (Lam BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "query"))
+  (App (App (Val (GoInstruction (FuncResolve Video []))) (Val #())) (Var "$a0")))
+  (Let "_order3" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Var "c"))
-  (Let "$v" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "query"))
-  (App (App (Val (GoInstruction (FuncResolve Video []))) (Val #())) (Var "$a0")))
-  (App (App (Val (chan.send go.string)) (Var "$chan")) (Var "$v"))))))))
+  (Let "$v" (App (Val (GoInstruction (GoLoad go.string))) (Var "_order3"))
+  (App (App (Val (chan.send go.string)) (Var "$chan")) (Var "$v")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order3") (Var "$r0"))))))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (App (App (Val (GoInstruction (FuncResolve go.make3 [(go.GoType.SliceType go.string)]))) (Val #())) (Val #(W64 0))) (Val #(W64 3)))
   (Let "results" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.string)))) (Val #())))
@@ -1050,13 +1070,18 @@ noncomputable def CancellableHedgedRequest.impl [FfiSyntax] [GoGlobalContext] : 
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "query"))
+  (App (App (Val (GoInstruction (FuncResolve GetPrimary []))) (Val #())) (Var "$a0")))
+  (Let "_order1" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv Result.ty)))) (Var "c"))
-  (Let "$v" (Let "$v0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "query"))
-  (App (App (Val (GoInstruction (FuncResolve GetPrimary []))) (Val #())) (Var "$a0")))
+  (Let "$v" (Let "$v0" (App (Val (GoInstruction (GoLoad go.string))) (Var "_order1"))
   (Let "$v1" (Val #true)
   (App (Val (GoInstruction (CompositeLiteral Result.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0"))), (KeyedElement none (ElementExpression go.bool (Var "$v1")))]))))
-  (App (App (Val (chan.send Result.ty)) (Var "$chan")) (Var "$v"))))))))
+  (App (App (Val (chan.send Result.ty)) (Var "$chan")) (Var "$v")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order1") (Var "$r0"))))))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv Result.ty)))) (Var "c"))
@@ -1076,9 +1101,12 @@ noncomputable def CancellableHedgedRequest.impl [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (CompositeLiteral Result.ty))) (LiteralValue [])))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.string)))) (Var "errStr")) (Var "$r0"))))))))]))))))
-  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv Result.ty)))) (Var "c"))
-  (Let "$ch1" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Duration.ty))) (Var "threshold"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Duration.ty))) (Var "threshold"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.After []))) (Val #())) (Var "$a0")))
+  (Let "_order3" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.recvonly _root_.Perennial.time.Time.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.recvonly _root_.Perennial.time.Time.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv Result.ty)))) (Var "c"))
+  (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly _root_.Perennial.time.Time.ty)))) (Var "_order3"))
   (Let "$ch2" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Var "done"))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (RecvCase Result.ty (Var "$ch0")) (Lam "$recvVal"
   (Let "$r0" (Fst (Var "$recvVal"))
@@ -1094,13 +1122,18 @@ noncomputable def CancellableHedgedRequest.impl [FfiSyntax] [GoGlobalContext] : 
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "query"))
+  (App (App (Val (GoInstruction (FuncResolve GetSecondary []))) (Val #())) (Var "$a0")))
+  (Let "_order2" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv Result.ty)))) (Var "c"))
-  (Let "$v" (Let "$v0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "query"))
-  (App (App (Val (GoInstruction (FuncResolve GetSecondary []))) (Val #())) (Var "$a0")))
+  (Let "$v" (Let "$v0" (App (Val (GoInstruction (GoLoad go.string))) (Var "_order2"))
   (Let "$v1" (Val #false)
   (App (Val (GoInstruction (CompositeLiteral Result.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0"))), (KeyedElement none (ElementExpression go.bool (Var "$v1")))]))))
-  (App (App (Val (chan.send Result.ty)) (Var "$chan")) (Var "$v"))))))))
+  (App (App (Val (chan.send Result.ty)) (Var "$chan")) (Var "$v")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order2") (Var "$r0"))))))))))
   (App (Val doExecute)
   (Fork
   (App (Var "$go") (Val #()))))))),
@@ -1110,7 +1143,9 @@ noncomputable def CancellableHedgedRequest.impl [FfiSyntax] [GoGlobalContext] : 
   (App (Val doReturn)
   (App (Val (GoInstruction (CompositeLiteral Result.ty))) (LiteralValue [])))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.string)))) (Var "errStr")) (Var "$r0"))))))))]))))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.string)))) (Var "errStr")) (Var "$r0"))))))))])))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.recvonly _root_.Perennial.time.Time.ty)))) (Pair (Var "_order3") (Var "$r0"))))))))))
   (App (Val doExecute)
   (Fork
   (App (Var "$go") (Val #()))))))))
@@ -1249,11 +1284,16 @@ noncomputable def process.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (App (Val doExecute)
-  (Let "$opy" (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.SliceType go.byte))))) (Var "b"))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.SliceType go.byte))))) (Var "b"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.strings.ToUpper []))) (Val #())) (Var "$a0")))
+  (Let "_order1" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Let "$opy" (App (Val (GoInstruction (GoLoad go.string))) (Var "_order1"))
   (Let "$opa" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.string)))) (Var "output"))
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$opa") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "$opa")) (Var "$opy"))))))))))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$opa") (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "$opa")) (Var "$opy"))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order1") (Var "$r0")))))))))))))
 
 /-- go: leaky_buffer_unverified.go:18:6 -/
 noncomputable def client.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -1445,10 +1485,15 @@ noncomputable def Async.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
+  (Let "$r0" (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [go.string]))))) (Var "f")) (Val #()))
+  (Let "_order1" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Var "ch"))
-  (Let "$v" (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [go.string]))))) (Var "f")) (Val #()))
-  (App (App (Val (chan.send go.string)) (Var "$chan")) (Var "$v"))))))))
+  (Let "$v" (App (Val (GoInstruction (GoLoad go.string))) (Var "_order1"))
+  (App (App (Val (chan.send go.string)) (Var "$chan")) (Var "$v")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order1") (Var "$r0"))))))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Var "ch")))))
@@ -1475,11 +1520,21 @@ noncomputable def Serve.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #()))))
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
+  (Let "$r0" (Fst (App (Val (chan.receive go.string)) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (StructFieldRef stream.ty go!"req"))) (Var "s")))))
+  (Let "_order2" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "_order2"))
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [go.string] false [go.string]))))) (Var "f")) (Var "$a0")))
+  (Let "_order3" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (StructFieldRef stream.ty go!"res"))) (Var "s")))
-  (Let "$v" (Let "$a0" (Fst (App (Val (chan.receive go.string)) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (StructFieldRef stream.ty go!"req"))) (Var "s")))))
-  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [go.string] false [go.string]))))) (Var "f")) (Var "$a0")))
+  (Let "$v" (App (Val (GoInstruction (GoLoad go.string))) (Var "_order3"))
   (App (App (Val (chan.send go.string)) (Var "$chan")) (Var "$v")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order3") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "_order2") (Var "$r0")))))))))
   (Lam BAnon
   (Val #()))))))
   (App (App (Val exceptionSeq) (Lam BAnon

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"os"
 	"strings"
 	"sync"
 
@@ -11,6 +12,7 @@ import (
 
 	"github.com/mit-pdos/perennial/goose/declfilter"
 	"github.com/mit-pdos/perennial/goose/glang"
+	"github.com/mit-pdos/perennial/goose/order"
 	"github.com/mit-pdos/perennial/goose/util"
 	"golang.org/x/tools/go/packages"
 )
@@ -135,6 +137,65 @@ func (ctx *Ctx) initFile(pkg *packages.Package, config declfilter.FilterConfig) 
 	return
 }
 
+// loadOrdered loads the packages matching the patterns in Perennial's
+// evaluation order: each file is rewritten by order.Rewrite (as
+// cmd/perennial-order does when compiling) and the packages are loaded again
+// from the rewritten source, held in memory.
+//
+// Whatever the rewriter does, goose then checks that every statement it is
+// about to translate is in normal form (order.CheckFile), on which every
+// evaluation order the Go spec allows agrees: so goose's translation, which
+// evaluates in one fixed order, is the behaviour of the compiled code. A
+// statement that is not is an error.
+func loadOrdered(modDir string, patterns ...string) ([]*packages.Package, error) {
+	cfg := util.NewPackageConfig(modDir, true)
+	pkgs, err := packages.Load(cfg, patterns...)
+	if err != nil {
+		return nil, err
+	}
+	overlay := map[string][]byte{}
+	for _, pkg := range pkgs {
+		if len(pkg.Errors) > 0 || pkg.TypesInfo == nil {
+			continue // reported by translatePackage
+		}
+		for i, f := range pkg.Syntax {
+			name := pkg.CompiledGoFiles[i]
+			src, err := os.ReadFile(name)
+			if err != nil {
+				return nil, err
+			}
+			out, changed, err := order.Rewrite(pkg.Fset, pkg.Types, pkg.TypesInfo, f, src)
+			if err != nil {
+				return nil, err
+			}
+			if changed {
+				overlay[name] = out
+			}
+		}
+	}
+	if len(overlay) > 0 {
+		cfg = util.NewPackageConfig(modDir, true)
+		cfg.Overlay = overlay
+		if pkgs, err = packages.Load(cfg, patterns...); err != nil {
+			return nil, err
+		}
+	}
+	for _, pkg := range pkgs {
+		if pkg.TypesInfo == nil {
+			continue
+		}
+		for _, f := range pkg.Syntax {
+			for _, v := range order.CheckFile(pkg.TypesInfo, f) {
+				pkg.Errors = append(pkg.Errors, packages.Error{
+					Pos: pkg.Fset.Position(v.Pos).String(),
+					Msg: "statement not in normal form (evaluation order): goose/order did not rewrite it",
+				})
+			}
+		}
+	}
+	return pkgs, nil
+}
+
 // TranslatePackages loads packages by a list of patterns and translates them
 // all, producing one file per matched package.
 //
@@ -143,7 +204,7 @@ func (ctx *Ctx) initFile(pkg *packages.Package, config declfilter.FilterConfig) 
 // a syntax error.
 func TranslatePackages(configDir string, modDir string,
 	pkgPattern ...string) (files []glang.File, errs []error, patternErr error) {
-	pkgs, patternErr := packages.Load(util.NewPackageConfig(modDir, true), pkgPattern...)
+	pkgs, patternErr := loadOrdered(modDir, pkgPattern...)
 
 	if patternErr != nil {
 		return
