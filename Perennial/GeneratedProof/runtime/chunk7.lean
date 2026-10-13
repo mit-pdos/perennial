@@ -20,6 +20,358 @@ open Iris Iris.BI
 noncomputable section
 namespace runtime
 
+namespace elfPhdr
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance elfPhdr_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.elfPhdr where
+  typedPointstoDef l v dq := iprop(
+    "p_type" ∷ typedPointsto (structFieldRef runtime.elfPhdr go!"p_type" l) v.p_type' dq ∗
+    "p_flags" ∷ typedPointsto (structFieldRef runtime.elfPhdr go!"p_flags" l) v.p_flags' dq ∗
+    "p_offset" ∷ typedPointsto (structFieldRef runtime.elfPhdr go!"p_offset" l) v.p_offset' dq ∗
+    "p_vaddr" ∷ typedPointsto (structFieldRef runtime.elfPhdr go!"p_vaddr" l) v.p_vaddr' dq ∗
+    "p_paddr" ∷ typedPointsto (structFieldRef runtime.elfPhdr go!"p_paddr" l) v.p_paddr' dq ∗
+    "p_filesz" ∷ typedPointsto (structFieldRef runtime.elfPhdr go!"p_filesz" l) v.p_filesz' dq ∗
+    "p_memsz" ∷ typedPointsto (structFieldRef runtime.elfPhdr go!"p_memsz" l) v.p_memsz' dq ∗
+    "p_align" ∷ typedPointsto (structFieldRef runtime.elfPhdr go!"p_align" l) v.p_align' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance elfPhdr_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.elfPhdr runtime.elfPhdr.underlying := by
+  solve_into_val_typed_struct
+
+instance elfPhdr_access_load_p_type (l : Loc) (v : runtime.elfPhdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_type" l) v.p_type' dq)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_type" l) v.p_type' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfPhdr_access_store_p_type (l : Loc) (v : runtime.elfPhdr) (p_type' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_type" l) v.p_type' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_type" l) p_type' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with p_type' := p_type' } : runtime.elfPhdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfPhdr_access_load_p_flags (l : Loc) (v : runtime.elfPhdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_flags" l) v.p_flags' dq)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_flags" l) v.p_flags' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfPhdr_access_store_p_flags (l : Loc) (v : runtime.elfPhdr) (p_flags' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_flags" l) v.p_flags' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_flags" l) p_flags' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with p_flags' := p_flags' } : runtime.elfPhdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfPhdr_access_load_p_offset (l : Loc) (v : runtime.elfPhdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_offset" l) v.p_offset' dq)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_offset" l) v.p_offset' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfPhdr_access_store_p_offset (l : Loc) (v : runtime.elfPhdr) (p_offset' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_offset" l) v.p_offset' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_offset" l) p_offset' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with p_offset' := p_offset' } : runtime.elfPhdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfPhdr_access_load_p_vaddr (l : Loc) (v : runtime.elfPhdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_vaddr" l) v.p_vaddr' dq)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_vaddr" l) v.p_vaddr' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfPhdr_access_store_p_vaddr (l : Loc) (v : runtime.elfPhdr) (p_vaddr' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_vaddr" l) v.p_vaddr' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_vaddr" l) p_vaddr' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with p_vaddr' := p_vaddr' } : runtime.elfPhdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfPhdr_access_load_p_paddr (l : Loc) (v : runtime.elfPhdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_paddr" l) v.p_paddr' dq)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_paddr" l) v.p_paddr' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfPhdr_access_store_p_paddr (l : Loc) (v : runtime.elfPhdr) (p_paddr' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_paddr" l) v.p_paddr' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_paddr" l) p_paddr' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with p_paddr' := p_paddr' } : runtime.elfPhdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfPhdr_access_load_p_filesz (l : Loc) (v : runtime.elfPhdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_filesz" l) v.p_filesz' dq)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_filesz" l) v.p_filesz' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfPhdr_access_store_p_filesz (l : Loc) (v : runtime.elfPhdr) (p_filesz' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_filesz" l) v.p_filesz' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_filesz" l) p_filesz' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with p_filesz' := p_filesz' } : runtime.elfPhdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfPhdr_access_load_p_memsz (l : Loc) (v : runtime.elfPhdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_memsz" l) v.p_memsz' dq)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_memsz" l) v.p_memsz' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfPhdr_access_store_p_memsz (l : Loc) (v : runtime.elfPhdr) (p_memsz' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_memsz" l) v.p_memsz' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_memsz" l) p_memsz' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with p_memsz' := p_memsz' } : runtime.elfPhdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfPhdr_access_load_p_align (l : Loc) (v : runtime.elfPhdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_align" l) v.p_align' dq)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_align" l) v.p_align' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfPhdr_access_store_p_align (l : Loc) (v : runtime.elfPhdr) (p_align' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_align" l) v.p_align' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfPhdr go!"p_align" l) p_align' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with p_align' := p_align' } : runtime.elfPhdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end elfPhdr
+
+namespace elfShdr
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance elfShdr_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.elfShdr where
+  typedPointstoDef l v dq := iprop(
+    "sh_name" ∷ typedPointsto (structFieldRef runtime.elfShdr go!"sh_name" l) v.sh_name' dq ∗
+    "sh_type" ∷ typedPointsto (structFieldRef runtime.elfShdr go!"sh_type" l) v.sh_type' dq ∗
+    "sh_flags" ∷ typedPointsto (structFieldRef runtime.elfShdr go!"sh_flags" l) v.sh_flags' dq ∗
+    "sh_addr" ∷ typedPointsto (structFieldRef runtime.elfShdr go!"sh_addr" l) v.sh_addr' dq ∗
+    "sh_offset" ∷ typedPointsto (structFieldRef runtime.elfShdr go!"sh_offset" l) v.sh_offset' dq ∗
+    "sh_size" ∷ typedPointsto (structFieldRef runtime.elfShdr go!"sh_size" l) v.sh_size' dq ∗
+    "sh_link" ∷ typedPointsto (structFieldRef runtime.elfShdr go!"sh_link" l) v.sh_link' dq ∗
+    "sh_info" ∷ typedPointsto (structFieldRef runtime.elfShdr go!"sh_info" l) v.sh_info' dq ∗
+    "sh_addralign" ∷ typedPointsto (structFieldRef runtime.elfShdr go!"sh_addralign" l) v.sh_addralign' dq ∗
+    "sh_entsize" ∷ typedPointsto (structFieldRef runtime.elfShdr go!"sh_entsize" l) v.sh_entsize' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance elfShdr_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.elfShdr runtime.elfShdr.underlying := by
+  solve_into_val_typed_struct
+
+instance elfShdr_access_load_sh_name (l : Loc) (v : runtime.elfShdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_name" l) v.sh_name' dq)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_name" l) v.sh_name' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_store_sh_name (l : Loc) (v : runtime.elfShdr) (sh_name' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_name" l) v.sh_name' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_name" l) sh_name' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sh_name' := sh_name' } : runtime.elfShdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_load_sh_type (l : Loc) (v : runtime.elfShdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_type" l) v.sh_type' dq)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_type" l) v.sh_type' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_store_sh_type (l : Loc) (v : runtime.elfShdr) (sh_type' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_type" l) v.sh_type' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_type" l) sh_type' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sh_type' := sh_type' } : runtime.elfShdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_load_sh_flags (l : Loc) (v : runtime.elfShdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_flags" l) v.sh_flags' dq)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_flags" l) v.sh_flags' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_store_sh_flags (l : Loc) (v : runtime.elfShdr) (sh_flags' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_flags" l) v.sh_flags' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_flags" l) sh_flags' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sh_flags' := sh_flags' } : runtime.elfShdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_load_sh_addr (l : Loc) (v : runtime.elfShdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_addr" l) v.sh_addr' dq)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_addr" l) v.sh_addr' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_store_sh_addr (l : Loc) (v : runtime.elfShdr) (sh_addr' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_addr" l) v.sh_addr' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_addr" l) sh_addr' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sh_addr' := sh_addr' } : runtime.elfShdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_load_sh_offset (l : Loc) (v : runtime.elfShdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_offset" l) v.sh_offset' dq)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_offset" l) v.sh_offset' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_store_sh_offset (l : Loc) (v : runtime.elfShdr) (sh_offset' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_offset" l) v.sh_offset' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_offset" l) sh_offset' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sh_offset' := sh_offset' } : runtime.elfShdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_load_sh_size (l : Loc) (v : runtime.elfShdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_size" l) v.sh_size' dq)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_size" l) v.sh_size' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_store_sh_size (l : Loc) (v : runtime.elfShdr) (sh_size' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_size" l) v.sh_size' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_size" l) sh_size' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sh_size' := sh_size' } : runtime.elfShdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_load_sh_link (l : Loc) (v : runtime.elfShdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_link" l) v.sh_link' dq)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_link" l) v.sh_link' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_store_sh_link (l : Loc) (v : runtime.elfShdr) (sh_link' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_link" l) v.sh_link' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_link" l) sh_link' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sh_link' := sh_link' } : runtime.elfShdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_load_sh_info (l : Loc) (v : runtime.elfShdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_info" l) v.sh_info' dq)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_info" l) v.sh_info' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_store_sh_info (l : Loc) (v : runtime.elfShdr) (sh_info' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_info" l) v.sh_info' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_info" l) sh_info' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sh_info' := sh_info' } : runtime.elfShdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_load_sh_addralign (l : Loc) (v : runtime.elfShdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_addralign" l) v.sh_addralign' dq)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_addralign" l) v.sh_addralign' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_store_sh_addralign (l : Loc) (v : runtime.elfShdr) (sh_addralign' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_addralign" l) v.sh_addralign' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_addralign" l) sh_addralign' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sh_addralign' := sh_addralign' } : runtime.elfShdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_load_sh_entsize (l : Loc) (v : runtime.elfShdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_entsize" l) v.sh_entsize' dq)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_entsize" l) v.sh_entsize' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance elfShdr_access_store_sh_entsize (l : Loc) (v : runtime.elfShdr) (sh_entsize' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_entsize" l) v.sh_entsize' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.elfShdr go!"sh_entsize" l) sh_entsize' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sh_entsize' := sh_entsize' } : runtime.elfShdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end elfShdr
+
 namespace elfDyn
 section def_
 

@@ -119,14 +119,6 @@ class StructLayout (V : Type) (fs : outParam (List (GoString × Int × Int))) : 
   field_ref : ∀ (f : GoString) (off : Int) (l : Loc), structFieldOffset fs f = some off →
     l.locCar ≠ 0 → structFieldRef V f l = l +ₗ off
 
-/-- The struct with Lean representation `V` has no padding and no blank field: its fields'
-sizes add up to its size. Memory reinterpreted by `unsafe` may be accessed at such a type
-(`go.Reinterpretable`): a copy of it copies all its bytes, in the model as in Go, and `==`
-compares all of them. Proofs give it per struct (it is not inferred). -/
-class NoPadding (V : Type) : Prop where
-  no_padding : ∃ fs, StructLayout V fs ∧ typeSize V = (fs.map (·.2.1)).sum ∧
-    ∀ f ∈ fs, go.isBlankFieldName f.1 = false
-
 /-- The sizes and alignments of the built-in representations. -/
 class LayoutSemantics : Prop where
   typeSize_nonneg (V : Type) : 0 ≤ typeSize V

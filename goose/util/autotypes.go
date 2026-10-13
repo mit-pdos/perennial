@@ -69,6 +69,9 @@ func (c *typeTranslatability) check(t types.Type, byValue bool, top bool) {
 		}
 	case *types.TypeParam:
 	case *types.Pointer:
+		if IsProphId(t.Elem()) {
+			c.fail("pointer to a ProphId")
+		}
 		c.check(t.Elem(), false, false)
 	case *types.Slice:
 		c.check(t.Elem(), false, false)
@@ -110,11 +113,27 @@ func (c *typeTranslatability) check(t types.Type, byValue bool, top bool) {
 			c.fail("anonymous struct with fields")
 		}
 		for i := range t.NumFields() {
-			c.check(t.Field(i).Type(), true, false)
+			f := t.Field(i)
+			// what goose refuses in a struct (goose.structType)
+			if f.Name() == "_" && types.SizesFor("gc", "amd64").Sizeof(f.Type()) != 0 {
+				c.fail("blank field of non-zero size")
+			}
+			if IsProphId(f.Type()) {
+				c.fail("ProphId in a struct")
+			}
+			c.check(f.Type(), true, false)
 		}
 	default:
 		c.fail("unsupported type %T", t)
 	}
+}
+
+// IsProphId reports whether t is goose_lang/primitive's ProphId, which the model keeps in
+// memory (8 bytes) where gc's is a struct{} (0 bytes).
+func IsProphId(t types.Type) bool {
+	nt, ok := types.Unalias(t).(*types.Named)
+	return ok && nt.Obj().Pkg() != nil &&
+		nt.Obj().Pkg().Path() == "github.com/goose-lang/primitive" && nt.Obj().Name() == "ProphId"
 }
 
 func (c *typeTranslatability) checkObj(obj types.Object) {

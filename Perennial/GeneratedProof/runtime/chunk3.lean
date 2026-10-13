@@ -20,6 +20,82 @@ open Iris Iris.BI
 noncomputable section
 namespace runtime
 
+namespace metricFloat64Histogram
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance metricFloat64Histogram_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.metricFloat64Histogram where
+  typedPointstoDef l v dq := iprop(
+    "counts" ∷ typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"counts" l) v.counts' dq ∗
+    "buckets" ∷ typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"buckets" l) v.buckets' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance metricFloat64Histogram_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.metricFloat64Histogram runtime.metricFloat64Histogram.underlying := by
+  solve_into_val_typed_struct
+
+instance metricFloat64Histogram_access_load_counts (l : Loc) (v : runtime.metricFloat64Histogram) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"counts" l) v.counts' dq)
+      (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"counts" l) v.counts' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance metricFloat64Histogram_access_store_counts (l : Loc) (v : runtime.metricFloat64Histogram) (counts' : GoSlice) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"counts" l) v.counts' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"counts" l) counts' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with counts' := counts' } : runtime.metricFloat64Histogram) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance metricFloat64Histogram_access_load_buckets (l : Loc) (v : runtime.metricFloat64Histogram) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"buckets" l) v.buckets' dq)
+      (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"buckets" l) v.buckets' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance metricFloat64Histogram_access_store_buckets (l : Loc) (v : runtime.metricFloat64Histogram) (buckets' : GoSlice) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"buckets" l) v.buckets' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"buckets" l) buckets' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buckets' := buckets' } : runtime.metricFloat64Histogram) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end metricFloat64Histogram
+
+namespace finBlock
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance finBlock_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.finBlock :=
+  sorry -- axiomatized type
+
+instance finBlock_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.finBlock runtime.finBlock.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end finBlock
+
 namespace finalizer
 section def_
 
@@ -2167,171 +2243,6 @@ instance blockRecord_access_store_cycles (l : Loc) (v : runtime.blockRecord) (cy
 
 end def_
 end blockRecord
-
-namespace mProfCycleHolder
-section def_
-
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance mProfCycleHolder_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.mProfCycleHolder where
-  typedPointstoDef l v dq := iprop(
-    "value" ∷ typedPointsto (structFieldRef runtime.mProfCycleHolder go!"value" l) v.value' dq ∗
-    "_" ∷ True)
-  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
-  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
-  typedPointsto_agree := by solve_typed_pointsto_agree
-
-instance mProfCycleHolder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.mProfCycleHolder runtime.mProfCycleHolder.underlying := by
-  solve_into_val_typed_struct
-
-instance mProfCycleHolder_access_load_value (l : Loc) (v : runtime.mProfCycleHolder) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mProfCycleHolder go!"value" l) v.value' dq)
-      (typedPointsto (structFieldRef runtime.mProfCycleHolder go!"value" l) v.value' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance mProfCycleHolder_access_store_value (l : Loc) (v : runtime.mProfCycleHolder) (value' : internal.runtime.atomic.Uint32) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mProfCycleHolder go!"value" l) v.value' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.mProfCycleHolder go!"value" l) value' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := value' } : runtime.mProfCycleHolder) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-end def_
-end mProfCycleHolder
-
-namespace mLockProfile
-section def_
-
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance mLockProfile_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.mLockProfile where
-  typedPointstoDef l v dq := iprop(
-    "waitTime" ∷ typedPointsto (structFieldRef runtime.mLockProfile go!"waitTime" l) v.waitTime' dq ∗
-    "stack" ∷ typedPointsto (structFieldRef runtime.mLockProfile go!"stack" l) v.stack' dq ∗
-    "cycles" ∷ typedPointsto (structFieldRef runtime.mLockProfile go!"cycles" l) v.cycles' dq ∗
-    "cyclesLost" ∷ typedPointsto (structFieldRef runtime.mLockProfile go!"cyclesLost" l) v.cyclesLost' dq ∗
-    "haveStack" ∷ typedPointsto (structFieldRef runtime.mLockProfile go!"haveStack" l) v.haveStack' dq ∗
-    "disabled" ∷ typedPointsto (structFieldRef runtime.mLockProfile go!"disabled" l) v.disabled' dq ∗
-    "_" ∷ True)
-  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
-  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
-  typedPointsto_agree := by solve_typed_pointsto_agree
-
-instance mLockProfile_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.mLockProfile runtime.mLockProfile.underlying := by
-  solve_into_val_typed_struct
-
-instance mLockProfile_access_load_waitTime (l : Loc) (v : runtime.mLockProfile) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"waitTime" l) v.waitTime' dq)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"waitTime" l) v.waitTime' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance mLockProfile_access_store_waitTime (l : Loc) (v : runtime.mLockProfile) (waitTime' : internal.runtime.atomic.Int64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"waitTime" l) v.waitTime' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"waitTime" l) waitTime' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with waitTime' := waitTime' } : runtime.mLockProfile) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance mLockProfile_access_load_stack (l : Loc) (v : runtime.mLockProfile) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"stack" l) v.stack' dq)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"stack" l) v.stack' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance mLockProfile_access_store_stack (l : Loc) (v : runtime.mLockProfile) (stack' : GoSlice) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"stack" l) v.stack' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"stack" l) stack' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stack' := stack' } : runtime.mLockProfile) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance mLockProfile_access_load_cycles (l : Loc) (v : runtime.mLockProfile) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"cycles" l) v.cycles' dq)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"cycles" l) v.cycles' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance mLockProfile_access_store_cycles (l : Loc) (v : runtime.mLockProfile) (cycles' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"cycles" l) v.cycles' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"cycles" l) cycles' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cycles' := cycles' } : runtime.mLockProfile) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance mLockProfile_access_load_cyclesLost (l : Loc) (v : runtime.mLockProfile) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"cyclesLost" l) v.cyclesLost' dq)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"cyclesLost" l) v.cyclesLost' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance mLockProfile_access_store_cyclesLost (l : Loc) (v : runtime.mLockProfile) (cyclesLost' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"cyclesLost" l) v.cyclesLost' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"cyclesLost" l) cyclesLost' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cyclesLost' := cyclesLost' } : runtime.mLockProfile) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance mLockProfile_access_load_haveStack (l : Loc) (v : runtime.mLockProfile) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"haveStack" l) v.haveStack' dq)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"haveStack" l) v.haveStack' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance mLockProfile_access_store_haveStack (l : Loc) (v : runtime.mLockProfile) (haveStack' : Bool) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"haveStack" l) v.haveStack' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"haveStack" l) haveStack' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with haveStack' := haveStack' } : runtime.mLockProfile) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance mLockProfile_access_load_disabled (l : Loc) (v : runtime.mLockProfile) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"disabled" l) v.disabled' dq)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"disabled" l) v.disabled' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance mLockProfile_access_store_disabled (l : Loc) (v : runtime.mLockProfile) (disabled' : Bool) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"disabled" l) v.disabled' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.mLockProfile go!"disabled" l) disabled' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with disabled' := disabled' } : runtime.mLockProfile) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-end def_
-end mLockProfile
 
 end runtime
 end

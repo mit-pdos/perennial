@@ -109,7 +109,7 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `unsafe.Slice(p, n)` check that the cells they reach (`T`'s from `p`, those from
   `p` to `p + n`, the slice's) are bytes (`CheckBytes`), else they are stuck; and `T`
   (the element type, for `unsafe.Slice`) must be `go.Reinterpretable`: numbers, and
-  arrays and structs of them without padding or blank fields (`go.NoPadding`), whose
+  arrays and structs of them without padding (their fields' sizes add up to theirs, `go.StructSize`), whose
   values are their bytes in the model as in Go. So no pointer, string, interface,
   map, channel, function, `bool`, mutex or padding is ever reinterpreted, and the
   model's representation of them never shows. `(*T)(nil)` is `nil`. `Sizeof`,
@@ -120,10 +120,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   move the stack (goose's `stackStable`: no call, receive, map index, or conversion
   that a checkptr build (`-race`) instruments) is exact for two pointers into the
   same allocation. Any other conversion of a `uintptr` to a pointer is stuck. goose
-  refuses a `primitive.ProphId` inside a struct or an array (gc's is 0 bytes, the
-  model's a cell value, which would break gc's layout), a map key with a blank field
-  (the model compares keys whole), and a field named like goose's names for blank
-  fields (`_0`, …), which `==` skips. The lock models' `Unlock` of an unlocked lock
+  refuses a `primitive.ProphId` inside a struct or an array, or a pointer to one (gc's
+  is 0 bytes, the model's a cell value, which would break gc's layout and addresses),
+  a blank field of non-zero size (Go ignores its bytes in `==` and as a map key, the
+  model would not), and a field named like goose's names for blank fields (`_0`, …). The lock models' `Unlock` of an unlocked lock
   is stuck (Go: a fatal error). `atomic.Pointer[T]`'s `Load` and `Swap` and
   `strings.Builder.copyCheck` convert an `unsafe.Pointer` back to the pointer type it
   came from: they are trusted models of that round trip

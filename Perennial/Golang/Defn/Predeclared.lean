@@ -162,7 +162,7 @@ variable [FfiSyntax] [GoSemanticsFunctions]
 mutual
 /-- `Reinterpretable t`: memory reached through an `unsafe.Pointer` may be accessed as a `t`
 (`(*t)(p)`, `unsafe.Slice`, `UnsafeSemantics`): numbers, and arrays and structs of them
-without padding or blank fields (`NoPadding`). Such a value is its bytes, in the model as
+without padding (`ReinterpretableFields`, `StructSize`). Such a value is its bytes, in the model as
 in Go, so reading or writing it over any bytes means what it means in Go; `UnsafeSemantics`
 also checks that the memory accessed is bytes (`CheckBytes`). Not the other types, whose
 model representation is not Go's bytes (a pointer, a string, an interface, a map, a
@@ -182,18 +182,24 @@ inductive Reinterpretable : go.GoType → Prop
   | float32 : Reinterpretable go.float32
   | float64 : Reinterpretable go.float64
   | array (n : Int) (t : go.GoType) (h : Reinterpretable t) : Reinterpretable (go.ArrayType n t)
-  | struct (fds fds' : List go.field_decl) (heq : EqualsUnfold fds fds')
-      (h : ReinterpretableFields fds') (V : Type) [ZeroVal V]
-      (hr : TypeRepr (go.StructType fds) V) (hnp : NoPadding V) : Reinterpretable (go.StructType fds)
+  | struct (fds fds' : List go.field_decl) (heq : EqualsUnfold fds fds') (sum : Int)
+      (h : ReinterpretableFields fds' sum) (V : Type) [ZeroVal V]
+      (hr : TypeRepr (go.StructType fds) V) (hsz : typeSize V = sum) :
+      Reinterpretable (go.StructType fds)
   | named (t u : go.GoType) (hu : IsUnderlying t u) (h : Reinterpretable u) : Reinterpretable t
 
-/-- Every field of the list is `Reinterpretable`. -/
-inductive ReinterpretableFields : List go.field_decl → Prop
-  | nil : ReinterpretableFields []
-  | field (n : GoString) (t : go.GoType) (fs : List go.field_decl) (h : Reinterpretable t)
-      (hs : ReinterpretableFields fs) : ReinterpretableFields (go.FieldDecl n t :: fs)
-  | embedded (n : GoString) (t : go.GoType) (fs : List go.field_decl) (h : Reinterpretable t)
-      (hs : ReinterpretableFields fs) : ReinterpretableFields (go.EmbeddedField n t :: fs)
+/-- Every field of the list is `Reinterpretable`, and their sizes add up to `sum`: a struct of
+them whose size is `sum` has no padding. (A blank field is zero-size: goose refuses others.) -/
+inductive ReinterpretableFields : List go.field_decl → outParam Int → Prop
+  | nil : ReinterpretableFields [] 0
+  | field (n : GoString) (t : go.GoType) (fs : List go.field_decl) (sum : Int)
+      (h : Reinterpretable t) (F : Type) [ZeroVal F] (hr : TypeRepr t F)
+      (hs : ReinterpretableFields fs sum) :
+      ReinterpretableFields (go.FieldDecl n t :: fs) (typeSize F + sum)
+  | embedded (n : GoString) (t : go.GoType) (fs : List go.field_decl) (sum : Int)
+      (h : Reinterpretable t) (F : Type) [ZeroVal F] (hr : TypeRepr t F)
+      (hs : ReinterpretableFields fs sum) :
+      ReinterpretableFields (go.EmbeddedField n t :: fs) (typeSize F + sum)
 end
 
 attribute [class] Reinterpretable ReinterpretableFields
@@ -205,16 +211,24 @@ attribute [instance] Reinterpretable.uint8 Reinterpretable.uint16 Reinterpretabl
 
 instance (n : Int) (t : go.GoType) [h : Reinterpretable t] : Reinterpretable (go.ArrayType n t) :=
   .array n t h
-instance (fds fds' : List go.field_decl) [heq : EqualsUnfold fds fds'] [h : ReinterpretableFields fds']
-    {V : Type} [ZeroVal V] [hr : TypeRepr (go.StructType fds) V] [hnp : NoPadding V] :
-    Reinterpretable (go.StructType fds) := .struct fds fds' heq h V hr hnp
+/-- The size of a struct type, for `Reinterpretable`'s premise that it is its fields'
+sizes' sum; proofs give it per struct (`go.typeSize_eq` with `StructLayout`). -/
+class StructSize (t : go.GoType) (sum : Int) : Prop where
+  size : ∀ (V : Type) [ZeroVal V], TypeRepr t V → typeSize V = sum
+
+instance (fds fds' : List go.field_decl) [heq : EqualsUnfold fds fds'] {sum : Int}
+    [h : ReinterpretableFields fds' sum] {V : Type} [ZeroVal V] [hr : TypeRepr (go.StructType fds) V]
+    [hsz : StructSize (go.StructType fds) sum] :
+    Reinterpretable (go.StructType fds) := .struct fds fds' heq sum h V hr (hsz.size V hr)
 instance (priority := low) (t u : go.GoType) [hu : IsUnderlying t u] [h : Reinterpretable u] :
     Reinterpretable t := .named t u hu h
-instance (n : GoString) (t : go.GoType) (fs : List go.field_decl) [h : Reinterpretable t]
-    [hs : ReinterpretableFields fs] : ReinterpretableFields (go.FieldDecl n t :: fs) := .field n t fs h hs
-instance (n : GoString) (t : go.GoType) (fs : List go.field_decl) [h : Reinterpretable t]
-    [hs : ReinterpretableFields fs] : ReinterpretableFields (go.EmbeddedField n t :: fs) :=
-  .embedded n t fs h hs
+instance (n : GoString) (t : go.GoType) (fs : List go.field_decl) {sum : Int} [h : Reinterpretable t]
+    {F : Type} [ZeroVal F] [hr : TypeRepr t F] [hs : ReinterpretableFields fs sum] :
+    ReinterpretableFields (go.FieldDecl n t :: fs) (typeSize F + sum) := .field n t fs sum h F hr hs
+instance (n : GoString) (t : go.GoType) (fs : List go.field_decl) {sum : Int} [h : Reinterpretable t]
+    {F : Type} [ZeroVal F] [hr : TypeRepr t F] [hs : ReinterpretableFields fs sum] :
+    ReinterpretableFields (go.EmbeddedField n t :: fs) (typeSize F + sum) :=
+  .embedded n t fs sum h F hr hs
 
 end reinterpretable
 

@@ -20,6 +20,101 @@ open Iris Iris.BI
 noncomputable section
 namespace runtime
 
+namespace boundsError
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance boundsError_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.boundsError :=
+  sorry -- axiomatized type
+
+instance boundsError_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.boundsError runtime.boundsError.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end boundsError
+
+namespace typeCacheBucket
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance typeCacheBucket_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.typeCacheBucket :=
+  sorry -- axiomatized type
+
+instance typeCacheBucket_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.typeCacheBucket runtime.typeCacheBucket.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end typeCacheBucket
+
+namespace bitvector
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance bitvector_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.bitvector where
+  typedPointstoDef l v dq := iprop(
+    "n" ∷ typedPointsto (structFieldRef runtime.bitvector go!"n" l) v.n' dq ∗
+    "bytedata" ∷ typedPointsto (structFieldRef runtime.bitvector go!"bytedata" l) v.bytedata' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance bitvector_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.bitvector runtime.bitvector.underlying := by
+  solve_into_val_typed_struct
+
+instance bitvector_access_load_n (l : Loc) (v : runtime.bitvector) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.bitvector go!"n" l) v.n' dq)
+      (typedPointsto (structFieldRef runtime.bitvector go!"n" l) v.n' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance bitvector_access_store_n (l : Loc) (v : runtime.bitvector) (n' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.bitvector go!"n" l) v.n' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.bitvector go!"n" l) n' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := n' } : runtime.bitvector) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance bitvector_access_load_bytedata (l : Loc) (v : runtime.bitvector) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.bitvector go!"bytedata" l) v.bytedata' dq)
+      (typedPointsto (structFieldRef runtime.bitvector go!"bytedata" l) v.bytedata' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance bitvector_access_store_bytedata (l : Loc) (v : runtime.bitvector) (bytedata' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.bitvector go!"bytedata" l) v.bytedata' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.bitvector go!"bytedata" l) bytedata' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with bytedata' := bytedata' } : runtime.bitvector) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end bitvector
+
 namespace hexdumper
 section def_
 
@@ -1216,6 +1311,25 @@ instance cleanupFn_access_store_arg (l : Loc) (v : runtime.cleanupFn) (arg' : Lo
 end def_
 end cleanupFn
 
+namespace cleanupQueue
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance cleanupQueue_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.cleanupQueue :=
+  sorry -- axiomatized type
+
+instance cleanupQueue_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.cleanupQueue runtime.cleanupQueue.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end cleanupQueue
+
 namespace heapStatsDelta
 section def_
 
@@ -2186,63 +2300,6 @@ instance schedStatsAggregate_access_store_threads (l : Loc) (v : runtime.schedSt
 
 end def_
 end schedStatsAggregate
-
-namespace metricFloat64Histogram
-section def_
-
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance metricFloat64Histogram_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.metricFloat64Histogram where
-  typedPointstoDef l v dq := iprop(
-    "counts" ∷ typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"counts" l) v.counts' dq ∗
-    "buckets" ∷ typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"buckets" l) v.buckets' dq ∗
-    "_" ∷ True)
-  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
-  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
-  typedPointsto_agree := by solve_typed_pointsto_agree
-
-instance metricFloat64Histogram_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.metricFloat64Histogram runtime.metricFloat64Histogram.underlying := by
-  solve_into_val_typed_struct
-
-instance metricFloat64Histogram_access_load_counts (l : Loc) (v : runtime.metricFloat64Histogram) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"counts" l) v.counts' dq)
-      (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"counts" l) v.counts' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance metricFloat64Histogram_access_store_counts (l : Loc) (v : runtime.metricFloat64Histogram) (counts' : GoSlice) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"counts" l) v.counts' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"counts" l) counts' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with counts' := counts' } : runtime.metricFloat64Histogram) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-instance metricFloat64Histogram_access_load_buckets (l : Loc) (v : runtime.metricFloat64Histogram) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"buckets" l) v.buckets' dq)
-      (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"buckets" l) v.buckets' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-instance metricFloat64Histogram_access_store_buckets (l : Loc) (v : runtime.metricFloat64Histogram) (buckets' : GoSlice) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"buckets" l) v.buckets' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.metricFloat64Histogram go!"buckets" l) buckets' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buckets' := buckets' } : runtime.metricFloat64Histogram) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-end def_
-end metricFloat64Histogram
 
 end runtime
 end
