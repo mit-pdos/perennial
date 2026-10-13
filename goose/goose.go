@@ -641,6 +641,10 @@ func (ctx *Ctx) compositeLiteralWithBindings(e *ast.CompositeLit, bindings *[]co
 				}
 			}
 			if !done {
+				// a map key is converted to the key type too
+				if hasInterfaceSlot(ctx.typeOf(e)) {
+					ctx.checkDynamicTypes(el.Key, ctx.typeOf(el.Key))
+				}
 				name := fmt.Sprintf("$k%d", len(*bindings))
 				*bindings = append(*bindings, compositeBinding{name: name, val: ctx.expr(el.Key)})
 				k = glang.NewCallExpr(glang.VerbatimExpr("KeyExpression"),
@@ -1843,27 +1847,29 @@ func (ctx *Ctx) checkTypeArgs(n locatable, args *types.TypeList) {
 // rangeVarTypes gives the types of the key and value a range loop over a
 // value of type t produces (nil when there is none or it is not known).
 func rangeVarTypes(t types.Type) (key, val types.Type) {
-	switch t := t.Underlying().(type) {
+	switch u := underlyingType(t).(type) {
 	case *types.Slice:
-		return types.Typ[types.Int], t.Elem()
+		return types.Typ[types.Int], u.Elem()
 	case *types.Array:
-		return types.Typ[types.Int], t.Elem()
+		return types.Typ[types.Int], u.Elem()
 	case *types.Pointer:
-		if a, ok := t.Elem().Underlying().(*types.Array); ok {
+		if a, ok := u.Elem().Underlying().(*types.Array); ok {
 			return types.Typ[types.Int], a.Elem()
 		}
 	case *types.Map:
-		return t.Key(), t.Elem()
+		return u.Key(), u.Elem()
 	case *types.Chan:
-		return t.Elem(), nil
+		return u.Elem(), nil
 	case *types.Basic:
-		if t.Info()&types.IsString != 0 {
+		if u.Info()&types.IsString != 0 {
 			return types.Typ[types.Int], types.Typ[types.Rune]
 		}
-		return t, nil
+		// range over an integer: the counter has the integer's type (a named
+		// integer type stays named; an untyped constant gets its default type)
+		return types.Default(t), nil
 	case *types.Signature:
-		if t.Params().Len() == 1 {
-			if yield, ok := t.Params().At(0).Type().Underlying().(*types.Signature); ok {
+		if u.Params().Len() == 1 {
+			if yield, ok := u.Params().At(0).Type().Underlying().(*types.Signature); ok {
 				ps := yield.Params()
 				if ps.Len() > 0 {
 					key = ps.At(0).Type()
@@ -1895,7 +1901,8 @@ func (ctx *Ctx) checkInstances(n ast.Node) {
 // hasInterfaceSlot reports whether a composite literal of type t has an
 // element, key or field of interface type, which converts its value.
 func hasInterfaceSlot(t types.Type) bool {
-	switch t := t.Underlying().(type) {
+	// the core type, for a literal whose type is a type parameter
+	switch t := underlyingType(t).(type) {
 	case *types.Struct:
 		for i := 0; i < t.NumFields(); i++ {
 			if types.IsInterface(t.Field(i).Type()) {
@@ -2454,10 +2461,8 @@ func (ctx *Ctx) selectStmt(s *ast.SelectStmt, cont glang.Expr) (expr glang.Expr)
 	for i := len(chs) - 1; i >= 0; i-- {
 		s := s.Body.List[i].(*ast.CommClause)
 		if c, ok := s.Comm.(*ast.SendStmt); ok {
-			var elem types.Type
-			if ch, ok := ctx.typeOf(c.Chan).Underlying().(*types.Chan); ok {
-				elem = ch.Elem()
-			}
+			// the core type, for a channel whose type is a type parameter
+			elem := chanElem(ctx.typeOf(c.Chan))
 			expr = glang.LetExpr{
 				Names:   []string{fmt.Sprintf("$v%d", i)},
 				ValExpr: ctx.exprIntoType(c.Value, elem),
@@ -3219,6 +3224,11 @@ func (ctx *Ctx) decl(d ast.Decl) {
 			ctx.constDecl(d)
 		case token.VAR:
 			ctx.checkInstances(d)
+			// a type declared in an initializer (in a function literal) would be
+			// translated by its name, the same as a package-level type's
+			for _, g := range util.TypeDecls(d) {
+				ctx.unsupported(g, "local type in a package-level variable initializer")
+			}
 			ctx.globalVarDecl(d)
 		case token.TYPE:
 			for _, spec := range d.Specs {

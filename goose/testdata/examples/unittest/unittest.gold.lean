@@ -98,6 +98,11 @@ def assignIface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] assignIface.ty
 
+def assignInt.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignInt" [])
+
+attribute [irreducible] assignInt.ty
+
 def Fooer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Fooer" [])
 
@@ -618,6 +623,12 @@ noncomputable def selectSendInterface [FfiSyntax] [GoGlobalContext] : GoString :
 
 noncomputable def typeParamToInterface [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.typeParamToInterface"
+
+noncomputable def rangeIntoInterface [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.rangeIntoInterface"
+
+noncomputable def selectSendTypeParam [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.selectSendTypeParam"
 
 noncomputable def fooConsumer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.fooConsumer"
@@ -2519,6 +2530,49 @@ noncomputable def typeParamToInterface.impl [FfiSyntax] [GoGlobalContext] (X : g
   (App (Val (GoInstruction (GoLoad go.error))) (Var "e")))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "e") (Var "$r0"))))))))))
+
+/-- The counter of a range over a named integer has the named type.
+
+    go: iface_assign.go:33:6 -/
+noncomputable def rangeIntoInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.any))) (Var "x")))))
+  (Let "$range" (Val #(W64 3))
+  (Let "$range_i" (App (Val (GoInstruction (GoAlloc assignInt.ty))) (App (Val (GoInstruction (GoZeroVal assignInt.ty))) (Val #())))
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt assignInt.ty))) (Pair (App (Val (GoInstruction (GoLoad assignInt.ty))) (Var "$range_i")) (Var "$range"))))) (Lam BAnon
+  (Let "$key" (App (Val (GoInstruction (GoLoad assignInt.ty))) (Var "$range_i"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "x") (App (Val (GoInstruction (Convert assignInt.ty go.any))) (Var "$key")))))))))
+  (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Val #())))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore assignInt.ty))) (Pair (Var "$range_i") (App (Val (GoInstruction (GoOp GoPlus assignInt.ty))) (Pair (App (Val (GoInstruction (GoLoad assignInt.ty))) (Var "$range_i")) (Val #(W64 1))))))))))))))))
+
+/-- The sent value is converted to the element type of the channel's core type.
+
+    go: iface_assign.go:41:6 -/
+noncomputable def selectSendTypeParam.impl [FfiSyntax] [GoGlobalContext] (C : go.GoType) : val :=
+  (LamV "ch"
+  (Lam "i"
+  (App (Val exceptionDo)
+  (Let "i" (App (Val (GoInstruction (GoAlloc assignIface.ty))) (Var "i"))
+  (Let "ch" (App (Val (GoInstruction (GoAlloc C))) (Var "ch"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad C))) (Var "ch"))
+  (Let "$v0" (App (Val (GoInstruction (Convert assignIface.ty go.error))) (App (Val (GoInstruction (GoLoad assignIface.ty))) (Var "i")))
+  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (SendCase go.error (Var "$ch0") (Var "$v0")) (App (Val doExecute)
+  (Val #())))]))))))))))
 
 /-- go: interfaces.go:15:25 -/
 noncomputable def concreteFooer.Foo.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -5488,6 +5542,16 @@ class assignIface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
 
 attribute [instance] assignIface.TypeAssumptions.underlying
 
+abbrev assignInt [FfiSyntax] : Type := w64
+
+@[reducible] def assignInt.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  go.int
+
+class assignInt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq assignInt.ty assignInt.underlying
+
+attribute [instance] assignInt.TypeAssumptions.underlying
+
 abbrev Fooer [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Fooer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
@@ -6346,6 +6410,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   Enum1_instance : Enum1.TypeAssumptions
   Enum2_instance : Enum2.TypeAssumptions
   assignIface_instance : assignIface.TypeAssumptions
+  assignInt_instance : assignInt.TypeAssumptions
   Fooer_instance : Fooer.TypeAssumptions
   concreteFooer_instance : concreteFooer.TypeAssumptions
   FooerUser_instance : FooerUser.TypeAssumptions
@@ -6455,6 +6520,8 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   rangeAssignInterface_unfold : FuncUnfold rangeAssignInterface [] rangeAssignInterface.impl
   selectSendInterface_unfold : FuncUnfold selectSendInterface [] selectSendInterface.impl
   typeParamToInterface_unfold : ∀ (X : go.GoType), FuncUnfold typeParamToInterface [X] (typeParamToInterface.impl X)
+  rangeIntoInterface_unfold : FuncUnfold rangeIntoInterface [] rangeIntoInterface.impl
+  selectSendTypeParam_unfold : ∀ (C : go.GoType), FuncUnfold selectSendTypeParam [C] (selectSendTypeParam.impl C)
   fooConsumer_unfold : FuncUnfold fooConsumer [] fooConsumer.impl
   testAssignConcreteToInterface_unfold : FuncUnfold testAssignConcreteToInterface [] testAssignConcreteToInterface.impl
   testPassConcreteToInterfaceArg_unfold : FuncUnfold testPassConcreteToInterfaceArg [] testPassConcreteToInterfaceArg.impl
@@ -6607,6 +6674,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.Enum1_instance
   Assumptions.Enum2_instance
   Assumptions.assignIface_instance
+  Assumptions.assignInt_instance
   Assumptions.Fooer_instance
   Assumptions.concreteFooer_instance
   Assumptions.FooerUser_instance
@@ -6716,6 +6784,8 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.rangeAssignInterface_unfold
   Assumptions.selectSendInterface_unfold
   Assumptions.typeParamToInterface_unfold
+  Assumptions.rangeIntoInterface_unfold
+  Assumptions.selectSendTypeParam_unfold
   Assumptions.fooConsumer_unfold
   Assumptions.testAssignConcreteToInterface_unfold
   Assumptions.testPassConcreteToInterfaceArg_unfold

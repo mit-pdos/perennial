@@ -215,3 +215,100 @@ _ = e.([]interface{ q.HasM })         // Go: panics (the two m are different met
 
 *Fixed*: the check looks at the complete method set (negative test
 `iface_embedded_unexported`).
+
+## Round 8 (review)
+
+**BLOCK (round 7's range fix): a named integer counter boxed as its
+underlying type.**
+
+```go
+type MyInt int
+func R() int { var x any; for x = range MyInt(3) {}; return x.(int) }
+// Go: panic: interface conversion: interface {} is main.MyInt, not int
+```
+
+*Fixed*: `rangeVarTypes` keeps the integer's type (`types.Default` for an
+untyped constant).
+
+**BLOCK (round 7's select fix, byte semantics): a channel typed by a type
+parameter.**
+
+```go
+func S[C ~chan error](ch C) string {
+	var i I2 = T{}            // I2, T as in round 7
+	select { case ch <- i: }
+	e := <-ch; return e.Error()
+}
+// Go: "Error"; the model: "A"
+```
+
+*Fixed*: the element type of the channel's core type (`chanElem`).
+
+**BLOCK: a composite literal whose type is a type parameter skipped the
+element check.**
+
+```go
+type SC = struct{ X int }
+type SB = struct{ X int `json:"b"` }
+func Mk[C ~[]any]() C { return C{SB{1}} }
+// s := Mk[[]any](); _ = s[0].(SC) — Go: panic: ... is struct { X int "json:\"b\"" }, not struct { X int }
+```
+
+*Fixed*: `hasInterfaceSlot` uses the core type.
+
+**BLOCK (old semantics): map-literal keys were not checked.**
+
+```go
+m := map[any]int{SB{1}: 1}
+for k := range m { _, ok = k.(SC) }   // Go: ok = false; the old semantics: true
+```
+
+*Fixed*: keys are checked like values.
+
+**BLOCK (pre-existing): a local type in a package-level variable's
+initializer has the term of the package-level type of the same name.**
+
+```go
+type L struct{ X int }
+var Mk = func() any { type L struct{ X int }; return L{1} }
+// _, ok := Mk().(L) — Go: false; both semantics: true (Mk().(L).X: Go panics)
+```
+
+*Fixed*: goose refuses local types in package-level variable initializers.
+
+**BLOCK (old semantics; round 4's revert of round 3's restriction): pointer
+reinterpretation between interface types.**
+
+```go
+var a I1 = T{1}
+b := *(*I2)(&a)
+_ = b.(T).x   // Go: panic: interface conversion: main.I2 is main.T, not main.T (types from different scopes)
+```
+
+The old `type_assert_step` ignores the source type (its `GoInterface` has no
+static type). *Fixed for the plain-Go route*: `convert_pointer_same_underlying`
+again excludes interface base types (the only route without `unsafe`: other
+base types with the same underlying type have the same interface field
+types).
+
+**Inherited, not fixed (old semantics, `unsafe`): reinterpretation through
+`unsafe.Pointer`.**
+
+```go
+var e error = T{1}
+a := *(*any)(unsafe.Pointer(&e))
+_ = a.(T).x   // Go: fatal error: runtime: name offset out of range; the old semantics: 1
+```
+
+The `unsafe.Pointer` ↔ `*T` rules (`unsafe.Semantics`) predate this branch
+and are not changed by it. The byte semantics behaves as Go's memory here (it
+reads the itab word as a type word, which no proof can show to be `typeAddr
+T`). For the old semantics a fix needs either a static interface type in
+`GoInterface` (about 35 proof files) or a deep "contains no interface" premise
+on the target type (through pointers and recursive types); refusing the
+rule outright breaks `strings.Builder.copyCheck`'s proof.
+
+**NOTE (old semantics): `methodSet` is keyed by bare method names**, so a
+premise `methodSet T !! "m" = some sig` for a `T` of another package than the
+interface's unexported `m` reads as true but makes `x.(p.I)` succeed where Go
+says `T` does not implement `p.I`. No program verifies without such a premise.
