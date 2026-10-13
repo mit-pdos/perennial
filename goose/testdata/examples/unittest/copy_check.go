@@ -22,3 +22,13 @@ type bigStruct2 bigStruct
 func copyConverted(p *bigStruct, q *bigStruct2) {
 	*p = bigStruct(*q)
 }
+
+type bigTagged struct {
+	a    int64 `json:"a"`
+	b, c int64
+}
+
+// Conversions that ignore struct tags keep the representation too.
+func copyTagConverted(p *bigStruct, q *bigTagged) {
+	*p = bigStruct(*q)
+}

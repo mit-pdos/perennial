@@ -18,11 +18,22 @@ func rootVar(info *types.Info, e ast.Expr) *types.Var {
 			return rootVar(info, e.X)
 		}
 	case *ast.IndexExpr:
-		if _, ok := info.TypeOf(e.X).Underlying().(*types.Array); ok {
+		if inPlace(info.TypeOf(e.X)) {
 			return rootVar(info, e.X)
 		}
 	}
 	return nil
+}
+
+// inPlace reports whether indexing or slicing an operand of type t reaches into the
+// operand's own storage: an array, or a type parameter (whose core type may be one), not a
+// slice, string, map or pointer.
+func inPlace(t types.Type) bool {
+	if _, isTP := t.(*types.TypeParam); isTP {
+		return true
+	}
+	_, ok := t.Underlying().(*types.Array)
+	return ok
 }
 
 // addrTakenVars returns the variables of the package whose address is taken:
@@ -43,7 +54,7 @@ func addrTakenVars(info *types.Info, files []*ast.File) map[*types.Var]bool {
 					mark(n.X)
 				}
 			case *ast.SliceExpr:
-				if _, ok := info.TypeOf(n.X).Underlying().(*types.Array); ok {
+				if inPlace(info.TypeOf(n.X)) {
 					mark(n.X)
 				}
 			case *ast.SelectorExpr:

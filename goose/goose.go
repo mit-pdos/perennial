@@ -1808,6 +1808,50 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 	return glang.SeqExpr{Expr: e, Cont: cont}
 }
 
+// rangeIterType is the type of the key (value = false) or value of ranging over a value
+// of type t, or nil.
+func rangeIterType(t types.Type, value bool) types.Type {
+	switch u := underlyingType(t).(type) {
+	case *types.Basic:
+		if u.Info()&types.IsString != 0 {
+			if value {
+				return types.Typ[types.Rune]
+			}
+			return types.Typ[types.Int]
+		}
+		if !value {
+			return types.Default(t) // range over an integer
+		}
+	case *types.Slice:
+		if value {
+			return u.Elem()
+		}
+		return types.Typ[types.Int]
+	case *types.Array:
+		if value {
+			return u.Elem()
+		}
+		return types.Typ[types.Int]
+	case *types.Pointer:
+		if a, ok := u.Elem().Underlying().(*types.Array); ok {
+			if value {
+				return a.Elem()
+			}
+			return types.Typ[types.Int]
+		}
+	case *types.Map:
+		if value {
+			return u.Elem()
+		}
+		return u.Key()
+	case *types.Chan:
+		if !value {
+			return u.Elem()
+		}
+	}
+	return nil
+}
+
 func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 	// `for _, v = range x` over a slice or an array pointer copies each element from
 	// memory into v, which gc does in place (over an array value, from a copy): refuse a
@@ -1841,7 +1885,15 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 			if s.Tok == token.DEFINE && x.Name != "_" {
 				shared = append(shared, x)
 			}
-			body = ctx.assignFromTo(kv.x, glang.IdentExpr(kv.v), body)
+			var val glang.Expr = glang.IdentExpr(kv.v)
+			// `for k, v = range x` assigns: the iteration values are converted to the
+			// variables' types (an interface variable, ...)
+			if s.Tok == token.ASSIGN && kv.x != nil {
+				if et := rangeIterType(ctx.typeOf(s.X), kv.v == "$value"); et != nil {
+					val = ctx.handleImplicitConversion(kv.x, et, ctx.typeOf(kv.x), val)
+				}
+			}
+			body = ctx.assignFromTo(kv.x, val, body)
 		}
 	}
 
@@ -2320,7 +2372,7 @@ func (ctx *Ctx) copySource(lhs, rhs ast.Expr, t types.Type) (src ast.Expr, ok bo
 		at := ctx.typeOf(c.Args[0])
 		_, tp1 := at.(*types.TypeParam)
 		_, tp2 := ctx.typeOf(c).(*types.TypeParam)
-		if !tp1 && !tp2 && !types.Identical(at.Underlying(), ctx.typeOf(c).Underlying()) {
+		if !tp1 && !tp2 && !types.IdenticalIgnoreTags(at.Underlying(), ctx.typeOf(c).Underlying()) {
 			break
 		}
 		src = ast.Unparen(c.Args[0])
@@ -3130,9 +3182,10 @@ func (ctx *Ctx) selectStmt(s *ast.SelectStmt, cont glang.Expr) (expr glang.Expr)
 	for i := len(chs) - 1; i >= 0; i-- {
 		s := s.Body.List[i].(*ast.CommClause)
 		if c, ok := s.Comm.(*ast.SendStmt); ok {
+			// the value is converted to the channel's element type, as in a send
 			expr = glang.LetExpr{
 				Names:   []string{fmt.Sprintf("$v%d", i)},
-				ValExpr: ctx.expr(c.Value),
+				ValExpr: ctx.exprIntoType(c.Value, chanElem(ctx.typeOf(c.Chan))),
 				Cont:    expr,
 			}
 		}

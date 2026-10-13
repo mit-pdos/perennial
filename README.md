@@ -136,7 +136,8 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   such a value from memory (gc copies them in place too). `(*[n]T)(p)[i:j:k]`, which
   bbolt uses with `n` far beyond the allocation, is one operation
   (`unsafe.ArraySlice`, `wp_unsafe_array_slice`): the slice's bounds against `n` and
-  the `k` elements' bytes, which is what gc's `-d=checkptr` checks for this form;
+  the `k` elements' bytes from `p` (gc's `-d=checkptr` checks those for elements of
+  alignment above 1, and nothing for bytes: the model is stricter there);
   `(*[n]T)(p)` alone checks all `n` elements. `(*T)(nil)` is `nil`. `Sizeof`,
   `Alignof` and `Offsetof` are constants; `uintptr(p)` is an unspecified address in
   `[8, 2^48)` congruent to `p`'s offset modulo 8 (an allocation's address is

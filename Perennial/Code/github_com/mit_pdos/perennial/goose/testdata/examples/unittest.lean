@@ -69,6 +69,11 @@ def bigStruct2.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] bigStruct2.ty
 
+def bigTagged.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.bigTagged" [])
+
+attribute [irreducible] bigTagged.ty
+
 def diskWrapper.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.diskWrapper" [])
 
@@ -528,6 +533,9 @@ noncomputable def copyIntoLocal [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def copyConverted [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.copyConverted"
+
+noncomputable def copyTagConverted [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.copyTagConverted"
 
 noncomputable def atomicCreateStub [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.atomicCreateStub"
@@ -1952,6 +1960,27 @@ noncomputable def copyConverted.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #()))))
   (Let "$src" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType bigStruct2.ty)))) (Var "q"))
   (Let "$r0" (App (Val (GoInstruction (GoLoad bigStruct2.ty))) (Var "$src"))
+  (Let "$dst" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType bigStruct.ty)))) (Var "p"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore bigStruct.ty))) (Pair (Var "$dst") (Var "$r0"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (CheckCopy bigStruct.ty))) (Pair (Var "$dst") (Var "$src"))))))))))))))
+
+/-- Conversions that ignore struct tags keep the representation too.
+
+    go: copy_check.go:32:6 -/
+noncomputable def copyTagConverted.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "q"
+  (App (Val exceptionDo)
+  (Let "q" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType bigTagged.ty)))) (Var "q"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType bigStruct.ty)))) (Var "p"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$src" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType bigTagged.ty)))) (Var "q"))
+  (Let "$r0" (App (Val (GoInstruction (Convert bigTagged.ty bigStruct.ty))) (App (Val (GoInstruction (GoLoad bigTagged.ty))) (Var "$src")))
   (Let "$dst" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType bigStruct.ty)))) (Var "p"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
@@ -5707,6 +5736,51 @@ class bigStruct2.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] bigStruct2.TypeAssumptions.underlying
 
+structure bigTagged [FfiSyntax] where
+  mk ::
+  a' : w64
+  b' : w64
+  c' : w64
+
+instance bigTagged.zero_val [FfiSyntax] : ZeroVal bigTagged :=
+  ⟨bigTagged.mk zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] def bigTagged.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"a" go.int64),
+(go.field_decl.FieldDecl go!"b" go.int64),
+(go.field_decl.FieldDecl go!"c" go.int64)]
+
+@[irreducible] def bigTagged.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  bigTagged.fieldsUnsealed
+
+instance equals_unfold_bigTagged [FfiSyntax] [GoGlobalContext] :
+    EqualsUnfold bigTagged.fields bigTagged.fieldsUnsealed :=
+  ⟨by unfold bigTagged.fields; rfl⟩
+
+@[reducible] def bigTagged.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType bigTagged.fields)
+
+class bigTagged.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying bigTagged.underlying bigTagged
+  underlying : go.UnderlyingDirectedEq bigTagged.ty bigTagged.underlying
+  layout : go.StructLayout bigTagged [(go!"a", typeSize w64, typeAlign w64), (go!"b", typeSize w64, typeAlign w64), (go!"c", typeSize w64, typeAlign w64)]
+  get_a : ∀ (x : bigTagged), go.IsGoStepPureDetTagged under (StructFieldGet bigTagged.underlying go!"a") #x (Val #(x.a'))
+  set_a : ∀ (x : bigTagged) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet bigTagged.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : bigTagged)))
+  get_b : ∀ (x : bigTagged), go.IsGoStepPureDetTagged under (StructFieldGet bigTagged.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : bigTagged) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet bigTagged.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : bigTagged)))
+  get_c : ∀ (x : bigTagged), go.IsGoStepPureDetTagged under (StructFieldGet bigTagged.underlying go!"c") #x (Val #(x.c'))
+  set_c : ∀ (x : bigTagged) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet bigTagged.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : bigTagged)))
+
+attribute [instance] bigTagged.TypeAssumptions.type_repr
+  bigTagged.TypeAssumptions.underlying
+  bigTagged.TypeAssumptions.layout
+  bigTagged.TypeAssumptions.get_a
+  bigTagged.TypeAssumptions.set_a
+  bigTagged.TypeAssumptions.get_b
+  bigTagged.TypeAssumptions.set_b
+  bigTagged.TypeAssumptions.get_c
+  bigTagged.TypeAssumptions.set_c
+
 structure diskWrapper [FfiSyntax] where
   mk ::
   d' : _root_.Perennial.github_com.goose_lang.primitive.disk.Disk
@@ -6978,6 +7052,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   withInterface_instance : withInterface.TypeAssumptions
   bigStruct_instance : bigStruct.TypeAssumptions
   bigStruct2_instance : bigStruct2.TypeAssumptions
+  bigTagged_instance : bigTagged.TypeAssumptions
   diskWrapper_instance : diskWrapper.TypeAssumptions
   embedA_instance : embedA.TypeAssumptions
   embedB_instance : embedB.TypeAssumptions
@@ -7060,6 +7135,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   copyThroughPointers_unfold : FuncUnfold copyThroughPointers [] copyThroughPointers.impl
   copyIntoLocal_unfold : FuncUnfold copyIntoLocal [] copyIntoLocal.impl
   copyConverted_unfold : FuncUnfold copyConverted [] copyConverted.impl
+  copyTagConverted_unfold : FuncUnfold copyTagConverted [] copyTagConverted.impl
   atomicCreateStub_unfold : FuncUnfold atomicCreateStub [] atomicCreateStub.impl
   useSlice_unfold : FuncUnfold useSlice [] useSlice.impl
   useSliceIndexing_unfold : FuncUnfold useSliceIndexing [] useSliceIndexing.impl
@@ -7259,6 +7335,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.withInterface_instance
   Assumptions.bigStruct_instance
   Assumptions.bigStruct2_instance
+  Assumptions.bigTagged_instance
   Assumptions.diskWrapper_instance
   Assumptions.embedA_instance
   Assumptions.embedB_instance
@@ -7341,6 +7418,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.copyThroughPointers_unfold
   Assumptions.copyIntoLocal_unfold
   Assumptions.copyConverted_unfold
+  Assumptions.copyTagConverted_unfold
   Assumptions.atomicCreateStub_unfold
   Assumptions.useSlice_unfold
   Assumptions.useSliceIndexing_unfold
