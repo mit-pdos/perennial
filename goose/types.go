@@ -167,7 +167,7 @@ func (ctx *Ctx) structType(t *types.Struct) glang.StructType {
 		}
 		// Go ignores a blank field's bytes in == and as part of a map key, the model's
 		// values would not (and unsafe could write them): only zero-size ones
-		if t.Field(i).Name() == "_" && types.SizesFor("gc", "amd64").Sizeof(fieldType) != 0 {
+		if t.Field(i).Name() == "_" && util.NonZeroSize(fieldType) {
 			ctx.unsupported(t.Field(i), "a blank field of non-zero size")
 		}
 		// the semantics recognizes blank fields by goose's names for them
@@ -375,6 +375,11 @@ func chanElem(t types.Type) types.Type {
 func (ctx *Ctx) convertTypeArgsToGlang(l locatable, typeList *types.TypeList) (glangTypeArgs []glang.Expr) {
 	glangTypeArgs = make([]glang.Expr, typeList.Len())
 	for i := range glangTypeArgs {
+		// a ProphId substituted for a type parameter would reach the struct fields,
+		// arrays and pointers goose refuses it in
+		if util.MentionsProphId(typeList.At(i)) {
+			ctx.unsupported(l, "a ProphId in a type argument")
+		}
 		glangTypeArgs[i] = ctx.glangType(l, typeList.At(i))
 	}
 	return

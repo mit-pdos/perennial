@@ -162,7 +162,7 @@ variable [FfiSyntax] [GoSemanticsFunctions]
 mutual
 /-- `Reinterpretable t`: memory reached through an `unsafe.Pointer` may be accessed as a `t`
 (`(*t)(p)`, `unsafe.Slice`, `UnsafeSemantics`): numbers, and arrays and structs of them
-without padding (`ReinterpretableFields`, `StructSize`). Such a value is its bytes, in the model as
+of at most 16 bytes (`SizeAtMost16`) without padding (`ReinterpretableFields`, `StructSize`). Such a value is its bytes, in the model as
 in Go, so reading or writing it over any bytes means what it means in Go; `UnsafeSemantics`
 also checks that the memory accessed is bytes (`CheckBytes`). Not the other types, whose
 model representation is not Go's bytes (a pointer, a string, an interface, a map, a
@@ -181,10 +181,12 @@ inductive Reinterpretable : go.GoType → Prop
   | int : Reinterpretable go.int
   | float32 : Reinterpretable go.float32
   | float64 : Reinterpretable go.float64
-  | array (n : Int) (t : go.GoType) (h : Reinterpretable t) : Reinterpretable (go.ArrayType n t)
+  | array (n : Int) (t : go.GoType) (h : Reinterpretable t) (V : Type) [ZeroVal V]
+      (hr : TypeRepr (go.ArrayType n t) V) (hsz : typeSize V ≤ 16) :
+      Reinterpretable (go.ArrayType n t)
   | struct (fds fds' : List go.field_decl) (heq : EqualsUnfold fds fds') (sum : Int)
       (h : ReinterpretableFields fds' sum) (V : Type) [ZeroVal V]
-      (hr : TypeRepr (go.StructType fds) V) (hsz : typeSize V = sum) :
+      (hr : TypeRepr (go.StructType fds) V) (hsz : typeSize V = sum) (hle : sum ≤ 16) :
       Reinterpretable (go.StructType fds)
   | named (t u : go.GoType) (hu : IsUnderlying t u) (h : Reinterpretable u) : Reinterpretable t
 
@@ -209,17 +211,26 @@ attribute [instance] Reinterpretable.uint8 Reinterpretable.uint16 Reinterpretabl
   Reinterpretable.float32 Reinterpretable.float64
   ReinterpretableFields.nil
 
-instance (n : Int) (t : go.GoType) [h : Reinterpretable t] : Reinterpretable (go.ArrayType n t) :=
-  .array n t h
 /-- The size of a struct type, for `Reinterpretable`'s premise that it is its fields'
-sizes' sum; proofs give it per struct (`go.typeSize_eq` with `StructLayout`). -/
+sizes' sum; proofs give it per struct. -/
 class StructSize (t : go.GoType) (sum : Int) : Prop where
   size : ∀ (V : Type) [ZeroVal V], TypeRepr t V → typeSize V = sum
 
+/-- A type of at most 16 bytes, for `Reinterpretable`: gc copies a value of at most 16
+bytes in one move, a larger one (other than an array through pointers) in a forward loop
+that two overlapping views of the same bytes would corrupt where the model copies
+the value whole; proofs give it per array or struct type. -/
+class SizeAtMost16 (t : go.GoType) : Prop where
+  le : ∀ (V : Type) [ZeroVal V], TypeRepr t V → typeSize V ≤ 16
+
+instance (n : Int) (t : go.GoType) [h : Reinterpretable t] {V : Type} [ZeroVal V]
+    [hr : TypeRepr (go.ArrayType n t) V] [hs : SizeAtMost16 (go.ArrayType n t)] :
+    Reinterpretable (go.ArrayType n t) := .array n t h V hr (hs.le V hr)
 instance (fds fds' : List go.field_decl) [heq : EqualsUnfold fds fds'] {sum : Int}
     [h : ReinterpretableFields fds' sum] {V : Type} [ZeroVal V] [hr : TypeRepr (go.StructType fds) V]
-    [hsz : StructSize (go.StructType fds) sum] :
-    Reinterpretable (go.StructType fds) := .struct fds fds' heq sum h V hr (hsz.size V hr)
+    [hsz : StructSize (go.StructType fds) sum] [hs : SizeAtMost16 (go.StructType fds)] :
+    Reinterpretable (go.StructType fds) :=
+  .struct fds fds' heq sum h V hr (hsz.size V hr) (by have := hs.le V hr; rw [hsz.size V hr] at this; exact this)
 instance (priority := low) (t u : go.GoType) [hu : IsUnderlying t u] [h : Reinterpretable u] :
     Reinterpretable t := .named t u hu h
 instance (n : GoString) (t : go.GoType) (fs : List go.field_decl) {sum : Int} [h : Reinterpretable t]

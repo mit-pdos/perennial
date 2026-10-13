@@ -721,7 +721,7 @@ func (ctx *Ctx) selectorExpr(e *ast.SelectorExpr) glang.Expr {
 		} else if f, ok := ctx.info.ObjectOf(e.Sel).(*types.Func); ok {
 			// package-qualified function
 			typeArgs := ctx.info.Instances[e.Sel].TypeArgs
-			args := glang.ListExpr(ctx.convertTypeArgsToGlang(nil, typeArgs))
+			args := glang.ListExpr(ctx.convertTypeArgsToGlang(e, typeArgs))
 			return glang.NewCallExpr(
 				glang.VerbatimExpr("FuncResolve"),
 				ctx.termIdent(ctx.pkgRef(f.Pkg())+"."+f.Name()),

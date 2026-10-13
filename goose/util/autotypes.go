@@ -65,6 +65,9 @@ func (c *typeTranslatability) check(t types.Type, byValue bool, top bool) {
 	case *types.Named:
 		c.checkObj(t.Obj())
 		for i := range t.TypeArgs().Len() {
+			if MentionsProphId(t.TypeArgs().At(i)) {
+				c.fail("ProphId in a type argument")
+			}
 			c.check(t.TypeArgs().At(i), byValue, false)
 		}
 	case *types.TypeParam:
@@ -115,7 +118,7 @@ func (c *typeTranslatability) check(t types.Type, byValue bool, top bool) {
 		for i := range t.NumFields() {
 			f := t.Field(i)
 			// what goose refuses in a struct (goose.structType)
-			if f.Name() == "_" && types.SizesFor("gc", "amd64").Sizeof(f.Type()) != 0 {
+			if f.Name() == "_" && NonZeroSize(f.Type()) {
 				c.fail("blank field of non-zero size")
 			}
 			if IsProphId(f.Type()) {
@@ -134,6 +137,83 @@ func IsProphId(t types.Type) bool {
 	nt, ok := types.Unalias(t).(*types.Named)
 	return ok && nt.Obj().Pkg() != nil &&
 		nt.Obj().Pkg().Path() == "github.com/goose-lang/primitive" && nt.Obj().Name() == "ProphId"
+}
+
+// MentionsProphId reports whether t mentions ProphId anywhere.
+func MentionsProphId(t types.Type) bool {
+	seen := map[types.Type]bool{}
+	var walk func(t types.Type) bool
+	walk = func(t types.Type) bool {
+		if seen[t] {
+			return false
+		}
+		seen[t] = true
+		if IsProphId(t) {
+			return true
+		}
+		switch t := t.(type) {
+		case *types.Named:
+			for i := range t.TypeArgs().Len() {
+				if walk(t.TypeArgs().At(i)) {
+					return true
+				}
+			}
+			return walk(t.Underlying())
+		case *types.Alias:
+			return walk(types.Unalias(t))
+		case *types.Pointer:
+			return walk(t.Elem())
+		case *types.Slice:
+			return walk(t.Elem())
+		case *types.Array:
+			return walk(t.Elem())
+		case *types.Map:
+			return walk(t.Key()) || walk(t.Elem())
+		case *types.Chan:
+			return walk(t.Elem())
+		case *types.Struct:
+			for i := range t.NumFields() {
+				if walk(t.Field(i).Type()) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	return walk(t)
+}
+
+// NonZeroSize reports whether a value of type t may have a non-zero size under gc: a type
+// that depends on a type parameter may (its size is that of its instantiation).
+func NonZeroSize(t types.Type) bool {
+	if dependsOnTypeParam(t) {
+		return true
+	}
+	return types.SizesFor("gc", "amd64").Sizeof(t) != 0
+}
+
+func dependsOnTypeParam(t types.Type) bool {
+	switch t := t.(type) {
+	case *types.TypeParam:
+		return true
+	case *types.Named:
+		for i := range t.TypeArgs().Len() {
+			if dependsOnTypeParam(t.TypeArgs().At(i)) {
+				return true
+			}
+		}
+	case *types.Alias:
+		return dependsOnTypeParam(types.Unalias(t))
+	case *types.Array:
+		return dependsOnTypeParam(t.Elem())
+	case *types.Struct:
+		for i := range t.NumFields() {
+			if dependsOnTypeParam(t.Field(i).Type()) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (c *typeTranslatability) checkObj(obj types.Object) {

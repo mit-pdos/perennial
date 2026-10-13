@@ -109,7 +109,9 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `unsafe.Slice(p, n)` check that the cells they reach (`T`'s from `p`, those from
   `p` to `p + n`, the slice's) are bytes (`CheckBytes`), else they are stuck; and `T`
   (the element type, for `unsafe.Slice`) must be `go.Reinterpretable`: numbers, and
-  arrays and structs of them without padding (their fields' sizes add up to theirs, `go.StructSize`), whose
+  arrays and structs of them of at most 16 bytes (`go.SizeAtMost16`: gc copies a larger
+  one in a forward loop, which overlapping views would corrupt) without padding (their
+  fields' sizes add up to theirs, `go.StructSize`), whose
   values are their bytes in the model as in Go. So no pointer, string, interface,
   map, channel, function, `bool`, mutex or padding is ever reinterpreted, and the
   model's representation of them never shows. `(*T)(nil)` is `nil`. `Sizeof`,
@@ -120,7 +122,8 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   move the stack (goose's `stackStable`: no call, receive, map index, or conversion
   that a checkptr build (`-race`) instruments) is exact for two pointers into the
   same allocation. Any other conversion of a `uintptr` to a pointer is stuck. goose
-  refuses a `primitive.ProphId` inside a struct or an array, or a pointer to one (gc's
+  refuses a `primitive.ProphId` inside a struct or an array, behind a pointer or in a
+  type argument (gc's
   is 0 bytes, the model's a cell value, which would break gc's layout and addresses),
   a blank field of non-zero size (Go ignores its bytes in `==` and as a map key, the
   model would not), and a field named like goose's names for blank fields (`_0`, …). The lock models' `Unlock` of an unlocked lock
@@ -178,6 +181,9 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
     rejects a type of more than `2^50` bytes, and an array whose length is only known
     at run time (`make`'s backing array) has passed `make`'s check against `maxAlloc`
     (`2^48` bytes, `go.makeCapBound`), which panics (is stuck) beyond it.
+  * Running out of memory is not modelled: an allocation the model makes (a static type
+    of up to `2^50` bytes, `make` up to `maxAlloc`) may make Go die with "out of
+    memory". A verified program is verified on the executions where memory suffices.
   * `append`'s new length (`sumAssumeNoOverflowSigned`, `Golang/Defn/Slice.lean`).
     **Known to be reachable, not yet fixed:** with zero-size elements no
     memory bounds the length, and Go panics where the model assumes:
