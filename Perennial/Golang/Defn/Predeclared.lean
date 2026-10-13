@@ -1138,7 +1138,9 @@ def arbitraryNaN32 : Expr :=
 /-- The result `r` of a `float64` operation, a fixed function of its operands (`FloatOps`)
 unless it is a NaN: which NaN an operation on NaNs gives depends on how gc compiled it
 (the order of a commutative operation's operands, constant folding), and its bits are
-observable through package `unsafe`, so a NaN result is any NaN. -/
+observable through package `unsafe`, so a NaN result is any NaN. A float function that gc
+compiles to an instruction rather than its Go body (`math.Sqrt`, `Floor`, `FMA`, ...) gives
+the instruction's NaN, so it must stay trusted with any-NaN results, not be translated. -/
 def floatResult64 (r : w64) : Expr := if isNaN64 r then arbitraryNaN64 else Val #r
 
 /-- `floatResult64` for `float32`. -/
