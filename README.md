@@ -85,7 +85,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `go.floatResult64`, since which NaN gc's code gives depends on how it was
   compiled and package `unsafe` reads its bits; the program is assumed built
   with the default `GOAMD64=v1`, where gc does not fuse `x*y+z` into one
-  rounding as it may with `v3`), and a value with no byte
+  rounding as it may with `v3`; float `==` is IEEE equality on the bits, so a NaN
+  is not equal to itself and `-0 == +0`, and `<` is `≤` and not `==`; goose
+  refuses a map whose key type contains a float, and a type argument that
+  contains one, since the model's maps compare keys by their bits), and a value with no byte
   representation (a pointer, string, slice, interface, func, map, chan, `bool`)
   as itself in its first cell followed by tails `LitTail k i` that record its
   size and position; padding and fresh cells are `LitPad`. Typed loads and stores go through multi-cell primitives

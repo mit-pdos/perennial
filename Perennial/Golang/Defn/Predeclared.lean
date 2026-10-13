@@ -1122,6 +1122,16 @@ def isNaN64 (r : w64) : Bool :=
 def isNaN32 (r : w32) : Bool :=
   decide ((uint.Z r / 2 ^ 23) % 2 ^ 8 = 2 ^ 8 - 1 ∧ uint.Z r % 2 ^ 23 ≠ 0)
 
+/-- `==` on `float64`s given by their bits (IEEE 754): false if either is a NaN, true for
+`+0` and `-0`, and otherwise the bits are equal. -/
+def float64Eqb (a b : w64) : Bool :=
+  !isNaN64 a && !isNaN64 b &&
+    (decide (a = b) || decide ((a ||| b) &&& 0x7FFFFFFFFFFFFFFF = 0))
+
+/-- `==` on `float32`s given by their bits (IEEE 754). -/
+def float32Eqb (a b : w32) : Bool :=
+  !isNaN32 a && !isNaN32 b && (decide (a = b) || decide ((a ||| b) &&& 0x7FFFFFFF = 0))
+
 /-- Any NaN `float64`: either sign, any non-zero mantissa. -/
 def arbitraryNaN64 : Expr :=
   gl((((ArbitraryInt %⟨go.uint64⟩ #(W64 2)) *⟨go.uint64⟩ #(W64 (2 ^ 63))) +⟨go.uint64⟩
@@ -1150,13 +1160,17 @@ class Float64Semantics [GoSemanticsFunctions] : Prop where
   go_zero_val_float64 : TypeReprUnderlying go.float64 w64
   comparable_float64 : ⟦CheckComparable go.float64, #()⟧ ⤳[under] #()
   underlying_float64 : go.float64 ↓u go.float64
-  go_eq_float64 : IsStrictlyComparable go.float64 w64
+  /-- IEEE equality, not equality of the bits: a NaN is not `==` to itself, `-0 == +0`. -/
+  go_eq_float64 (v1 v2 : w64) : ⟦GoOp GoEquals go.float64, (#v1, #v2)⟧ ⤳[under]
+    #(float64Eqb v1 v2)
   le_float64 (v1 v2 : w64) : ⟦GoOp GoLe go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Leb v1 v2)
+  /-- `<` is `≤` and not `==` (which IEEE's order satisfies: `-0 < +0` is false), with `≤`
+  an uninterpreted function. -/
   lt_float64 (v1 v2 : w64) : ⟦GoOp GoLt go.float64, (#v1, #v2)⟧
-    ⤳[under] #(float64Leb v1 v2 && decide (v1 ≠ v2))
+    ⤳[under] #(float64Leb v1 v2 && !float64Eqb v1 v2)
   ge_float64 (v1 v2 : w64) : ⟦GoOp GoGe go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Leb v2 v1)
   gt_float64 (v1 v2 : w64) : ⟦GoOp GoGt go.float64, (#v1, #v2)⟧
-    ⤳[under] #(float64Leb v2 v1 && decide (v1 ≠ v2))
+    ⤳[under] #(float64Leb v2 v1 && !float64Eqb v1 v2)
   plus_float64 (v1 v2 : w64) : ⟦GoOp GoPlus go.float64, (#v1, #v2)⟧ ⤳[under]
     floatResult64 (float64Add v1 v2)
   sub_float64 (v1 v2 : w64) : ⟦GoOp GoSub go.float64, (#v1, #v2)⟧ ⤳[under]
@@ -1194,13 +1208,17 @@ class Float32Semantics [GoSemanticsFunctions] : Prop where
   go_zero_val_float32 : TypeReprUnderlying go.float32 w32
   comparable_float32 : ⟦CheckComparable go.float32, #()⟧ ⤳[under] #()
   underlying_float32 : go.float32 ↓u go.float32
-  go_eq_float32 : IsStrictlyComparable go.float32 w32
+  /-- IEEE equality, not equality of the bits: a NaN is not `==` to itself, `-0 == +0`. -/
+  go_eq_float32 (v1 v2 : w32) : ⟦GoOp GoEquals go.float32, (#v1, #v2)⟧ ⤳[under]
+    #(float32Eqb v1 v2)
   le_float32 (v1 v2 : w32) : ⟦GoOp GoLe go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Leb v1 v2)
+  /-- `<` is `≤` and not `==` (which IEEE's order satisfies: `-0 < +0` is false), with `≤`
+  an uninterpreted function. -/
   lt_float32 (v1 v2 : w32) : ⟦GoOp GoLt go.float32, (#v1, #v2)⟧
-    ⤳[under] #(float32Leb v1 v2 && decide (v1 ≠ v2))
+    ⤳[under] #(float32Leb v1 v2 && !float32Eqb v1 v2)
   ge_float32 (v1 v2 : w32) : ⟦GoOp GoGe go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Leb v2 v1)
   gt_float32 (v1 v2 : w32) : ⟦GoOp GoGt go.float32, (#v1, #v2)⟧
-    ⤳[under] #(float32Leb v2 v1 && decide (v1 ≠ v2))
+    ⤳[under] #(float32Leb v2 v1 && !float32Eqb v1 v2)
   plus_float32 (v1 v2 : w32) : ⟦GoOp GoPlus go.float32, (#v1, #v2)⟧ ⤳[under]
     floatResult32 (float32Add v1 v2)
   sub_float32 (v1 v2 : w32) : ⟦GoOp GoSub go.float32, (#v1, #v2)⟧ ⤳[under]
