@@ -880,9 +880,45 @@ func getInterfaceSingletonType(t types.Type) (types.Type, bool) {
 	return nil, false
 }
 
-// underlyingType returns the underlying type of t, including if t is of an
-// singleton interface.
+// typeSetTerms returns the underlying types of the type terms of the
+// constraint of the type parameter t, walking embedded interfaces and unions.
+// t's type set is included in the types whose underlying type is one of them
+// (an element without terms, such as a method or comparable, does not restrict
+// the underlying type).
+func typeSetTerms(t *types.TypeParam) (terms []types.Type) {
+	var walk func(t types.Type)
+	walk = func(t types.Type) {
+		switch u := t.Underlying().(type) {
+		case *types.Interface:
+			for i := 0; i < u.NumEmbeddeds(); i++ {
+				walk(u.EmbeddedType(i))
+			}
+		case *types.Union:
+			for i := 0; i < u.Len(); i++ {
+				walk(u.Term(i).Type())
+			}
+		default:
+			terms = append(terms, u)
+		}
+	}
+	walk(t.Constraint())
+	return terms
+}
+
+// underlyingType returns the underlying type of t. For a type parameter whose
+// constraint's terms all have the same underlying type it is that type (the
+// core type); for any other type parameter it is the constraint interface.
 func underlyingType(t types.Type) types.Type {
+	if tp, ok := t.(*types.TypeParam); ok {
+		if terms := typeSetTerms(tp); len(terms) > 0 {
+			for _, u := range terms[1:] {
+				if !types.Identical(terms[0], u) {
+					return t.Underlying()
+				}
+			}
+			return terms[0]
+		}
+	}
 	if t, ok := getInterfaceSingletonType(t); ok {
 		return t.Underlying()
 	}
@@ -1902,7 +1938,12 @@ func (ctx *Ctx) checkInstances(n ast.Node) {
 // element, key or field of interface type, which converts its value.
 func hasInterfaceSlot(t types.Type) bool {
 	// the core type, for a literal whose type is a type parameter
-	switch t := underlyingType(t).(type) {
+	u := underlyingType(t)
+	if _, ok := t.(*types.TypeParam); ok && types.IsInterface(u) {
+		// no core type found: assume a slot
+		return true
+	}
+	switch t := u.(type) {
 	case *types.Struct:
 		for i := 0; i < t.NumFields(); i++ {
 			if types.IsInterface(t.Field(i).Type()) {

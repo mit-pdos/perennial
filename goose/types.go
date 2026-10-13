@@ -349,6 +349,15 @@ func chanElem(t types.Type) types.Type {
 	if t, ok := underlyingType(t).(*types.Chan); ok {
 		return t.Elem()
 	}
+	// a type parameter whose channel terms differ in direction: the channels
+	// of a core type have identical elements
+	if tp, ok := t.(*types.TypeParam); ok {
+		for _, u := range typeSetTerms(tp) {
+			if c, ok := u.(*types.Chan); ok {
+				return c.Elem()
+			}
+		}
+	}
 	panic(fmt.Errorf("expected channel type, got %v", t))
 }
 
