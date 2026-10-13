@@ -399,11 +399,7 @@ func (ctx *Ctx) callExpr(s *ast.CallExpr) glang.Expr {
 	} else if e, ok := ctx.maybeHandleSpecialBuiltin(s); ok {
 		return e
 	} else {
-		// the translation evaluates the arguments before the function value
-		// (and a method's receiver); Go evaluates them left to right
-		if ctx.hasEffects(s.Fun) && ctx.anyEffects(s.Args...) {
-			ctx.unsupported(s, "evaluation order: a call whose function or receiver and arguments both call a function or receive")
-		}
+		ctx.checkCallOrder(s)
 		var args []glang.Expr
 		for i := range ctx.getNumParams(s.Fun) {
 			args = append(args, glang.IdentExpr(fmt.Sprintf("$a%d", i)))
@@ -1032,6 +1028,7 @@ func (ctx *Ctx) indexExpr(e *ast.IndexExpr, multipleBindings bool) glang.Expr {
 	xTy := ctx.typeOf(e.X).Underlying()
 	switch xTy := xTy.(type) {
 	case *types.Map:
+		ctx.checkMapIndexOrder(e)
 		if multipleBindings {
 			return glang.NewCallExpr(glang.VerbatimExpr("map.lookup2"),
 				ctx.glangType(e.X, xTy.Key()),
@@ -1745,6 +1742,7 @@ func (ctx *Ctx) assignFromTo(lhs ast.Expr, rhs glang.Expr, cont glang.Expr) glan
 		targetTy := ctx.typeOf(lhs.X)
 		switch t := targetTy.Underlying().(type) {
 		case *types.Map:
+			ctx.checkMapIndexOrder(lhs)
 			return glang.NewDoSeq(glang.NewCallExpr(glang.VerbatimExpr("map.insert"),
 				ctx.glangType(lhs.Index, t.Key()),
 				ctx.expr(lhs.X),
@@ -1962,6 +1960,24 @@ func targetOperands(e ast.Expr) []ast.Expr {
 		return []ast.Expr{e.X}
 	}
 	return nil
+}
+
+// checkCallOrder refuses a call (also in go and defer) whose function value or
+// receiver and arguments both call a function or receive: the translation
+// evaluates the arguments first, Go left to right.
+func (ctx *Ctx) checkCallOrder(s *ast.CallExpr) {
+	if ctx.hasEffects(s.Fun) && ctx.anyEffects(s.Args...) {
+		ctx.unsupported(s, "evaluation order: a call whose function or receiver and arguments both call a function or receive")
+	}
+}
+
+// checkMapIndexOrder refuses m[k] where m and k both call a function or
+// receive: the map primitives take the key as a curried argument, which
+// GooseLang evaluates before the map, while Go evaluates m first.
+func (ctx *Ctx) checkMapIndexOrder(e *ast.IndexExpr) {
+	if ctx.hasEffects(e.X) && ctx.hasEffects(e.Index) {
+		ctx.unsupported(e, "evaluation order: a map index whose map and key both call a function or receive")
+	}
 }
 
 func (ctx *Ctx) anyEffects(es ...ast.Expr) bool {
@@ -2213,6 +2229,7 @@ func breaksOut(body *ast.BlockStmt) bool {
 }
 
 func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
+	ctx.checkCallOrder(e.Call)
 	args := make([]glang.Expr, 0, len(e.Call.Args))
 	for i := range len(e.Call.Args) {
 		args = append(args, glang.IdentExpr(fmt.Sprintf("$a%d", i)))
@@ -2381,6 +2398,7 @@ func (ctx *Ctx) returnStmt(s *ast.ReturnStmt, cont glang.Expr) glang.Expr {
 }
 
 func (ctx *Ctx) deferStmt(s *ast.DeferStmt, cont glang.Expr) (expr glang.Expr) {
+	ctx.checkCallOrder(s.Call)
 	ctx.usesDefer = true
 	args := make([]glang.Expr, 0, len(s.Call.Args))
 	for i := range len(s.Call.Args) {

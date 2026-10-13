@@ -375,3 +375,53 @@ fields for such a type, so it does not elaborate, but this becomes a BLOCK when
 goose renames them. `IfaceMethods`/`TypeBytes` are hand-written per package; two
 packages stating different facts would make a combined proof vacuous (goose
 should generate them from the type). No `typeAddr T ≠ 0`.
+
+## Round 10
+
+Round 9's refusals held where they apply. Three more inherited goose
+evaluation-order problems:
+
+**BLOCK: `go` and `defer` evaluated arguments before the function value and
+receiver** (they do not go through `callExpr`).
+
+```go
+func DeferMethod() { defer getR(1).M(f(2)) }   // f, getR log their argument
+// Go: log [1 2]; the model: [2 1]   (also `go h(1)(f(2))`, `defer h(1)(f(2))`)
+```
+
+*Fixed by refusal* (`checkCallOrder` in `goStmt`/`deferStmt`; negative test
+`evalorder_defer`).
+
+**BLOCK: a map index evaluated the key before the map operand** (the map
+primitives take the key as a curried argument, and GooseLang's `App`
+evaluates its argument first).
+
+```go
+func ms(k int) map[int]int { f(k); return map[int]int{} }
+func MapRead() int { return ms(1)[f(2)] }   // Go: [1 2]; the model: [2 1]
+func MapIns()      { ms(1)[f(2)] = 3 }      // same
+```
+
+*Fixed by refusal* (`checkMapIndexOrder`, reads and inserts; negative test
+`evalorder_mapindex`).
+
+**BLOCK (inherited, broad, open): reads ordered against calls.** Go leaves
+the order of variable/memory reads relative to calls unspecified; goose fixes
+the lexical order, and gc reads after the calls:
+
+```go
+var i int
+func bump() int { i = 1; return 10 }
+i + bump()                        // gc: 11; the model: 10
+g2(i, bump())                     // gc: 1 10; the model: 0 10
+[]int{i, bump()} / return i, bump() / x, y = i, bump()   // gc reads i = 1
+a := [2]int{5, 7}; a[i] += bump() // gc: [5 17]; the model: [15 7]
+```
+
+A program verified for the lexical order can fail as gc compiles it. This is
+a property of goose's whole translation, not of the byte memory; it needs a
+decision (refuse expressions where a call may write a location the
+expression reads, or record the order as a model assumption).
+
+**NOTE:** `make([]T, f(1), f(2))` evaluates `f(2)` first (curried `App`),
+against the spec, but gc does the same.
