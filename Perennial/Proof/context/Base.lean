@@ -396,6 +396,10 @@ def isCancelCtxOfR (c : Loc) (γ : ContextNames) (P R : IProp GF) : IProp GF :=
     "#Hinv" ∷ inv cancelCtxN (cancelCtxInv c γ P) ∗
     "#Hcci" ∷ isClosedchanInit)
 
+instance isCancelCtxOfR_hypPure (c l : Loc) (γ : ContextNames) (P R : IProp GF)
+    [LocNonNullFrom c l] : HypPure (isCancelCtxOfR c γ P R) (l ≠ null) := by
+  unfold isCancelCtxOfR; infer_instance
+
 instance isCancelCtxOfR_pers (c : Loc) (γ : ContextNames) (P R : IProp GF) :
     Persistent (isCancelCtxOfR c γ P R) := by
   unfold isCancelCtxOfR; infer_instance
@@ -408,6 +412,10 @@ def isCancelCtxOf (c : Loc) (γ : ContextNames) (P : IProp GF) : IProp GF :=
       (cancelCtxLockInv c γ P R) ∗
     "#Hinv" ∷ inv cancelCtxN (cancelCtxInv c γ P) ∗
     "#Hcci" ∷ isClosedchanInit)
+
+instance isCancelCtxOf_hypPure (c l : Loc) (γ : ContextNames) (P : IProp GF)
+    [LocNonNullFrom c l] : HypPure (isCancelCtxOf c γ P) (l ≠ null) := by
+  unfold isCancelCtxOf; infer_instance
 
 instance isCancelCtxOf_pers (c : Loc) (γ : ContextNames) (P : IProp GF) :
     Persistent (isCancelCtxOf c γ P) := by

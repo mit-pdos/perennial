@@ -520,6 +520,10 @@ func (suite *GoTestSuite) TestInterfaceNilWithType() {
 	suite.Equal(true, testInterfaceNilWithType())
 }
 
+func (suite *GoTestSuite) TestNilFieldRefPanics() {
+	suite.Equal(true, testNilFieldRefPanics())
+}
+
 func (suite *GoTestSuite) TestReverseAssignOps64() {
 	suite.Equal(true, testReverseAssignOps64())
 }

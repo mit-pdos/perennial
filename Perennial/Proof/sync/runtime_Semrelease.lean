@@ -27,6 +27,7 @@ theorem sync.runtime_Semrelease.wp_proof :
   intro sema γ N _u1 _u2
   wp_start as #Hsem
   simp only [isSema_unseal, isSemaDef, ownSema_unseal, ownSemaDef]
+  icases Hsem with ⟨#Hsem, %_⟩
   wp_bind (AtomicAdd _ _)
   iinv Hsem with ⟨%v, >Hs, >Hv⟩
   imod HΦ with ⟨%v1, Hv2, HΦ⟩

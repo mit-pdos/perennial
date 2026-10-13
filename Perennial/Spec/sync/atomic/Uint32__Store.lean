@@ -27,6 +27,7 @@ abbrev sync.atomic.Uint32.Store.spec : Prop :=
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ old : w32, ownUint32 u (DFrac.own 1) old ∗
       (ownUint32 u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
+    ⌜u ≠ null⌝ -∗
     WP (App (Val (u @!! go.GoType.PointerType Uint32.ty @!! go!"Store")) (Val #v)) {{ Φ }}
 
 end spec

@@ -817,6 +817,105 @@ instance mvOuterPtr_access_store_mvBox (l : Loc) (v : github_com.mit_pdos.perenn
 end def_
 end mvOuterPtr
 
+namespace nilFieldInner
+section def_
+
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
+
+instance nilFieldInner_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldInner where
+  typedPointstoDef l v dq := iprop(
+    "a" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldInner go!"a" l) v.a' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance nilFieldInner_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldInner github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldInner.underlying := by
+  solve_into_val_typed_struct
+
+instance nilFieldInner_access_load_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldInner) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldInner go!"a" l) v.a' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldInner go!"a" l) v.a' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance nilFieldInner_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldInner) (a' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldInner go!"a" l) v.a' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldInner go!"a" l) a' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldInner) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end nilFieldInner
+
+namespace nilFieldOuter
+section def_
+
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
+
+instance nilFieldOuter_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter where
+  typedPointstoDef l v dq := iprop(
+    "nilFieldInner" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter go!"nilFieldInner" l) v.nilFieldInner' dq ∗
+    "z" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter go!"z" l) v.z' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance nilFieldOuter_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter.underlying := by
+  solve_into_val_typed_struct
+
+instance nilFieldOuter_access_load_nilFieldInner (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter go!"nilFieldInner" l) v.nilFieldInner' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter go!"nilFieldInner" l) v.nilFieldInner' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance nilFieldOuter_access_store_nilFieldInner (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter) (nilFieldInner' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldInner) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter go!"nilFieldInner" l) v.nilFieldInner' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter go!"nilFieldInner" l) nilFieldInner' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with nilFieldInner' := nilFieldInner' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance nilFieldOuter_access_load_z (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter go!"z" l) v.z' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter go!"z" l) v.z' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance nilFieldOuter_access_store_z (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter) (z' : Unit) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter go!"z" l) v.z' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter go!"z" l) z' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with z' := z' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.nilFieldOuter) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end nilFieldOuter
+
 namespace BoolTest
 section def_
 

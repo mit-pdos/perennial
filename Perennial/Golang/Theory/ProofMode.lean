@@ -102,6 +102,46 @@ theorem pure_wp_val (φ : Prop) (e : Expr) (v' : val)
 
 end classes
 
+/-- `HypPure P φ`: the hypothesis `P` implies the pure fact `φ`. `wp_auto` and
+`wp_pures` use it to discharge the side condition `φ` of a pure step from a
+hypothesis of the context, when the side-condition solver fails (e.g. the
+`l ≠ null` of a field reference `StructFieldRef t f #l`, from a points-to at
+`l` or at a field of `l`: `pure_wp_structFieldRef`). -/
+class HypPure {PROP : Type _} [BI PROP] (P : PROP) (φ : Prop) : Prop where
+  hyp_pure : P ⊢ ⌜φ⌝
+
+/-- `LocNonNullFrom loc l`: `loc` and `l` are (nested) field addresses of a
+common base address (or the base itself), so `loc ≠ null` implies `l ≠ null`
+(the instances for field addresses, from `structFieldRef_eq_null_iff`, are in
+`PostLifting.lean`). -/
+class LocNonNullFrom (loc l : Loc) : Prop where
+  ne_null : loc ≠ null → l ≠ null
+
+instance locNonNullFrom_refl (l : Loc) : LocNonNullFrom l l := ⟨id⟩
+
+instance hypPure_pure {PROP : Type _} [BI PROP] (φ : Prop) : HypPure (PROP := PROP) iprop(⌜φ⌝) φ :=
+  ⟨.rfl⟩
+
+instance hypPure_sep_left {PROP : Type _} [BI PROP] [BIAffine PROP] (P Q : PROP) (φ : Prop)
+    [h : HypPure P φ] : HypPure iprop(P ∗ Q) φ :=
+  ⟨sep_elim_left.trans h.hyp_pure⟩
+
+instance hypPure_sep_right {PROP : Type _} [BI PROP] [BIAffine PROP] (P Q : PROP) (φ : Prop)
+    [h : HypPure Q φ] : HypPure iprop(P ∗ Q) φ :=
+  ⟨sep_elim_right.trans h.hyp_pure⟩
+
+instance hypPure_exists {PROP : Type _} [BI PROP] {α : Sort _} (P : α → PROP) (φ : Prop)
+    [h : ∀ x, HypPure (P x) φ] : HypPure iprop(∃ x, P x) φ :=
+  ⟨exists_elim fun x => (h x).hyp_pure⟩
+
+instance hypPure_intuitionistically {PROP : Type _} [BI PROP] (P : PROP) (φ : Prop)
+    [h : HypPure P φ] : HypPure iprop(□ P) φ :=
+  ⟨intuitionistically_elim.trans h.hyp_pure⟩
+
+theorem tac_pure_from_hyp {PROP : Type _} [BI PROP] [BIAffine PROP] {Δ Δ' P Q : PROP} {p : Bool}
+    {φ : Prop} (h : Δ ⊣⊢ Δ' ∗ □?p P) (hP : HypPure P φ) (k : φ → Δ ⊢ Q) : Δ ⊢ Q :=
+  pure_elim φ (h.1.trans (sep_elim_right.trans (intuitionisticallyIf_elim.trans hP.hyp_pure))) k
+
 /-! ## Basic instances -/
 
 section instances
@@ -1428,12 +1468,45 @@ meta def synthPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Le
   if let some ra ← abs3 xs r then pureWpCacheInsert key ra
   return r
 
+/-- `l` if `φ` is of the form `l ≠ null` (`l : Loc`). -/
+meta def neNullLoc? (φ : Lean.Expr) : MetaM (Option Lean.Expr) := do
+  let φ ← whnfR (← instantiateMVars φ)
+  let_expr Not e := φ | return none
+  let e ← whnfR e
+  let_expr Eq _ a b := e | return none
+  unless (← whnfR b).isConstOf ``Perennial.Loc.null do return none
+  return some a
+
+/-- Is `φ` of the form `l ≠ null` (`l : Loc`)? -/
+meta def isNeNull (φ : Lean.Expr) : MetaM Bool := return (← neNullLoc? φ).isSome
+
+/-- A proof of `l ≠ null` from a Lean hypothesis `h : l' ≠ null`, where `l` and `l'`
+are (nested) field addresses of a common base (`LocNonNullFrom l' l`). The
+hypotheses are matched syntactically: `assumption` and `simp [*]` can loop
+unfolding unrelated hypotheses (e.g. on machine-word literals). -/
+meta def solveNeNullCheap? (φ : Lean.Expr) : MetaM (Option Lean.Expr) := do
+  let some l ← neNullLoc? φ | return none
+  for d in ← getLCtx do
+    if d.isImplementationDetail then continue
+    let some l' ← neNullLoc? d.type | continue
+    let some inst ← observing? (synthInstance (← mkAppM ``Perennial.LocNonNullFrom #[l', l]))
+      | continue
+    return some (← mkAppOptM ``Perennial.LocNonNullFrom.ne_null #[l', l, inst, d.toExpr])
+  return none
+
 /-- Discharge the side condition `φ` of a pure step. `True` is solved
-immediately; otherwise iris-lean's side-condition solver is tried, and if it
-fails the condition becomes a new goal (unless `failOnUnsolved`). -/
+immediately; `l ≠ null` with `solveNeNullCheap?`; otherwise iris-lean's
+side-condition solver is tried, and if it fails the condition becomes a new goal
+(unless `failOnUnsolved`). -/
 meta def solvePureSideCondition (φ : Lean.Expr) (failOnUnsolved : Bool) : ProofModeM Lean.Expr := do
   let φ ← instantiateMVars φ
   if φ.isConstOf ``True then return mkConst ``True.intro
+  if ← isNeNull φ then
+    if let some h ← solveNeNullCheap? φ then return h
+    if failOnUnsolved then throwIPMError "failed to solve side condition {φ}"
+    let g ← mkFreshExprSyntheticOpaqueMVar φ
+    addMVarGoal g.mvarId!
+    return g
   iSolveSidecondition φ (failOnUnsolved := failOnUnsolved)
 
 /-- Is `e` a string literal? -/
@@ -2401,10 +2474,10 @@ meta def isCompositeLitApp (e : Lean.Expr) : MetaM Bool := do
   return false
 
 /-- Find the pure step that `iWpPureStep` would take (the outermost redex with a
-`PureWp` instance satisfying `pred`) and solve its side condition. -/
-meta def iWpPureStepFind (wp : GooseWpGoal) (failOnUnsolved : Bool)
+`PureWp` instance satisfying `pred`). -/
+meta def iWpPureStepFindRaw (wp : GooseWpGoal)
     (pred : Lean.Expr → MetaM Bool := fun _ => pure true) (multi : Bool := false) :
-    ProofModeM (PureStep × Lean.Expr) := do
+    ProofModeM PureStep := do
   let gs ← gooseGSArgs wp.ι
   let stepSliceLits := (goose.wp.unfoldSliceLiterals.get (← getOptions)).or
     (!goose.wp.extras.get (← getOptions))
@@ -2444,8 +2517,64 @@ meta def iWpPureStepFind (wp : GooseWpGoal) (failOnUnsolved : Bool)
             throwError "slice literal"
       return ({ K, e1, φ, e2, inst } : PureStep))
     | throwIPMError "could not find a head subexpression with a known next step"
+  return st
+
+/-- Find the pure step that `iWpPureStep` would take (`iWpPureStepFindRaw`) and
+solve its side condition. -/
+meta def iWpPureStepFind (wp : GooseWpGoal) (failOnUnsolved : Bool)
+    (pred : Lean.Expr → MetaM Bool := fun _ => pure true) (multi : Bool := false) :
+    ProofModeM (PureStep × Lean.Expr) := do
+  let st ← iWpPureStepFindRaw wp pred multi
   let hφ ← solvePureSideCondition st.φ failOnUnsolved
   return (st, hφ)
+
+/-- How the side condition of a pure step is discharged: by a proof, or from a
+hypothesis (`HypPure`): `wrap h pf` turns a proof `pf` of the goal in which the
+local `h : φ` is free into one of the goal without it (`tac_pure_from_hyp`). -/
+inductive SideCondProof where
+  | proof (h : Lean.Expr)
+  | fromHyp (wrap : Lean.Expr → Lean.Expr → MetaM Lean.Expr)
+
+/-- A hypothesis `H` of `hyps` with `HypPure H φ`: returns the wrapper of
+`SideCondProof.fromHyp`. -/
+meta def pureFromHyps? {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+    (hyps : Hyps bi ehyps) (goal φ : Lean.Expr) :
+    MetaM (Option (Lean.Expr → Lean.Expr → MetaM Lean.Expr)) := do
+  let φ ← instantiateMVars φ
+  if φ.hasMVar then return none
+  for (_, ivar, _, _) in hypsListCore hyps do
+    let r := hyps.remove false ivar
+    let ty ← mkAppM ``HypPure #[r.out', φ]
+    let some inst ← observing? (synthInstance ty) | continue
+    return some fun h pf => do
+      let k ← mkLambdaFVars #[h] pf
+      mkAppNamed ``tac_pure_from_hyp
+        [("PROP", prop), ("Δ", ehyps), ("Δ'", r.e'), ("P", r.out'), ("Q", goal), ("p", r.p),
+         ("φ", φ), ("h", r.pf), ("hP", inst), ("!k", k)]
+  return none
+where
+  hypsListCore : ∀ {e}, Hyps bi e → List (Name × IVarId × Q(Bool) × Q($prop))
+    | _, .emp _ => []
+    | _, .hyp _ name ivar p ty _ => [(name, ivar, p, ty)]
+    | _, .sep _ _ _ _ lhs rhs => hypsListCore rhs ++ hypsListCore lhs
+
+/-- `iWpPureStepFind`, discharging a side condition that the solver cannot
+solve from a hypothesis of `hyps` (`pureFromHyps?`) if there is one. A side
+condition `l ≠ null` (`pure_wp_structFieldRef`) is first tried with
+`solveNeNullCheap?` and `pureFromHyps?`. -/
+meta def iWpPureStepFindHyps {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
+    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (multi : Bool := false) :
+    ProofModeM (PureStep × SideCondProof) := do
+  let st ← iWpPureStepFindRaw wp (multi := multi)
+  if ← isNeNull st.φ then
+    if let some hφ ← solveNeNullCheap? st.φ then return (st, .proof hφ)
+    if let some wrap ← pureFromHyps? hyps (wp.mk' wp.e wp.Φ) st.φ then
+      return (st, .fromHyp wrap)
+  if let some hφ ← observing? (solvePureSideCondition st.φ (failOnUnsolved := true)) then
+    return (st, .proof hφ)
+  match ← pureFromHyps? hyps (wp.mk' wp.e wp.Φ) st.φ with
+  | some wrap => return (st, .fromHyp wrap)
+  | none => throwIPMError "failed to solve side condition {st.φ}"
 
 /-- The subterms of the redex `e1` up to depth 3 (looking through reducible
 definitions such as `Let`): these are parts of the WP expression, hence in
@@ -2793,10 +2922,16 @@ meta partial def iWpPures {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($
   let saved ← saveState
   -- only the search is allowed to fail; errors while taking the step (e.g. in
   -- `simp`) are reported
-  let found ← observing? (iWpPureStepFind wp (failOnUnsolved := true) (multi := true))
+  let found ← observing? (iWpPureStepFindHyps hyps wp (multi := true))
+  -- a side condition discharged from a hypothesis (`HypPure`): continue with it
+  -- as a local `Hφ`
+  if let some (st, .fromHyp wrap) := found then
+    return ← withLocalDeclD (← mkFreshUserName `Hφ) st.φ fun h => do
+      let ⟨_, hyps', e', k⟩ ← iWpPureStepTake hyps wp st h false
+      wrap h (← k (← iWpPures hyps' { wp with e := e' } (simpFirst := false)))
   let step ← match found with
-    | some (st, hφ) => some <$> iWpPureStepTake hyps wp st hφ false
-    | none => pure none
+    | some (st, .proof hφ) => some <$> iWpPureStepTake hyps wp st hφ false
+    | _ => pure none
   match step with
   | some ⟨_, hyps', e', k⟩ =>
     -- do not loop on an expression that steps to itself (e.g. `rec: f <> := f #()`)
@@ -3219,8 +3354,28 @@ elab "wp_apply_raw " colGt pmt:pmTerm : tactic => do
     throwIPMError "cannot apply {A} to any subexpression in evaluation position of{indentExpr wp.e}"
 
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
+/-- `inonnull` proves an Iris goal `⌜l ≠ null⌝` from a Lean hypothesis (with the
+side-condition solver, which knows `structFieldRef_eq_null_iff`) or from a
+hypothesis `H` of the context with `HypPure H (l ≠ null)` (e.g. a points-to at
+`l` or at a field of `l`, or `isMutex` of a field of `l`). -/
+elab "inonnull" : tactic =>
+  ProofModeM.runTactic `inonnull fun mvar {prop, bi, e, hyps, goal, ..} => do
+    let goal' ← whnfR (← instantiateMVars goal)
+    unless goal'.isAppOfArity ``BIBase.pure 3 do throwIPMError "inonnull: not a pure goal"
+    let φ := goal'.getArg! 2
+    unless ← isNeNull φ do throwIPMError "inonnull: not a goal `⌜l ≠ null⌝`"
+    if let some hφ ← solveNeNullCheap? φ then
+      mvar.assign (← mkAppOptM ``BI.pure_intro #[prop, none, φ, e, hφ])
+      return
+    let some wrap ← pureFromHyps? hyps goal φ | throwIPMError "inonnull: cannot show {φ}"
+    let pf ← withLocalDeclD `h φ fun h => do
+      wrap h (← mkAppOptM ``BI.pure_intro #[prop, none, φ, e, h])
+    mvar.assign pf
+
+open Lean Elab Tactic Meta Qq Iris.ProofMode in
 /-- Internal: post-processing of the goals produced by `wp_apply_raw`: strip a
-leading `▷`, and solve trivial `True`/`⌜True⌝`/`emp` goals. -/
+leading `▷`, solve trivial `True`/`⌜True⌝`/`emp` goals, and `⌜l ≠ null⌝` goals
+(`inonnull`). -/
 elab "wp_apply_post" : tactic => do
   let gs ← getGoals
   let mut out := []
@@ -3243,6 +3398,10 @@ elab "wp_apply_post" : tactic => do
             solved := true
           else if let some _ ← observing? (evalTactic (← `(tactic| iempintro))) then
             solved := true
+        if !solved && goal.isAppOfArity ``BIBase.pure 3 then
+          if ← isNeNull (goal.getArg! 2) then
+            if let some _ ← observing? (evalTactic (← `(tactic| inonnull))) then
+              solved := true
         -- `True -∗ P`: drop the premise
         if goal.isAppOfArity ``BIBase.wand 4 then
           let lhs ← whnfR (goal.getArg! 2)

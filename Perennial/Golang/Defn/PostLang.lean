@@ -448,12 +448,31 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
     ⟦MethodResolve t m, rcvr⟧ ⤳ #(methods t m rcvr)
   go_global_var_addr_step (v : GoString) : ⟦GlobalVarAddr v, #()⟧ ⤳ #(globalAddr v)
 
-  /-- FIXME: unsound semantics: simply computing the struct field address will
-  panic if the base address is nil. This is a bit of a headache because every
-  program step executing `StructFieldRef` will need to have a precondition that
-  `l ≠ null`. -/
+  /-- The address `&x.f` of field `f` of the struct `*x` at `l`. Goose emits
+  `StructFieldRef` for every field selector through a pointer, explicit or
+  implicit (`&p.f`, `p.f`, `p.f = v`, `p.g.f`, the embedded field a promoted
+  method is called through, and the field-by-field expansions of `GoLoad`,
+  `GoStore` and `GoAlloc` of a struct). Go: "If x is of pointer type and has
+  the value nil and x.f denotes a struct field, assigning to or evaluating x.f
+  causes a run-time panic", and taking its address panics too (also for a
+  zero-size field), so on `null` this is a stuck run-time panic, like the other
+  run-time panics of builtins (Go's is recoverable, the model's is not: the
+  model is less defined than Go there). -/
   structFieldRef_step (t : go.GoType) (f : GoString) (l : Loc) {V : Type} [ZeroVal V]
-    [TypeRepr t V] : ⟦StructFieldRef t f, #l⟧ ⤳[under] #(structFieldRef V f l)
+    [TypeRepr t V] : ⟦StructFieldRef t f, #l⟧ ⤳[under]
+      (if l = null then Panic "nil pointer dereference" else #(structFieldRef V f l))
+
+  /-- The address of a field of the struct at `null` is `null`. No Go program
+  computes it (`structFieldRef_step` panics on `null`, and `GoAlloc` takes the
+  field addresses of a fresh, non-null struct only), so this fixes an
+  unobservable value; it lets a points-to at a field `l.[V, f]` show `l ≠ null`. -/
+  structFieldRef_null (V : Type) (f : GoString) : structFieldRef V f null = null
+
+  /-- The address of a field of a struct at a non-null address is not `null`
+  (Go: `&x.f` is the address of a variable, never `nil`; as
+  `arrayIndexRef_null_inv` for arrays). -/
+  structFieldRef_null_inv (V : Type) (f : GoString) (l : Loc) :
+    structFieldRef V f l = null → l = null
 
   /-- The language spec doesn't say anything about the addresses of zero-sized
   allocation. But, in the runtime, these addresses are non-nil, so the
@@ -616,7 +635,7 @@ export CoreSemantics (basic_into_val_inj underlying_not_named convert_underlying
   fullSlice_underlying index_underlying index_ref_underlying check_comparable_underlying
   struct_field_get_underlying struct_field_set_underlying structFieldRef_step_underlying
   go_zero_val_step_underlying go_func_resolve_step go_method_resolve_step go_global_var_addr_step
-  structFieldRef_step go_prealloc_step angelic_exit_step intoVal_unfold_func
+  structFieldRef_step structFieldRef_null structFieldRef_null_inv go_prealloc_step angelic_exit_step intoVal_unfold_func
   intoVal_unfold_bool intoVal_unfold_w64 intoVal_unfold_w32 intoVal_unfold_w16
   intoVal_unfold_w8 intoVal_unfold_string intoVal_unfold_loc intoVal_unfold_unit
   go_zero_val_step go_zero_val_pointer go_zero_val_function go_zero_val_slice

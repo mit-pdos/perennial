@@ -83,7 +83,8 @@ instance (priority := high) go_zero_val_step' [FfiSyntax] [GoLocalContext] [GoGl
 instance (priority := high) structFieldRef_step' [FfiSyntax] [GoLocalContext]
     [GoGlobalContext] [GoSemanticsFunctions] [go.CoreSemantics] (t : go.GoType) (f : GoString)
     (l : Loc) {V : Type} {zv : ZeroVal V} [TypeRepr t V] :
-    ⟦StructFieldRef t f, #l⟧ ⤳[under] #(structFieldRef V f l) :=
+    ⟦StructFieldRef t f, #l⟧ ⤳[under]
+      (if l = null then Panic "nil pointer dereference" else #(structFieldRef V f l)) :=
   go.structFieldRef_step t f l
 
 section not_named
@@ -221,6 +222,31 @@ theorem typedPointsto_not_null (l : Loc) (v : V) (dq : DFrac) :
   rw [typedPointsto_unseal]; unfold typedPointstoWrap
   iintro ⟨_, %h⟩; ipureintro; exact h
 
+/-- A field address is `null` exactly when the struct's address is
+(`go.structFieldRef_null`, `go.structFieldRef_null_inv`). -/
+@[simp] theorem structFieldRef_eq_null_iff [FfiSyntax] [GoSemanticsFunctions] [GoLocalContext]
+    [GoGlobalContext] [go.CoreSemantics] {V' : Type} {f : GoString} {l : Loc} :
+    structFieldRef V' f l = null ↔ l = null :=
+  ⟨go.structFieldRef_null_inv V' f l, by rintro rfl; exact go.structFieldRef_null V' f⟩
+
+instance locNonNullFrom_field_left [FfiSyntax] [GoSemanticsFunctions] [GoLocalContext]
+    [GoGlobalContext] [go.CoreSemantics] {V' : Type} {f : GoString}
+    {loc l : Loc} [h : LocNonNullFrom loc l] : LocNonNullFrom (structFieldRef V' f loc) l :=
+  ⟨fun hn => h.ne_null (fun e => hn (structFieldRef_eq_null_iff.2 e))⟩
+
+instance locNonNullFrom_field_right [FfiSyntax] [GoSemanticsFunctions] [GoLocalContext]
+    [GoGlobalContext] [go.CoreSemantics] {V' : Type} {f : GoString}
+    {loc l : Loc} [h : LocNonNullFrom loc l] : LocNonNullFrom loc (structFieldRef V' f l) :=
+  ⟨fun hn e => h.ne_null hn (structFieldRef_eq_null_iff.1 e)⟩
+
+/-- A points-to at `loc` shows `l ≠ null` when `loc` and `l` are field addresses of a
+common base (`LocNonNullFrom`): `wp_auto`
+and `wp_pures` use it for the side condition of a field reference
+(`pure_wp_structFieldRef`). -/
+instance typedPointsto_hypPure (loc l : Loc) (v : V) (dq : DFrac) [h : LocNonNullFrom loc l] :
+    HypPure (typedPointsto (GF := GF) loc v dq) (l ≠ null) :=
+  ⟨(typedPointsto_not_null loc v dq).trans (pure_mono h.ne_null)⟩
+
 end typed_pointsto_props
 
 /-! ## `IntoValTyped` -/
@@ -303,6 +329,22 @@ instance pure_wp_go_step_det (i : GoInstruction) (v : val) (e : Expr)
     imodintro
     iframe Hctx
     iapply HΦ $$ Hlc
+
+/-- `StructFieldRef t f #l` steps to the field address when `l ≠ null`; on
+`null` it is a stuck run-time panic (`go.structFieldRef_step`). `wp_auto` and
+`wp_pures` discharge the side condition from a Lean hypothesis `l' ≠ null`, or
+from a hypothesis of the context with `HypPure` (a points-to, `isMutex`,
+`isSema`, ... at an address with the same base as `l`: `LocNonNullFrom`), which
+they then keep as a local `Hφ : l ≠ null`. -/
+instance (priority := high) pure_wp_structFieldRef (t : go.GoType) (f : GoString) (l r : Loc)
+    (msg : String)
+    [h : go.IsGoStepPureDet (StructFieldRef t f) #l (if l = null then Panic msg else Val #r)] :
+    PureWp (G := G) (L := L) (l ≠ null) (App (Val (GoInstruction (StructFieldRef t f))) (Val #l))
+      (Val #r) where
+  pure_wp_wp s E Φ K hnn := by
+    have := (pure_wp_go_step_det (G := G) (L := L) _ _ _ (h := h)).pure_wp_wp s E Φ K trivial
+    simp only [hnn, ↓reduceIte] at this
+    exact this
 
 /-- (Time receipts) A deterministic pure Go instruction step
 that also yields an exclusive time receipt `⧗ 1` (`wp_GoInstruction_receipt`).

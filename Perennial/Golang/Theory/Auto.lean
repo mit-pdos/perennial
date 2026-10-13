@@ -467,7 +467,20 @@ meta partial def iWpAuto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($p
       return (← k pf', lc', true)
   let saved ← saveState
   -- pure step
-  if let some (st, hφ) ← observing? (iWpPureStepFind wp (failOnUnsolved := true) (multi := true)) then
+  let found ← observing? (iWpPureStepFindHyps hyps wp (multi := true))
+  -- a side condition discharged from a hypothesis (`HypPure`, e.g. the `l ≠ null`
+  -- of a field reference): continue with it as a local `Hφ`
+  if let some (st, .fromHyp wrap) := found then
+    binderSteps.modify (· + 1)
+    let res ← IO.mkRef (lc, true)
+    let pf ← withLocalDeclD (← mkFreshUserName `Hφ) st.φ fun h => do
+      let ⟨_, hyps', e', k⟩ ← iWpPureStepTake hyps wp st h (lc := false)
+      let (pf', lc', _) ← iWpAuto hyps' { wp with e := e' } lc lcIdx (simpFirst := false)
+      res.set (lc', true)
+      wrap h (← k pf')
+    let (lc', p) ← res.get
+    return (pf, lc', p)
+  if let some (st, .proof hφ) := found then
     let ⟨ehyps1, hyps', e', k⟩ ← iWpPureStepTake hyps wp st hφ (lc := lc > 0)
     if e' == wp.e then
       saved.restore
@@ -1117,7 +1130,8 @@ theorem closed_allocFields (T : go.GoType) (v : val) (l : Loc) (fds : List go.fi
     split <;> simp_all
 
 theorem struct_alloc_fields {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
-    [go.TypeReprUnderlying (go.StructType fdsT) V] (x : V) (l : Loc) (s : Stuckness) (E : CoPset) :
+    [go.TypeReprUnderlying (go.StructType fdsT) V] (x : V) (l : Loc) (s : Stuckness) (E : CoPset)
+    (hl : l ≠ null) :
     ∀ (fds : List go.field_decl) (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))),
     FieldsMatch fds fs → ∀ (K : List EctxItem) (Φ : val → IProp GF),
     (structFieldsPointsto fs l x (DFrac.own 1) -∗ WP (fill K (Val #())) @ s; E {{ Φ }}) ⊢
@@ -1163,12 +1177,13 @@ theorem struct_alloc_fields {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
 
 theorem struct_alloc_fields' {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
     [go.TypeReprUnderlying (go.StructType fdsT) V] (x : V) (l : Loc) (s : Stuckness) (E : CoPset)
+    (hl : l ≠ null)
     (fds : List go.field_decl) (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT)))
     (hm : FieldsMatch fds fs) (Φ : val → IProp GF) :
     (structFieldsPointsto fs l x (DFrac.own 1) -∗ WP (Val #()) @ s; E {{ Φ }}) ⊢
       WP (List.foldr (allocFieldExpr (go.StructType fdsT) #x (Val #l)) (Val #()) fds)
         @ s; E {{ Φ }} :=
-  struct_alloc_fields x l s E fds fs hm [] Φ
+  struct_alloc_fields x l s E hl fds fs hm [] Φ
 
 theorem wp_pure_raw_step {φ : Prop} {e1 e2 : Expr} [Hwp : PureWp (hlc := hlc) (GF := GF) φ e1 e2] (hφ : φ)
     {s : Stuckness} {E : CoPset} {Φ : val → IProp GF} :
@@ -1200,7 +1215,7 @@ theorem struct_wp_alloc {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
   wp_pures
   rw [subst_allocFields]
   wp_bind (List.foldr _ _ _)
-  iapply (struct_alloc_fields' v l s E fds_unsealed fs hfs)
+  iapply (struct_alloc_fields' v l s E Hl fds_unsealed fs hfs)
   iintro Hfs
   wp_pures
   iapply HΦ
@@ -1255,7 +1270,7 @@ def structRebuild {V : Type} {T : go.GoType} :
 
 theorem struct_load_fields {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
     [go.TypeReprUnderlying (go.StructType fdsT) V] (x : V) (l : Loc) (dq : DFrac) (s : Stuckness)
-    (E : CoPset) :
+    (E : CoPset) (hl : l ≠ null) :
     ∀ (fds : List go.field_decl) (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))),
     FieldsMatch fds fs → ∀ (e0 : Expr) (acc : V) (P : IProp GF),
     (∀ (K : List EctxItem) (Ψ : val → IProp GF),
@@ -1322,7 +1337,7 @@ theorem struct_load_fields {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
 
 theorem struct_load_fields' {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
     [go.TypeReprUnderlying (go.StructType fdsT) V] (x : V) (l : Loc) (dq : DFrac) (s : Stuckness)
-    (E : CoPset) (fds : List go.field_decl)
+    (E : CoPset) (hl : l ≠ null) (fds : List go.field_decl)
     (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))) (hm : FieldsMatch fds fs)
     (e0 : Expr) (acc : V) (P : IProp GF)
     (he0 : ∀ (K : List EctxItem) (Ψ : val → IProp GF),
@@ -1332,7 +1347,7 @@ theorem struct_load_fields' {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
       ((P ∗ structFieldsPointsto fs l x dq) -∗
         WP (Val #(structRebuild fs acc x)) @ s; E {{ Φ }})) ⊢
       WP (List.foldl (loadFieldExpr (go.StructType fdsT) #l) e0 fds) @ s; E {{ Φ }} :=
-  struct_load_fields x l dq s E fds fs hm e0 acc P he0 [] Φ
+  struct_load_fields x l dq s E hl fds fs hm e0 acc P he0 [] Φ
 
 theorem struct_wp_load {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
     {fds fds_unsealed : List go.field_decl} [EqualsUnfold fds fds_unsealed]
@@ -1365,7 +1380,7 @@ theorem struct_wp_load {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
     wp_pure
     iapply H
     itrivial
-  iapply (struct_load_fields' v l dq s E fds_unsealed fs hfs _ (zero_val V) emp he0 Φ)
+  iapply (struct_load_fields' v l dq s E Hnn fds_unsealed fs hfs _ (zero_val V) emp he0 Φ)
   iframe Hl
   iintro ⟨-, Hl⟩
   rw [hrebuild]
@@ -1416,7 +1431,7 @@ theorem storeStructRaw_eq (fds : List go.field_decl) (l v : val)
 
 theorem struct_store_fields {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
     [go.TypeReprUnderlying (go.StructType fdsT) V] (x y : V) (l : Loc) (s : Stuckness)
-    (E : CoPset) :
+    (E : CoPset) (hl : l ≠ null) :
     ∀ (fds : List go.field_decl) (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))),
     FieldsMatch fds fs → ∀ (e0 : Expr) (Pin Pout : IProp GF),
     (∀ (K : List EctxItem) (Ψ : val → IProp GF),
@@ -1482,7 +1497,7 @@ theorem struct_store_fields {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
 
 theorem struct_store_fields_nil {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
     [go.TypeReprUnderlying (go.StructType fdsT) V] (x y : V) (l : Loc) (s : Stuckness)
-    (E : CoPset) (fds : List go.field_decl)
+    (E : CoPset) (hl : l ≠ null) (fds : List go.field_decl)
     (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))) (hm : FieldsMatch fds fs)
     (e0 : Expr) (Pin Pout : IProp GF)
     (he0 : ∀ (K : List EctxItem) (Ψ : val → IProp GF),
@@ -1491,11 +1506,11 @@ theorem struct_store_fields_nil {V : Type} {fdsT : List go.field_decl} [ZeroVal 
     iprop(Pin ∗ structFieldsPointsto fs l x (DFrac.own 1) ∗
       ((Pout ∗ structFieldsPointsto fs l y (DFrac.own 1)) -∗ WP (Val #()) @ s; E {{ Φ }})) ⊢
       WP (List.foldl (storeFieldExpr (go.StructType fdsT) #l #y) e0 fds) @ s; E {{ Φ }} :=
-  struct_store_fields x y l s E fds fs hm e0 Pin Pout he0 [] Φ
+  struct_store_fields x y l s E hl fds fs hm e0 Pin Pout he0 [] Φ
 
 theorem struct_store_fields' {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
     [go.TypeReprUnderlying (go.StructType fdsT) V] (x y : V) (l : Loc) (s : Stuckness)
-    (E : CoPset) (fds : List go.field_decl)
+    (E : CoPset) (hl : l ≠ null) (fds : List go.field_decl)
     (fs : List (StructFieldDesc (GF := GF) V (go.StructType fdsT))) (hm : FieldsMatch fds fs)
     (Φ : val → IProp GF) :
     iprop(structFieldsPointsto fs l x (DFrac.own 1) ∗
@@ -1509,7 +1524,7 @@ theorem struct_store_fields' {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
     iapply H
     itrivial
   iintro ⟨Hx, H⟩
-  iapply (struct_store_fields_nil x y l s E fds fs hm (Val #()) emp emp he0 Φ)
+  iapply (struct_store_fields_nil x y l s E hl fds fs hm (Val #()) emp emp he0 Φ)
   iframe Hx
   iintro ⟨-, Hy⟩
   iapply H
@@ -1537,7 +1552,7 @@ theorem struct_wp_store {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
   iapply (wp_pure_raw_step (Hwp := hpw) trivial)
   inext
   rw [storeStructRaw_eq]
-  iapply (struct_store_fields' v w l s E fds_unsealed fs hfs Φ)
+  iapply (struct_store_fields' v w l s E Hnn fds_unsealed fs hfs Φ)
   iframe Hl
   iintro Hl
   wp_pures

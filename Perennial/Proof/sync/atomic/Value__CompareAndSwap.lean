@@ -31,9 +31,9 @@ theorem sync.atomic.Value.CompareAndSwap.wp_proof :
   | ok ii =>
   simp only
   rw [Value_ty_eq]
-  wp_auto
   simp only [ownValue_unseal, ownValueDef]
   ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hown
+  wp_auto
   iStructNamed Hown
   wp_bind (Load _)
   wp_apply_core wp_atomic_load _ _ _ (DFrac.own 1) (interface.nil : GoInterface) $$ v

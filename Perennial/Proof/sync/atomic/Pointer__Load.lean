@@ -27,7 +27,9 @@ theorem sync.atomic.Pointer.Load.wp_proof
     (wp_LoadPointer : sync.atomic.LoadPointer.spec (GF := GF) (hG := hG)) :
     sync.atomic.Pointer.Load.spec (GF := GF) (hG := hG) := by
   intro T' _ _ T _ u dq
-  wp_start as _
+  wp_start_folded as _
+  iintro %hu
+  (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)
   wp_auto
   wp_apply_core wp_LoadPointer $$ [] [HΦ]
   · iPkgInit
