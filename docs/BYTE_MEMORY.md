@@ -256,12 +256,10 @@ live only in `go.Semantics` (`convert_nil_interface`) and
   types (inside generic code they can become dynamic types), and a type
   declared in a generic function (Go has one per instantiation, goose one).
   Composite literals with an interface slot check their elements too.
-* Not fixed (the old `go.Semantics` only; `SemanticsB` is less defined there):
-  goose's interface types are not canonical (embedded interfaces are not
-  flattened, `interface{ error }` and `interface{ Error() string }` differ),
-  and the old type-set check treats an embedded interface as one type, so
-  `x.(interface{ io.Reader; io.Writer })` is `ok = false` where Go says true.
-  Canonical interface types in goose fix both.
+* (Done.) goose translates an interface whose type set is a method set as its
+  complete method set (embedded interfaces flattened, in go/types' order), so
+  identical Go interface types are one term; constraint interfaces (unions,
+  `comparable`) keep their elements. This could also give `IfaceMethods`.
 * (Done.) `TypeAssert`/`TypeAssert2` carry the source type. The interface
   values' tag (`(false, _)`/`(true, _)`) is no longer read by any lowering and
   can go.

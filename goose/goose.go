@@ -1800,8 +1800,10 @@ func typeIdentityLost(t types.Type) bool {
 		if types.Identical(t, types.Universe.Lookup("error").Type().Underlying()) {
 			return true
 		}
-		for i := 0; i < t.NumExplicitMethods(); i++ {
-			m := t.ExplicitMethod(i)
+		// all methods, embedded ones too: the term has them flattened, and an
+		// embedded interface's unexported methods belong to its package
+		for i := 0; i < t.NumMethods(); i++ {
+			m := t.Method(i)
 			if !m.Exported() || typeIdentityLost(m.Type()) {
 				return true
 			}

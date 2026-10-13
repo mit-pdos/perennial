@@ -207,6 +207,21 @@ func (ctx *Ctx) signature(n locatable, t *types.Signature) glang.Expr {
 
 func (ctx *Ctx) interfaceType(n locatable, t *types.Interface) glang.Expr {
 	var elems glang.ListExpr
+	// An interface whose type set is given by its methods is translated as its
+	// complete method set (embedded interfaces flattened, in go/types' order of
+	// unique ids), so that identical Go interface types get the same term
+	// (`interface{ error }` and `interface{ Error() string }`; the order of
+	// embedded interfaces does not matter).
+	if t.IsMethodSet() {
+		for i := range t.NumMethods() {
+			elems = append(elems,
+				glang.NewCallExpr(glang.TermIdent("go.MethodElem"),
+					glang.StringLiteral{Value: t.Method(i).Name()},
+					ctx.signature(n, t.Method(i).Signature())),
+			)
+		}
+		return glang.NewCallExpr(glang.TermIdent("go.InterfaceType"), elems)
+	}
 	for i := range t.NumExplicitMethods() {
 		elems = append(elems,
 			glang.NewCallExpr(glang.TermIdent("go.MethodElem"),

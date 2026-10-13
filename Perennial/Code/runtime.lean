@@ -12568,7 +12568,7 @@ attribute [instance] sockaddr_un.TypeAssumptions.type_repr
 abbrev Error [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Error.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"RuntimeError" (go.signature.Signature [] false [])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm go.error)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Error" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"RuntimeError" (go.signature.Signature [] false []))])
 
 class Error.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Error.ty Error.underlying

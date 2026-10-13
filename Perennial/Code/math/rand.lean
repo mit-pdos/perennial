@@ -246,7 +246,7 @@ attribute [instance] Source.TypeAssumptions.underlying
 abbrev Source64 [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Source64.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Uint64" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Source.ty)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Int63" (go.signature.Signature [] false [go.int64])), (go.InterfaceElem.MethodElem go!"Seed" (go.signature.Signature [go.int64] false [])), (go.InterfaceElem.MethodElem go!"Uint64" (go.signature.Signature [] false [go.uint64]))])
 
 class Source64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Source64.ty Source64.underlying

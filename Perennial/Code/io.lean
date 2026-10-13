@@ -444,7 +444,7 @@ attribute [instance] Seeker.TypeAssumptions.underlying
 abbrev ReadWriter [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ReadWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer.ty)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Read" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])), (go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))])
 
 class ReadWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ReadWriter.ty ReadWriter.underlying
@@ -454,7 +454,7 @@ attribute [instance] ReadWriter.TypeAssumptions.underlying
 abbrev ReadCloser [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ReadCloser.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Closer.ty)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Close" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.MethodElem go!"Read" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))])
 
 class ReadCloser.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ReadCloser.ty ReadCloser.underlying
@@ -464,7 +464,7 @@ attribute [instance] ReadCloser.TypeAssumptions.underlying
 abbrev WriteCloser [FfiSyntax] : Type := GoInterface
 
 @[reducible] def WriteCloser.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Closer.ty)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Close" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))])
 
 class WriteCloser.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq WriteCloser.ty WriteCloser.underlying
@@ -474,7 +474,7 @@ attribute [instance] WriteCloser.TypeAssumptions.underlying
 abbrev ReadWriteCloser [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ReadWriteCloser.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Closer.ty)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Close" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.MethodElem go!"Read" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])), (go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))])
 
 class ReadWriteCloser.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ReadWriteCloser.ty ReadWriteCloser.underlying
@@ -484,7 +484,7 @@ attribute [instance] ReadWriteCloser.TypeAssumptions.underlying
 abbrev ReadSeeker [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ReadSeeker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Seeker.ty)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Read" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])), (go.InterfaceElem.MethodElem go!"Seek" (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))])
 
 class ReadSeeker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ReadSeeker.ty ReadSeeker.underlying
@@ -494,7 +494,7 @@ attribute [instance] ReadSeeker.TypeAssumptions.underlying
 abbrev ReadSeekCloser [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ReadSeekCloser.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Seeker.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Closer.ty)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Close" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.MethodElem go!"Read" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])), (go.InterfaceElem.MethodElem go!"Seek" (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))])
 
 class ReadSeekCloser.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ReadSeekCloser.ty ReadSeekCloser.underlying
@@ -504,7 +504,7 @@ attribute [instance] ReadSeekCloser.TypeAssumptions.underlying
 abbrev WriteSeeker [FfiSyntax] : Type := GoInterface
 
 @[reducible] def WriteSeeker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Seeker.ty)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Seek" (go.signature.Signature [go.int64, go.int] false [go.int64, go.error])), (go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))])
 
 class WriteSeeker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq WriteSeeker.ty WriteSeeker.underlying
@@ -514,7 +514,7 @@ attribute [instance] WriteSeeker.TypeAssumptions.underlying
 abbrev ReadWriteSeeker [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ReadWriteSeeker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Seeker.ty)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Read" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])), (go.InterfaceElem.MethodElem go!"Seek" (go.signature.Signature [go.int64, go.int] false [go.int64, go.error])), (go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))])
 
 class ReadWriteSeeker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ReadWriteSeeker.ty ReadWriteSeeker.underlying
@@ -574,7 +574,7 @@ attribute [instance] ByteReader.TypeAssumptions.underlying
 abbrev ByteScanner [FfiSyntax] : Type := GoInterface
 
 @[reducible] def ByteScanner.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"UnreadByte" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm ByteReader.ty)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ReadByte" (go.signature.Signature [] false [go.byte, go.error])), (go.InterfaceElem.MethodElem go!"UnreadByte" (go.signature.Signature [] false [go.error]))])
 
 class ByteScanner.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ByteScanner.ty ByteScanner.underlying
@@ -604,7 +604,7 @@ attribute [instance] RuneReader.TypeAssumptions.underlying
 abbrev RuneScanner [FfiSyntax] : Type := GoInterface
 
 @[reducible] def RuneScanner.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"UnreadRune" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm RuneReader.ty)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ReadRune" (go.signature.Signature [] false [go.rune, go.int, go.error])), (go.InterfaceElem.MethodElem go!"UnreadRune" (go.signature.Signature [] false [go.error]))])
 
 class RuneScanner.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq RuneScanner.ty RuneScanner.underlying

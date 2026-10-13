@@ -128,7 +128,8 @@ func F[T any](x any) any {
 semantics**, bypassing the check (`[]any{SB{1}}`, `H{F: b}`, map literals).
 *Fixed*: elements of a literal with an interface slot are checked.
 
-**BLOCK (old semantics only, open): interface types are not canonical.**
+**BLOCK (old semantics only): interface types are not canonical.** *Fixed in
+round 8.*
 
 ```go
 var y any = []interface{ error }{}
@@ -139,8 +140,7 @@ goose keeps embedded interfaces as type elements, unflattened, so the two
 terms differ and the old semantics' `decide (ii.ty = t)` says false. Also
 `x.(interface{ io.Reader; io.Writer })` is `ok = false` for a value that
 implements both (the old type-set check treats an embedded interface as one
-type). Under the byte semantics both are stuck (less defined). Fix: canonical
-interface types in goose.
+type). Under the byte semantics both are stuck (less defined).
 
 **REWORK: no `Convert` from a type parameter to an interface.** *Fixed in
 round 7* (it was a BLOCK there).
@@ -194,3 +194,24 @@ func F[X error](x X) string { var e error = x; return e.Error() }
 *Fixed*: `handleImplicitConversion` converts from or to a type parameter, and
 between distinct interface types (also the round-7 NOTE: `type E1/E2
 interface{ Error() string }` kept the E1 itab).
+
+## Round 8 (fixes before the review)
+
+**BLOCK (round 5's, old semantics).** *Fixed*: goose translates an interface
+whose type set is a method set as its complete, flattened method set (go/types'
+order), so identical interface types are one term, and type-set checks never
+see an embedded interface. Constraint interfaces keep their elements.
+
+**BLOCK (exposed by the flattening): an embedded interface's unexported
+methods.** `typeIdentityLost` looked only at explicit methods and treated an
+embedded named interface as package-qualified; flattened, its unexported
+methods appear unqualified:
+
+```go
+// package p: type hasM interface{ m() }      package q: type hasM interface{ m() }
+var e any = []interface{ p.HasM }{}   // (exported names for the embedded types)
+_ = e.([]interface{ q.HasM })         // Go: panics (the two m are different methods)
+```
+
+*Fixed*: the check looks at the complete method set (negative test
+`iface_embedded_unexported`).

@@ -7241,7 +7241,7 @@ attribute [instance] Flower.TypeAssumptions.underlying
 abbrev Flora [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Flora.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Genus" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Flower.ty)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Genus" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Petals" (go.signature.Signature [] false [go.uint64]))])
 
 class Flora.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Flora.ty Flora.underlying

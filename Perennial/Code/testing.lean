@@ -1529,7 +1529,7 @@ attribute [instance] F.TypeAssumptions.type_repr
 abbrev fuzzCrashError [FfiSyntax] : Type := GoInterface
 
 @[reducible] def fuzzCrashError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"CrashPath" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm go.error)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"CrashPath" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Error" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])
 
 class fuzzCrashError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq fuzzCrashError.ty fuzzCrashError.underlying
