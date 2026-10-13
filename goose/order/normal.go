@@ -299,8 +299,9 @@ func (a *analysis) sharedReads(n ast.Node) []ast.Node {
 			}
 			value(e)
 		case *ast.IndexExpr:
-			if !a.constIndex(x) {
-				reads = append(reads, x) // bounds check
+			_, ptr := a.under(x.X).(*types.Pointer)
+			if ptr || !a.constIndex(x) {
+				reads = append(reads, x) // bounds check, or nil check of p in p[i]
 			}
 			switch a.under(x.X).(type) {
 			case *types.Array:
@@ -395,7 +396,13 @@ func (a *analysis) sharedReads(n ast.Node) []ast.Node {
 			}
 		case *ast.CompositeLit:
 			if m, ok := a.under(x).(*types.Map); ok && hasInterface(m.Key(), nil) {
-				reads = append(reads, x) // hashing an unhashable dynamic key panics
+				for _, el := range x.Elts {
+					if kv, ok := el.(*ast.KeyValueExpr); ok {
+						// hashing an unhashable dynamic key panics, as the
+						// entry is inserted (in source order)
+						reads = append(reads, kv.Key)
+					}
+				}
 			}
 		}
 		children(e)
@@ -496,7 +503,9 @@ func (a *analysis) selectionReads(sel *types.Selection, x *ast.SelectorExpr) boo
 		return false
 	}
 	if _, ptrRecv := sig.Recv().Type().Underlying().(*types.Pointer); ptrRecv {
-		return false
+		// a method promoted through x's embedded fields: reaching the
+		// receiver &x.E may dereference x or a pointer field
+		return len(sel.Index()) > 1 && (ptrX || sel.Indirect())
 	}
 	if _, isIface := sig.Recv().Type().Underlying().(*types.Interface); isIface {
 		return sel.Kind() == types.MethodVal

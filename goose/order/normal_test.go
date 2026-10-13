@@ -111,23 +111,38 @@ func ex(n int, i I, p *int, k any) {
 	h(map[int]int{n: 0}, f())       // 20: normal
 }
 
+type E struct{ v int }
+
+func (e *E) N(...int) int { return 0 }
+
+type S struct{ E }
+type SP struct{ *E }
+
+func ex3(k any, p *S, pa *[4]int, q *SP, e *E) {
+	_ = map[any]int{k: 0, "x": f()} // 31: not normal: k is hashed as its entry is inserted
+	_ = p.N(f())                    // 32: not normal: p.N is (&p.E).N, which reads *p
+	h(&pa[2], f())                  // 33: not normal: nil check of pa
+	q.v = f()                       // 34: not normal: q.E is read in phase 1
+	e.v = f()                       // 35: normal
+}
+
 type Num interface{ ~int | ~uint }
 type Arr interface{ ~[4]int }
 type Bs interface{ ~[]byte }
 type Ms interface{ ~map[int]int }
 
 func gen[T Num, A Arr, B Bs, M Ms](x, y T, a A, b B, m M, u uint) {
-	_ = x/y + T(f())           // 29: not normal: the division may panic
-	_ = u<<y + uint(f())       // 30: not normal: y may be signed
-	s := a[:]                  // 31: a is now address-taken
-	h(a, f())                  // 32: not normal: f may change a through s
-	h(string(b), f())          // 33: not normal: f may change b's elements
-	h(len(m), f())             // 34: not normal: f may grow m
+	_ = x/y + T(f())           // 44: not normal: the division may panic
+	_ = u<<y + uint(f())       // 45: not normal: y may be signed
+	s := a[:]                  // 46: a is now address-taken
+	h(a, f())                  // 47: not normal: f may change a through s
+	h(string(b), f())          // 48: not normal: f may change b's elements
+	h(len(m), f())             // 49: not normal: f may grow m
 	_ = s
 }
 `
 	got := nonNormal(t, src)
-	want := []int{11, 13, 14, 16, 18, 19, 29, 30, 32, 33, 34}
+	want := []int{11, 13, 14, 16, 18, 19, 31, 32, 33, 34, 44, 45, 47, 48, 49}
 	if len(got) != len(want) {
 		t.Fatalf("got %v, want %v", got, want)
 	}

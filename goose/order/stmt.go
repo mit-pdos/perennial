@@ -27,6 +27,12 @@ func (a *analysis) lhsReads(e ast.Expr) []ast.Expr {
 			if _, ptr := a.under(x.X).(*types.Pointer); !ptr && !sel.Indirect() {
 				return a.lhsReads(x.X)
 			}
+			if sel.Indirect() && len(sel.Index()) > 1 {
+				// a promoted field through embedded pointers: the operands
+				// of the implicit indirections include x.E (conservatively,
+				// the whole selector)
+				return []ast.Expr{x}
+			}
 		}
 		return []ast.Expr{x.X}
 	}
