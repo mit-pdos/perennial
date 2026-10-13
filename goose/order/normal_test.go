@@ -158,3 +158,22 @@ func ex4(a []int, i int, b bool) {
 		}
 	}
 }
+
+// A var spec is checked if goose translates one of its variables: each
+// variable's initialization is translated on its own.
+func TestSelectedSpec(t *testing.T) {
+	src := `package p
+
+var glob int
+
+func f() int { return 0 }
+
+var a, b = glob + f(), 1
+`
+	fset, f, info := check(t, src)
+	onlyA := func(obj types.Object) bool { return obj.Name() == "a" }
+	vs := CheckFile(info, f, onlyA)
+	if len(vs) != 1 || fset.Position(vs[0].Pos).Line != 7 {
+		t.Fatalf("got %v, want a violation at line 7", vs)
+	}
+}

@@ -355,5 +355,20 @@ func ExtendFilter(pkg *packages.Package, config declfilter.FilterConfig, df decl
 			f.Close()
 		}
 	}
+	// The names are those of types; goose looks functions and variables up
+	// in the same filter, so a name that is also one of theirs (a type
+	// declared in a function, named like a package-level function or
+	// variable; init; _) is not added: the declarations goose translates
+	// stay those of the configuration (Translated).
+	for n := range names {
+		if obj := pkg.Types.Scope().Lookup(n); n == "_" || n == "init" || obj != nil && !isTypeName(obj) {
+			delete(names, n)
+		}
+	}
 	return declfilter.WithTranslated(df, names)
+}
+
+func isTypeName(obj types.Object) bool {
+	_, ok := obj.(*types.TypeName)
+	return ok
 }

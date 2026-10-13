@@ -63,10 +63,10 @@ func main() {
 	if strings.TrimSuffix(filepath.Base(tool), ".exe") != "compile" {
 		os.Exit(run(tool, args))
 	}
-	for _, a := range args {
-		if strings.HasPrefix(a, "-V") {
-			os.Exit(version(tool, args))
-		}
+	// the go command asks for the version as `compile -V=full` alone (an
+	// argument of a compilation, such as a -buildid value, may start with -V)
+	if len(args) == 1 && strings.HasPrefix(args[0], "-V") {
+		os.Exit(version(tool, args))
 	}
 	os.Exit(compile(tool, args))
 }

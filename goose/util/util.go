@@ -143,7 +143,7 @@ func ReadConfig(configDir string, pkgPath string) (declfilter.FilterConfig, erro
 // functions and methods, and the package-level variables (their
 // initializers), that its translate list matches. These, and only these, are
 // put in Perennial's evaluation order, by goose and by cmd/perennial-order.
-// (util.ExtendFilter only adds types, which have no code.)
+// (util.ExtendFilter only adds the names of types, which have no code.)
 func Translated(config declfilter.FilterConfig) order.Selection {
 	df := declfilter.New(config)
 	return func(obj types.Object) bool {

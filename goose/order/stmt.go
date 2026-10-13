@@ -220,7 +220,8 @@ type Violation struct {
 type Selection func(obj types.Object) bool
 
 // Selected reports whether sel selects the declaration d (a FuncDecl, or a
-// package-level var spec all of whose variables it selects).
+// package-level var spec one of whose variables it selects: goose translates
+// each variable's initialization on its own).
 func Selected(info *types.Info, sel Selection, d ast.Node) bool {
 	if sel == nil {
 		return true
@@ -230,11 +231,10 @@ func Selected(info *types.Info, sel Selection, d ast.Node) bool {
 		return sel(info.Defs[d.Name])
 	case *ast.ValueSpec:
 		for _, n := range d.Names {
-			if !sel(info.Defs[n]) {
-				return false
+			if sel(info.Defs[n]) {
+				return true
 			}
 		}
-		return true
 	}
 	return false
 }
