@@ -239,10 +239,9 @@ var leanConstructors = map[string]string{
 
 // leanVerbatims maps verbatim snippets used by the translator to Lean.
 var leanVerbatims = map[string]string{
-	"None":           "none",
-	"Some":           "some",
-	"#slice.nil":     "#slice.nil",
-	"#interface.nil": "#GoInterface.nil",
+	"None":       "none",
+	"Some":       "some",
+	"#slice.nil": "#slice.nil",
 }
 
 // leanRenames maps the snake_case names of framework definitions, which the

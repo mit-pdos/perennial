@@ -2619,7 +2619,7 @@ func (ctx *Ctx) typeSwitchStmt(s *ast.TypeSwitchStmt, cont glang.Expr) (e glang.
 							OpId: glang.OpEquals,
 							Type: ctx.glangType(y, ctx.typeOf(y)),
 						},
-						Y: glang.VerbatimExpr("#interface.nil"),
+						Y: ctx.exprIntoType(c.List[i], ctx.typeOf(y)),
 					}
 				} else {
 					return glang.NewCallExpr(glang.VerbatimExpr("Snd"),
@@ -2644,6 +2644,8 @@ func (ctx *Ctx) typeSwitchStmt(s *ast.TypeSwitchStmt, cont glang.Expr) (e glang.
 			// In this case, x should have the type equal to the single type listed in this case.
 			ty := ctx.typeOf(c.List[0])
 			if b, ok := ty.(*types.Basic); ok && b.Kind() == types.UntypedNil {
+				// `case nil` compares y with nil converted to y's type, as
+				// `y == nil` does
 				e = glang.LetExpr{Names: []string{"$x"}, ValExpr: glang.IdentExpr("$y"), Cont: e}
 				e = glang.LetExpr{
 					Names: []string{"$ok"},
@@ -2653,7 +2655,7 @@ func (ctx *Ctx) typeSwitchStmt(s *ast.TypeSwitchStmt, cont glang.Expr) (e glang.
 							OpId: glang.OpEquals,
 							Type: ctx.glangType(y, ctx.typeOf(y)),
 						},
-						Y: glang.VerbatimExpr("#interface.nil"),
+						Y: ctx.exprIntoType(c.List[0], ctx.typeOf(y)),
 					},
 					Cont: e,
 				}

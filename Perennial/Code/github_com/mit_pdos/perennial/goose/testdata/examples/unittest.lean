@@ -4986,7 +4986,7 @@ noncomputable def fancyTypeSwitch.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "y" (App (Val (GoInstruction (GoAlloc go.string))) (Var "$x"))
   (App (Val doReturn)
   (Val #(W64 2))))
-  (Let "$ok" (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (Var "$y") (Val #GoInterface.nil)))
+  (Let "$ok" (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (Var "$y") (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil))))
   (Let "$x" (Var "$y")
   (If (Var "$ok")
   (Let "y" (App (Val (GoInstruction (GoAlloc go.any))) (Var "$x"))
