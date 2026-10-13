@@ -1534,6 +1534,28 @@ theorem wp_func_alloc (v : val) (Hv : v.isPanic = false := by simp) :
     isplitr
     · unfold isFunc; iexact Hp
     · ipureintro; exact hp0
+  | FuncAllocReuseS _ p _ hp0 hfp =>
+    icases (bmemCtx_eq _).1 $$ Hσ with ⟨Hbytes, Hfr, Hbl, ⟨Hfn, %Hst, #Hff⟩, %Hwf⟩
+    ihave #Hp := Hff $$ %p %v %hfp
+    imodintro
+    isplitr
+    · ipureintro; exact ⟨rfl, rfl⟩
+    isplitl [Hbytes Hfr Hbl Hfn]
+    · iexists σ₁.1.bmem
+      isplitr
+      · ipureintro; rfl
+      iapply (bmemCtx_eq _).2
+      iframe
+      isplitr
+      · isplitr
+        · ipureintro; exact Hst
+        · iexact Hff
+      ipureintro; exact Hwf
+    iapply wp_value'
+    iapply HΦ
+    isplitr
+    · unfold isFunc; iexact Hp
+    · ipureintro; exact hp0
   | FuncAllocOomS =>
     imodintro
     isplitr

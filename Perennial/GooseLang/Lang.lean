@@ -430,7 +430,7 @@ class GoGlobalContext [FfiSyntax] where
   abstract, and packages state facts about their own static data. -/
   staticBytes : GMap w64 w8
   /-- The code of the program image: the closure at each function's entry
-  address (functions and methods, at their `codeAddr`). -/
+  address (functions and methods, at their `methodAddr`). -/
   staticFuncs : GMap w64 val
 
 export GoGlobalContext (intoVal staticBytes staticFuncs)
@@ -559,7 +559,10 @@ Rules for the Go-level code built on these primitives (not enforced here):
   for frozen data. A plain access made atomic would be more atomic than Go, so
   a program with a data race could verify;
 * an allocation keeps the runtime's checks before `BAlloc` (`makeslice: len out
-  of range` above `maxAlloc` is a recoverable panic in Go, not out of memory). -/
+  of range` above `maxAlloc` is a recoverable panic in Go, not out of memory);
+* a typed load or store through a pointer keeps Go's nil check: a range of
+  length 0 is accessible at every address, `0` included, so `*p` for a nil
+  `*struct{}` (a panic in Go) would otherwise succeed. -/
 
 inductive ByteMode where
   | Rd (n : Nat)
@@ -992,6 +995,14 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
       p ≠ 0 → σg.1.bmem.funcs !! p = none →
       BaseStep (FuncAlloc (Val v)) σg [] (Val #p)
         (setBmem (fun m => { m with funcs := <[p := v]> m.funcs }) σg) []
+  /-- A func value may be shared: any entry holding the same closure. Go gives
+  every evaluation of a top-level function, or of a closure that captures
+  nothing, the one static funcval (`F·f`), so two such func values have the same
+  address (observable through `unsafe`); the static code is in `funcs` from the
+  start (`staticImage`). -/
+  | FuncAllocReuseS (v : val) (p : w64) σg :
+      p ≠ 0 → σg.1.bmem.funcs !! p = some v →
+      BaseStep (FuncAlloc (Val v)) σg [] (Val #p) σg []
   | FuncAllocOomS (v : val) σg :
       (∀ p : w64, p ≠ 0 → σg.1.bmem.funcs !! p ≠ none) →
       BaseStep (FuncAlloc (Val v)) σg [] (FuncAlloc (Val v)) σg []

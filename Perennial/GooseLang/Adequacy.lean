@@ -334,7 +334,13 @@ postcondition `φ` that excludes panics (`hφ`), then in every real execution of
 * every thread is a value or can take a step;
 * no thread has an unrecovered panic (`UnrecoveredPanic`): no thread has ended
   in a panic `PanicV p`, and none is unwinding one through frames none of which
-  is a `Catch`. -/
+  is a `Catch`.
+
+The byte memory starts as the program image (`Hbm`). The image is the
+`GoGlobalContext` in scope (`staticBytes`, `staticFuncs`), so a theorem about a
+real binary must quantify over it, assuming only facts true of that binary's
+image (`StaticItab`, `StaticMethod`, ...): a concrete instance would be a
+theorem about another program. -/
 theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
     (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
