@@ -43,3 +43,12 @@ func selectSendTypeParam[C ~chan error](ch C, i assignIface) {
 	case ch <- i:
 	}
 }
+
+// A case with several types tests each of them, left to right.
+func typeSwitchMultiCase(x any) uint64 {
+	switch x.(type) {
+	case string, uint64:
+		return 1
+	}
+	return 0
+}

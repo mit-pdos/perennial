@@ -506,7 +506,7 @@ noncomputable def Channel.tryClose.impl [FfiSyntax] [GoGlobalContext] (T : go.Go
   (App (App (Val (GoInstruction (FuncResolve runtimePanic []))) (Val #())) (Val #()))))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))) (Val #()))))
-  (If (If (App (Val (GoInstruction (GoOp GoEquals offerState.ty))) (Pair (Var "$sw") (Val buffered))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals offerState.ty))) (Pair (Var "$sw") (Val idle))))
+  (If (If (App (Val (GoInstruction (GoOp GoEquals offerState.ty))) (Pair (Var "$sw") (Val idle))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals offerState.ty))) (Pair (Var "$sw") (Val buffered))))
   (Let "$r0" (Val closed)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon

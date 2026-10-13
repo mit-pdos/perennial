@@ -630,6 +630,9 @@ noncomputable def rangeIntoInterface [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def selectSendTypeParam [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.selectSendTypeParam"
 
+noncomputable def typeSwitchMultiCase [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.typeSwitchMultiCase"
+
 noncomputable def fooConsumer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.fooConsumer"
 
@@ -2573,6 +2576,25 @@ noncomputable def selectSendTypeParam.impl [FfiSyntax] [GoGlobalContext] (C : go
   (Let "$v0" (App (Val (GoInstruction (Convert assignIface.ty go.error))) (App (Val (GoInstruction (GoLoad assignIface.ty))) (Var "i")))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (SendCase go.error (Var "$ch0") (Var "$v0")) (App (Val doExecute)
   (Val #())))]))))))))))
+
+/-- A case with several types tests each of them, left to right.
+
+    go: iface_assign.go:48:6 -/
+noncomputable def typeSwitchMultiCase.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "x"
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #(W64 0)))))
+  (Let "$y" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
+  (Let "$ok" (If (Snd (App (Val (GoInstruction (TypeAssert2 go.any go.string))) (Var "$y"))) (Val #true) (Snd (App (Val (GoInstruction (TypeAssert2 go.any go.uint64))) (Var "$y"))))
+  (Let "$x" (Var "$y")
+  (If (Var "$ok")
+  (App (Val doReturn)
+  (Val #(W64 1)))
+  (App (Val doExecute)
+  (Val #()))))))))))
 
 /-- go: interfaces.go:15:25 -/
 noncomputable def concreteFooer.Foo.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -4811,7 +4833,7 @@ noncomputable def testSwitchMultiple.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (Val #(W64 3)))))
   (Let "$sw" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
-  (If (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 1)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 10)))))
+  (If (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 10)))) (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 1)))))
   (App (Val doReturn)
   (Val #(W64 1)))
   (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Var "$sw") (Val #(W64 0))))
@@ -5011,7 +5033,7 @@ noncomputable def multiTypeSwitch.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (Val #(W64 0)))))
   (Let "$y" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
-  (Let "$ok" (If (Snd (App (Val (GoInstruction (TypeAssert2 go.any go.int))) (Var "$y"))) (Val #true) (Snd (App (Val (GoInstruction (TypeAssert2 go.any go.int))) (Var "$y"))))
+  (Let "$ok" (If (Snd (App (Val (GoInstruction (TypeAssert2 go.any go.int))) (Var "$y"))) (Val #true) (Snd (App (Val (GoInstruction (TypeAssert2 go.any go.string))) (Var "$y"))))
   (Let "$x" (Var "$y")
   (If (Var "$ok")
   (App (Val doReturn)
@@ -6522,6 +6544,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   typeParamToInterface_unfold : ∀ (X : go.GoType), FuncUnfold typeParamToInterface [X] (typeParamToInterface.impl X)
   rangeIntoInterface_unfold : FuncUnfold rangeIntoInterface [] rangeIntoInterface.impl
   selectSendTypeParam_unfold : ∀ (C : go.GoType), FuncUnfold selectSendTypeParam [C] (selectSendTypeParam.impl C)
+  typeSwitchMultiCase_unfold : FuncUnfold typeSwitchMultiCase [] typeSwitchMultiCase.impl
   fooConsumer_unfold : FuncUnfold fooConsumer [] fooConsumer.impl
   testAssignConcreteToInterface_unfold : FuncUnfold testAssignConcreteToInterface [] testAssignConcreteToInterface.impl
   testPassConcreteToInterfaceArg_unfold : FuncUnfold testPassConcreteToInterfaceArg [] testPassConcreteToInterfaceArg.impl
@@ -6786,6 +6809,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.typeParamToInterface_unfold
   Assumptions.rangeIntoInterface_unfold
   Assumptions.selectSendTypeParam_unfold
+  Assumptions.typeSwitchMultiCase_unfold
   Assumptions.fooConsumer_unfold
   Assumptions.testAssignConcreteToInterface_unfold
   Assumptions.testPassConcreteToInterfaceArg_unfold

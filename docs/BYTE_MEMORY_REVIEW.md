@@ -312,3 +312,66 @@ rule outright breaks `strings.Builder.copyCheck`'s proof.
 premise `methodSet T !! "m" = some sig` for a `T` of another package than the
 interface's unexported `m` reads as true but makes `x.(p.I)` succeed where Go
 says `T` does not implement `p.I`. No program verifies without such a premise.
+
+## Round 9
+
+The branch's own changes held (every round 7-8 fix was attacked; about 60
+conversion sites checked). Five pre-existing goose bugs (present at the merge
+base), in both semantics:
+
+**BLOCK: a type-switch case with several types tested its first type twice
+and never the last.**
+
+```go
+var x any = 1
+switch x.(type) { case string, int: return "matched" }
+return "default"
+// Go: "matched"; the model: "default"
+```
+
+The loop `for i := range c.List[1:]` used the slice index on the full list.
+The existing proof `wp_multiTypeSwitch` (unittest) had been proved against the
+buggy translation and needed the missing case. *Fixed*.
+
+**BLOCK: a value-switch case list was evaluated right to left.**
+
+```go
+switch 1 { case f(1), f(2): }   // f logs its argument; Go: "1"; the model: "21"
+```
+
+*Fixed*: left to right, stopping at the first match.
+
+**BLOCK: `x op= y`, `x++`, `x--` evaluated x's operands twice.**
+
+```go
+a[<-ch]++          // ch holds 0 then 1; Go: a = [1 0]; the model: a[1] = a[0] + 1
+m[next()] += 1     // Go: m["a"] = 1; the model: m["b"] = m["a"] + 1
+```
+
+**BLOCK: a single assignment evaluated its right side before its target's
+operands.**
+
+```go
+a[f(1)] = f(2)     // Go: log "12"; the model: "21"
+```
+
+**BLOCK: a call evaluated its arguments before its receiver operand.**
+
+```go
+ps[f(1)].M(f(2))   // Go: log "12"; the model: "21"
+```
+
+*Fixed (the last three) by refusal*: goose refuses an `op=`/`++`/`--` whose
+target's operands call a function or receive, a single assignment whose target
+operands and right side both do, and a call whose function (receiver) and
+arguments both do (`hasEffects`). Reordering the translation instead would
+change most generated assignments and calls and their proofs; no translated
+code is refused. Negative tests `evalorder_*`.
+
+**NOTEs (byte semantics):** methods are keyed by bare name (`methodAddr`,
+`itabMethods`, `MethodUnfold`), so an unexported `p.m` and `q.m` of a type
+embedding a `p` type are one method; today goose emits duplicate `m_unfold`
+fields for such a type, so it does not elaborate, but this becomes a BLOCK when
+goose renames them. `IfaceMethods`/`TypeBytes` are hand-written per package; two
+packages stating different facts would make a combined proof vacuous (goose
+should generate them from the type). No `typeAddr T ≠ 0`.

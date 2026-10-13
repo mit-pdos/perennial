@@ -213,7 +213,12 @@ theorem wp_multiTypeSwitch (x : GoInterface) :
       wp_auto
       wp_end
     · wp_auto_neg h
-      wp_end
+      by_cases h' : ty = go.string
+      · subst h'
+        wp_auto
+        wp_end
+      · wp_auto_neg h'
+        wp_end
 
 theorem wp_testSwitchMultiple (x : w64) :
     {{ isPkgInit (PROP := IProp GF) pkg }}
