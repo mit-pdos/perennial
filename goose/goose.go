@@ -3050,6 +3050,49 @@ func (ctx *Ctx) functionConstSpec(spec *ast.ValueSpec, cont glang.Expr) glang.Ex
 	return e
 }
 
+// checkGlobalVarDecl refuses what d's translated parts cannot translate: the
+// type of a translated variable, and an initializer whose variables are all
+// translated (as packagePropClass translates it; otherwise it is an 'init
+// axiom).
+func (ctx *Ctx) checkGlobalVarDecl(d *ast.GenDecl) {
+	translated := func(names ...*ast.Ident) bool {
+		for _, name := range names {
+			if ctx.filter.GetAction(name.Name) != declfilter.Translate {
+				return false
+			}
+		}
+		return true
+	}
+	checkInit := func(e ast.Expr) {
+		ctx.checkInstances(e)
+		// a type declared in an initializer (in a function literal) would be
+		// translated by its name, the same as a package-level type's
+		for _, g := range util.TypeDecls(e) {
+			ctx.unsupported(g, "local type in a package-level variable initializer")
+		}
+	}
+	for _, spec := range d.Specs {
+		s := spec.(*ast.ValueSpec)
+		if s.Type != nil {
+			for _, name := range s.Names {
+				if name.Name != "_" && translated(name) {
+					ctx.checkInstances(s.Type)
+					break
+				}
+			}
+		}
+		if len(s.Values) == len(s.Names) {
+			for i, v := range s.Values {
+				if translated(s.Names[i]) {
+					checkInit(v)
+				}
+			}
+		} else if len(s.Values) == 1 && translated(s.Names...) {
+			checkInit(s.Values[0])
+		}
+	}
+}
+
 func (ctx *Ctx) globalVarDecl(d *ast.GenDecl) {
 	for _, spec := range d.Specs {
 		s := spec.(*ast.ValueSpec)
@@ -3264,12 +3307,7 @@ func (ctx *Ctx) decl(d ast.Decl) {
 		case token.CONST:
 			ctx.constDecl(d)
 		case token.VAR:
-			ctx.checkInstances(d)
-			// a type declared in an initializer (in a function literal) would be
-			// translated by its name, the same as a package-level type's
-			for _, g := range util.TypeDecls(d) {
-				ctx.unsupported(g, "local type in a package-level variable initializer")
-			}
+			ctx.checkGlobalVarDecl(d)
 			ctx.globalVarDecl(d)
 		case token.TYPE:
 			for _, spec := range d.Specs {
