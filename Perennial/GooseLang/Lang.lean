@@ -429,8 +429,9 @@ class GoGlobalContext [FfiSyntax] where
   starts with these bytes, frozen (`staticImage`); which bytes are there is left
   abstract, and packages state facts about their own static data. -/
   staticBytes : GMap w64 w8
-  /-- The code of the program image: the closure at each function's entry
-  address (functions and methods, at their `methodAddr`). -/
+  /-- The code of the program image: the closure at each static func value's
+  address, a funcval symbol (`F·f`) or a function's entry (methods, at their
+  `methodAddr`). -/
   staticFuncs : GMap w64 val
 
 export GoGlobalContext (intoVal staticBytes staticFuncs)
@@ -562,7 +563,20 @@ Rules for the Go-level code built on these primitives (not enforced here):
   of range` above `maxAlloc` is a recoverable panic in Go, not out of memory);
 * a typed load or store through a pointer keeps Go's nil check: a range of
   length 0 is accessible at every address, `0` included, so `*p` for a nil
-  `*struct{}` (a panic in Go) would otherwise succeed. -/
+  `*struct{}` (a panic in Go) would otherwise succeed;
+* `sync/atomic` uses `BLoad`/`BSwap` only on naturally aligned 1-, 2-, 4- or
+  8-byte words, and a misaligned atomic access is stuck: `BLoad`/`BSwap` are
+  atomic at any length and alignment, while a misaligned 64-bit atomic tears on
+  amd64 and faults on arm64. Longer or misaligned `BLoad`s are for frozen data;
+* a conversion that Go may implement without a copy keeps that sharing:
+  `[]byte(s)` may point at `s`'s bytes when the slice is never written (gc
+  since Go 1.22), observable through `unsafe.StringData`;
+* slicing to an empty result keeps the base pointer, as gc does (`s[len(s):]`
+  points at `s`'s first element), not one past the end, which may be the start
+  of another block;
+* `staticImage` has no blocks: `UnsafeAdd` with a non-zero offset into static
+  data is stuck (less defined), until the image records one block per linker
+  symbol. -/
 
 inductive ByteMode where
   | Rd (n : Nat)
