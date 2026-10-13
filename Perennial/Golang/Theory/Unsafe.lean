@@ -413,4 +413,32 @@ theorem wp_floatResult32 (r : w32) (Φ : val → IProp GF) :
 
 end unsafe_wps
 
+section not_float
+variable [FfiSyntax] [GoSemanticsFunctions]
+
+/-- A float is not a `MinByLt` type (its `min` is `minFloat.impl`): the classes the
+semantics' rules take as premises admit only their listed types. -/
+theorem not_minByLt_float64 (hu : GoSemanticsFunctions.underlying go.float64 = go.float64) :
+    ¬ go.MinByLt go.float64 := by
+  intro h
+  generalize ht : go.float64 = t at h
+  induction h with
+  | named t u hu' _ ih =>
+    subst ht
+    exact ih (by rw [← hu'.is_underlying, hu])
+  | _ => cases ht
+
+/-- A float is not a `MapKeyBits` type: a map keyed by floats is stuck. -/
+theorem not_mapKeyBits_float64 (hu : GoSemanticsFunctions.underlying go.float64 = go.float64) :
+    ¬ go.MapKeyBits go.float64 := by
+  intro h
+  generalize ht : go.float64 = t at h
+  induction h with
+  | named t u hu' _ ih =>
+    subst ht
+    exact ih (by rw [← hu'.is_underlying, hu])
+  | _ => cases ht
+
+end not_float
+
 end Perennial

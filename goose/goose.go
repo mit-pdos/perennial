@@ -2314,7 +2314,8 @@ func (ctx *Ctx) copySource(lhs, rhs ast.Expr, t types.Type) (src ast.Expr, convs
 	}
 	// (A slice-to-array conversion [n]T(s) is also a copy from memory in gc, from s's
 	// backing array; the semantics has no rule for it, so it is stuck. A rule for it would
-	// need a CheckCopy here.)
+	// need a CheckCopy here from the backing array, and the unaliasedLocal exemption below
+	// would not apply to s, whose elements are not in s's variable.)
 	if !ctx.addressable(src) {
 		return nil, nil, false
 	}

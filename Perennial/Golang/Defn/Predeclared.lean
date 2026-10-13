@@ -1155,22 +1155,28 @@ def floatResult32 (r : w32) : Expr := if isNaN32 r then arbitraryNaN32 else Val 
 /-- `MinByLt t`: Go's `min`/`max` on `t` is `<`'s choice (`min.impl`): integers,
 `uintptr`, strings, and named types of them. Not floats, whose `min` of a NaN is a NaN and
 `min(-0, +0)` is `-0` (`minFloat.impl`). -/
-class MinByLt [GoSemanticsFunctions] (t : go.GoType) : Prop where
+inductive MinByLt [GoSemanticsFunctions] : go.GoType → Prop
+  | int : MinByLt go.int
+  | int8 : MinByLt go.int8
+  | int16 : MinByLt go.int16
+  | int32 : MinByLt go.int32
+  | int64 : MinByLt go.int64
+  | uint : MinByLt go.uint
+  | uint8 : MinByLt go.uint8
+  | uint16 : MinByLt go.uint16
+  | uint32 : MinByLt go.uint32
+  | uint64 : MinByLt go.uint64
+  | uintptr : MinByLt go.uintptr
+  | string : MinByLt go.string
+  | named (t u : go.GoType) (hu : t ↓u u) (h : MinByLt u) : MinByLt t
 
-instance [GoSemanticsFunctions] : MinByLt go.int := ⟨⟩
-instance [GoSemanticsFunctions] : MinByLt go.int8 := ⟨⟩
-instance [GoSemanticsFunctions] : MinByLt go.int16 := ⟨⟩
-instance [GoSemanticsFunctions] : MinByLt go.int32 := ⟨⟩
-instance [GoSemanticsFunctions] : MinByLt go.int64 := ⟨⟩
-instance [GoSemanticsFunctions] : MinByLt go.uint := ⟨⟩
-instance [GoSemanticsFunctions] : MinByLt go.uint8 := ⟨⟩
-instance [GoSemanticsFunctions] : MinByLt go.uint16 := ⟨⟩
-instance [GoSemanticsFunctions] : MinByLt go.uint32 := ⟨⟩
-instance [GoSemanticsFunctions] : MinByLt go.uint64 := ⟨⟩
-instance [GoSemanticsFunctions] : MinByLt go.uintptr := ⟨⟩
-instance [GoSemanticsFunctions] : MinByLt go.string := ⟨⟩
-instance (priority := low) [GoSemanticsFunctions] (t u : go.GoType) [t ↓u u] [MinByLt u] :
-    MinByLt t := ⟨⟩
+attribute [class] MinByLt
+attribute [instance] MinByLt.int MinByLt.int8 MinByLt.int16 MinByLt.int32 MinByLt.int64
+  MinByLt.uint MinByLt.uint8 MinByLt.uint16 MinByLt.uint32 MinByLt.uint64 MinByLt.uintptr
+  MinByLt.string
+
+instance (priority := low) [GoSemanticsFunctions] (t u : go.GoType) [hu : t ↓u u]
+    [h : MinByLt u] : MinByLt t := .named t u hu h
 
 /-- `min(x, y)` of floats of type `t` (the Go spec; gc on amd64 compiles it to an
 instruction, `ssa.OpMin64F`): a NaN if either is a NaN (any NaN: which one depends on the
@@ -1300,13 +1306,18 @@ def pointerAddr (off : Int) : Expr :=
 
 /-- `NoOverlappingViews t`: two locations of type `t` are equal or disjoint, since `t` is
 never reinterpreted (it is not `Reinterpretable`: a `*t` comes only from an allocation, a
-field or an element of a typed object): slices and named types of them. (The other types
-that are not `Reinterpretable` are at most 16 bytes, which `NoPartialOverlap` admits.) -/
-class NoOverlappingViews [GoSemanticsFunctions] (t : go.GoType) : Prop where
+field or an element of a typed object): slices, and named types of them. (Other types
+that are not `Reinterpretable`, such as a large struct with a pointer field, are not
+listed: their copies need `NoPartialOverlap`.) -/
+inductive NoOverlappingViews [GoSemanticsFunctions] : go.GoType → Prop
+  | slice (t : go.GoType) : NoOverlappingViews (go.SliceType t)
+  | named (t u : go.GoType) (hu : t ↓u u) (h : NoOverlappingViews u) : NoOverlappingViews t
 
-instance [GoSemanticsFunctions] (t : go.GoType) : NoOverlappingViews (go.SliceType t) := ⟨⟩
-instance (priority := low) [GoSemanticsFunctions] (t u : go.GoType) [t ↓u u]
-    [NoOverlappingViews u] : NoOverlappingViews t := ⟨⟩
+attribute [class] NoOverlappingViews
+attribute [instance] NoOverlappingViews.slice
+
+instance (priority := low) [GoSemanticsFunctions] (t u : go.GoType) [hu : t ↓u u]
+    [h : NoOverlappingViews u] : NoOverlappingViews t := .named t u hu h
 
 /-- A copy of `n` bytes from `src` to `dst` that gc's code cannot corrupt: the same
 location, at most 16 bytes (gc loads them all before storing), different allocations, or

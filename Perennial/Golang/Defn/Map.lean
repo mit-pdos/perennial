@@ -80,27 +80,33 @@ pointers, channels, `unsafe.Pointer`, and named types of them. Not floats (a NaN
 `==` to itself, `-0 == +0`), nor structs and arrays (left out). A map whose key type has
 none is stuck (`internal_map_check_key_step`); an interface key is checked by its dynamic
 type (`internal_map_check_key_iface`). -/
-class MapKeyBits [GoSemanticsFunctions] (t : go.GoType) : Prop where
+inductive MapKeyBits [GoSemanticsFunctions] : go.GoType → Prop
+  | int : MapKeyBits go.int
+  | int8 : MapKeyBits go.int8
+  | int16 : MapKeyBits go.int16
+  | int32 : MapKeyBits go.int32
+  | int64 : MapKeyBits go.int64
+  | uint : MapKeyBits go.uint
+  | uint8 : MapKeyBits go.uint8
+  | uint16 : MapKeyBits go.uint16
+  | uint32 : MapKeyBits go.uint32
+  | uint64 : MapKeyBits go.uint64
+  | uintptr : MapKeyBits go.uintptr
+  | bool : MapKeyBits go.bool
+  | string : MapKeyBits go.string
+  | unsafePointer : MapKeyBits «unsafe».Pointer
+  | pointer (t : go.GoType) : MapKeyBits (go.PointerType t)
+  | chan (d : go.ChanDir) (t : go.GoType) : MapKeyBits (go.ChannelType d t)
+  | named (t u : go.GoType) (hu : t ↓u u) (h : MapKeyBits u) : MapKeyBits t
 
-instance [GoSemanticsFunctions] : MapKeyBits go.int := ⟨⟩
-instance [GoSemanticsFunctions] : MapKeyBits go.int8 := ⟨⟩
-instance [GoSemanticsFunctions] : MapKeyBits go.int16 := ⟨⟩
-instance [GoSemanticsFunctions] : MapKeyBits go.int32 := ⟨⟩
-instance [GoSemanticsFunctions] : MapKeyBits go.int64 := ⟨⟩
-instance [GoSemanticsFunctions] : MapKeyBits go.uint := ⟨⟩
-instance [GoSemanticsFunctions] : MapKeyBits go.uint8 := ⟨⟩
-instance [GoSemanticsFunctions] : MapKeyBits go.uint16 := ⟨⟩
-instance [GoSemanticsFunctions] : MapKeyBits go.uint32 := ⟨⟩
-instance [GoSemanticsFunctions] : MapKeyBits go.uint64 := ⟨⟩
-instance [GoSemanticsFunctions] : MapKeyBits go.uintptr := ⟨⟩
-instance [GoSemanticsFunctions] : MapKeyBits go.bool := ⟨⟩
-instance [GoSemanticsFunctions] : MapKeyBits go.string := ⟨⟩
-instance [GoSemanticsFunctions] : MapKeyBits «unsafe».Pointer := ⟨⟩
-instance [GoSemanticsFunctions] (t : go.GoType) : MapKeyBits (go.PointerType t) := ⟨⟩
-instance [GoSemanticsFunctions] (d : go.ChanDir) (t : go.GoType) :
-    MapKeyBits (go.ChannelType d t) := ⟨⟩
-instance (priority := low) [GoSemanticsFunctions] (t u : go.GoType) [t ↓u u] [MapKeyBits u] :
-    MapKeyBits t := ⟨⟩
+attribute [class] MapKeyBits
+attribute [instance] MapKeyBits.int MapKeyBits.int8 MapKeyBits.int16 MapKeyBits.int32
+  MapKeyBits.int64 MapKeyBits.uint MapKeyBits.uint8 MapKeyBits.uint16 MapKeyBits.uint32
+  MapKeyBits.uint64 MapKeyBits.uintptr MapKeyBits.bool MapKeyBits.string
+  MapKeyBits.unsafePointer MapKeyBits.pointer MapKeyBits.chan
+
+instance (priority := low) [GoSemanticsFunctions] (t u : go.GoType) [hu : t ↓u u]
+    [h : MapKeyBits u] : MapKeyBits t := .named t u hu h
 
 class MapSemantics [GoSemanticsFunctions] : Prop where
   internal_map_lookup_step_pure (m k : val) :
