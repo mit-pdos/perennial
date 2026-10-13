@@ -32,3 +32,22 @@ type bigTagged struct {
 func copyTagConverted(p *bigStruct, q *bigTagged) {
 	*p = bigStruct(*q)
 }
+
+type innerBig struct{ x bigStruct }
+
+type outerBig struct {
+	*innerBig
+	y bigStruct
+}
+
+// p.x is in *p.innerBig, another object than p.y: CheckCopy.
+func copyPromoted(p *outerBig) {
+	p.x = p.y
+}
+
+type ptrLike interface{ ~*bigStruct | ~*bigStruct2 }
+
+// The conversion between type parameters is kept, after the CheckCopy.
+func copyTypeParamConv[T, U ptrLike](p *T, q *U) {
+	*p = T(*q)
+}

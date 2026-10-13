@@ -239,6 +239,105 @@ instance bigTagged_access_store_c (l : Loc) (v : github_com.mit_pdos.perennial.g
 end def_
 end bigTagged
 
+namespace innerBig
+section def_
+
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+instance innerBig_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.innerBig where
+  typedPointstoDef l v dq := iprop(
+    "x" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.innerBig go!"x" l) v.x' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance innerBig_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.innerBig github_com.mit_pdos.perennial.goose.testdata.examples.unittest.innerBig.underlying := by
+  solve_into_val_typed_struct
+
+instance innerBig_access_load_x (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.innerBig) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.innerBig go!"x" l) v.x' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.innerBig go!"x" l) v.x' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance innerBig_access_store_x (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.innerBig) (x' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.innerBig go!"x" l) v.x' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.innerBig go!"x" l) x' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with x' := x' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.innerBig) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end innerBig
+
+namespace outerBig
+section def_
+
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+instance outerBig_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig where
+  typedPointstoDef l v dq := iprop(
+    "innerBig" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig go!"innerBig" l) v.innerBig' dq ∗
+    "y" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig go!"y" l) v.y' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance outerBig_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig.underlying := by
+  solve_into_val_typed_struct
+
+instance outerBig_access_load_innerBig (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig go!"innerBig" l) v.innerBig' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig go!"innerBig" l) v.innerBig' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance outerBig_access_store_innerBig (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig) (innerBig' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig go!"innerBig" l) v.innerBig' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig go!"innerBig" l) innerBig' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with innerBig' := innerBig' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance outerBig_access_load_y (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig go!"y" l) v.y' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig go!"y" l) v.y' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance outerBig_access_store_y (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig) (y' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig go!"y" l) v.y' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig go!"y" l) y' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with y' := y' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.outerBig) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end outerBig
+
 namespace diskWrapper
 section def_
 

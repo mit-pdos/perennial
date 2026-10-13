@@ -74,6 +74,21 @@ def bigTagged.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] bigTagged.ty
 
+def innerBig.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.innerBig" [])
+
+attribute [irreducible] innerBig.ty
+
+def outerBig.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.outerBig" [])
+
+attribute [irreducible] outerBig.ty
+
+def ptrLike.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.ptrLike" [])
+
+attribute [irreducible] ptrLike.ty
+
 def diskWrapper.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.diskWrapper" [])
 
@@ -536,6 +551,12 @@ noncomputable def copyConverted [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def copyTagConverted [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.copyTagConverted"
+
+noncomputable def copyPromoted [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.copyPromoted"
+
+noncomputable def copyTypeParamConv [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.copyTypeParamConv"
 
 noncomputable def atomicCreateStub [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.atomicCreateStub"
@@ -1987,6 +2008,46 @@ noncomputable def copyTagConverted.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore bigStruct.ty))) (Pair (Var "$dst") (Var "$r0"))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (CheckCopy bigStruct.ty))) (Pair (Var "$dst") (Var "$src"))))))))))))))
+
+/-- p.x is in *p.innerBig, another object than p.y: CheckCopy.
+
+    go: copy_check.go:44:6 -/
+noncomputable def copyPromoted.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "p"
+  (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType outerBig.ty)))) (Var "p"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$src" (App (Val (GoInstruction (StructFieldRef outerBig.ty go!"y"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType outerBig.ty)))) (Var "p")))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad bigStruct.ty))) (Var "$src"))
+  (Let "$dst" (App (Val (GoInstruction (StructFieldRef innerBig.ty go!"x"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType innerBig.ty)))) (App (Val (GoInstruction (StructFieldRef outerBig.ty go!"innerBig"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType outerBig.ty)))) (Var "p")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore bigStruct.ty))) (Pair (Var "$dst") (Var "$r0"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (CheckCopy bigStruct.ty))) (Pair (Var "$dst") (Var "$src"))))))))))))
+
+/-- The conversion between type parameters is kept, after the CheckCopy.
+
+    go: copy_check.go:51:6 -/
+noncomputable def copyTypeParamConv.impl [FfiSyntax] [GoGlobalContext] (T U : go.GoType) : val :=
+  (LamV "p"
+  (Lam "q"
+  (App (Val exceptionDo)
+  (Let "q" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType U)))) (Var "q"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (Var "p"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$src" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType U)))) (Var "q"))
+  (Let "$r0" (App (Val (GoInstruction (Convert U T))) (App (Val (GoInstruction (GoLoad U))) (Var "$src")))
+  (Let "$dst" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType T)))) (Var "p"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (Var "$dst") (Var "$r0"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (CheckCopy T))) (Pair (Var "$dst") (Var "$src"))))))))))))))
 
 /-- go: data_structures.go:7:6 -/
 noncomputable def atomicCreateStub.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -5781,6 +5842,88 @@ attribute [instance] bigTagged.TypeAssumptions.type_repr
   bigTagged.TypeAssumptions.get_c
   bigTagged.TypeAssumptions.set_c
 
+structure innerBig [FfiSyntax] where
+  mk ::
+  x' : bigStruct
+
+instance innerBig.zero_val [FfiSyntax] : ZeroVal innerBig :=
+  ⟨innerBig.mk zeroValDef⟩
+
+@[reducible] def innerBig.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"x" bigStruct.ty)]
+
+@[irreducible] def innerBig.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  innerBig.fieldsUnsealed
+
+instance equals_unfold_innerBig [FfiSyntax] [GoGlobalContext] :
+    EqualsUnfold innerBig.fields innerBig.fieldsUnsealed :=
+  ⟨by unfold innerBig.fields; rfl⟩
+
+@[reducible] def innerBig.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType innerBig.fields)
+
+class innerBig.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying innerBig.underlying innerBig
+  underlying : go.UnderlyingDirectedEq innerBig.ty innerBig.underlying
+  layout : go.StructLayout innerBig [(go!"x", typeSize bigStruct, typeAlign bigStruct)]
+  get_x : ∀ (x : innerBig), go.IsGoStepPureDetTagged under (StructFieldGet innerBig.underlying go!"x") #x (Val #(x.x'))
+  set_x : ∀ (x : innerBig) (y : bigStruct), go.IsGoStepPureDetTagged under (StructFieldSet innerBig.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : innerBig)))
+
+attribute [instance] innerBig.TypeAssumptions.type_repr
+  innerBig.TypeAssumptions.underlying
+  innerBig.TypeAssumptions.layout
+  innerBig.TypeAssumptions.get_x
+  innerBig.TypeAssumptions.set_x
+
+structure outerBig [FfiSyntax] where
+  mk ::
+  innerBig' : Loc
+  y' : bigStruct
+
+instance outerBig.zero_val [FfiSyntax] : ZeroVal outerBig :=
+  ⟨outerBig.mk zeroValDef zeroValDef⟩
+
+@[reducible] def outerBig.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"innerBig" (go.GoType.PointerType innerBig.ty)),
+(go.field_decl.FieldDecl go!"y" bigStruct.ty)]
+
+@[irreducible] def outerBig.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  outerBig.fieldsUnsealed
+
+instance equals_unfold_outerBig [FfiSyntax] [GoGlobalContext] :
+    EqualsUnfold outerBig.fields outerBig.fieldsUnsealed :=
+  ⟨by unfold outerBig.fields; rfl⟩
+
+@[reducible] def outerBig.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType outerBig.fields)
+
+class outerBig.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying outerBig.underlying outerBig
+  underlying : go.UnderlyingDirectedEq outerBig.ty outerBig.underlying
+  layout : go.StructLayout outerBig [(go!"innerBig", typeSize Loc, typeAlign Loc), (go!"y", typeSize bigStruct, typeAlign bigStruct)]
+  get_innerBig : ∀ (x : outerBig), go.IsGoStepPureDetTagged under (StructFieldGet outerBig.underlying go!"innerBig") #x (Val #(x.innerBig'))
+  set_innerBig : ∀ (x : outerBig) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet outerBig.underlying go!"innerBig") (PairV #x #y) (Val #(({ x with innerBig' := y } : outerBig)))
+  get_y : ∀ (x : outerBig), go.IsGoStepPureDetTagged under (StructFieldGet outerBig.underlying go!"y") #x (Val #(x.y'))
+  set_y : ∀ (x : outerBig) (y : bigStruct), go.IsGoStepPureDetTagged under (StructFieldSet outerBig.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : outerBig)))
+
+attribute [instance] outerBig.TypeAssumptions.type_repr
+  outerBig.TypeAssumptions.underlying
+  outerBig.TypeAssumptions.layout
+  outerBig.TypeAssumptions.get_innerBig
+  outerBig.TypeAssumptions.set_innerBig
+  outerBig.TypeAssumptions.get_y
+  outerBig.TypeAssumptions.set_y
+
+abbrev ptrLike [FfiSyntax] : Type := GoInterface
+
+@[reducible] def ptrLike.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTermUnderlying (go.GoType.PointerType bigStruct.ty)), (go.type_term.TypeTermUnderlying (go.GoType.PointerType bigStruct2.ty))])])
+
+class ptrLike.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq ptrLike.ty ptrLike.underlying
+
+attribute [instance] ptrLike.TypeAssumptions.underlying
+
 structure diskWrapper [FfiSyntax] where
   mk ::
   d' : _root_.Perennial.github_com.goose_lang.primitive.disk.Disk
@@ -7053,6 +7196,9 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   bigStruct_instance : bigStruct.TypeAssumptions
   bigStruct2_instance : bigStruct2.TypeAssumptions
   bigTagged_instance : bigTagged.TypeAssumptions
+  innerBig_instance : innerBig.TypeAssumptions
+  outerBig_instance : outerBig.TypeAssumptions
+  ptrLike_instance : ptrLike.TypeAssumptions
   diskWrapper_instance : diskWrapper.TypeAssumptions
   embedA_instance : embedA.TypeAssumptions
   embedB_instance : embedB.TypeAssumptions
@@ -7136,6 +7282,8 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   copyIntoLocal_unfold : FuncUnfold copyIntoLocal [] copyIntoLocal.impl
   copyConverted_unfold : FuncUnfold copyConverted [] copyConverted.impl
   copyTagConverted_unfold : FuncUnfold copyTagConverted [] copyTagConverted.impl
+  copyPromoted_unfold : FuncUnfold copyPromoted [] copyPromoted.impl
+  copyTypeParamConv_unfold : ∀ (T U : go.GoType), FuncUnfold copyTypeParamConv [T, U] (copyTypeParamConv.impl T U)
   atomicCreateStub_unfold : FuncUnfold atomicCreateStub [] atomicCreateStub.impl
   useSlice_unfold : FuncUnfold useSlice [] useSlice.impl
   useSliceIndexing_unfold : FuncUnfold useSliceIndexing [] useSliceIndexing.impl
@@ -7336,6 +7484,9 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.bigStruct_instance
   Assumptions.bigStruct2_instance
   Assumptions.bigTagged_instance
+  Assumptions.innerBig_instance
+  Assumptions.outerBig_instance
+  Assumptions.ptrLike_instance
   Assumptions.diskWrapper_instance
   Assumptions.embedA_instance
   Assumptions.embedB_instance
@@ -7419,6 +7570,8 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.copyIntoLocal_unfold
   Assumptions.copyConverted_unfold
   Assumptions.copyTagConverted_unfold
+  Assumptions.copyPromoted_unfold
+  Assumptions.copyTypeParamConv_unfold
   Assumptions.atomicCreateStub_unfold
   Assumptions.useSlice_unfold
   Assumptions.useSliceIndexing_unfold

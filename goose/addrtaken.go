@@ -7,19 +7,23 @@ import (
 )
 
 // rootVar returns the variable whose storage the addressable expression e is
-// part of (through fields and array elements, not through pointers), or nil.
-func rootVar(info *types.Info, e ast.Expr) *types.Var {
+// part of (through fields and array elements, not through pointers), or nil. An
+// index of a type parameter may be an array's or a slice's: conservative counts it as
+// in the variable (to mark address-taken variables), otherwise it does not (to find
+// unaliased ones).
+func rootVar(info *types.Info, e ast.Expr, conservative bool) *types.Var {
 	switch e := ast.Unparen(e).(type) {
 	case *ast.Ident:
 		v, _ := info.Uses[e].(*types.Var)
 		return v
 	case *ast.SelectorExpr:
 		if sel := info.Selections[e]; sel != nil && sel.Kind() == types.FieldVal && !sel.Indirect() {
-			return rootVar(info, e.X)
+			return rootVar(info, e.X, conservative)
 		}
 	case *ast.IndexExpr:
-		if inPlace(info.TypeOf(e.X)) {
-			return rootVar(info, e.X)
+		t := info.TypeOf(e.X)
+		if _, isTP := t.(*types.TypeParam); isTP && conservative || !isTP && inPlace(t) {
+			return rootVar(info, e.X, conservative)
 		}
 	}
 	return nil
@@ -42,7 +46,7 @@ func inPlace(t types.Type) bool {
 func addrTakenVars(info *types.Info, files []*ast.File) map[*types.Var]bool {
 	m := make(map[*types.Var]bool)
 	mark := func(e ast.Expr) {
-		if v := rootVar(info, e); v != nil {
+		if v := rootVar(info, e, true); v != nil {
 			m[v] = true
 		}
 	}
