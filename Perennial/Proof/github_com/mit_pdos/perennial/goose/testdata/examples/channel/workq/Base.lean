@@ -219,7 +219,9 @@ def isCoordinator (γ : WorkqNames) (sh : shared) : IProp GF :=
   iprop(∃ γdone : ChanNames,
     "#Hdone" ∷ ownBroadcastChan sh.done' γdone (isTasksDone γ sh) .Unknown ∗
     "#Hdone_is" ∷ isChan sh.done' γdone Unit ∗
-    "#Hi" ∷ inv nroot (coordinatorInv γ sh γdone))
+    "#Hi" ∷ inv nroot (coordinatorInv γ sh γdone) ∗
+    "%Hremaining_nn" ∷ ⌜sh.remaining' ≠ null⌝ ∗
+    "%Htotal_nn" ∷ ⌜sh.total' ≠ null⌝)
 
 instance isCoordinator_persistent (γ : WorkqNames) (sh : shared) :
     Persistent (isCoordinator (GF := GF) γ sh) := by

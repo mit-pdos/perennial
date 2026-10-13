@@ -117,7 +117,7 @@ the wand form, which `wp_start` handles too (`Perennial/Spec/sync/runtime_Semacq
 | Notation | Meaning | File |
 |:--|:--|:--|
 | `l ↦ v`, `l ↦{dq} v`, `l ↦□ v` | typed points-to (`typedPointsto l v dq`) | `Golang/Theory/PostLifting.lean` |
-| `l.[S, go!"f"]` | address of field `f` of the struct at `l` | `Golang/Defn/PostLang.lean` |
+| `l.[S, go!"f"]` | address of field `f` of the struct at `l` (computing it panics on `l = null`) | `Golang/Defn/PostLang.lean` |
 | `s ↦* vs`, `s ↦*{dq} vs` | slice points-to (`ownSlice`) | `Golang/Theory/Slice.lean` |
 | `ownSliceCap V s dq` | ownership of the capacity beyond the length | `Golang/Theory/Slice.lean` |
 | `m ↦$ mv`, `m ↦${dq} mv`, `m ↦$□ mv` | map points-to (`ownMap`), `mv : gmap K V` | `Golang/Theory/Map.lean` |
@@ -747,8 +747,26 @@ outer `recover()` must read).
 A loop body that panics proves its `forPostcondition` with `wp_for_post`
 (`wp_for_post_panic`). Run-time panics of builtins (`Panic "msg"`: an index out
 of range, a failed type assertion, an integer division or remainder by zero, a
-negative shift count) are stuck: proofs show they are unreachable
-(`wp_PanicOp : ▷ False ⊢ WP (Panic msg)`). A division `x / y` steps to
+negative shift count, a field selector through a nil pointer) are stuck: proofs
+show they are unreachable (`wp_PanicOp : ▷ False ⊢ WP (Panic msg)`). A field
+reference `StructFieldRef t f #l` (Goose's translation of `&p.f`, and the
+address behind `p.f`, `p.f = v`, `p.g.f` and a promoted method called through
+an embedded field) steps to `if l = null then Panic "nil pointer dereference"
+else #(l.[V, f])`; `wp_auto`/`wp_pures` take it as a pure step with the side
+condition `l ≠ null` (`pure_wp_structFieldRef`). A field address is `null`
+exactly when the struct's is (`structFieldRef_eq_null_iff`, from the semantics'
+`go.structFieldRef_null` and `go.structFieldRef_null_inv`), so the side
+condition follows from any non-null address with the same base
+(`LocNonNullFrom`): a Lean hypothesis `l' ≠ null`, or a hypothesis of the
+context with a `HypPure` instance: a points-to (`typedPointsto_hypPure`), a
+pure `⌜l' ≠ null⌝`, `isLock`/`isMutex`/`isSema` (which record their address's
+non-nullness), `isWaitGroup`, `isCancelCtxOf`, and `∗`/`∃`/`□` of these; the
+fact is then kept as a local `Hφ : l ≠ null`. A struct whose fields are all
+behind invariants needs such a fact in its persistent predicate (as
+`isCoordinator` in the `workq` example does). `wp_apply` closes a premise
+`⌜l ≠ null⌝` of a spec the same way (`inonnull`, also usable directly); the
+`sync/atomic` method specs (`Int64.Load`, ...) take one, since the receiver's
+ownership is only available inside their atomic update. A division `x / y` steps to
 `if uint.Z y = 0 then Panic "integer divide by zero" else #(x / y)` (`sint.Z` at
 signed types): a literal divisor is decided by `wp_pures`, another needs
 `rw [if_neg (show ¬ uint.Z y = 0 by ...)]`. A shift `x << y` is

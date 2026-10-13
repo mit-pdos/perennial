@@ -27,7 +27,9 @@ theorem sync.atomic.Uint32.Add.wp_proof
     (wp_AddUint32 : sync.atomic.AddUint32.spec (GF := GF) (hG := hG)) :
     sync.atomic.Uint32.Add.spec (GF := GF) (hG := hG) := by
   intro u delta
-  wp_start as _
+  wp_start_folded as _
+  iintro %hu
+  (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)
   wp_auto
   wp_apply_core wp_AddUint32 $$ [] [HΦ]
   · iPkgInit

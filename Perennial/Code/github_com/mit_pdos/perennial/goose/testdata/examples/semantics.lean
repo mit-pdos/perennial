@@ -181,6 +181,16 @@ def mvOuterPtr.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] mvOuterPtr.ty
 
+def nilFieldInner.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.nilFieldInner" [])
+
+attribute [irreducible] nilFieldInner.ty
+
+def nilFieldOuter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.nilFieldOuter" [])
+
+attribute [irreducible] nilFieldOuter.ty
+
 def BoolTest.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.BoolTest" [])
 
@@ -747,6 +757,18 @@ noncomputable def testComparePointerWrappedDefaultToNil [FfiSyntax] [GoGlobalCon
 
 noncomputable def testInterfaceNilWithType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testInterfaceNilWithType"
+
+noncomputable def nilFieldRef [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.nilFieldRef"
+
+noncomputable def nilFieldRefZeroSize [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.nilFieldRefZeroSize"
+
+noncomputable def nilPromotedMethod [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.nilPromotedMethod"
+
+noncomputable def testNilFieldRefPanics [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testNilFieldRefPanics"
 
 noncomputable def reverseAssignOps64 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.reverseAssignOps64"
@@ -5506,6 +5528,146 @@ noncomputable def testInterfaceNilWithType.impl [FfiSyntax] [GoGlobalContext] : 
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "isNil") (Var "$r0")))))))))
 
+/-- go: nil.go:41:25 -/
+noncomputable def nilFieldInner.setA.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType nilFieldInner.ty)))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$r0" (Val #(W64 1))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef nilFieldInner.ty go!"a"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType nilFieldInner.ty)))) (Var "s"))) (Var "$r0"))))))))))
+
+/-- nilFieldRef takes the address of a field through a nil pointer, which is a
+    run-time panic in Go (here recovered). The model makes it a stuck panic, so
+    this test is not provable: the model is less defined than Go.
+
+    go: nil.go:53:6 -/
+noncomputable def nilFieldRef.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "panicked" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res0" (Var "panicked")
+  (App (App (Val wrapDeferRecover) (Lam BAnon
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))
+  (Lam "$defer"
+  (Lam "$panic"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType nilFieldOuter.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType nilFieldOuter.ty)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (StructFieldRef nilFieldOuter.ty go!"nilFieldInner"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType nilFieldOuter.ty)))) (Var "p")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$rv0" (Val #false)
+  (Seq (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$rv0")))
+  (App (Val doReturn)
+  (Val #()))))))
+  (App (Val doExecute)
+  (Var "$r0")))))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.InterfaceType [])))) (Pair (App (Val recoverPanic)
+  (Var "$panic")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.InterfaceType [])))) (Val UntypedNil))))))
+  (Let "$r0" (Val #true)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "panicked") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #()))))))))))))))))
+
+/-- nilFieldRefZeroSize panics even though the field occupies no memory.
+
+    go: nil.go:65:6 -/
+noncomputable def nilFieldRefZeroSize.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "panicked" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res0" (Var "panicked")
+  (App (App (Val wrapDeferRecover) (Lam BAnon
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))
+  (Lam "$defer"
+  (Lam "$panic"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType nilFieldOuter.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType nilFieldOuter.ty)))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (StructFieldRef nilFieldOuter.ty go!"z"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType nilFieldOuter.ty)))) (Var "p")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$rv0" (Val #false)
+  (Seq (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$rv0")))
+  (App (Val doReturn)
+  (Val #()))))))
+  (App (Val doExecute)
+  (Var "$r0")))))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.InterfaceType [])))) (Pair (App (Val recoverPanic)
+  (Var "$panic")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.InterfaceType [])))) (Val UntypedNil))))))
+  (Let "$r0" (Val #true)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "panicked") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #()))))))))))))))))
+
+/-- nilPromotedMethod calls a promoted pointer-receiver method through a nil
+    pointer to the embedding struct, which computes the address of the embedded
+    field and panics.
+
+    go: nil.go:79:6 -/
+noncomputable def nilPromotedMethod.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "panicked" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res0" (Var "panicked")
+  (App (App (Val wrapDeferRecover) (Lam BAnon
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))
+  (Lam "$defer"
+  (Lam "$panic"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType nilFieldOuter.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType nilFieldOuter.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$rv0" (Val #false)
+  (Seq (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$rv0")))
+  (App (Val doReturn)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType nilFieldInner.ty) go!"setA"))) (App (Val (GoInstruction (StructFieldRef nilFieldOuter.ty go!"nilFieldInner"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType nilFieldOuter.ty)))) (Var "p")))) (Val #())))))))
+  (App (Val doExecute)
+  (Let "$f" (Lam BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.InterfaceType [])))) (Pair (App (Val recoverPanic)
+  (Var "$panic")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.InterfaceType [])))) (Val UntypedNil))))))
+  (Let "$r0" (Val #true)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "panicked") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (Var "$f") (Val #()))
+  (App (Var "$oldf") (Val #()))))))))))))))))
+
+/-- go: nil.go:90:6 -/
+noncomputable def testNilFieldRefPanics.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (If (If (App (App (Val (GoInstruction (FuncResolve nilFieldRef []))) (Val #())) (Val #())) (App (App (Val (GoInstruction (FuncResolve nilFieldRefZeroSize []))) (Val #())) (Val #())) (Val #false)) (App (App (Val (GoInstruction (FuncResolve nilPromotedMethod []))) (Val #())) (Val #())) (Val #false)))))
+
 /-- helpers
 
     go: operations.go:4:6 -/
@@ -8618,6 +8780,79 @@ attribute [instance] mvOuterPtr.TypeAssumptions.type_repr
   mvOuterPtr.TypeAssumptions.ptr_getPtr_unfold
   mvOuterPtr.TypeAssumptions.ptr_store_unfold
 
+structure nilFieldInner [FfiSyntax] where
+  mk ::
+  a' : w64
+
+instance nilFieldInner.zero_val [FfiSyntax] : ZeroVal nilFieldInner :=
+  ⟨nilFieldInner.mk zeroValDef⟩
+
+@[reducible] def nilFieldInner.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"a" go.uint64)]
+
+@[irreducible] def nilFieldInner.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  nilFieldInner.fieldsUnsealed
+
+instance equals_unfold_nilFieldInner [FfiSyntax] [GoGlobalContext] :
+    EqualsUnfold nilFieldInner.fields nilFieldInner.fieldsUnsealed :=
+  ⟨by unfold nilFieldInner.fields; rfl⟩
+
+@[reducible] def nilFieldInner.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType nilFieldInner.fields)
+
+class nilFieldInner.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying nilFieldInner.underlying nilFieldInner
+  underlying : go.UnderlyingDirectedEq nilFieldInner.ty nilFieldInner.underlying
+  get_a : ∀ (x : nilFieldInner), go.IsGoStepPureDetTagged under (StructFieldGet nilFieldInner.underlying go!"a") #x (Val #(x.a'))
+  set_a : ∀ (x : nilFieldInner) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet nilFieldInner.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : nilFieldInner)))
+  ptr_setA_unfold : MethodUnfold (go.GoType.PointerType nilFieldInner.ty) go!"setA" nilFieldInner.setA.impl
+
+attribute [instance] nilFieldInner.TypeAssumptions.type_repr
+  nilFieldInner.TypeAssumptions.underlying
+  nilFieldInner.TypeAssumptions.get_a
+  nilFieldInner.TypeAssumptions.set_a
+  nilFieldInner.TypeAssumptions.ptr_setA_unfold
+
+structure nilFieldOuter [FfiSyntax] where
+  mk ::
+  nilFieldInner' : nilFieldInner
+  z' : Unit
+
+instance nilFieldOuter.zero_val [FfiSyntax] : ZeroVal nilFieldOuter :=
+  ⟨nilFieldOuter.mk zeroValDef zeroValDef⟩
+
+@[reducible] def nilFieldOuter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"nilFieldInner" nilFieldInner.ty),
+(go.field_decl.FieldDecl go!"z" (go.GoType.StructType []))]
+
+@[irreducible] def nilFieldOuter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  nilFieldOuter.fieldsUnsealed
+
+instance equals_unfold_nilFieldOuter [FfiSyntax] [GoGlobalContext] :
+    EqualsUnfold nilFieldOuter.fields nilFieldOuter.fieldsUnsealed :=
+  ⟨by unfold nilFieldOuter.fields; rfl⟩
+
+@[reducible] def nilFieldOuter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType nilFieldOuter.fields)
+
+class nilFieldOuter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying nilFieldOuter.underlying nilFieldOuter
+  underlying : go.UnderlyingDirectedEq nilFieldOuter.ty nilFieldOuter.underlying
+  get_nilFieldInner : ∀ (x : nilFieldOuter), go.IsGoStepPureDetTagged under (StructFieldGet nilFieldOuter.underlying go!"nilFieldInner") #x (Val #(x.nilFieldInner'))
+  set_nilFieldInner : ∀ (x : nilFieldOuter) (y : nilFieldInner), go.IsGoStepPureDetTagged under (StructFieldSet nilFieldOuter.underlying go!"nilFieldInner") (PairV #x #y) (Val #(({ x with nilFieldInner' := y } : nilFieldOuter)))
+  get_z : ∀ (x : nilFieldOuter), go.IsGoStepPureDetTagged under (StructFieldGet nilFieldOuter.underlying go!"z") #x (Val #(x.z'))
+  set_z : ∀ (x : nilFieldOuter) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet nilFieldOuter.underlying go!"z") (PairV #x #y) (Val #(({ x with z' := y } : nilFieldOuter)))
+  ptr_setA_unfold : MethodUnfold (go.GoType.PointerType nilFieldOuter.ty) go!"setA" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType nilFieldInner.ty) go!"setA"))) (App (Val (GoInstruction (StructFieldRef nilFieldOuter.ty go!"nilFieldInner"))) (Var "$r"))))
+
+attribute [instance] nilFieldOuter.TypeAssumptions.type_repr
+  nilFieldOuter.TypeAssumptions.underlying
+  nilFieldOuter.TypeAssumptions.get_nilFieldInner
+  nilFieldOuter.TypeAssumptions.set_nilFieldInner
+  nilFieldOuter.TypeAssumptions.get_z
+  nilFieldOuter.TypeAssumptions.set_z
+  nilFieldOuter.TypeAssumptions.ptr_setA_unfold
+
 structure BoolTest [FfiSyntax] where
   mk ::
   t' : Bool
@@ -9139,6 +9374,8 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   mvBox_instance : mvBox.TypeAssumptions
   mvOuter_instance : mvOuter.TypeAssumptions
   mvOuterPtr_instance : mvOuterPtr.TypeAssumptions
+  nilFieldInner_instance : nilFieldInner.TypeAssumptions
+  nilFieldOuter_instance : nilFieldOuter.TypeAssumptions
   BoolTest_instance : BoolTest.TypeAssumptions
   ArrayEditor_instance : ArrayEditor.TypeAssumptions
   Bar_instance : Bar.TypeAssumptions
@@ -9314,6 +9551,10 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   testComparePointerWrappedToNil_unfold : FuncUnfold testComparePointerWrappedToNil [] testComparePointerWrappedToNil.impl
   testComparePointerWrappedDefaultToNil_unfold : FuncUnfold testComparePointerWrappedDefaultToNil [] testComparePointerWrappedDefaultToNil.impl
   testInterfaceNilWithType_unfold : FuncUnfold testInterfaceNilWithType [] testInterfaceNilWithType.impl
+  nilFieldRef_unfold : FuncUnfold nilFieldRef [] nilFieldRef.impl
+  nilFieldRefZeroSize_unfold : FuncUnfold nilFieldRefZeroSize [] nilFieldRefZeroSize.impl
+  nilPromotedMethod_unfold : FuncUnfold nilPromotedMethod [] nilPromotedMethod.impl
+  testNilFieldRefPanics_unfold : FuncUnfold testNilFieldRefPanics [] testNilFieldRefPanics.impl
   reverseAssignOps64_unfold : FuncUnfold reverseAssignOps64 [] reverseAssignOps64.impl
   reverseAssignOps32_unfold : FuncUnfold reverseAssignOps32 [] reverseAssignOps32.impl
   add64Equals_unfold : FuncUnfold add64Equals [] add64Equals.impl
@@ -9417,6 +9658,8 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.mvBox_instance
   Assumptions.mvOuter_instance
   Assumptions.mvOuterPtr_instance
+  Assumptions.nilFieldInner_instance
+  Assumptions.nilFieldOuter_instance
   Assumptions.BoolTest_instance
   Assumptions.ArrayEditor_instance
   Assumptions.Bar_instance
@@ -9592,6 +9835,10 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testComparePointerWrappedToNil_unfold
   Assumptions.testComparePointerWrappedDefaultToNil_unfold
   Assumptions.testInterfaceNilWithType_unfold
+  Assumptions.nilFieldRef_unfold
+  Assumptions.nilFieldRefZeroSize_unfold
+  Assumptions.nilPromotedMethod_unfold
+  Assumptions.testNilFieldRefPanics_unfold
   Assumptions.reverseAssignOps64_unfold
   Assumptions.reverseAssignOps32_unfold
   Assumptions.add64Equals_unfold

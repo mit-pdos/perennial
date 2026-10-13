@@ -27,7 +27,9 @@ theorem sync.atomic.Uint64.Load.wp_proof
     (wp_LoadUint64 : sync.atomic.LoadUint64.spec (GF := GF) (hG := hG)) :
     sync.atomic.Uint64.Load.spec (GF := GF) (hG := hG) := by
   intro u dq
-  wp_start as _
+  wp_start_folded as _
+  iintro %hu
+  (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)
   wp_auto
   wp_apply_core wp_LoadUint64 $$ [] [HΦ]
   · iPkgInit

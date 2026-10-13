@@ -47,7 +47,7 @@ abbrev lockInv (m : Loc) (R : IProp GF) : IProp GF :=
 
 def isLockDef (m : Loc) (R : IProp GF) : IProp GF :=
   iprop("#Hinv" ∷ inv nroot (lockInv m R) ∗
-    "_" ∷ True)
+    "%Hm_nn" ∷ ⌜m ≠ null⌝)
 /-- This means `m` is a valid lock with invariant `R` (sealed). -/
 @[irreducible] def isLock (m : Loc) (R : IProp GF) : IProp GF := isLockDef m R
 theorem isLock_unseal : @isLock = @isLockDef := by funext; with_unfolding_all rfl
@@ -81,6 +81,16 @@ instance isLock_ne (m : Loc) : NonExpansive (isLock (GF := GF) m) where
 instance isLock_persistent (m : Loc) (R : IProp GF) : Persistent (isLock m R) := by
   rw [isLock_unseal]; unfold isLockDef named; infer_instance
 
+/-- A lock's address is not `null` (`init_lock` takes a points-to at it), and
+neither is any address with the same base (`LocNonNullFrom`): `wp_auto` uses this
+for the field references of a struct whose fields a lock protects (`HypPure`). -/
+instance isLock_hypPure (m l : Loc) (R : IProp GF) [h : LocNonNullFrom m l] :
+    HypPure (isLock m R) (l ≠ null) where
+  hyp_pure := by
+    rw [isLock_unseal]; unfold isLockDef
+    iintro ⟨_, %Hnn⟩
+    ipureintro; exact h.ne_null Hnn
+
 instance locked_timeless (m : Loc) : Timeless (ownLock (GF := GF) m) := by
   rw [ownLock_unseal]; unfold ownLockDef; infer_instance
 
@@ -88,6 +98,7 @@ theorem init_lock (R : IProp GF) (E : CoPset) (m : Loc) :
     ⊢ typedPointsto (GF := GF) m false (DFrac.own 1) -∗ ▷ R ={E}=∗ isLock m R := by
   iintro Hl HR
   rw [isLock_unseal]; unfold isLockDef
+  icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %Hnn⟩
   icases (typedPointsto_quarter_three_quarter m false).1 $$ Hl with ⟨Hl1, Hl2⟩
   imod inv_alloc nroot E (lockInv m R) $$ [Hl1 Hl2 HR] with #Hinv
   · inext
@@ -97,6 +108,7 @@ theorem init_lock (R : IProp GF) (E : CoPset) (m : Loc) :
     iframe
   imodintro
   iframe Hinv
+  ipureintro; exact Hnn
 
 theorem wp_lock_trylock (m : Loc) (R : IProp GF) :
     {{ isLock m R }} (App (Val lock.trylock) (Val #m))
@@ -171,6 +183,7 @@ theorem wp_lock_lock (m : Loc) (R : IProp GF) :
     wp_pure
     iapply IH $$ [] HΦ
     iframe Hinv
+    ipureintro; exact Hm_nn
 
 theorem wp_lock_unlock (m : Loc) (R : IProp GF) :
     {{ isLock m R ∗ ownLock m ∗ ▷ R }} (App (Val lock.unlock) (Val #m)) {{ RET #(); True }} := by

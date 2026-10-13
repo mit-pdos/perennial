@@ -46,7 +46,8 @@ theorem wp_done_Load_of
   iintro %Φ ⟨#Hpkg, #Hc⟩ HΦ
   unfold isCancelCtxOf
   iNamed Hc
-  iapply wp_VLoad _ (DFrac.own 1)
+  iapply wp_VLoad _ (DFrac.own 1) $$ [] [-]
+  all_goals try inonnull
   · iPkgInit
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -88,7 +89,8 @@ theorem wp_done_Load_frag_of
   iintro %Φ ⟨#Hpkg, #Hc, Hf⟩ HΦ
   unfold isCancelCtxOf
   iNamed Hc
-  iapply wp_VLoad _ (DFrac.own 1)
+  iapply wp_VLoad _ (DFrac.own 1) $$ [] [-]
+  all_goals try inonnull
   · iPkgInit
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -146,7 +148,8 @@ theorem wp_err_Load_of
   iintro %Φ ⟨#Hpkg, #Hc, Hcl⟩ HΦ
   unfold isCancelCtxOf
   iNamed Hc
-  iapply wp_VLoad _ (DFrac.own 1)
+  iapply wp_VLoad _ (DFrac.own 1) $$ [] [-]
+  all_goals try inonnull
   · iPkgInit
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -200,7 +203,8 @@ theorem wp_err_Load_frag_of
   iintro %Φ ⟨#Hpkg, #Hc, Hf⟩ HΦ
   unfold isCancelCtxOf
   iNamed Hc
-  iapply wp_VLoad _ (DFrac.own 1)
+  iapply wp_VLoad _ (DFrac.own 1) $$ [] [-]
+  all_goals try inonnull
   · iPkgInit
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -254,7 +258,8 @@ theorem wp_done_Load_known_of
   iintro %Φ ⟨#Hpkg, #Hc, #Hdd⟩ HΦ
   unfold isCancelCtxOf
   iNamed Hc
-  iapply wp_VLoad _ (DFrac.own 1)
+  iapply wp_VLoad _ (DFrac.own 1) $$ [] [-]
+  all_goals try inonnull
   · iPkgInit
   iinv Hinv with Hi Hclose
   all_goals try solve_ndisj

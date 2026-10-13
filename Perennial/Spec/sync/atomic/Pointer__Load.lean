@@ -26,6 +26,7 @@ abbrev sync.atomic.Pointer.Load.spec : Prop :=
   ∀ {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] (T : go.GoType) [IntoValTyped (GF := GF) T' T] (u : Loc) (dq : DFrac),
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ v : Loc, ownPointer (T' := T') u dq v ∗ (ownPointer (T' := T') u dq v ={∅,⊤}=∗ Φ #v)) -∗
+    ⌜u ≠ null⌝ -∗
     WP (App (Val (u @!! go.GoType.PointerType (Pointer.ty T) @!! go!"Load")) (Val #())) {{ Φ }}
 
 end spec

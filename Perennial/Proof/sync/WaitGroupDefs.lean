@@ -216,6 +216,11 @@ def isWaitGroupDef (wg : Loc) (γ : WaitGroupNames) (N : Namespace) : IProp GF :
   isWaitGroupDef wg γ N
 theorem isWaitGroup_unseal : @isWaitGroup = @isWaitGroupDef := by
   funext; with_unfolding_all rfl
+/-- A `WaitGroup`'s address is not `null` (its semaphore's is not, `isSema`). -/
+instance isWaitGroup_hypPure (wg l : Loc) (γ : WaitGroupNames) (N : Namespace)
+    [LocNonNullFrom wg l] : HypPure (isWaitGroup (GF := GF) wg γ N) (l ≠ null) := by
+  rw [isWaitGroup_unseal]; unfold isWaitGroupDef; infer_instance
+
 instance isWaitGroup_persistent (wg : Loc) (γ : WaitGroupNames) (N : Namespace) :
     Persistent (isWaitGroup (GF := GF) wg γ N) := by
   rw [isWaitGroup_unseal]; unfold isWaitGroupDef named; infer_instance

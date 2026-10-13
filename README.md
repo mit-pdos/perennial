@@ -116,7 +116,8 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   wrapper a thunk reading the cells, which it calls after the deferred chain,
   on a normal return and on a recovered panic alike. A panic that no
   deferred function of the function recovers is stuck at the end of the
-  function (`exceptionDo`), like a run-time panic of a builtin (`Panic "msg"`):
+  function (`exceptionDo`), like a run-time panic of a builtin (`Panic "msg"`:
+  an index out of range, a field selector or `&p.f` through a nil pointer, ...):
   a proof shows that it does not happen. The model does not propagate a panic to
   the caller (in Go the caller's deferred functions run and may recover it), so
   a program that recovers a callee's panic is not provable. GooseLang itself has

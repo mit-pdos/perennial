@@ -29,7 +29,9 @@ theorem sync.atomic.Bool.CompareAndSwap.wp_proof
     (wp_CompareAndSwapUint32 : sync.atomic.CompareAndSwapUint32.spec (GF := GF) (hG := hG)) :
     sync.atomic.Bool.CompareAndSwap.spec (GF := GF) (hG := hG) := by
   intro u old new
-  wp_start as _
+  wp_start_folded as _
+  iintro %hu
+  (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)
   wp_auto
   wp_apply wp_b32
   wp_apply wp_b32

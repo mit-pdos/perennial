@@ -25,7 +25,9 @@ variable [package_sem : sync.atomic.Assumptions]
 theorem sync.atomic.Value.Load.wp_proof :
     sync.atomic.Value.Load.spec (GF := GF) (hG := hG) := by
   intro u dq
-  wp_start as _
+  wp_start_folded as _
+  iintro %hu
+  (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)
   rw [Value_ty_eq]
   wp_auto
   imod HΦ with ⟨%x, >Hown, HΦ⟩

@@ -27,7 +27,9 @@ theorem sync.atomic.Int64.CompareAndSwap.wp_proof
     (wp_CompareAndSwapInt64 : sync.atomic.CompareAndSwapInt64.spec (GF := GF) (hG := hG)) :
     sync.atomic.Int64.CompareAndSwap.spec (GF := GF) (hG := hG) := by
   intro u old new
-  wp_start as _
+  wp_start_folded as _
+  iintro %hu
+  (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)
   wp_auto
   wp_apply_core wp_CompareAndSwapInt64 $$ [] [HΦ]
   · iPkgInit

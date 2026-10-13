@@ -52,6 +52,10 @@ def isMutexDef (m : Loc) (R : IProp GF) : IProp GF := isLock m R
 @[irreducible] def isMutex (m : Loc) (R : IProp GF) : IProp GF := isMutexDef m R
 theorem isMutex_unseal : @isMutex = @isMutexDef := by funext; with_unfolding_all rfl
 
+instance isMutex_hypPure (m l : Loc) (R : IProp GF) [LocNonNullFrom m l] :
+    HypPure (isMutex m R) (l ≠ null) where
+  hyp_pure := by rw [isMutex_unseal]; exact (isLock_hypPure m l R).hyp_pure
+
 def ownMutexDef (m : Loc) : IProp GF := ownLock m
 /-- This resource denotes ownership of the fact that the Mutex is currently
 locked. -/

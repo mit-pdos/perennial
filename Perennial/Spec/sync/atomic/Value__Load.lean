@@ -26,6 +26,7 @@ abbrev sync.atomic.Value.Load.spec : Prop :=
   ∀ (u : Loc) (dq : DFrac),
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ x : GoInterface, ownValue u dq x ∗ (ownValue u dq x ={∅,⊤}=∗ Φ #x)) -∗
+    ⌜u ≠ null⌝ -∗
     WP (App (Val (u @!! go.GoType.PointerType Value.ty @!! go!"Load")) (Val #())) {{ Φ }}
 
 end spec

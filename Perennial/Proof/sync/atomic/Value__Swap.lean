@@ -25,7 +25,9 @@ variable [package_sem : sync.atomic.Assumptions]
 theorem sync.atomic.Value.Swap.wp_proof :
     sync.atomic.Value.Swap.spec (GF := GF) (hG := hG) := by
   intro u v hv
-  wp_start as _
+  wp_start_folded as _
+  iintro %hu
+  (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)
   cases v with
   | nil => exact absurd rfl hv
   | ok ii =>
