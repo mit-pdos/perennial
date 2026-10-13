@@ -35,16 +35,18 @@ variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 
-/-- `k` is a safe map key at `key_type`: comparing it with itself does not
-panic (see the comment in `Perennial/Golang/Defn/Map.lean`). -/
+/-- `k` is a safe map key at `key_type`: the check before a map access, which compares it
+with itself, steps (the model compares keys as Go does, `go.MapKeyBits`, and the comparison
+does not panic; see `Perennial/Golang/Defn/Map.lean`). -/
 class SafeMapKey {K : Type} (key_type : go.GoType) (k : K) : Prop where
   wp_go_eq_safe_map_key : ∀ (s : Stuckness) (E : CoPset) (Φ : val → IProp GF),
     (∀ v, Φ v) ⊢
-      WP (App (Val (GoInstruction (GoOp GoEquals key_type))) (Val (PairV #k #k))) @ s; E {{ Φ }}
+      WP (App (Val (GoInstruction (InternalMapCheckKey key_type))) (Val #k)) @ s; E {{ Φ }}
 
 export SafeMapKey (wp_go_eq_safe_map_key)
 
 instance safe_map_key_is_go_eq {K : Type} (key_type : go.GoType) (k : K) (b : Bool)
+    [hc : ⟦InternalMapCheckKey key_type, #k⟧ ⤳ (#k =⟨key_type⟩ #k)]
     [h : ⟦GoOp GoEquals key_type, (#k, #k)⟧ ⤳ #b] : SafeMapKey (GF := GF) key_type k where
   wp_go_eq_safe_map_key s E Φ := by
     iintro HΦ

@@ -33,8 +33,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.testConve
     ⟨fun s E Φ => by iintro H; wp_auto; iapply H⟩
   wp_apply wp_mapInsert $$ Hm with Hm
   wp_apply wp_mapInsert $$ Hm with Hm
-  have hs : SafeMapKey (GF := GF) go.any
-      (interface.mkOk withInterface.ty #(withInterface.mk interface.nil)) :=
+  have hs : SafeMapKey (GF := GF) go.any (interface.mkOk go.string #([115#8] : GoString)) :=
     ⟨fun s E Φ => by iintro H; wp_auto; iapply H⟩
   wp_apply wp_mapInsert $$ Hm with Hm
   wp_apply wp_map_lookup1 $$ Hm with Hm

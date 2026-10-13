@@ -86,11 +86,12 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   compiled and package `unsafe` reads its bits; the program is assumed built
   with the default `GOAMD64=v1`, where gc does not fuse `x*y+z` into one
   rounding as it may with `v3`; float `==` is IEEE equality on the bits, so a NaN
-  is not equal to itself and `-0 == +0`, and `<` is `≤` and not `==`; goose
-  refuses a map whose key type contains a float, a type argument that contains
-  one, a conversion of a float-containing value to an interface (which could then be
-  a map key) and `min`/`max` of floats, since the model's maps compare keys by their
-  bits and its `min` is `<`'s choice), and a value with no byte
+  is not equal to itself and `-0 == +0`, and `<` is `≤` and not `==`; `min`/`max`
+  of floats give any NaN for a NaN argument and combine two equal values by their
+  bits, `min(-0, +0) = -0`, `minFloat.impl`; the model's maps compare keys by their
+  values, so a map access is stuck unless its key type is one whose `==` is that
+  (`go.MapKeyBits`: integers, `bool`, strings, pointers, channels; an interface key
+  by its dynamic type), so never for a float key), and a value with no byte
   representation (a pointer, string, slice, interface, func, map, chan, `bool`)
   as itself in its first cell followed by tails `LitTail k i` that record its
   size and position; padding and fresh cells are `LitPad`. Typed loads and stores go through multi-cell primitives
@@ -126,14 +127,17 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   model's representation of them never shows. gc copies a struct or array of more than
   16 bytes from memory to memory in forward chunks, which views that overlap partially
   (arranged through `unsafe`) would corrupt, while the model copies the value whole: so
-  before `dst = src` with `src` a variable of struct, array or type-parameter type, goose
-  emits `CheckCopy t (&dst, &src)`, stuck unless the copy cannot overlap partially
+  before `dst = src` with `src` a variable (through any conversions), goose emits
+  `CheckCopy t (&dst, &src)`, as for each such pair of a multiple assignment and for the
+  value of a `for … = range` over a slice or array pointer (from the element), whatever
+  `t` is; the semantics decides: it steps when the copy cannot overlap partially
   (`go.NoPartialOverlap`: the same location, at most 16 bytes, different allocations or
-  disjoint ranges; `wp_check_copy`, and `pointstoVals_noPartialOverlap` from owning
-  both); not when either side is part of a local variable whose address is never taken.
-  The source is found through conversions that keep the representation; goose refuses
-  a multiple assignment and a `for … = range` over a slice or array pointer that copy
-  such a value from memory (gc copies them in place too). `(*[n]T)(p)[i:j:k]`, which
+  disjoint ranges; `wp_check_copy`, `check_copy_small` for a representation of at most 16
+  bytes, `pointstoVals_noPartialOverlap` from owning both) or when `t` is never
+  reinterpreted (`go.NoOverlappingViews`: slices), and is stuck otherwise. goose leaves
+  the check out only for reasons in the syntax: either side is part of a local variable
+  whose address is never taken, or both are reached from the same variable through
+  fields and indices (equal or disjoint places). `(*[n]T)(p)[i:j:k]`, which
   bbolt uses with `n` far beyond the allocation, is one operation
   (`unsafe.ArraySlice`, `wp_unsafe_array_slice`): the slice's bounds against `n` and
   the `k` elements' bytes from `p` (gc's `-d=checkptr` checks those for elements of

@@ -39,14 +39,14 @@ end error
 section helpers
 variable [FfiSyntax] [GoGlobalContext]
 
-/-- `min(x, y)` as `x < y`'s choice; not for floats, which goose refuses (Go's `min` of a
-NaN is a NaN, and `min(-0, +0)` is `-0`). -/
+/-- `min(x, y)` as `x < y`'s choice, for the types where that is Go's `min` (`MinByLt`);
+floats have their own (`minFloat.impl`). -/
 def min.impl (t : go.GoType) (n : Nat) : val :=
   match n with
   | 2 => λ: "x" "y", if: ("x" <⟨t⟩ "y") then "x" else "y"
   | _ => LitV LitPoison
 
-/-- `max(x, y)`; not for floats (see `min.impl`). -/
+/-- `max(x, y)` as `x > y`'s choice (`MinByLt`). -/
 def max.impl (t : go.GoType) (n : Nat) : val :=
   match n with
   | 2 => λ: "x" "y", if: "x" >⟨t⟩ "y" then "x" else "y"
@@ -1152,6 +1152,59 @@ def floatResult64 (r : w64) : Expr := if isNaN64 r then arbitraryNaN64 else Val 
 /-- `floatResult64` for `float32`. -/
 def floatResult32 (r : w32) : Expr := if isNaN32 r then arbitraryNaN32 else Val #r
 
+/-- `MinByLt t`: Go's `min`/`max` on `t` is `<`'s choice (`min.impl`): integers,
+`uintptr`, strings, and named types of them. Not floats, whose `min` of a NaN is a NaN and
+`min(-0, +0)` is `-0` (`minFloat.impl`). -/
+class MinByLt [GoSemanticsFunctions] (t : go.GoType) : Prop where
+
+instance [GoSemanticsFunctions] : MinByLt go.int := ⟨⟩
+instance [GoSemanticsFunctions] : MinByLt go.int8 := ⟨⟩
+instance [GoSemanticsFunctions] : MinByLt go.int16 := ⟨⟩
+instance [GoSemanticsFunctions] : MinByLt go.int32 := ⟨⟩
+instance [GoSemanticsFunctions] : MinByLt go.int64 := ⟨⟩
+instance [GoSemanticsFunctions] : MinByLt go.uint := ⟨⟩
+instance [GoSemanticsFunctions] : MinByLt go.uint8 := ⟨⟩
+instance [GoSemanticsFunctions] : MinByLt go.uint16 := ⟨⟩
+instance [GoSemanticsFunctions] : MinByLt go.uint32 := ⟨⟩
+instance [GoSemanticsFunctions] : MinByLt go.uint64 := ⟨⟩
+instance [GoSemanticsFunctions] : MinByLt go.uintptr := ⟨⟩
+instance [GoSemanticsFunctions] : MinByLt go.string := ⟨⟩
+instance (priority := low) [GoSemanticsFunctions] (t u : go.GoType) [t ↓u u] [MinByLt u] :
+    MinByLt t := ⟨⟩
+
+/-- `min(x, y)` of floats of type `t` (the Go spec; gc on amd64 compiles it to an
+instruction, `ssa.OpMin64F`): a NaN if either is a NaN (any NaN: which one depends on the
+instruction), else the smaller, and of two equal values (`x == y`) the one with the sign bit
+set if either has it (`min(-0, +0) = -0`): the OR of their bits (`runtime.forbits`), at the
+unsigned type `bits` of the same width. `nan` is the expression for any NaN of the width. -/
+def minFloat.impl (t bits : go.GoType) (nan : Expr) (n : Nat) : val :=
+  match n with
+  | 2 => LamV "x" (Lam "y"
+      (If (App (Val (GoInstruction (GoOp GoEquals t))) (Pair (Var "x") (Var "x")))
+        (If (App (Val (GoInstruction (GoOp GoEquals t))) (Pair (Var "y") (Var "y")))
+          (If (App (Val (GoInstruction (GoOp GoLt t))) (Pair (Var "x") (Var "y"))) (Var "x")
+            (If (App (Val (GoInstruction (GoOp GoLt t))) (Pair (Var "y") (Var "x"))) (Var "y")
+              (App (Val (GoInstruction (GoOp GoOr bits)))
+                (Pair (Var "x") (Var "y")))))
+          nan)
+        nan))
+  | _ => LitV LitPoison
+
+/-- `max(x, y)` of floats: as `minFloat.impl`, the larger, and of two equal values the AND of
+their bits (`max(-0, +0) = +0`, `runtime.fandbits`). -/
+def maxFloat.impl (t bits : go.GoType) (nan : Expr) (n : Nat) : val :=
+  match n with
+  | 2 => LamV "x" (Lam "y"
+      (If (App (Val (GoInstruction (GoOp GoEquals t))) (Pair (Var "x") (Var "x")))
+        (If (App (Val (GoInstruction (GoOp GoEquals t))) (Pair (Var "y") (Var "y")))
+          (If (App (Val (GoInstruction (GoOp GoGt t))) (Pair (Var "x") (Var "y"))) (Var "x")
+            (If (App (Val (GoInstruction (GoOp GoGt t))) (Pair (Var "y") (Var "x"))) (Var "y")
+              (App (Val (GoInstruction (GoOp GoAnd bits)))
+                (Pair (Var "x") (Var "y")))))
+          nan)
+        nan))
+  | _ => LitV LitPoison
+
 class Float64Semantics [GoSemanticsFunctions] : Prop where
   go_zero_val_float64 : TypeReprUnderlying go.float64 w64
   comparable_float64 : ⟦CheckComparable go.float64, #()⟧ ⤳[under] #()
@@ -1245,6 +1298,16 @@ def pointerAddr (off : Int) : Expr :=
   gl((((ArbitraryInt %⟨go.uint64⟩ #(W64 (2 ^ 45 - 1))) +⟨go.uint64⟩ #(W64 1)) *⟨go.uint64⟩
       #(W64 8)) +⟨go.uint64⟩ #(W64 (off % 8)))
 
+/-- `NoOverlappingViews t`: two locations of type `t` are equal or disjoint, since `t` is
+never reinterpreted (it is not `Reinterpretable`: a `*t` comes only from an allocation, a
+field or an element of a typed object): slices and named types of them. (The other types
+that are not `Reinterpretable` are at most 16 bytes, which `NoPartialOverlap` admits.) -/
+class NoOverlappingViews [GoSemanticsFunctions] (t : go.GoType) : Prop where
+
+instance [GoSemanticsFunctions] (t : go.GoType) : NoOverlappingViews (go.SliceType t) := ⟨⟩
+instance (priority := low) [GoSemanticsFunctions] (t u : go.GoType) [t ↓u u]
+    [NoOverlappingViews u] : NoOverlappingViews t := ⟨⟩
+
 /-- A copy of `n` bytes from `src` to `dst` that gc's code cannot corrupt: the same
 location, at most 16 bytes (gc loads them all before storing), different allocations, or
 disjoint ranges. -/
@@ -1272,6 +1335,10 @@ class UnsafeSemantics [GoSemanticsFunctions] : Prop where
   Such a copy is stuck (there is no step). -/
   check_copy (t : go.GoType) {V : Type} [ZeroVal V] [TypeRepr t V] (dst src : Loc)
       (h : NoPartialOverlap (typeSize V) dst src) :
+    ⟦CheckCopy t, (#dst, #src)⟧ ⤳ #()
+  /-- A copy of a type that is never reinterpreted (`NoOverlappingViews`) cannot overlap
+  partially. -/
+  check_copy_no_views (t : go.GoType) [NoOverlappingViews t] (dst src : Loc) :
     ⟦CheckCopy t, (#dst, #src)⟧ ⤳ #()
   /-- `(*t)(nil)` is `nil`, for any `t` (nothing is reinterpreted). -/
   convert_unsafe_nil_to_pointer (elem : go.GoType) :
@@ -1349,9 +1416,10 @@ attribute [instance] UnsafeSemantics.convert_unsafe_to_pointer
   UnsafeSemantics.convert_unsafe_nil_to_pointer
   UnsafeSemantics.convert_pointer_to_uintptr UnsafeSemantics.ptr_diff
   UnsafeSemantics.add_unfold UnsafeSemantics.slice_unfold UnsafeSemantics.array_slice_unfold
+  UnsafeSemantics.check_copy_no_views
 export UnsafeSemantics (convert_unsafe_to_pointer convert_unsafe_nil_to_pointer
   convert_pointer_to_uintptr ptr_diff add_unfold
-  slice_unfold array_slice_unfold check_copy)
+  slice_unfold array_slice_unfold check_copy check_copy_no_views)
 
 class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   /-- A value of a predeclared type is allocated as a block of its size (`allocEncoded`),
@@ -1375,8 +1443,20 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   make2_underlying (t : go.GoType) : functions make2 [t] = functions make2 [underlying t]
   make1_underlying (t : go.GoType) : functions make1 [t] = functions make1 [underlying t]
 
-  min_unfold (n : Nat) (t : go.GoType) : FuncUnfold min (List.replicate n t) (min.impl t n)
-  max_unfold (n : Nat) (t : go.GoType) : FuncUnfold max (List.replicate n t) (max.impl t n)
+  min_unfold (n : Nat) (t : go.GoType) [MinByLt t] :
+    FuncUnfold min (List.replicate n t) (min.impl t n)
+  max_unfold (n : Nat) (t : go.GoType) [MinByLt t] :
+    FuncUnfold max (List.replicate n t) (max.impl t n)
+  /-- `min`/`max` of floats (`minFloat.impl`): of a type whose underlying type is `float64`
+  or `float32`, at that float type (the bit operation is on its width). -/
+  min_unfold_float64 (n : Nat) (t : go.GoType) [t ↓u go.float64] :
+    FuncUnfold min (List.replicate n t) (minFloat.impl go.float64 go.uint64 arbitraryNaN64 n)
+  max_unfold_float64 (n : Nat) (t : go.GoType) [t ↓u go.float64] :
+    FuncUnfold max (List.replicate n t) (maxFloat.impl go.float64 go.uint64 arbitraryNaN64 n)
+  min_unfold_float32 (n : Nat) (t : go.GoType) [t ↓u go.float32] :
+    FuncUnfold min (List.replicate n t) (minFloat.impl go.float32 go.uint32 arbitraryNaN32 n)
+  max_unfold_float32 (n : Nat) (t : go.GoType) [t ↓u go.float32] :
+    FuncUnfold max (List.replicate n t) (maxFloat.impl go.float32 go.uint32 arbitraryNaN32 n)
   panic_unfold : FuncUnfold panic [] panic.impl
 
   [unsafe_sem : unsafe.Semantics]
@@ -1431,7 +1511,9 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
 
 attribute [instance] PredeclaredSemantics.alloc_predeclared PredeclaredSemantics.load_predeclared
   PredeclaredSemantics.store_predeclared PredeclaredSemantics.min_unfold
-  PredeclaredSemantics.max_unfold PredeclaredSemantics.panic_unfold PredeclaredSemantics.unsafe_sem
+  PredeclaredSemantics.max_unfold PredeclaredSemantics.min_unfold_float64
+  PredeclaredSemantics.max_unfold_float64 PredeclaredSemantics.min_unfold_float32
+  PredeclaredSemantics.max_unfold_float32 PredeclaredSemantics.panic_unfold PredeclaredSemantics.unsafe_sem
   PredeclaredSemantics.unsafe_ext_sem
   PredeclaredSemantics.comparable_bool PredeclaredSemantics.go_eq_bool
   PredeclaredSemantics.underlying_bool PredeclaredSemantics.go_zero_val_bool
@@ -1454,7 +1536,8 @@ attribute [instance] PredeclaredSemantics.alloc_predeclared PredeclaredSemantics
   PredeclaredSemantics.type_repr_empty_struct
 export PredeclaredSemantics (alloc_predeclared load_predeclared store_predeclared
   predeclared_underlying len_underlying cap_underlying clear_underlying copy_underlying
-  delete_underlying make3_underlying make2_underlying make1_underlying min_unfold max_unfold panic_unfold
+  delete_underlying make3_underlying make2_underlying make1_underlying min_unfold max_unfold min_unfold_float64 max_unfold_float64
+  min_unfold_float32 max_unfold_float32 panic_unfold
   unsafe_sem comparable_bool go_eq_bool underlying_bool go_zero_val_bool go_unop_not_bool
   untypedInt_semantics int_semantics int64_semantics int32_semantics int16_semantics
   int8_semantics uint_semantics uint64_semantics uint32_semantics uint16_semantics

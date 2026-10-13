@@ -1861,9 +1861,9 @@ noncomputable def testConversionLiteral.impl [FfiSyntax] [GoGlobalContext] : val
   (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (App (Val (map.lookup1 go.any go.any)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.any go.any)))) (Var "m"))) (App (App (Val (map.lookup1 go.any go.any)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.any go.any)))) (Var "m"))) (App (Val (GoInstruction (Convert withInterface.ty go.any))) (App (Val (GoInstruction (GoLoad withInterface.ty))) (Var "s"))))) (App (Val (GoInstruction (Convert withInterface.ty go.any))) (App (Val (GoInstruction (GoLoad withInterface.ty))) (Var "s"))))))))
+  (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (App (Val (map.lookup1 go.any go.any)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.any go.any)))) (Var "m"))) (App (App (Val (map.lookup1 go.any go.any)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.any go.any)))) (Var "m"))) (App (Val (GoInstruction (Convert go.string go.any))) (Val #(go!"s"))))) (App (Val (GoInstruction (Convert withInterface.ty go.any))) (App (Val (GoInstruction (GoLoad withInterface.ty))) (Var "s"))))))))
   (App (Val doExecute)
-  (App (App (App (Val (map.insert go.any)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.any go.any)))) (Var "m"))) (App (Val (GoInstruction (Convert withInterface.ty go.any))) (App (Val (GoInstruction (GoLoad withInterface.ty))) (Var "s")))) (Var "$r0")))))))
+  (App (App (App (Val (map.insert go.any)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.any go.any)))) (Var "m"))) (App (Val (GoInstruction (Convert go.string go.any))) (Val #(go!"s")))) (Var "$r0")))))))
   (App (Val doExecute)
   (App (App (App (Val (map.insert go.any)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.any go.any)))) (Var "m"))) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil))) (Var "$r0")))))))
   (App (Val doExecute)
@@ -2540,7 +2540,7 @@ noncomputable def maybeConvertToInterface.impl [FfiSyntax] [GoGlobalContext] (A 
   (App (Val exceptionDo)
   (Let "a" (App (Val (GoInstruction (GoAlloc A))) (Var "a"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad A))) (Var "a"))))))
+  (App (Val (GoInstruction (Convert A go.any))) (App (Val (GoInstruction (GoLoad A))) (Var "a")))))))
 
 /-- go: generic_conversion.go:11:6 -/
 noncomputable def maybeConvertToString.impl [FfiSyntax] [GoGlobalContext] (A : go.GoType) : val :=

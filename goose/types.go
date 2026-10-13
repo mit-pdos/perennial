@@ -319,9 +319,6 @@ func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 		}
 
 	case *types.Map:
-		if containsFloat(t.Key()) {
-			ctx.unsupported(n, "a map whose key type %v contains a float (the model's maps compare keys by their bits; Go's == does not: NaN keys are never found, -0 and +0 are one key)", t.Key())
-		}
 		return glang.NewCallExpr(glang.TermIdent("go.MapType"),
 			ctx.glangType(n, t.Key()), ctx.glangType(n, t.Elem()))
 	case *types.Chan:
@@ -375,24 +372,6 @@ func chanElem(t types.Type) types.Type {
 	panic(fmt.Errorf("expected channel type, got %v", t))
 }
 
-// containsFloat reports whether a value of type t contains a float: t is a
-// float type, or an array or struct with a float element or field.
-func containsFloat(t types.Type) bool {
-	switch t := t.Underlying().(type) {
-	case *types.Basic:
-		return t.Info()&(types.IsFloat|types.IsComplex) != 0
-	case *types.Array:
-		return containsFloat(t.Elem())
-	case *types.Struct:
-		for i := 0; i < t.NumFields(); i++ {
-			if containsFloat(t.Field(i).Type()) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
 func (ctx *Ctx) convertTypeArgsToGlang(l locatable, typeList *types.TypeList) (glangTypeArgs []glang.Expr) {
 	glangTypeArgs = make([]glang.Expr, typeList.Len())
 	for i := range glangTypeArgs {
@@ -400,11 +379,6 @@ func (ctx *Ctx) convertTypeArgsToGlang(l locatable, typeList *types.TypeList) (g
 		// arrays and pointers goose refuses it in
 		if util.MentionsProphId(typeList.At(i)) {
 			ctx.unsupported(l, "a ProphId in a type argument")
-		}
-		// a float substituted for a type parameter could become a map key (see
-		// the map case of glangType)
-		if containsFloat(typeList.At(i)) {
-			ctx.unsupported(l, "a type argument %v that contains a float", typeList.At(i))
 		}
 		glangTypeArgs[i] = ctx.glangType(l, typeList.At(i))
 	}

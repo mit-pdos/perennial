@@ -4849,6 +4849,9 @@ noncomputable def testRangeVarShared.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (slice.forRange go.uint64)) (Var "$range"))
   (Lam "$key"
   (Lam "$value"
+  (Let "$src" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (Var "$range") (Var "$key")))
+  (Let "$dst" (Var "x")
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.PointerType go.uint64))))) (Var "ptrs"))
@@ -4860,7 +4863,9 @@ noncomputable def testRangeVarShared.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Var "$key")))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$value"))))))))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$dst") (Var "$value")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (CheckCopy go.uint64))) (Pair (Var "$dst") (Var "$src"))))))))))))))))
 
 /-- with one variable shared by all iterations, f would return 3
 
@@ -6469,7 +6474,10 @@ noncomputable def ArrayEditor.Advance.impl [FfiSyntax] [GoGlobalContext] : val :
   (App (Val doReturn)
   (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef ArrayEditor.ty go!"next_val"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor.ty)))) (Var "ae"))))
+  (Let "$src" (App (Val (GoInstruction (StructFieldRef ArrayEditor.ty go!"next_val"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor.ty)))) (Var "ae")))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$src"))
+  (Let "$dst" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (StructFieldRef ArrayEditor.ty go!"s"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor.ty)))) (Var "ae")))) (Val #(W64 0))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "next"))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -6480,7 +6488,9 @@ noncomputable def ArrayEditor.Advance.impl [FfiSyntax] [GoGlobalContext] : val :
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef ArrayEditor.ty go!"next_val"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor.ty)))) (Var "ae"))) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (StructFieldRef ArrayEditor.ty go!"s"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType ArrayEditor.ty)))) (Var "ae")))) (Val #(W64 0)))) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$dst") (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (CheckCopy go.uint64))) (Pair (Var "$dst") (Var "$src"))))))))))
   (App (Val doExecute)
   (Let "$opa" (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (Var "arr")) (Val #(W64 0))))
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$opa") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$opa")) (Val #(W64 1)))))))))))))))))

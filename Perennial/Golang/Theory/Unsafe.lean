@@ -184,6 +184,36 @@ theorem wp_check_copy (t : go.GoType) {V : Type} [ZeroVal V] [TypeRepr t V] (dst
   wp_pures
   iapply HΦ; itrivial
 
+/-- A representation of at most 16 bytes: a copy of it cannot be corrupted
+(`go.NoPartialOverlap`), so `CheckCopy` steps (`check_copy_small`). -/
+class SmallSize (V : Type) : Prop where
+  le : typeSize V ≤ 16
+
+variable [go.LayoutSemantics] in
+instance : SmallSize w8 := ⟨by rw [go.typeSize_w8]; decide⟩
+variable [go.LayoutSemantics] in
+instance : SmallSize w16 := ⟨by rw [go.typeSize_w16]; decide⟩
+variable [go.LayoutSemantics] in
+instance : SmallSize w32 := ⟨by rw [go.typeSize_w32]; decide⟩
+variable [go.LayoutSemantics] in
+instance : SmallSize w64 := ⟨by rw [go.typeSize_w64]; decide⟩
+variable [go.LayoutSemantics] in
+instance : SmallSize Bool := ⟨by rw [go.typeSize_bool]; decide⟩
+variable [go.LayoutSemantics] in
+instance : SmallSize Loc := ⟨by rw [go.typeSize_loc]; decide⟩
+variable [go.LayoutSemantics] in
+instance : SmallSize GoFunc := ⟨by rw [go.typeSize_func]; decide⟩
+variable [go.LayoutSemantics] in
+instance : SmallSize GoString := ⟨by rw [go.typeSize_string]; decide⟩
+variable [go.LayoutSemantics] in
+instance : SmallSize GoInterface := ⟨by rw [go.typeSize_interface]; decide⟩
+variable [go.LayoutSemantics] in
+instance : SmallSize Unit := ⟨by rw [go.typeSize_unit]; decide⟩
+
+instance check_copy_small (t : go.GoType) {V : Type} [ZeroVal V] [TypeRepr t V] [hs : SmallSize V]
+    (dst src : Loc) : ⟦CheckCopy t, (#dst, #src)⟧ ⤳ #() :=
+  go.check_copy t dst src (Or.inr (Or.inl hs.le))
+
 /-- Owning all of `n` cells from `dst` and some of `n` cells from `src` rules out a partial
 overlap: they would share a cell. -/
 theorem pointstoVals_noPartialOverlap (dst src : Loc) (dq : DFrac) (vs ws : List val) (n : Int)

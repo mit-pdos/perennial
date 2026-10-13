@@ -74,6 +74,34 @@ namespace go
 section defs
 variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
 
+/-- `MapKeyBits t`: Go's `==` on `t` is equality of the model's values, so a map keyed by
+`t` may compare keys by their values (`mapLookup`): integers, `uintptr`, `bool`, strings,
+pointers, channels, `unsafe.Pointer`, and named types of them. Not floats (a NaN is not
+`==` to itself, `-0 == +0`), nor structs and arrays (left out). A map whose key type has
+none is stuck (`internal_map_check_key_step`); an interface key is checked by its dynamic
+type (`internal_map_check_key_iface`). -/
+class MapKeyBits [GoSemanticsFunctions] (t : go.GoType) : Prop where
+
+instance [GoSemanticsFunctions] : MapKeyBits go.int := ⟨⟩
+instance [GoSemanticsFunctions] : MapKeyBits go.int8 := ⟨⟩
+instance [GoSemanticsFunctions] : MapKeyBits go.int16 := ⟨⟩
+instance [GoSemanticsFunctions] : MapKeyBits go.int32 := ⟨⟩
+instance [GoSemanticsFunctions] : MapKeyBits go.int64 := ⟨⟩
+instance [GoSemanticsFunctions] : MapKeyBits go.uint := ⟨⟩
+instance [GoSemanticsFunctions] : MapKeyBits go.uint8 := ⟨⟩
+instance [GoSemanticsFunctions] : MapKeyBits go.uint16 := ⟨⟩
+instance [GoSemanticsFunctions] : MapKeyBits go.uint32 := ⟨⟩
+instance [GoSemanticsFunctions] : MapKeyBits go.uint64 := ⟨⟩
+instance [GoSemanticsFunctions] : MapKeyBits go.uintptr := ⟨⟩
+instance [GoSemanticsFunctions] : MapKeyBits go.bool := ⟨⟩
+instance [GoSemanticsFunctions] : MapKeyBits go.string := ⟨⟩
+instance [GoSemanticsFunctions] : MapKeyBits «unsafe».Pointer := ⟨⟩
+instance [GoSemanticsFunctions] (t : go.GoType) : MapKeyBits (go.PointerType t) := ⟨⟩
+instance [GoSemanticsFunctions] (d : go.ChanDir) (t : go.GoType) :
+    MapKeyBits (go.ChannelType d t) := ⟨⟩
+instance (priority := low) [GoSemanticsFunctions] (t u : go.GoType) [t ↓u u] [MapKeyBits u] :
+    MapKeyBits t := ⟨⟩
+
 class MapSemantics [GoSemanticsFunctions] : Prop where
   internal_map_lookup_step_pure (m k : val) :
     ⟦InternalMapLookup, (m, k)⟧ ⤳ (let (ok, v) := mapLookup m k; gl((v, #ok)))
@@ -105,8 +133,20 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
           ) gl(return: (do: #())) ks)
   internal_map_make_step_pure (v : val) :
     ⟦InternalMapMake, v⟧ ⤳ (mapEmpty v)
-  internal_map_check_key_step (key_type : go.GoType) (k : val) :
+  /-- Before a map access, the key is compared with itself (which panics on an uncomparable
+  key), if the model's comparison of keys is Go's (`MapKeyBits`); for other key types the
+  access is stuck: Go's map compares keys with `==`, `mapLookup` by their values. -/
+  internal_map_check_key_step (key_type : go.GoType) [MapKeyBits key_type] (k : val) :
     ⟦InternalMapCheckKey key_type, k⟧ ⤳ (k =⟨key_type⟩ k)
+  /-- An interface key by its dynamic type: `nil`, or a value of a `MapKeyBits` type. -/
+  internal_map_check_key_iface_nil (key_type : go.GoType) {elems : List go.InterfaceElem}
+      [key_type ↓u go.InterfaceType elems] :
+    ⟦InternalMapCheckKey key_type, #(interface.nil : GoInterface)⟧ ⤳
+      (#(interface.nil : GoInterface) =⟨key_type⟩ #(interface.nil : GoInterface))
+  internal_map_check_key_iface (key_type : go.GoType) {elems : List go.InterfaceElem}
+      [key_type ↓u go.InterfaceType elems] (ty : go.GoType) [MapKeyBits ty] (v : val) :
+    ⟦InternalMapCheckKey key_type, #(interface.mkOk ty v)⟧ ⤳
+      (#(interface.mkOk ty v) =⟨key_type⟩ #(interface.mkOk ty v))
 
   -- special cases for equality
   is_go_op_go_equals_map_nil_l (kt vt : go.GoType) (s : GoMap) :
@@ -201,6 +241,7 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
 attribute [instance] MapSemantics.internal_map_lookup_step_pure
   MapSemantics.internal_map_insert_step_pure MapSemantics.internal_map_delete_step_pure
   MapSemantics.internal_map_make_step_pure MapSemantics.internal_map_check_key_step
+  MapSemantics.internal_map_check_key_iface_nil MapSemantics.internal_map_check_key_iface
   MapSemantics.is_go_op_go_equals_map_nil_l MapSemantics.is_go_op_go_equals_map_nil_r
   MapSemantics.internal_map_lookup_step MapSemantics.internal_map_insert_step
   MapSemantics.internal_map_delete_step MapSemantics.internal_map_make_step
@@ -209,6 +250,7 @@ attribute [instance] MapSemantics.internal_map_lookup_step_pure
 export MapSemantics (internal_map_lookup_step_pure internal_map_insert_step_pure
   internal_map_delete_step_pure internal_map_length_step_pure
   internal_map_domain_literal_step_pure internal_map_make_step_pure internal_map_check_key_step
+  internal_map_check_key_iface_nil internal_map_check_key_iface
   is_go_op_go_equals_map_nil_l is_go_op_go_equals_map_nil_r internal_map_lookup_step
   internal_map_insert_step internal_map_delete_step internal_map_make_step mapLookup_pure
   is_map_pure_map_insert is_map_pure_map_delete is_map_pure_map_empty mapDefault_map_empty
