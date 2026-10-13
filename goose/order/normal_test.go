@@ -1,0 +1,75 @@
+package order
+
+import (
+	"go/ast"
+	"go/importer"
+	"go/parser"
+	"go/token"
+	"go/types"
+	"testing"
+)
+
+func check(t *testing.T, src string) (*token.FileSet, *ast.File, *types.Info) {
+	t.Helper()
+	fset := token.NewFileSet()
+	f, err := parser.ParseFile(fset, "x.go", src, parser.ParseComments)
+	if err != nil {
+		t.Fatal(err)
+	}
+	info := &types.Info{Types: map[ast.Expr]types.TypeAndValue{}, Defs: map[*ast.Ident]types.Object{},
+		Uses: map[*ast.Ident]types.Object{}, Selections: map[*ast.SelectorExpr]*types.Selection{}}
+	conf := types.Config{Importer: importer.Default()}
+	if _, err := conf.Check("p", fset, []*ast.File{f}, info); err != nil {
+		t.Fatal(err)
+	}
+	return fset, f, info
+}
+
+// nonNormal lists the lines of the statements of src not in normal form.
+func nonNormal(t *testing.T, src string) []int {
+	fset, f, info := check(t, src)
+	var lines []int
+	for _, v := range CheckFile(info, f) {
+		lines = append(lines, fset.Position(v.Pos).Line)
+	}
+	return lines
+}
+
+func TestNormal(t *testing.T) {
+	src := `package p
+
+type G struct{ c []byte }
+
+func (g G) ctrls() *G       { return &g }
+func (g *G) match(b byte) int { return 0 }
+func h2(x int) byte          { return 0 }
+
+var global int
+var gv G
+
+func f() int { return 0 }
+
+func ex(g G, hash int, a []int, i int, p *int) {
+	_ = g.ctrls().match(h2(hash)) // 15: normal: g is read inside the first call
+	_ = a[i] + f()                // 16: not normal
+	_ = global + f()              // 17: not normal
+	_ = i + f()                   // 18: normal: i is a safe local
+	_ = f() + f()                 // 19: normal: calls are ordered
+	_ = *p + f()                  // 20: not normal
+	_ = g.ctrls().c[0]            // 20: normal: read of the call's result
+	_ = f() + gv.match(0)         // 21: normal: &gv, not a read of gv
+	q := &g                       // 22: g is now address-taken
+	_ = q
+}
+`
+	got := nonNormal(t, src)
+	want := []int{16, 17, 20}
+	if len(got) != len(want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	for i := range got {
+		if got[i] != want[i] {
+			t.Fatalf("got %v, want %v", got, want)
+		}
+	}
+}
