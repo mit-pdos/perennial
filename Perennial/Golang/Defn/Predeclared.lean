@@ -76,16 +76,12 @@ class Semantics [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunct
   go_zero_val_Pointer : go.TypeReprUnderlying Pointer Loc
   go_eq_Pointer : go.IsStrictlyComparable Pointer Loc
   underlying_pointer : unsafe.Pointer ↓u unsafe.Pointer
-  convert_unsafe_to_pointer (elem : go.GoType) (l : Loc) :
-    ⟦Convert unsafe.Pointer (go.PointerType elem), #l⟧ ⤳[under] #l
   convert_pointer_to_unsafe (elem : go.GoType) (l : Loc) :
     ⟦Convert (go.PointerType elem) unsafe.Pointer, #l⟧ ⤳[under] #l
 
 attribute [instance] Semantics.go_zero_val_Pointer Semantics.go_eq_Pointer
-  Semantics.underlying_pointer Semantics.convert_unsafe_to_pointer
-  Semantics.convert_pointer_to_unsafe
-export Semantics (go_zero_val_Pointer go_eq_Pointer underlying_pointer convert_unsafe_to_pointer
-  convert_pointer_to_unsafe)
+  Semantics.underlying_pointer Semantics.convert_pointer_to_unsafe
+export Semantics (go_zero_val_Pointer go_eq_Pointer underlying_pointer convert_pointer_to_unsafe)
 end «unsafe»
 
 namespace any
@@ -158,6 +154,73 @@ def untypedFloat : go.GoType := go.Named go!"untyped float" []
 abbrev untypedRune : go.GoType := untypedInt
 
 def prophId : go.GoType := go.Named go!"proph id" []
+
+section reinterpretable
+variable [FfiSyntax] [GoSemanticsFunctions]
+
+mutual
+/-- `Reinterpretable t`: memory reached through an `unsafe.Pointer` may be accessed as a `t`
+(the conversion `(*t)(p)`, `UnsafeSemantics.convert_unsafe_to_pointer`). Its values are
+bytes, or values whose Go representation the model's memory keeps apart (`decode` checks
+the cells, `WriteCompat` the stores): numbers, `bool`, strings, pointers, `unsafe.Pointer`,
+slices, and arrays and structs of them. Not interfaces, maps, channels or functions, which
+the model represents by the same value whatever their (static) type, where Go's
+representation depends on it (an interface's method table, a map's key type): reading one
+type's memory as another would be defined in the model where Go reads garbage. -/
+inductive Reinterpretable : go.GoType → Prop
+  | uint8 : Reinterpretable go.uint8
+  | uint16 : Reinterpretable go.uint16
+  | uint32 : Reinterpretable go.uint32
+  | uint64 : Reinterpretable go.uint64
+  | uint : Reinterpretable go.uint
+  | uintptr : Reinterpretable go.uintptr
+  | int8 : Reinterpretable go.int8
+  | int16 : Reinterpretable go.int16
+  | int32 : Reinterpretable go.int32
+  | int64 : Reinterpretable go.int64
+  | int : Reinterpretable go.int
+  | float32 : Reinterpretable go.float32
+  | float64 : Reinterpretable go.float64
+  | bool : Reinterpretable go.bool
+  | string : Reinterpretable go.string
+  | unsafePointer : Reinterpretable «unsafe».Pointer
+  | pointer (t : go.GoType) : Reinterpretable (go.PointerType t)
+  | slice (t : go.GoType) : Reinterpretable (go.SliceType t)
+  | array (n : Int) (t : go.GoType) (h : Reinterpretable t) : Reinterpretable (go.ArrayType n t)
+  | struct (fds fds' : List go.field_decl) (heq : EqualsUnfold fds fds')
+      (h : ReinterpretableFields fds') : Reinterpretable (go.StructType fds)
+  | named (t u : go.GoType) (hu : IsUnderlying t u) (h : Reinterpretable u) : Reinterpretable t
+
+/-- Every field of the list is `Reinterpretable`. -/
+inductive ReinterpretableFields : List go.field_decl → Prop
+  | nil : ReinterpretableFields []
+  | field (n : GoString) (t : go.GoType) (fs : List go.field_decl) (h : Reinterpretable t)
+      (hs : ReinterpretableFields fs) : ReinterpretableFields (go.FieldDecl n t :: fs)
+  | embedded (n : GoString) (t : go.GoType) (fs : List go.field_decl) (h : Reinterpretable t)
+      (hs : ReinterpretableFields fs) : ReinterpretableFields (go.EmbeddedField n t :: fs)
+end
+
+attribute [class] Reinterpretable ReinterpretableFields
+attribute [instance] Reinterpretable.uint8 Reinterpretable.uint16 Reinterpretable.uint32
+  Reinterpretable.uint64 Reinterpretable.uint Reinterpretable.uintptr Reinterpretable.int8
+  Reinterpretable.int16 Reinterpretable.int32 Reinterpretable.int64 Reinterpretable.int
+  Reinterpretable.float32 Reinterpretable.float64 Reinterpretable.bool Reinterpretable.string
+  Reinterpretable.unsafePointer Reinterpretable.pointer Reinterpretable.slice
+  ReinterpretableFields.nil
+
+instance (n : Int) (t : go.GoType) [h : Reinterpretable t] : Reinterpretable (go.ArrayType n t) :=
+  .array n t h
+instance (fds fds' : List go.field_decl) [heq : EqualsUnfold fds fds'] [h : ReinterpretableFields fds'] :
+    Reinterpretable (go.StructType fds) := .struct fds fds' heq h
+instance (priority := low) (t u : go.GoType) [hu : IsUnderlying t u] [h : Reinterpretable u] :
+    Reinterpretable t := .named t u hu h
+instance (n : GoString) (t : go.GoType) (fs : List go.field_decl) [h : Reinterpretable t]
+    [hs : ReinterpretableFields fs] : ReinterpretableFields (go.FieldDecl n t :: fs) := .field n t fs h hs
+instance (n : GoString) (t : go.GoType) (fs : List go.field_decl) [h : Reinterpretable t]
+    [hs : ReinterpretableFields fs] : ReinterpretableFields (go.EmbeddedField n t :: fs) :=
+  .embedded n t fs h hs
+
+end reinterpretable
 
 section defs
 variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
@@ -1111,6 +1174,10 @@ conversions in one expression, `unsafe.Add` and `unsafe.Slice`. The conversion o
 `uintptr` to an `unsafe.Pointer` is not modeled (stuck), except in the form
 `unsafe.Pointer(uintptr(p) + n)`, which Goose emits as `unsafe.Add(p, n)`. -/
 class UnsafeSemantics [GoSemanticsFunctions] : Prop where
+  /-- `(*t)(p)` keeps the location, for a type whose memory may be reinterpreted
+  (`Reinterpretable`); any other is stuck. -/
+  convert_unsafe_to_pointer (elem : go.GoType) [Reinterpretable elem] (l : Loc) :
+    ⟦Convert unsafe.Pointer (go.PointerType elem), #l⟧ ⤳[under] #l
   /-- `uintptr(p)`: `0` for `nil`, else an unspecified address (`pointerAddr`). -/
   convert_pointer_to_uintptr (l : Loc) :
     ⟦Convert «unsafe».Pointer go.uintptr, #l⟧ ⤳[under]
@@ -1137,7 +1204,9 @@ class UnsafeSemantics [GoSemanticsFunctions] : Prop where
   negative `len`; for a zero-size element, a `nil` `ptr` with a positive `len`; otherwise
   `len × size` overflowing or running past the end of the address space
   (`mem > -uintptr(ptr)`, with `uintptr(ptr)` as `convert_pointer_to_uintptr`, so `0` for
-  `nil`). A panic is stuck. -/
+  `nil`). A panic is stuck. Beyond Go's checks, the slice must lie in `ptr`'s allocation
+  (package `unsafe`'s rules; Go's `-d=checkptr` checks it): its first and last bytes are
+  cells (`CheckCell`; a block's cells are one allocation's, contiguous). -/
   slice_unfold (t : go.GoType) {V : Type} [ZeroVal V] [TypeRepr t V] :
     FuncUnfold «unsafe».Slice [t] (λ: "p" "n",
       if: "n" <⟨go.int⟩ #(W64 0) then Panic "unsafe.Slice: len out of range"
@@ -1155,11 +1224,19 @@ class UnsafeSemantics [GoSemanticsFunctions] : Prop where
         else if: ("n" *⟨go.uint64⟩ #(W64 (typeSize V))) >⟨go.uint64⟩ (#(W64 0) -⟨go.uint64⟩ "a") then
           (if: "p" =⟨go.PointerType t⟩ #null then Panic "unsafe.Slice: ptr is nil and len is not zero"
            else Panic "unsafe.Slice: len out of range")
-        else InternalMakeSlice ("p", "n", "n"))) : val)
+        else
+          (if: "n" =⟨go.int⟩ #(W64 0) then #()
+           else
+             CheckCell "p" ;;
+             CheckCell (GoOp GoPlus (go.PointerType go.uint8)
+               ("p", ("n" *⟨go.int⟩ #(W64 (typeSize V))) -⟨go.int⟩ #(W64 1)))) ;;
+          InternalMakeSlice ("p", "n", "n"))) : val)
 
-attribute [instance] UnsafeSemantics.convert_pointer_to_uintptr UnsafeSemantics.ptr_diff
+attribute [instance] UnsafeSemantics.convert_unsafe_to_pointer
+  UnsafeSemantics.convert_pointer_to_uintptr UnsafeSemantics.ptr_diff
   UnsafeSemantics.add_unfold UnsafeSemantics.slice_unfold
-export UnsafeSemantics (convert_pointer_to_uintptr ptr_diff add_unfold slice_unfold)
+export UnsafeSemantics (convert_unsafe_to_pointer convert_pointer_to_uintptr ptr_diff add_unfold
+  slice_unfold)
 
 class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   /-- A value of a predeclared type is allocated as a block of its size (`allocEncoded`),

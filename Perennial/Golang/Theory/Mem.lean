@@ -193,11 +193,11 @@ instance encoded_w16 : EncodedPointsto (GF := GF) w16 (.word 2) :=
 instance encoded_w8 : EncodedPointsto (GF := GF) w8 (.word 1) :=
   ⟨fun _ _ _ => .rfl, encode_w8 (hG := hG), go.intoVal_inj⟩
 instance encoded_loc : EncodedPointsto (GF := GF) Loc (.cell 8) :=
-  ⟨fun _ _ _ => .rfl, fun v => encode_cell 8 (by decide) #v, go.intoVal_inj⟩
+  ⟨fun _ _ _ => .rfl, fun v => encode_cell 8 (by decide) v, go.intoVal_inj⟩
 instance encoded_bool : EncodedPointsto (GF := GF) Bool (.cell 1) :=
-  ⟨typedPointstoDef_bool, fun v => encode_cell 1 (by decide) #v, go.intoVal_inj⟩
+  ⟨typedPointstoDef_bool, fun v => encode_cell 1 (by decide) v, go.intoVal_inj⟩
 instance encoded_interface : EncodedPointsto (GF := GF) GoInterface (.cell 16) :=
-  ⟨fun _ _ _ => .rfl, fun v => encode_cell 16 (by decide) #v, go.intoVal_inj⟩
+  ⟨fun _ _ _ => .rfl, fun v => encode_cell 16 (by decide) v, go.intoVal_inj⟩
 
 end goose_lang
 

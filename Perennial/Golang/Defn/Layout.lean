@@ -12,7 +12,8 @@ gc's for amd64; the largest alignment is 8): `uint64`, `int`, `uintptr`, `float6
 pointers, maps, channels and functions 8 (maps and channels are `Loc`s), strings and
 interfaces 16, slices 24. How a value occupies its cells is its `Encoding`
 (`GooseLang/Lang.lean`): an integer is its little-endian bytes; any other value is one
-cell followed by `LitTail` cells, so that every cell of its range belongs to it.
+cell followed by `LitTail` cells, so that every cell of its range belongs to it; padding
+is `LitPad`.
 -/
 module
 

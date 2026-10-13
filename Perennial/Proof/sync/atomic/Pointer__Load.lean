@@ -26,7 +26,7 @@ variable [package_sem : sync.atomic.Assumptions]
 theorem sync.atomic.Pointer.Load.wp_proof
     (wp_LoadPointer : sync.atomic.LoadPointer.spec (GF := GF) (hG := hG)) :
     sync.atomic.Pointer.Load.spec (GF := GF) (hG := hG) := by
-  intro T' _ _ T _ u dq
+  intro T' _ _ T _ _ u dq
   wp_start_folded as _
   iintro %hu %hal
   (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)

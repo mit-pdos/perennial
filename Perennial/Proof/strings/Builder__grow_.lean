@@ -32,10 +32,10 @@ theorem strings.Builder.grow.wp_proof
   wp_auto
   have Hm : sint.Z (W64 2 * buf.cap + n) = 2 * sint.Z buf.cap + sint.Z n := by word
   wp_apply wp_MakeNoZero (W64 2 * buf.cap + n)
-    ⟨by rw [Hm]; omega, by rw [Hm]; exact Hn.2⟩ as %sl ⟨Hsl, Hslcap⟩
+    ⟨by rw [Hm]; omega, by rw [Hm]; exact Hn.2⟩ as %sl ⟨%bs0, %Hbs0, Hsl, Hslcap⟩
   ihave %Hsllen := ownSlice_len $$ Hsl
   ihave %Hslwf := ownSlice_wf $$ Hsl
-  simp only [List.length_replicate] at Hsllen
+  rw [Hbs0] at Hsllen
   have Hk : 0 ≤ sint.Z (W64 0) ∧ sint.Z (W64 0) ≤ sint.Z buf.len ∧ sint.Z buf.len ≤ sint.Z sl.len :=
     ⟨by word, by word, by word⟩
   rw [ite_eq_left ⟨Hk.1, Hk.2.1, by omega⟩]
@@ -49,9 +49,8 @@ theorem strings.Builder.grow.wp_proof
   iapply HΦ
   iexists _
   iframe
-  have Hsub : (subslice (sint.nat (W64 0)) (sint.nat buf.len)
-      (List.replicate (sint.nat (W64 2 * buf.cap + n)) (W8 0))).length = s.length := by
-    simp only [subslice, List.length_take, List.length_drop, List.length_replicate]; word
+  have Hsub : (subslice (sint.nat (W64 0)) (sint.nat buf.len) bs0).length = s.length := by
+    simp only [subslice, List.length_take, List.length_drop, Hbs0]; word
   rw [Hsub, List.take_length, List.drop_eq_nil_of_le (Nat.le_of_eq Hsub), List.append_nil]
   iexact Hnew
 

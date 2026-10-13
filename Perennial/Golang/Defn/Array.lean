@@ -33,20 +33,22 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   /-- An array is allocated as one block of `n` elements, at an offset of the element's
   alignment (`AllocN`), into which the value is stored element by element. A size of
   `2^63` bytes or more is not considered (`AngelicExit`); no program reaches it: a static
-  array type gc compiles is below `2^50` bytes (`types.MaxWidth`), and a dynamic one
-  (`make`, through `InternalDynamicArrayAlloc`) has passed `makeslice`'s check of
-  `2^48` (`make3_slice`). -/
+  array type gc compiles is below `2^50` bytes (`types.MaxWidth`); a dynamic one has
+  passed `makeslice`'s check of `2^48` (`make`, `make3_slice`), or is as long as a slice
+  that lies in one allocation (`copy`'s and `clear`'s buffers, `append`'s new array:
+  `unsafe.Slice` checks that its slice does), or is `append`ed past `maxAlloc`, which only
+  memory that exists reaches (`README.md`, "Model assumptions"). -/
   alloc_array (n : Int) (elem : go.GoType) (v : val) {V : Type} [ZeroVal V] [TypeRepr elem V] :
     ⟦GoAlloc (go.ArrayType n elem), v⟧ ⤳[internalUnder]
       (if 0 ≤ n ∧ n * typeSize V < 2^63 then
         (Let "l" (AllocN (Val (PairV (LitV (LitInt (W64 (n * typeSize V))))
-            (LitV (LitInt (W64 (typeAlign V)))))) (Val (LitV LitTail)))
+            (LitV (LitInt (W64 (typeAlign V)))))) (Val (LitV LitPad)))
           gl(GoStore (go.ArrayType n elem) ("l", v) ;; "l") : Expr)
        else gl(AngelicExit #()))
 
   load_array (n : Int) (elem_type : go.GoType) (l : val) :
     ⟦GoLoad (go.ArrayType n elem_type), l⟧ ⤳[internalUnder]
-    (if ¬(0 ≤ n ∧ n < 2^63-1) then
+    (if ¬(0 ≤ n ∧ n < 2^63) then
       gl(AngelicExit #())
     else
       gl((rec: "recur" "n" :=
@@ -63,7 +65,7 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   `load_array`. -/
   store_array (n : Int) (elem_type : go.GoType) (l : val) {V : Type} (v : GoArray V n) :
     ⟦GoStore (go.ArrayType n elem_type), (l, #v)⟧ ⤳[internalUnder]
-    (if ¬(0 ≤ n ∧ n < 2^63-1 ∧ (v.arr.length : Int) = n) then
+    (if ¬(0 ≤ n ∧ n < 2^63 ∧ (v.arr.length : Int) = n) then
       gl(AngelicExit #())
     else
     List.foldl (fun str_so_far j =>

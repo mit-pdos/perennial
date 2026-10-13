@@ -90,10 +90,12 @@ inductive BaseLit where
   | LitLoc (l : Loc)
   | LitProphecy (p : proph_id)
   | LitSlice (s : GoSlice)
-  /-- A cell of memory that holds no value of its own: one of the cells after the first of
-  a value that is not represented as bytes (`Encoding.cell`), padding, or the cells of a
-  fresh allocation before its first store. No load decodes it (`decode`). -/
+  /-- One of the cells after the first of a value that is not represented as bytes
+  (`Encoding.cell`). No load decodes it as a value of its own (`decode`). -/
   | LitTail
+  /-- A cell that holds no value: padding, or a cell of a fresh allocation before its
+  first store (Go leaves padding unspecified). No load decodes it. -/
+  | LitPad
 deriving DecidableEq, Inhabited
 
 /-- How a value occupies the heap cells from its address on (a heap cell is a byte of
@@ -337,7 +339,7 @@ export Element (ElementExpression ElementLiteralValue)
 export comm_clause (CommClause)
 export CommCase (SendCase RecvCase)
 export BaseLit (LitInt LitInt32 LitInt16 LitBool LitByte LitString LitUnit LitPoison LitLoc
-  LitProphecy LitSlice LitTail)
+  LitProphecy LitSlice LitTail LitPad)
 export GoOperator (GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemainder GoAnd
   GoOr GoXor GoBitClear)
 export GoShiftOperator (GoShiftl GoShiftr)
@@ -370,8 +372,8 @@ abbrev Load (e : Expr) : Expr := Primitive1 .LoadOp e
 abbrev FinishStore (e1 e2 : Expr) : Expr := Primitive2 .FinishStoreOp e1 e2
 abbrev AtomicSwap (e1 e2 : Expr) : Expr := Primitive2 .AtomicSwapOp e1 e2
 abbrev AtomicAdd (e1 e2 : Expr) : Expr := Primitive2 .AtomicAddOp e1 e2
-/-- `AllocN (n, a) v`: a fresh block of `n` cells (one `LitTail` cell if `n = 0`), each
-holding `v`, at an offset aligned to `a` (`AllocNS`). -/
+/-- `AllocN (n, a) v`: a fresh block of `n` cells, each holding `v`, at an offset aligned to
+`a` (`AllocNS`); for `n = 0`, any non-null location aligned to `a` (`AllocN0S`). -/
 abbrev AllocN (e1 e2 : Expr) : Expr := Primitive2 .AllocNOp e1 e2
 abbrev StartReadN (enc : Encoding) (e : Expr) : Expr := Primitive1 (.MemOp1Op .startRead enc) e
 abbrev FinishReadN (enc : Encoding) (e : Expr) : Expr := Primitive1 (.MemOp1Op .finishRead enc) e
@@ -426,34 +428,6 @@ instance [FfiSyntax] : Inhabited GoFunc := ⟨nil⟩
 abbrev mk [FfiSyntax] (f x : Binder) (e : Expr) : GoFunc := ⟨f, x, e⟩
 end func
 
-/-- `GoGlobalContext` contains the `intoVal` function. This allows for the Go
-semantics to state constraints on `intoVal` (e.g. injectivity for certain
-types). -/
-class GoGlobalContext [FfiSyntax] where
-  intoVal : {V : Type} → V → val
-  intoVal_inj_loc : Function.Injective (intoVal (V := Loc))
-  intoVal_inj_bool : Function.Injective (intoVal (V := Bool))
-  intoVal_inj_proph_id : Function.Injective (intoVal (V := proph_id))
-  intoVal_inj_w64 : Function.Injective (intoVal (V := w64))
-  intoVal_inj_w8 : Function.Injective (intoVal (V := w8))
-
-export GoGlobalContext (intoVal)
-
-/-- `# x` is `intoVal x`. -/
-scoped prefix:max "#" => intoVal
-
-/-- `GoLocalContext` contains several low-level Go functions for typed memory
-access, map updates, etc. -/
-class GoLocalContext [FfiSyntax] where
-  is_go_step_pure : GoInstruction → val → Expr → Prop
-
-export GoLocalContext (is_go_step_pure)
-
-namespace chan
-abbrev _root_.Perennial.GoChan := Loc
-def nil : GoChan := null
-end chan
-
 namespace interface
 
 structure _root_.Perennial.GoInterfaceOk [FfiSyntax] where
@@ -477,6 +451,58 @@ structure _root_.Perennial.GoArray (V : Type) (n : Int) where
   arr : List V
 abbrev mk {V : Type} (n : Int) (arr : List V) : GoArray V n := ⟨arr⟩
 end array
+
+/-- The byte of a cell. -/
+def byteOf? [FfiSyntax] : val → Option w8
+  | LitV (LitByte b) => some b
+  | _ => none
+
+/-- `v` can be the first cell of an `Encoding.cell` value: it is not a byte, a tail or a
+pad. The values of the types with a cell encoding are cell heads
+(`GoGlobalContext.intoVal_head_loc`, ...). -/
+def IsCellHead [FfiSyntax] (v : val) : Prop :=
+  byteOf? v = none ∧ v ≠ LitV LitTail ∧ v ≠ LitV LitPad
+
+noncomputable instance [FfiSyntax] (v : val) : Decidable (IsCellHead v) :=
+  inferInstanceAs (Decidable (_ ∧ _ ∧ _))
+
+/-- `GoGlobalContext` contains the `intoVal` function. This allows for the Go
+semantics to state constraints on `intoVal` (e.g. injectivity for certain
+types). -/
+class GoGlobalContext [FfiSyntax] where
+  intoVal : {V : Type} → V → val
+  intoVal_inj_loc : Function.Injective (intoVal (V := Loc))
+  intoVal_inj_bool : Function.Injective (intoVal (V := Bool))
+  intoVal_inj_proph_id : Function.Injective (intoVal (V := proph_id))
+  intoVal_inj_w64 : Function.Injective (intoVal (V := w64))
+  intoVal_inj_w8 : Function.Injective (intoVal (V := w8))
+  /-- The values of the types with a cell encoding (`Encoding.cell`) are not bytes, tails
+  or pads (`IsCellHead`). -/
+  intoVal_head_loc : ∀ l : Loc, IsCellHead (intoVal l)
+  intoVal_head_bool : ∀ b : Bool, IsCellHead (intoVal b)
+  intoVal_head_proph_id : ∀ p : proph_id, IsCellHead (intoVal p)
+  intoVal_head_string : ∀ x : byte_string, IsCellHead (intoVal x)
+  intoVal_head_slice : ∀ x : GoSlice, IsCellHead (intoVal x)
+  intoVal_head_func : ∀ x : GoFunc, IsCellHead (intoVal x)
+  intoVal_head_interface : ∀ x : GoInterface, IsCellHead (intoVal x)
+
+export GoGlobalContext (intoVal)
+
+/-- `# x` is `intoVal x`. -/
+scoped prefix:max "#" => intoVal
+
+/-- `GoLocalContext` contains several low-level Go functions for typed memory
+access, map updates, etc. -/
+class GoLocalContext [FfiSyntax] where
+  is_go_step_pure : GoInstruction → val → Expr → Prop
+
+export GoLocalContext (is_go_step_pure)
+
+namespace chan
+abbrev _root_.Perennial.GoChan := Loc
+def nil : GoChan := null
+end chan
+
 
 /-! ## State -/
 
@@ -784,25 +810,29 @@ def wordLitZ? (n : Nat) (v : val) : Option Int :=
 /-- The cells of `v` under encoding `enc`, if `v` has that encoding. -/
 noncomputable def encode : Encoding → val → Option (List val)
   | .word n, v => (wordLitZ? n v).map fun z => (leBytes n z).map fun b => LitV (LitByte b)
-  | .cell k, v => if 1 ≤ k then some (v :: List.replicate (k - 1) (LitV LitTail)) else none
-
-/-- The byte of a cell. -/
-def byteOf? : val → Option w8
-  | LitV (LitByte b) => some b
-  | _ => none
+  | .cell k, v =>
+    if 1 ≤ k ∧ IsCellHead v then some (v :: List.replicate (k - 1) (LitV LitTail)) else none
 
 /-- The value that the cells `cs` hold under encoding `enc`, if they hold one: for a word,
-`n` bytes; for a `cell k` value, its first cell followed by `k - 1` tails. A `cell` load of
-cells that do not hold such a value (bytes, or a tail in the first cell) gives a value
-that is not one of the type (`LitByte`, `LitTail`), on which every operation of the type
-is stuck: Go would give the bits of a corrupted value. -/
+`n` bytes; for a `cell k` value, a cell head (`IsCellHead`) followed by `k - 1` tails.
+Anything else (bytes read as a pointer, the tails of a value read from their middle, a
+pad) is no value: the load is stuck. -/
 noncomputable def decode : Encoding → List val → Option val
   | .word n, cs =>
     if n = 1 ∨ n = 2 ∨ n = 4 ∨ n = 8 then
       (cs.mapM byteOf?).bind fun bs => if bs.length = n then some (wordLit n (leInt bs)) else none
     else none
   | .cell k, [] => none
-  | .cell k, v :: ts => if ts = List.replicate (k - 1) (LitV LitTail) then some v else none
+  | .cell k, v :: ts =>
+    if IsCellHead v ∧ ts = List.replicate (k - 1) (LitV LitTail) then some v else none
+
+/-- A non-atomic store under encoding `enc` may overwrite the cells holding `vs`: a word
+only bytes and pads, a cell value no bytes. So a store through a pointer reinterpreted by
+`unsafe` cannot put bytes into the cells of a pointer (which Go's garbage collector would
+then read as a pointer) nor a pointer into bytes (which it would not trace). -/
+def WriteCompat : Encoding → List val → Prop
+  | .word _, vs => ∀ v ∈ vs, (∃ b, v = LitV (LitByte b)) ∨ v = LitV LitPad
+  | .cell _, vs => ∀ v ∈ vs, ∀ b, v ≠ LitV (LitByte b)
 
 /-- The cells `l, l +ₗ 1, …` of the heap `h` are `cs`. -/
 def CellsAt (h : GMap Loc (NonAtomic val)) (l : Loc) (cs : List (NonAtomic val)) : Prop :=
@@ -822,11 +852,6 @@ def naModeUrl : NaMode → NaMode
   | Reading (n + 1) => Reading n
   | m => m
 
-/-- The cells of a fresh allocation of `n` cells holding `v`: a zero-size allocation still
-takes one cell (a `LitTail`, which nothing can load), so that its block is never
-reused, as Go's zero-size variables do not share an address with a later variable. -/
-def allocCells (n : Nat) (v : val) : List val :=
-  if n = 0 then [LitV LitTail] else List.replicate n v
 
 def IsWriting {A} (mna : Option (NonAtomic A)) : Prop := ∃ x, mna = some (Writing, x)
 
@@ -883,11 +908,20 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
   | AllocS v l σg :
       IsFresh σg l →
       BaseStep (Alloc (Val v)) σg [] (Val #l) (stateInitHeap l v σg.1, σg.2) []
-  /-- A fresh block of `n` cells (`allocCells`) at an offset aligned to `a`. -/
+  /-- A fresh block of `n ≠ 0` cells holding `v`, at an offset aligned to `a`. -/
   | AllocNS (n a : w64) v l σg :
-      IsFreshAligned σg l (uint.nat a) →
+      uint.nat n ≠ 0 → IsFreshAligned σg l (uint.nat a) →
       BaseStep (AllocN (Val (PairV (LitV (LitInt n)) (LitV (LitInt a)))) (Val v)) σg [] (Val #l)
-        (setCells l ((allocCells (uint.nat n) v).map Free) σg) []
+        (setCells l ((List.replicate (uint.nat n) v).map Free) σg) []
+  /-- A zero-size allocation: any non-null location aligned to `a`, fresh or not (gc gives
+  every zero-size heap object the address `runtime.zerobase`, and the spec lets pointers to
+  distinct zero-size variables be equal). It owns no cell, so nothing is loaded or stored
+  through it, and `unsafe.Add` from it to a non-zero offset is stuck unless the result
+  happens to be a cell. -/
+  | AllocN0S (n a : w64) v (l : Loc) σg :
+      uint.nat n = 0 → l.locCar ≠ 0 → (uint.nat a : Int) ∣ l.locOff →
+      BaseStep (AllocN (Val (PairV (LitV (LitInt n)) (LitV (LitInt a)))) (Val v)) σg []
+        (Val #l) σg []
   /-- non-atomic load of an encoded value, part 1: a reader on each of its cells -/
   | StartReadNS enc l cs v σg :
       cs.length = enc.size → CellsAt σg.1.heap l cs →
@@ -904,7 +938,7 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
   /-- non-atomic store of an encoded value, part 1: each of its cells `Writing` -/
   | PrepareWriteNS enc l cs σg :
       cs.length = enc.size → CellsAt σg.1.heap l cs →
-      (∀ c ∈ cs, c.1 = Reading 0) →
+      (∀ c ∈ cs, c.1 = Reading 0) → WriteCompat enc (cs.map Prod.snd) →
       BaseStep (PrepareWriteN enc (Val #l)) σg [] (Val #())
         (setCells l (cs.map fun c => (Writing, c.2)) σg) []
   /-- non-atomic store of an encoded value, part 2 -/

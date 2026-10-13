@@ -82,31 +82,43 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   (`GooseLang/Lang.lean`, `Encoding`): an integer or float of `n` bytes is
   stored as its `n` little-endian bytes (`LitByte`), and a value with no byte
   representation (a pointer, string, slice, interface, func, map, chan, `bool`)
-  as itself in its first cell followed by `LitTail` cells. Typed loads and
-  stores of these go through multi-cell primitives that detect races cell by
-  cell (`StartReadN`/`FinishReadN`, `PrepareWriteN`/`FinishStoreN`: two
-  unsynchronized accesses that overlap, one of them a write, are stuck), and
-  reading cells that do not decode at the type read (a pointer read as an
-  integer, half of an interface) is stuck. Atomic operations (`LoadN`,
+  as itself in its first cell followed by `LitTail` cells; padding and fresh
+  cells are `LitPad`. Typed loads and stores go through multi-cell primitives
+  that detect races cell by cell (`StartReadN`/`FinishReadN`,
+  `PrepareWriteN`/`FinishStoreN`: two unsynchronized accesses that overlap, one
+  of them a write, are stuck). A load of cells that do not hold a value of its
+  encoding is stuck (`decode`: bytes read as a pointer, a value's tails read from
+  their middle, a pad), and so is a store of bytes over a non-byte value or of a
+  non-byte value over bytes (`WriteCompat`: Go's garbage collector would read
+  the bytes as a pointer, or not trace the pointer). Atomic operations (`LoadN`,
   `SwapN`, `AddN`, `CmpXchgN`, used by `sync/atomic` and `sync`) are stuck
   unless the location is aligned to the encoding (`Aligned`), as amd64 makes
   a misaligned atomic non-atomic; an allocation is aligned to its type
   (`AllocN`, `IsFreshAligned`), and proofs get the alignment of a fresh
   allocation (`AllocAligned`, the `x_al` hypothesis of the allocation
   tactics) and of a field of an aligned struct (`go.field_aligned`,
-  `Golang/Theory/Align.lean`). Package `unsafe` (`go.UnsafeSemantics`):
-  `Sizeof`, `Alignof` and `Offsetof` are constants; `uintptr(p)` is an
-  unspecified address in `[8, 2^48)` congruent to `p`'s offset modulo 8 (an
-  allocation's address is 8-aligned), chosen anew at each conversion, so a
-  proof cannot depend on where a block lives; `uintptr(p) - uintptr(q)` in one
-  expression with no call between is exact for two pointers into the same
-  allocation; `unsafe.Add(p, n)` (and `unsafe.Pointer(uintptr(p) + n)`, which
-  goose emits as it) is stuck unless the result is a cell of `p`'s allocation;
-  `unsafe.Slice` checks what `runtime.unsafeslice` checks; converting a
-  pointer to a pointer of another type keeps the location, and reading the
-  cells at the new type is stuck unless they decode. Any other conversion of a
-  `uintptr` to a pointer is stuck. A model may be less defined than Go: what
-  is stuck here is what a proof shows does not happen.
+  `Golang/Theory/Align.lean`). A zero-size allocation is any non-null aligned
+  location (gc gives them all `runtime.zerobase`). The lock models
+  (`sync.Mutex`, goose_lang/primitive's `Mutex`) have gc's layout (`go.mutex`,
+  `Golang/Defn/Mutex.lean`: 8 bytes, aligned to 4, the lock in the first cell),
+  so every struct's field offsets are gc's. Package `unsafe`
+  (`go.UnsafeSemantics`): `Sizeof`, `Alignof` and `Offsetof` are constants;
+  `uintptr(p)` is an unspecified address in `[8, 2^48)` congruent to `p`'s offset
+  modulo 8 (an allocation's address is 8-aligned), chosen anew at each
+  conversion, so a proof cannot depend on where a block lives;
+  `uintptr(p) - uintptr(q)` in one expression whose operands cannot move the
+  stack (goose's `stackStable`: no call, receive, map index or allocating
+  conversion) is exact for two pointers into the same allocation;
+  `unsafe.Add(p, n)` (and `unsafe.Pointer(uintptr(p) + n)` with stack-stable
+  operands, which goose emits as it) is stuck unless the result is a cell of
+  `p`'s allocation; `unsafe.Slice` checks what `runtime.unsafeslice` checks, and
+  that the slice lies in `ptr`'s allocation; `(*T)(p)` for an `unsafe.Pointer`
+  `p` keeps the location, and is stuck unless `T` is `go.Reinterpretable`
+  (numbers, `bool`, strings, pointers, slices, and arrays and structs of them;
+  not interfaces, maps, channels or funcs, whose model representation does not
+  depend on their type as Go's does). Any other conversion of a `uintptr` to a
+  pointer is stuck. A model may be less defined than Go: what is stuck here is
+  what a proof shows does not happen.
 * **Evaluation order.** The Go spec orders a statement's calls and receives
   (left to right) but leaves the other reads of its operands unordered
   relative to them, and compilers differ: gc reads `m[0]` in `m[0] + f()`

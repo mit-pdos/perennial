@@ -1677,7 +1677,7 @@ theorem struct_wp_alloc {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
       (App (Val (GoInstruction (GoAlloc t))) (Val #v))
       (if typeSize V < 2^63 then
         (Let "l" (AllocN (Val (PairV (LitV (LitInt (W64 (typeSize V))))
-            (LitV (LitInt (W64 (typeAlign V)))))) (Val (LitV LitTail)))
+            (LitV (LitInt (W64 (typeAlign V)))))) (Val (LitV LitPad)))
           gl(GoStore (go.StructType fds) ("l", #v) ;; "l") : Expr)
        else gl(AngelicExit #())) := by
     have _tagged := @go.tagged_internal_inst
@@ -1907,11 +1907,10 @@ macro "solve_into_val_typed_struct_steps" : tactic => `(tactic| (
     clear _tagged
     split
     · wp_apply_core wp_allocN _ _ _
-      iintro %l ⟨%Hoff, Hpts⟩
-      icases pointstoVals_non_null l _ _ (by unfold allocCells; split <;> simp_all) $$ Hpts
-        with ⟨-, %Hc⟩
+      iintro %l ⟨%Hoff, -⟩
+      have Hc := Hoff.1
       have Hnn : l ≠ null := fun h => by subst h; exact Hc rfl
-      have Hal' := Hoff.2.2
+      have Hal' := Hoff.2
       rw [uint_nat_W64' _ (go.typeAlign_pos _) (go.typeAlign_le_8 _)] at Hal'
       have Hal : AllocAligned _ l := ⟨Hc, Hal'⟩
       wp_pures

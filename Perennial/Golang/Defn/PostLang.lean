@@ -192,11 +192,11 @@ class inductive IsPrimitive : go.GoType → outParam Encoding → Prop
   | isPrimitive_channel dir t : IsPrimitive (go.ChannelType dir t) (.cell 8)
 
 /-- The allocation of a value with encoding `enc`: a fresh block of its size, at an offset
-of its alignment, into which it is stored. The block's cells hold `LitTail` until the
+of its alignment, into which it is stored. The block's cells hold `LitPad` until the
 store, so nothing reads them as bytes. -/
 def allocEncoded (enc : Encoding) (v : val) : Expr :=
   Let "l" (AllocN (Val (PairV (LitV (LitInt (W64 enc.size))) (LitV (LitInt (W64 enc.align)))))
-    (Val (LitV LitTail)))
+    (Val (LitV LitPad)))
     (Seq (App (App (Val (StoreN enc)) (Var "l")) (Val v)) (Var "l"))
 
 attribute [instance] IsPrimitive.isPrimitive_pointer IsPrimitive.isPrimitive_function
@@ -580,7 +580,7 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
     ⟦GoAlloc u, v⟧ ⤳[internalUnder] allocEncoded enc v
   /-- A struct is allocated as one block of its size, at an offset of its alignment
   (`AllocN`; its fields at their offsets, `go.StructLayout`), into which the value is
-  stored field by field. The padding keeps `LitTail` (Go leaves its contents
+  stored field by field. The padding keeps `LitPad` (Go leaves its contents
   unspecified). A size of `2^63` or more is not considered (`AngelicExit`): gc rejects a
   type of `2^50` bytes or more ("type too large", `types.MaxWidth`), so no program
   reaches it. -/
@@ -589,7 +589,7 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
     ⟦GoAlloc (go.StructType fds), v⟧ ⤳[internalUnder]
       (if typeSize V < 2^63 then
         (Let "l" (AllocN (Val (PairV (LitV (LitInt (W64 (typeSize V))))
-            (LitV (LitInt (W64 (typeAlign V)))))) (Val (LitV LitTail)))
+            (LitV (LitInt (W64 (typeAlign V)))))) (Val (LitV LitPad)))
           gl(GoStore (go.StructType fds) ("l", v) ;; "l") : Expr)
        else gl(AngelicExit #()))
 

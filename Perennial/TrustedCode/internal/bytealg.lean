@@ -19,6 +19,14 @@ variable [FfiSyntax] [GoGlobalContext]
 `heapAddrBits = 48`). -/
 def maxAlloc : Int := 2 ^ 48
 
+/-- `fillArbitrary i s n`: an arbitrary byte into each of `s[i]`, …, `s[n-1]`. -/
+def fillArbitrary : val :=
+  rec: "fill" "i" := λ: "s" "n",
+    if: "i" <⟨go.int⟩ "n" then
+      IndexRef (go.SliceType go.byte) ("s", "i") <-[go.byte] Convert go.uint64 go.byte ArbitraryInt ;;
+      "fill" ("i" +⟨go.int⟩ #(W64 1)) "s" "n"
+    else #()
+
 /-- `MakeNoZero(n)`: a new `[]byte` of length `n` and capacity at least `n`. Go's `MakeNoZero`
 has no Go body; the runtime implements it (`runtime.bytealg_MakeNoZero`):
 
@@ -37,17 +45,18 @@ like `make`'s), and otherwise is `make([]byte, n, c)` for an arbitrary `c` with
 `n ≤ c ≤ maxAlloc` (`slice._new_cap`, kept at most `maxAlloc`), which includes every capacity
 `roundupsize` can give: it rounds up to a size class or a multiple of the page size, and
 `maxAlloc` is a multiple of the page size, so `roundupsize(n) ≤ maxAlloc`. Go does not zero the
-bytes; the model does. That is unobservable to a caller that writes every byte before reading
-it, as the only translated caller, `strings.Builder.grow`, does (it reads nothing past what
-`copy` and `append` wrote); a new caller must be checked for the same. Go's `maxAlloc` is
-smaller on some other platforms (`2^40` on iOS); the model follows 64-bit Linux. -/
+bytes (`mallocgc(cap, nil, false)`): the model writes an arbitrary byte into each of the `n`
+(`fillArbitrary`), so a caller learns nothing of them. Go's `maxAlloc` is smaller on some
+other platforms (`2^40` on iOS); the model follows 64-bit Linux. -/
 def MakeNoZero.impl : val :=
   λ: "n",
     if: "n" <⟨go.int⟩ #(W64 0) then Panic "makeslice: len out of range" else #() ;;
     if: #(W64 maxAlloc) <⟨go.int⟩ "n" then Panic "makeslice: len out of range" else #() ;;
     let: "c" := slice._new_cap "n" in
     let: "c" := (if: #(W64 maxAlloc) <⟨go.int⟩ "c" then "n" else "c") in
-    FuncResolve go.make3 [go.SliceType go.byte] #() "n" "c"
+    let: "s" := FuncResolve go.make3 [go.SliceType go.byte] #() "n" "c" in
+    fillArbitrary #(W64 0) "s" "n" ;;
+    "s"
 
 /-- The address of `MaxLen` (`internal/bytealg.MaxLen`, an `int`), which the generated package
 names `MaxLen`; this file is imported by the generated package, so it cannot refer to that. -/

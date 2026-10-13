@@ -45,15 +45,15 @@ instance intoVal_typed_int8 : IntoValTypedUnderlying (GF := GF) w8 go.int8 := by
 instance intoVal_typed_int : IntoValTypedUnderlying (GF := GF) w64 go.int := by
   solve_into_val_typed (Encoding.word 8) (encode_w64 (hG := hG)) go.typeSize_w64 go.typeAlign_w64
 instance intoVal_typed_bool : IntoValTypedUnderlying (GF := GF) Bool go.bool := by
-  solve_into_val_typed' (Encoding.cell 1) (fun v => encode_cell 1 (by decide) #v) go.typeSize_bool
+  solve_into_val_typed' (Encoding.cell 1) (fun v => encode_cell 1 (by decide) v) go.typeSize_bool
     go.typeAlign_bool typedPointstoDef_bool
 instance intoVal_typed_string : IntoValTypedUnderlying (GF := GF) GoString go.string := by
-  solve_into_val_typed (Encoding.cell 16) (fun v => encode_cell 16 (by decide) #v) go.typeSize_string go.typeAlign_string
+  solve_into_val_typed (Encoding.cell 16) (fun v => encode_cell 16 (by decide) v) go.typeSize_string go.typeAlign_string
 instance intoVal_typed_Pointer : IntoValTypedUnderlying (GF := GF) Loc unsafe.Pointer := by
-  solve_into_val_typed (Encoding.cell 8) (fun v => encode_cell 8 (by decide) #v) go.typeSize_loc go.typeAlign_loc
+  solve_into_val_typed (Encoding.cell 8) (fun v => encode_cell 8 (by decide) v) go.typeSize_loc go.typeAlign_loc
 instance intoVal_typed_proph_id :
     IntoValTypedUnderlying (GF := GF) Perennial.proph_id go.prophId := by
-  solve_into_val_typed (Encoding.cell 8) (fun v => encode_cell 8 (by decide) #v) go.typeSize_proph_id go.typeAlign_proph_id
+  solve_into_val_typed (Encoding.cell 8) (fun v => encode_cell 8 (by decide) v) go.typeSize_proph_id go.typeAlign_proph_id
 instance intoVal_typed_float64 : IntoValTypedUnderlying (GF := GF) w64 go.float64 := by
   solve_into_val_typed (Encoding.word 8) (encode_w64 (hG := hG)) go.typeSize_w64 go.typeAlign_w64
 instance intoVal_typed_float32 : IntoValTypedUnderlying (GF := GF) w32 go.float32 := by

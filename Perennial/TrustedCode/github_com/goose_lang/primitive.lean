@@ -55,7 +55,9 @@ def ResolveProph.impl : val := λ: "p" "val", ResolveProph (Var "p") (Var "val")
 
 def Linearize.impl : val := λ: <>, #()
 
-@[reducible] def Mutex.underlying : go.GoType := go.bool
+/-- The lock model's type (`go.mutex`, `Golang/Defn/Lock.lean`): gc's size and alignment
+(8, 4), the lock in its first cell. -/
+@[reducible] def Mutex.underlying : go.GoType := go.mutex
 
 def Mutex.Lock.impl : val :=
   λ: "m" <>, lock.lock "m"
@@ -67,7 +69,7 @@ def Mutex.Unlock.impl : val :=
 
 end code
 
-abbrev Mutex := Bool
+abbrev Mutex := MutexState
 
 abbrev ProphId := Perennial.proph_id
 

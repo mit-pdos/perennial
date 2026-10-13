@@ -18,11 +18,10 @@ open Iris Iris.BI Iris.ProofMode goose_heap
 section raw
 variable [ext : FfiSyntax] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
 
-/-- The `n` cells from `l` on, owned, each holding something (as a fresh allocation's
-do, `AllocN`). -/
+/-- The `n` cells from `l` on, owned, each a pad (as a fresh allocation's are, `AllocN`). -/
 noncomputable def rawCells (l : Loc) (n : Int) : IProp GF :=
   [∗list] _k ↦ i ∈ List.range n.toNat,
-    iprop(∃ (c : val), heapPointsto (l +ₗ ((i : Nat) : Int)) (DFrac.own 1) c)
+    heapPointsto (l +ₗ ((i : Nat) : Int)) (DFrac.own 1) (LitV LitPad)
 
 theorem rawCells_zero (l : Loc) : rawCells l 0 ⊣⊢ (emp : IProp GF) := by
   unfold rawCells
@@ -37,7 +36,7 @@ theorem rawCells_add (l : Loc) (n m : Int) (hn : 0 ≤ n) (hm : 0 ≤ m) :
   refine sep_congr .rfl ?_
   rw [BigSepL.bigSepL_map]
   rw [BigSepL.bigSepL_eq_of_forall_eq (Ψ := fun _ i =>
-    iprop(∃ (c : val), heapPointsto ((l +ₗ n) +ₗ ((i : Nat) : Int)) (DFrac.own 1) c))
+    heapPointsto ((l +ₗ n) +ₗ ((i : Nat) : Int)) (DFrac.own 1) (LitV LitPad))
     (fun {_ i} => by
       rw [loc_add_assoc, show (n : Int) + ((i : Nat) : Int) = ((n.toNat + i : Nat) : Int) by omega])]
   exact .rfl
@@ -49,7 +48,7 @@ theorem rawCells_first (l : Loc) (n : Int) (h : 1 ≤ n) :
   obtain ⟨k, hk⟩ : ∃ k : Nat, n.toNat = k + 1 := ⟨n.toNat - 1, by omega⟩
   rw [hk, List.range_succ_eq_map]
   iintro H
-  icases BigSepL.bigSepL_cons.1 $$ H with ⟨⟨%c, H⟩, -⟩
+  icases BigSepL.bigSepL_cons.1 $$ H with ⟨H, -⟩
   simp only [Int.natCast_zero, loc_add_0]
   iexists _
   iexact H

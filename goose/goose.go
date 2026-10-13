@@ -400,6 +400,18 @@ func (ctx *Ctx) uintptrToPointer(n locatable, e ast.Expr) glang.Expr {
 		ctx.unsupported(n, "conversion of a uintptr to unsafe.Pointer other than unsafe.Pointer(uintptr(p) + offset)")
 		return nil
 	}
+	// the address must still be valid when it is converted back: nothing between the
+	// conversion and the end of the sum may move the stack
+	if !ctx.stackStable(call.Args[0]) {
+		ctx.unsupported(n, "unsafe.Pointer(uintptr(p) + offset) with a p that may move the stack")
+		return nil
+	}
+	for _, t := range terms {
+		if !ctx.stackStable(t) {
+			ctx.unsupported(n, "unsafe.Pointer(uintptr(p) + offset) with an offset that may move the stack")
+			return nil
+		}
+	}
 	uintptrTy := types.Typ[types.Uintptr]
 	var offset glang.Expr = glang.NewCallExpr(glang.VerbatimExpr("W64"), glang.ZLiteral{Value: big.NewInt(0)})
 	offset = glang.ToVal{Value: offset}
@@ -428,26 +440,63 @@ func (ctx *Ctx) pointerConversionOperand(e ast.Expr) (ast.Expr, bool) {
 	return call.Args[0], true
 }
 
-// hasCallOrReceive reports whether e contains a call other than a conversion, or a
-// channel receive: between two such pointer conversions Go may move a goroutine's stack.
-func (ctx *Ctx) hasCallOrReceive(e ast.Expr) bool {
-	found := false
-	ast.Inspect(e, func(n ast.Node) bool {
-		switch n := n.(type) {
-		case *ast.CallExpr:
-			if !ctx.info.Types[n.Fun].IsType() {
-				found = true
-			}
-		case *ast.UnaryExpr:
-			if n.Op == token.ARROW {
-				found = true
-			}
-		case *ast.FuncLit:
-			return false
+// stackStable reports whether evaluating e cannot move the goroutine's stack, so that a
+// uintptr taken before it is still the address after it: e is built only from constants,
+// variables, fields, dereferences, &, indexes of arrays and slices, integer arithmetic,
+// and conversions between pointer and integer types. Anything else (a call, a receive, a
+// map index, a conversion that allocates, a string concatenation) may call the runtime,
+// which may grow and move the stack.
+func (ctx *Ctx) stackStable(e ast.Expr) bool {
+	if tv, ok := ctx.info.Types[e]; ok && tv.Value != nil {
+		return true
+	}
+	isIntOrPtr := func(t types.Type) bool {
+		switch u := t.Underlying().(type) {
+		case *types.Basic:
+			return u.Info()&types.IsInteger != 0 || u.Kind() == types.UnsafePointer
+		case *types.Pointer:
+			return true
 		}
-		return !found
-	})
-	return found
+		return false
+	}
+	switch e := e.(type) {
+	case *ast.ParenExpr:
+		return ctx.stackStable(e.X)
+	case *ast.Ident:
+		_, isVar := ctx.info.Uses[e].(*types.Var)
+		return isVar
+	case *ast.SelectorExpr:
+		if sel := ctx.info.Selections[e]; sel != nil {
+			return sel.Kind() == types.FieldVal && ctx.stackStable(e.X)
+		}
+		_, isVar := ctx.info.Uses[e.Sel].(*types.Var)
+		return isVar
+	case *ast.StarExpr:
+		return ctx.stackStable(e.X)
+	case *ast.UnaryExpr:
+		switch e.Op {
+		case token.AND, token.ADD, token.SUB, token.XOR:
+			return ctx.stackStable(e.X)
+		}
+	case *ast.IndexExpr:
+		t := ctx.typeOf(e.X).Underlying()
+		if p, ok := t.(*types.Pointer); ok {
+			t = p.Elem().Underlying()
+		}
+		switch t.(type) {
+		case *types.Array, *types.Slice:
+			return ctx.stackStable(e.X) && ctx.stackStable(e.Index)
+		}
+	case *ast.BinaryExpr:
+		return isIntOrPtr(ctx.typeOf(e.X)) && isIntOrPtr(ctx.typeOf(e.Y)) &&
+			ctx.stackStable(e.X) && ctx.stackStable(e.Y)
+	case *ast.CallExpr:
+		if ctx.info.Types[e.Fun].IsType() && len(e.Args) == 1 &&
+			isIntOrPtr(ctx.typeOf(e)) && isIntOrPtr(ctx.typeOf(e.Args[0])) {
+			return ctx.stackStable(e.Args[0])
+		}
+	}
+	return false
 }
 
 // This handles:
@@ -802,6 +851,11 @@ func (ctx *Ctx) compositeLiteralWithBindings(e *ast.CompositeLit, bindings *[]co
 				case *types.Array, *types.Slice:
 					if tv, ok := ctx.info.Types[el.Key]; ok && tv.Value != nil {
 						if idx, exact := constant.Int64Val(constant.ToInt(tv.Value)); exact {
+							if idx == math.MaxInt64 {
+								// the literal's length would be 2^63: gc miscompiles it (to an
+								// empty slice); the semantics does not model that length
+								ctx.unsupported(el.Key, "composite literal index math.MaxInt")
+							}
 							k = glang.NewCallExpr(glang.VerbatimExpr("KeyInteger"), glang.IntToZ(idx))
 							done = true
 						}
@@ -871,13 +925,14 @@ func (ctx *Ctx) binExpr(e *ast.BinaryExpr) (expr glang.Expr) {
 
 	op := gooseLangOps[e.Op]
 
-	// uintptr(p) - uintptr(q), for unsafe.Pointers p and q without a call or a receive: the
-	// distance between two addresses taken at one instant (go.UnsafeSemantics.ptr_diff),
-	// p and q evaluated left to right.
+	// uintptr(p) - uintptr(q), for unsafe.Pointers p and q whose evaluation cannot move the
+	// stack (stackStable): the distance between two addresses taken at one instant
+	// (go.UnsafeSemantics.ptr_diff), p and q evaluated left to right. Otherwise it is the
+	// difference of two unrelated conversions.
 	if e.Op == token.SUB {
 		if p, ok := ctx.pointerConversionOperand(e.X); ok {
 			if q, ok := ctx.pointerConversionOperand(e.Y); ok &&
-				!ctx.hasCallOrReceive(p) && !ctx.hasCallOrReceive(q) {
+				ctx.stackStable(p) && ctx.stackStable(q) {
 				return bindInOrder([]glang.Expr{ctx.expr(p), ctx.expr(q)}, glang.BinaryExpr{
 					X:  unsafeArg(0),
 					Op: glang.BinOp{OpId: glang.OpMinus, Type: glang.TermIdent("unsafe.Pointer")},

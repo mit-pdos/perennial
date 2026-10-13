@@ -1,5 +1,6 @@
 /-
-A spin lock on a boolean location: `trylock`, `lock` and `unlock`.
+A spin lock on a boolean location: `trylock`, `lock` and `unlock` (the lock of `go.mutex`,
+`Mutex.lean`).
 -/
 module
 
@@ -31,5 +32,6 @@ end code
 end lock
 
 attribute [irreducible] lock.trylock lock.lock lock.unlock
+
 
 end Perennial

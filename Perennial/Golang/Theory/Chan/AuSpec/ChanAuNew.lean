@@ -63,6 +63,7 @@ theorem wp_NewChannel (cap : w64) :
       with ⟨%offer_continuation_gname, Hcontinuation⟩
     ipersist cap
     ipersist mu
+    simp only [typedPointsto_mutex_eq, MutexState.zero_locked]
     imod init_lock (chanInvInner ch ⟨state_gname, offer_lock_gname, offer_parked_prop_gname,
       offer_parked_pred_gname, offer_continuation_gname, cap⟩ V) ⊤ «$v1_ptr» $$ «$v1»
       [-HΦ Hstate_frag] with #Hlock
@@ -117,6 +118,7 @@ theorem wp_NewChannel (cap : w64) :
       with ⟨%offer_continuation_gname, Hcontinuation⟩
     ipersist cap
     ipersist mu
+    simp only [typedPointsto_mutex_eq, MutexState.zero_locked]
     imod init_lock (chanInvInner ch ⟨state_gname, offer_lock_gname, offer_parked_prop_gname,
       offer_parked_pred_gname, offer_continuation_gname, W64 0⟩ V) ⊤ «$v1_ptr» $$ «$v1»
       [-HΦ Hstate_frag] with #Hlock
@@ -194,6 +196,7 @@ theorem wp_NewChannel_unbuffered_ne (l : Loc) (x : w64) :
     with ⟨%offer_continuation_gname, Hcontinuation⟩
   ipersist cap
   ipersist mu
+  simp only [typedPointsto_mutex_eq, MutexState.zero_locked]
   imod init_lock (chanInvInner ch ⟨state_gname, offer_lock_gname, offer_parked_prop_gname,
     offer_parked_pred_gname, offer_continuation_gname, W64 0⟩ V) ⊤ «$v1_ptr» $$ «$v1»
     [-HΦ Hstate_frag Hl] with #Hlock

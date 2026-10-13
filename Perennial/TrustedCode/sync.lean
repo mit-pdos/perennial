@@ -21,7 +21,9 @@ namespace sync
 section code
 variable [FfiSyntax] [GoGlobalContext]
 
-@[reducible] def Mutex.underlying : go.GoType := go.bool
+/-- The lock model's type (`go.mutex`, `Golang/Defn/Lock.lean`): gc's size and alignment
+(8, 4), the lock in its first cell. -/
+@[reducible] def Mutex.underlying : go.GoType := go.mutex
 
 def Mutex.TryLock.impl : val :=
   λ: "m" <>, lock.trylock "m"
@@ -127,7 +129,7 @@ end code
 /-- See `copyChecker.underlying`. -/
 abbrev copyChecker := Loc
 
-abbrev Mutex := Bool
+abbrev Mutex := MutexState
 
 end sync
 

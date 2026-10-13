@@ -927,7 +927,7 @@ instance alloc_atomic (a : Language.Atomicity) (v : val) : Language.Atomic a (Al
 
 instance allocN_atomic (a : Language.Atomicity) (n v : val) :
     Language.Atomic a (AllocN (Val n) (Val v)) :=
-  goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
+  goose_atomic a (fun _ _ _ _ _ h => by cases h <;> rfl) (by solve_sub_redexes)
 
 instance memOp1_atomic (a : Language.Atomicity) (op : MemOp1) (enc : Encoding) (v : val) :
     Language.Atomic a (Primitive1 (.MemOp1Op op enc) (Val v)) :=
@@ -2190,7 +2190,7 @@ theorem decode_encode {enc : Encoding} {v : val} {vs : List val} (h : encode enc
   | cell k =>
     simp only [encode] at h
     split at h
-    · cases h; simp [decode]
+    · rename_i hk; cases h; simp [decode, hk.2]
     · cases h
 
 /-- An encoding is never empty. -/
@@ -2267,9 +2267,13 @@ theorem pointstoVals_split' (l : Loc) (q : DFrac) (vs : List val) (hne : vs ≠ 
 
 theorem baseStep_AllocN_inv {n v : val} (h : BaseStep (AllocN (Val n) (Val v)) σ κ e' σ' efs) :
     ∃ (k a : w64) (l : Loc), n = PairV (LitV (LitInt k)) (LitV (LitInt a)) ∧
-      IsFreshAligned σ l (uint.nat a) ∧ κ = [] ∧ e' = Val #l ∧
-      σ' = setCells l ((allocCells (uint.nat k) v).map Free) σ ∧ efs = [] := by
-  cases h; exact ⟨_, _, _, rfl, ‹_›, rfl, rfl, rfl, rfl⟩
+      κ = [] ∧ e' = Val #l ∧ efs = [] ∧
+      ((uint.nat k ≠ 0 ∧ IsFreshAligned σ l (uint.nat a) ∧
+          σ' = setCells l ((List.replicate (uint.nat k) v).map Free) σ) ∨
+        (uint.nat k = 0 ∧ l.locCar ≠ 0 ∧ (uint.nat a : Int) ∣ l.locOff ∧ σ' = σ)) := by
+  cases h with
+  | AllocNS _ _ _ _ _ hk hf => exact ⟨_, _, _, rfl, rfl, rfl, rfl, .inl ⟨hk, hf, rfl⟩⟩
+  | AllocN0S _ _ _ _ _ hk hc ha => exact ⟨_, _, _, rfl, rfl, rfl, rfl, .inr ⟨hk, hc, ha, rfl⟩⟩
 
 theorem baseStep_StartReadN_inv {enc : Encoding} {v : val}
     (h : BaseStep (StartReadN enc (Val v)) σ κ e' σ' efs) :
@@ -2290,10 +2294,10 @@ theorem baseStep_FinishReadN_inv {enc : Encoding} {v : val}
 theorem baseStep_PrepareWriteN_inv {enc : Encoding} {v : val}
     (h : BaseStep (PrepareWriteN enc (Val v)) σ κ e' σ' efs) :
     ∃ l cs, v = #l ∧ cs.length = enc.size ∧ CellsAt σ.1.heap l cs ∧
-      (∀ c ∈ cs, c.1 = Reading 0) ∧
+      (∀ c ∈ cs, c.1 = Reading 0) ∧ WriteCompat enc (cs.map Prod.snd) ∧
       κ = [] ∧ e' = Val #() ∧ σ' = setCells l (cs.map fun c => (Writing, c.2)) σ ∧
       efs = [] := by
-  cases h; exact ⟨_, _, rfl, ‹_›, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
+  cases h; exact ⟨_, _, rfl, ‹_›, ‹_›, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
 
 theorem baseStep_FinishStoreN_inv {enc : Encoding} {v1 v2 : val}
     (h : BaseStep (FinishStoreN enc (Val v1) (Val v2)) σ κ e' σ' efs) :
@@ -2358,13 +2362,13 @@ theorem IsFreshAligned.car {σ : CfgState} {l : Loc} {a : Nat} (h : IsFreshAlign
   apply (h.1 (-l.locOff)).1
   cases l; simp only [Loc.add, null] at *; congr <;> omega
 
-/-- `AllocN (n, a) v`: a fresh block of `n` cells holding `v` (one tail cell if `n = 0`),
-owned, at an offset in `[0, 8)` aligned to `a`. -/
+/-- `AllocN (n, a) v`: `n` owned cells holding `v` (none if `n = 0`), at a non-null
+location aligned to `a`. -/
 theorem wp_allocN (n a : w64) (v : val) :
     {{ (True : IProp GF) }}
       (AllocN (Val (PairV (LitV (LitInt n)) (LitV (LitInt a)))) (Val v)) @ s; E
-    {{ l, RET #l; ⌜0 ≤ l.locOff ∧ l.locOff < 8 ∧ ((uint.nat a : Nat) : Int) ∣ l.locOff⌝ ∗
-        pointstoVals l (.own 1) (allocCells (uint.nat n) v) }} := by
+    {{ l, RET #l; ⌜l.locCar ≠ 0 ∧ ((uint.nat a : Nat) : Int) ∣ l.locOff⌝ ∗
+        pointstoVals l (.own 1) (List.replicate (uint.nat n) v) }} := by
   iintro %Φ _ HΦ
   iapply wp_lift_atomic_heap_step rfl rfl
   iintro %σ₁ Hσ
@@ -2372,28 +2376,47 @@ theorem wp_allocN (n a : w64) (v : val) :
   isplitr
   · ipureintro
     obtain ⟨l, hl⟩ := exists_isFreshAligned σ₁ (uint.nat a)
-    exact ⟨[], _, _, [], BaseStep.AllocNS n a v l σ₁ hl⟩
+    by_cases hn : uint.nat n = 0
+    · exact ⟨[], _, _, [], BaseStep.AllocN0S n a v l σ₁ hn hl.car hl.2.2.2⟩
+    · exact ⟨[], _, _, [], BaseStep.AllocNS n a v l σ₁ hn hl⟩
   inext
   iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨k, a', l, Hk, Hfresh, rfl, rfl, rfl, rfl⟩ := baseStep_AllocN_inv Hstep
+  obtain ⟨k, a', l, Hk, rfl, rfl, rfl, Hcase⟩ := baseStep_AllocN_inv Hstep
   cases Hk
-  have Hnn : l.locCar ≠ 0 := Hfresh.car
-  imod na_heap_alloc_list σ₁.1.heap l (allocCells (uint.nat n) v) (fun i => (Hfresh.1 i).2)
-    $$ Hσ with ⟨Hσ, Hl⟩
-  imodintro
-  isplitr
-  · ipureintro; exact ⟨rfl, rfl⟩
-  isplitl [Hσ]
-  · iexists _; iframe Hσ; ipureintro; rfl
-  iexists #l
-  isplit
-  · ipureintro; rfl
-  iapply HΦ
-  isplitl []
-  · ipureintro; exact Hfresh.2
-  unfold pointstoVals
-  iapply (BigSepL.bigSepL_mono (fun {i x} _ =>
-    na_pointsto_to_heap (l +ₗ (i : Int)) _ x Hnn)) $$ Hl
+  rcases Hcase with ⟨_, Hfresh, rfl⟩ | ⟨hk, hc, ha, rfl⟩
+  · have Hnn : l.locCar ≠ 0 := Hfresh.car
+    imod na_heap_alloc_list σ₁.1.heap l (List.replicate (uint.nat n) v) (fun i => (Hfresh.1 i).2)
+      $$ Hσ with ⟨Hσ, Hl⟩
+    imodintro
+    isplitr
+    · ipureintro; exact ⟨rfl, rfl⟩
+    isplitl [Hσ]
+    · iexists _; iframe Hσ; ipureintro; rfl
+    iexists #l
+    isplit
+    · ipureintro; rfl
+    iapply HΦ
+    isplitl []
+    · ipureintro; exact ⟨Hnn, Hfresh.2.2.2⟩
+    unfold pointstoVals
+    iapply (BigSepL.bigSepL_mono (fun {i x} _ =>
+      na_pointsto_to_heap (l +ₗ (i : Int)) _ x Hnn)) $$ Hl
+  · imodintro
+    isplitr
+    · ipureintro; exact ⟨rfl, rfl⟩
+    isplitl [Hσ]
+    · iexists _; iframe Hσ; ipureintro; rfl
+    iexists #l
+    isplit
+    · ipureintro; rfl
+    iapply HΦ
+    isplitl []
+    · ipureintro; exact ⟨hc, ha⟩
+    rw [hk]
+    unfold pointstoVals
+    simp only [List.replicate_zero]
+    iapply BigSepL.bigSepL_nil.2
+    itrivial
 
 /-- The cells of an encoded value being read (between `StartReadN` and `FinishReadN`). -/
 def readingCells (l : Loc) (q : DFrac) (vs : List val) : IProp GF :=
@@ -2472,7 +2495,7 @@ theorem wp_finish_readN (enc : Encoding) (l : Loc) (q : DFrac) (vs : List val)
     na_pointsto_to_heap (l +ₗ (i : Int)) _ x hc)) $$ Hl
 
 theorem wp_prepare_writeN (enc : Encoding) (l : Loc) (vs : List val)
-    (hlen : vs.length = enc.size) (hne : vs ≠ []) :
+    (hlen : vs.length = enc.size) (hne : vs ≠ []) (hcompat : WriteCompat enc vs) :
     {{ ▷ pointstoVals (GF := GF) l (.own 1) vs }} (PrepareWriteN enc (Val #l)) @ s; E
     {{ RET #(); writingCells l vs }} := by
   iintro %Φ >Hl HΦ
@@ -2484,10 +2507,11 @@ theorem wp_prepare_writeN (enc : Encoding) (l : Loc) (vs : List val)
   imodintro
   isplitr
   · ipureintro
-    exact ⟨[], _, _, [], BaseStep.PrepareWriteNS enc l cs σ₁ hlen' Hcells Hrd⟩
+    exact ⟨[], _, _, [], BaseStep.PrepareWriteNS enc l cs σ₁ hlen' Hcells Hrd
+      (by rw [Hvs]; exact hcompat)⟩
   inext
   iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨l', cs', Hl', hlen'', Hcells', -, rfl, rfl, rfl, rfl⟩ := baseStep_PrepareWriteN_inv Hstep
+  obtain ⟨l', cs', Hl', hlen'', Hcells', -, -, rfl, rfl, rfl, rfl⟩ := baseStep_PrepareWriteN_inv Hstep
   cases GoGlobalContext.intoVal_inj_loc Hl'
   cases cellsAt_eq_of_snd Hcells Hcells' (by omega)
   imodintro

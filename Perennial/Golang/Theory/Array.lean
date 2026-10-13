@@ -236,7 +236,7 @@ abbrev loadArrayBody (n : Int) (elem_type : go.GoType) (l : val) : Expr :=
 
 theorem wp_load_array_loop (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int)
     {s : Stuckness} {E : CoPset} (l : Loc) (dq : DFrac) (vs : List V)
-    (hlen : (vs.length : Int) = n) (hn : 0 ≤ n ∧ n < 2^63-1) (m : Nat) (hm : (m : Int) ≤ n) :
+    (hlen : (vs.length : Int) = n) (hn : 0 ≤ n ∧ n < 2^63) (m : Nat) (hm : (m : Int) ≤ n) :
     {{ arrayElems (GF := GF) l vs dq }}
       (App (Val (RecV "recur" "n" (loadArrayBody n t #l))) (Val #(W64 m))) @ s; E
     {{ RET #(array.mk n (vs.take m ++ (List.replicate n.toNat (zero_val V)).drop m));
@@ -330,7 +330,7 @@ theorem rawCells_rawElems (l : Loc) (hc : l.locCar ≠ 0) (n : Nat) :
 
 theorem wp_store_array_loop_raw (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int)
     {s : Stuckness} {E : CoPset} (l : Loc) (hc : l.locCar ≠ 0) (w : GoArray V n)
-    (hwlen : (w.arr.length : Int) = n) (hn : 0 ≤ n ∧ n < 2^63-1) (k : Nat) (hk : (k : Int) ≤ n) :
+    (hwlen : (w.arr.length : Int) = n) (hn : 0 ≤ n ∧ n < 2^63) (k : Nat) (hk : (k : Int) ≤ n) :
     ⊢ ∀ Φ, rawElems (GF := GF) (V := V) l 0 n.toNat -∗
       (arrayElems l (w.arr.take k) (DFrac.own 1) ∗ rawElems (V := V) l k (n.toNat - k) -∗ Φ #()) -∗
       WP (List.foldl (storeArrayStep n t #l #w) (#() : Expr)
@@ -383,7 +383,7 @@ theorem wp_store_array_loop_raw (t : go.GoType) [IntoValTyped (GF := GF) V t] (n
 theorem wp_store_array_loop (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int)
     {s : Stuckness} {E : CoPset} (l : Loc) (vs : List V) (w : GoArray V n)
     (hlen : (vs.length : Int) = n) (hwlen : (w.arr.length : Int) = n)
-    (hn : 0 ≤ n ∧ n < 2^63-1) (k : Nat) (hk : (k : Int) ≤ n) :
+    (hn : 0 ≤ n ∧ n < 2^63) (k : Nat) (hk : (k : Int) ≤ n) :
     ⊢ ∀ Φ, arrayElems (GF := GF) l vs (DFrac.own 1) -∗
       (arrayElems l (w.arr.take k ++ vs.drop k) (DFrac.own 1) -∗ Φ #()) -∗
       WP (List.foldl (storeArrayStep n t #l #w) (#() : Expr)
@@ -435,17 +435,17 @@ theorem intoVal_typed_array_store_raw' (t : go.GoType) [IntoValTyped (GF := GF) 
   have _tagged := @go.tagged_internal_inst
   wp_pure
   clear _tagged
-  by_cases hn : 0 ≤ n ∧ n < 2^63-1
+  by_cases hn : 0 ≤ n ∧ n < 2^63
   case neg =>
-    simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = True from
+    simp only [show (¬(0 ≤ n ∧ n < 2^63 ∧ (w.arr.length : Int) = n)) = True from
       eq_true (fun h => hn ⟨h.1, h.2.1⟩), ↓reduceIte]
     iapply wp_AngelicExit
   by_cases hwlen : (w.arr.length : Int) = n
   case neg =>
-    simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = True from
+    simp only [show (¬(0 ≤ n ∧ n < 2^63 ∧ (w.arr.length : Int) = n)) = True from
       eq_true (fun h => hwlen h.2.2), ↓reduceIte]
     iapply wp_AngelicExit
-  simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = False from
+  simp only [show (¬(0 ≤ n ∧ n < 2^63 ∧ (w.arr.length : Int) = n)) = False from
       eq_false (fun h => h ⟨hn.1, hn.2, hwlen⟩), ↓reduceIte]
   have e : n * typeSize V = ((n.toNat : Nat) : Int) * typeSize V := by
     rw [Int.toNat_of_nonneg hn.1]
@@ -496,11 +496,11 @@ instance intoVal_typed_array (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : 
     have _tagged := @go.tagged_internal_inst
     wp_pure
     clear _tagged
-    by_cases hn : 0 ≤ n ∧ n < 2^63-1
+    by_cases hn : 0 ≤ n ∧ n < 2^63
     case neg =>
-      simp only [show (¬(0 ≤ n ∧ n < 2^63-1)) = True from eq_true hn, ↓reduceIte]
+      simp only [show (¬(0 ≤ n ∧ n < 2^63)) = True from eq_true hn, ↓reduceIte]
       iapply wp_AngelicExit
-    simp only [show (¬(0 ≤ n ∧ n < 2^63-1)) = False from eq_false (fun h => h hn), ↓reduceIte]
+    simp only [show (¬(0 ≤ n ∧ n < 2^63)) = False from eq_false (fun h => h hn), ↓reduceIte]
     obtain ⟨vs⟩ := v
     icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %Hnn⟩
     icases typedPointsto_split _ _ _ $$ Hl with Hl
@@ -525,17 +525,17 @@ instance intoVal_typed_array (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : 
     have _tagged := @go.tagged_internal_inst
     wp_pure
     clear _tagged
-    by_cases hn : 0 ≤ n ∧ n < 2^63-1
+    by_cases hn : 0 ≤ n ∧ n < 2^63
     case neg =>
-      simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = True from
+      simp only [show (¬(0 ≤ n ∧ n < 2^63 ∧ (w.arr.length : Int) = n)) = True from
         eq_true (fun h => hn ⟨h.1, h.2.1⟩), ↓reduceIte]
       iapply wp_AngelicExit
     by_cases hwlen : (w.arr.length : Int) = n
     case neg =>
-      simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = True from
+      simp only [show (¬(0 ≤ n ∧ n < 2^63 ∧ (w.arr.length : Int) = n)) = True from
         eq_true (fun h => hwlen h.2.2), ↓reduceIte]
       iapply wp_AngelicExit
-    simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = False from
+    simp only [show (¬(0 ≤ n ∧ n < 2^63 ∧ (w.arr.length : Int) = n)) = False from
         eq_false (fun h => h ⟨hn.1, hn.2, hwlen⟩), ↓reduceIte]
     obtain ⟨vs⟩ := v
     icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %Hnn⟩
