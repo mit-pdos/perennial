@@ -48,3 +48,9 @@ func sliceArrayPtr(p *[16]byte, i, j int) []byte {
 func sliceArrayPtr2(p *[16]byte) []byte {
 	return p[2:]
 }
+
+// bbolt's unsafeByteSlice: a pointer to an array larger than the allocation, sliced; only
+// the max elements are accessed (unsafe.ArraySlice).
+func unsafeByteSlice(base unsafe.Pointer, offset uintptr, i, j int) []byte {
+	return (*[0x7FFFFFFF]byte)(unsafe.Add(base, offset))[i:j:j]
+}

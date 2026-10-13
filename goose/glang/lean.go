@@ -1061,6 +1061,11 @@ func (e StoreStmt) Lean(m LeanMode) string {
 		ePair(e.Dst.Lean(LeanExpr), e.X.Lean(LeanExpr)))
 }
 
+func (e CheckCopyStmt) Lean(m LeanMode) string {
+	return eApp(eInstr("CheckCopy", e.Ty.Lean(LeanTerm)),
+		ePair(e.Dst.Lean(LeanExpr), e.Src.Lean(LeanExpr)))
+}
+
 func (ife IfExpr) Lean(m LeanMode) string {
 	return "(If " + lparen(ife.Cond.Lean(LeanExpr)) +
 		"\n" + lparen(ife.Then.Lean(LeanExpr)) +

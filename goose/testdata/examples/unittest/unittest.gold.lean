@@ -59,6 +59,16 @@ def withInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] withInterface.ty
 
+def bigStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.bigStruct" [])
+
+attribute [irreducible] bigStruct.ty
+
+def bigStruct2.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.bigStruct2" [])
+
+attribute [irreducible] bigStruct2.ty
+
 def diskWrapper.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.diskWrapper" [])
 
@@ -509,6 +519,15 @@ noncomputable def testCopySimple [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def testCopyDifferentLengths [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.testCopyDifferentLengths"
+
+noncomputable def copyThroughPointers [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.copyThroughPointers"
+
+noncomputable def copyIntoLocal [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.copyIntoLocal"
+
+noncomputable def copyConverted [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.copyConverted"
 
 noncomputable def atomicCreateStub [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.atomicCreateStub"
@@ -1037,6 +1056,9 @@ noncomputable def sliceArrayPtr [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def sliceArrayPtr2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.sliceArrayPtr2"
+
+noncomputable def unsafeByteSlice [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.unsafeByteSlice"
 
 noncomputable def variadicFunc [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.variadicFunc"
@@ -1879,6 +1901,63 @@ noncomputable def testCopyDifferentLengths.impl [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "x")) (Val #(W64 3)))) (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "x") (Var "$r0")))))))))
+
+/-- `*p = *q` may copy between overlapping memory: goose emits CheckCopy.
+
+    go: copy_check.go:8:6 -/
+noncomputable def copyThroughPointers.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "q"
+  (App (Val exceptionDo)
+  (Let "q" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType bigStruct.ty)))) (Var "q"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType bigStruct.ty)))) (Var "p"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$src" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType bigStruct.ty)))) (Var "q"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad bigStruct.ty))) (Var "$src"))
+  (Let "$dst" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType bigStruct.ty)))) (Var "p"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore bigStruct.ty))) (Pair (Var "$dst") (Var "$r0"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (CheckCopy bigStruct.ty))) (Pair (Var "$dst") (Var "$src"))))))))))))))
+
+/-- x is a local variable whose address is never taken: no CheckCopy.
+
+    go: copy_check.go:13:6 -/
+noncomputable def copyIntoLocal.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "p"
+  (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType bigStruct.ty)))) (Var "p"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc bigStruct.ty))) (App (Val (GoInstruction (GoZeroVal bigStruct.ty))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad bigStruct.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType bigStruct.ty)))) (Var "p")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef bigStruct.ty go!"a"))) (Var "x"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore bigStruct.ty))) (Pair (Var "x") (Var "$r0"))))))))))
+
+/-- A conversion that keeps the representation is still a copy from memory.
+
+    go: copy_check.go:22:6 -/
+noncomputable def copyConverted.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Lam "q"
+  (App (Val exceptionDo)
+  (Let "q" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType bigStruct2.ty)))) (Var "q"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType bigStruct.ty)))) (Var "p"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$src" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType bigStruct2.ty)))) (Var "q"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad bigStruct2.ty))) (Var "$src"))
+  (Let "$dst" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType bigStruct.ty)))) (Var "p"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore bigStruct.ty))) (Pair (Var "$dst") (Var "$r0"))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (CheckCopy bigStruct.ty))) (Pair (Var "$dst") (Var "$src"))))))))))))))
 
 /-- go: data_structures.go:7:6 -/
 noncomputable def atomicCreateStub.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -5258,6 +5337,29 @@ noncomputable def sliceArrayPtr2.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.ArrayType 16 go.byte))))) (Var "p"))
   (App (Val (GoInstruction (Slice (go.GoType.ArrayType 16 go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 2))) (Val #(W64 16)))))))))
 
+/-- bbolt's unsafeByteSlice: a pointer to an array larger than the allocation, sliced; only
+    the max elements are accessed (unsafe.ArraySlice).
+
+    go: unsafe_ops.go:54:6 -/
+noncomputable def unsafeByteSlice.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "base"
+  (Lam "offset"
+  (Lam "i"
+  (Lam "j"
+  (App (Val exceptionDo)
+  (Let "j" (App (Val (GoInstruction (GoAlloc go.int))) (Var "j"))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (Var "i"))
+  (Let "offset" (App (Val (GoInstruction (GoAlloc go.uintptr))) (Var "offset"))
+  (Let "base" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (Var "base"))
+  (App (Val doReturn)
+  (Let "$u0" (Let "$u0" (App (Val (GoInstruction (GoLoad «unsafe».Pointer))) (Var "base"))
+  (Let "$u1" (App (Val (GoInstruction (Convert go.uintptr go.int))) (App (Val (GoInstruction (GoLoad go.uintptr))) (Var "offset")))
+  (App (App (App (Val (GoInstruction (FuncResolve «unsafe».Add []))) (Val #())) (Var "$u0")) (Var "$u1"))))
+  (Let "$u1" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
+  (Let "$u2" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
+  (Let "$u3" (App (Val (GoInstruction (GoLoad go.int))) (Var "j"))
+  (App (App (App (App (App (Val (GoInstruction (FuncResolve «unsafe».ArraySlice [(go.GoType.ArrayType 2147483647 go.byte)]))) (Val #())) (Var "$u0")) (Var "$u1")) (Var "$u2")) (Var "$u3"))))))))))))))))
+
 /-- go: varargs.go:3:6 -/
 noncomputable def variadicFunc.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
@@ -5549,6 +5651,61 @@ attribute [instance] withInterface.TypeAssumptions.type_repr
   withInterface.TypeAssumptions.layout
   withInterface.TypeAssumptions.get_a
   withInterface.TypeAssumptions.set_a
+
+structure bigStruct [FfiSyntax] where
+  mk ::
+  a' : w64
+  b' : w64
+  c' : w64
+
+instance bigStruct.zero_val [FfiSyntax] : ZeroVal bigStruct :=
+  ⟨bigStruct.mk zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] def bigStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"a" go.int64),
+(go.field_decl.FieldDecl go!"b" go.int64),
+(go.field_decl.FieldDecl go!"c" go.int64)]
+
+@[irreducible] def bigStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  bigStruct.fieldsUnsealed
+
+instance equals_unfold_bigStruct [FfiSyntax] [GoGlobalContext] :
+    EqualsUnfold bigStruct.fields bigStruct.fieldsUnsealed :=
+  ⟨by unfold bigStruct.fields; rfl⟩
+
+@[reducible] def bigStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType bigStruct.fields)
+
+class bigStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying bigStruct.underlying bigStruct
+  underlying : go.UnderlyingDirectedEq bigStruct.ty bigStruct.underlying
+  layout : go.StructLayout bigStruct [(go!"a", typeSize w64, typeAlign w64), (go!"b", typeSize w64, typeAlign w64), (go!"c", typeSize w64, typeAlign w64)]
+  get_a : ∀ (x : bigStruct), go.IsGoStepPureDetTagged under (StructFieldGet bigStruct.underlying go!"a") #x (Val #(x.a'))
+  set_a : ∀ (x : bigStruct) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet bigStruct.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : bigStruct)))
+  get_b : ∀ (x : bigStruct), go.IsGoStepPureDetTagged under (StructFieldGet bigStruct.underlying go!"b") #x (Val #(x.b'))
+  set_b : ∀ (x : bigStruct) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet bigStruct.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : bigStruct)))
+  get_c : ∀ (x : bigStruct), go.IsGoStepPureDetTagged under (StructFieldGet bigStruct.underlying go!"c") #x (Val #(x.c'))
+  set_c : ∀ (x : bigStruct) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet bigStruct.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : bigStruct)))
+
+attribute [instance] bigStruct.TypeAssumptions.type_repr
+  bigStruct.TypeAssumptions.underlying
+  bigStruct.TypeAssumptions.layout
+  bigStruct.TypeAssumptions.get_a
+  bigStruct.TypeAssumptions.set_a
+  bigStruct.TypeAssumptions.get_b
+  bigStruct.TypeAssumptions.set_b
+  bigStruct.TypeAssumptions.get_c
+  bigStruct.TypeAssumptions.set_c
+
+abbrev bigStruct2 [FfiSyntax] : Type := bigStruct
+
+@[reducible] def bigStruct2.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  bigStruct.ty
+
+class bigStruct2.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq bigStruct2.ty bigStruct2.underlying
+
+attribute [instance] bigStruct2.TypeAssumptions.underlying
 
 structure diskWrapper [FfiSyntax] where
   mk ::
@@ -6819,6 +6976,8 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   Uint32_instance : Uint32.TypeAssumptions
   numWrapper_instance : numWrapper.TypeAssumptions
   withInterface_instance : withInterface.TypeAssumptions
+  bigStruct_instance : bigStruct.TypeAssumptions
+  bigStruct2_instance : bigStruct2.TypeAssumptions
   diskWrapper_instance : diskWrapper.TypeAssumptions
   embedA_instance : embedA.TypeAssumptions
   embedB_instance : embedB.TypeAssumptions
@@ -6898,6 +7057,9 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   testConversionLiteral_unfold : FuncUnfold testConversionLiteral [] testConversionLiteral.impl
   testCopySimple_unfold : FuncUnfold testCopySimple [] testCopySimple.impl
   testCopyDifferentLengths_unfold : FuncUnfold testCopyDifferentLengths [] testCopyDifferentLengths.impl
+  copyThroughPointers_unfold : FuncUnfold copyThroughPointers [] copyThroughPointers.impl
+  copyIntoLocal_unfold : FuncUnfold copyIntoLocal [] copyIntoLocal.impl
+  copyConverted_unfold : FuncUnfold copyConverted [] copyConverted.impl
   atomicCreateStub_unfold : FuncUnfold atomicCreateStub [] atomicCreateStub.impl
   useSlice_unfold : FuncUnfold useSlice [] useSlice.impl
   useSliceIndexing_unfold : FuncUnfold useSliceIndexing [] useSliceIndexing.impl
@@ -7074,6 +7236,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   unsafeIncUintptr_unfold : FuncUnfold unsafeIncUintptr [] unsafeIncUintptr.impl
   sliceArrayPtr_unfold : FuncUnfold sliceArrayPtr [] sliceArrayPtr.impl
   sliceArrayPtr2_unfold : FuncUnfold sliceArrayPtr2 [] sliceArrayPtr2.impl
+  unsafeByteSlice_unfold : FuncUnfold unsafeByteSlice [] unsafeByteSlice.impl
   variadicFunc_unfold : FuncUnfold variadicFunc [] variadicFunc.impl
   testVariadicCall_unfold : FuncUnfold testVariadicCall [] testVariadicCall.impl
   returnMultiple_unfold : FuncUnfold returnMultiple [] returnMultiple.impl
@@ -7094,6 +7257,8 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.Uint32_instance
   Assumptions.numWrapper_instance
   Assumptions.withInterface_instance
+  Assumptions.bigStruct_instance
+  Assumptions.bigStruct2_instance
   Assumptions.diskWrapper_instance
   Assumptions.embedA_instance
   Assumptions.embedB_instance
@@ -7173,6 +7338,9 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.testConversionLiteral_unfold
   Assumptions.testCopySimple_unfold
   Assumptions.testCopyDifferentLengths_unfold
+  Assumptions.copyThroughPointers_unfold
+  Assumptions.copyIntoLocal_unfold
+  Assumptions.copyConverted_unfold
   Assumptions.atomicCreateStub_unfold
   Assumptions.useSlice_unfold
   Assumptions.useSliceIndexing_unfold
@@ -7349,6 +7517,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.unsafeIncUintptr_unfold
   Assumptions.sliceArrayPtr_unfold
   Assumptions.sliceArrayPtr2_unfold
+  Assumptions.unsafeByteSlice_unfold
   Assumptions.variadicFunc_unfold
   Assumptions.testVariadicCall_unfold
   Assumptions.returnMultiple_unfold

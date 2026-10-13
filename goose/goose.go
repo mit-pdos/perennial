@@ -115,6 +115,9 @@ type Ctx struct {
 
 	filter declfilter.DeclFilter
 	out    outputDecls
+
+	// variables whose address the package takes (addrTakenVars)
+	addrTaken map[*types.Var]bool
 }
 
 // NewPkgCtx initializes a context based on a properly loaded package
@@ -129,6 +132,7 @@ func NewPkgCtx(pkg *packages.Package, filter declfilter.DeclFilter) Ctx {
 		importAssumptions: make(map[string]string),
 		filter:            filter,
 		localTypes:        make(map[string]bool),
+		addrTaken:         addrTakenVars(pkg.TypesInfo, pkg.Syntax),
 	}
 }
 
@@ -809,6 +813,50 @@ type compositeBinding struct {
 	val  glang.Expr
 }
 
+// checkLiteralFloats is checkFloatIntoIface for the elements and map keys of a composite
+// literal, which the semantics converts to their slots' types.
+func (ctx *Ctx) checkLiteralFloats(e *ast.CompositeLit) {
+	check := func(v ast.Expr, slot types.Type) {
+		if slot != nil && v != nil {
+			if t := ctx.typeOf(v); t != nil {
+				ctx.checkFloatIntoIface(v, t, slot)
+			}
+		}
+	}
+	switch t := underlyingType(ctx.typeOf(e)).(type) {
+	case *types.Struct:
+		for i, el := range e.Elts {
+			if kv, ok := el.(*ast.KeyValueExpr); ok {
+				if id, ok := kv.Key.(*ast.Ident); ok {
+					if f, ok := ctx.info.Uses[id].(*types.Var); ok {
+						check(kv.Value, f.Type())
+					}
+				}
+			} else if i < t.NumFields() {
+				check(el, t.Field(i).Type())
+			}
+		}
+	case *types.Array, *types.Slice, *types.Map:
+		var key, elem types.Type
+		switch t := t.(type) {
+		case *types.Array:
+			elem = t.Elem()
+		case *types.Slice:
+			elem = t.Elem()
+		case *types.Map:
+			key, elem = t.Key(), t.Elem()
+		}
+		for _, el := range e.Elts {
+			if kv, ok := el.(*ast.KeyValueExpr); ok {
+				check(kv.Key, key)
+				check(kv.Value, elem)
+			} else {
+				check(el, elem)
+			}
+		}
+	}
+}
+
 func (ctx *Ctx) compositeLiteral(e *ast.CompositeLit) glang.Expr {
 	var bindings []compositeBinding
 	res := ctx.compositeLiteralWithBindings(e, &bindings)
@@ -858,6 +906,9 @@ func (ctx *Ctx) compositeLiteralWithBindings(e *ast.CompositeLit, bindings *[]co
 			next++
 		}
 	}
+
+	// the semantics converts the elements (and map keys) to their slots' types
+	ctx.checkLiteralFloats(e)
 
 	for _, el := range e.Elts {
 		var k glang.Expr = glang.VerbatimExpr("None")
@@ -1005,7 +1056,45 @@ func (ctx *Ctx) binOpExpr(n locatable, op glang.OpId, xT types.Type, x, y glang.
 	}
 }
 
+// unsafeArraySlice translates (*[n]T)(p)[lo:hi:max] for p an unsafe.Pointer as one
+// operation (unsafe.ArraySlice), which accesses only the max elements: bbolt converts to a
+// pointer to an array far larger than the allocation and slices it. The conversion alone
+// would check the whole array (go.UnsafeSemantics.convert_unsafe_to_pointer).
+func (ctx *Ctx) unsafeArraySlice(e *ast.SliceExpr) (glang.Expr, bool) {
+	if e.Max == nil {
+		return nil, false
+	}
+	conv, ok := ast.Unparen(e.X).(*ast.CallExpr)
+	if !ok || len(conv.Args) != 1 || !ctx.info.Types[conv.Fun].IsType() {
+		return nil, false
+	}
+	if !types.Identical(ctx.typeOf(conv.Args[0]), types.Typ[types.UnsafePointer]) {
+		return nil, false
+	}
+	ptrTy, ok := ctx.typeOf(conv).Underlying().(*types.Pointer)
+	if !ok {
+		return nil, false
+	}
+	arrTy, ok := ptrTy.Elem().Underlying().(*types.Array)
+	if !ok {
+		return nil, false
+	}
+	toInt := func(b ast.Expr) glang.Expr {
+		return ctx.handleImplicitConversion(b, ctx.typeOf(b), types.Typ[types.Int], ctx.expr(b))
+	}
+	var lo glang.Expr = glang.Int64Val{Value: glang.IntToZ(0)}
+	if e.Low != nil {
+		lo = toInt(e.Low)
+	}
+	call := callUnsafe("ArraySlice", glang.ListExpr{ctx.glangType(e, arrTy)},
+		unsafeArg(0), unsafeArg(1), unsafeArg(2), unsafeArg(3))
+	return bindInOrder([]glang.Expr{ctx.expr(conv.Args[0]), lo, toInt(e.High), toInt(e.Max)}, call), true
+}
+
 func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
+	if res, ok := ctx.unsafeArraySlice(e); ok {
+		return res
+	}
 	xT := ctx.typeOf(e.X)
 	ty := ctx.glangType(e, xT)
 	arrayTy, isArray := underlyingType(xT).(*types.Array)
@@ -1201,6 +1290,11 @@ func (ctx *Ctx) builtinIdent(e *ast.Ident) glang.Expr {
 		var t types.Type = sig.Params().At(0).Type().Underlying()
 		for i := 0; i < sig.Params().Len(); i++ {
 			t = ctx.typeJoin(e, t, sig.Params().At(i).Type())
+		}
+		// a float min or max is not the semantics' `x < y` choice: a NaN argument
+		// gives a NaN, and min(-0, +0) is -0
+		if containsFloat(t) {
+			ctx.unsupported(e, "%s of floats", e.Name)
 		}
 		var typeArgs glang.ListExpr
 		ty := ctx.glangType(e, t)
@@ -1715,6 +1809,17 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 }
 
 func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
+	// `for _, v = range x` over a slice or an array pointer copies each element from
+	// memory into v, which gc does in place (over an array value, from a copy): refuse a
+	// struct or array value whose target could overlap the elements
+	if s.Tok == token.ASSIGN && s.Value != nil && isAggregate(ctx.typeOf(s.Value)) {
+		switch underlyingType(ctx.typeOf(s.X)).(type) {
+		case *types.Slice, *types.Pointer:
+			if !ctx.unaliasedLocal(s.Value) {
+				ctx.unsupported(s, "a range with = that copies struct or array elements from memory")
+			}
+		}
+	}
 	// Each iteration has its own iteration variables. A variable the loop
 	// declares is allocated in the body if the body captures it or takes its
 	// address (loopVarEscapes), and otherwise once, before the loop.
@@ -2032,6 +2137,15 @@ func (ctx *Ctx) assignFromTo(lhs ast.Expr, rhs glang.Expr, cont glang.Expr) glan
 	}, cont)
 }
 
+// checkFloatIntoIface refuses converting a value that contains a float to an interface:
+// an interface value can be a map key, which the model compares by its bits (see the map
+// case of glangType), and this is the only way a float gets into one.
+func (ctx *Ctx) checkFloatIntoIface(n locatable, from, to types.Type) {
+	if _, isTP := to.(*types.TypeParam); !isTP && types.IsInterface(to) && containsFloat(from) {
+		ctx.unsupported(n, "a conversion of %v, which contains a float, to an interface", from)
+	}
+}
+
 // This handles conversions arising from the notion of "assignability" in the Go spec.
 func (ctx *Ctx) handleImplicitConversion(n locatable, from, to types.Type, e glang.Expr) glang.Expr {
 	if to == nil {
@@ -2041,6 +2155,7 @@ func (ctx *Ctx) handleImplicitConversion(n locatable, from, to types.Type, e gla
 	if from == nil {
 		ctx.unsupported(n, "implicit conversion: don't know from type")
 	}
+	ctx.checkFloatIntoIface(n, from, to)
 	if types.Identical(from.Underlying(), to.Underlying()) {
 		return e
 	} else {
@@ -2050,7 +2165,215 @@ func (ctx *Ctx) handleImplicitConversion(n locatable, from, to types.Type, e gla
 }
 
 func (ctx *Ctx) assignStmt(s *ast.AssignStmt, cont glang.Expr) glang.Expr {
+	if e, ok := ctx.copyAssign(s, cont); ok {
+		return e
+	}
 	return ctx.assignStmtWith(s, func(e glang.Expr) glang.Expr { return e }, cont)
+}
+
+// addressable reports whether e denotes a variable (Go's addressability): its
+// value is read from memory.
+func (ctx *Ctx) addressable(e ast.Expr) bool {
+	switch e := ast.Unparen(e).(type) {
+	case *ast.Ident:
+		_, ok := ctx.info.Uses[e].(*types.Var)
+		return ok && e.Name != "_"
+	case *ast.StarExpr:
+		return true
+	case *ast.SelectorExpr:
+		if sel := ctx.info.Selections[e]; sel != nil {
+			return sel.Kind() == types.FieldVal && (sel.Indirect() || ctx.addressable(e.X))
+		}
+		// a qualified identifier
+		_, ok := ctx.info.Uses[e.Sel].(*types.Var)
+		return ok
+	case *ast.IndexExpr:
+		switch t := ctx.typeOf(e.X).Underlying().(type) {
+		case *types.Slice:
+			return true
+		case *types.Pointer:
+			_, ok := t.Elem().Underlying().(*types.Array)
+			return ok
+		case *types.Array:
+			return ctx.addressable(e.X)
+		}
+	}
+	return false
+}
+
+// unaliasedLocal reports whether e is part of a local variable whose address is never
+// taken (addrTakenVars): no pointer into it exists, so it overlaps no other memory.
+func (ctx *Ctx) unaliasedLocal(e ast.Expr) bool {
+	if id, ok := ast.Unparen(e).(*ast.Ident); ok && id.Name == "_" {
+		return true
+	}
+	v := rootVar(ctx.info, e)
+	return v != nil && v.Pkg() != nil && v.Parent() != v.Pkg().Scope() && !ctx.addrTaken[v]
+}
+
+// baseVar returns the variable an addressable expression is reached from through fields
+// and array indices: an identifier, or the pointer or slice variable it is reached
+// through (`p.f`, `s[i]`, `*p`).
+func (ctx *Ctx) baseVar(e ast.Expr) *types.Var {
+	for {
+		switch x := ast.Unparen(e).(type) {
+		case *ast.Ident:
+			v, _ := ctx.info.Uses[x].(*types.Var)
+			return v
+		case *ast.SelectorExpr:
+			sel := ctx.info.Selections[x]
+			if sel == nil || sel.Kind() != types.FieldVal {
+				return nil
+			}
+			if sel.Indirect() {
+				id, ok := ast.Unparen(x.X).(*ast.Ident)
+				if !ok {
+					return nil
+				}
+				v, _ := ctx.info.Uses[id].(*types.Var)
+				return v
+			}
+			e = x.X
+		case *ast.IndexExpr:
+			if _, ok := ctx.typeOf(x.X).Underlying().(*types.Array); ok {
+				e = x.X
+				continue
+			}
+			id, ok := ast.Unparen(x.X).(*ast.Ident)
+			if !ok {
+				return nil
+			}
+			v, _ := ctx.info.Uses[id].(*types.Var)
+			return v
+		case *ast.StarExpr:
+			id, ok := ast.Unparen(x.X).(*ast.Ident)
+			if !ok {
+				return nil
+			}
+			v, _ := ctx.info.Uses[id].(*types.Var)
+			return v
+		default:
+			return nil
+		}
+	}
+}
+
+// sameBase reports whether two places of the same type are reached from the same variable
+// (baseVar) through fields and indices: they are then the same place or disjoint (a value
+// does not contain another of its own type), never partially overlapping (`s[i] = s[j]`).
+func (ctx *Ctx) sameBase(a, b ast.Expr) bool {
+	va, vb := ctx.baseVar(a), ctx.baseVar(b)
+	return va != nil && va == vb
+}
+
+// isAggregate reports whether a value of type t may be a struct or array: gc copies one
+// of more than 16 bytes from memory to memory in forward chunks.
+func isAggregate(t types.Type) bool {
+	if tp, isTP := t.(*types.TypeParam); isTP {
+		// unless every type the constraint admits is a basic type
+		var onlyBasic func(t types.Type) bool
+		onlyBasic = func(t types.Type) bool {
+			switch u := t.Underlying().(type) {
+			case *types.Basic:
+				return true
+			case *types.Union:
+				for i := 0; i < u.Len(); i++ {
+					if !onlyBasic(u.Term(i).Type()) {
+						return false
+					}
+				}
+				return true
+			case *types.Interface:
+				// some embedded element restricts the type set to basic types
+				for i := 0; i < u.NumEmbeddeds(); i++ {
+					if onlyBasic(u.EmbeddedType(i)) {
+						return true
+					}
+				}
+			}
+			return false
+		}
+		return !onlyBasic(tp.Constraint())
+	}
+	switch t.Underlying().(type) {
+	case *types.Struct, *types.Array:
+		return true
+	}
+	return false
+}
+
+// copySource is the variable that `lhs = rhs` copies from memory, for lhs of struct or
+// array type t: rhs, or the operand of conversions that do not change the
+// representation (gc's s.addr looks through them, and through assignability). ok is false
+// when no copy from memory can go wrong: rhs is not a variable, or either side is part of
+// a local variable whose address is never taken (no pointer into it exists).
+func (ctx *Ctx) copySource(lhs, rhs ast.Expr, t types.Type) (src ast.Expr, ok bool) {
+	if t == nil || !isAggregate(t) {
+		return nil, false
+	}
+	src = ast.Unparen(rhs)
+	for {
+		c, isCall := src.(*ast.CallExpr)
+		if !isCall || len(c.Args) != 1 || !ctx.info.Types[c.Fun].IsType() {
+			break
+		}
+		at := ctx.typeOf(c.Args[0])
+		_, tp1 := at.(*types.TypeParam)
+		_, tp2 := ctx.typeOf(c).(*types.TypeParam)
+		if !tp1 && !tp2 && !types.Identical(at.Underlying(), ctx.typeOf(c).Underlying()) {
+			break
+		}
+		src = ast.Unparen(c.Args[0])
+	}
+	if !ctx.addressable(src) {
+		return nil, false
+	}
+	if ctx.unaliasedLocal(lhs) || ctx.unaliasedLocal(src) || ctx.sameBase(lhs, src) {
+		return nil, false
+	}
+	return src, true
+}
+
+// copyAssign translates `lhs = rhs` when it copies a struct or array from memory
+// (copySource): gc's copy goes wrong when the two overlap partially (only possible
+// through unsafe), so the store is preceded by a CheckCopy of the two addresses.
+func (ctx *Ctx) copyAssign(s *ast.AssignStmt, cont glang.Expr) (glang.Expr, bool) {
+	if s.Tok != token.ASSIGN || len(s.Lhs) != 1 || len(s.Rhs) != 1 {
+		return nil, false
+	}
+	lhs, rhs := s.Lhs[0], s.Rhs[0]
+	if id, ok := ast.Unparen(lhs).(*ast.Ident); ok && id.Name == "_" {
+		return nil, false
+	}
+	if ix, ok := ast.Unparen(lhs).(*ast.IndexExpr); ok {
+		if _, isMap := ctx.typeOf(ix.X).Underlying().(*types.Map); isMap {
+			return nil, false
+		}
+	}
+	t := ctx.typeOf(lhs)
+	src, ok := ctx.copySource(lhs, rhs, t)
+	if !ok {
+		return nil, false
+	}
+	ty := ctx.glangType(lhs, t)
+	srcT := ctx.typeOf(src)
+	store := glang.LetExpr{
+		Names:   []string{"$dst"},
+		ValExpr: ctx.exprAddr(lhs),
+		Cont: glang.NewDoSeq(
+			glang.CheckCopyStmt{Ty: ty, Dst: glang.IdentExpr("$dst"), Src: glang.IdentExpr("$src")},
+			glang.NewDoSeq(glang.StoreStmt{Dst: glang.IdentExpr("$dst"), X: glang.IdentExpr("$r0"), Ty: ty}, cont)),
+	}
+	return glang.LetExpr{
+		Names:   []string{"$src"},
+		ValExpr: ctx.exprAddr(src),
+		Cont: glang.LetExpr{
+			Names: []string{"$r0"},
+			ValExpr: ctx.handleImplicitConversion(rhs, srcT, t,
+				glang.DerefExpr{X: glang.IdentExpr("$src"), Ty: ctx.glangType(src, srcT)}),
+			Cont: store,
+		},
+	}, true
 }
 
 // assignStmtWith is assignStmt with scope wrapped around the assignments, after
@@ -2065,6 +2388,15 @@ func (ctx *Ctx) assignStmtWith(s *ast.AssignStmt, scope func(glang.Expr) glang.E
 	// evaluates their index and indirection operands before any assignment
 	// (the targets are bound to $l<i>, or $lm<i> and $lk<i> for a map, below).
 	multi := len(s.Lhs) > 1
+	// gc copies the first pairs in place when no later one reads what they write (no
+	// temporary), so a struct or array copied from memory could overlap its target
+	if multi && s.Tok == token.ASSIGN && len(s.Rhs) == len(s.Lhs) {
+		for i, lhs := range s.Lhs {
+			if _, ok := ctx.copySource(lhs, s.Rhs[i], ctx.typeOf(lhs)); ok {
+				ctx.unsupported(s, "a multiple assignment that copies a struct or array from memory (use one assignment per statement)")
+			}
+		}
+	}
 	var lhsLets []glang.LetExpr
 	for i := len(s.Lhs); i > 0; i-- {
 		lhs, rhs := s.Lhs[i-1], glang.IdentExpr(fmt.Sprintf("$r%d", i-1))

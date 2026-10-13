@@ -89,6 +89,81 @@ instance withInterface_access_store_a (l : Loc) (v : github_com.mit_pdos.perenni
 end def_
 end withInterface
 
+namespace bigStruct
+section def_
+
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+instance bigStruct_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct where
+  typedPointstoDef l v dq := iprop(
+    "a" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct go!"a" l) v.a' dq ∗
+    "b" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct go!"b" l) v.b' dq ∗
+    "c" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct go!"c" l) v.c' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance bigStruct_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct.underlying := by
+  solve_into_val_typed_struct
+
+instance bigStruct_access_load_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct go!"a" l) v.a' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct go!"a" l) v.a' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance bigStruct_access_store_a (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct) (a' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct go!"a" l) v.a' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct go!"a" l) a' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with a' := a' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance bigStruct_access_load_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct go!"b" l) v.b' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct go!"b" l) v.b' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance bigStruct_access_store_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct) (b' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct go!"b" l) v.b' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct go!"b" l) b' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with b' := b' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance bigStruct_access_load_c (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct go!"c" l) v.c' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct go!"c" l) v.c' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance bigStruct_access_store_c (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct) (c' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct go!"c" l) v.c' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct go!"c" l) c' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with c' := c' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.bigStruct) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end bigStruct
+
 namespace diskWrapper
 section def_
 

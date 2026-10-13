@@ -39,11 +39,14 @@ end error
 section helpers
 variable [FfiSyntax] [GoGlobalContext]
 
+/-- `min(x, y)` as `x < y`'s choice; not for floats, which goose refuses (Go's `min` of a
+NaN is a NaN, and `min(-0, +0)` is `-0`). -/
 def min.impl (t : go.GoType) (n : Nat) : val :=
   match n with
   | 2 => λ: "x" "y", if: ("x" <⟨t⟩ "y") then "x" else "y"
   | _ => LitV LitPoison
 
+/-- `max(x, y)`; not for floats (see `min.impl`). -/
 def max.impl (t : go.GoType) (n : Nat) : val :=
   match n with
   | 2 => λ: "x" "y", if: "x" >⟨t⟩ "y" then "x" else "y"
@@ -72,6 +75,9 @@ def Pointer : go.GoType := go.Named go!"unsafe.Pointer" []
 def Add : GoString := go!"unsafe.Add"
 /-- `unsafe.Slice(ptr, len)`: the slice of `len` elements from `ptr`. -/
 def Slice : GoString := go!"unsafe.Slice"
+/-- `(*[n]T)(ptr)[lo:hi:max]`, which goose emits as one operation (not a conversion
+followed by a slice): only the `max` elements are accessed, not the whole array. -/
+def ArraySlice : GoString := go!"unsafe.ArraySlice"
 
 class Semantics [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] : Prop where
   go_zero_val_Pointer : go.TypeReprUnderlying Pointer Loc
@@ -162,7 +168,7 @@ variable [FfiSyntax] [GoSemanticsFunctions]
 mutual
 /-- `Reinterpretable t`: memory reached through an `unsafe.Pointer` may be accessed as a `t`
 (`(*t)(p)`, `unsafe.Slice`, `UnsafeSemantics`): numbers, and arrays and structs of them
-of at most 16 bytes (`SizeAtMost16`) without padding (`ReinterpretableFields`, `StructSize`). Such a value is its bytes, in the model as
+without padding (`ReinterpretableFields`, `StructSize`). Such a value is its bytes, in the model as
 in Go, so reading or writing it over any bytes means what it means in Go; `UnsafeSemantics`
 also checks that the memory accessed is bytes (`CheckBytes`). Not the other types, whose
 model representation is not Go's bytes (a pointer, a string, an interface, a map, a
@@ -181,12 +187,11 @@ inductive Reinterpretable : go.GoType → Prop
   | int : Reinterpretable go.int
   | float32 : Reinterpretable go.float32
   | float64 : Reinterpretable go.float64
-  | array (n : Int) (t : go.GoType) (h : Reinterpretable t) (V : Type) [ZeroVal V]
-      (hr : TypeRepr (go.ArrayType n t) V) (hsz : typeSize V ≤ 16) :
+  | array (n : Int) (t : go.GoType) (h : Reinterpretable t) :
       Reinterpretable (go.ArrayType n t)
   | struct (fds fds' : List go.field_decl) (heq : EqualsUnfold fds fds') (sum : Int)
       (h : ReinterpretableFields fds' sum) (V : Type) [ZeroVal V]
-      (hr : TypeRepr (go.StructType fds) V) (hsz : typeSize V = sum) (hle : sum ≤ 16) :
+      (hr : TypeRepr (go.StructType fds) V) (hsz : typeSize V = sum) :
       Reinterpretable (go.StructType fds)
   | named (t u : go.GoType) (hu : IsUnderlying t u) (h : Reinterpretable u) : Reinterpretable t
 
@@ -216,22 +221,13 @@ sizes' sum; proofs give it per struct. -/
 class StructSize (t : go.GoType) (sum : Int) : Prop where
   size : ∀ (V : Type) [ZeroVal V], TypeRepr t V → typeSize V = sum
 
-/-- A type of at most 16 bytes, for `Reinterpretable`: gc copies a value of at most 16
-bytes in one move, but a larger one may be copied in a forward loop (even an array, as in
-`*p = [6]int(*q)`; only `*p = *q` is a `memmove`), which two overlapping views of the same
-bytes would corrupt where the model copies the value whole. (Converting a slice to an array
-pointer, stuck today, gives such views too.) Proofs give it per array or struct type. -/
-class SizeAtMost16 (t : go.GoType) : Prop where
-  le : ∀ (V : Type) [ZeroVal V], TypeRepr t V → typeSize V ≤ 16
-
-instance (n : Int) (t : go.GoType) [h : Reinterpretable t] {V : Type} [ZeroVal V]
-    [hr : TypeRepr (go.ArrayType n t) V] [hs : SizeAtMost16 (go.ArrayType n t)] :
-    Reinterpretable (go.ArrayType n t) := .array n t h V hr (hs.le V hr)
+instance (n : Int) (t : go.GoType) [h : Reinterpretable t] :
+    Reinterpretable (go.ArrayType n t) := .array n t h
 instance (fds fds' : List go.field_decl) [heq : EqualsUnfold fds fds'] {sum : Int}
     [h : ReinterpretableFields fds' sum] {V : Type} [ZeroVal V] [hr : TypeRepr (go.StructType fds) V]
-    [hsz : StructSize (go.StructType fds) sum] [hs : SizeAtMost16 (go.StructType fds)] :
+    [hsz : StructSize (go.StructType fds) sum] :
     Reinterpretable (go.StructType fds) :=
-  .struct fds fds' heq sum h V hr (hsz.size V hr) (by have := hs.le V hr; rw [hsz.size V hr] at this; exact this)
+  .struct fds fds' heq sum h V hr (hsz.size V hr)
 instance (priority := low) (t u : go.GoType) [hu : IsUnderlying t u] [h : Reinterpretable u] :
     Reinterpretable t := .named t u hu h
 instance (n : GoString) (t : go.GoType) (fs : List go.field_decl) {sum : Int} [h : Reinterpretable t]
@@ -1249,6 +1245,12 @@ def pointerAddr (off : Int) : Expr :=
   gl((((ArbitraryInt %⟨go.uint64⟩ #(W64 (2 ^ 45 - 1))) +⟨go.uint64⟩ #(W64 1)) *⟨go.uint64⟩
       #(W64 8)) +⟨go.uint64⟩ #(W64 (off % 8)))
 
+/-- A copy of `n` bytes from `src` to `dst` that gc's code cannot corrupt: the same
+location, at most 16 bytes (gc loads them all before storing), different allocations, or
+disjoint ranges. -/
+def NoPartialOverlap (n : Int) (dst src : Loc) : Prop :=
+  dst = src ∨ n ≤ 16 ∨ dst.locCar ≠ src.locCar ∨ n ≤ dst.locOff - src.locOff ∨ n ≤ src.locOff - dst.locOff
+
 /-- The rest of package `unsafe` on linux/amd64: `uintptr(p)`, the difference of two such
 conversions in one expression, `unsafe.Add` and `unsafe.Slice`. The conversion of a
 `uintptr` to an `unsafe.Pointer` is not modeled (stuck), except in the form
@@ -1262,6 +1264,15 @@ class UnsafeSemantics [GoSemanticsFunctions] : Prop where
     ⟦Convert unsafe.Pointer (go.PointerType elem), #l⟧ ⤳[under]
       (if l = null then #null
        else Seq (CheckBytes (Val (PairV #l (LitV (LitInt (W64 (typeSize V))))))) (Val #l))
+  /-- `CheckCopy t (dst, src)` before `dst = src` (goose emits it when `src` is in memory):
+  gc copies a struct or array of more than 16 bytes from memory to memory in forward chunks
+  (`OpMove`; a `memmove` only for `*p = *q` of an array type), so when the two ranges
+  overlap partially, which only `unsafe` views of the same bytes can arrange, it reads
+  bytes it has already overwritten, while the model loads the value whole and stores it.
+  Such a copy is stuck (there is no step). -/
+  check_copy (t : go.GoType) {V : Type} [ZeroVal V] [TypeRepr t V] (dst src : Loc)
+      (h : NoPartialOverlap (typeSize V) dst src) :
+    ⟦CheckCopy t, (#dst, #src)⟧ ⤳ #()
   /-- `(*t)(nil)` is `nil`, for any `t` (nothing is reinterpreted). -/
   convert_unsafe_nil_to_pointer (elem : go.GoType) :
     ⟦Convert unsafe.Pointer (go.PointerType elem), #null⟧ ⤳[under] #null
@@ -1320,14 +1331,27 @@ class UnsafeSemantics [GoSemanticsFunctions] : Prop where
              CheckBytes (Convert (go.PointerType t) «unsafe».Pointer "p",
                "n" *⟨go.int⟩ #(W64 (typeSize V)))) ;;
           InternalMakeSlice ("p", "n", "n"))) : val)
+  /-- `(*[n]t)(p)[lo:hi:max]` (`p` an `unsafe.Pointer`; the bounds `int`s): the bounds and
+  `nil` checks of slicing a pointer to an array of `n` elements (pure, as
+  `fullSlice_array_step_pure`), and the `max` elements' cells bytes (`CheckBytes`), as gc's
+  `-d=checkptr` checks only them for this form. The array `[n]t` may be larger than the
+  allocation (bbolt's `(*[maxAllocSize]byte)(p)[i:j:j]`): `(*[n]t)(p)` alone checks all `n`
+  elements. -/
+  array_slice_unfold (n : Int) (t : go.GoType) [Reinterpretable t] {V : Type} [ZeroVal V]
+      [TypeRepr t V] :
+    FuncUnfold «unsafe».ArraySlice [go.ArrayType n t] (λ: "p" "lo" "hi" "max",
+      let: "s" := FullSlice (go.ArrayType n t) ("p", "lo", "hi", "max") in
+      (if: "max" =⟨go.int⟩ #(W64 0) then #()
+       else CheckBytes ("p", "max" *⟨go.int⟩ #(W64 (typeSize V)))) ;;
+      "s")
 
 attribute [instance] UnsafeSemantics.convert_unsafe_to_pointer
   UnsafeSemantics.convert_unsafe_nil_to_pointer
   UnsafeSemantics.convert_pointer_to_uintptr UnsafeSemantics.ptr_diff
-  UnsafeSemantics.add_unfold UnsafeSemantics.slice_unfold
+  UnsafeSemantics.add_unfold UnsafeSemantics.slice_unfold UnsafeSemantics.array_slice_unfold
 export UnsafeSemantics (convert_unsafe_to_pointer convert_unsafe_nil_to_pointer
   convert_pointer_to_uintptr ptr_diff add_unfold
-  slice_unfold)
+  slice_unfold array_slice_unfold check_copy)
 
 class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   /-- A value of a predeclared type is allocated as a block of its size (`allocEncoded`),

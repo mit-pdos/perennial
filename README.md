@@ -87,8 +87,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   with the default `GOAMD64=v1`, where gc does not fuse `x*y+z` into one
   rounding as it may with `v3`; float `==` is IEEE equality on the bits, so a NaN
   is not equal to itself and `-0 == +0`, and `<` is `≤` and not `==`; goose
-  refuses a map whose key type contains a float, and a type argument that
-  contains one, since the model's maps compare keys by their bits), and a value with no byte
+  refuses a map whose key type contains a float, a type argument that contains
+  one, a conversion of a float-containing value to an interface (which could then be
+  a map key) and `min`/`max` of floats, since the model's maps compare keys by their
+  bits and its `min` is `<`'s choice), and a value with no byte
   representation (a pointer, string, slice, interface, func, map, chan, `bool`)
   as itself in its first cell followed by tails `LitTail k i` that record its
   size and position; padding and fresh cells are `LitPad`. Typed loads and stores go through multi-cell primitives
@@ -117,12 +119,25 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `unsafe.Slice(p, n)` check that the cells they reach (`T`'s from `p`, those from
   `p` to `p + n`, the slice's) are bytes (`CheckBytes`), else they are stuck; and `T`
   (the element type, for `unsafe.Slice`) must be `go.Reinterpretable`: numbers, and
-  arrays and structs of them of at most 16 bytes (`go.SizeAtMost16`: gc copies a larger
-  one in a forward loop, which overlapping views would corrupt) without padding (their
-  fields' sizes add up to theirs, `go.StructSize`), whose
+  arrays and structs of them without padding (their fields' sizes add up to theirs,
+  `go.StructSize`), whose
   values are their bytes in the model as in Go. So no pointer, string, interface,
   map, channel, function, `bool`, mutex or padding is ever reinterpreted, and the
-  model's representation of them never shows. `(*T)(nil)` is `nil`. `Sizeof`,
+  model's representation of them never shows. gc copies a struct or array of more than
+  16 bytes from memory to memory in forward chunks, which views that overlap partially
+  (arranged through `unsafe`) would corrupt, while the model copies the value whole: so
+  before `dst = src` with `src` a variable of struct, array or type-parameter type, goose
+  emits `CheckCopy t (&dst, &src)`, stuck unless the copy cannot overlap partially
+  (`go.NoPartialOverlap`: the same location, at most 16 bytes, different allocations or
+  disjoint ranges; `wp_check_copy`, and `pointstoVals_noPartialOverlap` from owning
+  both); not when either side is part of a local variable whose address is never taken.
+  The source is found through conversions that keep the representation; goose refuses
+  a multiple assignment and a `for … = range` over a slice or array pointer that copy
+  such a value from memory (gc copies them in place too). `(*[n]T)(p)[i:j:k]`, which
+  bbolt uses with `n` far beyond the allocation, is one operation
+  (`unsafe.ArraySlice`, `wp_unsafe_array_slice`): the slice's bounds against `n` and
+  the `k` elements' bytes, which is what gc's `-d=checkptr` checks for this form;
+  `(*[n]T)(p)` alone checks all `n` elements. `(*T)(nil)` is `nil`. `Sizeof`,
   `Alignof` and `Offsetof` are constants; `uintptr(p)` is an unspecified address in
   `[8, 2^48)` congruent to `p`'s offset modulo 8 (an allocation's address is
   8-aligned), chosen anew at each conversion, so a proof cannot depend on where a

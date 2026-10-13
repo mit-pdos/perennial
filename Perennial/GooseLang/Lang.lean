@@ -203,6 +203,9 @@ inductive GoInstruction where
   | CheckComparable (t : go.GoType)
   | GoLoad (t : go.GoType)
   | GoStore (t : go.GoType)
+  /-- `CheckCopy t (dst, src)`: goose emits it before an assignment `dst = src` of a value of
+  type `t` read from memory (`go.UnsafeSemantics.check_copy`). -/
+  | CheckCopy (t : go.GoType)
   | GoAlloc (t : go.GoType)
   | GoPrealloc
   | GoZeroVal (t : go.GoType)
@@ -345,7 +348,7 @@ export GoOperator (GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemai
   GoOr GoXor GoBitClear)
 export GoShiftOperator (GoShiftl GoShiftr)
 export GoUnaryOperator (GoPos GoNeg GoNot GoComplement)
-export GoInstruction (AngelicExit Convert GoOp GoShift GoUnOp CheckComparable GoLoad GoStore GoAlloc
+export GoInstruction (AngelicExit Convert GoOp GoShift GoUnOp CheckComparable GoLoad GoStore CheckCopy GoAlloc
   GoPrealloc GoZeroVal FuncResolve MethodResolve TypeAssert TypeAssert2 PackageInitCheck
   PackageInitStart PackageInitFinish GlobalVarAddr StructFieldRef StructFieldGet StructFieldSet
   InternalSliceLen InternalSliceCap InternalDynamicArrayAlloc InternalMakeSlice IndexRef Index

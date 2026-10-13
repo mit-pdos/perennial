@@ -172,6 +172,59 @@ theorem wp_ptr_diff (l1 l2 : Loc) :
     iapply HΦ; ipureintro; intro h; exact absurd h hc
 
 
+/-- `CheckCopy t (dst, src)`, the check goose emits before `dst = src` with `src` in memory:
+it steps when the copy cannot overlap partially. -/
+theorem wp_check_copy (t : go.GoType) {V : Type} [ZeroVal V] [TypeRepr t V] (dst src : Loc)
+    (h : go.NoPartialOverlap (typeSize V) dst src) :
+    {{ (True : IProp GF) }}
+      (App (Val (GoInstruction (CheckCopy t))) (Val (PairV #dst #src))) @ s; E
+    {{ RET #(); True }} := by
+  haveI := go.check_copy t dst src h
+  iintro %Φ _ HΦ
+  wp_pures
+  iapply HΦ; itrivial
+
+/-- Owning all of `n` cells from `dst` and some of `n` cells from `src` rules out a partial
+overlap: they would share a cell. -/
+theorem pointstoVals_noPartialOverlap (dst src : Loc) (dq : DFrac) (vs ws : List val) (n : Int)
+    (h1 : (vs.length : Int) = n) (h2 : (ws.length : Int) = n) :
+    pointstoVals (GF := GF) dst (.own 1) vs ∗ pointstoVals src dq ws ⊢
+      ⌜go.NoPartialOverlap n dst src⌝ := by
+  by_cases hno : go.NoPartialOverlap n dst src
+  · iintro -; ipureintro; exact hno
+  unfold go.NoPartialOverlap at hno
+  simp only [not_or] at hno
+  obtain ⟨hne, -, hcar, hlt1, hlt2⟩ := hno
+  have hcar : dst.locCar = src.locCar := Classical.not_not.mp hcar
+  have hoff : dst.locOff ≠ src.locOff := by
+    intro ho; apply hne; cases dst; cases src; simp_all
+  unfold pointstoVals
+  iintro ⟨H1, H2⟩
+  -- the cell at the larger of the two offsets is in both ranges
+  by_cases hd : src.locOff < dst.locOff
+  · have hj : (dst.locOff - src.locOff).toNat < ws.length := by omega
+    obtain ⟨w, hw⟩ : ∃ w, ws[(dst.locOff - src.locOff).toNat]? = some w :=
+      ⟨_, List.getElem?_eq_getElem hj⟩
+    obtain ⟨v, hv⟩ : ∃ v, vs[0]? = some v := ⟨_, List.getElem?_eq_getElem (by omega)⟩
+    ihave Hv := BigSepL.bigSepL_lookup (Φ := fun j vj => heapPointsto (dst +ₗ (j : Int)) (.own 1) vj) hv $$ H1
+    ihave Hw := BigSepL.bigSepL_lookup (Φ := fun j vj => heapPointsto (src +ₗ (j : Int)) dq vj) hw $$ H2
+    have hl : src +ₗ ((dst.locOff - src.locOff).toNat : Int) = dst +ₗ ((0 : Nat) : Int) := by
+      cases dst; cases src; simp only [Loc.add, Loc.mk.injEq] at *; omega
+    rw [hl]
+    icombine Hv Hw gives %hv'
+    exact absurd hv'.1 CMRA.not_valid_excl_op_left
+  · have hj : (src.locOff - dst.locOff).toNat < vs.length := by omega
+    obtain ⟨v, hv⟩ : ∃ v, vs[(src.locOff - dst.locOff).toNat]? = some v :=
+      ⟨_, List.getElem?_eq_getElem hj⟩
+    obtain ⟨w, hw⟩ : ∃ w, ws[0]? = some w := ⟨_, List.getElem?_eq_getElem (by omega)⟩
+    ihave Hv := BigSepL.bigSepL_lookup (Φ := fun j vj => heapPointsto (dst +ₗ (j : Int)) (.own 1) vj) hv $$ H1
+    ihave Hw := BigSepL.bigSepL_lookup (Φ := fun j vj => heapPointsto (src +ₗ (j : Int)) dq vj) hw $$ H2
+    have hl : dst +ₗ ((src.locOff - dst.locOff).toNat : Int) = src +ₗ ((0 : Nat) : Int) := by
+      cases dst; cases src; simp only [Loc.add, Loc.mk.injEq] at *; omega
+    rw [hl]
+    icombine Hv Hw gives %hv'
+    exact absurd hv'.1 CMRA.not_valid_excl_op_left
+
 /-- `unsafe.Slice(p, n)` for a `Reinterpretable` element type of positive size, over the
 slice's bytes. -/
 theorem wp_unsafe_slice (t : go.GoType) [go.Reinterpretable t] {V : Type} [ZeroVal V]
@@ -242,6 +295,48 @@ theorem wp_unsafe_slice (t : go.GoType) [go.Reinterpretable t] {V : Type} [ZeroV
   wp_auto
   try iapply HΦ $$ Hl
 
+
+/-- `(*[n]t)(p)[lo:hi:max]` (`unsafe.ArraySlice`) within bounds, over the `max` elements'
+bytes. -/
+theorem wp_unsafe_array_slice (n : Int) (t : go.GoType) [go.Reinterpretable t] {V : Type}
+    [ZeroVal V] [TypeRepr t V] (p : Loc) (lo hi mx : w64) (dq : DFrac) (bs : List w8)
+    (hp : p ≠ null)
+    (hb : 0 ≤ sint.Z lo ∧ sint.Z lo ≤ sint.Z hi ∧ sint.Z hi ≤ sint.Z mx ∧ sint.Z mx ≤ n)
+    (hpos : 0 < sint.Z mx) (hmem : sint.Z mx * typeSize V < 2 ^ 63)
+    (hlen : (bs.length : Int) = sint.Z mx * typeSize V) :
+    {{ (pointstoVals (GF := GF) p dq (byteCells bs)) }}
+      (App (App (App (App (Val #(functions «unsafe».ArraySlice [go.ArrayType n t])) (Val #p))
+        (Val #lo)) (Val #hi)) (Val #mx)) @ s; E
+    {{ RET #(slice.mk (arrayIndexRef V (sint.Z lo) p) (hi - lo) (mx - lo));
+        pointstoVals p dq (byteCells bs) }} := by
+  iintro %Φ Hl HΦ
+  wp_func_call
+  wp_auto
+  rw [if_neg hp, if_pos hb]
+  wp_auto
+  rw [decide_eq_false (show mx ≠ W64 0 by intro h; subst h; simp at hpos)]
+  wp_auto
+  have hsz := go.typeSize_nonneg V
+  have hbn : uint.nat (mx * W64 (typeSize V)) = bs.length := by
+    have hmu : uint.Z (mx * W64 (typeSize V)) = sint.Z mx * typeSize V := by
+      have hszb : typeSize V < 2 ^ 63 := by
+        have : 1 * typeSize V ≤ sint.Z mx * typeSize V :=
+          Int.mul_le_mul_of_nonneg_right (by omega) hsz
+        omega
+      have hszu : uint.Z (W64 (typeSize V)) = typeSize V := by
+        simp only [uint.Z, W64, BitVec.toNat_ofInt]; omega
+      have hnu : uint.Z mx = sint.Z mx := by word
+      have e : uint.Z (mx * W64 (typeSize V)) = (uint.Z mx * uint.Z (W64 (typeSize V))) % 2 ^ 64 := by
+        simp only [uint.Z, BitVec.toNat_mul, Int.natCast_emod, Int.natCast_mul]; rfl
+      rw [e, hnu, hszu]
+      exact Int.emod_eq_of_lt (Int.mul_nonneg (by omega) hsz) (by omega)
+    simp only [uint.Z] at hmu; simp only [uint.nat]; omega
+  wp_bind (Primitive1 _ _)
+  wp_apply_core (wp_CheckBytes p dq bs (mx * W64 (typeSize V)) hbn) $$ [Hl]
+  · iexact Hl
+  iintro Hl
+  wp_auto
+  try iapply HΦ $$ Hl
 
 /-- A `float64` operation's result (`go.floatResult64`): some `float64`, its bits being
 observable through package `unsafe`, so a NaN result is any NaN. -/

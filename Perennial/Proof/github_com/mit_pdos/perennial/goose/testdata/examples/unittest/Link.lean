@@ -12,6 +12,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.VoidImplicitReturnInBranch
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.basicTypeSwitch
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.checkedTypeAssert
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.copyThroughPointers
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.fancyTypeSwitch
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.ifJoinDemo
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.intSliceLoop
@@ -63,6 +64,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wp_basicT
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wp_checkedTypeAssert : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.checkedTypeAssert.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unittest.checkedTypeAssert.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wp_copyThroughPointers : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.copyThroughPointers.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.unittest.copyThroughPointers.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wp_fancyTypeSwitch : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.fancyTypeSwitch.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unittest.fancyTypeSwitch.wp_proof

@@ -332,6 +332,14 @@ type StoreStmt struct {
 	X   Expr
 }
 
+// CheckCopyStmt checks that copying a value of type Ty from Src to Dst cannot
+// overlap partially (go.UnsafeSemantics.check_copy).
+type CheckCopyStmt struct {
+	Ty  Expr
+	Dst Expr
+	Src Expr
+}
+
 type IfExpr struct {
 	Cond Expr
 	Then Expr
