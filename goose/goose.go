@@ -399,7 +399,6 @@ func (ctx *Ctx) callExpr(s *ast.CallExpr) glang.Expr {
 	} else if e, ok := ctx.maybeHandleSpecialBuiltin(s); ok {
 		return e
 	} else {
-		ctx.checkCallOrder(s)
 		var args []glang.Expr
 		for i := range ctx.getNumParams(s.Fun) {
 			args = append(args, glang.IdentExpr(fmt.Sprintf("$a%d", i)))
@@ -1028,7 +1027,6 @@ func (ctx *Ctx) indexExpr(e *ast.IndexExpr, multipleBindings bool) glang.Expr {
 	xTy := ctx.typeOf(e.X).Underlying()
 	switch xTy := xTy.(type) {
 	case *types.Map:
-		ctx.checkMapIndexOrder(e)
 		if multipleBindings {
 			return glang.NewCallExpr(glang.VerbatimExpr("map.lookup2"),
 				ctx.glangType(e.X, xTy.Key()),
@@ -1268,7 +1266,6 @@ func (ctx *Ctx) switchStmt(s *ast.SwitchStmt, cont glang.Expr) (e glang.Expr) {
 			}
 		}
 
-		// Go evaluates a case's expressions left to right, up to the first match
 		cond := getCond(0)
 		for i := 1; i < len(c.List); i++ {
 			cond = glang.BinaryExpr{
@@ -1276,7 +1273,7 @@ func (ctx *Ctx) switchStmt(s *ast.SwitchStmt, cont glang.Expr) (e glang.Expr) {
 					OpId: glang.OpLOr,
 					Type: glang.VerbatimExpr("go.bool"),
 				},
-				X: cond, Y: getCond(i)}
+				X: getCond(i), Y: cond}
 		}
 
 		e = glang.IfExpr{
@@ -1742,7 +1739,6 @@ func (ctx *Ctx) assignFromTo(lhs ast.Expr, rhs glang.Expr, cont glang.Expr) glan
 		targetTy := ctx.typeOf(lhs.X)
 		switch t := targetTy.Underlying().(type) {
 		case *types.Map:
-			ctx.checkMapIndexOrder(lhs)
 			return glang.NewDoSeq(glang.NewCallExpr(glang.VerbatimExpr("map.insert"),
 				ctx.glangType(lhs.Index, t.Key()),
 				ctx.expr(lhs.X),
@@ -1925,70 +1921,6 @@ func hasInterfaceSlot(t types.Type) bool {
 	return false
 }
 
-// hasEffects reports whether evaluating e may call a function or receive from
-// a channel: the events whose order Go specifies (lexical left-to-right). A
-// conversion is not a call; the body of a function literal is not evaluated.
-func (ctx *Ctx) hasEffects(e ast.Expr) bool {
-	found := false
-	ast.Inspect(e, func(n ast.Node) bool {
-		switch n := n.(type) {
-		case *ast.FuncLit:
-			return false
-		case *ast.CallExpr:
-			if tv, ok := ctx.info.Types[n.Fun]; !ok || !tv.IsType() {
-				found = true
-			}
-		case *ast.UnaryExpr:
-			if n.Op == token.ARROW {
-				found = true
-			}
-		}
-		return !found
-	})
-	return found
-}
-
-// targetOperands gives the operands Go evaluates for an assignment target (the
-// operand of an index, selector or indirection).
-func targetOperands(e ast.Expr) []ast.Expr {
-	switch e := ast.Unparen(e).(type) {
-	case *ast.IndexExpr:
-		return []ast.Expr{e.X, e.Index}
-	case *ast.SelectorExpr:
-		return []ast.Expr{e.X}
-	case *ast.StarExpr:
-		return []ast.Expr{e.X}
-	}
-	return nil
-}
-
-// checkCallOrder refuses a call (also in go and defer) whose function value or
-// receiver and arguments both call a function or receive: the translation
-// evaluates the arguments first, Go left to right.
-func (ctx *Ctx) checkCallOrder(s *ast.CallExpr) {
-	if ctx.hasEffects(s.Fun) && ctx.anyEffects(s.Args...) {
-		ctx.unsupported(s, "evaluation order: a call whose function or receiver and arguments both call a function or receive")
-	}
-}
-
-// checkMapIndexOrder refuses m[k] where m and k both call a function or
-// receive: the map primitives take the key as a curried argument, which
-// GooseLang evaluates before the map, while Go evaluates m first.
-func (ctx *Ctx) checkMapIndexOrder(e *ast.IndexExpr) {
-	if ctx.hasEffects(e.X) && ctx.hasEffects(e.Index) {
-		ctx.unsupported(e, "evaluation order: a map index whose map and key both call a function or receive")
-	}
-}
-
-func (ctx *Ctx) anyEffects(es ...ast.Expr) bool {
-	for _, e := range es {
-		if ctx.hasEffects(e) {
-			return true
-		}
-	}
-	return false
-}
-
 // This handles conversions arising from the notion of "assignability" in the Go spec.
 func (ctx *Ctx) handleImplicitConversion(n locatable, from, to types.Type, e glang.Expr) glang.Expr {
 	if to == nil {
@@ -2036,11 +1968,6 @@ func (ctx *Ctx) assignStmtWith(s *ast.AssignStmt, scope func(glang.Expr) glang.E
 	// evaluates their index and indirection operands before any assignment
 	// (the targets are bound to $l<i>, or $lm<i> and $lk<i> for a map, below).
 	multi := len(s.Lhs) > 1
-	// with one target the translation evaluates the right side before the
-	// target's operands; Go evaluates them left to right
-	if !multi && ctx.anyEffects(targetOperands(s.Lhs[0])...) && ctx.anyEffects(s.Rhs...) {
-		ctx.unsupported(s, "evaluation order: an assignment whose target's operands and right side both call a function or receive")
-	}
 	var lhsLets []glang.LetExpr
 	for i := len(s.Lhs); i > 0; i-- {
 		lhs, rhs := s.Lhs[i-1], glang.IdentExpr(fmt.Sprintf("$r%d", i-1))
@@ -2146,10 +2073,6 @@ func (ctx *Ctx) assignOpStmt(s *ast.AssignStmt, cont glang.Expr) glang.Expr {
 	if !ok {
 		ctx.unsupported(s, "unsupported assign+update operation %v", s.Tok)
 	}
-	// the translation evaluates x's operands twice; Go once
-	if ctx.anyEffects(targetOperands(s.Lhs[0])...) {
-		ctx.unsupported(s, "evaluation order: x op= y where x's operands call a function or receive")
-	}
 	// construct s.lhs + s.rhs as a Go AST fragment
 	rhs := ctx.binExpr(&ast.BinaryExpr{
 		X:  s.Lhs[0],
@@ -2161,10 +2084,6 @@ func (ctx *Ctx) assignOpStmt(s *ast.AssignStmt, cont glang.Expr) glang.Expr {
 }
 
 func (ctx *Ctx) incDecStmt(stmt *ast.IncDecStmt, cont glang.Expr) glang.Expr {
-	// the translation evaluates x's operands twice; Go once
-	if ctx.anyEffects(targetOperands(stmt.X)...) {
-		ctx.unsupported(stmt, "evaluation order: x++ or x-- where x's operands call a function or receive")
-	}
 	opId := glang.OpPlus
 	if stmt.Tok == token.DEC {
 		opId = glang.OpMinus
@@ -2229,7 +2148,6 @@ func breaksOut(body *ast.BlockStmt) bool {
 }
 
 func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
-	ctx.checkCallOrder(e.Call)
 	args := make([]glang.Expr, 0, len(e.Call.Args))
 	for i := range len(e.Call.Args) {
 		args = append(args, glang.IdentExpr(fmt.Sprintf("$a%d", i)))
@@ -2398,7 +2316,6 @@ func (ctx *Ctx) returnStmt(s *ast.ReturnStmt, cont glang.Expr) glang.Expr {
 }
 
 func (ctx *Ctx) deferStmt(s *ast.DeferStmt, cont glang.Expr) (expr glang.Expr) {
-	ctx.checkCallOrder(s.Call)
 	ctx.usesDefer = true
 	args := make([]glang.Expr, 0, len(s.Call.Args))
 	for i := range len(s.Call.Args) {
@@ -2673,14 +2590,13 @@ func (ctx *Ctx) typeSwitchStmt(s *ast.TypeSwitchStmt, cont glang.Expr) (e glang.
 					)
 				}
 			}
-			// the case's types are tested left to right
 			cond := getCond(0)
-			for i := 1; i < len(c.List); i++ {
+			for i := range c.List[1:] {
 				cond = glang.BinaryExpr{Op: glang.BinOp{
 					OpId: glang.OpLOr,
 					Type: glang.VerbatimExpr("go.bool"),
 				},
-					X: cond, Y: getCond(i)}
+					X: getCond(i), Y: cond}
 			}
 			e = glang.LetExpr{Names: []string{"$ok"}, ValExpr: cond, Cont: e}
 		} else {
