@@ -192,7 +192,7 @@ noncomputable def DSPExample.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "$r0" (App (Val (GoInstruction (TypeAssert (go.GoType.PointerType go.int)))) (Fst (App (Val (chan.receive go.any)) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (Var "c")))))
+  (Let "$r0" (App (Val (GoInstruction (TypeAssert go.any (go.GoType.PointerType go.int)))) (Fst (App (Val (chan.receive go.any)) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (Var "c")))))
   (Let "ptr" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.int)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.int)))) (Var "ptr"))) (Val #(W64 2))))

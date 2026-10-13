@@ -179,8 +179,10 @@ inductive GoInstruction where
   | GoZeroVal (t : go.GoType)
   | FuncResolve (f : GoString) (type_args : List go.GoType)
   | MethodResolve (t : go.GoType) (m : GoString)
-  | TypeAssert (t : go.GoType)
-  | TypeAssert2 (t : go.GoType)
+  /-- `x.(t)` for `x` of the interface type `from_` -/
+  | TypeAssert (from_ t : go.GoType)
+  /-- `v, ok := x.(t)` for `x` of the interface type `from_` -/
+  | TypeAssert2 (from_ t : go.GoType)
   | PackageInitCheck (pkg_name : GoString)
   | PackageInitStart (pkg_name : GoString)
   | PackageInitFinish (pkg_name : GoString)

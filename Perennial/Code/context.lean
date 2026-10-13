@@ -388,7 +388,7 @@ noncomputable def Cause.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad go.error))) (Var "err")))))
-  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.PointerType cancelCtx.ty)))) (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.int) go.any))) (App (Val (GoInstruction (GlobalVarAddr cancelCtxKey))) (Val #())))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.any (go.GoType.PointerType cancelCtx.ty)))) (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.int) go.any))) (App (Val (GoInstruction (GlobalVarAddr cancelCtxKey))) (Val #())))
   (App (App (Val (GoInstruction (MethodResolve Context.ty go!"Value"))) (App (Val (GoInstruction (GoLoad Context.ty))) (Var "c"))) (Var "$a0"))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
@@ -553,7 +553,7 @@ noncomputable def parentCancelCtx.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "done" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.PointerType cancelCtx.ty)))) (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.int) go.any))) (App (Val (GoInstruction (GlobalVarAddr cancelCtxKey))) (Val #())))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.any (go.GoType.PointerType cancelCtx.ty)))) (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.int) go.any))) (App (Val (GoInstruction (GlobalVarAddr cancelCtxKey))) (Val #())))
   (App (App (Val (GoInstruction (MethodResolve Context.ty go!"Value"))) (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent"))) (Var "$a0"))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
@@ -564,7 +564,7 @@ noncomputable def parentCancelCtx.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Value.ty) go!"Load"))) (App (Val (GoInstruction (StructFieldRef cancelCtx.ty go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType cancelCtx.ty)))) (Var "p")))) (Val #())))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.any (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Value.ty) go!"Load"))) (App (Val (GoInstruction (StructFieldRef cancelCtx.ty go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType cancelCtx.ty)))) (Var "p")))) (Val #())))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -647,7 +647,7 @@ noncomputable def removeChild.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType cancelCtx.ty)))) (Pair (Var "p") (Var "$r0"))))))))))))))
-  (Let "__p" (App (Val (GoInstruction (TypeAssert2 stopCtx.ty))) (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent")))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 Context.ty stopCtx.ty))) (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -704,7 +704,7 @@ noncomputable def cancelCtx.Done.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (Convert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (App (Val (GoInstruction (TypeAssert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoLoad go.any))) (Var "d")))))))
+  (App (Val (GoInstruction (Convert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (App (Val (GoInstruction (TypeAssert go.any (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoLoad go.any))) (Var "d")))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "d")) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil)))))
   (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) go.any))) (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -727,7 +727,7 @@ noncomputable def cancelCtx.Done.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef cancelCtx.ty go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType cancelCtx.ty)))) (Var "c")))) (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "d")) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil))))))
   (App (Val doReturn)
-  (App (Val (GoInstruction (Convert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (App (Val (GoInstruction (TypeAssert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoLoad go.any))) (Var "d")))))
+  (App (Val (GoInstruction (Convert (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))))) (App (Val (GoInstruction (TypeAssert go.any (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GoLoad go.any))) (Var "d")))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -748,7 +748,7 @@ noncomputable def cancelCtx.Err.impl [FfiSyntax] [GoGlobalContext] : val :=
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (TypeAssert go.error))) (App (Val (GoInstruction (GoLoad go.any))) (Var "err"))))))
+  (App (Val (GoInstruction (TypeAssert go.any go.error))) (App (Val (GoInstruction (GoLoad go.any))) (Var "err"))))))
   (App (Val doExecute)
   (Fst (App (Val (chan.receive (go.GoType.StructType []))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType cancelCtx.ty) go!"Done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType cancelCtx.ty)))) (Var "c"))) (Val #()))))))
   (App (Val doExecute)
@@ -804,7 +804,7 @@ noncomputable def cancelCtx.propagateCancel.impl [FfiSyntax] [GoGlobalContext] :
   (App (Val doExecute)
   (Let "$a0" (Val #(W32 1))
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int32.ty) go!"Add"))) (App (Val (GoInstruction (GlobalVarAddr goroutines))) (Val #()))) (Var "$a0")))))))
-  (Let "__p" (App (Val (GoInstruction (TypeAssert2 afterFuncer.ty))) (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent")))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 Context.ty afterFuncer.ty))) (App (Val (GoInstruction (GoLoad Context.ty))) (Var "parent")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -874,7 +874,7 @@ noncomputable def cancelCtx.propagateCancel.impl [FfiSyntax] [GoGlobalContext] :
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (GoLoad go.any))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil))))))
   (App (Val doExecute)
   (Let "$a0" (Val #false)
-  (Let "$a1" (App (Val (GoInstruction (TypeAssert go.error))) (App (Val (GoInstruction (GoLoad go.any))) (Var "err")))
+  (Let "$a1" (App (Val (GoInstruction (TypeAssert go.any go.error))) (App (Val (GoInstruction (GoLoad go.any))) (Var "err")))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (StructFieldRef cancelCtx.ty go!"cause"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType cancelCtx.ty)))) (Var "p"))))
   (App (App (App (App (Val (GoInstruction (MethodResolve canceler.ty go!"cancel"))) (App (Val (GoInstruction (GoLoad canceler.ty))) (Var "child"))) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -954,7 +954,7 @@ noncomputable def cancelCtx.cancel.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.error))) (Var "cause"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Value.ty) go!"Load"))) (App (Val (GoInstruction (StructFieldRef cancelCtx.ty go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType cancelCtx.ty)))) (Var "c")))) (Val #())))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.any (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Value.ty) go!"Load"))) (App (Val (GoInstruction (StructFieldRef cancelCtx.ty go!"done"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType cancelCtx.ty)))) (Var "c")))) (Val #())))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -1404,7 +1404,7 @@ noncomputable def value.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
   (Let "$y" (App (Val (GoInstruction (GoLoad Context.ty))) (Var "c"))
-  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.PointerType valueCtx.ty)))) (Var "$y"))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 Context.ty (go.GoType.PointerType valueCtx.ty)))) (Var "$y"))
   (Let "$x" (Fst (Var "__p"))
   (Let "$ok" (Snd (Var "__p"))
   (If (Var "$ok")
@@ -1418,7 +1418,7 @@ noncomputable def value.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef valueCtx.ty go!"val"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType valueCtx.ty)))) (Var "ctx")))))
   (App (Val doExecute)
   (Val #())))))
-  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.PointerType cancelCtx.ty)))) (Var "$y"))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 Context.ty (go.GoType.PointerType cancelCtx.ty)))) (Var "$y"))
   (Let "$x" (Fst (Var "__p"))
   (Let "$ok" (Snd (Var "__p"))
   (If (Var "$ok")
@@ -1432,7 +1432,7 @@ noncomputable def value.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (Convert Context.ty go.any))) (App (Val (GoInstruction (GoLoad Context.ty))) (Var "c"))))
   (App (Val doExecute)
   (Val #())))))
-  (Let "__p" (App (Val (GoInstruction (TypeAssert2 withoutCancelCtx.ty))) (Var "$y"))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 Context.ty withoutCancelCtx.ty))) (Var "$y"))
   (Let "$x" (Fst (Var "__p"))
   (Let "$ok" (Snd (Var "__p"))
   (If (Var "$ok")
@@ -1446,7 +1446,7 @@ noncomputable def value.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (Convert go.untypedNil go.any))) (Val UntypedNil)))
   (App (Val doExecute)
   (Val #())))))
-  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.PointerType timerCtx.ty)))) (Var "$y"))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 Context.ty (go.GoType.PointerType timerCtx.ty)))) (Var "$y"))
   (Let "$x" (Fst (Var "__p"))
   (Let "$ok" (Snd (Var "__p"))
   (If (Var "$ok")
@@ -1460,7 +1460,7 @@ noncomputable def value.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (Convert (go.GoType.PointerType cancelCtx.ty) go.any))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"cancelCtx"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "ctx")))))
   (App (Val doExecute)
   (Val #())))))
-  (Let "$ok" (If (Snd (App (Val (GoInstruction (TypeAssert2 backgroundCtx.ty))) (Var "$y"))) (Val #true) (Snd (App (Val (GoInstruction (TypeAssert2 backgroundCtx.ty))) (Var "$y"))))
+  (Let "$ok" (If (Snd (App (Val (GoInstruction (TypeAssert2 Context.ty backgroundCtx.ty))) (Var "$y"))) (Val #true) (Snd (App (Val (GoInstruction (TypeAssert2 Context.ty backgroundCtx.ty))) (Var "$y"))))
   (Let "$x" (Var "$y")
   (If (Var "$ok")
   (Let "ctx" (App (Val (GoInstruction (GoAlloc Context.ty))) (Var "$x"))

@@ -1136,14 +1136,17 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 }
 
 func (ctx *Ctx) typeAssertExpr(e *ast.TypeAssertExpr, multipleBindings bool) glang.Expr {
+	// the source (interface) type too: the assertion compares the dynamic type
+	// word with the itab for (target, source), as the compiler does
+	from := ctx.glangType(e.X, ctx.typeOf(e.X))
 	ty := ctx.glangType(e, ctx.typeOf(e.Type))
 	if multipleBindings {
 		return glang.NewCallExpr(glang.VerbatimExpr("TypeAssert2"),
-			ty,
+			from, ty,
 			ctx.expr(e.X),
 		)
 	}
-	return glang.NewCallExpr(glang.VerbatimExpr("TypeAssert"), ty, ctx.expr(e.X))
+	return glang.NewCallExpr(glang.VerbatimExpr("TypeAssert"), from, ty, ctx.expr(e.X))
 }
 
 func (ctx *Ctx) exprSpecial(e ast.Expr, multipleBindings bool) glang.Expr {
@@ -2371,6 +2374,7 @@ func (ctx *Ctx) typeSwitchStmt(s *ast.TypeSwitchStmt, cont glang.Expr) (e glang.
 				} else {
 					return glang.NewCallExpr(glang.VerbatimExpr("Snd"),
 						glang.NewCallExpr(glang.VerbatimExpr("TypeAssert2"),
+							ctx.glangType(y, ctx.typeOf(y)),
 							ctx.glangType(c.List[i], ty),
 							glang.IdentExpr("$y"),
 						),
@@ -2407,6 +2411,7 @@ func (ctx *Ctx) typeSwitchStmt(s *ast.TypeSwitchStmt, cont glang.Expr) (e glang.
 				e = glang.LetExpr{
 					Names: []string{"$x", "$ok"},
 					ValExpr: glang.NewCallExpr(glang.VerbatimExpr("TypeAssert2"),
+						ctx.glangType(y, ctx.typeOf(y)),
 						ctx.glangType(c.List[0], ty),
 						glang.IdentExpr("$y"),
 					),

@@ -62,8 +62,10 @@ class InterfaceSemantics : Prop where
             if isUntypedNil funder then #interface.nil
             else #(interface.mkOk from_ v)))
 
-  type_assert_step {t t_under : go.GoType} [t ↓u t_under] (i : GoInterface) :
-    ⟦TypeAssert t, #i⟧ ⤳
+  /-- `x.(t)`; this representation keeps the dynamic type in the value, so the
+  source type `from_` is not needed. -/
+  type_assert_step {from_ t t_under : go.GoType} [t ↓u t_under] (i : GoInterface) :
+    ⟦TypeAssert from_ t, #i⟧ ⤳
     (match i with
      | interface.nil => Panic "type assert failed"
      | interface.ok ii =>
@@ -72,9 +74,9 @@ class InterfaceSemantics : Prop where
          else
            if ii.ty = t then ii.v else Panic "type assert failed")
 
-  type_assert2_interface_step {t t_under : go.GoType} [t ↓u t_under] (i : GoInterface) {v : val}
-    [⟦GoZeroVal t, #()⟧ ⤳ Val v] :
-    ⟦TypeAssert2 t, #i⟧ ⤳
+  type_assert2_interface_step {from_ t t_under : go.GoType} [t ↓u t_under] (i : GoInterface)
+    {v : val} [⟦GoZeroVal t, #()⟧ ⤳ Val v] :
+    ⟦TypeAssert2 from_ t, #i⟧ ⤳
     glv(((match i with
       | interface.nil => v
       | interface.ok ii =>

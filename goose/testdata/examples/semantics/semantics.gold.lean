@@ -1771,7 +1771,7 @@ noncomputable def testBreakTypeSwitch.impl [FfiSyntax] [GoGlobalContext] : val :
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")) (Val #(W64 1)))))))))
   (App (Val catchBreak) (Let "$y" (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "x"))
-  (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.uint64))) (Var "$y"))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.InterfaceType []) go.uint64))) (Var "$y"))
   (Let "$x" (Fst (Var "__p"))
   (Let "$ok" (Snd (Var "__p"))
   (If (Var "$ok")
@@ -2812,7 +2812,7 @@ noncomputable def testTypeAssertionInterface.impl [FfiSyntax] [GoGlobalContext] 
   (Let "i" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [])))) (App (Val (GoInstruction (GoZeroVal (go.GoType.InterfaceType [])))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals NumStruct.ty))) (Pair (App (Val (GoInstruction (TypeAssert NumStruct.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "i"))) (Let "$v0" (Val #(W64 3))
+  (App (Val (GoInstruction (GoOp GoEquals NumStruct.ty))) (Pair (App (Val (GoInstruction (TypeAssert (go.GoType.InterfaceType []) NumStruct.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [])))) (Var "i"))) (Let "$v0" (Val #(W64 3))
   (App (Val (GoInstruction (CompositeLiteral NumStruct.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.int (Var "$v0")))]))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "i") (Var "$r0")))))))))
@@ -3110,7 +3110,7 @@ noncomputable def testDowncastInterface.impl [FfiSyntax] [GoGlobalContext] : val
   (Let "f" (App (Val (GoInstruction (GoAlloc Flora.ty))) (App (Val (GoInstruction (GoZeroVal Flora.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve Flora.ty go!"Petals"))) (App (Val (GoInstruction (GoLoad Flora.ty))) (Var "f"))) (Val #())) (App (App (Val (GoInstruction (MethodResolve Flower.ty go!"Petals"))) (App (Val (GoInstruction (TypeAssert Flower.ty))) (App (Val (GoInstruction (GoLoad Flora.ty))) (Var "f")))) (Val #())))))))
+  (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve Flora.ty go!"Petals"))) (App (Val (GoInstruction (GoLoad Flora.ty))) (Var "f"))) (Val #())) (App (App (Val (GoInstruction (MethodResolve Flower.ty go!"Petals"))) (App (Val (GoInstruction (TypeAssert Flora.ty Flower.ty))) (App (Val (GoInstruction (GoLoad Flora.ty))) (Var "f")))) (Val #())))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Flora.ty))) (Pair (Var "f") (Var "$r0")))))))))
   (App (Val doExecute)

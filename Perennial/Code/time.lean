@@ -853,7 +853,7 @@ noncomputable def goFunc.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "$go" (App (Val (GoInstruction (TypeAssert (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (GoLoad go.any))) (Var "arg")))
+  (Let "$go" (App (Val (GoInstruction (TypeAssert go.any (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (GoLoad go.any))) (Var "arg")))
   (App (Val doExecute)
   (Fork
   (App (Var "$go") (Val #())))))))))))))

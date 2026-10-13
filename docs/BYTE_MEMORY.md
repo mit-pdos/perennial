@@ -166,7 +166,14 @@ static data, like the generated `Assumptions` classes.
   conversion between interfaces with the same underlying type is the identity
   (as core's `convert_same` requires); `i.m` loads `itab.Fun[k]`, the code at
   that address loads the receiver from the data word and calls the method;
-  `i.(T)` compares the dynamic type word with `typeAddr T`. A conversion
+  `i.(T)` (`TypeAssert I T`: goose emits the source type) checks, as the
+  compiler does, the type word against `typeAddr T` when `I` is empty, and
+  otherwise that the itab is the one for `T` and `I` (its `Type` and `Inter`
+  words; the compiler compares the pointer with `go:itab.T,I`, the same test as
+  a Go binary has one itab per pair). Every lowering dispatches on the static
+  source type, not on the value, so memory reinterpreted through
+  `(*I2)(&a)` or `unsafe.Pointer` behaves as in Go: an `I2` holding an itab
+  for `I1` fails `.(T)` (Go panics; the model has no proof of success). A conversion
   between two different interface types is not the identity even when their
   underlying types are the same, since Go gives the value an itab for the
   target type; core's `convert_underlying` therefore no longer lifts
@@ -177,15 +184,6 @@ static data, like the generated `Assumptions` classes.
   are stuck by having no rule (the `NoGetitab` premise; `==` is a rule only for
   different or nil type words), not by a `Panic` that could be read as Go's
   behaviour.
-* **Known divergence (unsafe only).** `i.(T)` compares the dynamic type, not
-  the itab: Go compares the itab with `go:itab.T,I` for the static type `I`.
-  They agree while every value of static type `I` has an itab for `I`. Plain Go
-  cannot break that once core's pointer conversion between same-underlying
-  pointer types excludes interface bases (`(*I2)(&a)` for `a : I1`, now no
-  step); reinterpreting memory through `unsafe.Pointer` still can, and there
-  the model's assertion succeeds where Go panics. It is the val heap's general
-  problem with type punning (the old interface representation had it too) and
-  goes away when goose emits the source type of `TypeAssert`.
 * **The abstraction.** Program proofs see an interface value as an opaque
   `i : GoIface` (or `GoEface`) with the persistent fact `isIface i I T x`
   ("an interface of type `I` holding `x : T`"), and the specs
@@ -246,10 +244,9 @@ live only in `go.Semantics` (`convert_nil_interface`) and
 
 **Needed in goose (found by the sketch).**
 
-* `TypeAssert` must carry the source type: the lowering compares a type word
-  for an empty interface but an itab's `Type` for a non-empty one, and which
-  one it is cannot be told from the 16 bytes. The sketch tags interface values
-  (`(false, _)`/`(true, _)`) instead.
+* (Done.) `TypeAssert`/`TypeAssert2` carry the source type. The interface
+  values' tag (`(false, _)`/`(true, _)`) is no longer read by any lowering and
+  can go.
 * goose must provide each interface's itab method order (`IfaceMethods`: the
   flattened method set, sorted by `CompareSyms`) and, ideally, canonical
   interface types (so that identical interface types are one `GoType`).

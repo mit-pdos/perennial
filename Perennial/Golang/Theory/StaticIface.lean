@@ -74,6 +74,18 @@ theorem itab_type_bytes (tab inter typ : w64) (h : w32) (fns : List w64) :
   rw [ByteRepr.length_encode]
   iexact H
 
+/-- The `Inter` field of an itab. -/
+theorem itab_inter_bytes (tab inter typ : w64) (h : w32) (fns : List w64) :
+    bytesPointsto (GF := GF) tab .discard (itabBytes inter typ h fns) ⊢
+      bytesPointsto tab .discard (ByteRepr.encode inter) := by
+  unfold itabBytes
+  iintro H
+  icases (bytesPointsto_app tab _ _ _).1 $$ H with ⟨H, -⟩
+  icases (bytesPointsto_app tab _ _ _).1 $$ H with ⟨H, -⟩
+  icases (bytesPointsto_app tab _ _ _).1 $$ H with ⟨H, -⟩
+  icases (bytesPointsto_app tab _ _ _).1 $$ H with ⟨H, -⟩
+  iexact H
+
 /-- `Fun[k]` of an itab. -/
 theorem itab_fun_bytes (tab inter typ : w64) (h : w32) (fns : List w64) (k : Nat)
     (hk : k < fns.length) :
@@ -125,12 +137,12 @@ instance intoVal_typed_iface (elems : List go.InterfaceElem) {m : GoString} {ms 
 
 /-! ## Resources -/
 
-/-- `tab` is an itab of `T` for the interface `I`: it points at `T`'s descriptor
-and at the code of `T`'s methods, in `I`'s itab order. -/
+/-- `tab` is an itab of `T` for the interface `I`: it points at `I`'s and `T`'s
+descriptors and at the code of `T`'s methods, in `I`'s itab order. -/
 def isItab (tab : w64) (T I : go.GoType) : IProp GF :=
-  iprop(∃ (inter : w64) (h : w32),
+  iprop(∃ (h : w32),
     bytesPointsto tab .discard
-      (itabBytes inter (typeAddr T) h ((itabMethods I).map (methodAddr T))) ∗
+      (itabBytes (typeAddr I) (typeAddr T) h ((itabMethods I).map (methodAddr T))) ∗
     ⌜tab ≠ 0 ∧ ∀ m ∈ itabMethods I, StaticMethod T m⌝)
 
 /-- A non-empty interface value of interface type `I`, with dynamic type `T` and
@@ -169,7 +181,7 @@ theorem static_isItab {e : Expr} {Φ : val → IProp GF} (T I : go.GoType) [Stat
   iintro #Hb
   iapply H
   unfold isItab
-  iexists typeAddr I, hash
+  iexists hash
   iframe Hb
   ipureintro
   exact ⟨StaticItab.ne_zero, Implements.methods⟩
@@ -264,13 +276,13 @@ theorem wp_iface_method_resolve {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder I 
       (App (Val (GoInstruction (MethodResolve I m))) (Val #i)) @ s; E
     {{ RET #(methods T m #x); True }} := by
   unfold isIface isItab
-  iintro %Φ ⟨⟨%inter, %h, #Hb, %hp⟩, #Hd⟩ HΦ
+  iintro %Φ ⟨⟨%h, #Hb, %hp⟩, #Hd⟩ HΦ
   obtain ⟨hne, hmeth⟩ := hp
   wp_pures
   simp only [hne, ↓reduceIte]
   have hk : (itabMethods I).idxOf m < ((itabMethods I).map (methodAddr T)).length := by
     rw [List.length_map]; exact List.idxOf_lt_length_of_mem hm
-  ihave #Hf := itab_fun_bytes i.tab inter (typeAddr T) h _ _ hk $$ Hb
+  ihave #Hf := itab_fun_bytes i.tab (typeAddr I) (typeAddr T) h _ _ hk $$ Hb
   have hget : ((itabMethods I).map (methodAddr T))[(itabMethods I).idxOf m] = methodAddr T m := by
     rw [List.getElem_map, List.getElem_idxOf]
   rw [hget]
@@ -288,22 +300,27 @@ theorem wp_iface_method_resolve {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder I 
   wp_pures
   iapply HΦ; itrivial
 
-/-- `i.(T)` for a non-empty interface holding `x : T`. -/
-theorem wp_type_assert_iface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder : go.GoType}
-    [TypeRepr T V] [TypeBytes T V] [T ↓u Tunder] (hT : isInterfaceType Tunder = false)
-    (i : GoIface) (I : go.GoType) (x : V) (hsz : ByteRepr.size V < 2 ^ 64) :
-    {{ isIface (GF := GF) i I T x }} (App (Val (GoInstruction (TypeAssert T))) (Val #i)) @ s; E
+/-- `i.(T)` for a non-empty interface of type `I` holding `x : T`. -/
+theorem wp_type_assert_iface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder I : go.GoType}
+    [TypeRepr T V] [TypeBytes T V] [T ↓u Tunder] {elems : List go.InterfaceElem}
+    [I ≤u go.InterfaceType elems] {m : GoString} {ms : List GoString} [IfaceMethods I (m :: ms)]
+    (hT : isInterfaceType Tunder = false) (i : GoIface) (x : V)
+    (hsz : ByteRepr.size V < 2 ^ 64) :
+    {{ isIface (GF := GF) i I T x }} (App (Val (GoInstruction (TypeAssert I T))) (Val #i)) @ s; E
     {{ RET #x; True }} := by
   haveI : NoGetitab Tunder T := ⟨fun h => by rw [hT] at h; cases h⟩
+  have hm : (itabMethods I).isEmpty = false := by rw [IfaceMethods.itab_methods]; rfl
   unfold isIface isItab
-  iintro %Φ ⟨⟨%inter, %h, #Hb, %hp⟩, #Hd⟩ HΦ
+  iintro %Φ ⟨⟨%h, #Hb, %hp⟩, #Hd⟩ HΦ
   obtain ⟨hne, -⟩ := hp
-  ihave #Ht := itab_type_bytes i.tab inter (typeAddr T) h _ $$ Hb
+  ihave #Ht := itab_type_bytes i.tab (typeAddr I) (typeAddr T) h _ $$ Hb
+  ihave #Hi := itab_inter_bytes i.tab (typeAddr I) (typeAddr T) h _ $$ Hb
   obtain ⟨tab, d⟩ := i
   rw [← iface_val (GF := GF)]
   wp_pures
   simp only [hT, Bool.false_eq_true, ↓reduceIte]
-  unfold typeAssertConcrete dynType
+  unfold typeAssertConcrete
+  simp only [hm, Bool.false_eq_true, ↓reduceIte]
   wp_pures
   simp only at hne
   have hne' : tab ≠ W64 0 := hne
@@ -315,17 +332,23 @@ theorem wp_type_assert_iface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder : go.
   wp_apply wp_bload (byteAddr tab 8) (W64 8) .discard (ByteRepr.encode (typeAddr T))
     (by rw [ByteRepr.length_encode]; rfl) $$ [$Ht] as -
   wp_pures
+  unfold itabInter
+  wp_pures
+  wp_apply wp_bload tab (W64 8) .discard (ByteRepr.encode (typeAddr I))
+    (by rw [ByteRepr.length_encode]; rfl) $$ [$Hi] as -
   wp_pures
   wp_apply wp_unbox T d .discard x hsz $$ [$Hd] as -
   iapply HΦ; itrivial
 
-/-- `i.(T)` for an empty interface holding `x : T`. -/
-theorem wp_type_assert_eface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder : go.GoType}
-    [TypeRepr T V] [TypeBytes T V] [T ↓u Tunder] (hT : isInterfaceType Tunder = false)
+/-- `i.(T)` for an empty interface of type `Ie` holding `x : T`. -/
+theorem wp_type_assert_eface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder Ie : go.GoType}
+    [TypeRepr T V] [TypeBytes T V] [T ↓u Tunder] {elems : List go.InterfaceElem}
+    [Ie ≤u go.InterfaceType elems] [IfaceMethods Ie []] (hT : isInterfaceType Tunder = false)
     (i : GoEface) (x : V) (hsz : ByteRepr.size V < 2 ^ 64) :
-    {{ isEface (GF := GF) i T x }} (App (Val (GoInstruction (TypeAssert T))) (Val #i)) @ s; E
+    {{ isEface (GF := GF) i T x }} (App (Val (GoInstruction (TypeAssert Ie T))) (Val #i)) @ s; E
     {{ RET #x; True }} := by
   haveI : NoGetitab Tunder T := ⟨fun h => by rw [hT] at h; cases h⟩
+  have hm : (itabMethods Ie).isEmpty = true := by rw [IfaceMethods.itab_methods]; rfl
   unfold isEface
   iintro %Φ ⟨%ht, #Hd⟩ HΦ
   obtain ⟨tp, d⟩ := i
@@ -334,7 +357,8 @@ theorem wp_type_assert_eface {V : Type} [ZeroVal V] [ByteRepr V] {T Tunder : go.
   rw [← eface_val (GF := GF)]
   wp_pures
   simp only [hT, Bool.false_eq_true, ↓reduceIte]
-  unfold typeAssertConcrete dynType
+  unfold typeAssertConcrete
+  simp only [hm, ↓reduceIte]
   wp_pures
   wp_apply wp_unbox T d .discard x hsz $$ [$Hd] as -
   iapply HΦ; itrivial

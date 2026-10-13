@@ -323,8 +323,8 @@ def GoInstruction.toTree : GoInstruction → GenTree
   | .GoZeroVal x0 => node 9 [of x0]
   | .FuncResolve x0 x1 => node 10 [of x0, of x1]
   | .MethodResolve x0 x1 => node 11 [of x0, of x1]
-  | .TypeAssert x0 => node 12 [of x0]
-  | .TypeAssert2 x0 => node 13 [of x0]
+  | .TypeAssert x0 x1 => node 12 [of x0, of x1]
+  | .TypeAssert2 x0 x1 => node 13 [of x0, of x1]
   | .PackageInitCheck x0 => node 14 [of x0]
   | .PackageInitStart x0 => node 15 [of x0]
   | .PackageInitFinish x0 => node 16 [of x0]
@@ -368,8 +368,8 @@ def GoInstruction.ofTree : GenTree → GoInstruction
   | node 9 [x0] => .GoZeroVal (decLeaf x0)
   | node 10 [x0, x1] => .FuncResolve (decLeaf x0) (decLeaf x1)
   | node 11 [x0, x1] => .MethodResolve (decLeaf x0) (decLeaf x1)
-  | node 12 [x0] => .TypeAssert (decLeaf x0)
-  | node 13 [x0] => .TypeAssert2 (decLeaf x0)
+  | node 12 [x0, x1] => .TypeAssert (decLeaf x0) (decLeaf x1)
+  | node 13 [x0, x1] => .TypeAssert2 (decLeaf x0) (decLeaf x1)
   | node 14 [x0] => .PackageInitCheck (decLeaf x0)
   | node 15 [x0] => .PackageInitStart (decLeaf x0)
   | node 16 [x0] => .PackageInitFinish (decLeaf x0)

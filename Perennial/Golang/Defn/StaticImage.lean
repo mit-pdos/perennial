@@ -27,11 +27,11 @@ Status and simplifications:
   non-nil interfaces with the same dynamic type (it needs the type's
   equality); the contents of type descriptors are not constrained beyond
   their size (`HasTypeDesc`);
-* `GoEface` and `GoIface` values are tagged (`(false, _)`/`(true, _)`): goose
-  emits `TypeAssert t` with the target type only, while the lowering needs to
-  know whether the source is an empty interface (whose first word is a type)
-  or not (an itab). The compiler knows the source type; goose should emit it,
-  and the tag then disappears;
+* `GoEface` and `GoIface` values are tagged (`(false, _)`/`(true, _)`). No
+  lowering reads the tag: each dispatches on the static source type, as the
+  compiler does (goose emits it, `TypeAssert from_ t`), so a value whose
+  memory is reinterpreted through `unsafe.Pointer` is treated as Go treats it.
+  The tag is left to remove;
 * dynamic values are boxed even when Go stores them directly in the data word
   (pointer-shaped types), and only `ByteRepr` types can be (pointers are still
   `Loc`s, strings `GoString`s);
@@ -150,34 +150,43 @@ def itabType : val :=
   LamV "tab" (gi (DecodeBytes go.uint64)
     (BLoad (Pair (addU (Var "tab") (Val #(W64 8))) (Val #(W64 8)))))
 
-/-- The dynamic type word of a (tagged) interface value; `0` for nil. -/
-def dynType : val :=
-  LamV "i" (If (Fst (Var "i"))
-    (If (eqU (Fst (Snd (Var "i"))) (Val #(W64 0))) (Val #(W64 0))
-      (App (Val itabType) (Fst (Snd (Var "i")))))
-    (Fst (Snd (Var "i"))))
+/-- `itab.Inter`. -/
+def itabInter : val :=
+  LamV "tab" (gi (DecodeBytes go.uint64) (BLoad (Pair (Var "tab") (Val #(W64 8)))))
 
-/-- `i.(T)` for a concrete `T`: compare the dynamic type with `T`'s descriptor.
-Go compares the whole type word with `type:T` (empty interface) or
-`go:itab.T,I` (static type `I`), which also checks that the itab is for `I`.
-The two agree as long as a value of static type `I` has an itab for `I`; only
-reinterpreting memory through `unsafe.Pointer` breaks that (an `I1` read as
-an `I2`, or an `I` read as an `any`), and there this assertion succeeds where
-Go panics. The fix is for goose to emit the source type in `TypeAssert` (then
-the tag goes too). -/
-def typeAssertConcrete (t : go.GoType) : val :=
-  LamV "i" (If (eqU (App (Val dynType) (Var "i")) (Val #(typeAddr t)))
-    (App (Val (unboxV t)) (Snd (Snd (Var "i"))))
-    (Panic "type assertion failed"))
+/-- `i.(T)` for a concrete `T` and `i` of the interface type `from_`. From an
+empty interface: the type word is `type:T`. From a non-empty one: the itab is
+for `T` and `from_` (its `Type` and `Inter` words); the compiler compares the
+itab pointer with `go:itab.T,from_`, the same test since a Go binary has one
+itab per (interface, type) pair. -/
+def typeAssertConcrete (from_ t : go.GoType) : val :=
+  if (itabMethods from_).isEmpty then
+    LamV "i" (If (eqU (Fst (Snd (Var "i"))) (Val #(typeAddr t)))
+      (App (Val (unboxV t)) (Snd (Snd (Var "i"))))
+      (Panic "type assertion failed"))
+  else
+    LamV "i" (If (eqU (Fst (Snd (Var "i"))) (Val #(W64 0))) (Panic "type assertion failed")
+      (If (eqU (App (Val itabType) (Fst (Snd (Var "i")))) (Val #(typeAddr t)))
+        (If (eqU (App (Val itabInter) (Fst (Snd (Var "i")))) (Val #(typeAddr from_)))
+          (App (Val (unboxV t)) (Snd (Snd (Var "i"))))
+          (Panic "type assertion failed"))
+        (Panic "type assertion failed")))
 
-/-- Conversion of an interface to an empty interface (nil stays nil). -/
-def convToEface : val :=
-  LamV "i" (Pair (Val #false) (Pair (App (Val dynType) (Var "i")) (Snd (Snd (Var "i")))))
+/-- Conversion of an interface of type `from_` to an empty interface (nil stays
+nil): from a non-empty interface the type word is `itab.Type`. -/
+def convToEface (from_ : go.GoType) : val :=
+  if (itabMethods from_).isEmpty then LamV "i" (Pair (Val #false) (Snd (Var "i")))
+  else
+    LamV "i" (Pair (Val #false) (Pair
+      (If (eqU (Fst (Snd (Var "i"))) (Val #(W64 0))) (Val #(W64 0))
+        (App (Val itabType) (Fst (Snd (Var "i")))))
+      (Snd (Snd (Var "i")))))
 
-/-- `i.(any)`: a non-nil interface as an empty interface. -/
-def typeAssertEface : val :=
+/-- `i.(any)` for `i` of the interface type `from_`: a non-nil interface as an
+empty interface. -/
+def typeAssertEface (from_ : go.GoType) : val :=
   LamV "i" (If (eqU (Fst (Snd (Var "i"))) (Val #(W64 0))) (Panic "type assertion failed")
-    (App (Val convToEface) (Var "i")))
+    (App (Val (convToEface from_)) (Var "i")))
 
 /-- The code of method `m` of `t` called through an itab: load the receiver from
 the data word and call the method. -/
@@ -266,7 +275,7 @@ interface type it is `convert_same`. -/
     [from_ ↓u funder] [to ≤u go.InterfaceType elems] [NoGetitab funder to] :
     ⟦Convert from_ to, v⟧ ⤳
     (if isInterfaceType funder then
-       (if from_ = to then Val v else App (Val convToEface) (Val v))
+       (if from_ = to then Val v else App (Val (convToEface from_)) (Val v))
      else if isUntypedNil funder then
        (if (itabMethods to).isEmpty then Val #(zero_val GoEface) else Val #(zero_val GoIface))
      else if (itabMethods to).isEmpty then
@@ -275,13 +284,15 @@ interface type it is `convert_same`. -/
      else
        App (Val (LamV "d" (Pair (Val #true) (Pair (Val #(itabAddr from_ to)) (Var "d")))))
          (App (Val (boxBytes from_)) (Val v)))
-  /-- `x.(T)`: to a concrete type, compare descriptors; to an empty interface,
-  keep the value; to a non-empty interface (`NoGetitab` fails) there is no step
-  (`runtime.getitab`, not modelled). -/
-  type_assert_step {t tunder : go.GoType} [t ↓u tunder] [NoGetitab tunder t] (v : val) :
-    ⟦TypeAssert t, v⟧ ⤳
-    (if isInterfaceType tunder then App (Val typeAssertEface) (Val v)
-     else App (Val (typeAssertConcrete t)) (Val v))
+  /-- `x.(T)` for `x` of the interface type `from_`: to a concrete type, compare
+  the type word or itab (`typeAssertConcrete`); to an empty interface, the value
+  as an empty interface; to a non-empty interface (`NoGetitab` fails) there is
+  no step (`runtime.getitab`, not modelled). -/
+  type_assert_step {from_ t tunder : go.GoType} {selems : List go.InterfaceElem}
+    [from_ ≤u go.InterfaceType selems] [t ↓u tunder] [NoGetitab tunder t] (v : val) :
+    ⟦TypeAssert from_ t, v⟧ ⤳
+    (if isInterfaceType tunder then App (Val (typeAssertEface from_)) (Val v)
+     else App (Val (typeAssertConcrete from_ t)) (Val v))
   /-- `i.m`: the method's code from the itab, applied to the data word -/
   method_interface (m : GoString) {t : go.GoType} {elems : List go.InterfaceElem}
     [t ≤u go.InterfaceType elems] (i : GoIface) :
