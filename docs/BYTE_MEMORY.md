@@ -7,9 +7,10 @@ and length, type-descriptor pointer and data pointer, code pointer). The goals
 are `unsafe.Pointer` support and verifying `reflect`, which reads type
 descriptors and interface words through `unsafe`.
 
-The prototype lives **next to** the `val` heap: nothing that exists today was
-changed in meaning, and the old heap and every proof keep working. Migrating
-the Go model onto it is future work (see "Migration" below).
+The prototype lives **next to** the `val` heap: the old heap and every proof
+keep working, and the existing semantics changed only where the interface
+sketch needed it (listed under "Changes the sketch needed outside its files").
+Migrating the Go model onto it is future work (see "Migration" below).
 
 ## What is implemented
 
@@ -20,10 +21,10 @@ the Go model onto it is future work (see "Migration" below).
 | `Perennial/GooseLang/Lifting.lean` | the ghost state `ByteMemGS` and its interpretation `bmemCtx`, a new conjunct of `gooseStateInterp` |
 | `Perennial/GooseLang/ByteLifting.lean` | resources (`a ↦∗{dq} bs`, `isBlock`, `isFunc`) and a WP lemma for every primitive, all proved |
 | `Perennial/GooseLang/Adequacy.lean` | allocates the byte-memory ghost state; the adequacy theorems take `σ.bmem = staticImage` (programs start with the program image: `GoGlobalContext.staticBytes`, frozen, and `staticFuncs`) |
-| `Perennial/Golang/Defn/ByteRepr.lean` | trusted: the layout of Go values (`ByteRepr`: size, alignment, little-endian encode/decode; string, interface and slice headers; struct layout with padding) |
+| `Perennial/Golang/Defn/ByteRepr.lean` | trusted: the layout of Go values (`ByteRepr`: size, alignment, little-endian encode/decode; string and slice headers; struct layout with padding) |
 | `Perennial/Golang/Theory/BytePrototype.lean` | the Go layer on top: typed points-to over bytes and struct field splitting, strings as heap objects (`isString`), calls through func pointers, an `unsafe.Add` field access |
-| `Perennial/Golang/Defn/StaticImage.lean` | sketch, trusted: symbols of the program image (`StaticSymbols`: `typeAddr`, `itabAddr`, `methodAddr`, `itabMethods`), facts packages assume about it (`IfaceMethods`, `StaticItab`, `StaticMethod`), the byte encoding instructions (`go.BytesSemantics`) and the interface semantics over the byte memory (`go.InterfaceSemanticsB`), bundled in `go.SemanticsB` |
-| `Perennial/Golang/Theory/StaticIface.lean` | sketch: the interface abstraction (`isIface`, `isEface`, `Implements`, `ImplementsStatic`) and its instruction-level specs |
+| `Perennial/Golang/Defn/StaticImage.lean` | sketch, trusted: interface values and their layout (`GoEface`, `GoIface`), symbols of the program image (`StaticSymbols`: `typeAddr`, `itabAddr`, `methodAddr`, `itabMethods`, `layoutOf`), facts packages assume about it (`IfaceMethods`, `TypeBytes`, `StaticItab`, `StaticMethod`, `HasTypeDesc`, `TypeEqual`), the byte encoding instructions (`go.BytesSemantics`) and the interface semantics over the byte memory (`go.InterfaceSemanticsB`), bundled in `go.SemanticsB` |
+| `Perennial/Golang/Theory/StaticIface.lean` | sketch: the interface abstraction (`isIface`, `isEface`, `Implements`) and its instruction-level specs |
 | `Perennial/Proof/.../semantics_proof/interfaces_bytes.lean` | goose's unchanged interface tests proved under `go.SemanticsB` |
 
 Everything is proved: `#print axioms` on the WP lemmas, the interface specs
@@ -58,7 +59,9 @@ and the adequacy theorems shows only `propext`, `Classical.choice` and
   version interned descriptors on first use (`TypeIntern`); it could not fill
   the pointers between descriptors of recursive types and is removed.
 * **Funcs.** A func value is the address of its closure. `FuncAlloc v`
-  records `v` at a fresh non-zero address and `FuncLoad p` reads it back.
+  records `v` at a fresh non-zero address, or returns an entry already holding
+  `v` (Go shares the static funcval of a top-level function or of a closure
+  that captures nothing), and `FuncLoad p` reads it back.
 * **Out of memory.** The address space is finite. An allocation that finds no
   fresh range loops, which corresponds to Go's fatal "out of memory" (not a
   panic). The WP lemmas absorb the loop by Löb induction, so specs are
@@ -127,14 +130,18 @@ and the adequacy theorems shows only `propext`, `Classical.choice` and
 
 What the compiler and linker emit statically is assumed, never constructed: it
 is a parameter of the semantics, and packages state facts about their own
-static data, like the generated `Assumptions` classes.
+static data, like the generated `Assumptions` classes. Where the sketch models
+interfaces it follows the gc compiler and runtime exactly (`internal/abi`,
+`runtime/iface.go`, `runtime/alg.go`), including where gc departs from the
+spec (see "`(*I2)(&a)`" below).
 
 * **The image.** `GoGlobalContext.staticBytes : GMap w64 w8` (read-only data)
   and `staticFuncs : GMap w64 val` (code) are abstract. The byte memory starts
   as `staticImage`: the static bytes, frozen, and the code. The interpretation
   keeps persistent fragments of all frozen bytes, and a pure invariant says the
   static bytes stay frozen with their values (`StaticAgree`). So `a ↦∗□ bs` for
-  a static range is available at any step (`wp_static_bytes`).
+  a static range is available at any step (`wp_static_bytes`). A theorem about
+  a real binary quantifies over the image and assumes only facts true of it.
 * **Symbols** (`StaticSymbols`, to become fields of `GoSemanticsFunctions`):
   `typeAddr T` (`type:T`), `itabAddr T I` (`go:itab.T,I`), `methodAddr T m`
   (the code a call through an itab jumps to), and `itabMethods I`, the
@@ -143,62 +150,100 @@ static data, like the generated `Assumptions` classes.
   (`IfaceMethods`), not computed in Lean: computing it from goose's interface
   types was wrong for embedded interfaces and for non-ASCII exported names.
   The byte layout of each type is also a symbol, `layoutOf t` (with
-  `TypeBytes t V`, generated by goose): the encoding steps take it from
-  there, so a proof cannot choose a layout (an earlier version quantified the
-  steps over any `ByteRepr` instance, from which a second layout of `Bool`
-  derived `False`).
-  There is no map from addresses back to types: it would force syntactically
-  different `GoType`s that Go identifies (`interface{ io.Reader; io.Writer }`
-  and its methods written out) to have different descriptors. So a type
-  assertion that fails cannot be proved to fail; one that succeeds can.
+  `TypeBytes t V`, generated by goose; the predeclared numeric and boolean
+  types' are in `BytesSemantics`): the encoding steps take it from there, so a
+  proof cannot choose a layout (an earlier version quantified the steps over any
+  `ByteRepr` instance, from which a second layout of `Bool` derived `False`).
+  A layout must satisfy Go's laws (alignment a power of two dividing the size)
+  and have the zero value as zero bytes (`ZeroBytes`).
+  There is no map from addresses back to types: it would force any two
+  `GoType` terms that Go identifies to have different descriptors, and goose's
+  terms are canonical only where goose checks them. So a type assertion that
+  fails cannot be proved to fail (except on nil); one that succeeds can.
 * **Package facts** (`StaticAssumptions` in the test file; goose would
-  generate them): `IfaceMethods I ms` for each interface type, and, for each
-  concrete-to-interface conversion, `StaticItab T I` (the itab, at a non-zero
-  address) and `Implements T I` (the methods' code). They compose by
+  generate them): `IfaceMethods I ms` for each interface type; for each
+  concrete-to-interface conversion and each assertion to a concrete type,
+  `StaticItab T I` (the itab, at a non-zero address) and `Implements T I` (the
+  methods' code); for each dynamic type, `HasTypeDesc T` (a non-zero address,
+  48 bytes, `TFlagDirectIface` clear) and, if it is comparable, `TypeEqual T`
+  (its descriptor's `Equal` is the code of `==` on `T`). They compose by
   conjunction: two packages that use the same type state the same fact about
   the same symbol.
+* **Representation.** An interface value is its two words: `(type, data)`
+  when its method set is empty (`GoEface`, `runtime.eface`), `(tab, data)`
+  otherwise (`GoIface`, `runtime.iface`), nil `(0, 0)`, with no tag; its layout
+  is 16 bytes. A dynamic value is boxed: `data` points to a frozen copy of its
+  bytes (`convT`). Boxes come from `BAllocFrozen`, which may share them, as Go
+  may (`zerobase`, `staticuint64s`, read-only constants).
 * **Lowering.** `go.InterfaceSemanticsB` gives `Convert`, `MethodResolve`,
-  `TypeAssert` and interface `==` byte-memory meanings, as the compiler lowers
-  them, as GooseLang code over the byte memory and three instructions
-  (`EncodeBytes t`, `DecodeBytes t`, `SizeOf t`, from `ByteRepr`, in
-  `go.BytesSemantics`). `I(x)` boxes `x` and pairs it with `itabAddr T I`, or
-  with `typeAddr T` when `I`'s method set is empty; `nil` is `(0, 0)`; a
-  conversion between interfaces with the same underlying type is the identity
-  (as core's `convert_same` requires); `i.m` loads `itab.Fun[k]`, the code at
-  that address loads the receiver from the data word and calls the method;
-  `i.(T)` (`TypeAssert I T`: goose emits the source type) checks, as the
-  compiler does, the type word against `typeAddr T` when `I` is empty, and
-  otherwise that the itab is the one for `T` and `I` (its `Type` and `Inter`
-  words; the compiler compares the pointer with `go:itab.T,I`, the same test as
-  a Go binary has one itab per pair). Every lowering dispatches on the static
-  source type, not on the value, so memory reinterpreted through
-  `(*I2)(&a)` or `unsafe.Pointer` behaves as in Go: an `I2` holding an itab
-  for `I1` fails `.(T)` (Go panics; the model has no proof of success). A conversion
+  `TypeAssert`, `TypeAssert2` and interface `==` byte-memory meanings, as the
+  compiler lowers them, as GooseLang code over the byte memory and three
+  instructions (`EncodeBytes t`, `DecodeBytes t`, `SizeOf t`, from `ByteRepr`,
+  in `go.BytesSemantics`):
+  * `I(x)` boxes `x` and pairs it with `itabAddr T I`, or with `typeAddr T`
+    when `I`'s method set is empty; a conversion between interfaces is the
+    identity from the same type (as core's `convert_same` requires) and
+    `itab.Type` to an empty interface;
+  * `i.m` loads `itab.Fun[k]`, and the code at that address loads the receiver
+    from the data word and calls the method;
+  * `i.(T)` and `v, ok := i.(T)` (`TypeAssert I T`, `TypeAssert2 I T`; goose
+    emits the source type) compare, as the compiler does, the type word with
+    `typeAddr T` when `I` is empty, and otherwise the itab pointer with
+    `itabAddr T I`: the pointer, not the itab's contents, so an itab built in
+    memory with the right words at another address fails as in Go. `i.(E)` for
+    an empty `E` checks that `i` is not nil. Type switches are `TypeAssert2`
+    per case;
+  * `==` is `nilinterequal`/`interequal`: different type words give `false`;
+    equal ones go to `efaceeq`/`ifaceeq`, which read the dynamic type's
+    descriptor (from the type word, or `itab.Type`): a nil `Equal` is the
+    "comparing uncomparable type" panic, a `TFlagDirectIface` type compares
+    the data words, any other calls `Equal` on the data pointers (whose code is
+    `eqWrapper T`, `==` on the boxed values).
+
+  Every lowering dispatches on the static source type, not on the value, so
+  memory reinterpreted through `unsafe.Pointer` behaves as in Go. A conversion
   between two different interface types is not the identity even when their
   underlying types are the same, since Go gives the value an itab for the
   target type; core's `convert_underlying` therefore no longer lifts
   conversions whose target is an interface (`NotInterface`). Not modelled
   (stuck): assertions and conversions to a non-empty interface from an
-  interface (`runtime.getitab`, to be translated), and `==` on two non-nil
-  interfaces with the same dynamic type (it needs the type's equality). They
-  are stuck by having no rule (the `NoGetitab` premise; `==` is a rule only for
-  different or nil type words), not by a `Panic` that could be read as Go's
+  interface (`runtime.getitab`, to be translated). They are stuck by having no
+  rule (the `NoGetitab` premise), not by a `Panic` that could be read as Go's
   behaviour.
+* **`(*I2)(&a)`.** For `a : I1` with `I1` and `I2` the same underlying
+  interface, the conversion `(*I2)(&a)` is legal Go (pointers whose base types
+  have identical underlying types) and keeps the pointer, so `*(*I2)(&a)` holds
+  `I1`'s itab. gc's `.(T)` on it compares that itab with `go:itab.T,I2` and
+  panics ("main.I2 is main.T, not main.T (types from different scopes)"), its
+  type switches take `default`, and `==` with an `I2` holding the same value is
+  `false`, although the spec says the dynamic type is `T` (reproduced with Go
+  1.10 to 1.27). The byte semantics models gc: the conversion is the identity
+  (`convert_pointer_interface`) and the lowerings above behave as gc's. The old
+  semantics cannot (`GoInterface` has no static type), so there the conversion
+  has no step.
 * **The abstraction.** Program proofs see an interface value as an opaque
   `i : GoIface` (or `GoEface`) with the persistent fact `isIface i I T x`
-  ("an interface of type `I` holding `x : T`"), and the specs
-  `wp_convert_iface`, `wp_convert_eface`, `wp_iface_method_resolve` (`i.m`
-  resolves to `T`'s method `m` on `x`), `wp_type_assert_iface`,
-  `wp_type_assert_eface`, `wp_eq_eface_nil`, all proved against the lowered
+  ("an interface of type `I` holding `x : T`": its itab is `itabAddr T I`, with
+  an itab's contents) or `isEface i T x`, and the specs `wp_convert_iface`,
+  `wp_convert_eface`, `wp_iface_method_resolve` (`i.m` resolves to `T`'s method
+  `m` on `x`), `wp_type_assert_iface`, `wp_type_assert_eface`,
+  `wp_type_assert2_iface`, `wp_type_assert2_eface`, `wp_eq_iface_same`,
+  `wp_eq_eface_same` (`==` on the values), `wp_eq_iface_nil`,
+  `wp_eq_eface_nil'` and `wp_eq_eface_nil`, all proved against the lowered
   code. The lowered steps are not instances, so automation stops at the
   interface instructions and the proof applies these specs; itabs and
-  descriptors never appear. The premises are goose-generated instances, found
-  by instance search.
-* **Static and dynamic.** `isItab` (and so `isIface`) is defined by the itab's
-  contents, not its address, so an itab built by `getitab` will be
-  interchangeable with a static one: every consumer of an interface value has
-  one spec. Only the producers differ: a conversion needs `StaticItab T I`;
-  `getitab` will need only `Implements T I`.
+  descriptors never appear. The premises are goose-generated facts, found by
+  instance search; the itab order appears only through the premise
+  `m ∈ itabMethods I` of `wp_iface_method_resolve`, discharged from
+  `IfaceMethods`.
+* **Static and dynamic.** gc's assertions compare itab pointers, which is
+  correct because the runtime keeps one itab per (interface, type) pair:
+  `itabsinit` registers the static itabs before `getitab` can build one, and
+  `getitab` returns the registered one. `isIface` therefore records the
+  address `itabAddr T I`; a translated `getitab` will establish it from that
+  invariant for pairs with a static itab. Only the producers of interface
+  values differ: a conversion needs `StaticItab T I`; `getitab` will need only
+  `Implements T I`.
 * **Runtime state.** What Go mutates (`runtime.itabTable`, the per-site
   type-assertion caches, `reflect`'s caches) is ordinary package state of
   `runtime`/`reflect`, with proved invariants (every itab in the table is
@@ -206,34 +251,43 @@ static data, like the generated `Assumptions` classes.
   immutable data.
 
 **Result.** Of the interface tests (`interfaces.go`, `interfaces_complex.go`),
-on goose's unchanged translation: `testBasicInterface`,
-`testAssignInterface`, `testMultipleInterface`, `testBinaryExprInterface`,
-`testIfStmtInterface`, `testParamsInterface`, `testEmptyInterface` and
-`testTypeAssertionInterface` are proved under `go.SemanticsB`, with no `sorry`
-(the remaining axioms are generated code's existing opaque types). An earlier
-version of the sketch was contradictory (`False` was derivable from
-`go.SemanticsB`: `PredeclaredSemantics` still converted untyped `nil` to the old
-nil interface while the new rule boxed it); the old representation's rules now
-live only in `go.Semantics` (`convert_nil_interface`) and
-`go.InterfaceSemantics`. Not covered, and why:
+on goose's translation: `testBasicInterface`, `testAssignInterface`,
+`testMultipleInterface`, `testBinaryExprInterface`, `testIfStmtInterface`,
+`testParamsInterface`, `testEmptyInterface` and `testTypeAssertionInterface`
+are proved under `go.SemanticsB`, with no `sorry` (the remaining axioms are
+generated code's existing opaque types). An earlier version of the sketch was
+contradictory (`False` was derivable from `go.SemanticsB`:
+`PredeclaredSemantics` still converted untyped `nil` to the old nil interface
+while the new rule boxed it); the old representation's rules now live only in
+`go.Semantics` (`convert_nil_interface`) and `go.InterfaceSemantics`. Not
+covered, and why:
 
 * pointer receivers and pointer-shaped dynamic values
   (`testAcceptAddressInterface`, `testPolymorphismInterface`,
   `testEmbeddingInterface`, `testDoublePointerInterface`): the data word would
-  be the pointer itself, but pointers are still `Loc`s, not addresses;
+  be the pointer itself (`TFlagDirectIface`), but pointers are still `Loc`s,
+  not addresses;
 * string-valued dynamic types (`testSharedFunctionsInterface`,
   `testStringInterface`): strings are still values, not headers;
 * `testDowncastInterface`: `f.(Flower)` on a `Flora` goes through
   `runtime.getitab`, not modelled yet.
 
-**Changes the sketch needed outside its files.**
+Also not modelled under `go.SemanticsB`: `defer`/`recover`
+(`Golang/Defn/Defer.lean` compares with the old representation's nil, so a
+recovered panic is stuck).
+
+**Changes the sketch needed outside its files.** These change the existing
+`go.Semantics`, each in the less-defined direction or not at all:
 
 * `CoreSemantics.convert_underlying` takes `NotInterface` of the target's
   underlying type: conversions to interface types are the interface
   semantics' (the old `InterfaceSemantics` already gave them all), and
   `NotInterface` instances for the predeclared types are in
   `Golang/Theory/PostLifting.lean`.
-
+* `convert_pointer_same_underlying` takes `NotInterface` of the base types'
+  underlying type: `(*I2)(&a)` is the interface semantics' (see above).
+* `TypeAssert`/`TypeAssert2` carry the source type (goose emits it); the old
+  semantics ignores it.
 * `CoreSemantics` fixed interface values as `GoInterface`
   (`go_zero_val_interface`); that fact is now its own class,
   `go.InterfaceReprSemantics`, part of `go.InterfaceSemantics`, which moved
@@ -255,25 +309,44 @@ live only in `go.Semantics` (`convert_nil_interface`) and
   as its underlying interface), an instantiation whose type arguments are such
   types (inside generic code they can become dynamic types), and a type
   declared in a generic function (Go has one per instantiation, goose one).
-  Composite literals with an interface slot check their elements too.
+  Composite literals with an interface slot check their elements too,
+  including literals whose type is a type parameter (by its core type).
 * (Done.) goose translates an interface whose type set is a method set as its
   complete method set (embedded interfaces flattened, in go/types' order), so
   identical Go interface types are one term; constraint interfaces (unions,
   `comparable`) keep their elements. This could also give `IfaceMethods`.
-* (Done.) `TypeAssert`/`TypeAssert2` carry the source type. The interface
-  values' tag (`(false, _)`/`(true, _)`) is no longer read by any lowering and
-  can go.
+* (Done.) `TypeAssert`/`TypeAssert2` carry the source type, and a type
+  switch's `case nil` compares with nil converted to the guard's type (it
+  used the old representation's nil).
 * goose must provide each interface's itab method order (`IfaceMethods`: the
-  flattened method set, sorted by `CompareSyms`) and, ideally, canonical
-  interface types (so that identical interface types are one `GoType`).
+  flattened method set, sorted by `CompareSyms`).
 * Proofgen states the generated instances (typed points-to of structs, ...)
   under `go.Semantics` although they do not use the interface semantics; they
   should be stated under a class without it. The test file restates the two it
   needs.
-* Generating `StaticAssumptions` (itab orders, static itabs, method code per
-  conversion) and `ByteRepr` instances for the package's types, with an n-ary
-  struct layout (`ByteRepr`'s pair instance is the layout of a two-field
-  struct only).
+* Generating `StaticAssumptions` (itab orders, static itabs, method code,
+  descriptors and equality code per dynamic type) and `ByteRepr` instances for
+  the package's types, with an n-ary struct layout (`ByteRepr`'s pair instance
+  is the layout of a two-field struct only).
+
+## Open issues
+
+* **Methods are keyed by bare name** (`methodAddr`, `itabMethods`, the `idxOf`
+  lookup in `method_interface`, `MethodUnfold`), so an unexported `p.m` and
+  `q.m` of a type embedding a `p` type are one method. goose emits duplicate
+  `m_unfold` fields for such a type today, so it does not elaborate; it becomes
+  a wrong-method bug if goose renames them. Fix: package-qualified ids for
+  unexported methods.
+* **Hand-written static facts.** `IfaceMethods`, `TypeBytes`, `HasTypeDesc`
+  and `TypeEqual` facts are hand-written per package; two packages stating
+  different facts for one type would make a combined proof vacuous. goose
+  should generate them from the type.
+* **Old semantics and `unsafe`.** Under `go.Semantics`, reinterpreting an
+  interface through `unsafe.Pointer` (`*(*any)(unsafe.Pointer(&e))` for
+  `e : error`) keeps the dynamic type, where Go reads the itab as a type
+  descriptor. The `unsafe.Pointer` rules predate the byte memory; fixing the old
+  semantics needs a static type in `GoInterface` or a deep "contains no
+  interface" premise. The byte semantics behaves as Go's memory here.
 
 ## Migration plan (not started)
 

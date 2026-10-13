@@ -1,8 +1,8 @@
 # Byte memory: trusted-base review findings
 
-A running record of the `/review-trusted` rounds on the byte-memory branch
-(`worktree-byte-heap`): every problem found, the example that shows it, and
-what was done. A BLOCK is a way for a Go program that panics (or computes
+A running record of the `/review-trusted` rounds on the byte-memory prototype
+(`docs/BYTE_MEMORY.md`): every problem found, the example that shows it, and
+what was done; the open items are also under "Open issues" there. A BLOCK is a way for a Go program that panics (or computes
 something else) to be verified; a REWORK adds trust that should not be there;
 a NOTE records accepted trust or incompleteness. "Old semantics" is
 `go.Semantics` (`Golang/Defn/Interface.lean`, `GoInterface` values); "byte
@@ -57,6 +57,9 @@ func main() {
 	_ = b.(T)         // Go: panic: interface conversion: main.I2 is main.T, not main.T (types from different scopes)
 }
 ```
+
+(This is gc's behaviour, not the spec's: the spec says `b`'s dynamic type is
+`T`, so the assertion should succeed. The model follows gc; see round 11.)
 
 The model compared only `itab.Type`; Go compares the itab with
 `go:itab.T,I2`. Round 3 removed the `(*I2)(&a)` route
@@ -317,11 +320,10 @@ says `T` does not implement `p.I`. No program verifies without such a premise.
 
 Every round 7-8 fix held (about 60 conversion sites checked), and the Lean
 side had no BLOCK. The BLOCKs these rounds found are pre-existing goose bugs
-unrelated to the byte memory (a type-switch case list, and evaluation order of
-assignments, `op=`, calls, `go`/`defer` and map indexes). Their fixes and
-refusals, with the example programs, are on the branch `eval-order-refusals`
-(`docs/EVAL_ORDER_REFUSALS.md`), which is provisional and may be deleted in
-favour of an operational semantics for Go's underspecified evaluation order.
+unrelated to the byte memory (a type-switch case list that tests only some of
+its types, and evaluation order of assignments, `op=`, calls, `go`/`defer` and
+map indexes). They are left to a separate change: evaluation order is to be
+solved by an operational semantics for Go's underspecified order.
 
 **NOTEs that concern the byte memory:**
 
@@ -335,4 +337,53 @@ favour of an operational semantics for Go's underspecified evaluation order.
   packages stating different facts for one type would make a combined proof
   vacuous. goose should generate them from the type.
 * Nothing gives `typeAddr T ≠ 0` (`any(T{}) == nil` cannot be proved false;
-  less defined only).
+  less defined only). *Fixed in round 11* (`HasTypeDesc`).
+
+## Round 11: gc's representation
+
+The byte semantics now follows the gc compiler and runtime exactly where it
+models interfaces (`docs/BYTE_MEMORY.md`, "Static data and interfaces").
+
+**REWORK (byte semantics, latent): the assertion compared the itab's contents.** From a
+non-empty interface `x.(T)` checked the itab's `Type` and `Inter` words; gc
+compares the itab pointer with `go:itab.T,I`. On an itab built in memory with
+the right words at another address (possible once `unsafe` writes are
+modelled) Go panics and the model succeeded. *Fixed*: pointer comparison;
+`isIface` records `i.tab = itabAddr T I`.
+
+**REWORK: interface values were tagged** (`(false, _)`/`(true, _)`), which no
+Go value has. *Fixed*: the two words, with a 16-byte layout (`GoIfaceHdr`
+removed).
+
+**REWORK (byte memory): `FuncAlloc` was always fresh.** Go shares the static
+funcval of a top-level function or a non-capturing closure, observable through
+`unsafe`. *Fixed*: `FuncAllocReuseS`.
+
+**BLOCK (goose, round 8's fix): a type-parameter literal with a multi-term or
+embedded constraint skipped the element check.**
+
+```go
+func Mk[C interface{ []any | Anys }]() C { return C{SB{1}} }   // SB, SC as in round 8
+// _ = Mk[[]any]()[0].(SC) — Go: panic; the model: succeeds
+```
+
+*Fixed*: the core type over the whole type set; no core type means "has a
+slot".
+
+**REWORK (goose): the package-variable checks ran on variables the
+configuration does not translate.** *Fixed*: only translated ones.
+
+**Made defined (were stuck):** `TypeAssert2` (comma-ok and type switches;
+goose's `case nil` used the old representation's nil and now converts nil);
+`==` on equal type words (`efaceeq`/`ifaceeq`, through the descriptor's
+`Equal` and `TFlagDirectIface`, with the "comparing uncomparable type" panic);
+`(*I2)(&a)` (gc's identity, which keeps `I1`'s itab, so `.(T)` panics as in
+gc); boxing of the predeclared numeric and boolean types.
+
+**NOTE: `(*I2)(&a)` is a gc/spec divergence.** gc's `.(T)`, type switches,
+`==` and map lookups disagree with the spec on such a value (reproduced with
+Go 1.10 to 1.27; no report found in Go's tracker). The model follows gc. The
+old semantics has no step for the conversion.
+
+**NOTE: `ByteRepr` laws.** Layouts now satisfy Go's alignment laws, and
+`TypeBytes` requires the zero value to be zero bytes (`ZeroBytes`).

@@ -114,11 +114,12 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
 * **Byte memory (prototype).** Next to the `val` heap, the state has a
   byte-addressed memory `ByteMem` (`GooseLang/Lang.lean`, "Byte memory";
   program logic in `GooseLang/ByteLifting.lean`): bytes at `w64` addresses with
-  allocation blocks for `unsafe.Add` and func pointers. The Go model does not use it yet; `docs/BYTE_MEMORY.md` describes
-  the design, what the prototype confirms and the migration plan. The adequacy
-  theorems start from the program image (`σ.bmem = staticImage`: the abstract
-  `GoGlobalContext.staticBytes`, frozen, and `staticFuncs`). A sketch of
-  interfaces over it (`Golang/Defn/StaticImage.lean`, `go.SemanticsB`) proves
+  allocation blocks for `unsafe.Add` and func pointers. The Go model does not
+  use it yet; `docs/BYTE_MEMORY.md` describes the design, what the prototype
+  confirms and the migration plan. The adequacy theorems start from the program
+  image (`σ.bmem = staticImage`: the abstract `GoGlobalContext.staticBytes`,
+  frozen, and `staticFuncs`). A sketch of interfaces over it, following gc's
+  representation (`Golang/Defn/StaticImage.lean`, `go.SemanticsB`), proves 8 of
   the interface semantics tests.
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with

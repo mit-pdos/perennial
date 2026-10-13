@@ -592,8 +592,9 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
   parameters but have identical underlying types"), e.g. `(*BTreeG[Item])(t)` for
   `t : *BTree` with `type BTree BTreeG[Item]`. Not when the base types are
   interfaces: `(*I2)(&a)` for `a : I1` makes an `I2` whose itab is for `I1`, and
-  Go's `.(T)` on it then panics; the old interface representation (`GoInterface`)
-  has no static type to tell, so such a conversion has no step. (A struct, array
+  gc's `.(T)` on it then panics; the old interface representation (`GoInterface`)
+  has no static type to tell, so such a conversion has no step here (the byte
+  semantics models it: `convert_pointer_interface`). (A struct, array
   or other base type with the same underlying type has the same interface field
   types, so this is the only such route without `unsafe`.) -/
   convert_pointer_same_underlying {t1 t2 u : go.GoType} [t1 ↓u u] [t2 ↓u u] [NotInterface u]
