@@ -95,10 +95,6 @@ theorem typedBytes_goStrHdr (a : w64) (dq : DFrac) (v : GoStrHdr) :
     typedBytes (GF := GF) a dq v ⊣⊢ a ↦∗{dq} ByteRepr.encode v :=
   typedBytes_eq_encode a dq v fun bs => (ByteRepr.goStrHdr_decode_iff_eq_encode bs v).mp
 
-theorem typedBytes_goIfaceHdr (a : w64) (dq : DFrac) (v : GoIfaceHdr) :
-    typedBytes (GF := GF) a dq v ⊣⊢ a ↦∗{dq} ByteRepr.encode v :=
-  typedBytes_eq_encode a dq v fun bs => (ByteRepr.goIfaceHdr_decode_iff_eq_encode bs v).mp
-
 /-- Ownership of `n` bytes with arbitrary contents (padding). -/
 def anyBytes (a : w64) (dq : DFrac) (n : Nat) : IProp GF :=
   iprop(∃ bs, ⌜bs.length = n⌝ ∗ a ↦∗{dq} bs)

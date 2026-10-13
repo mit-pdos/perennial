@@ -31,6 +31,8 @@ instance SquareStruct.byteRepr : ByteRepr SquareStruct where
   encode x := ByteRepr.encode x.Side'
   decode bs := (ByteRepr.decode bs).map SquareStruct.mk
   align_pos := by decide
+  align_pow2 := ⟨3, rfl⟩
+  align_dvd_size := by decide
   length_encode x := ByteRepr.length_encode (V := w64) _
   decode_encode x := by simp [ByteRepr.decode_encode]
   length_of_decode bs v h := by
@@ -43,16 +45,16 @@ instance NumStruct.byteRepr : ByteRepr NumStruct where
   encode x := ByteRepr.encode x.Value'
   decode bs := (ByteRepr.decode bs).map NumStruct.mk
   align_pos := by decide
+  align_pow2 := ⟨3, rfl⟩
+  align_dvd_size := by decide
   length_encode x := ByteRepr.length_encode (V := w64) _
   decode_encode x := by simp [ByteRepr.decode_encode]
   length_of_decode bs v h := by
     obtain ⟨w, hw, -⟩ := Option.map_eq_some_iff.1 h
     exact ByteRepr.length_of_decode (V := w64) _ _ hw
 
-/-- The methods of an interface type, from its (syntactic) underlying type. -/
-@[reducible] def ifaceElems : go.GoType → List go.InterfaceElem
-  | .InterfaceType elems => elems
-  | _ => []
+instance : ZeroBytes SquareStruct := ⟨rfl⟩
+instance : ZeroBytes NumStruct := ⟨rfl⟩
 
 /-! ## Typed points-to of the test's structs
 
@@ -159,6 +161,10 @@ attribute [instance] StaticAssumptions.SquareStruct_bytes StaticAssumptions.NumS
   StaticAssumptions.SquareStruct_geometryInterface_itab
   StaticAssumptions.SquareStruct_geometryInterface
 
+/-! The specs of the same test functions as `interfaces.lean` and
+`interfaces_complex.lean`, under `go.SemanticsB`, in their own namespace. -/
+namespace bytes
+
 section wps
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
@@ -177,11 +183,6 @@ theorem geometry_Square : go!"Square" ∈ itabMethods geometryInterface.ty := by
 
 theorem geometry_Volume : go!"Volume" ∈ itabMethods geometryInterface.ty := by
   rw [IfaceMethods.itab_methods (t := geometryInterface.ty)]; simp
-
-omit package_sem static in
-include hG in
-theorem iface_val (tab d : w64) : PairV #true (PairV #tab #d) = #(⟨tab, d⟩ : GoIface) := by
-  rw [intoVal_unfold GoIface]
 
 theorem wp_testBasicInterface : TestFunOkB (GF := GF) testBasicInterface := by
   intro Φ
@@ -274,6 +275,8 @@ theorem wp_testTypeAssertionInterface : TestFunOkB (GF := GF) testTypeAssertionI
   iexact HΦ
 
 end wps
+
+end bytes
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.semantics
 

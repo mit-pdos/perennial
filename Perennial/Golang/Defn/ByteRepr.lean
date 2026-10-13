@@ -26,6 +26,10 @@ class ByteRepr (V : Type) where
   encode : V → List w8
   decode : List w8 → Option V
   align_pos : 0 < align
+  /-- Go's alignments are powers of two, and a type's size is a multiple of its
+  alignment (so array elements stay aligned). -/
+  align_pow2 : ∃ k, align = 2 ^ k
+  align_dvd_size : align ∣ size
   length_encode : ∀ v, (encode v).length = size
   decode_encode : ∀ v, decode (encode v) = some v
   length_of_decode : ∀ bs v, decode bs = some v → bs.length = size
@@ -84,6 +88,8 @@ instance instW8 : ByteRepr w8 where
   encode := wordEncode 1
   decode := wordDecode 1 8
   align_pos := by decide
+  align_pow2 := ⟨0, rfl⟩
+  align_dvd_size := Nat.dvd_refl _
   length_encode := wordEncode_length 1
   decode_encode := wordDecode_encode 1 rfl
   length_of_decode := wordDecode_length 1 8
@@ -94,6 +100,8 @@ instance instW16 : ByteRepr w16 where
   encode := wordEncode 2
   decode := wordDecode 2 16
   align_pos := by decide
+  align_pow2 := ⟨1, rfl⟩
+  align_dvd_size := Nat.dvd_refl _
   length_encode := wordEncode_length 2
   decode_encode := wordDecode_encode 2 rfl
   length_of_decode := wordDecode_length 2 16
@@ -104,6 +112,8 @@ instance instW32 : ByteRepr w32 where
   encode := wordEncode 4
   decode := wordDecode 4 32
   align_pos := by decide
+  align_pow2 := ⟨2, rfl⟩
+  align_dvd_size := Nat.dvd_refl _
   length_encode := wordEncode_length 4
   decode_encode := wordDecode_encode 4 rfl
   length_of_decode := wordDecode_length 4 32
@@ -114,6 +124,8 @@ instance instW64 : ByteRepr w64 where
   encode := wordEncode 8
   decode := wordDecode 8 64
   align_pos := by decide
+  align_pow2 := ⟨3, rfl⟩
+  align_dvd_size := Nat.dvd_refl _
   length_encode := wordEncode_length 8
   decode_encode := wordDecode_encode 8 rfl
   length_of_decode := wordDecode_length 8 64
@@ -144,6 +156,8 @@ instance instBool : ByteRepr Bool where
   encode b := [if b then 1 else 0]
   decode := boolDecode
   align_pos := by decide
+  align_pow2 := ⟨0, rfl⟩
+  align_dvd_size := Nat.dvd_refl _
   length_encode _ := rfl
   decode_encode b := by cases b <;> decide
   length_of_decode bs v h := by
@@ -166,7 +180,7 @@ theorem bool_decode_iff_eq_encode (bs : List w8) (v : Bool) :
         · cases h
   · rintro rfl; exact decode_encode v
 
-/-! ## Headers of strings, interfaces and slices -/
+/-! ## Headers of strings and slices (interface values: `Golang/Defn/StaticImage.lean`) -/
 
 end ByteRepr
 
@@ -174,12 +188,6 @@ end ByteRepr
 structure GoStrHdr where
   ptr : w64
   len : w64
-deriving DecidableEq
-
-/-- A Go interface: a pointer to the type descriptor and a data pointer. -/
-structure GoIfaceHdr where
-  tptr : w64
-  data : w64
 deriving DecidableEq
 
 /-- A Go slice: a pointer to the elements, its length and its capacity. -/
@@ -224,6 +232,8 @@ instance instGoStrHdr : ByteRepr GoStrHdr where
   encode h := encode h.ptr ++ encode h.len
   decode bs := (decodePair bs).map fun p => ⟨p.1, p.2⟩
   align_pos := by decide
+  align_pow2 := ⟨3, rfl⟩
+  align_dvd_size := by decide
   length_encode h := by simp [length_encode]; rfl
   decode_encode h := by simp [(decodePair_iff _ h.ptr h.len).mpr rfl]
   length_of_decode bs v h := by
@@ -234,31 +244,6 @@ instance instGoStrHdr : ByteRepr GoStrHdr where
 theorem goStrHdr_decode_iff_eq_encode (bs : List w8) (v : GoStrHdr) :
     decode bs = some v ↔ bs = encode v := by
   change (decodePair bs).map _ = some v ↔ bs = encode v.ptr ++ encode v.len
-  rw [← decodePair_iff]
-  obtain ⟨p, l⟩ := v
-  constructor
-  · intro h
-    simp only [Option.map_eq_some_iff] at h
-    obtain ⟨⟨a, b⟩, hp, he⟩ := h
-    cases he; exact hp
-  · intro h; simp [h]
-
-instance instGoIfaceHdr : ByteRepr GoIfaceHdr where
-  size := 16
-  align := 8
-  encode h := encode h.tptr ++ encode h.data
-  decode bs := (decodePair bs).map fun p => ⟨p.1, p.2⟩
-  align_pos := by decide
-  length_encode h := by simp [length_encode]; rfl
-  decode_encode h := by simp [(decodePair_iff _ h.tptr h.data).mpr rfl]
-  length_of_decode bs v h := by
-    simp only [Option.map_eq_some_iff] at h
-    obtain ⟨p, hp, _⟩ := h
-    exact decodePair_length bs p hp
-
-theorem goIfaceHdr_decode_iff_eq_encode (bs : List w8) (v : GoIfaceHdr) :
-    decode bs = some v ↔ bs = encode v := by
-  change (decodePair bs).map _ = some v ↔ bs = encode v.tptr ++ encode v.data
   rw [← decodePair_iff]
   obtain ⟨p, l⟩ := v
   constructor
@@ -298,6 +283,8 @@ instance instGoSliceHdr : ByteRepr GoSliceHdr where
   encode h := encode h.ptr ++ encode h.len ++ encode h.cap
   decode := sliceHdrDecode
   align_pos := by decide
+  align_pow2 := ⟨3, rfl⟩
+  align_dvd_size := by decide
   length_encode h := by simp [length_encode]; rfl
   decode_encode h := (sliceHdrDecode_iff _ h).mpr rfl
   length_of_decode bs v h := by
@@ -394,6 +381,11 @@ instance instProd : ByteRepr (A × B) where
     List.replicate (prodSize A B - (fieldOffset2 A B + size B)) 0
   decode := prodDecode A B
   align_pos := Nat.lt_of_lt_of_le (align_pos (V := A)) (Nat.le_max_left _ _)
+  align_pow2 := by
+    rw [Nat.max_def]; split
+    · exact align_pow2 (V := B)
+    · exact align_pow2 (V := A)
+  align_dvd_size := Nat.dvd_of_mod_eq_zero (roundUp_mod _ _)
   length_encode p := by
     have := fieldOffset2_ge (A := A) (B := B)
     have := fieldOffset2_add_le (A := A) (B := B)
