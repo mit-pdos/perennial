@@ -345,20 +345,30 @@ func ptrElem(t types.Type) types.Type {
 	panic(fmt.Errorf("expected pointer type, got %v", t))
 }
 
-func chanElem(t types.Type) types.Type {
+// chanElem returns the element type of the channel type t, or of the core
+// type of a type parameter t; ok is false when there is none.
+func chanElem(t types.Type) (elem types.Type, ok bool) {
 	if t, ok := underlyingType(t).(*types.Chan); ok {
-		return t.Elem()
+		return t.Elem(), true
 	}
-	// a type parameter whose channel terms differ in direction: the channels
-	// of a core type have identical elements
+	// a type parameter whose channel terms differ only in direction: the
+	// channels of a core type have identical elements (terms with different
+	// elements, as in an intersection, are not resolved here)
 	if tp, ok := t.(*types.TypeParam); ok {
+		var elem types.Type
 		for _, u := range typeSetTerms(tp) {
-			if c, ok := u.(*types.Chan); ok {
-				return c.Elem()
+			c, ok := u.(*types.Chan)
+			if !ok || (elem != nil && !types.Identical(elem, c.Elem())) {
+				elem = nil
+				break
 			}
+			elem = c.Elem()
+		}
+		if elem != nil {
+			return elem, true
 		}
 	}
-	panic(fmt.Errorf("expected channel type, got %v", t))
+	return nil, false
 }
 
 func (ctx *Ctx) convertTypeArgsToGlang(l locatable, typeList *types.TypeList) (glangTypeArgs []glang.Expr) {

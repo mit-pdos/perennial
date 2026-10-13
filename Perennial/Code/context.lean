@@ -1460,7 +1460,7 @@ noncomputable def value.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (Convert (go.GoType.PointerType cancelCtx.ty) go.any))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"cancelCtx"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType timerCtx.ty)))) (Var "ctx")))))
   (App (Val doExecute)
   (Val #())))))
-  (Let "$ok" (If (Snd (App (Val (GoInstruction (TypeAssert2 Context.ty backgroundCtx.ty))) (Var "$y"))) (Val #true) (Snd (App (Val (GoInstruction (TypeAssert2 Context.ty backgroundCtx.ty))) (Var "$y"))))
+  (Let "$ok" (If (Snd (App (Val (GoInstruction (TypeAssert2 Context.ty todoCtx.ty))) (Var "$y"))) (Val #true) (Snd (App (Val (GoInstruction (TypeAssert2 Context.ty backgroundCtx.ty))) (Var "$y"))))
   (Let "$x" (Var "$y")
   (If (Var "$ok")
   (Let "ctx" (App (Val (GoInstruction (GoAlloc Context.ty))) (Var "$x"))

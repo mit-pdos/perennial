@@ -5011,7 +5011,7 @@ noncomputable def multiTypeSwitch.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (Val #(W64 0)))))
   (Let "$y" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
-  (Let "$ok" (If (Snd (App (Val (GoInstruction (TypeAssert2 go.any go.int))) (Var "$y"))) (Val #true) (Snd (App (Val (GoInstruction (TypeAssert2 go.any go.int))) (Var "$y"))))
+  (Let "$ok" (If (Snd (App (Val (GoInstruction (TypeAssert2 go.any go.string))) (Var "$y"))) (Val #true) (Snd (App (Val (GoInstruction (TypeAssert2 go.any go.int))) (Var "$y"))))
   (Let "$x" (Var "$y")
   (If (Var "$ok")
   (App (Val doReturn)

@@ -208,12 +208,17 @@ theorem wp_multiTypeSwitch (x : GoInterface) :
     wp_end
   | ok i =>
     obtain ⟨ty, v⟩ := i
-    by_cases h : ty = go.int
-    · subst h
+    by_cases hs : ty = go.string
+    · subst hs
       wp_auto
       wp_end
-    · wp_auto_neg h
-      wp_end
+    · wp_auto_neg hs
+      by_cases h : ty = go.int
+      · subst h
+        wp_auto
+        wp_end
+      · wp_auto_neg h
+        wp_end
 
 theorem wp_testSwitchMultiple (x : w64) :
     {{ isPkgInit (PROP := IProp GF) pkg }}

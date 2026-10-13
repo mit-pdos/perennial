@@ -814,7 +814,7 @@ func (ctx *Ctx) unaryExpr(e *ast.UnaryExpr, multipleBindings bool) glang.Expr {
 	}
 	if e.Op == token.ARROW {
 		var expr glang.Expr = glang.NewCallExpr(glang.VerbatimExpr("chan.receive"),
-			ctx.glangType(e, chanElem(ctx.typeOf(e.X))),
+			ctx.glangType(e, ctx.chanElem(e, ctx.typeOf(e.X))),
 			ctx.expr(e.X))
 		if !multipleBindings {
 			expr = glang.NewCallExpr(glang.VerbatimExpr("Fst"), expr)
@@ -1528,7 +1528,7 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 	case *types.Chan:
 		e = glang.ForRangeChanExpr{
 			Chan: glang.IdentExpr("$range"),
-			Elem: ctx.glangType(s.X, chanElem(ctx.typeOf(s.X))),
+			Elem: ctx.glangType(s.X, ctx.chanElem(s.X, ctx.typeOf(s.X))),
 			Body: body,
 		}
 	case *types.Array:
@@ -1790,6 +1790,17 @@ func (ctx *Ctx) assignFromTo(lhs ast.Expr, rhs glang.Expr, cont glang.Expr) glan
 	}, cont)
 }
 
+// chanElem is the element type of a channel operation's channel type t, which
+// for a type parameter is its core type's: a type parameter whose channel terms
+// have different elements is not translated.
+func (ctx *Ctx) chanElem(n locatable, t types.Type) types.Type {
+	elem, ok := chanElem(t)
+	if !ok {
+		ctx.unsupported(n, "channel operation on %v, whose core type goose does not determine", t)
+	}
+	return elem
+}
+
 // typeIdentityLost reports whether the GoLang term for t may denote more than
 // one Go type: struct tags are dropped, unexported field and method names are
 // not qualified by their package, and the predeclared error is its underlying
@@ -1839,6 +1850,16 @@ func typeIdentityLost(t types.Type) bool {
 		// literal interface identical to it gets the same term
 		if types.Identical(t, types.Universe.Lookup("error").Type().Underlying()) {
 			return true
+		}
+		// so is one that becomes identical to it once a type parameter is
+		// instantiated (`interface{ Error() T }` with `T = string`)
+		if t.NumMethods() == 1 && t.Method(0).Name() == "Error" {
+			sig := t.Method(0).Type().(*types.Signature)
+			if sig.Params().Len() == 0 && sig.Results().Len() == 1 {
+				if _, ok := types.Unalias(sig.Results().At(0).Type()).(*types.TypeParam); ok {
+					return true
+				}
+			}
 		}
 		// all methods, embedded ones too: the term has them flattened, and an
 		// embedded interface's unexported methods belong to its package
@@ -2421,7 +2442,7 @@ func (ctx *Ctx) selectStmt(s *ast.SelectStmt, cont glang.Expr) (expr glang.Expr)
 
 			clauses = append(clauses, glang.CommClause{
 				Comm: glang.SendCase{
-					ElemType: ctx.glangType(s.Comm, chanElem(ctx.typeOf(c.Chan))),
+					ElemType: ctx.glangType(s.Comm, ctx.chanElem(c.Chan, ctx.typeOf(c.Chan))),
 					Chan:     glang.IdentExpr(fmt.Sprintf("$ch%d", i)),
 					Value:    glang.IdentExpr(fmt.Sprintf("$v%d", i)),
 				},
@@ -2482,7 +2503,7 @@ func (ctx *Ctx) selectStmt(s *ast.SelectStmt, cont glang.Expr) (expr glang.Expr)
 
 			clauses = append(clauses, glang.CommClause{
 				Comm: glang.RecvCase{
-					ElemType: ctx.glangType(s.Comm, chanElem(chanType)),
+					ElemType: ctx.glangType(s.Comm, ctx.chanElem(s.Comm, chanType)),
 					Chan:     glang.IdentExpr(fmt.Sprintf("$ch%d", i)),
 				},
 				Body: glang.FuncLit{
@@ -2503,7 +2524,7 @@ func (ctx *Ctx) selectStmt(s *ast.SelectStmt, cont glang.Expr) (expr glang.Expr)
 		s := s.Body.List[i].(*ast.CommClause)
 		if c, ok := s.Comm.(*ast.SendStmt); ok {
 			// the core type, for a channel whose type is a type parameter
-			elem := chanElem(ctx.typeOf(c.Chan))
+			elem := ctx.chanElem(c.Chan, ctx.typeOf(c.Chan))
 			expr = glang.LetExpr{
 				Names:   []string{fmt.Sprintf("$v%d", i)},
 				ValExpr: ctx.exprIntoType(c.Value, elem),
@@ -2525,7 +2546,7 @@ func (ctx *Ctx) selectStmt(s *ast.SelectStmt, cont glang.Expr) (expr glang.Expr)
 }
 
 func (ctx *Ctx) sendStmt(s *ast.SendStmt, cont glang.Expr) (expr glang.Expr) {
-	elemType := chanElem(ctx.typeOf(s.Chan))
+	elemType := ctx.chanElem(s.Chan, ctx.typeOf(s.Chan))
 	expr = glang.NewCallExpr(glang.VerbatimExpr("chan.send"),
 		ctx.glangType(s, elemType),
 		glang.IdentExpr("$chan"),
@@ -2632,7 +2653,7 @@ func (ctx *Ctx) typeSwitchStmt(s *ast.TypeSwitchStmt, cont glang.Expr) (e glang.
 				}
 			}
 			cond := getCond(0)
-			for i := range c.List[1:] {
+			for i := 1; i < len(c.List); i++ {
 				cond = glang.BinaryExpr{Op: glang.BinOp{
 					OpId: glang.OpLOr,
 					Type: glang.VerbatimExpr("go.bool"),
