@@ -80,7 +80,12 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
 * **Byte-addressed memory and `unsafe`.** A heap location is a block and a byte
   offset (`Loc`), and each byte of an allocation is a cell
   (`GooseLang/Lang.lean`, `Encoding`): an integer or float of `n` bytes is
-  stored as its `n` little-endian bytes (`LitByte`), and a value with no byte
+  stored as its `n` little-endian bytes (`LitByte`; float arithmetic is an
+  uninterpreted function of its operands, except that a NaN result is any NaN,
+  `go.floatResult64`, since which NaN gc's code gives depends on how it was
+  compiled and package `unsafe` reads its bits; the program is assumed built
+  with the default `GOAMD64=v1`, where gc does not fuse `x*y+z` into one
+  rounding as it may with `v3`), and a value with no byte
   representation (a pointer, string, slice, interface, func, map, chan, `bool`)
   as itself in its first cell followed by tails `LitTail k i` that record its
   size and position; padding and fresh cells are `LitPad`. Typed loads and stores go through multi-cell primitives

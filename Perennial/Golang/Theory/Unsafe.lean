@@ -243,6 +243,49 @@ theorem wp_unsafe_slice (t : go.GoType) [go.Reinterpretable t] {V : Type} [ZeroV
   try iapply HΦ $$ Hl
 
 
+/-- A `float64` operation's result (`go.floatResult64`): some `float64`, its bits being
+observable through package `unsafe`, so a NaN result is any NaN. -/
+theorem wp_floatResult64 (r : w64) (Φ : val → IProp GF) :
+    (∀ f : w64, Φ #f) ⊢ WP (go.floatResult64 r) @ s; E {{ Φ }} := by
+  iintro HΦ
+  unfold go.floatResult64
+  split
+  · unfold go.arbitraryNaN64
+    wp_bind ArbitraryInt
+    wp_apply wp_ArbitraryInt as %x -
+    wp_pures
+    rw [if_neg (by decide)]
+    wp_pures
+    wp_bind ArbitraryInt
+    wp_apply wp_ArbitraryInt as %y -
+    wp_pures
+    rw [if_neg (by decide)]
+    wp_pures
+    iapply HΦ
+  · wp_pures
+    iapply HΦ
+
+/-- `go.floatResult32`, for `float32`. -/
+theorem wp_floatResult32 (r : w32) (Φ : val → IProp GF) :
+    (∀ f : w32, Φ #f) ⊢ WP (go.floatResult32 r) @ s; E {{ Φ }} := by
+  iintro HΦ
+  unfold go.floatResult32
+  split
+  · unfold go.arbitraryNaN32
+    wp_bind ArbitraryInt
+    wp_apply wp_ArbitraryInt as %x -
+    wp_pures
+    rw [if_neg (by decide)]
+    wp_pures
+    wp_bind ArbitraryInt
+    wp_apply wp_ArbitraryInt as %y -
+    wp_pures
+    rw [if_neg (by decide)]
+    wp_pures
+    iapply HΦ
+  · wp_pures
+    iapply HΦ
+
 end unsafe_wps
 
 end Perennial

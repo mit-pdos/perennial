@@ -217,9 +217,10 @@ class StructSize (t : go.GoType) (sum : Int) : Prop where
   size : ∀ (V : Type) [ZeroVal V], TypeRepr t V → typeSize V = sum
 
 /-- A type of at most 16 bytes, for `Reinterpretable`: gc copies a value of at most 16
-bytes in one move, a larger one (other than an array through pointers) in a forward loop
-that two overlapping views of the same bytes would corrupt where the model copies
-the value whole; proofs give it per array or struct type. -/
+bytes in one move, but a larger one may be copied in a forward loop (even an array, as in
+`*p = [6]int(*q)`; only `*p = *q` is a `memmove`), which two overlapping views of the same
+bytes would corrupt where the model copies the value whole. (Converting a slice to an array
+pointer, stuck today, gives such views too.) Proofs give it per array or struct type. -/
 class SizeAtMost16 (t : go.GoType) : Prop where
   le : ∀ (V : Type) [ZeroVal V], TypeRepr t V → typeSize V ≤ 16
 
@@ -1113,6 +1114,36 @@ attribute [instance] UntypedFloatSemantics.underlying_untyped_float
 export UntypedFloatSemantics (underlying_untyped_float convert_untyped_float64
   convert_untyped_float32)
 
+/-- Whether a `float64`'s bits are a NaN: all exponent bits set, a non-zero mantissa. -/
+def isNaN64 (r : w64) : Bool :=
+  decide ((uint.Z r / 2 ^ 52) % 2 ^ 11 = 2 ^ 11 - 1 ∧ uint.Z r % 2 ^ 52 ≠ 0)
+
+/-- Whether a `float32`'s bits are a NaN. -/
+def isNaN32 (r : w32) : Bool :=
+  decide ((uint.Z r / 2 ^ 23) % 2 ^ 8 = 2 ^ 8 - 1 ∧ uint.Z r % 2 ^ 23 ≠ 0)
+
+/-- Any NaN `float64`: either sign, any non-zero mantissa. -/
+def arbitraryNaN64 : Expr :=
+  gl((((ArbitraryInt %⟨go.uint64⟩ #(W64 2)) *⟨go.uint64⟩ #(W64 (2 ^ 63))) +⟨go.uint64⟩
+      #(W64 0x7FF0000000000000)) +⟨go.uint64⟩
+      ((ArbitraryInt %⟨go.uint64⟩ #(W64 (2 ^ 52 - 1))) +⟨go.uint64⟩ #(W64 1)))
+
+/-- Any NaN `float32`. -/
+def arbitraryNaN32 : Expr :=
+  App (Val (GoInstruction (Convert go.uint64 go.uint32)))
+    gl((((ArbitraryInt %⟨go.uint64⟩ #(W64 2)) *⟨go.uint64⟩ #(W64 (2 ^ 31))) +⟨go.uint64⟩
+      #(W64 0x7F800000)) +⟨go.uint64⟩
+      ((ArbitraryInt %⟨go.uint64⟩ #(W64 (2 ^ 23 - 1))) +⟨go.uint64⟩ #(W64 1)))
+
+/-- The result `r` of a `float64` operation, a fixed function of its operands (`FloatOps`)
+unless it is a NaN: which NaN an operation on NaNs gives depends on how gc compiled it
+(the order of a commutative operation's operands, constant folding), and its bits are
+observable through package `unsafe`, so a NaN result is any NaN. -/
+def floatResult64 (r : w64) : Expr := if isNaN64 r then arbitraryNaN64 else Val #r
+
+/-- `floatResult64` for `float32`. -/
+def floatResult32 (r : w32) : Expr := if isNaN32 r then arbitraryNaN32 else Val #r
+
 class Float64Semantics [GoSemanticsFunctions] : Prop where
   go_zero_val_float64 : TypeReprUnderlying go.float64 w64
   comparable_float64 : ⟦CheckComparable go.float64, #()⟧ ⤳[under] #()
@@ -1124,10 +1155,14 @@ class Float64Semantics [GoSemanticsFunctions] : Prop where
   ge_float64 (v1 v2 : w64) : ⟦GoOp GoGe go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Leb v2 v1)
   gt_float64 (v1 v2 : w64) : ⟦GoOp GoGt go.float64, (#v1, #v2)⟧
     ⤳[under] #(float64Leb v2 v1 && decide (v1 ≠ v2))
-  plus_float64 (v1 v2 : w64) : ⟦GoOp GoPlus go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Add v1 v2)
-  sub_float64 (v1 v2 : w64) : ⟦GoOp GoSub go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Sub v1 v2)
-  mul_float64 (v1 v2 : w64) : ⟦GoOp GoMul go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Mul v1 v2)
-  div_float64 (v1 v2 : w64) : ⟦GoOp GoDiv go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Div v1 v2)
+  plus_float64 (v1 v2 : w64) : ⟦GoOp GoPlus go.float64, (#v1, #v2)⟧ ⤳[under]
+    floatResult64 (float64Add v1 v2)
+  sub_float64 (v1 v2 : w64) : ⟦GoOp GoSub go.float64, (#v1, #v2)⟧ ⤳[under]
+    floatResult64 (float64Sub v1 v2)
+  mul_float64 (v1 v2 : w64) : ⟦GoOp GoMul go.float64, (#v1, #v2)⟧ ⤳[under]
+    floatResult64 (float64Mul v1 v2)
+  div_float64 (v1 v2 : w64) : ⟦GoOp GoDiv go.float64, (#v1, #v2)⟧ ⤳[under]
+    floatResult64 (float64Div v1 v2)
   -- `float64(n)` of an integer: an uninterpreted function of the integer (`FloatOps`)
   convert_int_to_float64 (v : w64) : ⟦Convert go.int go.float64, #v⟧ ⤳[under] #(int64ToFloat64 v)
   convert_int64_to_float64 (v : w64) :
@@ -1164,10 +1199,14 @@ class Float32Semantics [GoSemanticsFunctions] : Prop where
   ge_float32 (v1 v2 : w32) : ⟦GoOp GoGe go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Leb v2 v1)
   gt_float32 (v1 v2 : w32) : ⟦GoOp GoGt go.float32, (#v1, #v2)⟧
     ⤳[under] #(float32Leb v2 v1 && decide (v1 ≠ v2))
-  plus_float32 (v1 v2 : w32) : ⟦GoOp GoPlus go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Add v1 v2)
-  sub_float32 (v1 v2 : w32) : ⟦GoOp GoSub go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Sub v1 v2)
-  mul_float32 (v1 v2 : w32) : ⟦GoOp GoMul go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Mul v1 v2)
-  div_float32 (v1 v2 : w32) : ⟦GoOp GoDiv go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Div v1 v2)
+  plus_float32 (v1 v2 : w32) : ⟦GoOp GoPlus go.float32, (#v1, #v2)⟧ ⤳[under]
+    floatResult32 (float32Add v1 v2)
+  sub_float32 (v1 v2 : w32) : ⟦GoOp GoSub go.float32, (#v1, #v2)⟧ ⤳[under]
+    floatResult32 (float32Sub v1 v2)
+  mul_float32 (v1 v2 : w32) : ⟦GoOp GoMul go.float32, (#v1, #v2)⟧ ⤳[under]
+    floatResult32 (float32Mul v1 v2)
+  div_float32 (v1 v2 : w32) : ⟦GoOp GoDiv go.float32, (#v1, #v2)⟧ ⤳[under]
+    floatResult32 (float32Div v1 v2)
 
 attribute [instance] Float32Semantics.go_zero_val_float32 Float32Semantics.comparable_float32
   Float32Semantics.underlying_float32 Float32Semantics.go_eq_float32 Float32Semantics.le_float32

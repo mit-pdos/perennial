@@ -30,6 +30,13 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.useFloat.
   -- the package constant `a` (a `def` of type `val`) must be unfolded
   simp only [a]
   wp_auto
+  -- the sum and the product: any NaN when they are NaNs (`go.floatResult64`)
+  wp_bind (go.floatResult64 _)
+  iapply wp_floatResult64; iintro %f
+  wp_auto
+  wp_bind (go.floatResult64 _)
+  iapply wp_floatResult64; iintro %g
+  wp_auto
   wp_end
 
 end proof
