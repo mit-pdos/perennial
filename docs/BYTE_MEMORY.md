@@ -244,6 +244,13 @@ live only in `go.Semantics` (`convert_nil_interface`) and
 
 **Needed in goose (found by the sketch).**
 
+* (Done.) goose refuses an interface conversion, assertion or type switch on
+  an unnamed type with a struct tag or an unexported field or method name:
+  its term drops the tag and does not qualify the name by its package, so it
+  may denote several Go types, and the semantics compares dynamic types by
+  their terms (`any(struct{X int "a"}{1}).(struct{X int "b"})` panics in Go).
+  Encoding tags and package paths in goose's types would lift the
+  restriction.
 * (Done.) `TypeAssert`/`TypeAssert2` carry the source type. The interface
   values' tag (`(false, _)`/`(true, _)`) is no longer read by any lowering and
   can go.

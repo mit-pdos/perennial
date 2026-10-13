@@ -1138,6 +1138,7 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 func (ctx *Ctx) typeAssertExpr(e *ast.TypeAssertExpr, multipleBindings bool) glang.Expr {
 	// the source (interface) type too: the assertion compares the dynamic type
 	// word with the itab for (target, source), as the compiler does
+	ctx.checkDynamicTypes(e, ctx.typeOf(e.X), ctx.typeOf(e.Type))
 	from := ctx.glangType(e.X, ctx.typeOf(e.X))
 	ty := ctx.glangType(e, ctx.typeOf(e.Type))
 	if multipleBindings {
@@ -1732,6 +1733,78 @@ func (ctx *Ctx) assignFromTo(lhs ast.Expr, rhs glang.Expr, cont glang.Expr) glan
 	}, cont)
 }
 
+// typeIdentityLost reports whether the GoLang term for t may denote more than
+// one Go type: struct tags are dropped and unexported field and method names
+// are not qualified by their package, so in an unnamed type they do not
+// distinguish types that Go does. Named types are qualified by their package
+// (only their type arguments are checked).
+func typeIdentityLost(t types.Type) bool {
+	switch t := types.Unalias(t).(type) {
+	case *types.Named:
+		if args := t.TypeArgs(); args != nil {
+			for i := 0; i < args.Len(); i++ {
+				if typeIdentityLost(args.At(i)) {
+					return true
+				}
+			}
+		}
+		return false
+	case *types.Pointer:
+		return typeIdentityLost(t.Elem())
+	case *types.Slice:
+		return typeIdentityLost(t.Elem())
+	case *types.Array:
+		return typeIdentityLost(t.Elem())
+	case *types.Chan:
+		return typeIdentityLost(t.Elem())
+	case *types.Map:
+		return typeIdentityLost(t.Key()) || typeIdentityLost(t.Elem())
+	case *types.Signature:
+		for _, tup := range []*types.Tuple{t.Params(), t.Results()} {
+			for i := 0; i < tup.Len(); i++ {
+				if typeIdentityLost(tup.At(i).Type()) {
+					return true
+				}
+			}
+		}
+		return false
+	case *types.Struct:
+		for i := 0; i < t.NumFields(); i++ {
+			f := t.Field(i)
+			if t.Tag(i) != "" || !f.Exported() || typeIdentityLost(f.Type()) {
+				return true
+			}
+		}
+		return false
+	case *types.Interface:
+		for i := 0; i < t.NumExplicitMethods(); i++ {
+			m := t.ExplicitMethod(i)
+			if !m.Exported() || typeIdentityLost(m.Type()) {
+				return true
+			}
+		}
+		for i := 0; i < t.NumEmbeddeds(); i++ {
+			if typeIdentityLost(t.EmbeddedType(i)) {
+				return true
+			}
+		}
+		return false
+	default:
+		return false
+	}
+}
+
+// checkDynamicTypes refuses an interface conversion, assertion or type switch
+// on a type whose identity the translation loses: the semantics compares
+// dynamic types by their terms, so it would identify types Go distinguishes.
+func (ctx *Ctx) checkDynamicTypes(n locatable, ts ...types.Type) {
+	for _, t := range ts {
+		if typeIdentityLost(t) {
+			ctx.unsupported(n, "interface conversion or type assertion on %v, an unnamed type with a struct tag or an unexported field or method name (its identity is lost in translation)", t)
+		}
+	}
+}
+
 // This handles conversions arising from the notion of "assignability" in the Go spec.
 func (ctx *Ctx) handleImplicitConversion(n locatable, from, to types.Type, e glang.Expr) glang.Expr {
 	if to == nil {
@@ -1744,6 +1817,9 @@ func (ctx *Ctx) handleImplicitConversion(n locatable, from, to types.Type, e gla
 	if types.Identical(from.Underlying(), to.Underlying()) {
 		return e
 	} else {
+		if types.IsInterface(from) || types.IsInterface(to) {
+			ctx.checkDynamicTypes(n, from, to)
+		}
 		return glang.NewCallExpr(glang.VerbatimExpr("Convert"),
 			ctx.glangType(n, from), ctx.glangType(n, to), e)
 	}
@@ -2325,6 +2401,10 @@ func (ctx *Ctx) typeSwitchStmt(s *ast.TypeSwitchStmt, cont glang.Expr) (e glang.
 		if c.List == nil {
 			// default case already handled
 			continue
+		}
+		ctx.checkDynamicTypes(c, ctx.typeOf(y))
+		for _, ct := range c.List {
+			ctx.checkDynamicTypes(ct, ctx.typeOf(ct))
 		}
 
 		body := ctx.stmtList(c.Body, nil)
