@@ -347,6 +347,22 @@ syntax leaves implicit (an implicit conversion to a known target type, an
 interface-method call versus a static call) when the Go type checker has
 already fixed that choice for every instantiation.
 
+**R11. The evaluation order is fixed by goose/order, and only its normal form
+is trusted.** goose translates code rewritten by `order.Rewrite` and checks it
+with `order.CheckFile`; binaries are compiled from the same rewrite by
+`cmd/perennial-order` (README, "Evaluation order"). Trusted: the definition of
+the normal form (`goose/order/normal.go`, `stmt.go`: which nodes are events,
+which reads a call could affect, when a read and an event are ordered), and
+the wrapper compiling exactly the rewrite of the source it is given. Not
+trusted: the rewriter (`rewrite.go`), whose bugs surface as goose errors. A
+change that makes the normal form accept more statements is BLOCK unless it
+comes with the spec sentence that orders the newly accepted reads, and an
+adversarial Go program (built with and without `-race`) that tries to tell
+two orders apart. goose code that orders evaluation itself (lets that bind
+operands in some order) needs no review on that account for statements in
+normal form, but a goose change that skips the check or translates code that
+was not rewritten is BLOCK.
+
 ## Report format
 
 Lead with the verdict, then the trust delta, then findings, then what was
