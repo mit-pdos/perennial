@@ -26,6 +26,7 @@ that width shifts every bit out (`<<<`, `>>>` give `0`, `sshiftRight'` the sign)
 module
 
 public import Perennial.Golang.Defn.PostLang
+public import Perennial.Golang.Defn.Layout
 
 @[expose] public section
 
@@ -160,15 +161,12 @@ variable [FfiSyntax] [GoSemanticsFunctions]
 
 mutual
 /-- `Reinterpretable t`: memory reached through an `unsafe.Pointer` may be accessed as a `t`
-(the conversion `(*t)(p)`, `UnsafeSemantics.convert_unsafe_to_pointer`): numbers, and
-slices, arrays and structs of them. A number is its bytes, as in Go; a slice header is the
-only value of 24 cells (`decode` checks a value's cells, `WriteCompat` the stores). Nothing
-else: a pointer could read the location inside a map or a channel (a `Loc` in the model)
-and reach the model's representation of it; a string shares its encoding (16 cells) with
-an interface, and a `bool` (one cell) is also the head of a mutex's value, so either could
-read or write another type's value whole where Go sees words of it; interfaces, maps,
-channels and functions are represented by the same value whatever their static type, where
-Go's representation depends on it. -/
+(`(*t)(p)`, `unsafe.Slice`, `UnsafeSemantics`): numbers, and arrays and structs of them
+without padding or blank fields (`NoPadding`). Such a value is its bytes, in the model as
+in Go, so reading or writing it over any bytes means what it means in Go; `UnsafeSemantics`
+also checks that the memory accessed is bytes (`CheckBytes`). Not the other types, whose
+model representation is not Go's bytes (a pointer, a string, an interface, a map, a
+channel, a function or a `bool` is one value in its cells; padding is no value). -/
 inductive Reinterpretable : go.GoType → Prop
   | uint8 : Reinterpretable go.uint8
   | uint16 : Reinterpretable go.uint16
@@ -183,10 +181,10 @@ inductive Reinterpretable : go.GoType → Prop
   | int : Reinterpretable go.int
   | float32 : Reinterpretable go.float32
   | float64 : Reinterpretable go.float64
-  | slice (t : go.GoType) (h : Reinterpretable t) : Reinterpretable (go.SliceType t)
   | array (n : Int) (t : go.GoType) (h : Reinterpretable t) : Reinterpretable (go.ArrayType n t)
   | struct (fds fds' : List go.field_decl) (heq : EqualsUnfold fds fds')
-      (h : ReinterpretableFields fds') : Reinterpretable (go.StructType fds)
+      (h : ReinterpretableFields fds') (V : Type) [ZeroVal V]
+      (hr : TypeRepr (go.StructType fds) V) (hnp : NoPadding V) : Reinterpretable (go.StructType fds)
   | named (t u : go.GoType) (hu : IsUnderlying t u) (h : Reinterpretable u) : Reinterpretable t
 
 /-- Every field of the list is `Reinterpretable`. -/
@@ -207,9 +205,9 @@ attribute [instance] Reinterpretable.uint8 Reinterpretable.uint16 Reinterpretabl
 
 instance (n : Int) (t : go.GoType) [h : Reinterpretable t] : Reinterpretable (go.ArrayType n t) :=
   .array n t h
-instance (t : go.GoType) [h : Reinterpretable t] : Reinterpretable (go.SliceType t) := .slice t h
-instance (fds fds' : List go.field_decl) [heq : EqualsUnfold fds fds'] [h : ReinterpretableFields fds'] :
-    Reinterpretable (go.StructType fds) := .struct fds fds' heq h
+instance (fds fds' : List go.field_decl) [heq : EqualsUnfold fds fds'] [h : ReinterpretableFields fds']
+    {V : Type} [ZeroVal V] [hr : TypeRepr (go.StructType fds) V] [hnp : NoPadding V] :
+    Reinterpretable (go.StructType fds) := .struct fds fds' heq h V hr hnp
 instance (priority := low) (t u : go.GoType) [hu : IsUnderlying t u] [h : Reinterpretable u] :
     Reinterpretable t := .named t u hu h
 instance (n : GoString) (t : go.GoType) (fs : List go.field_decl) [h : Reinterpretable t]
@@ -1173,9 +1171,13 @@ conversions in one expression, `unsafe.Add` and `unsafe.Slice`. The conversion o
 `unsafe.Pointer(uintptr(p) + n)`, which Goose emits as `unsafe.Add(p, n)`. -/
 class UnsafeSemantics [GoSemanticsFunctions] : Prop where
   /-- `(*t)(p)` keeps the location, for a type whose memory may be reinterpreted
-  (`Reinterpretable`); any other is stuck. -/
-  convert_unsafe_to_pointer (elem : go.GoType) [Reinterpretable elem] (l : Loc) :
-    ⟦Convert unsafe.Pointer (go.PointerType elem), #l⟧ ⤳[under] #l
+  (`Reinterpretable`) and if the `t`'s cells from `p` are bytes (`CheckBytes`); any other is
+  stuck. -/
+  convert_unsafe_to_pointer (elem : go.GoType) [Reinterpretable elem] {V : Type} [ZeroVal V]
+      [TypeRepr elem V] (l : Loc) :
+    ⟦Convert unsafe.Pointer (go.PointerType elem), #l⟧ ⤳[under]
+      (if l = null then #null
+       else Seq (CheckBytes (Val (PairV #l (LitV (LitInt (W64 (typeSize V))))))) (Val #l))
   /-- `(*t)(nil)` is `nil`, for any `t` (nothing is reinterpreted). -/
   convert_unsafe_nil_to_pointer (elem : go.GoType) :
     ⟦Convert unsafe.Pointer (go.PointerType elem), #null⟧ ⤳[under] #null
@@ -1193,22 +1195,25 @@ class UnsafeSemantics [GoSemanticsFunctions] : Prop where
        else gl((ArbitraryInt *⟨go.uint64⟩ #(W64 8)) +⟨go.uint64⟩
          #(W64 ((l1.locOff - l2.locOff) % 8))))
   /-- `unsafe.Add(ptr, len)`: `ptr` moved `len` bytes, which must stay in `ptr`'s
-  allocation (package `unsafe`'s rules; one past the end is not in it): a non-zero `len`
-  is stuck unless the result is a cell of the heap (`CheckCell`; the cells of a block are
-  exactly those its allocation made, `IsFreshAligned`). -/
+  allocation (package `unsafe`'s rules; one past the end is not in it). Beyond that, a
+  non-zero `len` is stuck unless the cells from `ptr` to the result, both included, are
+  bytes (`CheckBytes`): memory is only reached through `unsafe` where it is bytes, as in Go,
+  so the model's representation of other values (and of padding) is never reinterpreted. -/
   add_unfold : FuncUnfold «unsafe».Add [] (λ: "p" "n",
     if: "n" =⟨go.int⟩ #(W64 0) then "p"
     else
       let: "q" := GoOp GoPlus (go.PointerType go.uint8) ("p", "n") in
-      CheckCell "q" ;; "q")
+      (if: "n" >⟨go.int⟩ #(W64 0) then CheckBytes ("p", "n" +⟨go.int⟩ #(W64 1))
+       else CheckBytes ("q", #(W64 1) -⟨go.int⟩ "n")) ;;
+      "q")
   /-- `unsafe.Slice(ptr, len)` (`len` an `int`) checks what `runtime.unsafeslice` checks: a
   negative `len`; for a zero-size element, a `nil` `ptr` with a positive `len`; otherwise
   `len × size` overflowing or running past the end of the address space
   (`mem > -uintptr(ptr)`, with `uintptr(ptr)` as `convert_pointer_to_uintptr`, so `0` for
-  `nil`). A panic is stuck. Beyond Go's checks, the slice must lie in `ptr`'s allocation
-  (package `unsafe`'s rules; Go's `-d=checkptr` checks it): its first and last bytes are
-  cells (`CheckCell`; a block's cells are one allocation's, contiguous). -/
-  slice_unfold (t : go.GoType) {V : Type} [ZeroVal V] [TypeRepr t V] :
+  `nil`). A panic is stuck. Beyond Go's checks, the element type must be `Reinterpretable`
+  and the slice's cells bytes (`CheckBytes`), which also puts it in `ptr`'s allocation
+  (package `unsafe`'s rules; Go's `-d=checkptr` checks that). -/
+  slice_unfold (t : go.GoType) [Reinterpretable t] {V : Type} [ZeroVal V] [TypeRepr t V] :
     FuncUnfold «unsafe».Slice [t] (λ: "p" "n",
       if: "n" <⟨go.int⟩ #(W64 0) then Panic "unsafe.Slice: len out of range"
       else (if typeSize V = 0 then
@@ -1228,9 +1233,8 @@ class UnsafeSemantics [GoSemanticsFunctions] : Prop where
         else
           (if: "n" =⟨go.int⟩ #(W64 0) then #()
            else
-             CheckCell "p" ;;
-             CheckCell (GoOp GoPlus (go.PointerType go.uint8)
-               ("p", ("n" *⟨go.int⟩ #(W64 (typeSize V))) -⟨go.int⟩ #(W64 1)))) ;;
+             CheckBytes (Convert (go.PointerType t) «unsafe».Pointer "p",
+               "n" *⟨go.int⟩ #(W64 (typeSize V)))) ;;
           InternalMakeSlice ("p", "n", "n"))) : val)
 
 attribute [instance] UnsafeSemantics.convert_unsafe_to_pointer

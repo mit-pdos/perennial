@@ -106,6 +106,28 @@ def CompareAndSwapPointer.impl : val :=
   λ: "addr" "old" "new",
     Snd (CmpXchgN (.cell 8) "addr" ("old", "new"))
 
+/-- Models of (sync/atomic/type.go)
+
+```go
+func (x *Pointer[T]) Load() *T { return (*T)(LoadPointer(&x.v)) }
+func (x *Pointer[T]) Swap(new *T) (old *T) { return (*T)(SwapPointer(&x.v, unsafe.Pointer(new))) }
+```
+
+Goose translates them, but the semantics converts an `unsafe.Pointer` to a `*T` only where
+`T`'s memory is bytes (`go.Reinterpretable`, `CheckBytes`). These conversions are round
+trips: `x.v` (unexported) only ever holds an `unsafe.Pointer(p)` of a `p : *T` that `Store`,
+`Swap` or `CompareAndSwap` put there, so the model returns the location itself. A lower
+rung would need `unsafe.Pointer` values to carry the type they were converted from. -/
+def Pointer.Load.impl (T : go.GoType) : val :=
+  λ: "x" <>,
+    FuncResolve go!"sync/atomic.LoadPointer" [] #()
+      (StructFieldRef (go.GoType.Named go!"sync/atomic.Pointer" [T]) go!"v" "x")
+def Pointer.Swap.impl (T : go.GoType) : val :=
+  λ: "x" "new",
+    FuncResolve go!"sync/atomic.SwapPointer" [] #()
+      (StructFieldRef (go.GoType.Named go!"sync/atomic.Pointer" [T]) go!"v" "x")
+      (Convert (go.PointerType T) «unsafe».Pointer "new")
+
 def Value.Load.impl : val :=
   λ: "v" <>, LoadN (.cell 16) (StructFieldRef (go.GoType.Named go!"sync/atomic.Value" []) go!"v" "v")
 

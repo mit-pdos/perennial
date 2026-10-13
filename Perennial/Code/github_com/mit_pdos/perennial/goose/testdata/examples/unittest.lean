@@ -179,11 +179,6 @@ def wrapExternalStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] wrapExternalStruct.ty
 
-def typing.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.typing" [])
-
-attribute [irreducible] typing.ty
-
 def composite.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.composite" [])
 
@@ -6271,39 +6266,6 @@ attribute [instance] wrapExternalStruct.TypeAssumptions.type_repr
   wrapExternalStruct.TypeAssumptions.join_unfold
   wrapExternalStruct.TypeAssumptions.ptr_join_unfold
 
-structure typing [FfiSyntax] where
-  mk ::
-  proph' : _root_.Perennial.github_com.goose_lang.primitive.ProphId
-
-instance typing.zero_val [FfiSyntax] : ZeroVal typing :=
-  ⟨typing.mk zeroValDef⟩
-
-@[reducible] def typing.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"proph" _root_.Perennial.github_com.goose_lang.primitive.ProphId.ty)]
-
-@[irreducible] def typing.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  typing.fieldsUnsealed
-
-instance equals_unfold_typing [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold typing.fields typing.fieldsUnsealed :=
-  ⟨by unfold typing.fields; rfl⟩
-
-@[reducible] def typing.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType typing.fields)
-
-class typing.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying typing.underlying typing
-  underlying : go.UnderlyingDirectedEq typing.ty typing.underlying
-  layout : go.StructLayout typing [(go!"proph", typeSize _root_.Perennial.github_com.goose_lang.primitive.ProphId, typeAlign _root_.Perennial.github_com.goose_lang.primitive.ProphId)]
-  get_proph : ∀ (x : typing), go.IsGoStepPureDetTagged under (StructFieldGet typing.underlying go!"proph") #x (Val #(x.proph'))
-  set_proph : ∀ (x : typing) (y : _root_.Perennial.github_com.goose_lang.primitive.ProphId), go.IsGoStepPureDetTagged under (StructFieldSet typing.underlying go!"proph") (PairV #x #y) (Val #(({ x with proph' := y } : typing)))
-
-attribute [instance] typing.TypeAssumptions.type_repr
-  typing.TypeAssumptions.underlying
-  typing.TypeAssumptions.layout
-  typing.TypeAssumptions.get_proph
-  typing.TypeAssumptions.set_proph
-
 structure composite [FfiSyntax] where
   mk ::
   a' : w64
@@ -6881,7 +6843,6 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   mvEmbedPtr_instance : mvEmbedPtr.TypeAssumptions
   containsPointer_instance : containsPointer.TypeAssumptions
   wrapExternalStruct_instance : wrapExternalStruct.TypeAssumptions
-  typing_instance : typing.TypeAssumptions
   composite_instance : composite.TypeAssumptions
   R_instance : R.TypeAssumptions
   Other_instance : Other.TypeAssumptions
@@ -7157,7 +7118,6 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.mvEmbedPtr_instance
   Assumptions.containsPointer_instance
   Assumptions.wrapExternalStruct_instance
-  Assumptions.typing_instance
   Assumptions.composite_instance
   Assumptions.R_instance
   Assumptions.Other_instance

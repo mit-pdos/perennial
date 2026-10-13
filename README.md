@@ -103,31 +103,32 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `Golang/Defn/Mutex.lean`: one 8-byte value aligned to 4, the lock in its first
   cell),
   so every struct's field offsets are gc's. Package `unsafe`
-  (`go.UnsafeSemantics`): `Sizeof`, `Alignof` and `Offsetof` are constants;
-  `uintptr(p)` is an unspecified address in `[8, 2^48)` congruent to `p`'s offset
-  modulo 8 (an allocation's address is 8-aligned), chosen anew at each
-  conversion, so a proof cannot depend on where a block lives;
-  `uintptr(p) - uintptr(q)` in one expression whose operands cannot move the
-  stack (goose's `stackStable`: no call, receive, map index or allocating
-  conversion) is exact for two pointers into the same allocation;
-  `unsafe.Add(p, n)` (and `unsafe.Pointer(uintptr(p) + n)` with stack-stable
-  operands, which goose emits as it) is stuck unless the result is a cell of
-  `p`'s allocation; `unsafe.Slice` checks what `runtime.unsafeslice` checks, and
-  that the slice lies in `ptr`'s allocation; `(*T)(p)` for an `unsafe.Pointer`
-  `p` keeps the location, and is stuck unless `p` is `nil` or `T` is
-  `go.Reinterpretable` (numbers, and slices, arrays and structs of them: what
-  the model keeps exactly as Go does; not pointers, which could reach the model's
-  representation of a map or a channel, nor strings or `bool`s, whose encodings
-  are shared with interfaces and mutexes, nor interfaces, maps, channels or
-  funcs, whose model representation does not depend on their type as Go's does).
-  The lock models' `Unlock` of an unlocked lock is stuck (Go: a fatal error).
-  `atomic.Pointer[T]`'s `Load` and `Swap` convert an `unsafe.Pointer` back to `*T`,
-  so their specs require `go.Reinterpretable T`; `strings.Builder.copyCheck`, which
-  does the same round trip for `*Builder`, is a trusted model of it
-  (`TrustedCode/strings.lean`). goose also refuses the `uintptr` patterns whose
-  operands a checkptr build (`-race`, `-d=checkptr`) turns into runtime calls. Any other conversion of a `uintptr` to a
-  pointer is stuck. A model may be less defined than Go: what is stuck here is
-  what a proof shows does not happen.
+  (`go.UnsafeSemantics`, WPs in `Golang/Theory/Unsafe.lean`): memory is reached
+  through an `unsafe.Pointer` only where it is bytes. `(*T)(p)`, `unsafe.Add(p, n)`
+  (and `unsafe.Pointer(uintptr(p) + n)`, which goose emits as it) and
+  `unsafe.Slice(p, n)` check that the cells they reach (`T`'s from `p`, those from
+  `p` to `p + n`, the slice's) are bytes (`CheckBytes`), else they are stuck; and `T`
+  (the element type, for `unsafe.Slice`) must be `go.Reinterpretable`: numbers, and
+  arrays and structs of them without padding or blank fields (`go.NoPadding`), whose
+  values are their bytes in the model as in Go. So no pointer, string, interface,
+  map, channel, function, `bool`, mutex or padding is ever reinterpreted, and the
+  model's representation of them never shows. `(*T)(nil)` is `nil`. `Sizeof`,
+  `Alignof` and `Offsetof` are constants; `uintptr(p)` is an unspecified address in
+  `[8, 2^48)` congruent to `p`'s offset modulo 8 (an allocation's address is
+  8-aligned), chosen anew at each conversion, so a proof cannot depend on where a
+  block lives; `uintptr(p) - uintptr(q)` in one expression whose operands cannot
+  move the stack (goose's `stackStable`: no call, receive, map index, or conversion
+  that a checkptr build (`-race`) instruments) is exact for two pointers into the
+  same allocation. Any other conversion of a `uintptr` to a pointer is stuck. goose
+  refuses a `primitive.ProphId` inside a struct or an array (gc's is 0 bytes, the
+  model's a cell value, which would break gc's layout), a map key with a blank field
+  (the model compares keys whole), and a field named like goose's names for blank
+  fields (`_0`, …), which `==` skips. The lock models' `Unlock` of an unlocked lock
+  is stuck (Go: a fatal error). `atomic.Pointer[T]`'s `Load` and `Swap` and
+  `strings.Builder.copyCheck` convert an `unsafe.Pointer` back to the pointer type it
+  came from: they are trusted models of that round trip
+  (`TrustedCode/sync/atomic.lean`, `TrustedCode/strings.lean`). A model may be less
+  defined than Go: what is stuck here is what a proof shows does not happen.
 * **Evaluation order.** The Go spec orders a statement's calls and receives
   (left to right) but leaves the other reads of its operands unordered
   relative to them, and compilers differ: gc reads `m[0]` in `m[0] + f()`

@@ -13,6 +13,8 @@ translate = [
   "noCopy",
   "Pointer",
   "Pointer*",
+  "!Pointer[T].Load",
+  "!Pointer[T].Swap",
 
   "_",
 
@@ -20,6 +22,11 @@ translate = [
 ]
 
 trusted = [
+  # `Pointer.Load`/`Swap` convert an `unsafe.Pointer` back to `*T`, a round trip the
+  # semantics does not express (`go.Reinterpretable`): models in TrustedCode/sync/atomic.lean.
+  "Pointer[T].Load",
+  "Pointer[T].Swap",
+
   "LoadUint64",
   "StoreUint64",
   "SwapUint64",

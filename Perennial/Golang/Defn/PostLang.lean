@@ -121,6 +121,13 @@ attribute [instance] GoSemanticsFunctions.float_ops
 export GoSemanticsFunctions (underlying globalAddr functions methods methodSet structFieldRef
   typeSize typeAlign mapEmpty mapLookup mapInsert mapDelete is_map_domain is_map_pure mapDefault)
 
+/-- The name goose gives a blank field `_` (the `i`-th field: `_i`); goose refuses a field
+that is so named in the source. -/
+def go.isBlankFieldName (n : GoString) : Bool :=
+  match n with
+  | c :: ds => c == (95 : w8) && !ds.isEmpty && ds.all (fun d => (48 : w8) ≤ d && d ≤ (57 : w8))
+  | [] => false
+
 /-- The address of element `i` of an array of `V`s at `l`: `i` strides of `typeSize V`
 bytes on, within `l`'s block. A location outside any block (`locCar = 0`, which no
 allocation returns: `IsFresh`) has no elements, and stays where it is, so an index never
@@ -377,6 +384,8 @@ class CoreComparisonSemantics [GoSemanticsFunctions] : Prop where
                match fd with
                | go.FieldDecl n t => (n, t)
                | go.EmbeddedField n t => (n, t)
+             -- blank fields are not compared (spec, "Comparison operators")
+             if go.isBlankFieldName field_name then cmp_so_far else
              gl(if: cmp_so_far then
                 (StructFieldGet (go.StructType fds) field_name v1) =⟨field_type⟩
                 (StructFieldGet (go.StructType fds) field_name v2)

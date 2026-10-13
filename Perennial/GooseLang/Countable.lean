@@ -189,7 +189,7 @@ def PrimOp1.toSum : PrimOp1 → Nat ⊕ (MemOp1 × Encoding)
   | .FinishReadOp => .inl 2
   | .LoadOp => .inl 3
   | .AllocOp => .inl 4
-  | .CheckCellOp => .inl 5
+  | .CheckBytesOp => .inl 5
   | .MemOp1Op op enc => .inr (op, enc)
 def PrimOp1.fromSum : Nat ⊕ (MemOp1 × Encoding) → PrimOp1
   | .inl 0 => .PrepareWriteOp
@@ -197,7 +197,7 @@ def PrimOp1.fromSum : Nat ⊕ (MemOp1 × Encoding) → PrimOp1
   | .inl 2 => .FinishReadOp
   | .inl 3 => .LoadOp
   | .inl 4 => .AllocOp
-  | .inl _ => .CheckCellOp
+  | .inl _ => .CheckBytesOp
   | .inr (op, enc) => .MemOp1Op op enc
 instance PrimOp1.countable : Pos.Countable PrimOp1 :=
   countableOfLeftInverse PrimOp1.toSum PrimOp1.fromSum (by intro x; cases x <;> rfl)

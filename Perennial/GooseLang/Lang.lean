@@ -159,8 +159,8 @@ inductive PrimOp1 where
   | AllocOp
   /-- a memory operation on the encoded value at a location (`MemOp1`) -/
   | MemOp1Op (op : MemOp1) (enc : Encoding)
-  /-- stuck unless the location is a cell of the heap (`unsafe.Add`) -/
-  | CheckCellOp
+  /-- `(l, n)`: stuck unless the `n` cells from `l` are bytes (package `unsafe`) -/
+  | CheckBytesOp
 deriving DecidableEq
 
 inductive PrimOp2 where
@@ -389,8 +389,8 @@ abbrev AddN (enc : Encoding) (e1 e2 : Expr) : Expr := Primitive2 (.MemOp2Op .add
 /-- `CmpXchgN enc l (old, new)`: an atomic compare-exchange, returning the old value and
 whether it wrote. -/
 abbrev CmpXchgN (enc : Encoding) (e1 e2 : Expr) : Expr := Primitive2 (.MemOp2Op .cmpxchg enc) e1 e2
-/-- `CheckCell l`: `#()` if `l` is a cell of the heap, else stuck. -/
-abbrev CheckCell (e : Expr) : Expr := Primitive1 .CheckCellOp e
+/-- `CheckBytes (l, n)`: `#()` if the `n` cells from `l` are bytes (`LitByte`), else stuck. -/
+abbrev CheckBytes (e : Expr) : Expr := Primitive1 .CheckBytesOp e
 
 abbrev Lam (x : Binder) (e : Expr) : Expr := Rec BAnon x e
 abbrev Let (x : Binder) (e1 e2 : Expr) : Expr := App (Lam x e2) e1
@@ -997,10 +997,11 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
       decode enc (cs.map Prod.snd) = some vl → vl = v1 → encode enc v2 = some vs →
       BaseStep (CmpXchgN enc (Val #l) (Val (PairV v1 v2))) σg [] (Val (PairV vl #true))
         (setCells l (vs.map Free) σg) []
-  /-- `CheckCell l` (for `unsafe.Add`): `l` is a cell of the heap. -/
-  | CheckCellS l σg :
-      (σg.1.heap !! l).isSome →
-      BaseStep (CheckCell (Val #l)) σg [] (Val #()) σg []
+  /-- `CheckBytes (l, n)` (for package `unsafe`): the `n` cells from `l` are bytes. -/
+  | CheckBytesS (l : Loc) (n : w64) cs σg :
+      cs.length = uint.nat n → CellsAt σg.1.heap l cs →
+      (∀ c ∈ cs, ∃ b, c.2 = LitV (LitByte b)) →
+      BaseStep (CheckBytes (Val (PairV #l (LitV (LitInt n))))) σg [] (Val #()) σg []
   /-- non-atomic load part 1 (used for map accesses) -/
   | StartReadS l n v σg :
       σg.1.heap !! l = some (Reading n, v) →

@@ -35,9 +35,11 @@ trusted = [
 
   "runtime_notifyList*",
 
-  # `copyChecker` is a `uintptr` holding its own address, and `check` converts
-  # `unsafe.Pointer(c)` to `uintptr` and CASes it; goose supports neither, so
-  # both are modeled in TrustedCode/sync.lean (as an `unsafe.Pointer`).
+  # `copyChecker` is a `uintptr` holding its own address, and `check` compares
+  # `uintptr(unsafe.Pointer(c))` with it. goose translates `check`, but in the
+  # semantics each `uintptr(p)` is an unspecified address, so the translation
+  # may panic; Go's check relies on a `Cond`'s address being fixed (it lives on
+  # the heap). Both are modeled in TrustedCode/sync.lean (as an `unsafe.Pointer`).
   "copyChecker",
   "copyChecker.*",
 

@@ -159,6 +159,15 @@ func (ctx *Ctx) structType(t *types.Struct) glang.StructType {
 	for i := range t.NumFields() {
 		fieldType := t.Field(i).Type()
 		fieldName := fieldName(i, t.Field(i).Name())
+		// the semantics lays out structs as gc does (go.StructLayout), which a ProphId
+		// (0 bytes in gc, a cell value in the model) would break
+		if isProphId(fieldType) {
+			ctx.unsupported(t.Field(i), "a ProphId in a struct")
+		}
+		// the semantics recognizes blank fields by goose's names for them
+		if isBlankRename(t.Field(i).Name()) {
+			ctx.unsupported(t.Field(i), "a field named like a blank field (%s)", t.Field(i).Name())
+		}
 
 		ty.Fields = append(ty.Fields, glang.FieldDecl{
 			Name:     fieldName,
@@ -241,6 +250,42 @@ func (ctx *Ctx) interfaceType(n locatable, t *types.Interface) glang.Expr {
 	return glang.NewCallExpr(glang.TermIdent("go.InterfaceType"), elems)
 }
 
+// isProphId reports whether t is goose_lang/primitive's ProphId, which the model keeps in
+// memory (8 bytes) where gc's is a struct{} (0 bytes).
+func isProphId(t types.Type) bool {
+	nt, ok := types.Unalias(t).(*types.Named)
+	return ok && nt.Obj().Pkg() != nil &&
+		nt.Obj().Pkg().Path() == "github.com/goose-lang/primitive" && nt.Obj().Name() == "ProphId"
+}
+
+// hasBlankField reports whether a value of type t (not through pointers) has a blank field.
+func hasBlankField(t types.Type) bool {
+	switch u := t.Underlying().(type) {
+	case *types.Struct:
+		for i := 0; i < u.NumFields(); i++ {
+			if u.Field(i).Name() == "_" || hasBlankField(u.Field(i).Type()) {
+				return true
+			}
+		}
+	case *types.Array:
+		return hasBlankField(u.Elem())
+	}
+	return false
+}
+
+// isBlankRename reports whether s is a name goose gives a blank field (_0, _1, ...).
+func isBlankRename(s string) bool {
+	if len(s) < 2 || s[0] != '_' {
+		return false
+	}
+	for _, c := range s[1:] {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
+}
+
 func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 	switch t := t.(type) {
 	case *types.Struct:
@@ -285,6 +330,10 @@ func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 		}
 
 	case *types.Map:
+		// the model compares map keys as values, blank fields included (Go ignores them)
+		if hasBlankField(t.Key()) {
+			ctx.unsupported(n, "a map key type with a blank field")
+		}
 		return glang.NewCallExpr(glang.TermIdent("go.MapType"),
 			ctx.glangType(n, t.Key()), ctx.glangType(n, t.Elem()))
 	case *types.Chan:
@@ -301,6 +350,9 @@ func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 			glang.TermIdent(chanDir), ctx.glangType(n, t.Elem()),
 		)
 	case *types.Array:
+		if isProphId(t.Elem()) {
+			ctx.unsupported(n, "an array of ProphId")
+		}
 		return glang.NewCallExpr(glang.VerbatimExpr("go.ArrayType"),
 			glang.ZLiteral{Value: big.NewInt(t.Len())}, ctx.glangType(n, t.Elem()))
 	case *types.Signature:

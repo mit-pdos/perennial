@@ -937,8 +937,8 @@ instance memOp2_atomic (a : Language.Atomicity) (op : MemOp2) (enc : Encoding) (
     Language.Atomic a (Primitive2 (.MemOp2Op op enc) (Val v1) (Val v2)) :=
   goose_atomic a (fun _ _ _ _ _ h => by cases h <;> rfl) (by solve_sub_redexes)
 
-instance checkCell_atomic (a : Language.Atomicity) (v : val) :
-    Language.Atomic a (CheckCell (Val v)) :=
+instance checkBytes_atomic (a : Language.Atomicity) (v : val) :
+    Language.Atomic a (CheckBytes (Val v)) :=
   goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
 
 /-- `PrepareWrite` and `FinishStore` are individually atomic, but the two need to
@@ -2344,9 +2344,9 @@ theorem baseStep_CmpXchgN_inv {enc : Encoding} {v1 v2 : val}
     exact ⟨_, _, _, _, _, rfl, rfl, ‹_›, ‹_›, ‹_›, ‹_›, rfl, rfl,
       Or.inr ⟨‹_›, ‹_›, _, ‹_›, rfl, rfl⟩⟩
 
-theorem baseStep_CheckCell_inv {v : val} (h : BaseStep (CheckCell (Val v)) σ κ e' σ' efs) :
-    ∃ l, v = #l ∧ (σ.1.heap !! l).isSome ∧ κ = [] ∧ e' = Val #() ∧ σ' = σ ∧ efs = [] := by
-  cases h; exact ⟨_, rfl, ‹_›, rfl, rfl, rfl, rfl⟩
+theorem baseStep_CheckBytes_inv {v : val} (h : BaseStep (CheckBytes (Val v)) σ κ e' σ' efs) :
+    κ = [] ∧ e' = Val #() ∧ σ' = σ ∧ efs = [] := by
+  cases h; exact ⟨rfl, rfl, rfl, rfl⟩
 
 /-! #### WPs -/
 
@@ -2758,20 +2758,26 @@ theorem wp_cmpxchgN_suc (enc : Encoding) (l : Loc) (vs vs' : List val) (vl v1 v2
     iapply (BigSepL.bigSepL_mono (fun {i x} _ =>
       na_pointsto_to_heap (l +ₗ (i : Int)) _ x hc)) $$ Hl
 
-theorem wp_checkCell (l : Loc) (q : DFrac) (v : val) :
-    {{ ▷ heapPointsto (GF := GF) l q v }} (CheckCell (Val #l)) @ s; E
-    {{ RET #(); heapPointsto l q v }} := by
+/-- `CheckBytes (l, n)` over `n` owned bytes. -/
+theorem wp_checkBytes (l : Loc) (q : DFrac) (vs : List val) (n : w64)
+    (hn : uint.nat n = vs.length) (hb : ∀ v ∈ vs, ∃ b, v = LitV (LitByte b)) :
+    {{ ▷ pointstoVals (GF := GF) l q vs }} (CheckBytes (Val (PairV #l (LitV (LitInt n))))) @ s; E
+    {{ RET #(); pointstoVals l q vs }} := by
   iintro %Φ >Hl HΦ
   iapply wp_lift_atomic_heap_step rfl rfl
   iintro %σ₁ Hσ
-  icases heapPointsto_na_acc l q v $$ Hl with ⟨Hl, Hl_rest⟩
-  icases na_heap_read tls σ₁.1.heap l q v $$ Hσ Hl with %⟨lk, n, Hlookup, -⟩
+  icases pointstoVals_split l q vs $$ Hl with ⟨%hc, Hl⟩
+  icases na_heap_read_cells' σ₁.1.heap l q vs $$ Hσ Hl with %⟨cs, Hvs, Hcells, Hrd⟩
   imodintro
   isplitr
-  · ipureintro; exact ⟨[], _, _, [], BaseStep.CheckCellS l σ₁ (by rw [Hlookup]; rfl)⟩
+  · ipureintro
+    refine ⟨[], _, _, [], BaseStep.CheckBytesS l n cs σ₁ (by rw [hn, ← Hvs, List.length_map])
+      Hcells ?_⟩
+    intro c hcm
+    exact hb c.2 (by rw [← Hvs]; exact List.mem_map_of_mem hcm)
   inext
   iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨l', Hl', -, rfl, rfl, rfl, rfl⟩ := baseStep_CheckCell_inv Hstep
+  obtain ⟨rfl, rfl, rfl, rfl⟩ := baseStep_CheckBytes_inv Hstep
   imodintro
   isplitr
   · ipureintro; exact ⟨rfl, rfl⟩
@@ -2781,7 +2787,11 @@ theorem wp_checkCell (l : Loc) (q : DFrac) (v : val) :
   isplit
   · ipureintro; rfl
   iapply HΦ
-  iapply Hl_rest $$ Hl
+  unfold pointstoVals
+  rcases hc with rfl | hc
+  · iapply BigSepL.bigSepL_nil.2; itrivial
+  · iapply (BigSepL.bigSepL_mono (fun {i x} _ =>
+      na_pointsto_to_heap (l +ₗ (i : Int)) _ x hc)) $$ Hl
 
 end enc_wps
 
