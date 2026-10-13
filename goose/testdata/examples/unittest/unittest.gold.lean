@@ -93,6 +93,11 @@ def Enum2.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Enum2.ty
 
+def assignIface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.assignIface" [])
+
+attribute [irreducible] assignIface.ty
+
 def Fooer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Fooer" [])
 
@@ -604,6 +609,15 @@ noncomputable def TakesFunctionType [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def FuncVar [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.FuncVar"
+
+noncomputable def rangeAssignInterface [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.rangeAssignInterface"
+
+noncomputable def selectSendInterface [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.selectSendInterface"
+
+noncomputable def typeParamToInterface [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.typeParamToInterface"
 
 noncomputable def fooConsumer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.fooConsumer"
@@ -2297,7 +2311,7 @@ noncomputable def maybeConvertToInterface.impl [FfiSyntax] [GoGlobalContext] (A 
   (App (Val exceptionDo)
   (Let "a" (App (Val (GoInstruction (GoAlloc A))) (Var "a"))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad A))) (Var "a"))))))
+  (App (Val (GoInstruction (Convert A go.any))) (App (Val (GoInstruction (GoLoad A))) (Var "a")))))))
 
 /-- go: generic_conversion.go:11:6 -/
 noncomputable def maybeConvertToString.impl [FfiSyntax] [GoGlobalContext] (A : go.GoType) : val :=
@@ -2455,6 +2469,56 @@ noncomputable def FuncVar.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f"))
   (App (Val doExecute)
   (Var "$r0")))))))
+
+/-- go: iface_assign.go:12:6 -/
+noncomputable def rangeAssignInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "xs"
+  (App (Val exceptionDo)
+  (Let "xs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType assignIface.ty)))) (Var "xs"))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.error))) (Var "x")))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType assignIface.ty)))) (Var "xs"))
+  (App (App (Val (slice.forRange assignIface.ty)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "x") (App (Val (GoInstruction (Convert assignIface.ty go.error))) (Var "$value")))))))))))))))
+
+/-- go: iface_assign.go:19:6 -/
+noncomputable def selectSendInterface.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "ch"
+  (Lam "i"
+  (App (Val exceptionDo)
+  (Let "i" (App (Val (GoInstruction (GoAlloc assignIface.ty))) (Var "i"))
+  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv go.error)))) (Var "ch"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.error)))) (Var "ch"))
+  (Let "$v0" (App (Val (GoInstruction (Convert assignIface.ty go.error))) (App (Val (GoInstruction (GoLoad assignIface.ty))) (Var "i")))
+  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (SendCase go.error (Var "$ch0") (Var "$v0")) (App (Val doExecute)
+  (Val #())))]))))))))))
+
+/-- go: iface_assign.go:25:6 -/
+noncomputable def typeParamToInterface.impl [FfiSyntax] [GoGlobalContext] (X : go.GoType) : val :=
+  (LamV "x"
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc X))) (Var "x"))
+  (Let "$r0" (App (Val (GoInstruction (Convert X go.error))) (App (Val (GoInstruction (GoLoad X))) (Var "x")))
+  (Let "e" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoLoad go.error))) (Var "e")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "e") (Var "$r0"))))))))))
 
 /-- go: interfaces.go:15:25 -/
 noncomputable def concreteFooer.Foo.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -5414,6 +5478,16 @@ class Enum2.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Enum2.TypeAssumptions.underlying
 
+abbrev assignIface [FfiSyntax] : Type := GoInterface
+
+@[reducible] def assignIface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"A" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Error" (go.signature.Signature [] false [go.string]))])
+
+class assignIface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq assignIface.ty assignIface.underlying
+
+attribute [instance] assignIface.TypeAssumptions.underlying
+
 abbrev Fooer [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Fooer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
@@ -6271,6 +6345,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   embedD_instance : embedD.TypeAssumptions
   Enum1_instance : Enum1.TypeAssumptions
   Enum2_instance : Enum2.TypeAssumptions
+  assignIface_instance : assignIface.TypeAssumptions
   Fooer_instance : Fooer.TypeAssumptions
   concreteFooer_instance : concreteFooer.TypeAssumptions
   FooerUser_instance : FooerUser.TypeAssumptions
@@ -6377,6 +6452,9 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   useUntypedRune_unfold : FuncUnfold useUntypedRune [] useUntypedRune.impl
   TakesFunctionType_unfold : FuncUnfold TakesFunctionType [] TakesFunctionType.impl
   FuncVar_unfold : FuncUnfold FuncVar [] FuncVar.impl
+  rangeAssignInterface_unfold : FuncUnfold rangeAssignInterface [] rangeAssignInterface.impl
+  selectSendInterface_unfold : FuncUnfold selectSendInterface [] selectSendInterface.impl
+  typeParamToInterface_unfold : ∀ (X : go.GoType), FuncUnfold typeParamToInterface [X] (typeParamToInterface.impl X)
   fooConsumer_unfold : FuncUnfold fooConsumer [] fooConsumer.impl
   testAssignConcreteToInterface_unfold : FuncUnfold testAssignConcreteToInterface [] testAssignConcreteToInterface.impl
   testPassConcreteToInterfaceArg_unfold : FuncUnfold testPassConcreteToInterfaceArg [] testPassConcreteToInterfaceArg.impl
@@ -6528,6 +6606,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.embedD_instance
   Assumptions.Enum1_instance
   Assumptions.Enum2_instance
+  Assumptions.assignIface_instance
   Assumptions.Fooer_instance
   Assumptions.concreteFooer_instance
   Assumptions.FooerUser_instance
@@ -6634,6 +6713,9 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.useUntypedRune_unfold
   Assumptions.TakesFunctionType_unfold
   Assumptions.FuncVar_unfold
+  Assumptions.rangeAssignInterface_unfold
+  Assumptions.selectSendInterface_unfold
+  Assumptions.typeParamToInterface_unfold
   Assumptions.fooConsumer_unfold
   Assumptions.testAssignConcreteToInterface_unfold
   Assumptions.testPassConcreteToInterfaceArg_unfold

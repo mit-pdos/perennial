@@ -1443,7 +1443,20 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 			if s.Tok == token.DEFINE && x.Name != "_" {
 				shared = append(shared, x)
 			}
-			body = ctx.assignFromTo(kv.x, glang.IdentExpr(kv.v), body)
+			var rhs glang.Expr = glang.IdentExpr(kv.v)
+			if s.Tok == token.ASSIGN {
+				// `for k, v = range x` assigns: convert to an interface variable
+				key, val := rangeVarTypes(ctx.typeOf(s.X))
+				src := key
+				if kv.v == "$value" {
+					src = val
+				}
+				if dst := ctx.typeOf(kv.x); src != nil && dst != nil &&
+					(types.IsInterface(src) || types.IsInterface(dst)) {
+					rhs = ctx.handleImplicitConversion(kv.x, src, dst, rhs)
+				}
+			}
+			body = ctx.assignFromTo(kv.x, rhs, body)
 		}
 	}
 
@@ -1815,6 +1828,54 @@ func (ctx *Ctx) checkDynamicTypes(n locatable, ts ...types.Type) {
 	}
 }
 
+// checkTypeArgs refuses type arguments that lose their identity in
+// translation (see checkInstances).
+func (ctx *Ctx) checkTypeArgs(n locatable, args *types.TypeList) {
+	for i := 0; i < args.Len(); i++ {
+		if t := args.At(i); typeIdentityLost(t) {
+			ctx.unsupported(n, "instantiation with %v, whose identity is lost in translation (an unnamed type with a struct tag, an unexported field or method name, or a literal interface identical to error)", t)
+		}
+	}
+}
+
+// rangeVarTypes gives the types of the key and value a range loop over a
+// value of type t produces (nil when there is none or it is not known).
+func rangeVarTypes(t types.Type) (key, val types.Type) {
+	switch t := t.Underlying().(type) {
+	case *types.Slice:
+		return types.Typ[types.Int], t.Elem()
+	case *types.Array:
+		return types.Typ[types.Int], t.Elem()
+	case *types.Pointer:
+		if a, ok := t.Elem().Underlying().(*types.Array); ok {
+			return types.Typ[types.Int], a.Elem()
+		}
+	case *types.Map:
+		return t.Key(), t.Elem()
+	case *types.Chan:
+		return t.Elem(), nil
+	case *types.Basic:
+		if t.Info()&types.IsString != 0 {
+			return types.Typ[types.Int], types.Typ[types.Rune]
+		}
+		return t, nil
+	case *types.Signature:
+		if t.Params().Len() == 1 {
+			if yield, ok := t.Params().At(0).Type().Underlying().(*types.Signature); ok {
+				ps := yield.Params()
+				if ps.Len() > 0 {
+					key = ps.At(0).Type()
+				}
+				if ps.Len() > 1 {
+					val = ps.At(1).Type()
+				}
+				return key, val
+			}
+		}
+	}
+	return nil, nil
+}
+
 // checkInstances refuses an instantiation in n whose type arguments lose
 // their identity in translation: inside the generic code they may become
 // dynamic types (`any(x)`, `x.(T)` for a type parameter `T`).
@@ -1822,11 +1883,7 @@ func (ctx *Ctx) checkInstances(n ast.Node) {
 	ast.Inspect(n, func(n ast.Node) bool {
 		if id, ok := n.(*ast.Ident); ok {
 			if inst, ok := ctx.info.Instances[id]; ok && inst.TypeArgs != nil {
-				for i := 0; i < inst.TypeArgs.Len(); i++ {
-					if t := inst.TypeArgs.At(i); typeIdentityLost(t) {
-						ctx.unsupported(id, "instantiation with %v, whose identity is lost in translation (an unnamed type with a struct tag, an unexported field or method name, or a literal interface identical to error)", t)
-					}
-				}
+				ctx.checkTypeArgs(id, inst.TypeArgs)
 			}
 		}
 		return true
@@ -1864,7 +1921,18 @@ func (ctx *Ctx) handleImplicitConversion(n locatable, from, to types.Type, e gla
 	if from == nil {
 		ctx.unsupported(n, "implicit conversion: don't know from type")
 	}
-	if types.Identical(from.Underlying(), to.Underlying()) {
+	// A value of a type parameter's type is converted even when the
+	// constraint's underlying type is the target's (the type argument may be an
+	// interface needing another itab, or a concrete type needing boxing), and
+	// so is a value between distinct interface types (Go gives it an itab for
+	// the target type).
+	if types.Identical(from, to) {
+		return e
+	}
+	_, fromTP := types.Unalias(from).(*types.TypeParam)
+	_, toTP := types.Unalias(to).(*types.TypeParam)
+	bothIface := types.IsInterface(from) && types.IsInterface(to) && !types.Identical(from, to)
+	if types.Identical(from.Underlying(), to.Underlying()) && !fromTP && !toTP && !bothIface {
 		return e
 	} else {
 		if types.IsInterface(from) || types.IsInterface(to) {
@@ -2384,9 +2452,13 @@ func (ctx *Ctx) selectStmt(s *ast.SelectStmt, cont glang.Expr) (expr glang.Expr)
 	for i := len(chs) - 1; i >= 0; i-- {
 		s := s.Body.List[i].(*ast.CommClause)
 		if c, ok := s.Comm.(*ast.SendStmt); ok {
+			var elem types.Type
+			if ch, ok := ctx.typeOf(c.Chan).Underlying().(*types.Chan); ok {
+				elem = ch.Elem()
+			}
 			expr = glang.LetExpr{
 				Names:   []string{fmt.Sprintf("$v%d", i)},
-				ValExpr: ctx.expr(c.Value),
+				ValExpr: ctx.exprIntoType(c.Value, elem),
 				Cont:    expr,
 			}
 		}

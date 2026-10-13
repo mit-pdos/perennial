@@ -260,6 +260,7 @@ func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 			ctx.nope(n, "unexpected built-in type %v", t.Obj())
 		}
 		if t.TypeArgs().Len() != 0 {
+			ctx.checkTypeArgs(n, t.TypeArgs())
 			return glang.CallExpr{
 				MethodName: glang.TypeIdent(ctx.qualifiedName(t.Obj())),
 				Args:       ctx.convertTypeArgsToGlang(n, t.TypeArgs()),
@@ -276,6 +277,7 @@ func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 			ctx.nope(n, "unexpected built-in type %v", t.Obj())
 		}
 		if t.TypeArgs().Len() != 0 {
+			ctx.checkTypeArgs(n, t.TypeArgs())
 			return glang.CallExpr{
 				MethodName: glang.TypeIdent(ctx.qualifiedName(t.Obj())),
 				Args:       ctx.convertTypeArgsToGlang(n, t.TypeArgs()),
