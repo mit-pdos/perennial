@@ -813,6 +813,18 @@ type compositeBinding struct {
 	val  glang.Expr
 }
 
+// literalType is the type of the value a composite literal builds: an elided element
+// literal in a slot of type *T (`[]*T{{...}}`) has type *T in go/types but builds a T.
+func (ctx *Ctx) literalType(e *ast.CompositeLit) types.Type {
+	t := ctx.typeOf(e)
+	if e.Type == nil {
+		if p, ok := t.Underlying().(*types.Pointer); ok {
+			return p.Elem()
+		}
+	}
+	return t
+}
+
 // checkLiteralFloats is checkFloatIntoIface for the elements and map keys of a composite
 // literal, which the semantics converts to their slots' types.
 func (ctx *Ctx) checkLiteralFloats(e *ast.CompositeLit) {
@@ -823,7 +835,7 @@ func (ctx *Ctx) checkLiteralFloats(e *ast.CompositeLit) {
 			}
 		}
 	}
-	switch t := underlyingType(ctx.typeOf(e)).(type) {
+	switch t := underlyingType(ctx.literalType(e)).(type) {
 	case *types.Struct:
 		for i, el := range e.Elts {
 			if kv, ok := el.(*ast.KeyValueExpr); ok {
@@ -890,7 +902,7 @@ func (ctx *Ctx) compositeLiteralWithBindings(e *ast.CompositeLit, bindings *[]co
 
 	// a slice literal whose length would be 2^63 or more (an element at index math.MaxInt,
 	// keyed or not) is miscompiled by gc; the semantics does not model that length
-	if _, ok := underlyingType(ctx.typeOf(e)).(*types.Slice); ok {
+	if _, ok := underlyingType(ctx.literalType(e)).(*types.Slice); ok {
 		next := int64(0)
 		for _, el := range e.Elts {
 			if kv, ok := el.(*ast.KeyValueExpr); ok {
@@ -927,7 +939,7 @@ func (ctx *Ctx) compositeLiteralWithBindings(e *ast.CompositeLit, bindings *[]co
 			if !done {
 				// array and slice literal keys are constant indices, which the
 				// semantics expects as KeyInteger
-				switch underlyingType(ctx.typeOf(e)).(type) {
+				switch underlyingType(ctx.literalType(e)).(type) {
 				case *types.Array, *types.Slice:
 					if tv, ok := ctx.info.Types[el.Key]; ok && tv.Value != nil {
 						if idx, exact := constant.Int64Val(constant.ToInt(tv.Value)); exact {
@@ -2385,6 +2397,9 @@ func (ctx *Ctx) copySource(lhs, rhs ast.Expr, t types.Type) (src ast.Expr, convs
 		convs = append(convs, c)
 		src = ast.Unparen(c.Args[0])
 	}
+	// (A slice-to-array conversion [n]T(s) is also a copy from memory in gc, from s's
+	// backing array; the semantics has no rule for it, so it is stuck. A rule for it would
+	// need a CheckCopy here.)
 	if !ctx.addressable(src) {
 		return nil, nil, false
 	}
