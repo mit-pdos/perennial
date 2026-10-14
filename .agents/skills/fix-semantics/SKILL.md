@@ -13,9 +13,9 @@ smallest change that makes the scheme more uniform, not less.
 
 The calibration lives in two files next to this one:
 
-* `cases.md`: decisions the user made. Authoritative.
-* `candidates.md`: past commits labelled by an agent, not yet reviewed.
-  Useful as examples of shapes, never as precedent over `cases.md`.
+* `examples.md`: decisions the user made. Authoritative.
+* `candidate-examples.md`: past commits labelled by an agent, not yet reviewed.
+  Useful as examples of shapes, never as precedent over `examples.md`.
 
 Read both before proposing anything.
 
@@ -42,7 +42,7 @@ Read both before proposing anything.
    * the change, as a diff or the exact rule;
    * its cost: changed/new goose branches, new semantics rules, new negative
      tests, new trusted models, lines in the trusted base;
-   * the closest case in `cases.md` and how this one matches its shape;
+   * the closest case in `examples.md` and how this one matches its shape;
    * what it leaves out (bundled fixes are split into separate items).
    A cost of more than one new branch/rule/negative test, or any branch that
    depends on context, is a red flag: say why it is unavoidable or propose
@@ -66,11 +66,11 @@ Read both before proposing anything.
    * `etc/trusted-delta.py HEAD`: the signals should be exactly the planned
      ones.
 
-6. **Record the case.** Append the decision to `cases.md` (format at its top),
+6. **Record the case.** Append the decision to `examples.md` (format at its top),
    including what the user rejected or changed in the plan and their words.
-   If it came from `candidates.md`, move it.
+   If it came from `candidate-examples.md`, move it.
 
-## Principles (provisional, distilled from cases.md; the user may edit)
+## Principles (provisional, distilled from examples.md; the user may edit)
 
 * **Complete a uniform scheme; don't add a case.** A new rule should look
   like a sibling of an existing one (Case 1). A new goose branch keyed on a
@@ -89,7 +89,7 @@ Read both before proposing anything.
 * **One bug per change.** Split bundled fixes; each gets its own plan and
   case.
 * **No narrative in the trusted base.** No comments justifying a rule or
-  recounting a bug; the commit message and `cases.md` carry the history.
+  recounting a bug; the commit message and `examples.md` carry the history.
 
 ## Relation to other skills
 

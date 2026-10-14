@@ -9,7 +9,7 @@ argument-hint: "[commit | A..B | (nothing: branch + working tree)] [--fix]"
 Perennial's theorems are only as good as what they rest on. The question this
 review answers for a change is: **does it add trust, is each addition
 necessary, and is each addition true of Go?** The reviewer's default is no:
-new trust must earn its place. `cases.md` (next to this file) has graded past
+new trust must earn its place. `examples.md` (next to this file) has graded past
 changes; read it once before reviewing, and compare the change against them
 (if it is missing, say so under "Skipped" and proceed). Precedent does not
 lower a grade: a merged change of the same shape means that change also needs
@@ -67,7 +67,7 @@ Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
    `AngelicExit`, stuck `Panic`); trust-list change; translator change;
    adequacy-statement change; new axiom/sorry/opaque. Then apply the rules
    below to each. Do not skip an item because it looks routine: the two
-   calibration failures in `cases.md` both looked routine.
+   calibration failures in `examples.md` both looked routine.
 
 4. **Verify, do not infer.** Each rule says how. At minimum:
    - compare a trusted model with the *real* Go source (the report's
@@ -115,7 +115,7 @@ Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
      unreviewed, not OK.
    For a non-trivial trusted model or semantics rule, additionally spawn one
    subagent (`Agent`, general-purpose) as an adversary. Its brief: the model
-   (or rule) and the Go it claims to model; the real Go source; `cases.md`;
+   (or rule) and the Go it claims to model; the real Go source; `examples.md`;
    the semantics facts it needs so it does not chase non-divergences (strings
    are byte lists, an out-of-range index or slice is a stuck `Panic`,
    `append`'s new capacity is arbitrary, `append`'s length above `2^63` is
@@ -128,7 +128,7 @@ Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
    the run's output; if it finds none after trying the zero/empty/nil/bounds/
    overflow/concurrency cases, say which cases it tried. The point of a
    separate agent is that it has not read the author's justification: the
-   counterexample to case 1 in `cases.md` is two lines of Go, and the people
+   counterexample to case 1 in `examples.md` is two lines of Go, and the people
    who had accepted the author's framing did not look for it.
 
 5. **Report** in the format below. Then, with `--fix`, apply the playbook.
@@ -406,7 +406,7 @@ soundness reason (the message is itself reviewed by R8). Playbook:
   (drop the `!Name`/`trusted` entries, regenerate). Move the obligation into
   the spec as a premise; if a caller cannot discharge it locally, back it with
   the ghost resource that adequacy bounds (R3a). Re-prove the specs that used
-  the assumption. The WaitGroup revert (`cases.md`, case 1) is the template.
+  the assumption. The WaitGroup revert (`examples.md`, case 1) is the template.
 - **Trusted code that is not irreducible (R2):** move the function to
   `translate` and regenerate.
   - For a missing feature, extend goose: a unit test in

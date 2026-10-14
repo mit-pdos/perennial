@@ -2,9 +2,9 @@
 
 These are past commits to the Go semantics and goose, not on the current
 branch. An agent labelled them automatically, and the user has not reviewed
-them yet. Where `cases.md` records a decision by the user, that decision
+them yet. Where `examples.md` records a decision by the user, that decision
 overrides the label here. When the user rules on a candidate, move it to
-`cases.md`.
+`examples.md`.
 
 Labels: **COUNTEREXAMPLE**: the mechanism is a carve-out, so do not redo it.
 **KEEP-IDEA**: the commit fixes a real bug and the idea is worth redoing simply.
@@ -20,8 +20,8 @@ Labels: **COUNTEREXAMPLE**: the mechanism is a carve-out, so do not redo it.
 | 8fcfd9fa4 | uint32 division and remainder are unsigned | KEEP-IDEA |
 | 3859a488b | division by zero panics; shift counts; ^x | MIXED |
 | 4020291cc | a shift count of a type-parameter type is unsupported | COUNTEREXAMPLE |
-| 84edc3ea5 | eval order for s[a:], multiple assignment, select sends | MIXED (len($s) taken: cases.md Case 2) |
-| d676d3851 | string slicing; a negative string index panics | KEEP-IDEA (string_slice taken: cases.md Case 1) |
+| 84edc3ea5 | eval order for s[a:], multiple assignment, select sends | MIXED (len($s) taken: examples.md Case 2) |
+| d676d3851 | string slicing; a negative string index panics | KEEP-IDEA (string_slice taken: examples.md Case 1) |
 | 20708027d | a trusted init function | MIXED |
 | d80ae18bc | shifts carry both operand types (GoShift o t count_t) | KEEP-IDEA |
 | 51e94d6e0 | a parenthesized panic statement; no panic as a for post | COUNTEREXAMPLE |
@@ -99,14 +99,14 @@ KEEP-IDEA.
 
 ## 84edc3ea5 — goose: Go's evaluation order for s[a:], multiple assignment and select sends
 **Bug it addressed:** There were three. `f()[1:]` evaluated `f` twice, because the high bound was `len(x)`. In `i, a[i] = 1, 9`, the target address was computed after the earlier stores. A select send evaluated its value before its channel.
-**What it did:** `len($s)`, a one-line change, taken as cases.md Case 2 (110478a07). For multiple assignment it added a 3-way branch (identifier / map index / other), active only when `multi`, which binds `$l<i>` or `$lm<i>`/`$lk<i>` first. For select it reordered two lets.
+**What it did:** `len($s)`, a one-line change, taken as examples.md Case 2 (110478a07). For multiple assignment it added a 3-way branch (identifier / map index / other), active only when `multi`, which binds `$l<i>` or `$lm<i>`/`$lk<i>` first. For select it reordered two lets.
 **Provisional label:** MIXED (len($s): done; select reorder: KEEP-IDEA; multi-assign: redo simply)
 **Why:** The multi-assign fix is right about Go but adds a single-vs-multi case and an identifier case. Simple version: every assignment binds each non-identifier target (address, or map and key) before the right-hand sides, the same way for one LHS or many, using one helper shared with op=.
 
 ## d676d3851 — StringSemantics: string slicing; a negative string index panics
 **Bug it addressed:** `s[lo:hi]` on a string was stuck, which is why strings.HasPrefix and others had models. `s[-1]` read `s[0]`, because `sint.nat` clamps to 0, where Go panics. That second bug was unsound.
 **What it did:** It added a `string_slice` rule with Go's bounds panic, and added `0 <= i` to `string_index` (String.lean +19).
-**Provisional label:** KEEP-IDEA (string_slice: taken as cases.md Case 1 (6f38ab75f); the negative-index guard is still to redo)
+**Provisional label:** KEEP-IDEA (string_slice: taken as examples.md Case 1 (6f38ab75f); the negative-index guard is still to redo)
 **Why:** Both changes complete the scheme with a sibling rule that has the same bounds-panic shape as slices. Neither touches goose.
 
 ## 20708027d — goose: a trusted init function

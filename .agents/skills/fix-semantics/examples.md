@@ -4,7 +4,7 @@ Fixes to the Go semantics or goose that the user approved (or rejected), in the
 order they were decided. Each records the bug, the fix that was taken, the fix
 that would have been worse, and why. These are the calibration examples for
 `SKILL.md`: before proposing a fix, find the closest case here and match its
-shape. Provisional, agent-labelled examples are in `candidates.md`; a case here
+shape. Provisional, agent-labelled examples are in `candidate-examples.md`; a case here
 overrides anything there.
 
 Entry format:
