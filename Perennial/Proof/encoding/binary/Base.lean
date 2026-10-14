@@ -80,15 +80,15 @@ theorem u64Le_8 (v : w64) :
     first | trivial | (apply BitVec.eq_of_toNat_eq; simp; omega)
 
 theorem u32Le_4 (v : w32) :
-    u32Le v = [W8 (uint.Z v), W8 (uint.Z (v >>> W64 8)), W8 (uint.Z (v >>> W64 16)),
-      W8 (uint.Z (v >>> W64 24))] := by
+    u32Le v = [W8 (uint.Z v), W8 (uint.Z (v >>> W32 8)), W8 (uint.Z (v >>> W32 16)),
+      W8 (uint.Z (v >>> W32 24))] := by
   simp only [u32Le, u32LeDef, LittleEndian.split, W8, uint.Z, BitVec.ofInt_natCast, List.cons.injEq]
   refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> first | trivial | (apply BitVec.eq_of_toNat_eq; simp; omega)
 
 theorem leToU32_4 (w0 w1 w2 w3 : w8) :
     leToU32 [w0, w1, w2, w3] =
-      W32 (uint.Z w0) ||| (W32 (uint.Z w1) <<< W64 8) ||| (W32 (uint.Z w2) <<< W64 16) |||
-      (W32 (uint.Z w3) <<< W64 24) := by
+      W32 (uint.Z w0) ||| (W32 (uint.Z w1) <<< W32 8) ||| (W32 (uint.Z w2) <<< W32 16) |||
+      (W32 (uint.Z w3) <<< W32 24) := by
   simp only [leToU32, leToU32Def, LittleEndian.combine, W32, uint.Z, BitVec.ofInt_natCast,
     BitVec.ofNat_toNat, BitVec.shiftLeft_eq', BitVec.toNat_ofInt, Nat.reducePow, Int.cast_ofNat_Int,
     Int.reduceMod, Int.reduceToNat]
