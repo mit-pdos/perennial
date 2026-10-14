@@ -92,9 +92,13 @@ Read both before proposing anything.
   library) is how limitations are discovered, but a change to the semantics or
   a trusted model is justified only by what Go does, never by what a proof
   needs; otherwise the model collects overly specific, possibly false
-  assumptions. A proof blocked by a missing fact states it on the proof side, as
-  a narrow, visible axiom in the program's development, and the semantics is
-  fixed later on its own merits, if at all.
+  assumptions. A proof blocked by a missing fact stays open (a visible `sorry`
+  with a note), and the semantics is fixed later on its own merits, if at all.
+  A proof-side axiom is acceptable only if the model does not refute it (a fact
+  about what the model leaves opaque, such as an axiomatized function): an
+  axiom about something the model does define, such as a bound on a
+  nondeterministic model's result, contradicts it and makes the logic
+  inconsistent, and as a premise it makes every result using it vacuous.
 * **One logical bug per change.** Split unrelated fixes; each gets its own
   plan and case. Sibling rules with the same defect are one bug and are fixed
   together (Case 9).
