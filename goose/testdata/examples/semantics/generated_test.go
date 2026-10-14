@@ -368,6 +368,10 @@ func (suite *GoTestSuite) TestNilVal() {
 	suite.Equal(true, testNilVal())
 }
 
+func (suite *GoTestSuite) TestUnsafePointerNil() {
+	suite.Equal(true, testUnsafePointerNil())
+}
+
 func (suite *GoTestSuite) TestCompareSliceToNil() {
 	suite.Equal(true, testCompareSliceToNil())
 }

@@ -2,6 +2,7 @@
 module
 
 public import Perennial.Code.sync
+public import Perennial.Code.«unsafe»
 public import Perennial.Code.github_com.goose_lang.primitive
 public import Perennial.Code.encoding.binary
 public import Perennial.Code.github_com.goose_lang.primitive.disk
@@ -585,6 +586,9 @@ noncomputable def testNilDefault [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def testNilVal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testNilVal"
+
+noncomputable def testUnsafePointerNil [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testUnsafePointerNil"
 
 noncomputable def testCompareSliceToNil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCompareSliceToNil"
@@ -4078,7 +4082,30 @@ noncomputable def testNilVal.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.int)))) (Pair (Var "x") (Var "$r0")))))))))
 
-/-- go: nil.go:3:6 -/
+/-- go: nil.go:5:6 -/
+noncomputable def testUnsafePointerNil.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (App (Val (GoInstruction (GoZeroVal «unsafe».Pointer))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil «unsafe».Pointer))) (Val UntypedNil))
+  (Let "q" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (App (Val (GoInstruction (GoZeroVal «unsafe».Pointer))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint64) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "x")))
+  (Let "r" (App (Val (GoInstruction (GoAlloc «unsafe».Pointer))) (App (Val (GoInstruction (GoZeroVal «unsafe».Pointer))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (If (If (App (Val (GoInstruction (GoOp GoEquals «unsafe».Pointer))) (Pair (App (Val (GoInstruction (GoLoad «unsafe».Pointer))) (Var "p")) (App (Val (GoInstruction (Convert go.untypedNil «unsafe».Pointer))) (Val UntypedNil)))) (App (Val (GoInstruction (GoOp GoEquals «unsafe».Pointer))) (Pair (App (Val (GoInstruction (GoLoad «unsafe».Pointer))) (Var "q")) (App (Val (GoInstruction (Convert go.untypedNil «unsafe».Pointer))) (Val UntypedNil)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals «unsafe».Pointer))) (Pair (App (Val (GoInstruction (GoLoad «unsafe».Pointer))) (Var "p")) (App (Val (GoInstruction (GoLoad «unsafe».Pointer))) (Var "q")))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals «unsafe».Pointer))) (Pair (App (Val (GoInstruction (GoLoad «unsafe».Pointer))) (Var "r")) (App (Val (GoInstruction (Convert go.untypedNil «unsafe».Pointer))) (Val UntypedNil))))) (Val #false)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore «unsafe».Pointer))) (Pair (Var "r") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "x") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore «unsafe».Pointer))) (Pair (Var "q") (Var "$r0"))))))))))
+
+/-- go: nil.go:13:6 -/
 noncomputable def testCompareSliceToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -4090,7 +4117,7 @@ noncomputable def testCompareSliceToNil.impl [FfiSyntax] [GoGlobalContext] : val
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
 
-/-- go: nil.go:8:6 -/
+/-- go: nil.go:18:6 -/
 noncomputable def testComparePointerToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -4102,7 +4129,7 @@ noncomputable def testComparePointerToNil.impl [FfiSyntax] [GoGlobalContext] : v
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "s") (Var "$r0")))))))))
 
-/-- go: nil.go:13:6 -/
+/-- go: nil.go:23:6 -/
 noncomputable def testCompareNilToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -4114,7 +4141,7 @@ noncomputable def testCompareNilToNil.impl [FfiSyntax] [GoGlobalContext] : val :
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.PointerType go.uint64))))) (Pair (Var "s") (Var "$r0")))))))))
 
-/-- go: nil.go:18:6 -/
+/-- go: nil.go:28:6 -/
 noncomputable def testComparePointerWrappedToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -4126,7 +4153,7 @@ noncomputable def testComparePointerWrappedToNil.impl [FfiSyntax] [GoGlobalConte
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
 
-/-- go: nil.go:24:6 -/
+/-- go: nil.go:34:6 -/
 noncomputable def testComparePointerWrappedDefaultToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -4134,7 +4161,7 @@ noncomputable def testComparePointerWrappedDefaultToNil.impl [FfiSyntax] [GoGlob
   (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "s")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.byte)))) (Val UntypedNil))))))))
 
-/-- go: nil.go:29:6 -/
+/-- go: nil.go:39:6 -/
 noncomputable def testInterfaceNilWithType.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -6686,7 +6713,7 @@ noncomputable def disabled_testWal.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.semantics where
-  pkgImportedPkgs := [pkg_id.sync, pkg_id.github_com.goose_lang.primitive, pkg_id.encoding.binary, pkg_id.github_com.goose_lang.primitive.disk]
+  pkgImportedPkgs := [pkg_id.sync, pkg_id.«unsafe», pkg_id.github_com.goose_lang.primitive, pkg_id.encoding.binary, pkg_id.github_com.goose_lang.primitive.disk]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -6695,8 +6722,11 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #())))))
+  (App (Val doExecute)
+  (App (Val _root_.Perennial.«unsafe».initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.initialize') (Val #()))))))
   (App (Val doExecute)
@@ -8035,6 +8065,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   testReturnFour_unfold : FuncUnfold testReturnFour [] testReturnFour.impl
   testNilDefault_unfold : FuncUnfold testNilDefault [] testNilDefault.impl
   testNilVal_unfold : FuncUnfold testNilVal [] testNilVal.impl
+  testUnsafePointerNil_unfold : FuncUnfold testUnsafePointerNil [] testUnsafePointerNil.impl
   testCompareSliceToNil_unfold : FuncUnfold testCompareSliceToNil [] testCompareSliceToNil.impl
   testComparePointerToNil_unfold : FuncUnfold testComparePointerToNil [] testComparePointerToNil.impl
   testCompareNilToNil_unfold : FuncUnfold testCompareNilToNil [] testCompareNilToNil.impl
@@ -8126,6 +8157,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   Open_unfold : FuncUnfold Open [] Open.impl
   disabled_testWal_unfold : FuncUnfold disabled_testWal [] disabled_testWal.impl
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
+  import_unsafe_Assumption : _root_.Perennial.«unsafe».Assumptions
   import_primitive_Assumption : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
   import_binary_Assumption : _root_.Perennial.encoding.binary.Assumptions
   import_disk_Assumption : _root_.Perennial.github_com.goose_lang.primitive.disk.Assumptions
@@ -8284,6 +8316,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testReturnFour_unfold
   Assumptions.testNilDefault_unfold
   Assumptions.testNilVal_unfold
+  Assumptions.testUnsafePointerNil_unfold
   Assumptions.testCompareSliceToNil_unfold
   Assumptions.testComparePointerToNil_unfold
   Assumptions.testCompareNilToNil_unfold
@@ -8375,6 +8408,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.Open_unfold
   Assumptions.disabled_testWal_unfold
   Assumptions.import_sync_Assumption
+  Assumptions.import_unsafe_Assumption
   Assumptions.import_primitive_Assumption
   Assumptions.import_binary_Assumption
   Assumptions.import_disk_Assumption

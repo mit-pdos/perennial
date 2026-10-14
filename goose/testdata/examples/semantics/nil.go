@@ -1,5 +1,15 @@
 package semantics
 
+import "unsafe"
+
+func testUnsafePointerNil() bool {
+	var p unsafe.Pointer
+	q := unsafe.Pointer(nil)
+	x := new(uint64)
+	r := unsafe.Pointer(x)
+	return p == nil && q == nil && p == q && r != nil
+}
+
 func testCompareSliceToNil() bool {
 	s := make([]byte, 0)
 	return s != nil
