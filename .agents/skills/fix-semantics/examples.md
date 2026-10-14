@@ -132,3 +132,19 @@ like `if appendStringSpecialCase() { ... }` inside of callExprPrelude. This is
 easy to understand once you've read the Go spec." The final form is one named
 condition in the single general path, with no type test, so it composes with
 type parameters.
+
+## Case 4 — ACCEPTED: `copy(b, s)` with a string (2ca59acee)
+
+**Symptom.** Incomplete, the same as Case 3: `go/types` reports
+`func([]byte, string) int`, so the source string reached `copy_slice` unchanged
+and was stuck. Nothing depended on it yet; fixed for symmetry with Case 3.
+
+**Taken.** The same mechanism as Case 3, as its own sibling `if` under
+"handle `copy` special case for strings" with a predicate `isCopy`: `copy`'s
+source converts to the destination's parameter type. No existing translation
+changed; 0 semantics rules. Semantics tests: string variable, untyped
+constant, short destination, generic `~[]byte | ~string` both ways.
+
+**Not taken.** Merging the two conditions into one `stringSpecialCase`
+predicate. The user chose "the two ifs": each is checkable on its own against
+its sentence in the spec.
