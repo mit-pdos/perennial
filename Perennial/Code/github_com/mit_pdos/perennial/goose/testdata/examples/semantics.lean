@@ -248,6 +248,9 @@ attribute [irreducible] Log.ty
 @[reducible] noncomputable def logLength [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 21)
 
+noncomputable def initOrder [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.initOrder"
+
 noncomputable def findKey [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.findKey"
 
@@ -397,6 +400,18 @@ noncomputable def storeAndReturn [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def failing_testArgumentOrder [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.failing_testArgumentOrder"
+
+noncomputable def init.«0» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.init.0"
+
+noncomputable def init.«1» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.init.1"
+
+noncomputable def testInitOrder [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testInitOrder"
+
+noncomputable def init.«2» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.init.2"
 
 noncomputable def testU64ToU32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testU64ToU32"
@@ -589,6 +604,9 @@ noncomputable def testNilVal [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def testUnsafePointerNil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testUnsafePointerNil"
+
+noncomputable def testConstantCalls [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testConstantCalls"
 
 noncomputable def testCompareSliceToNil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCompareSliceToNil"
@@ -2332,6 +2350,56 @@ noncomputable def failing_testArgumentOrder.impl [FfiSyntax] [GoGlobalContext] :
   (App (App (App (App (App (Val (GoInstruction (FuncResolve addFour64 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
+
+/-- go: init_order.go:5:6 -/
+noncomputable def init.«0».impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #())))
+  (Let "$a1" (Let "$sl0" (Val #(W64 1))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #())) (Var "$r0"))))))))
+
+/-- go: init_order.go:9:6 -/
+noncomputable def init.«1».impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #())))
+  (Let "$a1" (Let "$sl0" (Val #(W64 2))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #())) (Var "$r0"))))))))
+
+/-- go: init_order.go:13:6 -/
+noncomputable def testInitOrder.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (If (If (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #())))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 3)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #()))) (Val #(W64 0))))) (Val #(W64 1)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #()))) (Val #(W64 1))))) (Val #(W64 2)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #()))) (Val #(W64 2))))) (Val #(W64 3)))) (Val #false)))))
+
+/-- go: init_order2.go:3:6 -/
+noncomputable def init.«2».impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #())))
+  (Let "$a1" (Let "$sl0" (Val #(W64 3))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #())) (Var "$r0"))))))))
 
 /-- go: int_conversions.go:3:6 -/
 noncomputable def testU64ToU32.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -4106,6 +4174,25 @@ noncomputable def testUnsafePointerNil.impl [FfiSyntax] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore «unsafe».Pointer))) (Pair (Var "q") (Var "$r0"))))))))))
 
 /-- go: nil.go:13:6 -/
+noncomputable def testConstantCalls.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 3 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 3 go.uint64)))) (Val #())))
+  (Let "$r0" (Val #(W64 8))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.uintptr))) (App (Val (GoInstruction (GoZeroVal go.uintptr))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 3))
+  (Let "m" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.uintptr))) (Pair (App (Val (GoInstruction (GoLoad go.uintptr))) (Var "n")) (Val #(W64 8)))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (Val #(W64 3)))) (Val #false)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "m") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (Var "n") (Var "$r0")))))))))))
+
+/-- go: nil.go:21:6 -/
 noncomputable def testCompareSliceToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -4117,7 +4204,7 @@ noncomputable def testCompareSliceToNil.impl [FfiSyntax] [GoGlobalContext] : val
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
 
-/-- go: nil.go:18:6 -/
+/-- go: nil.go:26:6 -/
 noncomputable def testComparePointerToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -4129,7 +4216,7 @@ noncomputable def testComparePointerToNil.impl [FfiSyntax] [GoGlobalContext] : v
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "s") (Var "$r0")))))))))
 
-/-- go: nil.go:23:6 -/
+/-- go: nil.go:31:6 -/
 noncomputable def testCompareNilToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -4141,7 +4228,7 @@ noncomputable def testCompareNilToNil.impl [FfiSyntax] [GoGlobalContext] : val :
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.PointerType go.uint64))))) (Pair (Var "s") (Var "$r0")))))))))
 
-/-- go: nil.go:28:6 -/
+/-- go: nil.go:36:6 -/
 noncomputable def testComparePointerWrappedToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -4153,7 +4240,7 @@ noncomputable def testComparePointerWrappedToNil.impl [FfiSyntax] [GoGlobalConte
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
 
-/-- go: nil.go:34:6 -/
+/-- go: nil.go:42:6 -/
 noncomputable def testComparePointerWrappedDefaultToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -4161,7 +4248,7 @@ noncomputable def testComparePointerWrappedDefaultToNil.impl [FfiSyntax] [GoGlob
   (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "s")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.byte)))) (Val UntypedNil))))))))
 
-/-- go: nil.go:39:6 -/
+/-- go: nil.go:47:6 -/
 noncomputable def testInterfaceNilWithType.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -6723,8 +6810,18 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val _root_.Perennial.sync.initialize') (Val #())))))
+  (App (App (Val (GoInstruction (FuncResolve init.«2» []))) (Val #())) (Val #())))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve init.«1» []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve init.«0» []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val _root_.Perennial.sync.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.«unsafe».initialize') (Val #()))))))
   (App (Val doExecute)
@@ -6732,7 +6829,9 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.encoding.binary.initialize') (Val #()))))))
   (App (Val doExecute)
-  (App (Val _root_.Perennial.github_com.goose_lang.primitive.disk.initialize') (Val #()))))))))
+  (App (Val _root_.Perennial.github_com.goose_lang.primitive.disk.initialize') (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc initOrder (go.GoType.SliceType go.uint64))) (Val #()))))))))
 
 structure unit [FfiSyntax] where
   mk ::
@@ -8002,6 +8101,10 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   failing_testFunctionOrdering_unfold : FuncUnfold failing_testFunctionOrdering [] failing_testFunctionOrdering.impl
   storeAndReturn_unfold : FuncUnfold storeAndReturn [] storeAndReturn.impl
   failing_testArgumentOrder_unfold : FuncUnfold failing_testArgumentOrder [] failing_testArgumentOrder.impl
+  «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
+  «init.1_unfold» : FuncUnfold init.«1» [] init.«1».impl
+  testInitOrder_unfold : FuncUnfold testInitOrder [] testInitOrder.impl
+  «init.2_unfold» : FuncUnfold init.«2» [] init.«2».impl
   testU64ToU32_unfold : FuncUnfold testU64ToU32 [] testU64ToU32.impl
   testU32ToU64_unfold : FuncUnfold testU32ToU64 [] testU32ToU64.impl
   testU32Len_unfold : FuncUnfold testU32Len [] testU32Len.impl
@@ -8066,6 +8169,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   testNilDefault_unfold : FuncUnfold testNilDefault [] testNilDefault.impl
   testNilVal_unfold : FuncUnfold testNilVal [] testNilVal.impl
   testUnsafePointerNil_unfold : FuncUnfold testUnsafePointerNil [] testUnsafePointerNil.impl
+  testConstantCalls_unfold : FuncUnfold testConstantCalls [] testConstantCalls.impl
   testCompareSliceToNil_unfold : FuncUnfold testCompareSliceToNil [] testCompareSliceToNil.impl
   testComparePointerToNil_unfold : FuncUnfold testComparePointerToNil [] testComparePointerToNil.impl
   testCompareNilToNil_unfold : FuncUnfold testCompareNilToNil [] testCompareNilToNil.impl
@@ -8253,6 +8357,10 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.failing_testFunctionOrdering_unfold
   Assumptions.storeAndReturn_unfold
   Assumptions.failing_testArgumentOrder_unfold
+  Assumptions.«init.0_unfold»
+  Assumptions.«init.1_unfold»
+  Assumptions.testInitOrder_unfold
+  Assumptions.«init.2_unfold»
   Assumptions.testU64ToU32_unfold
   Assumptions.testU32ToU64_unfold
   Assumptions.testU32Len_unfold
@@ -8317,6 +8425,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testNilDefault_unfold
   Assumptions.testNilVal_unfold
   Assumptions.testUnsafePointerNil_unfold
+  Assumptions.testConstantCalls_unfold
   Assumptions.testCompareSliceToNil_unfold
   Assumptions.testComparePointerToNil_unfold
   Assumptions.testCompareNilToNil_unfold

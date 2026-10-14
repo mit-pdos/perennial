@@ -66,7 +66,7 @@ func init() {
 before any package is initialized (`runtime.schedinit` → `cpuinit` → `cpu.Initialize`), which
 no goose translation of a package runs. The model sets `MaxLen` to 63 or 31, chosen
 arbitrarily, so it covers every CPU. -/
-noncomputable def init.impl : val :=
+noncomputable def init.«0».impl : val :=
   λ: <>,
     if: ArbitraryInt =⟨go.int⟩ #(W64 0) then MaxLenAddr <-[go.int] #(W64 63)
     else MaxLenAddr <-[go.int] #(W64 31)

@@ -248,6 +248,9 @@ attribute [irreducible] Log.ty
 @[reducible] noncomputable def logLength [FfiSyntax] [GoGlobalContext] : val :=
   #(W64 21)
 
+noncomputable def initOrder [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.initOrder"
+
 noncomputable def findKey [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.findKey"
 
@@ -397,6 +400,18 @@ noncomputable def storeAndReturn [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def failing_testArgumentOrder [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.failing_testArgumentOrder"
+
+noncomputable def init.«0» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.init.0"
+
+noncomputable def init.«1» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.init.1"
+
+noncomputable def testInitOrder [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testInitOrder"
+
+noncomputable def init.«2» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.init.2"
 
 noncomputable def testU64ToU32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testU64ToU32"
@@ -2335,6 +2350,56 @@ noncomputable def failing_testArgumentOrder.impl [FfiSyntax] [GoGlobalContext] :
   (App (App (App (App (App (Val (GoInstruction (FuncResolve addFour64 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3"))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
+
+/-- go: init_order.go:5:6 -/
+noncomputable def init.«0».impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #())))
+  (Let "$a1" (Let "$sl0" (Val #(W64 1))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #())) (Var "$r0"))))))))
+
+/-- go: init_order.go:9:6 -/
+noncomputable def init.«1».impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #())))
+  (Let "$a1" (Let "$sl0" (Val #(W64 2))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #())) (Var "$r0"))))))))
+
+/-- go: init_order.go:13:6 -/
+noncomputable def testInitOrder.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (If (If (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #())))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 3)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #()))) (Val #(W64 0))))) (Val #(W64 1)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #()))) (Val #(W64 1))))) (Val #(W64 2)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #()))) (Val #(W64 2))))) (Val #(W64 3)))) (Val #false)))))
+
+/-- go: init_order2.go:3:6 -/
+noncomputable def init.«2».impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.uint64)))) (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #())))
+  (Let "$a1" (Let "$sl0" (Val #(W64 3))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.uint64)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr initOrder))) (Val #())) (Var "$r0"))))))))
 
 /-- go: int_conversions.go:3:6 -/
 noncomputable def testU64ToU32.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -6745,8 +6810,18 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val _root_.Perennial.sync.initialize') (Val #())))))
+  (App (App (Val (GoInstruction (FuncResolve init.«2» []))) (Val #())) (Val #())))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve init.«1» []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve init.«0» []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val _root_.Perennial.sync.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.«unsafe».initialize') (Val #()))))))
   (App (Val doExecute)
@@ -6754,7 +6829,9 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.encoding.binary.initialize') (Val #()))))))
   (App (Val doExecute)
-  (App (Val _root_.Perennial.github_com.goose_lang.primitive.disk.initialize') (Val #()))))))))
+  (App (Val _root_.Perennial.github_com.goose_lang.primitive.disk.initialize') (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc initOrder (go.GoType.SliceType go.uint64))) (Val #()))))))))
 
 structure unit [FfiSyntax] where
   mk ::
@@ -8024,6 +8101,10 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   failing_testFunctionOrdering_unfold : FuncUnfold failing_testFunctionOrdering [] failing_testFunctionOrdering.impl
   storeAndReturn_unfold : FuncUnfold storeAndReturn [] storeAndReturn.impl
   failing_testArgumentOrder_unfold : FuncUnfold failing_testArgumentOrder [] failing_testArgumentOrder.impl
+  «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
+  «init.1_unfold» : FuncUnfold init.«1» [] init.«1».impl
+  testInitOrder_unfold : FuncUnfold testInitOrder [] testInitOrder.impl
+  «init.2_unfold» : FuncUnfold init.«2» [] init.«2».impl
   testU64ToU32_unfold : FuncUnfold testU64ToU32 [] testU64ToU32.impl
   testU32ToU64_unfold : FuncUnfold testU32ToU64 [] testU32ToU64.impl
   testU32Len_unfold : FuncUnfold testU32Len [] testU32Len.impl
@@ -8276,6 +8357,10 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.failing_testFunctionOrdering_unfold
   Assumptions.storeAndReturn_unfold
   Assumptions.failing_testArgumentOrder_unfold
+  Assumptions.«init.0_unfold»
+  Assumptions.«init.1_unfold»
+  Assumptions.testInitOrder_unfold
+  Assumptions.«init.2_unfold»
   Assumptions.testU64ToU32_unfold
   Assumptions.testU32ToU64_unfold
   Assumptions.testU32Len_unfold

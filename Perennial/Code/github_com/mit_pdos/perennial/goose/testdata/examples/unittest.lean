@@ -593,6 +593,12 @@ noncomputable def other [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def bar [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.bar"
 
+noncomputable def init.«0» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.init.0"
+
+noncomputable def init.«1» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.init.1"
+
 noncomputable def useUntypedRune [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.useUntypedRune"
 
@@ -2374,6 +2380,28 @@ noncomputable def bar.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #())))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve other []))) (Val #())) (Val #())))))))
+
+/-- go: globals.go:29:6 -/
+noncomputable def init.«0».impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GlobalVarAddr GlobalX))) (Val #())))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GlobalVarAddr GlobalX))) (Val #())) (Var "$r0"))))))))
+
+/-- go: globals.go:33:6 -/
+noncomputable def init.«1».impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$r0" (Val #(go!""))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (GlobalVarAddr globalY))) (Val #())) (Var "$r0"))))))))
 
 /-- go: globals.go:37:6 -/
 noncomputable def useUntypedRune.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -4933,23 +4961,9 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Lam BAnon
-  (App (Val exceptionDo)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (Let "$r0" (Val #(go!""))
+  (App (App (Val (GoInstruction (FuncResolve init.«1» []))) (Val #())) (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (App (Val (GoInstruction (GlobalVarAddr globalY))) (Val #())) (Var "$r0")))))))) (Val #())))))
-  (App (Val doExecute)
-  (App (Lam BAnon
-  (App (Val exceptionDo)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GlobalVarAddr GlobalX))) (Val #())))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GlobalVarAddr GlobalX))) (Val #())) (Var "$r0")))))))) (Val #()))))))
+  (App (App (Val (GoInstruction (FuncResolve init.«0» []))) (Val #())) (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.MapType go.any go.any)))) (Pair (App (Val (GoInstruction (GlobalVarAddr mapLiteralWithConversion))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
@@ -6271,6 +6285,8 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   foo_unfold : FuncUnfold foo [] foo.impl
   other_unfold : FuncUnfold other [] other.impl
   bar_unfold : FuncUnfold bar [] bar.impl
+  «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
+  «init.1_unfold» : FuncUnfold init.«1» [] init.«1».impl
   useUntypedRune_unfold : FuncUnfold useUntypedRune [] useUntypedRune.impl
   TakesFunctionType_unfold : FuncUnfold TakesFunctionType [] TakesFunctionType.impl
   FuncVar_unfold : FuncUnfold FuncVar [] FuncVar.impl
@@ -6522,6 +6538,8 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.foo_unfold
   Assumptions.other_unfold
   Assumptions.bar_unfold
+  Assumptions.«init.0_unfold»
+  Assumptions.«init.1_unfold»
   Assumptions.useUntypedRune_unfold
   Assumptions.TakesFunctionType_unfold
   Assumptions.FuncVar_unfold

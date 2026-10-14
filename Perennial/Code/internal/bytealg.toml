@@ -7,10 +7,10 @@ translate = [
 # Trusted models in TrustedCode/internal/bytealg.lean, of what has no Go body or reads the CPU:
 # - `MakeNoZero` is implemented in the runtime (linkname);
 # - `IndexByteString`, `IndexString`, `CountString` and `abigen_runtime_cmpstring` are assembly;
-# - `init` sets `MaxLen` from `cpu.X86.HasAVX2`, which the runtime sets from `cpuid` before
+# - `init.0` sets `MaxLen` from `cpu.X86.HasAVX2`, which the runtime sets from `cpuid` before
 #   any package is initialized.
 trusted = [
   "MakeNoZero", "IndexByteString", "IndexString", "CountString", "abigen_runtime_cmpstring",
-  "init",
+  "init.0",
 ]
 imports = ["!*"]

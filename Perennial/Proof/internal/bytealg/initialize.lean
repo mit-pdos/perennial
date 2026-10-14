@@ -30,6 +30,8 @@ theorem internal.bytealg.initialize'.wp_proof :
   iintro Hown
   wp_auto
   wp_apply wp_GlobalAlloc (V := w64) MaxLen go.int as HM
+  wp_func_call
+  wp_call
   unfold MaxLenAddr
   rw [show (go!"internal/bytealg.MaxLen" : GoString) = MaxLen from rfl]
   wp_bind ArbitraryInt
@@ -43,6 +45,9 @@ theorem internal.bytealg.initialize'.wp_proof :
     isPkgInit_unfold
     isplitl []
     · ipureintro; simp
+    imodintro
+    isplitl []
+    · itrivial
     imodintro
     iexists _
     iframe HM

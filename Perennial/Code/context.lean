@@ -147,6 +147,9 @@ noncomputable def parentCancelCtx [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def removeChild [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"context.removeChild"
 
+noncomputable def init.«0» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"context.init.0"
+
 noncomputable def contextName [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"context.contextName"
 
@@ -668,6 +671,17 @@ noncomputable def removeChild.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore stopCtx.ty))) (Pair (Var "s") (Var "$r0")))))))))))))))))))
+
+/-- go: context.go:425:6 -/
+noncomputable def init.«0».impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GlobalVarAddr closedchan))) (Val #())))
+  (App (App (Val (GoInstruction (FuncResolve go.close [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Var "$a0")))))))
 
 /-- go: context.go:441:21 -/
 noncomputable def cancelCtx.Value.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -1496,14 +1510,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Lam BAnon
-  (App (Val exceptionDo)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (GlobalVarAddr closedchan))) (Val #())))
-  (App (App (Val (GoInstruction (FuncResolve go.close [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Var "$a0"))))))) (Val #())))))
+  (App (App (Val (GoInstruction (FuncResolve init.«0» []))) (Val #())) (Val #())))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (App (Val (GoInstruction (GlobalVarAddr closedchan))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
@@ -2210,6 +2217,7 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   AfterFunc_unfold : FuncUnfold AfterFunc [] AfterFunc.impl
   parentCancelCtx_unfold : FuncUnfold parentCancelCtx [] parentCancelCtx.impl
   removeChild_unfold : FuncUnfold removeChild [] removeChild.impl
+  «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
   WithoutCancel_unfold : FuncUnfold WithoutCancel [] WithoutCancel.impl
   WithDeadline_unfold : FuncUnfold WithDeadline [] WithDeadline.impl
   WithDeadlineCause_unfold : FuncUnfold WithDeadlineCause [] WithDeadlineCause.impl
@@ -2246,6 +2254,7 @@ attribute [instance] Assumptions.Context_instance
   Assumptions.AfterFunc_unfold
   Assumptions.parentCancelCtx_unfold
   Assumptions.removeChild_unfold
+  Assumptions.«init.0_unfold»
   Assumptions.WithoutCancel_unfold
   Assumptions.WithDeadline_unfold
   Assumptions.WithDeadlineCause_unfold

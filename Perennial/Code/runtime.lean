@@ -4927,6 +4927,9 @@ noncomputable def arena_arena_Free [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def arena_heapify [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.arena_heapify"
 
+noncomputable def init.«0» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"runtime.init.0"
+
 noncomputable def userArenaChunkReserveBytes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.userArenaChunkReserveBytes"
 
@@ -5244,6 +5247,9 @@ noncomputable def coverage_getCovCounterList [FfiSyntax] [GoGlobalContext] : GoS
 
 noncomputable def addCovMeta [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.addCovMeta"
+
+noncomputable def init.«1» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"runtime.init.1"
 
 noncomputable def SetCPUProfileRate [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.SetCPUProfileRate"
@@ -6823,6 +6829,9 @@ noncomputable def fillAligned [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def unpackScavChunkData [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.unpackScavChunkData"
 
+noncomputable def init.«2» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"runtime.init.2"
+
 noncomputable def binarySearchTree [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.binarySearchTree"
 
@@ -6846,6 +6855,9 @@ noncomputable def clobberfree [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def gcPaceSweeper [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.gcPaceSweeper"
+
+noncomputable def init.«3» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"runtime.init.3"
 
 noncomputable def getempty [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.getempty"
@@ -7212,6 +7224,9 @@ noncomputable def roundupsize [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def makeHeadTailIndex [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.makeHeadTailIndex"
+
+noncomputable def init.«4» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"runtime.init.4"
 
 noncomputable def ReadMemStats [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.ReadMemStats"
@@ -7753,6 +7768,9 @@ noncomputable def asyncPreempt [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def asyncPreempt2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.asyncPreempt2"
 
+noncomputable def init.«5» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"runtime.init.5"
+
 noncomputable def wantAsyncPreempt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.wantAsyncPreempt"
 
@@ -7852,8 +7870,14 @@ noncomputable def main [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def os_beforeExit [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.os_beforeExit"
 
+noncomputable def init.«6» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"runtime.init.6"
+
 noncomputable def runExitHooks [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.runExitHooks"
+
+noncomputable def init.«7» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"runtime.init.7"
 
 noncomputable def forcegchelper [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.forcegchelper"
@@ -8904,6 +8928,9 @@ noncomputable def os_sigpipe [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def signame [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.signame"
+
+noncomputable def init.«8» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"runtime.init.8"
 
 noncomputable def initsig [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"runtime.initsig"
@@ -10488,8 +10515,35 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val vdsoSymbolKeys.init) (Val #())))))
+  (App (App (Val (GoInstruction (FuncResolve init.«8» []))) (Val #())) (Val #())))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve init.«7» []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve init.«6» []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve init.«5» []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve init.«4» []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve init.«3» []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve init.«2» []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve init.«1» []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve init.«0» []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val vdsoSymbolKeys.init) (Val #()))))))
   (App (Val doExecute)
   (App (Val vdsoLinuxVersion.init) (Val #()))))))
   (App (Val doExecute)

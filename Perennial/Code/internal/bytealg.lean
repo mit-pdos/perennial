@@ -92,6 +92,9 @@ noncomputable def abigen_runtime_memequal [FfiSyntax] [GoGlobalContext] : GoStri
 noncomputable def abigen_runtime_memequal_varlen [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/bytealg.abigen_runtime_memequal_varlen"
 
+noncomputable def init.«0» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"internal/bytealg.init.0"
+
 noncomputable def Cutover [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/bytealg.Cutover"
 
@@ -294,7 +297,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Val #()))))
+  (App (App (Val (GoInstruction (FuncResolve init.«0» []))) (Val #())) (Val #())))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc MaxLen go.int)) (Val #()))))))))
 
@@ -305,6 +308,7 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   CompareString_unfold : FuncUnfold CompareString [] CompareString.impl
   abigen_runtime_cmpstring_unfold : FuncUnfold abigen_runtime_cmpstring [] abigen_runtime_cmpstring.impl
   CountString_unfold : FuncUnfold CountString [] CountString.impl
+  «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
   Cutover_unfold : FuncUnfold Cutover [] Cutover.impl
   IndexString_unfold : FuncUnfold IndexString [] IndexString.impl
   IndexByteString_unfold : FuncUnfold IndexByteString [] IndexByteString.impl
@@ -315,6 +319,7 @@ attribute [instance] Assumptions.HashStr_unfold
   Assumptions.CompareString_unfold
   Assumptions.abigen_runtime_cmpstring_unfold
   Assumptions.CountString_unfold
+  Assumptions.«init.0_unfold»
   Assumptions.Cutover_unfold
   Assumptions.IndexString_unfold
   Assumptions.IndexByteString_unfold
