@@ -148,3 +148,19 @@ constant, short destination, generic `~[]byte | ~string` both ways.
 **Not taken.** Merging the two conditions into one `stringSpecialCase`
 predicate. The user chose "the two ifs": each is checkable on its own against
 its sentence in the spec.
+
+## Case 5 — ACCEPTED: the bit clear operator `&^` (de9774010)
+
+**Symptom.** Incomplete. Goose emits `GoOp GoBitClear t` for `x &^ y`, but no
+rule gave it a meaning; blocked `time.Time.Add`.
+
+**Taken.** Re-applied 97da3725e unchanged: one rule per integer type, a sibling
+of `and_<t>` in each of the 11 integer classes,
+`bitclear_<t> (v1 v2) : ⟦GoOp GoBitClear go.<t>, (#v1, #v2)⟧ ⤳[under] #(v1 &&& ~~~v2)`.
+Cost: 11 one-line rules of one form, 0 goose changes. Semantics test
+`testBitClear` (uint64 and a negative int8). `Time.Add` built unchanged.
+
+**Not taken.** One generic rule expanding `&^` to `GoAnd` of `GoComplement`:
+fewer lines, but the first `GoOp` rule that expands to other operations
+instead of producing a value, and two extra proof steps at every use. Many
+rules are fine when they are one row each of an existing per-type table.
