@@ -88,6 +88,13 @@ Read both before proposing anything.
 * **Type-dependent choices are the semantics' job.** Goose emits operations
   annotated with their operands' Go types; signedness, width, and type
   parameter instantiation are decided by Lean rules, not by goose branches.
+* **Never change the semantics to qed a proof.** A program proof (etcd, a
+  library) is how limitations are discovered, but a change to the semantics or
+  a trusted model is justified only by what Go does, never by what a proof
+  needs; otherwise the model collects overly specific, possibly false
+  assumptions. A proof blocked by a missing fact states it on the proof side, as
+  a narrow, visible axiom in the program's development, and the semantics is
+  fixed later on its own merits, if at all.
 * **One logical bug per change.** Split unrelated fixes; each gets its own
   plan and case. Sibling rules with the same defect are one bug and are fixed
   together (Case 9).
