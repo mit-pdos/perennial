@@ -103,7 +103,8 @@ type Ctx struct {
 	// using package name "v1".
 	importAssumptions map[string]string
 
-	inits []glang.Expr
+	// the package's init functions, in initialization order
+	inits []*ast.FuncDecl
 
 	filter declfilter.DeclFilter
 	out    outputDecls
@@ -121,7 +122,20 @@ func NewPkgCtx(pkg *packages.Package, filter declfilter.DeclFilter) Ctx {
 		importAssumptions: make(map[string]string),
 		filter:            filter,
 		localTypes:        make(map[string]bool),
+		inits:             initFuncs(pkg.Syntax),
 	}
+}
+
+func initFuncs(fs []*ast.File) []*ast.FuncDecl {
+	var inits []*ast.FuncDecl
+	for _, f := range fs {
+		for _, d := range f.Decls {
+			if d, ok := d.(*ast.FuncDecl); ok && d.Recv == nil && d.Name.Name == "init" {
+				inits = append(inits, d)
+			}
+		}
+	}
+	return inits
 }
 
 func (ctx *Ctx) paramList(fs *ast.FieldList) (names []glang.Binder, types []glang.Expr) {
@@ -2396,7 +2410,16 @@ func funcName(f *types.Func) string {
 	return util.FuncName(f)
 }
 
-// Returns a glang.FuncDecl and maybe also a glang.NameDecl. If the function is an `init` or `_`, this
+// funcDeclName returns the name of a package-level function.
+func (ctx *Ctx) funcDeclName(d *ast.FuncDecl) string {
+	if d.Recv != nil || d.Name.Name != "init" {
+		return d.Name.Name
+	}
+	// dedup init() names by numbering them
+	return fmt.Sprintf("init.%d", slices.Index(ctx.inits, d))
+}
+
+// Returns a glang.FuncDecl and maybe also a glang.NameDecl. If the function is `_`, this
 // returns None.
 func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 	ctx.curFuncType = ctx.typeOf(d.Name).(*types.Signature)
@@ -2410,16 +2433,15 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 	}
 
 	if d.Recv == nil {
+		funcName = ctx.funcDeclName(d)
 		// Always emit func name decl, even if the function is trusted or axiomatized.
-		funcId := ctx.info.Defs[d.Name].Pkg().Path() + "." + ctx.info.Defs[d.Name].Name()
-		if d.Name.Name != "init" {
-			ctx.out.funcDecls = append(ctx.out.funcDecls, glang.ConstDecl{
-				Name: d.Name.Name,
-				Val:  glang.StringLiteral{Value: funcId},
-				Type: glang.VerbatimExpr("go_string"),
-			})
-			ctx.functions = append(ctx.functions, d)
-		}
+		funcId := ctx.info.Defs[d.Name].Pkg().Path() + "." + funcName
+		ctx.out.funcDecls = append(ctx.out.funcDecls, glang.ConstDecl{
+			Name: funcName,
+			Val:  glang.StringLiteral{Value: funcId},
+			Type: glang.VerbatimExpr("go_string"),
+		})
+		ctx.functions = append(ctx.functions, d)
 	}
 
 	if ctx.filter.GetAction(funcName) != declfilter.Translate {
@@ -2495,7 +2517,7 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 			}
 		}
 	} else {
-		fd.Name = glang.FuncImpl(d.Name.Name)
+		fd.Name = glang.FuncImpl(funcName)
 		switch ctx.filter.GetAction(funcName) {
 		case declfilter.Trust:
 			return
@@ -2541,20 +2563,6 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		cont = glang.ReturnExpr{Value: glang.Tt}
 	}
 	body := ctx.blockStmt(d.Body, cont)
-
-	if d.Name.Name == "init" {
-		if ctx.usesRecover {
-			ctx.unsupported(d, "recover() in a package init function")
-		}
-		if ctx.usesDefer {
-			body = glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), body)
-		} else {
-			body = glang.NewCallExpr(glang.VerbatimExpr("exception_do"), body)
-		}
-		f := glang.FuncLit{Args: nil, Body: body}
-		ctx.inits = append(ctx.inits, f)
-		return
-	}
 
 	fd.Body = body
 	var argTypes []glang.Expr
@@ -2977,10 +2985,12 @@ func (ctx *Ctx) finalExtraDecls() {
 
 	var e glang.Expr
 
-	// add all init() function bodies
+	// call the init functions
 	for i := range ctx.inits {
-		init := ctx.inits[len(ctx.inits)-i-1]
-		e = glang.NewDoSeq(glang.NewCallExpr(init, glang.Tt), e)
+		init := ctx.funcDeclName(ctx.inits[len(ctx.inits)-i-1])
+		e = glang.NewDoSeq(glang.NewCallExpr(
+			glang.NewCallExpr(glang.VerbatimExpr("FuncResolve"), ctx.termIdent(init), glang.ListExpr{}, glang.Tt),
+			glang.Tt), e)
 	}
 
 	if ctx.filter.GetAction("_") != declfilter.Translate {
