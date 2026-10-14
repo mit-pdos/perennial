@@ -187,3 +187,60 @@ exception-monad semantics (an unrecovered panic was stuck). Under these
 semantics a panic is a value and `wp_fork` requires `⌜v.isPanic = false⌝`; the
 spec now says so (ed2f06198). Its one client, `context.WithDeadlineCause`,
 needed no change.
+
+## Case 7 — ACCEPTED: init functions are numbered functions (d4c355484, 5d4df6949)
+
+**Symptom.** Incomplete and unsound. `bytealg.toml` trusted `init`, but goose
+dropped a non-translated init silently (`case declfilter.Trust: return`), so
+`MaxLen` stayed 0; an init neither translated nor trusted was also dropped,
+so the model skipped code Go runs.
+
+**Taken.** Each `func init()` is an ordinary function named `init.<k>`, as gc
+names them, numbered once when the context is built (`initFuncs(pkg.Syntax)`:
+files in order, then source order; `funcDeclName` looks up the index under
+"dedup init() names by numbering them"). `initialize'` calls them in order.
+Translate/trust/axiomatize apply per name, so an unconfigured init has no
+`FuncUnfold` and is stuck. The special init-literal branch in `funcDecl` is
+gone. Gold example `inits` (one translated, one trusted init); semantics test
+`testInitOrder` (three inits over two files).
+
+**Configs.** `bytealg` trusts `init.0`. `sync` translates `init.0` and `init.1`
+and trusts `runtime_registerPoolCleanup` (a runtime linkname with no Go body;
+model `λ: "cleanup", #()`). The 11 inits of `runtime`, `os` and `log` stay
+stuck: nothing imports those packages, so no proof needs their init.
+
+**Not taken.**
+* 20708027d's `init`+`Trust` branch emitting `init.impl`: at most one trusted
+  init per package. The user: "the annoying part seems to be that there could
+  be multiple init declarations in Go, and one may want only *some* of them to
+  have trusted models."
+* Numbering in `funcDeclName` on first sight: "It seems sketchy: what if we
+  parse funcDecls out of order for some reason in the future?" Numbered once,
+  up front, with one slice (no map): "Is there any way to simplify the Go
+  code?"
+* 13 trivial trusted models for the previously dropped inits: unnecessary
+  once the measurement showed no proof depends on them; leaving them stuck
+  adds no trust.
+
+## Case 8 — ACCEPTED: a constant call is its constant (c77eabdcc)
+
+**Symptom.** Incomplete: `unsafe.Sizeof(n)` in sync's `init.1` was refused
+("builtin that isn't an ident"), and `constantLiteral` had no `uintptr` case.
+
+**Taken.** In `callExpr`, after conversions: if go/types has the call's
+constant value, emit it ("constant call, e.g. unsafe.Sizeof(x) or len of an
+array"). This replaces the special case for constant `len`/`cap`; `uintptr`
+joins the 64-bit constants. No existing translation changed. Semantics test
+`testConstantCalls`.
+
+**Not taken.**
+* A trusted model of sync's `init.1`: it is translatable Go.
+* Lifting the check into `expr()` (every constant expression a literal):
+  "this seems worse because it eliminates the symbolic names, which can make
+  proofs easier to carry out." Named constants stay references to their
+  definitions.
+
+**Note.** The user does not want a semantics for `uintptr` that could become
+unsound once conversions between `unsafe.Pointer` and pointers are allowed;
+here a `uintptr` only appears as a constant argument to a trusted runtime
+check, and `uintptr` ↔ pointer conversions remain stuck.
