@@ -32,7 +32,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 /-! ## The laws -/
 
 section laws
-variable {GF : BundledGFunctors} [AllG GF] [ThreadGS GF]
+variable {GF : BundledGFunctors} [ThreadGS GF]
 
 example (m n : Nat) : threadToks (m + n) ⊣⊢@{IProp GF} threadToks m ∗ threadToks n :=
   threadToks_add m n
@@ -49,7 +49,7 @@ end laws
 section counter
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : sync.atomic.Assumptions]
 
 def counterN : Namespace := nroot.@"threads"
@@ -106,7 +106,7 @@ theorem wp_counter_register (Hbound : threadBound GF ≤ 2 ^ 31) (l : Loc) :
 given one by its own proof, e.g. out of an invariant). Two tokens are then at
 hand, so `2 < threadBound GF`. -/
 example (e : Expr) (s : Stuckness) (E : CoPset) :
-    threadTok ∗ ▷ WP e @ s; ⊤ {{ _v, (threadTok : IProp GF) }} ⊢
+    threadTok ∗ ▷ WP e @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ ∗ (threadTok : IProp GF) }} ⊢
       WP (Fork e) @ s; E {{ _v, threadToks 2 ∗ ⌜2 < threadBound GF⌝ }} := by
   iintro ⟨Htok, He⟩
   iapply wp_fork_tok

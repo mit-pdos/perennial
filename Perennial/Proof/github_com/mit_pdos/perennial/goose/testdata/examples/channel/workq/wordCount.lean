@@ -21,7 +21,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 section proof
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Assumptions]
 
@@ -193,8 +193,6 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.word
   simp only [hP, decide_false, Bool.false_eq_true, ↓reduceIte]
   iclear Htasks
   wp_auto
-  icases typedPointsto_not_null_dup _ _ _ $$ «$v0» with ⟨«$v0», %Hv0_nn⟩
-  icases typedPointsto_not_null_dup _ _ _ $$ «$v1» with ⟨«$v1», %Hv1_nn⟩
   ihave Hrem : sync.atomic.ownInt64 (GF := GF) «$v0_ptr» (DFrac.own 1) (W64 0) $$ [«$v0»]
   · rw [sync.atomic.ownInt64_unseal]
     unfold sync.atomic.ownInt64Def
@@ -253,7 +251,6 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.word
   · unfold isCoordinator
     iexists γdone
     iframe #
-    ipureintro; exact ⟨Hv0_nn, Hv1_nn⟩
   rename_i jj_ptr
   irename : (jj_ptr ↦ zero_val w64 : IProp GF) => j
   ihave HI : (∃ (i j : w64) (wv : Loc),

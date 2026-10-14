@@ -134,7 +134,7 @@ theorem enc_0 : (0#64 : w64) = enc (W32 0) (W32 0) := by
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -216,11 +216,6 @@ def isWaitGroupDef (wg : Loc) (γ : WaitGroupNames) (N : Namespace) : IProp GF :
   isWaitGroupDef wg γ N
 theorem isWaitGroup_unseal : @isWaitGroup = @isWaitGroupDef := by
   funext; with_unfolding_all rfl
-/-- A `WaitGroup`'s address is not `null` (its semaphore's is not, `isSema`). -/
-instance isWaitGroup_hypPure (wg l : Loc) (γ : WaitGroupNames) (N : Namespace)
-    [LocNonNullFrom wg l] : HypPure (isWaitGroup (GF := GF) wg γ N) (l ≠ null) := by
-  rw [isWaitGroup_unseal]; unfold isWaitGroupDef; infer_instance
-
 instance isWaitGroup_persistent (wg : Loc) (γ : WaitGroupNames) (N : Namespace) :
     Persistent (isWaitGroup (GF := GF) wg γ N) := by
   rw [isWaitGroup_unseal]; unfold isWaitGroupDef named; infer_instance

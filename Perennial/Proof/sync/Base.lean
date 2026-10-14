@@ -45,7 +45,7 @@ namespace sync
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -58,10 +58,6 @@ def isMutexDef (m : Loc) (R : IProp GF) : IProp GF := isLock m R
 /-- This means `m` is a valid mutex with invariant `R` (sealed). -/
 @[irreducible] def isMutex (m : Loc) (R : IProp GF) : IProp GF := isMutexDef m R
 theorem isMutex_unseal : @isMutex = @isMutexDef := by funext; with_unfolding_all rfl
-
-instance isMutex_hypPure (m l : Loc) (R : IProp GF) [LocNonNullFrom m l] :
-    HypPure (isMutex m R) (l ≠ null) where
-  hyp_pure := by rw [isMutex_unseal]; exact (isLock_hypPure m l R).hyp_pure
 
 def ownMutexDef (m : Loc) : IProp GF := ownLock m
 /-- This resource denotes ownership of the fact that the Mutex is currently

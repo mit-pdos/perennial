@@ -20,7 +20,7 @@ namespace sync.atomic
 section results
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.atomic.Assumptions]
 
@@ -38,6 +38,7 @@ theorem wp_AddUint64_receipt (addr : Loc) (v : w64) :
   iintro %Φ #Hpkg HΦ
   wp_bind (App (Val (GoInstruction _)) (Val _))
   iapply wp_go_step_receipt'
+  case hv => exact isPanic_intoVal ()
   inext
   iintro Hr _
   iapply wp_value'

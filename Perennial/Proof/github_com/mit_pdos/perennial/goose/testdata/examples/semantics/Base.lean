@@ -35,7 +35,7 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.semantics
 
 section wps
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 
 instance isPkgInit_inst :

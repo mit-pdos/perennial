@@ -18,7 +18,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 section spec
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.atomic.Assumptions]
 
@@ -26,7 +26,6 @@ abbrev sync.atomic.Uint64.Load.spec : Prop :=
   ∀ (u : Loc) (dq : DFrac),
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ v : w64, ownUint64 u dq v ∗ (ownUint64 u dq v ={∅,⊤}=∗ Φ #v)) -∗
-    ⌜u ≠ null⌝ -∗
     WP (App (Val (u @!! go.GoType.PointerType Uint64.ty @!! go!"Load")) (Val #())) {{ Φ }}
 
 end spec

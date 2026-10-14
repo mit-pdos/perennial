@@ -18,7 +18,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 section spec
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.atomic.Assumptions]
 
@@ -27,7 +27,6 @@ abbrev sync.atomic.Bool.Store.spec : Prop :=
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ old : Bool, ownBool u (DFrac.own 1) old ∗
       (ownBool u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
-    ⌜u ≠ null⌝ -∗
     WP (App (Val (u @!! go.GoType.PointerType Bool'.ty @!! go!"Store")) (Val #v)) {{ Φ }}
 
 end spec

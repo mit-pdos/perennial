@@ -173,7 +173,7 @@ theorem mods_2_bound (i : w64) (h0 : 0 ≤ sint.Z i) (h2 : sint.Z i < 2) :
 section init
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : workq.Assumptions]
 
 
@@ -185,7 +185,7 @@ end init
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.Assumptions]
 
@@ -219,9 +219,7 @@ def isCoordinator (γ : WorkqNames) (sh : shared) : IProp GF :=
   iprop(∃ γdone : ChanNames,
     "#Hdone" ∷ ownBroadcastChan sh.done' γdone (isTasksDone γ sh) .Unknown ∗
     "#Hdone_is" ∷ isChan sh.done' γdone Unit ∗
-    "#Hi" ∷ inv nroot (coordinatorInv γ sh γdone) ∗
-    "%Hremaining_nn" ∷ ⌜sh.remaining' ≠ null⌝ ∗
-    "%Htotal_nn" ∷ ⌜sh.total' ≠ null⌝)
+    "#Hi" ∷ inv nroot (coordinatorInv γ sh γdone))
 
 instance isCoordinator_persistent (γ : WorkqNames) (sh : shared) :
     Persistent (isCoordinator (GF := GF) γ sh) := by

@@ -24,7 +24,7 @@ namespace context
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : context.Assumptions]
 
@@ -46,8 +46,7 @@ theorem wp_done_Load_of
   iintro %Φ ⟨#Hpkg, #Hc⟩ HΦ
   unfold isCancelCtxOf
   iNamed Hc
-  iapply wp_VLoad _ (DFrac.own 1) $$ [] [-]
-  all_goals try inonnull
+  iapply wp_VLoad _ (DFrac.own 1)
   · iPkgInit
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -89,8 +88,7 @@ theorem wp_done_Load_frag_of
   iintro %Φ ⟨#Hpkg, #Hc, Hf⟩ HΦ
   unfold isCancelCtxOf
   iNamed Hc
-  iapply wp_VLoad _ (DFrac.own 1) $$ [] [-]
-  all_goals try inonnull
+  iapply wp_VLoad _ (DFrac.own 1)
   · iPkgInit
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -148,8 +146,7 @@ theorem wp_err_Load_of
   iintro %Φ ⟨#Hpkg, #Hc, Hcl⟩ HΦ
   unfold isCancelCtxOf
   iNamed Hc
-  iapply wp_VLoad _ (DFrac.own 1) $$ [] [-]
-  all_goals try inonnull
+  iapply wp_VLoad _ (DFrac.own 1)
   · iPkgInit
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -203,8 +200,7 @@ theorem wp_err_Load_frag_of
   iintro %Φ ⟨#Hpkg, #Hc, Hf⟩ HΦ
   unfold isCancelCtxOf
   iNamed Hc
-  iapply wp_VLoad _ (DFrac.own 1) $$ [] [-]
-  all_goals try inonnull
+  iapply wp_VLoad _ (DFrac.own 1)
   · iPkgInit
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -258,8 +254,7 @@ theorem wp_done_Load_known_of
   iintro %Φ ⟨#Hpkg, #Hc, #Hdd⟩ HΦ
   unfold isCancelCtxOf
   iNamed Hc
-  iapply wp_VLoad _ (DFrac.own 1) $$ [] [-]
-  all_goals try inonnull
+  iapply wp_VLoad _ (DFrac.own 1)
   · iPkgInit
   iinv Hinv with Hi Hclose
   all_goals try solve_ndisj

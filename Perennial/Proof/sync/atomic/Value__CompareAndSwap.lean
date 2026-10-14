@@ -18,7 +18,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 section proof
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.atomic.Assumptions]
 
@@ -31,9 +31,9 @@ theorem sync.atomic.Value.CompareAndSwap.wp_proof :
   | ok ii =>
   simp only
   rw [Value_ty_eq]
+  wp_auto
   simp only [ownValue_unseal, ownValueDef]
   ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hown
-  wp_auto
   iStructNamed Hown
   wp_bind (Load _)
   wp_apply_core wp_atomic_load _ _ _ (DFrac.own 1) (interface.nil : GoInterface) $$ v

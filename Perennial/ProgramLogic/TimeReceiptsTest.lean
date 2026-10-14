@@ -29,7 +29,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 /-! ## The laws (paper, Fig. 3) -/
 
 section laws
-variable {GF : BundledGFunctors} [AllG GF] [ReceiptGS GF]
+variable {GF : BundledGFunctors} [ReceiptGS GF]
 
 example (m n : Nat) : ⧗ (m + n) ⊣⊢@{IProp GF} ⧗ m ∗ ⧗ n := receipt_add m n
 example : ⊢@{IProp GF} |==> ⧗ 0 := receipt_zero
@@ -49,7 +49,7 @@ end laws
 section clock
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : sync.atomic.Assumptions]
 
 /-- The clock invariant: the counter `l` holds `n`, and `n` receipts back it. -/

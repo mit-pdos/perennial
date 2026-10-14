@@ -19,7 +19,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 section proof
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.atomic.Assumptions]
 
@@ -27,9 +27,7 @@ theorem sync.atomic.Pointer.Swap.wp_proof
     (wp_SwapPointer : sync.atomic.SwapPointer.spec (GF := GF) (hG := hG)) :
     sync.atomic.Pointer.Swap.spec (GF := GF) (hG := hG) := by
   intro T' _ _ T _ u v'
-  wp_start_folded as _
-  iintro %hu
-  (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)
+  wp_start as _
   wp_auto
   wp_apply_core wp_SwapPointer $$ [] [HΦ]
   · iPkgInit

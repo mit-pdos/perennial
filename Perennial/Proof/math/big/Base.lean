@@ -80,7 +80,7 @@ theorem natValue_one_word (ws : List w64) (hne : ws ≠ []) (hn : natNormalized 
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.math.big :=
   define_is_pkg_init iprop(True)

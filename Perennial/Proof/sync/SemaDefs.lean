@@ -21,7 +21,7 @@ namespace sync
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -29,19 +29,9 @@ variable [package_sem : sync.Assumptions]
 abbrev semaInv (x : Loc) (γ : GName) : IProp GF :=
   iprop(∃ v : w32, x ↦ v ∗ ghostVar γ (1 : Qp).half v)
 
-def isSemaDef (x : Loc) (γ : GName) (N : Namespace) : IProp GF :=
-  iprop(inv N (semaInv x γ) ∗ ⌜x ≠ null⌝)
+def isSemaDef (x : Loc) (γ : GName) (N : Namespace) : IProp GF := inv N (semaInv x γ)
 @[irreducible] def isSema (x : Loc) (γ : GName) (N : Namespace) : IProp GF := isSemaDef x γ N
 theorem isSema_unseal : @isSema = @isSemaDef := by funext; with_unfolding_all rfl
-
-/-- A semaphore's address is not `null`, nor is any address with the same base
-(`LocNonNullFrom`; used by `wp_auto` for field references, `HypPure`). -/
-instance isSema_hypPure (x l : Loc) (γ : GName) (N : Namespace) [h : LocNonNullFrom x l] :
-    HypPure (isSema (GF := GF) x γ N) (l ≠ null) where
-  hyp_pure := by
-    rw [isSema_unseal]; unfold isSemaDef
-    iintro ⟨_, %Hnn⟩
-    ipureintro; exact h.ne_null Hnn
 
 instance isSema_persistent (x : Loc) (γ : GName) (N : Namespace) :
     Persistent (isSema (GF := GF) x γ N) := by
@@ -58,7 +48,6 @@ theorem init_sema {E : CoPset} (N : Namespace) (sema : Loc) (v : w32) :
     ⊢ typedPointsto (GF := GF) sema v (DFrac.own 1) ={E}=∗
       ∃ γ, isSema sema γ N ∗ ownSema γ v := by
   iintro Hs
-  icases typedPointsto_not_null_dup _ _ _ $$ Hs with ⟨Hs, %Hnn⟩
   imod ghostVar_alloc v with ⟨%γ, Hv⟩
   icases ghostVar_split γ v (1 : Qp).half (1 : Qp).half $$ [Hv] with ⟨Hv1, Hv2⟩
   · rw [Qp.half_add_half]; iexact Hv
@@ -68,7 +57,6 @@ theorem init_sema {E : CoPset} (N : Namespace) (sema : Loc) (v : w32) :
   iexists γ
   simp only [isSema_unseal, isSemaDef, ownSema_unseal, ownSemaDef]
   iframe # ∗
-  ipureintro; exact Hnn
 
 end wps
 

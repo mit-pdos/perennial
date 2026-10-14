@@ -33,12 +33,7 @@ Built on iris-lean's `BundledGFunctors`/`ElemG`/`iOwn`:
 * `class allG (GF : outParam BundledGFunctors)` bundles a single
   `ElemG GF allURF` (field `any_inG`). `GF` is an `outParam`, so in a context
   `[allG GF]` a bare `own γ a` (or `ghostVar γ q v`) elaborates with that
-  `GF`. There should be exactly one `allG` instance in scope: under the
-  GooseLang program logic it is the field `gooseAllG` of `gooseGlobalGS`
-  (`GooseLang/Lifting.lean`), so a section with `[heapGS hlc GF]` does not add
-  `[allG GF]`; only the generic ghost libraries assume `[allG GF]` directly.
-  (`GF` is not an `outParam` of `heapGS`, so there a bare `own γ a` whose `GF`
-  the expected type does not fix needs `(GF := GF)`.)
+  `GF`. There should be exactly one `allG` instance in scope.
   Note: `allG` is defined for `GF : BundledGFunctors.{0,0,0}` (forced by the
   universe of the codes); downstream simply writes `{GF} [allG GF]`.
 * `IsCmra PROP A e` (resp. `IsOfe`, `IsUcmra`, `IsTy`) is the evidence that the
@@ -60,8 +55,8 @@ Built on iris-lean's `BundledGFunctors`/`ElemG`/`iOwn`:
 * Building a model: `«allΣ»` puts `allURF` at slot 0, with `«allG_allΣ»`;
   `allGOfSlot` builds `allG GF` for any `GF` that has `allURF` at some slot.
 
-How a proof obtains ghost state: assume `{GF} [allG GF]` (or `[heapGS hlc GF]`,
-which provides it), then use `own`/the libraries directly, e.g.
+How a proof obtains ghost state: assume `{GF} [allG GF]` (or a GS class that
+extends `allG GF`), then use `own`/the libraries directly, e.g.
 `imod ghostVar_alloc v`; no further class assumptions are needed, except
 `[Pos.Countable A]` for the types of stored data.
 -/

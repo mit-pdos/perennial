@@ -18,7 +18,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE disk_ffi
 
 section spec
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.goose_lang.primitive.disk.Assumptions]
 

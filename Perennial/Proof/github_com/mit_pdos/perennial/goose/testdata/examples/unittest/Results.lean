@@ -21,7 +21,7 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 
 section results
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : unittest.Assumptions]
 
