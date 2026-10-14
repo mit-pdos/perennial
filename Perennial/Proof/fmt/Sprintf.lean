@@ -49,7 +49,7 @@ theorem fmt.Sprintf.wp_proof :
     obtain ⟨c, Hc, Hdrop⟩ : ∃ c, format[sint.nat n]? = some c ∧
         format.drop (sint.nat n) = c :: format.drop (sint.nat n + 1) :=
       ⟨_, List.getElem?_eq_getElem Hlt, List.drop_eq_getElem_cons Hlt⟩
-    rw [Hc]
+    rw [if_pos (show 0 ≤ sint.Z n by word), Hc]
     wp_auto
     wp_if_destruct
     · -- `%`
@@ -60,7 +60,8 @@ theorem fmt.Sprintf.wp_proof :
         obtain ⟨d, Hd, Hdrop1⟩ : ∃ d, format[sint.nat n + 1]? = some d ∧
             format.drop (sint.nat n + 1) = d :: format.drop (sint.nat n + 2) :=
           ⟨_, List.getElem?_eq_getElem Hlt1, List.drop_eq_getElem_cons Hlt1⟩
-        rw [show sint.nat (n + W64 1) = sint.nat n + 1 by word, Hd]
+        rw [if_pos (show 0 ≤ sint.Z (n + W64 1) by word),
+          show sint.nat (n + W64 1) = sint.nat n + 1 by word, Hd]
         wp_auto
         wp_if_destruct
         · -- `%%`
@@ -167,7 +168,7 @@ theorem fmt.Sprintf.wp_proof :
           rw [Hdrop, show xs.drop (sint.nat k) = [] from List.drop_eq_nil_of_le (by word)]
           exact .other _ _ _ (not_simpleDirective_nil _ Hnp)
     · -- a byte other than `%`
-      rw [Hc]
+      rw [if_pos (show 0 ≤ sint.Z n by word), Hc]
       wp_auto
       wp_bind (App (Val (GoInstruction (CompositeLiteral (go.SliceType go.byte))))
         (Val (LiteralValueV _)))

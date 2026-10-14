@@ -65,11 +65,12 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   index_ref_array (n : Int) (elem_type : go.GoType) (i : w64) (l : Loc) {V : Type} [ZeroVal V]
     [TypeRepr elem_type V] :
     ⟦IndexRef (go.ArrayType n elem_type), (#l, #i)⟧ ⤳[under]
-      (if sint.Z i < n then #(arrayIndexRef V (sint.Z i) l) else Panic "index out of range")
+      (if 0 ≤ sint.Z i ∧ sint.Z i < n then #(arrayIndexRef V (sint.Z i) l)
+       else Panic "index out of range")
 
   index_array (n : Int) (elem_type : go.GoType) (i : w64) (V : Type) (a : GoArray V n) :
     ⟦Index (go.ArrayType n elem_type), (#a, #i)⟧ ⤳[under]
-      (match a.arr[sint.nat i]? with
+      (match (if 0 ≤ sint.Z i then a.arr[sint.nat i]? else none) with
        | some v => #v
        | none => Panic "index out of range")
 

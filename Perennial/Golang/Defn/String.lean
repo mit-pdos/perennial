@@ -54,7 +54,9 @@ class StringSemantics [GoSemanticsFunctions] : Prop where
 
   string_index (s : GoString) (i : w64) :
     ⟦Index go.string, (#s, #i)⟧ ⤳[under]
-    (match s[sint.nat i]? with | some b => #b | _ => Panic "index out of bounds")
+    (match (if 0 ≤ sint.Z i then s[sint.nat i]? else none) with
+     | some b => #b
+     | _ => Panic "index out of bounds")
 
   string_slice (s : GoString) (low high : w64) :
     ⟦Slice go.string, (#s, #low, #high)⟧ ⤳[under]

@@ -55,7 +55,8 @@ theorem math.bits.Len64.wp_proof : math.bits.Len64.spec (GF := GF) (hG := hG) :=
   obtain ⟨hi, hx3, hn3, hpos⟩ := Hinv
   have hx3' : uint.nat x3 < 256 := hx3
   have hidx : sint.nat (W64 (uint.Z (W8 (uint.Z x3)))) = uint.nat x3 := by word
-  rw [hidx, htab _ hx3']
+  have h0 : 0 ≤ sint.Z (W64 (uint.Z (W8 (uint.Z x3)))) := by word
+  rw [if_pos h0, hidx, htab _ hx3']
   wp_auto
   wp_end
   ipureintro
