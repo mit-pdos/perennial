@@ -124,3 +124,11 @@ func testManyParentheses() bool {
 func testPlusTimes() bool {
 	return (2+5)*2 == 14
 }
+
+func testBitClear() bool {
+	var x uint64 = 0xff
+	var y uint64 = 0x0f
+	var a int8 = -1
+	var b int8 = 1
+	return x&^y == 0xf0 && a&^b == -2
+}

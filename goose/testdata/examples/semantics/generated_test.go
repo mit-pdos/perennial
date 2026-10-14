@@ -436,6 +436,10 @@ func (suite *GoTestSuite) TestPlusTimes() {
 	suite.Equal(true, testPlusTimes())
 }
 
+func (suite *GoTestSuite) TestBitClear() {
+	suite.Equal(true, testBitClear())
+}
+
 func (suite *GoTestSuite) TestOrCompareSimple() {
 	suite.Equal(true, testOrCompareSimple())
 }

@@ -649,6 +649,9 @@ noncomputable def testManyParentheses [FfiSyntax] [GoGlobalContext] : GoString :
 noncomputable def testPlusTimes [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testPlusTimes"
 
+noncomputable def testBitClear [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBitClear"
+
 noncomputable def shouldPanic [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.shouldPanic"
 
@@ -4539,6 +4542,33 @@ noncomputable def testPlusTimes.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (Val #true))))
 
+/-- go: operations.go:128:6 -/
+noncomputable def testBitClear.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (Let "$r0" (Val #(W64 255))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 15))
+  (Let "y" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int8))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
+  (Let "a" (App (Val (GoInstruction (GoAlloc go.int8))) (App (Val (GoInstruction (GoZeroVal go.int8))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W8 1))
+  (Let "b" (App (Val (GoInstruction (GoAlloc go.int8))) (App (Val (GoInstruction (GoZeroVal go.int8))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoBitClear go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "y")))) (Val #(W64 240)))) (App (Val (GoInstruction (GoOp GoEquals go.int8))) (Pair (App (Val (GoInstruction (GoOp GoBitClear go.int8))) (Pair (App (Val (GoInstruction (GoLoad go.int8))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int8))) (Var "b")))) (App (Val (GoInstruction (Convert go.untypedInt go.int8))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2 : Int)))))) (Val #false)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int8))) (Pair (Var "b") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int8))) (Pair (Var "a") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "y") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))
+
 /-- go: panic.go:3:6 -/
 noncomputable def shouldPanic.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -8026,6 +8056,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   testBitAddAnd_unfold : FuncUnfold testBitAddAnd [] testBitAddAnd.impl
   testManyParentheses_unfold : FuncUnfold testManyParentheses [] testManyParentheses.impl
   testPlusTimes_unfold : FuncUnfold testPlusTimes [] testPlusTimes.impl
+  testBitClear_unfold : FuncUnfold testBitClear [] testBitClear.impl
   shouldPanic_unfold : FuncUnfold shouldPanic [] shouldPanic.impl
   testOrCompareSimple_unfold : FuncUnfold testOrCompareSimple [] testOrCompareSimple.impl
   testOrCompare_unfold : FuncUnfold testOrCompare [] testOrCompare.impl
@@ -8274,6 +8305,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testBitAddAnd_unfold
   Assumptions.testManyParentheses_unfold
   Assumptions.testPlusTimes_unfold
+  Assumptions.testBitClear_unfold
   Assumptions.shouldPanic_unfold
   Assumptions.testOrCompareSimple_unfold
   Assumptions.testOrCompare_unfold
