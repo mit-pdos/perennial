@@ -164,3 +164,26 @@ Cost: 11 one-line rules of one form, 0 goose changes. Semantics test
 fewer lines, but the first `GoOp` rule that expands to other operations
 instead of producing a value, and two extra proof steps at every use. Many
 rules are fine when they are one row each of an existing per-type table.
+
+## Case 6 — ACCEPTED: `unsafe.Pointer(nil)` (92400740a)
+
+**Symptom.** Incomplete: `Convert go.untypedNil «unsafe».Pointer` had no rule,
+so `unsafe.Pointer(nil)` and `p == nil` on an `unsafe.Pointer` were stuck;
+blocked `time.AfterFunc` (it passes nil to the runtime's `newTimer`).
+
+**Taken.** Re-applied 2cb0f7810's rule unchanged, next to the other nil
+conversions: `convert_nil_unsafe_pointer : ⟦Convert go.untypedNil
+«unsafe».Pointer, UntypedNil⟧ ⤳[under] #null`. Cost: 1 rule. Semantics test
+`testUnsafePointerNil`. `unsafe.Pointer` stays opaque: obtainable only from
+`*T` or nil, convertible only back to `*T`, no `uintptr` conversions.
+
+**Not taken.** Putting the rule in `«unsafe».Semantics` beside the `*T`
+conversions; kept with the nil siblings so all `untypedNil` conversions are in
+one list.
+
+**Follow-up outside the trusted base.** `time.AfterFunc`'s spec required the
+callback's WP with postcondition `True`, which held under the dropped
+exception-monad semantics (an unrecovered panic was stuck). Under these
+semantics a panic is a value and `wp_fork` requires `⌜v.isPanic = false⌝`; the
+spec now says so (ed2f06198). Its one client, `context.WithDeadlineCause`,
+needed no change.
