@@ -95,6 +95,13 @@ imports = ["!*"]
   not read that key, it documents the intent.)
 * `trust_proofgen = true` makes proofgen emit admitted (`sorry`) instances.
 
+A package's `init` functions are named `init.0`, `init.1`, ... (as gc numbers
+them: the files in order, then source order within a file) and are selected by
+these names like any function (`sync.toml` translates `"init.0", "init.1"`;
+`internal/bytealg.toml` trusts `"init.0"`). `initialize'` calls them in that
+order, so an init that is neither translated nor trusted makes the package's
+initialization stuck.
+
 **What is generated.** For each package, `Perennial/Code/<pkg>.lean` contains
 
 * `pkg_id.<pkg> : GoString` and a `PkgInfo` instance (the imported packages);
@@ -125,7 +132,7 @@ import Perennial.Proof.sync
 ```lean
 section tutorial
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : unittest.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
@@ -135,8 +142,9 @@ The unit-test package imports `github.com/goose-lang/primitive/disk`, so its
 FFI is fixed to the disk FFI (global instances from `Perennial.Proof.DiskPrelude`)
 and the section does not bind it. Other packages are generic in the FFI and also
 bind `[ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]`,
-as in `Perennial/Spec/sync/Mutex__Lock.lean`. Ghost state comes with `HeapGS`
-(section 10).
+as in `Perennial/Spec/sync/Mutex__Lock.lean`. `[AllG GF]` is the universal
+camera of ghost state (section 10); the spec and proof files bind it next to
+`HeapGS`, which does not provide it.
 
 ## 4. Writing a specification
 
@@ -439,7 +447,9 @@ theorem wp_DoSomeLocking' [sync.Assumptions] (l : Loc) (R : IProp GF) :
 ```
 
 A `go` statement is `Fork e`; `wp_fork` (`Perennial/GooseLang/Lifting.lean`)
-asks for `WP e {{ True }}` for the new goroutine. Resources shared by both
+asks for `WP e {{ v, ⌜v.isPanic = false⌝ }}` for the new goroutine: it must not
+panic (`itrivial` and `wp_auto` close `⌜v.isPanic = false⌝` at the goroutine's
+final value). Resources shared by both
 goroutines must be persistent (`ipersist H` turns `l ↦ v` into `l ↦□ v`), or
 protected by a lock created with `sync.init_Mutex`:
 
@@ -492,11 +502,9 @@ theorem wp_simpleSpawn' [sync.Assumptions] :
 
 ## 10. Ghost state and invariants
 
-Ghost state is `own` over one universal camera, `AllG GF` (no per-algebra
-`inG` classes); `HeapGS` provides the one instance, so a section with
-`[hG : HeapGS hlc GF]` does not add `[AllG GF]` (only the generic ghost
-libraries, which have no `HeapGS`, assume it). `ghostVar`, `ghost_map`,
-`mono_list`, `saved_prop`, ... live in
+Ghost state needs `[AllG GF]` (one universal camera; no per-algebra `inG`
+classes), a section variable of its own next to `[hG : HeapGS hlc GF]`:
+`ghostVar`, `ghost_map`, `mono_list`, `saved_prop`, ... live in
 `Perennial/Ghost`. Invariants are iris-lean's `inv N P`; `imod inv_alloc N E P $$ [..]`
 allocates, `iinv H with pat Hclose` opens one around an atomic step, and
 `imod Hclose $$ [..]` closes it.
@@ -556,7 +564,7 @@ example : IsPkgInit (IProp GF) pkg_id.sync := define_is_pkg_init iprop(True)
 example : GetIsPkgInitWf (IProp GF) pkg_id.sync := build_get_is_pkg_init_wf
 
 -- The initialization proof: run `package.init`, initialize the imported
--- packages in order, and conclude `isPkgInit`.
+-- packages in order, call the package's init functions, and conclude `isPkgInit`.
 example (get_is_pkg_init : GoString → IProp GF)
     (Hinit : GetIsPkgInitProp pkg_id.sync get_is_pkg_init) :
     {{ ownInitializing get_is_pkg_init }}
@@ -571,6 +579,17 @@ example (get_is_pkg_init : GoString → IProp GF)
   wp_apply internal.synctest.wp_initialize' _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hsynctest⟩
   wp_apply internal.race.wp_initialize' _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hrace⟩
   wp_apply sync.atomic.wp_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #Hatomic⟩
+  -- the init functions: init.0 is runtime_registerPoolCleanup(poolCleanup)
+  wp_func_call
+  wp_call
+  wp_func_call
+  wp_call
+  -- init.1 is runtime_notifyListCheck(unsafe.Sizeof(n))
+  wp_func_call
+  wp_call
+  wp_auto
+  wp_func_call
+  wp_call
   iframe Hown
   is_pkg_init_finish
 ```
@@ -580,7 +599,9 @@ example (get_is_pkg_init : GoString → IProp GF)
   computed from the package's imports, so their instances must exist.
 * `wp_initialize'` initializes the imports in the order of `initialize'` in
   `Perennial/Code/<pkg>.lean`; `Hinit.2.1`, `Hinit.2.2.1`, ... are the
-  imports' `GetIsPkgInitProp` facts.
+  imports' `GetIsPkgInitProp` facts. Then `initialize'` calls the package's
+  init functions `init.«0»`, `init.«1»`, ... (a translated one is stepped into
+  with `wp_func_call; wp_call`).
 * In client specs, `wp_start` and `wp_apply` solve `isPkgInit` premises
   automatically (`iPkgInit`), also when only a package importing it is
   available.
@@ -682,12 +703,10 @@ example (l : List w64) (h : 2 < l.length) : True := by
 * **Hypotheses that mention functions.** `wp_func_call` rewrites the first
   `#(functions ..)` in the goal; if a hypothesis mentions another function,
   `rw [func_unfold (f := F)]` instead.
-* **Panics.** `wp_apply wp_panic` continues with the panic as the outcome of the
-  function body: a `return`-like outcome that skips the rest of the body (in a
-  loop, `wp_for_post`) and is stuck at the end of the function unless a deferred
-  function literal `recover()`s it (`wp_with_defer_recover`, `wp_recoverPanic`).
-  A proof of a function that panics shows that the panic is unreachable; see the
-  reference, "Panics".
+* **Panics.** `wp_apply wp_panic` (or a spec whose postcondition is a panic)
+  continues with the panic unwinding to the nearest `Catch` (a function with
+  `defer`) or to `Φ (PanicV p)`; see the reference, "Panics". A `let:` or call
+  that binds a generic `v : val` needs `v.isPanic = false` in the Lean context.
 
 ## 14. Tactic summary
 

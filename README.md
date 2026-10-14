@@ -74,47 +74,18 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
 * **64-bit platform.** The Go semantics assumes a 64-bit platform: the
   word-sized types `int`, `uint` and `uintptr` are 64-bit (values `w64`).
   `uintptr` (`go.UintptrSemantics`, `Perennial/Golang/Defn/Predeclared.lean`)
-  is an integer type like `uint64`. Pointer/`unsafe.Pointer` to/from `uintptr`
-  conversions are not modelled: they are stuck.
-* **Evaluation order.** The Go spec orders a statement's calls and receives
-  (left to right) but leaves the other reads of its operands unordered
-  relative to them, and compilers differ: gc reads `m[0]` in `m[0] + f()`
-  after `f` runs, and before it under `-race`. Perennial fixes one order and
-  compiles with it: a statement's operands are evaluated strictly left to
-  right, each completely (its operands first) before the next one starts, then
-  its assignments are carried out (`x + f()` reads `x`, then calls `f`; in
-  `{e1, e2}` all of `e1` is evaluated before `e2`, whatever `e2` contains).
-  `goose/order` implements it as a source rewrite: a statement is in *normal
-  form* when every read of state that a call could change, and every
-  operation that can panic (whose panic the model makes stuck, and which a
-  compiler must not reach before a call that in the model runs first), is
-  ordered with every call and receive (*event*) by the spec, so that all
-  orders agree on it (about 1.3% of the standard library's statements are
-  not); `order.Rewrite` turns the others into statements in normal form by
-  evaluating, in order, the operands that must come before a later one into
-  temporaries (`_orderN`, which goose translates as ordinary locals; the
-  address, for an operand used as an address). Only the declarations goose
-  translates are rewritten (`util.Translated`: the functions, methods and
-  package-level variables a package's `.toml` translates): code that is not
-  verified keeps the compiler's own order, on which existing Go code may rely
-  (`crypto/x509.ParseOID` returns `o, o.unmarshalOIDText(oid)`, correct only
-  if the call runs first; verifying such a function means rewriting it not to
-  depend on the order). goose translates the rewritten source, and
-  **binaries must be built with the same rewrite**: `go build
-  -toolexec="perennial-order -code DIR"` (`goose/cmd/perennial-order`, built
-  from the same commit as the goose that produced the translation; DIR is
-  goose's output and configuration directory, `-code` repeatable) rewrites, in
-  each package with a translation in a DIR, the declarations its configuration
-  translates, standard-library packages included, without writing anything to
-  the source tree. What is trusted is goose's check that every statement it
-  translates is in normal form (`order.CheckFile`, the definition of the
-  normal form in `goose/order/normal.go`), and that the wrapper compiles the
-  rewrite of the same source with the same selection (a translated package
-  missing from the `-code` directories is compiled unrewritten); the rewriter
-  itself is not: a rewriter bug is a goose error, not an unsound translation. goose loads
-  code with the build tag `goose` and `GOARCH=amd64`; a file whose types
-  differ between that configuration and the real build may be rewritten
-  differently.
+  is an integer type like `uint64`. `unsafe.Pointer` (`unsafe.Semantics`, same
+  file) is an opaque location: converting a `*T` to it and back is the
+  identity on the `Loc`, and untyped `nil` converts to `null`.
+  Pointer/`unsafe.Pointer` to/from `uintptr` conversions are not modelled: they
+  are stuck. A constant call (`unsafe.Sizeof`, `unsafe.Alignof`,
+  `unsafe.Offsetof`, `len` of an array) is translated as its constant.
+* **Evaluation order.** A statement's operands are evaluated in the order of
+  goose's translation. The Go spec orders a statement's calls and receives but
+  leaves the other reads of its operands unordered relative to them, and
+  compilers differ (gc reads `m[0]` in `m[0] + f()` after `f` runs, and before
+  it under `-race`); there the translation fixes one order, which need not be
+  the compiler's.
 * **Model assumptions (overflow).** Where Go panics on an overflow that a real
   program cannot reach (it would run out of memory first), the model assumes the
   overflow does not happen, with `assume` (`Golang/Defn/Assume.lean`: an
@@ -141,26 +112,15 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   threadBound GF`, and the client assumes `threadBound GF ≤ 2^31` at adequacy
   time (`ProgramLogic/ThreadTokensTest.lean`, `docs/PERENNIAL_PROOF_REFERENCE.md`
   "Thread tokens").
-* **Panics.** `panic(p)` is a third outcome of the exception monad that models
-  function bodies (`Golang/Defn/Exception.lean`), `panicVal p = ("panic", p)`,
-  next to `do:` and `return:`: like a `return:`, it ends the body (`;;;` and the
-  loop combinators pass it on). The function's deferred functions then run
-  (`wrapDefer`, `Golang/Defn/Defer.lean`), and if one of them calls `recover()`
-  (Goose translates it only directly in a deferred function literal) the
-  function returns its results (`wrapDeferRecover`). As in Go, a function
-  that defers returns its results' values *after* its deferred functions ran,
-  which may modify named results: Goose gives each result a cell `$res<i>` (a
-  named result's own variable), translates `return e1, ..., en` as evaluating
-  the `ei`, storing them in the cells and `return: #()`, and passes the
-  wrapper a thunk reading the cells, which it calls after the deferred chain,
-  on a normal return and on a recovered panic alike. A panic that no
-  deferred function of the function recovers is stuck at the end of the
-  function (`exceptionDo`), like a run-time panic of a builtin (`Panic "msg"`:
-  an index out of range, a field selector or `&p.f` through a nil pointer, ...):
-  a proof shows that it does not happen. The model does not propagate a panic to
-  the caller (in Go the caller's deferred functions run and may recover it), so
-  a program that recovers a callee's panic is not provable. GooseLang itself has
-  no panic construct. See `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
+* **Panics.** A panic outcome is a value, `PanicV p`, that unwinds every
+  evaluation frame but that of `Catch e h k` (`GooseLang/Lang.lean`); `panic(p)`
+  steps to it, a function with `defer`s runs its body under a `Catch`
+  (`Golang/Defn/Defer.lean`), and `recover()` (Goose translates it only directly
+  in a deferred function literal) reads and clears the panic. A postcondition
+  receives panics too, a spec `{{ P }} e {{ RET v; Q }}` excludes them, and a
+  goroutine must not panic (`wp_fork`, `goose_adequacy_nopanic`). Run-time panics
+  of builtins (`Panic "msg"`: an index out of range, a failed type assertion,
+  ...) are stuck. See `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
   `etc/update-goose-new.py` rather than editing them by hand.

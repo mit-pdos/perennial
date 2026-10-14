@@ -117,7 +117,7 @@ the wand form, which `wp_start` handles too (`Perennial/Spec/sync/runtime_Semacq
 | Notation | Meaning | File |
 |:--|:--|:--|
 | `l ↦ v`, `l ↦{dq} v`, `l ↦□ v` | typed points-to (`typedPointsto l v dq`) | `Golang/Theory/PostLifting.lean` |
-| `l.[S, go!"f"]` | address of field `f` of the struct at `l` (computing it panics on `l = null`) | `Golang/Defn/PostLang.lean` |
+| `l.[S, go!"f"]` | address of field `f` of the struct at `l` | `Golang/Defn/PostLang.lean` |
 | `s ↦* vs`, `s ↦*{dq} vs` | slice points-to (`ownSlice`) | `Golang/Theory/Slice.lean` |
 | `ownSliceCap V s dq` | ownership of the capacity beyond the length | `Golang/Theory/Slice.lean` |
 | `m ↦$ mv`, `m ↦${dq} mv`, `m ↦$□ mv` | map points-to (`ownMap`), `mv : gmap K V` | `Golang/Theory/Map.lean` |
@@ -207,14 +207,6 @@ and after `wp_auto`:
 ```
 
 (`GoString` literals are displayed as byte lists: `[98#8]` is `go!"b"`.)
-
-Translated code is in Perennial's evaluation order (README, "Evaluation
-order"): a statement whose order the Go spec leaves open is rewritten before
-translation, the operands that must be evaluated before a later one bound to
-locals `_order1`, `_order2`, ... in order (`x := a[i] + f()` becomes
-`_order1 := a[i]; x := _order1 + f()`).
-They are ordinary locals: `wp_auto` allocates, stores and loads them like any
-other.
 
 ### `wp_func_call`, `wp_method_call`
 
@@ -555,7 +547,7 @@ Specs take `isPkgInit` of their package; `wp_apply` discharges it.
 | `wp_load_slice_index s i vs dq v (hpos : 0 ≤ i)` | `{{ s ↦*{dq} vs ∗ ⌜vs[i.toNat]? = some v⌝ }} ![t] #(sliceIndexRef V i s) {{ RET #v; s ↦*{dq} vs }}` |
 | `wp_store_slice_index` | `{{ s ↦* vs ∗ ⌜0 ≤ i ∧ i < vs.length⌝ }} ... {{ RET #(); s ↦* vs.set i.toNat v' }}` |
 | `wp_slice_make2`, `wp_slice_make3` | `make([]T, n)`, `make([]T, n, c)` |
-| `wp_slice_append`, `wp_slice_copy`, `wp_slice_clear` | `append`, `copy`, `clear` |
+| `wp_slice_append`, `wp_slice_copy`, `wp_slice_clear` | `append`, `copy`, `clear` (Goose converts the string `s` of `append(b, s...)` and `copy(b, s)` to `b`'s slice type, `wp_string_to_bytes`) |
 | `wp_slice_literal` | `[]T{...}` (`wp_auto` stops before it) |
 
 ### Maps (`Golang/Theory/Map.lean`)
@@ -574,10 +566,10 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty
 | Lemma | |
 |:--|:--|
 | `wp_for`, `wp_for_post_do/continue/break/return/panic` | loops (used by the tactics) |
-| `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `Once.wp_doSlow`; `wp_auto` first to allocate the result cells); the deferred chain runs after the body, whatever its outcome, then the function returns its results read from their cells |
+| `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `Once.wp_doSlow`); the body runs under a `Catch` (see "Panics") |
 | `wp_with_defer_recover`, `wp_recoverPanic` | functions whose deferred function literal calls `recover()` (introduce `%defer %pnc defer pnc`) and the `recover()` |
-| `wp_panic`, `wp_exceptionDo_panic` | `panic(p)`, and an unrecovered panic at the end of a function (stuck); see "Panics" |
-| `wp_fork` | `go` statements: `▷ WP e {{ True }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}` |
+| `wp_panic`, `wp_unwind`, `wp_catch`, `wp_catch_panic`, `wp_catch_val` | panics (see "Panics") |
+| `wp_fork` | `go` statements: `▷ WP e {{ v, ⌜v.isPanic = false⌝ }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}` |
 | `wp_fork_tok`, `wp_ThreadExit` | `go` statements with thread tokens: the forking thread receives a `threadTok`, the forked thread `e ;; ThreadExit` must end with one; see "Thread tokens" |
 | `wp_assume`, `wp_sumAssumeNoOverflow`, ... | `primitive.Assume*`; the model's overflow assumptions (`append`) are listed in `README.md`, "Model assumptions (overflow)" |
 | `wp_package_init` | package initialization (in `wp_initialize'`) |
@@ -687,39 +679,23 @@ theorem wp_simpleSpawn' [sync.Assumptions] :
 
 ### Panics
 
-GooseLang has no panic construct: `panic(p)` is an outcome of the exception
-monad of function bodies (`Golang/Defn/Exception.lean`), `panicVal p =
-("panic", p)`, next to `executeVal` (`do:`) and `returnVal v` (`return:`).
-`wp_panic : Φ (panicVal #(.ok i)) ⊢ WP (@! go.panic #(.ok i)) {{ Φ }}` (the
-argument converted to an `interface{}`, not `nil`), and `;;;` passes the outcome on
-(`pure_panic_val`), as `return:` is: the rest of the body is skipped. In a loop
-body, `wp_for_post` (`wp_for_post_panic`) ends the loop with it, and a
-`for range` over a map likewise (`forMapPostcondition`).
-
-What happens to the outcome depends on the function:
-
-* no `defer`: the body is `exceptionDo body`, and `exceptionDo (panicVal p)` is
-  stuck (`wp_exceptionDo_panic : ▷ False ⊢ WP ..`), like a run-time panic of a
-  builtin (`Panic "msg"`, `wp_PanicOp`); the proof must show that the panic is
-  unreachable (`Perennial/{Spec,Proof}/github_com/mit_pdos/perennial/goose/testdata/examples/semantics/shouldPanic.lean`);
-* `defer` (`with_defer: r; e`, `wp_with_defer`): the deferred chain runs after
-  the body whatever its outcome; a panic is then stuck (`exceptionDo` as
-  above), and otherwise the function returns `r`, which reads its results'
-  cells. In a function that defers, every result has a cell `$res<i>` (a named
-  result's own variable, a fresh cell for an unnamed or blank result, bound
-  outside the `with_defer:`), and `return e1, ..., en` evaluates the `ei`,
-  stores them in the cells and is `return: #()` (a bare `return` is
-  `return: #()`), so that, as in Go, the function returns its results' values
-  *after* the deferred functions ran, which may read and modify named results
-  (the `testDefer*` tests in `Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics/`);
-* `defer` of a function literal that calls `recover()` (`with_defer_recover:`,
-  `wp_with_defer_recover`): the panic's value is stored in the `$panic` cell
-  (`pnc ↦ nil` while not panicking) before the chain runs; `recover()`
-  (`recoverPanic`, `wp_recoverPanic`) reads and clears it; if the chain cleared
-  it, or the body did not panic, the function returns its results (read from
-  their cells after the chain), and otherwise `exceptionDo` as above. `wp_auto` steps through these
-  checks once the body's outcome is a `returnVal`/`panicVal`
-  (`recoverNamed.lean` and `recoverInLoop.lean` in `Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics/`):
+A panic outcome is a value, `PanicV p` (`GooseLang/Lang.lean`): `panic(p)` steps
+to it (`wp_panic : Φ (PanicV #p) ⊢ WP (@! go.panic #p) {{ Φ }}`, `p` the argument
+converted to an `interface{}`), and it unwinds every evaluation frame but that of
+`Catch e h k`, which continues with `h p` (a panic) or `k v` (a value). So a
+postcondition `Φ` also receives panics, while a spec `{{ P }} e {{ RET v; Q }}`
+names a normal value (`#x` is never a panic, `isPanic_intoVal`) and therefore
+excludes them. A spec that lets a function panic says what `Φ (PanicV p)` it
+provides (`shouldPanic.spec` in
+`Perennial/Spec/github_com/mit_pdos/perennial/goose/testdata/examples/semantics/shouldPanic.lean`);
+after `wp_apply` of it, `wp_auto` takes the panic through the caller's evaluation
+context (`wp_unwind`) up to a `Catch`. A function with `defer`s runs its body
+under a `Catch` (`with_defer:`, `wrapDefer` in `Golang/Defn/Defer.lean`): the
+deferred chain runs on both outcomes and a panic is raised again; if a deferred
+function literal calls `recover()`, Goose emits `with_defer_recover:`
+(`wrapDeferRecover`), whose `$panic` cell the handler sets and `recover()`
+(`recoverPanic`) reads and clears, and the function then returns its named
+results (`Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics/recoverNamed.lean`):
 
 ```lean
 theorem wp_recoverNamed :
@@ -728,59 +704,34 @@ theorem wp_recoverNamed :
   wp_start
   wp_auto
   wp_apply wp_with_defer_recover as %defer %pnc defer pnc
-  wp_auto
-  wp_apply wp_panic                               -- the body's outcome
-  wp_auto                                         -- stored in `pnc`; the deferred literal runs
-  wp_apply wp_recoverPanic $$ [$pnc] as pnc       -- `recover()` in it
-  wp_auto                                         -- sets `x`; the function returns it
+  wp_apply wp_panic                               -- unwinds to the handler
+  wp_apply wp_recoverPanic $$ [$pnc] as pnc       -- in the deferred literal
   iapply HΦ
   itrivial
 ```
 
-The model does not propagate a panic to the caller: a function call evaluates
-to a value or is stuck, so a program that recovers a callee's panic (Go runs the
-caller's deferred functions, which may recover it) is not provable, and neither
-is one that lets a panic escape a goroutine or `main` (in Go, it crashes the
-program). A specification `{{ P }} f args {{ RET v; Q }}` therefore says that
-`f` does not panic, except where its own deferred functions recover it. `panic(nil)` is
-stuck (Go 1.21 turns it into a run-time panic with a `*runtime.PanicNilError`,
-and a `nil` in the `$panic` cell means "not panicking"), so `wp_panic` takes a
-non-nil value `.ok i`. Goose does not translate a `panic(..)` as the post
-statement of a `for` (`doFor` runs the post statement under `do:`, which would
-drop the panic), nor `defer panic(..)` or `go panic(..)`, nor a `recover()` in a
-deferred function literal that itself defers a literal calling `recover()` (the
-inner `with_defer_recover:` would bind its own `$panic` cell, hiding the one the
-outer `recover()` must read).
-
 A loop body that panics proves its `forPostcondition` with `wp_for_post`
 (`wp_for_post_panic`). Run-time panics of builtins (`Panic "msg"`: an index out
-of range, a failed type assertion, an integer division or remainder by zero, a
-negative shift count, a field selector through a nil pointer) are stuck: proofs
-show they are unreachable (`wp_PanicOp : ▷ False ⊢ WP (Panic msg)`). A field
-reference `StructFieldRef t f #l` (Goose's translation of `&p.f`, and the
-address behind `p.f`, `p.f = v`, `p.g.f` and a promoted method called through
-an embedded field) steps to `if l = null then Panic "nil pointer dereference"
-else #(l.[V, f])`; `wp_auto`/`wp_pures` take it as a pure step with the side
-condition `l ≠ null` (`pure_wp_structFieldRef`). A field address is `null`
-exactly when the struct's is (`structFieldRef_eq_null_iff`, from the semantics'
-`go.structFieldRef_null` and `go.structFieldRef_null_inv`), so the side
-condition follows from any non-null address with the same base
-(`LocNonNullFrom`): a Lean hypothesis `l' ≠ null`, or a hypothesis of the
-context with a `HypPure` instance: a points-to (`typedPointsto_hypPure`), a
-pure `⌜l' ≠ null⌝`, `isLock`/`isMutex`/`isSema` (which record their address's
-non-nullness), `isWaitGroup`, `isCancelCtxOf`, and `∗`/`∃`/`□` of these; the
-fact is then kept as a local `Hφ : l ≠ null`. A struct whose fields are all
-behind invariants needs such a fact in its persistent predicate (as
-`isCoordinator` in the `workq` example does). `wp_apply` closes a premise
-`⌜l ≠ null⌝` of a spec the same way (`inonnull`, also usable directly); the
-`sync/atomic` method specs (`Int64.Load`, ...) take one, since the receiver's
-ownership is only available inside their atomic update. A division `x / y` steps to
-`if uint.Z y = 0 then Panic "integer divide by zero" else #(x / y)` (`sint.Z` at
-signed types): a literal divisor is decided by `wp_pures`, another needs
-`rw [if_neg (show ¬ uint.Z y = 0 by ...)]`. A shift `x << y` is
-`GoShift GoShiftl t ct` with the types of both operands; a signed count `y`
-steps to `if sint.Z y < 0 then Panic "negative shift amount" else ...`, closed
-the same way (`rw [if_neg (show ¬ sint.Z y < 0 by ...)]`).
+of range, including a negative string or array index, a failed type assertion,
+a slice expression out of bounds) are stuck, not unwinding: proofs show they are
+unreachable (`wp_PanicOp : ▷ False ⊢ WP (Panic msg)`).
+
+**Binding a value needs it not to be a panic.** A step that binds or pairs a
+value (a call, a `let:`, a pair, a Go instruction's argument, a frame holding an
+evaluated operand) needs `v.isPanic = false`, since a panic would unwind it
+instead. The tactics prove it for `#x`, `val` constructors (also behind
+definitions such as `exceptionSeq`), `if`s of those and hypotheses
+`h : v.isPanic = false` or `h : v = w` in the Lean context; for a generic
+`v : val` from a postcondition, get one (`obtain ⟨x, rfl⟩ : ∃ x, v = #x`) or case
+on `v.isPanic` (`val.isPanic_eq_true`). A postcondition `⌜v.isPanic = false⌝ ∗ Q`
+reached at such a value becomes `Q` (and `⌜v.isPanic = false⌝` is closed by
+`wp_auto` and `itrivial`).
+
+**Goroutines must not panic.** `wp_fork` asks for `WP e {{ v, ⌜v.isPanic = false⌝ }}`
+(`forkPost`), and `goose_adequacy_nopanic` concludes that no thread of an execution
+ends in a panic when the main thread's `φ` excludes panics (the convention
+`φ (PanicV _) = False`): an unrecovered panic, which kills a Go program, is a
+verification failure.
 
 ### Ghost state and invariants
 
@@ -819,19 +770,19 @@ theorem counter_incr (N : Namespace) (γ : GName) (n : Nat) :
 Inside a WP: `wp_bind` the atomic instruction, `iinv`, `wp_apply_core` the
 atomic spec, `iintro` its postcondition, `imodintro`, close the invariant
 (`isplitl [..]` against the closing conjunct, as `wp_runtime_Semacquire` in
-`sema.lean` does, or `imod Hclose $$ [..]`), and continue with `wp_auto`.
+`Perennial/Proof/sync/runtime_Semacquire.lean` does, or `imod Hclose $$ [..]`), and continue with `wp_auto`.
 
 ### Later credits
 
 `wp_auto_lc n` (or `wp_apply (lc := n) ...`, `wp_pure_lc H`, `wp_call_lc H`) yields
 `£ 1` hypotheses. Use them to strip a later from a non-timeless hypothesis under
 a fancy update: `imod lc_fupd_elim_later (E := ⊤ \ ↑nroot) $$ Hlc1 Hi with Hi`
-(`once.lean`), or `inext 1 credit: Hlc1` (iris-lean).
+(`Perennial/Proof/sync/Once__Do.lean`), or `inext 1 credit: Hlc1` (iris-lean).
 
 ### Löb induction
 
-`iloeb as IH generalizing %x H` (see `wp_Assume` in
-`Perennial/Proof/github_com/goose_lang/primitive.lean` and the proof of
+`iloeb as IH generalizing %x H` (see the proof of `Assume` in
+`Perennial/Proof/github_com/goose_lang/primitive/Assume.lean` and the proof of
 `wp_for` in `Loop.lean`).
 
 ### Time receipts
@@ -852,6 +803,7 @@ ghost state (with `receiptBound_pos : 0 < receiptBound GF`):
 
 ```
 class ReceiptGS (GF : BundledGFunctors) where
+  receiptAllG : AllG GF
   receiptTokName : GName
   receiptLbName : GName
   receiptBound : Nat
@@ -864,13 +816,13 @@ Each counted step `k` also issues an exclusive `ghost_map` token `k ↪ ()`
 (`receiptTokName`), and `⧗ n` is `n` such tokens, each with `⧖ (k + 1)`.
 Tokens are distinct steps, so the latest of `n` of them gives `⧖ n`; this is how
 the snapshot rule and `⧗ n ⊢ ⌜n < N⌝` hold without the authoritative counter.
-The receipts are ghost state of `GooseGlobalGS`'s `AllG GF` (`gooseAllG`, the
-one `AllG` of every proof under `HeapGS`).
+`receiptAllG` is an instance only inside `Receipts.lean`; elsewhere proofs keep
+their own `[AllG GF]`.
 
 `ReceiptGS` is a field of `GooseGlobalGS`, hence available from `HeapGS`, so a
 proof can write `receiptBound GF` without new section variables. Nothing else
 depends on `N`: the language instance, `PureExec`/`Atomic` instances and the
-ghost state to allocate (`GooseGpreS`) are the same for every `N`. A
+receipt camera (`ReceiptGpreS`, `GooseGpreS`) are the same for every `N`. A
 proof that needs `N` to be small states it as a premise, e.g.
 `(Hbound : receiptBound GF ≤ 2 ^ 64)`, and every caller passes the premise on;
 the client discharges it when it picks `N` at adequacy time (below). Prefer to
@@ -1018,14 +970,15 @@ state (with `threadBound_gt : 1 < threadBound GF`, the main thread being live):
 
 ```
 class ThreadGS (GF : BundledGFunctors) where
+  threadAllG : AllG GF
   threadTokName : GName
   threadBound : Nat
   threadBound_gt : 1 < threadBound
 ```
 
-`ThreadGS` is a field of `GooseGlobalGS`, hence available from `HeapGS`, and
-its tokens are ghost state of `GooseGlobalGS`'s `AllG GF` (`gooseAllG`, the
-one `AllG` of every proof under `HeapGS`); as for `N`, a proof that needs `T` to be small states it as a premise
+`ThreadGS` is a field of `GooseGlobalGS`, hence available from `HeapGS`
+(`threadAllG`, like `receiptAllG`, is an instance only inside its own file); as
+for `N`, a proof that needs `T` to be small states it as a premise
 (`Hbound : threadBound GF ≤ 2 ^ 31`), discharged by the client at adequacy
 time.
 
@@ -1056,17 +1009,17 @@ are the thread fuel, owned by the state interpretation
 
 **Getting and returning tokens.**
 
-* `wp_fork_tok`: `▷ (threadTok -∗ WP e {{ _, threadTok }} ∗ Φ #()) ⊢ WP (Fork e) {{ Φ }}`.
+* `wp_fork_tok`: `▷ (threadTok -∗ WP e {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }} ∗ Φ #()) ⊢ WP (Fork e) {{ Φ }}`.
   The forking thread receives a token (out of the thread fuel), and the forked
   thread must end with one (its `ThreadExit` returns it to the fuel). Whether
   the token stays with the forking thread, goes to the forked thread, or is
   deposited in an invariant is up to the proof: every live thread is accounted
   for by exactly one token, wherever it is.
-* `wp_fork`: the usual rule, `▷ WP e {{ True }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}`;
+* `wp_fork`: the usual rule, `▷ WP e {{ v, ⌜v.isPanic = false⌝ }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}`;
   the forked thread keeps its token to itself.
-* `wp_fork_tok_body`: `▷ (threadTok -∗ WP e {{ _, threadTok }}) -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}`,
+* `wp_fork_tok_body`: `▷ (threadTok -∗ WP e {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }}) -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}`,
   the token given to the body (which uses it and ends with it);
-  `wp_fork_tok_self`: `▷ WP e {{ _, threadTok }} -∗ ▷ (threadTok -∗ Φ #()) -∗ WP (Fork e) {{ Φ }}`,
+  `wp_fork_tok_self`: `▷ WP e {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }} -∗ ▷ (threadTok -∗ Φ #()) -∗ WP (Fork e) {{ Φ }}`,
   the token kept by the forking thread, the body ending with one from elsewhere (its `Done`).
 * `wp_ThreadExit`: `threadTok -∗ ▷ Φ #() -∗ WP ThreadExit {{ Φ }}` (used by
   `wp_fork_tok`; goose-generated code does not contain `ThreadExit`).
@@ -1102,7 +1055,7 @@ example : IsPkgInit (IProp GF) pkg_id.sync := define_is_pkg_init iprop(True)
 example : GetIsPkgInitWf (IProp GF) pkg_id.sync := build_get_is_pkg_init_wf
 
 -- The initialization proof: run `package.init`, initialize the imported
--- packages in order, and conclude `isPkgInit`.
+-- packages in order, call the package's init functions, and conclude `isPkgInit`.
 example (get_is_pkg_init : GoString → IProp GF)
     (Hinit : GetIsPkgInitProp pkg_id.sync get_is_pkg_init) :
     {{ ownInitializing get_is_pkg_init }}
@@ -1117,6 +1070,17 @@ example (get_is_pkg_init : GoString → IProp GF)
   wp_apply internal.synctest.wp_initialize' _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hsynctest⟩
   wp_apply internal.race.wp_initialize' _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hrace⟩
   wp_apply sync.atomic.wp_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #Hatomic⟩
+  -- the init functions: init.0 is runtime_registerPoolCleanup(poolCleanup)
+  wp_func_call
+  wp_call
+  wp_func_call
+  wp_call
+  -- init.1 is runtime_notifyListCheck(unsafe.Sizeof(n))
+  wp_func_call
+  wp_call
+  wp_auto
+  wp_func_call
+  wp_call
   iframe Hown
   is_pkg_init_finish
 ```

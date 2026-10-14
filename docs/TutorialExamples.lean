@@ -41,7 +41,7 @@ theorem sum_w64_take_succ (xs : List w64) (n : Nat) (x : w64) (h : xs[n]? = some
 -- ANCHOR: context
 section tutorial
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics] [package_sem : unittest.Assumptions]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
@@ -384,7 +384,7 @@ end tutorial
 
 section ghost
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 
 -- ANCHOR: ghost
 /-- The invariant owns half of a ghost variable `γ` holding a counter; the
@@ -595,7 +595,7 @@ namespace sync
 section pkg_init
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
@@ -606,7 +606,7 @@ example : IsPkgInit (IProp GF) pkg_id.sync := define_is_pkg_init iprop(True)
 example : GetIsPkgInitWf (IProp GF) pkg_id.sync := build_get_is_pkg_init_wf
 
 -- The initialization proof: run `package.init`, initialize the imported
--- packages in order, and conclude `isPkgInit`.
+-- packages in order, call the package's init functions, and conclude `isPkgInit`.
 example (get_is_pkg_init : GoString → IProp GF)
     (Hinit : GetIsPkgInitProp pkg_id.sync get_is_pkg_init) :
     {{ ownInitializing get_is_pkg_init }}
@@ -621,6 +621,17 @@ example (get_is_pkg_init : GoString → IProp GF)
   wp_apply internal.synctest.wp_initialize' _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hsynctest⟩
   wp_apply internal.race.wp_initialize' _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hrace⟩
   wp_apply sync.atomic.wp_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #Hatomic⟩
+  -- the init functions: init.0 is runtime_registerPoolCleanup(poolCleanup)
+  wp_func_call
+  wp_call
+  wp_func_call
+  wp_call
+  -- init.1 is runtime_notifyListCheck(unsafe.Sizeof(n))
+  wp_func_call
+  wp_call
+  wp_auto
+  wp_func_call
+  wp_call
   iframe Hown
   is_pkg_init_finish
 -- ANCHOR_END: pkg_init
