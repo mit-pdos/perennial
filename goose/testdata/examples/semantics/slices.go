@@ -146,3 +146,38 @@ func testAppendNilNamed() bool {
 	y := append(x, nil...)
 	return len(y) == 2 && y[1] == 2
 }
+
+func testCopyStringVar() bool {
+	b := make([]byte, 2)
+	s := "cd"
+	n := copy(b, s)
+	return n == 2 && string(b) == "cd"
+}
+
+func testCopyStringConst() bool {
+	b := make([]byte, 2)
+	n := copy(b, "cd")
+	return n == 2 && string(b) == "cd"
+}
+
+func testCopyStringShortDst() bool {
+	b := make([]byte, 1)
+	n := copy(b, "cd")
+	return n == 1 && b[0] == 'c'
+}
+
+func copyBytesOrString[S ~[]byte | ~string](b []byte, s S) int {
+	return copy(b, s)
+}
+
+func testCopyGenericString() bool {
+	b := make([]byte, 2)
+	n := copyBytesOrString(b, "cd")
+	return n == 2 && string(b) == "cd"
+}
+
+func testCopyGenericBytes() bool {
+	b := make([]byte, 2)
+	n := copyBytesOrString(b, []byte("cd"))
+	return n == 2 && string(b) == "cd"
+}

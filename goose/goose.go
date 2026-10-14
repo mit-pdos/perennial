@@ -291,6 +291,10 @@ func (ctx *Ctx) callExprPrelude(call *ast.CallExpr, cont glang.Expr) (expr glang
 		if ctx.appendWithEllipsis(call) {
 			paramTy = funcSig.Params().At(0).Type()
 		}
+		// handle `copy` special case for strings
+		if ctx.isCopy(call) {
+			paramTy = funcSig.Params().At(0).Type()
+		}
 		expr = glang.LetExpr{
 			Names: []string{fmt.Sprintf("$a%d", i-1)},
 			ValExpr: ctx.handleImplicitConversion(intermediates[i-1].n,
@@ -305,6 +309,11 @@ func (ctx *Ctx) appendWithEllipsis(call *ast.CallExpr) bool {
 	id, ok := ast.Unparen(call.Fun).(*ast.Ident)
 	return ok && ctx.info.Types[call.Fun].IsBuiltin() && id.Name == "append" &&
 		call.Ellipsis != token.NoPos
+}
+
+func (ctx *Ctx) isCopy(call *ast.CallExpr) bool {
+	id, ok := ast.Unparen(call.Fun).(*ast.Ident)
+	return ok && ctx.info.Types[call.Fun].IsBuiltin() && id.Name == "copy"
 }
 
 func (ctx *Ctx) conversionExpr(s *ast.CallExpr) glang.Expr {
