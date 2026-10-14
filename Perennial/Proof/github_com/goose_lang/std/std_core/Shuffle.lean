@@ -51,8 +51,6 @@ theorem github_com.goose_lang.std.std_core.Shuffle.wp_proof
   have hlen' := Hperm.length_eq
   wp_if_destruct
   · wp_apply wp_RandomUint64 as %x _
-    rw [if_neg (show ¬ uint.Z (i + W64 1) = 0 by have := HI.1; have := HI.2; word)]
-    wp_auto
     have hj := umod_succ_bound x i HI.1
     list_elem xs' (sint.nat i) as x_i
     list_elem xs' (sint.nat (x % (i + W64 1))) as x_j

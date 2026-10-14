@@ -48,18 +48,16 @@ theorem slices.reverseRangeCmpFunc.wp_proof : slices.reverseRangeCmpFunc.spec (G
     list_elem xs1 (sint.nat j_val) as xj
     list_elem xs1 (sint.nat i_val) as xi
     slice_index_if
-    wp_auto
-    slice_index_if
-    wp_auto
-    slice_index_if
     wp_apply wp_load_slice_index data (sint.Z j_val) xs1 _ xj (by word) $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; exact Hxj_lookup
     slice_index_if
     wp_apply wp_load_slice_index data (sint.Z i_val) xs1 _ xi (by word) $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; exact Hxi_lookup
+    slice_index_if
     wp_pures
     wp_apply wp_store_slice_index data (sint.Z i_val) xs1 xj $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; constructor <;> word
+    slice_index_if
     wp_pures
     wp_apply wp_store_slice_index data (sint.Z j_val) _ xi $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; simp only [List.length_set]; constructor <;> word

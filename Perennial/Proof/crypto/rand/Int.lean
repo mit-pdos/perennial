@@ -58,7 +58,6 @@ theorem crypto.rand.Int.wp_proof
   rw [decide_eq_false (show ¬ uint.Z (W64 (2 ^ 63)) ≤ uint.Z m by word)]
   wp_auto
   wp_apply wp_ArbitraryInt as %r _
-  rw [if_neg (show ¬ uint.Z m = 0 by omega)]
   wp_apply wp_NewInt as %v Hv
   ispecialize HΦ $$ %v %(sint.Z (r % m))
   iapply HΦ

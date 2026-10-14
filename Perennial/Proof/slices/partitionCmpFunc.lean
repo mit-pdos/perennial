@@ -33,18 +33,16 @@ theorem slices.partitionCmpFunc.wp_proof : slices.partitionCmpFunc.spec (GF := G
   list_elem xs (sint.nat pivot) as xp
   list_elem xs (sint.nat a) as xa
   slice_index_if
-  wp_auto
-  slice_index_if
-  wp_auto
-  slice_index_if
   wp_apply wp_load_slice_index data (sint.Z pivot) xs _ xp (by omega) $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; exact Hxp_lookup
   slice_index_if
   wp_apply wp_load_slice_index data (sint.Z a) xs _ xa (by omega) $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; exact Hxa_lookup
+  slice_index_if
   wp_pures
   wp_apply wp_store_slice_index data (sint.Z a) xs xp $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; omega
+  slice_index_if
   wp_pures
   wp_apply wp_store_slice_index data (sint.Z pivot) _ xa $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; simp; omega

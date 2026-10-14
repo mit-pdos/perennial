@@ -143,16 +143,14 @@ theorem slices.siftDownOrdered.wp_proof : slices.siftDownOrdered.spec (GF := GF)
         subst hlt
         simp only [Bool.not_true]
         wp_auto
-        heap_slice_index_k kxrt
-        wp_auto
-        heap_slice_index_k kxc
-        wp_auto
         heap_load_k Hxc kxc
         heap_load_k Hxrt kxrt
+        heap_slice_index_k kxrt
         wp_pures
         wp_apply wp_store_slice_index (t := Et) data _ xs' xc $$ [Hxs] with Hxs
         · iframe Hxs; ipureintro; exact kxrt.2.2
         rw [hridx]
+        heap_slice_index_k kxc
         wp_pures
         wp_apply wp_store_slice_index (t := Et) data _ (xs'.set (sint.nat a + sint.nat root_val) xc) xrt $$ [Hxs]
           with Hxs

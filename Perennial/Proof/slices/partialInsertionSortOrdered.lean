@@ -113,18 +113,16 @@ theorem slices.partialInsertionSortOrdered.wp_proof : slices.partialInsertionSor
     have hidx : (sint.Z (i_val - W64 1)).toNat = sint.nat i_val - 1 := hi1
     have hidx' : (sint.Z i_val).toNat = sint.nat i_val := rfl
     slice_index_if
-    wp_auto
-    slice_index_if
-    wp_auto
-    slice_index_if
     wp_apply wp_load_slice_index data (sint.Z (i_val - W64 1)) xs' _ x1 (by word) $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; rw [hidx]; exact Hx1_lookup
     slice_index_if
     wp_apply wp_load_slice_index data (sint.Z i_val) xs' _ x0 (by word) $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; exact Hx0_lookup
+    slice_index_if
     wp_pures
     wp_apply wp_store_slice_index data (sint.Z i_val) xs' x1 $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; word
+    slice_index_if
     wp_pures
     wp_apply wp_store_slice_index data (sint.Z (i_val - W64 1)) _ x0 $$ [Hxs] with Hxs
     · iframe Hxs; ipureintro; simp only [List.length_set]; word

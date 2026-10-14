@@ -31,9 +31,7 @@ theorem github_com.goose_lang.std.std_core.MulNoOverflow.wp_proof :
     wp_if_destruct
     · rw [decide_eq_true (by simp [uint.Z])]
       iapply HΦ; itrivial
-    · rw [if_neg (show ¬ uint.Z y = 0 from fun h => Hif (by word))]
-      wp_auto
-      have hx : uint.Z x ≠ 0 := fun h => Hx (by word)
+    · have hx : uint.Z x ≠ 0 := fun h => Hx (by word)
       have h : (uint.Z x ≤ uint.Z (W64 18446744073709551615 / y)) ↔
           (uint.Z (x * y) = uint.Z x * uint.Z y) := by
         have hy : uint.Z y ≠ 0 := fun h => Hif (by word)
