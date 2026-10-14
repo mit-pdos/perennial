@@ -103,3 +103,13 @@ func testSliceRef() bool {
 	*ptr = 1
 	return (sl[0] == 1)
 }
+
+func testSliceLowOnlyEvaluatesOnce() bool {
+	var n uint64
+	f := func() []uint64 {
+		n++
+		return make([]uint64, 3)
+	}
+	s := f()[1:]
+	return n == 1 && len(s) == 2
+}

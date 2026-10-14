@@ -504,6 +504,10 @@ func (suite *GoTestSuite) TestSliceRef() {
 	suite.Equal(true, testSliceRef())
 }
 
+func (suite *GoTestSuite) TestSliceLowOnlyEvaluatesOnce() {
+	suite.Equal(true, testSliceLowOnlyEvaluatesOnce())
+}
+
 func (suite *GoTestSuite) TestFooBarMutation() {
 	suite.Equal(true, testFooBarMutation())
 }

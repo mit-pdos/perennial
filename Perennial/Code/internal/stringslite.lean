@@ -79,7 +79,7 @@ noncomputable def HasSuffix.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "suffix"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (App (Val (GoInstruction (GoLoad go.string))) (Var "s")))))) (App (Val (GoInstruction (GoLoad go.string))) (Var "suffix")))) (Val #false))))))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s"))))) (App (Val (GoInstruction (GoLoad go.string))) (Var "suffix")))) (Val #false))))))))
 
 /-- go: strings.go:24:6 -/
 noncomputable def IndexByte.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -132,7 +132,7 @@ noncomputable def Index.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "fails")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (Val #(W64 4)) (App (Val (GoInstruction (GoOp GoShiftr go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val #(4 : Int))))))))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "t")))) (Val #false)))
   (Let "$r0" (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
-  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))))))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "substr"))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.bytealg.IndexRabinKarp [go.string]))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (Let "j" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -243,7 +243,7 @@ noncomputable def Index.impl [FfiSyntax] [GoGlobalContext] : val :=
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "fails")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.bytealg.Cutover []))) (Val #())) (Var "$a0"))))))
   (Let "$r0" (Let "$a0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
-  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))))))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "substr"))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.bytealg.IndexString []))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (Let "r" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -337,7 +337,7 @@ noncomputable def Cut.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Pair (Pair (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))) (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "sep"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))))))) (Val #true)))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))) (Val #true)))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
@@ -356,7 +356,7 @@ noncomputable def CutPrefix.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (Pair (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "prefix"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (App (Val (GoInstruction (GoLoad go.string))) (Var "s")))))) (Val #true)))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s"))))) (Val #true)))))
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "prefix"))
   (App (App (App (Val (GoInstruction (FuncResolve HasPrefix []))) (Val #())) (Var "$a0")) (Var "$a1")))))
@@ -404,7 +404,7 @@ noncomputable def TrimPrefix.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "prefix"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (App (Val (GoInstruction (GoLoad go.string))) (Var "s")))))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s"))))))
   (App (Val doExecute)
   (Val #())))))))))
 

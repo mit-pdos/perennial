@@ -731,7 +731,7 @@ func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
 		x = ctx.expr(e.X)
 		highExpr = glang.NewCallExpr(
 			glang.VerbatimExpr("FuncResolve"),
-			glang.VerbatimExpr("go.len"), glang.ListExpr{ty}, glang.Tt, ctx.expr(e.X))
+			glang.VerbatimExpr("go.len"), glang.ListExpr{ty}, glang.Tt, glang.IdentExpr("$s"))
 	}
 
 	if e.Low != nil {

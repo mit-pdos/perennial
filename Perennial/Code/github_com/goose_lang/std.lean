@@ -216,7 +216,7 @@ noncomputable def SliceSplit.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) 
   (App (Val doReturn)
   (Pair (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "xs"))
   (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))))) (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "xs"))
-  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "xs")))))))))))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (Var "$s"))))))))))))
 
 /-- go: goose_std.go:84:6 -/
 noncomputable def newJoinHandle.impl [FfiSyntax] [GoGlobalContext] : val :=
