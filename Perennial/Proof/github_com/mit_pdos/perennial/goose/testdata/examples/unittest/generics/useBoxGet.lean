@@ -5,6 +5,7 @@ module
 
 public import Perennial.Spec.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useBoxGet
 public import Perennial.Spec.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.makeGenericBox
+public import Perennial.Spec.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box__Get
 
 @[expose] public section
 
@@ -26,12 +27,15 @@ variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.un
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useBoxGet.wp_proof
     (wp_makeGenericBox :
       github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.makeGenericBox.spec
+        (GF := GF) (hG := hG))
+    (wp_Get :
+      github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box.Get.spec
         (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useBoxGet.spec
       (GF := GF) (hG := hG) := by
   wp_start
   wp_apply wp_makeGenericBox
-  wp_apply github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box.wp_Get' $$ [$]
+  wp_apply wp_Get $$ [$]
   wp_end
 
 end proof

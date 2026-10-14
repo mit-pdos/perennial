@@ -66,15 +66,14 @@ theorem errors.asType.wp_proof :
       wp_for_post
       iapply HΦ
       iframe
-    wp_store; wp_pures; wp_store; wp_pures; wp_load; wp_pures
+    wp_auto
     -- the `As` statement, joined before the `Unwrap` switch: it either returns
     -- or falls through with an updated `*ppe`
     wp_join (Q := fun v => iprop(
         (⌜v = executeVal⌝ ∗ ∃ q : Loc, "ppe" ∷ ppe_ptr ↦ ppe ∗ "err" ∷ err_ptr ↦ interface.ok ii ∗
           "Hppe" ∷ ppe ↦ q ∗ "Hpe" ∷ (⌜q = Loc.null⌝ ∨ ∃ v : T', q ↦ v)) ∨
         (∃ (e : T') (q : Loc), ⌜v = returnVal (PairV #e #true)⌝ ∗ ppe ↦ q ∗
-          (⌜q = Loc.null⌝ ∨ ∃ v : T', q ↦ v)))) at next with [ppe err Hppe Hpe]
-    wp_auto
+          (⌜q = Loc.null⌝ ∨ ∃ v : T', q ↦ v)))) at next 2 with [ppe err Hppe Hpe x ok]
     have hu : underlying (go.InterfaceType [go.MethodElem go!"As" (go.Signature [go.any] false [go.bool])]) =
         go.InterfaceType [go.MethodElem go!"As" (go.Signature [go.any] false [go.bool])] :=
       go.is_underlying
