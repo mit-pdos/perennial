@@ -244,3 +244,31 @@ joins the 64-bit constants. No existing translation changed. Semantics test
 unsound once conversions between `unsafe.Pointer` and pointers are allowed;
 here a `uintptr` only appears as a constant argument to a trusted runtime
 check, and `uintptr` ↔ pointer conversions remain stuck.
+
+## Case 9 — ACCEPTED: a negative index panics (58fa042ef)
+
+**Symptom.** Unsound (more defined than Go). `string_index` and `index_array`
+looked up `[sint.nat i]?`; `sint.nat` sends a negative `i` to 0, so `s[-1]`
+read `s[0]`. `index_ref_array` tested only `sint.Z i < n`, so `&a[-1]` (and a
+store `a[-1] = x`) was an address before the array. Goose converts every
+index to `int`, so a `uint64` index of 2^63 or more arrives negative too.
+
+**Witness.** `idx("abc", -1)` and `"abc"[uint64(1<<63)]` panic in Go; the
+model gave `'a'`. Likewise `idxArr([3]byte{1,2,3}, -1)`.
+
+**Taken.** The missing `0 ≤ sint.Z i` half of the bounds test, as
+`index_ref_slice` has it: `match (if 0 ≤ sint.Z i then s[sint.nat i]? else
+none)` for the two lookups, `if 0 ≤ sint.Z i ∧ sint.Z i < n` for the
+reference. Cost: 3 rules refined from defined to stuck, 0 new rules, 0 goose
+changes; no semantics test (a stuck `Panic` is not observable by a
+`test*() bool`). Proofs that index a string discharge the guard with
+`rw [if_pos (show 0 ≤ sint.Z i by word)]` (fmt, math/bits); `Theory/Array`'s
+restated instance follows the rule.
+
+**Bundling.** The user: "Since the array/slice problems are the same logical
+issue, fix all of them in one commit." One bug per change means one *logical*
+bug: siblings with the same defect go together.
+
+**How it was found.** An isolated agent running this skill from the symptom
+of the string case alone proposed the string fix and, unprompted, listed the
+two array rules as siblings with the same defect.

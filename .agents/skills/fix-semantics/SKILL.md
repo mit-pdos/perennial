@@ -43,7 +43,9 @@ Read both before proposing anything.
    * its cost: changed/new goose branches, new semantics rules, new negative
      tests, new trusted models, lines in the trusted base;
    * the closest case in `examples.md` and how this one matches its shape;
-   * what it leaves out (bundled fixes are split into separate items).
+   * the sibling rules or translations with the same defect, which the plan
+     includes (look for them: the same lookup, test or binding elsewhere);
+   * what it leaves out (unrelated fixes are split into separate items).
    A cost of more than one new branch/rule/negative test, or any branch that
    depends on context, is a red flag: say why it is unavoidable or propose
    leaving the construct stuck instead.
@@ -86,8 +88,9 @@ Read both before proposing anything.
 * **Type-dependent choices are the semantics' job.** Goose emits operations
   annotated with their operands' Go types; signedness, width, and type
   parameter instantiation are decided by Lean rules, not by goose branches.
-* **One bug per change.** Split bundled fixes; each gets its own plan and
-  case.
+* **One logical bug per change.** Split unrelated fixes; each gets its own
+  plan and case. Sibling rules with the same defect are one bug and are fixed
+  together (Case 9).
 * **No narrative in the trusted base.** No comments justifying a rule or
   recounting a bug; the commit message and `examples.md` carry the history.
 
