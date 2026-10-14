@@ -48,7 +48,7 @@ theorem slices.partitionCmpFunc.wp_proof : slices.partitionCmpFunc.spec (GF := G
   wp_pures
   wp_apply wp_store_slice_index data (sint.Z pivot) _ xa $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; simp; omega
-  try wp_auto
+  wp_auto
   ipersist a
   ipersist data
   ipersist cmp

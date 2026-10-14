@@ -20,7 +20,7 @@ open github_com.mit_pdos.perennial.goose.model
 section new_spec
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF] [AllG GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics] [sem : go.ChanSemantics]
 variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {t : go.GoType}
   [IntoValTyped (GF := GF) V t]
@@ -45,7 +45,7 @@ theorem wp_NewChannel (cap : w64) :
   simp only [channel.idle, channel.buffered]
   wp_auto
   wp_if_destruct
-  · wp_apply wp_slice_make2 (V := V) (W64 0) (make_cap_ok_zero _) $$ [] as %sl ⟨Hsl, Hslcap⟩
+  · wp_apply wp_slice_make2 (V := V) $$ [] as %sl ⟨Hsl, Hslcap⟩
     · ipureintro; decide
     iapply wp_fupd
     wp_alloc ch as Hch
@@ -63,8 +63,6 @@ theorem wp_NewChannel (cap : w64) :
       with ⟨%offer_continuation_gname, Hcontinuation⟩
     ipersist cap
     ipersist mu
-    ihave «$v1» := typedPointsto_mutex_lock _ _ _ $$ «$v1»
-    simp only [MutexState.zero_locked]
     imod init_lock (chanInvInner ch ⟨state_gname, offer_lock_gname, offer_parked_prop_gname,
       offer_parked_pred_gname, offer_continuation_gname, cap⟩ V) ⊤ «$v1_ptr» $$ «$v1»
       [-HΦ Hstate_frag] with #Hlock
@@ -101,7 +99,7 @@ theorem wp_NewChannel (cap : w64) :
       constructor <;> word
   · have hcap : cap = W64 0 := by word
     subst hcap
-    wp_apply wp_slice_make2 (V := V) (W64 0) (make_cap_ok_zero _) $$ [] as %sl ⟨Hsl, Hslcap⟩
+    wp_apply wp_slice_make2 (V := V) $$ [] as %sl ⟨Hsl, Hslcap⟩
     · ipureintro; decide
     iapply wp_fupd
     wp_alloc ch as Hch
@@ -119,8 +117,6 @@ theorem wp_NewChannel (cap : w64) :
       with ⟨%offer_continuation_gname, Hcontinuation⟩
     ipersist cap
     ipersist mu
-    ihave «$v1» := typedPointsto_mutex_lock _ _ _ $$ «$v1»
-    simp only [MutexState.zero_locked]
     imod init_lock (chanInvInner ch ⟨state_gname, offer_lock_gname, offer_parked_prop_gname,
       offer_parked_pred_gname, offer_continuation_gname, W64 0⟩ V) ⊤ «$v1_ptr» $$ «$v1»
       [-HΦ Hstate_frag] with #Hlock
@@ -174,7 +170,7 @@ theorem wp_NewChannel_unbuffered_ne (l : Loc) (x : w64) :
   wp_auto
   simp only [channel.idle, channel.buffered]
   wp_auto
-  wp_apply wp_slice_make2 (V := V) (W64 0) (make_cap_ok_zero _) $$ [] as %sl ⟨Hsl, Hslcap⟩
+  wp_apply wp_slice_make2 (V := V) $$ [] as %sl ⟨Hsl, Hslcap⟩
   · ipureintro; decide
   iapply wp_fupd
   wp_alloc ch as Hch
@@ -184,9 +180,11 @@ theorem wp_NewChannel_unbuffered_ne (l : Loc) (x : w64) :
   by_cases hcl : ch = l
   · subst hcl
     iexfalso
-    iapply word_pointsto_own_discard (V := w64) _ _ x $$ [cap Hl]
-    iframe cap
-    iexact Hl
+    simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap]
+    icases cap with ⟨Hc1, -⟩
+    icases Hl with ⟨Hc2, -⟩
+    icombine Hc1 Hc2 gives %H
+    exact absurd (DFrac.valid_own_op_discard.1 H.1) (by simp)
   imod ghostVar_alloc (ChanState.Idle (V := V)) with ⟨%state_gname, Hstate⟩
   icases ghostVar_halves _ _ $$ Hstate with ⟨Hstate_auth, Hstate_frag⟩
   imod ghostVar_alloc (none : Option (OfferLock V)) with ⟨%offer_lock_gname, Hoffer_lock⟩
@@ -198,8 +196,6 @@ theorem wp_NewChannel_unbuffered_ne (l : Loc) (x : w64) :
     with ⟨%offer_continuation_gname, Hcontinuation⟩
   ipersist cap
   ipersist mu
-  ihave «$v1» := typedPointsto_mutex_lock _ _ _ $$ «$v1»
-  simp only [MutexState.zero_locked]
   imod init_lock (chanInvInner ch ⟨state_gname, offer_lock_gname, offer_parked_prop_gname,
     offer_parked_pred_gname, offer_continuation_gname, W64 0⟩ V) ⊤ «$v1_ptr» $$ «$v1»
     [-HΦ Hstate_frag Hl] with #Hlock

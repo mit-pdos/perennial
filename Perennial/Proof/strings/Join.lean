@@ -25,7 +25,7 @@ variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
 
 /-- Proved from goose's translation of Go's `Join` and of the `strings.Builder` methods it calls,
-with `Builder.String`, `Builder.copyCheck` and `internal/bytealg.MakeNoZero` trusted
+with `Builder.String`, `internal/bytealg.MakeNoZero` and `internal/abi.NoEscape` trusted
 (`Perennial/TrustedCode`). -/
 theorem strings.Join.wp_proof
     (wp_Grow : strings.Builder.Grow.spec (GF := GF) (hG := hG))
@@ -53,7 +53,7 @@ theorem strings.Join.wp_proof
     rw [ite_eq_left ⟨by word, by simp at Hlen; word⟩]
     wp_apply wp_load_slice_index elems (sint.Z (W64 0)) _ dq x0 (by word) $$ [Hs] as Hs
     · iframe; ipureintro; rfl
-    try wp_auto
+    wp_auto
     rw [show sep.intercalate [x0] = x0 by simp [List.intercalate]]
     iapply HΦ
     iexact Hs

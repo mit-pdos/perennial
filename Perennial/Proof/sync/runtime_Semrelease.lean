@@ -27,13 +27,15 @@ theorem sync.runtime_Semrelease.wp_proof :
   intro sema γ N _u1 _u2
   wp_start as #Hsem
   simp only [isSema_unseal, isSemaDef, ownSema_unseal, ownSemaDef]
-  icases Hsem with ⟨#Hsem, %_, %hal⟩
-  wp_bind (AddN _ _ _)
+  icases Hsem with ⟨#Hsem, %_⟩
+  wp_bind (AtomicAdd _ _)
   iinv Hsem with ⟨%v, >Hs, >Hv⟩
   imod HΦ with ⟨%v1, Hv2, HΦ⟩
   icombine Hv Hv2 gives % ⟨_, Heq⟩
   subst Heq
-  wp_apply_core typed.wp_atomic_add sema v (W32 1) (v + W32 1) hal
+  simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap]
+  icases Hs with ⟨Hs, %Hnn⟩
+  wp_apply_core Perennial.wp_atomic_add sema #v #(W32 1) #(v + W32 1)
     (by simp [go.intoVal_unfold, atomicAddEval]) $$ Hs
   iintro Hs
   imod ghostVar_update_halves (v + W32 1) γ v v $$ Hv Hv2 with ⟨Hv, Hv2⟩
@@ -42,7 +44,8 @@ theorem sync.runtime_Semrelease.wp_proof :
   imodintro
   isplitl [Hs Hv]
   · inext; iexists _
-    iframe
+    simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap]
+    iframe; ipureintro; exact Hnn
   wp_auto
   iexact HΦ
 

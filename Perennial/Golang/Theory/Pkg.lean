@@ -261,14 +261,21 @@ variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
-theorem wp_package_init (pkg_name : GoString) [PkgInfo pkg_name] (init_func : val)
+/-- The initialization of a package by its function `init_func` (a function value,
+`rec: f x := body`), which must not panic. -/
+theorem wp_package_init (pkg_name : GoString) [PkgInfo pkg_name] (f x : Binder) (body : Expr)
     (get_is_pkg_init : GoString → IProp GF) (isPkgInit : IProp GF) (Φ : val → IProp GF)
     (heq : get_is_pkg_init pkg_name = isPkgInit) :
+    let init_func := RecV f x body
     iprop(ownInitializing get_is_pkg_init ∗
       (ownInitializing get_is_pkg_init -∗
-        WP (App (Val init_func) (Val #())) {{ _v, □ isPkgInit ∗ ownInitializing get_is_pkg_init }}))
+        WP (App (Val init_func) (Val #())) {{ v, ⌜v.isPanic = false⌝ ∗ □ isPkgInit ∗
+          ownInitializing get_is_pkg_init }}))
     ⊢ iprop((ownInitializing get_is_pkg_init ∗ isPkgInit -∗ Φ #()) -∗
       WP (App (Val (package.init pkg_name)) (Val init_func)) {{ Φ }}) := by
+  intro init_func
+  have hinit : init_func.isPanic = false := rfl
+  clear_value init_func
   subst heq
   rw [ownInitializing_unseal, package.init_unseal]
   unfold ownInitializingDef
@@ -290,7 +297,7 @@ theorem wp_package_init (pkg_name : GoString) [PkgInfo pkg_name] (init_func : va
       simp only [Bool.false_eq_true, ↓reduceIte]
       itrivial
     wp_apply_core wp_wand $$ Hpre
-    iintro %_ ⟨#Hinitd, Hown⟩
+    iintro %_ ⟨%Hnp, #Hinitd, Hown⟩
     icases Hown with ⟨%σ', Hg, #Hinit'⟩
     wp_pures
     wp_apply_core wp_PackageInitFinish pkg_name σ' $$ Hg

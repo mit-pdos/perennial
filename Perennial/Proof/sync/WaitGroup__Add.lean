@@ -40,7 +40,6 @@ theorem sync.WaitGroup.Add.wp_proof
     sync.WaitGroup.Add.spec (GF := GF) (hG := hG) := by
   intro wg delta γ N
   wp_start as #His
-  ihave %Hal := isWaitGroup_aligned wg γ N $$ His
   iapply wp_with_defer
   iintro %defer Hdefer
   wp_auto

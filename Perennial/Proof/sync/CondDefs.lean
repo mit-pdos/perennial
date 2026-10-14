@@ -51,9 +51,8 @@ abbrev copyCheckerInv (c : Loc) : IProp GF :=
 /-- See the module docstring. -/
 def copyCheckerN : Namespace := nroot.@"copyChecker"
 
-/-- See the module docstring. The checker's atomic operations need it aligned. -/
-def isCopyCheckerDef (c : Loc) : IProp GF :=
-  iprop(inv copyCheckerN (copyCheckerInv c) ∗ ⌜Aligned (.cell 8) c⌝)
+/-- See the module docstring. -/
+def isCopyCheckerDef (c : Loc) : IProp GF := inv copyCheckerN (copyCheckerInv c)
 @[irreducible] def isCopyChecker (c : Loc) : IProp GF := isCopyCheckerDef c
 theorem isCopyChecker_unseal : @isCopyChecker = @isCopyCheckerDef := by
   funext; with_unfolding_all rfl

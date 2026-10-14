@@ -48,7 +48,6 @@ theorem wp_done_Load_of
   iNamed Hc
   iapply wp_VLoad _ (DFrac.own 1) $$ [] [-]
   all_goals try inonnull
-  all_goals try (ipureintro; first | exact Hcal.1 | exact Hcal.2)
   · iPkgInit
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -92,7 +91,6 @@ theorem wp_done_Load_frag_of
   iNamed Hc
   iapply wp_VLoad _ (DFrac.own 1) $$ [] [-]
   all_goals try inonnull
-  all_goals try (ipureintro; first | exact Hcal.1 | exact Hcal.2)
   · iPkgInit
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -152,7 +150,6 @@ theorem wp_err_Load_of
   iNamed Hc
   iapply wp_VLoad _ (DFrac.own 1) $$ [] [-]
   all_goals try inonnull
-  all_goals try (ipureintro; first | exact Hcal.1 | exact Hcal.2)
   · iPkgInit
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -208,7 +205,6 @@ theorem wp_err_Load_frag_of
   iNamed Hc
   iapply wp_VLoad _ (DFrac.own 1) $$ [] [-]
   all_goals try inonnull
-  all_goals try (ipureintro; first | exact Hcal.1 | exact Hcal.2)
   · iPkgInit
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -264,7 +260,6 @@ theorem wp_done_Load_known_of
   iNamed Hc
   iapply wp_VLoad _ (DFrac.own 1) $$ [] [-]
   all_goals try inonnull
-  all_goals try (ipureintro; first | exact Hcal.1 | exact Hcal.2)
   · iPkgInit
   iinv Hinv with Hi Hclose
   all_goals try solve_ndisj

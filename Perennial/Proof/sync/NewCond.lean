@@ -28,10 +28,7 @@ theorem sync.NewCond.wp_proof :
   wp_start as _
   wp_auto
   wp_pures
-  wp_apply_core wp_alloc _
-  iintro %c ⟨Hc, %Hal⟩
-  have hck := go.field_aligned (V := Cond) (f := go!"checker") (by solve_layout_mem)
-    (by solve_layout_nodup) (by solve_layout_pow2) Hal.1 Hal.2
+  wp_alloc c as Hc
   iStructNamed Hc
   ipersist L
   ipersist notify
@@ -41,9 +38,8 @@ theorem sync.NewCond.wp_proof :
   iapply HΦ
   rw [isCond_unseal]; unfold isCondDef
   rw [isCopyChecker_unseal]; unfold isCopyCheckerDef
-  simp only [named]
   iframe #
-  ipureintro; simpa [Aligned, Encoding.align] using hck
+  done
 
 end proof
 

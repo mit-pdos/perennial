@@ -48,7 +48,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.word
     rw [show (W64 (((([] : List GoString).map word_count).sum : Nat) : Int)) = W64 0 from rfl]
     iapply HΦ
     itrivial
-  wp_apply wp_slice_make2 (V := Loc) (W64 2) (make_cap_ok (by rw [go.typeSize_loc]; decide)) $$ [] as %workers_sl ⟨workers_sl, -⟩
+  wp_apply wp_slice_make2 (V := Loc) (W64 2) $$ [] as %workers_sl ⟨workers_sl, -⟩
   · ipureintro; decide
   rename_i j_ptr
   irename : (j_ptr ↦ zero_val w64 : IProp GF) => j
@@ -195,10 +195,6 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.word
   wp_auto
   icases typedPointsto_not_null_dup _ _ _ $$ «$v0» with ⟨«$v0», %Hv0_nn⟩
   icases typedPointsto_not_null_dup _ _ _ $$ «$v1» with ⟨«$v1», %Hv1_nn⟩
-  icases «$v0_al» with %Hv0_al
-  icases «$v1_al» with %Hv1_al
-  have Hv0_v := sync.atomic.Int64.v_aligned (GF := GF) _ Hv0_al
-  have Hv1_v := sync.atomic.Int64.v_aligned (GF := GF) _ Hv1_al
   ihave Hrem : sync.atomic.ownInt64 (GF := GF) «$v0_ptr» (DFrac.own 1) (W64 0) $$ [«$v0»]
   · rw [sync.atomic.ownInt64_unseal]
     unfold sync.atomic.ownInt64Def
@@ -257,7 +253,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.word
   · unfold isCoordinator
     iexists γdone
     iframe #
-    ipureintro; exact ⟨Hv0_nn, Hv1_nn, Hv0_v, Hv1_v⟩
+    ipureintro; exact ⟨Hv0_nn, Hv1_nn⟩
   rename_i jj_ptr
   irename : (jj_ptr ↦ zero_val w64 : IProp GF) => j
   ihave HI : (∃ (i j : w64) (wv : Loc),

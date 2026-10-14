@@ -28,7 +28,7 @@ abbrev sync.atomic.Bool.CompareAndSwap.spec : Prop :=
     (|={⊤,∅}=> ▷ ∃ (v : Bool) (dq : DFrac), ownBool u dq v ∗
       ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
       (ownBool u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
-    ⌜u ≠ null⌝ -∗ ⌜Aligned (.word 4) (structFieldRef Bool' go!"v" u)⌝ -∗
+    ⌜u ≠ null⌝ -∗
     WP (App (App (Val (u @!! go.GoType.PointerType Bool'.ty @!! go!"CompareAndSwap")) (Val #old))
       (Val #new)) {{ Φ }}
 

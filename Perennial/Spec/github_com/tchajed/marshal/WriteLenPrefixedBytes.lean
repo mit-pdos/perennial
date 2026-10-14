@@ -24,11 +24,11 @@ variable [sem : go.Semantics]
 variable [package_sem : github_com.tchajed.marshal.Assumptions]
 
 /-- `WriteLenPrefixedBytes(s, data)`: `s` with the little-endian length of `data` and then
-`data` appended. The hypothesis `length vs + 8 ≤ 2^47` is inherited from `reserve.spec`. -/
+`data` appended. The hypothesis `length vs + 8 ≤ 2^62` is inherited from `reserve.spec`. -/
 abbrev github_com.tchajed.marshal.WriteLenPrefixedBytes.spec : Prop :=
   ∀ (s : GoSlice) (vs : List w8) (data_sl : GoSlice) (q : DFrac)
     (data : List w8),
-  (vs.length : Int) + 8 ≤ 2 ^ 47 →
+  (vs.length : Int) + 8 ≤ 2 ^ 62 →
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.tchajed.marshal ∗ s ↦* vs ∗
         data_sl ↦*{q} data ∗ ownSliceCap w8 s (DFrac.own 1) }}
       (App (App (Val (@! WriteLenPrefixedBytes)) (Val #s)) (Val #data_sl))

@@ -48,7 +48,7 @@ theorem slices.partitionOrdered.wp_proof : slices.partitionOrdered.spec (GF := G
   wp_pures
   wp_apply wp_store_slice_index data (sint.Z pivot) _ xa $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; simp; omega
-  try wp_auto
+  wp_auto
   ipersist a
   ipersist data
   ihave HI : partInv R data a b xp xs i_ptr j_ptr false false $$ [Hxs i j]

@@ -23,7 +23,7 @@ variable [sem : go.Semantics]
 variable [package_sem : sync.atomic.Assumptions]
 
 abbrev sync.atomic.AddInt64.spec : Prop :=
-  ∀ (addr : Loc) (v : w64), Aligned (.word 8) addr →
+  ∀ (addr : Loc) (v : w64),
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ oldv : w64, addr ↦ oldv ∗
       (addr ↦ (oldv + v) ={∅,⊤}=∗ Φ #(oldv + v))) -∗

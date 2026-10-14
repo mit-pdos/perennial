@@ -23,7 +23,7 @@ variable [sem : go.Semantics]
 variable [package_sem : sync.atomic.Assumptions]
 
 abbrev sync.atomic.StorePointer.spec : Prop :=
-  ∀ (addr : Loc) (v : Loc), Aligned (.cell 8) addr →
+  ∀ (addr : Loc) (v : Loc),
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ oldv : Loc, addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #())) -∗
     WP (App (App (Val (@! StorePointer)) (Val #addr)) (Val #v)) {{ Φ }}

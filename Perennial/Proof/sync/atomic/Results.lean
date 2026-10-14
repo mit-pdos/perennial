@@ -29,7 +29,7 @@ variable [package_sem : sync.atomic.Assumptions]
 in which goose emits it. Resolving `AddUint64` is a Go instruction, which yields
 a time receipt `⧗ 1`; the atomic update receives it (so it can, e.g., be stored
 in an invariant opened by the update). -/
-theorem wp_AddUint64_receipt (addr : Loc) (v : w64) (hal : Aligned (.word 8) addr) :
+theorem wp_AddUint64_receipt (addr : Loc) (v : w64) :
     ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
       (⧗ 1 -∗ |={⊤,∅}=> ▷ ∃ oldv : w64, addr ↦ oldv ∗
         (addr ↦ (oldv + v) ={∅,⊤}=∗ Φ #(oldv + v))) -∗
@@ -41,7 +41,7 @@ theorem wp_AddUint64_receipt (addr : Loc) (v : w64) (hal : Aligned (.word 8) add
   inext
   iintro Hr _
   iapply wp_value'
-  iapply wp_AddUint64 addr v hal $$ %Φ Hpkg
+  iapply wp_AddUint64 addr v $$ %Φ Hpkg
   iapply HΦ $$ Hr
 
 end results

@@ -24,7 +24,7 @@ variable [package_sem : sync.atomic.Assumptions]
 
 theorem sync.atomic.Value.CompareAndSwap.wp_proof :
     sync.atomic.Value.CompareAndSwap.spec (GF := GF) (hG := hG) := by
-  intro u new hal hnew
+  intro u new hnew
   wp_start as Hown
   cases new with
   | nil => exact absurd rfl hnew
@@ -35,8 +35,8 @@ theorem sync.atomic.Value.CompareAndSwap.wp_proof :
   ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hown
   wp_auto
   iStructNamed Hown
-  wp_bind (LoadN _ _)
-  wp_apply_core typed.wp_atomic_load _ (DFrac.own 1) (interface.nil : GoInterface) hal $$ v
+  wp_bind (Load _)
+  wp_apply_core wp_atomic_load _ _ _ (DFrac.own 1) (interface.nil : GoInterface) $$ v
   iintro Hv
   wp_auto
   wp_bind ArbitraryInt
@@ -46,8 +46,8 @@ theorem sync.atomic.Value.CompareAndSwap.wp_proof :
   by_cases hx : x = W64 0
   · subst hx
     wp_auto
-    wp_bind (CmpXchgN _ _ _)
-    wp_apply_core typed.wp_cmpxchg_suc _ (interface.nil : GoInterface) interface.nil (interface.ok ii) hal rfl $$ Hv
+    wp_bind (CmpXchg _ _ _)
+    wp_apply_core wp_cmpxchg_suc _ (interface.nil : GoInterface) interface.nil (interface.ok ii) _ _ rfl $$ Hv
     iintro Hv
     wp_auto
     iapply HΦ

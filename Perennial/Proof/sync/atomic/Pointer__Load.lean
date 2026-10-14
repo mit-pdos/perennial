@@ -28,13 +28,10 @@ theorem sync.atomic.Pointer.Load.wp_proof
     sync.atomic.Pointer.Load.spec (GF := GF) (hG := hG) := by
   intro T' _ _ T _ u dq
   wp_start_folded as _
-  iintro %hu %hal
+  iintro %hu
   (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)
-  rw [show go.GoType.Named go!"sync/atomic.Pointer" [T] = sync.atomic.Pointer.ty T by
-      with_unfolding_all rfl,
-    show (go!"sync/atomic.LoadPointer" : GoString) = sync.atomic.LoadPointer by with_unfolding_all rfl]
-  try wp_auto
-  wp_apply_core (wp_LoadPointer _ _ (by first | exact hal | simpa using hal)) $$ [] [HΦ]
+  wp_auto
+  wp_apply_core wp_LoadPointer $$ [] [HΦ]
   · iPkgInit
   imod HΦ with ⟨%v, Hown, HΦ⟩
   imodintro; inext
@@ -49,7 +46,7 @@ theorem sync.atomic.Pointer.Load.wp_proof
     simp only [TypedPointsto.typedPointstoDef]
     iframe
   imodintro
-  try wp_auto
+  wp_auto
   iexact HΦ
 
 end proof

@@ -86,9 +86,7 @@ theorem init_Mutex (R : IProp GF) (E : CoPset) (m : Loc) :
     ⊢ typedPointsto (GF := GF) m (zero_val sync.Mutex) (DFrac.own 1) -∗ ▷ R ={E}=∗
       isMutex m R := by
   simp only [isMutex_unseal, isMutexDef]
-  iintro Hm HR
-  ihave Hm := typedPointsto_mutex_lock _ _ _ $$ Hm
-  iapply init_lock R E m $$ Hm HR
+  exact init_lock R E m
 
 /-- `i` implements `Locker` with `Lock` producing `P` and `Unlock` consuming it. -/
 def isLocker (i : GoInterfaceOk) (P : IProp GF) : IProp GF :=

@@ -27,7 +27,7 @@ local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.exam
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.testU32NewtypeLen.wp_proof :
     github_com.mit_pdos.perennial.goose.testdata.examples.unittest.testU32NewtypeLen.spec (GF := GF) (hG := hG) := by
   wp_start
-  wp_apply (wp_slice_make2 (V := w8) (W64 20) (make_cap_ok (by rw [go.typeSize_w8]; decide))) with %sl ⟨Hs, Hcap⟩
+  wp_apply (wp_slice_make2 (V := w8)) with %sl ⟨Hs, Hcap⟩
   · ipureintro; word
   ihave %Hlen := ownSlice_len _ _ _ $$ Hs
   have h : sint.Z sl.len = 20 := by

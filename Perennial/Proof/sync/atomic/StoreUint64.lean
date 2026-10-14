@@ -24,11 +24,11 @@ variable [package_sem : sync.atomic.Assumptions]
 
 theorem sync.atomic.StoreUint64.wp_proof :
     sync.atomic.StoreUint64.spec (GF := GF) (hG := hG) := by
-  intro addr v hal
+  intro addr v
   wp_start as _
-  wp_bind (SwapN _ _ _)
+  wp_bind (AtomicSwap _ _)
   imod HΦ with ⟨%oldv, >Haddr, HΦ⟩
-  wp_apply_core typed.wp_atomic_swap addr oldv v hal $$ Haddr
+  wp_apply_core wp_atomic_swap _ _ addr oldv v $$ Haddr
   iintro Haddr
   imod HΦ $$ Haddr with HΦ
   imodintro

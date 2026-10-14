@@ -55,8 +55,9 @@ theorem ownBuilder_zero (b : Loc) :
 theorem typedPointsto_w8_heap (l : Loc) (v : w8) (dq : DFrac) :
     typedPointsto (GF := GF) l v dq ⊢ heapPointsto l dq #v := by
   rw [typedPointsto_unseal_eq]
+  simp only [typedPointstoDef_heap]
   iintro ⟨H, -⟩
-  iapply (typedPointstoDef_w8 _ _ _).1 $$ H
+  iexact H
 
 /-- `lockBytes buf i` (`TrustedCode/strings.lean`), given the bytes of `buf` from index `i` on,
 read-locks them and keeps them. -/

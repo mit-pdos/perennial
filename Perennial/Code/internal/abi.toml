@@ -1,7 +1,5 @@
-# `NoEscape` converts its argument to `uintptr` and back (`unsafe.Pointer(x ^ 0)`), which
-# goose does not translate: a model in TrustedCode/internal/abi.lean. No translated code
-# calls it now (its caller `strings.Builder.copyCheck` is trusted); kept, with its spec, for
-# code that does.
+# `NoEscape` converts its argument to `uintptr` and back, which goose does not
+# translate: a model in TrustedCode/internal/abi.lean.
 # `kindNames` is the package's only initialized variable: translated so that the package's
 # initialization has a semantics.
 translate = ["!*", "kindNames", "Kind", "Invalid", "Bool", "Int", "Int8", "Int16", "Int32",

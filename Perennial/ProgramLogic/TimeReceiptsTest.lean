@@ -71,13 +71,13 @@ theorem clock_alloc (l : Loc) :
 /-- Incrementing the clock (`atomic.AddUint64(l, 1)`, as emitted by goose)
 returns `n + 1` for some `n + 1 < 2^64`: the counter never wraps around,
 provided the time-receipt bound is at most `2^64`. -/
-theorem wp_clock_incr (Hbound : receiptBound GF ≤ 2 ^ 64) (l : Loc) (hal : Aligned (.word 8) l) :
+theorem wp_clock_incr (Hbound : receiptBound GF ≤ 2 ^ 64) (l : Loc) :
     {{ isPkgInit (PROP := IProp GF) pkg_id.sync.atomic ∗ inv clockN (clockInv l) }}
       (App (App (App (Val (GoInstruction (FuncResolve sync.atomic.AddUint64 []))) (Val #()))
         (Val #l)) (Val #(W64 1)))
     {{ (n : Nat), RET #(W64 (n + 1)); ⌜n + 1 < 2 ^ 64⌝ }} := by
   iintro %Φ ⟨#Hpkg, #Hinv⟩ HΦ
-  iapply sync.atomic.wp_AddUint64_receipt l (W64 1) hal $$ %_ Hpkg
+  iapply sync.atomic.wp_AddUint64_receipt l (W64 1) $$ %_ Hpkg
   iintro Hr
   iinv Hinv with Hi Hclose
   iapply fupd_mask_intro Std.LawfulSet.empty_subset

@@ -316,11 +316,8 @@ automation. The last goal is the continuation `∀ x, Q -∗ WP K[v] {{ Φ }}`.
 hypothesis `l ↦{dq} v` or one from which it can be accessed (an `Access`
 instance, e.g. the struct points-to for a field address). `wp_store` needs full
 ownership and updates the hypothesis. `wp_alloc l as H` introduces `l` and
-`H : l ↦ v`, and the intuitionistic `H_al : allocAligned V l` (the allocation's
-alignment; `icases H_al with %hal` gives `hal : AllocAligned V l`, see
-"Alignment"). `wp_alloc_auto` names a `let:`-bound allocation after its
-variable (`x_ptr`, `x`, `x_al`), and otherwise does an anonymous allocation
-with inaccessible names.
+`H : l ↦ v`. `wp_alloc_auto` names a `let:`-bound allocation after its
+variable, and otherwise does an anonymous allocation with inaccessible names.
 
 ### `wp_if_destruct`
 
@@ -542,8 +539,7 @@ Specs take `isPkgInit` of their package; `wp_apply` discharges it.
 | Lemma | |
 |:--|:--|
 | `wp_alloc`, `wp_store`, `IntoValTyped.wp_load` | typed allocation/store/load (used by the tactics; `wp_load` is not exported, write `IntoValTyped.wp_load`) |
-| `typed.wp_atomic_load`, `typed.wp_atomic_swap`, `typed.wp_cmpxchg_suc`, `typed.wp_cmpxchg_fail`, `typed.wp_atomic_add` | atomic operations on a typed points-to of a type with an `EncodedPointsto` instance (words, `Loc`, `Bool`, interfaces); each takes `Aligned enc l` |
-| `go.field_aligned`, `go.structFieldRef_car'` (`Golang/Theory/Align.lean`) | a field of an aligned struct is aligned, and is in the struct's block; side conditions by `solve_layout_mem`, `solve_layout_nodup`, `solve_layout_pow2` |
+| `wp_cmpxchg_suc`, `wp_cmpxchg_fail`, `wp_atomic_load`, `wp_atomic_swap` | atomic operations on typed points-to (`AtomicWps`) |
 | `typedPointsto_split` | struct points-to to fields (used by `iStructNamed`) |
 | `wp_AngelicExit` | unreachable code |
 | `wp_GoPrealloc`, `wp_GlobalAlloc` | low level allocation |
@@ -558,7 +554,7 @@ Specs take `isPkgInit` of their package; `wp_apply` discharges it.
 | `ownSlice_split`, `ownSlice_combine`, `ownSlice_slice`, `ownSlice_elem_acc` | splitting and element access |
 | `wp_load_slice_index s i vs dq v (hpos : 0 ≤ i)` | `{{ s ↦*{dq} vs ∗ ⌜vs[i.toNat]? = some v⌝ }} ![t] #(sliceIndexRef V i s) {{ RET #v; s ↦*{dq} vs }}` |
 | `wp_store_slice_index` | `{{ s ↦* vs ∗ ⌜0 ≤ i ∧ i < vs.length⌝ }} ... {{ RET #(); s ↦* vs.set i.toNat v' }}` |
-| `wp_slice_make2 n hmax`, `wp_slice_make3 n c hle hmax` | `make([]T, n)`, `make([]T, n, c)`; `hmax` bounds the capacity by `maxAlloc` (`2^48` bytes), as `make` panics beyond it: `make_cap_ok (h : sint.Z c * typeSize V ≤ 2^48)`, `make_cap_ok_zero` |
+| `wp_slice_make2`, `wp_slice_make3` | `make([]T, n)`, `make([]T, n, c)` |
 | `wp_slice_append`, `wp_slice_copy`, `wp_slice_clear` | `append`, `copy`, `clear` |
 | `wp_slice_literal` | `[]T{...}` (`wp_auto` stops before it) |
 
@@ -597,8 +593,7 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty
 | `sync.init_Once`, `Once.wp_Do` | `sync.Once` |
 | `sync.rwmutex.RWMutex.wp_*` | `RWMutex`, logically atomic (the specs); `sync.RWMutex.wp_*`: the guarded forms (`Results.lean`) |
 | `sync.wp_runtime_Semacquire`, `wp_runtime_Semrelease` | runtime semaphores (atomic-update style specs) |
-| `sync.atomic.wp_*` (`Uint64.wp_Load`, `Bool.wp_Store`, `wp_CompareAndSwapInt32`, ...) | `sync/atomic`; the functions take `Aligned (.word n) addr`, the methods `⌜u ≠ null⌝ -∗ ⌜Aligned _ (structFieldRef X go!"v" u)⌝ -∗` (`X.v_aligned` gives it for an allocated `X`) |
-| `sync.init_WaitGroup`, `sync.init_Once`, `sync.rwmutex.init_RWMutex`, ... | take the allocation's `AllocAligned` (their atomic fields) |
+| `sync.atomic.wp_*` (`Uint64.wp_Load`, `Bool.wp_Store`, `wp_CompareAndSwapInt32`, ...) | `sync/atomic` |
 
 ### Other proved packages
 
@@ -786,27 +781,6 @@ signed types): a literal divisor is decided by `wp_pures`, another needs
 `GoShift GoShiftl t ct` with the types of both operands; a signed count `y`
 steps to `if sint.Z y < 0 then Panic "negative shift amount" else ...`, closed
 the same way (`rw [if_neg (show ¬ sint.Z y < 0 by ...)]`).
-
-### Alignment
-
-The atomic operations are stuck unless their location is aligned to the
-encoding (`Aligned enc l : enc.align ∣ l.locOff`), so a spec of an atomic
-operation takes the alignment, and a proof gets it from the allocation:
-`wp_alloc`, `wp_auto` and `steps` add `x_al : allocAligned V x_ptr` (opaque and
-persistent; `icases x_al with %hal` gives `hal : AllocAligned V x_ptr`, that
-is `x_ptr.locCar ≠ 0 ∧ typeAlign V ∣ x_ptr.locOff`). For a field, chain
-`go.field_aligned` through the struct layouts goose emits:
-
-```lean
-have h := go.field_aligned (V := WaitGroup) (f := go!"state") (by solve_layout_mem)
-  (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
-```
-
-(`wg_fields_aligned`, `Proof/sync/WaitGroupDefs.lean`; `cancelCtx_fields_aligned`,
-`Proof/context/Base.lean`). A shared object's predicate usually keeps the
-alignment of its atomic fields as a pure conjunct (`isWaitGroup`'s `%Hal`,
-`isCancelCtxOf`'s `%Hcal`), established at its allocation. `wp_apply` closes a
-goal `⌜Aligned enc l⌝` from a hypothesis of that exact type.
 
 ### Ghost state and invariants
 

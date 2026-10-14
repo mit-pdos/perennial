@@ -28,7 +28,7 @@ abbrev sync.atomic.Uint64.CompareAndSwap.spec : Prop :=
     (|={⊤,∅}=> ▷ ∃ (v : w64) (dq : DFrac), ownUint64 u dq v ∗
       ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗
       (ownUint64 u dq (if v = old then new else v) ={∅,⊤}=∗ Φ #(decide (v = old)))) -∗
-    ⌜u ≠ null⌝ -∗ ⌜Aligned (.word 8) (structFieldRef Uint64 go!"v" u)⌝ -∗
+    ⌜u ≠ null⌝ -∗
     WP (App (App (Val (u @!! go.GoType.PointerType Uint64.ty @!! go!"CompareAndSwap")) (Val #old))
       (Val #new)) {{ Φ }}
 

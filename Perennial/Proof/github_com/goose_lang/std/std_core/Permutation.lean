@@ -24,11 +24,9 @@ variable [package_sem : github_com.goose_lang.std.std_core.Assumptions]
 theorem github_com.goose_lang.std.std_core.Permutation.wp_proof
     (wp_Shuffle : github_com.goose_lang.std.std_core.Shuffle.spec (GF := GF) (hG := hG)) :
     github_com.goose_lang.std.std_core.Permutation.spec (GF := GF) (hG := hG) := fun n => by
-  wp_start as %Hnzn
-  obtain ⟨Hnz, Hn⟩ := Hnzn
+  wp_start as %Hnz
   wp_auto
-  wp_apply wp_slice_make2 (V := w64) n (make_cap_ok (by rw [go.typeSize_w64]; omega)) $$ []
-    as %s ⟨Hs, -⟩
+  wp_apply wp_slice_make2 (V := w64) n $$ [] as %s ⟨Hs, -⟩
   · ipureintro; exact Hnz
   have hnu := sint_eq_uint n Hnz
   simp only [show (zero_val w64 : w64) = W64 0 from rfl]

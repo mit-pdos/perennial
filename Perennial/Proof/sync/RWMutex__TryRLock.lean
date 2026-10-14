@@ -33,8 +33,6 @@ theorem sync.rwmutex.RWMutex.TryRLock.wp_proof
     sync.rwmutex.RWMutex.TryRLock.spec (GF := GF) (hG := hG) := by
   intro γ rw N
   wp_start as ⟨#His, Htok⟩
-  ihave %Hal := isRWMutex_aligned rw γ N $$ His
-  obtain ⟨HalRC, HalRW⟩ := Hal
   simp only [isRWMutex_unseal, isRWMutexDef, ownRLockToken_unseal, ownRLockTokenDef]
   iNamed His
   simp only [internal.race.Enabled]

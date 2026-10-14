@@ -16,8 +16,6 @@ public import Perennial.Golang.Theory.Assume
 public import Perennial.Golang.Theory.Pkg
 public import Perennial.Golang.Theory.TacticsSimp
 public import Perennial.Golang.Theory.Auto
-public import Perennial.Golang.Theory.Mutex
-public import Perennial.Golang.Theory.Unsafe
 public import Perennial.Golang.Theory.Defer
 public import Perennial.Golang.Theory.Array
 public import Perennial.Golang.Theory.Slice

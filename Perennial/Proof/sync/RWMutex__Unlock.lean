@@ -35,8 +35,6 @@ theorem sync.rwmutex.RWMutex.Unlock.wp_proof
     sync.rwmutex.RWMutex.Unlock.spec (GF := GF) (hG := hG) := by
   intro γ rw N
   wp_start as #His
-  ihave %Hal := isRWMutex_aligned rw γ N $$ His
-  obtain ⟨HalRC, HalRW⟩ := Hal
   simp only [isRWMutex_unseal, isRWMutexDef]
   iNamed His
   simp only [internal.race.Enabled, sync.rwmutexMaxReaders]

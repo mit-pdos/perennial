@@ -27,7 +27,7 @@ abbrev sync.atomic.Pointer.Swap.spec : Prop :=
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ∃ v : Loc, ownPointer (T' := T') u (DFrac.own 1) v ∗
       (ownPointer (T' := T') u (DFrac.own 1) v' ={∅,⊤}=∗ Φ #v)) -∗
-    ⌜u ≠ null⌝ -∗ ⌜Aligned (.cell 8) (structFieldRef (Pointer T') go!"v" u)⌝ -∗
+    ⌜u ≠ null⌝ -∗
     WP (App (Val (u @!! go.GoType.PointerType (Pointer.ty T) @!! go!"Swap")) (Val #v')) {{ Φ }}
 
 end spec

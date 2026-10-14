@@ -20,11 +20,10 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem_fn : GoSemanticsFunctions] [sem : go.PreSemantics]
 variable [package_sem : github_com.goose_lang.std.std_core.Assumptions]
 
-/-- `Permutation(n)`: a new slice holding a permutation of `0, …, n-1`. `make` panics when
-the slice has more than `2^48` bytes, so `n ≤ 2^45`. -/
+/-- `Permutation(n)`: a new slice holding a permutation of `0, …, n-1`. -/
 abbrev github_com.goose_lang.std.std_core.Permutation.spec : Prop :=
   ∀ (n : w64),
-    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core ∗ ⌜0 ≤ sint.Z n ∧ sint.Z n ≤ 2 ^ 45⌝ }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.goose_lang.std.std_core ∗ ⌜0 ≤ sint.Z n⌝ }}
       (App (Val (@! Permutation)) (Val #n))
     {{ (xs : List w64) (s : GoSlice), RET #s;
         ⌜xs ≡ₚ (seqZ 0 (sint.Z n)).map (fun z => W64 z)⌝ ∗ s ↦* xs }}

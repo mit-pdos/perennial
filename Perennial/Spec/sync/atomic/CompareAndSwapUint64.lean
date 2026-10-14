@@ -23,7 +23,7 @@ variable [sem : go.Semantics]
 variable [package_sem : sync.atomic.Assumptions]
 
 abbrev sync.atomic.CompareAndSwapUint64.spec : Prop :=
-  ∀ (addr : Loc) (old new : w64), Aligned (.word 8) addr →
+  ∀ (addr : Loc) (old new : w64),
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ (v : w64) (dq : DFrac), addr ↦{dq} v ∗
       ⌜dq = if v = old then DFrac.own 1 else dq⌝ ∗

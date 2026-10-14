@@ -35,9 +35,9 @@ theorem github_com.tchajed.marshal.ReadInt.wp_proof
   ihave %Hwf := ownSlice_wf _ _ _ $$ Hs
   ihave #Hbin : isPkgInit (PROP := IProp GF) pkg_id.encoding.binary $$ []
   · iPkgInit
-  ihave #Hle := isPkgInit_access (PROP := IProp GF) pkg_id.encoding.binary $$ Hbin
   wp_auto
-  wp_apply wp_littleEndian_Uint64 _ s (u64Le x) tail dq (u64Le_length x) $$ [$Hs] as Hs
+  wp_apply encoding.binary.wp_LittleEndian_Uint64_of wp_littleEndian_Uint64 s (u64Le x) dq tail
+    (u64Le_length x) $$ [$Hs] as Hs
   rw [u64Le_to_word]
   simp only [List.length_append, u64Le_length] at Hlen
   have h8 : sint.Z (W64 8) = 8 := by decide

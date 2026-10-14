@@ -288,6 +288,18 @@ noncomputable def b32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #())))))))
 
+/-- Load atomically loads and returns the value stored in x.
+
+    go: type.go:58:22 -/
+noncomputable def Pointer.Load.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+  (LamV "x"
+  (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Pointer.ty T))))) (Var "x"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType T)))) (Let "$a0" (App (Val (GoInstruction (StructFieldRef (Pointer.ty T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Pointer.ty T))))) (Var "x")))
+  (App (App (Val (GoInstruction (FuncResolve LoadPointer []))) (Val #())) (Var "$a0")))))))))
+
 /-- Store atomically stores val into x.
 
     go: type.go:61:22 -/
@@ -304,6 +316,21 @@ noncomputable def Pointer.Store.impl [FfiSyntax] [GoGlobalContext] (T : go.GoTyp
   (Let "$a0" (App (Val (GoInstruction (StructFieldRef (Pointer.ty T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Pointer.ty T))))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (Convert (go.GoType.PointerType T) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType T)))) (Var "val")))
   (App (App (App (Val (GoInstruction (FuncResolve StorePointer []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+
+/-- Swap atomically stores new into x and returns the previous value.
+
+    go: type.go:64:22 -/
+noncomputable def Pointer.Swap.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+  (LamV "x"
+  (Lam "new"
+  (App (Val exceptionDo)
+  (Let "old" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType T)))) (Val #())))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Pointer.ty T))))) (Var "x"))
+  (Let "new" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (Var "new"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType T)))) (Let "$a0" (App (Val (GoInstruction (StructFieldRef (Pointer.ty T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Pointer.ty T))))) (Var "x")))
+  (Let "$a1" (App (Val (GoInstruction (Convert (go.GoType.PointerType T) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType T)))) (Var "new")))
+  (App (App (App (Val (GoInstruction (FuncResolve SwapPointer []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))))
 
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 

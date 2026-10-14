@@ -102,46 +102,6 @@ theorem pure_wp_val (φ : Prop) (e : Expr) (v' : val)
 
 end classes
 
-/-- `HypPure P φ`: the hypothesis `P` implies the pure fact `φ`. `wp_auto` and
-`wp_pures` use it to discharge the side condition `φ` of a pure step from a
-hypothesis of the context, when the side-condition solver fails (e.g. the
-`l ≠ null` of a field reference `StructFieldRef t f #l`, from a points-to at
-`l` or at a field of `l`: `pure_wp_structFieldRef`). -/
-class HypPure {PROP : Type _} [BI PROP] (P : PROP) (φ : Prop) : Prop where
-  hyp_pure : P ⊢ ⌜φ⌝
-
-/-- `LocNonNullFrom loc l`: `loc` and `l` are (nested) field addresses of a
-common base address (or the base itself), so `loc ≠ null` implies `l ≠ null`
-(the instances for field addresses, from `structFieldRef_eq_null_iff`, are in
-`PostLifting.lean`). -/
-class LocNonNullFrom (loc l : Loc) : Prop where
-  ne_null : loc ≠ null → l ≠ null
-
-instance locNonNullFrom_refl (l : Loc) : LocNonNullFrom l l := ⟨id⟩
-
-instance hypPure_pure {PROP : Type _} [BI PROP] (φ : Prop) : HypPure (PROP := PROP) iprop(⌜φ⌝) φ :=
-  ⟨.rfl⟩
-
-instance hypPure_sep_left {PROP : Type _} [BI PROP] [BIAffine PROP] (P Q : PROP) (φ : Prop)
-    [h : HypPure P φ] : HypPure iprop(P ∗ Q) φ :=
-  ⟨sep_elim_left.trans h.hyp_pure⟩
-
-instance hypPure_sep_right {PROP : Type _} [BI PROP] [BIAffine PROP] (P Q : PROP) (φ : Prop)
-    [h : HypPure Q φ] : HypPure iprop(P ∗ Q) φ :=
-  ⟨sep_elim_right.trans h.hyp_pure⟩
-
-instance hypPure_exists {PROP : Type _} [BI PROP] {α : Sort _} (P : α → PROP) (φ : Prop)
-    [h : ∀ x, HypPure (P x) φ] : HypPure iprop(∃ x, P x) φ :=
-  ⟨exists_elim fun x => (h x).hyp_pure⟩
-
-instance hypPure_intuitionistically {PROP : Type _} [BI PROP] (P : PROP) (φ : Prop)
-    [h : HypPure P φ] : HypPure iprop(□ P) φ :=
-  ⟨intuitionistically_elim.trans h.hyp_pure⟩
-
-theorem tac_pure_from_hyp {PROP : Type _} [BI PROP] [BIAffine PROP] {Δ Δ' P Q : PROP} {p : Bool}
-    {φ : Prop} (h : Δ ⊣⊢ Δ' ∗ □?p P) (hP : HypPure P φ) (k : φ → Δ ⊢ Q) : Δ ⊢ Q :=
-  pure_elim φ (h.1.trans (sep_elim_right.trans (intuitionisticallyIf_elim.trans hP.hyp_pure))) k
-
 /-! ## Basic instances -/
 
 section instances
@@ -160,7 +120,8 @@ instance wp_recc (f x : Binder) (erec : Expr) :
   pure_exec_pure_wp (pure_recc f x erec)
 
 instance wp_pair (v1 v2 : val) :
-    PureWp (G := G) (L := L) True (Pair (Val v1) (Val v2)) (Val (PairV v1 v2)) :=
+    PureWp (G := G) (L := L) (v1.isPanic = false ∧ v2.isPanic = false) (Pair (Val v1) (Val v2))
+      (Val (PairV v1 v2)) :=
   pure_exec_pure_wp (pure_pairc v1 v2)
 
 instance wp_if_false (e1 e2 : Expr) : PureWp (G := G) (L := L) True (If (Val #false) e1 e2) e2 :=
@@ -169,9 +130,10 @@ instance wp_if_false (e1 e2 : Expr) : PureWp (G := G) (L := L) True (If (Val #fa
 instance wp_if_true (e1 e2 : Expr) : PureWp (G := G) (L := L) True (If (Val #true) e1 e2) e1 :=
   pure_exec_pure_wp (pure_if_true e1 e2)
 
-/-- Calling a function value (see the module docstring). -/
+/-- Calling a function value (see the module docstring); the argument is not a
+panic (which would unwind the call instead). -/
 instance wp_call (v2 : val) (f x : Binder) (e : Expr) :
-    PureWp (G := G) (L := L) True (App (Val (RecV f x e)) (Val v2))
+    PureWp (G := G) (L := L) (v2.isPanic = false) (App (Val (RecV f x e)) (Val v2))
       (subst' x v2 (subst' f (RecV f x e) e)) :=
   pure_exec_pure_wp (pure_beta f x e v2)
 
@@ -185,6 +147,64 @@ instance pure_wp_SelectStmtClauses (d : Option Expr) (cs : List comm_clause) :
 
 -- `wp_call_go_func` (which needs `go.PreSemantics`, `Golang/Defn/Pre.lean`) is at the start of
 -- `PostLifting.lean`, so that this file does not wait for `Golang/Defn`.
+
+/-! Panics: `Raise`, the `Catch` steps, and the unwinding of a panic through each
+frame but `Catch`'s (`pure_unwind`), so that `wp_pures` takes a panic up to the
+nearest `Catch` (or to the postcondition). -/
+
+instance wp_raise_pure (v : val) :
+    PureWp (G := G) (L := L) (v.isPanic = false) (Raise (Val v)) (Val (PanicV v)) :=
+  pure_exec_pure_wp (pure_raise v)
+
+instance (priority := high) wp_catch_panic_pure (p : val) (h k : Expr) :
+    PureWp (G := G) (L := L) True (Catch (Val (PanicV p)) h k) (App h (Val p)) :=
+  pure_exec_pure_wp (pure_catch_panic p h k)
+
+instance wp_catch_val_pure (v : val) (h k : Expr) :
+    PureWp (G := G) (L := L) (v.isPanic = false) (Catch (Val v) h k) (App k (Val v)) :=
+  pure_exec_pure_wp (pure_catch_val v h k)
+
+instance (priority := high) wp_unwind_appR (e1 : Expr) (p : val) :
+    PureWp (G := G) (L := L) True (App e1 (Val (PanicV p))) (Val (PanicV p)) :=
+  pure_exec_pure_wp (pure_unwind (.AppRCtx e1) p rfl)
+
+instance (priority := high) wp_unwind_appL (p v2 : val) :
+    PureWp (G := G) (L := L) (v2.isPanic = false) (App (Val (PanicV p)) (Val v2)) (Val (PanicV p)) :=
+  ⟨fun s E Φ K hv => (pure_exec_pure_wp (pure_unwind (.AppLCtx v2 hv) p rfl)).pure_wp_wp s E Φ K
+    trivial⟩
+
+instance (priority := high) wp_unwind_if (p : val) (e1 e2 : Expr) :
+    PureWp (G := G) (L := L) True (If (Val (PanicV p)) e1 e2) (Val (PanicV p)) :=
+  pure_exec_pure_wp (pure_unwind (.IfCtx e1 e2) p rfl)
+
+instance (priority := high) wp_unwind_pairL (p : val) (e2 : Expr) :
+    PureWp (G := G) (L := L) True (Pair (Val (PanicV p)) e2) (Val (PanicV p)) :=
+  pure_exec_pure_wp (pure_unwind (.PairLCtx e2) p rfl)
+
+instance (priority := high) wp_unwind_pairR (v1 p : val) :
+    PureWp (G := G) (L := L) (v1.isPanic = false) (Pair (Val v1) (Val (PanicV p))) (Val (PanicV p)) :=
+  ⟨fun s E Φ K hv => (pure_exec_pure_wp (pure_unwind (.PairRCtx v1 hv) p rfl)).pure_wp_wp s E Φ K
+    trivial⟩
+
+instance (priority := high) wp_unwind_fst (p : val) :
+    PureWp (G := G) (L := L) True (Fst (Val (PanicV p))) (Val (PanicV p)) :=
+  pure_exec_pure_wp (pure_unwind .FstCtx p rfl)
+
+instance (priority := high) wp_unwind_snd (p : val) :
+    PureWp (G := G) (L := L) True (Snd (Val (PanicV p))) (Val (PanicV p)) :=
+  pure_exec_pure_wp (pure_unwind .SndCtx p rfl)
+
+instance (priority := high) wp_unwind_primitive1 (op : PrimOp1) (p : val) :
+    PureWp (G := G) (L := L) True (Primitive1 op (Val (PanicV p))) (Val (PanicV p)) :=
+  pure_exec_pure_wp (pure_unwind (.Primitive1Ctx op) p rfl)
+
+instance (priority := high) wp_unwind_primitive2L (op : PrimOp2) (p : val) (e2 : Expr) :
+    PureWp (G := G) (L := L) True (Primitive2 op (Val (PanicV p)) e2) (Val (PanicV p)) :=
+  pure_exec_pure_wp (pure_unwind (.Primitive2LCtx op e2) p rfl)
+
+instance (priority := high) wp_unwind_externalOp (op : ffi_opcode) (p : val) :
+    PureWp (G := G) (L := L) True (ExternalOp op (Val (PanicV p))) (Val (PanicV p)) :=
+  pure_exec_pure_wp (pure_unwind (.ExternalOpCtx op) p rfl)
 
 end instances
 
@@ -205,14 +225,15 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : G
 theorem tac_wp_let_env {σ : String → Option val} {b : Binder} {v : val} {e : Expr}
     {K : List EctxItem} {Δ Δ1 Δ2 : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
     (h1 : Δ ⊢ ▷ Δ1) (h2 : Δ1 ⊢ ▷ Δ2)
+    (hv : v.isPanic = false)
     (h : Δ2 ⊢ WP (fill K (substEnv (envInsB b v σ) e)) @ s; E {{ Φ }}) :
     Δ ⊢ WP (fill K (substEnv σ (App (Rec BAnon b e) (Val v)))) @ s; E {{ Φ }} := by
   have he : substEnv σ (App (Rec BAnon b e) (Val v)) =
       App (Rec BAnon b (substEnv (envDel BAnon (envDel b σ)) e)) (Val v) := by
     simp only [substEnv]
   rw [he]
-  refine tac_wp_pure_wp (K := EctxItem.AppLCtx v :: K) (Hwp := wp_recc _ _ _) trivial h1 ?_
-  refine tac_wp_pure_wp (K := K) (Hwp := wp_call _ _ _ _) trivial h2 ?_
+  refine tac_wp_pure_wp (K := EctxItem.AppLCtx v hv :: K) (Hwp := wp_recc _ _ _) trivial h1 ?_
+  refine tac_wp_pure_wp (K := K) (Hwp := wp_call _ _ _ _) hv h2 ?_
   rw [subst'_substEnv]
   exact h
 
@@ -271,6 +292,21 @@ theorem tac_wp_value {Δ : IProp GF} {s : Stuckness} {E : CoPset} {v : val} {Φ 
 theorem tac_wp_value_nofupd {Δ : IProp GF} {s : Stuckness} {E : CoPset} {v : val}
     {Φ : val → IProp GF} (H : Δ ⊢ Φ v) : Δ ⊢ WP (Val v) @ s; E {{ Φ }} :=
   H.trans <| fupd_intro.trans (wp_value_fupd (e := Val v) ⟨rfl⟩).2
+
+/-- A postcondition `⌜v.isPanic = false⌝ ∗ Q` at a value that is not a panic (see
+`iWpValue`). -/
+theorem tac_sep_not_panic {Δ Q : IProp GF} {φ : Prop} (h : φ) (H : Δ ⊢ Q) :
+    Δ ⊢ iprop(⌜φ⌝ ∗ Q) := by
+  refine H.trans ?_
+  iintro HQ
+  iframe HQ
+  ipureintro; exact h
+
+/-- A postcondition `⌜v.isPanic = false⌝` at a value that is not a panic (see
+`iWpValue`). -/
+theorem tac_not_panic_true {Δ : IProp GF} {φ : Prop} (h : φ) (H : Δ ⊢ iprop(True)) :
+    Δ ⊢ iprop(⌜φ⌝) :=
+  H.trans (pure_mono fun _ => h)
 
 theorem tac_wp_expr_simp {Δ : IProp GF} {s : Stuckness} {E : CoPset} {e e' : Expr}
     {Φ : val → IProp GF} (h : Δ ⊢ WP e' @ s; E {{ Φ }}) (heq : e = e') :
@@ -816,9 +852,59 @@ meta def runTacticGooseWp {α} (tacName : Name)
       | throwIPMError "the goal {g.goal} is not a GooseLang WP"
     k mvar g wp
 
+/-- A proof of `v.isPanic = false` for a GooseLang value `v`: `#x`
+(`isPanic_intoVal`), a `val` constructor other than `PanicV` (by computation, also
+through definitions such as `exceptionSeq`), or a hypothesis. -/
+meta partial def notPanicProof? (v : Lean.Expr) : MetaM (Option Lean.Expr) := do
+  let v ← instantiateMVars v
+  let ofIntoVal (w : Lean.Expr) : Option Lean.Expr :=
+    if w.isAppOfArity ``GoGlobalContext.intoVal 4 then
+      some (mkAppN (mkConst ``isPanic_intoVal) w.getAppArgs)
+    else none
+  if let some pf := ofIntoVal v then return some pf
+  let ty ← mkEq (← mkAppM ``val.isPanic #[v]) (mkConst ``Bool.false)
+  -- unfold definitions (e.g. `exceptionSeq`, a package constant `#(W64 3)`) up to
+  -- `#x` or a constructor
+  let mut w := v
+  for _ in [0:16] do
+    let w' ← whnfR w
+    if let some pf := ofIntoVal w' then return some (← mkExpectedTypeHint pf ty)
+    -- `if c then a else b` (e.g. the outcome of a type assertion)
+    if w'.isAppOfArity ``ite 5 then
+      let some pa ← notPanicProof? (w'.getArg! 3) | return none
+      let some pb ← notPanicProof? (w'.getArg! 4) | return none
+      return some (← mkExpectedTypeHint
+        (← mkAppOptM ``isPanic_ite #[none, w'.getArg! 1, w'.getArg! 2, none, none, pa, pb]) ty)
+    let some c := w'.getAppFn.constName? | break
+    if let some (.ctorInfo _) := (← getEnv).find? c then
+      if c == ``Perennial.val.PanicV then return none
+      return some (← mkExpectedTypeHint (← mkEqRefl (mkConst ``Bool.false)) ty)
+    let some w'' ← withTransparency .all <| unfoldDefinition? w' | break
+    w := w''
+  for d in ← getLCtx do
+    if d.isImplementationDetail then continue
+    if (← instantiateMVars d.type) == ty then return some d.toExpr
+  for d in ← getLCtx do
+    if d.isImplementationDetail then continue
+    if ← withReducible (isDefEq d.type ty) then return some d.toExpr
+  -- a hypothesis `v = w` (e.g. from a postcondition `⌜v = #x⌝`), `w` not a panic
+  if v.isFVar then
+    for d in ← getLCtx do
+      if d.isImplementationDetail then continue
+      let some (_, lhs, rhs) := (← instantiateMVars d.type).eq? | continue
+      unless lhs == v do continue
+      if rhs.isFVar then continue
+      let some pw ← notPanicProof? rhs | continue
+      -- `pw : rhs.isPanic = false`, `d : v = rhs`
+      let vty ← whnfR (← inferType v)
+      let f := mkApp (mkConst ``Perennial.val.isPanic) (vty.getArg! 0)
+      return some (← mkEqTrans (← mkCongrArg f d.toExpr) pw)
+  return none
+
 /-- One evaluation-context item of a GooseLang expression: the item (as a
 `ectx_item` expression) and the sub-expression in the hole. Mirrors
-`fillItem` in `Perennial/GooseLang/Lang.lean`. -/
+`fillItem` in `Perennial/GooseLang/Lang.lean`. A frame holding a value needs a
+proof that the value is not a panic (`notPanicProof?`); without one, `none`. -/
 meta def extractEctxItem (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr)) := do
   let e ← whnfR (← instantiateMVars e)
   let isVal (e : Lean.Expr) : MetaM (Option Lean.Expr) := do
@@ -830,27 +916,41 @@ meta def extractEctxItem (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr
     mkAppN (mkConst n) (#[ext] ++ args)
   match_expr e with
   | Perennial.Expr.App ext e1 e2 =>
-    if let some v ← isVal e2 then return some (mk ``EctxItem.AppLCtx ext #[v], e1)
+    if let some v ← isVal e2 then
+      let some hv ← notPanicProof? v | return none
+      return some (mk ``EctxItem.AppLCtx ext #[v, hv], e1)
     else return some (mk ``EctxItem.AppRCtx ext #[e1], e2)
   | Perennial.Expr.If ext e0 e1 e2 => return some (mk ``EctxItem.IfCtx ext #[e1, e2], e0)
   | Perennial.Expr.Pair ext e1 e2 =>
-    if let some v ← isVal e1 then return some (mk ``EctxItem.PairRCtx ext #[v], e2)
+    if let some v ← isVal e1 then
+      let some hv ← notPanicProof? v | return none
+      return some (mk ``EctxItem.PairRCtx ext #[v, hv], e2)
     else return some (mk ``EctxItem.PairLCtx ext #[e2], e1)
   | Perennial.Expr.Fst ext e => return some (mk ``EctxItem.FstCtx ext #[], e)
   | Perennial.Expr.Snd ext e => return some (mk ``EctxItem.SndCtx ext #[], e)
   | Perennial.Expr.Primitive1 ext op e => return some (mk ``EctxItem.Primitive1Ctx ext #[op], e)
   | Perennial.Expr.Primitive2 ext op e1 e2 =>
-    if let some v ← isVal e1 then return some (mk ``EctxItem.Primitive2RCtx ext #[op, v], e2)
+    if let some v ← isVal e1 then
+      let some hv ← notPanicProof? v | return none
+      return some (mk ``EctxItem.Primitive2RCtx ext #[op, v, hv], e2)
     else return some (mk ``EctxItem.Primitive2LCtx ext #[op, e2], e1)
   | Perennial.Expr.ExternalOp ext op e => return some (mk ``EctxItem.ExternalOpCtx ext #[op], e)
   | Perennial.Expr.CmpXchg ext e0 e1 e2 =>
     match ← isVal e0, ← isVal e1 with
-    | some v0, some v1 => return some (mk ``EctxItem.CmpXchgRCtx ext #[v0, v1], e2)
-    | some v0, none => return some (mk ``EctxItem.CmpXchgMCtx ext #[v0, e2], e1)
+    | some v0, some v1 =>
+      let some h0 ← notPanicProof? v0 | return none
+      let some h1 ← notPanicProof? v1 | return none
+      return some (mk ``EctxItem.CmpXchgRCtx ext #[v0, v1, h0, h1], e2)
+    | some v0, none =>
+      let some h0 ← notPanicProof? v0 | return none
+      return some (mk ``EctxItem.CmpXchgMCtx ext #[v0, e2, h0], e1)
     | none, _ => return some (mk ``EctxItem.CmpXchgLCtx ext #[e1, e2], e0)
   | Perennial.Expr.ResolveProph ext e1 e2 =>
-    if let some v ← isVal e2 then return some (mk ``EctxItem.ResolveProphLCtx ext #[v], e1)
+    if let some v ← isVal e2 then
+      let some hv ← notPanicProof? v | return none
+      return some (mk ``EctxItem.ResolveProphLCtx ext #[v, hv], e1)
     else return some (mk ``EctxItem.ResolveProphRCtx ext #[e1], e2)
+  | Perennial.Expr.Catch ext e0 h k => return some (mk ``EctxItem.CatchCtx ext #[h, k], e0)
   | _ => return none
 
 /-- `fillItem Ki e` at the meta level, producing constructor applications. -/
@@ -877,6 +977,7 @@ meta def fillItemExpr (Ki e : Lean.Expr) : MetaM Lean.Expr := do
   | some ``EctxItem.CmpXchgRCtx => return mk ``Perennial.Expr.CmpXchg #[val a[1]!, val a[2]!, e]
   | some ``EctxItem.ResolveProphLCtx => return mk ``Perennial.Expr.ResolveProph #[e, val a[1]!]
   | some ``EctxItem.ResolveProphRCtx => return mk ``Perennial.Expr.ResolveProph #[a[1]!, e]
+  | some ``EctxItem.CatchCtx => return mk ``Perennial.Expr.Catch #[e, a[1]!, a[2]!]
   | _ => throwError "fillItemExpr: unknown evaluation context item {Ki}"
 
 /-- `fill K e` at the meta level (`K` innermost item first). -/
@@ -1146,6 +1247,16 @@ meta def isGooseVal? (e : Lean.Expr) : MetaM (Option Lean.Expr) := do
   | Perennial.Expr.Val _ v => return some v
   | _ => return none
 
+/-- Is `e` a panic `Val (PanicV p)`? -/
+meta def isPanicVal (e : Lean.Expr) : MetaM Bool := do
+  let some v ← isGooseVal? e | return false
+  return (← whnfR v).isAppOf ``Perennial.val.PanicV
+
+/-- `itrivial` also proves `⌜v.isPanic = false⌝` for `#x` and constructors (e.g. the
+postcondition of a goroutine's body, `wp_fork`). -/
+macro_rules
+  | `(tactic| itrivial) => `(tactic| (ipureintro; first | exact isPanic_intoVal _ | rfl))
+
 /-- A pure step found in a WP goal. -/
 structure PureStep where
   K : List Lean.Expr
@@ -1153,6 +1264,11 @@ structure PureStep where
   φ : Lean.Expr
   e2 : Lean.Expr
   inst : Lean.Expr
+
+/-- The proposition `v.isPanic = false`. -/
+meta def notPanicProp (ext v : Lean.Expr) : Lean.Expr :=
+  mkApp3 (mkConst ``Eq [1]) (mkConst ``Bool) (mkApp2 (mkConst ``Perennial.val.isPanic) ext v)
+    (mkConst ``Bool.false)
 
 /-- The `PureWp` instance of a step that only rearranges `e1`: `Rec f x e`
 (`wp_recc`), a beta-redex `App (Val (RecV f x e)) (Val v)` (`wp_call`) and a pair
@@ -1174,14 +1290,18 @@ meta def directPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (L
     let some v2 ← isGooseVal? b | return none
     let fv ← whnfR fv
     let_expr Perennial.val.RecV _ f x body := fv | return none
+    if (← whnfR v2).isAppOf ``Perennial.val.PanicV then return none
     let recv := mkApp4 (mkConst ``Perennial.val.RecV) ext f x body
     let s1 := mkApp4 (mkConst ``Perennial.subst') ext f recv body
-    return some (mkConst ``True, mkApp4 (mkConst ``Perennial.subst') ext x v2 s1,
+    return some (notPanicProp ext v2, mkApp4 (mkConst ``Perennial.subst') ext x v2 s1,
       mkAppN (mkConst ``wp_call) (gs ++ #[v2, f, x, body]))
   | Perennial.Expr.Pair _ a b =>
     let some v1 ← isGooseVal? a | return none
     let some v2 ← isGooseVal? b | return none
-    return some (mkConst ``True, val (mkApp3 (mkConst ``Perennial.val.PairV) ext v1 v2),
+    if (← whnfR v1).isAppOf ``Perennial.val.PanicV then return none
+    if (← whnfR v2).isAppOf ``Perennial.val.PanicV then return none
+    return some (mkAnd (notPanicProp ext v1) (notPanicProp ext v2),
+      val (mkApp3 (mkConst ``Perennial.val.PairV) ext v1 v2),
       mkAppN (mkConst ``wp_pair) (gs ++ #[v1, v2]))
   | _ => return none
 
@@ -1468,45 +1588,22 @@ meta def synthPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Le
   if let some ra ← abs3 xs r then pureWpCacheInsert key ra
   return r
 
-/-- `l` if `φ` is of the form `l ≠ null` (`l : Loc`). -/
-meta def neNullLoc? (φ : Lean.Expr) : MetaM (Option Lean.Expr) := do
-  let φ ← whnfR (← instantiateMVars φ)
-  let_expr Not e := φ | return none
-  let e ← whnfR e
-  let_expr Eq _ a b := e | return none
-  unless (← whnfR b).isConstOf ``Perennial.Loc.null do return none
-  return some a
-
-/-- Is `φ` of the form `l ≠ null` (`l : Loc`)? -/
-meta def isNeNull (φ : Lean.Expr) : MetaM Bool := return (← neNullLoc? φ).isSome
-
-/-- A proof of `l ≠ null` from a Lean hypothesis `h : l' ≠ null`, where `l` and `l'`
-are (nested) field addresses of a common base (`LocNonNullFrom l' l`). The
-hypotheses are matched syntactically: `assumption` and `simp [*]` can loop
-unfolding unrelated hypotheses (e.g. on machine-word literals). -/
-meta def solveNeNullCheap? (φ : Lean.Expr) : MetaM (Option Lean.Expr) := do
-  let some l ← neNullLoc? φ | return none
-  for d in ← getLCtx do
-    if d.isImplementationDetail then continue
-    let some l' ← neNullLoc? d.type | continue
-    let some inst ← observing? (synthInstance (← mkAppM ``Perennial.LocNonNullFrom #[l', l]))
-      | continue
-    return some (← mkAppOptM ``Perennial.LocNonNullFrom.ne_null #[l', l, inst, d.toExpr])
-  return none
-
 /-- Discharge the side condition `φ` of a pure step. `True` is solved
-immediately; `l ≠ null` with `solveNeNullCheap?`; otherwise iris-lean's
-side-condition solver is tried, and if it fails the condition becomes a new goal
-(unless `failOnUnsolved`). -/
-meta def solvePureSideCondition (φ : Lean.Expr) (failOnUnsolved : Bool) : ProofModeM Lean.Expr := do
+immediately; otherwise iris-lean's side-condition solver is tried, and if it
+fails the condition becomes a new goal (unless `failOnUnsolved`). -/
+meta partial def solvePureSideCondition (φ : Lean.Expr) (failOnUnsolved : Bool) :
+    ProofModeM Lean.Expr := do
   let φ ← instantiateMVars φ
   if φ.isConstOf ``True then return mkConst ``True.intro
-  if ← isNeNull φ then
-    if let some h ← solveNeNullCheap? φ then return h
-    if failOnUnsolved then throwIPMError "failed to solve side condition {φ}"
-    let g ← mkFreshExprSyntheticOpaqueMVar φ
-    addMVarGoal g.mvarId!
-    return g
+  -- `v.isPanic = false` (the argument of a call, a pair's components, ...)
+  if let some (_, lhs, rhs) := φ.eq? then
+    if lhs.isAppOfArity ``Perennial.val.isPanic 2 && rhs.isConstOf ``Bool.false then
+      if let some pf ← notPanicProof? (lhs.getArg! 1) then return pf
+  if φ.isAppOfArity ``And 2 then
+    let a := φ.getArg! 0
+    let b := φ.getArg! 1
+    return mkApp4 (mkConst ``And.intro) a b (← solvePureSideCondition a failOnUnsolved)
+      (← solvePureSideCondition b failOnUnsolved)
   iSolveSidecondition φ (failOnUnsolved := failOnUnsolved)
 
 /-- Is `e` a string literal? -/
@@ -2474,10 +2571,10 @@ meta def isCompositeLitApp (e : Lean.Expr) : MetaM Bool := do
   return false
 
 /-- Find the pure step that `iWpPureStep` would take (the outermost redex with a
-`PureWp` instance satisfying `pred`). -/
-meta def iWpPureStepFindRaw (wp : GooseWpGoal)
+`PureWp` instance satisfying `pred`) and solve its side condition. -/
+meta def iWpPureStepFind (wp : GooseWpGoal) (failOnUnsolved : Bool)
     (pred : Lean.Expr → MetaM Bool := fun _ => pure true) (multi : Bool := false) :
-    ProofModeM PureStep := do
+    ProofModeM (PureStep × Lean.Expr) := do
   let gs ← gooseGSArgs wp.ι
   let stepSliceLits := (goose.wp.unfoldSliceLiterals.get (← getOptions)).or
     (!goose.wp.extras.get (← getOptions))
@@ -2487,6 +2584,8 @@ meta def iWpPureStepFindRaw (wp : GooseWpGoal)
       -- instances are of this form): skip the (costly) instance search otherwise
       -- (instances may match curried applications `App (App (Val f) (Val v1)) (Val v2)`)
       if let some (_, hole) ← extractEctxItem e1 then
+       -- (a panic in the hole unwinds the frame, whatever the rest of it)
+       unless ← isPanicVal hole do
         let rec valApp (fuel : Nat) (h : Lean.Expr) : MetaM Bool := do
           if (← isGooseVal? h).isSome then return true
           match fuel with
@@ -2517,64 +2616,8 @@ meta def iWpPureStepFindRaw (wp : GooseWpGoal)
             throwError "slice literal"
       return ({ K, e1, φ, e2, inst } : PureStep))
     | throwIPMError "could not find a head subexpression with a known next step"
-  return st
-
-/-- Find the pure step that `iWpPureStep` would take (`iWpPureStepFindRaw`) and
-solve its side condition. -/
-meta def iWpPureStepFind (wp : GooseWpGoal) (failOnUnsolved : Bool)
-    (pred : Lean.Expr → MetaM Bool := fun _ => pure true) (multi : Bool := false) :
-    ProofModeM (PureStep × Lean.Expr) := do
-  let st ← iWpPureStepFindRaw wp pred multi
   let hφ ← solvePureSideCondition st.φ failOnUnsolved
   return (st, hφ)
-
-/-- How the side condition of a pure step is discharged: by a proof, or from a
-hypothesis (`HypPure`): `wrap h pf` turns a proof `pf` of the goal in which the
-local `h : φ` is free into one of the goal without it (`tac_pure_from_hyp`). -/
-inductive SideCondProof where
-  | proof (h : Lean.Expr)
-  | fromHyp (wrap : Lean.Expr → Lean.Expr → MetaM Lean.Expr)
-
-/-- A hypothesis `H` of `hyps` with `HypPure H φ`: returns the wrapper of
-`SideCondProof.fromHyp`. -/
-meta def pureFromHyps? {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
-    (hyps : Hyps bi ehyps) (goal φ : Lean.Expr) :
-    MetaM (Option (Lean.Expr → Lean.Expr → MetaM Lean.Expr)) := do
-  let φ ← instantiateMVars φ
-  if φ.hasMVar then return none
-  for (_, ivar, _, _) in hypsListCore hyps do
-    let r := hyps.remove false ivar
-    let ty ← mkAppM ``HypPure #[r.out', φ]
-    let some inst ← observing? (synthInstance ty) | continue
-    return some fun h pf => do
-      let k ← mkLambdaFVars #[h] pf
-      mkAppNamed ``tac_pure_from_hyp
-        [("PROP", prop), ("Δ", ehyps), ("Δ'", r.e'), ("P", r.out'), ("Q", goal), ("p", r.p),
-         ("φ", φ), ("h", r.pf), ("hP", inst), ("!k", k)]
-  return none
-where
-  hypsListCore : ∀ {e}, Hyps bi e → List (Name × IVarId × Q(Bool) × Q($prop))
-    | _, .emp _ => []
-    | _, .hyp _ name ivar p ty _ => [(name, ivar, p, ty)]
-    | _, .sep _ _ _ _ lhs rhs => hypsListCore rhs ++ hypsListCore lhs
-
-/-- `iWpPureStepFind`, discharging a side condition that the solver cannot
-solve from a hypothesis of `hyps` (`pureFromHyps?`) if there is one. A side
-condition `l ≠ null` (`pure_wp_structFieldRef`) is first tried with
-`solveNeNullCheap?` and `pureFromHyps?`. -/
-meta def iWpPureStepFindHyps {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
-    (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (multi : Bool := false) :
-    ProofModeM (PureStep × SideCondProof) := do
-  let st ← iWpPureStepFindRaw wp (multi := multi)
-  if ← isNeNull st.φ then
-    if let some hφ ← solveNeNullCheap? st.φ then return (st, .proof hφ)
-    if let some wrap ← pureFromHyps? hyps (wp.mk' wp.e wp.Φ) st.φ then
-      return (st, .fromHyp wrap)
-  if let some hφ ← observing? (solvePureSideCondition st.φ (failOnUnsolved := true)) then
-    return (st, .proof hφ)
-  match ← pureFromHyps? hyps (wp.mk' wp.e wp.Φ) st.φ with
-  | some wrap => return (st, .fromHyp wrap)
-  | none => throwIPMError "failed to solve side condition {st.φ}"
 
 /-- The subterms of the redex `e1` up to depth 3 (looking through reducible
 definitions such as `Let`): these are parts of the WP expression, hence in
@@ -2642,6 +2685,8 @@ meta def valueLet? (e : Lean.Expr) : MetaM (Option (Lean.Expr × Option String �
   unless (← whnfR fb).isConstOf ``Binder.BAnon do return none
   let some bl ← binderLit? b | return none
   let some v ← isGooseVal? a | return none
+  -- (`tac_wp_let_env` needs `v.isPanic = false`)
+  if (← notPanicProof? v).isNone then return none
   return some (← whnfR b, bl, v, body)
 
 /-- The evaluation context `K` (innermost first) and the run of `let:`s of values
@@ -2722,9 +2767,10 @@ meta def iWpLetRun? {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     for i' in [0:run.size] do
       let i := run.size - 1 - i'
       let (b, _, v, bd) := run[i]!
+      let some hv ← notPanicProof? v | throwError "let run: no proof that {v} is not a panic"
       pf := mkAppN (mkConst ``tac_wp_let_env) (gs ++ #[sigmas[i]!, b, v, bd, Kq,
         deltas[2 * i]!, deltas[2 * i + 1]!, deltas[2 * i + 2]!, wp.s, wp.E, wp.Φ,
-        laters[2 * i]!, laters[2 * i + 1]!, pf])
+        laters[2 * i]!, laters[2 * i + 1]!, hv, pf])
     return mkAppN (mkConst ``tac_wp_env_enter) (gs ++ #[c0, Kq, ehyps, wp.s, wp.E, wp.Φ, pf])
   return some ⟨ehyps', hyps', e', k⟩
 
@@ -2787,13 +2833,33 @@ meta def iWpUnfoldValConst? (wp : GooseWpGoal) (Δ : Lean.Expr) :
     [("Δ", Δ), ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("e", wp.wrap wp.e), ("e'", wp.wrap e'),
      ("!h", h), ("!heq", heq)])
 
+/-- A proof of `φ` if `φ` is `v.isPanic = false` for a value that is not a panic. -/
+meta def notPanicProp? (φ : Lean.Expr) : MetaM (Option Lean.Expr) := do
+  let some (_, lhs, rhs) := (← instantiateMVars φ).eq? | return none
+  unless lhs.isAppOfArity ``Perennial.val.isPanic 2 && rhs.isConstOf ``Bool.false do return none
+  notPanicProof? (lhs.getArg! 1)
+
 /-- Turn the goal `hyps ⊢ WP (Val v) {{ Φ }}` into `hyps ⊢ Φ v` (by
-`wp_value`), continuing with `k` on the new conclusion. -/
+`wp_value`), continuing with `k` on the new conclusion. A conclusion
+`⌜v.isPanic = false⌝ ∗ Q` (the postcondition of a computation that must not panic,
+e.g. a goroutine's body) at a value that is not a panic becomes `Q`, and
+`⌜v.isPanic = false⌝` is proved. -/
 meta def iWpValue {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (v : Lean.Expr)
     (k : Lean.Expr → ProofModeM Lean.Expr) : ProofModeM Lean.Expr := do
   let goal := (mkApp wp.Φ v).headBeta
-  let pf ← k goal
+  let k' (goal : Lean.Expr) : ProofModeM Lean.Expr := do
+    match_expr goal with
+    | Iris.BI.BIBase.sep _ _ P Q =>
+      let_expr Iris.BI.BIBase.pure _ _ φ := P | k goal
+      let some h ← notPanicProp? φ | k goal
+      mkAppM ``tac_sep_not_panic #[h, ← k Q]
+    | Iris.BI.BIBase.pure _ _ φ =>
+      let some h ← notPanicProp? φ | k goal
+      let tru := mkApp3 goal.getAppFn (goal.getArg! 0) (goal.getArg! 1) (mkConst ``True)
+      mkAppM ``tac_not_panic_true #[h, ← k tru]
+    | _ => k goal
+  let pf ← k' goal
   wp.mkAppNamed ``tac_wp_value_nofupd
     [("Δ", ehyps), ("s", wp.s), ("E", wp.E), ("v", v), ("Φ", wp.Φ), ("!H", pf)]
 
@@ -2922,16 +2988,10 @@ meta partial def iWpPures {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($
   let saved ← saveState
   -- only the search is allowed to fail; errors while taking the step (e.g. in
   -- `simp`) are reported
-  let found ← observing? (iWpPureStepFindHyps hyps wp (multi := true))
-  -- a side condition discharged from a hypothesis (`HypPure`): continue with it
-  -- as a local `Hφ`
-  if let some (st, .fromHyp wrap) := found then
-    return ← withLocalDeclD (← mkFreshUserName `Hφ) st.φ fun h => do
-      let ⟨_, hyps', e', k⟩ ← iWpPureStepTake hyps wp st h false
-      wrap h (← k (← iWpPures hyps' { wp with e := e' } (simpFirst := false)))
+  let found ← observing? (iWpPureStepFind wp (failOnUnsolved := true) (multi := true))
   let step ← match found with
-    | some (st, .proof hφ) => some <$> iWpPureStepTake hyps wp st hφ false
-    | _ => pure none
+    | some (st, hφ) => some <$> iWpPureStepTake hyps wp st hφ false
+    | none => pure none
   match step with
   | some ⟨_, hyps', e', k⟩ =>
     -- do not loop on an expression that steps to itself (e.g. `rec: f <> := f #()`)
@@ -3244,19 +3304,21 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : G
 `rec: f x := e`. The recursive occurrences of `f` are replaced by the folded `fv`. -/
 theorem tac_wp_call' {fv v2 : val} {f x : Binder} {e e' : Expr} (hfv : fv = RecV f x e)
     {K : List EctxItem} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
+    (hv2 : v2.isPanic = false)
     (hlater : Δ ⊢ ▷ Δ') (heq : fill K (subst' x v2 (subst' f fv e)) = e')
     (h : Δ' ⊢ WP e' @ s; E {{ Φ }}) :
     Δ ⊢ WP (fill K (App (Val fv) (Val v2))) @ s; E {{ Φ }} := by
   subst hfv
-  exact tac_wp_pure_wp' (Hwp := wp_call (G := G) (L := L) v2 f x e) trivial hlater heq h
+  exact tac_wp_pure_wp' (Hwp := wp_call (G := G) (L := L) v2 f x e) hv2 hlater heq h
 
 theorem tac_wp_call_lc' {fv v2 : val} {f x : Binder} {e e' : Expr} (hfv : fv = RecV f x e)
     {K : List EctxItem} {Δ Δ' : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
+    (hv2 : v2.isPanic = false)
     (hlater : Δ ⊢ ▷ Δ') (heq : fill K (subst' x v2 (subst' f fv e)) = e')
     (h : Δ' ⊢ iprop(£ 1 -∗ WP e' @ s; E {{ Φ }})) :
     Δ ⊢ WP (fill K (App (Val fv) (Val v2))) @ s; E {{ Φ }} := by
   subst hfv
-  exact tac_wp_pure_wp_lc' (Hwp := wp_call (G := G) (L := L) v2 f x e) trivial hlater heq h
+  exact tac_wp_pure_wp_lc' (Hwp := wp_call (G := G) (L := L) v2 f x e) hv2 hlater heq h
 
 end call_lemmas
 
@@ -3268,11 +3330,12 @@ transparency) to `RecV f x e`, and take the beta step. -/
 meta def iWpCallStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (lc : Bool := false) (onlyImpl : Bool := false) :
     ProofModeM ((ehyps' : Q($prop)) × Hyps bi ehyps' × Lean.Expr × (Lean.Expr → MetaM Lean.Expr)) := do
-  let some ((fv, v2, f, x, body), K, _) ← findEctx wp.e (fun _ e => do
+  let some ((fv, v2, hv2, f, x, body), K, _) ← findEctx wp.e (fun _ e => do
       let e ← whnfR e
       let_expr Perennial.Expr.App _ e1 e2 := e | throwError "not an application"
       let some fv ← isGooseVal? e1 | throwError "not a value"
       let some v2 ← isGooseVal? e2 | throwError "not a value"
+      let some hv2 ← notPanicProof? v2 | throwError "the argument may be a panic"
       -- `onlyImpl`: only implementation constants `Foo.impl`/`T.M.impl` (as produced by
       -- `wp_func_call`/`wp_method_call`)
       if onlyImpl then
@@ -3281,7 +3344,7 @@ meta def iWpCallStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)
           throwError "not an implementation constant"
       let fv' ← whnf fv
       let_expr Perennial.val.RecV _ f x body := fv' | throwError "not a function"
-      return (fv, v2, f, x, body))
+      return (fv, v2, hv2, f, x, body))
     | throwIPMError "could not find a function call expression at the head"
   let ⟨ehyps', hyps', hlater⟩ ← iLaterIntro hyps
   let s1 ← mkAppM ``subst' #[f, fv, body]
@@ -3291,7 +3354,7 @@ meta def iWpCallStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)
   let hfv ← mkEqRefl fv
   let k := fun (h : Lean.Expr) => wp.mkAppNamed (if lc then ``tac_wp_call_lc' else ``tac_wp_call')
     [("Δ", ehyps), ("Δ'", ehyps'), ("e'", wp.wrap e'),
-     ("hfv", hfv), ("v2", v2), ("f", f), ("x", x), ("e", body), ("K", wp.quoteK K),
+     ("hfv", hfv), ("v2", v2), ("hv2", hv2), ("f", f), ("x", x), ("e", body), ("K", wp.quoteK K),
      ("s", wp.s), ("E", wp.E), ("Φ", wp.Φ), ("hlater", hlater),
      ("!heq", heq), (if lc then "h" else "!h", h)]
   return ⟨ehyps', hyps', e', k⟩
@@ -3354,28 +3417,8 @@ elab "wp_apply_raw " colGt pmt:pmTerm : tactic => do
     throwIPMError "cannot apply {A} to any subexpression in evaluation position of{indentExpr wp.e}"
 
 open Lean Elab Tactic Meta Qq Iris.ProofMode in
-/-- `inonnull` proves an Iris goal `⌜l ≠ null⌝` from a Lean hypothesis (with the
-side-condition solver, which knows `structFieldRef_eq_null_iff`) or from a
-hypothesis `H` of the context with `HypPure H (l ≠ null)` (e.g. a points-to at
-`l` or at a field of `l`, or `isMutex` of a field of `l`). -/
-elab "inonnull" : tactic =>
-  ProofModeM.runTactic `inonnull fun mvar {prop, bi, e, hyps, goal, ..} => do
-    let goal' ← whnfR (← instantiateMVars goal)
-    unless goal'.isAppOfArity ``BIBase.pure 3 do throwIPMError "inonnull: not a pure goal"
-    let φ := goal'.getArg! 2
-    unless ← isNeNull φ do throwIPMError "inonnull: not a goal `⌜l ≠ null⌝`"
-    if let some hφ ← solveNeNullCheap? φ then
-      mvar.assign (← mkAppOptM ``BI.pure_intro #[prop, none, φ, e, hφ])
-      return
-    let some wrap ← pureFromHyps? hyps goal φ | throwIPMError "inonnull: cannot show {φ}"
-    let pf ← withLocalDeclD `h φ fun h => do
-      wrap h (← mkAppOptM ``BI.pure_intro #[prop, none, φ, e, h])
-    mvar.assign pf
-
-open Lean Elab Tactic Meta Qq Iris.ProofMode in
 /-- Internal: post-processing of the goals produced by `wp_apply_raw`: strip a
-leading `▷`, solve trivial `True`/`⌜True⌝`/`emp` goals, `⌜l ≠ null⌝` goals
-(`inonnull`), and `⌜Aligned enc l⌝` goals that are a Lean hypothesis. -/
+leading `▷`, and solve trivial `True`/`⌜True⌝`/`emp` goals. -/
 elab "wp_apply_post" : tactic => do
   let gs ← getGoals
   let mut out := []
@@ -3398,15 +3441,6 @@ elab "wp_apply_post" : tactic => do
             solved := true
           else if let some _ ← observing? (evalTactic (← `(tactic| iempintro))) then
             solved := true
-        if !solved && goal.isAppOfArity ``BIBase.pure 3 then
-          if ← isNeNull (goal.getArg! 2) then
-            if let some _ ← observing? (evalTactic (← `(tactic| inonnull))) then
-              solved := true
-        -- the alignment of an atomic operation (`⌜Aligned enc l⌝`): from a Lean hypothesis
-        if !solved && goal.isAppOfArity ``BIBase.pure 3 then
-          if (← whnfR (goal.getArg! 2)).isAppOf ``Aligned then
-            if let some _ ← observing? (evalTactic (← `(tactic| ipureintro; assumption))) then
-              solved := true
         -- `True -∗ P`: drop the premise
         if goal.isAppOfArity ``BIBase.wand 4 then
           let lhs ← whnfR (goal.getArg! 2)

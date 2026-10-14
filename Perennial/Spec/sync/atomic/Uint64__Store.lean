@@ -27,7 +27,7 @@ abbrev sync.atomic.Uint64.Store.spec : Prop :=
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ old : w64, ownUint64 u (DFrac.own 1) old ∗
       (ownUint64 u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
-    ⌜u ≠ null⌝ -∗ ⌜Aligned (.word 8) (structFieldRef Uint64 go!"v" u)⌝ -∗
+    ⌜u ≠ null⌝ -∗
     WP (App (Val (u @!! go.GoType.PointerType Uint64.ty @!! go!"Store")) (Val #v)) {{ Φ }}
 
 end spec
