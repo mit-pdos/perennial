@@ -98,8 +98,6 @@ theorem strings.Join.wp_proof
         rw [h, show (W64 9223372036854775807).toInt = 2 ^ 63 - 1 from rfl]
         rw [show (elems.len - W64 1).toInt = (m : Int) by show sint.Z _ = _; omega]
       · exact absurd h (by decide)
-    rw [if_neg (show ¬ sint.Z (elems.len - W64 1) = 0 by omega)]
-    wp_auto
     rw [decide_eq_false (by rw [Hdiv, Hsl]; omega)]
     wp_auto
     wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %-
