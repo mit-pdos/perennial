@@ -81,3 +81,54 @@ operand is translated once and referred to by name. Nothing depends on what
 two other evaluation-order changes (multiple assignment targets, select send
 order) that add `$l<i>`/`$lm<i>`/`$lk<i>` bindings with per-target-kind
 branches. Only the one line was taken; the others are separate items.
+
+## Case 3 — ACCEPTED: `append(b, s...)` with a string (b02f27d96)
+
+**Symptom.** Incomplete. For the Go spec's special form `append([]byte, string...)`,
+`go/types` reports the signature `func([]byte, string...)`, so goose bound the
+string unchanged and `append_slice` was stuck on it. Blocked
+`strings.Builder.WriteString`.
+
+**Witness.** `b := []byte("ab"); b = append(b, "cd"...)` is stuck; also
+`func h[S ~[]byte | ~string](b []byte, s S) []byte { return append(b, s...) }`
+with `S = string`.
+
+**Taken.** In `callExprPrelude`'s argument loop, every argument of
+`append(x, y...)` converts to `append`'s slice type (its first parameter's type)
+instead of the parameter type `go/types` reports, under the comment "handle
+`append` special case for strings", with a small predicate
+`appendWithEllipsis`. For ordinary slices `handleImplicitConversion` emits
+nothing (identical underlying types); the string, the untyped constant and a
+`~[]byte | ~string` type parameter get `Convert <t> S`, which the existing
+`convert_string_to_bytes` / `is_convert_underlying_same` rules give meaning.
+Cost: one `if` and one predicate in goose, 0 semantics rules, 0 negative tests.
+Semantics tests: string variable, untyped constant, generic both ways,
+`append(x, nil...)` on a named slice.
+
+**Not taken** (in the order proposed):
+* Annotate every builtin with all its parameter types and add
+  `append_string`/`copy_string` rules in Lean. Rejected: "We should not
+  annotate every built-in call with all parameter types. The Go spec treats
+  the append with string thing as a special case, so let's make it a bit of a
+  special case, but implement it in a 'local'/modular way without affecting
+  all the other translations."
+* A condition written inline in the loop (`call.Ellipsis != NoPos && i == len
+  && IsBuiltin && Name == "append"`): "a bad change: I don't like special
+  casing like this, because the more differently-handled branches there are in
+  the translator, the more potential cases there are that diverge from the
+  original Go semantics."
+* A separate case in `maybeHandleSpecialBuiltin` re-binding the arguments
+  itself: "worse than the first one" (a second copy of argument binding and
+  evaluation order).
+* A predicate testing for a string argument (`IsString` on the underlying
+  type, as 41b3cbd00 did): misses a type parameter whose type set has both
+  `[]byte` and `string`; whether a type is a string is known at instantiation,
+  in Lean.
+* An extra `isSlice` test and an `i == 2` position test: both redundant (the
+  conversion is a no-op for slices and for the first argument).
+
+**Why.** The user wanted the special case visible and local: "something more
+like `if appendStringSpecialCase() { ... }` inside of callExprPrelude. This is
+easy to understand once you've read the Go spec." The final form is one named
+condition in the single general path, with no type test, so it composes with
+type parameters.
