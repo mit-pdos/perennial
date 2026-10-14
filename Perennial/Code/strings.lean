@@ -445,7 +445,7 @@ noncomputable def Builder.WriteString.impl [FfiSyntax] [GoGlobalContext] : val :
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (StructFieldRef Builder.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b"))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "$a1" (App (Val (GoInstruction (Convert go.string (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad go.string))) (Var "s")))
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)

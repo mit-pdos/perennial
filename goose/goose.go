@@ -286,14 +286,25 @@ func (ctx *Ctx) callExprPrelude(call *ast.CallExpr, cont glang.Expr) (expr glang
 		i--
 	}
 	for ; i > 0; i-- {
+		paramTy := funcSig.Params().At(i - 1).Type()
+		// handle `append` special case for strings
+		if ctx.appendWithEllipsis(call) {
+			paramTy = funcSig.Params().At(0).Type()
+		}
 		expr = glang.LetExpr{
 			Names: []string{fmt.Sprintf("$a%d", i-1)},
 			ValExpr: ctx.handleImplicitConversion(intermediates[i-1].n,
-				intermediates[i-1].t, funcSig.Params().At(i-1).Type(), intermediates[i-1].e),
+				intermediates[i-1].t, paramTy, intermediates[i-1].e),
 			Cont: expr,
 		}
 	}
 	return
+}
+
+func (ctx *Ctx) appendWithEllipsis(call *ast.CallExpr) bool {
+	id, ok := ast.Unparen(call.Fun).(*ast.Ident)
+	return ok && ctx.info.Types[call.Fun].IsBuiltin() && id.Name == "append" &&
+		call.Ellipsis != token.NoPos
 }
 
 func (ctx *Ctx) conversionExpr(s *ast.CallExpr) glang.Expr {

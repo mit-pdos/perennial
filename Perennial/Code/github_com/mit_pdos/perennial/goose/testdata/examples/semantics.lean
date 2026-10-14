@@ -171,6 +171,11 @@ def ArrayEditor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] ArrayEditor.ty
 
+def appendNamedSlice.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.appendNamedSlice" [])
+
+attribute [irreducible] appendNamedSlice.ty
+
 def Bar.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Bar" [])
 
@@ -721,6 +726,24 @@ noncomputable def testSliceRef [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def testSliceLowOnlyEvaluatesOnce [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSliceLowOnlyEvaluatesOnce"
+
+noncomputable def testAppendStringVar [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAppendStringVar"
+
+noncomputable def testAppendStringConst [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAppendStringConst"
+
+noncomputable def appendBytesOrString [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.appendBytesOrString"
+
+noncomputable def testAppendGenericString [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAppendGenericString"
+
+noncomputable def testAppendGenericBytes [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAppendGenericBytes"
+
+noncomputable def testAppendNilNamed [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAppendNilNamed"
 
 noncomputable def testFooBarMutation [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testFooBarMutation"
@@ -5244,6 +5267,99 @@ noncomputable def testSliceLowOnlyEvaluatesOnce.impl [FfiSyntax] [GoGlobalContex
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [(go.GoType.SliceType go.uint64)]))))) (Pair (Var "f") (Var "$r0"))))))))))
 
+/-- go: slices.go:117:6 -/
+noncomputable def testAppendStringVar.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert go.string (go.GoType.SliceType go.byte)))) (Val #(go!"ab")))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(go!"cd"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "$a1" (App (Val (GoInstruction (Convert go.string (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad go.string))) (Var "s")))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))) (Val #(go!"abcd")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0")))))))))
+
+/-- go: slices.go:124:6 -/
+noncomputable def testAppendStringConst.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert go.string (go.GoType.SliceType go.byte)))) (Val #(go!"ab")))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "$a1" (App (Val (GoInstruction (Convert go.untypedString (go.GoType.SliceType go.byte)))) (Val #(go!"cd")))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))) (Val #(go!"abcd")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0")))))))))
+
+/-- go: slices.go:130:6 -/
+noncomputable def appendBytesOrString.impl [FfiSyntax] [GoGlobalContext] (S : go.GoType) : val :=
+  (LamV "b"
+  (Lam "s"
+  (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc S))) (Var "s"))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
+  (App (Val doReturn)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "$a1" (App (Val (GoInstruction (Convert S (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad S))) (Var "s")))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
+
+/-- go: slices.go:134:6 -/
+noncomputable def testAppendGenericString.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.SliceType go.byte)))) (Val #(go!"ab")))
+  (Let "$a1" (Val #(go!"cd"))
+  (App (App (App (Val (GoInstruction (FuncResolve appendBytesOrString [go.string]))) (Val #())) (Var "$a0")) (Var "$a1"))))) (Val #(go!"abcd")))))))
+
+/-- go: slices.go:138:6 -/
+noncomputable def testAppendGenericBytes.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert (go.GoType.SliceType go.byte) go.string))) (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.SliceType go.byte)))) (Val #(go!"ab")))
+  (Let "$a1" (App (Val (GoInstruction (Convert go.string (go.GoType.SliceType go.byte)))) (Val #(go!"cd")))
+  (App (App (App (Val (GoInstruction (FuncResolve appendBytesOrString [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))) (Val #(go!"abcd")))))))
+
+/-- go: slices.go:144:6 -/
+noncomputable def testAppendNilNamed.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (Let "$r0" (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (Val #(W64 2))
+  (App (Val (GoInstruction (CompositeLiteral appendNamedSlice.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1")))]))))
+  (Let "x" (App (Val (GoInstruction (GoAlloc appendNamedSlice.ty))) (App (Val (GoInstruction (GoZeroVal appendNamedSlice.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad appendNamedSlice.ty))) (Var "x"))
+  (Let "$a1" (App (Val (GoInstruction (Convert go.untypedNil appendNamedSlice.ty))) (Val UntypedNil))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [appendNamedSlice.ty]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "y" (App (Val (GoInstruction (GoAlloc appendNamedSlice.ty))) (App (Val (GoInstruction (GoZeroVal appendNamedSlice.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad appendNamedSlice.ty))) (Var "y"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [appendNamedSlice.ty]))) (Val #())) (Var "$a0"))) (Val #(W64 2)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (IndexRef appendNamedSlice.ty))) (Pair (App (Val (GoInstruction (GoLoad appendNamedSlice.ty))) (Var "y")) (Val #(W64 1))))) (Val #(W64 2)))) (Val #false)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore appendNamedSlice.ty))) (Pair (Var "y") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore appendNamedSlice.ty))) (Pair (Var "x") (Var "$r0")))))))))
+
 /-- go: struct_pointers.go:14:17 -/
 noncomputable def Bar.mutate.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "bar"
@@ -7193,6 +7309,16 @@ attribute [instance] ArrayEditor.TypeAssumptions.type_repr
   ArrayEditor.TypeAssumptions.set_next_val
   ArrayEditor.TypeAssumptions.ptr_Advance_unfold
 
+abbrev appendNamedSlice [FfiSyntax] : Type := GoSlice
+
+@[reducible] def appendNamedSlice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.uint64)
+
+class appendNamedSlice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq appendNamedSlice.ty appendNamedSlice.underlying
+
+attribute [instance] appendNamedSlice.TypeAssumptions.underlying
+
 structure Bar [FfiSyntax] where
   mk ::
   a' : w64
@@ -7624,6 +7750,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   loopCounter_instance : loopCounter.TypeAssumptions
   BoolTest_instance : BoolTest.TypeAssumptions
   ArrayEditor_instance : ArrayEditor.TypeAssumptions
+  appendNamedSlice_instance : appendNamedSlice.TypeAssumptions
   Bar_instance : Bar.TypeAssumptions
   Foo_instance : Foo.TypeAssumptions
   TwoInts_instance : TwoInts.TypeAssumptions
@@ -7795,6 +7922,12 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   testSliceAppend_unfold : FuncUnfold testSliceAppend [] testSliceAppend.impl
   testSliceRef_unfold : FuncUnfold testSliceRef [] testSliceRef.impl
   testSliceLowOnlyEvaluatesOnce_unfold : FuncUnfold testSliceLowOnlyEvaluatesOnce [] testSliceLowOnlyEvaluatesOnce.impl
+  testAppendStringVar_unfold : FuncUnfold testAppendStringVar [] testAppendStringVar.impl
+  testAppendStringConst_unfold : FuncUnfold testAppendStringConst [] testAppendStringConst.impl
+  appendBytesOrString_unfold : ∀ (S : go.GoType), FuncUnfold appendBytesOrString [S] (appendBytesOrString.impl S)
+  testAppendGenericString_unfold : FuncUnfold testAppendGenericString [] testAppendGenericString.impl
+  testAppendGenericBytes_unfold : FuncUnfold testAppendGenericBytes [] testAppendGenericBytes.impl
+  testAppendNilNamed_unfold : FuncUnfold testAppendNilNamed [] testAppendNilNamed.impl
   testFooBarMutation_unfold : FuncUnfold testFooBarMutation [] testFooBarMutation.impl
   NewS_unfold : FuncUnfold NewS [] NewS.impl
   testStructUpdates_unfold : FuncUnfold testStructUpdates [] testStructUpdates.impl
@@ -7859,6 +7992,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.loopCounter_instance
   Assumptions.BoolTest_instance
   Assumptions.ArrayEditor_instance
+  Assumptions.appendNamedSlice_instance
   Assumptions.Bar_instance
   Assumptions.Foo_instance
   Assumptions.TwoInts_instance
@@ -8030,6 +8164,12 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testSliceAppend_unfold
   Assumptions.testSliceRef_unfold
   Assumptions.testSliceLowOnlyEvaluatesOnce_unfold
+  Assumptions.testAppendStringVar_unfold
+  Assumptions.testAppendStringConst_unfold
+  Assumptions.appendBytesOrString_unfold
+  Assumptions.testAppendGenericString_unfold
+  Assumptions.testAppendGenericBytes_unfold
+  Assumptions.testAppendNilNamed_unfold
   Assumptions.testFooBarMutation_unfold
   Assumptions.NewS_unfold
   Assumptions.testStructUpdates_unfold

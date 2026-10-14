@@ -121,7 +121,7 @@ noncomputable def Clone.impl [FfiSyntax] [GoGlobalContext] (S E : go.GoType) : v
   (Let "s" (App (Val (GoInstruction (GoAlloc S))) (Var "s"))
   (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (CompositeLiteral S))) (LiteralValue []))
-  (Let "$a1" (App (Val (GoInstruction (Convert S (go.GoType.SliceType E)))) (App (Val (GoInstruction (GoLoad S))) (Var "s")))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
   (App (App (App (Val (GoInstruction (FuncResolve go.append [S]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
 
 /-- BoxGet is a function getter (rather than a method)
