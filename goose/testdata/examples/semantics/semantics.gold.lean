@@ -590,6 +590,9 @@ noncomputable def testNilVal [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def testUnsafePointerNil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testUnsafePointerNil"
 
+noncomputable def testConstantCalls [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testConstantCalls"
+
 noncomputable def testCompareSliceToNil [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCompareSliceToNil"
 
@@ -4106,6 +4109,25 @@ noncomputable def testUnsafePointerNil.impl [FfiSyntax] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore «unsafe».Pointer))) (Pair (Var "q") (Var "$r0"))))))))))
 
 /-- go: nil.go:13:6 -/
+noncomputable def testConstantCalls.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 3 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 3 go.uint64)))) (Val #())))
+  (Let "$r0" (Val #(W64 8))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.uintptr))) (App (Val (GoInstruction (GoZeroVal go.uintptr))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 3))
+  (Let "m" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.uintptr))) (Pair (App (Val (GoInstruction (GoLoad go.uintptr))) (Var "n")) (Val #(W64 8)))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (Val #(W64 3)))) (Val #false)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "m") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (Var "n") (Var "$r0")))))))))))
+
+/-- go: nil.go:21:6 -/
 noncomputable def testCompareSliceToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -4117,7 +4139,7 @@ noncomputable def testCompareSliceToNil.impl [FfiSyntax] [GoGlobalContext] : val
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
 
-/-- go: nil.go:18:6 -/
+/-- go: nil.go:26:6 -/
 noncomputable def testComparePointerToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -4129,7 +4151,7 @@ noncomputable def testComparePointerToNil.impl [FfiSyntax] [GoGlobalContext] : v
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "s") (Var "$r0")))))))))
 
-/-- go: nil.go:23:6 -/
+/-- go: nil.go:31:6 -/
 noncomputable def testCompareNilToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -4141,7 +4163,7 @@ noncomputable def testCompareNilToNil.impl [FfiSyntax] [GoGlobalContext] : val :
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.PointerType go.uint64))))) (Pair (Var "s") (Var "$r0")))))))))
 
-/-- go: nil.go:28:6 -/
+/-- go: nil.go:36:6 -/
 noncomputable def testComparePointerWrappedToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -4153,7 +4175,7 @@ noncomputable def testComparePointerWrappedToNil.impl [FfiSyntax] [GoGlobalConte
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0")))))))))
 
-/-- go: nil.go:34:6 -/
+/-- go: nil.go:42:6 -/
 noncomputable def testComparePointerWrappedDefaultToNil.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -4161,7 +4183,7 @@ noncomputable def testComparePointerWrappedDefaultToNil.impl [FfiSyntax] [GoGlob
   (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "s")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.byte)))) (Val UntypedNil))))))))
 
-/-- go: nil.go:39:6 -/
+/-- go: nil.go:47:6 -/
 noncomputable def testInterfaceNilWithType.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -8066,6 +8088,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   testNilDefault_unfold : FuncUnfold testNilDefault [] testNilDefault.impl
   testNilVal_unfold : FuncUnfold testNilVal [] testNilVal.impl
   testUnsafePointerNil_unfold : FuncUnfold testUnsafePointerNil [] testUnsafePointerNil.impl
+  testConstantCalls_unfold : FuncUnfold testConstantCalls [] testConstantCalls.impl
   testCompareSliceToNil_unfold : FuncUnfold testCompareSliceToNil [] testCompareSliceToNil.impl
   testComparePointerToNil_unfold : FuncUnfold testComparePointerToNil [] testComparePointerToNil.impl
   testCompareNilToNil_unfold : FuncUnfold testCompareNilToNil [] testCompareNilToNil.impl
@@ -8317,6 +8340,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testNilDefault_unfold
   Assumptions.testNilVal_unfold
   Assumptions.testUnsafePointerNil_unfold
+  Assumptions.testConstantCalls_unfold
   Assumptions.testCompareSliceToNil_unfold
   Assumptions.testComparePointerToNil_unfold
   Assumptions.testCompareNilToNil_unfold

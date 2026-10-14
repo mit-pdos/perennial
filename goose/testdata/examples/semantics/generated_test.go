@@ -372,6 +372,10 @@ func (suite *GoTestSuite) TestUnsafePointerNil() {
 	suite.Equal(true, testUnsafePointerNil())
 }
 
+func (suite *GoTestSuite) TestConstantCalls() {
+	suite.Equal(true, testConstantCalls())
+}
+
 func (suite *GoTestSuite) TestCompareSliceToNil() {
 	suite.Equal(true, testCompareSliceToNil())
 }
