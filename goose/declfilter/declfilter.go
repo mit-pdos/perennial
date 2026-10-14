@@ -25,8 +25,7 @@ type FilterConfig struct {
 	// Imports to keep. Defaults to "*" (all).
 	Imports []string `toml:"imports"`
 	// Declarations that have trusted models, which the translation will
-	// reference. Defaults to the empty set. "init" trusts the package's init
-	// function (at most one): its model `init.impl` runs in its place.
+	// reference. Defaults to the empty set.
 	Trusted []string `toml:"trusted"`
 	// Translate for bootstrapping by importing a subset of golang.
 	Bootstrap Bootstrap `toml:"bootstrap"`

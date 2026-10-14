@@ -354,12 +354,9 @@ noncomputable def Builder.grow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoOp GoMul go.int))) (Pair (Val #(W64 2)) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (StructFieldRef Builder.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b"))))
+  (Let "$r0" (Let "$s" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoOp GoMul go.int))) (Pair (Val #(W64 2)) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (StructFieldRef Builder.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b"))))
   (App (App (Val (GoInstruction (FuncResolve go.cap [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.bytealg.MakeNoZero []))) (Val #())) (Var "$a0")))
-  (Let "_order1" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "_order1"))
   (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (StructFieldRef Builder.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b"))))
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))))))
   (Let "buf" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
@@ -373,9 +370,7 @@ noncomputable def Builder.grow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (StructFieldRef Builder.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b"))))
   (App (App (App (Val (GoInstruction (FuncResolve go.copy [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "buf") (Var "$r0")))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "_order1") (Var "$r0")))))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "buf") (Var "$r0")))))))))))))
 
 /-- Grow grows b's capacity, if necessary, to guarantee space for
     another n bytes. After Grow(n), at least n bytes can be written to b
@@ -402,8 +397,9 @@ noncomputable def Builder.Grow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #())))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 0)))))
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"strings.Builder.Grow: negative count")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -421,7 +417,7 @@ noncomputable def Builder.WriteString.impl [FfiSyntax] [GoGlobalContext] : val :
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (StructFieldRef Builder.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Builder.ty)))) (Var "b"))))
-  (Let "$a1" (App (Val (GoInstruction (Convert go.string (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad go.string))) (Var "s")))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -498,7 +494,7 @@ noncomputable def explode.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.int))) (Var "size")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
-  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "size"))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
+  (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (Var "size"))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0")))))))
   (App (Val doExecute)
@@ -549,7 +545,7 @@ noncomputable def Count.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "substr"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0")))))))
   (App (Val doExecute)
@@ -641,7 +637,7 @@ noncomputable def genSplit.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (App (Val (GoInstruction (Slice go.string))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "m")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "sep"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$s")))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))))) (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))
@@ -740,7 +736,7 @@ noncomputable def Join.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Builder.ty) go!"String"))) (Var "b")) (Val #())))))
   (Let "$range" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "elems"))
-  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.string)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$s")))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.string)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.string)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "elems"))))))
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (App (App (Val (slice.forRange go.string)) (Var "$range"))
   (Lam "$key"
@@ -773,13 +769,13 @@ noncomputable def Join.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$opy" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "elem"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Var "$opy")))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "elem"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "elem"))
   (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Val maxInt) (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))))))
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"strings: Join output length overflow")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -790,15 +786,15 @@ noncomputable def Join.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$opy" (App (Val (GoInstruction (GoOp GoMul go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "sep"))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (App (Val (GoInstruction (GoOp GoMul go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "sep"))
   (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "elems"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0"))) (Val #(W64 1))))))
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Var "$opy")))))))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "sep"))
   (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoOp GoDiv go.int))) (Pair (Val maxInt) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "elems"))
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0"))) (Val #(W64 1)))))))))
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"strings: Join output length overflow")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #()))))
   (App (Val doExecute)
@@ -919,7 +915,6 @@ instance equals_unfold_Builder [FfiSyntax] [GoGlobalContext] :
 class Builder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Builder.underlying Builder
   underlying : go.UnderlyingDirectedEq Builder.ty Builder.underlying
-  layout : go.StructLayout Builder [(go!"addr", typeSize Loc, typeAlign Loc), (go!"buf", typeSize GoSlice, typeAlign GoSlice)]
   get_addr : ∀ (x : Builder), go.IsGoStepPureDetTagged under (StructFieldGet Builder.underlying go!"addr") #x (Val #(x.addr'))
   set_addr : ∀ (x : Builder) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Builder.underlying go!"addr") (PairV #x #y) (Val #(({ x with addr' := y } : Builder)))
   get_buf : ∀ (x : Builder), go.IsGoStepPureDetTagged under (StructFieldGet Builder.underlying go!"buf") #x (Val #(x.buf'))
@@ -932,7 +927,6 @@ class Builder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 
 attribute [instance] Builder.TypeAssumptions.type_repr
   Builder.TypeAssumptions.underlying
-  Builder.TypeAssumptions.layout
   Builder.TypeAssumptions.get_addr
   Builder.TypeAssumptions.set_addr
   Builder.TypeAssumptions.get_buf
@@ -970,7 +964,6 @@ instance equals_unfold_Reader [FfiSyntax] [GoGlobalContext] :
 class Reader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Reader.underlying Reader
   underlying : go.UnderlyingDirectedEq Reader.ty Reader.underlying
-  layout : go.StructLayout Reader [(go!"s", typeSize GoString, typeAlign GoString), (go!"i", typeSize w64, typeAlign w64), (go!"prevRune", typeSize w64, typeAlign w64)]
   get_s : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"s") #x (Val #(x.s'))
   set_s : ∀ (x : Reader) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : Reader)))
   get_i : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"i") #x (Val #(x.i'))
@@ -980,7 +973,6 @@ class Reader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Reader.TypeAssumptions.type_repr
   Reader.TypeAssumptions.underlying
-  Reader.TypeAssumptions.layout
   Reader.TypeAssumptions.get_s
   Reader.TypeAssumptions.set_s
   Reader.TypeAssumptions.get_i
@@ -1045,7 +1037,6 @@ instance equals_unfold_trieNode [FfiSyntax] [GoGlobalContext] :
 class trieNode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying trieNode.underlying trieNode
   underlying : go.UnderlyingDirectedEq trieNode.ty trieNode.underlying
-  layout : go.StructLayout trieNode [(go!"value", typeSize GoString, typeAlign GoString), (go!"priority", typeSize w64, typeAlign w64), (go!"prefix", typeSize GoString, typeAlign GoString), (go!"next", typeSize Loc, typeAlign Loc), (go!"table", typeSize GoSlice, typeAlign GoSlice)]
   get_value : ∀ (x : trieNode), go.IsGoStepPureDetTagged under (StructFieldGet trieNode.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : trieNode) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet trieNode.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : trieNode)))
   get_priority : ∀ (x : trieNode), go.IsGoStepPureDetTagged under (StructFieldGet trieNode.underlying go!"priority") #x (Val #(x.priority'))
@@ -1059,7 +1050,6 @@ class trieNode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] trieNode.TypeAssumptions.type_repr
   trieNode.TypeAssumptions.underlying
-  trieNode.TypeAssumptions.layout
   trieNode.TypeAssumptions.get_value
   trieNode.TypeAssumptions.set_value
   trieNode.TypeAssumptions.get_priority
@@ -1098,7 +1088,6 @@ instance equals_unfold_genericReplacer [FfiSyntax] [GoGlobalContext] :
 class genericReplacer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying genericReplacer.underlying genericReplacer
   underlying : go.UnderlyingDirectedEq genericReplacer.ty genericReplacer.underlying
-  layout : go.StructLayout genericReplacer [(go!"root", typeSize trieNode, typeAlign trieNode), (go!"tableSize", typeSize w64, typeAlign w64), (go!"mapping", typeSize (GoArray w8 256), typeAlign (GoArray w8 256))]
   get_root : ∀ (x : genericReplacer), go.IsGoStepPureDetTagged under (StructFieldGet genericReplacer.underlying go!"root") #x (Val #(x.root'))
   set_root : ∀ (x : genericReplacer) (y : trieNode), go.IsGoStepPureDetTagged under (StructFieldSet genericReplacer.underlying go!"root") (PairV #x #y) (Val #(({ x with root' := y } : genericReplacer)))
   get_tableSize : ∀ (x : genericReplacer), go.IsGoStepPureDetTagged under (StructFieldGet genericReplacer.underlying go!"tableSize") #x (Val #(x.tableSize'))
@@ -1108,7 +1097,6 @@ class genericReplacer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
 
 attribute [instance] genericReplacer.TypeAssumptions.type_repr
   genericReplacer.TypeAssumptions.underlying
-  genericReplacer.TypeAssumptions.layout
   genericReplacer.TypeAssumptions.get_root
   genericReplacer.TypeAssumptions.set_root
   genericReplacer.TypeAssumptions.get_tableSize
@@ -1164,7 +1152,6 @@ instance equals_unfold_singleStringReplacer [FfiSyntax] [GoGlobalContext] :
 class singleStringReplacer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying singleStringReplacer.underlying singleStringReplacer
   underlying : go.UnderlyingDirectedEq singleStringReplacer.ty singleStringReplacer.underlying
-  layout : go.StructLayout singleStringReplacer [(go!"finder", typeSize Loc, typeAlign Loc), (go!"value", typeSize GoString, typeAlign GoString)]
   get_finder : ∀ (x : singleStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet singleStringReplacer.underlying go!"finder") #x (Val #(x.finder'))
   set_finder : ∀ (x : singleStringReplacer) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet singleStringReplacer.underlying go!"finder") (PairV #x #y) (Val #(({ x with finder' := y } : singleStringReplacer)))
   get_value : ∀ (x : singleStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet singleStringReplacer.underlying go!"value") #x (Val #(x.value'))
@@ -1172,7 +1159,6 @@ class singleStringReplacer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLoca
 
 attribute [instance] singleStringReplacer.TypeAssumptions.type_repr
   singleStringReplacer.TypeAssumptions.underlying
-  singleStringReplacer.TypeAssumptions.layout
   singleStringReplacer.TypeAssumptions.get_finder
   singleStringReplacer.TypeAssumptions.set_finder
   singleStringReplacer.TypeAssumptions.get_value
@@ -1213,7 +1199,6 @@ instance equals_unfold_byteStringReplacer [FfiSyntax] [GoGlobalContext] :
 class byteStringReplacer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying byteStringReplacer.underlying byteStringReplacer
   underlying : go.UnderlyingDirectedEq byteStringReplacer.ty byteStringReplacer.underlying
-  layout : go.StructLayout byteStringReplacer [(go!"replacements", typeSize (GoArray GoSlice 256), typeAlign (GoArray GoSlice 256)), (go!"toReplace", typeSize GoSlice, typeAlign GoSlice)]
   get_replacements : ∀ (x : byteStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet byteStringReplacer.underlying go!"replacements") #x (Val #(x.replacements'))
   set_replacements : ∀ (x : byteStringReplacer) (y : (GoArray GoSlice 256)), go.IsGoStepPureDetTagged under (StructFieldSet byteStringReplacer.underlying go!"replacements") (PairV #x #y) (Val #(({ x with replacements' := y } : byteStringReplacer)))
   get_toReplace : ∀ (x : byteStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet byteStringReplacer.underlying go!"toReplace") #x (Val #(x.toReplace'))
@@ -1221,7 +1206,6 @@ class byteStringReplacer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
 
 attribute [instance] byteStringReplacer.TypeAssumptions.type_repr
   byteStringReplacer.TypeAssumptions.underlying
-  byteStringReplacer.TypeAssumptions.layout
   byteStringReplacer.TypeAssumptions.get_replacements
   byteStringReplacer.TypeAssumptions.set_replacements
   byteStringReplacer.TypeAssumptions.get_toReplace
@@ -1254,7 +1238,6 @@ instance equals_unfold_stringFinder [FfiSyntax] [GoGlobalContext] :
 class stringFinder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying stringFinder.underlying stringFinder
   underlying : go.UnderlyingDirectedEq stringFinder.ty stringFinder.underlying
-  layout : go.StructLayout stringFinder [(go!"pattern", typeSize GoString, typeAlign GoString), (go!"badCharSkip", typeSize (GoArray w64 256), typeAlign (GoArray w64 256)), (go!"goodSuffixSkip", typeSize GoSlice, typeAlign GoSlice)]
   get_pattern : ∀ (x : stringFinder), go.IsGoStepPureDetTagged under (StructFieldGet stringFinder.underlying go!"pattern") #x (Val #(x.pattern'))
   set_pattern : ∀ (x : stringFinder) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet stringFinder.underlying go!"pattern") (PairV #x #y) (Val #(({ x with pattern' := y } : stringFinder)))
   get_badCharSkip : ∀ (x : stringFinder), go.IsGoStepPureDetTagged under (StructFieldGet stringFinder.underlying go!"badCharSkip") #x (Val #(x.badCharSkip'))
@@ -1264,7 +1247,6 @@ class stringFinder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] stringFinder.TypeAssumptions.type_repr
   stringFinder.TypeAssumptions.underlying
-  stringFinder.TypeAssumptions.layout
   stringFinder.TypeAssumptions.get_pattern
   stringFinder.TypeAssumptions.set_pattern
   stringFinder.TypeAssumptions.get_badCharSkip

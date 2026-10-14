@@ -153,7 +153,7 @@ var LeanShadowNames = map[string]bool{}
 
 func init() {
 	for _, w := range strings.Fields(`Val Var Rec App If Pair Fst Snd Fork Lam
-	Let Seq LamV RecV PairV LitV BAnon BNamed GoInstruction GoOp GoShift GoUnOp GoLoad
+	Let Seq LamV RecV PairV LitV BAnon BNamed GoInstruction GoOp GoUnOp GoLoad
 	GoStore GoAlloc GoZeroVal FuncResolve MethodResolve StructFieldGet
 	StructFieldRef StructFieldSet GlobalVarAddr Index IndexRef Slice FullSlice
 	TypeAssert TypeAssert2 Convert CompositeLiteral SelectStmt LiteralValue
@@ -790,12 +790,11 @@ func (h leanHead) render(args []Expr, m LeanMode) string {
 		}
 		return eApp(eVal(h.name), restS...)
 	case headWithDefer:
-		if len(args) != 2 {
-			panic("with_defer: expects two arguments")
+		if len(args) != 1 {
+			panic("with_defer: expects one argument")
 		}
-		return eLetLike("App", []string{lapp("App", eVal("wrapDefer"),
-			eLam(nil, args[0].Lean(LeanExpr)))},
-			eLam([]string{"$defer"}, args[1].Lean(LeanExpr)))
+		return eLetLike("App", []string{eVal("wrapDefer")},
+			eLam([]string{"$defer"}, args[0].Lean(LeanExpr)))
 	case headWithDeferRecover:
 		if len(args) != 2 {
 			panic("with_defer_recover: expects two arguments")
@@ -975,6 +974,8 @@ var leanBinOps = map[OpId]string{
 	OpGreaterThan: "GoGt",
 	OpLessEq:      "GoLe",
 	OpGreaterEq:   "GoGe",
+	OpShl:         "GoShiftl",
+	OpShr:         "GoShiftr",
 	OpAnd:         "GoAnd",
 	OpAndNot:      "GoBitClear",
 	OpOr:          "GoOr",
@@ -993,15 +994,6 @@ func (be BinaryExpr) Lean(m LeanMode) string {
 		return lapp("If", x, y, eVal("#false"))
 	case OpLOr:
 		return lapp("If", x, eVal("#true"), y)
-	}
-	switch be.Op.OpId {
-	case OpShl, OpShr:
-		op := "GoShiftl"
-		if be.Op.OpId == OpShr {
-			op = "GoShiftr"
-		}
-		return eApp(eInstr("GoShift", op, be.Op.Type.Lean(LeanTerm), be.Op.CountType.Lean(LeanTerm)),
-			ePair(x, y))
 	}
 	op, ok := leanBinOps[be.Op.OpId]
 	if !ok {

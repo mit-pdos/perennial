@@ -74,15 +74,8 @@ class FloatOps where
 
   float64ToFloat32 : w64 → w32
 
-  -- integer to float conversions (`float64(n)`), uninterpreted: a float is an opaque bit pattern
-  int64ToFloat64 : w64 → w64
-  uint64ToFloat64 : w64 → w64
-  int32ToFloat64 : w32 → w64
-  uint32ToFloat64 : w32 → w64
-
 export FloatOps (float64Neg float64Add float64Sub float64Mul float64Div float64Leb
-  float32Neg float32Add float32Sub float32Mul float32Div float32Leb float64ToFloat32
-  int64ToFloat64 uint64ToFloat64 int32ToFloat64 uint32ToFloat64)
+  float32Neg float32Add float32Sub float32Mul float32Div float32Leb float64ToFloat32)
 
 class GoSemanticsFunctions [FfiSyntax] where
   underlying : go.GoType → go.GoType
@@ -99,12 +92,7 @@ class GoSemanticsFunctions [FfiSyntax] where
   TypeRepr : go.GoType → (V : Type) → [ZeroVal V] → Prop
   structFieldRef : Type → GoString → Loc → Loc
 
-  /-- The size in bytes (heap cells) of a value of Lean representation type `V` in memory:
-  the stride of an array of them (`arrayIndexRef`). Like `structFieldRef`, indexed by the
-  Lean representation, which determines it. -/
-  typeSize : Type → Int
-  /-- The alignment of a value of Lean representation type `V` (`Golang/Defn/Layout.lean`). -/
-  typeAlign : Type → Int
+  arrayIndexRef (elem_type : Type) (i : Int) (l : Loc) : Loc
 
   mapEmpty : val → val
   mapLookup : val → val → Bool × val
@@ -119,29 +107,7 @@ class GoSemanticsFunctions [FfiSyntax] where
 attribute [instance] GoSemanticsFunctions.float_ops
 
 export GoSemanticsFunctions (underlying globalAddr functions methods methodSet structFieldRef
-  typeSize typeAlign mapEmpty mapLookup mapInsert mapDelete is_map_domain is_map_pure mapDefault)
-
-/-- The name goose gives a blank field `_` (the `i`-th field: `_i`); goose refuses a field
-that is so named in the source. -/
-def go.isBlankFieldName (n : GoString) : Bool :=
-  match n with
-  | c :: ds => c == (95 : w8) && !ds.isEmpty && ds.all (fun d => (48 : w8) ≤ d && d ≤ (57 : w8))
-  | [] => false
-
-/-- The address of element `i` of an array of `V`s at `l`: `i` strides of `typeSize V`
-bytes on, within `l`'s block. A location outside any block (`locCar = 0`, which no
-allocation returns: `IsFresh`) has no elements, and stays where it is, so an index never
-reaches `null` from a non-null array. -/
-def arrayIndexRef [FfiSyntax] [GoSemanticsFunctions] (V : Type) (i : Int) (l : Loc) : Loc :=
-  if l.locCar = 0 then l else l +ₗ i * typeSize V
-
-theorem arrayIndexRef_of_car [FfiSyntax] [GoSemanticsFunctions] (V : Type) (i : Int) (l : Loc)
-    (h : l.locCar ≠ 0) : arrayIndexRef V i l = l +ₗ i * typeSize V := by
-  simp [arrayIndexRef, h]
-
-@[simp] theorem arrayIndexRef_car [FfiSyntax] [GoSemanticsFunctions] (V : Type) (i : Int) (l : Loc) :
-    (arrayIndexRef V i l).locCar = l.locCar := by
-  unfold arrayIndexRef; split <;> rfl
+  arrayIndexRef mapEmpty mapLookup mapInsert mapDelete is_map_domain is_map_pure mapDefault)
 
 /-- The class form of `GoSemanticsFunctions.TypeRepr` (`V` is an output). -/
 class TypeRepr [FfiSyntax] [GoSemanticsFunctions] (t : go.GoType) (V : outParam Type) [ZeroVal V] :
@@ -185,26 +151,17 @@ def GlobalAllocDef (v : GoString) (t : go.GoType) : val :=
 @[irreducible] def GlobalAlloc (v : GoString) (t : go.GoType) : val := GlobalAllocDef v t
 theorem GlobalAlloc_unseal : GlobalAlloc = GlobalAllocDef := by with_unfolding_all rfl
 
-/-- The Go types other than the predeclared ones (in their own file) whose values are not
-represented as bytes: a value is its first cell, followed by tails (`Encoding.cell`), of
-gc/amd64's size (`Layout.lean`): pointers, functions, maps and channels 8, interfaces 16,
-slices 24. A `class` so that the premise `[IsPrimitive u enc]` of `alloc_primitive` etc. is
-found by typeclass search. -/
-class inductive IsPrimitive : go.GoType → outParam Encoding → Prop
-  | isPrimitive_pointer t : IsPrimitive (go.PointerType t) (.cell 8)
-  | isPrimitive_function sig : IsPrimitive (go.FunctionType sig) (.cell 8)
-  | isPrimitive_interface elems : IsPrimitive (go.InterfaceType elems) (.cell 16)
-  | isPrimitive_slice elem : IsPrimitive (go.SliceType elem) (.cell 24)
-  | isPrimitive_map kt vt : IsPrimitive (go.MapType kt vt) (.cell 8)
-  | isPrimitive_channel dir t : IsPrimitive (go.ChannelType dir t) (.cell 8)
-
-/-- The allocation of a value with encoding `enc`: a fresh block of its size, at an offset
-of its alignment, into which it is stored. The block's cells hold `LitPad` until the
-store, so nothing reads them as bytes. -/
-def allocEncoded (enc : Encoding) (v : val) : Expr :=
-  Let "l" (AllocN (Val (PairV (LitV (LitInt (W64 enc.size))) (LitV (LitInt (W64 enc.align)))))
-    (Val (LitV LitPad)))
-    (Seq (App (App (Val (StoreN enc)) (Var "l")) (Val v)) (Var "l"))
+/-- This semantics considers several Go types to be `primitive` in the sense
+that they are modeled as taking a single heap location. Predeclared types are
+in their own file. A `class` so that the premise
+`[IsPrimitive u]` of `alloc_primitive` etc. is found by typeclass search. -/
+class inductive IsPrimitive : go.GoType → Prop
+  | isPrimitive_pointer t : IsPrimitive (go.PointerType t)
+  | isPrimitive_function sig : IsPrimitive (go.FunctionType sig)
+  | isPrimitive_interface elems : IsPrimitive (go.InterfaceType elems)
+  | isPrimitive_slice elem : IsPrimitive (go.SliceType elem)
+  | isPrimitive_map kt vt : IsPrimitive (go.MapType kt vt)
+  | isPrimitive_channel dir t : IsPrimitive (go.ChannelType dir t)
 
 attribute [instance] IsPrimitive.isPrimitive_pointer IsPrimitive.isPrimitive_function
   IsPrimitive.isPrimitive_interface IsPrimitive.isPrimitive_slice IsPrimitive.isPrimitive_map
@@ -384,8 +341,6 @@ class CoreComparisonSemantics [GoSemanticsFunctions] : Prop where
                match fd with
                | go.FieldDecl n t => (n, t)
                | go.EmbeddedField n t => (n, t)
-             -- blank fields are not compared (spec, "Comparison operators")
-             if go.isBlankFieldName field_name then cmp_so_far else
              gl(if: cmp_so_far then
                 (StructFieldGet (go.StructType fds) field_name v1) =⟨field_type⟩
                 (StructFieldGet (go.StructType fds) field_name v2)
@@ -454,10 +409,6 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
     (e : Expr) [⟦GoUnOp o t_under, v⟧ ⤳[under] e] : ⟦GoUnOp o t, v⟧ ⤳ e
   go_op_underlying (o : GoOperator) {t t_under : go.GoType} [t ↓u t_under] (v : val) (e : Expr)
     [⟦GoOp o t_under, v⟧ ⤳[under] e] : ⟦GoOp o t, v⟧ ⤳ e
-  /-- A shift resolves both of its types, the shifted operand's and the count's. -/
-  go_shift_underlying (o : GoShiftOperator) {t t_under ct ct_under : go.GoType} [t ↓u t_under]
-    [ct ↓u ct_under] (v : val) (e : Expr) [⟦GoShift o t_under ct_under, v⟧ ⤳[under] e] :
-    ⟦GoShift o t ct, v⟧ ⤳ e
   composite_literal_underlying {t t_under : go.GoType} [t ↓u t_under] (v : val) (e : Expr)
     [⟦CompositeLiteral t_under, v⟧ ⤳[under] e] : ⟦CompositeLiteral t, v⟧ ⤳ e
   slice_underlying {t t_under : go.GoType} [t ↓u t_under] (v : val) (e : Expr)
@@ -486,31 +437,12 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
     ⟦MethodResolve t m, rcvr⟧ ⤳ #(methods t m rcvr)
   go_global_var_addr_step (v : GoString) : ⟦GlobalVarAddr v, #()⟧ ⤳ #(globalAddr v)
 
-  /-- The address `&x.f` of field `f` of the struct `*x` at `l`. Goose emits
-  `StructFieldRef` for every field selector through a pointer, explicit or
-  implicit (`&p.f`, `p.f`, `p.f = v`, `p.g.f`, the embedded field a promoted
-  method is called through, and the field-by-field expansions of `GoLoad`,
-  `GoStore` and `GoAlloc` of a struct). Go: "If x is of pointer type and has
-  the value nil and x.f denotes a struct field, assigning to or evaluating x.f
-  causes a run-time panic", and taking its address panics too (also for a
-  zero-size field), so on `null` this is a stuck run-time panic, like the other
-  run-time panics of builtins (Go's is recoverable, the model's is not: the
-  model is less defined than Go there). -/
+  /-- FIXME: unsound semantics: simply computing the struct field address will
+  panic if the base address is nil. This is a bit of a headache because every
+  program step executing `StructFieldRef` will need to have a precondition that
+  `l ≠ null`. -/
   structFieldRef_step (t : go.GoType) (f : GoString) (l : Loc) {V : Type} [ZeroVal V]
-    [TypeRepr t V] : ⟦StructFieldRef t f, #l⟧ ⤳[under]
-      (if l = null then Panic "nil pointer dereference" else #(structFieldRef V f l))
-
-  /-- The address of a field of the struct at `null` is `null`. No Go program
-  computes it (`structFieldRef_step` panics on `null`, and `GoAlloc` takes the
-  field addresses of a fresh, non-null struct only), so this fixes an
-  unobservable value; it lets a points-to at a field `l.[V, f]` show `l ≠ null`. -/
-  structFieldRef_null (V : Type) (f : GoString) : structFieldRef V f null = null
-
-  /-- The address of a field of a struct at a non-null address is not `null`
-  (Go: `&x.f` is the address of a variable, never `nil`; as
-  `arrayIndexRef_null_inv` for arrays). -/
-  structFieldRef_null_inv (V : Type) (f : GoString) (l : Loc) :
-    structFieldRef V f l = null → l = null
+    [TypeRepr t V] : ⟦StructFieldRef t f, #l⟧ ⤳[under] #(structFieldRef V f l)
 
   /-- The language spec doesn't say anything about the addresses of zero-sized
   allocation. But, in the runtime, these addresses are non-nil, so the
@@ -585,25 +517,26 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
   store_underlying {t t_under : go.GoType} [t ↓u t_under] (v : val) (e : Expr)
     [⟦GoStore t_under, v⟧ ⤳[internalUnder] e] : ⟦GoStore t, v⟧ ⤳[internal] e
 
-  alloc_primitive (v : val) (u : go.GoType) {enc : Encoding} [H : IsPrimitive u enc] :
-    ⟦GoAlloc u, v⟧ ⤳[internalUnder] allocEncoded enc v
-  /-- A struct is allocated as one block of its size, at an offset of its alignment
-  (`AllocN`; its fields at their offsets, `go.StructLayout`), into which the value is
-  stored field by field. The padding keeps `LitPad` (Go leaves its contents
-  unspecified). A size of `2^63` or more is not considered (`AngelicExit`): gc rejects a
-  type of `2^50` bytes or more ("type too large", `types.MaxWidth`), so no program
-  reaches it. -/
-  alloc_struct (v : val) {fds : List go.field_decl} {V : Type} [ZeroVal V]
-      [TypeRepr (go.StructType fds) V] :
+  alloc_primitive (v : val) (u : go.GoType) [H : IsPrimitive u] :
+    ⟦GoAlloc u, v⟧ ⤳[internalUnder] Alloc v
+  alloc_struct (v : val) {fds fds_unsealed : List go.field_decl} [fds =→ fds_unsealed] :
     ⟦GoAlloc (go.StructType fds), v⟧ ⤳[internalUnder]
-      (if typeSize V < 2^63 then
-        (Let "l" (AllocN (Val (PairV (LitV (LitInt (W64 (typeSize V))))
-            (LitV (LitInt (W64 (typeAlign V)))))) (Val (LitV LitPad)))
-          gl(GoStore (go.StructType fds) ("l", v) ;; "l") : Expr)
-       else gl(AngelicExit #()))
+      (let: "l" := GoPrealloc #() in
+       List.foldr (fun fd alloc_rest =>
+                let (field_name, field_type) := match fd with
+                                                | go.FieldDecl n t => (n, t)
+                                                | go.EmbeddedField n t => (n, t)
+                let field_addr := gl(StructFieldRef (go.StructType fds) field_name "l")
+                gl(let: "l_field" :=
+                    GoAlloc field_type (StructFieldGet (go.StructType fds) field_name v) in
+                  (if: ("l_field" =⟨go.PointerType field_type⟩ field_addr) then #()
+                   else AngelicExit #()) ;;
+                  alloc_rest)
+         ) (#() : Expr) fds_unsealed ;;
+       "l")
 
-  load_primitive (u : go.GoType) {enc : Encoding} [H : IsPrimitive u enc] (l : val) :
-    ⟦GoLoad u, l⟧ ⤳[internalUnder] App (Val (ReadN enc)) (Val l)
+  load_primitive (u : go.GoType) [H : IsPrimitive u] (l : val) :
+    ⟦GoLoad u, l⟧ ⤳[internalUnder] Read l
 
   load_struct (fds : List go.field_decl) (l : val) {fds_unsealed : List go.field_decl}
     [fds =→ fds_unsealed] :
@@ -617,8 +550,8 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
                 gl(StructFieldSet (go.StructType fds) field_name (struct_so_far, field_val))
          ) (GoZeroVal (go.StructType fds) #()) fds_unsealed)
 
-  store_primitive (u : go.GoType) {enc : Encoding} [H : IsPrimitive u enc] (l v : val) :
-    ⟦GoStore u, (l, v)⟧ ⤳[internalUnder] App (App (Val (StoreN enc)) (Val l)) (Val v)
+  store_primitive (u : go.GoType) [H : IsPrimitive u] (l v : val) :
+    ⟦GoStore u, (l, v)⟧ ⤳[internalUnder] Store l v
   store_struct {fds fds_unsealed : List go.field_decl} [fds =→ fds_unsealed] (l v : val) :
     ⟦GoStore (go.StructType fds), (l, v)⟧ ⤳[internalUnder]
       (List.foldl (fun store_so_far fd =>
@@ -643,8 +576,7 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
 
 attribute [instance] CoreSemantics.basic_into_val_inj CoreSemantics.underlying_not_named
   CoreSemantics.convert_underlying CoreSemantics.go_un_op_underlying
-  CoreSemantics.go_op_underlying CoreSemantics.go_shift_underlying
-  CoreSemantics.composite_literal_underlying
+  CoreSemantics.go_op_underlying CoreSemantics.composite_literal_underlying
   CoreSemantics.slice_underlying CoreSemantics.fullSlice_underlying
   CoreSemantics.index_underlying CoreSemantics.index_ref_underlying
   CoreSemantics.check_comparable_underlying CoreSemantics.struct_field_get_underlying
@@ -668,11 +600,11 @@ attribute [instance] CoreSemantics.basic_into_val_inj CoreSemantics.underlying_n
   CoreSemantics.convert_pointer_same_underlying
 
 export CoreSemantics (basic_into_val_inj underlying_not_named convert_underlying
-  go_un_op_underlying go_op_underlying go_shift_underlying composite_literal_underlying slice_underlying
+  go_un_op_underlying go_op_underlying composite_literal_underlying slice_underlying
   fullSlice_underlying index_underlying index_ref_underlying check_comparable_underlying
   struct_field_get_underlying struct_field_set_underlying structFieldRef_step_underlying
   go_zero_val_step_underlying go_func_resolve_step go_method_resolve_step go_global_var_addr_step
-  structFieldRef_step structFieldRef_null structFieldRef_null_inv go_prealloc_step angelic_exit_step intoVal_unfold_func
+  structFieldRef_step go_prealloc_step angelic_exit_step intoVal_unfold_func
   intoVal_unfold_bool intoVal_unfold_w64 intoVal_unfold_w32 intoVal_unfold_w16
   intoVal_unfold_w8 intoVal_unfold_string intoVal_unfold_loc intoVal_unfold_unit
   go_zero_val_step go_zero_val_pointer go_zero_val_function go_zero_val_slice

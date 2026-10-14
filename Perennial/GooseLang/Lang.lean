@@ -7,12 +7,15 @@ a customizable FFI (foreign-function interface) for new primitive operations.
 * There is no crash semantics (`ffi_crash_step`, `goose_crash`).
 * The base step is an inductive relation (`base_step`), and FFI steps (`FfiSemantics.ffi_step`) are a
   plain relation.
+* Panics: a panic outcome is a value, `PanicV p`, which unwinds every evaluation
+  frame but that of `Catch e h k` (`Unwinds`); the head step relation `HeadStep`
+  is the unwinding together with `base_step` on the redexes that do not unwind.
 * The real semantics is `gooseRealEctxiLang`, an iris-lean
   `EctxItemLanguage` whose state is the pair `state × GlobalState`
-  (`CfgState`). It is a `def`, not an instance: the registered language
+  (`CfgState`) and whose head step is `HeadStep`. It is a `def`, not an instance: the registered language
   instance (used by the program logic) is the step-bounded layer
   `goose_ectxi_lang` of `Perennial/GooseLang/BoundedLang.lean`, which adds a
-  step fuel on top of `base_step` for time receipts. The adequacy theorems
+  step fuel on top of `HeadStep` for time receipts. The adequacy theorems
   are transferred back to `gooseRealEctxiLang` (`goose_adequacy`).
 * Equality on the syntax is decided classically; nothing downstream computes with it.
 -/
@@ -90,52 +93,7 @@ inductive BaseLit where
   | LitLoc (l : Loc)
   | LitProphecy (p : proph_id)
   | LitSlice (s : GoSlice)
-  /-- The cell `i` (`1 ≤ i < k`) of a value of `k` cells that is not represented as bytes
-  (`Encoding.cell k`): the tails say where their value starts and ends, so that no load
-  or store takes part of a value for a whole one (`decode`, `WriteCompat`). -/
-  | LitTail (k i : Nat)
-  /-- A cell that holds no value: padding, or a cell of a fresh allocation before its
-  first store (Go leaves padding unspecified). No load decodes it. -/
-  | LitPad
 deriving DecidableEq, Inhabited
-
-/-- How a value occupies the heap cells from its address on (a heap cell is a byte of
-memory, `Golang/Defn/Layout.lean`): `encode`, `decode`. -/
-inductive Encoding where
-  /-- the `n` little-endian bytes (`LitByte` cells) of an integer of `n ∈ {1, 2, 4, 8}`
-  bytes -/
-  | word (n : Nat)
-  /-- the whole value in the first cell and its `LitTail`s in the `k - 1` cells after
-  it: a value of size `k ≥ 1` that is not represented as bytes (a pointer, a string, …) -/
-  | cell (k : Nat)
-deriving DecidableEq
-
-/-- The number of cells of an encoded value. -/
-def Encoding.size : Encoding → Nat
-  | .word n => n
-  | .cell k => k
-
-/-- The alignment the atomic operations need: an access of `n ≤ 8` bytes is atomic on
-amd64 only if it does not straddle an `n`-byte boundary (`Go memory model`: an access
-of at most a machine word at an aligned address). -/
-def Encoding.align : Encoding → Nat
-  | .word n => n
-  | .cell k => min k 8
-
-/-- The one-operand memory operations on an encoded value (`Encoding`), on all its cells
-at once: the two halves of a non-atomic read (`startRead`, `finishRead`, which count a
-reader on each cell, so that a concurrent write of any of them is stuck), the first half
-of a non-atomic write (`prepareWrite`), and an atomic load (`load`). -/
-inductive MemOp1 where
-  | startRead | finishRead | prepareWrite | load
-deriving DecidableEq
-
-/-- The two-operand memory operations on an encoded value: the second half of a
-non-atomic write (`finishStore`) and the atomic swap, add and compare-exchange (the
-second operand the pair of the old and the new value). -/
-inductive MemOp2 where
-  | finishStore | swap | add | cmpxchg
-deriving DecidableEq
 
 inductive PrimOp0 where
   /-- a stuck expression, to represent undefined behavior -/
@@ -157,10 +115,8 @@ inductive PrimOp1 where
   | LoadOp
   /-- allocation (initial value) -/
   | AllocOp
-  /-- a memory operation on the encoded value at a location (`MemOp1`) -/
-  | MemOp1Op (op : MemOp1) (enc : Encoding)
-  /-- `(l, n)`: stuck unless the `n` cells from `l` are bytes (package `unsafe`) -/
-  | CheckBytesOp
+  /-- start a panic with the given value (the body of `go.panic`) -/
+  | RaiseOp
 deriving DecidableEq
 
 inductive PrimOp2 where
@@ -170,21 +126,12 @@ inductive PrimOp2 where
   | AtomicSwapOp
   /-- pointer, value -/
   | AtomicAddOp
-  /-- allocation of a contiguous block (the pair of the number of cells and the alignment,
-  the initial value of each cell) -/
-  | AllocNOp
-  /-- a memory operation on the encoded value at a location (`MemOp2`) -/
-  | MemOp2Op (op : MemOp2) (enc : Encoding)
 deriving DecidableEq
 
 inductive GoOperator where
   | GoEquals | GoLt | GoLe | GoGt | GoGe
   | GoPlus | GoSub | GoMul | GoDiv | GoRemainder
-  | GoAnd | GoOr | GoXor | GoBitClear
-deriving DecidableEq
-
-inductive GoShiftOperator where
-  | GoShiftl | GoShiftr
+  | GoAnd | GoOr | GoXor | GoBitClear | GoShiftl | GoShiftr
 deriving DecidableEq
 
 inductive GoUnaryOperator where
@@ -195,10 +142,6 @@ inductive GoInstruction where
   | AngelicExit
   | Convert (from_ to : go.GoType)
   | GoOp (o : GoOperator) (t : go.GoType)
-  /-- `x << y` / `x >> y` with `x : t` and `y : count_t`: the two operands of a shift need not
-  have the same type, so the instruction carries both, and the semantics chooses what to do
-  with the count (`go.UntypedIntSemantics.shift_count_untyped_int`, ...). -/
-  | GoShift (o : GoShiftOperator) (t count_t : go.GoType)
   | GoUnOp (o : GoUnaryOperator) (t : go.GoType)
   | CheckComparable (t : go.GoType)
   | GoLoad (t : go.GoType)
@@ -275,6 +218,10 @@ inductive Expr where
   | ResolveProph (e1 e2 : Expr)
   | LiteralValue (l : List keyed_element)
   | SelectStmtClauses (default_handler : Option Expr) (l : List comm_clause)
+  /-- Panic handling: `Catch e h k` evaluates `e`; a panic `PanicV p` that
+  reaches it continues as `h p`, a value `v` as `k v`. The only evaluation frame
+  that a panic does not unwind (see `Unwinds`). -/
+  | Catch (e h k : Expr)
 
 inductive val where
   | LitV (l : BaseLit)
@@ -291,6 +238,9 @@ inductive val where
   | LiteralValueV (l : List keyed_element)
   | SelectStmtClausesV (default_handler : Option Expr) (l : List comm_clause)
   | UntypedNil
+  /-- The outcome of a panic with value `p`: it unwinds every evaluation frame
+  but `Catch`'s. Not the value of any Go type (`GoGlobalContext.intoVal_not_panic`). -/
+  | PanicV (p : val)
 
 /-- https://go.dev/ref/spec#Composite_literals -/
 inductive keyed_element where
@@ -328,24 +278,33 @@ noncomputable instance : DecidableEq CommCase := fun a b => Classical.propDecida
 instance : Inhabited val := ⟨.LitV .LitUnit⟩
 instance : Inhabited Expr := ⟨.Val default⟩
 
+/-- Is `v` a panic outcome `PanicV p`? -/
+def val.isPanic : val → Bool
+  | .PanicV _ => true
+  | _ => false
+
+attribute [simp] val.isPanic.eq_1 val.isPanic.eq_2
+
+theorem val.isPanic_eq_true {v : val} (h : v.isPanic = true) : ∃ p, v = .PanicV p := by
+  cases v <;> simp_all
+
 end goose_syntax
 
 export Expr (Val Var Rec App If Pair Fst Snd Fork Primitive0 Primitive1 Primitive2 CmpXchg
-  ExternalOp NewProph ResolveProph LiteralValue SelectStmtClauses)
+  ExternalOp NewProph ResolveProph LiteralValue SelectStmtClauses Catch)
 export val (LitV RecV PairV InjLV InjRV ExtV GoInstruction ArrayV InterfaceV LiteralValueV
-  SelectStmtClausesV UntypedNil)
+  SelectStmtClausesV UntypedNil PanicV)
 export keyed_element (KeyedElement)
 export key (KeyField KeyInteger KeyExpression KeyLiteralValue)
 export Element (ElementExpression ElementLiteralValue)
 export comm_clause (CommClause)
 export CommCase (SendCase RecvCase)
 export BaseLit (LitInt LitInt32 LitInt16 LitBool LitByte LitString LitUnit LitPoison LitLoc
-  LitProphecy LitSlice LitTail LitPad)
+  LitProphecy LitSlice)
 export GoOperator (GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemainder GoAnd
-  GoOr GoXor GoBitClear)
-export GoShiftOperator (GoShiftl GoShiftr)
+  GoOr GoXor GoBitClear GoShiftl GoShiftr)
 export GoUnaryOperator (GoPos GoNeg GoNot GoComplement)
-export GoInstruction (AngelicExit Convert GoOp GoShift GoUnOp CheckComparable GoLoad GoStore GoAlloc
+export GoInstruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad GoStore GoAlloc
   GoPrealloc GoZeroVal FuncResolve MethodResolve TypeAssert TypeAssert2 PackageInitCheck
   PackageInitStart PackageInitFinish GlobalVarAddr StructFieldRef StructFieldGet StructFieldSet
   InternalSliceLen InternalSliceCap InternalDynamicArrayAlloc InternalMakeSlice IndexRef Index
@@ -361,6 +320,8 @@ instance : Coe String Expr := ⟨Var⟩
 instance : CoeFun Expr (fun _ => Expr → Expr) := ⟨App⟩
 
 abbrev Panic (s : String) : Expr := Primitive0 (.PanicOp s)
+/-- `Raise e`: a panic with the value of `e` (it steps to `PanicV v`). -/
+abbrev Raise (e : Expr) : Expr := Primitive1 .RaiseOp e
 abbrev ArbitraryInt : Expr := Primitive0 .ArbitraryIntOp
 /-- The last step of a forked thread (`ForkS` spawns `Seq e ThreadExit`): a no-op
 that decrements the thread count `GlobalState.threads`. -/
@@ -373,24 +334,6 @@ abbrev Load (e : Expr) : Expr := Primitive1 .LoadOp e
 abbrev FinishStore (e1 e2 : Expr) : Expr := Primitive2 .FinishStoreOp e1 e2
 abbrev AtomicSwap (e1 e2 : Expr) : Expr := Primitive2 .AtomicSwapOp e1 e2
 abbrev AtomicAdd (e1 e2 : Expr) : Expr := Primitive2 .AtomicAddOp e1 e2
-/-- `AllocN (n, a) v`: a fresh block of `n` cells, each holding `v`, at an offset aligned to
-`a` (`AllocNS`); for `n = 0`, any non-null location aligned to `a` (`AllocN0S`). -/
-abbrev AllocN (e1 e2 : Expr) : Expr := Primitive2 .AllocNOp e1 e2
-abbrev StartReadN (enc : Encoding) (e : Expr) : Expr := Primitive1 (.MemOp1Op .startRead enc) e
-abbrev FinishReadN (enc : Encoding) (e : Expr) : Expr := Primitive1 (.MemOp1Op .finishRead enc) e
-abbrev PrepareWriteN (enc : Encoding) (e : Expr) : Expr := Primitive1 (.MemOp1Op .prepareWrite enc) e
-/-- An atomic load of the encoded value at an aligned location. -/
-abbrev LoadN (enc : Encoding) (e : Expr) : Expr := Primitive1 (.MemOp1Op .load enc) e
-abbrev FinishStoreN (enc : Encoding) (e1 e2 : Expr) : Expr := Primitive2 (.MemOp2Op .finishStore enc) e1 e2
-/-- An atomic swap, returning the old value. -/
-abbrev SwapN (enc : Encoding) (e1 e2 : Expr) : Expr := Primitive2 (.MemOp2Op .swap enc) e1 e2
-/-- An atomic add, returning the new value. -/
-abbrev AddN (enc : Encoding) (e1 e2 : Expr) : Expr := Primitive2 (.MemOp2Op .add enc) e1 e2
-/-- `CmpXchgN enc l (old, new)`: an atomic compare-exchange, returning the old value and
-whether it wrote. -/
-abbrev CmpXchgN (enc : Encoding) (e1 e2 : Expr) : Expr := Primitive2 (.MemOp2Op .cmpxchg enc) e1 e2
-/-- `CheckBytes (l, n)`: `#()` if the `n` cells from `l` are bytes (`LitByte`), else stuck. -/
-abbrev CheckBytes (e : Expr) : Expr := Primitive1 .CheckBytesOp e
 
 abbrev Lam (x : Binder) (e : Expr) : Expr := Rec BAnon x e
 abbrev Let (x : Binder) (e1 e2 : Expr) : Expr := App (Lam x e2) e1
@@ -405,16 +348,6 @@ def Store : val :=
 def Read : val :=
   LamV "l" (Let "v" (StartRead (Var "l")) (Seq (FinishRead (Var "l")) (Var "v")))
 
-/-- The non-atomic store of an encoded value: all its cells become `Writing`, then are
-written. -/
-def StoreN (enc : Encoding) : val :=
-  LamV "l" (Lam "v" (Seq (PrepareWriteN enc (Var "l")) (FinishStoreN enc (Var "l") (Var "v"))))
-
-/-- The non-atomic load of an encoded value: a reader is counted on each of its cells
-while it is read. -/
-def ReadN (enc : Encoding) : val :=
-  LamV "l" (Let "v" (StartReadN enc (Var "l")) (Seq (FinishReadN enc (Var "l")) (Var "v")))
-
 end derived
 
 namespace func
@@ -428,6 +361,48 @@ def nil [FfiSyntax] : GoFunc := ⟨BAnon, BAnon, Val (LitV LitPoison)⟩
 instance [FfiSyntax] : Inhabited GoFunc := ⟨nil⟩
 abbrev mk [FfiSyntax] (f x : Binder) (e : Expr) : GoFunc := ⟨f, x, e⟩
 end func
+
+/-- `GoGlobalContext` contains the `intoVal` function. This allows for the Go
+semantics to state constraints on `intoVal` (e.g. injectivity for certain
+types). -/
+class GoGlobalContext [FfiSyntax] where
+  intoVal : {V : Type} → V → val
+  intoVal_inj_loc : Function.Injective (intoVal (V := Loc))
+  intoVal_inj_bool : Function.Injective (intoVal (V := Bool))
+  intoVal_inj_proph_id : Function.Injective (intoVal (V := proph_id))
+  intoVal_inj_w64 : Function.Injective (intoVal (V := w64))
+  intoVal_inj_w8 : Function.Injective (intoVal (V := w8))
+  /-- No Go value is a panic outcome. -/
+  intoVal_not_panic : ∀ {V : Type} (x : V), (intoVal x).isPanic = false
+
+export GoGlobalContext (intoVal)
+
+/-- `# x` is `intoVal x`. -/
+scoped prefix:max "#" => intoVal
+
+theorem isPanic_ite [FfiSyntax] {c : Prop} [Decidable c] {a b : val} (ha : a.isPanic = false)
+    (hb : b.isPanic = false) : (if c then a else b).isPanic = false := by
+  split <;> assumption
+
+@[simp] theorem isPanic_intoVal [FfiSyntax] [GoGlobalContext] {V : Type} (x : V) :
+    (#x : val).isPanic = false :=
+  GoGlobalContext.intoVal_not_panic x
+
+@[simp] theorem intoVal_ne_PanicV [FfiSyntax] [GoGlobalContext] {V : Type} (x : V) (p : val) :
+    (#x : val) ≠ PanicV p := by
+  intro h; have := isPanic_intoVal x; rw [h] at this; cases this
+
+/-- `GoLocalContext` contains several low-level Go functions for typed memory
+access, map updates, etc. -/
+class GoLocalContext [FfiSyntax] where
+  is_go_step_pure : GoInstruction → val → Expr → Prop
+
+export GoLocalContext (is_go_step_pure)
+
+namespace chan
+abbrev _root_.Perennial.GoChan := Loc
+def nil : GoChan := null
+end chan
 
 namespace interface
 
@@ -452,68 +427,6 @@ structure _root_.Perennial.GoArray (V : Type) (n : Int) where
   arr : List V
 abbrev mk {V : Type} (n : Int) (arr : List V) : GoArray V n := ⟨arr⟩
 end array
-
-/-- The byte of a cell. -/
-def byteOf? [FfiSyntax] : val → Option w8
-  | LitV (LitByte b) => some b
-  | _ => none
-
-/-- Whether a cell is a tail. -/
-def isTail [FfiSyntax] : val → Bool
-  | LitV (LitTail _ _) => true
-  | _ => false
-
-/-- Whether a value is a `bool`'s. -/
-def isBoolLit [FfiSyntax] : val → Bool
-  | LitV (LitBool _) => true
-  | _ => false
-
-/-- `v` can be the first cell of an `Encoding.cell` value: it is not a byte, a tail or a
-pad. The values of the types with a cell encoding are cell heads
-(`GoGlobalContext.intoVal_head_loc`, ...). -/
-def IsCellHead [FfiSyntax] (v : val) : Prop :=
-  byteOf? v = none ∧ isTail v = false ∧ v ≠ LitV LitPad
-
-noncomputable instance [FfiSyntax] (v : val) : Decidable (IsCellHead v) :=
-  inferInstanceAs (Decidable (_ ∧ _ ∧ _))
-
-/-- `GoGlobalContext` contains the `intoVal` function. This allows for the Go
-semantics to state constraints on `intoVal` (e.g. injectivity for certain
-types). -/
-class GoGlobalContext [FfiSyntax] where
-  intoVal : {V : Type} → V → val
-  intoVal_inj_loc : Function.Injective (intoVal (V := Loc))
-  intoVal_inj_bool : Function.Injective (intoVal (V := Bool))
-  intoVal_inj_proph_id : Function.Injective (intoVal (V := proph_id))
-  intoVal_inj_w64 : Function.Injective (intoVal (V := w64))
-  intoVal_inj_w8 : Function.Injective (intoVal (V := w8))
-  /-- The values of the types with a cell encoding (`Encoding.cell`) are not bytes, tails
-  or pads (`IsCellHead`). -/
-  intoVal_head_loc : ∀ l : Loc, IsCellHead (intoVal l)
-  intoVal_head_bool : ∀ b : Bool, IsCellHead (intoVal b)
-  intoVal_head_proph_id : ∀ p : proph_id, IsCellHead (intoVal p)
-  intoVal_head_string : ∀ x : byte_string, IsCellHead (intoVal x)
-  intoVal_head_slice : ∀ x : GoSlice, IsCellHead (intoVal x)
-  intoVal_head_func : ∀ x : GoFunc, IsCellHead (intoVal x)
-  intoVal_head_interface : ∀ x : GoInterface, IsCellHead (intoVal x)
-
-export GoGlobalContext (intoVal)
-
-/-- `# x` is `intoVal x`. -/
-scoped prefix:max "#" => intoVal
-
-/-- `GoLocalContext` contains several low-level Go functions for typed memory
-access, map updates, etc. -/
-class GoLocalContext [FfiSyntax] where
-  is_go_step_pure : GoInstruction → val → Expr → Prop
-
-export GoLocalContext (is_go_step_pure)
-
-namespace chan
-abbrev _root_.Perennial.GoChan := Loc
-def nil : GoChan := null
-end chan
-
 
 /-! ## State -/
 
@@ -622,43 +535,53 @@ def toVal : Expr → Option val
 theorem of_to_val {e : Expr} {v : val} : toVal e = some v → Val v = e := by
   cases e <;> simp [toVal]; exact Eq.symm
 
+/-- Evaluation frames. A frame whose already evaluated operand is a value holds a
+proof that the value is not a panic: once an operand has panicked, nothing else
+around it is evaluated (the panic unwinds the frame, `Unwinds`). -/
 inductive EctxItem where
-  | AppLCtx (v2 : val)
+  | AppLCtx (v2 : val) (h2 : v2.isPanic = false)
   | AppRCtx (e1 : Expr)
   | IfCtx (e1 e2 : Expr)
   | PairLCtx (e2 : Expr)
-  | PairRCtx (v1 : val)
+  | PairRCtx (v1 : val) (h1 : v1.isPanic = false)
   | FstCtx
   | SndCtx
   | Primitive1Ctx (op : PrimOp1)
   | Primitive2LCtx (op : PrimOp2) (e2 : Expr)
-  | Primitive2RCtx (op : PrimOp2) (v1 : val)
+  | Primitive2RCtx (op : PrimOp2) (v1 : val) (h1 : v1.isPanic = false)
   | ExternalOpCtx (op : ffi_opcode)
   | CmpXchgLCtx (e1 e2 : Expr)
-  | CmpXchgMCtx (v1 : val) (e2 : Expr)
-  | CmpXchgRCtx (v1 v2 : val)
-  | ResolveProphLCtx (v2 : val)
+  | CmpXchgMCtx (v1 : val) (e2 : Expr) (h1 : v1.isPanic = false)
+  | CmpXchgRCtx (v1 v2 : val) (h1 : v1.isPanic = false) (h2 : v2.isPanic = false)
+  | ResolveProphLCtx (v2 : val) (h2 : v2.isPanic = false)
   | ResolveProphRCtx (e1 : Expr)
+  | CatchCtx (h k : Expr)
 
 open EctxItem in
 def fillItem (Ki : EctxItem) (e : Expr) : Expr :=
   match Ki with
-  | AppLCtx v2 => App e (Val v2)
+  | AppLCtx v2 _ => App e (Val v2)
   | AppRCtx e1 => App e1 e
   | IfCtx e1 e2 => If e e1 e2
   | PairLCtx e2 => Pair e e2
-  | PairRCtx v1 => Pair (Val v1) e
+  | PairRCtx v1 _ => Pair (Val v1) e
   | FstCtx => Fst e
   | SndCtx => Snd e
   | Primitive1Ctx op => Primitive1 op e
   | Primitive2LCtx op e2 => Primitive2 op e e2
-  | Primitive2RCtx op v1 => Primitive2 op (Val v1) e
+  | Primitive2RCtx op v1 _ => Primitive2 op (Val v1) e
   | ExternalOpCtx op => ExternalOp op e
   | CmpXchgLCtx e1 e2 => CmpXchg e e1 e2
-  | CmpXchgMCtx v0 e2 => CmpXchg (Val v0) e e2
-  | CmpXchgRCtx v0 v1 => CmpXchg (Val v0) (Val v1) e
-  | ResolveProphLCtx v2 => ResolveProph e (Val v2)
+  | CmpXchgMCtx v0 e2 _ => CmpXchg (Val v0) e e2
+  | CmpXchgRCtx v0 v1 _ _ => CmpXchg (Val v0) (Val v1) e
+  | ResolveProphLCtx v2 _ => ResolveProph e (Val v2)
   | ResolveProphRCtx e1 => ResolveProph e1 e
+  | CatchCtx h k => Catch e h k
+
+/-- The frames a panic unwinds: all but `Catch`'s. -/
+def EctxItem.unwinds : EctxItem → Bool
+  | .CatchCtx .. => false
+  | _ => true
 
 mutual
 def subst (x : String) (v : val) : Expr → Expr
@@ -680,6 +603,7 @@ def subst (x : String) (v : val) : Expr → Expr
   | ResolveProph e1 e2 => ResolveProph (subst x v e1) (subst x v e2)
   | LiteralValue l => LiteralValue (substKeyedElements x v l)
   | SelectStmtClauses d l => SelectStmtClauses (substOpt x v d) (substCommClauses x v l)
+  | Catch e h k => Catch (subst x v e) (subst x v h) (subst x v k)
 
 def substOpt (x : String) (v : val) : Option Expr → Option Expr
   | none => none
@@ -726,173 +650,11 @@ variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalCont
 def stateInitHeap (l : Loc) (v : val) (σ : state) : state :=
   { σ with heap := {[l := Free v]} ∪ σ.heap }
 
-/-- The heap containing `vs` at `l, l +ₗ 1, ...`. -/
-def heapArray {V : Type} (l : Loc) : List V → GMap Loc V
-  | [] => ∅
-  | v :: vs => <[l := v]> (heapArray (l +ₗ 1) vs)
-
-/-- The `n` little-endian bytes of `z` (mod `2^(8n)`). -/
-def leBytes : Nat → Int → List w8
-  | 0, _ => []
-  | n + 1, z => BitVec.ofInt 8 z :: leBytes n (z / 256)
-
-/-- The value of little-endian bytes. -/
-def leInt (bs : List w8) : Int :=
-  bs.foldr (fun b acc => (b.toNat : Int) + 256 * acc) 0
-
-theorem leBytes_length (n : Nat) (z : Int) : (leBytes n z).length = n := by
-  induction n generalizing z with
-  | zero => rfl
-  | succ n ih => simp [leBytes, ih]
-
-theorem emod_256_mul (z m : Int) :
-    z % (256 * m) = z % 256 + 256 * ((z / 256) % m) := by
-  have e1 := Int.emod_def z (256 * m)
-  have e2 := Int.emod_def z 256
-  have e3 := Int.emod_def (z / 256) m
-  rw [← Int.ediv_ediv_of_nonneg (by decide : (0 : Int) ≤ 256)] at e1
-  rw [e1, e2, e3]
-  generalize z / 256 = q
-  generalize q / m = r
-  rw [Int.mul_assoc]
-  generalize m * r = t
-  omega
-
-theorem ofInt8_emod_256_mul (z m : Int) :
-    BitVec.ofInt 8 (z % (256 * m)) = BitVec.ofInt 8 z := by
-  apply BitVec.eq_of_toNat_eq
-  simp only [BitVec.toNat_ofInt]
-  congr 1
-  rw [emod_256_mul]
-  have h0 := Int.emod_nonneg z (by decide : (256 : Int) ≠ 0)
-  have h1 := Int.emod_lt_of_pos z (by decide : (0 : Int) < 256)
-  show (z % 256 + 256 * (z / 256 % m)) % (2 ^ 8 : Nat) = z % (2 ^ 8 : Nat)
-  rw [show ((2 ^ 8 : Nat) : Int) = 256 by decide, Int.add_mul_emod_self_left, Int.emod_emod_of_dvd _ (by decide)]
-
-/-- The bytes of `z` depend only on `z` modulo `2^(8n)`. -/
-theorem leBytes_emod (n : Nat) (z : Int) : leBytes n (z % 2 ^ (8 * n)) = leBytes n z := by
-  induction n generalizing z with
-  | zero => rfl
-  | succ n ih =>
-    rw [show 8 * (n + 1) = 8 + 8 * n by omega, Int.pow_add, show (2 : Int) ^ 8 = 256 by decide]
-    simp only [leBytes, ofInt8_emod_256_mul]
-    congr 1
-    rw [emod_256_mul]
-    have h0 := Int.emod_nonneg z (by decide : (256 : Int) ≠ 0)
-    have h1 := Int.emod_lt_of_pos z (by decide : (0 : Int) < 256)
-    rw [show (z % 256 + 256 * (z / 256 % 2 ^ (8 * n))) / 256 = z / 256 % 2 ^ (8 * n) by
-      rw [Int.add_mul_ediv_left _ _ (by decide)]
-      rw [Int.ediv_eq_zero_of_lt h0 h1, Int.zero_add]]
-    exact ih (z / 256)
-
-/-- Decoding the bytes of `z` gives `z` modulo `2^(8n)`. -/
-theorem leInt_leBytes (n : Nat) (z : Int) : leInt (leBytes n z) = z % 2 ^ (8 * n) := by
-  induction n generalizing z with
-  | zero => simp [leBytes, leInt, Int.emod_one]
-  | succ n ih =>
-    have ih' := ih (z / 256)
-    simp only [leBytes, leInt, List.foldr_cons] at *
-    rw [ih']
-    have h8 : ((BitVec.ofInt 8 z).toNat : Int) = z % 256 := by
-      rw [BitVec.toNat_ofInt]
-      have := Int.emod_nonneg z (by decide : (256 : Int) ≠ 0)
-      simp only [Int.toNat_of_nonneg (by omega : 0 ≤ z % (2 ^ 8 : Nat))]
-      rfl
-    rw [h8, show 8 * (n + 1) = 8 + 8 * n by omega, Int.pow_add,
-      show (2 : Int) ^ 8 = 256 by decide, emod_256_mul]
-
-/-- A word of `n` bytes as a value: a `w8`, `w16`, `w32` or `w64`. -/
-def wordLit (n : Nat) (z : Int) : val :=
-  match n with
-  | 1 => LitV (LitByte (BitVec.ofInt 8 z))
-  | 2 => LitV (LitInt16 (BitVec.ofInt 16 z))
-  | 4 => LitV (LitInt32 (BitVec.ofInt 32 z))
-  | _ => LitV (LitInt (BitVec.ofInt 64 z))
-
-/-- The (unsigned) value of a word value of `n` bytes. -/
-def wordLitZ? (n : Nat) (v : val) : Option Int :=
-  match n, v with
-  | 1, LitV (LitByte x) => some x.toNat
-  | 2, LitV (LitInt16 x) => some x.toNat
-  | 4, LitV (LitInt32 x) => some x.toNat
-  | 8, LitV (LitInt x) => some x.toNat
-  | _, _ => none
-
-/-- The tails of a value of `k` cells. -/
-def tails (k : Nat) : List val := (List.range (k - 1)).map fun i => LitV (LitTail k (i + 1))
-
-/-- `v` can be the first cell of a `cell k` value: a cell head, and a `bool` if `k = 1` (the
-only type of one cell that is not a byte). -/
-def CellHeadOf [FfiSyntax] (k : Nat) (v : val) : Prop :=
-  1 ≤ k ∧ IsCellHead v ∧ (k = 1 → isBoolLit v = true)
-
-noncomputable instance [FfiSyntax] (k : Nat) (v : val) : Decidable (CellHeadOf k v) :=
-  inferInstanceAs (Decidable (_ ∧ _ ∧ _))
-
-/-- The cells of `v` under encoding `enc`, if `v` has that encoding. -/
-noncomputable def encode : Encoding → val → Option (List val)
-  | .word n, v => (wordLitZ? n v).map fun z => (leBytes n z).map fun b => LitV (LitByte b)
-  | .cell k, v => if CellHeadOf k v then some (v :: tails k) else none
-
-/-- The value that the cells `cs` hold under encoding `enc`, if they hold one: for a word,
-`n` bytes; for a `cell k` value, a head (`CellHeadOf`) followed by its `k - 1` tails.
-Anything else (bytes read as a pointer, part of a longer value, a pad) is no value: the
-load is stuck. -/
-noncomputable def decode : Encoding → List val → Option val
-  | .word n, cs =>
-    if n = 1 ∨ n = 2 ∨ n = 4 ∨ n = 8 then
-      (cs.mapM byteOf?).bind fun bs => if bs.length = n then some (wordLit n (leInt bs)) else none
-    else none
-  | .cell k, [] => none
-  | .cell k, v :: ts => if CellHeadOf k v ∧ ts = tails k then some v else none
-
-/-- A non-atomic store under encoding `enc` may overwrite the cells holding `vs`: a word
-only bytes and pads; a cell value only pads (a fresh allocation's) or one whole value of
-the same encoding. So a store through memory reinterpreted by `unsafe` cannot put bytes
-into a value's cells (a pointer's, which Go's garbage collector reads as a pointer), nor
-a value into bytes, padding or part of another value (which the collector would not
-trace as a pointer). -/
-def WriteCompat : Encoding → List val → Prop
-  | .word _, vs => ∀ v ∈ vs, (∃ b, v = LitV (LitByte b)) ∨ v = LitV LitPad
-  | .cell k, vs => (∀ v ∈ vs, v = LitV LitPad) ∨ (decode (.cell k) vs).isSome
-
-/-- The cells `l, l +ₗ 1, …` of the heap `h` are `cs`. -/
-def CellsAt (h : GMap Loc (NonAtomic val)) (l : Loc) (cs : List (NonAtomic val)) : Prop :=
-  ∀ i (hi : i < cs.length), h !! (l +ₗ (i : Int)) = some (cs[i]'hi)
-
-/-- The heap with the cells `l, l +ₗ 1, …` set to `cs`. -/
-def setCells (l : Loc) (cs : List (NonAtomic val)) (σg : CfgState) : CfgState :=
-  ({ σg.1 with heap := heapArray l cs ∪ σg.1.heap }, σg.2)
-
-/-- The read-lock function for `NaMode`. -/
-def naModeRl : NaMode → NaMode
-  | Reading n => Reading (n + 1)
-  | m => m
-
-/-- The read-unlock function for `NaMode`. -/
-def naModeUrl : NaMode → NaMode
-  | Reading (n + 1) => Reading n
-  | m => m
-
-
 def IsWriting {A} (mna : Option (NonAtomic A)) : Prop := ∃ x, mna = some (Writing, x)
 
 /-- `l` is the start of a fresh block in `σg`. -/
 def IsFresh (σg : CfgState) (l : Loc) : Prop :=
   (∀ i : Int, l +ₗ i ≠ null ∧ σg.1.heap !! (l +ₗ i) = none) ∧ l.addrOffset = 0
-
-/-- `l` is in a fresh block of `σg`, at an offset in `[0, 8)` that is a multiple of `a`.
-By convention, offset `0` of every block is 8-aligned (8 is the largest alignment of a
-gc/amd64 type), so the offset of a location is its address modulo 8: an object at an
-address `A` aligned to `a` is the block based at `A - A % 8`, at offset `A % 8`. Go
-promises a variable only its type's alignment, so the offset is any one with that
-alignment. -/
-def IsFreshAligned (σg : CfgState) (l : Loc) (a : Nat) : Prop :=
-  (∀ i : Int, l +ₗ i ≠ null ∧ σg.1.heap !! (l +ₗ i) = none) ∧
-    0 ≤ l.locOff ∧ l.locOff < 8 ∧ (a : Int) ∣ l.locOff
-
-/-- `l` is aligned for an atomic operation on a value with encoding `enc`. -/
-def Aligned (enc : Encoding) (l : Loc) : Prop := (enc.align : Int) ∣ l.locOff
 
 def atomicAddEval (v1 v2 : val) : Option val :=
   match v1, v2 with
@@ -930,78 +692,6 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
   | AllocS v l σg :
       IsFresh σg l →
       BaseStep (Alloc (Val v)) σg [] (Val #l) (stateInitHeap l v σg.1, σg.2) []
-  /-- A fresh block of `n ≠ 0` cells holding `v`, at an offset aligned to `a`. -/
-  | AllocNS (n a : w64) v l σg :
-      uint.nat n ≠ 0 → IsFreshAligned σg l (uint.nat a) →
-      BaseStep (AllocN (Val (PairV (LitV (LitInt n)) (LitV (LitInt a)))) (Val v)) σg [] (Val #l)
-        (setCells l ((List.replicate (uint.nat n) v).map Free) σg) []
-  /-- A zero-size allocation: any non-null location aligned to `a`, fresh or not (gc gives
-  every zero-size heap object the address `runtime.zerobase`, and the spec lets pointers to
-  distinct zero-size variables be equal). It owns no cell, so nothing is loaded or stored
-  through it, and `unsafe.Add` from it to a non-zero offset is stuck unless the result
-  happens to be a cell. -/
-  | AllocN0S (n a : w64) v (l : Loc) σg :
-      uint.nat n = 0 → l.locCar ≠ 0 → (uint.nat a : Int) ∣ l.locOff →
-      BaseStep (AllocN (Val (PairV (LitV (LitInt n)) (LitV (LitInt a)))) (Val v)) σg []
-        (Val #l) σg []
-  /-- non-atomic load of an encoded value, part 1: a reader on each of its cells -/
-  | StartReadNS enc l cs v σg :
-      cs.length = enc.size → CellsAt σg.1.heap l cs →
-      (∀ c ∈ cs, ∃ n, c.1 = Reading n) →
-      decode enc (cs.map Prod.snd) = some v →
-      BaseStep (StartReadN enc (Val #l)) σg [] (Val v)
-        (setCells l (cs.map fun c => (naModeRl c.1, c.2)) σg) []
-  /-- non-atomic load of an encoded value, part 2 -/
-  | FinishReadNS enc l cs σg :
-      cs.length = enc.size → CellsAt σg.1.heap l cs →
-      (∀ c ∈ cs, ∃ n, c.1 = Reading (n + 1)) →
-      BaseStep (FinishReadN enc (Val #l)) σg [] (Val #())
-        (setCells l (cs.map fun c => (naModeUrl c.1, c.2)) σg) []
-  /-- non-atomic store of an encoded value, part 1: each of its cells `Writing` -/
-  | PrepareWriteNS enc l cs σg :
-      cs.length = enc.size → CellsAt σg.1.heap l cs →
-      (∀ c ∈ cs, c.1 = Reading 0) → WriteCompat enc (cs.map Prod.snd) →
-      BaseStep (PrepareWriteN enc (Val #l)) σg [] (Val #())
-        (setCells l (cs.map fun c => (Writing, c.2)) σg) []
-  /-- non-atomic store of an encoded value, part 2 -/
-  | FinishStoreNS enc l v cs vs σg :
-      cs.length = enc.size → CellsAt σg.1.heap l cs →
-      (∀ c ∈ cs, c.1 = Writing) →
-      encode enc v = some vs →
-      BaseStep (FinishStoreN enc (Val #l) (Val v)) σg [] (Val #()) (setCells l (vs.map Free) σg) []
-  /-- atomic load of an encoded value at an aligned location -/
-  | LoadNS enc l cs v σg :
-      Aligned enc l → cs.length = enc.size → CellsAt σg.1.heap l cs →
-      (∀ c ∈ cs, ∃ n, c.1 = Reading n) →
-      decode enc (cs.map Prod.snd) = some v →
-      BaseStep (LoadN enc (Val #l)) σg [] (Val v) σg []
-  | SwapNS enc l cs v0 v vs σg :
-      Aligned enc l → cs.length = enc.size → CellsAt σg.1.heap l cs →
-      (∀ c ∈ cs, c.1 = Reading 0) →
-      decode enc (cs.map Prod.snd) = some v0 → encode enc v = some vs →
-      BaseStep (SwapN enc (Val #l) (Val v)) σg [] (Val v0) (setCells l (vs.map Free) σg) []
-  | AddNS n l cs v0 v v' vs σg :
-      Aligned (.word n) l → cs.length = n → CellsAt σg.1.heap l cs →
-      (∀ c ∈ cs, c.1 = Reading 0) →
-      decode (.word n) (cs.map Prod.snd) = some v0 → atomicAddEval v0 v = some v' →
-      encode (.word n) v' = some vs →
-      BaseStep (AddN (.word n) (Val #l) (Val v)) σg [] (Val v') (setCells l (vs.map Free) σg) []
-  | CmpXchgNFailS enc l cs vl v1 v2 σg :
-      Aligned enc l → cs.length = enc.size → CellsAt σg.1.heap l cs →
-      (∀ c ∈ cs, ∃ n, c.1 = Reading n) →
-      decode enc (cs.map Prod.snd) = some vl → vl ≠ v1 →
-      BaseStep (CmpXchgN enc (Val #l) (Val (PairV v1 v2))) σg [] (Val (PairV vl #false)) σg []
-  | CmpXchgNSucS enc l cs vl v1 v2 vs σg :
-      Aligned enc l → cs.length = enc.size → CellsAt σg.1.heap l cs →
-      (∀ c ∈ cs, c.1 = Reading 0) →
-      decode enc (cs.map Prod.snd) = some vl → vl = v1 → encode enc v2 = some vs →
-      BaseStep (CmpXchgN enc (Val #l) (Val (PairV v1 v2))) σg [] (Val (PairV vl #true))
-        (setCells l (vs.map Free) σg) []
-  /-- `CheckBytes (l, n)` (for package `unsafe`): the `n` cells from `l` are bytes. -/
-  | CheckBytesS (l : Loc) (n : w64) cs σg :
-      cs.length = uint.nat n → CellsAt σg.1.heap l cs →
-      (∀ c ∈ cs, ∃ b, c.2 = LitV (LitByte b)) →
-      BaseStep (CheckBytes (Val (PairV #l (LitV (LitInt n))))) σg [] (Val #()) σg []
   /-- non-atomic load part 1 (used for map accesses) -/
   | StartReadS l n v σg :
       σg.1.heap !! l = some (Reading n, v) →
@@ -1054,6 +744,13 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
   | LiteralValueS l σg : BaseStep (LiteralValue l) σg [] (Val (LiteralValueV l)) σg []
   | SelectStmtClausesS d cs σg :
       BaseStep (SelectStmtClauses d cs) σg [] (Val (SelectStmtClausesV d cs)) σg []
+  /-- `Raise v` starts a panic with value `v`. -/
+  | RaiseS v σg : BaseStep (Raise (Val v)) σg [] (Val (PanicV v)) σg []
+  /-- A panic reaching a `Catch` continues with the handler. -/
+  | CatchPanicS p h k σg : BaseStep (Catch (Val (PanicV p)) h k) σg [] (App h (Val p)) σg []
+  /-- A value reaching a `Catch` continues with the normal continuation. -/
+  | CatchValS v h k σg :
+      v.isPanic = false → BaseStep (Catch (Val v) h k) σg [] (App k (Val v)) σg []
 
 theorem val_base_stuck {e σ κ e' σ' efs} : BaseStep e σ κ e' σ' efs → toVal e = none := by
   intro h; cases h <;> rfl
@@ -1071,7 +768,7 @@ theorem fillItem_no_val_inj (Ki1 Ki2 : EctxItem) {e1 e2 : Expr} :
   cases Ki1 <;> cases Ki2 <;> simp only [fillItem, reduceCtorEq] at h <;>
     (try simp only [Expr.App.injEq, Expr.Pair.injEq,
     Expr.If.injEq, Expr.Fst.injEq, Expr.Snd.injEq, Expr.Primitive1.injEq, Expr.Primitive2.injEq,
-    Expr.ExternalOp.injEq, Expr.CmpXchg.injEq, Expr.ResolveProph.injEq] at h) <;>
+    Expr.ExternalOp.injEq, Expr.CmpXchg.injEq, Expr.ResolveProph.injEq, Expr.Catch.injEq] at h) <;>
     (try subst_eqs) <;> (first | (obtain ⟨_, _, _⟩ := h) | (obtain ⟨_, _⟩ := h) | skip) <;>
     subst_vars <;> simp_all [toVal]
 
@@ -1079,6 +776,56 @@ theorem base_ctx_step_val (Ki : EctxItem) {e σ κ e2 σ2 efs} :
     BaseStep (fillItem Ki e) σ κ e2 σ2 efs → (toVal e).isSome := by
   intro h
   cases Ki <;> simp only [fillItem] at h <;> cases h <;> simp [toVal]
+
+/-! ### Panics
+
+A panic `PanicV p` in the hole of any frame but `Catch`'s *unwinds* it: the frame
+steps to `PanicV p` (`HeadStep.unwind`). This is a head step whose hole holds a
+value, as the evaluation-context language requires. A redex that unwinds takes no
+other step (`HeadStep.base` excludes it), and a frame whose evaluated operand is
+a panic is not an evaluation frame (`EctxItem`), so the unwinding is the only step
+of an expression in which a panic sits in an evaluation position. -/
+
+/-- `e` is a frame other than `Catch`'s around the panic `PanicV p`. -/
+def Unwinds (e : Expr) (p : val) : Prop :=
+  ∃ Ki : EctxItem, Ki.unwinds = true ∧ e = fillItem Ki (Val (PanicV p))
+
+/-- The head step relation of GooseLang (the trusted semantics): unwinding, or a
+base step of a redex that does not unwind. -/
+inductive HeadStep : Expr → CfgState → List Observation → Expr → CfgState → List Expr → Prop
+  | unwind {e p σg} : Unwinds e p → HeadStep e σg [] (Val (PanicV p)) σg []
+  | base {e σg κ e' σg' efs} :
+      (∀ p, ¬ Unwinds e p) → BaseStep e σg κ e' σg' efs → HeadStep e σg κ e' σg' efs
+
+theorem toVal_fillItem (Ki : EctxItem) (e : Expr) : toVal (fillItem Ki e) = none := by
+  cases Ki <;> rfl
+
+theorem val_head_stuck {e σ κ e' σ' efs} : HeadStep e σ κ e' σ' efs → toVal e = none := by
+  intro h
+  cases h with
+  | unwind hu => obtain ⟨Ki, _, rfl⟩ := hu; exact toVal_fillItem _ _
+  | base _ hb => exact val_base_stuck hb
+
+/-- Two decompositions of the same expression, one with a panic in the hole: the
+other hole holds a value too (a frame holding a panic is not a frame). -/
+theorem fillItem_panic_val {Ki Ki' : EctxItem} {e : Expr} {p : val}
+    (h : fillItem Ki e = fillItem Ki' (Val (PanicV p))) : (toVal e).isSome := by
+  cases Ki <;> cases Ki' <;> simp only [fillItem, reduceCtorEq, Expr.App.injEq, Expr.Pair.injEq,
+    Expr.If.injEq, Expr.Fst.injEq, Expr.Snd.injEq, Expr.Primitive1.injEq, Expr.Primitive2.injEq,
+    Expr.ExternalOp.injEq, Expr.CmpXchg.injEq, Expr.ResolveProph.injEq, Expr.Catch.injEq,
+    Expr.Val.injEq] at h <;> simp_all [toVal, val.isPanic]
+
+/-- Proves `∀ p, ¬ Unwinds e p` for an expression `e` none of whose evaluated
+operands is a panic (with the hypotheses in context). -/
+macro "not_unwinds" : tactic =>
+  `(tactic| (intro p ⟨Ki, _, h⟩; cases Ki <;> simp_all [fillItem, val.isPanic, EctxItem.unwinds]))
+
+theorem head_ctx_step_val (Ki : EctxItem) {e σ κ e2 σ2 efs} :
+    HeadStep (fillItem Ki e) σ κ e2 σ2 efs → (toVal e).isSome := by
+  intro h
+  cases h with
+  | unwind hu => obtain ⟨Ki', _, h⟩ := hu; exact fillItem_panic_val h
+  | base _ hb => exact base_ctx_step_val Ki hb
 
 end step
 
@@ -1101,13 +848,13 @@ model). Not an instance: the program logic uses the bounded layer
   ofVal := Val
   coe_of_toVal_eq_some := of_to_val
   toVal_coe _ := rfl
-  baseStep := fun (e, σ) κ (e', σ', efs) => BaseStep e σ κ e' σ' efs
+  baseStep := fun (e, σ) κ (e', σ', efs) => HeadStep e σ κ e' σ' efs
   fillItem := fillItem
   fillItem_inj {Ki} := fillItem_inj Ki
   fillItem_val e Ki := fillItem_val Ki e
   fillItem_no_val_inj Ki1 Ki2 := fillItem_no_val_inj Ki1 Ki2
-  val_stuck := val_base_stuck
-  base_ctx_step_val {Ki} _ _ _ _ _ _ := base_ctx_step_val Ki
+  val_stuck := val_head_stuck
+  base_ctx_step_val {Ki} _ _ _ _ _ _ := head_ctx_step_val Ki
 
 end language
 

@@ -233,8 +233,9 @@ noncomputable def Channel.TrySend.impl [FfiSyntax] [GoGlobalContext] (T : go.GoT
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))) (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore offerState.ty))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))) (Var "$r0"))))))
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"Invalid state transition with open receive offer")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))))))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))) (Val #()))))))
   (App (Val doExecute)
@@ -324,7 +325,7 @@ noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.
   (Let "val_copy" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))
-  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (Var "$s")))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -350,7 +351,7 @@ noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.
   (Let "val_copy" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))
-  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (Var "$s")))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (Val #(W64 1))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"buffer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -414,8 +415,9 @@ noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "local_val") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore offerState.ty))) (Pair (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"state"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))) (Var "$r0"))))))
+  (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"not supposed to be here!")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0")))))))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef (Channel.ty T) go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Channel.ty T))))) (Var "c"))))) (Val #()))))))
   (App (Val doExecute)
@@ -1327,7 +1329,6 @@ instance equals_unfold_Channel [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
 class Channel.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Channel.underlying T) (Channel T')
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Channel.ty T) (Channel.underlying T)
-  layout : ∀ (T' : Type), go.StructLayout (Channel T') [(go!"cap", typeSize w64, typeAlign w64), (go!"mu", typeSize Loc, typeAlign Loc), (go!"state", typeSize offerState, typeAlign offerState), (go!"buffer", typeSize GoSlice, typeAlign GoSlice), (go!"v", typeSize T', typeAlign T')]
   get_cap : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"cap") #x (Val #(x.cap'))
   set_cap : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"cap") (PairV #x #y) (Val #(({ x with cap' := y } : (Channel T'))))
   get_mu : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"mu") #x (Val #(x.mu'))
@@ -1351,7 +1352,6 @@ class Channel.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 
 attribute [instance] Channel.TypeAssumptions.type_repr
   Channel.TypeAssumptions.underlying
-  Channel.TypeAssumptions.layout
   Channel.TypeAssumptions.get_cap
   Channel.TypeAssumptions.set_cap
   Channel.TypeAssumptions.get_mu

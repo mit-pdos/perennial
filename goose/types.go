@@ -2,7 +2,6 @@ package goose
 
 import (
 	"fmt"
-	"github.com/mit-pdos/perennial/goose/util"
 	"go/ast"
 	"go/types"
 	"math/big"
@@ -160,20 +159,6 @@ func (ctx *Ctx) structType(t *types.Struct) glang.StructType {
 	for i := range t.NumFields() {
 		fieldType := t.Field(i).Type()
 		fieldName := fieldName(i, t.Field(i).Name())
-		// the semantics lays out structs as gc does (go.StructLayout), which a ProphId
-		// (0 bytes in gc, a cell value in the model) would break
-		if isProphId(fieldType) {
-			ctx.unsupported(t.Field(i), "a ProphId in a struct")
-		}
-		// Go ignores a blank field's bytes in == and as part of a map key, the model's
-		// values would not (and unsafe could write them): only zero-size ones
-		if t.Field(i).Name() == "_" && util.NonZeroSize(fieldType) {
-			ctx.unsupported(t.Field(i), "a blank field of non-zero size")
-		}
-		// the semantics recognizes blank fields by goose's names for them
-		if isBlankRename(t.Field(i).Name()) {
-			ctx.unsupported(t.Field(i), "a field named like a blank field (%s)", t.Field(i).Name())
-		}
 
 		ty.Fields = append(ty.Fields, glang.FieldDecl{
 			Name:     fieldName,
@@ -256,21 +241,6 @@ func (ctx *Ctx) interfaceType(n locatable, t *types.Interface) glang.Expr {
 	return glang.NewCallExpr(glang.TermIdent("go.InterfaceType"), elems)
 }
 
-func isProphId(t types.Type) bool { return util.IsProphId(t) }
-
-// isBlankRename reports whether s is a name goose gives a blank field (_0, _1, ...).
-func isBlankRename(s string) bool {
-	if len(s) < 2 || s[0] != '_' {
-		return false
-	}
-	for _, c := range s[1:] {
-		if c < '0' || c > '9' {
-			return false
-		}
-	}
-	return true
-}
-
 func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 	switch t := t.(type) {
 	case *types.Struct:
@@ -280,10 +250,6 @@ func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 	case *types.Basic:
 		return ctx.basicType(t)
 	case *types.Pointer:
-		// gc gives every zero-size ProphId the address zerobase; the model's are distinct
-		if isProphId(t.Elem()) {
-			ctx.unsupported(n, "a pointer to a ProphId")
-		}
 		return glang.NewCallExpr(glang.VerbatimExpr("go.PointerType"), ctx.glangType(n, t.Elem()))
 	case *types.Named:
 		if t.Obj().Pkg() == nil {
@@ -335,9 +301,6 @@ func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 			glang.TermIdent(chanDir), ctx.glangType(n, t.Elem()),
 		)
 	case *types.Array:
-		if isProphId(t.Elem()) {
-			ctx.unsupported(n, "an array of ProphId")
-		}
 		return glang.NewCallExpr(glang.VerbatimExpr("go.ArrayType"),
 			glang.ZLiteral{Value: big.NewInt(t.Len())}, ctx.glangType(n, t.Elem()))
 	case *types.Signature:
@@ -375,11 +338,6 @@ func chanElem(t types.Type) types.Type {
 func (ctx *Ctx) convertTypeArgsToGlang(l locatable, typeList *types.TypeList) (glangTypeArgs []glang.Expr) {
 	glangTypeArgs = make([]glang.Expr, typeList.Len())
 	for i := range glangTypeArgs {
-		// a ProphId substituted for a type parameter would reach the struct fields,
-		// arrays and pointers goose refuses it in
-		if util.MentionsProphId(typeList.At(i)) {
-			ctx.unsupported(l, "a ProphId in a type argument")
-		}
 		glangTypeArgs[i] = ctx.glangType(l, typeList.At(i))
 	}
 	return

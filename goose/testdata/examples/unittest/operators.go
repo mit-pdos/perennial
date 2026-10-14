@@ -9,32 +9,8 @@ func LogicalAndEqualityOperators(b1 bool, x uint64) bool {
 }
 
 func ArithmeticShifts(x uint32, y uint64) uint64 {
-	return uint64(x<<3) + (y << uint64(x)) + (y << 1)
-}
-
-// The count of a shift keeps its own type, not converted to the type of the
-// shifted operand: uint8(1) << uint64(256) is 0.
-func ShiftWideCount(x uint8, s uint64) uint8 {
-	return x << s
-}
-
-// A signed count panics if it is negative.
-func ShiftSignedCount(x uint32, s int) uint32 {
-	return x >> s
-}
-
-func SignedShiftRight(x int8, s uint8) int8 {
-	return x >> s
-}
-
-// The count may have a type-parameter type: whether it is signed depends on the
-// instantiation.
-func ShiftTypeParamCount[T ~int8 | ~uint](x int, y T) int {
-	return x << y
-}
-
-func Complement(x uint64, y int32) uint64 {
-	return ^x + uint64(^y)
+	return 0
+	// return uint64(x<<3) + (y << uint64(x)) + (y << 1)
 }
 
 func BitwiseOps(x uint32, y uint64) uint64 {

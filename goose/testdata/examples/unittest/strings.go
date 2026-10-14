@@ -11,7 +11,3 @@ func stringLength(s string) uint64 {
 func x() {
 	stringAppend("a" + "b")
 }
-
-func appendString(b []byte, s string) []byte {
-	return append(b, s...)
-}

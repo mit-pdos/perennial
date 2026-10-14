@@ -882,7 +882,7 @@ noncomputable def Time.sec.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))))
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (Val wallToInternal) (App (Val (GoInstruction (Convert go.uint64 go.int64))) (App (Val (GoInstruction (GoShift GoShiftr go.uint64 go.untypedInt))) (Pair (App (Val (GoInstruction (GoShift GoShiftl go.uint64 go.untypedInt))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (Val #(1 : Int)))) (Val #(31 : Int))))))))
+  (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (Val wallToInternal) (App (Val (GoInstruction (Convert go.uint64 go.int64))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(31 : Int)))))))))
   (App (Val doExecute)
   (Val #()))))))))
 
@@ -927,7 +927,7 @@ noncomputable def Time.addSec.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "sum") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))))
-  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int64))) (App (Val (GoInstruction (GoShift GoShiftr go.uint64 go.untypedInt))) (Pair (App (Val (GoInstruction (GoShift GoShiftl go.uint64 go.untypedInt))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (Val #(1 : Int)))) (Val #(31 : Int)))))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int64))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(31 : Int))))))
   (Let "sec" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "sec")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "d"))))
@@ -937,7 +937,7 @@ noncomputable def Time.addSec.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"stripMono"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t"))) (Val #())))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLe go.int64))) (Pair (Val #(W64 0)) (App (Val (GoInstruction (GoLoad go.int64))) (Var "dsec")))) (App (Val (GoInstruction (GoOp GoLe go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "dsec")) (Val #(W64 8589934591)))) (Val #false)))
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val nsecMask)))) (App (Val (GoInstruction (GoShift GoShiftl go.uint64 go.untypedInt))) (Pair (App (Val (GoInstruction (Convert go.int64 go.uint64))) (App (Val (GoInstruction (GoLoad go.int64))) (Var "dsec"))) (Val nsecShift))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val nsecMask)))) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int64 go.uint64))) (App (Val (GoInstruction (GoLoad go.int64))) (Var "dsec"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val nsecShift)))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -967,8 +967,7 @@ noncomputable def Time.stripMono.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"sec"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t"))) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$opa" (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$opa") (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$opa")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val nsecMask))))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t"))) (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val nsecMask)))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t"))) (Var "$r0"))))))
   (App (Val doExecute)
@@ -1101,23 +1100,17 @@ noncomputable def Time.Sub.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "d" (App (Val (GoInstruction (GoAlloc Duration.ty))) (App (Val (GoInstruction (GoZeroVal Duration.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$sw" (Val #true)
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d"))
-  (App (App (Val (GoInstruction (MethodResolve Time.ty go!"Add"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "u"))) (Var "$a0")))
-  (Let "_order1" (App (Val (GoInstruction (GoAlloc Time.ty))) (App (Val (GoInstruction (GoZeroVal Time.ty))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$sw" (Val #true)
   (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (Let "$a0" (App (Val (GoInstruction (GoLoad Time.ty))) (Var "t"))
-  (App (App (Val (GoInstruction (MethodResolve Time.ty go!"Equal"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "_order1"))) (Var "$a0")))))
+  (App (App (Val (GoInstruction (MethodResolve Time.ty go!"Equal"))) (Let "$a0" (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d"))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"Add"))) (Var "u")) (Var "$a0")))) (Var "$a0")))))
   (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")))
   (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (Let "$a0" (App (Val (GoInstruction (GoLoad Time.ty))) (Var "u"))
-  (App (App (Val (GoInstruction (MethodResolve Time.ty go!"Before"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "t"))) (Var "$a0")))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"Before"))) (Var "t")) (Var "$a0")))))
   (App (Val doReturn)
   (Val minDuration))
   (App (Val doReturn)
   (Val maxDuration)))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Time.ty))) (Pair (Var "_order1") (Var "$r0"))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "d") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "u"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))))
@@ -1168,15 +1161,10 @@ noncomputable def Since.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$a0" (App (Val (GoInstruction (GoLoad Time.ty))) (Var "t"))
   (App (App (Val (GoInstruction (MethodResolve Time.ty go!"Sub"))) (App (App (Val (GoInstruction (FuncResolve Now []))) (Val #())) (Val #()))) (Var "$a0"))))))
   (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve runtimeIsBubbled []))) (Val #())) (Val #()))) (Val #false))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve runtimeNano []))) (Val #())) (Val #()))
-  (Let "_order2" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "_order2")) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (GlobalVarAddr startNano))) (Val #())))))
+  (Let "$a0" (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (App (Val (GoInstruction (FuncResolve runtimeNano []))) (Val #())) (Val #())) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (GlobalVarAddr startNano))) (Val #())))))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t")))
-  (App (App (App (Val (GoInstruction (FuncResolve subMono []))) (Val #())) (Var "$a0")) (Var "$a1")))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "_order2") (Var "$r0")))))))
+  (App (App (App (Val (GoInstruction (FuncResolve subMono []))) (Val #())) (Var "$a0")) (Var "$a1")))))
   (App (Val doExecute)
   (Val #())))))))
 
@@ -1191,17 +1179,12 @@ noncomputable def Until.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Let "$a0" (App (App (Val (GoInstruction (FuncResolve Now []))) (Val #())) (Val #()))
-  (App (App (Val (GoInstruction (MethodResolve Time.ty go!"Sub"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "t"))) (Var "$a0"))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"Sub"))) (Var "t")) (Var "$a0"))))))
   (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve runtimeIsBubbled []))) (Val #())) (Val #()))) (Val #false))
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve runtimeNano []))) (Val #())) (Val #()))
-  (Let "_order3" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t")))
-  (Let "$a1" (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "_order3")) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (GlobalVarAddr startNano))) (Val #())))))
-  (App (App (App (Val (GoInstruction (FuncResolve subMono []))) (Val #())) (Var "$a0")) (Var "$a1")))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "_order3") (Var "$r0")))))))
+  (Let "$a1" (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (App (Val (GoInstruction (FuncResolve runtimeNano []))) (Val #())) (Val #())) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (GlobalVarAddr startNano))) (Val #())))))
+  (App (App (App (Val (GoInstruction (FuncResolve subMono []))) (Val #())) (Var "$a0")) (Var "$a1")))))
   (App (Val doExecute)
   (Val #())))))))
 
@@ -1312,7 +1295,6 @@ instance equals_unfold_ParseError [FfiSyntax] [GoGlobalContext] :
 class ParseError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ParseError.underlying ParseError
   underlying : go.UnderlyingDirectedEq ParseError.ty ParseError.underlying
-  layout : go.StructLayout ParseError [(go!"Layout", typeSize GoString, typeAlign GoString), (go!"Value", typeSize GoString, typeAlign GoString), (go!"LayoutElem", typeSize GoString, typeAlign GoString), (go!"ValueElem", typeSize GoString, typeAlign GoString), (go!"Message", typeSize GoString, typeAlign GoString)]
   get_Layout : ∀ (x : ParseError), go.IsGoStepPureDetTagged under (StructFieldGet ParseError.underlying go!"Layout") #x (Val #(x.Layout'))
   set_Layout : ∀ (x : ParseError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ParseError.underlying go!"Layout") (PairV #x #y) (Val #(({ x with Layout' := y } : ParseError)))
   get_Value : ∀ (x : ParseError), go.IsGoStepPureDetTagged under (StructFieldGet ParseError.underlying go!"Value") #x (Val #(x.Value'))
@@ -1326,7 +1308,6 @@ class ParseError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] ParseError.TypeAssumptions.type_repr
   ParseError.TypeAssumptions.underlying
-  ParseError.TypeAssumptions.layout
   ParseError.TypeAssumptions.get_Layout
   ParseError.TypeAssumptions.set_Layout
   ParseError.TypeAssumptions.get_Value
@@ -1363,7 +1344,6 @@ instance equals_unfold_parseDurationError [FfiSyntax] [GoGlobalContext] :
 class parseDurationError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying parseDurationError.underlying parseDurationError
   underlying : go.UnderlyingDirectedEq parseDurationError.ty parseDurationError.underlying
-  layout : go.StructLayout parseDurationError [(go!"message", typeSize GoString, typeAlign GoString), (go!"value", typeSize GoString, typeAlign GoString)]
   get_message : ∀ (x : parseDurationError), go.IsGoStepPureDetTagged under (StructFieldGet parseDurationError.underlying go!"message") #x (Val #(x.message'))
   set_message : ∀ (x : parseDurationError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet parseDurationError.underlying go!"message") (PairV #x #y) (Val #(({ x with message' := y } : parseDurationError)))
   get_value : ∀ (x : parseDurationError), go.IsGoStepPureDetTagged under (StructFieldGet parseDurationError.underlying go!"value") #x (Val #(x.value'))
@@ -1371,7 +1351,6 @@ class parseDurationError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
 
 attribute [instance] parseDurationError.TypeAssumptions.type_repr
   parseDurationError.TypeAssumptions.underlying
-  parseDurationError.TypeAssumptions.layout
   parseDurationError.TypeAssumptions.get_message
   parseDurationError.TypeAssumptions.set_message
   parseDurationError.TypeAssumptions.get_value
@@ -1402,7 +1381,6 @@ instance equals_unfold_Timer [FfiSyntax] [GoGlobalContext] :
 class Timer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Timer.underlying Timer
   underlying : go.UnderlyingDirectedEq Timer.ty Timer.underlying
-  layout : go.StructLayout Timer [(go!"C", typeSize GoChan, typeAlign GoChan), (go!"initTimer", typeSize Bool, typeAlign Bool)]
   get_C : ∀ (x : Timer), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"C") #x (Val #(x.C'))
   set_C : ∀ (x : Timer) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Timer)))
   get_initTimer : ∀ (x : Timer), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"initTimer") #x (Val #(x.initTimer'))
@@ -1410,7 +1388,6 @@ class Timer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Timer.TypeAssumptions.type_repr
   Timer.TypeAssumptions.underlying
-  Timer.TypeAssumptions.layout
   Timer.TypeAssumptions.get_C
   Timer.TypeAssumptions.set_C
   Timer.TypeAssumptions.get_initTimer
@@ -1441,7 +1418,6 @@ instance equals_unfold_Ticker [FfiSyntax] [GoGlobalContext] :
 class Ticker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Ticker.underlying Ticker
   underlying : go.UnderlyingDirectedEq Ticker.ty Ticker.underlying
-  layout : go.StructLayout Ticker [(go!"C", typeSize GoChan, typeAlign GoChan), (go!"initTicker", typeSize Bool, typeAlign Bool)]
   get_C : ∀ (x : Ticker), go.IsGoStepPureDetTagged under (StructFieldGet Ticker.underlying go!"C") #x (Val #(x.C'))
   set_C : ∀ (x : Ticker) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Ticker.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Ticker)))
   get_initTicker : ∀ (x : Ticker), go.IsGoStepPureDetTagged under (StructFieldGet Ticker.underlying go!"initTicker") #x (Val #(x.initTicker'))
@@ -1449,7 +1425,6 @@ class Ticker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Ticker.TypeAssumptions.type_repr
   Ticker.TypeAssumptions.underlying
-  Ticker.TypeAssumptions.layout
   Ticker.TypeAssumptions.get_C
   Ticker.TypeAssumptions.set_C
   Ticker.TypeAssumptions.get_initTicker
@@ -1482,7 +1457,6 @@ instance equals_unfold_Time [FfiSyntax] [GoGlobalContext] :
 class Time.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Time.underlying Time
   underlying : go.UnderlyingDirectedEq Time.ty Time.underlying
-  layout : go.StructLayout Time [(go!"wall", typeSize w64, typeAlign w64), (go!"ext", typeSize w64, typeAlign w64), (go!"loc", typeSize Loc, typeAlign Loc)]
   get_wall : ∀ (x : Time), go.IsGoStepPureDetTagged under (StructFieldGet Time.underlying go!"wall") #x (Val #(x.wall'))
   set_wall : ∀ (x : Time) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Time.underlying go!"wall") (PairV #x #y) (Val #(({ x with wall' := y } : Time)))
   get_ext : ∀ (x : Time), go.IsGoStepPureDetTagged under (StructFieldGet Time.underlying go!"ext") #x (Val #(x.ext'))
@@ -1512,7 +1486,6 @@ class Time.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 
 attribute [instance] Time.TypeAssumptions.type_repr
   Time.TypeAssumptions.underlying
-  Time.TypeAssumptions.layout
   Time.TypeAssumptions.get_wall
   Time.TypeAssumptions.set_wall
   Time.TypeAssumptions.get_ext
@@ -1680,7 +1653,6 @@ instance equals_unfold_Location [FfiSyntax] [GoGlobalContext] :
 class Location.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Location.underlying Location
   underlying : go.UnderlyingDirectedEq Location.ty Location.underlying
-  layout : go.StructLayout Location [(go!"name", typeSize GoString, typeAlign GoString), (go!"zone", typeSize GoSlice, typeAlign GoSlice), (go!"tx", typeSize GoSlice, typeAlign GoSlice), (go!"extend", typeSize GoString, typeAlign GoString), (go!"cacheStart", typeSize w64, typeAlign w64), (go!"cacheEnd", typeSize w64, typeAlign w64), (go!"cacheZone", typeSize Loc, typeAlign Loc)]
   get_name : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"name") #x (Val #(x.name'))
   set_name : ∀ (x : Location) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : Location)))
   get_zone : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"zone") #x (Val #(x.zone'))
@@ -1698,7 +1670,6 @@ class Location.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] Location.TypeAssumptions.type_repr
   Location.TypeAssumptions.underlying
-  Location.TypeAssumptions.layout
   Location.TypeAssumptions.get_name
   Location.TypeAssumptions.set_name
   Location.TypeAssumptions.get_zone
@@ -1741,7 +1712,6 @@ instance equals_unfold_zone [FfiSyntax] [GoGlobalContext] :
 class zone.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying zone.underlying zone
   underlying : go.UnderlyingDirectedEq zone.ty zone.underlying
-  layout : go.StructLayout zone [(go!"name", typeSize GoString, typeAlign GoString), (go!"offset", typeSize w64, typeAlign w64), (go!"isDST", typeSize Bool, typeAlign Bool)]
   get_name : ∀ (x : zone), go.IsGoStepPureDetTagged under (StructFieldGet zone.underlying go!"name") #x (Val #(x.name'))
   set_name : ∀ (x : zone) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet zone.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : zone)))
   get_offset : ∀ (x : zone), go.IsGoStepPureDetTagged under (StructFieldGet zone.underlying go!"offset") #x (Val #(x.offset'))
@@ -1751,7 +1721,6 @@ class zone.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 
 attribute [instance] zone.TypeAssumptions.type_repr
   zone.TypeAssumptions.underlying
-  zone.TypeAssumptions.layout
   zone.TypeAssumptions.get_name
   zone.TypeAssumptions.set_name
   zone.TypeAssumptions.get_offset
@@ -1788,7 +1757,6 @@ instance equals_unfold_zoneTrans [FfiSyntax] [GoGlobalContext] :
 class zoneTrans.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying zoneTrans.underlying zoneTrans
   underlying : go.UnderlyingDirectedEq zoneTrans.ty zoneTrans.underlying
-  layout : go.StructLayout zoneTrans [(go!"when", typeSize w64, typeAlign w64), (go!"index", typeSize w8, typeAlign w8), (go!"isstd", typeSize Bool, typeAlign Bool), (go!"isutc", typeSize Bool, typeAlign Bool)]
   get_when : ∀ (x : zoneTrans), go.IsGoStepPureDetTagged under (StructFieldGet zoneTrans.underlying go!"when") #x (Val #(x.when'))
   set_when : ∀ (x : zoneTrans) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet zoneTrans.underlying go!"when") (PairV #x #y) (Val #(({ x with when' := y } : zoneTrans)))
   get_index : ∀ (x : zoneTrans), go.IsGoStepPureDetTagged under (StructFieldGet zoneTrans.underlying go!"index") #x (Val #(x.index'))
@@ -1800,7 +1768,6 @@ class zoneTrans.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
 
 attribute [instance] zoneTrans.TypeAssumptions.type_repr
   zoneTrans.TypeAssumptions.underlying
-  zoneTrans.TypeAssumptions.layout
   zoneTrans.TypeAssumptions.get_when
   zoneTrans.TypeAssumptions.set_when
   zoneTrans.TypeAssumptions.get_index
@@ -1851,7 +1818,6 @@ instance equals_unfold_rule [FfiSyntax] [GoGlobalContext] :
 class rule.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying rule.underlying rule
   underlying : go.UnderlyingDirectedEq rule.ty rule.underlying
-  layout : go.StructLayout rule [(go!"kind", typeSize ruleKind, typeAlign ruleKind), (go!"day", typeSize w64, typeAlign w64), (go!"week", typeSize w64, typeAlign w64), (go!"mon", typeSize w64, typeAlign w64), (go!"time", typeSize w64, typeAlign w64)]
   get_kind : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"kind") #x (Val #(x.kind'))
   set_kind : ∀ (x : rule) (y : ruleKind), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"kind") (PairV #x #y) (Val #(({ x with kind' := y } : rule)))
   get_day : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"day") #x (Val #(x.day'))
@@ -1865,7 +1831,6 @@ class rule.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 
 attribute [instance] rule.TypeAssumptions.type_repr
   rule.TypeAssumptions.underlying
-  rule.TypeAssumptions.layout
   rule.TypeAssumptions.get_kind
   rule.TypeAssumptions.set_kind
   rule.TypeAssumptions.get_day
@@ -1912,7 +1877,6 @@ instance equals_unfold_dataIO [FfiSyntax] [GoGlobalContext] :
 class dataIO.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying dataIO.underlying dataIO
   underlying : go.UnderlyingDirectedEq dataIO.ty dataIO.underlying
-  layout : go.StructLayout dataIO [(go!"p", typeSize GoSlice, typeAlign GoSlice), (go!"error", typeSize Bool, typeAlign Bool)]
   get_p : ∀ (x : dataIO), go.IsGoStepPureDetTagged under (StructFieldGet dataIO.underlying go!"p") #x (Val #(x.p'))
   set_p : ∀ (x : dataIO) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet dataIO.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : dataIO)))
   get_error : ∀ (x : dataIO), go.IsGoStepPureDetTagged under (StructFieldGet dataIO.underlying go!"error") #x (Val #(x.error'))
@@ -1920,7 +1884,6 @@ class dataIO.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] dataIO.TypeAssumptions.type_repr
   dataIO.TypeAssumptions.underlying
-  dataIO.TypeAssumptions.layout
   dataIO.TypeAssumptions.get_p
   dataIO.TypeAssumptions.set_p
   dataIO.TypeAssumptions.get_error

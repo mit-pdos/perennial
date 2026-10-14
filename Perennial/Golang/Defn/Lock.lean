@@ -1,6 +1,5 @@
 /-
-A spin lock on a boolean location: `trylock`, `lock` and `unlock` (the lock of `go.mutex`,
-`Mutex.lean`).
+A spin lock on a boolean location: `trylock`, `lock` and `unlock`.
 -/
 module
 
@@ -25,17 +24,12 @@ def lock : val :=
     else
       "lock" "m"
 
-/-- Unlocking an unlocked lock is stuck (Go: `fatal error: sync: unlock of unlocked
-mutex`). -/
 def unlock : val :=
-  λ: "m", exceptionDo
-    (do: (if: Snd (CmpXchg "m" #true #false) then #()
-          else Panic "sync: unlock of unlocked mutex") ;;; return: #())
+  λ: "m", exceptionDo (do: CmpXchg "m" #true #false ;;; return: #())
 
 end code
 end lock
 
 attribute [irreducible] lock.trylock lock.lock lock.unlock
-
 
 end Perennial

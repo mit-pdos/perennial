@@ -74,7 +74,7 @@ noncomputable def Log.writeHdr.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "hdr"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "len"))
-  (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.encoding.binary.littleEndian.ty go!"PutUint64"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.encoding.binary.littleEndian.ty))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #())))) (Var "$a0")) (Var "$a1"))))))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.encoding.binary.littleEndian.ty) go!"PutUint64"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")) (Var "$a1"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "hdr") (Var "$r0")))))))))))))
 
@@ -98,7 +98,7 @@ noncomputable def Init.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad Log.ty))) (Var "log")))))
   (App (Val doExecute)
   (Let "$a0" (Val #(W64 0))
-  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"writeHdr"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "log"))) (Var "$a0")))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"writeHdr"))) (Var "log")) (Var "$a0")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Log.ty))) (Pair (Var "log") (Var "$r0"))))))))))
 
@@ -113,7 +113,7 @@ noncomputable def Log.readHdr.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "hdr" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Var "hdr"))
-  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.encoding.binary.littleEndian.ty go!"Uint64"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.encoding.binary.littleEndian.ty))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #())))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.encoding.binary.littleEndian.ty) go!"Uint64"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")))
   (Let "disklen" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -168,11 +168,11 @@ noncomputable def Log.Read.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (Let "log" (App (Val (GoInstruction (GoAlloc Log.ty))) (Var "log"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve Log.ty go!"readHdr"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "log"))) (Val #()))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"readHdr"))) (Var "log")) (Val #()))
   (Let "disklen" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "disklen"))
-  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"readBlocks"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "log"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"readBlocks"))) (Var "log")) (Var "$a0")))
   (Let "blks" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -299,7 +299,7 @@ noncomputable def Log.diskAppendWait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #()))))
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve Log.ty go!"readLogTxnNxt"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "log"))) (Val #()))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"readLogTxnNxt"))) (Var "log")) (Val #()))
   (Let "logtxn" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -321,7 +321,7 @@ noncomputable def Log.Append.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "log" (App (Val (GoInstruction (GoAlloc Log.ty))) (Var "log"))
   (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (Var "l"))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (Var "l"))
-  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"memAppend"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "log"))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"memAppend"))) (Var "log")) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -336,7 +336,7 @@ noncomputable def Log.Append.impl [FfiSyntax] [GoGlobalContext] : val :=
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "txn"))
-  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"diskAppendWait"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "log"))) (Var "$a0"))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"diskAppendWait"))) (Var "log")) (Var "$a0"))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -392,7 +392,7 @@ noncomputable def Log.diskAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve Log.ty go!"readHdr"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "log"))) (Val #()))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"readHdr"))) (Var "log")) (Val #()))
   (Let "disklen" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -403,7 +403,7 @@ noncomputable def Log.diskAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "allblks" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (Var "allblks"))
-  (App (Val (GoInstruction (Slice (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.uint64))) (Var "disklen"))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)]))) (Val #())) (Var "$s")))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.uint64))) (Var "disklen"))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (Var "allblks"))))))
   (Let "blks" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log.ty go!"memTxnNxt"))) (Var "log"))))
@@ -420,11 +420,11 @@ noncomputable def Log.diskAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef Log.ty go!"logTxnNxt"))) (Var "log"))) (Var "$r0"))))))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "memlen"))
-  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"writeHdr"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "log"))) (Var "$a0")))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"writeHdr"))) (Var "log")) (Var "$a0")))))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (Var "blks"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "disklen"))
-  (App (App (App (Val (GoInstruction (MethodResolve Log.ty go!"writeBlocks"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "log"))) (Var "$a0")) (Var "$a1"))))))))
+  (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"writeBlocks"))) (Var "log")) (Var "$a0")) (Var "$a1"))))))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Log.ty go!"memLock"))) (Var "log")))) (Val #()))))))
   (App (Val doExecute)
@@ -454,7 +454,7 @@ noncomputable def Log.Logger.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"diskAppend"))) (App (Val (GoInstruction (GoLoad Log.ty))) (Var "log"))) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"diskAppend"))) (Var "log")) (Val #())))))
   (Lam BAnon
   (Val #()))))))))
 
@@ -560,7 +560,7 @@ noncomputable def Txn.Commit.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))))) (Var "blks")))
-  (App (App (Val (GoInstruction (MethodResolve Log.ty go!"Append"))) (App (Val (GoInstruction (GoLoad Log.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log.ty)))) (App (Val (GoInstruction (StructFieldRef Txn.ty go!"log"))) (Var "txn"))))) (Var "$a0")))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"Append"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log.ty)))) (App (Val (GoInstruction (StructFieldRef Txn.ty go!"log"))) (Var "txn")))) (Var "$a0")))
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -638,7 +638,6 @@ instance equals_unfold_Log [FfiSyntax] [GoGlobalContext] :
 class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Log.underlying Log
   underlying : go.UnderlyingDirectedEq Log.ty Log.underlying
-  layout : go.StructLayout Log [(go!"logLock", typeSize Loc, typeAlign Loc), (go!"memLock", typeSize Loc, typeAlign Loc), (go!"logSz", typeSize w64, typeAlign w64), (go!"memLog", typeSize Loc, typeAlign Loc), (go!"memLen", typeSize Loc, typeAlign Loc), (go!"memTxnNxt", typeSize Loc, typeAlign Loc), (go!"logTxnNxt", typeSize Loc, typeAlign Loc)]
   get_logLock : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"logLock") #x (Val #(x.logLock'))
   set_logLock : ∀ (x : Log) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"logLock") (PairV #x #y) (Val #(({ x with logLock' := y } : Log)))
   get_memLock : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"memLock") #x (Val #(x.memLock'))
@@ -692,7 +691,6 @@ class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
 
 attribute [instance] Log.TypeAssumptions.type_repr
   Log.TypeAssumptions.underlying
-  Log.TypeAssumptions.layout
   Log.TypeAssumptions.get_logLock
   Log.TypeAssumptions.set_logLock
   Log.TypeAssumptions.get_memLock
@@ -757,7 +755,6 @@ instance equals_unfold_Txn [FfiSyntax] [GoGlobalContext] :
 class Txn.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Txn.underlying Txn
   underlying : go.UnderlyingDirectedEq Txn.ty Txn.underlying
-  layout : go.StructLayout Txn [(go!"log", typeSize Loc, typeAlign Loc), (go!"blks", typeSize GoMap, typeAlign GoMap)]
   get_log : ∀ (x : Txn), go.IsGoStepPureDetTagged under (StructFieldGet Txn.underlying go!"log") #x (Val #(x.log'))
   set_log : ∀ (x : Txn) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Txn.underlying go!"log") (PairV #x #y) (Val #(({ x with log' := y } : Txn)))
   get_blks : ∀ (x : Txn), go.IsGoStepPureDetTagged under (StructFieldGet Txn.underlying go!"blks") #x (Val #(x.blks'))
@@ -774,7 +771,6 @@ class Txn.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
 
 attribute [instance] Txn.TypeAssumptions.type_repr
   Txn.TypeAssumptions.underlying
-  Txn.TypeAssumptions.layout
   Txn.TypeAssumptions.get_log
   Txn.TypeAssumptions.set_log
   Txn.TypeAssumptions.get_blks

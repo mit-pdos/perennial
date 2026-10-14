@@ -156,66 +156,38 @@ instance Binder.countable : Pos.Countable Binder :=
 
 local instance : Inhabited PrimOp0 := ⟨.ArbitraryIntOp⟩
 local instance : Inhabited GoOperator := ⟨.GoEquals⟩
-local instance : Inhabited GoShiftOperator := ⟨.GoShiftl⟩
 local instance : Inhabited GoUnaryOperator := ⟨.GoPos⟩
 local instance : Inhabited GoInstruction := ⟨.AngelicExit⟩
 
-def Encoding.toSum : Encoding → Nat ⊕ Nat
-  | .word n => .inl n
-  | .cell k => .inr k
-def Encoding.fromSum : Nat ⊕ Nat → Encoding
-  | .inl n => .word n
-  | .inr k => .cell k
-instance Encoding.countable : Pos.Countable Encoding :=
-  countableOfLeftInverse Encoding.toSum Encoding.fromSum (by intro x; cases x <;> rfl)
-
-def MemOp1.toNat : MemOp1 → Nat
-  | .startRead => 0 | .finishRead => 1 | .prepareWrite => 2 | .load => 3
-def MemOp1.fromNat : Nat → MemOp1
-  | 0 => .startRead | 1 => .finishRead | 2 => .prepareWrite | _ => .load
-instance MemOp1.countable : Pos.Countable MemOp1 :=
-  countableOfLeftInverse MemOp1.toNat MemOp1.fromNat (by intro x; cases x <;> rfl)
-
-def MemOp2.toNat : MemOp2 → Nat
-  | .finishStore => 0 | .swap => 1 | .add => 2 | .cmpxchg => 3
-def MemOp2.fromNat : Nat → MemOp2
-  | 0 => .finishStore | 1 => .swap | 2 => .add | _ => .cmpxchg
-instance MemOp2.countable : Pos.Countable MemOp2 :=
-  countableOfLeftInverse MemOp2.toNat MemOp2.fromNat (by intro x; cases x <;> rfl)
-
-def PrimOp1.toSum : PrimOp1 → Nat ⊕ (MemOp1 × Encoding)
-  | .PrepareWriteOp => .inl 0
-  | .StartReadOp => .inl 1
-  | .FinishReadOp => .inl 2
-  | .LoadOp => .inl 3
-  | .AllocOp => .inl 4
-  | .CheckBytesOp => .inl 5
-  | .MemOp1Op op enc => .inr (op, enc)
-def PrimOp1.fromSum : Nat ⊕ (MemOp1 × Encoding) → PrimOp1
-  | .inl 0 => .PrepareWriteOp
-  | .inl 1 => .StartReadOp
-  | .inl 2 => .FinishReadOp
-  | .inl 3 => .LoadOp
-  | .inl 4 => .AllocOp
-  | .inl _ => .CheckBytesOp
-  | .inr (op, enc) => .MemOp1Op op enc
+def PrimOp1.toNat : PrimOp1 → Nat
+  | .PrepareWriteOp => 0
+  | .StartReadOp => 1
+  | .FinishReadOp => 2
+  | .LoadOp => 3
+  | .AllocOp => 4
+  | .RaiseOp => 5
+def PrimOp1.fromNat : Nat → PrimOp1
+  | 0 => .PrepareWriteOp
+  | 1 => .StartReadOp
+  | 2 => .FinishReadOp
+  | 3 => .LoadOp
+  | 4 => .AllocOp
+  | 5 => .RaiseOp
+  | _ => .PrepareWriteOp
 instance PrimOp1.countable : Pos.Countable PrimOp1 :=
-  countableOfLeftInverse PrimOp1.toSum PrimOp1.fromSum (by intro x; cases x <;> rfl)
+  countableOfLeftInverse PrimOp1.toNat PrimOp1.fromNat (by intro x; cases x <;> rfl)
 
-def PrimOp2.toSum : PrimOp2 → Nat ⊕ (MemOp2 × Encoding)
-  | .FinishStoreOp => .inl 0
-  | .AtomicSwapOp => .inl 1
-  | .AtomicAddOp => .inl 2
-  | .AllocNOp => .inl 3
-  | .MemOp2Op op enc => .inr (op, enc)
-def PrimOp2.fromSum : Nat ⊕ (MemOp2 × Encoding) → PrimOp2
-  | .inl 0 => .FinishStoreOp
-  | .inl 1 => .AtomicSwapOp
-  | .inl 2 => .AtomicAddOp
-  | .inl _ => .AllocNOp
-  | .inr (op, enc) => .MemOp2Op op enc
+def PrimOp2.toNat : PrimOp2 → Nat
+  | .FinishStoreOp => 0
+  | .AtomicSwapOp => 1
+  | .AtomicAddOp => 2
+def PrimOp2.fromNat : Nat → PrimOp2
+  | 0 => .FinishStoreOp
+  | 1 => .AtomicSwapOp
+  | 2 => .AtomicAddOp
+  | _ => .FinishStoreOp
 instance PrimOp2.countable : Pos.Countable PrimOp2 :=
-  countableOfLeftInverse PrimOp2.toSum PrimOp2.fromSum (by intro x; cases x <;> rfl)
+  countableOfLeftInverse PrimOp2.toNat PrimOp2.fromNat (by intro x; cases x <;> rfl)
 
 def GoOperator.toNat : GoOperator → Nat
   | .GoEquals => 0
@@ -232,6 +204,8 @@ def GoOperator.toNat : GoOperator → Nat
   | .GoOr => 11
   | .GoXor => 12
   | .GoBitClear => 13
+  | .GoShiftl => 14
+  | .GoShiftr => 15
 def GoOperator.fromNat : Nat → GoOperator
   | 0 => .GoEquals
   | 1 => .GoLt
@@ -247,20 +221,11 @@ def GoOperator.fromNat : Nat → GoOperator
   | 11 => .GoOr
   | 12 => .GoXor
   | 13 => .GoBitClear
+  | 14 => .GoShiftl
+  | 15 => .GoShiftr
   | _ => .GoEquals
 instance GoOperator.countable : Pos.Countable GoOperator :=
   countableOfLeftInverse GoOperator.toNat GoOperator.fromNat (by intro x; cases x <;> rfl)
-
-def GoShiftOperator.toNat : GoShiftOperator → Nat
-  | .GoShiftl => 0
-  | .GoShiftr => 1
-def GoShiftOperator.fromNat : Nat → GoShiftOperator
-  | 0 => .GoShiftl
-  | 1 => .GoShiftr
-  | _ => .GoShiftl
-instance GoShiftOperator.countable : Pos.Countable GoShiftOperator :=
-  countableOfLeftInverse GoShiftOperator.toNat GoShiftOperator.fromNat
-    (by intro x; cases x <;> rfl)
 
 def GoUnaryOperator.toNat : GoUnaryOperator → Nat
   | .GoPos => 0
@@ -301,8 +266,6 @@ def BaseLit.toTree : BaseLit → GenTree
   | .LitLoc x0 => node 8 [of x0]
   | .LitProphecy x0 => node 9 [of x0]
   | .LitSlice x0 => node 10 [of x0]
-  | .LitTail x0 x1 => node 11 [of x0, of x1]
-  | .LitPad => node 12 []
 def BaseLit.ofTree : GenTree → BaseLit
   | node 0 [x0] => .LitInt (decLeaf x0)
   | node 1 [x0] => .LitInt32 (decLeaf x0)
@@ -315,8 +278,6 @@ def BaseLit.ofTree : GenTree → BaseLit
   | node 8 [x0] => .LitLoc (decLeaf x0)
   | node 9 [x0] => .LitProphecy (decLeaf x0)
   | node 10 [x0] => .LitSlice (decLeaf x0)
-  | node 11 [x0, x1] => .LitTail (decLeaf x0) (decLeaf x1)
-  | node 12 [] => .LitPad
   | _ => default
 instance BaseLit.countable : Pos.Countable BaseLit :=
   countableOfLeftInverse BaseLit.toTree BaseLit.ofTree
@@ -364,7 +325,6 @@ def GoInstruction.toTree : GoInstruction → GenTree
   | .CompositeLiteral x0 => node 38 [of x0]
   | .SelectStmt => node 39 []
   | .InternalStringLen => node 40 []
-  | .GoShift x0 x1 x2 => node 41 [of x0, of x1, of x2]
 def GoInstruction.ofTree : GenTree → GoInstruction
   | node 0 [] => .AngelicExit
   | node 1 [x0, x1] => .Convert (decLeaf x0) (decLeaf x1)
@@ -407,7 +367,6 @@ def GoInstruction.ofTree : GenTree → GoInstruction
   | node 38 [x0] => .CompositeLiteral (decLeaf x0)
   | node 39 [] => .SelectStmt
   | node 40 [] => .InternalStringLen
-  | node 41 [x0, x1, x2] => .GoShift (decLeaf x0) (decLeaf x1) (decLeaf x2)
   | _ => default
 instance GoInstruction.countable : Pos.Countable GoInstruction :=
   countableOfLeftInverse GoInstruction.toTree GoInstruction.ofTree
@@ -425,7 +384,7 @@ local macro "inj_ex " b:ident : tactic => `(tactic| inj_cases $b:ident [
     Expr.Pair.injEq, Expr.Fst.injEq, Expr.Snd.injEq, Expr.Fork.injEq, Expr.Primitive0.injEq,
     Expr.Primitive1.injEq, Expr.Primitive2.injEq, Expr.CmpXchg.injEq, Expr.ExternalOp.injEq,
     Expr.ResolveProph.injEq, Expr.LiteralValue.injEq, Expr.SelectStmtClauses.injEq,
-    val.LitV.injEq, val.RecV.injEq, val.PairV.injEq, val.InjLV.injEq, val.InjRV.injEq,
+    Expr.Catch.injEq, val.PanicV.injEq, val.LitV.injEq, val.RecV.injEq, val.PairV.injEq, val.InjLV.injEq, val.InjRV.injEq,
     val.ExtV.injEq, val.GoInstruction.injEq, val.ArrayV.injEq, val.InterfaceV.injEq,
     val.LiteralValueV.injEq, val.SelectStmtClausesV.injEq,
     keyed_element.KeyedElement.injEq, key.KeyField.injEq, key.KeyInteger.injEq,
@@ -453,6 +412,7 @@ def Expr.toTree : Expr → GenTree
   | .ResolveProph e1 e2 => node 15 [e1.toTree, e2.toTree]
   | .LiteralValue l => node 16 [kesToTree l]
   | .SelectStmtClauses d l => node 17 [optexprToTree d, clausesToTree l]
+  | .Catch e h k => node 18 [e.toTree, h.toTree, k.toTree]
 def val.toTree : val → GenTree
   | .LitV l => node 0 [of l]
   | .RecV f x e => node 1 [of f, of x, e.toTree]
@@ -466,6 +426,7 @@ def val.toTree : val → GenTree
   | .LiteralValueV l => node 9 [kesToTree l]
   | .SelectStmtClausesV d l => node 10 [optexprToTree d, clausesToTree l]
   | .UntypedNil => node 11 []
+  | .PanicV p => node 12 [p.toTree]
 def keyed_element.toTree : keyed_element → GenTree
   | .KeyedElement k v => node 0 [optkeyToTree k, v.toTree]
 def key.toTree : key → GenTree
@@ -527,6 +488,8 @@ theorem Expr.toTree_inj : ∀ {a b : Expr}, a.toTree = b.toTree → a = b
   | .LiteralValue _, b, h => by inj_ex b; exact kesToTree_inj h
   | .SelectStmtClauses .., b, h => by
     inj_ex b; exact ⟨optexprToTree_inj h.1, clausesToTree_inj h.2⟩
+  | .Catch .., b, h => by
+    inj_ex b; exact ⟨Expr.toTree_inj h.1, Expr.toTree_inj h.2.1, Expr.toTree_inj h.2.2⟩
 termination_by structural a _ _ => a
 theorem val.toTree_inj : ∀ {a b : val}, a.toTree = b.toTree → a = b
   | .LitV _, b, h => by inj_ex b; exact h
@@ -542,6 +505,7 @@ theorem val.toTree_inj : ∀ {a b : val}, a.toTree = b.toTree → a = b
   | .SelectStmtClausesV .., b, h => by
     inj_ex b; exact ⟨optexprToTree_inj h.1, clausesToTree_inj h.2⟩
   | .UntypedNil, b, h => by inj_ex b
+  | .PanicV _, b, h => by inj_ex b; exact val.toTree_inj h
 termination_by structural a _ _ => a
 theorem keyed_element.toTree_inj : ∀ {a b : keyed_element}, a.toTree = b.toTree → a = b
   | .KeyedElement .., b, h => by

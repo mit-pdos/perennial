@@ -45,8 +45,7 @@ own, so `gl(...)` is only needed for pairs/strings outside them.
 | `e1 ;; e2` | `App (Rec BAnon BAnon e2) e1` |
 | `if: c then e1 else e2` | `If c e1 e2` |
 | `e1 =⟨t⟩ e2`, `<⟨t⟩`, `≤⟨t⟩`, `>⟨t⟩`, `≥⟨t⟩`, `≠⟨t⟩` | Go comparison at type `t` |
-| `e1 +⟨t⟩ e2`, `-⟨t⟩`, `*⟨t⟩`, `/⟨t⟩`, `%⟨t⟩`, `&⟨t⟩`, `\|⟨t⟩`, `^⟨t⟩`, `&^⟨t⟩` | Go arithmetic at type `t` |
-| `e1 <<⟨t, ct⟩ e2`, `>>⟨t, ct⟩` | Go shift of a `t` by a count of type `ct` |
+| `e1 +⟨t⟩ e2`, `-⟨t⟩`, `*⟨t⟩`, `/⟨t⟩`, `%⟨t⟩`, `&⟨t⟩`, `\|⟨t⟩`, `^⟨t⟩`, `&^⟨t⟩`, `<<⟨t⟩`, `>>⟨t⟩` | Go arithmetic at type `t` |
 | `⟨t⟩- e`, `⟨t⟩+ e`, `⟨t⟩! e`, `⟨t⟩^ e` | Go unary operators |
 
 Binders are string literals, `<>` (anonymous), identifiers, or `&b` for an
@@ -63,7 +62,7 @@ arithmetic 65 (left assoc) · `![t] e` max. Lean's `&&` (35) and `||` (30) bind
 more loosely than comparisons, so parenthesize operands. Notations defined later: `![t] e`, `e1 <-[t] e2`,
 `@! f`, `r @!! t @!! m` (`Defn/PostLang`), `e1 ;;; e2`, `do: e`, `return: e`
 (`Defn/Exception`), `break: e`, `continue: e`, `for: c ; p := e`
-(`Defn/Loop`), `with_defer: r; e`, `with_defer_recover: r; e` (`Defn/Defer`).
+(`Defn/Loop`), `with_defer: e`, `with_defer_recover: r; e` (`Defn/Defer`).
 -/
 module
 
@@ -309,8 +308,8 @@ scoped syntax:65 term:65 " &⟨" term "⟩ " term:66 : term
 scoped syntax:65 term:65 " |⟨" term "⟩ " term:66 : term
 scoped syntax:65 term:65 " ^⟨" term "⟩ " term:66 : term
 scoped syntax:65 term:65 " &^⟨" term "⟩ " term:66 : term
-scoped syntax:65 term:65 " <<⟨" term ", " term "⟩ " term:66 : term
-scoped syntax:65 term:65 " >>⟨" term ", " term "⟩ " term:66 : term
+scoped syntax:65 term:65 " <<⟨" term "⟩ " term:66 : term
+scoped syntax:65 term:65 " >>⟨" term "⟩ " term:66 : term
 
 scoped syntax:45 "⟨" term "⟩- " term:45 : term
 scoped syntax:45 "⟨" term "⟩+ " term:45 : term
@@ -333,10 +332,8 @@ macro_rules
   | `($a |⟨$t⟩ $b) => `(App (Val (GoInstruction (GoOp GoOr $t))) (Pair gl($a) gl($b)))
   | `($a ^⟨$t⟩ $b) => `(App (Val (GoInstruction (GoOp GoXor $t))) (Pair gl($a) gl($b)))
   | `($a &^⟨$t⟩ $b) => `(App (Val (GoInstruction (GoOp GoBitClear $t))) (Pair gl($a) gl($b)))
-  | `($a <<⟨$t, $ct⟩ $b) =>
-    `(App (Val (GoInstruction (GoShift GoShiftl $t $ct))) (Pair gl($a) gl($b)))
-  | `($a >>⟨$t, $ct⟩ $b) =>
-    `(App (Val (GoInstruction (GoShift GoShiftr $t $ct))) (Pair gl($a) gl($b)))
+  | `($a <<⟨$t⟩ $b) => `(App (Val (GoInstruction (GoOp GoShiftl $t))) (Pair gl($a) gl($b)))
+  | `($a >>⟨$t⟩ $b) => `(App (Val (GoInstruction (GoOp GoShiftr $t))) (Pair gl($a) gl($b)))
   | `(⟨$t⟩- $e) => `(App (Val (GoInstruction (GoUnOp GoNeg $t))) gl($e))
   | `(⟨$t⟩+ $e) => `(App (Val (GoInstruction (GoUnOp GoPos $t))) gl($e))
   | `(⟨$t⟩! $e) => `(App (Val (GoInstruction (GoUnOp GoNot $t))) gl($e))

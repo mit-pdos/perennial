@@ -34,8 +34,8 @@ the `n` tokens of `threadToks n` are `n` distinct slots below `T - 1`, whence
 `n ≤ T - 1` *without* access to an authoritative part: the authoritative map
 is allocated with all `T - 1` slots and discarded (`thread_init`).
 
-The tokens are ghost state of the one `allG GF`, which `GooseGlobalGS`
-(`Lifting.lean`) carries alongside `ThreadGS`; here it is the ambient `[AllG GF]`.
+`ThreadGS` carries its own `allG GF` (`threadAllG`), a local instance of this
+file only, for the same reason as `receiptAllG` (`Receipts.lean`).
 -/
 module
 
@@ -52,26 +52,33 @@ namespace Perennial
 
 open Iris Iris.BI
 
+/-- Ghost state for thread tokens, before allocation. It does not fix the bound,
+which is chosen when the ghost state is allocated (`thread_init`). -/
+class ThreadGpreS (GF : BundledGFunctors) where
+  threadPreGAllG : AllG GF
+
 /-- Ghost state for thread tokens. `threadBound` is the bound `T` on the number
 of live threads (`threadToks T ⊢ False`): an unspecified number above `1` (the
 main thread is live), fixed when the ghost state is allocated at adequacy time
 (`goose_adequacy`), where it also bounds `GlobalState.threads` along the
 executions the theorem is about. A proof that needs `T` to be small enough takes
-it as a premise (e.g. `threadBound GF ≤ 2 ^ 31`). The names are those of ghost
-state of the ambient `[AllG GF]`; before allocation (`thread_init`) nothing but
-`AllG GF` is needed. -/
+it as a premise (e.g. `threadBound GF ≤ 2 ^ 31`). -/
 class ThreadGS (GF : BundledGFunctors) where
+  threadAllG : AllG GF
   /-- `ghost_map Nat Unit`: the token `k ↪ ()` of every thread slot `k < T - 1`. -/
   threadTokName : GName
   threadBound : Nat
   threadBound_gt : 1 < threadBound
+
+attribute [reducible] ThreadGS.threadAllG
+attribute [local instance] ThreadGS.threadAllG
 
 export ThreadGS (threadBound threadBound_gt)
 
 /-! ## Definitions -/
 
 section defs
-variable {GF : BundledGFunctors} [AllG GF] [hT : ThreadGS GF]
+variable {GF : BundledGFunctors} [hT : ThreadGS GF]
 
 /-- The tokens of the slots `ks`: each slot's token, and that it is below `T - 1`. -/
 def threadTokList : List Nat → IProp GF
@@ -95,7 +102,7 @@ end defs
 /-! ## Laws -/
 
 section laws
-variable {GF : BundledGFunctors} [AllG GF] [hT : ThreadGS GF]
+variable {GF : BundledGFunctors} [hT : ThreadGS GF]
 open ProofMode
 
 instance threadTokList_timeless (ks : List Nat) : Timeless (threadTokList (GF := GF) ks) := by
@@ -220,17 +227,18 @@ end laws
 /-! ## Allocation -/
 
 section init
-variable {GF : BundledGFunctors} [AllG GF]
+variable {GF : BundledGFunctors} [hPre : ThreadGpreS GF]
 open ProofMode
 
 /-- The slots `0, ..., n - 1` of the ghost map `γ` allocated, as `n` tokens, with the
 other slots free. -/
 private theorem thread_init_aux (T : Nat) (hT : 1 < T) (γ : GName) (n : Nat) (hn : n ≤ T - 1) :
-    ghostMapAuth γ 1 (∅ : GMap Nat Unit) ⊢@{IProp GF}
+    (letI := hPre.threadPreGAllG; ghostMapAuth γ 1 (∅ : GMap Nat Unit)) ⊢@{IProp GF}
       |==> ∃ m : GMap Nat Unit,
-        ghostMapAuth γ 1 m ∗
+        (letI := hPre.threadPreGAllG; ghostMapAuth γ 1 m) ∗
         ⌜∀ k, n ≤ k → m.lookup k = none⌝ ∗
-        threadToks (hT := ⟨γ, T, hT⟩) n := by
+        threadToks (hT := ⟨hPre.threadPreGAllG, γ, T, hT⟩) n := by
+  letI := hPre.threadPreGAllG
   induction n with
   | zero =>
     iintro Hm
@@ -239,7 +247,7 @@ private theorem thread_init_aux (T : Nat) (hT : 1 < T) (γ : GName) (n : Nat) (h
     iframe Hm
     isplitr
     · ipureintro; intro k _; rfl
-    · exact threadToks_zero (hT := ⟨γ, T, hT⟩)
+    · exact threadToks_zero (hT := ⟨hPre.threadPreGAllG, γ, T, hT⟩)
   | succ n ih =>
     iintro Hm
     imod ih (by omega) $$ Hm with ⟨%m, Hm, %Hfree, Htoks⟩
@@ -252,7 +260,7 @@ private theorem thread_init_aux (T : Nat) (hT : 1 < T) (γ : GName) (n : Nat) (h
       intro k hk
       rw [GMap.lookup_insert_ne _ _ (by omega)]
       exact Hfree k (by omega)
-    · iapply (threadToks_add (hT := ⟨γ, T, hT⟩) n 1).2
+    · iapply (threadToks_add (hT := ⟨hPre.threadPreGAllG, γ, T, hT⟩) n 1).2
       iframe Htoks
       unfold threadToks
       iexists [n]
@@ -268,7 +276,8 @@ private theorem thread_init_aux (T : Nat) (hT : 1 < T) (γ : GName) (n : Nat) (h
 The adequacy theorem hands one to the main thread and makes the others the
 initial thread fuel of the bounded semantics. -/
 theorem thread_init (T : Nat) (hT : 1 < T) :
-    ⊢@{IProp GF} |==> ∃ γ : GName, threadToks (hT := ⟨γ, T, hT⟩) (T - 1) := by
+    ⊢@{IProp GF} |==> ∃ γ : GName, threadToks (hT := ⟨hPre.threadPreGAllG, γ, T, hT⟩) (T - 1) := by
+  letI := hPre.threadPreGAllG
   imod ghost_map_alloc_empty (GF := GF) (K := Nat) (V := Unit) with ⟨%γ, Hm⟩
   imod thread_init_aux T hT γ (T - 1) (Nat.le_refl _) $$ Hm with ⟨%m, -, -, Htoks⟩
   imodintro

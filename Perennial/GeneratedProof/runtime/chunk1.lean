@@ -979,25 +979,6 @@ instance siginfoFields_access_store_si_addr (l : Loc) (v : runtime.siginfoFields
 end def_
 end siginfoFields
 
-namespace siginfo
-section def_
-
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance siginfo_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.siginfo :=
-  sorry -- axiomatized type
-
-instance siginfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.siginfo runtime.siginfo.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end siginfo
-
 namespace sigeventFields
 section def_
 
@@ -1088,25 +1069,6 @@ instance sigeventFields_access_store_sigev_notify_thread_id (l : Loc) (v : runti
 
 end def_
 end sigeventFields
-
-namespace sigevent
-section def_
-
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : runtime.Assumptions]
-
-instance sigevent_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.sigevent :=
-  sorry -- axiomatized type
-
-instance sigevent_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.sigevent runtime.sigevent.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end sigevent
 
 namespace usigset
 section def_
@@ -2229,6 +2191,101 @@ instance errorAddressString_access_store_addr (l : Loc) (v : runtime.errorAddres
 
 end def_
 end errorAddressString
+
+namespace boundsError
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance boundsError_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.boundsError :=
+  sorry -- axiomatized type
+
+instance boundsError_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.boundsError runtime.boundsError.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end boundsError
+
+namespace typeCacheBucket
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance typeCacheBucket_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.typeCacheBucket :=
+  sorry -- axiomatized type
+
+instance typeCacheBucket_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.typeCacheBucket runtime.typeCacheBucket.underlying :=
+  sorry -- axiomatized type
+
+end def_
+end typeCacheBucket
+
+namespace bitvector
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+instance bitvector_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.bitvector where
+  typedPointstoDef l v dq := iprop(
+    "n" ∷ typedPointsto (structFieldRef runtime.bitvector go!"n" l) v.n' dq ∗
+    "bytedata" ∷ typedPointsto (structFieldRef runtime.bitvector go!"bytedata" l) v.bytedata' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance bitvector_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.bitvector runtime.bitvector.underlying := by
+  solve_into_val_typed_struct
+
+instance bitvector_access_load_n (l : Loc) (v : runtime.bitvector) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.bitvector go!"n" l) v.n' dq)
+      (typedPointsto (structFieldRef runtime.bitvector go!"n" l) v.n' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance bitvector_access_store_n (l : Loc) (v : runtime.bitvector) (n' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.bitvector go!"n" l) v.n' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.bitvector go!"n" l) n' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := n' } : runtime.bitvector) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance bitvector_access_load_bytedata (l : Loc) (v : runtime.bitvector) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.bitvector go!"bytedata" l) v.bytedata' dq)
+      (typedPointsto (structFieldRef runtime.bitvector go!"bytedata" l) v.bytedata' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance bitvector_access_store_bytedata (l : Loc) (v : runtime.bitvector) (bytedata' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.bitvector go!"bytedata" l) v.bytedata' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.bitvector go!"bytedata" l) bytedata' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with bytedata' := bytedata' } : runtime.bitvector) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end bitvector
 
 end runtime
 end

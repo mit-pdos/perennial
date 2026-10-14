@@ -78,8 +78,8 @@ noncomputable def Lock.TryLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Lam BAnon
   (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Lock.ty))) (Var "l"))
-  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (StructFieldRef Lock.ty go!"ch"))) (Var "l")))
   (Let "$v0" (App (Val (GoInstruction (CompositeLiteral (go.GoType.StructType [])))) (LiteralValue []))
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (StructFieldRef Lock.ty go!"ch"))) (Var "l")))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses (some (App (Val doReturn)
   (Val #false))) [(CommClause (SendCase (go.GoType.StructType []) (Var "$ch0") (Var "$v0")) (App (Val doReturn)
   (Val #true)))]))))))))
@@ -94,8 +94,8 @@ noncomputable def Lock.LockWithTimeout.impl [FfiSyntax] [GoGlobalContext] : val 
   (App (Val exceptionDo)
   (Let "l" (App (Val (GoInstruction (GoAlloc Lock.ty))) (Var "l"))
   (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.time.Duration.ty))) (Var "d"))
-  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (StructFieldRef Lock.ty go!"ch"))) (Var "l")))
   (Let "$v0" (App (Val (GoInstruction (CompositeLiteral (go.GoType.StructType [])))) (LiteralValue []))
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (StructFieldRef Lock.ty go!"ch"))) (Var "l")))
   (Let "$ch1" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.time.Duration.ty))) (Var "d"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.After []))) (Val #())) (Var "$a0")))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (SendCase (go.GoType.StructType []) (Var "$ch0") (Var "$v0")) (App (Val doReturn)
@@ -137,7 +137,6 @@ instance equals_unfold_Lock [FfiSyntax] [GoGlobalContext] :
 class Lock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Lock.underlying Lock
   underlying : go.UnderlyingDirectedEq Lock.ty Lock.underlying
-  layout : go.StructLayout Lock [(go!"ch", typeSize GoChan, typeAlign GoChan)]
   get_ch : ∀ (x : Lock), go.IsGoStepPureDetTagged under (StructFieldGet Lock.underlying go!"ch") #x (Val #(x.ch'))
   set_ch : ∀ (x : Lock) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Lock.underlying go!"ch") (PairV #x #y) (Val #(({ x with ch' := y } : Lock)))
   Lock_unfold : MethodUnfold Lock.ty go!"Lock" Lock.Lock.impl
@@ -155,7 +154,6 @@ class Lock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 
 attribute [instance] Lock.TypeAssumptions.type_repr
   Lock.TypeAssumptions.underlying
-  Lock.TypeAssumptions.layout
   Lock.TypeAssumptions.get_ch
   Lock.TypeAssumptions.set_ch
   Lock.TypeAssumptions.Lock_unfold
