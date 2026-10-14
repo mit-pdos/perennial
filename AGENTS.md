@@ -54,6 +54,11 @@ script enforces the review.
    each operation annotated with its operands' Go types, and any choice that
    depends on what a type is, such as signedness, width or a type parameter's
    instantiation, is made by the Lean semantics, not by goose).
+5. **Fixing a bug in the semantics or goose** follows
+   `.agents/skills/fix-semantics/SKILL.md` (Claude Code: `/fix-semantics`):
+   one bug at a time, the smallest change that completes an existing scheme
+   rather than adding a carve-out, and a plan the user signs off before any
+   trusted file changes. Its `cases.md` holds the user's past decisions.
 
 `.claude/settings.json` adds Claude Code conveniences on top (a reminder to
 land at the end of a turn, a check of a new worktree's base); nothing in the
