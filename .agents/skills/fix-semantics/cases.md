@@ -18,21 +18,6 @@ Entry format:
 **Why.** in the user's words where possible
 ```
 
-## Case 0 — Context: the 2026-10-14 rollback to c46da895a
-
-**What happened.** Over 2026-10-10..13, agents fixing semantics and goose bugs in
-a review→fix loop added ~12k lines to the trusted base: an exception-monad
-re-implementation of panics, a strict left-to-right evaluation-order rewriter
-(goose/order) with per-operation "order-sensitive" lists, a byte-cell heap for
-`unsafe`, and many narrow refusals and negative tests. The user rolled the
-semantics (Perennial/GooseLang, Perennial/Golang/Defn) and goose (except
-goose/model) back to c46da895a, keeping proofs, the proof layout and the
-tooling, and is re-applying fixes one at a time.
-
-**Why.** "The goose translator and semantics started incorporating lots of very
-specific corner cases. I want to make sure the translator avoids too many
-specific carve-outs, because that makes it more difficult to fuzz test."
-
 ## Case 1 — ACCEPTED: string slicing (6f38ab75f)
 
 **Symptom.** Incomplete. Goose translated `s[low:high]` on a string to
@@ -95,4 +80,4 @@ operand is translated once and referred to by name. Nothing depends on what
 **Not taken.** The original commit (84edc3ea5) fixed this line together with
 two other evaluation-order changes (multiple assignment targets, select send
 order) that add `$l<i>`/`$lm<i>`/`$lk<i>` bindings with per-target-kind
-branches. Only the one line was re-applied; the others are separate items.
+branches. Only the one line was taken; the others are separate items.

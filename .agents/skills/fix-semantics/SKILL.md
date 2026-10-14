@@ -8,8 +8,7 @@ argument-hint: "<symptom or failing module>"
 
 The trusted base must stay small and uniform: every special case in goose or
 the semantics is something a fuzzer has to know about, a reviewer has to check,
-and a proof has to step through. Bug-fixing loops tend to accrete carve-outs
-(see `cases.md`, Case 0). This skill is for fixing one bug at a time with the
+and a proof has to step through. Bug-fixing loops tend to accrete carve-outs. This skill is for fixing one bug at a time with the
 smallest change that makes the scheme more uniform, not less.
 
 The calibration lives in two files next to this one:
