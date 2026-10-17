@@ -28,7 +28,7 @@ theorem log.Logger.SetFlags.wp_proof
     log.Logger.SetFlags.spec (GF := GF) (hG := hG) := by
   intro l f flag
   wp_start as ⟨%Hal, Hf⟩
-  obtain ⟨Hnn, -, Hfa, -⟩ := Hal
+  have Hnn : _ ≠ null := Hal
   wp_auto
   wp_apply_core wp_Store $$ [] [-]
   · iPkgInit

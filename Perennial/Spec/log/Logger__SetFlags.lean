@@ -25,7 +25,7 @@ variable [package_sem : log.Assumptions]
 /-- `l.SetFlags(flag)` stores `int32(flag)` in the atomic `flag` field. -/
 abbrev log.Logger.SetFlags.spec : Prop :=
   ∀ (l : Loc) (f : w32) (flag : w64),
-    {{ isPkgInit (PROP := IProp GF) pkg_id.log ∗ ⌜log.LoggerAligned (GF := GF) l⌝ ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.log ∗ ⌜log.LoggerAligned l⌝ ∗
         sync.atomic.ownInt32 (log.flagField (GF := GF) l) (DFrac.own 1) f }}
       (App (Val (l @!! go.GoType.PointerType log.Logger.ty @!! go!"SetFlags")) (Val #flag))
     {{ RET #(); sync.atomic.ownInt32 (log.flagField (GF := GF) l) (DFrac.own 1) (W32 (sint.Z flag)) }}

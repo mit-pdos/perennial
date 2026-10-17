@@ -34,11 +34,9 @@ theorem log.New.wp_proof
   wp_start
   wp_auto
   irename flag => Hflag_arg
-  irename out => Hout_arg
   irename «prefix» => Hprefix_arg
-  icases «$r0_al» with %Hal
   icases typedPointsto_not_null_dup _ _ _ $$ «$r0» with ⟨Hl, %Hnn⟩
-  have Hla := log.LoggerAligned_of (GF := GF) _ Hnn Hal
+  have Hla : log.LoggerAligned «$r0_ptr» := Hnn
   iStructNamed Hl
   imod sync.init_Mutex iprop(∃ w : GoInterface, log.outField (GF := GF) «$r0_ptr» ↦ w) ⊤
       (log.outMuField (GF := GF) «$r0_ptr») $$ [outMu] [out] with #Hmu

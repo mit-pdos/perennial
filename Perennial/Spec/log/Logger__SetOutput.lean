@@ -27,7 +27,7 @@ variable [package_sem : log.Assumptions]
 type, `io.discard`, is comparable, `io.isInit`). -/
 abbrev log.Logger.SetOutput.spec : Prop :=
   ∀ (l : Loc) (b : Bool) (w : GoInterface),
-    {{ isPkgInit (PROP := IProp GF) pkg_id.log ∗ ⌜log.LoggerAligned (GF := GF) l⌝ ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.log ∗ ⌜log.LoggerAligned l⌝ ∗
         sync.isMutex (log.outMuField (GF := GF) l)
           (∃ w : GoInterface, log.outField (GF := GF) l ↦ w) ∗
         sync.atomic.ownBool (log.isDiscardField (GF := GF) l) (DFrac.own 1) b }}

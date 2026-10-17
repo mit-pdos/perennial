@@ -56,7 +56,7 @@ theorem log.Logger.SetOutput.wp_proof
     log.Logger.SetOutput.spec (GF := GF) (hG := hG) := by
   intro l b w
   wp_start as ⟨%Hal, #Hmu, Hb⟩
-  obtain ⟨Hnn, -, -, Hba⟩ := Hal
+  have Hnn : _ ≠ null := Hal
   ihave #Hio : isPkgInit (PROP := IProp GF) pkg_id.io $$ []
   · iPkgInit
   ihave #Hd := io.isInit_access $$ Hio

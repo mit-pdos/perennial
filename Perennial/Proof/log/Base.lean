@@ -46,41 +46,15 @@ abbrev prefixField (l : Loc) : Loc := structFieldRef Logger go!"prefix" l
 abbrev flagField (l : Loc) : Loc := structFieldRef Logger go!"flag" l
 abbrev isDiscardField (l : Loc) : Loc := structFieldRef Logger go!"isDiscard" l
 
-/-- The atomic fields of the `Logger` at `l` are aligned for their operations (the premise of
-the specs of `sync/atomic`'s methods), as in a `Logger` allocated at its alignment
-(`LoggerAligned_of`). -/
-def LoggerAligned (l : Loc) : Prop :=
-  l ≠ null ∧
-  Aligned (.cell 8) (structFieldRef (sync.atomic.Pointer GoString) go!"v" (prefixField (GF := GF) l)) ∧
-  Aligned (.word 4) (structFieldRef sync.atomic.Int32 go!"v" (flagField (GF := GF) l)) ∧
-  Aligned (.word 4) (structFieldRef sync.atomic.Bool' go!"v" (isDiscardField (GF := GF) l))
-
-include hG sem package_sem in
-theorem LoggerAligned_of (l : Loc) (hnn : l ≠ null) (hal : AllocAligned Logger l) :
-    LoggerAligned (GF := GF) l := by
-  have hp := go.field_aligned (V := Logger) (f := go!"prefix") (by solve_layout_mem)
-    (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
-  have cp := go.structFieldRef_car' (V := Logger) (f := go!"prefix") hal.1 (by solve_layout_mem)
-  have hf := go.field_aligned (V := Logger) (f := go!"flag") (by solve_layout_mem)
-    (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
-  have cf := go.structFieldRef_car' (V := Logger) (f := go!"flag") hal.1 (by solve_layout_mem)
-  have hd := go.field_aligned (V := Logger) (f := go!"isDiscard") (by solve_layout_mem)
-    (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
-  have cd := go.structFieldRef_car' (V := Logger) (f := go!"isDiscard") hal.1 (by solve_layout_mem)
-  have hp' := go.field_aligned (V := sync.atomic.Pointer GoString) (f := go!"v")
-    (by solve_layout_mem) (by solve_layout_nodup) (by solve_layout_pow2) cp hp
-  have hf' := go.field_aligned (V := sync.atomic.Int32) (f := go!"v")
-    (by solve_layout_mem) (by solve_layout_nodup) (by solve_layout_pow2) cf hf
-  have hd' := go.field_aligned (V := sync.atomic.Bool') (f := go!"v")
-    (by solve_layout_mem) (by solve_layout_nodup) (by solve_layout_pow2) cd hd
-  exact ⟨hnn, by simpa [Aligned, Encoding.align] using hp', by simpa [Aligned, Encoding.align] using hf',
-    by simpa [Aligned, Encoding.align] using hd'⟩
+/-- The `Logger` at `l` is not `nil` (what the setters' specs ask of it; at this Perennial the
+atomic operations' specs take no alignment premise). -/
+def LoggerAligned (l : Loc) : Prop := l ≠ null
 
 /-- The `*Logger` `l` with prefix `pfx` and flags `flag` (as `New` and the setters leave it):
 `outMu` guards `out` (`isMutex`); the atomic `prefix` points to a cell holding `pfx`, `flag`
 holds `flag`, and `isDiscard` some Boolean (whether `out` is `io.Discard`). -/
 def ownLogger (l : Loc) (pfx : GoString) (flag : w32) : IProp GF :=
-  iprop("%Hal" ∷ ⌜LoggerAligned (GF := GF) l⌝ ∗
+  iprop("%Hal" ∷ ⌜LoggerAligned l⌝ ∗
     "#HoutMu" ∷ sync.isMutex (outMuField (GF := GF) l) (∃ w : GoInterface, outField (GF := GF) l ↦ w) ∗
     "Hprefix" ∷ (∃ p : Loc,
       sync.atomic.ownPointer (T' := GoString) (prefixField (GF := GF) l) (DFrac.own 1) p ∗ p ↦ pfx) ∗

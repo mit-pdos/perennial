@@ -28,7 +28,7 @@ theorem log.Logger.SetPrefix.wp_proof
     log.Logger.SetPrefix.spec (GF := GF) (hG := hG) := by
   intro l p0 pfx
   wp_start as ⟨%Hal, Hf⟩
-  obtain ⟨Hnn, Hpa, -, -⟩ := Hal
+  have Hnn : _ ≠ null := Hal
   wp_auto
   wp_apply_core wp_Store $$ [] [-]
   · iPkgInit
