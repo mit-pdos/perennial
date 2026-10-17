@@ -96,8 +96,12 @@ abbrev Association [FfiSyntax] : Type := w64
 
 class Association.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Association.ty Association.underlying
+  method_set : go.MethodSetIs Association.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Association.ty) []
 
 attribute [instance] Association.TypeAssumptions.underlying
+  Association.TypeAssumptions.method_set
+  Association.TypeAssumptions.ptr_method_set
 
 structure Bubble [FfiSyntax] where
   mk ::
@@ -124,11 +128,15 @@ class Bubble.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   underlying : go.UnderlyingDirectedEq Bubble.ty Bubble.underlying
   get_b : ∀ (x : Bubble), go.IsGoStepPureDetTagged under (StructFieldGet Bubble.underlying go!"b") #x (Val #(x.b'))
   set_b : ∀ (x : Bubble) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet Bubble.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Bubble)))
+  method_set : go.MethodSetIs Bubble.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Bubble.ty) [(go!"Release", (some (go.signature.Signature [] false []))), (go!"Run", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [] false []))] false [])))]
 
 attribute [instance] Bubble.TypeAssumptions.type_repr
   Bubble.TypeAssumptions.underlying
   Bubble.TypeAssumptions.get_b
   Bubble.TypeAssumptions.set_b
+  Bubble.TypeAssumptions.method_set
+  Bubble.TypeAssumptions.ptr_method_set
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Association_instance : Association.TypeAssumptions

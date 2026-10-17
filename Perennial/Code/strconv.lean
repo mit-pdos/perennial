@@ -280,6 +280,8 @@ class NumError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_Num : ∀ (x : NumError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet NumError.underlying go!"Num") (PairV #x #y) (Val #(({ x with Num' := y } : NumError)))
   get_Err : ∀ (x : NumError), go.IsGoStepPureDetTagged under (StructFieldGet NumError.underlying go!"Err") #x (Val #(x.Err'))
   set_Err : ∀ (x : NumError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet NumError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : NumError)))
+  method_set : go.MethodSetIs NumError.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType NumError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"Unwrap", (some (go.signature.Signature [] false [go.error])))]
 
 attribute [instance] NumError.TypeAssumptions.type_repr
   NumError.TypeAssumptions.underlying
@@ -289,6 +291,8 @@ attribute [instance] NumError.TypeAssumptions.type_repr
   NumError.TypeAssumptions.set_Num
   NumError.TypeAssumptions.get_Err
   NumError.TypeAssumptions.set_Err
+  NumError.TypeAssumptions.method_set
+  NumError.TypeAssumptions.ptr_method_set
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   NumError_instance : NumError.TypeAssumptions

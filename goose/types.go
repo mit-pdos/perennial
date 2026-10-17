@@ -205,17 +205,28 @@ func (ctx *Ctx) signature(n locatable, t *types.Signature) glang.Expr {
 	)
 }
 
+// interfaceType translates an interface type as the list of its elements: its
+// methods, all of them (those of embedded interfaces too, as go/types computes
+// the interface's method set), ordered by their unique ids, each named by its id
+// (types.Id: an unexported method's name is qualified by its package path, so
+// that `m` of package a and `m` of package b are distinct methods, as in Go),
+// then the embedded elements that are not interfaces made only of methods
+// (whose methods are already in the list): unions, other types, and interfaces
+// with type terms (constraints, as `comparable`).
 func (ctx *Ctx) interfaceType(n locatable, t *types.Interface) glang.Expr {
 	var elems glang.ListExpr
-	for i := range t.NumExplicitMethods() {
+	for i := range t.NumMethods() {
 		elems = append(elems,
 			glang.NewCallExpr(glang.TermIdent("go.MethodElem"),
-				glang.StringLiteral{Value: t.ExplicitMethod(i).Name()},
-				ctx.signature(n, t.ExplicitMethod(i).Signature())),
+				glang.StringLiteral{Value: t.Method(i).Id()},
+				ctx.signature(n, t.Method(i).Signature())),
 		)
 	}
 	for i := range t.NumEmbeddeds() {
 		em := t.EmbeddedType(i)
+		if emi, ok := em.Underlying().(*types.Interface); ok && emi.IsMethodSet() {
+			continue
+		}
 		var terms glang.ListExpr
 		if uem, ok := em.(*types.Union); ok {
 			for j := range uem.Len() {

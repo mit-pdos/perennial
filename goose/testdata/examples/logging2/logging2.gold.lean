@@ -652,6 +652,8 @@ class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
   set_memTxnNxt : ∀ (x : Log) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"memTxnNxt") (PairV #x #y) (Val #(({ x with memTxnNxt' := y } : Log)))
   get_logTxnNxt : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"logTxnNxt") #x (Val #(x.logTxnNxt'))
   set_logTxnNxt : ∀ (x : Log) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"logTxnNxt") (PairV #x #y) (Val #(({ x with logTxnNxt' := y } : Log)))
+  method_set : go.MethodSetIs Log.ty [(go!"Append", none), (go!"Logger", (some (go.signature.Signature [] false []))), (go!"Read", none), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.diskAppend", (some (go.signature.Signature [] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.diskAppendWait", (some (go.signature.Signature [go.uint64] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.memAppend", none), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.memWrite", none), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.readBlocks", none), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.readHdr", (some (go.signature.Signature [] false [go.uint64]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.readLogTxnNxt", (some (go.signature.Signature [] false [go.uint64]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.writeBlocks", none), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.writeHdr", (some (go.signature.Signature [go.uint64] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Log.ty) [(go!"Append", none), (go!"Logger", (some (go.signature.Signature [] false []))), (go!"Read", none), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.diskAppend", (some (go.signature.Signature [] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.diskAppendWait", (some (go.signature.Signature [go.uint64] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.memAppend", none), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.memWrite", none), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.readBlocks", none), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.readHdr", (some (go.signature.Signature [] false [go.uint64]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.readLogTxnNxt", (some (go.signature.Signature [] false [go.uint64]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.writeBlocks", none), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.writeHdr", (some (go.signature.Signature [go.uint64] false [])))]
   Append_unfold : MethodUnfold Log.ty go!"Append" Log.Append.impl
   Logger_unfold : MethodUnfold Log.ty go!"Logger" Log.Logger.impl
   Read_unfold : MethodUnfold Log.ty go!"Read" Log.Read.impl
@@ -705,6 +707,8 @@ attribute [instance] Log.TypeAssumptions.type_repr
   Log.TypeAssumptions.set_memTxnNxt
   Log.TypeAssumptions.get_logTxnNxt
   Log.TypeAssumptions.set_logTxnNxt
+  Log.TypeAssumptions.method_set
+  Log.TypeAssumptions.ptr_method_set
   Log.TypeAssumptions.Append_unfold
   Log.TypeAssumptions.Logger_unfold
   Log.TypeAssumptions.Read_unfold
@@ -759,6 +763,8 @@ class Txn.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
   set_log : ∀ (x : Txn) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Txn.underlying go!"log") (PairV #x #y) (Val #(({ x with log' := y } : Txn)))
   get_blks : ∀ (x : Txn), go.IsGoStepPureDetTagged under (StructFieldGet Txn.underlying go!"blks") #x (Val #(x.blks'))
   set_blks : ∀ (x : Txn) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet Txn.underlying go!"blks") (PairV #x #y) (Val #(({ x with blks' := y } : Txn)))
+  method_set : go.MethodSetIs Txn.ty [(go!"Commit", (some (go.signature.Signature [] false [go.bool]))), (go!"Read", none), (go!"Write", none)]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Txn.ty) [(go!"Commit", (some (go.signature.Signature [] false [go.bool]))), (go!"Read", none), (go!"Write", none)]
   Commit_unfold : MethodUnfold Txn.ty go!"Commit" Txn.Commit.impl
   Read_unfold : MethodUnfold Txn.ty go!"Read" Txn.Read.impl
   Write_unfold : MethodUnfold Txn.ty go!"Write" Txn.Write.impl
@@ -775,6 +781,8 @@ attribute [instance] Txn.TypeAssumptions.type_repr
   Txn.TypeAssumptions.set_log
   Txn.TypeAssumptions.get_blks
   Txn.TypeAssumptions.set_blks
+  Txn.TypeAssumptions.method_set
+  Txn.TypeAssumptions.ptr_method_set
   Txn.TypeAssumptions.Commit_unfold
   Txn.TypeAssumptions.Read_unfold
   Txn.TypeAssumptions.Write_unfold

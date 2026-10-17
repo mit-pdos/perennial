@@ -615,6 +615,8 @@ class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
   set_cache : ∀ (x : Log) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"cache") (PairV #x #y) (Val #(({ x with cache' := y } : Log)))
   get_length : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"length") #x (Val #(x.length'))
   set_length : ∀ (x : Log) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"length") (PairV #x #y) (Val #(({ x with length' := y } : Log)))
+  method_set : go.MethodSetIs Log.ty [(go!"Apply", (some (go.signature.Signature [] false []))), (go!"BeginTxn", (some (go.signature.Signature [] false [go.bool]))), (go!"Commit", (some (go.signature.Signature [] false []))), (go!"Read", none), (go!"Size", (some (go.signature.Signature [] false [go.uint64]))), (go!"Write", none), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/wal.lock", (some (go.signature.Signature [] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/wal.unlock", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Log.ty) [(go!"Apply", (some (go.signature.Signature [] false []))), (go!"BeginTxn", (some (go.signature.Signature [] false [go.bool]))), (go!"Commit", (some (go.signature.Signature [] false []))), (go!"Read", none), (go!"Size", (some (go.signature.Signature [] false [go.uint64]))), (go!"Write", none), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/wal.lock", (some (go.signature.Signature [] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/wal.unlock", (some (go.signature.Signature [] false [])))]
   Apply_unfold : MethodUnfold Log.ty go!"Apply" Log.Apply.impl
   BeginTxn_unfold : MethodUnfold Log.ty go!"BeginTxn" Log.BeginTxn.impl
   Commit_unfold : MethodUnfold Log.ty go!"Commit" Log.Commit.impl
@@ -650,6 +652,8 @@ attribute [instance] Log.TypeAssumptions.type_repr
   Log.TypeAssumptions.set_cache
   Log.TypeAssumptions.get_length
   Log.TypeAssumptions.set_length
+  Log.TypeAssumptions.method_set
+  Log.TypeAssumptions.ptr_method_set
   Log.TypeAssumptions.Apply_unfold
   Log.TypeAssumptions.BeginTxn_unfold
   Log.TypeAssumptions.Commit_unfold

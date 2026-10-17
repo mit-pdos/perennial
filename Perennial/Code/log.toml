@@ -1,8 +1,16 @@
-translate = ["Ldate", "Ltime", "LstdFlags"]
+translate = [
+  "Ldate",
+  "Ltime",
+  "LstdFlags",
+  "New",
+  "Logger.SetOutput",
+  "Logger.SetPrefix",
+  "Logger.SetFlags",
+]
 
 trusted = ["Printf", "Println"]
 
-imports = ["!*"]
+imports = ["io", "sync", "sync/atomic"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

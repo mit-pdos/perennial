@@ -657,8 +657,12 @@ abbrev ByteOrder [FfiSyntax] : Type := GoInterface
 
 class ByteOrder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ByteOrder.ty ByteOrder.underlying
+  method_set : go.MethodSetIs ByteOrder.ty [(go!"PutUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false []))), (go!"PutUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false []))), (go!"PutUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false []))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Uint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint16]))), (go!"Uint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint32]))), (go!"Uint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType ByteOrder.ty) []
 
 attribute [instance] ByteOrder.TypeAssumptions.underlying
+  ByteOrder.TypeAssumptions.method_set
+  ByteOrder.TypeAssumptions.ptr_method_set
 
 abbrev AppendByteOrder [FfiSyntax] : Type := GoInterface
 
@@ -667,8 +671,12 @@ abbrev AppendByteOrder [FfiSyntax] : Type := GoInterface
 
 class AppendByteOrder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq AppendByteOrder.ty AppendByteOrder.underlying
+  method_set : go.MethodSetIs AppendByteOrder.ty [(go!"AppendUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false [(go.GoType.SliceType go.byte)]))), (go!"String", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType AppendByteOrder.ty) []
 
 attribute [instance] AppendByteOrder.TypeAssumptions.underlying
+  AppendByteOrder.TypeAssumptions.method_set
+  AppendByteOrder.TypeAssumptions.ptr_method_set
 
 structure littleEndian [FfiSyntax] where
   mk ::
@@ -692,6 +700,8 @@ instance equals_unfold_littleEndian [FfiSyntax] [GoGlobalContext] :
 class littleEndian.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying littleEndian.underlying littleEndian
   underlying : go.UnderlyingDirectedEq littleEndian.ty littleEndian.underlying
+  method_set : go.MethodSetIs littleEndian.ty [(go!"AppendUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false [(go.GoType.SliceType go.byte)]))), (go!"GoString", (some (go.signature.Signature [] false [go.string]))), (go!"PutUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false []))), (go!"PutUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false []))), (go!"PutUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false []))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Uint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint16]))), (go!"Uint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint32]))), (go!"Uint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType littleEndian.ty) [(go!"AppendUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false [(go.GoType.SliceType go.byte)]))), (go!"GoString", (some (go.signature.Signature [] false [go.string]))), (go!"PutUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false []))), (go!"PutUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false []))), (go!"PutUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false []))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Uint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint16]))), (go!"Uint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint32]))), (go!"Uint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint64])))]
   AppendUint16_unfold : MethodUnfold littleEndian.ty go!"AppendUint16" littleEndian.AppendUint16.impl
   AppendUint32_unfold : MethodUnfold littleEndian.ty go!"AppendUint32" littleEndian.AppendUint32.impl
   AppendUint64_unfold : MethodUnfold littleEndian.ty go!"AppendUint64" littleEndian.AppendUint64.impl
@@ -728,6 +738,8 @@ class littleEndian.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] littleEndian.TypeAssumptions.type_repr
   littleEndian.TypeAssumptions.underlying
+  littleEndian.TypeAssumptions.method_set
+  littleEndian.TypeAssumptions.ptr_method_set
   littleEndian.TypeAssumptions.AppendUint16_unfold
   littleEndian.TypeAssumptions.AppendUint32_unfold
   littleEndian.TypeAssumptions.AppendUint64_unfold
@@ -773,6 +785,8 @@ instance equals_unfold_bigEndian [FfiSyntax] [GoGlobalContext] :
 class bigEndian.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying bigEndian.underlying bigEndian
   underlying : go.UnderlyingDirectedEq bigEndian.ty bigEndian.underlying
+  method_set : go.MethodSetIs bigEndian.ty [(go!"AppendUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false [(go.GoType.SliceType go.byte)]))), (go!"GoString", (some (go.signature.Signature [] false [go.string]))), (go!"PutUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false []))), (go!"PutUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false []))), (go!"PutUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false []))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Uint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint16]))), (go!"Uint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint32]))), (go!"Uint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType bigEndian.ty) [(go!"AppendUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false [(go.GoType.SliceType go.byte)]))), (go!"GoString", (some (go.signature.Signature [] false [go.string]))), (go!"PutUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false []))), (go!"PutUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false []))), (go!"PutUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false []))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Uint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint16]))), (go!"Uint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint32]))), (go!"Uint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint64])))]
   AppendUint16_unfold : MethodUnfold bigEndian.ty go!"AppendUint16" bigEndian.AppendUint16.impl
   AppendUint32_unfold : MethodUnfold bigEndian.ty go!"AppendUint32" bigEndian.AppendUint32.impl
   AppendUint64_unfold : MethodUnfold bigEndian.ty go!"AppendUint64" bigEndian.AppendUint64.impl
@@ -809,6 +823,8 @@ class bigEndian.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
 
 attribute [instance] bigEndian.TypeAssumptions.type_repr
   bigEndian.TypeAssumptions.underlying
+  bigEndian.TypeAssumptions.method_set
+  bigEndian.TypeAssumptions.ptr_method_set
   bigEndian.TypeAssumptions.AppendUint16_unfold
   bigEndian.TypeAssumptions.AppendUint32_unfold
   bigEndian.TypeAssumptions.AppendUint64_unfold
@@ -865,6 +881,8 @@ class coder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_buf : ∀ (x : coder) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet coder.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : coder)))
   get_offset : ∀ (x : coder), go.IsGoStepPureDetTagged under (StructFieldGet coder.underlying go!"offset") #x (Val #(x.offset'))
   set_offset : ∀ (x : coder) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet coder.underlying go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : coder)))
+  method_set : go.MethodSetIs coder.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType coder.ty) []
 
 attribute [instance] coder.TypeAssumptions.type_repr
   coder.TypeAssumptions.underlying
@@ -874,6 +892,8 @@ attribute [instance] coder.TypeAssumptions.type_repr
   coder.TypeAssumptions.set_buf
   coder.TypeAssumptions.get_offset
   coder.TypeAssumptions.set_offset
+  coder.TypeAssumptions.method_set
+  coder.TypeAssumptions.ptr_method_set
 
 abbrev decoder [FfiSyntax] : Type := coder
 
@@ -882,8 +902,12 @@ abbrev decoder [FfiSyntax] : Type := coder
 
 class decoder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq decoder.ty decoder.underlying
+  method_set : go.MethodSetIs decoder.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType decoder.ty) [(go!"encoding/binary.bool", (some (go.signature.Signature [] false [go.bool]))), (go!"encoding/binary.int16", (some (go.signature.Signature [] false [go.int16]))), (go!"encoding/binary.int32", (some (go.signature.Signature [] false [go.int32]))), (go!"encoding/binary.int64", (some (go.signature.Signature [] false [go.int64]))), (go!"encoding/binary.int8", (some (go.signature.Signature [] false [go.int8]))), (go!"encoding/binary.skip", none), (go!"encoding/binary.uint16", (some (go.signature.Signature [] false [go.uint16]))), (go!"encoding/binary.uint32", (some (go.signature.Signature [] false [go.uint32]))), (go!"encoding/binary.uint64", (some (go.signature.Signature [] false [go.uint64]))), (go!"encoding/binary.uint8", (some (go.signature.Signature [] false [go.uint8]))), (go!"encoding/binary.value", none)]
 
 attribute [instance] decoder.TypeAssumptions.underlying
+  decoder.TypeAssumptions.method_set
+  decoder.TypeAssumptions.ptr_method_set
 
 abbrev encoder [FfiSyntax] : Type := coder
 
@@ -892,8 +916,12 @@ abbrev encoder [FfiSyntax] : Type := coder
 
 class encoder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq encoder.ty encoder.underlying
+  method_set : go.MethodSetIs encoder.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType encoder.ty) [(go!"encoding/binary.bool", (some (go.signature.Signature [go.bool] false []))), (go!"encoding/binary.int16", (some (go.signature.Signature [go.int16] false []))), (go!"encoding/binary.int32", (some (go.signature.Signature [go.int32] false []))), (go!"encoding/binary.int64", (some (go.signature.Signature [go.int64] false []))), (go!"encoding/binary.int8", (some (go.signature.Signature [go.int8] false []))), (go!"encoding/binary.skip", none), (go!"encoding/binary.uint16", (some (go.signature.Signature [go.uint16] false []))), (go!"encoding/binary.uint32", (some (go.signature.Signature [go.uint32] false []))), (go!"encoding/binary.uint64", (some (go.signature.Signature [go.uint64] false []))), (go!"encoding/binary.uint8", (some (go.signature.Signature [go.uint8] false []))), (go!"encoding/binary.value", none)]
 
 attribute [instance] encoder.TypeAssumptions.underlying
+  encoder.TypeAssumptions.method_set
+  encoder.TypeAssumptions.ptr_method_set
 
 structure nativeEndian [FfiSyntax] where
   mk ::
@@ -920,11 +948,15 @@ class nativeEndian.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   underlying : go.UnderlyingDirectedEq nativeEndian.ty nativeEndian.underlying
   get_littleEndian : ∀ (x : nativeEndian), go.IsGoStepPureDetTagged under (StructFieldGet nativeEndian.underlying go!"littleEndian") #x (Val #(x.littleEndian'))
   set_littleEndian : ∀ (x : nativeEndian) (y : littleEndian), go.IsGoStepPureDetTagged under (StructFieldSet nativeEndian.underlying go!"littleEndian") (PairV #x #y) (Val #(({ x with littleEndian' := y } : nativeEndian)))
+  method_set : go.MethodSetIs nativeEndian.ty [(go!"AppendUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false [(go.GoType.SliceType go.byte)]))), (go!"GoString", (some (go.signature.Signature [] false [go.string]))), (go!"PutUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false []))), (go!"PutUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false []))), (go!"PutUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false []))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Uint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint16]))), (go!"Uint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint32]))), (go!"Uint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType nativeEndian.ty) [(go!"AppendUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false [(go.GoType.SliceType go.byte)]))), (go!"AppendUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false [(go.GoType.SliceType go.byte)]))), (go!"GoString", (some (go.signature.Signature [] false [go.string]))), (go!"PutUint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false []))), (go!"PutUint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false []))), (go!"PutUint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false []))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Uint16", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint16]))), (go!"Uint32", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint32]))), (go!"Uint64", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint64])))]
 
 attribute [instance] nativeEndian.TypeAssumptions.type_repr
   nativeEndian.TypeAssumptions.underlying
   nativeEndian.TypeAssumptions.get_littleEndian
   nativeEndian.TypeAssumptions.set_littleEndian
+  nativeEndian.TypeAssumptions.method_set
+  nativeEndian.TypeAssumptions.ptr_method_set
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ByteOrder_instance : ByteOrder.TypeAssumptions

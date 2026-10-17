@@ -819,9 +819,13 @@ instance equals_unfold_noCopy [FfiSyntax] [GoGlobalContext] :
 class noCopy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying noCopy.underlying noCopy
   underlying : go.UnderlyingDirectedEq noCopy.ty noCopy.underlying
+  method_set : go.MethodSetIs noCopy.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType noCopy.ty) [(go!"Lock", (some (go.signature.Signature [] false []))), (go!"Unlock", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] noCopy.TypeAssumptions.type_repr
   noCopy.TypeAssumptions.underlying
+  noCopy.TypeAssumptions.method_set
+  noCopy.TypeAssumptions.ptr_method_set
 
 structure Bool' [FfiSyntax] where
   mk ::
@@ -852,6 +856,8 @@ class Bool.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   set__0 : ∀ (x : Bool') (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Bool'.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Bool')))
   get_v : ∀ (x : Bool'), go.IsGoStepPureDetTagged under (StructFieldGet Bool'.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Bool') (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Bool'.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Bool')))
+  method_set : go.MethodSetIs Bool'.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Bool'.ty) [(go!"CompareAndSwap", (some (go.signature.Signature [go.bool, go.bool] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.bool]))), (go!"Store", (some (go.signature.Signature [go.bool] false []))), (go!"Swap", (some (go.signature.Signature [go.bool] false [go.bool])))]
   ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Bool'.ty) go!"CompareAndSwap" Bool.CompareAndSwap.impl
   ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Bool'.ty) go!"Load" Bool.Load.impl
   ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Bool'.ty) go!"Store" Bool.Store.impl
@@ -863,6 +869,8 @@ attribute [instance] Bool.TypeAssumptions.type_repr
   Bool.TypeAssumptions.set__0
   Bool.TypeAssumptions.get_v
   Bool.TypeAssumptions.set_v
+  Bool.TypeAssumptions.method_set
+  Bool.TypeAssumptions.ptr_method_set
   Bool.TypeAssumptions.ptr_CompareAndSwap_unfold
   Bool.TypeAssumptions.ptr_Load_unfold
   Bool.TypeAssumptions.ptr_Store_unfold
@@ -901,6 +909,8 @@ class Pointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set__1 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : (Pointer T'))))
   get_v : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"v") #x (Val #(x.v'))
   set_v : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"v") (PairV #x #y) (Val #(({ x with v' := y } : (Pointer T'))))
+  method_set : ∀ (T : go.GoType), go.MethodSetIs (Pointer.ty T) []
+  ptr_method_set : ∀ (T : go.GoType), go.MethodSetIs (go.GoType.PointerType (Pointer.ty T)) [(go!"CompareAndSwap", (some (go.signature.Signature [(go.GoType.PointerType T), (go.GoType.PointerType T)] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [(go.GoType.PointerType T)]))), (go!"Store", (some (go.signature.Signature [(go.GoType.PointerType T)] false []))), (go!"Swap", (some (go.signature.Signature [(go.GoType.PointerType T)] false [(go.GoType.PointerType T)])))]
   ptr_CompareAndSwap_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Pointer.ty T)) go!"CompareAndSwap" (Pointer.CompareAndSwap.impl T)
   ptr_Load_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Pointer.ty T)) go!"Load" (Pointer.Load.impl T)
   ptr_Store_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Pointer.ty T)) go!"Store" (Pointer.Store.impl T)
@@ -914,6 +924,8 @@ attribute [instance] Pointer.TypeAssumptions.type_repr
   Pointer.TypeAssumptions.set__1
   Pointer.TypeAssumptions.get_v
   Pointer.TypeAssumptions.set_v
+  Pointer.TypeAssumptions.method_set
+  Pointer.TypeAssumptions.ptr_method_set
   Pointer.TypeAssumptions.ptr_CompareAndSwap_unfold
   Pointer.TypeAssumptions.ptr_Load_unfold
   Pointer.TypeAssumptions.ptr_Store_unfold
@@ -948,6 +960,8 @@ class Int32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set__0 : ∀ (x : Int32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Int32)))
   get_v : ∀ (x : Int32), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Int32) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Int32)))
+  method_set : go.MethodSetIs Int32.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Int32.ty) [(go!"Add", (some (go.signature.Signature [go.int32] false [go.int32]))), (go!"And", (some (go.signature.Signature [go.int32] false [go.int32]))), (go!"CompareAndSwap", (some (go.signature.Signature [go.int32, go.int32] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.int32]))), (go!"Or", (some (go.signature.Signature [go.int32] false [go.int32]))), (go!"Store", (some (go.signature.Signature [go.int32] false []))), (go!"Swap", (some (go.signature.Signature [go.int32] false [go.int32])))]
   ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Int32.ty) go!"Add" Int32.Add.impl
   ptr_And_unfold : MethodUnfold (go.GoType.PointerType Int32.ty) go!"And" Int32.And.impl
   ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Int32.ty) go!"CompareAndSwap" Int32.CompareAndSwap.impl
@@ -962,6 +976,8 @@ attribute [instance] Int32.TypeAssumptions.type_repr
   Int32.TypeAssumptions.set__0
   Int32.TypeAssumptions.get_v
   Int32.TypeAssumptions.set_v
+  Int32.TypeAssumptions.method_set
+  Int32.TypeAssumptions.ptr_method_set
   Int32.TypeAssumptions.ptr_Add_unfold
   Int32.TypeAssumptions.ptr_And_unfold
   Int32.TypeAssumptions.ptr_CompareAndSwap_unfold
@@ -992,9 +1008,13 @@ instance equals_unfold_align64 [FfiSyntax] [GoGlobalContext] :
 class align64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying align64.underlying align64
   underlying : go.UnderlyingDirectedEq align64.ty align64.underlying
+  method_set : go.MethodSetIs align64.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType align64.ty) []
 
 attribute [instance] align64.TypeAssumptions.type_repr
   align64.TypeAssumptions.underlying
+  align64.TypeAssumptions.method_set
+  align64.TypeAssumptions.ptr_method_set
 
 structure Int64 [FfiSyntax] where
   mk ::
@@ -1029,6 +1049,8 @@ class Int64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set__1 : ∀ (x : Int64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : Int64)))
   get_v : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Int64) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Int64)))
+  method_set : go.MethodSetIs Int64.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Int64.ty) [(go!"Add", (some (go.signature.Signature [go.int64] false [go.int64]))), (go!"And", (some (go.signature.Signature [go.int64] false [go.int64]))), (go!"CompareAndSwap", (some (go.signature.Signature [go.int64, go.int64] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.int64]))), (go!"Or", (some (go.signature.Signature [go.int64] false [go.int64]))), (go!"Store", (some (go.signature.Signature [go.int64] false []))), (go!"Swap", (some (go.signature.Signature [go.int64] false [go.int64])))]
   ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Int64.ty) go!"Add" Int64.Add.impl
   ptr_And_unfold : MethodUnfold (go.GoType.PointerType Int64.ty) go!"And" Int64.And.impl
   ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Int64.ty) go!"CompareAndSwap" Int64.CompareAndSwap.impl
@@ -1045,6 +1067,8 @@ attribute [instance] Int64.TypeAssumptions.type_repr
   Int64.TypeAssumptions.set__1
   Int64.TypeAssumptions.get_v
   Int64.TypeAssumptions.set_v
+  Int64.TypeAssumptions.method_set
+  Int64.TypeAssumptions.ptr_method_set
   Int64.TypeAssumptions.ptr_Add_unfold
   Int64.TypeAssumptions.ptr_And_unfold
   Int64.TypeAssumptions.ptr_CompareAndSwap_unfold
@@ -1082,6 +1106,8 @@ class Uint32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set__0 : ∀ (x : Uint32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Uint32)))
   get_v : ∀ (x : Uint32), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Uint32) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Uint32)))
+  method_set : go.MethodSetIs Uint32.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Uint32.ty) [(go!"Add", (some (go.signature.Signature [go.uint32] false [go.uint32]))), (go!"And", (some (go.signature.Signature [go.uint32] false [go.uint32]))), (go!"CompareAndSwap", (some (go.signature.Signature [go.uint32, go.uint32] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.uint32]))), (go!"Or", (some (go.signature.Signature [go.uint32] false [go.uint32]))), (go!"Store", (some (go.signature.Signature [go.uint32] false []))), (go!"Swap", (some (go.signature.Signature [go.uint32] false [go.uint32])))]
   ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Uint32.ty) go!"Add" Uint32.Add.impl
   ptr_And_unfold : MethodUnfold (go.GoType.PointerType Uint32.ty) go!"And" Uint32.And.impl
   ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Uint32.ty) go!"CompareAndSwap" Uint32.CompareAndSwap.impl
@@ -1096,6 +1122,8 @@ attribute [instance] Uint32.TypeAssumptions.type_repr
   Uint32.TypeAssumptions.set__0
   Uint32.TypeAssumptions.get_v
   Uint32.TypeAssumptions.set_v
+  Uint32.TypeAssumptions.method_set
+  Uint32.TypeAssumptions.ptr_method_set
   Uint32.TypeAssumptions.ptr_Add_unfold
   Uint32.TypeAssumptions.ptr_And_unfold
   Uint32.TypeAssumptions.ptr_CompareAndSwap_unfold
@@ -1137,6 +1165,8 @@ class Uint64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set__1 : ∀ (x : Uint64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : Uint64)))
   get_v : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Uint64) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Uint64)))
+  method_set : go.MethodSetIs Uint64.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Uint64.ty) [(go!"Add", (some (go.signature.Signature [go.uint64] false [go.uint64]))), (go!"And", (some (go.signature.Signature [go.uint64] false [go.uint64]))), (go!"CompareAndSwap", (some (go.signature.Signature [go.uint64, go.uint64] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.uint64]))), (go!"Or", (some (go.signature.Signature [go.uint64] false [go.uint64]))), (go!"Store", (some (go.signature.Signature [go.uint64] false []))), (go!"Swap", (some (go.signature.Signature [go.uint64] false [go.uint64])))]
   ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Uint64.ty) go!"Add" Uint64.Add.impl
   ptr_And_unfold : MethodUnfold (go.GoType.PointerType Uint64.ty) go!"And" Uint64.And.impl
   ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Uint64.ty) go!"CompareAndSwap" Uint64.CompareAndSwap.impl
@@ -1153,6 +1183,8 @@ attribute [instance] Uint64.TypeAssumptions.type_repr
   Uint64.TypeAssumptions.set__1
   Uint64.TypeAssumptions.get_v
   Uint64.TypeAssumptions.set_v
+  Uint64.TypeAssumptions.method_set
+  Uint64.TypeAssumptions.ptr_method_set
   Uint64.TypeAssumptions.ptr_Add_unfold
   Uint64.TypeAssumptions.ptr_And_unfold
   Uint64.TypeAssumptions.ptr_CompareAndSwap_unfold
@@ -1190,6 +1222,8 @@ class Uintptr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set__0 : ∀ (x : Uintptr) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Uintptr)))
   get_v : ∀ (x : Uintptr), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Uintptr) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Uintptr)))
+  method_set : go.MethodSetIs Uintptr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Uintptr.ty) [(go!"Add", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"And", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"CompareAndSwap", (some (go.signature.Signature [go.uintptr, go.uintptr] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.uintptr]))), (go!"Or", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"Store", (some (go.signature.Signature [go.uintptr] false []))), (go!"Swap", (some (go.signature.Signature [go.uintptr] false [go.uintptr])))]
 
 attribute [instance] Uintptr.TypeAssumptions.type_repr
   Uintptr.TypeAssumptions.underlying
@@ -1197,6 +1231,8 @@ attribute [instance] Uintptr.TypeAssumptions.type_repr
   Uintptr.TypeAssumptions.set__0
   Uintptr.TypeAssumptions.get_v
   Uintptr.TypeAssumptions.set_v
+  Uintptr.TypeAssumptions.method_set
+  Uintptr.TypeAssumptions.ptr_method_set
 
 structure Value [FfiSyntax] where
   mk ::
@@ -1223,6 +1259,8 @@ class Value.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   underlying : go.UnderlyingDirectedEq Value.ty Value.underlying
   get_v : ∀ (x : Value), go.IsGoStepPureDetTagged under (StructFieldGet Value.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Value) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet Value.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Value)))
+  method_set : go.MethodSetIs Value.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Value.ty) [(go!"CompareAndSwap", (some (go.signature.Signature [go.any, go.any] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.any]))), (go!"Store", (some (go.signature.Signature [go.any] false []))), (go!"Swap", (some (go.signature.Signature [go.any] false [go.any])))]
   ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"CompareAndSwap" Value.CompareAndSwap.impl
   ptr_Load_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"Load" Value.Load.impl
   ptr_Store_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"Store" Value.Store.impl
@@ -1232,6 +1270,8 @@ attribute [instance] Value.TypeAssumptions.type_repr
   Value.TypeAssumptions.underlying
   Value.TypeAssumptions.get_v
   Value.TypeAssumptions.set_v
+  Value.TypeAssumptions.method_set
+  Value.TypeAssumptions.ptr_method_set
   Value.TypeAssumptions.ptr_CompareAndSwap_unfold
   Value.TypeAssumptions.ptr_Load_unfold
   Value.TypeAssumptions.ptr_Store_unfold
@@ -1266,6 +1306,8 @@ class efaceWords.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_typ : ∀ (x : efaceWords) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet efaceWords.underlying go!"typ") (PairV #x #y) (Val #(({ x with typ' := y } : efaceWords)))
   get_data : ∀ (x : efaceWords), go.IsGoStepPureDetTagged under (StructFieldGet efaceWords.underlying go!"data") #x (Val #(x.data'))
   set_data : ∀ (x : efaceWords) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet efaceWords.underlying go!"data") (PairV #x #y) (Val #(({ x with data' := y } : efaceWords)))
+  method_set : go.MethodSetIs efaceWords.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType efaceWords.ty) []
 
 attribute [instance] efaceWords.TypeAssumptions.type_repr
   efaceWords.TypeAssumptions.underlying
@@ -1273,6 +1315,8 @@ attribute [instance] efaceWords.TypeAssumptions.type_repr
   efaceWords.TypeAssumptions.set_typ
   efaceWords.TypeAssumptions.get_data
   efaceWords.TypeAssumptions.set_data
+  efaceWords.TypeAssumptions.method_set
+  efaceWords.TypeAssumptions.ptr_method_set
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Bool_instance : Bool.TypeAssumptions
