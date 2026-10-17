@@ -1045,8 +1045,12 @@ abbrev readdirMode [FfiSyntax] : Type := w64
 
 class readdirMode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq readdirMode.ty readdirMode.underlying
+  method_set : go.MethodSetIs readdirMode.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType readdirMode.ty) []
 
 attribute [instance] readdirMode.TypeAssumptions.underlying
+  readdirMode.TypeAssumptions.method_set
+  readdirMode.TypeAssumptions.ptr_method_set
 
 axiom dirInfo : Type
 axiom dirInfo.zero_val : ZeroVal dirInfo
@@ -1056,10 +1060,14 @@ class dirInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying dirInfo.underlying dirInfo
   underlying : go.UnderlyingDirectedEq dirInfo.ty dirInfo.underlying
   isUnderlying : go.IsUnderlying dirInfo.underlying dirInfo.underlying
+  method_set : go.MethodSetIs dirInfo.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType dirInfo.ty) [(go!"os.close", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] dirInfo.TypeAssumptions.type_repr
   dirInfo.TypeAssumptions.underlying
   dirInfo.TypeAssumptions.isUnderlying
+  dirInfo.TypeAssumptions.method_set
+  dirInfo.TypeAssumptions.ptr_method_set
 
 abbrev timeout [FfiSyntax] : Type := GoInterface
 
@@ -1068,8 +1076,12 @@ abbrev timeout [FfiSyntax] : Type := GoInterface
 
 class timeout.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq timeout.ty timeout.underlying
+  method_set : go.MethodSetIs timeout.ty [(go!"Timeout", (some (go.signature.Signature [] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType timeout.ty) []
 
 attribute [instance] timeout.TypeAssumptions.underlying
+  timeout.TypeAssumptions.method_set
+  timeout.TypeAssumptions.ptr_method_set
 
 structure SyscallError [FfiSyntax] where
   mk ::
@@ -1101,6 +1113,8 @@ class SyscallError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   set_Syscall : ∀ (x : SyscallError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet SyscallError.underlying go!"Syscall") (PairV #x #y) (Val #(({ x with Syscall' := y } : SyscallError)))
   get_Err : ∀ (x : SyscallError), go.IsGoStepPureDetTagged under (StructFieldGet SyscallError.underlying go!"Err") #x (Val #(x.Err'))
   set_Err : ∀ (x : SyscallError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet SyscallError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : SyscallError)))
+  method_set : go.MethodSetIs SyscallError.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType SyscallError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"Timeout", (some (go.signature.Signature [] false [go.bool]))), (go!"Unwrap", (some (go.signature.Signature [] false [go.error])))]
 
 attribute [instance] SyscallError.TypeAssumptions.type_repr
   SyscallError.TypeAssumptions.underlying
@@ -1109,6 +1123,8 @@ attribute [instance] SyscallError.TypeAssumptions.type_repr
   SyscallError.TypeAssumptions.set_Syscall
   SyscallError.TypeAssumptions.get_Err
   SyscallError.TypeAssumptions.set_Err
+  SyscallError.TypeAssumptions.method_set
+  SyscallError.TypeAssumptions.ptr_method_set
 
 abbrev processStatus [FfiSyntax] : Type := w32
 
@@ -1117,8 +1133,12 @@ abbrev processStatus [FfiSyntax] : Type := w32
 
 class processStatus.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq processStatus.ty processStatus.underlying
+  method_set : go.MethodSetIs processStatus.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType processStatus.ty) []
 
 attribute [instance] processStatus.TypeAssumptions.underlying
+  processStatus.TypeAssumptions.method_set
+  processStatus.TypeAssumptions.ptr_method_set
 
 axiom Process : Type
 axiom Process.zero_val : ZeroVal Process
@@ -1128,10 +1148,14 @@ class Process.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying Process.underlying Process
   underlying : go.UnderlyingDirectedEq Process.ty Process.underlying
   isUnderlying : go.IsUnderlying Process.underlying Process.underlying
+  method_set : go.MethodSetIs Process.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Process.ty) [(go!"Kill", (some (go.signature.Signature [] false [go.error]))), (go!"Release", (some (go.signature.Signature [] false [go.error]))), (go!"Signal", (some (go.signature.Signature [Signal.ty] false [go.error]))), (go!"Wait", (some (go.signature.Signature [] false [(go.GoType.PointerType ProcessState.ty), go.error]))), (go!"WithHandle", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.uintptr] false []))] false [go.error]))), (go!"os.blockUntilWaitable", (some (go.signature.Signature [] false [go.bool, go.error]))), (go!"os.doRelease", (some (go.signature.Signature [processStatus.ty] false [processStatus.ty]))), (go!"os.handleTransientAcquire", (some (go.signature.Signature [] false [go.uintptr, processStatus.ty]))), (go!"os.handleTransientRelease", (some (go.signature.Signature [] false []))), (go!"os.kill", (some (go.signature.Signature [] false [go.error]))), (go!"os.pidSignal", none), (go!"os.pidStatus", (some (go.signature.Signature [] false [processStatus.ty]))), (go!"os.pidWait", (some (go.signature.Signature [] false [(go.GoType.PointerType ProcessState.ty), go.error]))), (go!"os.pidfdSendSignal", none), (go!"os.pidfdWait", (some (go.signature.Signature [] false [(go.GoType.PointerType ProcessState.ty), go.error]))), (go!"os.signal", (some (go.signature.Signature [Signal.ty] false [go.error]))), (go!"os.wait", (some (go.signature.Signature [] false [(go.GoType.PointerType ProcessState.ty), go.error]))), (go!"os.withHandle", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.uintptr] false []))] false [go.error])))]
 
 attribute [instance] Process.TypeAssumptions.type_repr
   Process.TypeAssumptions.underlying
   Process.TypeAssumptions.isUnderlying
+  Process.TypeAssumptions.method_set
+  Process.TypeAssumptions.ptr_method_set
 
 axiom processHandle : Type
 axiom processHandle.zero_val : ZeroVal processHandle
@@ -1141,10 +1165,14 @@ class processHandle.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   type_repr : go.TypeReprUnderlying processHandle.underlying processHandle
   underlying : go.UnderlyingDirectedEq processHandle.ty processHandle.underlying
   isUnderlying : go.IsUnderlying processHandle.underlying processHandle.underlying
+  method_set : go.MethodSetIs processHandle.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType processHandle.ty) [(go!"os.acquire", (some (go.signature.Signature [] false [go.uintptr, go.bool]))), (go!"os.closeHandle", (some (go.signature.Signature [] false []))), (go!"os.release", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] processHandle.TypeAssumptions.type_repr
   processHandle.TypeAssumptions.underlying
   processHandle.TypeAssumptions.isUnderlying
+  processHandle.TypeAssumptions.method_set
+  processHandle.TypeAssumptions.ptr_method_set
 
 axiom ProcAttr : Type
 axiom ProcAttr.zero_val : ZeroVal ProcAttr
@@ -1154,10 +1182,14 @@ class ProcAttr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying ProcAttr.underlying ProcAttr
   underlying : go.UnderlyingDirectedEq ProcAttr.ty ProcAttr.underlying
   isUnderlying : go.IsUnderlying ProcAttr.underlying ProcAttr.underlying
+  method_set : go.MethodSetIs ProcAttr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType ProcAttr.ty) []
 
 attribute [instance] ProcAttr.TypeAssumptions.type_repr
   ProcAttr.TypeAssumptions.underlying
   ProcAttr.TypeAssumptions.isUnderlying
+  ProcAttr.TypeAssumptions.method_set
+  ProcAttr.TypeAssumptions.ptr_method_set
 
 abbrev Signal [FfiSyntax] : Type := GoInterface
 
@@ -1166,8 +1198,12 @@ abbrev Signal [FfiSyntax] : Type := GoInterface
 
 class Signal.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Signal.ty Signal.underlying
+  method_set : go.MethodSetIs Signal.ty [(go!"Signal", (some (go.signature.Signature [] false []))), (go!"String", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Signal.ty) []
 
 attribute [instance] Signal.TypeAssumptions.underlying
+  Signal.TypeAssumptions.method_set
+  Signal.TypeAssumptions.ptr_method_set
 
 axiom ProcessState : Type
 axiom ProcessState.zero_val : ZeroVal ProcessState
@@ -1177,10 +1213,14 @@ class ProcessState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   type_repr : go.TypeReprUnderlying ProcessState.underlying ProcessState
   underlying : go.UnderlyingDirectedEq ProcessState.ty ProcessState.underlying
   isUnderlying : go.IsUnderlying ProcessState.underlying ProcessState.underlying
+  method_set : go.MethodSetIs ProcessState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType ProcessState.ty) [(go!"ExitCode", (some (go.signature.Signature [] false [go.int]))), (go!"Exited", (some (go.signature.Signature [] false [go.bool]))), (go!"Pid", (some (go.signature.Signature [] false [go.int]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Success", (some (go.signature.Signature [] false [go.bool]))), (go!"Sys", (some (go.signature.Signature [] false [go.any]))), (go!"SysUsage", (some (go.signature.Signature [] false [go.any]))), (go!"SystemTime", none), (go!"UserTime", none), (go!"os.exited", (some (go.signature.Signature [] false [go.bool]))), (go!"os.success", (some (go.signature.Signature [] false [go.bool]))), (go!"os.sys", (some (go.signature.Signature [] false [go.any]))), (go!"os.sysUsage", (some (go.signature.Signature [] false [go.any]))), (go!"os.systemTime", none), (go!"os.userTime", none)]
 
 attribute [instance] ProcessState.TypeAssumptions.type_repr
   ProcessState.TypeAssumptions.underlying
   ProcessState.TypeAssumptions.isUnderlying
+  ProcessState.TypeAssumptions.method_set
+  ProcessState.TypeAssumptions.ptr_method_set
 
 structure LinkError [FfiSyntax] where
   mk ::
@@ -1220,6 +1260,8 @@ class LinkError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_New : ∀ (x : LinkError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet LinkError.underlying go!"New") (PairV #x #y) (Val #(({ x with New' := y } : LinkError)))
   get_Err : ∀ (x : LinkError), go.IsGoStepPureDetTagged under (StructFieldGet LinkError.underlying go!"Err") #x (Val #(x.Err'))
   set_Err : ∀ (x : LinkError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet LinkError.underlying go!"Err") (PairV #x #y) (Val #(({ x with Err' := y } : LinkError)))
+  method_set : go.MethodSetIs LinkError.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType LinkError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"Unwrap", (some (go.signature.Signature [] false [go.error])))]
 
 attribute [instance] LinkError.TypeAssumptions.type_repr
   LinkError.TypeAssumptions.underlying
@@ -1232,6 +1274,8 @@ attribute [instance] LinkError.TypeAssumptions.type_repr
   LinkError.TypeAssumptions.set_New
   LinkError.TypeAssumptions.get_Err
   LinkError.TypeAssumptions.set_Err
+  LinkError.TypeAssumptions.method_set
+  LinkError.TypeAssumptions.ptr_method_set
 
 structure noReadFrom [FfiSyntax] where
   mk ::
@@ -1256,10 +1300,14 @@ class noReadFrom.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   type_repr : go.TypeReprUnderlying noReadFrom.underlying noReadFrom
   underlying : go.UnderlyingDirectedEq noReadFrom.ty noReadFrom.underlying
   layout : go.StructLayout noReadFrom []
+  method_set : go.MethodSetIs noReadFrom.ty [(go!"ReadFrom", none)]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType noReadFrom.ty) [(go!"ReadFrom", none)]
 
 attribute [instance] noReadFrom.TypeAssumptions.type_repr
   noReadFrom.TypeAssumptions.underlying
   noReadFrom.TypeAssumptions.layout
+  noReadFrom.TypeAssumptions.method_set
+  noReadFrom.TypeAssumptions.ptr_method_set
 
 structure fileWithoutReadFrom [FfiSyntax] where
   mk ::
@@ -1291,6 +1339,8 @@ class fileWithoutReadFrom.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocal
   set_noReadFrom : ∀ (x : fileWithoutReadFrom) (y : noReadFrom), go.IsGoStepPureDetTagged under (StructFieldSet fileWithoutReadFrom.underlying go!"noReadFrom") (PairV #x #y) (Val #(({ x with noReadFrom' := y } : fileWithoutReadFrom)))
   get_File : ∀ (x : fileWithoutReadFrom), go.IsGoStepPureDetTagged under (StructFieldGet fileWithoutReadFrom.underlying go!"File") #x (Val #(x.File'))
   set_File : ∀ (x : fileWithoutReadFrom) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet fileWithoutReadFrom.underlying go!"File") (PairV #x #y) (Val #(({ x with File' := y } : fileWithoutReadFrom)))
+  method_set : go.MethodSetIs fileWithoutReadFrom.ty [(go!"Chdir", (some (go.signature.Signature [] false [go.error]))), (go!"Chmod", (some (go.signature.Signature [FileMode.ty] false [go.error]))), (go!"Chown", (some (go.signature.Signature [go.int, go.int] false [go.error]))), (go!"Close", (some (go.signature.Signature [] false [go.error]))), (go!"Fd", (some (go.signature.Signature [] false [go.uintptr]))), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"ReadDir", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType DirEntry.ty), go.error]))), (go!"Readdir", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType FileInfo.ty), go.error]))), (go!"Readdirnames", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType go.string), go.error]))), (go!"Seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"SetDeadline", none), (go!"SetReadDeadline", none), (go!"SetWriteDeadline", none), (go!"Stat", (some (go.signature.Signature [] false [FileInfo.ty, go.error]))), (go!"Sync", (some (go.signature.Signature [] false [go.error]))), (go!"SyscallConn", none), (go!"Truncate", (some (go.signature.Signature [go.int64] false [go.error]))), (go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"WriteAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"WriteString", (some (go.signature.Signature [go.string] false [go.int, go.error]))), (go!"WriteTo", none), (go!"os.checkValid", (some (go.signature.Signature [go.string] false [go.error]))), (go!"os.chmod", (some (go.signature.Signature [FileMode.ty] false [go.error]))), (go!"os.close", (some (go.signature.Signature [] false [go.error]))), (go!"os.copyFileRange", none), (go!"os.fd", (some (go.signature.Signature [] false [go.uintptr]))), (go!"os.pread", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"os.pwrite", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"os.read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"os.readFrom", none), (go!"os.readdir", (some (go.signature.Signature [go.int, readdirMode.ty] false [(go.GoType.SliceType go.string), (go.GoType.SliceType DirEntry.ty), (go.GoType.SliceType FileInfo.ty), go.error]))), (go!"os.seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"os.setDeadline", none), (go!"os.setReadDeadline", none), (go!"os.setWriteDeadline", none), (go!"os.spliceToFile", none), (go!"os.wrapErr", (some (go.signature.Signature [go.string, go.error] false [go.error]))), (go!"os.write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"os.writeTo", none)]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType fileWithoutReadFrom.ty) [(go!"Chdir", (some (go.signature.Signature [] false [go.error]))), (go!"Chmod", (some (go.signature.Signature [FileMode.ty] false [go.error]))), (go!"Chown", (some (go.signature.Signature [go.int, go.int] false [go.error]))), (go!"Close", (some (go.signature.Signature [] false [go.error]))), (go!"Fd", (some (go.signature.Signature [] false [go.uintptr]))), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"ReadDir", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType DirEntry.ty), go.error]))), (go!"Readdir", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType FileInfo.ty), go.error]))), (go!"Readdirnames", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType go.string), go.error]))), (go!"Seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"SetDeadline", none), (go!"SetReadDeadline", none), (go!"SetWriteDeadline", none), (go!"Stat", (some (go.signature.Signature [] false [FileInfo.ty, go.error]))), (go!"Sync", (some (go.signature.Signature [] false [go.error]))), (go!"SyscallConn", none), (go!"Truncate", (some (go.signature.Signature [go.int64] false [go.error]))), (go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"WriteAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"WriteString", (some (go.signature.Signature [go.string] false [go.int, go.error]))), (go!"WriteTo", none), (go!"os.checkValid", (some (go.signature.Signature [go.string] false [go.error]))), (go!"os.chmod", (some (go.signature.Signature [FileMode.ty] false [go.error]))), (go!"os.close", (some (go.signature.Signature [] false [go.error]))), (go!"os.copyFileRange", none), (go!"os.fd", (some (go.signature.Signature [] false [go.uintptr]))), (go!"os.pread", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"os.pwrite", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"os.read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"os.readFrom", none), (go!"os.readdir", (some (go.signature.Signature [go.int, readdirMode.ty] false [(go.GoType.SliceType go.string), (go.GoType.SliceType DirEntry.ty), (go.GoType.SliceType FileInfo.ty), go.error]))), (go!"os.seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"os.setDeadline", none), (go!"os.setReadDeadline", none), (go!"os.setWriteDeadline", none), (go!"os.spliceToFile", none), (go!"os.wrapErr", (some (go.signature.Signature [go.string, go.error] false [go.error]))), (go!"os.write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"os.writeTo", none)]
 
 attribute [instance] fileWithoutReadFrom.TypeAssumptions.type_repr
   fileWithoutReadFrom.TypeAssumptions.underlying
@@ -1299,6 +1349,8 @@ attribute [instance] fileWithoutReadFrom.TypeAssumptions.type_repr
   fileWithoutReadFrom.TypeAssumptions.set_noReadFrom
   fileWithoutReadFrom.TypeAssumptions.get_File
   fileWithoutReadFrom.TypeAssumptions.set_File
+  fileWithoutReadFrom.TypeAssumptions.method_set
+  fileWithoutReadFrom.TypeAssumptions.ptr_method_set
 
 structure noWriteTo [FfiSyntax] where
   mk ::
@@ -1323,10 +1375,14 @@ class noWriteTo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying noWriteTo.underlying noWriteTo
   underlying : go.UnderlyingDirectedEq noWriteTo.ty noWriteTo.underlying
   layout : go.StructLayout noWriteTo []
+  method_set : go.MethodSetIs noWriteTo.ty [(go!"WriteTo", none)]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType noWriteTo.ty) [(go!"WriteTo", none)]
 
 attribute [instance] noWriteTo.TypeAssumptions.type_repr
   noWriteTo.TypeAssumptions.underlying
   noWriteTo.TypeAssumptions.layout
+  noWriteTo.TypeAssumptions.method_set
+  noWriteTo.TypeAssumptions.ptr_method_set
 
 structure fileWithoutWriteTo [FfiSyntax] where
   mk ::
@@ -1358,6 +1414,8 @@ class fileWithoutWriteTo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   set_noWriteTo : ∀ (x : fileWithoutWriteTo) (y : noWriteTo), go.IsGoStepPureDetTagged under (StructFieldSet fileWithoutWriteTo.underlying go!"noWriteTo") (PairV #x #y) (Val #(({ x with noWriteTo' := y } : fileWithoutWriteTo)))
   get_File : ∀ (x : fileWithoutWriteTo), go.IsGoStepPureDetTagged under (StructFieldGet fileWithoutWriteTo.underlying go!"File") #x (Val #(x.File'))
   set_File : ∀ (x : fileWithoutWriteTo) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet fileWithoutWriteTo.underlying go!"File") (PairV #x #y) (Val #(({ x with File' := y } : fileWithoutWriteTo)))
+  method_set : go.MethodSetIs fileWithoutWriteTo.ty [(go!"Chdir", (some (go.signature.Signature [] false [go.error]))), (go!"Chmod", (some (go.signature.Signature [FileMode.ty] false [go.error]))), (go!"Chown", (some (go.signature.Signature [go.int, go.int] false [go.error]))), (go!"Close", (some (go.signature.Signature [] false [go.error]))), (go!"Fd", (some (go.signature.Signature [] false [go.uintptr]))), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"ReadDir", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType DirEntry.ty), go.error]))), (go!"ReadFrom", none), (go!"Readdir", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType FileInfo.ty), go.error]))), (go!"Readdirnames", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType go.string), go.error]))), (go!"Seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"SetDeadline", none), (go!"SetReadDeadline", none), (go!"SetWriteDeadline", none), (go!"Stat", (some (go.signature.Signature [] false [FileInfo.ty, go.error]))), (go!"Sync", (some (go.signature.Signature [] false [go.error]))), (go!"SyscallConn", none), (go!"Truncate", (some (go.signature.Signature [go.int64] false [go.error]))), (go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"WriteAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"WriteString", (some (go.signature.Signature [go.string] false [go.int, go.error]))), (go!"os.checkValid", (some (go.signature.Signature [go.string] false [go.error]))), (go!"os.chmod", (some (go.signature.Signature [FileMode.ty] false [go.error]))), (go!"os.close", (some (go.signature.Signature [] false [go.error]))), (go!"os.copyFileRange", none), (go!"os.fd", (some (go.signature.Signature [] false [go.uintptr]))), (go!"os.pread", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"os.pwrite", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"os.read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"os.readFrom", none), (go!"os.readdir", (some (go.signature.Signature [go.int, readdirMode.ty] false [(go.GoType.SliceType go.string), (go.GoType.SliceType DirEntry.ty), (go.GoType.SliceType FileInfo.ty), go.error]))), (go!"os.seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"os.setDeadline", none), (go!"os.setReadDeadline", none), (go!"os.setWriteDeadline", none), (go!"os.spliceToFile", none), (go!"os.wrapErr", (some (go.signature.Signature [go.string, go.error] false [go.error]))), (go!"os.write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"os.writeTo", none)]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType fileWithoutWriteTo.ty) [(go!"Chdir", (some (go.signature.Signature [] false [go.error]))), (go!"Chmod", (some (go.signature.Signature [FileMode.ty] false [go.error]))), (go!"Chown", (some (go.signature.Signature [go.int, go.int] false [go.error]))), (go!"Close", (some (go.signature.Signature [] false [go.error]))), (go!"Fd", (some (go.signature.Signature [] false [go.uintptr]))), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"ReadDir", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType DirEntry.ty), go.error]))), (go!"ReadFrom", none), (go!"Readdir", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType FileInfo.ty), go.error]))), (go!"Readdirnames", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType go.string), go.error]))), (go!"Seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"SetDeadline", none), (go!"SetReadDeadline", none), (go!"SetWriteDeadline", none), (go!"Stat", (some (go.signature.Signature [] false [FileInfo.ty, go.error]))), (go!"Sync", (some (go.signature.Signature [] false [go.error]))), (go!"SyscallConn", none), (go!"Truncate", (some (go.signature.Signature [go.int64] false [go.error]))), (go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"WriteAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"WriteString", (some (go.signature.Signature [go.string] false [go.int, go.error]))), (go!"os.checkValid", (some (go.signature.Signature [go.string] false [go.error]))), (go!"os.chmod", (some (go.signature.Signature [FileMode.ty] false [go.error]))), (go!"os.close", (some (go.signature.Signature [] false [go.error]))), (go!"os.copyFileRange", none), (go!"os.fd", (some (go.signature.Signature [] false [go.uintptr]))), (go!"os.pread", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"os.pwrite", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"os.read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"os.readFrom", none), (go!"os.readdir", (some (go.signature.Signature [go.int, readdirMode.ty] false [(go.GoType.SliceType go.string), (go.GoType.SliceType DirEntry.ty), (go.GoType.SliceType FileInfo.ty), go.error]))), (go!"os.seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"os.setDeadline", none), (go!"os.setReadDeadline", none), (go!"os.setWriteDeadline", none), (go!"os.spliceToFile", none), (go!"os.wrapErr", (some (go.signature.Signature [go.string, go.error] false [go.error]))), (go!"os.write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"os.writeTo", none)]
 
 attribute [instance] fileWithoutWriteTo.TypeAssumptions.type_repr
   fileWithoutWriteTo.TypeAssumptions.underlying
@@ -1366,6 +1424,8 @@ attribute [instance] fileWithoutWriteTo.TypeAssumptions.type_repr
   fileWithoutWriteTo.TypeAssumptions.set_noWriteTo
   fileWithoutWriteTo.TypeAssumptions.get_File
   fileWithoutWriteTo.TypeAssumptions.set_File
+  fileWithoutWriteTo.TypeAssumptions.method_set
+  fileWithoutWriteTo.TypeAssumptions.ptr_method_set
 
 abbrev dirFS [FfiSyntax] : Type := GoString
 
@@ -1374,8 +1434,12 @@ abbrev dirFS [FfiSyntax] : Type := GoString
 
 class dirFS.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq dirFS.ty dirFS.underlying
+  method_set : go.MethodSetIs dirFS.ty [(go!"Lstat", none), (go!"Open", none), (go!"ReadDir", (some (go.signature.Signature [go.string] false [(go.GoType.SliceType DirEntry.ty), go.error]))), (go!"ReadFile", (some (go.signature.Signature [go.string] false [(go.GoType.SliceType go.byte), go.error]))), (go!"ReadLink", (some (go.signature.Signature [go.string] false [go.string, go.error]))), (go!"Stat", none), (go!"os.join", (some (go.signature.Signature [go.string] false [go.string, go.error])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType dirFS.ty) [(go!"Lstat", none), (go!"Open", none), (go!"ReadDir", (some (go.signature.Signature [go.string] false [(go.GoType.SliceType DirEntry.ty), go.error]))), (go!"ReadFile", (some (go.signature.Signature [go.string] false [(go.GoType.SliceType go.byte), go.error]))), (go!"ReadLink", (some (go.signature.Signature [go.string] false [go.string, go.error]))), (go!"Stat", none), (go!"os.join", (some (go.signature.Signature [go.string] false [go.string, go.error])))]
 
 attribute [instance] dirFS.TypeAssumptions.underlying
+  dirFS.TypeAssumptions.method_set
+  dirFS.TypeAssumptions.ptr_method_set
 
 axiom file : Type
 axiom file.zero_val : ZeroVal file
@@ -1385,10 +1449,14 @@ class file.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   type_repr : go.TypeReprUnderlying file.underlying file
   underlying : go.UnderlyingDirectedEq file.ty file.underlying
   isUnderlying : go.IsUnderlying file.underlying file.underlying
+  method_set : go.MethodSetIs file.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType file.ty) [(go!"os.close", (some (go.signature.Signature [] false [go.error])))]
 
 attribute [instance] file.TypeAssumptions.type_repr
   file.TypeAssumptions.underlying
   file.TypeAssumptions.isUnderlying
+  file.TypeAssumptions.method_set
+  file.TypeAssumptions.ptr_method_set
 
 abbrev newFileKind [FfiSyntax] : Type := w64
 
@@ -1397,8 +1465,12 @@ abbrev newFileKind [FfiSyntax] : Type := w64
 
 class newFileKind.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq newFileKind.ty newFileKind.underlying
+  method_set : go.MethodSetIs newFileKind.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType newFileKind.ty) []
 
 attribute [instance] newFileKind.TypeAssumptions.underlying
+  newFileKind.TypeAssumptions.method_set
+  newFileKind.TypeAssumptions.ptr_method_set
 
 axiom unixDirent : Type
 axiom unixDirent.zero_val : ZeroVal unixDirent
@@ -1408,10 +1480,14 @@ class unixDirent.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   type_repr : go.TypeReprUnderlying unixDirent.underlying unixDirent
   underlying : go.UnderlyingDirectedEq unixDirent.ty unixDirent.underlying
   isUnderlying : go.IsUnderlying unixDirent.underlying unixDirent.underlying
+  method_set : go.MethodSetIs unixDirent.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType unixDirent.ty) [(go!"Info", (some (go.signature.Signature [] false [FileInfo.ty, go.error]))), (go!"IsDir", (some (go.signature.Signature [] false [go.bool]))), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Type", (some (go.signature.Signature [] false [FileMode.ty])))]
 
 attribute [instance] unixDirent.TypeAssumptions.type_repr
   unixDirent.TypeAssumptions.underlying
   unixDirent.TypeAssumptions.isUnderlying
+  unixDirent.TypeAssumptions.method_set
+  unixDirent.TypeAssumptions.ptr_method_set
 
 structure rawConn [FfiSyntax] where
   mk ::
@@ -1439,12 +1515,16 @@ class rawConn.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   layout : go.StructLayout rawConn [(go!"file", typeSize Loc, typeAlign Loc)]
   get_file : ∀ (x : rawConn), go.IsGoStepPureDetTagged under (StructFieldGet rawConn.underlying go!"file") #x (Val #(x.file'))
   set_file : ∀ (x : rawConn) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet rawConn.underlying go!"file") (PairV #x #y) (Val #(({ x with file' := y } : rawConn)))
+  method_set : go.MethodSetIs rawConn.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType rawConn.ty) [(go!"Control", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.uintptr] false []))] false [go.error]))), (go!"Read", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.uintptr] false [go.bool]))] false [go.error]))), (go!"Write", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.uintptr] false [go.bool]))] false [go.error])))]
 
 attribute [instance] rawConn.TypeAssumptions.type_repr
   rawConn.TypeAssumptions.underlying
   rawConn.TypeAssumptions.layout
   rawConn.TypeAssumptions.get_file
   rawConn.TypeAssumptions.set_file
+  rawConn.TypeAssumptions.method_set
+  rawConn.TypeAssumptions.ptr_method_set
 
 structure Root [FfiSyntax] where
   mk ::
@@ -1472,12 +1552,16 @@ class Root.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   layout : go.StructLayout Root [(go!"root", typeSize Loc, typeAlign Loc)]
   get_root : ∀ (x : Root), go.IsGoStepPureDetTagged under (StructFieldGet Root.underlying go!"root") #x (Val #(x.root'))
   set_root : ∀ (x : Root) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Root.underlying go!"root") (PairV #x #y) (Val #(({ x with root' := y } : Root)))
+  method_set : go.MethodSetIs Root.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Root.ty) [(go!"Chmod", (some (go.signature.Signature [go.string, FileMode.ty] false [go.error]))), (go!"Chown", (some (go.signature.Signature [go.string, go.int, go.int] false [go.error]))), (go!"Chtimes", none), (go!"Close", (some (go.signature.Signature [] false [go.error]))), (go!"Create", (some (go.signature.Signature [go.string] false [(go.GoType.PointerType File.ty), go.error]))), (go!"FS", none), (go!"Lchown", (some (go.signature.Signature [go.string, go.int, go.int] false [go.error]))), (go!"Link", (some (go.signature.Signature [go.string, go.string] false [go.error]))), (go!"Lstat", (some (go.signature.Signature [go.string] false [FileInfo.ty, go.error]))), (go!"Mkdir", (some (go.signature.Signature [go.string, FileMode.ty] false [go.error]))), (go!"MkdirAll", (some (go.signature.Signature [go.string, FileMode.ty] false [go.error]))), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"Open", (some (go.signature.Signature [go.string] false [(go.GoType.PointerType File.ty), go.error]))), (go!"OpenFile", (some (go.signature.Signature [go.string, go.int, FileMode.ty] false [(go.GoType.PointerType File.ty), go.error]))), (go!"OpenRoot", (some (go.signature.Signature [go.string] false [(go.GoType.PointerType Root.ty), go.error]))), (go!"ReadFile", (some (go.signature.Signature [go.string] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Readlink", (some (go.signature.Signature [go.string] false [go.string, go.error]))), (go!"Remove", (some (go.signature.Signature [go.string] false [go.error]))), (go!"RemoveAll", (some (go.signature.Signature [go.string] false [go.error]))), (go!"Rename", (some (go.signature.Signature [go.string, go.string] false [go.error]))), (go!"Stat", (some (go.signature.Signature [go.string] false [FileInfo.ty, go.error]))), (go!"Symlink", (some (go.signature.Signature [go.string, go.string] false [go.error]))), (go!"WriteFile", (some (go.signature.Signature [go.string, (go.GoType.SliceType go.byte), FileMode.ty] false [go.error]))), (go!"os.logOpen", (some (go.signature.Signature [go.string] false []))), (go!"os.logStat", (some (go.signature.Signature [go.string] false [])))]
 
 attribute [instance] Root.TypeAssumptions.type_repr
   Root.TypeAssumptions.underlying
   Root.TypeAssumptions.layout
   Root.TypeAssumptions.get_root
   Root.TypeAssumptions.set_root
+  Root.TypeAssumptions.method_set
+  Root.TypeAssumptions.ptr_method_set
 
 abbrev rootFS [FfiSyntax] : Type := Root
 
@@ -1486,8 +1570,12 @@ abbrev rootFS [FfiSyntax] : Type := Root
 
 class rootFS.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq rootFS.ty rootFS.underlying
+  method_set : go.MethodSetIs rootFS.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType rootFS.ty) [(go!"Lstat", (some (go.signature.Signature [go.string] false [FileInfo.ty, go.error]))), (go!"Open", none), (go!"ReadDir", (some (go.signature.Signature [go.string] false [(go.GoType.SliceType DirEntry.ty), go.error]))), (go!"ReadFile", (some (go.signature.Signature [go.string] false [(go.GoType.SliceType go.byte), go.error]))), (go!"ReadLink", (some (go.signature.Signature [go.string] false [go.string, go.error]))), (go!"Stat", (some (go.signature.Signature [go.string] false [FileInfo.ty, go.error])))]
 
 attribute [instance] rootFS.TypeAssumptions.underlying
+  rootFS.TypeAssumptions.method_set
+  rootFS.TypeAssumptions.ptr_method_set
 
 axiom root : Type
 axiom root.zero_val : ZeroVal root
@@ -1497,10 +1585,14 @@ class root.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   type_repr : go.TypeReprUnderlying root.underlying root
   underlying : go.UnderlyingDirectedEq root.ty root.underlying
   isUnderlying : go.IsUnderlying root.underlying root.underlying
+  method_set : go.MethodSetIs root.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType root.ty) [(go!"Close", (some (go.signature.Signature [] false [go.error]))), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"os.decref", (some (go.signature.Signature [] false []))), (go!"os.incref", (some (go.signature.Signature [] false [go.error])))]
 
 attribute [instance] root.TypeAssumptions.type_repr
   root.TypeAssumptions.underlying
   root.TypeAssumptions.isUnderlying
+  root.TypeAssumptions.method_set
+  root.TypeAssumptions.ptr_method_set
 
 abbrev errSymlink [FfiSyntax] : Type := GoString
 
@@ -1509,8 +1601,12 @@ abbrev errSymlink [FfiSyntax] : Type := GoString
 
 class errSymlink.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq errSymlink.ty errSymlink.underlying
+  method_set : go.MethodSetIs errSymlink.ty [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType errSymlink.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
 
 attribute [instance] errSymlink.TypeAssumptions.underlying
+  errSymlink.TypeAssumptions.method_set
+  errSymlink.TypeAssumptions.ptr_method_set
 
 structure File [FfiSyntax] where
   mk ::
@@ -1538,12 +1634,16 @@ class File.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   layout : go.StructLayout File [(go!"file", typeSize Loc, typeAlign Loc)]
   get_file : ∀ (x : File), go.IsGoStepPureDetTagged under (StructFieldGet File.underlying go!"file") #x (Val #(x.file'))
   set_file : ∀ (x : File) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet File.underlying go!"file") (PairV #x #y) (Val #(({ x with file' := y } : File)))
+  method_set : go.MethodSetIs File.ty [(go!"os.close", (some (go.signature.Signature [] false [go.error])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType File.ty) [(go!"Chdir", (some (go.signature.Signature [] false [go.error]))), (go!"Chmod", (some (go.signature.Signature [FileMode.ty] false [go.error]))), (go!"Chown", (some (go.signature.Signature [go.int, go.int] false [go.error]))), (go!"Close", (some (go.signature.Signature [] false [go.error]))), (go!"Fd", (some (go.signature.Signature [] false [go.uintptr]))), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"ReadDir", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType DirEntry.ty), go.error]))), (go!"ReadFrom", none), (go!"Readdir", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType FileInfo.ty), go.error]))), (go!"Readdirnames", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType go.string), go.error]))), (go!"Seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"SetDeadline", none), (go!"SetReadDeadline", none), (go!"SetWriteDeadline", none), (go!"Stat", (some (go.signature.Signature [] false [FileInfo.ty, go.error]))), (go!"Sync", (some (go.signature.Signature [] false [go.error]))), (go!"SyscallConn", none), (go!"Truncate", (some (go.signature.Signature [go.int64] false [go.error]))), (go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"WriteAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"WriteString", (some (go.signature.Signature [go.string] false [go.int, go.error]))), (go!"WriteTo", none), (go!"os.checkValid", (some (go.signature.Signature [go.string] false [go.error]))), (go!"os.chmod", (some (go.signature.Signature [FileMode.ty] false [go.error]))), (go!"os.close", (some (go.signature.Signature [] false [go.error]))), (go!"os.copyFileRange", none), (go!"os.fd", (some (go.signature.Signature [] false [go.uintptr]))), (go!"os.pread", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"os.pwrite", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"os.read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"os.readFrom", none), (go!"os.readdir", (some (go.signature.Signature [go.int, readdirMode.ty] false [(go.GoType.SliceType go.string), (go.GoType.SliceType DirEntry.ty), (go.GoType.SliceType FileInfo.ty), go.error]))), (go!"os.seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"os.setDeadline", none), (go!"os.setReadDeadline", none), (go!"os.setWriteDeadline", none), (go!"os.spliceToFile", none), (go!"os.wrapErr", (some (go.signature.Signature [go.string, go.error] false [go.error]))), (go!"os.write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"os.writeTo", none)]
 
 attribute [instance] File.TypeAssumptions.type_repr
   File.TypeAssumptions.underlying
   File.TypeAssumptions.layout
   File.TypeAssumptions.get_file
   File.TypeAssumptions.set_file
+  File.TypeAssumptions.method_set
+  File.TypeAssumptions.ptr_method_set
 
 axiom fileStat : Type
 axiom fileStat.zero_val : ZeroVal fileStat
@@ -1553,10 +1653,14 @@ class fileStat.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying fileStat.underlying fileStat
   underlying : go.UnderlyingDirectedEq fileStat.ty fileStat.underlying
   isUnderlying : go.IsUnderlying fileStat.underlying fileStat.underlying
+  method_set : go.MethodSetIs fileStat.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType fileStat.ty) [(go!"IsDir", (some (go.signature.Signature [] false [go.bool]))), (go!"ModTime", none), (go!"Mode", (some (go.signature.Signature [] false [FileMode.ty]))), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"Size", (some (go.signature.Signature [] false [go.int64]))), (go!"Sys", (some (go.signature.Signature [] false [go.any])))]
 
 attribute [instance] fileStat.TypeAssumptions.type_repr
   fileStat.TypeAssumptions.underlying
   fileStat.TypeAssumptions.isUnderlying
+  fileStat.TypeAssumptions.method_set
+  fileStat.TypeAssumptions.ptr_method_set
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   readdirMode_instance : readdirMode.TypeAssumptions

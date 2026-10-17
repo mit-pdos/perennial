@@ -1323,6 +1323,8 @@ class ParseError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_ValueElem : ∀ (x : ParseError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ParseError.underlying go!"ValueElem") (PairV #x #y) (Val #(({ x with ValueElem' := y } : ParseError)))
   get_Message : ∀ (x : ParseError), go.IsGoStepPureDetTagged under (StructFieldGet ParseError.underlying go!"Message") #x (Val #(x.Message'))
   set_Message : ∀ (x : ParseError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet ParseError.underlying go!"Message") (PairV #x #y) (Val #(({ x with Message' := y } : ParseError)))
+  method_set : go.MethodSetIs ParseError.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType ParseError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
 
 attribute [instance] ParseError.TypeAssumptions.type_repr
   ParseError.TypeAssumptions.underlying
@@ -1337,6 +1339,8 @@ attribute [instance] ParseError.TypeAssumptions.type_repr
   ParseError.TypeAssumptions.set_ValueElem
   ParseError.TypeAssumptions.get_Message
   ParseError.TypeAssumptions.set_Message
+  ParseError.TypeAssumptions.method_set
+  ParseError.TypeAssumptions.ptr_method_set
 
 structure parseDurationError [FfiSyntax] where
   mk ::
@@ -1368,6 +1372,8 @@ class parseDurationError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   set_message : ∀ (x : parseDurationError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet parseDurationError.underlying go!"message") (PairV #x #y) (Val #(({ x with message' := y } : parseDurationError)))
   get_value : ∀ (x : parseDurationError), go.IsGoStepPureDetTagged under (StructFieldGet parseDurationError.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : parseDurationError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet parseDurationError.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : parseDurationError)))
+  method_set : go.MethodSetIs parseDurationError.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType parseDurationError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
 
 attribute [instance] parseDurationError.TypeAssumptions.type_repr
   parseDurationError.TypeAssumptions.underlying
@@ -1376,6 +1382,8 @@ attribute [instance] parseDurationError.TypeAssumptions.type_repr
   parseDurationError.TypeAssumptions.set_message
   parseDurationError.TypeAssumptions.get_value
   parseDurationError.TypeAssumptions.set_value
+  parseDurationError.TypeAssumptions.method_set
+  parseDurationError.TypeAssumptions.ptr_method_set
 
 structure Timer [FfiSyntax] where
   mk ::
@@ -1407,6 +1415,8 @@ class Timer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_C : ∀ (x : Timer) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Timer)))
   get_initTimer : ∀ (x : Timer), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"initTimer") #x (Val #(x.initTimer'))
   set_initTimer : ∀ (x : Timer) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"initTimer") (PairV #x #y) (Val #(({ x with initTimer' := y } : Timer)))
+  method_set : go.MethodSetIs Timer.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Timer.ty) [(go!"Reset", (some (go.signature.Signature [Duration.ty] false [go.bool]))), (go!"Stop", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] Timer.TypeAssumptions.type_repr
   Timer.TypeAssumptions.underlying
@@ -1415,6 +1425,8 @@ attribute [instance] Timer.TypeAssumptions.type_repr
   Timer.TypeAssumptions.set_C
   Timer.TypeAssumptions.get_initTimer
   Timer.TypeAssumptions.set_initTimer
+  Timer.TypeAssumptions.method_set
+  Timer.TypeAssumptions.ptr_method_set
 
 structure Ticker [FfiSyntax] where
   mk ::
@@ -1446,6 +1458,8 @@ class Ticker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_C : ∀ (x : Ticker) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Ticker.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Ticker)))
   get_initTicker : ∀ (x : Ticker), go.IsGoStepPureDetTagged under (StructFieldGet Ticker.underlying go!"initTicker") #x (Val #(x.initTicker'))
   set_initTicker : ∀ (x : Ticker) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Ticker.underlying go!"initTicker") (PairV #x #y) (Val #(({ x with initTicker' := y } : Ticker)))
+  method_set : go.MethodSetIs Ticker.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Ticker.ty) [(go!"Reset", (some (go.signature.Signature [Duration.ty] false []))), (go!"Stop", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] Ticker.TypeAssumptions.type_repr
   Ticker.TypeAssumptions.underlying
@@ -1454,6 +1468,8 @@ attribute [instance] Ticker.TypeAssumptions.type_repr
   Ticker.TypeAssumptions.set_C
   Ticker.TypeAssumptions.get_initTicker
   Ticker.TypeAssumptions.set_initTicker
+  Ticker.TypeAssumptions.method_set
+  Ticker.TypeAssumptions.ptr_method_set
 
 structure Time [FfiSyntax] where
   mk ::
@@ -1489,6 +1505,8 @@ class Time.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   set_ext : ∀ (x : Time) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Time.underlying go!"ext") (PairV #x #y) (Val #(({ x with ext' := y } : Time)))
   get_loc : ∀ (x : Time), go.IsGoStepPureDetTagged under (StructFieldGet Time.underlying go!"loc") #x (Val #(x.loc'))
   set_loc : ∀ (x : Time) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Time.underlying go!"loc") (PairV #x #y) (Val #(({ x with loc' := y } : Time)))
+  method_set : go.MethodSetIs Time.ty [(go!"Add", (some (go.signature.Signature [Duration.ty] false [Time.ty]))), (go!"AddDate", (some (go.signature.Signature [go.int, go.int, go.int] false [Time.ty]))), (go!"After", (some (go.signature.Signature [Time.ty] false [go.bool]))), (go!"AppendBinary", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte), go.error]))), (go!"AppendFormat", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.string] false [(go.GoType.SliceType go.byte)]))), (go!"AppendText", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Before", (some (go.signature.Signature [Time.ty] false [go.bool]))), (go!"Clock", (some (go.signature.Signature [] false [go.int, go.int, go.int]))), (go!"Compare", (some (go.signature.Signature [Time.ty] false [go.int]))), (go!"Date", (some (go.signature.Signature [] false [go.int, Month.ty, go.int]))), (go!"Day", (some (go.signature.Signature [] false [go.int]))), (go!"Equal", (some (go.signature.Signature [Time.ty] false [go.bool]))), (go!"Format", (some (go.signature.Signature [go.string] false [go.string]))), (go!"GoString", (some (go.signature.Signature [] false [go.string]))), (go!"GobEncode", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Hour", (some (go.signature.Signature [] false [go.int]))), (go!"ISOWeek", (some (go.signature.Signature [] false [go.int, go.int]))), (go!"In", (some (go.signature.Signature [(go.GoType.PointerType Location.ty)] false [Time.ty]))), (go!"IsDST", (some (go.signature.Signature [] false [go.bool]))), (go!"IsZero", (some (go.signature.Signature [] false [go.bool]))), (go!"Local", (some (go.signature.Signature [] false [Time.ty]))), (go!"Location", (some (go.signature.Signature [] false [(go.GoType.PointerType Location.ty)]))), (go!"MarshalBinary", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"MarshalJSON", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"MarshalText", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Minute", (some (go.signature.Signature [] false [go.int]))), (go!"Month", (some (go.signature.Signature [] false [Month.ty]))), (go!"Nanosecond", (some (go.signature.Signature [] false [go.int]))), (go!"Round", (some (go.signature.Signature [Duration.ty] false [Time.ty]))), (go!"Second", (some (go.signature.Signature [] false [go.int]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Sub", (some (go.signature.Signature [Time.ty] false [Duration.ty]))), (go!"Truncate", (some (go.signature.Signature [Duration.ty] false [Time.ty]))), (go!"UTC", (some (go.signature.Signature [] false [Time.ty]))), (go!"Unix", (some (go.signature.Signature [] false [go.int64]))), (go!"UnixMicro", (some (go.signature.Signature [] false [go.int64]))), (go!"UnixMilli", (some (go.signature.Signature [] false [go.int64]))), (go!"UnixNano", (some (go.signature.Signature [] false [go.int64]))), (go!"Weekday", (some (go.signature.Signature [] false [Weekday.ty]))), (go!"Year", (some (go.signature.Signature [] false [go.int]))), (go!"YearDay", (some (go.signature.Signature [] false [go.int]))), (go!"Zone", (some (go.signature.Signature [] false [go.string, go.int]))), (go!"ZoneBounds", (some (go.signature.Signature [] false [Time.ty, Time.ty]))), (go!"time.absSec", (some (go.signature.Signature [] false [absSeconds.ty]))), (go!"time.appendFormat", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.string] false [(go.GoType.SliceType go.byte)]))), (go!"time.appendFormatRFC3339", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.bool] false [(go.GoType.SliceType go.byte)]))), (go!"time.appendStrictRFC3339", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte), go.error]))), (go!"time.appendTo", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.string] false [(go.GoType.SliceType go.byte), go.error]))), (go!"time.locabs", (some (go.signature.Signature [] false [go.string, go.int, absSeconds.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Time.ty) [(go!"Add", (some (go.signature.Signature [Duration.ty] false [Time.ty]))), (go!"AddDate", (some (go.signature.Signature [go.int, go.int, go.int] false [Time.ty]))), (go!"After", (some (go.signature.Signature [Time.ty] false [go.bool]))), (go!"AppendBinary", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte), go.error]))), (go!"AppendFormat", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.string] false [(go.GoType.SliceType go.byte)]))), (go!"AppendText", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Before", (some (go.signature.Signature [Time.ty] false [go.bool]))), (go!"Clock", (some (go.signature.Signature [] false [go.int, go.int, go.int]))), (go!"Compare", (some (go.signature.Signature [Time.ty] false [go.int]))), (go!"Date", (some (go.signature.Signature [] false [go.int, Month.ty, go.int]))), (go!"Day", (some (go.signature.Signature [] false [go.int]))), (go!"Equal", (some (go.signature.Signature [Time.ty] false [go.bool]))), (go!"Format", (some (go.signature.Signature [go.string] false [go.string]))), (go!"GoString", (some (go.signature.Signature [] false [go.string]))), (go!"GobDecode", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))), (go!"GobEncode", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Hour", (some (go.signature.Signature [] false [go.int]))), (go!"ISOWeek", (some (go.signature.Signature [] false [go.int, go.int]))), (go!"In", (some (go.signature.Signature [(go.GoType.PointerType Location.ty)] false [Time.ty]))), (go!"IsDST", (some (go.signature.Signature [] false [go.bool]))), (go!"IsZero", (some (go.signature.Signature [] false [go.bool]))), (go!"Local", (some (go.signature.Signature [] false [Time.ty]))), (go!"Location", (some (go.signature.Signature [] false [(go.GoType.PointerType Location.ty)]))), (go!"MarshalBinary", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"MarshalJSON", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"MarshalText", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Minute", (some (go.signature.Signature [] false [go.int]))), (go!"Month", (some (go.signature.Signature [] false [Month.ty]))), (go!"Nanosecond", (some (go.signature.Signature [] false [go.int]))), (go!"Round", (some (go.signature.Signature [Duration.ty] false [Time.ty]))), (go!"Second", (some (go.signature.Signature [] false [go.int]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Sub", (some (go.signature.Signature [Time.ty] false [Duration.ty]))), (go!"Truncate", (some (go.signature.Signature [Duration.ty] false [Time.ty]))), (go!"UTC", (some (go.signature.Signature [] false [Time.ty]))), (go!"Unix", (some (go.signature.Signature [] false [go.int64]))), (go!"UnixMicro", (some (go.signature.Signature [] false [go.int64]))), (go!"UnixMilli", (some (go.signature.Signature [] false [go.int64]))), (go!"UnixNano", (some (go.signature.Signature [] false [go.int64]))), (go!"UnmarshalBinary", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))), (go!"UnmarshalJSON", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))), (go!"UnmarshalText", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.error]))), (go!"Weekday", (some (go.signature.Signature [] false [Weekday.ty]))), (go!"Year", (some (go.signature.Signature [] false [go.int]))), (go!"YearDay", (some (go.signature.Signature [] false [go.int]))), (go!"Zone", (some (go.signature.Signature [] false [go.string, go.int]))), (go!"ZoneBounds", (some (go.signature.Signature [] false [Time.ty, Time.ty]))), (go!"time.absSec", (some (go.signature.Signature [] false [absSeconds.ty]))), (go!"time.addSec", (some (go.signature.Signature [go.int64] false []))), (go!"time.appendFormat", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.string] false [(go.GoType.SliceType go.byte)]))), (go!"time.appendFormatRFC3339", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.bool] false [(go.GoType.SliceType go.byte)]))), (go!"time.appendStrictRFC3339", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [(go.GoType.SliceType go.byte), go.error]))), (go!"time.appendTo", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.string] false [(go.GoType.SliceType go.byte), go.error]))), (go!"time.locabs", (some (go.signature.Signature [] false [go.string, go.int, absSeconds.ty]))), (go!"time.mono", (some (go.signature.Signature [] false [go.int64]))), (go!"time.nsec", (some (go.signature.Signature [] false [go.int32]))), (go!"time.sec", (some (go.signature.Signature [] false [go.int64]))), (go!"time.setLoc", (some (go.signature.Signature [(go.GoType.PointerType Location.ty)] false []))), (go!"time.setMono", (some (go.signature.Signature [go.int64] false []))), (go!"time.stripMono", (some (go.signature.Signature [] false []))), (go!"time.unixSec", (some (go.signature.Signature [] false [go.int64])))]
   Add_unfold : MethodUnfold Time.ty go!"Add" Time.Add.impl
   Before_unfold : MethodUnfold Time.ty go!"Before" Time.Before.impl
   Equal_unfold : MethodUnfold Time.ty go!"Equal" Time.Equal.impl
@@ -1519,6 +1537,8 @@ attribute [instance] Time.TypeAssumptions.type_repr
   Time.TypeAssumptions.set_ext
   Time.TypeAssumptions.get_loc
   Time.TypeAssumptions.set_loc
+  Time.TypeAssumptions.method_set
+  Time.TypeAssumptions.ptr_method_set
   Time.TypeAssumptions.Add_unfold
   Time.TypeAssumptions.Before_unfold
   Time.TypeAssumptions.Equal_unfold
@@ -1542,8 +1562,12 @@ abbrev Month [FfiSyntax] : Type := w64
 
 class Month.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Month.ty Month.underlying
+  method_set : go.MethodSetIs Month.ty [(go!"String", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Month.ty) [(go!"String", (some (go.signature.Signature [] false [go.string])))]
 
 attribute [instance] Month.TypeAssumptions.underlying
+  Month.TypeAssumptions.method_set
+  Month.TypeAssumptions.ptr_method_set
 
 abbrev Weekday [FfiSyntax] : Type := w64
 
@@ -1552,8 +1576,12 @@ abbrev Weekday [FfiSyntax] : Type := w64
 
 class Weekday.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Weekday.ty Weekday.underlying
+  method_set : go.MethodSetIs Weekday.ty [(go!"String", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Weekday.ty) [(go!"String", (some (go.signature.Signature [] false [go.string])))]
 
 attribute [instance] Weekday.TypeAssumptions.underlying
+  Weekday.TypeAssumptions.method_set
+  Weekday.TypeAssumptions.ptr_method_set
 
 abbrev absSeconds [FfiSyntax] : Type := w64
 
@@ -1562,8 +1590,12 @@ abbrev absSeconds [FfiSyntax] : Type := w64
 
 class absSeconds.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq absSeconds.ty absSeconds.underlying
+  method_set : go.MethodSetIs absSeconds.ty [(go!"time.clock", (some (go.signature.Signature [] false [go.int, go.int, go.int]))), (go!"time.days", (some (go.signature.Signature [] false [absDays.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType absSeconds.ty) [(go!"time.clock", (some (go.signature.Signature [] false [go.int, go.int, go.int]))), (go!"time.days", (some (go.signature.Signature [] false [absDays.ty])))]
 
 attribute [instance] absSeconds.TypeAssumptions.underlying
+  absSeconds.TypeAssumptions.method_set
+  absSeconds.TypeAssumptions.ptr_method_set
 
 abbrev absDays [FfiSyntax] : Type := w64
 
@@ -1572,8 +1604,12 @@ abbrev absDays [FfiSyntax] : Type := w64
 
 class absDays.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq absDays.ty absDays.underlying
+  method_set : go.MethodSetIs absDays.ty [(go!"time.date", (some (go.signature.Signature [] false [go.int, Month.ty, go.int]))), (go!"time.split", (some (go.signature.Signature [] false [absCentury.ty, absCyear.ty, absYday.ty]))), (go!"time.weekday", (some (go.signature.Signature [] false [Weekday.ty]))), (go!"time.yearYday", (some (go.signature.Signature [] false [go.int, go.int])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType absDays.ty) [(go!"time.date", (some (go.signature.Signature [] false [go.int, Month.ty, go.int]))), (go!"time.split", (some (go.signature.Signature [] false [absCentury.ty, absCyear.ty, absYday.ty]))), (go!"time.weekday", (some (go.signature.Signature [] false [Weekday.ty]))), (go!"time.yearYday", (some (go.signature.Signature [] false [go.int, go.int])))]
 
 attribute [instance] absDays.TypeAssumptions.underlying
+  absDays.TypeAssumptions.method_set
+  absDays.TypeAssumptions.ptr_method_set
 
 abbrev absCentury [FfiSyntax] : Type := w64
 
@@ -1582,8 +1618,12 @@ abbrev absCentury [FfiSyntax] : Type := w64
 
 class absCentury.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq absCentury.ty absCentury.underlying
+  method_set : go.MethodSetIs absCentury.ty [(go!"time.leap", (some (go.signature.Signature [absCyear.ty] false [absLeap.ty]))), (go!"time.year", (some (go.signature.Signature [absCyear.ty, absJanFeb.ty] false [go.int])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType absCentury.ty) [(go!"time.leap", (some (go.signature.Signature [absCyear.ty] false [absLeap.ty]))), (go!"time.year", (some (go.signature.Signature [absCyear.ty, absJanFeb.ty] false [go.int])))]
 
 attribute [instance] absCentury.TypeAssumptions.underlying
+  absCentury.TypeAssumptions.method_set
+  absCentury.TypeAssumptions.ptr_method_set
 
 abbrev absCyear [FfiSyntax] : Type := w64
 
@@ -1592,8 +1632,12 @@ abbrev absCyear [FfiSyntax] : Type := w64
 
 class absCyear.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq absCyear.ty absCyear.underlying
+  method_set : go.MethodSetIs absCyear.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType absCyear.ty) []
 
 attribute [instance] absCyear.TypeAssumptions.underlying
+  absCyear.TypeAssumptions.method_set
+  absCyear.TypeAssumptions.ptr_method_set
 
 abbrev absYday [FfiSyntax] : Type := w64
 
@@ -1602,8 +1646,12 @@ abbrev absYday [FfiSyntax] : Type := w64
 
 class absYday.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq absYday.ty absYday.underlying
+  method_set : go.MethodSetIs absYday.ty [(go!"time.janFeb", (some (go.signature.Signature [] false [absJanFeb.ty]))), (go!"time.split", (some (go.signature.Signature [] false [absMonth.ty, go.int]))), (go!"time.yday", (some (go.signature.Signature [absJanFeb.ty, absLeap.ty] false [go.int])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType absYday.ty) [(go!"time.janFeb", (some (go.signature.Signature [] false [absJanFeb.ty]))), (go!"time.split", (some (go.signature.Signature [] false [absMonth.ty, go.int]))), (go!"time.yday", (some (go.signature.Signature [absJanFeb.ty, absLeap.ty] false [go.int])))]
 
 attribute [instance] absYday.TypeAssumptions.underlying
+  absYday.TypeAssumptions.method_set
+  absYday.TypeAssumptions.ptr_method_set
 
 abbrev absMonth [FfiSyntax] : Type := w64
 
@@ -1612,8 +1660,12 @@ abbrev absMonth [FfiSyntax] : Type := w64
 
 class absMonth.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq absMonth.ty absMonth.underlying
+  method_set : go.MethodSetIs absMonth.ty [(go!"time.month", (some (go.signature.Signature [absJanFeb.ty] false [Month.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType absMonth.ty) [(go!"time.month", (some (go.signature.Signature [absJanFeb.ty] false [Month.ty])))]
 
 attribute [instance] absMonth.TypeAssumptions.underlying
+  absMonth.TypeAssumptions.method_set
+  absMonth.TypeAssumptions.ptr_method_set
 
 abbrev absLeap [FfiSyntax] : Type := w64
 
@@ -1622,8 +1674,12 @@ abbrev absLeap [FfiSyntax] : Type := w64
 
 class absLeap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq absLeap.ty absLeap.underlying
+  method_set : go.MethodSetIs absLeap.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType absLeap.ty) []
 
 attribute [instance] absLeap.TypeAssumptions.underlying
+  absLeap.TypeAssumptions.method_set
+  absLeap.TypeAssumptions.ptr_method_set
 
 abbrev absJanFeb [FfiSyntax] : Type := w64
 
@@ -1632,8 +1688,12 @@ abbrev absJanFeb [FfiSyntax] : Type := w64
 
 class absJanFeb.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq absJanFeb.ty absJanFeb.underlying
+  method_set : go.MethodSetIs absJanFeb.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType absJanFeb.ty) []
 
 attribute [instance] absJanFeb.TypeAssumptions.underlying
+  absJanFeb.TypeAssumptions.method_set
+  absJanFeb.TypeAssumptions.ptr_method_set
 
 abbrev Duration [FfiSyntax] : Type := w64
 
@@ -1642,8 +1702,12 @@ abbrev Duration [FfiSyntax] : Type := w64
 
 class Duration.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Duration.ty Duration.underlying
+  method_set : go.MethodSetIs Duration.ty [(go!"Abs", (some (go.signature.Signature [] false [Duration.ty]))), (go!"Hours", (some (go.signature.Signature [] false [go.float64]))), (go!"Microseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Milliseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Minutes", (some (go.signature.Signature [] false [go.float64]))), (go!"Nanoseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Round", (some (go.signature.Signature [Duration.ty] false [Duration.ty]))), (go!"Seconds", (some (go.signature.Signature [] false [go.float64]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Truncate", (some (go.signature.Signature [Duration.ty] false [Duration.ty]))), (go!"time.format", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.ArrayType 32 go.byte))] false [go.int])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Duration.ty) [(go!"Abs", (some (go.signature.Signature [] false [Duration.ty]))), (go!"Hours", (some (go.signature.Signature [] false [go.float64]))), (go!"Microseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Milliseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Minutes", (some (go.signature.Signature [] false [go.float64]))), (go!"Nanoseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Round", (some (go.signature.Signature [Duration.ty] false [Duration.ty]))), (go!"Seconds", (some (go.signature.Signature [] false [go.float64]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Truncate", (some (go.signature.Signature [Duration.ty] false [Duration.ty]))), (go!"time.format", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.ArrayType 32 go.byte))] false [go.int])))]
 
 attribute [instance] Duration.TypeAssumptions.underlying
+  Duration.TypeAssumptions.method_set
+  Duration.TypeAssumptions.ptr_method_set
 
 structure Location [FfiSyntax] where
   mk ::
@@ -1695,6 +1759,8 @@ class Location.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_cacheEnd : ∀ (x : Location) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"cacheEnd") (PairV #x #y) (Val #(({ x with cacheEnd' := y } : Location)))
   get_cacheZone : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"cacheZone") #x (Val #(x.cacheZone'))
   set_cacheZone : ∀ (x : Location) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Location.underlying go!"cacheZone") (PairV #x #y) (Val #(({ x with cacheZone' := y } : Location)))
+  method_set : go.MethodSetIs Location.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Location.ty) [(go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"time.firstZoneUsed", (some (go.signature.Signature [] false [go.bool]))), (go!"time.get", (some (go.signature.Signature [] false [(go.GoType.PointerType Location.ty)]))), (go!"time.lookup", (some (go.signature.Signature [go.int64] false [go.string, go.int, go.int64, go.int64, go.bool]))), (go!"time.lookupFirstZone", (some (go.signature.Signature [] false [go.int]))), (go!"time.lookupName", (some (go.signature.Signature [go.string, go.int64] false [go.int, go.bool])))]
 
 attribute [instance] Location.TypeAssumptions.type_repr
   Location.TypeAssumptions.underlying
@@ -1713,6 +1779,8 @@ attribute [instance] Location.TypeAssumptions.type_repr
   Location.TypeAssumptions.set_cacheEnd
   Location.TypeAssumptions.get_cacheZone
   Location.TypeAssumptions.set_cacheZone
+  Location.TypeAssumptions.method_set
+  Location.TypeAssumptions.ptr_method_set
 
 structure zone [FfiSyntax] where
   mk ::
@@ -1748,6 +1816,8 @@ class zone.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   set_offset : ∀ (x : zone) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet zone.underlying go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : zone)))
   get_isDST : ∀ (x : zone), go.IsGoStepPureDetTagged under (StructFieldGet zone.underlying go!"isDST") #x (Val #(x.isDST'))
   set_isDST : ∀ (x : zone) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet zone.underlying go!"isDST") (PairV #x #y) (Val #(({ x with isDST' := y } : zone)))
+  method_set : go.MethodSetIs zone.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType zone.ty) []
 
 attribute [instance] zone.TypeAssumptions.type_repr
   zone.TypeAssumptions.underlying
@@ -1758,6 +1828,8 @@ attribute [instance] zone.TypeAssumptions.type_repr
   zone.TypeAssumptions.set_offset
   zone.TypeAssumptions.get_isDST
   zone.TypeAssumptions.set_isDST
+  zone.TypeAssumptions.method_set
+  zone.TypeAssumptions.ptr_method_set
 
 structure zoneTrans [FfiSyntax] where
   mk ::
@@ -1797,6 +1869,8 @@ class zoneTrans.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_isstd : ∀ (x : zoneTrans) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet zoneTrans.underlying go!"isstd") (PairV #x #y) (Val #(({ x with isstd' := y } : zoneTrans)))
   get_isutc : ∀ (x : zoneTrans), go.IsGoStepPureDetTagged under (StructFieldGet zoneTrans.underlying go!"isutc") #x (Val #(x.isutc'))
   set_isutc : ∀ (x : zoneTrans) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet zoneTrans.underlying go!"isutc") (PairV #x #y) (Val #(({ x with isutc' := y } : zoneTrans)))
+  method_set : go.MethodSetIs zoneTrans.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType zoneTrans.ty) []
 
 attribute [instance] zoneTrans.TypeAssumptions.type_repr
   zoneTrans.TypeAssumptions.underlying
@@ -1809,6 +1883,8 @@ attribute [instance] zoneTrans.TypeAssumptions.type_repr
   zoneTrans.TypeAssumptions.set_isstd
   zoneTrans.TypeAssumptions.get_isutc
   zoneTrans.TypeAssumptions.set_isutc
+  zoneTrans.TypeAssumptions.method_set
+  zoneTrans.TypeAssumptions.ptr_method_set
 
 abbrev ruleKind [FfiSyntax] : Type := w64
 
@@ -1817,8 +1893,12 @@ abbrev ruleKind [FfiSyntax] : Type := w64
 
 class ruleKind.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ruleKind.ty ruleKind.underlying
+  method_set : go.MethodSetIs ruleKind.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType ruleKind.ty) []
 
 attribute [instance] ruleKind.TypeAssumptions.underlying
+  ruleKind.TypeAssumptions.method_set
+  ruleKind.TypeAssumptions.ptr_method_set
 
 structure rule [FfiSyntax] where
   mk ::
@@ -1862,6 +1942,8 @@ class rule.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   set_mon : ∀ (x : rule) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"mon") (PairV #x #y) (Val #(({ x with mon' := y } : rule)))
   get_time : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"time") #x (Val #(x.time'))
   set_time : ∀ (x : rule) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"time") (PairV #x #y) (Val #(({ x with time' := y } : rule)))
+  method_set : go.MethodSetIs rule.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType rule.ty) []
 
 attribute [instance] rule.TypeAssumptions.type_repr
   rule.TypeAssumptions.underlying
@@ -1876,6 +1958,8 @@ attribute [instance] rule.TypeAssumptions.type_repr
   rule.TypeAssumptions.set_mon
   rule.TypeAssumptions.get_time
   rule.TypeAssumptions.set_time
+  rule.TypeAssumptions.method_set
+  rule.TypeAssumptions.ptr_method_set
 
 abbrev fileSizeError [FfiSyntax] : Type := GoString
 
@@ -1884,8 +1968,12 @@ abbrev fileSizeError [FfiSyntax] : Type := GoString
 
 class fileSizeError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq fileSizeError.ty fileSizeError.underlying
+  method_set : go.MethodSetIs fileSizeError.ty [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType fileSizeError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
 
 attribute [instance] fileSizeError.TypeAssumptions.underlying
+  fileSizeError.TypeAssumptions.method_set
+  fileSizeError.TypeAssumptions.ptr_method_set
 
 structure dataIO [FfiSyntax] where
   mk ::
@@ -1917,6 +2005,8 @@ class dataIO.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_p : ∀ (x : dataIO) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet dataIO.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : dataIO)))
   get_error : ∀ (x : dataIO), go.IsGoStepPureDetTagged under (StructFieldGet dataIO.underlying go!"error") #x (Val #(x.error'))
   set_error : ∀ (x : dataIO) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet dataIO.underlying go!"error") (PairV #x #y) (Val #(({ x with error' := y } : dataIO)))
+  method_set : go.MethodSetIs dataIO.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType dataIO.ty) [(go!"time.big4", (some (go.signature.Signature [] false [go.uint32, go.bool]))), (go!"time.big8", (some (go.signature.Signature [] false [go.uint64, go.bool]))), (go!"time.byte", (some (go.signature.Signature [] false [go.byte, go.bool]))), (go!"time.read", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType go.byte)]))), (go!"time.rest", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)])))]
 
 attribute [instance] dataIO.TypeAssumptions.type_repr
   dataIO.TypeAssumptions.underlying
@@ -1925,6 +2015,8 @@ attribute [instance] dataIO.TypeAssumptions.type_repr
   dataIO.TypeAssumptions.set_p
   dataIO.TypeAssumptions.get_error
   dataIO.TypeAssumptions.set_error
+  dataIO.TypeAssumptions.method_set
+  dataIO.TypeAssumptions.ptr_method_set
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ParseError_instance : ParseError.TypeAssumptions

@@ -275,10 +275,14 @@ class noCopy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying noCopy.underlying noCopy
   underlying : go.UnderlyingDirectedEq noCopy.ty noCopy.underlying
   layout : go.StructLayout noCopy []
+  method_set : go.MethodSetIs noCopy.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType noCopy.ty) [(go!"Lock", (some (go.signature.Signature [] false []))), (go!"Unlock", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] noCopy.TypeAssumptions.type_repr
   noCopy.TypeAssumptions.underlying
   noCopy.TypeAssumptions.layout
+  noCopy.TypeAssumptions.method_set
+  noCopy.TypeAssumptions.ptr_method_set
 
 structure Int32 [FfiSyntax] where
   mk ::
@@ -310,6 +314,8 @@ class Int32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_noCopy : ∀ (x : Int32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Int32)))
   get_value : ∀ (x : Int32), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : Int32) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Int32)))
+  method_set : go.MethodSetIs Int32.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Int32.ty) [(go!"Add", (some (go.signature.Signature [go.int32] false [go.int32]))), (go!"CompareAndSwap", (some (go.signature.Signature [go.int32, go.int32] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.int32]))), (go!"Store", (some (go.signature.Signature [go.int32] false []))), (go!"Swap", (some (go.signature.Signature [go.int32] false [go.int32])))]
 
 attribute [instance] Int32.TypeAssumptions.type_repr
   Int32.TypeAssumptions.underlying
@@ -318,6 +324,8 @@ attribute [instance] Int32.TypeAssumptions.type_repr
   Int32.TypeAssumptions.set_noCopy
   Int32.TypeAssumptions.get_value
   Int32.TypeAssumptions.set_value
+  Int32.TypeAssumptions.method_set
+  Int32.TypeAssumptions.ptr_method_set
 
 structure align64 [FfiSyntax] where
   mk ::
@@ -342,10 +350,14 @@ class align64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying align64.underlying align64
   underlying : go.UnderlyingDirectedEq align64.ty align64.underlying
   layout : go.StructLayout align64 []
+  method_set : go.MethodSetIs align64.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType align64.ty) []
 
 attribute [instance] align64.TypeAssumptions.type_repr
   align64.TypeAssumptions.underlying
   align64.TypeAssumptions.layout
+  align64.TypeAssumptions.method_set
+  align64.TypeAssumptions.ptr_method_set
 
 structure Int64 [FfiSyntax] where
   mk ::
@@ -381,6 +393,8 @@ class Int64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set__1 : ∀ (x : Int64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : Int64)))
   get_value : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : Int64) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Int64)))
+  method_set : go.MethodSetIs Int64.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Int64.ty) [(go!"Add", (some (go.signature.Signature [go.int64] false [go.int64]))), (go!"CompareAndSwap", (some (go.signature.Signature [go.int64, go.int64] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.int64]))), (go!"Store", (some (go.signature.Signature [go.int64] false []))), (go!"Swap", (some (go.signature.Signature [go.int64] false [go.int64])))]
 
 attribute [instance] Int64.TypeAssumptions.type_repr
   Int64.TypeAssumptions.underlying
@@ -391,6 +405,8 @@ attribute [instance] Int64.TypeAssumptions.type_repr
   Int64.TypeAssumptions.set__1
   Int64.TypeAssumptions.get_value
   Int64.TypeAssumptions.set_value
+  Int64.TypeAssumptions.method_set
+  Int64.TypeAssumptions.ptr_method_set
 
 structure Uint8 [FfiSyntax] where
   mk ::
@@ -422,6 +438,8 @@ class Uint8.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_noCopy : ∀ (x : Uint8) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint8.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Uint8)))
   get_value : ∀ (x : Uint8), go.IsGoStepPureDetTagged under (StructFieldGet Uint8.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : Uint8) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet Uint8.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Uint8)))
+  method_set : go.MethodSetIs Uint8.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Uint8.ty) [(go!"And", (some (go.signature.Signature [go.uint8] false []))), (go!"Load", (some (go.signature.Signature [] false [go.uint8]))), (go!"Or", (some (go.signature.Signature [go.uint8] false []))), (go!"Store", (some (go.signature.Signature [go.uint8] false [])))]
 
 attribute [instance] Uint8.TypeAssumptions.type_repr
   Uint8.TypeAssumptions.underlying
@@ -430,6 +448,8 @@ attribute [instance] Uint8.TypeAssumptions.type_repr
   Uint8.TypeAssumptions.set_noCopy
   Uint8.TypeAssumptions.get_value
   Uint8.TypeAssumptions.set_value
+  Uint8.TypeAssumptions.method_set
+  Uint8.TypeAssumptions.ptr_method_set
 
 structure Bool' [FfiSyntax] where
   mk ::
@@ -457,12 +477,16 @@ class Bool.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   layout : go.StructLayout Bool' [(go!"u", typeSize Uint8, typeAlign Uint8)]
   get_u : ∀ (x : Bool'), go.IsGoStepPureDetTagged under (StructFieldGet Bool'.underlying go!"u") #x (Val #(x.u'))
   set_u : ∀ (x : Bool') (y : Uint8), go.IsGoStepPureDetTagged under (StructFieldSet Bool'.underlying go!"u") (PairV #x #y) (Val #(({ x with u' := y } : Bool')))
+  method_set : go.MethodSetIs Bool'.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Bool'.ty) [(go!"Load", (some (go.signature.Signature [] false [go.bool]))), (go!"Store", (some (go.signature.Signature [go.bool] false [])))]
 
 attribute [instance] Bool.TypeAssumptions.type_repr
   Bool.TypeAssumptions.underlying
   Bool.TypeAssumptions.layout
   Bool.TypeAssumptions.get_u
   Bool.TypeAssumptions.set_u
+  Bool.TypeAssumptions.method_set
+  Bool.TypeAssumptions.ptr_method_set
 
 structure Uint32 [FfiSyntax] where
   mk ::
@@ -494,6 +518,8 @@ class Uint32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_noCopy : ∀ (x : Uint32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Uint32)))
   get_value : ∀ (x : Uint32), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : Uint32) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Uint32)))
+  method_set : go.MethodSetIs Uint32.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Uint32.ty) [(go!"Add", (some (go.signature.Signature [go.int32] false [go.uint32]))), (go!"And", (some (go.signature.Signature [go.uint32] false []))), (go!"CompareAndSwap", (some (go.signature.Signature [go.uint32, go.uint32] false [go.bool]))), (go!"CompareAndSwapRelease", (some (go.signature.Signature [go.uint32, go.uint32] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.uint32]))), (go!"LoadAcquire", (some (go.signature.Signature [] false [go.uint32]))), (go!"Or", (some (go.signature.Signature [go.uint32] false []))), (go!"Store", (some (go.signature.Signature [go.uint32] false []))), (go!"StoreRelease", (some (go.signature.Signature [go.uint32] false []))), (go!"Swap", (some (go.signature.Signature [go.uint32] false [go.uint32])))]
 
 attribute [instance] Uint32.TypeAssumptions.type_repr
   Uint32.TypeAssumptions.underlying
@@ -502,6 +528,8 @@ attribute [instance] Uint32.TypeAssumptions.type_repr
   Uint32.TypeAssumptions.set_noCopy
   Uint32.TypeAssumptions.get_value
   Uint32.TypeAssumptions.set_value
+  Uint32.TypeAssumptions.method_set
+  Uint32.TypeAssumptions.ptr_method_set
 
 structure Uint64 [FfiSyntax] where
   mk ::
@@ -537,6 +565,8 @@ class Uint64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set__1 : ∀ (x : Uint64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : Uint64)))
   get_value : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : Uint64) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Uint64)))
+  method_set : go.MethodSetIs Uint64.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Uint64.ty) [(go!"Add", (some (go.signature.Signature [go.int64] false [go.uint64]))), (go!"CompareAndSwap", (some (go.signature.Signature [go.uint64, go.uint64] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.uint64]))), (go!"LoadAcquire", (some (go.signature.Signature [] false [go.uint64]))), (go!"Store", (some (go.signature.Signature [go.uint64] false []))), (go!"StoreRelease", (some (go.signature.Signature [go.uint64] false []))), (go!"Swap", (some (go.signature.Signature [go.uint64] false [go.uint64])))]
 
 attribute [instance] Uint64.TypeAssumptions.type_repr
   Uint64.TypeAssumptions.underlying
@@ -547,6 +577,8 @@ attribute [instance] Uint64.TypeAssumptions.type_repr
   Uint64.TypeAssumptions.set__1
   Uint64.TypeAssumptions.get_value
   Uint64.TypeAssumptions.set_value
+  Uint64.TypeAssumptions.method_set
+  Uint64.TypeAssumptions.ptr_method_set
 
 structure Uintptr [FfiSyntax] where
   mk ::
@@ -578,6 +610,8 @@ class Uintptr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_noCopy : ∀ (x : Uintptr) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Uintptr)))
   get_value : ∀ (x : Uintptr), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : Uintptr) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Uintptr)))
+  method_set : go.MethodSetIs Uintptr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Uintptr.ty) [(go!"Add", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"CompareAndSwap", (some (go.signature.Signature [go.uintptr, go.uintptr] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [go.uintptr]))), (go!"LoadAcquire", (some (go.signature.Signature [] false [go.uintptr]))), (go!"Store", (some (go.signature.Signature [go.uintptr] false []))), (go!"StoreRelease", (some (go.signature.Signature [go.uintptr] false []))), (go!"Swap", (some (go.signature.Signature [go.uintptr] false [go.uintptr])))]
 
 attribute [instance] Uintptr.TypeAssumptions.type_repr
   Uintptr.TypeAssumptions.underlying
@@ -586,6 +620,8 @@ attribute [instance] Uintptr.TypeAssumptions.type_repr
   Uintptr.TypeAssumptions.set_noCopy
   Uintptr.TypeAssumptions.get_value
   Uintptr.TypeAssumptions.set_value
+  Uintptr.TypeAssumptions.method_set
+  Uintptr.TypeAssumptions.ptr_method_set
 
 structure Float64 [FfiSyntax] where
   mk ::
@@ -613,12 +649,16 @@ class Float64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   layout : go.StructLayout Float64 [(go!"u", typeSize Uint64, typeAlign Uint64)]
   get_u : ∀ (x : Float64), go.IsGoStepPureDetTagged under (StructFieldGet Float64.underlying go!"u") #x (Val #(x.u'))
   set_u : ∀ (x : Float64) (y : Uint64), go.IsGoStepPureDetTagged under (StructFieldSet Float64.underlying go!"u") (PairV #x #y) (Val #(({ x with u' := y } : Float64)))
+  method_set : go.MethodSetIs Float64.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Float64.ty) [(go!"Load", (some (go.signature.Signature [] false [go.float64]))), (go!"Store", (some (go.signature.Signature [go.float64] false [])))]
 
 attribute [instance] Float64.TypeAssumptions.type_repr
   Float64.TypeAssumptions.underlying
   Float64.TypeAssumptions.layout
   Float64.TypeAssumptions.get_u
   Float64.TypeAssumptions.set_u
+  Float64.TypeAssumptions.method_set
+  Float64.TypeAssumptions.ptr_method_set
 
 structure UnsafePointer [FfiSyntax] where
   mk ::
@@ -650,6 +690,8 @@ class UnsafePointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_noCopy : ∀ (x : UnsafePointer) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet UnsafePointer.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : UnsafePointer)))
   get_value : ∀ (x : UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldGet UnsafePointer.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : UnsafePointer) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet UnsafePointer.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : UnsafePointer)))
+  method_set : go.MethodSetIs UnsafePointer.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType UnsafePointer.ty) [(go!"CompareAndSwap", (some (go.signature.Signature [«unsafe».Pointer, «unsafe».Pointer] false [go.bool]))), (go!"CompareAndSwapNoWB", (some (go.signature.Signature [«unsafe».Pointer, «unsafe».Pointer] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"Store", (some (go.signature.Signature [«unsafe».Pointer] false []))), (go!"StoreNoWB", (some (go.signature.Signature [«unsafe».Pointer] false [])))]
 
 attribute [instance] UnsafePointer.TypeAssumptions.type_repr
   UnsafePointer.TypeAssumptions.underlying
@@ -658,6 +700,8 @@ attribute [instance] UnsafePointer.TypeAssumptions.type_repr
   UnsafePointer.TypeAssumptions.set_noCopy
   UnsafePointer.TypeAssumptions.get_value
   UnsafePointer.TypeAssumptions.set_value
+  UnsafePointer.TypeAssumptions.method_set
+  UnsafePointer.TypeAssumptions.ptr_method_set
 
 structure Pointer [FfiSyntax] (T : Type) where
   mk ::
@@ -685,12 +729,16 @@ class Pointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   layout : ∀ (T' : Type), go.StructLayout (Pointer T') [(go!"u", typeSize UnsafePointer, typeAlign UnsafePointer)]
   get_u : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"u") #x (Val #(x.u'))
   set_u : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"u") (PairV #x #y) (Val #(({ x with u' := y } : (Pointer T'))))
+  method_set : ∀ (T : go.GoType), go.MethodSetIs (Pointer.ty T) []
+  ptr_method_set : ∀ (T : go.GoType), go.MethodSetIs (go.GoType.PointerType (Pointer.ty T)) [(go!"CompareAndSwap", (some (go.signature.Signature [(go.GoType.PointerType T), (go.GoType.PointerType T)] false [go.bool]))), (go!"CompareAndSwapNoWB", (some (go.signature.Signature [(go.GoType.PointerType T), (go.GoType.PointerType T)] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [(go.GoType.PointerType T)]))), (go!"Store", (some (go.signature.Signature [(go.GoType.PointerType T)] false []))), (go!"StoreNoWB", (some (go.signature.Signature [(go.GoType.PointerType T)] false [])))]
 
 attribute [instance] Pointer.TypeAssumptions.type_repr
   Pointer.TypeAssumptions.underlying
   Pointer.TypeAssumptions.layout
   Pointer.TypeAssumptions.get_u
   Pointer.TypeAssumptions.set_u
+  Pointer.TypeAssumptions.method_set
+  Pointer.TypeAssumptions.ptr_method_set
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Int32_instance : Int32.TypeAssumptions

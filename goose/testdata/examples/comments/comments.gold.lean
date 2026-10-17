@@ -68,12 +68,16 @@ class Foo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
   layout : go.StructLayout Foo [(go!"a", typeSize Bool, typeAlign Bool)]
   get_a : ∀ (x : Foo), go.IsGoStepPureDetTagged under (StructFieldGet Foo.underlying go!"a") #x (Val #(x.a'))
   set_a : ∀ (x : Foo) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Foo.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : Foo)))
+  method_set : go.MethodSetIs Foo.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Foo.ty) []
 
 attribute [instance] Foo.TypeAssumptions.type_repr
   Foo.TypeAssumptions.underlying
   Foo.TypeAssumptions.layout
   Foo.TypeAssumptions.get_a
   Foo.TypeAssumptions.set_a
+  Foo.TypeAssumptions.method_set
+  Foo.TypeAssumptions.ptr_method_set
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Foo_instance : Foo.TypeAssumptions

@@ -391,8 +391,12 @@ abbrev readOp [FfiSyntax] : Type := w8
 
 class readOp.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq readOp.ty readOp.underlying
+  method_set : go.MethodSetIs readOp.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType readOp.ty) []
 
 attribute [instance] readOp.TypeAssumptions.underlying
+  readOp.TypeAssumptions.method_set
+  readOp.TypeAssumptions.ptr_method_set
 
 structure Buffer [FfiSyntax] where
   mk ::
@@ -428,6 +432,8 @@ class Buffer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_off : ∀ (x : Buffer) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Buffer.underlying go!"off") (PairV #x #y) (Val #(({ x with off' := y } : Buffer)))
   get_lastRead : ∀ (x : Buffer), go.IsGoStepPureDetTagged under (StructFieldGet Buffer.underlying go!"lastRead") #x (Val #(x.lastRead'))
   set_lastRead : ∀ (x : Buffer) (y : readOp), go.IsGoStepPureDetTagged under (StructFieldSet Buffer.underlying go!"lastRead") (PairV #x #y) (Val #(({ x with lastRead' := y } : Buffer)))
+  method_set : go.MethodSetIs Buffer.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Buffer.ty) [(go!"Available", (some (go.signature.Signature [] false [go.int]))), (go!"AvailableBuffer", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Bytes", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Cap", (some (go.signature.Signature [] false [go.int]))), (go!"Grow", (some (go.signature.Signature [go.int] false []))), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Next", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType go.byte)]))), (go!"Peek", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadByte", (some (go.signature.Signature [] false [go.byte, go.error]))), (go!"ReadBytes", (some (go.signature.Signature [go.byte] false [(go.GoType.SliceType go.byte), go.error]))), (go!"ReadFrom", none), (go!"ReadRune", (some (go.signature.Signature [] false [go.rune, go.int, go.error]))), (go!"ReadString", (some (go.signature.Signature [go.byte] false [go.string, go.error]))), (go!"Reset", (some (go.signature.Signature [] false []))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Truncate", (some (go.signature.Signature [go.int] false []))), (go!"UnreadByte", (some (go.signature.Signature [] false [go.error]))), (go!"UnreadRune", (some (go.signature.Signature [] false [go.error]))), (go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"WriteByte", (some (go.signature.Signature [go.byte] false [go.error]))), (go!"WriteRune", (some (go.signature.Signature [go.rune] false [go.int, go.error]))), (go!"WriteString", (some (go.signature.Signature [go.string] false [go.int, go.error]))), (go!"WriteTo", none), (go!"bytes.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"bytes.grow", (some (go.signature.Signature [go.int] false [go.int]))), (go!"bytes.readSlice", (some (go.signature.Signature [go.byte] false [(go.GoType.SliceType go.byte), go.error]))), (go!"bytes.tryGrowByReslice", (some (go.signature.Signature [go.int] false [go.int, go.bool])))]
 
 attribute [instance] Buffer.TypeAssumptions.type_repr
   Buffer.TypeAssumptions.underlying
@@ -438,6 +444,8 @@ attribute [instance] Buffer.TypeAssumptions.type_repr
   Buffer.TypeAssumptions.set_off
   Buffer.TypeAssumptions.get_lastRead
   Buffer.TypeAssumptions.set_lastRead
+  Buffer.TypeAssumptions.method_set
+  Buffer.TypeAssumptions.ptr_method_set
 
 abbrev asciiSet [FfiSyntax] : Type := (GoArray w32 8)
 
@@ -446,8 +454,12 @@ abbrev asciiSet [FfiSyntax] : Type := (GoArray w32 8)
 
 class asciiSet.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq asciiSet.ty asciiSet.underlying
+  method_set : go.MethodSetIs asciiSet.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType asciiSet.ty) [(go!"bytes.contains", (some (go.signature.Signature [go.byte] false [go.bool])))]
 
 attribute [instance] asciiSet.TypeAssumptions.underlying
+  asciiSet.TypeAssumptions.method_set
+  asciiSet.TypeAssumptions.ptr_method_set
 
 structure Reader [FfiSyntax] where
   mk ::
@@ -483,6 +495,8 @@ class Reader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_i : ∀ (x : Reader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"i") (PairV #x #y) (Val #(({ x with i' := y } : Reader)))
   get_prevRune : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"prevRune") #x (Val #(x.prevRune'))
   set_prevRune : ∀ (x : Reader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"prevRune") (PairV #x #y) (Val #(({ x with prevRune' := y } : Reader)))
+  method_set : go.MethodSetIs Reader.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Reader.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"ReadByte", (some (go.signature.Signature [] false [go.byte, go.error]))), (go!"ReadRune", (some (go.signature.Signature [] false [go.rune, go.int, go.error]))), (go!"Reset", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false []))), (go!"Seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"Size", (some (go.signature.Signature [] false [go.int64]))), (go!"UnreadByte", (some (go.signature.Signature [] false [go.error]))), (go!"UnreadRune", (some (go.signature.Signature [] false [go.error]))), (go!"WriteTo", none)]
 
 attribute [instance] Reader.TypeAssumptions.type_repr
   Reader.TypeAssumptions.underlying
@@ -493,6 +507,8 @@ attribute [instance] Reader.TypeAssumptions.type_repr
   Reader.TypeAssumptions.set_i
   Reader.TypeAssumptions.get_prevRune
   Reader.TypeAssumptions.set_prevRune
+  Reader.TypeAssumptions.method_set
+  Reader.TypeAssumptions.ptr_method_set
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Buffer_instance : Buffer.TypeAssumptions

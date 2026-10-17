@@ -283,6 +283,8 @@ class Worker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_queue : ∀ (x : Worker) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Worker.underlying go!"queue") (PairV #x #y) (Val #(({ x with queue' := y } : Worker)))
   get_steal : ∀ (x : Worker), go.IsGoStepPureDetTagged under (StructFieldGet Worker.underlying go!"steal") #x (Val #(x.steal'))
   set_steal : ∀ (x : Worker) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Worker.underlying go!"steal") (PairV #x #y) (Val #(({ x with steal' := y } : Worker)))
+  method_set : go.MethodSetIs Worker.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Worker.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/workq.process", (some (go.signature.Signature [go.string, shared.ty] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/workq.run", (some (go.signature.Signature [(go.GoType.PointerType Worker.ty), shared.ty] false [])))]
   ptr_process_unfold : MethodUnfold (go.GoType.PointerType Worker.ty) go!"process" Worker.process.impl
   ptr_run_unfold : MethodUnfold (go.GoType.PointerType Worker.ty) go!"run" Worker.run.impl
 
@@ -293,6 +295,8 @@ attribute [instance] Worker.TypeAssumptions.type_repr
   Worker.TypeAssumptions.set_queue
   Worker.TypeAssumptions.get_steal
   Worker.TypeAssumptions.set_steal
+  Worker.TypeAssumptions.method_set
+  Worker.TypeAssumptions.ptr_method_set
   Worker.TypeAssumptions.ptr_process_unfold
   Worker.TypeAssumptions.ptr_run_unfold
 
@@ -330,6 +334,8 @@ class shared.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_total : ∀ (x : shared) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet shared.underlying go!"total") (PairV #x #y) (Val #(({ x with total' := y } : shared)))
   get_done : ∀ (x : shared), go.IsGoStepPureDetTagged under (StructFieldGet shared.underlying go!"done") #x (Val #(x.done'))
   set_done : ∀ (x : shared) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet shared.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : shared)))
+  method_set : go.MethodSetIs shared.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType shared.ty) []
 
 attribute [instance] shared.TypeAssumptions.type_repr
   shared.TypeAssumptions.underlying
@@ -340,6 +346,8 @@ attribute [instance] shared.TypeAssumptions.type_repr
   shared.TypeAssumptions.set_total
   shared.TypeAssumptions.get_done
   shared.TypeAssumptions.set_done
+  shared.TypeAssumptions.method_set
+  shared.TypeAssumptions.ptr_method_set
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Worker_instance : Worker.TypeAssumptions

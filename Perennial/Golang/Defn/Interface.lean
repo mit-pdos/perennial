@@ -5,6 +5,7 @@ method calls on interface values.
 module
 
 public import Perennial.Golang.Defn.PostLang
+public import Perennial.Golang.Defn.MethodSet
 
 @[expose] public section
 
@@ -34,7 +35,10 @@ noncomputable def typeSetElemContains (t : go.GoType) (e : go.InterfaceElem) : B
 noncomputable def typeSetElemsContains (t : go.GoType) (elems : List go.InterfaceElem) : Bool :=
   elems.all (typeSetElemContains t)
 
-/-- Equals `true` iff t is in the type set of t'. -/
+/-- Equals `true` iff t is in the type set of t'. goose writes an interface type as the list of
+all its methods (`go.MethodElem`, named by their ids, those of embedded interfaces included),
+followed by its other embedded elements (unions, constraints such as `comparable`), which only
+occur in type constraints; a method element is decided by `methodSet` (`MethodSet.lean`). -/
 noncomputable def typeSetContains (t t' : go.GoType) : Bool :=
   match (underlying t') with
   | go.InterfaceType elems => typeSetElemsContains t elems
@@ -95,11 +99,17 @@ class InterfaceSemantics : Prop where
      | interface.nil => Panic "nil interface"
      | interface.ok i => #(methods i.ty m i.v))
 
+  /-- The types with no methods (`go.NoMethods`) have an empty method set. The method sets
+  of the named types of a package are facts of the package's `Assumptions`
+  (`MethodSet.lean`). -/
+  method_set_no_methods (t : go.GoType) [NoMethods t] : MethodSetIs t []
+
 attribute [instance] InterfaceSemantics.is_comparable_interface InterfaceSemantics.go_eq_interface
   InterfaceSemantics.convert_to_interface InterfaceSemantics.type_assert_step
   InterfaceSemantics.type_assert2_interface_step InterfaceSemantics.method_interface_ok
+  InterfaceSemantics.method_set_no_methods
 export InterfaceSemantics (is_comparable_interface go_eq_interface convert_to_interface
-  type_assert_step type_assert2_interface_step method_interface_ok)
+  type_assert_step type_assert2_interface_step method_interface_ok method_set_no_methods)
 
 end defs
 end go

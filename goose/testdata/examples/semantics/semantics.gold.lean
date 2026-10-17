@@ -8015,10 +8015,14 @@ class unit.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   type_repr : go.TypeReprUnderlying unit.underlying unit
   underlying : go.UnderlyingDirectedEq unit.ty unit.underlying
   layout : go.StructLayout unit []
+  method_set : go.MethodSetIs unit.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType unit.ty) []
 
 attribute [instance] unit.TypeAssumptions.type_repr
   unit.TypeAssumptions.underlying
   unit.TypeAssumptions.layout
+  unit.TypeAssumptions.method_set
+  unit.TypeAssumptions.ptr_method_set
 
 structure localPair [FfiSyntax] where
   mk ::
@@ -8046,12 +8050,16 @@ class localPair.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   layout : go.StructLayout localPair [(go!"a", typeSize w64, typeAlign w64)]
   get_a : ∀ (x : localPair), go.IsGoStepPureDetTagged under (StructFieldGet localPair.underlying go!"a") #x (Val #(x.a'))
   set_a : ∀ (x : localPair) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet localPair.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : localPair)))
+  method_set : go.MethodSetIs localPair.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType localPair.ty) []
 
 attribute [instance] localPair.TypeAssumptions.type_repr
   localPair.TypeAssumptions.underlying
   localPair.TypeAssumptions.layout
   localPair.TypeAssumptions.get_a
   localPair.TypeAssumptions.set_a
+  localPair.TypeAssumptions.method_set
+  localPair.TypeAssumptions.ptr_method_set
 
 structure pair [FfiSyntax] where
   mk ::
@@ -8083,6 +8091,8 @@ class pair.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   set_a : ∀ (x : pair) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pair.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : pair)))
   get_b : ∀ (x : pair), go.IsGoStepPureDetTagged under (StructFieldGet pair.underlying go!"b") #x (Val #(x.b'))
   set_b : ∀ (x : pair) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pair.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : pair)))
+  method_set : go.MethodSetIs pair.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pair.ty) []
 
 attribute [instance] pair.TypeAssumptions.type_repr
   pair.TypeAssumptions.underlying
@@ -8091,6 +8101,8 @@ attribute [instance] pair.TypeAssumptions.type_repr
   pair.TypeAssumptions.set_a
   pair.TypeAssumptions.get_b
   pair.TypeAssumptions.set_b
+  pair.TypeAssumptions.method_set
+  pair.TypeAssumptions.ptr_method_set
 
 abbrev pairs [FfiSyntax] : Type := GoSlice
 
@@ -8099,8 +8111,12 @@ abbrev pairs [FfiSyntax] : Type := GoSlice
 
 class pairs.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq pairs.ty pairs.underlying
+  method_set : go.MethodSetIs pairs.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pairs.ty) []
 
 attribute [instance] pairs.TypeAssumptions.underlying
+  pairs.TypeAssumptions.method_set
+  pairs.TypeAssumptions.ptr_method_set
 
 structure evalCounter [FfiSyntax] where
   mk ::
@@ -8132,6 +8148,8 @@ class evalCounter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set_n : ∀ (x : evalCounter) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet evalCounter.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : evalCounter)))
   get_buf : ∀ (x : evalCounter), go.IsGoStepPureDetTagged under (StructFieldGet evalCounter.underlying go!"buf") #x (Val #(x.buf'))
   set_buf : ∀ (x : evalCounter) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet evalCounter.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : evalCounter)))
+  method_set : go.MethodSetIs evalCounter.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType evalCounter.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.ch", (some (go.signature.Signature [(go.GoType.ChannelType go.ChanDir.sendrecv go.uint64)] false [(go.GoType.ChannelType go.ChanDir.sendrecv go.uint64)]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.next", (some (go.signature.Signature [] false [(go.GoType.SliceType go.uint64)]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.val", (some (go.signature.Signature [] false [go.uint64])))]
   ptr_ch_unfold : MethodUnfold (go.GoType.PointerType evalCounter.ty) go!"ch" evalCounter.ch.impl
   ptr_next_unfold : MethodUnfold (go.GoType.PointerType evalCounter.ty) go!"next" evalCounter.next.impl
   ptr_val_unfold : MethodUnfold (go.GoType.PointerType evalCounter.ty) go!"val" evalCounter.val.impl
@@ -8143,6 +8161,8 @@ attribute [instance] evalCounter.TypeAssumptions.type_repr
   evalCounter.TypeAssumptions.set_n
   evalCounter.TypeAssumptions.get_buf
   evalCounter.TypeAssumptions.set_buf
+  evalCounter.TypeAssumptions.method_set
+  evalCounter.TypeAssumptions.ptr_method_set
   evalCounter.TypeAssumptions.ptr_ch_unfold
   evalCounter.TypeAssumptions.ptr_next_unfold
   evalCounter.TypeAssumptions.ptr_val_unfold
@@ -8177,6 +8197,8 @@ class Editor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_s : ∀ (x : Editor) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Editor.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : Editor)))
   get_next_val : ∀ (x : Editor), go.IsGoStepPureDetTagged under (StructFieldGet Editor.underlying go!"next_val") #x (Val #(x.next_val'))
   set_next_val : ∀ (x : Editor) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Editor.underlying go!"next_val") (PairV #x #y) (Val #(({ x with next_val' := y } : Editor)))
+  method_set : go.MethodSetIs Editor.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Editor.ty) [(go!"AdvanceReturn", (some (go.signature.Signature [go.uint64] false [go.uint64])))]
   ptr_AdvanceReturn_unfold : MethodUnfold (go.GoType.PointerType Editor.ty) go!"AdvanceReturn" Editor.AdvanceReturn.impl
 
 attribute [instance] Editor.TypeAssumptions.type_repr
@@ -8186,6 +8208,8 @@ attribute [instance] Editor.TypeAssumptions.type_repr
   Editor.TypeAssumptions.set_s
   Editor.TypeAssumptions.get_next_val
   Editor.TypeAssumptions.set_next_val
+  Editor.TypeAssumptions.method_set
+  Editor.TypeAssumptions.ptr_method_set
   Editor.TypeAssumptions.ptr_AdvanceReturn_unfold
 
 structure Pair' [FfiSyntax] where
@@ -8218,6 +8242,8 @@ class Pair.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   set_x : ∀ (x : Pair') (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Pair'.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : Pair')))
   get_y : ∀ (x : Pair'), go.IsGoStepPureDetTagged under (StructFieldGet Pair'.underlying go!"y") #x (Val #(x.y'))
   set_y : ∀ (x : Pair') (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Pair'.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : Pair')))
+  method_set : go.MethodSetIs Pair'.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Pair'.ty) []
 
 attribute [instance] Pair.TypeAssumptions.type_repr
   Pair.TypeAssumptions.underlying
@@ -8226,6 +8252,8 @@ attribute [instance] Pair.TypeAssumptions.type_repr
   Pair.TypeAssumptions.set_x
   Pair.TypeAssumptions.get_y
   Pair.TypeAssumptions.set_y
+  Pair.TypeAssumptions.method_set
+  Pair.TypeAssumptions.ptr_method_set
 
 abbrev Uint32 [FfiSyntax] : Type := w32
 
@@ -8234,8 +8262,12 @@ abbrev Uint32 [FfiSyntax] : Type := w32
 
 class Uint32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Uint32.ty Uint32.underlying
+  method_set : go.MethodSetIs Uint32.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Uint32.ty) []
 
 attribute [instance] Uint32.TypeAssumptions.underlying
+  Uint32.TypeAssumptions.method_set
+  Uint32.TypeAssumptions.ptr_method_set
 
 abbrev geometryInterface [FfiSyntax] : Type := GoInterface
 
@@ -8244,8 +8276,12 @@ abbrev geometryInterface [FfiSyntax] : Type := GoInterface
 
 class geometryInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq geometryInterface.ty geometryInterface.underlying
+  method_set : go.MethodSetIs geometryInterface.ty [(go!"Square", (some (go.signature.Signature [] false [go.uint64]))), (go!"Volume", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType geometryInterface.ty) []
 
 attribute [instance] geometryInterface.TypeAssumptions.underlying
+  geometryInterface.TypeAssumptions.method_set
+  geometryInterface.TypeAssumptions.ptr_method_set
 
 structure SquareStruct [FfiSyntax] where
   mk ::
@@ -8273,6 +8309,8 @@ class SquareStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   layout : go.StructLayout SquareStruct [(go!"Side", typeSize w64, typeAlign w64)]
   get_Side : ∀ (x : SquareStruct), go.IsGoStepPureDetTagged under (StructFieldGet SquareStruct.underlying go!"Side") #x (Val #(x.Side'))
   set_Side : ∀ (x : SquareStruct) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet SquareStruct.underlying go!"Side") (PairV #x #y) (Val #(({ x with Side' := y } : SquareStruct)))
+  method_set : go.MethodSetIs SquareStruct.ty [(go!"Square", (some (go.signature.Signature [] false [go.uint64]))), (go!"Volume", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType SquareStruct.ty) [(go!"Square", (some (go.signature.Signature [] false [go.uint64]))), (go!"Volume", (some (go.signature.Signature [] false [go.uint64])))]
   Square_unfold : MethodUnfold SquareStruct.ty go!"Square" SquareStruct.Square.impl
   Volume_unfold : MethodUnfold SquareStruct.ty go!"Volume" SquareStruct.Volume.impl
   ptr_Square_unfold : MethodUnfold (go.GoType.PointerType SquareStruct.ty) go!"Square" (LamV "$r"
@@ -8285,6 +8323,8 @@ attribute [instance] SquareStruct.TypeAssumptions.type_repr
   SquareStruct.TypeAssumptions.layout
   SquareStruct.TypeAssumptions.get_Side
   SquareStruct.TypeAssumptions.set_Side
+  SquareStruct.TypeAssumptions.method_set
+  SquareStruct.TypeAssumptions.ptr_method_set
   SquareStruct.TypeAssumptions.Square_unfold
   SquareStruct.TypeAssumptions.Volume_unfold
   SquareStruct.TypeAssumptions.ptr_Square_unfold
@@ -8316,32 +8356,44 @@ class NumStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   layout : go.StructLayout NumStruct [(go!"Value", typeSize w64, typeAlign w64)]
   get_Value : ∀ (x : NumStruct), go.IsGoStepPureDetTagged under (StructFieldGet NumStruct.underlying go!"Value") #x (Val #(x.Value'))
   set_Value : ∀ (x : NumStruct) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet NumStruct.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : NumStruct)))
+  method_set : go.MethodSetIs NumStruct.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType NumStruct.ty) []
 
 attribute [instance] NumStruct.TypeAssumptions.type_repr
   NumStruct.TypeAssumptions.underlying
   NumStruct.TypeAssumptions.layout
   NumStruct.TypeAssumptions.get_Value
   NumStruct.TypeAssumptions.set_Value
+  NumStruct.TypeAssumptions.method_set
+  NumStruct.TypeAssumptions.ptr_method_set
 
 abbrev shapeInterface [FfiSyntax] : Type := GoInterface
 
 @[reducible] def shapeInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"describe" (go.signature.Signature [] false [go.string]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.describe" (go.signature.Signature [] false [go.string]))])
 
 class shapeInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq shapeInterface.ty shapeInterface.underlying
+  method_set : go.MethodSetIs shapeInterface.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.describe", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType shapeInterface.ty) []
 
 attribute [instance] shapeInterface.TypeAssumptions.underlying
+  shapeInterface.TypeAssumptions.method_set
+  shapeInterface.TypeAssumptions.ptr_method_set
 
 abbrev polygonInterface [FfiSyntax] : Type := GoInterface
 
 @[reducible] def polygonInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"sides" (go.signature.Signature [] false [go.uint64]))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.sides" (go.signature.Signature [] false [go.uint64]))])
 
 class polygonInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq polygonInterface.ty polygonInterface.underlying
+  method_set : go.MethodSetIs polygonInterface.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.sides", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType polygonInterface.ty) []
 
 attribute [instance] polygonInterface.TypeAssumptions.underlying
+  polygonInterface.TypeAssumptions.method_set
+  polygonInterface.TypeAssumptions.ptr_method_set
 
 structure shapeStruct [FfiSyntax] where
   mk ::
@@ -8369,6 +8421,8 @@ class shapeStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   layout : go.StructLayout shapeStruct [(go!"Shape", typeSize GoString, typeAlign GoString)]
   get_Shape : ∀ (x : shapeStruct), go.IsGoStepPureDetTagged under (StructFieldGet shapeStruct.underlying go!"Shape") #x (Val #(x.Shape'))
   set_Shape : ∀ (x : shapeStruct) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet shapeStruct.underlying go!"Shape") (PairV #x #y) (Val #(({ x with Shape' := y } : shapeStruct)))
+  method_set : go.MethodSetIs shapeStruct.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.describe", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType shapeStruct.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.describe", (some (go.signature.Signature [] false [go.string])))]
   describe_unfold : MethodUnfold shapeStruct.ty go!"describe" shapeStruct.describe.impl
   ptr_describe_unfold : MethodUnfold (go.GoType.PointerType shapeStruct.ty) go!"describe" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve shapeStruct.ty go!"describe"))) (App (Val (GoInstruction (GoLoad shapeStruct.ty))) (Var "$r"))))
@@ -8378,6 +8432,8 @@ attribute [instance] shapeStruct.TypeAssumptions.type_repr
   shapeStruct.TypeAssumptions.layout
   shapeStruct.TypeAssumptions.get_Shape
   shapeStruct.TypeAssumptions.set_Shape
+  shapeStruct.TypeAssumptions.method_set
+  shapeStruct.TypeAssumptions.ptr_method_set
   shapeStruct.TypeAssumptions.describe_unfold
   shapeStruct.TypeAssumptions.ptr_describe_unfold
 
@@ -8411,6 +8467,8 @@ class polygonStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_Shape : ∀ (x : polygonStruct) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet polygonStruct.underlying go!"Shape") (PairV #x #y) (Val #(({ x with Shape' := y } : polygonStruct)))
   get_Sides : ∀ (x : polygonStruct), go.IsGoStepPureDetTagged under (StructFieldGet polygonStruct.underlying go!"Sides") #x (Val #(x.Sides'))
   set_Sides : ∀ (x : polygonStruct) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet polygonStruct.underlying go!"Sides") (PairV #x #y) (Val #(({ x with Sides' := y } : polygonStruct)))
+  method_set : go.MethodSetIs polygonStruct.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.describe", (some (go.signature.Signature [] false [go.string]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.sides", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType polygonStruct.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.describe", (some (go.signature.Signature [] false [go.string]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.sides", (some (go.signature.Signature [] false [go.uint64])))]
   describe_unfold : MethodUnfold polygonStruct.ty go!"describe" polygonStruct.describe.impl
   sides_unfold : MethodUnfold polygonStruct.ty go!"sides" polygonStruct.sides.impl
   ptr_describe_unfold : MethodUnfold (go.GoType.PointerType polygonStruct.ty) go!"describe" (LamV "$r"
@@ -8425,6 +8483,8 @@ attribute [instance] polygonStruct.TypeAssumptions.type_repr
   polygonStruct.TypeAssumptions.set_Shape
   polygonStruct.TypeAssumptions.get_Sides
   polygonStruct.TypeAssumptions.set_Sides
+  polygonStruct.TypeAssumptions.method_set
+  polygonStruct.TypeAssumptions.ptr_method_set
   polygonStruct.TypeAssumptions.describe_unfold
   polygonStruct.TypeAssumptions.sides_unfold
   polygonStruct.TypeAssumptions.ptr_describe_unfold
@@ -8437,8 +8497,12 @@ abbrev dogInterface [FfiSyntax] : Type := GoInterface
 
 class dogInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq dogInterface.ty dogInterface.underlying
+  method_set : go.MethodSetIs dogInterface.ty [(go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"Speed", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType dogInterface.ty) []
 
 attribute [instance] dogInterface.TypeAssumptions.underlying
+  dogInterface.TypeAssumptions.method_set
+  dogInterface.TypeAssumptions.ptr_method_set
 
 abbrev catInterface [FfiSyntax] : Type := GoInterface
 
@@ -8447,8 +8511,12 @@ abbrev catInterface [FfiSyntax] : Type := GoInterface
 
 class catInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq catInterface.ty catInterface.underlying
+  method_set : go.MethodSetIs catInterface.ty [(go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"Weight", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType catInterface.ty) []
 
 attribute [instance] catInterface.TypeAssumptions.underlying
+  catInterface.TypeAssumptions.method_set
+  catInterface.TypeAssumptions.ptr_method_set
 
 abbrev Puppy [FfiSyntax] : Type := GoString
 
@@ -8457,6 +8525,8 @@ abbrev Puppy [FfiSyntax] : Type := GoString
 
 class Puppy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Puppy.ty Puppy.underlying
+  method_set : go.MethodSetIs Puppy.ty [(go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"Speed", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Puppy.ty) [(go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"Speed", (some (go.signature.Signature [] false [go.uint64])))]
   Name_unfold : MethodUnfold Puppy.ty go!"Name" Puppy.Name.impl
   Speed_unfold : MethodUnfold Puppy.ty go!"Speed" Puppy.Speed.impl
   ptr_Name_unfold : MethodUnfold (go.GoType.PointerType Puppy.ty) go!"Name" (LamV "$r"
@@ -8465,6 +8535,8 @@ class Puppy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 (App (Val (GoInstruction (MethodResolve Puppy.ty go!"Speed"))) (App (Val (GoInstruction (GoLoad Puppy.ty))) (Var "$r"))))
 
 attribute [instance] Puppy.TypeAssumptions.underlying
+  Puppy.TypeAssumptions.method_set
+  Puppy.TypeAssumptions.ptr_method_set
   Puppy.TypeAssumptions.Name_unfold
   Puppy.TypeAssumptions.Speed_unfold
   Puppy.TypeAssumptions.ptr_Name_unfold
@@ -8477,6 +8549,8 @@ abbrev Kitten [FfiSyntax] : Type := GoString
 
 class Kitten.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Kitten.ty Kitten.underlying
+  method_set : go.MethodSetIs Kitten.ty [(go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"Weight", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Kitten.ty) [(go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"Weight", (some (go.signature.Signature [] false [go.uint64])))]
   Name_unfold : MethodUnfold Kitten.ty go!"Name" Kitten.Name.impl
   Weight_unfold : MethodUnfold Kitten.ty go!"Weight" Kitten.Weight.impl
   ptr_Name_unfold : MethodUnfold (go.GoType.PointerType Kitten.ty) go!"Name" (LamV "$r"
@@ -8485,6 +8559,8 @@ class Kitten.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 (App (Val (GoInstruction (MethodResolve Kitten.ty go!"Weight"))) (App (Val (GoInstruction (GoLoad Kitten.ty))) (Var "$r"))))
 
 attribute [instance] Kitten.TypeAssumptions.underlying
+  Kitten.TypeAssumptions.method_set
+  Kitten.TypeAssumptions.ptr_method_set
   Kitten.TypeAssumptions.Name_unfold
   Kitten.TypeAssumptions.Weight_unfold
   Kitten.TypeAssumptions.ptr_Name_unfold
@@ -8497,8 +8573,12 @@ abbrev printInterface [FfiSyntax] : Type := GoInterface
 
 class printInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq printInterface.ty printInterface.underlying
+  method_set : go.MethodSetIs printInterface.ty [(go!"Assign", (some (go.signature.Signature [go.string] false []))), (go!"GetTitle", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType printInterface.ty) []
 
 attribute [instance] printInterface.TypeAssumptions.underlying
+  printInterface.TypeAssumptions.method_set
+  printInterface.TypeAssumptions.ptr_method_set
 
 structure PaperStruct [FfiSyntax] where
   mk ::
@@ -8526,6 +8606,8 @@ class PaperStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   layout : go.StructLayout PaperStruct [(go!"Title", typeSize GoString, typeAlign GoString)]
   get_Title : ∀ (x : PaperStruct), go.IsGoStepPureDetTagged under (StructFieldGet PaperStruct.underlying go!"Title") #x (Val #(x.Title'))
   set_Title : ∀ (x : PaperStruct) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet PaperStruct.underlying go!"Title") (PairV #x #y) (Val #(({ x with Title' := y } : PaperStruct)))
+  method_set : go.MethodSetIs PaperStruct.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType PaperStruct.ty) [(go!"Assign", (some (go.signature.Signature [go.string] false []))), (go!"GetTitle", (some (go.signature.Signature [] false [go.string])))]
   ptr_Assign_unfold : MethodUnfold (go.GoType.PointerType PaperStruct.ty) go!"Assign" PaperStruct.Assign.impl
   ptr_GetTitle_unfold : MethodUnfold (go.GoType.PointerType PaperStruct.ty) go!"GetTitle" PaperStruct.GetTitle.impl
 
@@ -8534,6 +8616,8 @@ attribute [instance] PaperStruct.TypeAssumptions.type_repr
   PaperStruct.TypeAssumptions.layout
   PaperStruct.TypeAssumptions.get_Title
   PaperStruct.TypeAssumptions.set_Title
+  PaperStruct.TypeAssumptions.method_set
+  PaperStruct.TypeAssumptions.ptr_method_set
   PaperStruct.TypeAssumptions.ptr_Assign_unfold
   PaperStruct.TypeAssumptions.ptr_GetTitle_unfold
 
@@ -8544,18 +8628,26 @@ abbrev Flower [FfiSyntax] : Type := GoInterface
 
 class Flower.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Flower.ty Flower.underlying
+  method_set : go.MethodSetIs Flower.ty [(go!"Petals", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Flower.ty) []
 
 attribute [instance] Flower.TypeAssumptions.underlying
+  Flower.TypeAssumptions.method_set
+  Flower.TypeAssumptions.ptr_method_set
 
 abbrev Flora [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Flora.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Genus" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Flower.ty)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Genus" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Petals" (go.signature.Signature [] false [go.uint64]))])
 
 class Flora.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Flora.ty Flora.underlying
+  method_set : go.MethodSetIs Flora.ty [(go!"Genus", (some (go.signature.Signature [] false [go.string]))), (go!"Petals", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Flora.ty) []
 
 attribute [instance] Flora.TypeAssumptions.underlying
+  Flora.TypeAssumptions.method_set
+  Flora.TypeAssumptions.ptr_method_set
 
 structure Lily [FfiSyntax] where
   mk ::
@@ -8580,6 +8672,8 @@ class Lily.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   type_repr : go.TypeReprUnderlying Lily.underlying Lily
   underlying : go.UnderlyingDirectedEq Lily.ty Lily.underlying
   layout : go.StructLayout Lily []
+  method_set : go.MethodSetIs Lily.ty [(go!"Genus", (some (go.signature.Signature [] false [go.string]))), (go!"Petals", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Lily.ty) [(go!"Genus", (some (go.signature.Signature [] false [go.string]))), (go!"Petals", (some (go.signature.Signature [] false [go.uint64])))]
   Genus_unfold : MethodUnfold Lily.ty go!"Genus" Lily.Genus.impl
   Petals_unfold : MethodUnfold Lily.ty go!"Petals" Lily.Petals.impl
   ptr_Genus_unfold : MethodUnfold (go.GoType.PointerType Lily.ty) go!"Genus" (LamV "$r"
@@ -8590,6 +8684,8 @@ class Lily.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 attribute [instance] Lily.TypeAssumptions.type_repr
   Lily.TypeAssumptions.underlying
   Lily.TypeAssumptions.layout
+  Lily.TypeAssumptions.method_set
+  Lily.TypeAssumptions.ptr_method_set
   Lily.TypeAssumptions.Genus_unfold
   Lily.TypeAssumptions.Petals_unfold
   Lily.TypeAssumptions.ptr_Genus_unfold
@@ -8618,6 +8714,8 @@ class Rose.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   type_repr : go.TypeReprUnderlying Rose.underlying Rose
   underlying : go.UnderlyingDirectedEq Rose.ty Rose.underlying
   layout : go.StructLayout Rose []
+  method_set : go.MethodSetIs Rose.ty [(go!"Genus", (some (go.signature.Signature [] false [go.string]))), (go!"Petals", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Rose.ty) [(go!"Genus", (some (go.signature.Signature [] false [go.string]))), (go!"Petals", (some (go.signature.Signature [] false [go.uint64])))]
   Genus_unfold : MethodUnfold Rose.ty go!"Genus" Rose.Genus.impl
   Petals_unfold : MethodUnfold Rose.ty go!"Petals" Rose.Petals.impl
   ptr_Genus_unfold : MethodUnfold (go.GoType.PointerType Rose.ty) go!"Genus" (LamV "$r"
@@ -8628,6 +8726,8 @@ class Rose.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 attribute [instance] Rose.TypeAssumptions.type_repr
   Rose.TypeAssumptions.underlying
   Rose.TypeAssumptions.layout
+  Rose.TypeAssumptions.method_set
+  Rose.TypeAssumptions.ptr_method_set
   Rose.TypeAssumptions.Genus_unfold
   Rose.TypeAssumptions.Petals_unfold
   Rose.TypeAssumptions.ptr_Genus_unfold
@@ -8656,6 +8756,8 @@ class Daisy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying Daisy.underlying Daisy
   underlying : go.UnderlyingDirectedEq Daisy.ty Daisy.underlying
   layout : go.StructLayout Daisy []
+  method_set : go.MethodSetIs Daisy.ty [(go!"Genus", (some (go.signature.Signature [] false [go.string]))), (go!"Petals", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Daisy.ty) [(go!"Genus", (some (go.signature.Signature [] false [go.string]))), (go!"Petals", (some (go.signature.Signature [] false [go.uint64])))]
   Genus_unfold : MethodUnfold Daisy.ty go!"Genus" Daisy.Genus.impl
   Petals_unfold : MethodUnfold Daisy.ty go!"Petals" Daisy.Petals.impl
   ptr_Genus_unfold : MethodUnfold (go.GoType.PointerType Daisy.ty) go!"Genus" (LamV "$r"
@@ -8666,6 +8768,8 @@ class Daisy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 attribute [instance] Daisy.TypeAssumptions.type_repr
   Daisy.TypeAssumptions.underlying
   Daisy.TypeAssumptions.layout
+  Daisy.TypeAssumptions.method_set
+  Daisy.TypeAssumptions.ptr_method_set
   Daisy.TypeAssumptions.Genus_unfold
   Daisy.TypeAssumptions.Petals_unfold
   Daisy.TypeAssumptions.ptr_Genus_unfold
@@ -8697,6 +8801,8 @@ class LoopStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   layout : go.StructLayout LoopStruct [(go!"loopNext", typeSize Loc, typeAlign Loc)]
   get_loopNext : ∀ (x : LoopStruct), go.IsGoStepPureDetTagged under (StructFieldGet LoopStruct.underlying go!"loopNext") #x (Val #(x.loopNext'))
   set_loopNext : ∀ (x : LoopStruct) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet LoopStruct.underlying go!"loopNext") (PairV #x #y) (Val #(({ x with loopNext' := y } : LoopStruct)))
+  method_set : go.MethodSetIs LoopStruct.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.forLoopWait", (some (go.signature.Signature [go.uint64] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType LoopStruct.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.forLoopWait", (some (go.signature.Signature [go.uint64] false [])))]
   forLoopWait_unfold : MethodUnfold LoopStruct.ty go!"forLoopWait" LoopStruct.forLoopWait.impl
   ptr_forLoopWait_unfold : MethodUnfold (go.GoType.PointerType LoopStruct.ty) go!"forLoopWait" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve LoopStruct.ty go!"forLoopWait"))) (App (Val (GoInstruction (GoLoad LoopStruct.ty))) (Var "$r"))))
@@ -8706,6 +8812,8 @@ attribute [instance] LoopStruct.TypeAssumptions.type_repr
   LoopStruct.TypeAssumptions.layout
   LoopStruct.TypeAssumptions.get_loopNext
   LoopStruct.TypeAssumptions.set_loopNext
+  LoopStruct.TypeAssumptions.method_set
+  LoopStruct.TypeAssumptions.ptr_method_set
   LoopStruct.TypeAssumptions.forLoopWait_unfold
   LoopStruct.TypeAssumptions.ptr_forLoopWait_unfold
 
@@ -8735,6 +8843,8 @@ class loopCounter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   layout : go.StructLayout loopCounter [(go!"n", typeSize w64, typeAlign w64)]
   get_n : ∀ (x : loopCounter), go.IsGoStepPureDetTagged under (StructFieldGet loopCounter.underlying go!"n") #x (Val #(x.n'))
   set_n : ∀ (x : loopCounter) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet loopCounter.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : loopCounter)))
+  method_set : go.MethodSetIs loopCounter.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType loopCounter.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.ptr", (some (go.signature.Signature [] false [(go.GoType.PointerType loopCounter.ty)])))]
   ptr_ptr_unfold : MethodUnfold (go.GoType.PointerType loopCounter.ty) go!"ptr" loopCounter.ptr.impl
 
 attribute [instance] loopCounter.TypeAssumptions.type_repr
@@ -8742,6 +8852,8 @@ attribute [instance] loopCounter.TypeAssumptions.type_repr
   loopCounter.TypeAssumptions.layout
   loopCounter.TypeAssumptions.get_n
   loopCounter.TypeAssumptions.set_n
+  loopCounter.TypeAssumptions.method_set
+  loopCounter.TypeAssumptions.ptr_method_set
   loopCounter.TypeAssumptions.ptr_ptr_unfold
 
 structure mvBox [FfiSyntax] where
@@ -8770,6 +8882,8 @@ class mvBox.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   layout : go.StructLayout mvBox [(go!"x", typeSize w64, typeAlign w64)]
   get_x : ∀ (x : mvBox), go.IsGoStepPureDetTagged under (StructFieldGet mvBox.underlying go!"x") #x (Val #(x.x'))
   set_x : ∀ (x : mvBox) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mvBox.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : mvBox)))
+  method_set : go.MethodSetIs mvBox.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.get", (some (go.signature.Signature [] false [go.uint64]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.store", (some (go.signature.Signature [(go.GoType.PointerType go.uint64)] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mvBox.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.get", (some (go.signature.Signature [] false [go.uint64]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.getPtr", (some (go.signature.Signature [] false [go.uint64]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.store", (some (go.signature.Signature [(go.GoType.PointerType go.uint64)] false [])))]
   get_unfold : MethodUnfold mvBox.ty go!"get" mvBox.get.impl
   store_unfold : MethodUnfold mvBox.ty go!"store" mvBox.store.impl
   ptr_get_unfold : MethodUnfold (go.GoType.PointerType mvBox.ty) go!"get" (LamV "$r"
@@ -8783,6 +8897,8 @@ attribute [instance] mvBox.TypeAssumptions.type_repr
   mvBox.TypeAssumptions.layout
   mvBox.TypeAssumptions.get_x
   mvBox.TypeAssumptions.set_x
+  mvBox.TypeAssumptions.method_set
+  mvBox.TypeAssumptions.ptr_method_set
   mvBox.TypeAssumptions.get_unfold
   mvBox.TypeAssumptions.store_unfold
   mvBox.TypeAssumptions.ptr_get_unfold
@@ -8815,6 +8931,8 @@ class mvOuter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   layout : go.StructLayout mvOuter [(go!"mvBox", typeSize mvBox, typeAlign mvBox)]
   get_mvBox : ∀ (x : mvOuter), go.IsGoStepPureDetTagged under (StructFieldGet mvOuter.underlying go!"mvBox") #x (Val #(x.mvBox'))
   set_mvBox : ∀ (x : mvOuter) (y : mvBox), go.IsGoStepPureDetTagged under (StructFieldSet mvOuter.underlying go!"mvBox") (PairV #x #y) (Val #(({ x with mvBox' := y } : mvOuter)))
+  method_set : go.MethodSetIs mvOuter.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.get", (some (go.signature.Signature [] false [go.uint64]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.store", (some (go.signature.Signature [(go.GoType.PointerType go.uint64)] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mvOuter.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.get", (some (go.signature.Signature [] false [go.uint64]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.getPtr", (some (go.signature.Signature [] false [go.uint64]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.store", (some (go.signature.Signature [(go.GoType.PointerType go.uint64)] false [])))]
   get_unfold : MethodUnfold mvOuter.ty go!"get" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve mvBox.ty go!"get"))) (App (Val (GoInstruction (StructFieldGet mvOuter.ty go!"mvBox"))) (Var "$r"))))
   store_unfold : MethodUnfold mvOuter.ty go!"store" (LamV "$r"
@@ -8831,6 +8949,8 @@ attribute [instance] mvOuter.TypeAssumptions.type_repr
   mvOuter.TypeAssumptions.layout
   mvOuter.TypeAssumptions.get_mvBox
   mvOuter.TypeAssumptions.set_mvBox
+  mvOuter.TypeAssumptions.method_set
+  mvOuter.TypeAssumptions.ptr_method_set
   mvOuter.TypeAssumptions.get_unfold
   mvOuter.TypeAssumptions.store_unfold
   mvOuter.TypeAssumptions.ptr_get_unfold
@@ -8863,6 +8983,8 @@ class mvOuterPtr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   layout : go.StructLayout mvOuterPtr [(go!"mvBox", typeSize Loc, typeAlign Loc)]
   get_mvBox : ∀ (x : mvOuterPtr), go.IsGoStepPureDetTagged under (StructFieldGet mvOuterPtr.underlying go!"mvBox") #x (Val #(x.mvBox'))
   set_mvBox : ∀ (x : mvOuterPtr) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet mvOuterPtr.underlying go!"mvBox") (PairV #x #y) (Val #(({ x with mvBox' := y } : mvOuterPtr)))
+  method_set : go.MethodSetIs mvOuterPtr.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.get", (some (go.signature.Signature [] false [go.uint64]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.getPtr", (some (go.signature.Signature [] false [go.uint64]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.store", (some (go.signature.Signature [(go.GoType.PointerType go.uint64)] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mvOuterPtr.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.get", (some (go.signature.Signature [] false [go.uint64]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.getPtr", (some (go.signature.Signature [] false [go.uint64]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.store", (some (go.signature.Signature [(go.GoType.PointerType go.uint64)] false [])))]
   get_unfold : MethodUnfold mvOuterPtr.ty go!"get" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType mvBox.ty) go!"get"))) (App (Val (GoInstruction (StructFieldGet mvOuterPtr.ty go!"mvBox"))) (Var "$r"))))
   getPtr_unfold : MethodUnfold mvOuterPtr.ty go!"getPtr" (LamV "$r"
@@ -8881,6 +9003,8 @@ attribute [instance] mvOuterPtr.TypeAssumptions.type_repr
   mvOuterPtr.TypeAssumptions.layout
   mvOuterPtr.TypeAssumptions.get_mvBox
   mvOuterPtr.TypeAssumptions.set_mvBox
+  mvOuterPtr.TypeAssumptions.method_set
+  mvOuterPtr.TypeAssumptions.ptr_method_set
   mvOuterPtr.TypeAssumptions.get_unfold
   mvOuterPtr.TypeAssumptions.getPtr_unfold
   mvOuterPtr.TypeAssumptions.store_unfold
@@ -8914,6 +9038,8 @@ class nilFieldInner.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   layout : go.StructLayout nilFieldInner [(go!"a", typeSize w64, typeAlign w64)]
   get_a : ∀ (x : nilFieldInner), go.IsGoStepPureDetTagged under (StructFieldGet nilFieldInner.underlying go!"a") #x (Val #(x.a'))
   set_a : ∀ (x : nilFieldInner) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet nilFieldInner.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : nilFieldInner)))
+  method_set : go.MethodSetIs nilFieldInner.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType nilFieldInner.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.setA", (some (go.signature.Signature [] false [])))]
   ptr_setA_unfold : MethodUnfold (go.GoType.PointerType nilFieldInner.ty) go!"setA" nilFieldInner.setA.impl
 
 attribute [instance] nilFieldInner.TypeAssumptions.type_repr
@@ -8921,6 +9047,8 @@ attribute [instance] nilFieldInner.TypeAssumptions.type_repr
   nilFieldInner.TypeAssumptions.layout
   nilFieldInner.TypeAssumptions.get_a
   nilFieldInner.TypeAssumptions.set_a
+  nilFieldInner.TypeAssumptions.method_set
+  nilFieldInner.TypeAssumptions.ptr_method_set
   nilFieldInner.TypeAssumptions.ptr_setA_unfold
 
 structure nilFieldOuter [FfiSyntax] where
@@ -8953,6 +9081,8 @@ class nilFieldOuter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_nilFieldInner : ∀ (x : nilFieldOuter) (y : nilFieldInner), go.IsGoStepPureDetTagged under (StructFieldSet nilFieldOuter.underlying go!"nilFieldInner") (PairV #x #y) (Val #(({ x with nilFieldInner' := y } : nilFieldOuter)))
   get_z : ∀ (x : nilFieldOuter), go.IsGoStepPureDetTagged under (StructFieldGet nilFieldOuter.underlying go!"z") #x (Val #(x.z'))
   set_z : ∀ (x : nilFieldOuter) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet nilFieldOuter.underlying go!"z") (PairV #x #y) (Val #(({ x with z' := y } : nilFieldOuter)))
+  method_set : go.MethodSetIs nilFieldOuter.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType nilFieldOuter.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.setA", (some (go.signature.Signature [] false [])))]
   ptr_setA_unfold : MethodUnfold (go.GoType.PointerType nilFieldOuter.ty) go!"setA" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType nilFieldInner.ty) go!"setA"))) (App (Val (GoInstruction (StructFieldRef nilFieldOuter.ty go!"nilFieldInner"))) (Var "$r"))))
 
@@ -8963,6 +9093,8 @@ attribute [instance] nilFieldOuter.TypeAssumptions.type_repr
   nilFieldOuter.TypeAssumptions.set_nilFieldInner
   nilFieldOuter.TypeAssumptions.get_z
   nilFieldOuter.TypeAssumptions.set_z
+  nilFieldOuter.TypeAssumptions.method_set
+  nilFieldOuter.TypeAssumptions.ptr_method_set
   nilFieldOuter.TypeAssumptions.ptr_setA_unfold
 
 structure BoolTest [FfiSyntax] where
@@ -9003,6 +9135,8 @@ class BoolTest.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_tc : ∀ (x : BoolTest) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet BoolTest.underlying go!"tc") (PairV #x #y) (Val #(({ x with tc' := y } : BoolTest)))
   get_fc : ∀ (x : BoolTest), go.IsGoStepPureDetTagged under (StructFieldGet BoolTest.underlying go!"fc") #x (Val #(x.fc'))
   set_fc : ∀ (x : BoolTest) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet BoolTest.underlying go!"fc") (PairV #x #y) (Val #(({ x with fc' := y } : BoolTest)))
+  method_set : go.MethodSetIs BoolTest.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType BoolTest.ty) []
 
 attribute [instance] BoolTest.TypeAssumptions.type_repr
   BoolTest.TypeAssumptions.underlying
@@ -9015,6 +9149,8 @@ attribute [instance] BoolTest.TypeAssumptions.type_repr
   BoolTest.TypeAssumptions.set_tc
   BoolTest.TypeAssumptions.get_fc
   BoolTest.TypeAssumptions.set_fc
+  BoolTest.TypeAssumptions.method_set
+  BoolTest.TypeAssumptions.ptr_method_set
 
 structure ArrayEditor [FfiSyntax] where
   mk ::
@@ -9046,6 +9182,8 @@ class ArrayEditor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set_s : ∀ (x : ArrayEditor) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet ArrayEditor.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : ArrayEditor)))
   get_next_val : ∀ (x : ArrayEditor), go.IsGoStepPureDetTagged under (StructFieldGet ArrayEditor.underlying go!"next_val") #x (Val #(x.next_val'))
   set_next_val : ∀ (x : ArrayEditor) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ArrayEditor.underlying go!"next_val") (PairV #x #y) (Val #(({ x with next_val' := y } : ArrayEditor)))
+  method_set : go.MethodSetIs ArrayEditor.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType ArrayEditor.ty) [(go!"Advance", (some (go.signature.Signature [(go.GoType.SliceType go.uint64), go.uint64] false [])))]
   ptr_Advance_unfold : MethodUnfold (go.GoType.PointerType ArrayEditor.ty) go!"Advance" ArrayEditor.Advance.impl
 
 attribute [instance] ArrayEditor.TypeAssumptions.type_repr
@@ -9055,6 +9193,8 @@ attribute [instance] ArrayEditor.TypeAssumptions.type_repr
   ArrayEditor.TypeAssumptions.set_s
   ArrayEditor.TypeAssumptions.get_next_val
   ArrayEditor.TypeAssumptions.set_next_val
+  ArrayEditor.TypeAssumptions.method_set
+  ArrayEditor.TypeAssumptions.ptr_method_set
   ArrayEditor.TypeAssumptions.ptr_Advance_unfold
 
 structure Bar [FfiSyntax] where
@@ -9087,6 +9227,8 @@ class Bar.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
   set_a : ∀ (x : Bar) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Bar.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : Bar)))
   get_b : ∀ (x : Bar), go.IsGoStepPureDetTagged under (StructFieldGet Bar.underlying go!"b") #x (Val #(x.b'))
   set_b : ∀ (x : Bar) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Bar.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Bar)))
+  method_set : go.MethodSetIs Bar.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Bar.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.mutate", (some (go.signature.Signature [] false [])))]
   ptr_mutate_unfold : MethodUnfold (go.GoType.PointerType Bar.ty) go!"mutate" Bar.mutate.impl
 
 attribute [instance] Bar.TypeAssumptions.type_repr
@@ -9096,6 +9238,8 @@ attribute [instance] Bar.TypeAssumptions.type_repr
   Bar.TypeAssumptions.set_a
   Bar.TypeAssumptions.get_b
   Bar.TypeAssumptions.set_b
+  Bar.TypeAssumptions.method_set
+  Bar.TypeAssumptions.ptr_method_set
   Bar.TypeAssumptions.ptr_mutate_unfold
 
 structure Foo [FfiSyntax] where
@@ -9124,6 +9268,8 @@ class Foo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
   layout : go.StructLayout Foo [(go!"bar", typeSize Bar, typeAlign Bar)]
   get_bar : ∀ (x : Foo), go.IsGoStepPureDetTagged under (StructFieldGet Foo.underlying go!"bar") #x (Val #(x.bar'))
   set_bar : ∀ (x : Foo) (y : Bar), go.IsGoStepPureDetTagged under (StructFieldSet Foo.underlying go!"bar") (PairV #x #y) (Val #(({ x with bar' := y } : Foo)))
+  method_set : go.MethodSetIs Foo.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Foo.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.mutateBar", (some (go.signature.Signature [] false [])))]
   ptr_mutateBar_unfold : MethodUnfold (go.GoType.PointerType Foo.ty) go!"mutateBar" Foo.mutateBar.impl
 
 attribute [instance] Foo.TypeAssumptions.type_repr
@@ -9131,6 +9277,8 @@ attribute [instance] Foo.TypeAssumptions.type_repr
   Foo.TypeAssumptions.layout
   Foo.TypeAssumptions.get_bar
   Foo.TypeAssumptions.set_bar
+  Foo.TypeAssumptions.method_set
+  Foo.TypeAssumptions.ptr_method_set
   Foo.TypeAssumptions.ptr_mutateBar_unfold
 
 structure TwoInts [FfiSyntax] where
@@ -9163,6 +9311,8 @@ class TwoInts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_x : ∀ (x : TwoInts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet TwoInts.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : TwoInts)))
   get_y : ∀ (x : TwoInts), go.IsGoStepPureDetTagged under (StructFieldGet TwoInts.underlying go!"y") #x (Val #(x.y'))
   set_y : ∀ (x : TwoInts) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet TwoInts.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : TwoInts)))
+  method_set : go.MethodSetIs TwoInts.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType TwoInts.ty) []
 
 attribute [instance] TwoInts.TypeAssumptions.type_repr
   TwoInts.TypeAssumptions.underlying
@@ -9171,6 +9321,8 @@ attribute [instance] TwoInts.TypeAssumptions.type_repr
   TwoInts.TypeAssumptions.set_x
   TwoInts.TypeAssumptions.get_y
   TwoInts.TypeAssumptions.set_y
+  TwoInts.TypeAssumptions.method_set
+  TwoInts.TypeAssumptions.ptr_method_set
 
 structure S [FfiSyntax] where
   mk ::
@@ -9206,6 +9358,8 @@ class S.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemant
   set_b : ∀ (x : S) (y : TwoInts), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : S)))
   get_c : ∀ (x : S), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"c") #x (Val #(x.c'))
   set_c : ∀ (x : S) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : S)))
+  method_set : go.MethodSetIs S.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.readBVal", (some (go.signature.Signature [] false [TwoInts.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType S.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.negateC", (some (go.signature.Signature [] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.readA", (some (go.signature.Signature [] false [go.uint64]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.readB", (some (go.signature.Signature [] false [TwoInts.ty]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.readBVal", (some (go.signature.Signature [] false [TwoInts.ty]))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.updateBValX", (some (go.signature.Signature [go.uint64] false [])))]
   readBVal_unfold : MethodUnfold S.ty go!"readBVal" S.readBVal.impl
   ptr_negateC_unfold : MethodUnfold (go.GoType.PointerType S.ty) go!"negateC" S.negateC.impl
   ptr_readA_unfold : MethodUnfold (go.GoType.PointerType S.ty) go!"readA" S.readA.impl
@@ -9223,6 +9377,8 @@ attribute [instance] S.TypeAssumptions.type_repr
   S.TypeAssumptions.set_b
   S.TypeAssumptions.get_c
   S.TypeAssumptions.set_c
+  S.TypeAssumptions.method_set
+  S.TypeAssumptions.ptr_method_set
   S.TypeAssumptions.readBVal_unfold
   S.TypeAssumptions.ptr_negateC_unfold
   S.TypeAssumptions.ptr_readA_unfold
@@ -9256,12 +9412,16 @@ class StructWrap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   layout : go.StructLayout StructWrap [(go!"i", typeSize w64, typeAlign w64)]
   get_i : ∀ (x : StructWrap), go.IsGoStepPureDetTagged under (StructFieldGet StructWrap.underlying go!"i") #x (Val #(x.i'))
   set_i : ∀ (x : StructWrap) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet StructWrap.underlying go!"i") (PairV #x #y) (Val #(({ x with i' := y } : StructWrap)))
+  method_set : go.MethodSetIs StructWrap.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType StructWrap.ty) []
 
 attribute [instance] StructWrap.TypeAssumptions.type_repr
   StructWrap.TypeAssumptions.underlying
   StructWrap.TypeAssumptions.layout
   StructWrap.TypeAssumptions.get_i
   StructWrap.TypeAssumptions.set_i
+  StructWrap.TypeAssumptions.method_set
+  StructWrap.TypeAssumptions.ptr_method_set
 
 structure StructWithFunc [FfiSyntax] where
   mk ::
@@ -9289,12 +9449,16 @@ class StructWithFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   layout : go.StructLayout StructWithFunc [(go!"fn", typeSize GoFunc, typeAlign GoFunc)]
   get_fn : ∀ (x : StructWithFunc), go.IsGoStepPureDetTagged under (StructFieldGet StructWithFunc.underlying go!"fn") #x (Val #(x.fn'))
   set_fn : ∀ (x : StructWithFunc) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet StructWithFunc.underlying go!"fn") (PairV #x #y) (Val #(({ x with fn' := y } : StructWithFunc)))
+  method_set : go.MethodSetIs StructWithFunc.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType StructWithFunc.ty) []
 
 attribute [instance] StructWithFunc.TypeAssumptions.type_repr
   StructWithFunc.TypeAssumptions.underlying
   StructWithFunc.TypeAssumptions.layout
   StructWithFunc.TypeAssumptions.get_fn
   StructWithFunc.TypeAssumptions.set_fn
+  StructWithFunc.TypeAssumptions.method_set
+  StructWithFunc.TypeAssumptions.ptr_method_set
 
 structure switchConcrete [FfiSyntax] where
   mk ::
@@ -9319,22 +9483,30 @@ class switchConcrete.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   type_repr : go.TypeReprUnderlying switchConcrete.underlying switchConcrete
   underlying : go.UnderlyingDirectedEq switchConcrete.ty switchConcrete.underlying
   layout : go.StructLayout switchConcrete []
+  method_set : go.MethodSetIs switchConcrete.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType switchConcrete.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.marker", (some (go.signature.Signature [] false [])))]
   ptr_marker_unfold : MethodUnfold (go.GoType.PointerType switchConcrete.ty) go!"marker" switchConcrete.marker.impl
 
 attribute [instance] switchConcrete.TypeAssumptions.type_repr
   switchConcrete.TypeAssumptions.underlying
   switchConcrete.TypeAssumptions.layout
+  switchConcrete.TypeAssumptions.method_set
+  switchConcrete.TypeAssumptions.ptr_method_set
   switchConcrete.TypeAssumptions.ptr_marker_unfold
 
 abbrev switchInterface [FfiSyntax] : Type := GoInterface
 
 @[reducible] def switchInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"marker" (go.signature.Signature [] false []))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.marker" (go.signature.Signature [] false []))])
 
 class switchInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq switchInterface.ty switchInterface.underlying
+  method_set : go.MethodSetIs switchInterface.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.marker", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType switchInterface.ty) []
 
 attribute [instance] switchInterface.TypeAssumptions.underlying
+  switchInterface.TypeAssumptions.method_set
+  switchInterface.TypeAssumptions.ptr_method_set
 
 abbrev DefinedStr [FfiSyntax] : Type := GoString
 
@@ -9343,8 +9515,12 @@ abbrev DefinedStr [FfiSyntax] : Type := GoString
 
 class DefinedStr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq DefinedStr.ty DefinedStr.underlying
+  method_set : go.MethodSetIs DefinedStr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType DefinedStr.ty) []
 
 attribute [instance] DefinedStr.TypeAssumptions.underlying
+  DefinedStr.TypeAssumptions.method_set
+  DefinedStr.TypeAssumptions.ptr_method_set
 
 structure List' [FfiSyntax] (T : Type) where
   mk ::
@@ -9376,6 +9552,8 @@ class List.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   set_X : ∀ (T : go.GoType) (T' : Type) (x : (List' T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (List'.underlying T) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (List' T'))))
   get_Next : ∀ (T : go.GoType) (T' : Type) (x : (List' T')), go.IsGoStepPureDetTagged under (StructFieldGet (List'.underlying T) go!"Next") #x (Val #(x.Next'))
   set_Next : ∀ (T : go.GoType) (T' : Type) (x : (List' T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (List'.underlying T) go!"Next") (PairV #x #y) (Val #(({ x with Next' := y } : (List' T'))))
+  method_set : ∀ (T : go.GoType), go.MethodSetIs (List'.ty T) []
+  ptr_method_set : ∀ (T : go.GoType), go.MethodSetIs (go.GoType.PointerType (List'.ty T)) []
 
 attribute [instance] List.TypeAssumptions.type_repr
   List.TypeAssumptions.underlying
@@ -9384,6 +9562,8 @@ attribute [instance] List.TypeAssumptions.type_repr
   List.TypeAssumptions.set_X
   List.TypeAssumptions.get_Next
   List.TypeAssumptions.set_Next
+  List.TypeAssumptions.method_set
+  List.TypeAssumptions.ptr_method_set
 
 structure Log [FfiSyntax] where
   mk ::
@@ -9423,6 +9603,8 @@ class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
   set_cache : ∀ (x : Log) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"cache") (PairV #x #y) (Val #(({ x with cache' := y } : Log)))
   get_length : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"length") #x (Val #(x.length'))
   set_length : ∀ (x : Log) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"length") (PairV #x #y) (Val #(({ x with length' := y } : Log)))
+  method_set : go.MethodSetIs Log.ty [(go!"Apply", (some (go.signature.Signature [] false []))), (go!"BeginTxn", (some (go.signature.Signature [] false [go.bool]))), (go!"Commit", (some (go.signature.Signature [] false []))), (go!"Read", (some (go.signature.Signature [go.uint64] false [_root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty]))), (go!"Size", (some (go.signature.Signature [] false [go.uint64]))), (go!"Write", (some (go.signature.Signature [go.uint64, _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.lock", (some (go.signature.Signature [] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.unlock", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Log.ty) [(go!"Apply", (some (go.signature.Signature [] false []))), (go!"BeginTxn", (some (go.signature.Signature [] false [go.bool]))), (go!"Commit", (some (go.signature.Signature [] false []))), (go!"Read", (some (go.signature.Signature [go.uint64] false [_root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty]))), (go!"Size", (some (go.signature.Signature [] false [go.uint64]))), (go!"Write", (some (go.signature.Signature [go.uint64, _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.lock", (some (go.signature.Signature [] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.unlock", (some (go.signature.Signature [] false [])))]
   Apply_unfold : MethodUnfold Log.ty go!"Apply" Log.Apply.impl
   BeginTxn_unfold : MethodUnfold Log.ty go!"BeginTxn" Log.BeginTxn.impl
   Commit_unfold : MethodUnfold Log.ty go!"Commit" Log.Commit.impl
@@ -9459,6 +9641,8 @@ attribute [instance] Log.TypeAssumptions.type_repr
   Log.TypeAssumptions.set_cache
   Log.TypeAssumptions.get_length
   Log.TypeAssumptions.set_length
+  Log.TypeAssumptions.method_set
+  Log.TypeAssumptions.ptr_method_set
   Log.TypeAssumptions.Apply_unfold
   Log.TypeAssumptions.BeginTxn_unfold
   Log.TypeAssumptions.Commit_unfold

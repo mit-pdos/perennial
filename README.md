@@ -230,6 +230,34 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   the caller (in Go the caller's deferred functions run and may recover it), so
   a program that recovers a callee's panic is not provable. GooseLang itself has
   no panic construct. See `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
+* **Method sets.** Whether a type implements an interface (`go.typeSetContains`, used by
+  type assertions and conversions) is decided by `methodSet`, an uninterpreted function of
+  the semantics constrained by `go.MethodSetIs t ms` facts (`Golang/Defn/MethodSet.lean`):
+  "the method set of `t` is exactly `ms`". goose emits them, for each named type `T` of a
+  translated package, for `T` and `*T` in `T.TypeAssumptions` (`method_set`,
+  `ptr_method_set`), from the Go type checker (`go/types.NewMethodSet`: value and pointer
+  receivers, methods promoted through embedded fields with Go's depth and ambiguity rules,
+  methods that are not translated, the same at every instantiation of a generic type); the
+  semantics (`InterfaceSemantics.method_set_no_methods`) gives the empty method sets of the
+  types that have no methods in Go (`go.NoMethods`). A method set is a property of a type's
+  declaration that the type checker fixes, like its underlying type, which goose also emits:
+  computing promotion in Lean would duplicate the type checker's rules, with nothing to check
+  it against. A method is named by its Go id: an unexported method's name qualified by its
+  package path (`"context.cancel"`), in method sets and in interface types (`go.MethodElem`)
+  alike, since in Go an unexported method of one package never implements an interface of
+  another. goose writes an interface type as all its methods (go/types' method set of the
+  interface, embedded interfaces included), so that `typeSetContains` needs no recursion
+  through embedded named interfaces; embedded constraint elements (unions, `comparable`) stay
+  as type terms. Nothing is claimed beyond what is known: a method whose signature mentions a
+  type of a package the translation does not import is an entry without a signature
+  (`(id, none)`: it exists), and the method set of any other type (a struct type literal with
+  embedded fields, a type declared in a function, a type of an untranslated package) is
+  unconstrained. Two limits of the model's type identity (`=` on `go.GoType`) apply here as
+  to type assertions: struct tags are not part of `go.StructType`, and the unexported field
+  names of struct type literals are not qualified by package. goose loads code with the build
+  tag `goose`: a method declared only in files excluded by it (or included only by it) would
+  make the emitted method set differ from the real build's.
+  `go_type_set` (`Golang/Theory/TypeSet.lean`) decides `typeSetContains` goals.
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
   `etc/update-goose-new.py` rather than editing them by hand.

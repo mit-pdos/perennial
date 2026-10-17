@@ -234,6 +234,8 @@ class LockedStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set_mu : ∀ (x : LockedStack) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : LockedStack)))
   get_stack : ∀ (x : LockedStack), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"stack") #x (Val #(x.stack'))
   set_stack : ∀ (x : LockedStack) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"stack") (PairV #x #y) (Val #(({ x with stack' := y } : LockedStack)))
+  method_set : go.MethodSetIs LockedStack.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType LockedStack.ty) [(go!"Pop", (some (go.signature.Signature [] false [go.string, go.bool]))), (go!"Push", (some (go.signature.Signature [go.string] false [])))]
   ptr_Pop_unfold : MethodUnfold (go.GoType.PointerType LockedStack.ty) go!"Pop" LockedStack.Pop.impl
   ptr_Push_unfold : MethodUnfold (go.GoType.PointerType LockedStack.ty) go!"Push" LockedStack.Push.impl
 
@@ -244,6 +246,8 @@ attribute [instance] LockedStack.TypeAssumptions.type_repr
   LockedStack.TypeAssumptions.set_mu
   LockedStack.TypeAssumptions.get_stack
   LockedStack.TypeAssumptions.set_stack
+  LockedStack.TypeAssumptions.method_set
+  LockedStack.TypeAssumptions.ptr_method_set
   LockedStack.TypeAssumptions.ptr_Pop_unfold
   LockedStack.TypeAssumptions.ptr_Push_unfold
 
@@ -277,6 +281,8 @@ class EliminationStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
   set_base : ∀ (x : EliminationStack) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"base") (PairV #x #y) (Val #(({ x with base' := y } : EliminationStack)))
   get_exchanger : ∀ (x : EliminationStack), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"exchanger") #x (Val #(x.exchanger'))
   set_exchanger : ∀ (x : EliminationStack) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"exchanger") (PairV #x #y) (Val #(({ x with exchanger' := y } : EliminationStack)))
+  method_set : go.MethodSetIs EliminationStack.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType EliminationStack.ty) [(go!"Pop", (some (go.signature.Signature [] false [go.string, go.bool]))), (go!"Push", (some (go.signature.Signature [go.string] false [])))]
   ptr_Pop_unfold : MethodUnfold (go.GoType.PointerType EliminationStack.ty) go!"Pop" EliminationStack.Pop.impl
   ptr_Push_unfold : MethodUnfold (go.GoType.PointerType EliminationStack.ty) go!"Push" EliminationStack.Push.impl
 
@@ -287,6 +293,8 @@ attribute [instance] EliminationStack.TypeAssumptions.type_repr
   EliminationStack.TypeAssumptions.set_base
   EliminationStack.TypeAssumptions.get_exchanger
   EliminationStack.TypeAssumptions.set_exchanger
+  EliminationStack.TypeAssumptions.method_set
+  EliminationStack.TypeAssumptions.ptr_method_set
   EliminationStack.TypeAssumptions.ptr_Pop_unfold
   EliminationStack.TypeAssumptions.ptr_Push_unfold
 

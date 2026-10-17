@@ -1966,8 +1966,12 @@ abbrev Interface [FfiSyntax] : Type := GoInterface
 
 class Interface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Interface.ty Interface.underlying
+  method_set : go.MethodSetIs Interface.ty [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Interface.ty) []
 
 attribute [instance] Interface.TypeAssumptions.underlying
+  Interface.TypeAssumptions.method_set
+  Interface.TypeAssumptions.ptr_method_set
 
 abbrev sortedHint [FfiSyntax] : Type := w64
 
@@ -1976,8 +1980,12 @@ abbrev sortedHint [FfiSyntax] : Type := w64
 
 class sortedHint.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq sortedHint.ty sortedHint.underlying
+  method_set : go.MethodSetIs sortedHint.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sortedHint.ty) []
 
 attribute [instance] sortedHint.TypeAssumptions.underlying
+  sortedHint.TypeAssumptions.method_set
+  sortedHint.TypeAssumptions.ptr_method_set
 
 abbrev xorshift [FfiSyntax] : Type := w64
 
@@ -1986,9 +1994,13 @@ abbrev xorshift [FfiSyntax] : Type := w64
 
 class xorshift.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq xorshift.ty xorshift.underlying
+  method_set : go.MethodSetIs xorshift.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType xorshift.ty) [(go!"Next", (some (go.signature.Signature [] false [go.uint64])))]
   ptr_Next_unfold : MethodUnfold (go.GoType.PointerType xorshift.ty) go!"Next" xorshift.Next.impl
 
 attribute [instance] xorshift.TypeAssumptions.underlying
+  xorshift.TypeAssumptions.method_set
+  xorshift.TypeAssumptions.ptr_method_set
   xorshift.TypeAssumptions.ptr_Next_unfold
 
 structure lessSwap [FfiSyntax] where
@@ -2021,6 +2033,8 @@ class lessSwap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_Less : ∀ (x : lessSwap) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet lessSwap.underlying go!"Less") (PairV #x #y) (Val #(({ x with Less' := y } : lessSwap)))
   get_Swap : ∀ (x : lessSwap), go.IsGoStepPureDetTagged under (StructFieldGet lessSwap.underlying go!"Swap") #x (Val #(x.Swap'))
   set_Swap : ∀ (x : lessSwap) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet lessSwap.underlying go!"Swap") (PairV #x #y) (Val #(({ x with Swap' := y } : lessSwap)))
+  method_set : go.MethodSetIs lessSwap.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType lessSwap.ty) []
 
 attribute [instance] lessSwap.TypeAssumptions.type_repr
   lessSwap.TypeAssumptions.underlying
@@ -2029,6 +2043,8 @@ attribute [instance] lessSwap.TypeAssumptions.type_repr
   lessSwap.TypeAssumptions.set_Less
   lessSwap.TypeAssumptions.get_Swap
   lessSwap.TypeAssumptions.set_Swap
+  lessSwap.TypeAssumptions.method_set
+  lessSwap.TypeAssumptions.ptr_method_set
 
 structure reverse [FfiSyntax] where
   mk ::
@@ -2056,6 +2072,8 @@ class reverse.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   layout : go.StructLayout reverse [(go!"Interface", typeSize Interface, typeAlign Interface)]
   get_Interface : ∀ (x : reverse), go.IsGoStepPureDetTagged under (StructFieldGet reverse.underlying go!"Interface") #x (Val #(x.Interface'))
   set_Interface : ∀ (x : reverse) (y : Interface), go.IsGoStepPureDetTagged under (StructFieldSet reverse.underlying go!"Interface") (PairV #x #y) (Val #(({ x with Interface' := y } : reverse)))
+  method_set : go.MethodSetIs reverse.ty [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType reverse.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
   Len_unfold : MethodUnfold reverse.ty go!"Len" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Interface.ty go!"Len"))) (App (Val (GoInstruction (StructFieldGet reverse.ty go!"Interface"))) (Var "$r"))))
   Less_unfold : MethodUnfold reverse.ty go!"Less" reverse.Less.impl
@@ -2073,6 +2091,8 @@ attribute [instance] reverse.TypeAssumptions.type_repr
   reverse.TypeAssumptions.layout
   reverse.TypeAssumptions.get_Interface
   reverse.TypeAssumptions.set_Interface
+  reverse.TypeAssumptions.method_set
+  reverse.TypeAssumptions.ptr_method_set
   reverse.TypeAssumptions.Len_unfold
   reverse.TypeAssumptions.Less_unfold
   reverse.TypeAssumptions.Swap_unfold
@@ -2087,8 +2107,12 @@ abbrev IntSlice [FfiSyntax] : Type := GoSlice
 
 class IntSlice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq IntSlice.ty IntSlice.underlying
+  method_set : go.MethodSetIs IntSlice.ty [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Search", (some (go.signature.Signature [go.int] false [go.int]))), (go!"Sort", (some (go.signature.Signature [] false []))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType IntSlice.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Search", (some (go.signature.Signature [go.int] false [go.int]))), (go!"Sort", (some (go.signature.Signature [] false []))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
 
 attribute [instance] IntSlice.TypeAssumptions.underlying
+  IntSlice.TypeAssumptions.method_set
+  IntSlice.TypeAssumptions.ptr_method_set
 
 abbrev Float64Slice [FfiSyntax] : Type := GoSlice
 
@@ -2097,8 +2121,12 @@ abbrev Float64Slice [FfiSyntax] : Type := GoSlice
 
 class Float64Slice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Float64Slice.ty Float64Slice.underlying
+  method_set : go.MethodSetIs Float64Slice.ty [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Search", (some (go.signature.Signature [go.float64] false [go.int]))), (go!"Sort", (some (go.signature.Signature [] false []))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Float64Slice.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Search", (some (go.signature.Signature [go.float64] false [go.int]))), (go!"Sort", (some (go.signature.Signature [] false []))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
 
 attribute [instance] Float64Slice.TypeAssumptions.underlying
+  Float64Slice.TypeAssumptions.method_set
+  Float64Slice.TypeAssumptions.ptr_method_set
 
 abbrev StringSlice [FfiSyntax] : Type := GoSlice
 
@@ -2107,8 +2135,12 @@ abbrev StringSlice [FfiSyntax] : Type := GoSlice
 
 class StringSlice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq StringSlice.ty StringSlice.underlying
+  method_set : go.MethodSetIs StringSlice.ty [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Search", (some (go.signature.Signature [go.string] false [go.int]))), (go!"Sort", (some (go.signature.Signature [] false []))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType StringSlice.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Search", (some (go.signature.Signature [go.string] false [go.int]))), (go!"Sort", (some (go.signature.Signature [] false []))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
 
 attribute [instance] StringSlice.TypeAssumptions.underlying
+  StringSlice.TypeAssumptions.method_set
+  StringSlice.TypeAssumptions.ptr_method_set
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Interface_instance : Interface.TypeAssumptions

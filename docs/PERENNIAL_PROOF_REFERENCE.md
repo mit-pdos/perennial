@@ -612,6 +612,38 @@ gives its results (`sort.wp_Search`, `sort.wp_SearchInts`, `sort.wp_Find`, the
 occurrence of a substring is `internal.bytealg.firstOcc`, and Go's `Index` result
 `indexResult`.
 
+### Interfaces and method sets (`Golang/Defn/MethodSet.lean`, `Golang/Theory/TypeSet.lean`)
+
+A conversion to an interface, a type assertion `x.(I)` / `x.(I)` with `ok`, and
+`errors.As`'s target check depend on `go.typeSetContains t I`: whether the dynamic type
+`t` implements `I`. Its method elements are decided by `methodSet t`, which the semantics
+constrains by `go.MethodSetIs t ms` facts: goose emits, for every named type `T` of a
+translated package (translated, types-only or axiomatized alike), the method sets of `T`
+and `*T` as the Go type checker computes them (fields `method_set`, `ptr_method_set` of
+`T.TypeAssumptions`, so of the package's `Assumptions`), and `go.InterfaceSemantics`
+gives the empty method set of the types without methods (`go.NoMethods`: predeclared
+types, slices, maps, ..., pointers to them, structs without embedded fields). Methods are
+named by their Go id (an unexported method qualified by its package path, `"context.cancel"`),
+in method sets and in interface types alike, and goose writes an interface type as all its
+methods (those of embedded interfaces included). `go_type_set` (or `go_type_set at h`)
+decides a goal `go.typeSetContains t I = b`:
+
+```
+example [errors.Assumptions] :
+    go.typeSetContains (go.GoType.PointerType errors.errorString.ty) go.error = true := by
+  go_type_set
+example [errors.Assumptions] : go.typeSetContains errors.errorString.ty go.error = false := by
+  go_type_set   -- `Error` has a pointer receiver
+```
+
+It also works with a named interface type of a user package (`Fooer.ty`: its
+`UnderlyingDirectedEq` gives the interface's methods) and generic types (`Box.ty go.int`);
+`Perennial/ProgramLogic/TypeSetTest.lean` has examples. What it cannot decide is left in
+the goal: the method set of a type literal with embedded fields, of a type of a package
+that is not translated, or an entry whose signature goose could not write (a method that is
+not translated may mention a type of a package the translation does not import:
+`("Equal", none)`); then the entry still says that the method exists.
+
 ---
 
 ## 5. Patterns

@@ -74,20 +74,28 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 class Mutex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Mutex.underlying Mutex
   underlying : go.UnderlyingDirectedEq Mutex.ty Mutex.underlying
+  method_set : go.MethodSetIs Mutex.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Mutex.ty) [(go!"Lock", (some (go.signature.Signature [] false []))), (go!"Unlock", (some (go.signature.Signature [] false [])))]
   ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Lock" Mutex.Lock.impl
   ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Unlock" Mutex.Unlock.impl
 
 attribute [instance] Mutex.TypeAssumptions.type_repr
   Mutex.TypeAssumptions.underlying
+  Mutex.TypeAssumptions.method_set
+  Mutex.TypeAssumptions.ptr_method_set
   Mutex.TypeAssumptions.ptr_Lock_unfold
   Mutex.TypeAssumptions.ptr_Unlock_unfold
 
 class ProphId.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ProphId.underlying ProphId
   underlying : go.UnderlyingDirectedEq ProphId.ty ProphId.underlying
+  method_set : go.MethodSetIs ProphId.ty [(go!"ResolveBool", (some (go.signature.Signature [go.bool] false []))), (go!"ResolveU64", (some (go.signature.Signature [go.uint64] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType ProphId.ty) [(go!"ResolveBool", (some (go.signature.Signature [go.bool] false []))), (go!"ResolveU64", (some (go.signature.Signature [go.uint64] false [])))]
 
 attribute [instance] ProphId.TypeAssumptions.type_repr
   ProphId.TypeAssumptions.underlying
+  ProphId.TypeAssumptions.method_set
+  ProphId.TypeAssumptions.ptr_method_set
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Mutex_instance : Mutex.TypeAssumptions

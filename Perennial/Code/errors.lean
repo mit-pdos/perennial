@@ -411,6 +411,8 @@ class errorString.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   layout : go.StructLayout errorString [(go!"s", typeSize GoString, typeAlign GoString)]
   get_s : ∀ (x : errorString), go.IsGoStepPureDetTagged under (StructFieldGet errorString.underlying go!"s") #x (Val #(x.s'))
   set_s : ∀ (x : errorString) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet errorString.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : errorString)))
+  method_set : go.MethodSetIs errorString.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType errorString.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
   ptr_Error_unfold : MethodUnfold (go.GoType.PointerType errorString.ty) go!"Error" errorString.Error.impl
 
 attribute [instance] errorString.TypeAssumptions.type_repr
@@ -418,6 +420,8 @@ attribute [instance] errorString.TypeAssumptions.type_repr
   errorString.TypeAssumptions.layout
   errorString.TypeAssumptions.get_s
   errorString.TypeAssumptions.set_s
+  errorString.TypeAssumptions.method_set
+  errorString.TypeAssumptions.ptr_method_set
   errorString.TypeAssumptions.ptr_Error_unfold
 
 structure joinError [FfiSyntax] where
@@ -446,12 +450,16 @@ class joinError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   layout : go.StructLayout joinError [(go!"errs", typeSize GoSlice, typeAlign GoSlice)]
   get_errs : ∀ (x : joinError), go.IsGoStepPureDetTagged under (StructFieldGet joinError.underlying go!"errs") #x (Val #(x.errs'))
   set_errs : ∀ (x : joinError) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet joinError.underlying go!"errs") (PairV #x #y) (Val #(({ x with errs' := y } : joinError)))
+  method_set : go.MethodSetIs joinError.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType joinError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"Unwrap", (some (go.signature.Signature [] false [(go.GoType.SliceType go.error)])))]
 
 attribute [instance] joinError.TypeAssumptions.type_repr
   joinError.TypeAssumptions.underlying
   joinError.TypeAssumptions.layout
   joinError.TypeAssumptions.get_errs
   joinError.TypeAssumptions.set_errs
+  joinError.TypeAssumptions.method_set
+  joinError.TypeAssumptions.ptr_method_set
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   errorString_instance : errorString.TypeAssumptions

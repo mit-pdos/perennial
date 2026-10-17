@@ -574,6 +574,211 @@ instance mapElem_access_store_b (l : Loc) (v : github_com.mit_pdos.perennial.goo
 end def_
 end mapElem
 
+namespace msLeft
+section def_
+
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+instance msLeft_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msLeft where
+  typedPointstoDef l v dq := iprop(
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance msLeft_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msLeft github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msLeft.underlying := by
+  solve_into_val_typed_struct
+
+end def_
+end msLeft
+
+namespace msRight
+section def_
+
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+instance msRight_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msRight where
+  typedPointstoDef l v dq := iprop(
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance msRight_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msRight github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msRight.underlying := by
+  solve_into_val_typed_struct
+
+end def_
+end msRight
+
+namespace msBoth
+section def_
+
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+instance msBoth_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth where
+  typedPointstoDef l v dq := iprop(
+    "msLeft" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth go!"msLeft" l) v.msLeft' dq ∗
+    "msRight" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth go!"msRight" l) v.msRight' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance msBoth_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth.underlying := by
+  solve_into_val_typed_struct
+
+instance msBoth_access_load_msLeft (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth go!"msLeft" l) v.msLeft' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth go!"msLeft" l) v.msLeft' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance msBoth_access_store_msLeft (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth) (msLeft' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msLeft) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth go!"msLeft" l) v.msLeft' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth go!"msLeft" l) msLeft' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with msLeft' := msLeft' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance msBoth_access_load_msRight (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth go!"msRight" l) v.msRight' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth go!"msRight" l) v.msRight' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance msBoth_access_store_msRight (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth) (msRight' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msRight) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth go!"msRight" l) v.msRight' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth go!"msRight" l) msRight' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with msRight' := msRight' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end msBoth
+
+namespace msShadow
+section def_
+
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+instance msShadow_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow where
+  typedPointstoDef l v dq := iprop(
+    "msLeft" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow go!"msLeft" l) v.msLeft' dq ∗
+    "Name" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow go!"Name" l) v.Name' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance msShadow_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow.underlying := by
+  solve_into_val_typed_struct
+
+instance msShadow_access_load_msLeft (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow go!"msLeft" l) v.msLeft' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow go!"msLeft" l) v.msLeft' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance msShadow_access_store_msLeft (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow) (msLeft' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msLeft) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow go!"msLeft" l) v.msLeft' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow go!"msLeft" l) msLeft' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with msLeft' := msLeft' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance msShadow_access_load_Name (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow go!"Name" l) v.Name' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow go!"Name" l) v.Name' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance msShadow_access_store_Name (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow) (Name' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow go!"Name" l) v.Name' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow go!"Name" l) Name' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Name' := Name' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end msShadow
+
+namespace msPtrEmbed
+section def_
+
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+instance msPtrEmbed_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msPtrEmbed where
+  typedPointstoDef l v dq := iprop(
+    "msLeft" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msPtrEmbed go!"msLeft" l) v.msLeft' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance msPtrEmbed_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msPtrEmbed github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msPtrEmbed.underlying := by
+  solve_into_val_typed_struct
+
+instance msPtrEmbed_access_load_msLeft (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msPtrEmbed) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msPtrEmbed go!"msLeft" l) v.msLeft' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msPtrEmbed go!"msLeft" l) v.msLeft' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance msPtrEmbed_access_store_msLeft (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msPtrEmbed) (msLeft' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msPtrEmbed go!"msLeft" l) v.msLeft' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msPtrEmbed go!"msLeft" l) msLeft' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with msLeft' := msLeft' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msPtrEmbed) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end msPtrEmbed
+
 namespace mvT
 section def_
 

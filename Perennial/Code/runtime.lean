@@ -10729,6 +10729,8 @@ class userArena.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_refs : ∀ (x : userArena) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet userArena.underlying go!"refs") (PairV #x #y) (Val #(({ x with refs' := y } : userArena)))
   get_defunct : ∀ (x : userArena), go.IsGoStepPureDetTagged under (StructFieldGet userArena.underlying go!"defunct") #x (Val #(x.defunct'))
   set_defunct : ∀ (x : userArena) (y : _root_.Perennial.internal.runtime.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet userArena.underlying go!"defunct") (PairV #x #y) (Val #(({ x with defunct' := y } : userArena)))
+  method_set : go.MethodSetIs userArena.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType userArena.ty) [(go!"runtime.alloc", (some (go.signature.Signature [(go.GoType.PointerType _type.ty), go.int] false [«unsafe».Pointer]))), (go!"runtime.free", (some (go.signature.Signature [] false []))), (go!"runtime.new", (some (go.signature.Signature [(go.GoType.PointerType _type.ty)] false [«unsafe».Pointer]))), (go!"runtime.refill", (some (go.signature.Signature [] false [(go.GoType.PointerType mspan.ty)]))), (go!"runtime.slice", (some (go.signature.Signature [go.any, go.int] false [])))]
 
 attribute [instance] userArena.TypeAssumptions.type_repr
   userArena.TypeAssumptions.underlying
@@ -10741,6 +10743,8 @@ attribute [instance] userArena.TypeAssumptions.type_repr
   userArena.TypeAssumptions.set_refs
   userArena.TypeAssumptions.get_defunct
   userArena.TypeAssumptions.set_defunct
+  userArena.TypeAssumptions.method_set
+  userArena.TypeAssumptions.ptr_method_set
 
 structure liveUserArenaChunk [FfiSyntax] where
   mk ::
@@ -10772,6 +10776,8 @@ class liveUserArenaChunk.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   set_mspan : ∀ (x : liveUserArenaChunk) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet liveUserArenaChunk.underlying go!"mspan") (PairV #x #y) (Val #(({ x with mspan' := y } : liveUserArenaChunk)))
   get_x : ∀ (x : liveUserArenaChunk), go.IsGoStepPureDetTagged under (StructFieldGet liveUserArenaChunk.underlying go!"x") #x (Val #(x.x'))
   set_x : ∀ (x : liveUserArenaChunk) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet liveUserArenaChunk.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : liveUserArenaChunk)))
+  method_set : go.MethodSetIs liveUserArenaChunk.ty [(go!"runtime.allocBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.base", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.countAlloc", (some (go.signature.Signature [] false [go.int]))), (go!"runtime.decPinCounter", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.divideByElemSize", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.ensureSwept", (some (go.signature.Signature [] false []))), (go!"runtime.getPinnerBits", (some (go.signature.Signature [] false [(go.GoType.PointerType pinnerBits.ty)]))), (go!"runtime.heapBits", (some (go.signature.Signature [] false [(go.GoType.SliceType go.uintptr)]))), (go!"runtime.heapBitsSmallForAddr", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.inList", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.incPinCounter", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.init", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"runtime.initHeapBits", (some (go.signature.Signature [] false []))), (go!"runtime.initInlineMarkBits", (some (go.signature.Signature [] false []))), (go!"runtime.inlineMarkBits", (some (go.signature.Signature [] false [(go.GoType.PointerType spanInlineMarkBits.ty)]))), (go!"runtime.isFree", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.isFreeOrNewlyAllocated", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.isUnusedUserArenaChunk", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.layout", (some (go.signature.Signature [] false [go.uintptr, go.uintptr, go.uintptr]))), (go!"runtime.markBitsForBase", (some (go.signature.Signature [] false [markBits.ty]))), (go!"runtime.markBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.moveInlineMarks", (some (go.signature.Signature [(go.GoType.PointerType gcBits.ty)] false []))), (go!"runtime.newPinnerBits", (some (go.signature.Signature [] false [(go.GoType.PointerType pinnerBits.ty)]))), (go!"runtime.nextFreeIndex", (some (go.signature.Signature [] false [go.uint16]))), (go!"runtime.objBase", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.objIndex", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.pinnerBitSize", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.refillAllocCache", (some (go.signature.Signature [go.uint16] false []))), (go!"runtime.refreshPinnerBits", (some (go.signature.Signature [] false []))), (go!"runtime.reportZombies", (some (go.signature.Signature [] false []))), (go!"runtime.scannedBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.setPinnerBits", (some (go.signature.Signature [(go.GoType.PointerType pinnerBits.ty)] false []))), (go!"runtime.setUserArenaChunkToFault", (some (go.signature.Signature [] false []))), (go!"runtime.specialFindSplicePoint", (some (go.signature.Signature [go.uintptr, go.byte] false [(go.GoType.PointerType (go.GoType.PointerType special.ty)), go.bool]))), (go!"runtime.typePointersOf", (some (go.signature.Signature [go.uintptr, go.uintptr] false [typePointers.ty]))), (go!"runtime.typePointersOfType", none), (go!"runtime.typePointersOfUnchecked", (some (go.signature.Signature [go.uintptr] false [typePointers.ty]))), (go!"runtime.userArenaNextFree", (some (go.signature.Signature [(go.GoType.PointerType _type.ty), go.int] false [«unsafe».Pointer]))), (go!"runtime.writeHeapBitsSmall", (some (go.signature.Signature [go.uintptr, go.uintptr, (go.GoType.PointerType _type.ty)] false [go.uintptr]))), (go!"runtime.writeUserArenaHeapBits", (some (go.signature.Signature [go.uintptr] false [writeUserArenaHeapBits.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType liveUserArenaChunk.ty) [(go!"runtime.allocBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.base", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.countAlloc", (some (go.signature.Signature [] false [go.int]))), (go!"runtime.decPinCounter", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.divideByElemSize", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.ensureSwept", (some (go.signature.Signature [] false []))), (go!"runtime.getPinnerBits", (some (go.signature.Signature [] false [(go.GoType.PointerType pinnerBits.ty)]))), (go!"runtime.heapBits", (some (go.signature.Signature [] false [(go.GoType.SliceType go.uintptr)]))), (go!"runtime.heapBitsSmallForAddr", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.inList", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.incPinCounter", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.init", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"runtime.initHeapBits", (some (go.signature.Signature [] false []))), (go!"runtime.initInlineMarkBits", (some (go.signature.Signature [] false []))), (go!"runtime.inlineMarkBits", (some (go.signature.Signature [] false [(go.GoType.PointerType spanInlineMarkBits.ty)]))), (go!"runtime.isFree", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.isFreeOrNewlyAllocated", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.isUnusedUserArenaChunk", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.layout", (some (go.signature.Signature [] false [go.uintptr, go.uintptr, go.uintptr]))), (go!"runtime.markBitsForBase", (some (go.signature.Signature [] false [markBits.ty]))), (go!"runtime.markBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.moveInlineMarks", (some (go.signature.Signature [(go.GoType.PointerType gcBits.ty)] false []))), (go!"runtime.newPinnerBits", (some (go.signature.Signature [] false [(go.GoType.PointerType pinnerBits.ty)]))), (go!"runtime.nextFreeIndex", (some (go.signature.Signature [] false [go.uint16]))), (go!"runtime.objBase", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.objIndex", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.pinnerBitSize", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.refillAllocCache", (some (go.signature.Signature [go.uint16] false []))), (go!"runtime.refreshPinnerBits", (some (go.signature.Signature [] false []))), (go!"runtime.reportZombies", (some (go.signature.Signature [] false []))), (go!"runtime.scannedBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.setPinnerBits", (some (go.signature.Signature [(go.GoType.PointerType pinnerBits.ty)] false []))), (go!"runtime.setUserArenaChunkToFault", (some (go.signature.Signature [] false []))), (go!"runtime.specialFindSplicePoint", (some (go.signature.Signature [go.uintptr, go.byte] false [(go.GoType.PointerType (go.GoType.PointerType special.ty)), go.bool]))), (go!"runtime.typePointersOf", (some (go.signature.Signature [go.uintptr, go.uintptr] false [typePointers.ty]))), (go!"runtime.typePointersOfType", none), (go!"runtime.typePointersOfUnchecked", (some (go.signature.Signature [go.uintptr] false [typePointers.ty]))), (go!"runtime.userArenaNextFree", (some (go.signature.Signature [(go.GoType.PointerType _type.ty), go.int] false [«unsafe».Pointer]))), (go!"runtime.writeHeapBitsSmall", (some (go.signature.Signature [go.uintptr, go.uintptr, (go.GoType.PointerType _type.ty)] false [go.uintptr]))), (go!"runtime.writeUserArenaHeapBits", (some (go.signature.Signature [go.uintptr] false [writeUserArenaHeapBits.ty])))]
 
 attribute [instance] liveUserArenaChunk.TypeAssumptions.type_repr
   liveUserArenaChunk.TypeAssumptions.underlying
@@ -10780,6 +10786,8 @@ attribute [instance] liveUserArenaChunk.TypeAssumptions.type_repr
   liveUserArenaChunk.TypeAssumptions.set_mspan
   liveUserArenaChunk.TypeAssumptions.get_x
   liveUserArenaChunk.TypeAssumptions.set_x
+  liveUserArenaChunk.TypeAssumptions.method_set
+  liveUserArenaChunk.TypeAssumptions.ptr_method_set
 
 structure writeUserArenaHeapBits [FfiSyntax] where
   mk ::
@@ -10819,6 +10827,8 @@ class writeUserArenaHeapBits.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLo
   set_valid : ∀ (x : writeUserArenaHeapBits) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet writeUserArenaHeapBits.underlying go!"valid") (PairV #x #y) (Val #(({ x with valid' := y } : writeUserArenaHeapBits)))
   get_low : ∀ (x : writeUserArenaHeapBits), go.IsGoStepPureDetTagged under (StructFieldGet writeUserArenaHeapBits.underlying go!"low") #x (Val #(x.low'))
   set_low : ∀ (x : writeUserArenaHeapBits) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet writeUserArenaHeapBits.underlying go!"low") (PairV #x #y) (Val #(({ x with low' := y } : writeUserArenaHeapBits)))
+  method_set : go.MethodSetIs writeUserArenaHeapBits.ty [(go!"runtime.flush", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty), go.uintptr, go.uintptr] false []))), (go!"runtime.pad", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty), go.uintptr] false [writeUserArenaHeapBits.ty]))), (go!"runtime.write", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty), go.uintptr, go.uintptr] false [writeUserArenaHeapBits.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType writeUserArenaHeapBits.ty) [(go!"runtime.flush", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty), go.uintptr, go.uintptr] false []))), (go!"runtime.pad", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty), go.uintptr] false [writeUserArenaHeapBits.ty]))), (go!"runtime.write", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty), go.uintptr, go.uintptr] false [writeUserArenaHeapBits.ty])))]
 
 attribute [instance] writeUserArenaHeapBits.TypeAssumptions.type_repr
   writeUserArenaHeapBits.TypeAssumptions.underlying
@@ -10831,6 +10841,8 @@ attribute [instance] writeUserArenaHeapBits.TypeAssumptions.type_repr
   writeUserArenaHeapBits.TypeAssumptions.set_valid
   writeUserArenaHeapBits.TypeAssumptions.get_low
   writeUserArenaHeapBits.TypeAssumptions.set_low
+  writeUserArenaHeapBits.TypeAssumptions.method_set
+  writeUserArenaHeapBits.TypeAssumptions.ptr_method_set
 
 abbrev cgoCallers [FfiSyntax] : Type := (GoArray w64 32)
 
@@ -10839,8 +10851,12 @@ abbrev cgoCallers [FfiSyntax] : Type := (GoArray w64 32)
 
 class cgoCallers.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq cgoCallers.ty cgoCallers.underlying
+  method_set : go.MethodSetIs cgoCallers.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType cgoCallers.ty) []
 
 attribute [instance] cgoCallers.TypeAssumptions.underlying
+  cgoCallers.TypeAssumptions.method_set
+  cgoCallers.TypeAssumptions.ptr_method_set
 
 structure argset [FfiSyntax] where
   mk ::
@@ -10872,6 +10888,8 @@ class argset.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_args : ∀ (x : argset) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet argset.underlying go!"args") (PairV #x #y) (Val #(({ x with args' := y } : argset)))
   get_retval : ∀ (x : argset), go.IsGoStepPureDetTagged under (StructFieldGet argset.underlying go!"retval") #x (Val #(x.retval'))
   set_retval : ∀ (x : argset) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet argset.underlying go!"retval") (PairV #x #y) (Val #(({ x with retval' := y } : argset)))
+  method_set : go.MethodSetIs argset.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType argset.ty) []
 
 attribute [instance] argset.TypeAssumptions.type_repr
   argset.TypeAssumptions.underlying
@@ -10880,6 +10898,8 @@ attribute [instance] argset.TypeAssumptions.type_repr
   argset.TypeAssumptions.set_args
   argset.TypeAssumptions.get_retval
   argset.TypeAssumptions.set_retval
+  argset.TypeAssumptions.method_set
+  argset.TypeAssumptions.ptr_method_set
 
 abbrev cgoErrorMsg [FfiSyntax] : Type := w64
 
@@ -10888,8 +10908,12 @@ abbrev cgoErrorMsg [FfiSyntax] : Type := w64
 
 class cgoErrorMsg.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq cgoErrorMsg.ty cgoErrorMsg.underlying
+  method_set : go.MethodSetIs cgoErrorMsg.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType cgoErrorMsg.ty) []
 
 attribute [instance] cgoErrorMsg.TypeAssumptions.underlying
+  cgoErrorMsg.TypeAssumptions.method_set
+  cgoErrorMsg.TypeAssumptions.ptr_method_set
 
 axiom hchan : Type
 axiom hchan.zero_val : ZeroVal hchan
@@ -10899,10 +10923,14 @@ class hchan.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying hchan.underlying hchan
   underlying : go.UnderlyingDirectedEq hchan.ty hchan.underlying
   isUnderlying : go.IsUnderlying hchan.underlying hchan.underlying
+  method_set : go.MethodSetIs hchan.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType hchan.ty) [(go!"runtime.raceaddr", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"runtime.sortkey", (some (go.signature.Signature [] false [go.uintptr])))]
 
 attribute [instance] hchan.TypeAssumptions.type_repr
   hchan.TypeAssumptions.underlying
   hchan.TypeAssumptions.isUnderlying
+  hchan.TypeAssumptions.method_set
+  hchan.TypeAssumptions.ptr_method_set
 
 structure waitq [FfiSyntax] where
   mk ::
@@ -10934,6 +10962,8 @@ class waitq.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_first : ∀ (x : waitq) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet waitq.underlying go!"first") (PairV #x #y) (Val #(({ x with first' := y } : waitq)))
   get_last : ∀ (x : waitq), go.IsGoStepPureDetTagged under (StructFieldGet waitq.underlying go!"last") #x (Val #(x.last'))
   set_last : ∀ (x : waitq) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet waitq.underlying go!"last") (PairV #x #y) (Val #(({ x with last' := y } : waitq)))
+  method_set : go.MethodSetIs waitq.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType waitq.ty) [(go!"runtime.dequeue", (some (go.signature.Signature [] false [(go.GoType.PointerType sudog.ty)]))), (go!"runtime.dequeueSudoG", (some (go.signature.Signature [(go.GoType.PointerType sudog.ty)] false []))), (go!"runtime.enqueue", (some (go.signature.Signature [(go.GoType.PointerType sudog.ty)] false [])))]
 
 attribute [instance] waitq.TypeAssumptions.type_repr
   waitq.TypeAssumptions.underlying
@@ -10942,6 +10972,8 @@ attribute [instance] waitq.TypeAssumptions.type_repr
   waitq.TypeAssumptions.set_first
   waitq.TypeAssumptions.get_last
   waitq.TypeAssumptions.set_last
+  waitq.TypeAssumptions.method_set
+  waitq.TypeAssumptions.ptr_method_set
 
 abbrev guintptr [FfiSyntax] : Type := w64
 
@@ -10950,8 +10982,12 @@ abbrev guintptr [FfiSyntax] : Type := w64
 
 class guintptr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq guintptr.ty guintptr.underlying
+  method_set : go.MethodSetIs guintptr.ty [(go!"runtime.ptr", (some (go.signature.Signature [] false [(go.GoType.PointerType g.ty)])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType guintptr.ty) [(go!"runtime.cas", (some (go.signature.Signature [guintptr.ty, guintptr.ty] false [go.bool]))), (go!"runtime.ptr", (some (go.signature.Signature [] false [(go.GoType.PointerType g.ty)]))), (go!"runtime.set", (some (go.signature.Signature [(go.GoType.PointerType g.ty)] false [])))]
 
 attribute [instance] guintptr.TypeAssumptions.underlying
+  guintptr.TypeAssumptions.method_set
+  guintptr.TypeAssumptions.ptr_method_set
 
 structure coro [FfiSyntax] where
   mk ::
@@ -10995,6 +11031,8 @@ class coro.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   set_lockedExt : ∀ (x : coro) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet coro.underlying go!"lockedExt") (PairV #x #y) (Val #(({ x with lockedExt' := y } : coro)))
   get_lockedInt : ∀ (x : coro), go.IsGoStepPureDetTagged under (StructFieldGet coro.underlying go!"lockedInt") #x (Val #(x.lockedInt'))
   set_lockedInt : ∀ (x : coro) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet coro.underlying go!"lockedInt") (PairV #x #y) (Val #(({ x with lockedInt' := y } : coro)))
+  method_set : go.MethodSetIs coro.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType coro.ty) []
 
 attribute [instance] coro.TypeAssumptions.type_repr
   coro.TypeAssumptions.underlying
@@ -11009,6 +11047,8 @@ attribute [instance] coro.TypeAssumptions.type_repr
   coro.TypeAssumptions.set_lockedExt
   coro.TypeAssumptions.get_lockedInt
   coro.TypeAssumptions.set_lockedInt
+  coro.TypeAssumptions.method_set
+  coro.TypeAssumptions.ptr_method_set
 
 structure lockRankStruct [FfiSyntax] where
   mk ::
@@ -11033,10 +11073,14 @@ class lockRankStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   type_repr : go.TypeReprUnderlying lockRankStruct.underlying lockRankStruct
   underlying : go.UnderlyingDirectedEq lockRankStruct.ty lockRankStruct.underlying
   layout : go.StructLayout lockRankStruct []
+  method_set : go.MethodSetIs lockRankStruct.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType lockRankStruct.ty) []
 
 attribute [instance] lockRankStruct.TypeAssumptions.type_repr
   lockRankStruct.TypeAssumptions.underlying
   lockRankStruct.TypeAssumptions.layout
+  lockRankStruct.TypeAssumptions.method_set
+  lockRankStruct.TypeAssumptions.ptr_method_set
 
 structure mutex [FfiSyntax] where
   mk ::
@@ -11068,6 +11112,8 @@ class mutex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_lockRankStruct : ∀ (x : mutex) (y : lockRankStruct), go.IsGoStepPureDetTagged under (StructFieldSet mutex.underlying go!"lockRankStruct") (PairV #x #y) (Val #(({ x with lockRankStruct' := y } : mutex)))
   get_key : ∀ (x : mutex), go.IsGoStepPureDetTagged under (StructFieldGet mutex.underlying go!"key") #x (Val #(x.key'))
   set_key : ∀ (x : mutex) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mutex.underlying go!"key") (PairV #x #y) (Val #(({ x with key' := y } : mutex)))
+  method_set : go.MethodSetIs mutex.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mutex.ty) []
 
 attribute [instance] mutex.TypeAssumptions.type_repr
   mutex.TypeAssumptions.underlying
@@ -11076,6 +11122,8 @@ attribute [instance] mutex.TypeAssumptions.type_repr
   mutex.TypeAssumptions.set_lockRankStruct
   mutex.TypeAssumptions.get_key
   mutex.TypeAssumptions.set_key
+  mutex.TypeAssumptions.method_set
+  mutex.TypeAssumptions.ptr_method_set
 
 structure cpuProfile [FfiSyntax] where
   mk ::
@@ -11127,6 +11175,8 @@ class cpuProfile.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_lostExtra : ∀ (x : cpuProfile) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet cpuProfile.underlying go!"lostExtra") (PairV #x #y) (Val #(({ x with lostExtra' := y } : cpuProfile)))
   get_lostAtomic : ∀ (x : cpuProfile), go.IsGoStepPureDetTagged under (StructFieldGet cpuProfile.underlying go!"lostAtomic") #x (Val #(x.lostAtomic'))
   set_lostAtomic : ∀ (x : cpuProfile) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet cpuProfile.underlying go!"lostAtomic") (PairV #x #y) (Val #(({ x with lostAtomic' := y } : cpuProfile)))
+  method_set : go.MethodSetIs cpuProfile.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType cpuProfile.ty) [(go!"runtime.add", (some (go.signature.Signature [(go.GoType.PointerType «unsafe».Pointer), (go.GoType.SliceType go.uintptr)] false []))), (go!"runtime.addExtra", (some (go.signature.Signature [] false []))), (go!"runtime.addNonGo", (some (go.signature.Signature [(go.GoType.SliceType go.uintptr)] false [])))]
 
 attribute [instance] cpuProfile.TypeAssumptions.type_repr
   cpuProfile.TypeAssumptions.underlying
@@ -11145,6 +11195,8 @@ attribute [instance] cpuProfile.TypeAssumptions.type_repr
   cpuProfile.TypeAssumptions.set_lostExtra
   cpuProfile.TypeAssumptions.get_lostAtomic
   cpuProfile.TypeAssumptions.set_lostAtomic
+  cpuProfile.TypeAssumptions.method_set
+  cpuProfile.TypeAssumptions.ptr_method_set
 
 structure debugCallWrapArgs [FfiSyntax] where
   mk ::
@@ -11176,6 +11228,8 @@ class debugCallWrapArgs.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCo
   set_dispatch : ∀ (x : debugCallWrapArgs) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet debugCallWrapArgs.underlying go!"dispatch") (PairV #x #y) (Val #(({ x with dispatch' := y } : debugCallWrapArgs)))
   get_callingG : ∀ (x : debugCallWrapArgs), go.IsGoStepPureDetTagged under (StructFieldGet debugCallWrapArgs.underlying go!"callingG") #x (Val #(x.callingG'))
   set_callingG : ∀ (x : debugCallWrapArgs) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet debugCallWrapArgs.underlying go!"callingG") (PairV #x #y) (Val #(({ x with callingG' := y } : debugCallWrapArgs)))
+  method_set : go.MethodSetIs debugCallWrapArgs.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType debugCallWrapArgs.ty) []
 
 attribute [instance] debugCallWrapArgs.TypeAssumptions.type_repr
   debugCallWrapArgs.TypeAssumptions.underlying
@@ -11184,6 +11238,8 @@ attribute [instance] debugCallWrapArgs.TypeAssumptions.type_repr
   debugCallWrapArgs.TypeAssumptions.set_dispatch
   debugCallWrapArgs.TypeAssumptions.get_callingG
   debugCallWrapArgs.TypeAssumptions.set_callingG
+  debugCallWrapArgs.TypeAssumptions.method_set
+  debugCallWrapArgs.TypeAssumptions.ptr_method_set
 
 structure debugLogBuf [FfiSyntax] where
   mk ::
@@ -11215,6 +11271,8 @@ class debugLogBuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set__0 : ∀ (x : debugLogBuf) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet debugLogBuf.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : debugLogBuf)))
   get_b : ∀ (x : debugLogBuf), go.IsGoStepPureDetTagged under (StructFieldGet debugLogBuf.underlying go!"b") #x (Val #(x.b'))
   set_b : ∀ (x : debugLogBuf) (y : (GoArray w8 16384)), go.IsGoStepPureDetTagged under (StructFieldSet debugLogBuf.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : debugLogBuf)))
+  method_set : go.MethodSetIs debugLogBuf.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType debugLogBuf.ty) []
 
 attribute [instance] debugLogBuf.TypeAssumptions.type_repr
   debugLogBuf.TypeAssumptions.underlying
@@ -11223,6 +11281,8 @@ attribute [instance] debugLogBuf.TypeAssumptions.type_repr
   debugLogBuf.TypeAssumptions.set__0
   debugLogBuf.TypeAssumptions.get_b
   debugLogBuf.TypeAssumptions.set_b
+  debugLogBuf.TypeAssumptions.method_set
+  debugLogBuf.TypeAssumptions.ptr_method_set
 
 structure debugLogReader [FfiSyntax] where
   mk ::
@@ -11266,6 +11326,8 @@ class debugLogReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_tick : ∀ (x : debugLogReader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet debugLogReader.underlying go!"tick") (PairV #x #y) (Val #(({ x with tick' := y } : debugLogReader)))
   get_nano : ∀ (x : debugLogReader), go.IsGoStepPureDetTagged under (StructFieldGet debugLogReader.underlying go!"nano") #x (Val #(x.nano'))
   set_nano : ∀ (x : debugLogReader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet debugLogReader.underlying go!"nano") (PairV #x #y) (Val #(({ x with nano' := y } : debugLogReader)))
+  method_set : go.MethodSetIs debugLogReader.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType debugLogReader.ty) [(go!"runtime.header", (some (go.signature.Signature [] false [go.uint64, go.uint64, go.uint64, go.int]))), (go!"runtime.peek", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.printVal", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.readUint16LEAt", (some (go.signature.Signature [go.uint64] false [go.uint16]))), (go!"runtime.readUint64LEAt", (some (go.signature.Signature [go.uint64] false [go.uint64]))), (go!"runtime.skip", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.uvarint", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.varint", (some (go.signature.Signature [] false [go.int64])))]
 
 attribute [instance] debugLogReader.TypeAssumptions.type_repr
   debugLogReader.TypeAssumptions.underlying
@@ -11280,6 +11342,8 @@ attribute [instance] debugLogReader.TypeAssumptions.type_repr
   debugLogReader.TypeAssumptions.set_tick
   debugLogReader.TypeAssumptions.get_nano
   debugLogReader.TypeAssumptions.set_nano
+  debugLogReader.TypeAssumptions.method_set
+  debugLogReader.TypeAssumptions.ptr_method_set
 
 structure debugLogWriter [FfiSyntax] where
   mk ::
@@ -11331,6 +11395,8 @@ class debugLogWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_r : ∀ (x : debugLogWriter) (y : debugLogReader), go.IsGoStepPureDetTagged under (StructFieldSet debugLogWriter.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : debugLogWriter)))
   get_buf : ∀ (x : debugLogWriter), go.IsGoStepPureDetTagged under (StructFieldGet debugLogWriter.underlying go!"buf") #x (Val #(x.buf'))
   set_buf : ∀ (x : debugLogWriter) (y : (GoArray w8 10)), go.IsGoStepPureDetTagged under (StructFieldSet debugLogWriter.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : debugLogWriter)))
+  method_set : go.MethodSetIs debugLogWriter.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType debugLogWriter.ty) [(go!"runtime.byte", (some (go.signature.Signature [go.byte] false []))), (go!"runtime.bytes", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false []))), (go!"runtime.ensure", (some (go.signature.Signature [go.uint64] false []))), (go!"runtime.uvarint", (some (go.signature.Signature [go.uint64] false []))), (go!"runtime.varint", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.writeFrameAt", (some (go.signature.Signature [go.uint64, go.uint64] false [go.bool]))), (go!"runtime.writeSync", (some (go.signature.Signature [go.uint64, go.uint64] false []))), (go!"runtime.writeUint64LE", (some (go.signature.Signature [go.uint64] false [])))]
 
 attribute [instance] debugLogWriter.TypeAssumptions.type_repr
   debugLogWriter.TypeAssumptions.underlying
@@ -11349,6 +11415,8 @@ attribute [instance] debugLogWriter.TypeAssumptions.type_repr
   debugLogWriter.TypeAssumptions.set_r
   debugLogWriter.TypeAssumptions.get_buf
   debugLogWriter.TypeAssumptions.set_buf
+  debugLogWriter.TypeAssumptions.method_set
+  debugLogWriter.TypeAssumptions.ptr_method_set
 
 structure dloggerImpl [FfiSyntax] where
   mk ::
@@ -11388,6 +11456,8 @@ class dloggerImpl.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set_allLink : ∀ (x : dloggerImpl) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet dloggerImpl.underlying go!"allLink") (PairV #x #y) (Val #(({ x with allLink' := y } : dloggerImpl)))
   get_owned : ∀ (x : dloggerImpl), go.IsGoStepPureDetTagged under (StructFieldGet dloggerImpl.underlying go!"owned") #x (Val #(x.owned'))
   set_owned : ∀ (x : dloggerImpl) (y : _root_.Perennial.internal.runtime.atomic.Uint32), go.IsGoStepPureDetTagged under (StructFieldSet dloggerImpl.underlying go!"owned") (PairV #x #y) (Val #(({ x with owned' := y } : dloggerImpl)))
+  method_set : go.MethodSetIs dloggerImpl.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType dloggerImpl.ty) [(go!"runtime.b", (some (go.signature.Signature [go.bool] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.end", (some (go.signature.Signature [] false []))), (go!"runtime.hex", (some (go.signature.Signature [go.uint64] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.hexdump", (some (go.signature.Signature [«unsafe».Pointer, go.uintptr] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.i", (some (go.signature.Signature [go.int] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.i16", (some (go.signature.Signature [go.int16] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.i32", (some (go.signature.Signature [go.int32] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.i64", (some (go.signature.Signature [go.int64] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.i8", (some (go.signature.Signature [go.int8] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.p", (some (go.signature.Signature [go.any] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.pc", (some (go.signature.Signature [go.uintptr] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.s", (some (go.signature.Signature [go.string] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.traceback", (some (go.signature.Signature [(go.GoType.SliceType go.uintptr)] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.u", (some (go.signature.Signature [go.uint] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.u16", (some (go.signature.Signature [go.uint16] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.u32", (some (go.signature.Signature [go.uint32] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.u64", (some (go.signature.Signature [go.uint64] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.u8", (some (go.signature.Signature [go.uint8] false [(go.GoType.PointerType dloggerImpl.ty)]))), (go!"runtime.uptr", (some (go.signature.Signature [go.uintptr] false [(go.GoType.PointerType dloggerImpl.ty)])))]
 
 attribute [instance] dloggerImpl.TypeAssumptions.type_repr
   dloggerImpl.TypeAssumptions.underlying
@@ -11400,6 +11470,8 @@ attribute [instance] dloggerImpl.TypeAssumptions.type_repr
   dloggerImpl.TypeAssumptions.set_allLink
   dloggerImpl.TypeAssumptions.get_owned
   dloggerImpl.TypeAssumptions.set_owned
+  dloggerImpl.TypeAssumptions.method_set
+  dloggerImpl.TypeAssumptions.ptr_method_set
 
 structure dloggerFake [FfiSyntax] where
   mk ::
@@ -11424,10 +11496,14 @@ class dloggerFake.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   type_repr : go.TypeReprUnderlying dloggerFake.underlying dloggerFake
   underlying : go.UnderlyingDirectedEq dloggerFake.ty dloggerFake.underlying
   layout : go.StructLayout dloggerFake []
+  method_set : go.MethodSetIs dloggerFake.ty [(go!"runtime.b", (some (go.signature.Signature [go.bool] false [dloggerFake.ty]))), (go!"runtime.end", (some (go.signature.Signature [] false []))), (go!"runtime.hex", (some (go.signature.Signature [go.uint64] false [dloggerFake.ty]))), (go!"runtime.hexdump", (some (go.signature.Signature [«unsafe».Pointer, go.uintptr] false [dloggerFake.ty]))), (go!"runtime.i", (some (go.signature.Signature [go.int] false [dloggerFake.ty]))), (go!"runtime.i16", (some (go.signature.Signature [go.int16] false [dloggerFake.ty]))), (go!"runtime.i32", (some (go.signature.Signature [go.int32] false [dloggerFake.ty]))), (go!"runtime.i64", (some (go.signature.Signature [go.int64] false [dloggerFake.ty]))), (go!"runtime.i8", (some (go.signature.Signature [go.int8] false [dloggerFake.ty]))), (go!"runtime.p", (some (go.signature.Signature [go.any] false [dloggerFake.ty]))), (go!"runtime.pc", (some (go.signature.Signature [go.uintptr] false [dloggerFake.ty]))), (go!"runtime.s", (some (go.signature.Signature [go.string] false [dloggerFake.ty]))), (go!"runtime.traceback", (some (go.signature.Signature [(go.GoType.SliceType go.uintptr)] false [dloggerFake.ty]))), (go!"runtime.u", (some (go.signature.Signature [go.uint] false [dloggerFake.ty]))), (go!"runtime.u16", (some (go.signature.Signature [go.uint16] false [dloggerFake.ty]))), (go!"runtime.u32", (some (go.signature.Signature [go.uint32] false [dloggerFake.ty]))), (go!"runtime.u64", (some (go.signature.Signature [go.uint64] false [dloggerFake.ty]))), (go!"runtime.u8", (some (go.signature.Signature [go.uint8] false [dloggerFake.ty]))), (go!"runtime.uptr", (some (go.signature.Signature [go.uintptr] false [dloggerFake.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType dloggerFake.ty) [(go!"runtime.b", (some (go.signature.Signature [go.bool] false [dloggerFake.ty]))), (go!"runtime.end", (some (go.signature.Signature [] false []))), (go!"runtime.hex", (some (go.signature.Signature [go.uint64] false [dloggerFake.ty]))), (go!"runtime.hexdump", (some (go.signature.Signature [«unsafe».Pointer, go.uintptr] false [dloggerFake.ty]))), (go!"runtime.i", (some (go.signature.Signature [go.int] false [dloggerFake.ty]))), (go!"runtime.i16", (some (go.signature.Signature [go.int16] false [dloggerFake.ty]))), (go!"runtime.i32", (some (go.signature.Signature [go.int32] false [dloggerFake.ty]))), (go!"runtime.i64", (some (go.signature.Signature [go.int64] false [dloggerFake.ty]))), (go!"runtime.i8", (some (go.signature.Signature [go.int8] false [dloggerFake.ty]))), (go!"runtime.p", (some (go.signature.Signature [go.any] false [dloggerFake.ty]))), (go!"runtime.pc", (some (go.signature.Signature [go.uintptr] false [dloggerFake.ty]))), (go!"runtime.s", (some (go.signature.Signature [go.string] false [dloggerFake.ty]))), (go!"runtime.traceback", (some (go.signature.Signature [(go.GoType.SliceType go.uintptr)] false [dloggerFake.ty]))), (go!"runtime.u", (some (go.signature.Signature [go.uint] false [dloggerFake.ty]))), (go!"runtime.u16", (some (go.signature.Signature [go.uint16] false [dloggerFake.ty]))), (go!"runtime.u32", (some (go.signature.Signature [go.uint32] false [dloggerFake.ty]))), (go!"runtime.u64", (some (go.signature.Signature [go.uint64] false [dloggerFake.ty]))), (go!"runtime.u8", (some (go.signature.Signature [go.uint8] false [dloggerFake.ty]))), (go!"runtime.uptr", (some (go.signature.Signature [go.uintptr] false [dloggerFake.ty])))]
 
 attribute [instance] dloggerFake.TypeAssumptions.type_repr
   dloggerFake.TypeAssumptions.underlying
   dloggerFake.TypeAssumptions.layout
+  dloggerFake.TypeAssumptions.method_set
+  dloggerFake.TypeAssumptions.ptr_method_set
 
 structure dlogPerM [FfiSyntax] where
   mk ::
@@ -11452,10 +11528,14 @@ class dlogPerM.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying dlogPerM.underlying dlogPerM
   underlying : go.UnderlyingDirectedEq dlogPerM.ty dlogPerM.underlying
   layout : go.StructLayout dlogPerM []
+  method_set : go.MethodSetIs dlogPerM.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType dlogPerM.ty) []
 
 attribute [instance] dlogPerM.TypeAssumptions.type_repr
   dlogPerM.TypeAssumptions.underlying
   dlogPerM.TypeAssumptions.layout
+  dlogPerM.TypeAssumptions.method_set
+  dlogPerM.TypeAssumptions.ptr_method_set
 
 structure timespec [FfiSyntax] where
   mk ::
@@ -11487,6 +11567,8 @@ class timespec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_tv_sec : ∀ (x : timespec) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet timespec.underlying go!"tv_sec") (PairV #x #y) (Val #(({ x with tv_sec' := y } : timespec)))
   get_tv_nsec : ∀ (x : timespec), go.IsGoStepPureDetTagged under (StructFieldGet timespec.underlying go!"tv_nsec") #x (Val #(x.tv_nsec'))
   set_tv_nsec : ∀ (x : timespec) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet timespec.underlying go!"tv_nsec") (PairV #x #y) (Val #(({ x with tv_nsec' := y } : timespec)))
+  method_set : go.MethodSetIs timespec.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType timespec.ty) [(go!"runtime.setNsec", (some (go.signature.Signature [go.int64] false [])))]
 
 attribute [instance] timespec.TypeAssumptions.type_repr
   timespec.TypeAssumptions.underlying
@@ -11495,6 +11577,8 @@ attribute [instance] timespec.TypeAssumptions.type_repr
   timespec.TypeAssumptions.set_tv_sec
   timespec.TypeAssumptions.get_tv_nsec
   timespec.TypeAssumptions.set_tv_nsec
+  timespec.TypeAssumptions.method_set
+  timespec.TypeAssumptions.ptr_method_set
 
 structure timeval [FfiSyntax] where
   mk ::
@@ -11526,6 +11610,8 @@ class timeval.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_tv_sec : ∀ (x : timeval) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet timeval.underlying go!"tv_sec") (PairV #x #y) (Val #(({ x with tv_sec' := y } : timeval)))
   get_tv_usec : ∀ (x : timeval), go.IsGoStepPureDetTagged under (StructFieldGet timeval.underlying go!"tv_usec") #x (Val #(x.tv_usec'))
   set_tv_usec : ∀ (x : timeval) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet timeval.underlying go!"tv_usec") (PairV #x #y) (Val #(({ x with tv_usec' := y } : timeval)))
+  method_set : go.MethodSetIs timeval.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType timeval.ty) [(go!"runtime.set_usec", (some (go.signature.Signature [go.int32] false [])))]
 
 attribute [instance] timeval.TypeAssumptions.type_repr
   timeval.TypeAssumptions.underlying
@@ -11534,6 +11620,8 @@ attribute [instance] timeval.TypeAssumptions.type_repr
   timeval.TypeAssumptions.set_tv_sec
   timeval.TypeAssumptions.get_tv_usec
   timeval.TypeAssumptions.set_tv_usec
+  timeval.TypeAssumptions.method_set
+  timeval.TypeAssumptions.ptr_method_set
 
 structure sigactiont [FfiSyntax] where
   mk ::
@@ -11573,6 +11661,8 @@ class sigactiont.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_sa_restorer : ∀ (x : sigactiont) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet sigactiont.underlying go!"sa_restorer") (PairV #x #y) (Val #(({ x with sa_restorer' := y } : sigactiont)))
   get_sa_mask : ∀ (x : sigactiont), go.IsGoStepPureDetTagged under (StructFieldGet sigactiont.underlying go!"sa_mask") #x (Val #(x.sa_mask'))
   set_sa_mask : ∀ (x : sigactiont) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet sigactiont.underlying go!"sa_mask") (PairV #x #y) (Val #(({ x with sa_mask' := y } : sigactiont)))
+  method_set : go.MethodSetIs sigactiont.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sigactiont.ty) []
 
 attribute [instance] sigactiont.TypeAssumptions.type_repr
   sigactiont.TypeAssumptions.underlying
@@ -11585,6 +11675,8 @@ attribute [instance] sigactiont.TypeAssumptions.type_repr
   sigactiont.TypeAssumptions.set_sa_restorer
   sigactiont.TypeAssumptions.get_sa_mask
   sigactiont.TypeAssumptions.set_sa_mask
+  sigactiont.TypeAssumptions.method_set
+  sigactiont.TypeAssumptions.ptr_method_set
 
 structure siginfoFields [FfiSyntax] where
   mk ::
@@ -11624,6 +11716,8 @@ class siginfoFields.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_si_code : ∀ (x : siginfoFields) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet siginfoFields.underlying go!"si_code") (PairV #x #y) (Val #(({ x with si_code' := y } : siginfoFields)))
   get_si_addr : ∀ (x : siginfoFields), go.IsGoStepPureDetTagged under (StructFieldGet siginfoFields.underlying go!"si_addr") #x (Val #(x.si_addr'))
   set_si_addr : ∀ (x : siginfoFields) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet siginfoFields.underlying go!"si_addr") (PairV #x #y) (Val #(({ x with si_addr' := y } : siginfoFields)))
+  method_set : go.MethodSetIs siginfoFields.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType siginfoFields.ty) []
 
 attribute [instance] siginfoFields.TypeAssumptions.type_repr
   siginfoFields.TypeAssumptions.underlying
@@ -11636,6 +11730,8 @@ attribute [instance] siginfoFields.TypeAssumptions.type_repr
   siginfoFields.TypeAssumptions.set_si_code
   siginfoFields.TypeAssumptions.get_si_addr
   siginfoFields.TypeAssumptions.set_si_addr
+  siginfoFields.TypeAssumptions.method_set
+  siginfoFields.TypeAssumptions.ptr_method_set
 
 axiom siginfo : Type
 axiom siginfo.zero_val : ZeroVal siginfo
@@ -11645,10 +11741,14 @@ class siginfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying siginfo.underlying siginfo
   underlying : go.UnderlyingDirectedEq siginfo.ty siginfo.underlying
   isUnderlying : go.IsUnderlying siginfo.underlying siginfo.underlying
+  method_set : go.MethodSetIs siginfo.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType siginfo.ty) []
 
 attribute [instance] siginfo.TypeAssumptions.type_repr
   siginfo.TypeAssumptions.underlying
   siginfo.TypeAssumptions.isUnderlying
+  siginfo.TypeAssumptions.method_set
+  siginfo.TypeAssumptions.ptr_method_set
 
 structure itimerspec [FfiSyntax] where
   mk ::
@@ -11680,6 +11780,8 @@ class itimerspec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_it_interval : ∀ (x : itimerspec) (y : timespec), go.IsGoStepPureDetTagged under (StructFieldSet itimerspec.underlying go!"it_interval") (PairV #x #y) (Val #(({ x with it_interval' := y } : itimerspec)))
   get_it_value : ∀ (x : itimerspec), go.IsGoStepPureDetTagged under (StructFieldGet itimerspec.underlying go!"it_value") #x (Val #(x.it_value'))
   set_it_value : ∀ (x : itimerspec) (y : timespec), go.IsGoStepPureDetTagged under (StructFieldSet itimerspec.underlying go!"it_value") (PairV #x #y) (Val #(({ x with it_value' := y } : itimerspec)))
+  method_set : go.MethodSetIs itimerspec.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType itimerspec.ty) []
 
 attribute [instance] itimerspec.TypeAssumptions.type_repr
   itimerspec.TypeAssumptions.underlying
@@ -11688,6 +11790,8 @@ attribute [instance] itimerspec.TypeAssumptions.type_repr
   itimerspec.TypeAssumptions.set_it_interval
   itimerspec.TypeAssumptions.get_it_value
   itimerspec.TypeAssumptions.set_it_value
+  itimerspec.TypeAssumptions.method_set
+  itimerspec.TypeAssumptions.ptr_method_set
 
 structure itimerval [FfiSyntax] where
   mk ::
@@ -11719,6 +11823,8 @@ class itimerval.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_it_interval : ∀ (x : itimerval) (y : timeval), go.IsGoStepPureDetTagged under (StructFieldSet itimerval.underlying go!"it_interval") (PairV #x #y) (Val #(({ x with it_interval' := y } : itimerval)))
   get_it_value : ∀ (x : itimerval), go.IsGoStepPureDetTagged under (StructFieldGet itimerval.underlying go!"it_value") #x (Val #(x.it_value'))
   set_it_value : ∀ (x : itimerval) (y : timeval), go.IsGoStepPureDetTagged under (StructFieldSet itimerval.underlying go!"it_value") (PairV #x #y) (Val #(({ x with it_value' := y } : itimerval)))
+  method_set : go.MethodSetIs itimerval.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType itimerval.ty) []
 
 attribute [instance] itimerval.TypeAssumptions.type_repr
   itimerval.TypeAssumptions.underlying
@@ -11727,6 +11833,8 @@ attribute [instance] itimerval.TypeAssumptions.type_repr
   itimerval.TypeAssumptions.set_it_interval
   itimerval.TypeAssumptions.get_it_value
   itimerval.TypeAssumptions.set_it_value
+  itimerval.TypeAssumptions.method_set
+  itimerval.TypeAssumptions.ptr_method_set
 
 structure sigeventFields [FfiSyntax] where
   mk ::
@@ -11766,6 +11874,8 @@ class sigeventFields.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_notify : ∀ (x : sigeventFields) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet sigeventFields.underlying go!"notify") (PairV #x #y) (Val #(({ x with notify' := y } : sigeventFields)))
   get_sigev_notify_thread_id : ∀ (x : sigeventFields), go.IsGoStepPureDetTagged under (StructFieldGet sigeventFields.underlying go!"sigev_notify_thread_id") #x (Val #(x.sigev_notify_thread_id'))
   set_sigev_notify_thread_id : ∀ (x : sigeventFields) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet sigeventFields.underlying go!"sigev_notify_thread_id") (PairV #x #y) (Val #(({ x with sigev_notify_thread_id' := y } : sigeventFields)))
+  method_set : go.MethodSetIs sigeventFields.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sigeventFields.ty) []
 
 attribute [instance] sigeventFields.TypeAssumptions.type_repr
   sigeventFields.TypeAssumptions.underlying
@@ -11778,6 +11888,8 @@ attribute [instance] sigeventFields.TypeAssumptions.type_repr
   sigeventFields.TypeAssumptions.set_notify
   sigeventFields.TypeAssumptions.get_sigev_notify_thread_id
   sigeventFields.TypeAssumptions.set_sigev_notify_thread_id
+  sigeventFields.TypeAssumptions.method_set
+  sigeventFields.TypeAssumptions.ptr_method_set
 
 axiom sigevent : Type
 axiom sigevent.zero_val : ZeroVal sigevent
@@ -11787,10 +11899,14 @@ class sigevent.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying sigevent.underlying sigevent
   underlying : go.UnderlyingDirectedEq sigevent.ty sigevent.underlying
   isUnderlying : go.IsUnderlying sigevent.underlying sigevent.underlying
+  method_set : go.MethodSetIs sigevent.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sigevent.ty) []
 
 attribute [instance] sigevent.TypeAssumptions.type_repr
   sigevent.TypeAssumptions.underlying
   sigevent.TypeAssumptions.isUnderlying
+  sigevent.TypeAssumptions.method_set
+  sigevent.TypeAssumptions.ptr_method_set
 
 structure usigset [FfiSyntax] where
   mk ::
@@ -11818,12 +11934,16 @@ class usigset.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   layout : go.StructLayout usigset [(go!"__val", typeSize (GoArray w64 16), typeAlign (GoArray w64 16))]
   get___val : ∀ (x : usigset), go.IsGoStepPureDetTagged under (StructFieldGet usigset.underlying go!"__val") #x (Val #(x.__val'))
   set___val : ∀ (x : usigset) (y : (GoArray w64 16)), go.IsGoStepPureDetTagged under (StructFieldSet usigset.underlying go!"__val") (PairV #x #y) (Val #(({ x with __val' := y } : usigset)))
+  method_set : go.MethodSetIs usigset.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType usigset.ty) []
 
 attribute [instance] usigset.TypeAssumptions.type_repr
   usigset.TypeAssumptions.underlying
   usigset.TypeAssumptions.layout
   usigset.TypeAssumptions.get___val
   usigset.TypeAssumptions.set___val
+  usigset.TypeAssumptions.method_set
+  usigset.TypeAssumptions.ptr_method_set
 
 structure fpxreg [FfiSyntax] where
   mk ::
@@ -11859,6 +11979,8 @@ class fpxreg.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_exponent : ∀ (x : fpxreg) (y : w16), go.IsGoStepPureDetTagged under (StructFieldSet fpxreg.underlying go!"exponent") (PairV #x #y) (Val #(({ x with exponent' := y } : fpxreg)))
   get_padding : ∀ (x : fpxreg), go.IsGoStepPureDetTagged under (StructFieldGet fpxreg.underlying go!"padding") #x (Val #(x.padding'))
   set_padding : ∀ (x : fpxreg) (y : (GoArray w16 3)), go.IsGoStepPureDetTagged under (StructFieldSet fpxreg.underlying go!"padding") (PairV #x #y) (Val #(({ x with padding' := y } : fpxreg)))
+  method_set : go.MethodSetIs fpxreg.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType fpxreg.ty) []
 
 attribute [instance] fpxreg.TypeAssumptions.type_repr
   fpxreg.TypeAssumptions.underlying
@@ -11869,6 +11991,8 @@ attribute [instance] fpxreg.TypeAssumptions.type_repr
   fpxreg.TypeAssumptions.set_exponent
   fpxreg.TypeAssumptions.get_padding
   fpxreg.TypeAssumptions.set_padding
+  fpxreg.TypeAssumptions.method_set
+  fpxreg.TypeAssumptions.ptr_method_set
 
 structure xmmreg [FfiSyntax] where
   mk ::
@@ -11896,12 +12020,16 @@ class xmmreg.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   layout : go.StructLayout xmmreg [(go!"element", typeSize (GoArray w32 4), typeAlign (GoArray w32 4))]
   get_element : ∀ (x : xmmreg), go.IsGoStepPureDetTagged under (StructFieldGet xmmreg.underlying go!"element") #x (Val #(x.element'))
   set_element : ∀ (x : xmmreg) (y : (GoArray w32 4)), go.IsGoStepPureDetTagged under (StructFieldSet xmmreg.underlying go!"element") (PairV #x #y) (Val #(({ x with element' := y } : xmmreg)))
+  method_set : go.MethodSetIs xmmreg.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType xmmreg.ty) []
 
 attribute [instance] xmmreg.TypeAssumptions.type_repr
   xmmreg.TypeAssumptions.underlying
   xmmreg.TypeAssumptions.layout
   xmmreg.TypeAssumptions.get_element
   xmmreg.TypeAssumptions.set_element
+  xmmreg.TypeAssumptions.method_set
+  xmmreg.TypeAssumptions.ptr_method_set
 
 structure fpstate [FfiSyntax] where
   mk ::
@@ -11969,6 +12097,8 @@ class fpstate.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set__xmm : ∀ (x : fpstate) (y : (GoArray xmmreg 16)), go.IsGoStepPureDetTagged under (StructFieldSet fpstate.underlying go!"_xmm") (PairV #x #y) (Val #(({ x with _xmm' := y } : fpstate)))
   get_padding : ∀ (x : fpstate), go.IsGoStepPureDetTagged under (StructFieldGet fpstate.underlying go!"padding") #x (Val #(x.padding'))
   set_padding : ∀ (x : fpstate) (y : (GoArray w32 24)), go.IsGoStepPureDetTagged under (StructFieldSet fpstate.underlying go!"padding") (PairV #x #y) (Val #(({ x with padding' := y } : fpstate)))
+  method_set : go.MethodSetIs fpstate.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType fpstate.ty) []
 
 attribute [instance] fpstate.TypeAssumptions.type_repr
   fpstate.TypeAssumptions.underlying
@@ -11995,6 +12125,8 @@ attribute [instance] fpstate.TypeAssumptions.type_repr
   fpstate.TypeAssumptions.set__xmm
   fpstate.TypeAssumptions.get_padding
   fpstate.TypeAssumptions.set_padding
+  fpstate.TypeAssumptions.method_set
+  fpstate.TypeAssumptions.ptr_method_set
 
 structure fpxreg1 [FfiSyntax] where
   mk ::
@@ -12030,6 +12162,8 @@ class fpxreg1.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_exponent : ∀ (x : fpxreg1) (y : w16), go.IsGoStepPureDetTagged under (StructFieldSet fpxreg1.underlying go!"exponent") (PairV #x #y) (Val #(({ x with exponent' := y } : fpxreg1)))
   get_padding : ∀ (x : fpxreg1), go.IsGoStepPureDetTagged under (StructFieldGet fpxreg1.underlying go!"padding") #x (Val #(x.padding'))
   set_padding : ∀ (x : fpxreg1) (y : (GoArray w16 3)), go.IsGoStepPureDetTagged under (StructFieldSet fpxreg1.underlying go!"padding") (PairV #x #y) (Val #(({ x with padding' := y } : fpxreg1)))
+  method_set : go.MethodSetIs fpxreg1.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType fpxreg1.ty) []
 
 attribute [instance] fpxreg1.TypeAssumptions.type_repr
   fpxreg1.TypeAssumptions.underlying
@@ -12040,6 +12174,8 @@ attribute [instance] fpxreg1.TypeAssumptions.type_repr
   fpxreg1.TypeAssumptions.set_exponent
   fpxreg1.TypeAssumptions.get_padding
   fpxreg1.TypeAssumptions.set_padding
+  fpxreg1.TypeAssumptions.method_set
+  fpxreg1.TypeAssumptions.ptr_method_set
 
 structure xmmreg1 [FfiSyntax] where
   mk ::
@@ -12067,12 +12203,16 @@ class xmmreg1.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   layout : go.StructLayout xmmreg1 [(go!"element", typeSize (GoArray w32 4), typeAlign (GoArray w32 4))]
   get_element : ∀ (x : xmmreg1), go.IsGoStepPureDetTagged under (StructFieldGet xmmreg1.underlying go!"element") #x (Val #(x.element'))
   set_element : ∀ (x : xmmreg1) (y : (GoArray w32 4)), go.IsGoStepPureDetTagged under (StructFieldSet xmmreg1.underlying go!"element") (PairV #x #y) (Val #(({ x with element' := y } : xmmreg1)))
+  method_set : go.MethodSetIs xmmreg1.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType xmmreg1.ty) []
 
 attribute [instance] xmmreg1.TypeAssumptions.type_repr
   xmmreg1.TypeAssumptions.underlying
   xmmreg1.TypeAssumptions.layout
   xmmreg1.TypeAssumptions.get_element
   xmmreg1.TypeAssumptions.set_element
+  xmmreg1.TypeAssumptions.method_set
+  xmmreg1.TypeAssumptions.ptr_method_set
 
 structure fpstate1 [FfiSyntax] where
   mk ::
@@ -12140,6 +12280,8 @@ class fpstate1.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set__xmm : ∀ (x : fpstate1) (y : (GoArray xmmreg1 16)), go.IsGoStepPureDetTagged under (StructFieldSet fpstate1.underlying go!"_xmm") (PairV #x #y) (Val #(({ x with _xmm' := y } : fpstate1)))
   get_padding : ∀ (x : fpstate1), go.IsGoStepPureDetTagged under (StructFieldGet fpstate1.underlying go!"padding") #x (Val #(x.padding'))
   set_padding : ∀ (x : fpstate1) (y : (GoArray w32 24)), go.IsGoStepPureDetTagged under (StructFieldSet fpstate1.underlying go!"padding") (PairV #x #y) (Val #(({ x with padding' := y } : fpstate1)))
+  method_set : go.MethodSetIs fpstate1.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType fpstate1.ty) []
 
 attribute [instance] fpstate1.TypeAssumptions.type_repr
   fpstate1.TypeAssumptions.underlying
@@ -12166,6 +12308,8 @@ attribute [instance] fpstate1.TypeAssumptions.type_repr
   fpstate1.TypeAssumptions.set__xmm
   fpstate1.TypeAssumptions.get_padding
   fpstate1.TypeAssumptions.set_padding
+  fpstate1.TypeAssumptions.method_set
+  fpstate1.TypeAssumptions.ptr_method_set
 
 structure fpreg1 [FfiSyntax] where
   mk ::
@@ -12197,6 +12341,8 @@ class fpreg1.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_significand : ∀ (x : fpreg1) (y : (GoArray w16 4)), go.IsGoStepPureDetTagged under (StructFieldSet fpreg1.underlying go!"significand") (PairV #x #y) (Val #(({ x with significand' := y } : fpreg1)))
   get_exponent : ∀ (x : fpreg1), go.IsGoStepPureDetTagged under (StructFieldGet fpreg1.underlying go!"exponent") #x (Val #(x.exponent'))
   set_exponent : ∀ (x : fpreg1) (y : w16), go.IsGoStepPureDetTagged under (StructFieldSet fpreg1.underlying go!"exponent") (PairV #x #y) (Val #(({ x with exponent' := y } : fpreg1)))
+  method_set : go.MethodSetIs fpreg1.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType fpreg1.ty) []
 
 attribute [instance] fpreg1.TypeAssumptions.type_repr
   fpreg1.TypeAssumptions.underlying
@@ -12205,6 +12351,8 @@ attribute [instance] fpreg1.TypeAssumptions.type_repr
   fpreg1.TypeAssumptions.set_significand
   fpreg1.TypeAssumptions.get_exponent
   fpreg1.TypeAssumptions.set_exponent
+  fpreg1.TypeAssumptions.method_set
+  fpreg1.TypeAssumptions.ptr_method_set
 
 structure stackt [FfiSyntax] where
   mk ::
@@ -12244,6 +12392,8 @@ class stackt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_pad_cgo_0 : ∀ (x : stackt) (y : (GoArray w8 4)), go.IsGoStepPureDetTagged under (StructFieldSet stackt.underlying go!"pad_cgo_0") (PairV #x #y) (Val #(({ x with pad_cgo_0' := y } : stackt)))
   get_ss_size : ∀ (x : stackt), go.IsGoStepPureDetTagged under (StructFieldGet stackt.underlying go!"ss_size") #x (Val #(x.ss_size'))
   set_ss_size : ∀ (x : stackt) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet stackt.underlying go!"ss_size") (PairV #x #y) (Val #(({ x with ss_size' := y } : stackt)))
+  method_set : go.MethodSetIs stackt.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stackt.ty) []
 
 attribute [instance] stackt.TypeAssumptions.type_repr
   stackt.TypeAssumptions.underlying
@@ -12256,6 +12406,8 @@ attribute [instance] stackt.TypeAssumptions.type_repr
   stackt.TypeAssumptions.set_pad_cgo_0
   stackt.TypeAssumptions.get_ss_size
   stackt.TypeAssumptions.set_ss_size
+  stackt.TypeAssumptions.method_set
+  stackt.TypeAssumptions.ptr_method_set
 
 structure mcontext [FfiSyntax] where
   mk ::
@@ -12291,6 +12443,8 @@ class mcontext.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_fpregs : ∀ (x : mcontext) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet mcontext.underlying go!"fpregs") (PairV #x #y) (Val #(({ x with fpregs' := y } : mcontext)))
   get___reserved1 : ∀ (x : mcontext), go.IsGoStepPureDetTagged under (StructFieldGet mcontext.underlying go!"__reserved1") #x (Val #(x.__reserved1'))
   set___reserved1 : ∀ (x : mcontext) (y : (GoArray w64 8)), go.IsGoStepPureDetTagged under (StructFieldSet mcontext.underlying go!"__reserved1") (PairV #x #y) (Val #(({ x with __reserved1' := y } : mcontext)))
+  method_set : go.MethodSetIs mcontext.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mcontext.ty) []
 
 attribute [instance] mcontext.TypeAssumptions.type_repr
   mcontext.TypeAssumptions.underlying
@@ -12301,6 +12455,8 @@ attribute [instance] mcontext.TypeAssumptions.type_repr
   mcontext.TypeAssumptions.set_fpregs
   mcontext.TypeAssumptions.get___reserved1
   mcontext.TypeAssumptions.set___reserved1
+  mcontext.TypeAssumptions.method_set
+  mcontext.TypeAssumptions.ptr_method_set
 
 structure ucontext [FfiSyntax] where
   mk ::
@@ -12348,6 +12504,8 @@ class ucontext.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_uc_sigmask : ∀ (x : ucontext) (y : usigset), go.IsGoStepPureDetTagged under (StructFieldSet ucontext.underlying go!"uc_sigmask") (PairV #x #y) (Val #(({ x with uc_sigmask' := y } : ucontext)))
   get___fpregs_mem : ∀ (x : ucontext), go.IsGoStepPureDetTagged under (StructFieldGet ucontext.underlying go!"__fpregs_mem") #x (Val #(x.__fpregs_mem'))
   set___fpregs_mem : ∀ (x : ucontext) (y : fpstate), go.IsGoStepPureDetTagged under (StructFieldSet ucontext.underlying go!"__fpregs_mem") (PairV #x #y) (Val #(({ x with __fpregs_mem' := y } : ucontext)))
+  method_set : go.MethodSetIs ucontext.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType ucontext.ty) []
 
 attribute [instance] ucontext.TypeAssumptions.type_repr
   ucontext.TypeAssumptions.underlying
@@ -12364,6 +12522,8 @@ attribute [instance] ucontext.TypeAssumptions.type_repr
   ucontext.TypeAssumptions.set_uc_sigmask
   ucontext.TypeAssumptions.get___fpregs_mem
   ucontext.TypeAssumptions.set___fpregs_mem
+  ucontext.TypeAssumptions.method_set
+  ucontext.TypeAssumptions.ptr_method_set
 
 structure sigcontext [FfiSyntax] where
   mk ::
@@ -12499,6 +12659,8 @@ class sigcontext.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_fpstate : ∀ (x : sigcontext) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet sigcontext.underlying go!"fpstate") (PairV #x #y) (Val #(({ x with fpstate' := y } : sigcontext)))
   get___reserved1 : ∀ (x : sigcontext), go.IsGoStepPureDetTagged under (StructFieldGet sigcontext.underlying go!"__reserved1") #x (Val #(x.__reserved1'))
   set___reserved1 : ∀ (x : sigcontext) (y : (GoArray w64 8)), go.IsGoStepPureDetTagged under (StructFieldSet sigcontext.underlying go!"__reserved1") (PairV #x #y) (Val #(({ x with __reserved1' := y } : sigcontext)))
+  method_set : go.MethodSetIs sigcontext.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sigcontext.ty) []
 
 attribute [instance] sigcontext.TypeAssumptions.type_repr
   sigcontext.TypeAssumptions.underlying
@@ -12559,6 +12721,8 @@ attribute [instance] sigcontext.TypeAssumptions.type_repr
   sigcontext.TypeAssumptions.set_fpstate
   sigcontext.TypeAssumptions.get___reserved1
   sigcontext.TypeAssumptions.set___reserved1
+  sigcontext.TypeAssumptions.method_set
+  sigcontext.TypeAssumptions.ptr_method_set
 
 structure sockaddr_un [FfiSyntax] where
   mk ::
@@ -12590,6 +12754,8 @@ class sockaddr_un.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set_family : ∀ (x : sockaddr_un) (y : w16), go.IsGoStepPureDetTagged under (StructFieldSet sockaddr_un.underlying go!"family") (PairV #x #y) (Val #(({ x with family' := y } : sockaddr_un)))
   get_path : ∀ (x : sockaddr_un), go.IsGoStepPureDetTagged under (StructFieldGet sockaddr_un.underlying go!"path") #x (Val #(x.path'))
   set_path : ∀ (x : sockaddr_un) (y : (GoArray w8 108)), go.IsGoStepPureDetTagged under (StructFieldSet sockaddr_un.underlying go!"path") (PairV #x #y) (Val #(({ x with path' := y } : sockaddr_un)))
+  method_set : go.MethodSetIs sockaddr_un.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sockaddr_un.ty) []
 
 attribute [instance] sockaddr_un.TypeAssumptions.type_repr
   sockaddr_un.TypeAssumptions.underlying
@@ -12598,16 +12764,22 @@ attribute [instance] sockaddr_un.TypeAssumptions.type_repr
   sockaddr_un.TypeAssumptions.set_family
   sockaddr_un.TypeAssumptions.get_path
   sockaddr_un.TypeAssumptions.set_path
+  sockaddr_un.TypeAssumptions.method_set
+  sockaddr_un.TypeAssumptions.ptr_method_set
 
 abbrev Error [FfiSyntax] : Type := GoInterface
 
 @[reducible] def Error.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"RuntimeError" (go.signature.Signature [] false [])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm go.error)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Error" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"RuntimeError" (go.signature.Signature [] false []))])
 
 class Error.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Error.ty Error.underlying
+  method_set : go.MethodSetIs Error.ty [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"RuntimeError", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Error.ty) []
 
 attribute [instance] Error.TypeAssumptions.underlying
+  Error.TypeAssumptions.method_set
+  Error.TypeAssumptions.ptr_method_set
 
 axiom TypeAssertionError : Type
 axiom TypeAssertionError.zero_val : ZeroVal TypeAssertionError
@@ -12617,10 +12789,14 @@ class TypeAssertionError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   type_repr : go.TypeReprUnderlying TypeAssertionError.underlying TypeAssertionError
   underlying : go.UnderlyingDirectedEq TypeAssertionError.ty TypeAssertionError.underlying
   isUnderlying : go.IsUnderlying TypeAssertionError.underlying TypeAssertionError.underlying
+  method_set : go.MethodSetIs TypeAssertionError.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType TypeAssertionError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"RuntimeError", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] TypeAssertionError.TypeAssumptions.type_repr
   TypeAssertionError.TypeAssumptions.underlying
   TypeAssertionError.TypeAssumptions.isUnderlying
+  TypeAssertionError.TypeAssumptions.method_set
+  TypeAssertionError.TypeAssumptions.ptr_method_set
 
 abbrev errorString [FfiSyntax] : Type := GoString
 
@@ -12629,8 +12805,12 @@ abbrev errorString [FfiSyntax] : Type := GoString
 
 class errorString.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq errorString.ty errorString.underlying
+  method_set : go.MethodSetIs errorString.ty [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"RuntimeError", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType errorString.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"RuntimeError", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] errorString.TypeAssumptions.underlying
+  errorString.TypeAssumptions.method_set
+  errorString.TypeAssumptions.ptr_method_set
 
 structure errorAddressString [FfiSyntax] where
   mk ::
@@ -12662,6 +12842,8 @@ class errorAddressString.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   set_msg : ∀ (x : errorAddressString) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet errorAddressString.underlying go!"msg") (PairV #x #y) (Val #(({ x with msg' := y } : errorAddressString)))
   get_addr : ∀ (x : errorAddressString), go.IsGoStepPureDetTagged under (StructFieldGet errorAddressString.underlying go!"addr") #x (Val #(x.addr'))
   set_addr : ∀ (x : errorAddressString) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet errorAddressString.underlying go!"addr") (PairV #x #y) (Val #(({ x with addr' := y } : errorAddressString)))
+  method_set : go.MethodSetIs errorAddressString.ty [(go!"Addr", (some (go.signature.Signature [] false [go.uintptr]))), (go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"RuntimeError", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType errorAddressString.ty) [(go!"Addr", (some (go.signature.Signature [] false [go.uintptr]))), (go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"RuntimeError", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] errorAddressString.TypeAssumptions.type_repr
   errorAddressString.TypeAssumptions.underlying
@@ -12670,6 +12852,8 @@ attribute [instance] errorAddressString.TypeAssumptions.type_repr
   errorAddressString.TypeAssumptions.set_msg
   errorAddressString.TypeAssumptions.get_addr
   errorAddressString.TypeAssumptions.set_addr
+  errorAddressString.TypeAssumptions.method_set
+  errorAddressString.TypeAssumptions.ptr_method_set
 
 abbrev plainError [FfiSyntax] : Type := GoString
 
@@ -12678,8 +12862,12 @@ abbrev plainError [FfiSyntax] : Type := GoString
 
 class plainError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq plainError.ty plainError.underlying
+  method_set : go.MethodSetIs plainError.ty [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"RuntimeError", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType plainError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"RuntimeError", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] plainError.TypeAssumptions.underlying
+  plainError.TypeAssumptions.method_set
+  plainError.TypeAssumptions.ptr_method_set
 
 axiom boundsError : Type
 axiom boundsError.zero_val : ZeroVal boundsError
@@ -12689,10 +12877,14 @@ class boundsError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   type_repr : go.TypeReprUnderlying boundsError.underlying boundsError
   underlying : go.UnderlyingDirectedEq boundsError.ty boundsError.underlying
   isUnderlying : go.IsUnderlying boundsError.underlying boundsError.underlying
+  method_set : go.MethodSetIs boundsError.ty [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"RuntimeError", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType boundsError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"RuntimeError", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] boundsError.TypeAssumptions.type_repr
   boundsError.TypeAssumptions.underlying
   boundsError.TypeAssumptions.isUnderlying
+  boundsError.TypeAssumptions.method_set
+  boundsError.TypeAssumptions.ptr_method_set
 
 abbrev stringer [FfiSyntax] : Type := GoInterface
 
@@ -12701,8 +12893,12 @@ abbrev stringer [FfiSyntax] : Type := GoInterface
 
 class stringer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq stringer.ty stringer.underlying
+  method_set : go.MethodSetIs stringer.ty [(go!"String", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stringer.ty) []
 
 attribute [instance] stringer.TypeAssumptions.underlying
+  stringer.TypeAssumptions.method_set
+  stringer.TypeAssumptions.ptr_method_set
 
 axiom typeCacheBucket : Type
 axiom typeCacheBucket.zero_val : ZeroVal typeCacheBucket
@@ -12712,10 +12908,14 @@ class typeCacheBucket.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
   type_repr : go.TypeReprUnderlying typeCacheBucket.underlying typeCacheBucket
   underlying : go.UnderlyingDirectedEq typeCacheBucket.ty typeCacheBucket.underlying
   isUnderlying : go.IsUnderlying typeCacheBucket.underlying typeCacheBucket.underlying
+  method_set : go.MethodSetIs typeCacheBucket.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType typeCacheBucket.ty) []
 
 attribute [instance] typeCacheBucket.TypeAssumptions.type_repr
   typeCacheBucket.TypeAssumptions.underlying
   typeCacheBucket.TypeAssumptions.isUnderlying
+  typeCacheBucket.TypeAssumptions.method_set
+  typeCacheBucket.TypeAssumptions.ptr_method_set
 
 structure bitvector [FfiSyntax] where
   mk ::
@@ -12747,6 +12947,8 @@ class bitvector.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_n : ∀ (x : bitvector) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet bitvector.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : bitvector)))
   get_bytedata : ∀ (x : bitvector), go.IsGoStepPureDetTagged under (StructFieldGet bitvector.underlying go!"bytedata") #x (Val #(x.bytedata'))
   set_bytedata : ∀ (x : bitvector) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet bitvector.underlying go!"bytedata") (PairV #x #y) (Val #(({ x with bytedata' := y } : bitvector)))
+  method_set : go.MethodSetIs bitvector.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType bitvector.ty) [(go!"runtime.ptrbit", (some (go.signature.Signature [go.uintptr] false [go.uint8])))]
 
 attribute [instance] bitvector.TypeAssumptions.type_repr
   bitvector.TypeAssumptions.underlying
@@ -12755,6 +12957,8 @@ attribute [instance] bitvector.TypeAssumptions.type_repr
   bitvector.TypeAssumptions.set_n
   bitvector.TypeAssumptions.get_bytedata
   bitvector.TypeAssumptions.set_bytedata
+  bitvector.TypeAssumptions.method_set
+  bitvector.TypeAssumptions.ptr_method_set
 
 structure childInfo [FfiSyntax] where
   mk ::
@@ -12798,6 +13002,8 @@ class childInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_sp : ∀ (x : childInfo) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet childInfo.underlying go!"sp") (PairV #x #y) (Val #(({ x with sp' := y } : childInfo)))
   get_depth : ∀ (x : childInfo), go.IsGoStepPureDetTagged under (StructFieldGet childInfo.underlying go!"depth") #x (Val #(x.depth'))
   set_depth : ∀ (x : childInfo) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet childInfo.underlying go!"depth") (PairV #x #y) (Val #(({ x with depth' := y } : childInfo)))
+  method_set : go.MethodSetIs childInfo.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType childInfo.ty) []
 
 attribute [instance] childInfo.TypeAssumptions.type_repr
   childInfo.TypeAssumptions.underlying
@@ -12812,6 +13018,8 @@ attribute [instance] childInfo.TypeAssumptions.type_repr
   childInfo.TypeAssumptions.set_sp
   childInfo.TypeAssumptions.get_depth
   childInfo.TypeAssumptions.set_depth
+  childInfo.TypeAssumptions.method_set
+  childInfo.TypeAssumptions.ptr_method_set
 
 structure hexdumper [FfiSyntax] where
   mk ::
@@ -12871,6 +13079,8 @@ class hexdumper.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_dataSkip : ∀ (x : hexdumper) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet hexdumper.underlying go!"dataSkip") (PairV #x #y) (Val #(({ x with dataSkip' := y } : hexdumper)))
   get_toPos : ∀ (x : hexdumper), go.IsGoStepPureDetTagged under (StructFieldGet hexdumper.underlying go!"toPos") #x (Val #(x.toPos'))
   set_toPos : ∀ (x : hexdumper) (y : (GoArray w8 16)), go.IsGoStepPureDetTagged under (StructFieldSet hexdumper.underlying go!"toPos") (PairV #x #y) (Val #(({ x with toPos' := y } : hexdumper)))
+  method_set : go.MethodSetIs hexdumper.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType hexdumper.ty) [(go!"runtime.close", (some (go.signature.Signature [] false []))), (go!"runtime.flushLine", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false []))), (go!"runtime.fmtHex", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false []))), (go!"runtime.init", (some (go.signature.Signature [] false []))), (go!"runtime.write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [])))]
 
 attribute [instance] hexdumper.TypeAssumptions.type_repr
   hexdumper.TypeAssumptions.underlying
@@ -12893,6 +13103,8 @@ attribute [instance] hexdumper.TypeAssumptions.type_repr
   hexdumper.TypeAssumptions.set_dataSkip
   hexdumper.TypeAssumptions.get_toPos
   hexdumper.TypeAssumptions.set_toPos
+  hexdumper.TypeAssumptions.method_set
+  hexdumper.TypeAssumptions.ptr_method_set
 
 structure hexdumpMarker [FfiSyntax] where
   mk ::
@@ -12920,12 +13132,16 @@ class hexdumpMarker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   layout : go.StructLayout hexdumpMarker [(go!"chars", typeSize w64, typeAlign w64)]
   get_chars : ∀ (x : hexdumpMarker), go.IsGoStepPureDetTagged under (StructFieldGet hexdumpMarker.underlying go!"chars") #x (Val #(x.chars'))
   set_chars : ∀ (x : hexdumpMarker) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet hexdumpMarker.underlying go!"chars") (PairV #x #y) (Val #(({ x with chars' := y } : hexdumpMarker)))
+  method_set : go.MethodSetIs hexdumpMarker.ty [(go!"runtime.start", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType hexdumpMarker.ty) [(go!"runtime.start", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] hexdumpMarker.TypeAssumptions.type_repr
   hexdumpMarker.TypeAssumptions.underlying
   hexdumpMarker.TypeAssumptions.layout
   hexdumpMarker.TypeAssumptions.get_chars
   hexdumpMarker.TypeAssumptions.set_chars
+  hexdumpMarker.TypeAssumptions.method_set
+  hexdumpMarker.TypeAssumptions.ptr_method_set
 
 structure timeHistogram [FfiSyntax] where
   mk ::
@@ -12961,6 +13177,8 @@ class timeHistogram.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_underflow : ∀ (x : timeHistogram) (y : _root_.Perennial.internal.runtime.atomic.Uint64), go.IsGoStepPureDetTagged under (StructFieldSet timeHistogram.underlying go!"underflow") (PairV #x #y) (Val #(({ x with underflow' := y } : timeHistogram)))
   get_overflow : ∀ (x : timeHistogram), go.IsGoStepPureDetTagged under (StructFieldGet timeHistogram.underlying go!"overflow") #x (Val #(x.overflow'))
   set_overflow : ∀ (x : timeHistogram) (y : _root_.Perennial.internal.runtime.atomic.Uint64), go.IsGoStepPureDetTagged under (StructFieldSet timeHistogram.underlying go!"overflow") (PairV #x #y) (Val #(({ x with overflow' := y } : timeHistogram)))
+  method_set : go.MethodSetIs timeHistogram.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType timeHistogram.ty) [(go!"runtime.record", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.write", (some (go.signature.Signature [(go.GoType.PointerType metricValue.ty)] false [])))]
 
 attribute [instance] timeHistogram.TypeAssumptions.type_repr
   timeHistogram.TypeAssumptions.underlying
@@ -12971,6 +13189,8 @@ attribute [instance] timeHistogram.TypeAssumptions.type_repr
   timeHistogram.TypeAssumptions.set_underflow
   timeHistogram.TypeAssumptions.get_overflow
   timeHistogram.TypeAssumptions.set_overflow
+  timeHistogram.TypeAssumptions.method_set
+  timeHistogram.TypeAssumptions.ptr_method_set
 
 axiom itabTableType : Type
 axiom itabTableType.zero_val : ZeroVal itabTableType
@@ -12980,10 +13200,14 @@ class itabTableType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   type_repr : go.TypeReprUnderlying itabTableType.underlying itabTableType
   underlying : go.UnderlyingDirectedEq itabTableType.ty itabTableType.underlying
   isUnderlying : go.IsUnderlying itabTableType.underlying itabTableType.underlying
+  method_set : go.MethodSetIs itabTableType.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType itabTableType.ty) [(go!"runtime.add", (some (go.signature.Signature [(go.GoType.PointerType itab.ty)] false []))), (go!"runtime.find", (some (go.signature.Signature [(go.GoType.PointerType interfacetype.ty), (go.GoType.PointerType _type.ty)] false [(go.GoType.PointerType itab.ty)])))]
 
 attribute [instance] itabTableType.TypeAssumptions.type_repr
   itabTableType.TypeAssumptions.underlying
   itabTableType.TypeAssumptions.isUnderlying
+  itabTableType.TypeAssumptions.method_set
+  itabTableType.TypeAssumptions.ptr_method_set
 
 abbrev uint16InterfacePtr [FfiSyntax] : Type := w16
 
@@ -12992,8 +13216,12 @@ abbrev uint16InterfacePtr [FfiSyntax] : Type := w16
 
 class uint16InterfacePtr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq uint16InterfacePtr.ty uint16InterfacePtr.underlying
+  method_set : go.MethodSetIs uint16InterfacePtr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType uint16InterfacePtr.ty) []
 
 attribute [instance] uint16InterfacePtr.TypeAssumptions.underlying
+  uint16InterfacePtr.TypeAssumptions.method_set
+  uint16InterfacePtr.TypeAssumptions.ptr_method_set
 
 abbrev uint32InterfacePtr [FfiSyntax] : Type := w32
 
@@ -13002,8 +13230,12 @@ abbrev uint32InterfacePtr [FfiSyntax] : Type := w32
 
 class uint32InterfacePtr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq uint32InterfacePtr.ty uint32InterfacePtr.underlying
+  method_set : go.MethodSetIs uint32InterfacePtr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType uint32InterfacePtr.ty) []
 
 attribute [instance] uint32InterfacePtr.TypeAssumptions.underlying
+  uint32InterfacePtr.TypeAssumptions.method_set
+  uint32InterfacePtr.TypeAssumptions.ptr_method_set
 
 abbrev uint64InterfacePtr [FfiSyntax] : Type := w64
 
@@ -13012,8 +13244,12 @@ abbrev uint64InterfacePtr [FfiSyntax] : Type := w64
 
 class uint64InterfacePtr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq uint64InterfacePtr.ty uint64InterfacePtr.underlying
+  method_set : go.MethodSetIs uint64InterfacePtr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType uint64InterfacePtr.ty) []
 
 attribute [instance] uint64InterfacePtr.TypeAssumptions.underlying
+  uint64InterfacePtr.TypeAssumptions.method_set
+  uint64InterfacePtr.TypeAssumptions.ptr_method_set
 
 abbrev stringInterfacePtr [FfiSyntax] : Type := GoString
 
@@ -13022,8 +13258,12 @@ abbrev stringInterfacePtr [FfiSyntax] : Type := GoString
 
 class stringInterfacePtr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq stringInterfacePtr.ty stringInterfacePtr.underlying
+  method_set : go.MethodSetIs stringInterfacePtr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stringInterfacePtr.ty) []
 
 attribute [instance] stringInterfacePtr.TypeAssumptions.underlying
+  stringInterfacePtr.TypeAssumptions.method_set
+  stringInterfacePtr.TypeAssumptions.ptr_method_set
 
 abbrev sliceInterfacePtr [FfiSyntax] : Type := GoSlice
 
@@ -13032,8 +13272,12 @@ abbrev sliceInterfacePtr [FfiSyntax] : Type := GoSlice
 
 class sliceInterfacePtr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq sliceInterfacePtr.ty sliceInterfacePtr.underlying
+  method_set : go.MethodSetIs sliceInterfacePtr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sliceInterfacePtr.ty) []
 
 attribute [instance] sliceInterfacePtr.TypeAssumptions.underlying
+  sliceInterfacePtr.TypeAssumptions.method_set
+  sliceInterfacePtr.TypeAssumptions.ptr_method_set
 
 abbrev lfstack [FfiSyntax] : Type := w64
 
@@ -13042,8 +13286,12 @@ abbrev lfstack [FfiSyntax] : Type := w64
 
 class lfstack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq lfstack.ty lfstack.underlying
+  method_set : go.MethodSetIs lfstack.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType lfstack.ty) [(go!"runtime.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.pop", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"runtime.push", (some (go.signature.Signature [(go.GoType.PointerType lfnode.ty)] false [])))]
 
 attribute [instance] lfstack.TypeAssumptions.underlying
+  lfstack.TypeAssumptions.method_set
+  lfstack.TypeAssumptions.ptr_method_set
 
 axiom linknameIter : Type
 axiom linknameIter.zero_val : ZeroVal linknameIter
@@ -13053,10 +13301,14 @@ class linknameIter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   type_repr : go.TypeReprUnderlying linknameIter.underlying linknameIter
   underlying : go.UnderlyingDirectedEq linknameIter.ty linknameIter.underlying
   isUnderlying : go.IsUnderlying linknameIter.underlying linknameIter.underlying
+  method_set : go.MethodSetIs linknameIter.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType linknameIter.ty) []
 
 attribute [instance] linknameIter.TypeAssumptions.type_repr
   linknameIter.TypeAssumptions.underlying
   linknameIter.TypeAssumptions.isUnderlying
+  linknameIter.TypeAssumptions.method_set
+  linknameIter.TypeAssumptions.ptr_method_set
 
 structure listHead [FfiSyntax] where
   mk ::
@@ -13092,6 +13344,8 @@ class listHead.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_initialized : ∀ (x : listHead) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet listHead.underlying go!"initialized") (PairV #x #y) (Val #(({ x with initialized' := y } : listHead)))
   get_nodeOffset : ∀ (x : listHead), go.IsGoStepPureDetTagged under (StructFieldGet listHead.underlying go!"nodeOffset") #x (Val #(x.nodeOffset'))
   set_nodeOffset : ∀ (x : listHead) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet listHead.underlying go!"nodeOffset") (PairV #x #y) (Val #(({ x with nodeOffset' := y } : listHead)))
+  method_set : go.MethodSetIs listHead.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType listHead.ty) [(go!"runtime.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.getNode", (some (go.signature.Signature [«unsafe».Pointer] false [(go.GoType.PointerType listNode.ty)]))), (go!"runtime.head", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"runtime.init", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.pop", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"runtime.push", (some (go.signature.Signature [«unsafe».Pointer] false []))), (go!"runtime.remove", (some (go.signature.Signature [«unsafe».Pointer] false [])))]
 
 attribute [instance] listHead.TypeAssumptions.type_repr
   listHead.TypeAssumptions.underlying
@@ -13102,6 +13356,8 @@ attribute [instance] listHead.TypeAssumptions.type_repr
   listHead.TypeAssumptions.set_initialized
   listHead.TypeAssumptions.get_nodeOffset
   listHead.TypeAssumptions.set_nodeOffset
+  listHead.TypeAssumptions.method_set
+  listHead.TypeAssumptions.ptr_method_set
 
 structure listNode [FfiSyntax] where
   mk ::
@@ -13133,6 +13389,8 @@ class listNode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_prev : ∀ (x : listNode) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet listNode.underlying go!"prev") (PairV #x #y) (Val #(({ x with prev' := y } : listNode)))
   get_next : ∀ (x : listNode), go.IsGoStepPureDetTagged under (StructFieldGet listNode.underlying go!"next") #x (Val #(x.next'))
   set_next : ∀ (x : listNode) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet listNode.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : listNode)))
+  method_set : go.MethodSetIs listNode.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType listNode.ty) []
 
 attribute [instance] listNode.TypeAssumptions.type_repr
   listNode.TypeAssumptions.underlying
@@ -13141,6 +13399,8 @@ attribute [instance] listNode.TypeAssumptions.type_repr
   listNode.TypeAssumptions.set_prev
   listNode.TypeAssumptions.get_next
   listNode.TypeAssumptions.set_next
+  listNode.TypeAssumptions.method_set
+  listNode.TypeAssumptions.ptr_method_set
 
 structure listHeadManual [FfiSyntax] where
   mk ::
@@ -13176,6 +13436,8 @@ class listHeadManual.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_initialized : ∀ (x : listHeadManual) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet listHeadManual.underlying go!"initialized") (PairV #x #y) (Val #(({ x with initialized' := y } : listHeadManual)))
   get_nodeOffset : ∀ (x : listHeadManual), go.IsGoStepPureDetTagged under (StructFieldGet listHeadManual.underlying go!"nodeOffset") #x (Val #(x.nodeOffset'))
   set_nodeOffset : ∀ (x : listHeadManual) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet listHeadManual.underlying go!"nodeOffset") (PairV #x #y) (Val #(({ x with nodeOffset' := y } : listHeadManual)))
+  method_set : go.MethodSetIs listHeadManual.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType listHeadManual.ty) [(go!"runtime.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.getNode", (some (go.signature.Signature [«unsafe».Pointer] false [(go.GoType.PointerType listNodeManual.ty)]))), (go!"runtime.head", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"runtime.init", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.pop", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"runtime.push", (some (go.signature.Signature [«unsafe».Pointer] false []))), (go!"runtime.remove", (some (go.signature.Signature [«unsafe».Pointer] false [])))]
 
 attribute [instance] listHeadManual.TypeAssumptions.type_repr
   listHeadManual.TypeAssumptions.underlying
@@ -13186,6 +13448,8 @@ attribute [instance] listHeadManual.TypeAssumptions.type_repr
   listHeadManual.TypeAssumptions.set_initialized
   listHeadManual.TypeAssumptions.get_nodeOffset
   listHeadManual.TypeAssumptions.set_nodeOffset
+  listHeadManual.TypeAssumptions.method_set
+  listHeadManual.TypeAssumptions.ptr_method_set
 
 structure listNodeManual [FfiSyntax] where
   mk ::
@@ -13217,6 +13481,8 @@ class listNodeManual.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_prev : ∀ (x : listNodeManual) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet listNodeManual.underlying go!"prev") (PairV #x #y) (Val #(({ x with prev' := y } : listNodeManual)))
   get_next : ∀ (x : listNodeManual), go.IsGoStepPureDetTagged under (StructFieldGet listNodeManual.underlying go!"next") #x (Val #(x.next'))
   set_next : ∀ (x : listNodeManual) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet listNodeManual.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : listNodeManual)))
+  method_set : go.MethodSetIs listNodeManual.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType listNodeManual.ty) []
 
 attribute [instance] listNodeManual.TypeAssumptions.type_repr
   listNodeManual.TypeAssumptions.underlying
@@ -13225,6 +13491,8 @@ attribute [instance] listNodeManual.TypeAssumptions.type_repr
   listNodeManual.TypeAssumptions.set_prev
   listNodeManual.TypeAssumptions.get_next
   listNodeManual.TypeAssumptions.set_next
+  listNodeManual.TypeAssumptions.method_set
+  listNodeManual.TypeAssumptions.ptr_method_set
 
 abbrev muintptr [FfiSyntax] : Type := w64
 
@@ -13233,8 +13501,12 @@ abbrev muintptr [FfiSyntax] : Type := w64
 
 class muintptr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq muintptr.ty muintptr.underlying
+  method_set : go.MethodSetIs muintptr.ty [(go!"runtime.ptr", (some (go.signature.Signature [] false [(go.GoType.PointerType m.ty)])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType muintptr.ty) [(go!"runtime.ptr", (some (go.signature.Signature [] false [(go.GoType.PointerType m.ty)]))), (go!"runtime.set", (some (go.signature.Signature [(go.GoType.PointerType m.ty)] false [])))]
 
 attribute [instance] muintptr.TypeAssumptions.underlying
+  muintptr.TypeAssumptions.method_set
+  muintptr.TypeAssumptions.ptr_method_set
 
 structure mWaitList [FfiSyntax] where
   mk ::
@@ -13266,6 +13538,8 @@ class mWaitList.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_next : ∀ (x : mWaitList) (y : muintptr), go.IsGoStepPureDetTagged under (StructFieldSet mWaitList.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : mWaitList)))
   get_startTicks : ∀ (x : mWaitList), go.IsGoStepPureDetTagged under (StructFieldGet mWaitList.underlying go!"startTicks") #x (Val #(x.startTicks'))
   set_startTicks : ∀ (x : mWaitList) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mWaitList.underlying go!"startTicks") (PairV #x #y) (Val #(({ x with startTicks' := y } : mWaitList)))
+  method_set : go.MethodSetIs mWaitList.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mWaitList.ty) []
 
 attribute [instance] mWaitList.TypeAssumptions.type_repr
   mWaitList.TypeAssumptions.underlying
@@ -13274,6 +13548,8 @@ attribute [instance] mWaitList.TypeAssumptions.type_repr
   mWaitList.TypeAssumptions.set_next
   mWaitList.TypeAssumptions.get_startTicks
   mWaitList.TypeAssumptions.set_startTicks
+  mWaitList.TypeAssumptions.method_set
+  mWaitList.TypeAssumptions.ptr_method_set
 
 abbrev lockRank [FfiSyntax] : Type := w64
 
@@ -13282,8 +13558,12 @@ abbrev lockRank [FfiSyntax] : Type := w64
 
 class lockRank.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq lockRank.ty lockRank.underlying
+  method_set : go.MethodSetIs lockRank.ty [(go!"String", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType lockRank.ty) [(go!"String", (some (go.signature.Signature [] false [go.string])))]
 
 attribute [instance] lockRank.TypeAssumptions.underlying
+  lockRank.TypeAssumptions.method_set
+  lockRank.TypeAssumptions.ptr_method_set
 
 structure persistentAlloc [FfiSyntax] where
   mk ::
@@ -13315,6 +13595,8 @@ class persistentAlloc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
   set_base : ∀ (x : persistentAlloc) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet persistentAlloc.underlying go!"base") (PairV #x #y) (Val #(({ x with base' := y } : persistentAlloc)))
   get_off : ∀ (x : persistentAlloc), go.IsGoStepPureDetTagged under (StructFieldGet persistentAlloc.underlying go!"off") #x (Val #(x.off'))
   set_off : ∀ (x : persistentAlloc) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet persistentAlloc.underlying go!"off") (PairV #x #y) (Val #(({ x with off' := y } : persistentAlloc)))
+  method_set : go.MethodSetIs persistentAlloc.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType persistentAlloc.ty) []
 
 attribute [instance] persistentAlloc.TypeAssumptions.type_repr
   persistentAlloc.TypeAssumptions.underlying
@@ -13323,6 +13605,8 @@ attribute [instance] persistentAlloc.TypeAssumptions.type_repr
   persistentAlloc.TypeAssumptions.set_base
   persistentAlloc.TypeAssumptions.get_off
   persistentAlloc.TypeAssumptions.set_off
+  persistentAlloc.TypeAssumptions.method_set
+  persistentAlloc.TypeAssumptions.ptr_method_set
 
 structure linearAlloc [FfiSyntax] where
   mk ::
@@ -13362,6 +13646,8 @@ class linearAlloc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set_end : ∀ (x : linearAlloc) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet linearAlloc.underlying go!"end") (PairV #x #y) (Val #(({ x with end' := y } : linearAlloc)))
   get_mapMemory : ∀ (x : linearAlloc), go.IsGoStepPureDetTagged under (StructFieldGet linearAlloc.underlying go!"mapMemory") #x (Val #(x.mapMemory'))
   set_mapMemory : ∀ (x : linearAlloc) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet linearAlloc.underlying go!"mapMemory") (PairV #x #y) (Val #(({ x with mapMemory' := y } : linearAlloc)))
+  method_set : go.MethodSetIs linearAlloc.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType linearAlloc.ty) [(go!"runtime.alloc", (some (go.signature.Signature [go.uintptr, go.uintptr, (go.GoType.PointerType sysMemStat.ty), go.string] false [«unsafe».Pointer]))), (go!"runtime.init", (some (go.signature.Signature [go.uintptr, go.uintptr, go.bool] false [])))]
 
 attribute [instance] linearAlloc.TypeAssumptions.type_repr
   linearAlloc.TypeAssumptions.underlying
@@ -13374,6 +13660,8 @@ attribute [instance] linearAlloc.TypeAssumptions.type_repr
   linearAlloc.TypeAssumptions.set_end
   linearAlloc.TypeAssumptions.get_mapMemory
   linearAlloc.TypeAssumptions.set_mapMemory
+  linearAlloc.TypeAssumptions.method_set
+  linearAlloc.TypeAssumptions.ptr_method_set
 
 structure notInHeap [FfiSyntax] where
   mk ::
@@ -13401,12 +13689,16 @@ class notInHeap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   layout : go.StructLayout notInHeap [(go!"_0", typeSize _root_.Perennial.internal.runtime.sys.NotInHeap, typeAlign _root_.Perennial.internal.runtime.sys.NotInHeap)]
   get__0 : ∀ (x : notInHeap), go.IsGoStepPureDetTagged under (StructFieldGet notInHeap.underlying go!"_0") #x (Val #(x._0'))
   set__0 : ∀ (x : notInHeap) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet notInHeap.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : notInHeap)))
+  method_set : go.MethodSetIs notInHeap.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType notInHeap.ty) [(go!"runtime.add", (some (go.signature.Signature [go.uintptr] false [(go.GoType.PointerType notInHeap.ty)])))]
 
 attribute [instance] notInHeap.TypeAssumptions.type_repr
   notInHeap.TypeAssumptions.underlying
   notInHeap.TypeAssumptions.layout
   notInHeap.TypeAssumptions.get__0
   notInHeap.TypeAssumptions.set__0
+  notInHeap.TypeAssumptions.method_set
+  notInHeap.TypeAssumptions.ptr_method_set
 
 axiom typePointers : Type
 axiom typePointers.zero_val : ZeroVal typePointers
@@ -13416,10 +13708,14 @@ class typePointers.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   type_repr : go.TypeReprUnderlying typePointers.underlying typePointers
   underlying : go.UnderlyingDirectedEq typePointers.ty typePointers.underlying
   isUnderlying : go.IsUnderlying typePointers.underlying typePointers.underlying
+  method_set : go.MethodSetIs typePointers.ty [(go!"runtime.fastForward", (some (go.signature.Signature [go.uintptr, go.uintptr] false [typePointers.ty]))), (go!"runtime.next", (some (go.signature.Signature [go.uintptr] false [typePointers.ty, go.uintptr]))), (go!"runtime.nextFast", (some (go.signature.Signature [] false [typePointers.ty, go.uintptr])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType typePointers.ty) [(go!"runtime.fastForward", (some (go.signature.Signature [go.uintptr, go.uintptr] false [typePointers.ty]))), (go!"runtime.next", (some (go.signature.Signature [go.uintptr] false [typePointers.ty, go.uintptr]))), (go!"runtime.nextFast", (some (go.signature.Signature [] false [typePointers.ty, go.uintptr])))]
 
 attribute [instance] typePointers.TypeAssumptions.type_repr
   typePointers.TypeAssumptions.underlying
   typePointers.TypeAssumptions.isUnderlying
+  typePointers.TypeAssumptions.method_set
+  typePointers.TypeAssumptions.ptr_method_set
 
 structure markBits [FfiSyntax] where
   mk ::
@@ -13455,6 +13751,8 @@ class markBits.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_mask : ∀ (x : markBits) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet markBits.underlying go!"mask") (PairV #x #y) (Val #(({ x with mask' := y } : markBits)))
   get_index : ∀ (x : markBits), go.IsGoStepPureDetTagged under (StructFieldGet markBits.underlying go!"index") #x (Val #(x.index'))
   set_index : ∀ (x : markBits) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet markBits.underlying go!"index") (PairV #x #y) (Val #(({ x with index' := y } : markBits)))
+  method_set : go.MethodSetIs markBits.ty [(go!"runtime.clearMarked", (some (go.signature.Signature [] false []))), (go!"runtime.isMarked", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.setMarked", (some (go.signature.Signature [] false []))), (go!"runtime.setMarkedNonAtomic", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType markBits.ty) [(go!"runtime.advance", (some (go.signature.Signature [] false []))), (go!"runtime.clearMarked", (some (go.signature.Signature [] false []))), (go!"runtime.isMarked", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.setMarked", (some (go.signature.Signature [] false []))), (go!"runtime.setMarkedNonAtomic", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] markBits.TypeAssumptions.type_repr
   markBits.TypeAssumptions.underlying
@@ -13465,6 +13763,8 @@ attribute [instance] markBits.TypeAssumptions.type_repr
   markBits.TypeAssumptions.set_mask
   markBits.TypeAssumptions.get_index
   markBits.TypeAssumptions.set_index
+  markBits.TypeAssumptions.method_set
+  markBits.TypeAssumptions.ptr_method_set
 
 abbrev gclinkptr [FfiSyntax] : Type := w64
 
@@ -13473,8 +13773,12 @@ abbrev gclinkptr [FfiSyntax] : Type := w64
 
 class gclinkptr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq gclinkptr.ty gclinkptr.underlying
+  method_set : go.MethodSetIs gclinkptr.ty [(go!"runtime.ptr", (some (go.signature.Signature [] false [(go.GoType.PointerType gclink.ty)])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gclinkptr.ty) [(go!"runtime.ptr", (some (go.signature.Signature [] false [(go.GoType.PointerType gclink.ty)])))]
 
 attribute [instance] gclinkptr.TypeAssumptions.underlying
+  gclinkptr.TypeAssumptions.method_set
+  gclinkptr.TypeAssumptions.ptr_method_set
 
 structure stackfreelist [FfiSyntax] where
   mk ::
@@ -13506,6 +13810,8 @@ class stackfreelist.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_list : ∀ (x : stackfreelist) (y : gclinkptr), go.IsGoStepPureDetTagged under (StructFieldSet stackfreelist.underlying go!"list") (PairV #x #y) (Val #(({ x with list' := y } : stackfreelist)))
   get_size : ∀ (x : stackfreelist), go.IsGoStepPureDetTagged under (StructFieldGet stackfreelist.underlying go!"size") #x (Val #(x.size'))
   set_size : ∀ (x : stackfreelist) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet stackfreelist.underlying go!"size") (PairV #x #y) (Val #(({ x with size' := y } : stackfreelist)))
+  method_set : go.MethodSetIs stackfreelist.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stackfreelist.ty) []
 
 attribute [instance] stackfreelist.TypeAssumptions.type_repr
   stackfreelist.TypeAssumptions.underlying
@@ -13514,6 +13820,8 @@ attribute [instance] stackfreelist.TypeAssumptions.type_repr
   stackfreelist.TypeAssumptions.set_list
   stackfreelist.TypeAssumptions.get_size
   stackfreelist.TypeAssumptions.set_size
+  stackfreelist.TypeAssumptions.method_set
+  stackfreelist.TypeAssumptions.ptr_method_set
 
 structure mcache [FfiSyntax] where
   mk ::
@@ -13581,6 +13889,8 @@ class mcache.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_stackcache : ∀ (x : mcache) (y : (GoArray stackfreelist 4)), go.IsGoStepPureDetTagged under (StructFieldSet mcache.underlying go!"stackcache") (PairV #x #y) (Val #(({ x with stackcache' := y } : mcache)))
   get_flushGen : ∀ (x : mcache), go.IsGoStepPureDetTagged under (StructFieldGet mcache.underlying go!"flushGen") #x (Val #(x.flushGen'))
   set_flushGen : ∀ (x : mcache) (y : _root_.Perennial.internal.runtime.atomic.Uint32), go.IsGoStepPureDetTagged under (StructFieldSet mcache.underlying go!"flushGen") (PairV #x #y) (Val #(({ x with flushGen' := y } : mcache)))
+  method_set : go.MethodSetIs mcache.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mcache.ty) [(go!"runtime.addReusableNoscan", (some (go.signature.Signature [spanClass.ty, go.uintptr] false []))), (go!"runtime.allocLarge", (some (go.signature.Signature [go.uintptr, go.bool] false [(go.GoType.PointerType mspan.ty)]))), (go!"runtime.hasReusableNoscan", (some (go.signature.Signature [spanClass.ty] false [go.bool]))), (go!"runtime.nextFree", (some (go.signature.Signature [spanClass.ty] false [gclinkptr.ty, (go.GoType.PointerType mspan.ty), go.bool]))), (go!"runtime.nextReusableNoScan", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty), spanClass.ty] false [gclinkptr.ty, (go.GoType.PointerType mspan.ty)]))), (go!"runtime.prepareForSweep", (some (go.signature.Signature [] false []))), (go!"runtime.refill", (some (go.signature.Signature [spanClass.ty] false []))), (go!"runtime.releaseAll", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] mcache.TypeAssumptions.type_repr
   mcache.TypeAssumptions.underlying
@@ -13607,6 +13917,8 @@ attribute [instance] mcache.TypeAssumptions.type_repr
   mcache.TypeAssumptions.set_stackcache
   mcache.TypeAssumptions.get_flushGen
   mcache.TypeAssumptions.set_flushGen
+  mcache.TypeAssumptions.method_set
+  mcache.TypeAssumptions.ptr_method_set
 
 structure gclink [FfiSyntax] where
   mk ::
@@ -13634,12 +13946,16 @@ class gclink.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   layout : go.StructLayout gclink [(go!"next", typeSize gclinkptr, typeAlign gclinkptr)]
   get_next : ∀ (x : gclink), go.IsGoStepPureDetTagged under (StructFieldGet gclink.underlying go!"next") #x (Val #(x.next'))
   set_next : ∀ (x : gclink) (y : gclinkptr), go.IsGoStepPureDetTagged under (StructFieldSet gclink.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : gclink)))
+  method_set : go.MethodSetIs gclink.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gclink.ty) []
 
 attribute [instance] gclink.TypeAssumptions.type_repr
   gclink.TypeAssumptions.underlying
   gclink.TypeAssumptions.layout
   gclink.TypeAssumptions.get_next
   gclink.TypeAssumptions.set_next
+  gclink.TypeAssumptions.method_set
+  gclink.TypeAssumptions.ptr_method_set
 
 abbrev spanClass [FfiSyntax] : Type := w8
 
@@ -13648,8 +13964,12 @@ abbrev spanClass [FfiSyntax] : Type := w8
 
 class spanClass.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq spanClass.ty spanClass.underlying
+  method_set : go.MethodSetIs spanClass.ty [(go!"runtime.noscan", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.sizeclass", (some (go.signature.Signature [] false [go.int8])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType spanClass.ty) [(go!"runtime.noscan", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.sizeclass", (some (go.signature.Signature [] false [go.int8])))]
 
 attribute [instance] spanClass.TypeAssumptions.underlying
+  spanClass.TypeAssumptions.method_set
+  spanClass.TypeAssumptions.ptr_method_set
 
 structure atomicSpanSetSpinePointer [FfiSyntax] where
   mk ::
@@ -13677,12 +13997,16 @@ class atomicSpanSetSpinePointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [G
   layout : go.StructLayout atomicSpanSetSpinePointer [(go!"a", typeSize _root_.Perennial.internal.runtime.atomic.UnsafePointer, typeAlign _root_.Perennial.internal.runtime.atomic.UnsafePointer)]
   get_a : ∀ (x : atomicSpanSetSpinePointer), go.IsGoStepPureDetTagged under (StructFieldGet atomicSpanSetSpinePointer.underlying go!"a") #x (Val #(x.a'))
   set_a : ∀ (x : atomicSpanSetSpinePointer) (y : _root_.Perennial.internal.runtime.atomic.UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldSet atomicSpanSetSpinePointer.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : atomicSpanSetSpinePointer)))
+  method_set : go.MethodSetIs atomicSpanSetSpinePointer.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType atomicSpanSetSpinePointer.ty) [(go!"Load", (some (go.signature.Signature [] false [spanSetSpinePointer.ty]))), (go!"StoreNoWB", (some (go.signature.Signature [spanSetSpinePointer.ty] false [])))]
 
 attribute [instance] atomicSpanSetSpinePointer.TypeAssumptions.type_repr
   atomicSpanSetSpinePointer.TypeAssumptions.underlying
   atomicSpanSetSpinePointer.TypeAssumptions.layout
   atomicSpanSetSpinePointer.TypeAssumptions.get_a
   atomicSpanSetSpinePointer.TypeAssumptions.set_a
+  atomicSpanSetSpinePointer.TypeAssumptions.method_set
+  atomicSpanSetSpinePointer.TypeAssumptions.ptr_method_set
 
 structure atomicHeadTailIndex [FfiSyntax] where
   mk ::
@@ -13710,12 +14034,16 @@ class atomicHeadTailIndex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocal
   layout : go.StructLayout atomicHeadTailIndex [(go!"u", typeSize _root_.Perennial.internal.runtime.atomic.Uint64, typeAlign _root_.Perennial.internal.runtime.atomic.Uint64)]
   get_u : ∀ (x : atomicHeadTailIndex), go.IsGoStepPureDetTagged under (StructFieldGet atomicHeadTailIndex.underlying go!"u") #x (Val #(x.u'))
   set_u : ∀ (x : atomicHeadTailIndex) (y : _root_.Perennial.internal.runtime.atomic.Uint64), go.IsGoStepPureDetTagged under (StructFieldSet atomicHeadTailIndex.underlying go!"u") (PairV #x #y) (Val #(({ x with u' := y } : atomicHeadTailIndex)))
+  method_set : go.MethodSetIs atomicHeadTailIndex.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType atomicHeadTailIndex.ty) [(go!"runtime.cas", (some (go.signature.Signature [headTailIndex.ty, headTailIndex.ty] false [go.bool]))), (go!"runtime.decHead", (some (go.signature.Signature [] false [headTailIndex.ty]))), (go!"runtime.incHead", (some (go.signature.Signature [] false [headTailIndex.ty]))), (go!"runtime.incTail", (some (go.signature.Signature [] false [headTailIndex.ty]))), (go!"runtime.load", (some (go.signature.Signature [] false [headTailIndex.ty]))), (go!"runtime.reset", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] atomicHeadTailIndex.TypeAssumptions.type_repr
   atomicHeadTailIndex.TypeAssumptions.underlying
   atomicHeadTailIndex.TypeAssumptions.layout
   atomicHeadTailIndex.TypeAssumptions.get_u
   atomicHeadTailIndex.TypeAssumptions.set_u
+  atomicHeadTailIndex.TypeAssumptions.method_set
+  atomicHeadTailIndex.TypeAssumptions.ptr_method_set
 
 structure spanSet [FfiSyntax] where
   mk ::
@@ -13759,6 +14087,8 @@ class spanSet.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_spineCap : ∀ (x : spanSet) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet spanSet.underlying go!"spineCap") (PairV #x #y) (Val #(({ x with spineCap' := y } : spanSet)))
   get_index : ∀ (x : spanSet), go.IsGoStepPureDetTagged under (StructFieldGet spanSet.underlying go!"index") #x (Val #(x.index'))
   set_index : ∀ (x : spanSet) (y : atomicHeadTailIndex), go.IsGoStepPureDetTagged under (StructFieldSet spanSet.underlying go!"index") (PairV #x #y) (Val #(({ x with index' := y } : spanSet)))
+  method_set : go.MethodSetIs spanSet.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType spanSet.ty) [(go!"runtime.pop", (some (go.signature.Signature [] false [(go.GoType.PointerType mspan.ty)]))), (go!"runtime.push", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"runtime.reset", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] spanSet.TypeAssumptions.type_repr
   spanSet.TypeAssumptions.underlying
@@ -13773,6 +14103,8 @@ attribute [instance] spanSet.TypeAssumptions.type_repr
   spanSet.TypeAssumptions.set_spineCap
   spanSet.TypeAssumptions.get_index
   spanSet.TypeAssumptions.set_index
+  spanSet.TypeAssumptions.method_set
+  spanSet.TypeAssumptions.ptr_method_set
 
 structure mcentral [FfiSyntax] where
   mk ::
@@ -13812,6 +14144,8 @@ class mcentral.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_partial : ∀ (x : mcentral) (y : (GoArray spanSet 2)), go.IsGoStepPureDetTagged under (StructFieldSet mcentral.underlying go!"partial") (PairV #x #y) (Val #(({ x with partial' := y } : mcentral)))
   get_full : ∀ (x : mcentral), go.IsGoStepPureDetTagged under (StructFieldGet mcentral.underlying go!"full") #x (Val #(x.full'))
   set_full : ∀ (x : mcentral) (y : (GoArray spanSet 2)), go.IsGoStepPureDetTagged under (StructFieldSet mcentral.underlying go!"full") (PairV #x #y) (Val #(({ x with full' := y } : mcentral)))
+  method_set : go.MethodSetIs mcentral.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mcentral.ty) [(go!"runtime.cacheSpan", (some (go.signature.Signature [] false [(go.GoType.PointerType mspan.ty)]))), (go!"runtime.fullSwept", (some (go.signature.Signature [go.uint32] false [(go.GoType.PointerType spanSet.ty)]))), (go!"runtime.fullUnswept", (some (go.signature.Signature [go.uint32] false [(go.GoType.PointerType spanSet.ty)]))), (go!"runtime.grow", (some (go.signature.Signature [] false [(go.GoType.PointerType mspan.ty)]))), (go!"runtime.init", (some (go.signature.Signature [spanClass.ty] false []))), (go!"runtime.partialSwept", (some (go.signature.Signature [go.uint32] false [(go.GoType.PointerType spanSet.ty)]))), (go!"runtime.partialUnswept", (some (go.signature.Signature [go.uint32] false [(go.GoType.PointerType spanSet.ty)]))), (go!"runtime.uncacheSpan", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false [])))]
 
 attribute [instance] mcentral.TypeAssumptions.type_repr
   mcentral.TypeAssumptions.underlying
@@ -13824,6 +14158,8 @@ attribute [instance] mcentral.TypeAssumptions.type_repr
   mcentral.TypeAssumptions.set_partial
   mcentral.TypeAssumptions.get_full
   mcentral.TypeAssumptions.set_full
+  mcentral.TypeAssumptions.method_set
+  mcentral.TypeAssumptions.ptr_method_set
 
 structure checkmarksMap [FfiSyntax] where
   mk ::
@@ -13855,6 +14191,8 @@ class checkmarksMap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set__0 : ∀ (x : checkmarksMap) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet checkmarksMap.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : checkmarksMap)))
   get_b : ∀ (x : checkmarksMap), go.IsGoStepPureDetTagged under (StructFieldGet checkmarksMap.underlying go!"b") #x (Val #(x.b'))
   set_b : ∀ (x : checkmarksMap) (y : (GoArray w8 1048576)), go.IsGoStepPureDetTagged under (StructFieldSet checkmarksMap.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : checkmarksMap)))
+  method_set : go.MethodSetIs checkmarksMap.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType checkmarksMap.ty) []
 
 attribute [instance] checkmarksMap.TypeAssumptions.type_repr
   checkmarksMap.TypeAssumptions.underlying
@@ -13863,6 +14201,8 @@ attribute [instance] checkmarksMap.TypeAssumptions.type_repr
   checkmarksMap.TypeAssumptions.set__0
   checkmarksMap.TypeAssumptions.get_b
   checkmarksMap.TypeAssumptions.set_b
+  checkmarksMap.TypeAssumptions.method_set
+  checkmarksMap.TypeAssumptions.ptr_method_set
 
 structure Cleanup [FfiSyntax] where
   mk ::
@@ -13894,6 +14234,8 @@ class Cleanup.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_id : ∀ (x : Cleanup) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Cleanup.underlying go!"id") (PairV #x #y) (Val #(({ x with id' := y } : Cleanup)))
   get_ptr : ∀ (x : Cleanup), go.IsGoStepPureDetTagged under (StructFieldGet Cleanup.underlying go!"ptr") #x (Val #(x.ptr'))
   set_ptr : ∀ (x : Cleanup) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Cleanup.underlying go!"ptr") (PairV #x #y) (Val #(({ x with ptr' := y } : Cleanup)))
+  method_set : go.MethodSetIs Cleanup.ty [(go!"Stop", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Cleanup.ty) [(go!"Stop", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] Cleanup.TypeAssumptions.type_repr
   Cleanup.TypeAssumptions.underlying
@@ -13902,6 +14244,8 @@ attribute [instance] Cleanup.TypeAssumptions.type_repr
   Cleanup.TypeAssumptions.set_id
   Cleanup.TypeAssumptions.get_ptr
   Cleanup.TypeAssumptions.set_ptr
+  Cleanup.TypeAssumptions.method_set
+  Cleanup.TypeAssumptions.ptr_method_set
 
 structure lfnode [FfiSyntax] where
   mk ::
@@ -13933,6 +14277,8 @@ class lfnode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_next : ∀ (x : lfnode) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet lfnode.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : lfnode)))
   get_pushcnt : ∀ (x : lfnode), go.IsGoStepPureDetTagged under (StructFieldGet lfnode.underlying go!"pushcnt") #x (Val #(x.pushcnt'))
   set_pushcnt : ∀ (x : lfnode) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet lfnode.underlying go!"pushcnt") (PairV #x #y) (Val #(({ x with pushcnt' := y } : lfnode)))
+  method_set : go.MethodSetIs lfnode.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType lfnode.ty) []
 
 attribute [instance] lfnode.TypeAssumptions.type_repr
   lfnode.TypeAssumptions.underlying
@@ -13941,6 +14287,8 @@ attribute [instance] lfnode.TypeAssumptions.type_repr
   lfnode.TypeAssumptions.set_next
   lfnode.TypeAssumptions.get_pushcnt
   lfnode.TypeAssumptions.set_pushcnt
+  lfnode.TypeAssumptions.method_set
+  lfnode.TypeAssumptions.ptr_method_set
 
 structure cleanupBlockHeader [FfiSyntax] where
   mk ::
@@ -13980,6 +14328,8 @@ class cleanupBlockHeader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   set_alllink : ∀ (x : cleanupBlockHeader) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet cleanupBlockHeader.underlying go!"alllink") (PairV #x #y) (Val #(({ x with alllink' := y } : cleanupBlockHeader)))
   get_n : ∀ (x : cleanupBlockHeader), go.IsGoStepPureDetTagged under (StructFieldGet cleanupBlockHeader.underlying go!"n") #x (Val #(x.n'))
   set_n : ∀ (x : cleanupBlockHeader) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet cleanupBlockHeader.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : cleanupBlockHeader)))
+  method_set : go.MethodSetIs cleanupBlockHeader.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType cleanupBlockHeader.ty) []
 
 attribute [instance] cleanupBlockHeader.TypeAssumptions.type_repr
   cleanupBlockHeader.TypeAssumptions.underlying
@@ -13992,6 +14342,8 @@ attribute [instance] cleanupBlockHeader.TypeAssumptions.type_repr
   cleanupBlockHeader.TypeAssumptions.set_alllink
   cleanupBlockHeader.TypeAssumptions.get_n
   cleanupBlockHeader.TypeAssumptions.set_n
+  cleanupBlockHeader.TypeAssumptions.method_set
+  cleanupBlockHeader.TypeAssumptions.ptr_method_set
 
 structure cleanupFn [FfiSyntax] where
   mk ::
@@ -14027,6 +14379,8 @@ class cleanupFn.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_fn : ∀ (x : cleanupFn) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet cleanupFn.underlying go!"fn") (PairV #x #y) (Val #(({ x with fn' := y } : cleanupFn)))
   get_arg : ∀ (x : cleanupFn), go.IsGoStepPureDetTagged under (StructFieldGet cleanupFn.underlying go!"arg") #x (Val #(x.arg'))
   set_arg : ∀ (x : cleanupFn) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet cleanupFn.underlying go!"arg") (PairV #x #y) (Val #(({ x with arg' := y } : cleanupFn)))
+  method_set : go.MethodSetIs cleanupFn.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType cleanupFn.ty) []
 
 attribute [instance] cleanupFn.TypeAssumptions.type_repr
   cleanupFn.TypeAssumptions.underlying
@@ -14037,6 +14391,8 @@ attribute [instance] cleanupFn.TypeAssumptions.type_repr
   cleanupFn.TypeAssumptions.set_fn
   cleanupFn.TypeAssumptions.get_arg
   cleanupFn.TypeAssumptions.set_arg
+  cleanupFn.TypeAssumptions.method_set
+  cleanupFn.TypeAssumptions.ptr_method_set
 
 structure cleanupBlock [FfiSyntax] where
   mk ::
@@ -14068,6 +14424,8 @@ class cleanupBlock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   set_cleanupBlockHeader : ∀ (x : cleanupBlock) (y : cleanupBlockHeader), go.IsGoStepPureDetTagged under (StructFieldSet cleanupBlock.underlying go!"cleanupBlockHeader") (PairV #x #y) (Val #(({ x with cleanupBlockHeader' := y } : cleanupBlock)))
   get_cleanups : ∀ (x : cleanupBlock), go.IsGoStepPureDetTagged under (StructFieldGet cleanupBlock.underlying go!"cleanups") #x (Val #(x.cleanups'))
   set_cleanups : ∀ (x : cleanupBlock) (y : (GoArray cleanupFn 20)), go.IsGoStepPureDetTagged under (StructFieldSet cleanupBlock.underlying go!"cleanups") (PairV #x #y) (Val #(({ x with cleanups' := y } : cleanupBlock)))
+  method_set : go.MethodSetIs cleanupBlock.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType cleanupBlock.ty) [(go!"runtime.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.enqueue", (some (go.signature.Signature [cleanupFn.ty] false [go.bool]))), (go!"runtime.full", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.take", (some (go.signature.Signature [(go.GoType.PointerType cleanupBlock.ty)] false [])))]
 
 attribute [instance] cleanupBlock.TypeAssumptions.type_repr
   cleanupBlock.TypeAssumptions.underlying
@@ -14076,6 +14434,8 @@ attribute [instance] cleanupBlock.TypeAssumptions.type_repr
   cleanupBlock.TypeAssumptions.set_cleanupBlockHeader
   cleanupBlock.TypeAssumptions.get_cleanups
   cleanupBlock.TypeAssumptions.set_cleanups
+  cleanupBlock.TypeAssumptions.method_set
+  cleanupBlock.TypeAssumptions.ptr_method_set
 
 axiom cleanupQueue : Type
 axiom cleanupQueue.zero_val : ZeroVal cleanupQueue
@@ -14085,10 +14445,14 @@ class cleanupQueue.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   type_repr : go.TypeReprUnderlying cleanupQueue.underlying cleanupQueue
   underlying : go.UnderlyingDirectedEq cleanupQueue.ty cleanupQueue.underlying
   isUnderlying : go.IsUnderlying cleanupQueue.underlying cleanupQueue.underlying
+  method_set : go.MethodSetIs cleanupQueue.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType cleanupQueue.ty) [(go!"runtime.addWork", (some (go.signature.Signature [go.int] false []))), (go!"runtime.beginRunningCleanups", (some (go.signature.Signature [] false []))), (go!"runtime.blockUntilEmpty", (some (go.signature.Signature [go.int64] false [go.bool]))), (go!"runtime.createGs", (some (go.signature.Signature [] false []))), (go!"runtime.dequeue", (some (go.signature.Signature [] false [(go.GoType.PointerType cleanupBlock.ty)]))), (go!"runtime.endRunningCleanups", (some (go.signature.Signature [] false []))), (go!"runtime.enqueue", (some (go.signature.Signature [cleanupFn.ty] false []))), (go!"runtime.flush", (some (go.signature.Signature [] false []))), (go!"runtime.needG", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.needsWake", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.readQueueStats", (some (go.signature.Signature [] false [go.uint64, go.uint64]))), (go!"runtime.tryTakeWork", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.wake", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] cleanupQueue.TypeAssumptions.type_repr
   cleanupQueue.TypeAssumptions.underlying
   cleanupQueue.TypeAssumptions.isUnderlying
+  cleanupQueue.TypeAssumptions.method_set
+  cleanupQueue.TypeAssumptions.ptr_method_set
 
 abbrev statDepSet [FfiSyntax] : Type := (GoArray w64 1)
 
@@ -14097,8 +14461,12 @@ abbrev statDepSet [FfiSyntax] : Type := (GoArray w64 1)
 
 class statDepSet.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq statDepSet.ty statDepSet.underlying
+  method_set : go.MethodSetIs statDepSet.ty [(go!"runtime.difference", (some (go.signature.Signature [statDepSet.ty] false [statDepSet.ty]))), (go!"runtime.union", (some (go.signature.Signature [statDepSet.ty] false [statDepSet.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType statDepSet.ty) [(go!"runtime.difference", (some (go.signature.Signature [statDepSet.ty] false [statDepSet.ty]))), (go!"runtime.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.has", (some (go.signature.Signature [statDep.ty] false [go.bool]))), (go!"runtime.union", (some (go.signature.Signature [statDepSet.ty] false [statDepSet.ty])))]
 
 attribute [instance] statDepSet.TypeAssumptions.underlying
+  statDepSet.TypeAssumptions.method_set
+  statDepSet.TypeAssumptions.ptr_method_set
 
 structure metricData [FfiSyntax] where
   mk ::
@@ -14130,6 +14498,8 @@ class metricData.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_deps : ∀ (x : metricData) (y : statDepSet), go.IsGoStepPureDetTagged under (StructFieldSet metricData.underlying go!"deps") (PairV #x #y) (Val #(({ x with deps' := y } : metricData)))
   get_compute : ∀ (x : metricData), go.IsGoStepPureDetTagged under (StructFieldGet metricData.underlying go!"compute") #x (Val #(x.compute'))
   set_compute : ∀ (x : metricData) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet metricData.underlying go!"compute") (PairV #x #y) (Val #(({ x with compute' := y } : metricData)))
+  method_set : go.MethodSetIs metricData.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType metricData.ty) []
 
 attribute [instance] metricData.TypeAssumptions.type_repr
   metricData.TypeAssumptions.underlying
@@ -14138,6 +14508,8 @@ attribute [instance] metricData.TypeAssumptions.type_repr
   metricData.TypeAssumptions.set_deps
   metricData.TypeAssumptions.get_compute
   metricData.TypeAssumptions.set_compute
+  metricData.TypeAssumptions.method_set
+  metricData.TypeAssumptions.ptr_method_set
 
 abbrev metricReader [FfiSyntax] : Type := GoFunc
 
@@ -14146,8 +14518,12 @@ abbrev metricReader [FfiSyntax] : Type := GoFunc
 
 class metricReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq metricReader.ty metricReader.underlying
+  method_set : go.MethodSetIs metricReader.ty [(go!"runtime.compute", (some (go.signature.Signature [(go.GoType.PointerType statAggregate.ty), (go.GoType.PointerType metricValue.ty)] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType metricReader.ty) [(go!"runtime.compute", (some (go.signature.Signature [(go.GoType.PointerType statAggregate.ty), (go.GoType.PointerType metricValue.ty)] false [])))]
 
 attribute [instance] metricReader.TypeAssumptions.underlying
+  metricReader.TypeAssumptions.method_set
+  metricReader.TypeAssumptions.ptr_method_set
 
 abbrev statDep [FfiSyntax] : Type := w64
 
@@ -14156,8 +14532,12 @@ abbrev statDep [FfiSyntax] : Type := w64
 
 class statDep.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq statDep.ty statDep.underlying
+  method_set : go.MethodSetIs statDep.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType statDep.ty) []
 
 attribute [instance] statDep.TypeAssumptions.underlying
+  statDep.TypeAssumptions.method_set
+  statDep.TypeAssumptions.ptr_method_set
 
 structure heapStatsDelta [FfiSyntax] where
   mk ::
@@ -14229,6 +14609,8 @@ class heapStatsDelta.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_largeFreeCount : ∀ (x : heapStatsDelta) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet heapStatsDelta.underlying go!"largeFreeCount") (PairV #x #y) (Val #(({ x with largeFreeCount' := y } : heapStatsDelta)))
   get_smallFreeCount : ∀ (x : heapStatsDelta), go.IsGoStepPureDetTagged under (StructFieldGet heapStatsDelta.underlying go!"smallFreeCount") #x (Val #(x.smallFreeCount'))
   set_smallFreeCount : ∀ (x : heapStatsDelta) (y : (GoArray w64 68)), go.IsGoStepPureDetTagged under (StructFieldSet heapStatsDelta.underlying go!"smallFreeCount") (PairV #x #y) (Val #(({ x with smallFreeCount' := y } : heapStatsDelta)))
+  method_set : go.MethodSetIs heapStatsDelta.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType heapStatsDelta.ty) [(go!"runtime.merge", (some (go.signature.Signature [(go.GoType.PointerType heapStatsDelta.ty)] false [])))]
 
 attribute [instance] heapStatsDelta.TypeAssumptions.type_repr
   heapStatsDelta.TypeAssumptions.underlying
@@ -14257,6 +14639,8 @@ attribute [instance] heapStatsDelta.TypeAssumptions.type_repr
   heapStatsDelta.TypeAssumptions.set_largeFreeCount
   heapStatsDelta.TypeAssumptions.get_smallFreeCount
   heapStatsDelta.TypeAssumptions.set_smallFreeCount
+  heapStatsDelta.TypeAssumptions.method_set
+  heapStatsDelta.TypeAssumptions.ptr_method_set
 
 structure heapStatsAggregate [FfiSyntax] where
   mk ::
@@ -14308,6 +14692,8 @@ class heapStatsAggregate.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   set_totalAllocs : ∀ (x : heapStatsAggregate) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet heapStatsAggregate.underlying go!"totalAllocs") (PairV #x #y) (Val #(({ x with totalAllocs' := y } : heapStatsAggregate)))
   get_totalFrees : ∀ (x : heapStatsAggregate), go.IsGoStepPureDetTagged under (StructFieldGet heapStatsAggregate.underlying go!"totalFrees") #x (Val #(x.totalFrees'))
   set_totalFrees : ∀ (x : heapStatsAggregate) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet heapStatsAggregate.underlying go!"totalFrees") (PairV #x #y) (Val #(({ x with totalFrees' := y } : heapStatsAggregate)))
+  method_set : go.MethodSetIs heapStatsAggregate.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType heapStatsAggregate.ty) [(go!"runtime.compute", (some (go.signature.Signature [] false []))), (go!"runtime.merge", (some (go.signature.Signature [(go.GoType.PointerType heapStatsDelta.ty)] false [])))]
 
 attribute [instance] heapStatsAggregate.TypeAssumptions.type_repr
   heapStatsAggregate.TypeAssumptions.underlying
@@ -14326,6 +14712,8 @@ attribute [instance] heapStatsAggregate.TypeAssumptions.type_repr
   heapStatsAggregate.TypeAssumptions.set_totalAllocs
   heapStatsAggregate.TypeAssumptions.get_totalFrees
   heapStatsAggregate.TypeAssumptions.set_totalFrees
+  heapStatsAggregate.TypeAssumptions.method_set
+  heapStatsAggregate.TypeAssumptions.ptr_method_set
 
 structure sysStatsAggregate [FfiSyntax] where
   mk ::
@@ -14393,6 +14781,8 @@ class sysStatsAggregate.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCo
   set_gcCyclesDone : ∀ (x : sysStatsAggregate) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet sysStatsAggregate.underlying go!"gcCyclesDone") (PairV #x #y) (Val #(({ x with gcCyclesDone' := y } : sysStatsAggregate)))
   get_gcCyclesForced : ∀ (x : sysStatsAggregate), go.IsGoStepPureDetTagged under (StructFieldGet sysStatsAggregate.underlying go!"gcCyclesForced") #x (Val #(x.gcCyclesForced'))
   set_gcCyclesForced : ∀ (x : sysStatsAggregate) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet sysStatsAggregate.underlying go!"gcCyclesForced") (PairV #x #y) (Val #(({ x with gcCyclesForced' := y } : sysStatsAggregate)))
+  method_set : go.MethodSetIs sysStatsAggregate.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sysStatsAggregate.ty) [(go!"runtime.compute", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] sysStatsAggregate.TypeAssumptions.type_repr
   sysStatsAggregate.TypeAssumptions.underlying
@@ -14419,6 +14809,8 @@ attribute [instance] sysStatsAggregate.TypeAssumptions.type_repr
   sysStatsAggregate.TypeAssumptions.set_gcCyclesDone
   sysStatsAggregate.TypeAssumptions.get_gcCyclesForced
   sysStatsAggregate.TypeAssumptions.set_gcCyclesForced
+  sysStatsAggregate.TypeAssumptions.method_set
+  sysStatsAggregate.TypeAssumptions.ptr_method_set
 
 structure cpuStats [FfiSyntax] where
   mk ::
@@ -14486,6 +14878,8 @@ class cpuStats.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_UserTime : ∀ (x : cpuStats) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet cpuStats.underlying go!"UserTime") (PairV #x #y) (Val #(({ x with UserTime' := y } : cpuStats)))
   get_TotalTime : ∀ (x : cpuStats), go.IsGoStepPureDetTagged under (StructFieldGet cpuStats.underlying go!"TotalTime") #x (Val #(x.TotalTime'))
   set_TotalTime : ∀ (x : cpuStats) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet cpuStats.underlying go!"TotalTime") (PairV #x #y) (Val #(({ x with TotalTime' := y } : cpuStats)))
+  method_set : go.MethodSetIs cpuStats.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType cpuStats.ty) [(go!"runtime.accumulate", (some (go.signature.Signature [go.int64, go.bool] false []))), (go!"runtime.accumulateGCPauseTime", (some (go.signature.Signature [go.int64, go.int32] false [])))]
 
 attribute [instance] cpuStats.TypeAssumptions.type_repr
   cpuStats.TypeAssumptions.underlying
@@ -14512,6 +14906,8 @@ attribute [instance] cpuStats.TypeAssumptions.type_repr
   cpuStats.TypeAssumptions.set_UserTime
   cpuStats.TypeAssumptions.get_TotalTime
   cpuStats.TypeAssumptions.set_TotalTime
+  cpuStats.TypeAssumptions.method_set
+  cpuStats.TypeAssumptions.ptr_method_set
 
 structure cpuStatsAggregate [FfiSyntax] where
   mk ::
@@ -14539,12 +14935,16 @@ class cpuStatsAggregate.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCo
   layout : go.StructLayout cpuStatsAggregate [(go!"cpuStats", typeSize cpuStats, typeAlign cpuStats)]
   get_cpuStats : ∀ (x : cpuStatsAggregate), go.IsGoStepPureDetTagged under (StructFieldGet cpuStatsAggregate.underlying go!"cpuStats") #x (Val #(x.cpuStats'))
   set_cpuStats : ∀ (x : cpuStatsAggregate) (y : cpuStats), go.IsGoStepPureDetTagged under (StructFieldSet cpuStatsAggregate.underlying go!"cpuStats") (PairV #x #y) (Val #(({ x with cpuStats' := y } : cpuStatsAggregate)))
+  method_set : go.MethodSetIs cpuStatsAggregate.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType cpuStatsAggregate.ty) [(go!"runtime.accumulate", (some (go.signature.Signature [go.int64, go.bool] false []))), (go!"runtime.accumulateGCPauseTime", (some (go.signature.Signature [go.int64, go.int32] false []))), (go!"runtime.compute", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] cpuStatsAggregate.TypeAssumptions.type_repr
   cpuStatsAggregate.TypeAssumptions.underlying
   cpuStatsAggregate.TypeAssumptions.layout
   cpuStatsAggregate.TypeAssumptions.get_cpuStats
   cpuStatsAggregate.TypeAssumptions.set_cpuStats
+  cpuStatsAggregate.TypeAssumptions.method_set
+  cpuStatsAggregate.TypeAssumptions.ptr_method_set
 
 structure gcStatsAggregate [FfiSyntax] where
   mk ::
@@ -14584,6 +14984,8 @@ class gcStatsAggregate.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
   set_globalsScan : ∀ (x : gcStatsAggregate) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet gcStatsAggregate.underlying go!"globalsScan") (PairV #x #y) (Val #(({ x with globalsScan' := y } : gcStatsAggregate)))
   get_totalScan : ∀ (x : gcStatsAggregate), go.IsGoStepPureDetTagged under (StructFieldGet gcStatsAggregate.underlying go!"totalScan") #x (Val #(x.totalScan'))
   set_totalScan : ∀ (x : gcStatsAggregate) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet gcStatsAggregate.underlying go!"totalScan") (PairV #x #y) (Val #(({ x with totalScan' := y } : gcStatsAggregate)))
+  method_set : go.MethodSetIs gcStatsAggregate.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gcStatsAggregate.ty) [(go!"runtime.compute", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] gcStatsAggregate.TypeAssumptions.type_repr
   gcStatsAggregate.TypeAssumptions.underlying
@@ -14596,6 +14998,8 @@ attribute [instance] gcStatsAggregate.TypeAssumptions.type_repr
   gcStatsAggregate.TypeAssumptions.set_globalsScan
   gcStatsAggregate.TypeAssumptions.get_totalScan
   gcStatsAggregate.TypeAssumptions.set_totalScan
+  gcStatsAggregate.TypeAssumptions.method_set
+  gcStatsAggregate.TypeAssumptions.ptr_method_set
 
 structure finalStatsAggregate [FfiSyntax] where
   mk ::
@@ -14635,6 +15039,8 @@ class finalStatsAggregate.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocal
   set_cleanupsQueued : ∀ (x : finalStatsAggregate) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet finalStatsAggregate.underlying go!"cleanupsQueued") (PairV #x #y) (Val #(({ x with cleanupsQueued' := y } : finalStatsAggregate)))
   get_cleanupsExecuted : ∀ (x : finalStatsAggregate), go.IsGoStepPureDetTagged under (StructFieldGet finalStatsAggregate.underlying go!"cleanupsExecuted") #x (Val #(x.cleanupsExecuted'))
   set_cleanupsExecuted : ∀ (x : finalStatsAggregate) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet finalStatsAggregate.underlying go!"cleanupsExecuted") (PairV #x #y) (Val #(({ x with cleanupsExecuted' := y } : finalStatsAggregate)))
+  method_set : go.MethodSetIs finalStatsAggregate.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType finalStatsAggregate.ty) [(go!"runtime.compute", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] finalStatsAggregate.TypeAssumptions.type_repr
   finalStatsAggregate.TypeAssumptions.underlying
@@ -14647,6 +15053,8 @@ attribute [instance] finalStatsAggregate.TypeAssumptions.type_repr
   finalStatsAggregate.TypeAssumptions.set_cleanupsQueued
   finalStatsAggregate.TypeAssumptions.get_cleanupsExecuted
   finalStatsAggregate.TypeAssumptions.set_cleanupsExecuted
+  finalStatsAggregate.TypeAssumptions.method_set
+  finalStatsAggregate.TypeAssumptions.ptr_method_set
 
 structure schedStatsAggregate [FfiSyntax] where
   mk ::
@@ -14698,6 +15106,8 @@ class schedStatsAggregate.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocal
   set_gCreated : ∀ (x : schedStatsAggregate) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet schedStatsAggregate.underlying go!"gCreated") (PairV #x #y) (Val #(({ x with gCreated' := y } : schedStatsAggregate)))
   get_threads : ∀ (x : schedStatsAggregate), go.IsGoStepPureDetTagged under (StructFieldGet schedStatsAggregate.underlying go!"threads") #x (Val #(x.threads'))
   set_threads : ∀ (x : schedStatsAggregate) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet schedStatsAggregate.underlying go!"threads") (PairV #x #y) (Val #(({ x with threads' := y } : schedStatsAggregate)))
+  method_set : go.MethodSetIs schedStatsAggregate.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType schedStatsAggregate.ty) [(go!"runtime.compute", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] schedStatsAggregate.TypeAssumptions.type_repr
   schedStatsAggregate.TypeAssumptions.underlying
@@ -14716,6 +15126,8 @@ attribute [instance] schedStatsAggregate.TypeAssumptions.type_repr
   schedStatsAggregate.TypeAssumptions.set_gCreated
   schedStatsAggregate.TypeAssumptions.get_threads
   schedStatsAggregate.TypeAssumptions.set_threads
+  schedStatsAggregate.TypeAssumptions.method_set
+  schedStatsAggregate.TypeAssumptions.ptr_method_set
 
 structure statAggregate [FfiSyntax] where
   mk ::
@@ -14767,6 +15179,8 @@ class statAggregate.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_finalStats : ∀ (x : statAggregate) (y : finalStatsAggregate), go.IsGoStepPureDetTagged under (StructFieldSet statAggregate.underlying go!"finalStats") (PairV #x #y) (Val #(({ x with finalStats' := y } : statAggregate)))
   get_schedStats : ∀ (x : statAggregate), go.IsGoStepPureDetTagged under (StructFieldGet statAggregate.underlying go!"schedStats") #x (Val #(x.schedStats'))
   set_schedStats : ∀ (x : statAggregate) (y : schedStatsAggregate), go.IsGoStepPureDetTagged under (StructFieldSet statAggregate.underlying go!"schedStats") (PairV #x #y) (Val #(({ x with schedStats' := y } : statAggregate)))
+  method_set : go.MethodSetIs statAggregate.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType statAggregate.ty) [(go!"runtime.ensure", (some (go.signature.Signature [(go.GoType.PointerType statDepSet.ty)] false [])))]
 
 attribute [instance] statAggregate.TypeAssumptions.type_repr
   statAggregate.TypeAssumptions.underlying
@@ -14785,6 +15199,8 @@ attribute [instance] statAggregate.TypeAssumptions.type_repr
   statAggregate.TypeAssumptions.set_finalStats
   statAggregate.TypeAssumptions.get_schedStats
   statAggregate.TypeAssumptions.set_schedStats
+  statAggregate.TypeAssumptions.method_set
+  statAggregate.TypeAssumptions.ptr_method_set
 
 abbrev metricKind [FfiSyntax] : Type := w64
 
@@ -14793,8 +15209,12 @@ abbrev metricKind [FfiSyntax] : Type := w64
 
 class metricKind.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq metricKind.ty metricKind.underlying
+  method_set : go.MethodSetIs metricKind.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType metricKind.ty) []
 
 attribute [instance] metricKind.TypeAssumptions.underlying
+  metricKind.TypeAssumptions.method_set
+  metricKind.TypeAssumptions.ptr_method_set
 
 structure metricValue [FfiSyntax] where
   mk ::
@@ -14830,6 +15250,8 @@ class metricValue.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set_scalar : ∀ (x : metricValue) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet metricValue.underlying go!"scalar") (PairV #x #y) (Val #(({ x with scalar' := y } : metricValue)))
   get_pointer : ∀ (x : metricValue), go.IsGoStepPureDetTagged under (StructFieldGet metricValue.underlying go!"pointer") #x (Val #(x.pointer'))
   set_pointer : ∀ (x : metricValue) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet metricValue.underlying go!"pointer") (PairV #x #y) (Val #(({ x with pointer' := y } : metricValue)))
+  method_set : go.MethodSetIs metricValue.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType metricValue.ty) [(go!"runtime.float64HistOrInit", (some (go.signature.Signature [(go.GoType.SliceType go.float64)] false [(go.GoType.PointerType metricFloat64Histogram.ty)])))]
 
 attribute [instance] metricValue.TypeAssumptions.type_repr
   metricValue.TypeAssumptions.underlying
@@ -14840,6 +15262,8 @@ attribute [instance] metricValue.TypeAssumptions.type_repr
   metricValue.TypeAssumptions.set_scalar
   metricValue.TypeAssumptions.get_pointer
   metricValue.TypeAssumptions.set_pointer
+  metricValue.TypeAssumptions.method_set
+  metricValue.TypeAssumptions.ptr_method_set
 
 structure metricSample [FfiSyntax] where
   mk ::
@@ -14871,6 +15295,8 @@ class metricSample.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   set_name : ∀ (x : metricSample) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet metricSample.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : metricSample)))
   get_value : ∀ (x : metricSample), go.IsGoStepPureDetTagged under (StructFieldGet metricSample.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : metricSample) (y : metricValue), go.IsGoStepPureDetTagged under (StructFieldSet metricSample.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : metricSample)))
+  method_set : go.MethodSetIs metricSample.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType metricSample.ty) []
 
 attribute [instance] metricSample.TypeAssumptions.type_repr
   metricSample.TypeAssumptions.underlying
@@ -14879,6 +15305,8 @@ attribute [instance] metricSample.TypeAssumptions.type_repr
   metricSample.TypeAssumptions.set_name
   metricSample.TypeAssumptions.get_value
   metricSample.TypeAssumptions.set_value
+  metricSample.TypeAssumptions.method_set
+  metricSample.TypeAssumptions.ptr_method_set
 
 structure metricFloat64Histogram [FfiSyntax] where
   mk ::
@@ -14910,6 +15338,8 @@ class metricFloat64Histogram.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLo
   set_counts : ∀ (x : metricFloat64Histogram) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet metricFloat64Histogram.underlying go!"counts") (PairV #x #y) (Val #(({ x with counts' := y } : metricFloat64Histogram)))
   get_buckets : ∀ (x : metricFloat64Histogram), go.IsGoStepPureDetTagged under (StructFieldGet metricFloat64Histogram.underlying go!"buckets") #x (Val #(x.buckets'))
   set_buckets : ∀ (x : metricFloat64Histogram) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet metricFloat64Histogram.underlying go!"buckets") (PairV #x #y) (Val #(({ x with buckets' := y } : metricFloat64Histogram)))
+  method_set : go.MethodSetIs metricFloat64Histogram.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType metricFloat64Histogram.ty) []
 
 attribute [instance] metricFloat64Histogram.TypeAssumptions.type_repr
   metricFloat64Histogram.TypeAssumptions.underlying
@@ -14918,6 +15348,8 @@ attribute [instance] metricFloat64Histogram.TypeAssumptions.type_repr
   metricFloat64Histogram.TypeAssumptions.set_counts
   metricFloat64Histogram.TypeAssumptions.get_buckets
   metricFloat64Histogram.TypeAssumptions.set_buckets
+  metricFloat64Histogram.TypeAssumptions.method_set
+  metricFloat64Histogram.TypeAssumptions.ptr_method_set
 
 structure metricName [FfiSyntax] where
   mk ::
@@ -14949,6 +15381,8 @@ class metricName.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_name : ∀ (x : metricName) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet metricName.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : metricName)))
   get_kind : ∀ (x : metricName), go.IsGoStepPureDetTagged under (StructFieldGet metricName.underlying go!"kind") #x (Val #(x.kind'))
   set_kind : ∀ (x : metricName) (y : metricKind), go.IsGoStepPureDetTagged under (StructFieldSet metricName.underlying go!"kind") (PairV #x #y) (Val #(({ x with kind' := y } : metricName)))
+  method_set : go.MethodSetIs metricName.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType metricName.ty) []
 
 attribute [instance] metricName.TypeAssumptions.type_repr
   metricName.TypeAssumptions.underlying
@@ -14957,6 +15391,8 @@ attribute [instance] metricName.TypeAssumptions.type_repr
   metricName.TypeAssumptions.set_name
   metricName.TypeAssumptions.get_kind
   metricName.TypeAssumptions.set_kind
+  metricName.TypeAssumptions.method_set
+  metricName.TypeAssumptions.ptr_method_set
 
 axiom finBlock : Type
 axiom finBlock.zero_val : ZeroVal finBlock
@@ -14966,10 +15402,14 @@ class finBlock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying finBlock.underlying finBlock
   underlying : go.UnderlyingDirectedEq finBlock.ty finBlock.underlying
   isUnderlying : go.IsUnderlying finBlock.underlying finBlock.underlying
+  method_set : go.MethodSetIs finBlock.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType finBlock.ty) []
 
 attribute [instance] finBlock.TypeAssumptions.type_repr
   finBlock.TypeAssumptions.underlying
   finBlock.TypeAssumptions.isUnderlying
+  finBlock.TypeAssumptions.method_set
+  finBlock.TypeAssumptions.ptr_method_set
 
 axiom finalizer : Type
 axiom finalizer.zero_val : ZeroVal finalizer
@@ -14979,10 +15419,14 @@ class finalizer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying finalizer.underlying finalizer
   underlying : go.UnderlyingDirectedEq finalizer.ty finalizer.underlying
   isUnderlying : go.IsUnderlying finalizer.underlying finalizer.underlying
+  method_set : go.MethodSetIs finalizer.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType finalizer.ty) []
 
 attribute [instance] finalizer.TypeAssumptions.type_repr
   finalizer.TypeAssumptions.underlying
   finalizer.TypeAssumptions.isUnderlying
+  finalizer.TypeAssumptions.method_set
+  finalizer.TypeAssumptions.ptr_method_set
 
 structure fixalloc [FfiSyntax] where
   mk ::
@@ -15046,6 +15490,8 @@ class fixalloc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_stat : ∀ (x : fixalloc) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet fixalloc.underlying go!"stat") (PairV #x #y) (Val #(({ x with stat' := y } : fixalloc)))
   get_zero : ∀ (x : fixalloc), go.IsGoStepPureDetTagged under (StructFieldGet fixalloc.underlying go!"zero") #x (Val #(x.zero'))
   set_zero : ∀ (x : fixalloc) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet fixalloc.underlying go!"zero") (PairV #x #y) (Val #(({ x with zero' := y } : fixalloc)))
+  method_set : go.MethodSetIs fixalloc.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType fixalloc.ty) [(go!"runtime.alloc", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"runtime.free", (some (go.signature.Signature [«unsafe».Pointer] false []))), (go!"runtime.init", (some (go.signature.Signature [go.uintptr, (go.GoType.FunctionType (go.signature.Signature [«unsafe».Pointer, «unsafe».Pointer] false [])), «unsafe».Pointer, (go.GoType.PointerType sysMemStat.ty)] false [])))]
 
 attribute [instance] fixalloc.TypeAssumptions.type_repr
   fixalloc.TypeAssumptions.underlying
@@ -15070,6 +15516,8 @@ attribute [instance] fixalloc.TypeAssumptions.type_repr
   fixalloc.TypeAssumptions.set_stat
   fixalloc.TypeAssumptions.get_zero
   fixalloc.TypeAssumptions.set_zero
+  fixalloc.TypeAssumptions.method_set
+  fixalloc.TypeAssumptions.ptr_method_set
 
 structure mlink [FfiSyntax] where
   mk ::
@@ -15101,6 +15549,8 @@ class mlink.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set__0 : ∀ (x : mlink) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet mlink.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : mlink)))
   get_next : ∀ (x : mlink), go.IsGoStepPureDetTagged under (StructFieldGet mlink.underlying go!"next") #x (Val #(x.next'))
   set_next : ∀ (x : mlink) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet mlink.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : mlink)))
+  method_set : go.MethodSetIs mlink.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mlink.ty) []
 
 attribute [instance] mlink.TypeAssumptions.type_repr
   mlink.TypeAssumptions.underlying
@@ -15109,6 +15559,8 @@ attribute [instance] mlink.TypeAssumptions.type_repr
   mlink.TypeAssumptions.set__0
   mlink.TypeAssumptions.get_next
   mlink.TypeAssumptions.set_next
+  mlink.TypeAssumptions.method_set
+  mlink.TypeAssumptions.ptr_method_set
 
 abbrev gcMarkWorkerMode [FfiSyntax] : Type := w64
 
@@ -15117,8 +15569,12 @@ abbrev gcMarkWorkerMode [FfiSyntax] : Type := w64
 
 class gcMarkWorkerMode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq gcMarkWorkerMode.ty gcMarkWorkerMode.underlying
+  method_set : go.MethodSetIs gcMarkWorkerMode.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gcMarkWorkerMode.ty) []
 
 attribute [instance] gcMarkWorkerMode.TypeAssumptions.underlying
+  gcMarkWorkerMode.TypeAssumptions.method_set
+  gcMarkWorkerMode.TypeAssumptions.ptr_method_set
 
 axiom workType : Type
 axiom workType.zero_val : ZeroVal workType
@@ -15128,10 +15584,14 @@ class workType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying workType.underlying workType
   underlying : go.UnderlyingDirectedEq workType.ty workType.underlying
   isUnderlying : go.IsUnderlying workType.underlying workType.underlying
+  method_set : go.MethodSetIs workType.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType workType.ty) [(go!"runtime.accumulate", (some (go.signature.Signature [go.int64, go.bool] false []))), (go!"runtime.accumulateGCPauseTime", (some (go.signature.Signature [go.int64, go.int32] false [])))]
 
 attribute [instance] workType.TypeAssumptions.type_repr
   workType.TypeAssumptions.underlying
   workType.TypeAssumptions.isUnderlying
+  workType.TypeAssumptions.method_set
+  workType.TypeAssumptions.ptr_method_set
 
 abbrev gcMode [FfiSyntax] : Type := w64
 
@@ -15140,8 +15600,12 @@ abbrev gcMode [FfiSyntax] : Type := w64
 
 class gcMode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq gcMode.ty gcMode.underlying
+  method_set : go.MethodSetIs gcMode.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gcMode.ty) []
 
 attribute [instance] gcMode.TypeAssumptions.underlying
+  gcMode.TypeAssumptions.method_set
+  gcMode.TypeAssumptions.ptr_method_set
 
 abbrev gcTriggerKind [FfiSyntax] : Type := w64
 
@@ -15150,8 +15614,12 @@ abbrev gcTriggerKind [FfiSyntax] : Type := w64
 
 class gcTriggerKind.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq gcTriggerKind.ty gcTriggerKind.underlying
+  method_set : go.MethodSetIs gcTriggerKind.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gcTriggerKind.ty) []
 
 attribute [instance] gcTriggerKind.TypeAssumptions.underlying
+  gcTriggerKind.TypeAssumptions.method_set
+  gcTriggerKind.TypeAssumptions.ptr_method_set
 
 structure gcTrigger [FfiSyntax] where
   mk ::
@@ -15187,6 +15655,8 @@ class gcTrigger.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_now : ∀ (x : gcTrigger) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet gcTrigger.underlying go!"now") (PairV #x #y) (Val #(({ x with now' := y } : gcTrigger)))
   get_n : ∀ (x : gcTrigger), go.IsGoStepPureDetTagged under (StructFieldGet gcTrigger.underlying go!"n") #x (Val #(x.n'))
   set_n : ∀ (x : gcTrigger) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet gcTrigger.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : gcTrigger)))
+  method_set : go.MethodSetIs gcTrigger.ty [(go!"runtime.test", (some (go.signature.Signature [] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gcTrigger.ty) [(go!"runtime.test", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] gcTrigger.TypeAssumptions.type_repr
   gcTrigger.TypeAssumptions.underlying
@@ -15197,6 +15667,8 @@ attribute [instance] gcTrigger.TypeAssumptions.type_repr
   gcTrigger.TypeAssumptions.set_now
   gcTrigger.TypeAssumptions.get_n
   gcTrigger.TypeAssumptions.set_n
+  gcTrigger.TypeAssumptions.method_set
+  gcTrigger.TypeAssumptions.ptr_method_set
 
 structure gcBgMarkWorkerNode [FfiSyntax] where
   mk ::
@@ -15232,6 +15704,8 @@ class gcBgMarkWorkerNode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   set_gp : ∀ (x : gcBgMarkWorkerNode) (y : guintptr), go.IsGoStepPureDetTagged under (StructFieldSet gcBgMarkWorkerNode.underlying go!"gp") (PairV #x #y) (Val #(({ x with gp' := y } : gcBgMarkWorkerNode)))
   get_m : ∀ (x : gcBgMarkWorkerNode), go.IsGoStepPureDetTagged under (StructFieldGet gcBgMarkWorkerNode.underlying go!"m") #x (Val #(x.m'))
   set_m : ∀ (x : gcBgMarkWorkerNode) (y : muintptr), go.IsGoStepPureDetTagged under (StructFieldSet gcBgMarkWorkerNode.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : gcBgMarkWorkerNode)))
+  method_set : go.MethodSetIs gcBgMarkWorkerNode.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gcBgMarkWorkerNode.ty) []
 
 attribute [instance] gcBgMarkWorkerNode.TypeAssumptions.type_repr
   gcBgMarkWorkerNode.TypeAssumptions.underlying
@@ -15242,6 +15716,8 @@ attribute [instance] gcBgMarkWorkerNode.TypeAssumptions.type_repr
   gcBgMarkWorkerNode.TypeAssumptions.set_gp
   gcBgMarkWorkerNode.TypeAssumptions.get_m
   gcBgMarkWorkerNode.TypeAssumptions.set_m
+  gcBgMarkWorkerNode.TypeAssumptions.method_set
+  gcBgMarkWorkerNode.TypeAssumptions.ptr_method_set
 
 structure gcBgMarkWorkerNodePadded [FfiSyntax] where
   mk ::
@@ -15273,6 +15749,8 @@ class gcBgMarkWorkerNodePadded.TypeAssumptions [FfiSyntax] [GoGlobalContext] [Go
   set_gcBgMarkWorkerNode : ∀ (x : gcBgMarkWorkerNodePadded) (y : gcBgMarkWorkerNode), go.IsGoStepPureDetTagged under (StructFieldSet gcBgMarkWorkerNodePadded.underlying go!"gcBgMarkWorkerNode") (PairV #x #y) (Val #(({ x with gcBgMarkWorkerNode' := y } : gcBgMarkWorkerNodePadded)))
   get_pad : ∀ (x : gcBgMarkWorkerNodePadded), go.IsGoStepPureDetTagged under (StructFieldGet gcBgMarkWorkerNodePadded.underlying go!"pad") #x (Val #(x.pad'))
   set_pad : ∀ (x : gcBgMarkWorkerNodePadded) (y : (GoArray w8 480)), go.IsGoStepPureDetTagged under (StructFieldSet gcBgMarkWorkerNodePadded.underlying go!"pad") (PairV #x #y) (Val #(({ x with pad' := y } : gcBgMarkWorkerNodePadded)))
+  method_set : go.MethodSetIs gcBgMarkWorkerNodePadded.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gcBgMarkWorkerNodePadded.ty) []
 
 attribute [instance] gcBgMarkWorkerNodePadded.TypeAssumptions.type_repr
   gcBgMarkWorkerNodePadded.TypeAssumptions.underlying
@@ -15281,6 +15759,8 @@ attribute [instance] gcBgMarkWorkerNodePadded.TypeAssumptions.type_repr
   gcBgMarkWorkerNodePadded.TypeAssumptions.set_gcBgMarkWorkerNode
   gcBgMarkWorkerNodePadded.TypeAssumptions.get_pad
   gcBgMarkWorkerNodePadded.TypeAssumptions.set_pad
+  gcBgMarkWorkerNodePadded.TypeAssumptions.method_set
+  gcBgMarkWorkerNodePadded.TypeAssumptions.ptr_method_set
 
 axiom gcCPULimiterState : Type
 axiom gcCPULimiterState.zero_val : ZeroVal gcCPULimiterState
@@ -15290,10 +15770,14 @@ class gcCPULimiterState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCo
   type_repr : go.TypeReprUnderlying gcCPULimiterState.underlying gcCPULimiterState
   underlying : go.UnderlyingDirectedEq gcCPULimiterState.ty gcCPULimiterState.underlying
   isUnderlying : go.IsUnderlying gcCPULimiterState.underlying gcCPULimiterState.underlying
+  method_set : go.MethodSetIs gcCPULimiterState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gcCPULimiterState.ty) [(go!"runtime.accumulate", (some (go.signature.Signature [go.int64, go.int64] false []))), (go!"runtime.addAssistTime", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.addIdleTime", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.finishGCTransition", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.limiting", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.needUpdate", (some (go.signature.Signature [go.int64] false [go.bool]))), (go!"runtime.resetCapacity", (some (go.signature.Signature [go.int64, go.int32] false []))), (go!"runtime.startGCTransition", (some (go.signature.Signature [go.bool, go.int64] false []))), (go!"runtime.tryLock", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.unlock", (some (go.signature.Signature [] false []))), (go!"runtime.update", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.updateLocked", (some (go.signature.Signature [go.int64] false [])))]
 
 attribute [instance] gcCPULimiterState.TypeAssumptions.type_repr
   gcCPULimiterState.TypeAssumptions.underlying
   gcCPULimiterState.TypeAssumptions.isUnderlying
+  gcCPULimiterState.TypeAssumptions.method_set
+  gcCPULimiterState.TypeAssumptions.ptr_method_set
 
 abbrev limiterEventType [FfiSyntax] : Type := w8
 
@@ -15302,8 +15786,12 @@ abbrev limiterEventType [FfiSyntax] : Type := w8
 
 class limiterEventType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq limiterEventType.ty limiterEventType.underlying
+  method_set : go.MethodSetIs limiterEventType.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType limiterEventType.ty) []
 
 attribute [instance] limiterEventType.TypeAssumptions.underlying
+  limiterEventType.TypeAssumptions.method_set
+  limiterEventType.TypeAssumptions.ptr_method_set
 
 abbrev limiterEventStamp [FfiSyntax] : Type := w64
 
@@ -15312,8 +15800,12 @@ abbrev limiterEventStamp [FfiSyntax] : Type := w64
 
 class limiterEventStamp.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq limiterEventStamp.ty limiterEventStamp.underlying
+  method_set : go.MethodSetIs limiterEventStamp.ty [(go!"runtime.duration", (some (go.signature.Signature [go.int64] false [go.int64]))), (go!"runtime.typ", (some (go.signature.Signature [] false [limiterEventType.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType limiterEventStamp.ty) [(go!"runtime.duration", (some (go.signature.Signature [go.int64] false [go.int64]))), (go!"runtime.typ", (some (go.signature.Signature [] false [limiterEventType.ty])))]
 
 attribute [instance] limiterEventStamp.TypeAssumptions.underlying
+  limiterEventStamp.TypeAssumptions.method_set
+  limiterEventStamp.TypeAssumptions.ptr_method_set
 
 structure limiterEvent [FfiSyntax] where
   mk ::
@@ -15341,12 +15833,16 @@ class limiterEvent.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   layout : go.StructLayout limiterEvent [(go!"stamp", typeSize _root_.Perennial.internal.runtime.atomic.Uint64, typeAlign _root_.Perennial.internal.runtime.atomic.Uint64)]
   get_stamp : ∀ (x : limiterEvent), go.IsGoStepPureDetTagged under (StructFieldGet limiterEvent.underlying go!"stamp") #x (Val #(x.stamp'))
   set_stamp : ∀ (x : limiterEvent) (y : _root_.Perennial.internal.runtime.atomic.Uint64), go.IsGoStepPureDetTagged under (StructFieldSet limiterEvent.underlying go!"stamp") (PairV #x #y) (Val #(({ x with stamp' := y } : limiterEvent)))
+  method_set : go.MethodSetIs limiterEvent.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType limiterEvent.ty) [(go!"runtime.consume", (some (go.signature.Signature [go.int64] false [limiterEventType.ty, go.int64]))), (go!"runtime.start", (some (go.signature.Signature [limiterEventType.ty, go.int64] false [go.bool]))), (go!"runtime.stop", (some (go.signature.Signature [limiterEventType.ty, go.int64] false [])))]
 
 attribute [instance] limiterEvent.TypeAssumptions.type_repr
   limiterEvent.TypeAssumptions.underlying
   limiterEvent.TypeAssumptions.layout
   limiterEvent.TypeAssumptions.get_stamp
   limiterEvent.TypeAssumptions.set_stamp
+  limiterEvent.TypeAssumptions.method_set
+  limiterEvent.TypeAssumptions.ptr_method_set
 
 abbrev gcDrainFlags [FfiSyntax] : Type := w64
 
@@ -15355,8 +15851,12 @@ abbrev gcDrainFlags [FfiSyntax] : Type := w64
 
 class gcDrainFlags.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq gcDrainFlags.ty gcDrainFlags.underlying
+  method_set : go.MethodSetIs gcDrainFlags.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gcDrainFlags.ty) []
 
 attribute [instance] gcDrainFlags.TypeAssumptions.underlying
+  gcDrainFlags.TypeAssumptions.method_set
+  gcDrainFlags.TypeAssumptions.ptr_method_set
 
 abbrev spanScanOwnership [FfiSyntax] : Type := w8
 
@@ -15365,8 +15865,12 @@ abbrev spanScanOwnership [FfiSyntax] : Type := w8
 
 class spanScanOwnership.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq spanScanOwnership.ty spanScanOwnership.underlying
+  method_set : go.MethodSetIs spanScanOwnership.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType spanScanOwnership.ty) [(go!"runtime.load", (some (go.signature.Signature [] false [spanScanOwnership.ty]))), (go!"runtime.or", (some (go.signature.Signature [spanScanOwnership.ty] false [spanScanOwnership.ty])))]
 
 attribute [instance] spanScanOwnership.TypeAssumptions.underlying
+  spanScanOwnership.TypeAssumptions.method_set
+  spanScanOwnership.TypeAssumptions.ptr_method_set
 
 structure spanInlineMarkBits [FfiSyntax] where
   mk ::
@@ -15406,6 +15910,8 @@ class spanInlineMarkBits.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   set_marks : ∀ (x : spanInlineMarkBits) (y : (GoArray w8 63)), go.IsGoStepPureDetTagged under (StructFieldSet spanInlineMarkBits.underlying go!"marks") (PairV #x #y) (Val #(({ x with marks' := y } : spanInlineMarkBits)))
   get_class : ∀ (x : spanInlineMarkBits), go.IsGoStepPureDetTagged under (StructFieldGet spanInlineMarkBits.underlying go!"class") #x (Val #(x.class'))
   set_class : ∀ (x : spanInlineMarkBits) (y : spanClass), go.IsGoStepPureDetTagged under (StructFieldSet spanInlineMarkBits.underlying go!"class") (PairV #x #y) (Val #(({ x with class' := y } : spanInlineMarkBits)))
+  method_set : go.MethodSetIs spanInlineMarkBits.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType spanInlineMarkBits.ty) [(go!"runtime.init", (some (go.signature.Signature [spanClass.ty, go.bool] false []))), (go!"runtime.release", (some (go.signature.Signature [] false [spanScanOwnership.ty]))), (go!"runtime.tryAcquire", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] spanInlineMarkBits.TypeAssumptions.type_repr
   spanInlineMarkBits.TypeAssumptions.underlying
@@ -15418,6 +15924,8 @@ attribute [instance] spanInlineMarkBits.TypeAssumptions.type_repr
   spanInlineMarkBits.TypeAssumptions.set_marks
   spanInlineMarkBits.TypeAssumptions.get_class
   spanInlineMarkBits.TypeAssumptions.set_class
+  spanInlineMarkBits.TypeAssumptions.method_set
+  spanInlineMarkBits.TypeAssumptions.ptr_method_set
 
 axiom spanQueue : Type
 axiom spanQueue.zero_val : ZeroVal spanQueue
@@ -15427,10 +15935,14 @@ class spanQueue.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying spanQueue.underlying spanQueue
   underlying : go.UnderlyingDirectedEq spanQueue.ty spanQueue.underlying
   isUnderlying : go.IsUnderlying spanQueue.underlying spanQueue.underlying
+  method_set : go.MethodSetIs spanQueue.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType spanQueue.ty) [(go!"runtime.chainEmpty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.destroy", (some (go.signature.Signature [] false []))), (go!"runtime.drain", (some (go.signature.Signature [go.uint32] false []))), (go!"runtime.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.flush", (some (go.signature.Signature [] false []))), (go!"runtime.put", (some (go.signature.Signature [objptr.ty] false [go.bool]))), (go!"runtime.putFast", (some (go.signature.Signature [objptr.ty] false [go.bool]))), (go!"runtime.refill", (some (go.signature.Signature [(go.GoType.PointerType spanSPMC.ty)] false [objptr.ty]))), (go!"runtime.steal", (some (go.signature.Signature [(go.GoType.PointerType spanQueue.ty)] false [objptr.ty]))), (go!"runtime.tryDrain", (some (go.signature.Signature [(go.GoType.PointerType spanSPMC.ty), go.uint32] false [go.bool]))), (go!"runtime.tryGetFast", (some (go.signature.Signature [] false [objptr.ty])))]
 
 attribute [instance] spanQueue.TypeAssumptions.type_repr
   spanQueue.TypeAssumptions.underlying
   spanQueue.TypeAssumptions.isUnderlying
+  spanQueue.TypeAssumptions.method_set
+  spanQueue.TypeAssumptions.ptr_method_set
 
 structure spanSPMC [FfiSyntax] where
   mk ::
@@ -15486,6 +15998,8 @@ class spanSPMC.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_cap : ∀ (x : spanSPMC) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet spanSPMC.underlying go!"cap") (PairV #x #y) (Val #(({ x with cap' := y } : spanSPMC)))
   get_ring : ∀ (x : spanSPMC), go.IsGoStepPureDetTagged under (StructFieldGet spanSPMC.underlying go!"ring") #x (Val #(x.ring'))
   set_ring : ∀ (x : spanSPMC) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet spanSPMC.underlying go!"ring") (PairV #x #y) (Val #(({ x with ring' := y } : spanSPMC)))
+  method_set : go.MethodSetIs spanSPMC.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType spanSPMC.ty) [(go!"runtime.deinit", (some (go.signature.Signature [] false []))), (go!"runtime.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.slot", (some (go.signature.Signature [go.uint32] false [(go.GoType.PointerType objptr.ty)])))]
 
 attribute [instance] spanSPMC.TypeAssumptions.type_repr
   spanSPMC.TypeAssumptions.underlying
@@ -15506,6 +16020,8 @@ attribute [instance] spanSPMC.TypeAssumptions.type_repr
   spanSPMC.TypeAssumptions.set_cap
   spanSPMC.TypeAssumptions.get_ring
   spanSPMC.TypeAssumptions.set_ring
+  spanSPMC.TypeAssumptions.method_set
+  spanSPMC.TypeAssumptions.ptr_method_set
 
 abbrev objptr [FfiSyntax] : Type := w64
 
@@ -15514,8 +16030,12 @@ abbrev objptr [FfiSyntax] : Type := w64
 
 class objptr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq objptr.ty objptr.underlying
+  method_set : go.MethodSetIs objptr.ty [(go!"runtime.objIndex", (some (go.signature.Signature [] false [go.uint16]))), (go!"runtime.spanBase", (some (go.signature.Signature [] false [go.uintptr])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType objptr.ty) [(go!"runtime.objIndex", (some (go.signature.Signature [] false [go.uint16]))), (go!"runtime.spanBase", (some (go.signature.Signature [] false [go.uintptr])))]
 
 attribute [instance] objptr.TypeAssumptions.underlying
+  objptr.TypeAssumptions.method_set
+  objptr.TypeAssumptions.ptr_method_set
 
 structure sizeClassScanStats [FfiSyntax] where
   mk ::
@@ -15559,6 +16079,8 @@ class sizeClassScanStats.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   set_spanObjsSparseScanned : ∀ (x : sizeClassScanStats) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet sizeClassScanStats.underlying go!"spanObjsSparseScanned") (PairV #x #y) (Val #(({ x with spanObjsSparseScanned' := y } : sizeClassScanStats)))
   get_sparseObjsScanned : ∀ (x : sizeClassScanStats), go.IsGoStepPureDetTagged under (StructFieldGet sizeClassScanStats.underlying go!"sparseObjsScanned") #x (Val #(x.sparseObjsScanned'))
   set_sparseObjsScanned : ∀ (x : sizeClassScanStats) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet sizeClassScanStats.underlying go!"sparseObjsScanned") (PairV #x #y) (Val #(({ x with sparseObjsScanned' := y } : sizeClassScanStats)))
+  method_set : go.MethodSetIs sizeClassScanStats.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sizeClassScanStats.ty) []
 
 attribute [instance] sizeClassScanStats.TypeAssumptions.type_repr
   sizeClassScanStats.TypeAssumptions.underlying
@@ -15573,6 +16095,8 @@ attribute [instance] sizeClassScanStats.TypeAssumptions.type_repr
   sizeClassScanStats.TypeAssumptions.set_spanObjsSparseScanned
   sizeClassScanStats.TypeAssumptions.get_sparseObjsScanned
   sizeClassScanStats.TypeAssumptions.set_sparseObjsScanned
+  sizeClassScanStats.TypeAssumptions.method_set
+  sizeClassScanStats.TypeAssumptions.ptr_method_set
 
 axiom gcControllerState : Type
 axiom gcControllerState.zero_val : ZeroVal gcControllerState
@@ -15582,10 +16106,14 @@ class gcControllerState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCo
   type_repr : go.TypeReprUnderlying gcControllerState.underlying gcControllerState
   underlying : go.UnderlyingDirectedEq gcControllerState.ty gcControllerState.underlying
   isUnderlying : go.IsUnderlying gcControllerState.underlying gcControllerState.underlying
+  method_set : go.MethodSetIs gcControllerState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gcControllerState.ty) [(go!"runtime.addGlobals", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.addIdleMarkWorker", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.addScannableStack", (some (go.signature.Signature [(go.GoType.PointerType p.ty), go.int64] false []))), (go!"runtime.assignWaitingGCWorker", (some (go.signature.Signature [(go.GoType.PointerType p.ty), go.int64] false [go.bool, go.int64]))), (go!"runtime.commit", (some (go.signature.Signature [go.bool] false []))), (go!"runtime.endCycle", (some (go.signature.Signature [go.int64, go.int, go.bool] false []))), (go!"runtime.enlistWorker", (some (go.signature.Signature [] false []))), (go!"runtime.findRunnableGCWorker", (some (go.signature.Signature [(go.GoType.PointerType p.ty), go.int64] false [(go.GoType.PointerType g.ty), go.int64]))), (go!"runtime.heapGoal", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.heapGoalInternal", (some (go.signature.Signature [] false [go.uint64, go.uint64]))), (go!"runtime.init", (some (go.signature.Signature [go.int32, go.int64] false []))), (go!"runtime.markWorkerStop", (some (go.signature.Signature [gcMarkWorkerMode.ty, go.int64] false []))), (go!"runtime.memoryLimitHeapGoal", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.needIdleMarkWorker", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.releaseNextGCMarkWorker", (some (go.signature.Signature [(go.GoType.PointerType p.ty)] false []))), (go!"runtime.removeIdleMarkWorker", (some (go.signature.Signature [] false []))), (go!"runtime.resetLive", (some (go.signature.Signature [go.uint64] false []))), (go!"runtime.revise", (some (go.signature.Signature [] false []))), (go!"runtime.setGCPercent", (some (go.signature.Signature [go.int32] false [go.int32]))), (go!"runtime.setMaxIdleMarkWorkers", (some (go.signature.Signature [go.int32] false []))), (go!"runtime.setMemoryLimit", (some (go.signature.Signature [go.int64] false [go.int64]))), (go!"runtime.startCycle", (some (go.signature.Signature [go.int64, go.int, gcTrigger.ty] false []))), (go!"runtime.trigger", (some (go.signature.Signature [] false [go.uint64, go.uint64]))), (go!"runtime.update", (some (go.signature.Signature [go.int64, go.int64] false [])))]
 
 attribute [instance] gcControllerState.TypeAssumptions.type_repr
   gcControllerState.TypeAssumptions.underlying
   gcControllerState.TypeAssumptions.isUnderlying
+  gcControllerState.TypeAssumptions.method_set
+  gcControllerState.TypeAssumptions.ptr_method_set
 
 structure piController [FfiSyntax] where
   mk ::
@@ -15641,6 +16169,8 @@ class piController.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   set_errOverflow : ∀ (x : piController) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet piController.underlying go!"errOverflow") (PairV #x #y) (Val #(({ x with errOverflow' := y } : piController)))
   get_inputOverflow : ∀ (x : piController), go.IsGoStepPureDetTagged under (StructFieldGet piController.underlying go!"inputOverflow") #x (Val #(x.inputOverflow'))
   set_inputOverflow : ∀ (x : piController) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet piController.underlying go!"inputOverflow") (PairV #x #y) (Val #(({ x with inputOverflow' := y } : piController)))
+  method_set : go.MethodSetIs piController.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType piController.ty) [(go!"runtime.next", (some (go.signature.Signature [go.float64, go.float64, go.float64] false [go.float64, go.bool]))), (go!"runtime.reset", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] piController.TypeAssumptions.type_repr
   piController.TypeAssumptions.underlying
@@ -15661,6 +16191,8 @@ attribute [instance] piController.TypeAssumptions.type_repr
   piController.TypeAssumptions.set_errOverflow
   piController.TypeAssumptions.get_inputOverflow
   piController.TypeAssumptions.set_inputOverflow
+  piController.TypeAssumptions.method_set
+  piController.TypeAssumptions.ptr_method_set
 
 structure scavengerState [FfiSyntax] where
   mk ::
@@ -15740,6 +16272,8 @@ class scavengerState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_shouldStop : ∀ (x : scavengerState) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet scavengerState.underlying go!"shouldStop") (PairV #x #y) (Val #(({ x with shouldStop' := y } : scavengerState)))
   get_gomaxprocs : ∀ (x : scavengerState), go.IsGoStepPureDetTagged under (StructFieldGet scavengerState.underlying go!"gomaxprocs") #x (Val #(x.gomaxprocs'))
   set_gomaxprocs : ∀ (x : scavengerState) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet scavengerState.underlying go!"gomaxprocs") (PairV #x #y) (Val #(({ x with gomaxprocs' := y } : scavengerState)))
+  method_set : go.MethodSetIs scavengerState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType scavengerState.ty) [(go!"runtime.controllerFailed", (some (go.signature.Signature [] false []))), (go!"runtime.init", (some (go.signature.Signature [] false []))), (go!"runtime.park", (some (go.signature.Signature [] false []))), (go!"runtime.ready", (some (go.signature.Signature [] false []))), (go!"runtime.run", (some (go.signature.Signature [] false [go.uintptr, go.float64]))), (go!"runtime.sleep", (some (go.signature.Signature [go.float64] false []))), (go!"runtime.wake", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] scavengerState.TypeAssumptions.type_repr
   scavengerState.TypeAssumptions.underlying
@@ -15772,6 +16306,8 @@ attribute [instance] scavengerState.TypeAssumptions.type_repr
   scavengerState.TypeAssumptions.set_shouldStop
   scavengerState.TypeAssumptions.get_gomaxprocs
   scavengerState.TypeAssumptions.set_gomaxprocs
+  scavengerState.TypeAssumptions.method_set
+  scavengerState.TypeAssumptions.ptr_method_set
 
 structure atomicOffAddr [FfiSyntax] where
   mk ::
@@ -15799,12 +16335,16 @@ class atomicOffAddr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   layout : go.StructLayout atomicOffAddr [(go!"a", typeSize _root_.Perennial.internal.runtime.atomic.Int64, typeAlign _root_.Perennial.internal.runtime.atomic.Int64)]
   get_a : ∀ (x : atomicOffAddr), go.IsGoStepPureDetTagged under (StructFieldGet atomicOffAddr.underlying go!"a") #x (Val #(x.a'))
   set_a : ∀ (x : atomicOffAddr) (y : _root_.Perennial.internal.runtime.atomic.Int64), go.IsGoStepPureDetTagged under (StructFieldSet atomicOffAddr.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : atomicOffAddr)))
+  method_set : go.MethodSetIs atomicOffAddr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType atomicOffAddr.ty) [(go!"Clear", (some (go.signature.Signature [] false []))), (go!"Load", (some (go.signature.Signature [] false [go.uintptr, go.bool]))), (go!"StoreMarked", (some (go.signature.Signature [go.uintptr] false []))), (go!"StoreMin", (some (go.signature.Signature [go.uintptr] false []))), (go!"StoreUnmark", (some (go.signature.Signature [go.uintptr, go.uintptr] false [])))]
 
 attribute [instance] atomicOffAddr.TypeAssumptions.type_repr
   atomicOffAddr.TypeAssumptions.underlying
   atomicOffAddr.TypeAssumptions.layout
   atomicOffAddr.TypeAssumptions.get_a
   atomicOffAddr.TypeAssumptions.set_a
+  atomicOffAddr.TypeAssumptions.method_set
+  atomicOffAddr.TypeAssumptions.ptr_method_set
 
 structure offAddr [FfiSyntax] where
   mk ::
@@ -15832,12 +16372,16 @@ class offAddr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   layout : go.StructLayout offAddr [(go!"a", typeSize w64, typeAlign w64)]
   get_a : ∀ (x : offAddr), go.IsGoStepPureDetTagged under (StructFieldGet offAddr.underlying go!"a") #x (Val #(x.a'))
   set_a : ∀ (x : offAddr) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet offAddr.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : offAddr)))
+  method_set : go.MethodSetIs offAddr.ty [(go!"runtime.add", (some (go.signature.Signature [go.uintptr] false [offAddr.ty]))), (go!"runtime.addr", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.diff", (some (go.signature.Signature [offAddr.ty] false [go.uintptr]))), (go!"runtime.equal", (some (go.signature.Signature [offAddr.ty] false [go.bool]))), (go!"runtime.lessEqual", (some (go.signature.Signature [offAddr.ty] false [go.bool]))), (go!"runtime.lessThan", (some (go.signature.Signature [offAddr.ty] false [go.bool]))), (go!"runtime.sub", (some (go.signature.Signature [go.uintptr] false [offAddr.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType offAddr.ty) [(go!"runtime.add", (some (go.signature.Signature [go.uintptr] false [offAddr.ty]))), (go!"runtime.addr", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.diff", (some (go.signature.Signature [offAddr.ty] false [go.uintptr]))), (go!"runtime.equal", (some (go.signature.Signature [offAddr.ty] false [go.bool]))), (go!"runtime.lessEqual", (some (go.signature.Signature [offAddr.ty] false [go.bool]))), (go!"runtime.lessThan", (some (go.signature.Signature [offAddr.ty] false [go.bool]))), (go!"runtime.sub", (some (go.signature.Signature [go.uintptr] false [offAddr.ty])))]
 
 attribute [instance] offAddr.TypeAssumptions.type_repr
   offAddr.TypeAssumptions.underlying
   offAddr.TypeAssumptions.layout
   offAddr.TypeAssumptions.get_a
   offAddr.TypeAssumptions.set_a
+  offAddr.TypeAssumptions.method_set
+  offAddr.TypeAssumptions.ptr_method_set
 
 structure scavengeIndex [FfiSyntax] where
   mk ::
@@ -15897,6 +16441,8 @@ class scavengeIndex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_gen : ∀ (x : scavengeIndex) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet scavengeIndex.underlying go!"gen") (PairV #x #y) (Val #(({ x with gen' := y } : scavengeIndex)))
   get_test : ∀ (x : scavengeIndex), go.IsGoStepPureDetTagged under (StructFieldGet scavengeIndex.underlying go!"test") #x (Val #(x.test'))
   set_test : ∀ (x : scavengeIndex) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet scavengeIndex.underlying go!"test") (PairV #x #y) (Val #(({ x with test' := y } : scavengeIndex)))
+  method_set : go.MethodSetIs scavengeIndex.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType scavengeIndex.ty) [(go!"runtime.alloc", (some (go.signature.Signature [chunkIdx.ty, go.uint] false []))), (go!"runtime.find", (some (go.signature.Signature [go.bool] false [chunkIdx.ty, go.uint]))), (go!"runtime.free", (some (go.signature.Signature [chunkIdx.ty, go.uint, go.uint] false []))), (go!"runtime.grow", (some (go.signature.Signature [go.uintptr, go.uintptr, (go.GoType.PointerType sysMemStat.ty)] false [go.uintptr]))), (go!"runtime.init", (some (go.signature.Signature [go.bool, (go.GoType.PointerType sysMemStat.ty)] false [go.uintptr]))), (go!"runtime.nextGen", (some (go.signature.Signature [] false []))), (go!"runtime.setEmpty", (some (go.signature.Signature [chunkIdx.ty] false []))), (go!"runtime.sysGrow", (some (go.signature.Signature [go.uintptr, go.uintptr, (go.GoType.PointerType sysMemStat.ty)] false [go.uintptr]))), (go!"runtime.sysInit", (some (go.signature.Signature [go.bool, (go.GoType.PointerType sysMemStat.ty)] false [go.uintptr])))]
 
 attribute [instance] scavengeIndex.TypeAssumptions.type_repr
   scavengeIndex.TypeAssumptions.underlying
@@ -15919,6 +16465,8 @@ attribute [instance] scavengeIndex.TypeAssumptions.type_repr
   scavengeIndex.TypeAssumptions.set_gen
   scavengeIndex.TypeAssumptions.get_test
   scavengeIndex.TypeAssumptions.set_test
+  scavengeIndex.TypeAssumptions.method_set
+  scavengeIndex.TypeAssumptions.ptr_method_set
 
 structure atomicScavChunkData [FfiSyntax] where
   mk ::
@@ -15946,12 +16494,16 @@ class atomicScavChunkData.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocal
   layout : go.StructLayout atomicScavChunkData [(go!"value", typeSize _root_.Perennial.internal.runtime.atomic.Uint64, typeAlign _root_.Perennial.internal.runtime.atomic.Uint64)]
   get_value : ∀ (x : atomicScavChunkData), go.IsGoStepPureDetTagged under (StructFieldGet atomicScavChunkData.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : atomicScavChunkData) (y : _root_.Perennial.internal.runtime.atomic.Uint64), go.IsGoStepPureDetTagged under (StructFieldSet atomicScavChunkData.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : atomicScavChunkData)))
+  method_set : go.MethodSetIs atomicScavChunkData.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType atomicScavChunkData.ty) [(go!"runtime.load", (some (go.signature.Signature [] false [scavChunkData.ty]))), (go!"runtime.store", (some (go.signature.Signature [scavChunkData.ty] false [])))]
 
 attribute [instance] atomicScavChunkData.TypeAssumptions.type_repr
   atomicScavChunkData.TypeAssumptions.underlying
   atomicScavChunkData.TypeAssumptions.layout
   atomicScavChunkData.TypeAssumptions.get_value
   atomicScavChunkData.TypeAssumptions.set_value
+  atomicScavChunkData.TypeAssumptions.method_set
+  atomicScavChunkData.TypeAssumptions.ptr_method_set
 
 abbrev scavChunkFlags [FfiSyntax] : Type := w8
 
@@ -15960,8 +16512,12 @@ abbrev scavChunkFlags [FfiSyntax] : Type := w8
 
 class scavChunkFlags.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq scavChunkFlags.ty scavChunkFlags.underlying
+  method_set : go.MethodSetIs scavChunkFlags.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType scavChunkFlags.ty) [(go!"runtime.isEmpty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.setEmpty", (some (go.signature.Signature [] false []))), (go!"runtime.setNonEmpty", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] scavChunkFlags.TypeAssumptions.underlying
+  scavChunkFlags.TypeAssumptions.method_set
+  scavChunkFlags.TypeAssumptions.ptr_method_set
 
 structure scavChunkData [FfiSyntax] where
   mk ::
@@ -16001,6 +16557,8 @@ class scavChunkData.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_gen : ∀ (x : scavChunkData) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet scavChunkData.underlying go!"gen") (PairV #x #y) (Val #(({ x with gen' := y } : scavChunkData)))
   get_scavChunkFlags : ∀ (x : scavChunkData), go.IsGoStepPureDetTagged under (StructFieldGet scavChunkData.underlying go!"scavChunkFlags") #x (Val #(x.scavChunkFlags'))
   set_scavChunkFlags : ∀ (x : scavChunkData) (y : scavChunkFlags), go.IsGoStepPureDetTagged under (StructFieldSet scavChunkData.underlying go!"scavChunkFlags") (PairV #x #y) (Val #(({ x with scavChunkFlags' := y } : scavChunkData)))
+  method_set : go.MethodSetIs scavChunkData.ty [(go!"runtime.pack", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.shouldScavenge", (some (go.signature.Signature [go.uint32, go.bool] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType scavChunkData.ty) [(go!"runtime.alloc", (some (go.signature.Signature [go.uint, go.uint32] false []))), (go!"runtime.free", (some (go.signature.Signature [go.uint, go.uint32] false []))), (go!"runtime.isEmpty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.pack", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.setEmpty", (some (go.signature.Signature [] false []))), (go!"runtime.setNonEmpty", (some (go.signature.Signature [] false []))), (go!"runtime.shouldScavenge", (some (go.signature.Signature [go.uint32, go.bool] false [go.bool])))]
 
 attribute [instance] scavChunkData.TypeAssumptions.type_repr
   scavChunkData.TypeAssumptions.underlying
@@ -16013,6 +16571,8 @@ attribute [instance] scavChunkData.TypeAssumptions.type_repr
   scavChunkData.TypeAssumptions.set_gen
   scavChunkData.TypeAssumptions.get_scavChunkFlags
   scavChunkData.TypeAssumptions.set_scavChunkFlags
+  scavChunkData.TypeAssumptions.method_set
+  scavChunkData.TypeAssumptions.ptr_method_set
 
 structure workbufhdr [FfiSyntax] where
   mk ::
@@ -16044,6 +16604,8 @@ class workbufhdr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_node : ∀ (x : workbufhdr) (y : lfnode), go.IsGoStepPureDetTagged under (StructFieldSet workbufhdr.underlying go!"node") (PairV #x #y) (Val #(({ x with node' := y } : workbufhdr)))
   get_nobj : ∀ (x : workbufhdr), go.IsGoStepPureDetTagged under (StructFieldGet workbufhdr.underlying go!"nobj") #x (Val #(x.nobj'))
   set_nobj : ∀ (x : workbufhdr) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet workbufhdr.underlying go!"nobj") (PairV #x #y) (Val #(({ x with nobj' := y } : workbufhdr)))
+  method_set : go.MethodSetIs workbufhdr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType workbufhdr.ty) []
 
 attribute [instance] workbufhdr.TypeAssumptions.type_repr
   workbufhdr.TypeAssumptions.underlying
@@ -16052,6 +16614,8 @@ attribute [instance] workbufhdr.TypeAssumptions.type_repr
   workbufhdr.TypeAssumptions.set_node
   workbufhdr.TypeAssumptions.get_nobj
   workbufhdr.TypeAssumptions.set_nobj
+  workbufhdr.TypeAssumptions.method_set
+  workbufhdr.TypeAssumptions.ptr_method_set
 
 structure stackWorkBufHdr [FfiSyntax] where
   mk ::
@@ -16087,6 +16651,8 @@ class stackWorkBufHdr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
   set_workbufhdr : ∀ (x : stackWorkBufHdr) (y : workbufhdr), go.IsGoStepPureDetTagged under (StructFieldSet stackWorkBufHdr.underlying go!"workbufhdr") (PairV #x #y) (Val #(({ x with workbufhdr' := y } : stackWorkBufHdr)))
   get_next : ∀ (x : stackWorkBufHdr), go.IsGoStepPureDetTagged under (StructFieldGet stackWorkBufHdr.underlying go!"next") #x (Val #(x.next'))
   set_next : ∀ (x : stackWorkBufHdr) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet stackWorkBufHdr.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : stackWorkBufHdr)))
+  method_set : go.MethodSetIs stackWorkBufHdr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stackWorkBufHdr.ty) []
 
 attribute [instance] stackWorkBufHdr.TypeAssumptions.type_repr
   stackWorkBufHdr.TypeAssumptions.underlying
@@ -16097,6 +16663,8 @@ attribute [instance] stackWorkBufHdr.TypeAssumptions.type_repr
   stackWorkBufHdr.TypeAssumptions.set_workbufhdr
   stackWorkBufHdr.TypeAssumptions.get_next
   stackWorkBufHdr.TypeAssumptions.set_next
+  stackWorkBufHdr.TypeAssumptions.method_set
+  stackWorkBufHdr.TypeAssumptions.ptr_method_set
 
 structure stackWorkBuf [FfiSyntax] where
   mk ::
@@ -16132,6 +16700,8 @@ class stackWorkBuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   set_stackWorkBufHdr : ∀ (x : stackWorkBuf) (y : stackWorkBufHdr), go.IsGoStepPureDetTagged under (StructFieldSet stackWorkBuf.underlying go!"stackWorkBufHdr") (PairV #x #y) (Val #(({ x with stackWorkBufHdr' := y } : stackWorkBuf)))
   get_obj : ∀ (x : stackWorkBuf), go.IsGoStepPureDetTagged under (StructFieldGet stackWorkBuf.underlying go!"obj") #x (Val #(x.obj'))
   set_obj : ∀ (x : stackWorkBuf) (y : (GoArray w64 252)), go.IsGoStepPureDetTagged under (StructFieldSet stackWorkBuf.underlying go!"obj") (PairV #x #y) (Val #(({ x with obj' := y } : stackWorkBuf)))
+  method_set : go.MethodSetIs stackWorkBuf.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stackWorkBuf.ty) []
 
 attribute [instance] stackWorkBuf.TypeAssumptions.type_repr
   stackWorkBuf.TypeAssumptions.underlying
@@ -16142,6 +16712,8 @@ attribute [instance] stackWorkBuf.TypeAssumptions.type_repr
   stackWorkBuf.TypeAssumptions.set_stackWorkBufHdr
   stackWorkBuf.TypeAssumptions.get_obj
   stackWorkBuf.TypeAssumptions.set_obj
+  stackWorkBuf.TypeAssumptions.method_set
+  stackWorkBuf.TypeAssumptions.ptr_method_set
 
 structure stackObjectBufHdr [FfiSyntax] where
   mk ::
@@ -16177,6 +16749,8 @@ class stackObjectBufHdr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCo
   set_workbufhdr : ∀ (x : stackObjectBufHdr) (y : workbufhdr), go.IsGoStepPureDetTagged under (StructFieldSet stackObjectBufHdr.underlying go!"workbufhdr") (PairV #x #y) (Val #(({ x with workbufhdr' := y } : stackObjectBufHdr)))
   get_next : ∀ (x : stackObjectBufHdr), go.IsGoStepPureDetTagged under (StructFieldGet stackObjectBufHdr.underlying go!"next") #x (Val #(x.next'))
   set_next : ∀ (x : stackObjectBufHdr) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet stackObjectBufHdr.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : stackObjectBufHdr)))
+  method_set : go.MethodSetIs stackObjectBufHdr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stackObjectBufHdr.ty) []
 
 attribute [instance] stackObjectBufHdr.TypeAssumptions.type_repr
   stackObjectBufHdr.TypeAssumptions.underlying
@@ -16187,6 +16761,8 @@ attribute [instance] stackObjectBufHdr.TypeAssumptions.type_repr
   stackObjectBufHdr.TypeAssumptions.set_workbufhdr
   stackObjectBufHdr.TypeAssumptions.get_next
   stackObjectBufHdr.TypeAssumptions.set_next
+  stackObjectBufHdr.TypeAssumptions.method_set
+  stackObjectBufHdr.TypeAssumptions.ptr_method_set
 
 structure stackObject [FfiSyntax] where
   mk ::
@@ -16234,6 +16810,8 @@ class stackObject.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set_left : ∀ (x : stackObject) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet stackObject.underlying go!"left") (PairV #x #y) (Val #(({ x with left' := y } : stackObject)))
   get_right : ∀ (x : stackObject), go.IsGoStepPureDetTagged under (StructFieldGet stackObject.underlying go!"right") #x (Val #(x.right'))
   set_right : ∀ (x : stackObject) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet stackObject.underlying go!"right") (PairV #x #y) (Val #(({ x with right' := y } : stackObject)))
+  method_set : go.MethodSetIs stackObject.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stackObject.ty) [(go!"runtime.setRecord", (some (go.signature.Signature [(go.GoType.PointerType stackObjectRecord.ty)] false [])))]
 
 attribute [instance] stackObject.TypeAssumptions.type_repr
   stackObject.TypeAssumptions.underlying
@@ -16250,6 +16828,8 @@ attribute [instance] stackObject.TypeAssumptions.type_repr
   stackObject.TypeAssumptions.set_left
   stackObject.TypeAssumptions.get_right
   stackObject.TypeAssumptions.set_right
+  stackObject.TypeAssumptions.method_set
+  stackObject.TypeAssumptions.ptr_method_set
 
 structure stackObjectBuf [FfiSyntax] where
   mk ::
@@ -16285,6 +16865,8 @@ class stackObjectBuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_stackObjectBufHdr : ∀ (x : stackObjectBuf) (y : stackObjectBufHdr), go.IsGoStepPureDetTagged under (StructFieldSet stackObjectBuf.underlying go!"stackObjectBufHdr") (PairV #x #y) (Val #(({ x with stackObjectBufHdr' := y } : stackObjectBuf)))
   get_obj : ∀ (x : stackObjectBuf), go.IsGoStepPureDetTagged under (StructFieldGet stackObjectBuf.underlying go!"obj") #x (Val #(x.obj'))
   set_obj : ∀ (x : stackObjectBuf) (y : (GoArray stackObject 63)), go.IsGoStepPureDetTagged under (StructFieldSet stackObjectBuf.underlying go!"obj") (PairV #x #y) (Val #(({ x with obj' := y } : stackObjectBuf)))
+  method_set : go.MethodSetIs stackObjectBuf.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stackObjectBuf.ty) []
 
 attribute [instance] stackObjectBuf.TypeAssumptions.type_repr
   stackObjectBuf.TypeAssumptions.underlying
@@ -16295,6 +16877,8 @@ attribute [instance] stackObjectBuf.TypeAssumptions.type_repr
   stackObjectBuf.TypeAssumptions.set_stackObjectBufHdr
   stackObjectBuf.TypeAssumptions.get_obj
   stackObjectBuf.TypeAssumptions.set_obj
+  stackObjectBuf.TypeAssumptions.method_set
+  stackObjectBuf.TypeAssumptions.ptr_method_set
 
 structure stack [FfiSyntax] where
   mk ::
@@ -16326,6 +16910,8 @@ class stack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_lo : ∀ (x : stack) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet stack.underlying go!"lo") (PairV #x #y) (Val #(({ x with lo' := y } : stack)))
   get_hi : ∀ (x : stack), go.IsGoStepPureDetTagged under (StructFieldGet stack.underlying go!"hi") #x (Val #(x.hi'))
   set_hi : ∀ (x : stack) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet stack.underlying go!"hi") (PairV #x #y) (Val #(({ x with hi' := y } : stack)))
+  method_set : go.MethodSetIs stack.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stack.ty) []
 
 attribute [instance] stack.TypeAssumptions.type_repr
   stack.TypeAssumptions.underlying
@@ -16334,6 +16920,8 @@ attribute [instance] stack.TypeAssumptions.type_repr
   stack.TypeAssumptions.set_lo
   stack.TypeAssumptions.get_hi
   stack.TypeAssumptions.set_hi
+  stack.TypeAssumptions.method_set
+  stack.TypeAssumptions.ptr_method_set
 
 structure stackScanState [FfiSyntax] where
   mk ::
@@ -16393,6 +16981,8 @@ class stackScanState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_nobjs : ∀ (x : stackScanState) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet stackScanState.underlying go!"nobjs") (PairV #x #y) (Val #(({ x with nobjs' := y } : stackScanState)))
   get_root : ∀ (x : stackScanState), go.IsGoStepPureDetTagged under (StructFieldGet stackScanState.underlying go!"root") #x (Val #(x.root'))
   set_root : ∀ (x : stackScanState) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet stackScanState.underlying go!"root") (PairV #x #y) (Val #(({ x with root' := y } : stackScanState)))
+  method_set : go.MethodSetIs stackScanState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stackScanState.ty) [(go!"runtime.addObject", (some (go.signature.Signature [go.uintptr, (go.GoType.PointerType stackObjectRecord.ty)] false []))), (go!"runtime.buildIndex", (some (go.signature.Signature [] false []))), (go!"runtime.findObject", (some (go.signature.Signature [go.uintptr] false [(go.GoType.PointerType stackObject.ty)]))), (go!"runtime.getPtr", (some (go.signature.Signature [] false [go.uintptr, go.bool]))), (go!"runtime.putPtr", (some (go.signature.Signature [go.uintptr, go.bool] false [])))]
 
 attribute [instance] stackScanState.TypeAssumptions.type_repr
   stackScanState.TypeAssumptions.underlying
@@ -16415,6 +17005,8 @@ attribute [instance] stackScanState.TypeAssumptions.type_repr
   stackScanState.TypeAssumptions.set_nobjs
   stackScanState.TypeAssumptions.get_root
   stackScanState.TypeAssumptions.set_root
+  stackScanState.TypeAssumptions.method_set
+  stackScanState.TypeAssumptions.ptr_method_set
 
 structure activeSweep [FfiSyntax] where
   mk ::
@@ -16442,12 +17034,16 @@ class activeSweep.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   layout : go.StructLayout activeSweep [(go!"state", typeSize _root_.Perennial.internal.runtime.atomic.Uint32, typeAlign _root_.Perennial.internal.runtime.atomic.Uint32)]
   get_state : ∀ (x : activeSweep), go.IsGoStepPureDetTagged under (StructFieldGet activeSweep.underlying go!"state") #x (Val #(x.state'))
   set_state : ∀ (x : activeSweep) (y : _root_.Perennial.internal.runtime.atomic.Uint32), go.IsGoStepPureDetTagged under (StructFieldSet activeSweep.underlying go!"state") (PairV #x #y) (Val #(({ x with state' := y } : activeSweep)))
+  method_set : go.MethodSetIs activeSweep.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType activeSweep.ty) [(go!"runtime.begin", (some (go.signature.Signature [] false [sweepLocker.ty]))), (go!"runtime.end", (some (go.signature.Signature [sweepLocker.ty] false []))), (go!"runtime.isDone", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.markDrained", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.reset", (some (go.signature.Signature [] false []))), (go!"runtime.sweepers", (some (go.signature.Signature [] false [go.uint32])))]
 
 attribute [instance] activeSweep.TypeAssumptions.type_repr
   activeSweep.TypeAssumptions.underlying
   activeSweep.TypeAssumptions.layout
   activeSweep.TypeAssumptions.get_state
   activeSweep.TypeAssumptions.set_state
+  activeSweep.TypeAssumptions.method_set
+  activeSweep.TypeAssumptions.ptr_method_set
 
 abbrev sweepClass [FfiSyntax] : Type := w32
 
@@ -16456,8 +17052,12 @@ abbrev sweepClass [FfiSyntax] : Type := w32
 
 class sweepClass.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq sweepClass.ty sweepClass.underlying
+  method_set : go.MethodSetIs sweepClass.ty [(go!"runtime.split", (some (go.signature.Signature [] false [spanClass.ty, go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sweepClass.ty) [(go!"runtime.clear", (some (go.signature.Signature [] false []))), (go!"runtime.load", (some (go.signature.Signature [] false [sweepClass.ty]))), (go!"runtime.split", (some (go.signature.Signature [] false [spanClass.ty, go.bool]))), (go!"runtime.update", (some (go.signature.Signature [sweepClass.ty] false [])))]
 
 attribute [instance] sweepClass.TypeAssumptions.underlying
+  sweepClass.TypeAssumptions.method_set
+  sweepClass.TypeAssumptions.ptr_method_set
 
 structure sweepdata [FfiSyntax] where
   mk ::
@@ -16501,6 +17101,8 @@ class sweepdata.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_active : ∀ (x : sweepdata) (y : activeSweep), go.IsGoStepPureDetTagged under (StructFieldSet sweepdata.underlying go!"active") (PairV #x #y) (Val #(({ x with active' := y } : sweepdata)))
   get_centralIndex : ∀ (x : sweepdata), go.IsGoStepPureDetTagged under (StructFieldGet sweepdata.underlying go!"centralIndex") #x (Val #(x.centralIndex'))
   set_centralIndex : ∀ (x : sweepdata) (y : sweepClass), go.IsGoStepPureDetTagged under (StructFieldSet sweepdata.underlying go!"centralIndex") (PairV #x #y) (Val #(({ x with centralIndex' := y } : sweepdata)))
+  method_set : go.MethodSetIs sweepdata.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sweepdata.ty) []
 
 attribute [instance] sweepdata.TypeAssumptions.type_repr
   sweepdata.TypeAssumptions.underlying
@@ -16515,6 +17117,8 @@ attribute [instance] sweepdata.TypeAssumptions.type_repr
   sweepdata.TypeAssumptions.set_active
   sweepdata.TypeAssumptions.get_centralIndex
   sweepdata.TypeAssumptions.set_centralIndex
+  sweepdata.TypeAssumptions.method_set
+  sweepdata.TypeAssumptions.ptr_method_set
 
 structure sweepLocker [FfiSyntax] where
   mk ::
@@ -16546,6 +17150,8 @@ class sweepLocker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set_sweepGen : ∀ (x : sweepLocker) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet sweepLocker.underlying go!"sweepGen") (PairV #x #y) (Val #(({ x with sweepGen' := y } : sweepLocker)))
   get_valid : ∀ (x : sweepLocker), go.IsGoStepPureDetTagged under (StructFieldGet sweepLocker.underlying go!"valid") #x (Val #(x.valid'))
   set_valid : ∀ (x : sweepLocker) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet sweepLocker.underlying go!"valid") (PairV #x #y) (Val #(({ x with valid' := y } : sweepLocker)))
+  method_set : go.MethodSetIs sweepLocker.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sweepLocker.ty) [(go!"runtime.tryAcquire", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false [sweepLocked.ty, go.bool])))]
 
 attribute [instance] sweepLocker.TypeAssumptions.type_repr
   sweepLocker.TypeAssumptions.underlying
@@ -16554,6 +17160,8 @@ attribute [instance] sweepLocker.TypeAssumptions.type_repr
   sweepLocker.TypeAssumptions.set_sweepGen
   sweepLocker.TypeAssumptions.get_valid
   sweepLocker.TypeAssumptions.set_valid
+  sweepLocker.TypeAssumptions.method_set
+  sweepLocker.TypeAssumptions.ptr_method_set
 
 structure sweepLocked [FfiSyntax] where
   mk ::
@@ -16581,12 +17189,16 @@ class sweepLocked.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   layout : go.StructLayout sweepLocked [(go!"mspan", typeSize Loc, typeAlign Loc)]
   get_mspan : ∀ (x : sweepLocked), go.IsGoStepPureDetTagged under (StructFieldGet sweepLocked.underlying go!"mspan") #x (Val #(x.mspan'))
   set_mspan : ∀ (x : sweepLocked) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet sweepLocked.underlying go!"mspan") (PairV #x #y) (Val #(({ x with mspan' := y } : sweepLocked)))
+  method_set : go.MethodSetIs sweepLocked.ty [(go!"runtime.allocBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.base", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.countAlloc", (some (go.signature.Signature [] false [go.int]))), (go!"runtime.decPinCounter", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.divideByElemSize", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.ensureSwept", (some (go.signature.Signature [] false []))), (go!"runtime.getPinnerBits", (some (go.signature.Signature [] false [(go.GoType.PointerType pinnerBits.ty)]))), (go!"runtime.heapBits", (some (go.signature.Signature [] false [(go.GoType.SliceType go.uintptr)]))), (go!"runtime.heapBitsSmallForAddr", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.inList", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.incPinCounter", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.init", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"runtime.initHeapBits", (some (go.signature.Signature [] false []))), (go!"runtime.initInlineMarkBits", (some (go.signature.Signature [] false []))), (go!"runtime.inlineMarkBits", (some (go.signature.Signature [] false [(go.GoType.PointerType spanInlineMarkBits.ty)]))), (go!"runtime.isFree", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.isFreeOrNewlyAllocated", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.isUnusedUserArenaChunk", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.layout", (some (go.signature.Signature [] false [go.uintptr, go.uintptr, go.uintptr]))), (go!"runtime.markBitsForBase", (some (go.signature.Signature [] false [markBits.ty]))), (go!"runtime.markBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.moveInlineMarks", (some (go.signature.Signature [(go.GoType.PointerType gcBits.ty)] false []))), (go!"runtime.newPinnerBits", (some (go.signature.Signature [] false [(go.GoType.PointerType pinnerBits.ty)]))), (go!"runtime.nextFreeIndex", (some (go.signature.Signature [] false [go.uint16]))), (go!"runtime.objBase", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.objIndex", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.pinnerBitSize", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.refillAllocCache", (some (go.signature.Signature [go.uint16] false []))), (go!"runtime.refreshPinnerBits", (some (go.signature.Signature [] false []))), (go!"runtime.reportZombies", (some (go.signature.Signature [] false []))), (go!"runtime.scannedBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.setPinnerBits", (some (go.signature.Signature [(go.GoType.PointerType pinnerBits.ty)] false []))), (go!"runtime.setUserArenaChunkToFault", (some (go.signature.Signature [] false []))), (go!"runtime.specialFindSplicePoint", (some (go.signature.Signature [go.uintptr, go.byte] false [(go.GoType.PointerType (go.GoType.PointerType special.ty)), go.bool]))), (go!"runtime.typePointersOf", (some (go.signature.Signature [go.uintptr, go.uintptr] false [typePointers.ty]))), (go!"runtime.typePointersOfType", none), (go!"runtime.typePointersOfUnchecked", (some (go.signature.Signature [go.uintptr] false [typePointers.ty]))), (go!"runtime.userArenaNextFree", (some (go.signature.Signature [(go.GoType.PointerType _type.ty), go.int] false [«unsafe».Pointer]))), (go!"runtime.writeHeapBitsSmall", (some (go.signature.Signature [go.uintptr, go.uintptr, (go.GoType.PointerType _type.ty)] false [go.uintptr]))), (go!"runtime.writeUserArenaHeapBits", (some (go.signature.Signature [go.uintptr] false [writeUserArenaHeapBits.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sweepLocked.ty) [(go!"runtime.allocBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.base", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.countAlloc", (some (go.signature.Signature [] false [go.int]))), (go!"runtime.decPinCounter", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.divideByElemSize", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.ensureSwept", (some (go.signature.Signature [] false []))), (go!"runtime.getPinnerBits", (some (go.signature.Signature [] false [(go.GoType.PointerType pinnerBits.ty)]))), (go!"runtime.heapBits", (some (go.signature.Signature [] false [(go.GoType.SliceType go.uintptr)]))), (go!"runtime.heapBitsSmallForAddr", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.inList", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.incPinCounter", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.init", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"runtime.initHeapBits", (some (go.signature.Signature [] false []))), (go!"runtime.initInlineMarkBits", (some (go.signature.Signature [] false []))), (go!"runtime.inlineMarkBits", (some (go.signature.Signature [] false [(go.GoType.PointerType spanInlineMarkBits.ty)]))), (go!"runtime.isFree", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.isFreeOrNewlyAllocated", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.isUnusedUserArenaChunk", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.layout", (some (go.signature.Signature [] false [go.uintptr, go.uintptr, go.uintptr]))), (go!"runtime.markBitsForBase", (some (go.signature.Signature [] false [markBits.ty]))), (go!"runtime.markBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.moveInlineMarks", (some (go.signature.Signature [(go.GoType.PointerType gcBits.ty)] false []))), (go!"runtime.newPinnerBits", (some (go.signature.Signature [] false [(go.GoType.PointerType pinnerBits.ty)]))), (go!"runtime.nextFreeIndex", (some (go.signature.Signature [] false [go.uint16]))), (go!"runtime.objBase", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.objIndex", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.pinnerBitSize", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.refillAllocCache", (some (go.signature.Signature [go.uint16] false []))), (go!"runtime.refreshPinnerBits", (some (go.signature.Signature [] false []))), (go!"runtime.reportZombies", (some (go.signature.Signature [] false []))), (go!"runtime.scannedBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.setPinnerBits", (some (go.signature.Signature [(go.GoType.PointerType pinnerBits.ty)] false []))), (go!"runtime.setUserArenaChunkToFault", (some (go.signature.Signature [] false []))), (go!"runtime.specialFindSplicePoint", (some (go.signature.Signature [go.uintptr, go.byte] false [(go.GoType.PointerType (go.GoType.PointerType special.ty)), go.bool]))), (go!"runtime.sweep", (some (go.signature.Signature [go.bool] false [go.bool]))), (go!"runtime.typePointersOf", (some (go.signature.Signature [go.uintptr, go.uintptr] false [typePointers.ty]))), (go!"runtime.typePointersOfType", none), (go!"runtime.typePointersOfUnchecked", (some (go.signature.Signature [go.uintptr] false [typePointers.ty]))), (go!"runtime.userArenaNextFree", (some (go.signature.Signature [(go.GoType.PointerType _type.ty), go.int] false [«unsafe».Pointer]))), (go!"runtime.writeHeapBitsSmall", (some (go.signature.Signature [go.uintptr, go.uintptr, (go.GoType.PointerType _type.ty)] false [go.uintptr]))), (go!"runtime.writeUserArenaHeapBits", (some (go.signature.Signature [go.uintptr] false [writeUserArenaHeapBits.ty])))]
 
 attribute [instance] sweepLocked.TypeAssumptions.type_repr
   sweepLocked.TypeAssumptions.underlying
   sweepLocked.TypeAssumptions.layout
   sweepLocked.TypeAssumptions.get_mspan
   sweepLocked.TypeAssumptions.set_mspan
+  sweepLocked.TypeAssumptions.method_set
+  sweepLocked.TypeAssumptions.ptr_method_set
 
 structure gcWork [FfiSyntax] where
   mk ::
@@ -16650,6 +17262,8 @@ class gcWork.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_mayNeedWorker : ∀ (x : gcWork) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet gcWork.underlying go!"mayNeedWorker") (PairV #x #y) (Val #(({ x with mayNeedWorker' := y } : gcWork)))
   get_stats : ∀ (x : gcWork), go.IsGoStepPureDetTagged under (StructFieldGet gcWork.underlying go!"stats") #x (Val #(x.stats'))
   set_stats : ∀ (x : gcWork) (y : (GoArray sizeClassScanStats 68)), go.IsGoStepPureDetTagged under (StructFieldSet gcWork.underlying go!"stats") (PairV #x #y) (Val #(({ x with stats' := y } : gcWork)))
+  method_set : go.MethodSetIs gcWork.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gcWork.ty) [(go!"runtime.balance", (some (go.signature.Signature [] false []))), (go!"runtime.dispose", (some (go.signature.Signature [] false []))), (go!"runtime.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.flushScanStats", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.ArrayType 68 sizeClassScanStats.ty))] false []))), (go!"runtime.init", (some (go.signature.Signature [] false []))), (go!"runtime.putObj", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.putObjBatch", (some (go.signature.Signature [(go.GoType.SliceType go.uintptr)] false []))), (go!"runtime.putObjFast", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.tryGetObj", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.tryGetObjFast", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.tryGetSpan", (some (go.signature.Signature [] false [objptr.ty]))), (go!"runtime.tryGetSpanFast", (some (go.signature.Signature [] false [objptr.ty]))), (go!"runtime.tryStealSpan", (some (go.signature.Signature [] false [objptr.ty])))]
 
 attribute [instance] gcWork.TypeAssumptions.type_repr
   gcWork.TypeAssumptions.underlying
@@ -16674,6 +17288,8 @@ attribute [instance] gcWork.TypeAssumptions.type_repr
   gcWork.TypeAssumptions.set_mayNeedWorker
   gcWork.TypeAssumptions.get_stats
   gcWork.TypeAssumptions.set_stats
+  gcWork.TypeAssumptions.method_set
+  gcWork.TypeAssumptions.ptr_method_set
 
 structure workbuf [FfiSyntax] where
   mk ::
@@ -16709,6 +17325,8 @@ class workbuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_workbufhdr : ∀ (x : workbuf) (y : workbufhdr), go.IsGoStepPureDetTagged under (StructFieldSet workbuf.underlying go!"workbufhdr") (PairV #x #y) (Val #(({ x with workbufhdr' := y } : workbuf)))
   get_obj : ∀ (x : workbuf), go.IsGoStepPureDetTagged under (StructFieldGet workbuf.underlying go!"obj") #x (Val #(x.obj'))
   set_obj : ∀ (x : workbuf) (y : (GoArray w64 253)), go.IsGoStepPureDetTagged under (StructFieldSet workbuf.underlying go!"obj") (PairV #x #y) (Val #(({ x with obj' := y } : workbuf)))
+  method_set : go.MethodSetIs workbuf.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType workbuf.ty) [(go!"runtime.checkempty", (some (go.signature.Signature [] false []))), (go!"runtime.checknonempty", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] workbuf.TypeAssumptions.type_repr
   workbuf.TypeAssumptions.underlying
@@ -16719,6 +17337,8 @@ attribute [instance] workbuf.TypeAssumptions.type_repr
   workbuf.TypeAssumptions.set_workbufhdr
   workbuf.TypeAssumptions.get_obj
   workbuf.TypeAssumptions.set_obj
+  workbuf.TypeAssumptions.method_set
+  workbuf.TypeAssumptions.ptr_method_set
 
 axiom mheap : Type
 axiom mheap.zero_val : ZeroVal mheap
@@ -16728,10 +17348,14 @@ class mheap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying mheap.underlying mheap
   underlying : go.UnderlyingDirectedEq mheap.ty mheap.underlying
   isUnderlying : go.IsUnderlying mheap.underlying mheap.underlying
+  method_set : go.MethodSetIs mheap.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mheap.ty) [(go!"runtime.alloc", (some (go.signature.Signature [go.uintptr, spanClass.ty] false [(go.GoType.PointerType mspan.ty)]))), (go!"runtime.allocMSpanLocked", (some (go.signature.Signature [] false [(go.GoType.PointerType mspan.ty)]))), (go!"runtime.allocManual", (some (go.signature.Signature [go.uintptr, spanAllocType.ty] false [(go.GoType.PointerType mspan.ty)]))), (go!"runtime.allocNeedsZero", (some (go.signature.Signature [go.uintptr, go.uintptr] false [go.bool]))), (go!"runtime.allocSpan", (some (go.signature.Signature [go.uintptr, spanAllocType.ty, spanClass.ty] false [(go.GoType.PointerType mspan.ty)]))), (go!"runtime.allocUserArenaChunk", (some (go.signature.Signature [] false [(go.GoType.PointerType mspan.ty)]))), (go!"runtime.enableMetadataHugePages", (some (go.signature.Signature [] false []))), (go!"runtime.freeMSpanLocked", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"runtime.freeManual", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty), spanAllocType.ty] false []))), (go!"runtime.freeSpan", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"runtime.freeSpanLocked", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty), spanAllocType.ty] false []))), (go!"runtime.grow", (some (go.signature.Signature [go.uintptr] false [go.uintptr, go.bool]))), (go!"runtime.init", (some (go.signature.Signature [] false []))), (go!"runtime.initSpan", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty), spanAllocType.ty, spanClass.ty, go.uintptr, go.uintptr, go.uintptr] false []))), (go!"runtime.nextSpanForSweep", (some (go.signature.Signature [] false [(go.GoType.PointerType mspan.ty)]))), (go!"runtime.reclaim", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.reclaimChunk", (some (go.signature.Signature [(go.GoType.SliceType arenaIdx.ty), go.uintptr, go.uintptr] false [go.uintptr]))), (go!"runtime.scavengeAll", (some (go.signature.Signature [] false []))), (go!"runtime.setSpans", (some (go.signature.Signature [go.uintptr, go.uintptr, (go.GoType.PointerType mspan.ty)] false []))), (go!"runtime.sysAlloc", (some (go.signature.Signature [go.uintptr, (go.GoType.PointerType (go.GoType.PointerType arenaHint.ty)), (go.GoType.PointerType (go.GoType.SliceType arenaIdx.ty))] false [«unsafe».Pointer, go.uintptr]))), (go!"runtime.tryAllocMSpan", (some (go.signature.Signature [] false [(go.GoType.PointerType mspan.ty)])))]
 
 attribute [instance] mheap.TypeAssumptions.type_repr
   mheap.TypeAssumptions.underlying
   mheap.TypeAssumptions.isUnderlying
+  mheap.TypeAssumptions.method_set
+  mheap.TypeAssumptions.ptr_method_set
 
 structure heapArena [FfiSyntax] where
   mk ::
@@ -16787,6 +17411,8 @@ class heapArena.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_checkmarks : ∀ (x : heapArena) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet heapArena.underlying go!"checkmarks") (PairV #x #y) (Val #(({ x with checkmarks' := y } : heapArena)))
   get_zeroedBase : ∀ (x : heapArena), go.IsGoStepPureDetTagged under (StructFieldGet heapArena.underlying go!"zeroedBase") #x (Val #(x.zeroedBase'))
   set_zeroedBase : ∀ (x : heapArena) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet heapArena.underlying go!"zeroedBase") (PairV #x #y) (Val #(({ x with zeroedBase' := y } : heapArena)))
+  method_set : go.MethodSetIs heapArena.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType heapArena.ty) []
 
 attribute [instance] heapArena.TypeAssumptions.type_repr
   heapArena.TypeAssumptions.underlying
@@ -16807,6 +17433,8 @@ attribute [instance] heapArena.TypeAssumptions.type_repr
   heapArena.TypeAssumptions.set_checkmarks
   heapArena.TypeAssumptions.get_zeroedBase
   heapArena.TypeAssumptions.set_zeroedBase
+  heapArena.TypeAssumptions.method_set
+  heapArena.TypeAssumptions.ptr_method_set
 
 structure arenaHint [FfiSyntax] where
   mk ::
@@ -16846,6 +17474,8 @@ class arenaHint.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_down : ∀ (x : arenaHint) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet arenaHint.underlying go!"down") (PairV #x #y) (Val #(({ x with down' := y } : arenaHint)))
   get_next : ∀ (x : arenaHint), go.IsGoStepPureDetTagged under (StructFieldGet arenaHint.underlying go!"next") #x (Val #(x.next'))
   set_next : ∀ (x : arenaHint) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet arenaHint.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : arenaHint)))
+  method_set : go.MethodSetIs arenaHint.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType arenaHint.ty) []
 
 attribute [instance] arenaHint.TypeAssumptions.type_repr
   arenaHint.TypeAssumptions.underlying
@@ -16858,6 +17488,8 @@ attribute [instance] arenaHint.TypeAssumptions.type_repr
   arenaHint.TypeAssumptions.set_down
   arenaHint.TypeAssumptions.get_next
   arenaHint.TypeAssumptions.set_next
+  arenaHint.TypeAssumptions.method_set
+  arenaHint.TypeAssumptions.ptr_method_set
 
 abbrev mSpanState [FfiSyntax] : Type := w8
 
@@ -16866,8 +17498,12 @@ abbrev mSpanState [FfiSyntax] : Type := w8
 
 class mSpanState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq mSpanState.ty mSpanState.underlying
+  method_set : go.MethodSetIs mSpanState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mSpanState.ty) []
 
 attribute [instance] mSpanState.TypeAssumptions.underlying
+  mSpanState.TypeAssumptions.method_set
+  mSpanState.TypeAssumptions.ptr_method_set
 
 structure mSpanStateBox [FfiSyntax] where
   mk ::
@@ -16895,12 +17531,16 @@ class mSpanStateBox.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   layout : go.StructLayout mSpanStateBox [(go!"s", typeSize _root_.Perennial.internal.runtime.atomic.Uint8, typeAlign _root_.Perennial.internal.runtime.atomic.Uint8)]
   get_s : ∀ (x : mSpanStateBox), go.IsGoStepPureDetTagged under (StructFieldGet mSpanStateBox.underlying go!"s") #x (Val #(x.s'))
   set_s : ∀ (x : mSpanStateBox) (y : _root_.Perennial.internal.runtime.atomic.Uint8), go.IsGoStepPureDetTagged under (StructFieldSet mSpanStateBox.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : mSpanStateBox)))
+  method_set : go.MethodSetIs mSpanStateBox.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mSpanStateBox.ty) [(go!"runtime.get", (some (go.signature.Signature [] false [mSpanState.ty]))), (go!"runtime.set", (some (go.signature.Signature [mSpanState.ty] false [])))]
 
 attribute [instance] mSpanStateBox.TypeAssumptions.type_repr
   mSpanStateBox.TypeAssumptions.underlying
   mSpanStateBox.TypeAssumptions.layout
   mSpanStateBox.TypeAssumptions.get_s
   mSpanStateBox.TypeAssumptions.set_s
+  mSpanStateBox.TypeAssumptions.method_set
+  mSpanStateBox.TypeAssumptions.ptr_method_set
 
 axiom mspan : Type
 axiom mspan.zero_val : ZeroVal mspan
@@ -16910,10 +17550,14 @@ class mspan.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying mspan.underlying mspan
   underlying : go.UnderlyingDirectedEq mspan.ty mspan.underlying
   isUnderlying : go.IsUnderlying mspan.underlying mspan.underlying
+  method_set : go.MethodSetIs mspan.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mspan.ty) [(go!"runtime.allocBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.base", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.countAlloc", (some (go.signature.Signature [] false [go.int]))), (go!"runtime.decPinCounter", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.divideByElemSize", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.ensureSwept", (some (go.signature.Signature [] false []))), (go!"runtime.getPinnerBits", (some (go.signature.Signature [] false [(go.GoType.PointerType pinnerBits.ty)]))), (go!"runtime.heapBits", (some (go.signature.Signature [] false [(go.GoType.SliceType go.uintptr)]))), (go!"runtime.heapBitsSmallForAddr", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.inList", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.incPinCounter", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.init", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"runtime.initHeapBits", (some (go.signature.Signature [] false []))), (go!"runtime.initInlineMarkBits", (some (go.signature.Signature [] false []))), (go!"runtime.inlineMarkBits", (some (go.signature.Signature [] false [(go.GoType.PointerType spanInlineMarkBits.ty)]))), (go!"runtime.isFree", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.isFreeOrNewlyAllocated", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.isUnusedUserArenaChunk", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.layout", (some (go.signature.Signature [] false [go.uintptr, go.uintptr, go.uintptr]))), (go!"runtime.markBitsForBase", (some (go.signature.Signature [] false [markBits.ty]))), (go!"runtime.markBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.moveInlineMarks", (some (go.signature.Signature [(go.GoType.PointerType gcBits.ty)] false []))), (go!"runtime.newPinnerBits", (some (go.signature.Signature [] false [(go.GoType.PointerType pinnerBits.ty)]))), (go!"runtime.nextFreeIndex", (some (go.signature.Signature [] false [go.uint16]))), (go!"runtime.objBase", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.objIndex", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.pinnerBitSize", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.refillAllocCache", (some (go.signature.Signature [go.uint16] false []))), (go!"runtime.refreshPinnerBits", (some (go.signature.Signature [] false []))), (go!"runtime.reportZombies", (some (go.signature.Signature [] false []))), (go!"runtime.scannedBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.setPinnerBits", (some (go.signature.Signature [(go.GoType.PointerType pinnerBits.ty)] false []))), (go!"runtime.setUserArenaChunkToFault", (some (go.signature.Signature [] false []))), (go!"runtime.specialFindSplicePoint", (some (go.signature.Signature [go.uintptr, go.byte] false [(go.GoType.PointerType (go.GoType.PointerType special.ty)), go.bool]))), (go!"runtime.typePointersOf", (some (go.signature.Signature [go.uintptr, go.uintptr] false [typePointers.ty]))), (go!"runtime.typePointersOfType", none), (go!"runtime.typePointersOfUnchecked", (some (go.signature.Signature [go.uintptr] false [typePointers.ty]))), (go!"runtime.userArenaNextFree", (some (go.signature.Signature [(go.GoType.PointerType _type.ty), go.int] false [«unsafe».Pointer]))), (go!"runtime.writeHeapBitsSmall", (some (go.signature.Signature [go.uintptr, go.uintptr, (go.GoType.PointerType _type.ty)] false [go.uintptr]))), (go!"runtime.writeUserArenaHeapBits", (some (go.signature.Signature [go.uintptr] false [writeUserArenaHeapBits.ty])))]
 
 attribute [instance] mspan.TypeAssumptions.type_repr
   mspan.TypeAssumptions.underlying
   mspan.TypeAssumptions.isUnderlying
+  mspan.TypeAssumptions.method_set
+  mspan.TypeAssumptions.ptr_method_set
 
 abbrev arenaIdx [FfiSyntax] : Type := w64
 
@@ -16922,8 +17566,12 @@ abbrev arenaIdx [FfiSyntax] : Type := w64
 
 class arenaIdx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq arenaIdx.ty arenaIdx.underlying
+  method_set : go.MethodSetIs arenaIdx.ty [(go!"runtime.l1", (some (go.signature.Signature [] false [go.uint]))), (go!"runtime.l2", (some (go.signature.Signature [] false [go.uint])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType arenaIdx.ty) [(go!"runtime.l1", (some (go.signature.Signature [] false [go.uint]))), (go!"runtime.l2", (some (go.signature.Signature [] false [go.uint])))]
 
 attribute [instance] arenaIdx.TypeAssumptions.underlying
+  arenaIdx.TypeAssumptions.method_set
+  arenaIdx.TypeAssumptions.ptr_method_set
 
 abbrev spanAllocType [FfiSyntax] : Type := w8
 
@@ -16932,8 +17580,12 @@ abbrev spanAllocType [FfiSyntax] : Type := w8
 
 class spanAllocType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq spanAllocType.ty spanAllocType.underlying
+  method_set : go.MethodSetIs spanAllocType.ty [(go!"runtime.manual", (some (go.signature.Signature [] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType spanAllocType.ty) [(go!"runtime.manual", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] spanAllocType.TypeAssumptions.underlying
+  spanAllocType.TypeAssumptions.method_set
+  spanAllocType.TypeAssumptions.ptr_method_set
 
 structure mSpanList [FfiSyntax] where
   mk ::
@@ -16969,6 +17621,8 @@ class mSpanList.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_first : ∀ (x : mSpanList) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet mSpanList.underlying go!"first") (PairV #x #y) (Val #(({ x with first' := y } : mSpanList)))
   get_last : ∀ (x : mSpanList), go.IsGoStepPureDetTagged under (StructFieldGet mSpanList.underlying go!"last") #x (Val #(x.last'))
   set_last : ∀ (x : mSpanList) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet mSpanList.underlying go!"last") (PairV #x #y) (Val #(({ x with last' := y } : mSpanList)))
+  method_set : go.MethodSetIs mSpanList.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mSpanList.ty) [(go!"runtime.init", (some (go.signature.Signature [] false []))), (go!"runtime.insert", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"runtime.insertBack", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"runtime.isEmpty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.remove", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"runtime.takeAll", (some (go.signature.Signature [(go.GoType.PointerType mSpanList.ty)] false [])))]
 
 attribute [instance] mSpanList.TypeAssumptions.type_repr
   mSpanList.TypeAssumptions.underlying
@@ -16979,6 +17633,8 @@ attribute [instance] mSpanList.TypeAssumptions.type_repr
   mSpanList.TypeAssumptions.set_first
   mSpanList.TypeAssumptions.get_last
   mSpanList.TypeAssumptions.set_last
+  mSpanList.TypeAssumptions.method_set
+  mSpanList.TypeAssumptions.ptr_method_set
 
 structure special [FfiSyntax] where
   mk ::
@@ -17018,6 +17674,8 @@ class special.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_offset : ∀ (x : special) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet special.underlying go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : special)))
   get_kind : ∀ (x : special), go.IsGoStepPureDetTagged under (StructFieldGet special.underlying go!"kind") #x (Val #(x.kind'))
   set_kind : ∀ (x : special) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet special.underlying go!"kind") (PairV #x #y) (Val #(({ x with kind' := y } : special)))
+  method_set : go.MethodSetIs special.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType special.ty) []
 
 attribute [instance] special.TypeAssumptions.type_repr
   special.TypeAssumptions.underlying
@@ -17030,6 +17688,8 @@ attribute [instance] special.TypeAssumptions.type_repr
   special.TypeAssumptions.set_offset
   special.TypeAssumptions.get_kind
   special.TypeAssumptions.set_kind
+  special.TypeAssumptions.method_set
+  special.TypeAssumptions.ptr_method_set
 
 axiom specialfinalizer : Type
 axiom specialfinalizer.zero_val : ZeroVal specialfinalizer
@@ -17039,10 +17699,14 @@ class specialfinalizer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
   type_repr : go.TypeReprUnderlying specialfinalizer.underlying specialfinalizer
   underlying : go.UnderlyingDirectedEq specialfinalizer.ty specialfinalizer.underlying
   isUnderlying : go.IsUnderlying specialfinalizer.underlying specialfinalizer.underlying
+  method_set : go.MethodSetIs specialfinalizer.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType specialfinalizer.ty) []
 
 attribute [instance] specialfinalizer.TypeAssumptions.type_repr
   specialfinalizer.TypeAssumptions.underlying
   specialfinalizer.TypeAssumptions.isUnderlying
+  specialfinalizer.TypeAssumptions.method_set
+  specialfinalizer.TypeAssumptions.ptr_method_set
 
 structure specialCleanup [FfiSyntax] where
   mk ::
@@ -17082,6 +17746,8 @@ class specialCleanup.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_cleanup : ∀ (x : specialCleanup) (y : cleanupFn), go.IsGoStepPureDetTagged under (StructFieldSet specialCleanup.underlying go!"cleanup") (PairV #x #y) (Val #(({ x with cleanup' := y } : specialCleanup)))
   get_id : ∀ (x : specialCleanup), go.IsGoStepPureDetTagged under (StructFieldGet specialCleanup.underlying go!"id") #x (Val #(x.id'))
   set_id : ∀ (x : specialCleanup) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet specialCleanup.underlying go!"id") (PairV #x #y) (Val #(({ x with id' := y } : specialCleanup)))
+  method_set : go.MethodSetIs specialCleanup.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType specialCleanup.ty) []
 
 attribute [instance] specialCleanup.TypeAssumptions.type_repr
   specialCleanup.TypeAssumptions.underlying
@@ -17094,6 +17760,8 @@ attribute [instance] specialCleanup.TypeAssumptions.type_repr
   specialCleanup.TypeAssumptions.set_cleanup
   specialCleanup.TypeAssumptions.get_id
   specialCleanup.TypeAssumptions.set_id
+  specialCleanup.TypeAssumptions.method_set
+  specialCleanup.TypeAssumptions.ptr_method_set
 
 axiom specialCheckFinalizer : Type
 axiom specialCheckFinalizer.zero_val : ZeroVal specialCheckFinalizer
@@ -17103,10 +17771,14 @@ class specialCheckFinalizer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLoc
   type_repr : go.TypeReprUnderlying specialCheckFinalizer.underlying specialCheckFinalizer
   underlying : go.UnderlyingDirectedEq specialCheckFinalizer.ty specialCheckFinalizer.underlying
   isUnderlying : go.IsUnderlying specialCheckFinalizer.underlying specialCheckFinalizer.underlying
+  method_set : go.MethodSetIs specialCheckFinalizer.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType specialCheckFinalizer.ty) []
 
 attribute [instance] specialCheckFinalizer.TypeAssumptions.type_repr
   specialCheckFinalizer.TypeAssumptions.underlying
   specialCheckFinalizer.TypeAssumptions.isUnderlying
+  specialCheckFinalizer.TypeAssumptions.method_set
+  specialCheckFinalizer.TypeAssumptions.ptr_method_set
 
 structure specialTinyBlock [FfiSyntax] where
   mk ::
@@ -17138,6 +17810,8 @@ class specialTinyBlock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
   set__0 : ∀ (x : specialTinyBlock) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet specialTinyBlock.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : specialTinyBlock)))
   get_special : ∀ (x : specialTinyBlock), go.IsGoStepPureDetTagged under (StructFieldGet specialTinyBlock.underlying go!"special") #x (Val #(x.special'))
   set_special : ∀ (x : specialTinyBlock) (y : special), go.IsGoStepPureDetTagged under (StructFieldSet specialTinyBlock.underlying go!"special") (PairV #x #y) (Val #(({ x with special' := y } : specialTinyBlock)))
+  method_set : go.MethodSetIs specialTinyBlock.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType specialTinyBlock.ty) []
 
 attribute [instance] specialTinyBlock.TypeAssumptions.type_repr
   specialTinyBlock.TypeAssumptions.underlying
@@ -17146,6 +17820,8 @@ attribute [instance] specialTinyBlock.TypeAssumptions.type_repr
   specialTinyBlock.TypeAssumptions.set__0
   specialTinyBlock.TypeAssumptions.get_special
   specialTinyBlock.TypeAssumptions.set_special
+  specialTinyBlock.TypeAssumptions.method_set
+  specialTinyBlock.TypeAssumptions.ptr_method_set
 
 structure specialWeakHandle [FfiSyntax] where
   mk ::
@@ -17181,6 +17857,8 @@ class specialWeakHandle.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCo
   set_special : ∀ (x : specialWeakHandle) (y : special), go.IsGoStepPureDetTagged under (StructFieldSet specialWeakHandle.underlying go!"special") (PairV #x #y) (Val #(({ x with special' := y } : specialWeakHandle)))
   get_handle : ∀ (x : specialWeakHandle), go.IsGoStepPureDetTagged under (StructFieldGet specialWeakHandle.underlying go!"handle") #x (Val #(x.handle'))
   set_handle : ∀ (x : specialWeakHandle) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet specialWeakHandle.underlying go!"handle") (PairV #x #y) (Val #(({ x with handle' := y } : specialWeakHandle)))
+  method_set : go.MethodSetIs specialWeakHandle.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType specialWeakHandle.ty) []
 
 attribute [instance] specialWeakHandle.TypeAssumptions.type_repr
   specialWeakHandle.TypeAssumptions.underlying
@@ -17191,6 +17869,8 @@ attribute [instance] specialWeakHandle.TypeAssumptions.type_repr
   specialWeakHandle.TypeAssumptions.set_special
   specialWeakHandle.TypeAssumptions.get_handle
   specialWeakHandle.TypeAssumptions.set_handle
+  specialWeakHandle.TypeAssumptions.method_set
+  specialWeakHandle.TypeAssumptions.ptr_method_set
 
 structure immortalWeakHandleMap [FfiSyntax] where
   mk ::
@@ -17218,12 +17898,16 @@ class immortalWeakHandleMap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLoc
   layout : go.StructLayout immortalWeakHandleMap [(go!"root", typeSize _root_.Perennial.internal.runtime.atomic.UnsafePointer, typeAlign _root_.Perennial.internal.runtime.atomic.UnsafePointer)]
   get_root : ∀ (x : immortalWeakHandleMap), go.IsGoStepPureDetTagged under (StructFieldGet immortalWeakHandleMap.underlying go!"root") #x (Val #(x.root'))
   set_root : ∀ (x : immortalWeakHandleMap) (y : _root_.Perennial.internal.runtime.atomic.UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldSet immortalWeakHandleMap.underlying go!"root") (PairV #x #y) (Val #(({ x with root' := y } : immortalWeakHandleMap)))
+  method_set : go.MethodSetIs immortalWeakHandleMap.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType immortalWeakHandleMap.ty) [(go!"runtime.getOrAdd", (some (go.signature.Signature [go.uintptr] false [(go.GoType.PointerType _root_.Perennial.internal.runtime.atomic.Uintptr.ty)])))]
 
 attribute [instance] immortalWeakHandleMap.TypeAssumptions.type_repr
   immortalWeakHandleMap.TypeAssumptions.underlying
   immortalWeakHandleMap.TypeAssumptions.layout
   immortalWeakHandleMap.TypeAssumptions.get_root
   immortalWeakHandleMap.TypeAssumptions.set_root
+  immortalWeakHandleMap.TypeAssumptions.method_set
+  immortalWeakHandleMap.TypeAssumptions.ptr_method_set
 
 structure immortalWeakHandle [FfiSyntax] where
   mk ::
@@ -17259,6 +17943,8 @@ class immortalWeakHandle.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   set_children : ∀ (x : immortalWeakHandle) (y : (GoArray _root_.Perennial.internal.runtime.atomic.UnsafePointer 2)), go.IsGoStepPureDetTagged under (StructFieldSet immortalWeakHandle.underlying go!"children") (PairV #x #y) (Val #(({ x with children' := y } : immortalWeakHandle)))
   get_ptr : ∀ (x : immortalWeakHandle), go.IsGoStepPureDetTagged under (StructFieldGet immortalWeakHandle.underlying go!"ptr") #x (Val #(x.ptr'))
   set_ptr : ∀ (x : immortalWeakHandle) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet immortalWeakHandle.underlying go!"ptr") (PairV #x #y) (Val #(({ x with ptr' := y } : immortalWeakHandle)))
+  method_set : go.MethodSetIs immortalWeakHandle.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType immortalWeakHandle.ty) [(go!"runtime.handle", (some (go.signature.Signature [] false [(go.GoType.PointerType _root_.Perennial.internal.runtime.atomic.Uintptr.ty)])))]
 
 attribute [instance] immortalWeakHandle.TypeAssumptions.type_repr
   immortalWeakHandle.TypeAssumptions.underlying
@@ -17269,6 +17955,8 @@ attribute [instance] immortalWeakHandle.TypeAssumptions.type_repr
   immortalWeakHandle.TypeAssumptions.set_children
   immortalWeakHandle.TypeAssumptions.get_ptr
   immortalWeakHandle.TypeAssumptions.set_ptr
+  immortalWeakHandle.TypeAssumptions.method_set
+  immortalWeakHandle.TypeAssumptions.ptr_method_set
 
 structure specialprofile [FfiSyntax] where
   mk ::
@@ -17304,6 +17992,8 @@ class specialprofile.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_special : ∀ (x : specialprofile) (y : special), go.IsGoStepPureDetTagged under (StructFieldSet specialprofile.underlying go!"special") (PairV #x #y) (Val #(({ x with special' := y } : specialprofile)))
   get_b : ∀ (x : specialprofile), go.IsGoStepPureDetTagged under (StructFieldGet specialprofile.underlying go!"b") #x (Val #(x.b'))
   set_b : ∀ (x : specialprofile) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet specialprofile.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : specialprofile)))
+  method_set : go.MethodSetIs specialprofile.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType specialprofile.ty) []
 
 attribute [instance] specialprofile.TypeAssumptions.type_repr
   specialprofile.TypeAssumptions.underlying
@@ -17314,6 +18004,8 @@ attribute [instance] specialprofile.TypeAssumptions.type_repr
   specialprofile.TypeAssumptions.set_special
   specialprofile.TypeAssumptions.get_b
   specialprofile.TypeAssumptions.set_b
+  specialprofile.TypeAssumptions.method_set
+  specialprofile.TypeAssumptions.ptr_method_set
 
 structure specialReachable [FfiSyntax] where
   mk ::
@@ -17349,6 +18041,8 @@ class specialReachable.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
   set_done : ∀ (x : specialReachable) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet specialReachable.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : specialReachable)))
   get_reachable : ∀ (x : specialReachable), go.IsGoStepPureDetTagged under (StructFieldGet specialReachable.underlying go!"reachable") #x (Val #(x.reachable'))
   set_reachable : ∀ (x : specialReachable) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet specialReachable.underlying go!"reachable") (PairV #x #y) (Val #(({ x with reachable' := y } : specialReachable)))
+  method_set : go.MethodSetIs specialReachable.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType specialReachable.ty) []
 
 attribute [instance] specialReachable.TypeAssumptions.type_repr
   specialReachable.TypeAssumptions.underlying
@@ -17359,6 +18053,8 @@ attribute [instance] specialReachable.TypeAssumptions.type_repr
   specialReachable.TypeAssumptions.set_done
   specialReachable.TypeAssumptions.get_reachable
   specialReachable.TypeAssumptions.set_reachable
+  specialReachable.TypeAssumptions.method_set
+  specialReachable.TypeAssumptions.ptr_method_set
 
 structure specialPinCounter [FfiSyntax] where
   mk ::
@@ -17390,6 +18086,8 @@ class specialPinCounter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCo
   set_special : ∀ (x : specialPinCounter) (y : special), go.IsGoStepPureDetTagged under (StructFieldSet specialPinCounter.underlying go!"special") (PairV #x #y) (Val #(({ x with special' := y } : specialPinCounter)))
   get_counter : ∀ (x : specialPinCounter), go.IsGoStepPureDetTagged under (StructFieldGet specialPinCounter.underlying go!"counter") #x (Val #(x.counter'))
   set_counter : ∀ (x : specialPinCounter) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet specialPinCounter.underlying go!"counter") (PairV #x #y) (Val #(({ x with counter' := y } : specialPinCounter)))
+  method_set : go.MethodSetIs specialPinCounter.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType specialPinCounter.ty) []
 
 attribute [instance] specialPinCounter.TypeAssumptions.type_repr
   specialPinCounter.TypeAssumptions.underlying
@@ -17398,6 +18096,8 @@ attribute [instance] specialPinCounter.TypeAssumptions.type_repr
   specialPinCounter.TypeAssumptions.set_special
   specialPinCounter.TypeAssumptions.get_counter
   specialPinCounter.TypeAssumptions.set_counter
+  specialPinCounter.TypeAssumptions.method_set
+  specialPinCounter.TypeAssumptions.ptr_method_set
 
 structure specialSecret [FfiSyntax] where
   mk ::
@@ -17433,6 +18133,8 @@ class specialSecret.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_special : ∀ (x : specialSecret) (y : special), go.IsGoStepPureDetTagged under (StructFieldSet specialSecret.underlying go!"special") (PairV #x #y) (Val #(({ x with special' := y } : specialSecret)))
   get_size : ∀ (x : specialSecret), go.IsGoStepPureDetTagged under (StructFieldGet specialSecret.underlying go!"size") #x (Val #(x.size'))
   set_size : ∀ (x : specialSecret) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet specialSecret.underlying go!"size") (PairV #x #y) (Val #(({ x with size' := y } : specialSecret)))
+  method_set : go.MethodSetIs specialSecret.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType specialSecret.ty) []
 
 attribute [instance] specialSecret.TypeAssumptions.type_repr
   specialSecret.TypeAssumptions.underlying
@@ -17443,6 +18145,8 @@ attribute [instance] specialSecret.TypeAssumptions.type_repr
   specialSecret.TypeAssumptions.set_special
   specialSecret.TypeAssumptions.get_size
   specialSecret.TypeAssumptions.set_size
+  specialSecret.TypeAssumptions.method_set
+  specialSecret.TypeAssumptions.ptr_method_set
 
 structure specialsIter [FfiSyntax] where
   mk ::
@@ -17474,6 +18178,8 @@ class specialsIter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   set_pprev : ∀ (x : specialsIter) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet specialsIter.underlying go!"pprev") (PairV #x #y) (Val #(({ x with pprev' := y } : specialsIter)))
   get_s : ∀ (x : specialsIter), go.IsGoStepPureDetTagged under (StructFieldGet specialsIter.underlying go!"s") #x (Val #(x.s'))
   set_s : ∀ (x : specialsIter) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet specialsIter.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : specialsIter)))
+  method_set : go.MethodSetIs specialsIter.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType specialsIter.ty) [(go!"runtime.next", (some (go.signature.Signature [] false []))), (go!"runtime.unlinkAndNext", (some (go.signature.Signature [] false [(go.GoType.PointerType special.ty)]))), (go!"runtime.valid", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] specialsIter.TypeAssumptions.type_repr
   specialsIter.TypeAssumptions.underlying
@@ -17482,6 +18188,8 @@ attribute [instance] specialsIter.TypeAssumptions.type_repr
   specialsIter.TypeAssumptions.set_pprev
   specialsIter.TypeAssumptions.get_s
   specialsIter.TypeAssumptions.set_s
+  specialsIter.TypeAssumptions.method_set
+  specialsIter.TypeAssumptions.ptr_method_set
 
 structure gcBits [FfiSyntax] where
   mk ::
@@ -17513,6 +18221,8 @@ class gcBits.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set__0 : ∀ (x : gcBits) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet gcBits.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : gcBits)))
   get_x : ∀ (x : gcBits), go.IsGoStepPureDetTagged under (StructFieldGet gcBits.underlying go!"x") #x (Val #(x.x'))
   set_x : ∀ (x : gcBits) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet gcBits.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : gcBits)))
+  method_set : go.MethodSetIs gcBits.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gcBits.ty) [(go!"runtime.bitp", (some (go.signature.Signature [go.uintptr] false [(go.GoType.PointerType go.uint8), go.uint8]))), (go!"runtime.bytep", (some (go.signature.Signature [go.uintptr] false [(go.GoType.PointerType go.uint8)])))]
 
 attribute [instance] gcBits.TypeAssumptions.type_repr
   gcBits.TypeAssumptions.underlying
@@ -17521,6 +18231,8 @@ attribute [instance] gcBits.TypeAssumptions.type_repr
   gcBits.TypeAssumptions.set__0
   gcBits.TypeAssumptions.get_x
   gcBits.TypeAssumptions.set_x
+  gcBits.TypeAssumptions.method_set
+  gcBits.TypeAssumptions.ptr_method_set
 
 structure gcBitsHeader [FfiSyntax] where
   mk ::
@@ -17552,6 +18264,8 @@ class gcBitsHeader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   set_free : ∀ (x : gcBitsHeader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet gcBitsHeader.underlying go!"free") (PairV #x #y) (Val #(({ x with free' := y } : gcBitsHeader)))
   get_next : ∀ (x : gcBitsHeader), go.IsGoStepPureDetTagged under (StructFieldGet gcBitsHeader.underlying go!"next") #x (Val #(x.next'))
   set_next : ∀ (x : gcBitsHeader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet gcBitsHeader.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : gcBitsHeader)))
+  method_set : go.MethodSetIs gcBitsHeader.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gcBitsHeader.ty) []
 
 attribute [instance] gcBitsHeader.TypeAssumptions.type_repr
   gcBitsHeader.TypeAssumptions.underlying
@@ -17560,6 +18274,8 @@ attribute [instance] gcBitsHeader.TypeAssumptions.type_repr
   gcBitsHeader.TypeAssumptions.set_free
   gcBitsHeader.TypeAssumptions.get_next
   gcBitsHeader.TypeAssumptions.set_next
+  gcBitsHeader.TypeAssumptions.method_set
+  gcBitsHeader.TypeAssumptions.ptr_method_set
 
 structure gcBitsArena [FfiSyntax] where
   mk ::
@@ -17599,6 +18315,8 @@ class gcBitsArena.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set_next : ∀ (x : gcBitsArena) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet gcBitsArena.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : gcBitsArena)))
   get_bits : ∀ (x : gcBitsArena), go.IsGoStepPureDetTagged under (StructFieldGet gcBitsArena.underlying go!"bits") #x (Val #(x.bits'))
   set_bits : ∀ (x : gcBitsArena) (y : (GoArray gcBits 65520)), go.IsGoStepPureDetTagged under (StructFieldSet gcBitsArena.underlying go!"bits") (PairV #x #y) (Val #(({ x with bits' := y } : gcBitsArena)))
+  method_set : go.MethodSetIs gcBitsArena.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gcBitsArena.ty) [(go!"runtime.tryAlloc", (some (go.signature.Signature [go.uintptr] false [(go.GoType.PointerType gcBits.ty)])))]
 
 attribute [instance] gcBitsArena.TypeAssumptions.type_repr
   gcBitsArena.TypeAssumptions.underlying
@@ -17611,6 +18329,8 @@ attribute [instance] gcBitsArena.TypeAssumptions.type_repr
   gcBitsArena.TypeAssumptions.set_next
   gcBitsArena.TypeAssumptions.get_bits
   gcBitsArena.TypeAssumptions.set_bits
+  gcBitsArena.TypeAssumptions.method_set
+  gcBitsArena.TypeAssumptions.ptr_method_set
 
 abbrev floaty [FfiSyntax] : Type := GoInterface
 
@@ -17619,8 +18339,12 @@ abbrev floaty [FfiSyntax] : Type := GoInterface
 
 class floaty.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq floaty.ty floaty.underlying
+  method_set : go.MethodSetIs floaty.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType floaty.ty) []
 
 attribute [instance] floaty.TypeAssumptions.underlying
+  floaty.TypeAssumptions.method_set
+  floaty.TypeAssumptions.ptr_method_set
 
 abbrev chunkIdx [FfiSyntax] : Type := w64
 
@@ -17629,8 +18353,12 @@ abbrev chunkIdx [FfiSyntax] : Type := w64
 
 class chunkIdx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq chunkIdx.ty chunkIdx.underlying
+  method_set : go.MethodSetIs chunkIdx.ty [(go!"runtime.l1", (some (go.signature.Signature [] false [go.uint]))), (go!"runtime.l2", (some (go.signature.Signature [] false [go.uint])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType chunkIdx.ty) [(go!"runtime.l1", (some (go.signature.Signature [] false [go.uint]))), (go!"runtime.l2", (some (go.signature.Signature [] false [go.uint])))]
 
 attribute [instance] chunkIdx.TypeAssumptions.underlying
+  chunkIdx.TypeAssumptions.method_set
+  chunkIdx.TypeAssumptions.ptr_method_set
 
 axiom pageAlloc : Type
 axiom pageAlloc.zero_val : ZeroVal pageAlloc
@@ -17640,10 +18368,14 @@ class pageAlloc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying pageAlloc.underlying pageAlloc
   underlying : go.UnderlyingDirectedEq pageAlloc.ty pageAlloc.underlying
   isUnderlying : go.IsUnderlying pageAlloc.underlying pageAlloc.underlying
+  method_set : go.MethodSetIs pageAlloc.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pageAlloc.ty) [(go!"runtime.alloc", (some (go.signature.Signature [go.uintptr] false [go.uintptr, go.uintptr]))), (go!"runtime.allocRange", (some (go.signature.Signature [go.uintptr, go.uintptr] false [go.uintptr]))), (go!"runtime.allocToCache", (some (go.signature.Signature [] false [pageCache.ty]))), (go!"runtime.chunkOf", (some (go.signature.Signature [chunkIdx.ty] false [(go.GoType.PointerType pallocData.ty)]))), (go!"runtime.enableChunkHugePages", (some (go.signature.Signature [] false []))), (go!"runtime.find", (some (go.signature.Signature [go.uintptr] false [go.uintptr, offAddr.ty]))), (go!"runtime.findMappedAddr", (some (go.signature.Signature [offAddr.ty] false [offAddr.ty]))), (go!"runtime.free", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"runtime.grow", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"runtime.init", (some (go.signature.Signature [(go.GoType.PointerType mutex.ty), (go.GoType.PointerType sysMemStat.ty), go.bool] false []))), (go!"runtime.markRandomPaddingPages", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"runtime.scavenge", (some (go.signature.Signature [go.uintptr, (go.GoType.FunctionType (go.signature.Signature [] false [go.bool])), go.bool] false [go.uintptr]))), (go!"runtime.scavengeOne", (some (go.signature.Signature [chunkIdx.ty, go.uint, go.uintptr] false [go.uintptr]))), (go!"runtime.sysGrow", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"runtime.sysInit", (some (go.signature.Signature [go.bool] false []))), (go!"runtime.tryChunkOf", (some (go.signature.Signature [chunkIdx.ty] false [(go.GoType.PointerType pallocData.ty)]))), (go!"runtime.update", (some (go.signature.Signature [go.uintptr, go.uintptr, go.bool, go.bool] false [])))]
 
 attribute [instance] pageAlloc.TypeAssumptions.type_repr
   pageAlloc.TypeAssumptions.underlying
   pageAlloc.TypeAssumptions.isUnderlying
+  pageAlloc.TypeAssumptions.method_set
+  pageAlloc.TypeAssumptions.ptr_method_set
 
 abbrev pallocSum [FfiSyntax] : Type := w64
 
@@ -17652,8 +18384,12 @@ abbrev pallocSum [FfiSyntax] : Type := w64
 
 class pallocSum.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq pallocSum.ty pallocSum.underlying
+  method_set : go.MethodSetIs pallocSum.ty [(go!"runtime.end", (some (go.signature.Signature [] false [go.uint]))), (go!"runtime.max", (some (go.signature.Signature [] false [go.uint]))), (go!"runtime.start", (some (go.signature.Signature [] false [go.uint]))), (go!"runtime.unpack", (some (go.signature.Signature [] false [go.uint, go.uint, go.uint])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pallocSum.ty) [(go!"runtime.end", (some (go.signature.Signature [] false [go.uint]))), (go!"runtime.max", (some (go.signature.Signature [] false [go.uint]))), (go!"runtime.start", (some (go.signature.Signature [] false [go.uint]))), (go!"runtime.unpack", (some (go.signature.Signature [] false [go.uint, go.uint, go.uint])))]
 
 attribute [instance] pallocSum.TypeAssumptions.underlying
+  pallocSum.TypeAssumptions.method_set
+  pallocSum.TypeAssumptions.ptr_method_set
 
 structure pageCache [FfiSyntax] where
   mk ::
@@ -17689,6 +18425,8 @@ class pageCache.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_cache : ∀ (x : pageCache) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pageCache.underlying go!"cache") (PairV #x #y) (Val #(({ x with cache' := y } : pageCache)))
   get_scav : ∀ (x : pageCache), go.IsGoStepPureDetTagged under (StructFieldGet pageCache.underlying go!"scav") #x (Val #(x.scav'))
   set_scav : ∀ (x : pageCache) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pageCache.underlying go!"scav") (PairV #x #y) (Val #(({ x with scav' := y } : pageCache)))
+  method_set : go.MethodSetIs pageCache.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pageCache.ty) [(go!"runtime.alloc", (some (go.signature.Signature [go.uintptr] false [go.uintptr, go.uintptr]))), (go!"runtime.allocN", (some (go.signature.Signature [go.uintptr] false [go.uintptr, go.uintptr]))), (go!"runtime.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.flush", (some (go.signature.Signature [(go.GoType.PointerType pageAlloc.ty)] false [])))]
 
 attribute [instance] pageCache.TypeAssumptions.type_repr
   pageCache.TypeAssumptions.underlying
@@ -17699,6 +18437,8 @@ attribute [instance] pageCache.TypeAssumptions.type_repr
   pageCache.TypeAssumptions.set_cache
   pageCache.TypeAssumptions.get_scav
   pageCache.TypeAssumptions.set_scav
+  pageCache.TypeAssumptions.method_set
+  pageCache.TypeAssumptions.ptr_method_set
 
 abbrev pageBits [FfiSyntax] : Type := (GoArray w64 8)
 
@@ -17707,8 +18447,12 @@ abbrev pageBits [FfiSyntax] : Type := (GoArray w64 8)
 
 class pageBits.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq pageBits.ty pageBits.underlying
+  method_set : go.MethodSetIs pageBits.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pageBits.ty) [(go!"runtime.block64", (some (go.signature.Signature [go.uint] false [go.uint64]))), (go!"runtime.clear", (some (go.signature.Signature [go.uint] false []))), (go!"runtime.clearAll", (some (go.signature.Signature [] false []))), (go!"runtime.clearBlock64", (some (go.signature.Signature [go.uint, go.uint64] false []))), (go!"runtime.clearRange", (some (go.signature.Signature [go.uint, go.uint] false []))), (go!"runtime.get", (some (go.signature.Signature [go.uint] false [go.uint]))), (go!"runtime.popcntRange", (some (go.signature.Signature [go.uint, go.uint] false [go.uint]))), (go!"runtime.set", (some (go.signature.Signature [go.uint] false []))), (go!"runtime.setAll", (some (go.signature.Signature [] false []))), (go!"runtime.setBlock64", (some (go.signature.Signature [go.uint, go.uint64] false []))), (go!"runtime.setRange", (some (go.signature.Signature [go.uint, go.uint] false [])))]
 
 attribute [instance] pageBits.TypeAssumptions.underlying
+  pageBits.TypeAssumptions.method_set
+  pageBits.TypeAssumptions.ptr_method_set
 
 abbrev pallocBits [FfiSyntax] : Type := pageBits
 
@@ -17717,8 +18461,12 @@ abbrev pallocBits [FfiSyntax] : Type := pageBits
 
 class pallocBits.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq pallocBits.ty pallocBits.underlying
+  method_set : go.MethodSetIs pallocBits.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pallocBits.ty) [(go!"runtime.allocAll", (some (go.signature.Signature [] false []))), (go!"runtime.allocPages64", (some (go.signature.Signature [go.uint, go.uint64] false []))), (go!"runtime.allocRange", (some (go.signature.Signature [go.uint, go.uint] false []))), (go!"runtime.find", (some (go.signature.Signature [go.uintptr, go.uint] false [go.uint, go.uint]))), (go!"runtime.find1", (some (go.signature.Signature [go.uint] false [go.uint]))), (go!"runtime.findLargeN", (some (go.signature.Signature [go.uintptr, go.uint] false [go.uint, go.uint]))), (go!"runtime.findSmallN", (some (go.signature.Signature [go.uintptr, go.uint] false [go.uint, go.uint]))), (go!"runtime.free", (some (go.signature.Signature [go.uint, go.uint] false []))), (go!"runtime.free1", (some (go.signature.Signature [go.uint] false []))), (go!"runtime.freeAll", (some (go.signature.Signature [] false []))), (go!"runtime.pages64", (some (go.signature.Signature [go.uint] false [go.uint64]))), (go!"runtime.summarize", (some (go.signature.Signature [] false [pallocSum.ty])))]
 
 attribute [instance] pallocBits.TypeAssumptions.underlying
+  pallocBits.TypeAssumptions.method_set
+  pallocBits.TypeAssumptions.ptr_method_set
 
 structure pallocData [FfiSyntax] where
   mk ::
@@ -17750,6 +18498,8 @@ class pallocData.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_pallocBits : ∀ (x : pallocData) (y : pallocBits), go.IsGoStepPureDetTagged under (StructFieldSet pallocData.underlying go!"pallocBits") (PairV #x #y) (Val #(({ x with pallocBits' := y } : pallocData)))
   get_scavenged : ∀ (x : pallocData), go.IsGoStepPureDetTagged under (StructFieldGet pallocData.underlying go!"scavenged") #x (Val #(x.scavenged'))
   set_scavenged : ∀ (x : pallocData) (y : pageBits), go.IsGoStepPureDetTagged under (StructFieldSet pallocData.underlying go!"scavenged") (PairV #x #y) (Val #(({ x with scavenged' := y } : pallocData)))
+  method_set : go.MethodSetIs pallocData.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pallocData.ty) [(go!"runtime.allocAll", (some (go.signature.Signature [] false []))), (go!"runtime.allocPages64", (some (go.signature.Signature [go.uint, go.uint64] false []))), (go!"runtime.allocRange", (some (go.signature.Signature [go.uint, go.uint] false []))), (go!"runtime.find", (some (go.signature.Signature [go.uintptr, go.uint] false [go.uint, go.uint]))), (go!"runtime.find1", (some (go.signature.Signature [go.uint] false [go.uint]))), (go!"runtime.findLargeN", (some (go.signature.Signature [go.uintptr, go.uint] false [go.uint, go.uint]))), (go!"runtime.findScavengeCandidate", (some (go.signature.Signature [go.uint, go.uintptr, go.uintptr] false [go.uint, go.uint]))), (go!"runtime.findSmallN", (some (go.signature.Signature [go.uintptr, go.uint] false [go.uint, go.uint]))), (go!"runtime.free", (some (go.signature.Signature [go.uint, go.uint] false []))), (go!"runtime.free1", (some (go.signature.Signature [go.uint] false []))), (go!"runtime.freeAll", (some (go.signature.Signature [] false []))), (go!"runtime.pages64", (some (go.signature.Signature [go.uint] false [go.uint64]))), (go!"runtime.summarize", (some (go.signature.Signature [] false [pallocSum.ty])))]
 
 attribute [instance] pallocData.TypeAssumptions.type_repr
   pallocData.TypeAssumptions.underlying
@@ -17758,6 +18508,8 @@ attribute [instance] pallocData.TypeAssumptions.type_repr
   pallocData.TypeAssumptions.set_pallocBits
   pallocData.TypeAssumptions.get_scavenged
   pallocData.TypeAssumptions.set_scavenged
+  pallocData.TypeAssumptions.method_set
+  pallocData.TypeAssumptions.ptr_method_set
 
 abbrev bucketType [FfiSyntax] : Type := w64
 
@@ -17766,8 +18518,12 @@ abbrev bucketType [FfiSyntax] : Type := w64
 
 class bucketType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq bucketType.ty bucketType.underlying
+  method_set : go.MethodSetIs bucketType.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType bucketType.ty) []
 
 attribute [instance] bucketType.TypeAssumptions.underlying
+  bucketType.TypeAssumptions.method_set
+  bucketType.TypeAssumptions.ptr_method_set
 
 structure bucket [FfiSyntax] where
   mk ::
@@ -17819,6 +18575,8 @@ class bucket.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_size : ∀ (x : bucket) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet bucket.underlying go!"size") (PairV #x #y) (Val #(({ x with size' := y } : bucket)))
   get_nstk : ∀ (x : bucket), go.IsGoStepPureDetTagged under (StructFieldGet bucket.underlying go!"nstk") #x (Val #(x.nstk'))
   set_nstk : ∀ (x : bucket) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet bucket.underlying go!"nstk") (PairV #x #y) (Val #(({ x with nstk' := y } : bucket)))
+  method_set : go.MethodSetIs bucket.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType bucket.ty) [(go!"runtime.bp", (some (go.signature.Signature [] false [(go.GoType.PointerType blockRecord.ty)]))), (go!"runtime.mp", (some (go.signature.Signature [] false [(go.GoType.PointerType memRecord.ty)]))), (go!"runtime.stk", (some (go.signature.Signature [] false [(go.GoType.SliceType go.uintptr)])))]
 
 attribute [instance] bucket.TypeAssumptions.type_repr
   bucket.TypeAssumptions.underlying
@@ -17837,6 +18595,8 @@ attribute [instance] bucket.TypeAssumptions.type_repr
   bucket.TypeAssumptions.set_size
   bucket.TypeAssumptions.get_nstk
   bucket.TypeAssumptions.set_nstk
+  bucket.TypeAssumptions.method_set
+  bucket.TypeAssumptions.ptr_method_set
 
 structure memRecordCycle [FfiSyntax] where
   mk ::
@@ -17876,6 +18636,8 @@ class memRecordCycle.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_alloc_bytes : ∀ (x : memRecordCycle) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet memRecordCycle.underlying go!"alloc_bytes") (PairV #x #y) (Val #(({ x with alloc_bytes' := y } : memRecordCycle)))
   get_free_bytes : ∀ (x : memRecordCycle), go.IsGoStepPureDetTagged under (StructFieldGet memRecordCycle.underlying go!"free_bytes") #x (Val #(x.free_bytes'))
   set_free_bytes : ∀ (x : memRecordCycle) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet memRecordCycle.underlying go!"free_bytes") (PairV #x #y) (Val #(({ x with free_bytes' := y } : memRecordCycle)))
+  method_set : go.MethodSetIs memRecordCycle.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType memRecordCycle.ty) [(go!"runtime.add", (some (go.signature.Signature [(go.GoType.PointerType memRecordCycle.ty)] false [])))]
 
 attribute [instance] memRecordCycle.TypeAssumptions.type_repr
   memRecordCycle.TypeAssumptions.underlying
@@ -17888,6 +18650,8 @@ attribute [instance] memRecordCycle.TypeAssumptions.type_repr
   memRecordCycle.TypeAssumptions.set_alloc_bytes
   memRecordCycle.TypeAssumptions.get_free_bytes
   memRecordCycle.TypeAssumptions.set_free_bytes
+  memRecordCycle.TypeAssumptions.method_set
+  memRecordCycle.TypeAssumptions.ptr_method_set
 
 structure memRecord [FfiSyntax] where
   mk ::
@@ -17919,6 +18683,8 @@ class memRecord.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_active : ∀ (x : memRecord) (y : memRecordCycle), go.IsGoStepPureDetTagged under (StructFieldSet memRecord.underlying go!"active") (PairV #x #y) (Val #(({ x with active' := y } : memRecord)))
   get_future : ∀ (x : memRecord), go.IsGoStepPureDetTagged under (StructFieldGet memRecord.underlying go!"future") #x (Val #(x.future'))
   set_future : ∀ (x : memRecord) (y : (GoArray memRecordCycle 3)), go.IsGoStepPureDetTagged under (StructFieldSet memRecord.underlying go!"future") (PairV #x #y) (Val #(({ x with future' := y } : memRecord)))
+  method_set : go.MethodSetIs memRecord.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType memRecord.ty) []
 
 attribute [instance] memRecord.TypeAssumptions.type_repr
   memRecord.TypeAssumptions.underlying
@@ -17927,6 +18693,8 @@ attribute [instance] memRecord.TypeAssumptions.type_repr
   memRecord.TypeAssumptions.set_active
   memRecord.TypeAssumptions.get_future
   memRecord.TypeAssumptions.set_future
+  memRecord.TypeAssumptions.method_set
+  memRecord.TypeAssumptions.ptr_method_set
 
 structure blockRecord [FfiSyntax] where
   mk ::
@@ -17958,6 +18726,8 @@ class blockRecord.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set_count : ∀ (x : blockRecord) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet blockRecord.underlying go!"count") (PairV #x #y) (Val #(({ x with count' := y } : blockRecord)))
   get_cycles : ∀ (x : blockRecord), go.IsGoStepPureDetTagged under (StructFieldGet blockRecord.underlying go!"cycles") #x (Val #(x.cycles'))
   set_cycles : ∀ (x : blockRecord) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet blockRecord.underlying go!"cycles") (PairV #x #y) (Val #(({ x with cycles' := y } : blockRecord)))
+  method_set : go.MethodSetIs blockRecord.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType blockRecord.ty) []
 
 attribute [instance] blockRecord.TypeAssumptions.type_repr
   blockRecord.TypeAssumptions.underlying
@@ -17966,6 +18736,8 @@ attribute [instance] blockRecord.TypeAssumptions.type_repr
   blockRecord.TypeAssumptions.set_count
   blockRecord.TypeAssumptions.get_cycles
   blockRecord.TypeAssumptions.set_cycles
+  blockRecord.TypeAssumptions.method_set
+  blockRecord.TypeAssumptions.ptr_method_set
 
 abbrev buckhashArray [FfiSyntax] : Type := (GoArray _root_.Perennial.internal.runtime.atomic.UnsafePointer 179999)
 
@@ -17974,8 +18746,12 @@ abbrev buckhashArray [FfiSyntax] : Type := (GoArray _root_.Perennial.internal.ru
 
 class buckhashArray.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq buckhashArray.ty buckhashArray.underlying
+  method_set : go.MethodSetIs buckhashArray.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType buckhashArray.ty) []
 
 attribute [instance] buckhashArray.TypeAssumptions.underlying
+  buckhashArray.TypeAssumptions.method_set
+  buckhashArray.TypeAssumptions.ptr_method_set
 
 structure mProfCycleHolder [FfiSyntax] where
   mk ::
@@ -18003,12 +18779,16 @@ class mProfCycleHolder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
   layout : go.StructLayout mProfCycleHolder [(go!"value", typeSize _root_.Perennial.internal.runtime.atomic.Uint32, typeAlign _root_.Perennial.internal.runtime.atomic.Uint32)]
   get_value : ∀ (x : mProfCycleHolder), go.IsGoStepPureDetTagged under (StructFieldGet mProfCycleHolder.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : mProfCycleHolder) (y : _root_.Perennial.internal.runtime.atomic.Uint32), go.IsGoStepPureDetTagged under (StructFieldSet mProfCycleHolder.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : mProfCycleHolder)))
+  method_set : go.MethodSetIs mProfCycleHolder.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mProfCycleHolder.ty) [(go!"runtime.increment", (some (go.signature.Signature [] false []))), (go!"runtime.read", (some (go.signature.Signature [] false [go.uint32]))), (go!"runtime.setFlushed", (some (go.signature.Signature [] false [go.uint32, go.bool])))]
 
 attribute [instance] mProfCycleHolder.TypeAssumptions.type_repr
   mProfCycleHolder.TypeAssumptions.underlying
   mProfCycleHolder.TypeAssumptions.layout
   mProfCycleHolder.TypeAssumptions.get_value
   mProfCycleHolder.TypeAssumptions.set_value
+  mProfCycleHolder.TypeAssumptions.method_set
+  mProfCycleHolder.TypeAssumptions.ptr_method_set
 
 structure mLockProfile [FfiSyntax] where
   mk ::
@@ -18056,6 +18836,8 @@ class mLockProfile.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   set_haveStack : ∀ (x : mLockProfile) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet mLockProfile.underlying go!"haveStack") (PairV #x #y) (Val #(({ x with haveStack' := y } : mLockProfile)))
   get_disabled : ∀ (x : mLockProfile), go.IsGoStepPureDetTagged under (StructFieldGet mLockProfile.underlying go!"disabled") #x (Val #(x.disabled'))
   set_disabled : ∀ (x : mLockProfile) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet mLockProfile.underlying go!"disabled") (PairV #x #y) (Val #(({ x with disabled' := y } : mLockProfile)))
+  method_set : go.MethodSetIs mLockProfile.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mLockProfile.ty) [(go!"runtime.captureStack", (some (go.signature.Signature [] false []))), (go!"runtime.end", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.recordUnlock", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.start", (some (go.signature.Signature [] false [go.int64]))), (go!"runtime.store", (some (go.signature.Signature [] false []))), (go!"runtime.storeSlow", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] mLockProfile.TypeAssumptions.type_repr
   mLockProfile.TypeAssumptions.underlying
@@ -18072,6 +18854,8 @@ attribute [instance] mLockProfile.TypeAssumptions.type_repr
   mLockProfile.TypeAssumptions.set_haveStack
   mLockProfile.TypeAssumptions.get_disabled
   mLockProfile.TypeAssumptions.set_disabled
+  mLockProfile.TypeAssumptions.method_set
+  mLockProfile.TypeAssumptions.ptr_method_set
 
 structure StackRecord [FfiSyntax] where
   mk ::
@@ -18099,12 +18883,16 @@ class StackRecord.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   layout : go.StructLayout StackRecord [(go!"Stack0", typeSize (GoArray w64 32), typeAlign (GoArray w64 32))]
   get_Stack0 : ∀ (x : StackRecord), go.IsGoStepPureDetTagged under (StructFieldGet StackRecord.underlying go!"Stack0") #x (Val #(x.Stack0'))
   set_Stack0 : ∀ (x : StackRecord) (y : (GoArray w64 32)), go.IsGoStepPureDetTagged under (StructFieldSet StackRecord.underlying go!"Stack0") (PairV #x #y) (Val #(({ x with Stack0' := y } : StackRecord)))
+  method_set : go.MethodSetIs StackRecord.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType StackRecord.ty) [(go!"Stack", (some (go.signature.Signature [] false [(go.GoType.SliceType go.uintptr)])))]
 
 attribute [instance] StackRecord.TypeAssumptions.type_repr
   StackRecord.TypeAssumptions.underlying
   StackRecord.TypeAssumptions.layout
   StackRecord.TypeAssumptions.get_Stack0
   StackRecord.TypeAssumptions.set_Stack0
+  StackRecord.TypeAssumptions.method_set
+  StackRecord.TypeAssumptions.ptr_method_set
 
 structure MemProfileRecord [FfiSyntax] where
   mk ::
@@ -18148,6 +18936,8 @@ class MemProfileRecord.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
   set_FreeObjects : ∀ (x : MemProfileRecord) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet MemProfileRecord.underlying go!"FreeObjects") (PairV #x #y) (Val #(({ x with FreeObjects' := y } : MemProfileRecord)))
   get_Stack0 : ∀ (x : MemProfileRecord), go.IsGoStepPureDetTagged under (StructFieldGet MemProfileRecord.underlying go!"Stack0") #x (Val #(x.Stack0'))
   set_Stack0 : ∀ (x : MemProfileRecord) (y : (GoArray w64 32)), go.IsGoStepPureDetTagged under (StructFieldSet MemProfileRecord.underlying go!"Stack0") (PairV #x #y) (Val #(({ x with Stack0' := y } : MemProfileRecord)))
+  method_set : go.MethodSetIs MemProfileRecord.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType MemProfileRecord.ty) [(go!"InUseBytes", (some (go.signature.Signature [] false [go.int64]))), (go!"InUseObjects", (some (go.signature.Signature [] false [go.int64]))), (go!"Stack", (some (go.signature.Signature [] false [(go.GoType.SliceType go.uintptr)])))]
 
 attribute [instance] MemProfileRecord.TypeAssumptions.type_repr
   MemProfileRecord.TypeAssumptions.underlying
@@ -18162,6 +18952,8 @@ attribute [instance] MemProfileRecord.TypeAssumptions.type_repr
   MemProfileRecord.TypeAssumptions.set_FreeObjects
   MemProfileRecord.TypeAssumptions.get_Stack0
   MemProfileRecord.TypeAssumptions.set_Stack0
+  MemProfileRecord.TypeAssumptions.method_set
+  MemProfileRecord.TypeAssumptions.ptr_method_set
 
 structure BlockProfileRecord [FfiSyntax] where
   mk ::
@@ -18197,6 +18989,8 @@ class BlockProfileRecord.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   set_Cycles : ∀ (x : BlockProfileRecord) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet BlockProfileRecord.underlying go!"Cycles") (PairV #x #y) (Val #(({ x with Cycles' := y } : BlockProfileRecord)))
   get_StackRecord : ∀ (x : BlockProfileRecord), go.IsGoStepPureDetTagged under (StructFieldGet BlockProfileRecord.underlying go!"StackRecord") #x (Val #(x.StackRecord'))
   set_StackRecord : ∀ (x : BlockProfileRecord) (y : StackRecord), go.IsGoStepPureDetTagged under (StructFieldSet BlockProfileRecord.underlying go!"StackRecord") (PairV #x #y) (Val #(({ x with StackRecord' := y } : BlockProfileRecord)))
+  method_set : go.MethodSetIs BlockProfileRecord.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType BlockProfileRecord.ty) [(go!"Stack", (some (go.signature.Signature [] false [(go.GoType.SliceType go.uintptr)])))]
 
 attribute [instance] BlockProfileRecord.TypeAssumptions.type_repr
   BlockProfileRecord.TypeAssumptions.underlying
@@ -18207,6 +19001,8 @@ attribute [instance] BlockProfileRecord.TypeAssumptions.type_repr
   BlockProfileRecord.TypeAssumptions.set_Cycles
   BlockProfileRecord.TypeAssumptions.get_StackRecord
   BlockProfileRecord.TypeAssumptions.set_StackRecord
+  BlockProfileRecord.TypeAssumptions.method_set
+  BlockProfileRecord.TypeAssumptions.ptr_method_set
 
 abbrev goroutineProfileState [FfiSyntax] : Type := w32
 
@@ -18215,8 +19011,12 @@ abbrev goroutineProfileState [FfiSyntax] : Type := w32
 
 class goroutineProfileState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq goroutineProfileState.ty goroutineProfileState.underlying
+  method_set : go.MethodSetIs goroutineProfileState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType goroutineProfileState.ty) []
 
 attribute [instance] goroutineProfileState.TypeAssumptions.underlying
+  goroutineProfileState.TypeAssumptions.method_set
+  goroutineProfileState.TypeAssumptions.ptr_method_set
 
 abbrev goroutineProfileStateHolder [FfiSyntax] : Type := _root_.Perennial.internal.runtime.atomic.Uint32
 
@@ -18225,8 +19025,12 @@ abbrev goroutineProfileStateHolder [FfiSyntax] : Type := _root_.Perennial.intern
 
 class goroutineProfileStateHolder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq goroutineProfileStateHolder.ty goroutineProfileStateHolder.underlying
+  method_set : go.MethodSetIs goroutineProfileStateHolder.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType goroutineProfileStateHolder.ty) [(go!"CompareAndSwap", (some (go.signature.Signature [goroutineProfileState.ty, goroutineProfileState.ty] false [go.bool]))), (go!"Load", (some (go.signature.Signature [] false [goroutineProfileState.ty]))), (go!"Store", (some (go.signature.Signature [goroutineProfileState.ty] false [])))]
 
 attribute [instance] goroutineProfileStateHolder.TypeAssumptions.underlying
+  goroutineProfileStateHolder.TypeAssumptions.method_set
+  goroutineProfileStateHolder.TypeAssumptions.ptr_method_set
 
 structure addrRange [FfiSyntax] where
   mk ::
@@ -18258,6 +19062,8 @@ class addrRange.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_base : ∀ (x : addrRange) (y : offAddr), go.IsGoStepPureDetTagged under (StructFieldSet addrRange.underlying go!"base") (PairV #x #y) (Val #(({ x with base' := y } : addrRange)))
   get_limit : ∀ (x : addrRange), go.IsGoStepPureDetTagged under (StructFieldGet addrRange.underlying go!"limit") #x (Val #(x.limit'))
   set_limit : ∀ (x : addrRange) (y : offAddr), go.IsGoStepPureDetTagged under (StructFieldSet addrRange.underlying go!"limit") (PairV #x #y) (Val #(({ x with limit' := y } : addrRange)))
+  method_set : go.MethodSetIs addrRange.ty [(go!"runtime.contains", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.removeGreaterEqual", (some (go.signature.Signature [go.uintptr] false [addrRange.ty]))), (go!"runtime.size", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.subtract", (some (go.signature.Signature [addrRange.ty] false [addrRange.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType addrRange.ty) [(go!"runtime.contains", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.removeGreaterEqual", (some (go.signature.Signature [go.uintptr] false [addrRange.ty]))), (go!"runtime.size", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.subtract", (some (go.signature.Signature [addrRange.ty] false [addrRange.ty]))), (go!"runtime.takeFromBack", (some (go.signature.Signature [go.uintptr, go.uint8] false [go.uintptr, go.bool]))), (go!"runtime.takeFromFront", (some (go.signature.Signature [go.uintptr, go.uint8] false [go.uintptr, go.bool])))]
 
 attribute [instance] addrRange.TypeAssumptions.type_repr
   addrRange.TypeAssumptions.underlying
@@ -18266,6 +19072,8 @@ attribute [instance] addrRange.TypeAssumptions.type_repr
   addrRange.TypeAssumptions.set_base
   addrRange.TypeAssumptions.get_limit
   addrRange.TypeAssumptions.set_limit
+  addrRange.TypeAssumptions.method_set
+  addrRange.TypeAssumptions.ptr_method_set
 
 structure addrRanges [FfiSyntax] where
   mk ::
@@ -18301,6 +19109,8 @@ class addrRanges.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_totalBytes : ∀ (x : addrRanges) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet addrRanges.underlying go!"totalBytes") (PairV #x #y) (Val #(({ x with totalBytes' := y } : addrRanges)))
   get_sysStat : ∀ (x : addrRanges), go.IsGoStepPureDetTagged under (StructFieldGet addrRanges.underlying go!"sysStat") #x (Val #(x.sysStat'))
   set_sysStat : ∀ (x : addrRanges) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet addrRanges.underlying go!"sysStat") (PairV #x #y) (Val #(({ x with sysStat' := y } : addrRanges)))
+  method_set : go.MethodSetIs addrRanges.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType addrRanges.ty) [(go!"runtime.add", (some (go.signature.Signature [addrRange.ty] false []))), (go!"runtime.cloneInto", (some (go.signature.Signature [(go.GoType.PointerType addrRanges.ty)] false []))), (go!"runtime.contains", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.findAddrGreaterEqual", (some (go.signature.Signature [go.uintptr] false [go.uintptr, go.bool]))), (go!"runtime.findSucc", (some (go.signature.Signature [go.uintptr] false [go.int]))), (go!"runtime.init", (some (go.signature.Signature [(go.GoType.PointerType sysMemStat.ty)] false []))), (go!"runtime.removeGreaterEqual", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.removeLast", (some (go.signature.Signature [go.uintptr] false [addrRange.ty])))]
 
 attribute [instance] addrRanges.TypeAssumptions.type_repr
   addrRanges.TypeAssumptions.underlying
@@ -18311,6 +19121,8 @@ attribute [instance] addrRanges.TypeAssumptions.type_repr
   addrRanges.TypeAssumptions.set_totalBytes
   addrRanges.TypeAssumptions.get_sysStat
   addrRanges.TypeAssumptions.set_sysStat
+  addrRanges.TypeAssumptions.method_set
+  addrRanges.TypeAssumptions.ptr_method_set
 
 structure spanSetBlockHeader [FfiSyntax] where
   mk ::
@@ -18342,6 +19154,8 @@ class spanSetBlockHeader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   set_lfnode : ∀ (x : spanSetBlockHeader) (y : lfnode), go.IsGoStepPureDetTagged under (StructFieldSet spanSetBlockHeader.underlying go!"lfnode") (PairV #x #y) (Val #(({ x with lfnode' := y } : spanSetBlockHeader)))
   get_popped : ∀ (x : spanSetBlockHeader), go.IsGoStepPureDetTagged under (StructFieldGet spanSetBlockHeader.underlying go!"popped") #x (Val #(x.popped'))
   set_popped : ∀ (x : spanSetBlockHeader) (y : _root_.Perennial.internal.runtime.atomic.Uint32), go.IsGoStepPureDetTagged under (StructFieldSet spanSetBlockHeader.underlying go!"popped") (PairV #x #y) (Val #(({ x with popped' := y } : spanSetBlockHeader)))
+  method_set : go.MethodSetIs spanSetBlockHeader.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType spanSetBlockHeader.ty) []
 
 attribute [instance] spanSetBlockHeader.TypeAssumptions.type_repr
   spanSetBlockHeader.TypeAssumptions.underlying
@@ -18350,6 +19164,8 @@ attribute [instance] spanSetBlockHeader.TypeAssumptions.type_repr
   spanSetBlockHeader.TypeAssumptions.set_lfnode
   spanSetBlockHeader.TypeAssumptions.get_popped
   spanSetBlockHeader.TypeAssumptions.set_popped
+  spanSetBlockHeader.TypeAssumptions.method_set
+  spanSetBlockHeader.TypeAssumptions.ptr_method_set
 
 structure spanSetBlockHeader2 [FfiSyntax] where
   mk ::
@@ -18381,6 +19197,8 @@ class spanSetBlockHeader2.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocal
   set_spanSetBlockHeader : ∀ (x : spanSetBlockHeader2) (y : spanSetBlockHeader), go.IsGoStepPureDetTagged under (StructFieldSet spanSetBlockHeader2.underlying go!"spanSetBlockHeader") (PairV #x #y) (Val #(({ x with spanSetBlockHeader' := y } : spanSetBlockHeader2)))
   get_pad : ∀ (x : spanSetBlockHeader2), go.IsGoStepPureDetTagged under (StructFieldGet spanSetBlockHeader2.underlying go!"pad") #x (Val #(x.pad'))
   set_pad : ∀ (x : spanSetBlockHeader2) (y : (GoArray w8 488)), go.IsGoStepPureDetTagged under (StructFieldSet spanSetBlockHeader2.underlying go!"pad") (PairV #x #y) (Val #(({ x with pad' := y } : spanSetBlockHeader2)))
+  method_set : go.MethodSetIs spanSetBlockHeader2.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType spanSetBlockHeader2.ty) []
 
 attribute [instance] spanSetBlockHeader2.TypeAssumptions.type_repr
   spanSetBlockHeader2.TypeAssumptions.underlying
@@ -18389,6 +19207,8 @@ attribute [instance] spanSetBlockHeader2.TypeAssumptions.type_repr
   spanSetBlockHeader2.TypeAssumptions.set_spanSetBlockHeader
   spanSetBlockHeader2.TypeAssumptions.get_pad
   spanSetBlockHeader2.TypeAssumptions.set_pad
+  spanSetBlockHeader2.TypeAssumptions.method_set
+  spanSetBlockHeader2.TypeAssumptions.ptr_method_set
 
 structure atomicMSpanPointer [FfiSyntax] where
   mk ::
@@ -18416,12 +19236,16 @@ class atomicMSpanPointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   layout : go.StructLayout atomicMSpanPointer [(go!"p", typeSize _root_.Perennial.internal.runtime.atomic.UnsafePointer, typeAlign _root_.Perennial.internal.runtime.atomic.UnsafePointer)]
   get_p : ∀ (x : atomicMSpanPointer), go.IsGoStepPureDetTagged under (StructFieldGet atomicMSpanPointer.underlying go!"p") #x (Val #(x.p'))
   set_p : ∀ (x : atomicMSpanPointer) (y : _root_.Perennial.internal.runtime.atomic.UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldSet atomicMSpanPointer.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : atomicMSpanPointer)))
+  method_set : go.MethodSetIs atomicMSpanPointer.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType atomicMSpanPointer.ty) [(go!"Load", (some (go.signature.Signature [] false [(go.GoType.PointerType mspan.ty)]))), (go!"StoreNoWB", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false [])))]
 
 attribute [instance] atomicMSpanPointer.TypeAssumptions.type_repr
   atomicMSpanPointer.TypeAssumptions.underlying
   atomicMSpanPointer.TypeAssumptions.layout
   atomicMSpanPointer.TypeAssumptions.get_p
   atomicMSpanPointer.TypeAssumptions.set_p
+  atomicMSpanPointer.TypeAssumptions.method_set
+  atomicMSpanPointer.TypeAssumptions.ptr_method_set
 
 structure spanSetBlock [FfiSyntax] where
   mk ::
@@ -18453,6 +19277,8 @@ class spanSetBlock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   set_spanSetBlockHeader2 : ∀ (x : spanSetBlock) (y : spanSetBlockHeader2), go.IsGoStepPureDetTagged under (StructFieldSet spanSetBlock.underlying go!"spanSetBlockHeader2") (PairV #x #y) (Val #(({ x with spanSetBlockHeader2' := y } : spanSetBlock)))
   get_spans : ∀ (x : spanSetBlock), go.IsGoStepPureDetTagged under (StructFieldGet spanSetBlock.underlying go!"spans") #x (Val #(x.spans'))
   set_spans : ∀ (x : spanSetBlock) (y : (GoArray atomicMSpanPointer 512)), go.IsGoStepPureDetTagged under (StructFieldSet spanSetBlock.underlying go!"spans") (PairV #x #y) (Val #(({ x with spans' := y } : spanSetBlock)))
+  method_set : go.MethodSetIs spanSetBlock.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType spanSetBlock.ty) []
 
 attribute [instance] spanSetBlock.TypeAssumptions.type_repr
   spanSetBlock.TypeAssumptions.underlying
@@ -18461,6 +19287,8 @@ attribute [instance] spanSetBlock.TypeAssumptions.type_repr
   spanSetBlock.TypeAssumptions.set_spanSetBlockHeader2
   spanSetBlock.TypeAssumptions.get_spans
   spanSetBlock.TypeAssumptions.set_spans
+  spanSetBlock.TypeAssumptions.method_set
+  spanSetBlock.TypeAssumptions.ptr_method_set
 
 structure spanSetSpinePointer [FfiSyntax] where
   mk ::
@@ -18488,12 +19316,16 @@ class spanSetSpinePointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocal
   layout : go.StructLayout spanSetSpinePointer [(go!"p", typeSize Loc, typeAlign Loc)]
   get_p : ∀ (x : spanSetSpinePointer), go.IsGoStepPureDetTagged under (StructFieldGet spanSetSpinePointer.underlying go!"p") #x (Val #(x.p'))
   set_p : ∀ (x : spanSetSpinePointer) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet spanSetSpinePointer.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : spanSetSpinePointer)))
+  method_set : go.MethodSetIs spanSetSpinePointer.ty [(go!"runtime.lookup", (some (go.signature.Signature [go.uintptr] false [(go.GoType.PointerType (_root_.Perennial.internal.runtime.atomic.Pointer.ty spanSetBlock.ty))])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType spanSetSpinePointer.ty) [(go!"runtime.lookup", (some (go.signature.Signature [go.uintptr] false [(go.GoType.PointerType (_root_.Perennial.internal.runtime.atomic.Pointer.ty spanSetBlock.ty))])))]
 
 attribute [instance] spanSetSpinePointer.TypeAssumptions.type_repr
   spanSetSpinePointer.TypeAssumptions.underlying
   spanSetSpinePointer.TypeAssumptions.layout
   spanSetSpinePointer.TypeAssumptions.get_p
   spanSetSpinePointer.TypeAssumptions.set_p
+  spanSetSpinePointer.TypeAssumptions.method_set
+  spanSetSpinePointer.TypeAssumptions.ptr_method_set
 
 structure spanSetBlockAlloc [FfiSyntax] where
   mk ::
@@ -18521,12 +19353,16 @@ class spanSetBlockAlloc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCo
   layout : go.StructLayout spanSetBlockAlloc [(go!"stack", typeSize lfstack, typeAlign lfstack)]
   get_stack : ∀ (x : spanSetBlockAlloc), go.IsGoStepPureDetTagged under (StructFieldGet spanSetBlockAlloc.underlying go!"stack") #x (Val #(x.stack'))
   set_stack : ∀ (x : spanSetBlockAlloc) (y : lfstack), go.IsGoStepPureDetTagged under (StructFieldSet spanSetBlockAlloc.underlying go!"stack") (PairV #x #y) (Val #(({ x with stack' := y } : spanSetBlockAlloc)))
+  method_set : go.MethodSetIs spanSetBlockAlloc.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType spanSetBlockAlloc.ty) [(go!"runtime.alloc", (some (go.signature.Signature [] false [(go.GoType.PointerType spanSetBlock.ty)]))), (go!"runtime.free", (some (go.signature.Signature [(go.GoType.PointerType spanSetBlock.ty)] false [])))]
 
 attribute [instance] spanSetBlockAlloc.TypeAssumptions.type_repr
   spanSetBlockAlloc.TypeAssumptions.underlying
   spanSetBlockAlloc.TypeAssumptions.layout
   spanSetBlockAlloc.TypeAssumptions.get_stack
   spanSetBlockAlloc.TypeAssumptions.set_stack
+  spanSetBlockAlloc.TypeAssumptions.method_set
+  spanSetBlockAlloc.TypeAssumptions.ptr_method_set
 
 abbrev headTailIndex [FfiSyntax] : Type := w64
 
@@ -18535,8 +19371,12 @@ abbrev headTailIndex [FfiSyntax] : Type := w64
 
 class headTailIndex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq headTailIndex.ty headTailIndex.underlying
+  method_set : go.MethodSetIs headTailIndex.ty [(go!"runtime.head", (some (go.signature.Signature [] false [go.uint32]))), (go!"runtime.split", (some (go.signature.Signature [] false [go.uint32, go.uint32]))), (go!"runtime.tail", (some (go.signature.Signature [] false [go.uint32])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType headTailIndex.ty) [(go!"runtime.head", (some (go.signature.Signature [] false [go.uint32]))), (go!"runtime.split", (some (go.signature.Signature [] false [go.uint32, go.uint32]))), (go!"runtime.tail", (some (go.signature.Signature [] false [go.uint32])))]
 
 attribute [instance] headTailIndex.TypeAssumptions.underlying
+  headTailIndex.TypeAssumptions.method_set
+  headTailIndex.TypeAssumptions.ptr_method_set
 
 structure consistentHeapStats [FfiSyntax] where
   mk ::
@@ -18572,6 +19412,8 @@ class consistentHeapStats.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocal
   set_gen : ∀ (x : consistentHeapStats) (y : _root_.Perennial.internal.runtime.atomic.Uint32), go.IsGoStepPureDetTagged under (StructFieldSet consistentHeapStats.underlying go!"gen") (PairV #x #y) (Val #(({ x with gen' := y } : consistentHeapStats)))
   get_noPLock : ∀ (x : consistentHeapStats), go.IsGoStepPureDetTagged under (StructFieldGet consistentHeapStats.underlying go!"noPLock") #x (Val #(x.noPLock'))
   set_noPLock : ∀ (x : consistentHeapStats) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet consistentHeapStats.underlying go!"noPLock") (PairV #x #y) (Val #(({ x with noPLock' := y } : consistentHeapStats)))
+  method_set : go.MethodSetIs consistentHeapStats.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType consistentHeapStats.ty) [(go!"runtime.acquire", (some (go.signature.Signature [] false [(go.GoType.PointerType heapStatsDelta.ty)]))), (go!"runtime.read", (some (go.signature.Signature [(go.GoType.PointerType heapStatsDelta.ty)] false []))), (go!"runtime.release", (some (go.signature.Signature [] false []))), (go!"runtime.unsafeClear", (some (go.signature.Signature [] false []))), (go!"runtime.unsafeRead", (some (go.signature.Signature [(go.GoType.PointerType heapStatsDelta.ty)] false [])))]
 
 attribute [instance] consistentHeapStats.TypeAssumptions.type_repr
   consistentHeapStats.TypeAssumptions.underlying
@@ -18582,6 +19424,8 @@ attribute [instance] consistentHeapStats.TypeAssumptions.type_repr
   consistentHeapStats.TypeAssumptions.set_gen
   consistentHeapStats.TypeAssumptions.get_noPLock
   consistentHeapStats.TypeAssumptions.set_noPLock
+  consistentHeapStats.TypeAssumptions.method_set
+  consistentHeapStats.TypeAssumptions.ptr_method_set
 
 abbrev sysMemStat [FfiSyntax] : Type := w64
 
@@ -18590,8 +19434,12 @@ abbrev sysMemStat [FfiSyntax] : Type := w64
 
 class sysMemStat.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq sysMemStat.ty sysMemStat.underlying
+  method_set : go.MethodSetIs sysMemStat.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sysMemStat.ty) [(go!"runtime.add", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.load", (some (go.signature.Signature [] false [go.uint64])))]
 
 attribute [instance] sysMemStat.TypeAssumptions.underlying
+  sysMemStat.TypeAssumptions.method_set
+  sysMemStat.TypeAssumptions.ptr_method_set
 
 structure mstats [FfiSyntax] where
   mk ::
@@ -18687,6 +19535,8 @@ class mstats.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_lastScanStats : ∀ (x : mstats) (y : (GoArray sizeClassScanStats 68)), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"lastScanStats") (PairV #x #y) (Val #(({ x with lastScanStats' := y } : mstats)))
   get_enablegc : ∀ (x : mstats), go.IsGoStepPureDetTagged under (StructFieldGet mstats.underlying go!"enablegc") #x (Val #(x.enablegc'))
   set_enablegc : ∀ (x : mstats) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"enablegc") (PairV #x #y) (Val #(({ x with enablegc' := y } : mstats)))
+  method_set : go.MethodSetIs mstats.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mstats.ty) []
 
 attribute [instance] mstats.TypeAssumptions.type_repr
   mstats.TypeAssumptions.underlying
@@ -18727,6 +19577,8 @@ attribute [instance] mstats.TypeAssumptions.type_repr
   mstats.TypeAssumptions.set_lastScanStats
   mstats.TypeAssumptions.get_enablegc
   mstats.TypeAssumptions.set_enablegc
+  mstats.TypeAssumptions.method_set
+  mstats.TypeAssumptions.ptr_method_set
 
 axiom MemStats : Type
 axiom MemStats.zero_val : ZeroVal MemStats
@@ -18736,10 +19588,14 @@ class MemStats.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying MemStats.underlying MemStats
   underlying : go.UnderlyingDirectedEq MemStats.ty MemStats.underlying
   isUnderlying : go.IsUnderlying MemStats.underlying MemStats.underlying
+  method_set : go.MethodSetIs MemStats.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType MemStats.ty) []
 
 attribute [instance] MemStats.TypeAssumptions.type_repr
   MemStats.TypeAssumptions.underlying
   MemStats.TypeAssumptions.isUnderlying
+  MemStats.TypeAssumptions.method_set
+  MemStats.TypeAssumptions.ptr_method_set
 
 structure wbBuf [FfiSyntax] where
   mk ::
@@ -18775,6 +19631,8 @@ class wbBuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_end : ∀ (x : wbBuf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet wbBuf.underlying go!"end") (PairV #x #y) (Val #(({ x with end' := y } : wbBuf)))
   get_buf : ∀ (x : wbBuf), go.IsGoStepPureDetTagged under (StructFieldGet wbBuf.underlying go!"buf") #x (Val #(x.buf'))
   set_buf : ∀ (x : wbBuf) (y : (GoArray w64 512)), go.IsGoStepPureDetTagged under (StructFieldSet wbBuf.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : wbBuf)))
+  method_set : go.MethodSetIs wbBuf.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType wbBuf.ty) [(go!"runtime.discard", (some (go.signature.Signature [] false []))), (go!"runtime.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.get1", (some (go.signature.Signature [] false [(go.GoType.PointerType (go.GoType.ArrayType 1 go.uintptr))]))), (go!"runtime.get2", (some (go.signature.Signature [] false [(go.GoType.PointerType (go.GoType.ArrayType 2 go.uintptr))]))), (go!"runtime.reset", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] wbBuf.TypeAssumptions.type_repr
   wbBuf.TypeAssumptions.underlying
@@ -18785,6 +19643,8 @@ attribute [instance] wbBuf.TypeAssumptions.type_repr
   wbBuf.TypeAssumptions.set_end
   wbBuf.TypeAssumptions.get_buf
   wbBuf.TypeAssumptions.set_buf
+  wbBuf.TypeAssumptions.method_set
+  wbBuf.TypeAssumptions.ptr_method_set
 
 structure timer [FfiSyntax] where
   mk ::
@@ -18868,6 +19728,8 @@ class timer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_sendLock : ∀ (x : timer) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet timer.underlying go!"sendLock") (PairV #x #y) (Val #(({ x with sendLock' := y } : timer)))
   get_isSending : ∀ (x : timer), go.IsGoStepPureDetTagged under (StructFieldGet timer.underlying go!"isSending") #x (Val #(x.isSending'))
   set_isSending : ∀ (x : timer) (y : _root_.Perennial.internal.runtime.atomic.Int32), go.IsGoStepPureDetTagged under (StructFieldSet timer.underlying go!"isSending") (PairV #x #y) (Val #(({ x with isSending' := y } : timer)))
+  method_set : go.MethodSetIs timer.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType timer.ty) [(go!"runtime.hchan", (some (go.signature.Signature [] false [(go.GoType.PointerType hchan.ty)]))), (go!"runtime.init", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.any, go.uintptr, go.int64] false [])), go.any] false []))), (go!"runtime.lock", (some (go.signature.Signature [] false []))), (go!"runtime.maybeAdd", (some (go.signature.Signature [] false []))), (go!"runtime.maybeRunAsync", (some (go.signature.Signature [] false []))), (go!"runtime.maybeRunChan", (some (go.signature.Signature [(go.GoType.PointerType hchan.ty)] false []))), (go!"runtime.modify", (some (go.signature.Signature [go.int64, go.int64, (go.GoType.FunctionType (go.signature.Signature [go.any, go.uintptr, go.int64] false [])), go.any, go.uintptr] false [go.bool]))), (go!"runtime.needsAdd", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.reset", (some (go.signature.Signature [go.int64, go.int64] false [go.bool]))), (go!"runtime.stop", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.trace", (some (go.signature.Signature [go.string] false []))), (go!"runtime.trace1", (some (go.signature.Signature [go.string] false []))), (go!"runtime.unlock", (some (go.signature.Signature [] false []))), (go!"runtime.unlockAndRun", (some (go.signature.Signature [go.int64, (go.GoType.PointerType synctestBubble.ty)] false []))), (go!"runtime.updateHeap", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] timer.TypeAssumptions.type_repr
   timer.TypeAssumptions.underlying
@@ -18902,6 +19764,8 @@ attribute [instance] timer.TypeAssumptions.type_repr
   timer.TypeAssumptions.set_sendLock
   timer.TypeAssumptions.get_isSending
   timer.TypeAssumptions.set_isSending
+  timer.TypeAssumptions.method_set
+  timer.TypeAssumptions.ptr_method_set
 
 structure pollDesc [FfiSyntax] where
   mk ::
@@ -19001,6 +19865,8 @@ class pollDesc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_wd : ∀ (x : pollDesc) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"wd") (PairV #x #y) (Val #(({ x with wd' := y } : pollDesc)))
   get_self : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"self") #x (Val #(x.self'))
   set_self : ∀ (x : pollDesc) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"self") (PairV #x #y) (Val #(({ x with self' := y } : pollDesc)))
+  method_set : go.MethodSetIs pollDesc.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pollDesc.ty) [(go!"runtime.info", (some (go.signature.Signature [] false [pollInfo.ty]))), (go!"runtime.makeArg", (some (go.signature.Signature [] false [go.any]))), (go!"runtime.publishInfo", (some (go.signature.Signature [] false []))), (go!"runtime.setEventErr", (some (go.signature.Signature [go.bool, go.uintptr] false [])))]
 
 attribute [instance] pollDesc.TypeAssumptions.type_repr
   pollDesc.TypeAssumptions.underlying
@@ -19043,6 +19909,8 @@ attribute [instance] pollDesc.TypeAssumptions.type_repr
   pollDesc.TypeAssumptions.set_wd
   pollDesc.TypeAssumptions.get_self
   pollDesc.TypeAssumptions.set_self
+  pollDesc.TypeAssumptions.method_set
+  pollDesc.TypeAssumptions.ptr_method_set
 
 abbrev pollInfo [FfiSyntax] : Type := w32
 
@@ -19051,8 +19919,12 @@ abbrev pollInfo [FfiSyntax] : Type := w32
 
 class pollInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq pollInfo.ty pollInfo.underlying
+  method_set : go.MethodSetIs pollInfo.ty [(go!"runtime.closing", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.eventErr", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.expiredReadDeadline", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.expiredWriteDeadline", (some (go.signature.Signature [] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pollInfo.ty) [(go!"runtime.closing", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.eventErr", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.expiredReadDeadline", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.expiredWriteDeadline", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] pollInfo.TypeAssumptions.underlying
+  pollInfo.TypeAssumptions.method_set
+  pollInfo.TypeAssumptions.ptr_method_set
 
 structure pollCache [FfiSyntax] where
   mk ::
@@ -19084,6 +19956,8 @@ class pollCache.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_lock : ∀ (x : pollCache) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet pollCache.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : pollCache)))
   get_first : ∀ (x : pollCache), go.IsGoStepPureDetTagged under (StructFieldGet pollCache.underlying go!"first") #x (Val #(x.first'))
   set_first : ∀ (x : pollCache) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet pollCache.underlying go!"first") (PairV #x #y) (Val #(({ x with first' := y } : pollCache)))
+  method_set : go.MethodSetIs pollCache.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pollCache.ty) [(go!"runtime.alloc", (some (go.signature.Signature [] false [(go.GoType.PointerType pollDesc.ty)]))), (go!"runtime.free", (some (go.signature.Signature [(go.GoType.PointerType pollDesc.ty)] false [])))]
 
 attribute [instance] pollCache.TypeAssumptions.type_repr
   pollCache.TypeAssumptions.underlying
@@ -19092,6 +19966,8 @@ attribute [instance] pollCache.TypeAssumptions.type_repr
   pollCache.TypeAssumptions.set_lock
   pollCache.TypeAssumptions.get_first
   pollCache.TypeAssumptions.set_first
+  pollCache.TypeAssumptions.method_set
+  pollCache.TypeAssumptions.ptr_method_set
 
 structure winlibcall [FfiSyntax] where
   mk ::
@@ -19116,10 +19992,14 @@ class winlibcall.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   type_repr : go.TypeReprUnderlying winlibcall.underlying winlibcall
   underlying : go.UnderlyingDirectedEq winlibcall.ty winlibcall.underlying
   layout : go.StructLayout winlibcall []
+  method_set : go.MethodSetIs winlibcall.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType winlibcall.ty) []
 
 attribute [instance] winlibcall.TypeAssumptions.type_repr
   winlibcall.TypeAssumptions.underlying
   winlibcall.TypeAssumptions.layout
+  winlibcall.TypeAssumptions.method_set
+  winlibcall.TypeAssumptions.ptr_method_set
 
 structure note [FfiSyntax] where
   mk ::
@@ -19147,12 +20027,16 @@ class note.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   layout : go.StructLayout note [(go!"key", typeSize w64, typeAlign w64)]
   get_key : ∀ (x : note), go.IsGoStepPureDetTagged under (StructFieldGet note.underlying go!"key") #x (Val #(x.key'))
   set_key : ∀ (x : note) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet note.underlying go!"key") (PairV #x #y) (Val #(({ x with key' := y } : note)))
+  method_set : go.MethodSetIs note.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType note.ty) []
 
 attribute [instance] note.TypeAssumptions.type_repr
   note.TypeAssumptions.underlying
   note.TypeAssumptions.layout
   note.TypeAssumptions.get_key
   note.TypeAssumptions.set_key
+  note.TypeAssumptions.method_set
+  note.TypeAssumptions.ptr_method_set
 
 structure mOS [FfiSyntax] where
   mk ::
@@ -19196,6 +20080,8 @@ class mOS.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
   set_vgetrandomState : ∀ (x : mOS) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mOS.underlying go!"vgetrandomState") (PairV #x #y) (Val #(({ x with vgetrandomState' := y } : mOS)))
   get_waitsema : ∀ (x : mOS), go.IsGoStepPureDetTagged under (StructFieldGet mOS.underlying go!"waitsema") #x (Val #(x.waitsema'))
   set_waitsema : ∀ (x : mOS) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet mOS.underlying go!"waitsema") (PairV #x #y) (Val #(({ x with waitsema' := y } : mOS)))
+  method_set : go.MethodSetIs mOS.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mOS.ty) []
 
 attribute [instance] mOS.TypeAssumptions.type_repr
   mOS.TypeAssumptions.underlying
@@ -19210,6 +20096,8 @@ attribute [instance] mOS.TypeAssumptions.type_repr
   mOS.TypeAssumptions.set_vgetrandomState
   mOS.TypeAssumptions.get_waitsema
   mOS.TypeAssumptions.set_waitsema
+  mOS.TypeAssumptions.method_set
+  mOS.TypeAssumptions.ptr_method_set
 
 structure perThreadSyscallArgs [FfiSyntax] where
   mk ::
@@ -19269,6 +20157,8 @@ class perThreadSyscallArgs.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLoca
   set_r1 : ∀ (x : perThreadSyscallArgs) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet perThreadSyscallArgs.underlying go!"r1") (PairV #x #y) (Val #(({ x with r1' := y } : perThreadSyscallArgs)))
   get_r2 : ∀ (x : perThreadSyscallArgs), go.IsGoStepPureDetTagged under (StructFieldGet perThreadSyscallArgs.underlying go!"r2") #x (Val #(x.r2'))
   set_r2 : ∀ (x : perThreadSyscallArgs) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet perThreadSyscallArgs.underlying go!"r2") (PairV #x #y) (Val #(({ x with r2' := y } : perThreadSyscallArgs)))
+  method_set : go.MethodSetIs perThreadSyscallArgs.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType perThreadSyscallArgs.ty) []
 
 attribute [instance] perThreadSyscallArgs.TypeAssumptions.type_repr
   perThreadSyscallArgs.TypeAssumptions.underlying
@@ -19291,6 +20181,8 @@ attribute [instance] perThreadSyscallArgs.TypeAssumptions.type_repr
   perThreadSyscallArgs.TypeAssumptions.set_r1
   perThreadSyscallArgs.TypeAssumptions.get_r2
   perThreadSyscallArgs.TypeAssumptions.set_r2
+  perThreadSyscallArgs.TypeAssumptions.method_set
+  perThreadSyscallArgs.TypeAssumptions.ptr_method_set
 
 abbrev sigset [FfiSyntax] : Type := (GoArray w32 2)
 
@@ -19299,8 +20191,12 @@ abbrev sigset [FfiSyntax] : Type := (GoArray w32 2)
 
 class sigset.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq sigset.ty sigset.underlying
+  method_set : go.MethodSetIs sigset.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sigset.ty) []
 
 attribute [instance] sigset.TypeAssumptions.underlying
+  sigset.TypeAssumptions.method_set
+  sigset.TypeAssumptions.ptr_method_set
 
 abbrev throwType [FfiSyntax] : Type := w32
 
@@ -19309,8 +20205,12 @@ abbrev throwType [FfiSyntax] : Type := w32
 
 class throwType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq throwType.ty throwType.underlying
+  method_set : go.MethodSetIs throwType.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType throwType.ty) []
 
 attribute [instance] throwType.TypeAssumptions.underlying
+  throwType.TypeAssumptions.method_set
+  throwType.TypeAssumptions.ptr_method_set
 
 structure PanicNilError [FfiSyntax] where
   mk ::
@@ -19338,12 +20238,16 @@ class PanicNilError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   layout : go.StructLayout PanicNilError [(go!"_0", typeSize (GoArray Loc 0), typeAlign (GoArray Loc 0))]
   get__0 : ∀ (x : PanicNilError), go.IsGoStepPureDetTagged under (StructFieldGet PanicNilError.underlying go!"_0") #x (Val #(x._0'))
   set__0 : ∀ (x : PanicNilError) (y : (GoArray Loc 0)), go.IsGoStepPureDetTagged under (StructFieldSet PanicNilError.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : PanicNilError)))
+  method_set : go.MethodSetIs PanicNilError.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType PanicNilError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"RuntimeError", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] PanicNilError.TypeAssumptions.type_repr
   PanicNilError.TypeAssumptions.underlying
   PanicNilError.TypeAssumptions.layout
   PanicNilError.TypeAssumptions.get__0
   PanicNilError.TypeAssumptions.set__0
+  PanicNilError.TypeAssumptions.method_set
+  PanicNilError.TypeAssumptions.ptr_method_set
 
 structure Pinner [FfiSyntax] where
   mk ::
@@ -19371,12 +20275,16 @@ class Pinner.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   layout : go.StructLayout Pinner [(go!"pinner", typeSize Loc, typeAlign Loc)]
   get_pinner : ∀ (x : Pinner), go.IsGoStepPureDetTagged under (StructFieldGet Pinner.underlying go!"pinner") #x (Val #(x.pinner'))
   set_pinner : ∀ (x : Pinner) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Pinner.underlying go!"pinner") (PairV #x #y) (Val #(({ x with pinner' := y } : Pinner)))
+  method_set : go.MethodSetIs Pinner.ty [(go!"runtime.unpin", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Pinner.ty) [(go!"Pin", (some (go.signature.Signature [go.any] false []))), (go!"Unpin", (some (go.signature.Signature [] false []))), (go!"runtime.unpin", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] Pinner.TypeAssumptions.type_repr
   Pinner.TypeAssumptions.underlying
   Pinner.TypeAssumptions.layout
   Pinner.TypeAssumptions.get_pinner
   Pinner.TypeAssumptions.set_pinner
+  Pinner.TypeAssumptions.method_set
+  Pinner.TypeAssumptions.ptr_method_set
 
 structure pinner [FfiSyntax] where
   mk ::
@@ -19408,6 +20316,8 @@ class pinner.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_refs : ∀ (x : pinner) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet pinner.underlying go!"refs") (PairV #x #y) (Val #(({ x with refs' := y } : pinner)))
   get_refStore : ∀ (x : pinner), go.IsGoStepPureDetTagged under (StructFieldGet pinner.underlying go!"refStore") #x (Val #(x.refStore'))
   set_refStore : ∀ (x : pinner) (y : (GoArray Loc 5)), go.IsGoStepPureDetTagged under (StructFieldSet pinner.underlying go!"refStore") (PairV #x #y) (Val #(({ x with refStore' := y } : pinner)))
+  method_set : go.MethodSetIs pinner.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pinner.ty) [(go!"runtime.unpin", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] pinner.TypeAssumptions.type_repr
   pinner.TypeAssumptions.underlying
@@ -19416,6 +20326,8 @@ attribute [instance] pinner.TypeAssumptions.type_repr
   pinner.TypeAssumptions.set_refs
   pinner.TypeAssumptions.get_refStore
   pinner.TypeAssumptions.set_refStore
+  pinner.TypeAssumptions.method_set
+  pinner.TypeAssumptions.ptr_method_set
 
 structure pinState [FfiSyntax] where
   mk ::
@@ -19451,6 +20363,8 @@ class pinState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_byteVal : ∀ (x : pinState) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet pinState.underlying go!"byteVal") (PairV #x #y) (Val #(({ x with byteVal' := y } : pinState)))
   get_mask : ∀ (x : pinState), go.IsGoStepPureDetTagged under (StructFieldGet pinState.underlying go!"mask") #x (Val #(x.mask'))
   set_mask : ∀ (x : pinState) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet pinState.underlying go!"mask") (PairV #x #y) (Val #(({ x with mask' := y } : pinState)))
+  method_set : go.MethodSetIs pinState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pinState.ty) [(go!"runtime.isMultiPinned", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.isPinned", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.set", (some (go.signature.Signature [go.bool, go.bool] false []))), (go!"runtime.setMultiPinned", (some (go.signature.Signature [go.bool] false []))), (go!"runtime.setPinned", (some (go.signature.Signature [go.bool] false [])))]
 
 attribute [instance] pinState.TypeAssumptions.type_repr
   pinState.TypeAssumptions.underlying
@@ -19461,6 +20375,8 @@ attribute [instance] pinState.TypeAssumptions.type_repr
   pinState.TypeAssumptions.set_byteVal
   pinState.TypeAssumptions.get_mask
   pinState.TypeAssumptions.set_mask
+  pinState.TypeAssumptions.method_set
+  pinState.TypeAssumptions.ptr_method_set
 
 abbrev pinnerBits [FfiSyntax] : Type := gcBits
 
@@ -19469,8 +20385,12 @@ abbrev pinnerBits [FfiSyntax] : Type := gcBits
 
 class pinnerBits.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq pinnerBits.ty pinnerBits.underlying
+  method_set : go.MethodSetIs pinnerBits.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pinnerBits.ty) [(go!"runtime.ofObject", (some (go.signature.Signature [go.uintptr] false [pinState.ty])))]
 
 attribute [instance] pinnerBits.TypeAssumptions.underlying
+  pinnerBits.TypeAssumptions.method_set
+  pinnerBits.TypeAssumptions.ptr_method_set
 
 axiom ptabEntry : Type
 axiom ptabEntry.zero_val : ZeroVal ptabEntry
@@ -19480,10 +20400,14 @@ class ptabEntry.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying ptabEntry.underlying ptabEntry
   underlying : go.UnderlyingDirectedEq ptabEntry.ty ptabEntry.underlying
   isUnderlying : go.IsUnderlying ptabEntry.underlying ptabEntry.underlying
+  method_set : go.MethodSetIs ptabEntry.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType ptabEntry.ty) []
 
 attribute [instance] ptabEntry.TypeAssumptions.type_repr
   ptabEntry.TypeAssumptions.underlying
   ptabEntry.TypeAssumptions.isUnderlying
+  ptabEntry.TypeAssumptions.method_set
+  ptabEntry.TypeAssumptions.ptr_method_set
 
 structure suspendGState [FfiSyntax] where
   mk ::
@@ -19519,6 +20443,8 @@ class suspendGState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_dead : ∀ (x : suspendGState) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet suspendGState.underlying go!"dead") (PairV #x #y) (Val #(({ x with dead' := y } : suspendGState)))
   get_stopped : ∀ (x : suspendGState), go.IsGoStepPureDetTagged under (StructFieldGet suspendGState.underlying go!"stopped") #x (Val #(x.stopped'))
   set_stopped : ∀ (x : suspendGState) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet suspendGState.underlying go!"stopped") (PairV #x #y) (Val #(({ x with stopped' := y } : suspendGState)))
+  method_set : go.MethodSetIs suspendGState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType suspendGState.ty) []
 
 attribute [instance] suspendGState.TypeAssumptions.type_repr
   suspendGState.TypeAssumptions.underlying
@@ -19529,6 +20455,8 @@ attribute [instance] suspendGState.TypeAssumptions.type_repr
   suspendGState.TypeAssumptions.set_dead
   suspendGState.TypeAssumptions.get_stopped
   suspendGState.TypeAssumptions.set_stopped
+  suspendGState.TypeAssumptions.method_set
+  suspendGState.TypeAssumptions.ptr_method_set
 
 structure xRegs [FfiSyntax] where
   mk ::
@@ -19712,6 +20640,8 @@ class xRegs.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_K6 : ∀ (x : xRegs) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet xRegs.underlying go!"K6") (PairV #x #y) (Val #(({ x with K6' := y } : xRegs)))
   get_K7 : ∀ (x : xRegs), go.IsGoStepPureDetTagged under (StructFieldGet xRegs.underlying go!"K7") #x (Val #(x.K7'))
   set_K7 : ∀ (x : xRegs) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet xRegs.underlying go!"K7") (PairV #x #y) (Val #(({ x with K7' := y } : xRegs)))
+  method_set : go.MethodSetIs xRegs.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType xRegs.ty) []
 
 attribute [instance] xRegs.TypeAssumptions.type_repr
   xRegs.TypeAssumptions.underlying
@@ -19796,6 +20726,8 @@ attribute [instance] xRegs.TypeAssumptions.type_repr
   xRegs.TypeAssumptions.set_K6
   xRegs.TypeAssumptions.get_K7
   xRegs.TypeAssumptions.set_K7
+  xRegs.TypeAssumptions.method_set
+  xRegs.TypeAssumptions.ptr_method_set
 
 structure xRegState [FfiSyntax] where
   mk ::
@@ -19827,6 +20759,8 @@ class xRegState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set__0 : ∀ (x : xRegState) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet xRegState.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : xRegState)))
   get_regs : ∀ (x : xRegState), go.IsGoStepPureDetTagged under (StructFieldGet xRegState.underlying go!"regs") #x (Val #(x.regs'))
   set_regs : ∀ (x : xRegState) (y : xRegs), go.IsGoStepPureDetTagged under (StructFieldSet xRegState.underlying go!"regs") (PairV #x #y) (Val #(({ x with regs' := y } : xRegState)))
+  method_set : go.MethodSetIs xRegState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType xRegState.ty) []
 
 attribute [instance] xRegState.TypeAssumptions.type_repr
   xRegState.TypeAssumptions.underlying
@@ -19835,6 +20769,8 @@ attribute [instance] xRegState.TypeAssumptions.type_repr
   xRegState.TypeAssumptions.set__0
   xRegState.TypeAssumptions.get_regs
   xRegState.TypeAssumptions.set_regs
+  xRegState.TypeAssumptions.method_set
+  xRegState.TypeAssumptions.ptr_method_set
 
 structure xRegPerG [FfiSyntax] where
   mk ::
@@ -19862,12 +20798,16 @@ class xRegPerG.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   layout : go.StructLayout xRegPerG [(go!"state", typeSize Loc, typeAlign Loc)]
   get_state : ∀ (x : xRegPerG), go.IsGoStepPureDetTagged under (StructFieldGet xRegPerG.underlying go!"state") #x (Val #(x.state'))
   set_state : ∀ (x : xRegPerG) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet xRegPerG.underlying go!"state") (PairV #x #y) (Val #(({ x with state' := y } : xRegPerG)))
+  method_set : go.MethodSetIs xRegPerG.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType xRegPerG.ty) []
 
 attribute [instance] xRegPerG.TypeAssumptions.type_repr
   xRegPerG.TypeAssumptions.underlying
   xRegPerG.TypeAssumptions.layout
   xRegPerG.TypeAssumptions.get_state
   xRegPerG.TypeAssumptions.set_state
+  xRegPerG.TypeAssumptions.method_set
+  xRegPerG.TypeAssumptions.ptr_method_set
 
 structure xRegPerP [FfiSyntax] where
   mk ::
@@ -19899,6 +20839,8 @@ class xRegPerP.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_scratch : ∀ (x : xRegPerP) (y : xRegs), go.IsGoStepPureDetTagged under (StructFieldSet xRegPerP.underlying go!"scratch") (PairV #x #y) (Val #(({ x with scratch' := y } : xRegPerP)))
   get_cache : ∀ (x : xRegPerP), go.IsGoStepPureDetTagged under (StructFieldGet xRegPerP.underlying go!"cache") #x (Val #(x.cache'))
   set_cache : ∀ (x : xRegPerP) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet xRegPerP.underlying go!"cache") (PairV #x #y) (Val #(({ x with cache' := y } : xRegPerP)))
+  method_set : go.MethodSetIs xRegPerP.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType xRegPerP.ty) [(go!"runtime.free", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] xRegPerP.TypeAssumptions.type_repr
   xRegPerP.TypeAssumptions.underlying
@@ -19907,6 +20849,8 @@ attribute [instance] xRegPerP.TypeAssumptions.type_repr
   xRegPerP.TypeAssumptions.set_scratch
   xRegPerP.TypeAssumptions.get_cache
   xRegPerP.TypeAssumptions.set_cache
+  xRegPerP.TypeAssumptions.method_set
+  xRegPerP.TypeAssumptions.ptr_method_set
 
 abbrev hex [FfiSyntax] : Type := w64
 
@@ -19915,8 +20859,12 @@ abbrev hex [FfiSyntax] : Type := w64
 
 class hex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq hex.ty hex.underlying
+  method_set : go.MethodSetIs hex.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType hex.ty) []
 
 attribute [instance] hex.TypeAssumptions.underlying
+  hex.TypeAssumptions.method_set
+  hex.TypeAssumptions.ptr_method_set
 
 abbrev quoted [FfiSyntax] : Type := GoString
 
@@ -19925,8 +20873,12 @@ abbrev quoted [FfiSyntax] : Type := GoString
 
 class quoted.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq quoted.ty quoted.underlying
+  method_set : go.MethodSetIs quoted.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType quoted.ty) []
 
 attribute [instance] quoted.TypeAssumptions.underlying
+  quoted.TypeAssumptions.method_set
+  quoted.TypeAssumptions.ptr_method_set
 
 abbrev stwReason [FfiSyntax] : Type := w8
 
@@ -19935,8 +20887,12 @@ abbrev stwReason [FfiSyntax] : Type := w8
 
 class stwReason.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq stwReason.ty stwReason.underlying
+  method_set : go.MethodSetIs stwReason.ty [(go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"runtime.isGC", (some (go.signature.Signature [] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stwReason.ty) [(go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"runtime.isGC", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] stwReason.TypeAssumptions.underlying
+  stwReason.TypeAssumptions.method_set
+  stwReason.TypeAssumptions.ptr_method_set
 
 structure worldStop [FfiSyntax] where
   mk ::
@@ -19976,6 +20932,8 @@ class worldStop.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_finishedStopping : ∀ (x : worldStop) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet worldStop.underlying go!"finishedStopping") (PairV #x #y) (Val #(({ x with finishedStopping' := y } : worldStop)))
   get_stoppingCPUTime : ∀ (x : worldStop), go.IsGoStepPureDetTagged under (StructFieldGet worldStop.underlying go!"stoppingCPUTime") #x (Val #(x.stoppingCPUTime'))
   set_stoppingCPUTime : ∀ (x : worldStop) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet worldStop.underlying go!"stoppingCPUTime") (PairV #x #y) (Val #(({ x with stoppingCPUTime' := y } : worldStop)))
+  method_set : go.MethodSetIs worldStop.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType worldStop.ty) []
 
 attribute [instance] worldStop.TypeAssumptions.type_repr
   worldStop.TypeAssumptions.underlying
@@ -19988,6 +20946,8 @@ attribute [instance] worldStop.TypeAssumptions.type_repr
   worldStop.TypeAssumptions.set_finishedStopping
   worldStop.TypeAssumptions.get_stoppingCPUTime
   worldStop.TypeAssumptions.set_stoppingCPUTime
+  worldStop.TypeAssumptions.method_set
+  worldStop.TypeAssumptions.ptr_method_set
 
 structure cgothreadstart [FfiSyntax] where
   mk ::
@@ -20023,6 +20983,8 @@ class cgothreadstart.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_tls : ∀ (x : cgothreadstart) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet cgothreadstart.underlying go!"tls") (PairV #x #y) (Val #(({ x with tls' := y } : cgothreadstart)))
   get_fn : ∀ (x : cgothreadstart), go.IsGoStepPureDetTagged under (StructFieldGet cgothreadstart.underlying go!"fn") #x (Val #(x.fn'))
   set_fn : ∀ (x : cgothreadstart) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet cgothreadstart.underlying go!"fn") (PairV #x #y) (Val #(({ x with fn' := y } : cgothreadstart)))
+  method_set : go.MethodSetIs cgothreadstart.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType cgothreadstart.ty) []
 
 attribute [instance] cgothreadstart.TypeAssumptions.type_repr
   cgothreadstart.TypeAssumptions.underlying
@@ -20033,6 +20995,8 @@ attribute [instance] cgothreadstart.TypeAssumptions.type_repr
   cgothreadstart.TypeAssumptions.set_tls
   cgothreadstart.TypeAssumptions.get_fn
   cgothreadstart.TypeAssumptions.set_fn
+  cgothreadstart.TypeAssumptions.method_set
+  cgothreadstart.TypeAssumptions.ptr_method_set
 
 structure sysmontick [FfiSyntax] where
   mk ::
@@ -20072,6 +21036,8 @@ class sysmontick.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_schedwhen : ∀ (x : sysmontick) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet sysmontick.underlying go!"schedwhen") (PairV #x #y) (Val #(({ x with schedwhen' := y } : sysmontick)))
   get_syscallwhen : ∀ (x : sysmontick), go.IsGoStepPureDetTagged under (StructFieldGet sysmontick.underlying go!"syscallwhen") #x (Val #(x.syscallwhen'))
   set_syscallwhen : ∀ (x : sysmontick) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet sysmontick.underlying go!"syscallwhen") (PairV #x #y) (Val #(({ x with syscallwhen' := y } : sysmontick)))
+  method_set : go.MethodSetIs sysmontick.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sysmontick.ty) []
 
 attribute [instance] sysmontick.TypeAssumptions.type_repr
   sysmontick.TypeAssumptions.underlying
@@ -20084,6 +21050,8 @@ attribute [instance] sysmontick.TypeAssumptions.type_repr
   sysmontick.TypeAssumptions.set_schedwhen
   sysmontick.TypeAssumptions.get_syscallwhen
   sysmontick.TypeAssumptions.set_syscallwhen
+  sysmontick.TypeAssumptions.method_set
+  sysmontick.TypeAssumptions.ptr_method_set
 
 structure syscallingThread [FfiSyntax] where
   mk ::
@@ -20123,6 +21091,8 @@ class syscallingThread.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
   set_pp : ∀ (x : syscallingThread) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet syscallingThread.underlying go!"pp") (PairV #x #y) (Val #(({ x with pp' := y } : syscallingThread)))
   get_status : ∀ (x : syscallingThread), go.IsGoStepPureDetTagged under (StructFieldGet syscallingThread.underlying go!"status") #x (Val #(x.status'))
   set_status : ∀ (x : syscallingThread) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet syscallingThread.underlying go!"status") (PairV #x #y) (Val #(({ x with status' := y } : syscallingThread)))
+  method_set : go.MethodSetIs syscallingThread.ty [(go!"runtime.gcstopP", (some (go.signature.Signature [] false []))), (go!"runtime.releaseP", (some (go.signature.Signature [go.uint32] false []))), (go!"runtime.resume", (some (go.signature.Signature [] false []))), (go!"runtime.takeP", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType syscallingThread.ty) [(go!"runtime.gcstopP", (some (go.signature.Signature [] false []))), (go!"runtime.releaseP", (some (go.signature.Signature [go.uint32] false []))), (go!"runtime.resume", (some (go.signature.Signature [] false []))), (go!"runtime.takeP", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] syscallingThread.TypeAssumptions.type_repr
   syscallingThread.TypeAssumptions.underlying
@@ -20135,6 +21105,8 @@ attribute [instance] syscallingThread.TypeAssumptions.type_repr
   syscallingThread.TypeAssumptions.set_pp
   syscallingThread.TypeAssumptions.get_status
   syscallingThread.TypeAssumptions.set_status
+  syscallingThread.TypeAssumptions.method_set
+  syscallingThread.TypeAssumptions.ptr_method_set
 
 structure updateMaxProcsGState [FfiSyntax] where
   mk ::
@@ -20174,6 +21146,8 @@ class updateMaxProcsGState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLoca
   set_idle : ∀ (x : updateMaxProcsGState) (y : _root_.Perennial.internal.runtime.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet updateMaxProcsGState.underlying go!"idle") (PairV #x #y) (Val #(({ x with idle' := y } : updateMaxProcsGState)))
   get_procs : ∀ (x : updateMaxProcsGState), go.IsGoStepPureDetTagged under (StructFieldGet updateMaxProcsGState.underlying go!"procs") #x (Val #(x.procs'))
   set_procs : ∀ (x : updateMaxProcsGState) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet updateMaxProcsGState.underlying go!"procs") (PairV #x #y) (Val #(({ x with procs' := y } : updateMaxProcsGState)))
+  method_set : go.MethodSetIs updateMaxProcsGState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType updateMaxProcsGState.ty) []
 
 attribute [instance] updateMaxProcsGState.TypeAssumptions.type_repr
   updateMaxProcsGState.TypeAssumptions.underlying
@@ -20186,6 +21160,8 @@ attribute [instance] updateMaxProcsGState.TypeAssumptions.type_repr
   updateMaxProcsGState.TypeAssumptions.set_idle
   updateMaxProcsGState.TypeAssumptions.get_procs
   updateMaxProcsGState.TypeAssumptions.set_procs
+  updateMaxProcsGState.TypeAssumptions.method_set
+  updateMaxProcsGState.TypeAssumptions.ptr_method_set
 
 abbrev pMask [FfiSyntax] : Type := GoSlice
 
@@ -20194,8 +21170,12 @@ abbrev pMask [FfiSyntax] : Type := GoSlice
 
 class pMask.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq pMask.ty pMask.underlying
+  method_set : go.MethodSetIs pMask.ty [(go!"runtime.any", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.clear", (some (go.signature.Signature [go.int32] false []))), (go!"runtime.read", (some (go.signature.Signature [go.uint32] false [go.bool]))), (go!"runtime.resize", (some (go.signature.Signature [go.int32] false [pMask.ty]))), (go!"runtime.set", (some (go.signature.Signature [go.int32] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pMask.ty) [(go!"runtime.any", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.clear", (some (go.signature.Signature [go.int32] false []))), (go!"runtime.read", (some (go.signature.Signature [go.uint32] false [go.bool]))), (go!"runtime.resize", (some (go.signature.Signature [go.int32] false [pMask.ty]))), (go!"runtime.set", (some (go.signature.Signature [go.int32] false [])))]
 
 attribute [instance] pMask.TypeAssumptions.underlying
+  pMask.TypeAssumptions.method_set
+  pMask.TypeAssumptions.ptr_method_set
 
 structure gQueue [FfiSyntax] where
   mk ::
@@ -20231,6 +21211,8 @@ class gQueue.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_tail : ∀ (x : gQueue) (y : guintptr), go.IsGoStepPureDetTagged under (StructFieldSet gQueue.underlying go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : gQueue)))
   get_size : ∀ (x : gQueue), go.IsGoStepPureDetTagged under (StructFieldGet gQueue.underlying go!"size") #x (Val #(x.size'))
   set_size : ∀ (x : gQueue) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet gQueue.underlying go!"size") (PairV #x #y) (Val #(({ x with size' := y } : gQueue)))
+  method_set : go.MethodSetIs gQueue.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gQueue.ty) [(go!"runtime.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.pop", (some (go.signature.Signature [] false [(go.GoType.PointerType g.ty)]))), (go!"runtime.popList", (some (go.signature.Signature [] false [gList.ty]))), (go!"runtime.push", (some (go.signature.Signature [(go.GoType.PointerType g.ty)] false []))), (go!"runtime.pushBack", (some (go.signature.Signature [(go.GoType.PointerType g.ty)] false []))), (go!"runtime.pushBackAll", (some (go.signature.Signature [gQueue.ty] false [])))]
 
 attribute [instance] gQueue.TypeAssumptions.type_repr
   gQueue.TypeAssumptions.underlying
@@ -20241,6 +21223,8 @@ attribute [instance] gQueue.TypeAssumptions.type_repr
   gQueue.TypeAssumptions.set_tail
   gQueue.TypeAssumptions.get_size
   gQueue.TypeAssumptions.set_size
+  gQueue.TypeAssumptions.method_set
+  gQueue.TypeAssumptions.ptr_method_set
 
 structure gList [FfiSyntax] where
   mk ::
@@ -20272,6 +21256,8 @@ class gList.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_head : ∀ (x : gList) (y : guintptr), go.IsGoStepPureDetTagged under (StructFieldSet gList.underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : gList)))
   get_size : ∀ (x : gList), go.IsGoStepPureDetTagged under (StructFieldGet gList.underlying go!"size") #x (Val #(x.size'))
   set_size : ∀ (x : gList) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet gList.underlying go!"size") (PairV #x #y) (Val #(({ x with size' := y } : gList)))
+  method_set : go.MethodSetIs gList.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gList.ty) [(go!"runtime.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.pop", (some (go.signature.Signature [] false [(go.GoType.PointerType g.ty)]))), (go!"runtime.push", (some (go.signature.Signature [(go.GoType.PointerType g.ty)] false []))), (go!"runtime.pushAll", (some (go.signature.Signature [gQueue.ty] false [])))]
 
 attribute [instance] gList.TypeAssumptions.type_repr
   gList.TypeAssumptions.underlying
@@ -20280,6 +21266,8 @@ attribute [instance] gList.TypeAssumptions.type_repr
   gList.TypeAssumptions.set_head
   gList.TypeAssumptions.get_size
   gList.TypeAssumptions.set_size
+  gList.TypeAssumptions.method_set
+  gList.TypeAssumptions.ptr_method_set
 
 structure randomOrder [FfiSyntax] where
   mk ::
@@ -20311,6 +21299,8 @@ class randomOrder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set_count : ∀ (x : randomOrder) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet randomOrder.underlying go!"count") (PairV #x #y) (Val #(({ x with count' := y } : randomOrder)))
   get_coprimes : ∀ (x : randomOrder), go.IsGoStepPureDetTagged under (StructFieldGet randomOrder.underlying go!"coprimes") #x (Val #(x.coprimes'))
   set_coprimes : ∀ (x : randomOrder) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet randomOrder.underlying go!"coprimes") (PairV #x #y) (Val #(({ x with coprimes' := y } : randomOrder)))
+  method_set : go.MethodSetIs randomOrder.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType randomOrder.ty) [(go!"runtime.reset", (some (go.signature.Signature [go.uint32] false []))), (go!"runtime.start", (some (go.signature.Signature [go.uint32] false [randomEnum.ty])))]
 
 attribute [instance] randomOrder.TypeAssumptions.type_repr
   randomOrder.TypeAssumptions.underlying
@@ -20319,6 +21309,8 @@ attribute [instance] randomOrder.TypeAssumptions.type_repr
   randomOrder.TypeAssumptions.set_count
   randomOrder.TypeAssumptions.get_coprimes
   randomOrder.TypeAssumptions.set_coprimes
+  randomOrder.TypeAssumptions.method_set
+  randomOrder.TypeAssumptions.ptr_method_set
 
 structure randomEnum [FfiSyntax] where
   mk ::
@@ -20358,6 +21350,8 @@ class randomEnum.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_pos : ∀ (x : randomEnum) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet randomEnum.underlying go!"pos") (PairV #x #y) (Val #(({ x with pos' := y } : randomEnum)))
   get_inc : ∀ (x : randomEnum), go.IsGoStepPureDetTagged under (StructFieldGet randomEnum.underlying go!"inc") #x (Val #(x.inc'))
   set_inc : ∀ (x : randomEnum) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet randomEnum.underlying go!"inc") (PairV #x #y) (Val #(({ x with inc' := y } : randomEnum)))
+  method_set : go.MethodSetIs randomEnum.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType randomEnum.ty) [(go!"runtime.done", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.next", (some (go.signature.Signature [] false []))), (go!"runtime.position", (some (go.signature.Signature [] false [go.uint32])))]
 
 attribute [instance] randomEnum.TypeAssumptions.type_repr
   randomEnum.TypeAssumptions.underlying
@@ -20370,6 +21364,8 @@ attribute [instance] randomEnum.TypeAssumptions.type_repr
   randomEnum.TypeAssumptions.set_pos
   randomEnum.TypeAssumptions.get_inc
   randomEnum.TypeAssumptions.set_inc
+  randomEnum.TypeAssumptions.method_set
+  randomEnum.TypeAssumptions.ptr_method_set
 
 structure initTask [FfiSyntax] where
   mk ::
@@ -20401,6 +21397,8 @@ class initTask.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_state : ∀ (x : initTask) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet initTask.underlying go!"state") (PairV #x #y) (Val #(({ x with state' := y } : initTask)))
   get_nfns : ∀ (x : initTask), go.IsGoStepPureDetTagged under (StructFieldGet initTask.underlying go!"nfns") #x (Val #(x.nfns'))
   set_nfns : ∀ (x : initTask) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet initTask.underlying go!"nfns") (PairV #x #y) (Val #(({ x with nfns' := y } : initTask)))
+  method_set : go.MethodSetIs initTask.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType initTask.ty) []
 
 attribute [instance] initTask.TypeAssumptions.type_repr
   initTask.TypeAssumptions.underlying
@@ -20409,6 +21407,8 @@ attribute [instance] initTask.TypeAssumptions.type_repr
   initTask.TypeAssumptions.set_state
   initTask.TypeAssumptions.get_nfns
   initTask.TypeAssumptions.set_nfns
+  initTask.TypeAssumptions.method_set
+  initTask.TypeAssumptions.ptr_method_set
 
 structure tracestat [FfiSyntax] where
   mk ::
@@ -20448,6 +21448,8 @@ class tracestat.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_allocs : ∀ (x : tracestat) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet tracestat.underlying go!"allocs") (PairV #x #y) (Val #(({ x with allocs' := y } : tracestat)))
   get_bytes : ∀ (x : tracestat), go.IsGoStepPureDetTagged under (StructFieldGet tracestat.underlying go!"bytes") #x (Val #(x.bytes'))
   set_bytes : ∀ (x : tracestat) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet tracestat.underlying go!"bytes") (PairV #x #y) (Val #(({ x with bytes' := y } : tracestat)))
+  method_set : go.MethodSetIs tracestat.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType tracestat.ty) []
 
 attribute [instance] tracestat.TypeAssumptions.type_repr
   tracestat.TypeAssumptions.underlying
@@ -20460,6 +21462,8 @@ attribute [instance] tracestat.TypeAssumptions.type_repr
   tracestat.TypeAssumptions.set_allocs
   tracestat.TypeAssumptions.get_bytes
   tracestat.TypeAssumptions.set_bytes
+  tracestat.TypeAssumptions.method_set
+  tracestat.TypeAssumptions.ptr_method_set
 
 abbrev profAtomic [FfiSyntax] : Type := w64
 
@@ -20468,8 +21472,12 @@ abbrev profAtomic [FfiSyntax] : Type := w64
 
 class profAtomic.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq profAtomic.ty profAtomic.underlying
+  method_set : go.MethodSetIs profAtomic.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType profAtomic.ty) [(go!"runtime.cas", (some (go.signature.Signature [profIndex.ty, profIndex.ty] false [go.bool]))), (go!"runtime.load", (some (go.signature.Signature [] false [profIndex.ty]))), (go!"runtime.store", (some (go.signature.Signature [profIndex.ty] false [])))]
 
 attribute [instance] profAtomic.TypeAssumptions.underlying
+  profAtomic.TypeAssumptions.method_set
+  profAtomic.TypeAssumptions.ptr_method_set
 
 abbrev profIndex [FfiSyntax] : Type := w64
 
@@ -20478,8 +21486,12 @@ abbrev profIndex [FfiSyntax] : Type := w64
 
 class profIndex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq profIndex.ty profIndex.underlying
+  method_set : go.MethodSetIs profIndex.ty [(go!"runtime.addCountsAndClearFlags", (some (go.signature.Signature [go.int, go.int] false [profIndex.ty]))), (go!"runtime.dataCount", (some (go.signature.Signature [] false [go.uint32]))), (go!"runtime.tagCount", (some (go.signature.Signature [] false [go.uint32])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType profIndex.ty) [(go!"runtime.addCountsAndClearFlags", (some (go.signature.Signature [go.int, go.int] false [profIndex.ty]))), (go!"runtime.dataCount", (some (go.signature.Signature [] false [go.uint32]))), (go!"runtime.tagCount", (some (go.signature.Signature [] false [go.uint32])))]
 
 attribute [instance] profIndex.TypeAssumptions.underlying
+  profIndex.TypeAssumptions.method_set
+  profIndex.TypeAssumptions.ptr_method_set
 
 structure profBuf [FfiSyntax] where
   mk ::
@@ -20547,6 +21559,8 @@ class profBuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_overflowBuf : ∀ (x : profBuf) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet profBuf.underlying go!"overflowBuf") (PairV #x #y) (Val #(({ x with overflowBuf' := y } : profBuf)))
   get_wait : ∀ (x : profBuf), go.IsGoStepPureDetTagged under (StructFieldGet profBuf.underlying go!"wait") #x (Val #(x.wait'))
   set_wait : ∀ (x : profBuf) (y : note), go.IsGoStepPureDetTagged under (StructFieldSet profBuf.underlying go!"wait") (PairV #x #y) (Val #(({ x with wait' := y } : profBuf)))
+  method_set : go.MethodSetIs profBuf.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType profBuf.ty) [(go!"runtime.canWriteRecord", (some (go.signature.Signature [go.int] false [go.bool]))), (go!"runtime.canWriteTwoRecords", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"runtime.close", (some (go.signature.Signature [] false []))), (go!"runtime.hasOverflow", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.incrementOverflow", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.read", (some (go.signature.Signature [profBufReadMode.ty] false [(go.GoType.SliceType go.uint64), (go.GoType.SliceType «unsafe».Pointer), go.bool]))), (go!"runtime.takeOverflow", (some (go.signature.Signature [] false [go.uint32, go.uint64]))), (go!"runtime.wakeupExtra", (some (go.signature.Signature [] false []))), (go!"runtime.write", (some (go.signature.Signature [(go.GoType.PointerType «unsafe».Pointer), go.int64, (go.GoType.SliceType go.uint64), (go.GoType.SliceType go.uintptr)] false [])))]
 
 attribute [instance] profBuf.TypeAssumptions.type_repr
   profBuf.TypeAssumptions.underlying
@@ -20573,6 +21587,8 @@ attribute [instance] profBuf.TypeAssumptions.type_repr
   profBuf.TypeAssumptions.set_overflowBuf
   profBuf.TypeAssumptions.get_wait
   profBuf.TypeAssumptions.set_wait
+  profBuf.TypeAssumptions.method_set
+  profBuf.TypeAssumptions.ptr_method_set
 
 abbrev profBufReadMode [FfiSyntax] : Type := w64
 
@@ -20581,8 +21597,12 @@ abbrev profBufReadMode [FfiSyntax] : Type := w64
 
 class profBufReadMode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq profBufReadMode.ty profBufReadMode.underlying
+  method_set : go.MethodSetIs profBufReadMode.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType profBufReadMode.ty) []
 
 attribute [instance] profBufReadMode.TypeAssumptions.underlying
+  profBufReadMode.TypeAssumptions.method_set
+  profBufReadMode.TypeAssumptions.ptr_method_set
 
 structure ticksType [FfiSyntax] where
   mk ::
@@ -20622,6 +21642,8 @@ class ticksType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_startTime : ∀ (x : ticksType) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ticksType.underlying go!"startTime") (PairV #x #y) (Val #(({ x with startTime' := y } : ticksType)))
   get_val : ∀ (x : ticksType), go.IsGoStepPureDetTagged under (StructFieldGet ticksType.underlying go!"val") #x (Val #(x.val'))
   set_val : ∀ (x : ticksType) (y : _root_.Perennial.internal.runtime.atomic.Int64), go.IsGoStepPureDetTagged under (StructFieldSet ticksType.underlying go!"val") (PairV #x #y) (Val #(({ x with val' := y } : ticksType)))
+  method_set : go.MethodSetIs ticksType.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType ticksType.ty) [(go!"runtime.init", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] ticksType.TypeAssumptions.type_repr
   ticksType.TypeAssumptions.underlying
@@ -20634,6 +21656,8 @@ attribute [instance] ticksType.TypeAssumptions.type_repr
   ticksType.TypeAssumptions.set_startTime
   ticksType.TypeAssumptions.get_val
   ticksType.TypeAssumptions.set_val
+  ticksType.TypeAssumptions.method_set
+  ticksType.TypeAssumptions.ptr_method_set
 
 structure godebugInc [FfiSyntax] where
   mk ::
@@ -20665,6 +21689,8 @@ class godebugInc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_name : ∀ (x : godebugInc) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet godebugInc.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : godebugInc)))
   get_inc : ∀ (x : godebugInc), go.IsGoStepPureDetTagged under (StructFieldGet godebugInc.underlying go!"inc") #x (Val #(x.inc'))
   set_inc : ∀ (x : godebugInc) (y : (_root_.Perennial.internal.runtime.atomic.Pointer GoFunc)), go.IsGoStepPureDetTagged under (StructFieldSet godebugInc.underlying go!"inc") (PairV #x #y) (Val #(({ x with inc' := y } : godebugInc)))
+  method_set : go.MethodSetIs godebugInc.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType godebugInc.ty) [(go!"IncNonDefault", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] godebugInc.TypeAssumptions.type_repr
   godebugInc.TypeAssumptions.underlying
@@ -20673,6 +21699,8 @@ attribute [instance] godebugInc.TypeAssumptions.type_repr
   godebugInc.TypeAssumptions.set_name
   godebugInc.TypeAssumptions.get_inc
   godebugInc.TypeAssumptions.set_inc
+  godebugInc.TypeAssumptions.method_set
+  godebugInc.TypeAssumptions.ptr_method_set
 
 structure dbgVar [FfiSyntax] where
   mk ::
@@ -20712,6 +21740,8 @@ class dbgVar.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_atomic : ∀ (x : dbgVar) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet dbgVar.underlying go!"atomic") (PairV #x #y) (Val #(({ x with atomic' := y } : dbgVar)))
   get_def : ∀ (x : dbgVar), go.IsGoStepPureDetTagged under (StructFieldGet dbgVar.underlying go!"def") #x (Val #(x.def'))
   set_def : ∀ (x : dbgVar) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet dbgVar.underlying go!"def") (PairV #x #y) (Val #(({ x with def' := y } : dbgVar)))
+  method_set : go.MethodSetIs dbgVar.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType dbgVar.ty) []
 
 attribute [instance] dbgVar.TypeAssumptions.type_repr
   dbgVar.TypeAssumptions.underlying
@@ -20724,6 +21754,8 @@ attribute [instance] dbgVar.TypeAssumptions.type_repr
   dbgVar.TypeAssumptions.set_atomic
   dbgVar.TypeAssumptions.get_def
   dbgVar.TypeAssumptions.set_def
+  dbgVar.TypeAssumptions.method_set
+  dbgVar.TypeAssumptions.ptr_method_set
 
 structure funcval [FfiSyntax] where
   mk ::
@@ -20751,12 +21783,16 @@ class funcval.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   layout : go.StructLayout funcval [(go!"fn", typeSize w64, typeAlign w64)]
   get_fn : ∀ (x : funcval), go.IsGoStepPureDetTagged under (StructFieldGet funcval.underlying go!"fn") #x (Val #(x.fn'))
   set_fn : ∀ (x : funcval) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet funcval.underlying go!"fn") (PairV #x #y) (Val #(({ x with fn' := y } : funcval)))
+  method_set : go.MethodSetIs funcval.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType funcval.ty) []
 
 attribute [instance] funcval.TypeAssumptions.type_repr
   funcval.TypeAssumptions.underlying
   funcval.TypeAssumptions.layout
   funcval.TypeAssumptions.get_fn
   funcval.TypeAssumptions.set_fn
+  funcval.TypeAssumptions.method_set
+  funcval.TypeAssumptions.ptr_method_set
 
 axiom iface : Type
 axiom iface.zero_val : ZeroVal iface
@@ -20766,10 +21802,14 @@ class iface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying iface.underlying iface
   underlying : go.UnderlyingDirectedEq iface.ty iface.underlying
   isUnderlying : go.IsUnderlying iface.underlying iface.underlying
+  method_set : go.MethodSetIs iface.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType iface.ty) []
 
 attribute [instance] iface.TypeAssumptions.type_repr
   iface.TypeAssumptions.underlying
   iface.TypeAssumptions.isUnderlying
+  iface.TypeAssumptions.method_set
+  iface.TypeAssumptions.ptr_method_set
 
 axiom eface : Type
 axiom eface.zero_val : ZeroVal eface
@@ -20779,10 +21819,14 @@ class eface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying eface.underlying eface
   underlying : go.UnderlyingDirectedEq eface.ty eface.underlying
   isUnderlying : go.IsUnderlying eface.underlying eface.underlying
+  method_set : go.MethodSetIs eface.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType eface.ty) []
 
 attribute [instance] eface.TypeAssumptions.type_repr
   eface.TypeAssumptions.underlying
   eface.TypeAssumptions.isUnderlying
+  eface.TypeAssumptions.method_set
+  eface.TypeAssumptions.ptr_method_set
 
 abbrev puintptr [FfiSyntax] : Type := w64
 
@@ -20791,8 +21835,12 @@ abbrev puintptr [FfiSyntax] : Type := w64
 
 class puintptr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq puintptr.ty puintptr.underlying
+  method_set : go.MethodSetIs puintptr.ty [(go!"runtime.ptr", (some (go.signature.Signature [] false [(go.GoType.PointerType p.ty)])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType puintptr.ty) [(go!"runtime.ptr", (some (go.signature.Signature [] false [(go.GoType.PointerType p.ty)]))), (go!"runtime.set", (some (go.signature.Signature [(go.GoType.PointerType p.ty)] false [])))]
 
 attribute [instance] puintptr.TypeAssumptions.underlying
+  puintptr.TypeAssumptions.method_set
+  puintptr.TypeAssumptions.ptr_method_set
 
 structure gobuf [FfiSyntax] where
   mk ::
@@ -20840,6 +21888,8 @@ class gobuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_lr : ∀ (x : gobuf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet gobuf.underlying go!"lr") (PairV #x #y) (Val #(({ x with lr' := y } : gobuf)))
   get_bp : ∀ (x : gobuf), go.IsGoStepPureDetTagged under (StructFieldGet gobuf.underlying go!"bp") #x (Val #(x.bp'))
   set_bp : ∀ (x : gobuf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet gobuf.underlying go!"bp") (PairV #x #y) (Val #(({ x with bp' := y } : gobuf)))
+  method_set : go.MethodSetIs gobuf.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gobuf.ty) []
 
 attribute [instance] gobuf.TypeAssumptions.type_repr
   gobuf.TypeAssumptions.underlying
@@ -20856,6 +21906,8 @@ attribute [instance] gobuf.TypeAssumptions.type_repr
   gobuf.TypeAssumptions.set_lr
   gobuf.TypeAssumptions.get_bp
   gobuf.TypeAssumptions.set_bp
+  gobuf.TypeAssumptions.method_set
+  gobuf.TypeAssumptions.ptr_method_set
 
 structure maybeTraceablePtr [FfiSyntax] where
   mk ::
@@ -20887,6 +21939,8 @@ class maybeTraceablePtr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCo
   set_vp : ∀ (x : maybeTraceablePtr) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet maybeTraceablePtr.underlying go!"vp") (PairV #x #y) (Val #(({ x with vp' := y } : maybeTraceablePtr)))
   get_vu : ∀ (x : maybeTraceablePtr), go.IsGoStepPureDetTagged under (StructFieldGet maybeTraceablePtr.underlying go!"vu") #x (Val #(x.vu'))
   set_vu : ∀ (x : maybeTraceablePtr) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet maybeTraceablePtr.underlying go!"vu") (PairV #x #y) (Val #(({ x with vu' := y } : maybeTraceablePtr)))
+  method_set : go.MethodSetIs maybeTraceablePtr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType maybeTraceablePtr.ty) [(go!"runtime.get", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"runtime.set", (some (go.signature.Signature [«unsafe».Pointer] false []))), (go!"runtime.setTraceable", (some (go.signature.Signature [] false []))), (go!"runtime.setUntraceable", (some (go.signature.Signature [] false []))), (go!"runtime.uintptr", (some (go.signature.Signature [] false [go.uintptr])))]
 
 attribute [instance] maybeTraceablePtr.TypeAssumptions.type_repr
   maybeTraceablePtr.TypeAssumptions.underlying
@@ -20895,6 +21949,8 @@ attribute [instance] maybeTraceablePtr.TypeAssumptions.type_repr
   maybeTraceablePtr.TypeAssumptions.set_vp
   maybeTraceablePtr.TypeAssumptions.get_vu
   maybeTraceablePtr.TypeAssumptions.set_vu
+  maybeTraceablePtr.TypeAssumptions.method_set
+  maybeTraceablePtr.TypeAssumptions.ptr_method_set
 
 structure maybeTraceableChan [FfiSyntax] where
   mk ::
@@ -20922,12 +21978,16 @@ class maybeTraceableChan.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   layout : go.StructLayout maybeTraceableChan [(go!"maybeTraceablePtr", typeSize maybeTraceablePtr, typeAlign maybeTraceablePtr)]
   get_maybeTraceablePtr : ∀ (x : maybeTraceableChan), go.IsGoStepPureDetTagged under (StructFieldGet maybeTraceableChan.underlying go!"maybeTraceablePtr") #x (Val #(x.maybeTraceablePtr'))
   set_maybeTraceablePtr : ∀ (x : maybeTraceableChan) (y : maybeTraceablePtr), go.IsGoStepPureDetTagged under (StructFieldSet maybeTraceableChan.underlying go!"maybeTraceablePtr") (PairV #x #y) (Val #(({ x with maybeTraceablePtr' := y } : maybeTraceableChan)))
+  method_set : go.MethodSetIs maybeTraceableChan.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType maybeTraceableChan.ty) [(go!"runtime.get", (some (go.signature.Signature [] false [(go.GoType.PointerType hchan.ty)]))), (go!"runtime.set", (some (go.signature.Signature [(go.GoType.PointerType hchan.ty)] false []))), (go!"runtime.setTraceable", (some (go.signature.Signature [] false []))), (go!"runtime.setUntraceable", (some (go.signature.Signature [] false []))), (go!"runtime.uintptr", (some (go.signature.Signature [] false [go.uintptr])))]
 
 attribute [instance] maybeTraceableChan.TypeAssumptions.type_repr
   maybeTraceableChan.TypeAssumptions.underlying
   maybeTraceableChan.TypeAssumptions.layout
   maybeTraceableChan.TypeAssumptions.get_maybeTraceablePtr
   maybeTraceableChan.TypeAssumptions.set_maybeTraceablePtr
+  maybeTraceableChan.TypeAssumptions.method_set
+  maybeTraceableChan.TypeAssumptions.ptr_method_set
 
 structure sudog [FfiSyntax] where
   mk ::
@@ -21007,6 +22067,8 @@ class sudog.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_waittail : ∀ (x : sudog) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet sudog.underlying go!"waittail") (PairV #x #y) (Val #(({ x with waittail' := y } : sudog)))
   get_c : ∀ (x : sudog), go.IsGoStepPureDetTagged under (StructFieldGet sudog.underlying go!"c") #x (Val #(x.c'))
   set_c : ∀ (x : sudog) (y : maybeTraceableChan), go.IsGoStepPureDetTagged under (StructFieldSet sudog.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : sudog)))
+  method_set : go.MethodSetIs sudog.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sudog.ty) []
 
 attribute [instance] sudog.TypeAssumptions.type_repr
   sudog.TypeAssumptions.underlying
@@ -21039,6 +22101,8 @@ attribute [instance] sudog.TypeAssumptions.type_repr
   sudog.TypeAssumptions.set_waittail
   sudog.TypeAssumptions.get_c
   sudog.TypeAssumptions.set_c
+  sudog.TypeAssumptions.method_set
+  sudog.TypeAssumptions.ptr_method_set
 
 structure libcall [FfiSyntax] where
   mk ::
@@ -21086,6 +22150,8 @@ class libcall.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_r2 : ∀ (x : libcall) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet libcall.underlying go!"r2") (PairV #x #y) (Val #(({ x with r2' := y } : libcall)))
   get_err : ∀ (x : libcall), go.IsGoStepPureDetTagged under (StructFieldGet libcall.underlying go!"err") #x (Val #(x.err'))
   set_err : ∀ (x : libcall) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet libcall.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : libcall)))
+  method_set : go.MethodSetIs libcall.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType libcall.ty) []
 
 attribute [instance] libcall.TypeAssumptions.type_repr
   libcall.TypeAssumptions.underlying
@@ -21102,6 +22168,8 @@ attribute [instance] libcall.TypeAssumptions.type_repr
   libcall.TypeAssumptions.set_r2
   libcall.TypeAssumptions.get_err
   libcall.TypeAssumptions.set_err
+  libcall.TypeAssumptions.method_set
+  libcall.TypeAssumptions.ptr_method_set
 
 structure heldLockInfo [FfiSyntax] where
   mk ::
@@ -21133,6 +22201,8 @@ class heldLockInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   set_lockAddr : ∀ (x : heldLockInfo) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet heldLockInfo.underlying go!"lockAddr") (PairV #x #y) (Val #(({ x with lockAddr' := y } : heldLockInfo)))
   get_rank : ∀ (x : heldLockInfo), go.IsGoStepPureDetTagged under (StructFieldGet heldLockInfo.underlying go!"rank") #x (Val #(x.rank'))
   set_rank : ∀ (x : heldLockInfo) (y : lockRank), go.IsGoStepPureDetTagged under (StructFieldSet heldLockInfo.underlying go!"rank") (PairV #x #y) (Val #(({ x with rank' := y } : heldLockInfo)))
+  method_set : go.MethodSetIs heldLockInfo.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType heldLockInfo.ty) []
 
 attribute [instance] heldLockInfo.TypeAssumptions.type_repr
   heldLockInfo.TypeAssumptions.underlying
@@ -21141,6 +22211,8 @@ attribute [instance] heldLockInfo.TypeAssumptions.type_repr
   heldLockInfo.TypeAssumptions.set_lockAddr
   heldLockInfo.TypeAssumptions.get_rank
   heldLockInfo.TypeAssumptions.set_rank
+  heldLockInfo.TypeAssumptions.method_set
+  heldLockInfo.TypeAssumptions.ptr_method_set
 
 abbrev waitReason [FfiSyntax] : Type := w8
 
@@ -21149,8 +22221,12 @@ abbrev waitReason [FfiSyntax] : Type := w8
 
 class waitReason.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq waitReason.ty waitReason.underlying
+  method_set : go.MethodSetIs waitReason.ty [(go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"runtime.isChanWait", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.isIdleInSynctest", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.isMutexWait", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.isSyncWait", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.isWaitingForSuspendG", (some (go.signature.Signature [] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType waitReason.ty) [(go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"runtime.isChanWait", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.isIdleInSynctest", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.isMutexWait", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.isSyncWait", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.isWaitingForSuspendG", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] waitReason.TypeAssumptions.underlying
+  waitReason.TypeAssumptions.method_set
+  waitReason.TypeAssumptions.ptr_method_set
 
 structure traceSchedResourceState [FfiSyntax] where
   mk ::
@@ -21182,6 +22258,8 @@ class traceSchedResourceState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoL
   set_statusTraced : ∀ (x : traceSchedResourceState) (y : (GoArray _root_.Perennial.internal.runtime.atomic.Uint32 3)), go.IsGoStepPureDetTagged under (StructFieldSet traceSchedResourceState.underlying go!"statusTraced") (PairV #x #y) (Val #(({ x with statusTraced' := y } : traceSchedResourceState)))
   get_seq : ∀ (x : traceSchedResourceState), go.IsGoStepPureDetTagged under (StructFieldGet traceSchedResourceState.underlying go!"seq") #x (Val #(x.seq'))
   set_seq : ∀ (x : traceSchedResourceState) (y : (GoArray w64 2)), go.IsGoStepPureDetTagged under (StructFieldSet traceSchedResourceState.underlying go!"seq") (PairV #x #y) (Val #(({ x with seq' := y } : traceSchedResourceState)))
+  method_set : go.MethodSetIs traceSchedResourceState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceSchedResourceState.ty) [(go!"runtime.acquireStatus", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.nextSeq", (some (go.signature.Signature [go.uintptr] false [traceArg.ty]))), (go!"runtime.readyNextGen", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.setStatusTraced", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.statusWasTraced", (some (go.signature.Signature [go.uintptr] false [go.bool])))]
 
 attribute [instance] traceSchedResourceState.TypeAssumptions.type_repr
   traceSchedResourceState.TypeAssumptions.underlying
@@ -21190,6 +22268,8 @@ attribute [instance] traceSchedResourceState.TypeAssumptions.type_repr
   traceSchedResourceState.TypeAssumptions.set_statusTraced
   traceSchedResourceState.TypeAssumptions.get_seq
   traceSchedResourceState.TypeAssumptions.set_seq
+  traceSchedResourceState.TypeAssumptions.method_set
+  traceSchedResourceState.TypeAssumptions.ptr_method_set
 
 structure gTraceState [FfiSyntax] where
   mk ::
@@ -21217,12 +22297,16 @@ class gTraceState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   layout : go.StructLayout gTraceState [(go!"traceSchedResourceState", typeSize traceSchedResourceState, typeAlign traceSchedResourceState)]
   get_traceSchedResourceState : ∀ (x : gTraceState), go.IsGoStepPureDetTagged under (StructFieldGet gTraceState.underlying go!"traceSchedResourceState") #x (Val #(x.traceSchedResourceState'))
   set_traceSchedResourceState : ∀ (x : gTraceState) (y : traceSchedResourceState), go.IsGoStepPureDetTagged under (StructFieldSet gTraceState.underlying go!"traceSchedResourceState") (PairV #x #y) (Val #(({ x with traceSchedResourceState' := y } : gTraceState)))
+  method_set : go.MethodSetIs gTraceState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gTraceState.ty) [(go!"runtime.acquireStatus", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.nextSeq", (some (go.signature.Signature [go.uintptr] false [traceArg.ty]))), (go!"runtime.readyNextGen", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.reset", (some (go.signature.Signature [] false []))), (go!"runtime.setStatusTraced", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.statusWasTraced", (some (go.signature.Signature [go.uintptr] false [go.bool])))]
 
 attribute [instance] gTraceState.TypeAssumptions.type_repr
   gTraceState.TypeAssumptions.underlying
   gTraceState.TypeAssumptions.layout
   gTraceState.TypeAssumptions.get_traceSchedResourceState
   gTraceState.TypeAssumptions.set_traceSchedResourceState
+  gTraceState.TypeAssumptions.method_set
+  gTraceState.TypeAssumptions.ptr_method_set
 
 structure g [FfiSyntax] where
   mk ::
@@ -21506,6 +22590,8 @@ class g.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemant
   set_gcAssistBytes : ∀ (x : g) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet g.underlying go!"gcAssistBytes") (PairV #x #y) (Val #(({ x with gcAssistBytes' := y } : g)))
   get_valgrindStackID : ∀ (x : g), go.IsGoStepPureDetTagged under (StructFieldGet g.underlying go!"valgrindStackID") #x (Val #(x.valgrindStackID'))
   set_valgrindStackID : ∀ (x : g) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet g.underlying go!"valgrindStackID") (PairV #x #y) (Val #(({ x with valgrindStackID' := y } : g)))
+  method_set : go.MethodSetIs g.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType g.ty) [(go!"runtime.guintptr", (some (go.signature.Signature [] false [guintptr.ty]))), (go!"runtime.internalBlocked", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.isMaybeRunnable", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] g.TypeAssumptions.type_repr
   g.TypeAssumptions.underlying
@@ -21640,6 +22726,8 @@ attribute [instance] g.TypeAssumptions.type_repr
   g.TypeAssumptions.set_gcAssistBytes
   g.TypeAssumptions.get_valgrindStackID
   g.TypeAssumptions.set_valgrindStackID
+  g.TypeAssumptions.method_set
+  g.TypeAssumptions.ptr_method_set
 
 axiom m : Type
 axiom m.zero_val : ZeroVal m
@@ -21649,10 +22737,14 @@ class m.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemant
   type_repr : go.TypeReprUnderlying m.underlying m
   underlying : go.UnderlyingDirectedEq m.ty m.underlying
   isUnderlying : go.IsUnderlying m.underlying m.underlying
+  method_set : go.MethodSetIs m.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType m.ty) [(go!"runtime.becomeSpinning", (some (go.signature.Signature [] false []))), (go!"runtime.clearAllpSnapshot", (some (go.signature.Signature [] false []))), (go!"runtime.hasCgoOnStack", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.snapshotAllp", (some (go.signature.Signature [] false [(go.GoType.SliceType (go.GoType.PointerType p.ty))])))]
 
 attribute [instance] m.TypeAssumptions.type_repr
   m.TypeAssumptions.underlying
   m.TypeAssumptions.isUnderlying
+  m.TypeAssumptions.method_set
+  m.TypeAssumptions.ptr_method_set
 
 axiom mPadded : Type
 axiom mPadded.zero_val : ZeroVal mPadded
@@ -21662,10 +22754,14 @@ class mPadded.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying mPadded.underlying mPadded
   underlying : go.UnderlyingDirectedEq mPadded.ty mPadded.underlying
   isUnderlying : go.IsUnderlying mPadded.underlying mPadded.underlying
+  method_set : go.MethodSetIs mPadded.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mPadded.ty) [(go!"runtime.becomeSpinning", (some (go.signature.Signature [] false []))), (go!"runtime.clearAllpSnapshot", (some (go.signature.Signature [] false []))), (go!"runtime.hasCgoOnStack", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.snapshotAllp", (some (go.signature.Signature [] false [(go.GoType.SliceType (go.GoType.PointerType p.ty))])))]
 
 attribute [instance] mPadded.TypeAssumptions.type_repr
   mPadded.TypeAssumptions.underlying
   mPadded.TypeAssumptions.isUnderlying
+  mPadded.TypeAssumptions.method_set
+  mPadded.TypeAssumptions.ptr_method_set
 
 structure mWeakPointer [FfiSyntax] where
   mk ::
@@ -21693,12 +22789,16 @@ class mWeakPointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   layout : go.StructLayout mWeakPointer [(go!"m", typeSize Loc, typeAlign Loc)]
   get_m : ∀ (x : mWeakPointer), go.IsGoStepPureDetTagged under (StructFieldGet mWeakPointer.underlying go!"m") #x (Val #(x.m'))
   set_m : ∀ (x : mWeakPointer) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet mWeakPointer.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : mWeakPointer)))
+  method_set : go.MethodSetIs mWeakPointer.ty [(go!"runtime.clear", (some (go.signature.Signature [] false []))), (go!"runtime.get", (some (go.signature.Signature [] false [(go.GoType.PointerType m.ty)])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mWeakPointer.ty) [(go!"runtime.clear", (some (go.signature.Signature [] false []))), (go!"runtime.get", (some (go.signature.Signature [] false [(go.GoType.PointerType m.ty)])))]
 
 attribute [instance] mWeakPointer.TypeAssumptions.type_repr
   mWeakPointer.TypeAssumptions.underlying
   mWeakPointer.TypeAssumptions.layout
   mWeakPointer.TypeAssumptions.get_m
   mWeakPointer.TypeAssumptions.set_m
+  mWeakPointer.TypeAssumptions.method_set
+  mWeakPointer.TypeAssumptions.ptr_method_set
 
 axiom p : Type
 axiom p.zero_val : ZeroVal p
@@ -21708,10 +22808,14 @@ class p.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemant
   type_repr : go.TypeReprUnderlying p.underlying p
   underlying : go.UnderlyingDirectedEq p.ty p.underlying
   isUnderlying : go.IsUnderlying p.underlying p.underlying
+  method_set : go.MethodSetIs p.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType p.ty) [(go!"runtime.destroy", (some (go.signature.Signature [] false []))), (go!"runtime.init", (some (go.signature.Signature [go.int32] false [])))]
 
 attribute [instance] p.TypeAssumptions.type_repr
   p.TypeAssumptions.underlying
   p.TypeAssumptions.isUnderlying
+  p.TypeAssumptions.method_set
+  p.TypeAssumptions.ptr_method_set
 
 axiom schedt : Type
 axiom schedt.zero_val : ZeroVal schedt
@@ -21721,10 +22825,14 @@ class schedt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying schedt.underlying schedt
   underlying : go.UnderlyingDirectedEq schedt.ty schedt.underlying
   isUnderlying : go.IsUnderlying schedt.underlying schedt.underlying
+  method_set : go.MethodSetIs schedt.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType schedt.ty) []
 
 attribute [instance] schedt.TypeAssumptions.type_repr
   schedt.TypeAssumptions.underlying
   schedt.TypeAssumptions.isUnderlying
+  schedt.TypeAssumptions.method_set
+  schedt.TypeAssumptions.ptr_method_set
 
 axiom _func : Type
 axiom _func.zero_val : ZeroVal _func
@@ -21734,10 +22842,14 @@ class _func.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying _func.underlying _func
   underlying : go.UnderlyingDirectedEq _func.ty _func.underlying
   isUnderlying : go.IsUnderlying _func.underlying _func.underlying
+  method_set : go.MethodSetIs _func.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType _func.ty) [(go!"runtime.funcInfo", (some (go.signature.Signature [] false [funcInfo.ty]))), (go!"runtime.isInlined", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] _func.TypeAssumptions.type_repr
   _func.TypeAssumptions.underlying
   _func.TypeAssumptions.isUnderlying
+  _func.TypeAssumptions.method_set
+  _func.TypeAssumptions.ptr_method_set
 
 structure funcinl [FfiSyntax] where
   mk ::
@@ -21785,6 +22897,8 @@ class funcinl.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_line : ∀ (x : funcinl) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet funcinl.underlying go!"line") (PairV #x #y) (Val #(({ x with line' := y } : funcinl)))
   get_startLine : ∀ (x : funcinl), go.IsGoStepPureDetTagged under (StructFieldGet funcinl.underlying go!"startLine") #x (Val #(x.startLine'))
   set_startLine : ∀ (x : funcinl) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet funcinl.underlying go!"startLine") (PairV #x #y) (Val #(({ x with startLine' := y } : funcinl)))
+  method_set : go.MethodSetIs funcinl.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType funcinl.ty) []
 
 attribute [instance] funcinl.TypeAssumptions.type_repr
   funcinl.TypeAssumptions.underlying
@@ -21801,6 +22915,8 @@ attribute [instance] funcinl.TypeAssumptions.type_repr
   funcinl.TypeAssumptions.set_line
   funcinl.TypeAssumptions.get_startLine
   funcinl.TypeAssumptions.set_startLine
+  funcinl.TypeAssumptions.method_set
+  funcinl.TypeAssumptions.ptr_method_set
 
 structure forcegcstate [FfiSyntax] where
   mk ::
@@ -21836,6 +22952,8 @@ class forcegcstate.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   set_g : ∀ (x : forcegcstate) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet forcegcstate.underlying go!"g") (PairV #x #y) (Val #(({ x with g' := y } : forcegcstate)))
   get_idle : ∀ (x : forcegcstate), go.IsGoStepPureDetTagged under (StructFieldGet forcegcstate.underlying go!"idle") #x (Val #(x.idle'))
   set_idle : ∀ (x : forcegcstate) (y : _root_.Perennial.internal.runtime.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet forcegcstate.underlying go!"idle") (PairV #x #y) (Val #(({ x with idle' := y } : forcegcstate)))
+  method_set : go.MethodSetIs forcegcstate.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType forcegcstate.ty) []
 
 attribute [instance] forcegcstate.TypeAssumptions.type_repr
   forcegcstate.TypeAssumptions.underlying
@@ -21846,6 +22964,8 @@ attribute [instance] forcegcstate.TypeAssumptions.type_repr
   forcegcstate.TypeAssumptions.set_g
   forcegcstate.TypeAssumptions.get_idle
   forcegcstate.TypeAssumptions.set_idle
+  forcegcstate.TypeAssumptions.method_set
+  forcegcstate.TypeAssumptions.ptr_method_set
 
 structure _defer [FfiSyntax] where
   mk ::
@@ -21897,6 +23017,8 @@ class _defer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_link : ∀ (x : _defer) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet _defer.underlying go!"link") (PairV #x #y) (Val #(({ x with link' := y } : _defer)))
   get_head : ∀ (x : _defer), go.IsGoStepPureDetTagged under (StructFieldGet _defer.underlying go!"head") #x (Val #(x.head'))
   set_head : ∀ (x : _defer) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet _defer.underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : _defer)))
+  method_set : go.MethodSetIs _defer.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType _defer.ty) []
 
 attribute [instance] _defer.TypeAssumptions.type_repr
   _defer.TypeAssumptions.underlying
@@ -21915,6 +23037,8 @@ attribute [instance] _defer.TypeAssumptions.type_repr
   _defer.TypeAssumptions.set_link
   _defer.TypeAssumptions.get_head
   _defer.TypeAssumptions.set_head
+  _defer.TypeAssumptions.method_set
+  _defer.TypeAssumptions.ptr_method_set
 
 structure _panic [FfiSyntax] where
   mk ::
@@ -21998,6 +23122,8 @@ class _panic.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_deferreturn : ∀ (x : _panic) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet _panic.underlying go!"deferreturn") (PairV #x #y) (Val #(({ x with deferreturn' := y } : _panic)))
   get_gopanicFP : ∀ (x : _panic), go.IsGoStepPureDetTagged under (StructFieldGet _panic.underlying go!"gopanicFP") #x (Val #(x.gopanicFP'))
   set_gopanicFP : ∀ (x : _panic) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet _panic.underlying go!"gopanicFP") (PairV #x #y) (Val #(({ x with gopanicFP' := y } : _panic)))
+  method_set : go.MethodSetIs _panic.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType _panic.ty) [(go!"runtime.initOpenCodedDefers", (some (go.signature.Signature [funcInfo.ty, «unsafe».Pointer] false [go.bool]))), (go!"runtime.nextDefer", (some (go.signature.Signature [] false [(go.GoType.FunctionType (go.signature.Signature [] false [])), go.bool]))), (go!"runtime.nextFrame", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.start", (some (go.signature.Signature [go.uintptr, «unsafe».Pointer] false [])))]
 
 attribute [instance] _panic.TypeAssumptions.type_repr
   _panic.TypeAssumptions.underlying
@@ -22032,6 +23158,8 @@ attribute [instance] _panic.TypeAssumptions.type_repr
   _panic.TypeAssumptions.set_deferreturn
   _panic.TypeAssumptions.get_gopanicFP
   _panic.TypeAssumptions.set_gopanicFP
+  _panic.TypeAssumptions.method_set
+  _panic.TypeAssumptions.ptr_method_set
 
 structure savedOpenDeferState [FfiSyntax] where
   mk ::
@@ -22067,6 +23195,8 @@ class savedOpenDeferState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocal
   set_deferBitsOffset : ∀ (x : savedOpenDeferState) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet savedOpenDeferState.underlying go!"deferBitsOffset") (PairV #x #y) (Val #(({ x with deferBitsOffset' := y } : savedOpenDeferState)))
   get_slotsOffset : ∀ (x : savedOpenDeferState), go.IsGoStepPureDetTagged under (StructFieldGet savedOpenDeferState.underlying go!"slotsOffset") #x (Val #(x.slotsOffset'))
   set_slotsOffset : ∀ (x : savedOpenDeferState) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet savedOpenDeferState.underlying go!"slotsOffset") (PairV #x #y) (Val #(({ x with slotsOffset' := y } : savedOpenDeferState)))
+  method_set : go.MethodSetIs savedOpenDeferState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType savedOpenDeferState.ty) []
 
 attribute [instance] savedOpenDeferState.TypeAssumptions.type_repr
   savedOpenDeferState.TypeAssumptions.underlying
@@ -22077,6 +23207,8 @@ attribute [instance] savedOpenDeferState.TypeAssumptions.type_repr
   savedOpenDeferState.TypeAssumptions.set_deferBitsOffset
   savedOpenDeferState.TypeAssumptions.get_slotsOffset
   savedOpenDeferState.TypeAssumptions.set_slotsOffset
+  savedOpenDeferState.TypeAssumptions.method_set
+  savedOpenDeferState.TypeAssumptions.ptr_method_set
 
 structure ancestorInfo [FfiSyntax] where
   mk ::
@@ -22112,6 +23244,8 @@ class ancestorInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   set_goid : ∀ (x : ancestorInfo) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ancestorInfo.underlying go!"goid") (PairV #x #y) (Val #(({ x with goid' := y } : ancestorInfo)))
   get_gopc : ∀ (x : ancestorInfo), go.IsGoStepPureDetTagged under (StructFieldGet ancestorInfo.underlying go!"gopc") #x (Val #(x.gopc'))
   set_gopc : ∀ (x : ancestorInfo) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ancestorInfo.underlying go!"gopc") (PairV #x #y) (Val #(({ x with gopc' := y } : ancestorInfo)))
+  method_set : go.MethodSetIs ancestorInfo.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType ancestorInfo.ty) []
 
 attribute [instance] ancestorInfo.TypeAssumptions.type_repr
   ancestorInfo.TypeAssumptions.underlying
@@ -22122,6 +23256,8 @@ attribute [instance] ancestorInfo.TypeAssumptions.type_repr
   ancestorInfo.TypeAssumptions.set_goid
   ancestorInfo.TypeAssumptions.get_gopc
   ancestorInfo.TypeAssumptions.set_gopc
+  ancestorInfo.TypeAssumptions.method_set
+  ancestorInfo.TypeAssumptions.ptr_method_set
 
 structure rwmutex [FfiSyntax] where
   mk ::
@@ -22177,6 +23313,8 @@ class rwmutex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_readerWait : ∀ (x : rwmutex) (y : _root_.Perennial.internal.runtime.atomic.Int32), go.IsGoStepPureDetTagged under (StructFieldSet rwmutex.underlying go!"readerWait") (PairV #x #y) (Val #(({ x with readerWait' := y } : rwmutex)))
   get_readRank : ∀ (x : rwmutex), go.IsGoStepPureDetTagged under (StructFieldGet rwmutex.underlying go!"readRank") #x (Val #(x.readRank'))
   set_readRank : ∀ (x : rwmutex) (y : lockRank), go.IsGoStepPureDetTagged under (StructFieldSet rwmutex.underlying go!"readRank") (PairV #x #y) (Val #(({ x with readRank' := y } : rwmutex)))
+  method_set : go.MethodSetIs rwmutex.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType rwmutex.ty) [(go!"runtime.init", (some (go.signature.Signature [lockRank.ty, lockRank.ty, lockRank.ty] false []))), (go!"runtime.lock", (some (go.signature.Signature [] false []))), (go!"runtime.rlock", (some (go.signature.Signature [] false []))), (go!"runtime.runlock", (some (go.signature.Signature [] false []))), (go!"runtime.unlock", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] rwmutex.TypeAssumptions.type_repr
   rwmutex.TypeAssumptions.underlying
@@ -22197,6 +23335,8 @@ attribute [instance] rwmutex.TypeAssumptions.type_repr
   rwmutex.TypeAssumptions.set_readerWait
   rwmutex.TypeAssumptions.get_readRank
   rwmutex.TypeAssumptions.set_readRank
+  rwmutex.TypeAssumptions.method_set
+  rwmutex.TypeAssumptions.ptr_method_set
 
 structure scase [FfiSyntax] where
   mk ::
@@ -22228,6 +23368,8 @@ class scase.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_c : ∀ (x : scase) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet scase.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : scase)))
   get_elem : ∀ (x : scase), go.IsGoStepPureDetTagged under (StructFieldGet scase.underlying go!"elem") #x (Val #(x.elem'))
   set_elem : ∀ (x : scase) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet scase.underlying go!"elem") (PairV #x #y) (Val #(({ x with elem' := y } : scase)))
+  method_set : go.MethodSetIs scase.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType scase.ty) []
 
 attribute [instance] scase.TypeAssumptions.type_repr
   scase.TypeAssumptions.underlying
@@ -22236,6 +23378,8 @@ attribute [instance] scase.TypeAssumptions.type_repr
   scase.TypeAssumptions.set_c
   scase.TypeAssumptions.get_elem
   scase.TypeAssumptions.set_elem
+  scase.TypeAssumptions.method_set
+  scase.TypeAssumptions.ptr_method_set
 
 abbrev selectDir [FfiSyntax] : Type := w64
 
@@ -22244,8 +23388,12 @@ abbrev selectDir [FfiSyntax] : Type := w64
 
 class selectDir.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq selectDir.ty selectDir.underlying
+  method_set : go.MethodSetIs selectDir.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType selectDir.ty) []
 
 attribute [instance] selectDir.TypeAssumptions.underlying
+  selectDir.TypeAssumptions.method_set
+  selectDir.TypeAssumptions.ptr_method_set
 
 structure runtimeSelect [FfiSyntax] where
   mk ::
@@ -22285,6 +23433,8 @@ class runtimeSelect.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_ch : ∀ (x : runtimeSelect) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet runtimeSelect.underlying go!"ch") (PairV #x #y) (Val #(({ x with ch' := y } : runtimeSelect)))
   get_val : ∀ (x : runtimeSelect), go.IsGoStepPureDetTagged under (StructFieldGet runtimeSelect.underlying go!"val") #x (Val #(x.val'))
   set_val : ∀ (x : runtimeSelect) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet runtimeSelect.underlying go!"val") (PairV #x #y) (Val #(({ x with val' := y } : runtimeSelect)))
+  method_set : go.MethodSetIs runtimeSelect.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType runtimeSelect.ty) []
 
 attribute [instance] runtimeSelect.TypeAssumptions.type_repr
   runtimeSelect.TypeAssumptions.underlying
@@ -22297,6 +23447,8 @@ attribute [instance] runtimeSelect.TypeAssumptions.type_repr
   runtimeSelect.TypeAssumptions.set_ch
   runtimeSelect.TypeAssumptions.get_val
   runtimeSelect.TypeAssumptions.set_val
+  runtimeSelect.TypeAssumptions.method_set
+  runtimeSelect.TypeAssumptions.ptr_method_set
 
 structure semaRoot [FfiSyntax] where
   mk ::
@@ -22332,6 +23484,8 @@ class semaRoot.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_treap : ∀ (x : semaRoot) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet semaRoot.underlying go!"treap") (PairV #x #y) (Val #(({ x with treap' := y } : semaRoot)))
   get_nwait : ∀ (x : semaRoot), go.IsGoStepPureDetTagged under (StructFieldGet semaRoot.underlying go!"nwait") #x (Val #(x.nwait'))
   set_nwait : ∀ (x : semaRoot) (y : _root_.Perennial.internal.runtime.atomic.Uint32), go.IsGoStepPureDetTagged under (StructFieldSet semaRoot.underlying go!"nwait") (PairV #x #y) (Val #(({ x with nwait' := y } : semaRoot)))
+  method_set : go.MethodSetIs semaRoot.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType semaRoot.ty) [(go!"runtime.dequeue", (some (go.signature.Signature [(go.GoType.PointerType go.uint32)] false [(go.GoType.PointerType sudog.ty), go.int64, go.int64]))), (go!"runtime.queue", (some (go.signature.Signature [(go.GoType.PointerType go.uint32), (go.GoType.PointerType sudog.ty), go.bool] false []))), (go!"runtime.rotateLeft", (some (go.signature.Signature [(go.GoType.PointerType sudog.ty)] false []))), (go!"runtime.rotateRight", (some (go.signature.Signature [(go.GoType.PointerType sudog.ty)] false [])))]
 
 attribute [instance] semaRoot.TypeAssumptions.type_repr
   semaRoot.TypeAssumptions.underlying
@@ -22342,6 +23496,8 @@ attribute [instance] semaRoot.TypeAssumptions.type_repr
   semaRoot.TypeAssumptions.set_treap
   semaRoot.TypeAssumptions.get_nwait
   semaRoot.TypeAssumptions.set_nwait
+  semaRoot.TypeAssumptions.method_set
+  semaRoot.TypeAssumptions.ptr_method_set
 
 axiom semTable : Type
 axiom semTable.zero_val : ZeroVal semTable
@@ -22351,10 +23507,14 @@ class semTable.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying semTable.underlying semTable
   underlying : go.UnderlyingDirectedEq semTable.ty semTable.underlying
   isUnderlying : go.IsUnderlying semTable.underlying semTable.underlying
+  method_set : go.MethodSetIs semTable.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType semTable.ty) [(go!"runtime.rootFor", (some (go.signature.Signature [(go.GoType.PointerType go.uint32)] false [(go.GoType.PointerType semaRoot.ty)])))]
 
 attribute [instance] semTable.TypeAssumptions.type_repr
   semTable.TypeAssumptions.underlying
   semTable.TypeAssumptions.isUnderlying
+  semTable.TypeAssumptions.method_set
+  semTable.TypeAssumptions.ptr_method_set
 
 abbrev semaProfileFlags [FfiSyntax] : Type := w64
 
@@ -22363,8 +23523,12 @@ abbrev semaProfileFlags [FfiSyntax] : Type := w64
 
 class semaProfileFlags.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq semaProfileFlags.ty semaProfileFlags.underlying
+  method_set : go.MethodSetIs semaProfileFlags.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType semaProfileFlags.ty) []
 
 attribute [instance] semaProfileFlags.TypeAssumptions.underlying
+  semaProfileFlags.TypeAssumptions.method_set
+  semaProfileFlags.TypeAssumptions.ptr_method_set
 
 structure notifyList [FfiSyntax] where
   mk ::
@@ -22408,6 +23572,8 @@ class notifyList.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_head : ∀ (x : notifyList) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : notifyList)))
   get_tail : ∀ (x : notifyList), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"tail") #x (Val #(x.tail'))
   set_tail : ∀ (x : notifyList) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : notifyList)))
+  method_set : go.MethodSetIs notifyList.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType notifyList.ty) []
 
 attribute [instance] notifyList.TypeAssumptions.type_repr
   notifyList.TypeAssumptions.underlying
@@ -22422,6 +23588,8 @@ attribute [instance] notifyList.TypeAssumptions.type_repr
   notifyList.TypeAssumptions.set_head
   notifyList.TypeAssumptions.get_tail
   notifyList.TypeAssumptions.set_tail
+  notifyList.TypeAssumptions.method_set
+  notifyList.TypeAssumptions.ptr_method_set
 
 structure sigctxt [FfiSyntax] where
   mk ::
@@ -22453,6 +23621,8 @@ class sigctxt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_info : ∀ (x : sigctxt) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet sigctxt.underlying go!"info") (PairV #x #y) (Val #(({ x with info' := y } : sigctxt)))
   get_ctxt : ∀ (x : sigctxt), go.IsGoStepPureDetTagged under (StructFieldGet sigctxt.underlying go!"ctxt") #x (Val #(x.ctxt'))
   set_ctxt : ∀ (x : sigctxt) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet sigctxt.underlying go!"ctxt") (PairV #x #y) (Val #(({ x with ctxt' := y } : sigctxt)))
+  method_set : go.MethodSetIs sigctxt.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sigctxt.ty) [(go!"runtime.cs", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.fault", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.fixsigcode", (some (go.signature.Signature [go.uint32] false []))), (go!"runtime.fs", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.gs", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.preparePanic", (some (go.signature.Signature [go.uint32, (go.GoType.PointerType g.ty)] false []))), (go!"runtime.pushCall", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"runtime.r10", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.r11", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.r12", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.r13", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.r14", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.r15", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.r8", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.r9", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.rax", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.rbp", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.rbx", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.rcx", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.rdi", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.rdx", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.regs", (some (go.signature.Signature [] false [(go.GoType.PointerType sigcontext.ty)]))), (go!"runtime.rflags", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.rip", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.rsi", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.rsp", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.set_rip", (some (go.signature.Signature [go.uint64] false []))), (go!"runtime.set_rsp", (some (go.signature.Signature [go.uint64] false []))), (go!"runtime.set_sigaddr", (some (go.signature.Signature [go.uint64] false []))), (go!"runtime.set_sigcode", (some (go.signature.Signature [go.uint64] false []))), (go!"runtime.setsigpc", (some (go.signature.Signature [go.uint64] false []))), (go!"runtime.sigFromSeccomp", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.sigFromUser", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.sigaddr", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.sigcode", (some (go.signature.Signature [] false [go.uint64]))), (go!"runtime.siglr", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.sigpc", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.sigsp", (some (go.signature.Signature [] false [go.uintptr])))]
 
 attribute [instance] sigctxt.TypeAssumptions.type_repr
   sigctxt.TypeAssumptions.underlying
@@ -22461,6 +23631,8 @@ attribute [instance] sigctxt.TypeAssumptions.type_repr
   sigctxt.TypeAssumptions.set_info
   sigctxt.TypeAssumptions.get_ctxt
   sigctxt.TypeAssumptions.set_ctxt
+  sigctxt.TypeAssumptions.method_set
+  sigctxt.TypeAssumptions.ptr_method_set
 
 structure sigTabT [FfiSyntax] where
   mk ::
@@ -22492,6 +23664,8 @@ class sigTabT.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_flags : ∀ (x : sigTabT) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet sigTabT.underlying go!"flags") (PairV #x #y) (Val #(({ x with flags' := y } : sigTabT)))
   get_name : ∀ (x : sigTabT), go.IsGoStepPureDetTagged under (StructFieldGet sigTabT.underlying go!"name") #x (Val #(x.name'))
   set_name : ∀ (x : sigTabT) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet sigTabT.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : sigTabT)))
+  method_set : go.MethodSetIs sigTabT.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sigTabT.ty) []
 
 attribute [instance] sigTabT.TypeAssumptions.type_repr
   sigTabT.TypeAssumptions.underlying
@@ -22500,6 +23674,8 @@ attribute [instance] sigTabT.TypeAssumptions.type_repr
   sigTabT.TypeAssumptions.set_flags
   sigTabT.TypeAssumptions.get_name
   sigTabT.TypeAssumptions.set_name
+  sigTabT.TypeAssumptions.method_set
+  sigTabT.TypeAssumptions.ptr_method_set
 
 structure gsignalStack [FfiSyntax] where
   mk ::
@@ -22539,6 +23715,8 @@ class gsignalStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   set_stackguard1 : ∀ (x : gsignalStack) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet gsignalStack.underlying go!"stackguard1") (PairV #x #y) (Val #(({ x with stackguard1' := y } : gsignalStack)))
   get_stktopsp : ∀ (x : gsignalStack), go.IsGoStepPureDetTagged under (StructFieldGet gsignalStack.underlying go!"stktopsp") #x (Val #(x.stktopsp'))
   set_stktopsp : ∀ (x : gsignalStack) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet gsignalStack.underlying go!"stktopsp") (PairV #x #y) (Val #(({ x with stktopsp' := y } : gsignalStack)))
+  method_set : go.MethodSetIs gsignalStack.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gsignalStack.ty) []
 
 attribute [instance] gsignalStack.TypeAssumptions.type_repr
   gsignalStack.TypeAssumptions.underlying
@@ -22551,6 +23729,8 @@ attribute [instance] gsignalStack.TypeAssumptions.type_repr
   gsignalStack.TypeAssumptions.set_stackguard1
   gsignalStack.TypeAssumptions.get_stktopsp
   gsignalStack.TypeAssumptions.set_stktopsp
+  gsignalStack.TypeAssumptions.method_set
+  gsignalStack.TypeAssumptions.ptr_method_set
 
 structure slice' [FfiSyntax] where
   mk ::
@@ -22586,6 +23766,8 @@ class slice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_len : ∀ (x : slice') (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet slice'.underlying go!"len") (PairV #x #y) (Val #(({ x with len' := y } : slice')))
   get_cap : ∀ (x : slice'), go.IsGoStepPureDetTagged under (StructFieldGet slice'.underlying go!"cap") #x (Val #(x.cap'))
   set_cap : ∀ (x : slice') (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet slice'.underlying go!"cap") (PairV #x #y) (Val #(({ x with cap' := y } : slice')))
+  method_set : go.MethodSetIs slice'.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType slice'.ty) []
 
 attribute [instance] slice.TypeAssumptions.type_repr
   slice.TypeAssumptions.underlying
@@ -22596,6 +23778,8 @@ attribute [instance] slice.TypeAssumptions.type_repr
   slice.TypeAssumptions.set_len
   slice.TypeAssumptions.get_cap
   slice.TypeAssumptions.set_cap
+  slice.TypeAssumptions.method_set
+  slice.TypeAssumptions.ptr_method_set
 
 structure notInHeapSlice [FfiSyntax] where
   mk ::
@@ -22631,6 +23815,8 @@ class notInHeapSlice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_len : ∀ (x : notInHeapSlice) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet notInHeapSlice.underlying go!"len") (PairV #x #y) (Val #(({ x with len' := y } : notInHeapSlice)))
   get_cap : ∀ (x : notInHeapSlice), go.IsGoStepPureDetTagged under (StructFieldGet notInHeapSlice.underlying go!"cap") #x (Val #(x.cap'))
   set_cap : ∀ (x : notInHeapSlice) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet notInHeapSlice.underlying go!"cap") (PairV #x #y) (Val #(({ x with cap' := y } : notInHeapSlice)))
+  method_set : go.MethodSetIs notInHeapSlice.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType notInHeapSlice.ty) []
 
 attribute [instance] notInHeapSlice.TypeAssumptions.type_repr
   notInHeapSlice.TypeAssumptions.underlying
@@ -22641,6 +23827,8 @@ attribute [instance] notInHeapSlice.TypeAssumptions.type_repr
   notInHeapSlice.TypeAssumptions.set_len
   notInHeapSlice.TypeAssumptions.get_cap
   notInHeapSlice.TypeAssumptions.set_cap
+  notInHeapSlice.TypeAssumptions.method_set
+  notInHeapSlice.TypeAssumptions.ptr_method_set
 
 structure stackpoolItem [FfiSyntax] where
   mk ::
@@ -22676,6 +23864,8 @@ class stackpoolItem.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_mu : ∀ (x : stackpoolItem) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet stackpoolItem.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : stackpoolItem)))
   get_span : ∀ (x : stackpoolItem), go.IsGoStepPureDetTagged under (StructFieldGet stackpoolItem.underlying go!"span") #x (Val #(x.span'))
   set_span : ∀ (x : stackpoolItem) (y : mSpanList), go.IsGoStepPureDetTagged under (StructFieldSet stackpoolItem.underlying go!"span") (PairV #x #y) (Val #(({ x with span' := y } : stackpoolItem)))
+  method_set : go.MethodSetIs stackpoolItem.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stackpoolItem.ty) []
 
 attribute [instance] stackpoolItem.TypeAssumptions.type_repr
   stackpoolItem.TypeAssumptions.underlying
@@ -22686,6 +23876,8 @@ attribute [instance] stackpoolItem.TypeAssumptions.type_repr
   stackpoolItem.TypeAssumptions.set_mu
   stackpoolItem.TypeAssumptions.get_span
   stackpoolItem.TypeAssumptions.set_span
+  stackpoolItem.TypeAssumptions.method_set
+  stackpoolItem.TypeAssumptions.ptr_method_set
 
 structure adjustinfo [FfiSyntax] where
   mk ::
@@ -22721,6 +23913,8 @@ class adjustinfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_delta : ∀ (x : adjustinfo) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet adjustinfo.underlying go!"delta") (PairV #x #y) (Val #(({ x with delta' := y } : adjustinfo)))
   get_sghi : ∀ (x : adjustinfo), go.IsGoStepPureDetTagged under (StructFieldGet adjustinfo.underlying go!"sghi") #x (Val #(x.sghi'))
   set_sghi : ∀ (x : adjustinfo) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet adjustinfo.underlying go!"sghi") (PairV #x #y) (Val #(({ x with sghi' := y } : adjustinfo)))
+  method_set : go.MethodSetIs adjustinfo.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType adjustinfo.ty) []
 
 attribute [instance] adjustinfo.TypeAssumptions.type_repr
   adjustinfo.TypeAssumptions.underlying
@@ -22731,6 +23925,8 @@ attribute [instance] adjustinfo.TypeAssumptions.type_repr
   adjustinfo.TypeAssumptions.set_delta
   adjustinfo.TypeAssumptions.get_sghi
   adjustinfo.TypeAssumptions.set_sghi
+  adjustinfo.TypeAssumptions.method_set
+  adjustinfo.TypeAssumptions.ptr_method_set
 
 structure stackObjectRecord [FfiSyntax] where
   mk ::
@@ -22770,6 +23966,8 @@ class stackObjectRecord.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCo
   set_ptrBytes : ∀ (x : stackObjectRecord) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet stackObjectRecord.underlying go!"ptrBytes") (PairV #x #y) (Val #(({ x with ptrBytes' := y } : stackObjectRecord)))
   get_gcdataoff : ∀ (x : stackObjectRecord), go.IsGoStepPureDetTagged under (StructFieldGet stackObjectRecord.underlying go!"gcdataoff") #x (Val #(x.gcdataoff'))
   set_gcdataoff : ∀ (x : stackObjectRecord) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet stackObjectRecord.underlying go!"gcdataoff") (PairV #x #y) (Val #(({ x with gcdataoff' := y } : stackObjectRecord)))
+  method_set : go.MethodSetIs stackObjectRecord.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stackObjectRecord.ty) [(go!"runtime.gcdata", (some (go.signature.Signature [] false [go.uintptr, (go.GoType.PointerType go.byte)])))]
 
 attribute [instance] stackObjectRecord.TypeAssumptions.type_repr
   stackObjectRecord.TypeAssumptions.underlying
@@ -22782,6 +23980,8 @@ attribute [instance] stackObjectRecord.TypeAssumptions.type_repr
   stackObjectRecord.TypeAssumptions.set_ptrBytes
   stackObjectRecord.TypeAssumptions.get_gcdataoff
   stackObjectRecord.TypeAssumptions.set_gcdataoff
+  stackObjectRecord.TypeAssumptions.method_set
+  stackObjectRecord.TypeAssumptions.ptr_method_set
 
 structure funcInfo [FfiSyntax] where
   mk ::
@@ -22813,6 +24013,8 @@ class funcInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set__func : ∀ (x : funcInfo) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet funcInfo.underlying go!"_func") (PairV #x #y) (Val #(({ x with _func' := y } : funcInfo)))
   get_datap : ∀ (x : funcInfo), go.IsGoStepPureDetTagged under (StructFieldGet funcInfo.underlying go!"datap") #x (Val #(x.datap'))
   set_datap : ∀ (x : funcInfo) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet funcInfo.underlying go!"datap") (PairV #x #y) (Val #(({ x with datap' := y } : funcInfo)))
+  method_set : go.MethodSetIs funcInfo.ty [(go!"runtime._Func", (some (go.signature.Signature [] false [(go.GoType.PointerType Func.ty)]))), (go!"runtime.entry", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.funcInfo", (some (go.signature.Signature [] false [funcInfo.ty]))), (go!"runtime.isInlined", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.srcFunc", (some (go.signature.Signature [] false [srcFunc.ty]))), (go!"runtime.valid", (some (go.signature.Signature [] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType funcInfo.ty) [(go!"runtime._Func", (some (go.signature.Signature [] false [(go.GoType.PointerType Func.ty)]))), (go!"runtime.entry", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.funcInfo", (some (go.signature.Signature [] false [funcInfo.ty]))), (go!"runtime.isInlined", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.srcFunc", (some (go.signature.Signature [] false [srcFunc.ty]))), (go!"runtime.valid", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] funcInfo.TypeAssumptions.type_repr
   funcInfo.TypeAssumptions.underlying
@@ -22821,6 +24023,8 @@ attribute [instance] funcInfo.TypeAssumptions.type_repr
   funcInfo.TypeAssumptions.set__func
   funcInfo.TypeAssumptions.get_datap
   funcInfo.TypeAssumptions.set_datap
+  funcInfo.TypeAssumptions.method_set
+  funcInfo.TypeAssumptions.ptr_method_set
 
 structure stkframe [FfiSyntax] where
   mk ::
@@ -22876,6 +24080,8 @@ class stkframe.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_varp : ∀ (x : stkframe) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet stkframe.underlying go!"varp") (PairV #x #y) (Val #(({ x with varp' := y } : stkframe)))
   get_argp : ∀ (x : stkframe), go.IsGoStepPureDetTagged under (StructFieldGet stkframe.underlying go!"argp") #x (Val #(x.argp'))
   set_argp : ∀ (x : stkframe) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet stkframe.underlying go!"argp") (PairV #x #y) (Val #(({ x with argp' := y } : stkframe)))
+  method_set : go.MethodSetIs stkframe.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stkframe.ty) [(go!"runtime.argBytes", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.argMapInternal", (some (go.signature.Signature [] false [bitvector.ty, go.bool]))), (go!"runtime.getStackMap", (some (go.signature.Signature [go.bool] false [bitvector.ty, bitvector.ty, (go.GoType.SliceType stackObjectRecord.ty)])))]
 
 attribute [instance] stkframe.TypeAssumptions.type_repr
   stkframe.TypeAssumptions.underlying
@@ -22896,6 +24102,8 @@ attribute [instance] stkframe.TypeAssumptions.type_repr
   stkframe.TypeAssumptions.set_varp
   stkframe.TypeAssumptions.get_argp
   stkframe.TypeAssumptions.set_argp
+  stkframe.TypeAssumptions.method_set
+  stkframe.TypeAssumptions.ptr_method_set
 
 structure reflectMethodValue [FfiSyntax] where
   mk ::
@@ -22931,6 +24139,8 @@ class reflectMethodValue.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   set_stack : ∀ (x : reflectMethodValue) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet reflectMethodValue.underlying go!"stack") (PairV #x #y) (Val #(({ x with stack' := y } : reflectMethodValue)))
   get_argLen : ∀ (x : reflectMethodValue), go.IsGoStepPureDetTagged under (StructFieldGet reflectMethodValue.underlying go!"argLen") #x (Val #(x.argLen'))
   set_argLen : ∀ (x : reflectMethodValue) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet reflectMethodValue.underlying go!"argLen") (PairV #x #y) (Val #(({ x with argLen' := y } : reflectMethodValue)))
+  method_set : go.MethodSetIs reflectMethodValue.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType reflectMethodValue.ty) []
 
 attribute [instance] reflectMethodValue.TypeAssumptions.type_repr
   reflectMethodValue.TypeAssumptions.underlying
@@ -22941,6 +24151,8 @@ attribute [instance] reflectMethodValue.TypeAssumptions.type_repr
   reflectMethodValue.TypeAssumptions.set_stack
   reflectMethodValue.TypeAssumptions.get_argLen
   reflectMethodValue.TypeAssumptions.set_argLen
+  reflectMethodValue.TypeAssumptions.method_set
+  reflectMethodValue.TypeAssumptions.ptr_method_set
 
 abbrev tmpBuf [FfiSyntax] : Type := (GoArray w8 32)
 
@@ -22949,8 +24161,12 @@ abbrev tmpBuf [FfiSyntax] : Type := (GoArray w8 32)
 
 class tmpBuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq tmpBuf.ty tmpBuf.underlying
+  method_set : go.MethodSetIs tmpBuf.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType tmpBuf.ty) []
 
 attribute [instance] tmpBuf.TypeAssumptions.underlying
+  tmpBuf.TypeAssumptions.method_set
+  tmpBuf.TypeAssumptions.ptr_method_set
 
 structure stringStruct [FfiSyntax] where
   mk ::
@@ -22982,6 +24198,8 @@ class stringStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   set_str : ∀ (x : stringStruct) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet stringStruct.underlying go!"str") (PairV #x #y) (Val #(({ x with str' := y } : stringStruct)))
   get_len : ∀ (x : stringStruct), go.IsGoStepPureDetTagged under (StructFieldGet stringStruct.underlying go!"len") #x (Val #(x.len'))
   set_len : ∀ (x : stringStruct) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet stringStruct.underlying go!"len") (PairV #x #y) (Val #(({ x with len' := y } : stringStruct)))
+  method_set : go.MethodSetIs stringStruct.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stringStruct.ty) []
 
 attribute [instance] stringStruct.TypeAssumptions.type_repr
   stringStruct.TypeAssumptions.underlying
@@ -22990,6 +24208,8 @@ attribute [instance] stringStruct.TypeAssumptions.type_repr
   stringStruct.TypeAssumptions.set_str
   stringStruct.TypeAssumptions.get_len
   stringStruct.TypeAssumptions.set_len
+  stringStruct.TypeAssumptions.method_set
+  stringStruct.TypeAssumptions.ptr_method_set
 
 structure stringStructDWARF [FfiSyntax] where
   mk ::
@@ -23021,6 +24241,8 @@ class stringStructDWARF.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCo
   set_str : ∀ (x : stringStructDWARF) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet stringStructDWARF.underlying go!"str") (PairV #x #y) (Val #(({ x with str' := y } : stringStructDWARF)))
   get_len : ∀ (x : stringStructDWARF), go.IsGoStepPureDetTagged under (StructFieldGet stringStructDWARF.underlying go!"len") #x (Val #(x.len'))
   set_len : ∀ (x : stringStructDWARF) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet stringStructDWARF.underlying go!"len") (PairV #x #y) (Val #(({ x with len' := y } : stringStructDWARF)))
+  method_set : go.MethodSetIs stringStructDWARF.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stringStructDWARF.ty) []
 
 attribute [instance] stringStructDWARF.TypeAssumptions.type_repr
   stringStructDWARF.TypeAssumptions.underlying
@@ -23029,6 +24251,8 @@ attribute [instance] stringStructDWARF.TypeAssumptions.type_repr
   stringStructDWARF.TypeAssumptions.set_str
   stringStructDWARF.TypeAssumptions.get_len
   stringStructDWARF.TypeAssumptions.set_len
+  stringStructDWARF.TypeAssumptions.method_set
+  stringStructDWARF.TypeAssumptions.ptr_method_set
 
 structure neverCallThisFunction [FfiSyntax] where
   mk ::
@@ -23053,10 +24277,14 @@ class neverCallThisFunction.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLoc
   type_repr : go.TypeReprUnderlying neverCallThisFunction.underlying neverCallThisFunction
   underlying : go.UnderlyingDirectedEq neverCallThisFunction.ty neverCallThisFunction.underlying
   layout : go.StructLayout neverCallThisFunction []
+  method_set : go.MethodSetIs neverCallThisFunction.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType neverCallThisFunction.ty) []
 
 attribute [instance] neverCallThisFunction.TypeAssumptions.type_repr
   neverCallThisFunction.TypeAssumptions.underlying
   neverCallThisFunction.TypeAssumptions.layout
+  neverCallThisFunction.TypeAssumptions.method_set
+  neverCallThisFunction.TypeAssumptions.ptr_method_set
 
 structure Frame [FfiSyntax] where
   mk ::
@@ -23112,6 +24340,8 @@ class Frame.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   set_Entry : ∀ (x : Frame) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Frame.underlying go!"Entry") (PairV #x #y) (Val #(({ x with Entry' := y } : Frame)))
   get_funcInfo : ∀ (x : Frame), go.IsGoStepPureDetTagged under (StructFieldGet Frame.underlying go!"funcInfo") #x (Val #(x.funcInfo'))
   set_funcInfo : ∀ (x : Frame) (y : funcInfo), go.IsGoStepPureDetTagged under (StructFieldSet Frame.underlying go!"funcInfo") (PairV #x #y) (Val #(({ x with funcInfo' := y } : Frame)))
+  method_set : go.MethodSetIs Frame.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Frame.ty) []
 
 attribute [instance] Frame.TypeAssumptions.type_repr
   Frame.TypeAssumptions.underlying
@@ -23132,6 +24362,8 @@ attribute [instance] Frame.TypeAssumptions.type_repr
   Frame.TypeAssumptions.set_Entry
   Frame.TypeAssumptions.get_funcInfo
   Frame.TypeAssumptions.set_funcInfo
+  Frame.TypeAssumptions.method_set
+  Frame.TypeAssumptions.ptr_method_set
 
 structure Frames [FfiSyntax] where
   mk ::
@@ -23171,6 +24403,8 @@ class Frames.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_frames : ∀ (x : Frames) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Frames.underlying go!"frames") (PairV #x #y) (Val #(({ x with frames' := y } : Frames)))
   get_frameStore : ∀ (x : Frames), go.IsGoStepPureDetTagged under (StructFieldGet Frames.underlying go!"frameStore") #x (Val #(x.frameStore'))
   set_frameStore : ∀ (x : Frames) (y : (GoArray Frame 2)), go.IsGoStepPureDetTagged under (StructFieldSet Frames.underlying go!"frameStore") (PairV #x #y) (Val #(({ x with frameStore' := y } : Frames)))
+  method_set : go.MethodSetIs Frames.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Frames.ty) [(go!"Next", (some (go.signature.Signature [] false [Frame.ty, go.bool])))]
 
 attribute [instance] Frames.TypeAssumptions.type_repr
   Frames.TypeAssumptions.underlying
@@ -23183,6 +24417,8 @@ attribute [instance] Frames.TypeAssumptions.type_repr
   Frames.TypeAssumptions.set_frames
   Frames.TypeAssumptions.get_frameStore
   Frames.TypeAssumptions.set_frameStore
+  Frames.TypeAssumptions.method_set
+  Frames.TypeAssumptions.ptr_method_set
 
 structure Func [FfiSyntax] where
   mk ::
@@ -23210,12 +24446,16 @@ class Func.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   layout : go.StructLayout Func [(go!"opaque", typeSize Unit, typeAlign Unit)]
   get_opaque : ∀ (x : Func), go.IsGoStepPureDetTagged under (StructFieldGet Func.underlying go!"opaque") #x (Val #(x.opaque'))
   set_opaque : ∀ (x : Func) (y : Unit), go.IsGoStepPureDetTagged under (StructFieldSet Func.underlying go!"opaque") (PairV #x #y) (Val #(({ x with opaque' := y } : Func)))
+  method_set : go.MethodSetIs Func.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Func.ty) [(go!"Entry", (some (go.signature.Signature [] false [go.uintptr]))), (go!"FileLine", (some (go.signature.Signature [go.uintptr] false [go.string, go.int]))), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"runtime.funcInfo", (some (go.signature.Signature [] false [funcInfo.ty]))), (go!"runtime.raw", (some (go.signature.Signature [] false [(go.GoType.PointerType _func.ty)]))), (go!"runtime.startLine", (some (go.signature.Signature [] false [go.int32])))]
 
 attribute [instance] Func.TypeAssumptions.type_repr
   Func.TypeAssumptions.underlying
   Func.TypeAssumptions.layout
   Func.TypeAssumptions.get_opaque
   Func.TypeAssumptions.set_opaque
+  Func.TypeAssumptions.method_set
+  Func.TypeAssumptions.ptr_method_set
 
 axiom pcHeader : Type
 axiom pcHeader.zero_val : ZeroVal pcHeader
@@ -23225,10 +24465,14 @@ class pcHeader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying pcHeader.underlying pcHeader
   underlying : go.UnderlyingDirectedEq pcHeader.ty pcHeader.underlying
   isUnderlying : go.IsUnderlying pcHeader.underlying pcHeader.underlying
+  method_set : go.MethodSetIs pcHeader.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pcHeader.ty) []
 
 attribute [instance] pcHeader.TypeAssumptions.type_repr
   pcHeader.TypeAssumptions.underlying
   pcHeader.TypeAssumptions.isUnderlying
+  pcHeader.TypeAssumptions.method_set
+  pcHeader.TypeAssumptions.ptr_method_set
 
 axiom moduledata : Type
 axiom moduledata.zero_val : ZeroVal moduledata
@@ -23238,10 +24482,14 @@ class moduledata.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   type_repr : go.TypeReprUnderlying moduledata.underlying moduledata
   underlying : go.UnderlyingDirectedEq moduledata.ty moduledata.underlying
   isUnderlying : go.IsUnderlying moduledata.underlying moduledata.underlying
+  method_set : go.MethodSetIs moduledata.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType moduledata.ty) [(go!"runtime.funcName", (some (go.signature.Signature [go.int32] false [go.string]))), (go!"runtime.textAddr", (some (go.signature.Signature [go.uint32] false [go.uintptr]))), (go!"runtime.textOff", (some (go.signature.Signature [go.uintptr] false [go.uint32, go.bool])))]
 
 attribute [instance] moduledata.TypeAssumptions.type_repr
   moduledata.TypeAssumptions.underlying
   moduledata.TypeAssumptions.isUnderlying
+  moduledata.TypeAssumptions.method_set
+  moduledata.TypeAssumptions.ptr_method_set
 
 structure modulehash [FfiSyntax] where
   mk ::
@@ -23277,6 +24525,8 @@ class modulehash.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_linktimehash : ∀ (x : modulehash) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet modulehash.underlying go!"linktimehash") (PairV #x #y) (Val #(({ x with linktimehash' := y } : modulehash)))
   get_runtimehash : ∀ (x : modulehash), go.IsGoStepPureDetTagged under (StructFieldGet modulehash.underlying go!"runtimehash") #x (Val #(x.runtimehash'))
   set_runtimehash : ∀ (x : modulehash) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet modulehash.underlying go!"runtimehash") (PairV #x #y) (Val #(({ x with runtimehash' := y } : modulehash)))
+  method_set : go.MethodSetIs modulehash.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType modulehash.ty) []
 
 attribute [instance] modulehash.TypeAssumptions.type_repr
   modulehash.TypeAssumptions.underlying
@@ -23287,6 +24537,8 @@ attribute [instance] modulehash.TypeAssumptions.type_repr
   modulehash.TypeAssumptions.set_linktimehash
   modulehash.TypeAssumptions.get_runtimehash
   modulehash.TypeAssumptions.set_runtimehash
+  modulehash.TypeAssumptions.method_set
+  modulehash.TypeAssumptions.ptr_method_set
 
 structure functab [FfiSyntax] where
   mk ::
@@ -23318,6 +24570,8 @@ class functab.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_entryoff : ∀ (x : functab) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet functab.underlying go!"entryoff") (PairV #x #y) (Val #(({ x with entryoff' := y } : functab)))
   get_funcoff : ∀ (x : functab), go.IsGoStepPureDetTagged under (StructFieldGet functab.underlying go!"funcoff") #x (Val #(x.funcoff'))
   set_funcoff : ∀ (x : functab) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet functab.underlying go!"funcoff") (PairV #x #y) (Val #(({ x with funcoff' := y } : functab)))
+  method_set : go.MethodSetIs functab.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType functab.ty) []
 
 attribute [instance] functab.TypeAssumptions.type_repr
   functab.TypeAssumptions.underlying
@@ -23326,6 +24580,8 @@ attribute [instance] functab.TypeAssumptions.type_repr
   functab.TypeAssumptions.set_entryoff
   functab.TypeAssumptions.get_funcoff
   functab.TypeAssumptions.set_funcoff
+  functab.TypeAssumptions.method_set
+  functab.TypeAssumptions.ptr_method_set
 
 structure textsect [FfiSyntax] where
   mk ::
@@ -23361,6 +24617,8 @@ class textsect.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_end : ∀ (x : textsect) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet textsect.underlying go!"end") (PairV #x #y) (Val #(({ x with end' := y } : textsect)))
   get_baseaddr : ∀ (x : textsect), go.IsGoStepPureDetTagged under (StructFieldGet textsect.underlying go!"baseaddr") #x (Val #(x.baseaddr'))
   set_baseaddr : ∀ (x : textsect) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet textsect.underlying go!"baseaddr") (PairV #x #y) (Val #(({ x with baseaddr' := y } : textsect)))
+  method_set : go.MethodSetIs textsect.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType textsect.ty) []
 
 attribute [instance] textsect.TypeAssumptions.type_repr
   textsect.TypeAssumptions.underlying
@@ -23371,6 +24629,8 @@ attribute [instance] textsect.TypeAssumptions.type_repr
   textsect.TypeAssumptions.set_end
   textsect.TypeAssumptions.get_baseaddr
   textsect.TypeAssumptions.set_baseaddr
+  textsect.TypeAssumptions.method_set
+  textsect.TypeAssumptions.ptr_method_set
 
 structure findfuncbucket [FfiSyntax] where
   mk ::
@@ -23402,6 +24662,8 @@ class findfuncbucket.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_idx : ∀ (x : findfuncbucket) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet findfuncbucket.underlying go!"idx") (PairV #x #y) (Val #(({ x with idx' := y } : findfuncbucket)))
   get_subbuckets : ∀ (x : findfuncbucket), go.IsGoStepPureDetTagged under (StructFieldGet findfuncbucket.underlying go!"subbuckets") #x (Val #(x.subbuckets'))
   set_subbuckets : ∀ (x : findfuncbucket) (y : (GoArray w8 16)), go.IsGoStepPureDetTagged under (StructFieldSet findfuncbucket.underlying go!"subbuckets") (PairV #x #y) (Val #(({ x with subbuckets' := y } : findfuncbucket)))
+  method_set : go.MethodSetIs findfuncbucket.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType findfuncbucket.ty) []
 
 attribute [instance] findfuncbucket.TypeAssumptions.type_repr
   findfuncbucket.TypeAssumptions.underlying
@@ -23410,6 +24672,8 @@ attribute [instance] findfuncbucket.TypeAssumptions.type_repr
   findfuncbucket.TypeAssumptions.set_idx
   findfuncbucket.TypeAssumptions.get_subbuckets
   findfuncbucket.TypeAssumptions.set_subbuckets
+  findfuncbucket.TypeAssumptions.method_set
+  findfuncbucket.TypeAssumptions.ptr_method_set
 
 axiom srcFunc : Type
 axiom srcFunc.zero_val : ZeroVal srcFunc
@@ -23419,10 +24683,14 @@ class srcFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying srcFunc.underlying srcFunc
   underlying : go.UnderlyingDirectedEq srcFunc.ty srcFunc.underlying
   isUnderlying : go.IsUnderlying srcFunc.underlying srcFunc.underlying
+  method_set : go.MethodSetIs srcFunc.ty [(go!"runtime.name", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType srcFunc.ty) [(go!"runtime.name", (some (go.signature.Signature [] false [go.string])))]
 
 attribute [instance] srcFunc.TypeAssumptions.type_repr
   srcFunc.TypeAssumptions.underlying
   srcFunc.TypeAssumptions.isUnderlying
+  srcFunc.TypeAssumptions.method_set
+  srcFunc.TypeAssumptions.ptr_method_set
 
 structure pcvalueCacheEnt [FfiSyntax] where
   mk ::
@@ -23462,6 +24730,8 @@ class pcvalueCacheEnt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
   set_val : ∀ (x : pcvalueCacheEnt) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet pcvalueCacheEnt.underlying go!"val") (PairV #x #y) (Val #(({ x with val' := y } : pcvalueCacheEnt)))
   get_valPC : ∀ (x : pcvalueCacheEnt), go.IsGoStepPureDetTagged under (StructFieldGet pcvalueCacheEnt.underlying go!"valPC") #x (Val #(x.valPC'))
   set_valPC : ∀ (x : pcvalueCacheEnt) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pcvalueCacheEnt.underlying go!"valPC") (PairV #x #y) (Val #(({ x with valPC' := y } : pcvalueCacheEnt)))
+  method_set : go.MethodSetIs pcvalueCacheEnt.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pcvalueCacheEnt.ty) []
 
 attribute [instance] pcvalueCacheEnt.TypeAssumptions.type_repr
   pcvalueCacheEnt.TypeAssumptions.underlying
@@ -23474,6 +24744,8 @@ attribute [instance] pcvalueCacheEnt.TypeAssumptions.type_repr
   pcvalueCacheEnt.TypeAssumptions.set_val
   pcvalueCacheEnt.TypeAssumptions.get_valPC
   pcvalueCacheEnt.TypeAssumptions.set_valPC
+  pcvalueCacheEnt.TypeAssumptions.method_set
+  pcvalueCacheEnt.TypeAssumptions.ptr_method_set
 
 structure pcvalueCache [FfiSyntax] where
   mk ::
@@ -23505,6 +24777,8 @@ class pcvalueCache.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   set_entries : ∀ (x : pcvalueCache) (y : (GoArray (GoArray pcvalueCacheEnt 8) 2)), go.IsGoStepPureDetTagged under (StructFieldSet pcvalueCache.underlying go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : pcvalueCache)))
   get_inUse : ∀ (x : pcvalueCache), go.IsGoStepPureDetTagged under (StructFieldGet pcvalueCache.underlying go!"inUse") #x (Val #(x.inUse'))
   set_inUse : ∀ (x : pcvalueCache) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pcvalueCache.underlying go!"inUse") (PairV #x #y) (Val #(({ x with inUse' := y } : pcvalueCache)))
+  method_set : go.MethodSetIs pcvalueCache.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pcvalueCache.ty) []
 
 attribute [instance] pcvalueCache.TypeAssumptions.type_repr
   pcvalueCache.TypeAssumptions.underlying
@@ -23513,6 +24787,8 @@ attribute [instance] pcvalueCache.TypeAssumptions.type_repr
   pcvalueCache.TypeAssumptions.set_entries
   pcvalueCache.TypeAssumptions.get_inUse
   pcvalueCache.TypeAssumptions.set_inUse
+  pcvalueCache.TypeAssumptions.method_set
+  pcvalueCache.TypeAssumptions.ptr_method_set
 
 structure stackmap [FfiSyntax] where
   mk ::
@@ -23548,6 +24824,8 @@ class stackmap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_nbit : ∀ (x : stackmap) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet stackmap.underlying go!"nbit") (PairV #x #y) (Val #(({ x with nbit' := y } : stackmap)))
   get_bytedata : ∀ (x : stackmap), go.IsGoStepPureDetTagged under (StructFieldGet stackmap.underlying go!"bytedata") #x (Val #(x.bytedata'))
   set_bytedata : ∀ (x : stackmap) (y : (GoArray w8 1)), go.IsGoStepPureDetTagged under (StructFieldSet stackmap.underlying go!"bytedata") (PairV #x #y) (Val #(({ x with bytedata' := y } : stackmap)))
+  method_set : go.MethodSetIs stackmap.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stackmap.ty) []
 
 attribute [instance] stackmap.TypeAssumptions.type_repr
   stackmap.TypeAssumptions.underlying
@@ -23558,6 +24836,8 @@ attribute [instance] stackmap.TypeAssumptions.type_repr
   stackmap.TypeAssumptions.set_nbit
   stackmap.TypeAssumptions.get_bytedata
   stackmap.TypeAssumptions.set_bytedata
+  stackmap.TypeAssumptions.method_set
+  stackmap.TypeAssumptions.ptr_method_set
 
 axiom inlinedCall : Type
 axiom inlinedCall.zero_val : ZeroVal inlinedCall
@@ -23567,10 +24847,14 @@ class inlinedCall.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   type_repr : go.TypeReprUnderlying inlinedCall.underlying inlinedCall
   underlying : go.UnderlyingDirectedEq inlinedCall.ty inlinedCall.underlying
   isUnderlying : go.IsUnderlying inlinedCall.underlying inlinedCall.underlying
+  method_set : go.MethodSetIs inlinedCall.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType inlinedCall.ty) []
 
 attribute [instance] inlinedCall.TypeAssumptions.type_repr
   inlinedCall.TypeAssumptions.underlying
   inlinedCall.TypeAssumptions.isUnderlying
+  inlinedCall.TypeAssumptions.method_set
+  inlinedCall.TypeAssumptions.ptr_method_set
 
 structure inlineUnwinder [FfiSyntax] where
   mk ::
@@ -23602,6 +24886,8 @@ class inlineUnwinder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_f : ∀ (x : inlineUnwinder) (y : funcInfo), go.IsGoStepPureDetTagged under (StructFieldSet inlineUnwinder.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : inlineUnwinder)))
   get_inlTree : ∀ (x : inlineUnwinder), go.IsGoStepPureDetTagged under (StructFieldGet inlineUnwinder.underlying go!"inlTree") #x (Val #(x.inlTree'))
   set_inlTree : ∀ (x : inlineUnwinder) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet inlineUnwinder.underlying go!"inlTree") (PairV #x #y) (Val #(({ x with inlTree' := y } : inlineUnwinder)))
+  method_set : go.MethodSetIs inlineUnwinder.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType inlineUnwinder.ty) [(go!"runtime.fileLine", (some (go.signature.Signature [inlineFrame.ty] false [go.string, go.int]))), (go!"runtime.isInlined", (some (go.signature.Signature [inlineFrame.ty] false [go.bool]))), (go!"runtime.next", (some (go.signature.Signature [inlineFrame.ty] false [inlineFrame.ty]))), (go!"runtime.resolveInternal", (some (go.signature.Signature [go.uintptr] false [inlineFrame.ty]))), (go!"runtime.srcFunc", (some (go.signature.Signature [inlineFrame.ty] false [srcFunc.ty])))]
 
 attribute [instance] inlineUnwinder.TypeAssumptions.type_repr
   inlineUnwinder.TypeAssumptions.underlying
@@ -23610,6 +24896,8 @@ attribute [instance] inlineUnwinder.TypeAssumptions.type_repr
   inlineUnwinder.TypeAssumptions.set_f
   inlineUnwinder.TypeAssumptions.get_inlTree
   inlineUnwinder.TypeAssumptions.set_inlTree
+  inlineUnwinder.TypeAssumptions.method_set
+  inlineUnwinder.TypeAssumptions.ptr_method_set
 
 structure inlineFrame [FfiSyntax] where
   mk ::
@@ -23641,6 +24929,8 @@ class inlineFrame.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set_pc : ∀ (x : inlineFrame) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet inlineFrame.underlying go!"pc") (PairV #x #y) (Val #(({ x with pc' := y } : inlineFrame)))
   get_index : ∀ (x : inlineFrame), go.IsGoStepPureDetTagged under (StructFieldGet inlineFrame.underlying go!"index") #x (Val #(x.index'))
   set_index : ∀ (x : inlineFrame) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet inlineFrame.underlying go!"index") (PairV #x #y) (Val #(({ x with index' := y } : inlineFrame)))
+  method_set : go.MethodSetIs inlineFrame.ty [(go!"runtime.valid", (some (go.signature.Signature [] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType inlineFrame.ty) [(go!"runtime.valid", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] inlineFrame.TypeAssumptions.type_repr
   inlineFrame.TypeAssumptions.underlying
@@ -23649,6 +24939,8 @@ attribute [instance] inlineFrame.TypeAssumptions.type_repr
   inlineFrame.TypeAssumptions.set_pc
   inlineFrame.TypeAssumptions.get_index
   inlineFrame.TypeAssumptions.set_index
+  inlineFrame.TypeAssumptions.method_set
+  inlineFrame.TypeAssumptions.ptr_method_set
 
 structure timers [FfiSyntax] where
   mk ::
@@ -23700,6 +24992,8 @@ class timers.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_minWhenHeap : ∀ (x : timers) (y : _root_.Perennial.internal.runtime.atomic.Int64), go.IsGoStepPureDetTagged under (StructFieldSet timers.underlying go!"minWhenHeap") (PairV #x #y) (Val #(({ x with minWhenHeap' := y } : timers)))
   get_minWhenModified : ∀ (x : timers), go.IsGoStepPureDetTagged under (StructFieldGet timers.underlying go!"minWhenModified") #x (Val #(x.minWhenModified'))
   set_minWhenModified : ∀ (x : timers) (y : _root_.Perennial.internal.runtime.atomic.Int64), go.IsGoStepPureDetTagged under (StructFieldSet timers.underlying go!"minWhenModified") (PairV #x #y) (Val #(({ x with minWhenModified' := y } : timers)))
+  method_set : go.MethodSetIs timers.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType timers.ty) [(go!"runtime.addHeap", (some (go.signature.Signature [(go.GoType.PointerType timer.ty)] false []))), (go!"runtime.adjust", (some (go.signature.Signature [go.int64, go.bool] false []))), (go!"runtime.check", (some (go.signature.Signature [go.int64, (go.GoType.PointerType synctestBubble.ty)] false [go.int64, go.int64, go.bool]))), (go!"runtime.cleanHead", (some (go.signature.Signature [] false []))), (go!"runtime.deleteMin", (some (go.signature.Signature [] false []))), (go!"runtime.initHeap", (some (go.signature.Signature [] false []))), (go!"runtime.lock", (some (go.signature.Signature [] false []))), (go!"runtime.run", (some (go.signature.Signature [go.int64, (go.GoType.PointerType synctestBubble.ty)] false [go.int64]))), (go!"runtime.siftDown", (some (go.signature.Signature [go.int] false []))), (go!"runtime.siftUp", (some (go.signature.Signature [go.int] false []))), (go!"runtime.take", (some (go.signature.Signature [(go.GoType.PointerType timers.ty)] false []))), (go!"runtime.trace", (some (go.signature.Signature [go.string] false []))), (go!"runtime.unlock", (some (go.signature.Signature [] false []))), (go!"runtime.updateMinWhenHeap", (some (go.signature.Signature [] false []))), (go!"runtime.updateMinWhenModified", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.verify", (some (go.signature.Signature [] false []))), (go!"runtime.wakeTime", (some (go.signature.Signature [] false [go.int64])))]
 
 attribute [instance] timers.TypeAssumptions.type_repr
   timers.TypeAssumptions.underlying
@@ -23718,6 +25012,8 @@ attribute [instance] timers.TypeAssumptions.type_repr
   timers.TypeAssumptions.set_minWhenHeap
   timers.TypeAssumptions.get_minWhenModified
   timers.TypeAssumptions.set_minWhenModified
+  timers.TypeAssumptions.method_set
+  timers.TypeAssumptions.ptr_method_set
 
 structure synctestBubble [FfiSyntax] where
   mk ::
@@ -23789,6 +25085,8 @@ class synctestBubble.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_running : ∀ (x : synctestBubble) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet synctestBubble.underlying go!"running") (PairV #x #y) (Val #(({ x with running' := y } : synctestBubble)))
   get_active : ∀ (x : synctestBubble), go.IsGoStepPureDetTagged under (StructFieldGet synctestBubble.underlying go!"active") #x (Val #(x.active'))
   set_active : ∀ (x : synctestBubble) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet synctestBubble.underlying go!"active") (PairV #x #y) (Val #(({ x with active' := y } : synctestBubble)))
+  method_set : go.MethodSetIs synctestBubble.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType synctestBubble.ty) [(go!"runtime.changegstatus", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.uint32, go.uint32] false []))), (go!"runtime.decActive", (some (go.signature.Signature [] false []))), (go!"runtime.incActive", (some (go.signature.Signature [] false []))), (go!"runtime.maybeWakeLocked", (some (go.signature.Signature [] false [(go.GoType.PointerType g.ty)]))), (go!"runtime.raceaddr", (some (go.signature.Signature [] false [«unsafe».Pointer])))]
 
 attribute [instance] synctestBubble.TypeAssumptions.type_repr
   synctestBubble.TypeAssumptions.underlying
@@ -23817,6 +25115,8 @@ attribute [instance] synctestBubble.TypeAssumptions.type_repr
   synctestBubble.TypeAssumptions.set_running
   synctestBubble.TypeAssumptions.get_active
   synctestBubble.TypeAssumptions.set_active
+  synctestBubble.TypeAssumptions.method_set
+  synctestBubble.TypeAssumptions.ptr_method_set
 
 structure synctestDeadlockError [FfiSyntax] where
   mk ::
@@ -23848,6 +25148,8 @@ class synctestDeadlockError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLoc
   set_reason : ∀ (x : synctestDeadlockError) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet synctestDeadlockError.underlying go!"reason") (PairV #x #y) (Val #(({ x with reason' := y } : synctestDeadlockError)))
   get_bubble : ∀ (x : synctestDeadlockError), go.IsGoStepPureDetTagged under (StructFieldGet synctestDeadlockError.underlying go!"bubble") #x (Val #(x.bubble'))
   set_bubble : ∀ (x : synctestDeadlockError) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet synctestDeadlockError.underlying go!"bubble") (PairV #x #y) (Val #(({ x with bubble' := y } : synctestDeadlockError)))
+  method_set : go.MethodSetIs synctestDeadlockError.ty [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType synctestDeadlockError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
 
 attribute [instance] synctestDeadlockError.TypeAssumptions.type_repr
   synctestDeadlockError.TypeAssumptions.underlying
@@ -23856,6 +25158,8 @@ attribute [instance] synctestDeadlockError.TypeAssumptions.type_repr
   synctestDeadlockError.TypeAssumptions.set_reason
   synctestDeadlockError.TypeAssumptions.get_bubble
   synctestDeadlockError.TypeAssumptions.set_bubble
+  synctestDeadlockError.TypeAssumptions.method_set
+  synctestDeadlockError.TypeAssumptions.ptr_method_set
 
 structure specialBubble [FfiSyntax] where
   mk ::
@@ -23891,6 +25195,8 @@ class specialBubble.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_special : ∀ (x : specialBubble) (y : special), go.IsGoStepPureDetTagged under (StructFieldSet specialBubble.underlying go!"special") (PairV #x #y) (Val #(({ x with special' := y } : specialBubble)))
   get_bubbleid : ∀ (x : specialBubble), go.IsGoStepPureDetTagged under (StructFieldGet specialBubble.underlying go!"bubbleid") #x (Val #(x.bubbleid'))
   set_bubbleid : ∀ (x : specialBubble) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet specialBubble.underlying go!"bubbleid") (PairV #x #y) (Val #(({ x with bubbleid' := y } : specialBubble)))
+  method_set : go.MethodSetIs specialBubble.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType specialBubble.ty) []
 
 attribute [instance] specialBubble.TypeAssumptions.type_repr
   specialBubble.TypeAssumptions.underlying
@@ -23901,6 +25207,8 @@ attribute [instance] specialBubble.TypeAssumptions.type_repr
   specialBubble.TypeAssumptions.set_special
   specialBubble.TypeAssumptions.get_bubbleid
   specialBubble.TypeAssumptions.set_bubbleid
+  specialBubble.TypeAssumptions.method_set
+  specialBubble.TypeAssumptions.ptr_method_set
 
 abbrev taggedPointer [FfiSyntax] : Type := w64
 
@@ -23909,8 +25217,12 @@ abbrev taggedPointer [FfiSyntax] : Type := w64
 
 class taggedPointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq taggedPointer.ty taggedPointer.underlying
+  method_set : go.MethodSetIs taggedPointer.ty [(go!"runtime.pointer", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"runtime.tag", (some (go.signature.Signature [] false [go.uintptr])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType taggedPointer.ty) [(go!"runtime.pointer", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"runtime.tag", (some (go.signature.Signature [] false [go.uintptr])))]
 
 attribute [instance] taggedPointer.TypeAssumptions.underlying
+  taggedPointer.TypeAssumptions.method_set
+  taggedPointer.TypeAssumptions.ptr_method_set
 
 structure timerWhen [FfiSyntax] where
   mk ::
@@ -23942,6 +25254,8 @@ class timerWhen.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_timer : ∀ (x : timerWhen) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet timerWhen.underlying go!"timer") (PairV #x #y) (Val #(({ x with timer' := y } : timerWhen)))
   get_when : ∀ (x : timerWhen), go.IsGoStepPureDetTagged under (StructFieldGet timerWhen.underlying go!"when") #x (Val #(x.when'))
   set_when : ∀ (x : timerWhen) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet timerWhen.underlying go!"when") (PairV #x #y) (Val #(({ x with when' := y } : timerWhen)))
+  method_set : go.MethodSetIs timerWhen.ty [(go!"runtime.less", (some (go.signature.Signature [timerWhen.ty] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType timerWhen.ty) [(go!"runtime.less", (some (go.signature.Signature [timerWhen.ty] false [go.bool])))]
 
 attribute [instance] timerWhen.TypeAssumptions.type_repr
   timerWhen.TypeAssumptions.underlying
@@ -23950,6 +25264,8 @@ attribute [instance] timerWhen.TypeAssumptions.type_repr
   timerWhen.TypeAssumptions.set_timer
   timerWhen.TypeAssumptions.get_when
   timerWhen.TypeAssumptions.set_when
+  timerWhen.TypeAssumptions.method_set
+  timerWhen.TypeAssumptions.ptr_method_set
 
 structure timeTimer [FfiSyntax] where
   mk ::
@@ -23985,6 +25301,8 @@ class timeTimer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_init : ∀ (x : timeTimer) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet timeTimer.underlying go!"init") (PairV #x #y) (Val #(({ x with init' := y } : timeTimer)))
   get_timer : ∀ (x : timeTimer), go.IsGoStepPureDetTagged under (StructFieldGet timeTimer.underlying go!"timer") #x (Val #(x.timer'))
   set_timer : ∀ (x : timeTimer) (y : timer), go.IsGoStepPureDetTagged under (StructFieldSet timeTimer.underlying go!"timer") (PairV #x #y) (Val #(({ x with timer' := y } : timeTimer)))
+  method_set : go.MethodSetIs timeTimer.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType timeTimer.ty) [(go!"runtime.hchan", (some (go.signature.Signature [] false [(go.GoType.PointerType hchan.ty)]))), (go!"runtime.lock", (some (go.signature.Signature [] false []))), (go!"runtime.maybeAdd", (some (go.signature.Signature [] false []))), (go!"runtime.maybeRunAsync", (some (go.signature.Signature [] false []))), (go!"runtime.maybeRunChan", (some (go.signature.Signature [(go.GoType.PointerType hchan.ty)] false []))), (go!"runtime.modify", (some (go.signature.Signature [go.int64, go.int64, (go.GoType.FunctionType (go.signature.Signature [go.any, go.uintptr, go.int64] false [])), go.any, go.uintptr] false [go.bool]))), (go!"runtime.needsAdd", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.reset", (some (go.signature.Signature [go.int64, go.int64] false [go.bool]))), (go!"runtime.stop", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.trace", (some (go.signature.Signature [go.string] false []))), (go!"runtime.trace1", (some (go.signature.Signature [go.string] false []))), (go!"runtime.unlock", (some (go.signature.Signature [] false []))), (go!"runtime.unlockAndRun", (some (go.signature.Signature [go.int64, (go.GoType.PointerType synctestBubble.ty)] false []))), (go!"runtime.updateHeap", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] timeTimer.TypeAssumptions.type_repr
   timeTimer.TypeAssumptions.underlying
@@ -23995,6 +25313,8 @@ attribute [instance] timeTimer.TypeAssumptions.type_repr
   timeTimer.TypeAssumptions.set_init
   timeTimer.TypeAssumptions.get_timer
   timeTimer.TypeAssumptions.set_timer
+  timeTimer.TypeAssumptions.method_set
+  timeTimer.TypeAssumptions.ptr_method_set
 
 structure traceAdvancerState [FfiSyntax] where
   mk ::
@@ -24026,6 +25346,8 @@ class traceAdvancerState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalC
   set_timer : ∀ (x : traceAdvancerState) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet traceAdvancerState.underlying go!"timer") (PairV #x #y) (Val #(({ x with timer' := y } : traceAdvancerState)))
   get_done : ∀ (x : traceAdvancerState), go.IsGoStepPureDetTagged under (StructFieldGet traceAdvancerState.underlying go!"done") #x (Val #(x.done'))
   set_done : ∀ (x : traceAdvancerState) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet traceAdvancerState.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : traceAdvancerState)))
+  method_set : go.MethodSetIs traceAdvancerState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceAdvancerState.ty) [(go!"runtime.start", (some (go.signature.Signature [] false []))), (go!"runtime.stop", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] traceAdvancerState.TypeAssumptions.type_repr
   traceAdvancerState.TypeAssumptions.underlying
@@ -24034,6 +25356,8 @@ attribute [instance] traceAdvancerState.TypeAssumptions.type_repr
   traceAdvancerState.TypeAssumptions.set_timer
   traceAdvancerState.TypeAssumptions.get_done
   traceAdvancerState.TypeAssumptions.set_done
+  traceAdvancerState.TypeAssumptions.method_set
+  traceAdvancerState.TypeAssumptions.ptr_method_set
 
 structure wakeableSleep [FfiSyntax] where
   mk ::
@@ -24069,6 +25393,8 @@ class wakeableSleep.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_lock : ∀ (x : wakeableSleep) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet wakeableSleep.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : wakeableSleep)))
   get_wakeup : ∀ (x : wakeableSleep), go.IsGoStepPureDetTagged under (StructFieldGet wakeableSleep.underlying go!"wakeup") #x (Val #(x.wakeup'))
   set_wakeup : ∀ (x : wakeableSleep) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet wakeableSleep.underlying go!"wakeup") (PairV #x #y) (Val #(({ x with wakeup' := y } : wakeableSleep)))
+  method_set : go.MethodSetIs wakeableSleep.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType wakeableSleep.ty) [(go!"runtime.close", (some (go.signature.Signature [] false []))), (go!"runtime.sleep", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.wake", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] wakeableSleep.TypeAssumptions.type_repr
   wakeableSleep.TypeAssumptions.underlying
@@ -24079,6 +25405,8 @@ attribute [instance] wakeableSleep.TypeAssumptions.type_repr
   wakeableSleep.TypeAssumptions.set_lock
   wakeableSleep.TypeAssumptions.get_wakeup
   wakeableSleep.TypeAssumptions.set_wakeup
+  wakeableSleep.TypeAssumptions.method_set
+  wakeableSleep.TypeAssumptions.ptr_method_set
 
 abbrev unwindFlags [FfiSyntax] : Type := w8
 
@@ -24087,8 +25415,12 @@ abbrev unwindFlags [FfiSyntax] : Type := w8
 
 class unwindFlags.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq unwindFlags.ty unwindFlags.underlying
+  method_set : go.MethodSetIs unwindFlags.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType unwindFlags.ty) []
 
 attribute [instance] unwindFlags.TypeAssumptions.underlying
+  unwindFlags.TypeAssumptions.method_set
+  unwindFlags.TypeAssumptions.ptr_method_set
 
 axiom unwinder : Type
 axiom unwinder.zero_val : ZeroVal unwinder
@@ -24098,10 +25430,14 @@ class unwinder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying unwinder.underlying unwinder
   underlying : go.UnderlyingDirectedEq unwinder.ty unwinder.underlying
   isUnderlying : go.IsUnderlying unwinder.underlying unwinder.underlying
+  method_set : go.MethodSetIs unwinder.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType unwinder.ty) [(go!"runtime.cgoCallers", (some (go.signature.Signature [(go.GoType.SliceType go.uintptr)] false [go.int]))), (go!"runtime.finishInternal", (some (go.signature.Signature [] false []))), (go!"runtime.init", (some (go.signature.Signature [(go.GoType.PointerType g.ty), unwindFlags.ty] false []))), (go!"runtime.initAt", (some (go.signature.Signature [go.uintptr, go.uintptr, go.uintptr, (go.GoType.PointerType g.ty), unwindFlags.ty] false []))), (go!"runtime.next", (some (go.signature.Signature [] false []))), (go!"runtime.resolveInternal", (some (go.signature.Signature [go.bool, go.bool] false []))), (go!"runtime.symPC", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.valid", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] unwinder.TypeAssumptions.type_repr
   unwinder.TypeAssumptions.underlying
   unwinder.TypeAssumptions.isUnderlying
+  unwinder.TypeAssumptions.method_set
+  unwinder.TypeAssumptions.ptr_method_set
 
 structure cgoTracebackArg [FfiSyntax] where
   mk ::
@@ -24141,6 +25477,8 @@ class cgoTracebackArg.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
   set_buf : ∀ (x : cgoTracebackArg) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet cgoTracebackArg.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : cgoTracebackArg)))
   get_max : ∀ (x : cgoTracebackArg), go.IsGoStepPureDetTagged under (StructFieldGet cgoTracebackArg.underlying go!"max") #x (Val #(x.max'))
   set_max : ∀ (x : cgoTracebackArg) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet cgoTracebackArg.underlying go!"max") (PairV #x #y) (Val #(({ x with max' := y } : cgoTracebackArg)))
+  method_set : go.MethodSetIs cgoTracebackArg.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType cgoTracebackArg.ty) []
 
 attribute [instance] cgoTracebackArg.TypeAssumptions.type_repr
   cgoTracebackArg.TypeAssumptions.underlying
@@ -24153,6 +25491,8 @@ attribute [instance] cgoTracebackArg.TypeAssumptions.type_repr
   cgoTracebackArg.TypeAssumptions.set_buf
   cgoTracebackArg.TypeAssumptions.get_max
   cgoTracebackArg.TypeAssumptions.set_max
+  cgoTracebackArg.TypeAssumptions.method_set
+  cgoTracebackArg.TypeAssumptions.ptr_method_set
 
 structure cgoContextArg [FfiSyntax] where
   mk ::
@@ -24180,12 +25520,16 @@ class cgoContextArg.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   layout : go.StructLayout cgoContextArg [(go!"context", typeSize w64, typeAlign w64)]
   get_context : ∀ (x : cgoContextArg), go.IsGoStepPureDetTagged under (StructFieldGet cgoContextArg.underlying go!"context") #x (Val #(x.context'))
   set_context : ∀ (x : cgoContextArg) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet cgoContextArg.underlying go!"context") (PairV #x #y) (Val #(({ x with context' := y } : cgoContextArg)))
+  method_set : go.MethodSetIs cgoContextArg.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType cgoContextArg.ty) []
 
 attribute [instance] cgoContextArg.TypeAssumptions.type_repr
   cgoContextArg.TypeAssumptions.underlying
   cgoContextArg.TypeAssumptions.layout
   cgoContextArg.TypeAssumptions.get_context
   cgoContextArg.TypeAssumptions.set_context
+  cgoContextArg.TypeAssumptions.method_set
+  cgoContextArg.TypeAssumptions.ptr_method_set
 
 structure cgoSymbolizerArg [FfiSyntax] where
   mk ::
@@ -24237,6 +25581,8 @@ class cgoSymbolizerArg.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
   set_more : ∀ (x : cgoSymbolizerArg) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet cgoSymbolizerArg.underlying go!"more") (PairV #x #y) (Val #(({ x with more' := y } : cgoSymbolizerArg)))
   get_data : ∀ (x : cgoSymbolizerArg), go.IsGoStepPureDetTagged under (StructFieldGet cgoSymbolizerArg.underlying go!"data") #x (Val #(x.data'))
   set_data : ∀ (x : cgoSymbolizerArg) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet cgoSymbolizerArg.underlying go!"data") (PairV #x #y) (Val #(({ x with data' := y } : cgoSymbolizerArg)))
+  method_set : go.MethodSetIs cgoSymbolizerArg.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType cgoSymbolizerArg.ty) []
 
 attribute [instance] cgoSymbolizerArg.TypeAssumptions.type_repr
   cgoSymbolizerArg.TypeAssumptions.underlying
@@ -24255,6 +25601,8 @@ attribute [instance] cgoSymbolizerArg.TypeAssumptions.type_repr
   cgoSymbolizerArg.TypeAssumptions.set_more
   cgoSymbolizerArg.TypeAssumptions.get_data
   cgoSymbolizerArg.TypeAssumptions.set_data
+  cgoSymbolizerArg.TypeAssumptions.method_set
+  cgoSymbolizerArg.TypeAssumptions.ptr_method_set
 
 axiom traceWriter : Type
 axiom traceWriter.zero_val : ZeroVal traceWriter
@@ -24264,10 +25612,14 @@ class traceWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   type_repr : go.TypeReprUnderlying traceWriter.underlying traceWriter
   underlying : go.UnderlyingDirectedEq traceWriter.ty traceWriter.underlying
   isUnderlying : go.IsUnderlying traceWriter.underlying traceWriter.underlying
+  method_set : go.MethodSetIs traceWriter.ty [(go!"GCActive", (some (go.signature.Signature [] false []))), (go!"GCDone", (some (go.signature.Signature [] false []))), (go!"GCMarkAssistDone", (some (go.signature.Signature [] false []))), (go!"GCMarkAssistStart", (some (go.signature.Signature [] false []))), (go!"GCStart", (some (go.signature.Signature [] false []))), (go!"GCSweepDone", (some (go.signature.Signature [] false []))), (go!"GCSweepSpan", (some (go.signature.Signature [go.uintptr] false []))), (go!"GCSweepStart", (some (go.signature.Signature [] false []))), (go!"GoCreate", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.uintptr, go.bool] false []))), (go!"GoCreateSyscall", (some (go.signature.Signature [(go.GoType.PointerType g.ty)] false []))), (go!"GoDestroySyscall", (some (go.signature.Signature [] false []))), (go!"GoEnd", (some (go.signature.Signature [] false []))), (go!"GoPark", (some (go.signature.Signature [traceBlockReason.ty, go.int] false []))), (go!"GoPreempt", (some (go.signature.Signature [] false []))), (go!"GoSched", (some (go.signature.Signature [] false []))), (go!"GoStart", (some (go.signature.Signature [] false []))), (go!"GoStop", (some (go.signature.Signature [traceGoStopReason.ty] false []))), (go!"GoSwitch", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.bool] false []))), (go!"GoSysCall", (some (go.signature.Signature [] false []))), (go!"GoSysExit", (some (go.signature.Signature [go.bool] false []))), (go!"GoUnpark", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.int] false []))), (go!"Gomaxprocs", (some (go.signature.Signature [go.int32] false []))), (go!"GoroutineStackAlloc", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"GoroutineStackExists", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"GoroutineStackFree", (some (go.signature.Signature [go.uintptr] false []))), (go!"HeapAlloc", (some (go.signature.Signature [go.uint64] false []))), (go!"HeapGoal", (some (go.signature.Signature [] false []))), (go!"HeapObjectAlloc", none), (go!"HeapObjectExists", none), (go!"HeapObjectFree", (some (go.signature.Signature [go.uintptr] false []))), (go!"ProcStart", (some (go.signature.Signature [] false []))), (go!"ProcSteal", (some (go.signature.Signature [(go.GoType.PointerType p.ty)] false []))), (go!"ProcStop", (some (go.signature.Signature [(go.GoType.PointerType p.ty)] false []))), (go!"STWDone", (some (go.signature.Signature [] false []))), (go!"STWStart", (some (go.signature.Signature [stwReason.ty] false []))), (go!"SpanAlloc", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"SpanExists", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"SpanFree", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"runtime.available", (some (go.signature.Signature [go.int] false [go.bool]))), (go!"runtime.byte", (some (go.signature.Signature [go.byte] false []))), (go!"runtime.emitUnblockStatus", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.uintptr] false []))), (go!"runtime.end", (some (go.signature.Signature [] false []))), (go!"runtime.ensure", (some (go.signature.Signature [go.int] false [traceWriter.ty, go.bool]))), (go!"runtime.event", none), (go!"runtime.eventWriter", none), (go!"runtime.expWriter", none), (go!"runtime.flush", (some (go.signature.Signature [] false [traceWriter.ty]))), (go!"runtime.ok", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.rawEventWriter", (some (go.signature.Signature [] false [traceEventWriter.ty]))), (go!"runtime.refill", (some (go.signature.Signature [] false [traceWriter.ty]))), (go!"runtime.rtype", none), (go!"runtime.stack", (some (go.signature.Signature [go.int] false [traceArg.ty]))), (go!"runtime.startPC", (some (go.signature.Signature [go.uintptr] false [traceArg.ty]))), (go!"runtime.string", (some (go.signature.Signature [go.string] false [traceArg.ty]))), (go!"runtime.stringData", (some (go.signature.Signature [go.string] false []))), (go!"runtime.uniqueString", (some (go.signature.Signature [go.string] false [traceArg.ty]))), (go!"runtime.varint", (some (go.signature.Signature [go.uint64] false []))), (go!"runtime.varintAt", (some (go.signature.Signature [go.int, go.uint64] false []))), (go!"runtime.varintReserve", (some (go.signature.Signature [] false [go.int]))), (go!"runtime.writeGoStatus", none), (go!"runtime.writeProcStatus", none), (go!"runtime.writeProcStatusForP", (some (go.signature.Signature [(go.GoType.PointerType p.ty), go.bool] false [traceWriter.ty]))), (go!"runtime.writer", (some (go.signature.Signature [] false [traceWriter.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceWriter.ty) [(go!"GCActive", (some (go.signature.Signature [] false []))), (go!"GCDone", (some (go.signature.Signature [] false []))), (go!"GCMarkAssistDone", (some (go.signature.Signature [] false []))), (go!"GCMarkAssistStart", (some (go.signature.Signature [] false []))), (go!"GCStart", (some (go.signature.Signature [] false []))), (go!"GCSweepDone", (some (go.signature.Signature [] false []))), (go!"GCSweepSpan", (some (go.signature.Signature [go.uintptr] false []))), (go!"GCSweepStart", (some (go.signature.Signature [] false []))), (go!"GoCreate", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.uintptr, go.bool] false []))), (go!"GoCreateSyscall", (some (go.signature.Signature [(go.GoType.PointerType g.ty)] false []))), (go!"GoDestroySyscall", (some (go.signature.Signature [] false []))), (go!"GoEnd", (some (go.signature.Signature [] false []))), (go!"GoPark", (some (go.signature.Signature [traceBlockReason.ty, go.int] false []))), (go!"GoPreempt", (some (go.signature.Signature [] false []))), (go!"GoSched", (some (go.signature.Signature [] false []))), (go!"GoStart", (some (go.signature.Signature [] false []))), (go!"GoStop", (some (go.signature.Signature [traceGoStopReason.ty] false []))), (go!"GoSwitch", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.bool] false []))), (go!"GoSysCall", (some (go.signature.Signature [] false []))), (go!"GoSysExit", (some (go.signature.Signature [go.bool] false []))), (go!"GoUnpark", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.int] false []))), (go!"Gomaxprocs", (some (go.signature.Signature [go.int32] false []))), (go!"GoroutineStackAlloc", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"GoroutineStackExists", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"GoroutineStackFree", (some (go.signature.Signature [go.uintptr] false []))), (go!"HeapAlloc", (some (go.signature.Signature [go.uint64] false []))), (go!"HeapGoal", (some (go.signature.Signature [] false []))), (go!"HeapObjectAlloc", none), (go!"HeapObjectExists", none), (go!"HeapObjectFree", (some (go.signature.Signature [go.uintptr] false []))), (go!"ProcStart", (some (go.signature.Signature [] false []))), (go!"ProcSteal", (some (go.signature.Signature [(go.GoType.PointerType p.ty)] false []))), (go!"ProcStop", (some (go.signature.Signature [(go.GoType.PointerType p.ty)] false []))), (go!"STWDone", (some (go.signature.Signature [] false []))), (go!"STWStart", (some (go.signature.Signature [stwReason.ty] false []))), (go!"SpanAlloc", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"SpanExists", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"SpanFree", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"runtime.available", (some (go.signature.Signature [go.int] false [go.bool]))), (go!"runtime.byte", (some (go.signature.Signature [go.byte] false []))), (go!"runtime.emitUnblockStatus", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.uintptr] false []))), (go!"runtime.end", (some (go.signature.Signature [] false []))), (go!"runtime.ensure", (some (go.signature.Signature [go.int] false [traceWriter.ty, go.bool]))), (go!"runtime.event", none), (go!"runtime.eventWriter", none), (go!"runtime.expWriter", none), (go!"runtime.flush", (some (go.signature.Signature [] false [traceWriter.ty]))), (go!"runtime.ok", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.rawEventWriter", (some (go.signature.Signature [] false [traceEventWriter.ty]))), (go!"runtime.refill", (some (go.signature.Signature [] false [traceWriter.ty]))), (go!"runtime.rtype", none), (go!"runtime.stack", (some (go.signature.Signature [go.int] false [traceArg.ty]))), (go!"runtime.startPC", (some (go.signature.Signature [go.uintptr] false [traceArg.ty]))), (go!"runtime.string", (some (go.signature.Signature [go.string] false [traceArg.ty]))), (go!"runtime.stringData", (some (go.signature.Signature [go.string] false []))), (go!"runtime.uniqueString", (some (go.signature.Signature [go.string] false [traceArg.ty]))), (go!"runtime.varint", (some (go.signature.Signature [go.uint64] false []))), (go!"runtime.varintAt", (some (go.signature.Signature [go.int, go.uint64] false []))), (go!"runtime.varintReserve", (some (go.signature.Signature [] false [go.int]))), (go!"runtime.writeGoStatus", none), (go!"runtime.writeProcStatus", none), (go!"runtime.writeProcStatusForP", (some (go.signature.Signature [(go.GoType.PointerType p.ty), go.bool] false [traceWriter.ty]))), (go!"runtime.writer", (some (go.signature.Signature [] false [traceWriter.ty])))]
 
 attribute [instance] traceWriter.TypeAssumptions.type_repr
   traceWriter.TypeAssumptions.underlying
   traceWriter.TypeAssumptions.isUnderlying
+  traceWriter.TypeAssumptions.method_set
+  traceWriter.TypeAssumptions.ptr_method_set
 
 structure traceBufQueue [FfiSyntax] where
   mk ::
@@ -24299,6 +25651,8 @@ class traceBufQueue.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_head : ∀ (x : traceBufQueue) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet traceBufQueue.underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : traceBufQueue)))
   get_tail : ∀ (x : traceBufQueue), go.IsGoStepPureDetTagged under (StructFieldGet traceBufQueue.underlying go!"tail") #x (Val #(x.tail'))
   set_tail : ∀ (x : traceBufQueue) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet traceBufQueue.underlying go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : traceBufQueue)))
+  method_set : go.MethodSetIs traceBufQueue.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceBufQueue.ty) [(go!"runtime.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.pop", (some (go.signature.Signature [] false [(go.GoType.PointerType traceBuf.ty)]))), (go!"runtime.push", (some (go.signature.Signature [(go.GoType.PointerType traceBuf.ty)] false [])))]
 
 attribute [instance] traceBufQueue.TypeAssumptions.type_repr
   traceBufQueue.TypeAssumptions.underlying
@@ -24307,6 +25661,8 @@ attribute [instance] traceBufQueue.TypeAssumptions.type_repr
   traceBufQueue.TypeAssumptions.set_head
   traceBufQueue.TypeAssumptions.get_tail
   traceBufQueue.TypeAssumptions.set_tail
+  traceBufQueue.TypeAssumptions.method_set
+  traceBufQueue.TypeAssumptions.ptr_method_set
 
 abbrev traceTime [FfiSyntax] : Type := w64
 
@@ -24315,8 +25671,12 @@ abbrev traceTime [FfiSyntax] : Type := w64
 
 class traceTime.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq traceTime.ty traceTime.underlying
+  method_set : go.MethodSetIs traceTime.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceTime.ty) []
 
 attribute [instance] traceTime.TypeAssumptions.underlying
+  traceTime.TypeAssumptions.method_set
+  traceTime.TypeAssumptions.ptr_method_set
 
 structure traceBufHeader [FfiSyntax] where
   mk ::
@@ -24356,6 +25716,8 @@ class traceBufHeader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_pos : ∀ (x : traceBufHeader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet traceBufHeader.underlying go!"pos") (PairV #x #y) (Val #(({ x with pos' := y } : traceBufHeader)))
   get_lenPos : ∀ (x : traceBufHeader), go.IsGoStepPureDetTagged under (StructFieldGet traceBufHeader.underlying go!"lenPos") #x (Val #(x.lenPos'))
   set_lenPos : ∀ (x : traceBufHeader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet traceBufHeader.underlying go!"lenPos") (PairV #x #y) (Val #(({ x with lenPos' := y } : traceBufHeader)))
+  method_set : go.MethodSetIs traceBufHeader.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceBufHeader.ty) []
 
 attribute [instance] traceBufHeader.TypeAssumptions.type_repr
   traceBufHeader.TypeAssumptions.underlying
@@ -24368,6 +25730,8 @@ attribute [instance] traceBufHeader.TypeAssumptions.type_repr
   traceBufHeader.TypeAssumptions.set_pos
   traceBufHeader.TypeAssumptions.get_lenPos
   traceBufHeader.TypeAssumptions.set_lenPos
+  traceBufHeader.TypeAssumptions.method_set
+  traceBufHeader.TypeAssumptions.ptr_method_set
 
 structure traceBuf [FfiSyntax] where
   mk ::
@@ -24403,6 +25767,8 @@ class traceBuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_traceBufHeader : ∀ (x : traceBuf) (y : traceBufHeader), go.IsGoStepPureDetTagged under (StructFieldSet traceBuf.underlying go!"traceBufHeader") (PairV #x #y) (Val #(({ x with traceBufHeader' := y } : traceBuf)))
   get_arr : ∀ (x : traceBuf), go.IsGoStepPureDetTagged under (StructFieldGet traceBuf.underlying go!"arr") #x (Val #(x.arr'))
   set_arr : ∀ (x : traceBuf) (y : (GoArray w8 65504)), go.IsGoStepPureDetTagged under (StructFieldSet traceBuf.underlying go!"arr") (PairV #x #y) (Val #(({ x with arr' := y } : traceBuf)))
+  method_set : go.MethodSetIs traceBuf.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceBuf.ty) [(go!"runtime.available", (some (go.signature.Signature [go.int] false [go.bool]))), (go!"runtime.byte", (some (go.signature.Signature [go.byte] false []))), (go!"runtime.stringData", (some (go.signature.Signature [go.string] false []))), (go!"runtime.varint", (some (go.signature.Signature [go.uint64] false []))), (go!"runtime.varintAt", (some (go.signature.Signature [go.int, go.uint64] false []))), (go!"runtime.varintReserve", (some (go.signature.Signature [] false [go.int])))]
 
 attribute [instance] traceBuf.TypeAssumptions.type_repr
   traceBuf.TypeAssumptions.underlying
@@ -24413,6 +25779,8 @@ attribute [instance] traceBuf.TypeAssumptions.type_repr
   traceBuf.TypeAssumptions.set_traceBufHeader
   traceBuf.TypeAssumptions.get_arr
   traceBuf.TypeAssumptions.set_arr
+  traceBuf.TypeAssumptions.method_set
+  traceBuf.TypeAssumptions.ptr_method_set
 
 abbrev traceArg [FfiSyntax] : Type := w64
 
@@ -24421,8 +25789,12 @@ abbrev traceArg [FfiSyntax] : Type := w64
 
 class traceArg.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq traceArg.ty traceArg.underlying
+  method_set : go.MethodSetIs traceArg.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceArg.ty) []
 
 attribute [instance] traceArg.TypeAssumptions.underlying
+  traceArg.TypeAssumptions.method_set
+  traceArg.TypeAssumptions.ptr_method_set
 
 structure traceLocker [FfiSyntax] where
   mk ::
@@ -24454,6 +25826,8 @@ class traceLocker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set_mp : ∀ (x : traceLocker) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet traceLocker.underlying go!"mp") (PairV #x #y) (Val #(({ x with mp' := y } : traceLocker)))
   get_gen : ∀ (x : traceLocker), go.IsGoStepPureDetTagged under (StructFieldGet traceLocker.underlying go!"gen") #x (Val #(x.gen'))
   set_gen : ∀ (x : traceLocker) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet traceLocker.underlying go!"gen") (PairV #x #y) (Val #(({ x with gen' := y } : traceLocker)))
+  method_set : go.MethodSetIs traceLocker.ty [(go!"GCActive", (some (go.signature.Signature [] false []))), (go!"GCDone", (some (go.signature.Signature [] false []))), (go!"GCMarkAssistDone", (some (go.signature.Signature [] false []))), (go!"GCMarkAssistStart", (some (go.signature.Signature [] false []))), (go!"GCStart", (some (go.signature.Signature [] false []))), (go!"GCSweepDone", (some (go.signature.Signature [] false []))), (go!"GCSweepSpan", (some (go.signature.Signature [go.uintptr] false []))), (go!"GCSweepStart", (some (go.signature.Signature [] false []))), (go!"GoCreate", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.uintptr, go.bool] false []))), (go!"GoCreateSyscall", (some (go.signature.Signature [(go.GoType.PointerType g.ty)] false []))), (go!"GoDestroySyscall", (some (go.signature.Signature [] false []))), (go!"GoEnd", (some (go.signature.Signature [] false []))), (go!"GoPark", (some (go.signature.Signature [traceBlockReason.ty, go.int] false []))), (go!"GoPreempt", (some (go.signature.Signature [] false []))), (go!"GoSched", (some (go.signature.Signature [] false []))), (go!"GoStart", (some (go.signature.Signature [] false []))), (go!"GoStop", (some (go.signature.Signature [traceGoStopReason.ty] false []))), (go!"GoSwitch", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.bool] false []))), (go!"GoSysCall", (some (go.signature.Signature [] false []))), (go!"GoSysExit", (some (go.signature.Signature [go.bool] false []))), (go!"GoUnpark", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.int] false []))), (go!"Gomaxprocs", (some (go.signature.Signature [go.int32] false []))), (go!"GoroutineStackAlloc", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"GoroutineStackExists", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"GoroutineStackFree", (some (go.signature.Signature [go.uintptr] false []))), (go!"HeapAlloc", (some (go.signature.Signature [go.uint64] false []))), (go!"HeapGoal", (some (go.signature.Signature [] false []))), (go!"HeapObjectAlloc", none), (go!"HeapObjectExists", none), (go!"HeapObjectFree", (some (go.signature.Signature [go.uintptr] false []))), (go!"ProcStart", (some (go.signature.Signature [] false []))), (go!"ProcSteal", (some (go.signature.Signature [(go.GoType.PointerType p.ty)] false []))), (go!"ProcStop", (some (go.signature.Signature [(go.GoType.PointerType p.ty)] false []))), (go!"STWDone", (some (go.signature.Signature [] false []))), (go!"STWStart", (some (go.signature.Signature [stwReason.ty] false []))), (go!"SpanAlloc", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"SpanExists", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"SpanFree", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"runtime.emitUnblockStatus", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.uintptr] false []))), (go!"runtime.eventWriter", none), (go!"runtime.expWriter", none), (go!"runtime.ok", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.rawEventWriter", (some (go.signature.Signature [] false [traceEventWriter.ty]))), (go!"runtime.rtype", none), (go!"runtime.stack", (some (go.signature.Signature [go.int] false [traceArg.ty]))), (go!"runtime.startPC", (some (go.signature.Signature [go.uintptr] false [traceArg.ty]))), (go!"runtime.string", (some (go.signature.Signature [go.string] false [traceArg.ty]))), (go!"runtime.uniqueString", (some (go.signature.Signature [go.string] false [traceArg.ty]))), (go!"runtime.writer", (some (go.signature.Signature [] false [traceWriter.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceLocker.ty) [(go!"GCActive", (some (go.signature.Signature [] false []))), (go!"GCDone", (some (go.signature.Signature [] false []))), (go!"GCMarkAssistDone", (some (go.signature.Signature [] false []))), (go!"GCMarkAssistStart", (some (go.signature.Signature [] false []))), (go!"GCStart", (some (go.signature.Signature [] false []))), (go!"GCSweepDone", (some (go.signature.Signature [] false []))), (go!"GCSweepSpan", (some (go.signature.Signature [go.uintptr] false []))), (go!"GCSweepStart", (some (go.signature.Signature [] false []))), (go!"GoCreate", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.uintptr, go.bool] false []))), (go!"GoCreateSyscall", (some (go.signature.Signature [(go.GoType.PointerType g.ty)] false []))), (go!"GoDestroySyscall", (some (go.signature.Signature [] false []))), (go!"GoEnd", (some (go.signature.Signature [] false []))), (go!"GoPark", (some (go.signature.Signature [traceBlockReason.ty, go.int] false []))), (go!"GoPreempt", (some (go.signature.Signature [] false []))), (go!"GoSched", (some (go.signature.Signature [] false []))), (go!"GoStart", (some (go.signature.Signature [] false []))), (go!"GoStop", (some (go.signature.Signature [traceGoStopReason.ty] false []))), (go!"GoSwitch", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.bool] false []))), (go!"GoSysCall", (some (go.signature.Signature [] false []))), (go!"GoSysExit", (some (go.signature.Signature [go.bool] false []))), (go!"GoUnpark", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.int] false []))), (go!"Gomaxprocs", (some (go.signature.Signature [go.int32] false []))), (go!"GoroutineStackAlloc", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"GoroutineStackExists", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"GoroutineStackFree", (some (go.signature.Signature [go.uintptr] false []))), (go!"HeapAlloc", (some (go.signature.Signature [go.uint64] false []))), (go!"HeapGoal", (some (go.signature.Signature [] false []))), (go!"HeapObjectAlloc", none), (go!"HeapObjectExists", none), (go!"HeapObjectFree", (some (go.signature.Signature [go.uintptr] false []))), (go!"ProcStart", (some (go.signature.Signature [] false []))), (go!"ProcSteal", (some (go.signature.Signature [(go.GoType.PointerType p.ty)] false []))), (go!"ProcStop", (some (go.signature.Signature [(go.GoType.PointerType p.ty)] false []))), (go!"STWDone", (some (go.signature.Signature [] false []))), (go!"STWStart", (some (go.signature.Signature [stwReason.ty] false []))), (go!"SpanAlloc", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"SpanExists", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"SpanFree", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false []))), (go!"runtime.emitUnblockStatus", (some (go.signature.Signature [(go.GoType.PointerType g.ty), go.uintptr] false []))), (go!"runtime.eventWriter", none), (go!"runtime.expWriter", none), (go!"runtime.ok", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.rawEventWriter", (some (go.signature.Signature [] false [traceEventWriter.ty]))), (go!"runtime.rtype", none), (go!"runtime.stack", (some (go.signature.Signature [go.int] false [traceArg.ty]))), (go!"runtime.startPC", (some (go.signature.Signature [go.uintptr] false [traceArg.ty]))), (go!"runtime.string", (some (go.signature.Signature [go.string] false [traceArg.ty]))), (go!"runtime.uniqueString", (some (go.signature.Signature [go.string] false [traceArg.ty]))), (go!"runtime.writer", (some (go.signature.Signature [] false [traceWriter.ty])))]
 
 attribute [instance] traceLocker.TypeAssumptions.type_repr
   traceLocker.TypeAssumptions.underlying
@@ -24462,6 +25836,8 @@ attribute [instance] traceLocker.TypeAssumptions.type_repr
   traceLocker.TypeAssumptions.set_mp
   traceLocker.TypeAssumptions.get_gen
   traceLocker.TypeAssumptions.set_gen
+  traceLocker.TypeAssumptions.method_set
+  traceLocker.TypeAssumptions.ptr_method_set
 
 structure traceEventWriter [FfiSyntax] where
   mk ::
@@ -24489,12 +25865,16 @@ class traceEventWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
   layout : go.StructLayout traceEventWriter [(go!"tl", typeSize traceLocker, typeAlign traceLocker)]
   get_tl : ∀ (x : traceEventWriter), go.IsGoStepPureDetTagged under (StructFieldGet traceEventWriter.underlying go!"tl") #x (Val #(x.tl'))
   set_tl : ∀ (x : traceEventWriter) (y : traceLocker), go.IsGoStepPureDetTagged under (StructFieldSet traceEventWriter.underlying go!"tl") (PairV #x #y) (Val #(({ x with tl' := y } : traceEventWriter)))
+  method_set : go.MethodSetIs traceEventWriter.ty [(go!"runtime.event", none)]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceEventWriter.ty) [(go!"runtime.event", none)]
 
 attribute [instance] traceEventWriter.TypeAssumptions.type_repr
   traceEventWriter.TypeAssumptions.underlying
   traceEventWriter.TypeAssumptions.layout
   traceEventWriter.TypeAssumptions.get_tl
   traceEventWriter.TypeAssumptions.set_tl
+  traceEventWriter.TypeAssumptions.method_set
+  traceEventWriter.TypeAssumptions.ptr_method_set
 
 axiom traceMap : Type
 axiom traceMap.zero_val : ZeroVal traceMap
@@ -24504,10 +25884,14 @@ class traceMap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying traceMap.underlying traceMap
   underlying : go.UnderlyingDirectedEq traceMap.ty traceMap.underlying
   isUnderlying : go.IsUnderlying traceMap.underlying traceMap.underlying
+  method_set : go.MethodSetIs traceMap.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceMap.ty) [(go!"runtime.newTraceMapNode", (some (go.signature.Signature [«unsafe».Pointer, go.uintptr, go.uintptr, go.uint64] false [(go.GoType.PointerType traceMapNode.ty)]))), (go!"runtime.put", (some (go.signature.Signature [«unsafe».Pointer, go.uintptr] false [go.uint64, go.bool]))), (go!"runtime.reset", (some (go.signature.Signature [] false []))), (go!"runtime.stealID", (some (go.signature.Signature [] false [go.uint64])))]
 
 attribute [instance] traceMap.TypeAssumptions.type_repr
   traceMap.TypeAssumptions.underlying
   traceMap.TypeAssumptions.isUnderlying
+  traceMap.TypeAssumptions.method_set
+  traceMap.TypeAssumptions.ptr_method_set
 
 structure traceMapNode [FfiSyntax] where
   mk ::
@@ -24551,6 +25935,8 @@ class traceMapNode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
   set_id : ∀ (x : traceMapNode) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet traceMapNode.underlying go!"id") (PairV #x #y) (Val #(({ x with id' := y } : traceMapNode)))
   get_data : ∀ (x : traceMapNode), go.IsGoStepPureDetTagged under (StructFieldGet traceMapNode.underlying go!"data") #x (Val #(x.data'))
   set_data : ∀ (x : traceMapNode) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet traceMapNode.underlying go!"data") (PairV #x #y) (Val #(({ x with data' := y } : traceMapNode)))
+  method_set : go.MethodSetIs traceMapNode.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceMapNode.ty) []
 
 attribute [instance] traceMapNode.TypeAssumptions.type_repr
   traceMapNode.TypeAssumptions.underlying
@@ -24565,6 +25951,8 @@ attribute [instance] traceMapNode.TypeAssumptions.type_repr
   traceMapNode.TypeAssumptions.set_id
   traceMapNode.TypeAssumptions.get_data
   traceMapNode.TypeAssumptions.set_data
+  traceMapNode.TypeAssumptions.method_set
+  traceMapNode.TypeAssumptions.ptr_method_set
 
 structure traceRegionAlloc [FfiSyntax] where
   mk ::
@@ -24604,6 +25992,8 @@ class traceRegionAlloc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
   set_current : ∀ (x : traceRegionAlloc) (y : _root_.Perennial.internal.runtime.atomic.UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAlloc.underlying go!"current") (PairV #x #y) (Val #(({ x with current' := y } : traceRegionAlloc)))
   get_full : ∀ (x : traceRegionAlloc), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAlloc.underlying go!"full") #x (Val #(x.full'))
   set_full : ∀ (x : traceRegionAlloc) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAlloc.underlying go!"full") (PairV #x #y) (Val #(({ x with full' := y } : traceRegionAlloc)))
+  method_set : go.MethodSetIs traceRegionAlloc.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceRegionAlloc.ty) [(go!"runtime.alloc", (some (go.signature.Signature [go.uintptr] false [(go.GoType.PointerType notInHeap.ty)]))), (go!"runtime.drop", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] traceRegionAlloc.TypeAssumptions.type_repr
   traceRegionAlloc.TypeAssumptions.underlying
@@ -24616,6 +26006,8 @@ attribute [instance] traceRegionAlloc.TypeAssumptions.type_repr
   traceRegionAlloc.TypeAssumptions.set_current
   traceRegionAlloc.TypeAssumptions.get_full
   traceRegionAlloc.TypeAssumptions.set_full
+  traceRegionAlloc.TypeAssumptions.method_set
+  traceRegionAlloc.TypeAssumptions.ptr_method_set
 
 structure traceRegionAllocBlockHeader [FfiSyntax] where
   mk ::
@@ -24647,6 +26039,8 @@ class traceRegionAllocBlockHeader.TypeAssumptions [FfiSyntax] [GoGlobalContext] 
   set_next : ∀ (x : traceRegionAllocBlockHeader) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAllocBlockHeader.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : traceRegionAllocBlockHeader)))
   get_off : ∀ (x : traceRegionAllocBlockHeader), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAllocBlockHeader.underlying go!"off") #x (Val #(x.off'))
   set_off : ∀ (x : traceRegionAllocBlockHeader) (y : _root_.Perennial.internal.runtime.atomic.Uintptr), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAllocBlockHeader.underlying go!"off") (PairV #x #y) (Val #(({ x with off' := y } : traceRegionAllocBlockHeader)))
+  method_set : go.MethodSetIs traceRegionAllocBlockHeader.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceRegionAllocBlockHeader.ty) []
 
 attribute [instance] traceRegionAllocBlockHeader.TypeAssumptions.type_repr
   traceRegionAllocBlockHeader.TypeAssumptions.underlying
@@ -24655,6 +26049,8 @@ attribute [instance] traceRegionAllocBlockHeader.TypeAssumptions.type_repr
   traceRegionAllocBlockHeader.TypeAssumptions.set_next
   traceRegionAllocBlockHeader.TypeAssumptions.get_off
   traceRegionAllocBlockHeader.TypeAssumptions.set_off
+  traceRegionAllocBlockHeader.TypeAssumptions.method_set
+  traceRegionAllocBlockHeader.TypeAssumptions.ptr_method_set
 
 structure traceRegionAllocBlock [FfiSyntax] where
   mk ::
@@ -24690,6 +26086,8 @@ class traceRegionAllocBlock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLoc
   set_traceRegionAllocBlockHeader : ∀ (x : traceRegionAllocBlock) (y : traceRegionAllocBlockHeader), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAllocBlock.underlying go!"traceRegionAllocBlockHeader") (PairV #x #y) (Val #(({ x with traceRegionAllocBlockHeader' := y } : traceRegionAllocBlock)))
   get_data : ∀ (x : traceRegionAllocBlock), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAllocBlock.underlying go!"data") #x (Val #(x.data'))
   set_data : ∀ (x : traceRegionAllocBlock) (y : (GoArray w8 65520)), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAllocBlock.underlying go!"data") (PairV #x #y) (Val #(({ x with data' := y } : traceRegionAllocBlock)))
+  method_set : go.MethodSetIs traceRegionAllocBlock.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceRegionAllocBlock.ty) []
 
 attribute [instance] traceRegionAllocBlock.TypeAssumptions.type_repr
   traceRegionAllocBlock.TypeAssumptions.underlying
@@ -24700,6 +26098,8 @@ attribute [instance] traceRegionAllocBlock.TypeAssumptions.type_repr
   traceRegionAllocBlock.TypeAssumptions.set_traceRegionAllocBlockHeader
   traceRegionAllocBlock.TypeAssumptions.get_data
   traceRegionAllocBlock.TypeAssumptions.set_data
+  traceRegionAllocBlock.TypeAssumptions.method_set
+  traceRegionAllocBlock.TypeAssumptions.ptr_method_set
 
 structure mTraceState [FfiSyntax] where
   mk ::
@@ -24747,6 +26147,8 @@ class mTraceState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set_entryGen : ∀ (x : mTraceState) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mTraceState.underlying go!"entryGen") (PairV #x #y) (Val #(({ x with entryGen' := y } : mTraceState)))
   get_oldthrowsplit : ∀ (x : mTraceState), go.IsGoStepPureDetTagged under (StructFieldGet mTraceState.underlying go!"oldthrowsplit") #x (Val #(x.oldthrowsplit'))
   set_oldthrowsplit : ∀ (x : mTraceState) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet mTraceState.underlying go!"oldthrowsplit") (PairV #x #y) (Val #(({ x with oldthrowsplit' := y } : mTraceState)))
+  method_set : go.MethodSetIs mTraceState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType mTraceState.ty) []
 
 attribute [instance] mTraceState.TypeAssumptions.type_repr
   mTraceState.TypeAssumptions.underlying
@@ -24763,6 +26165,8 @@ attribute [instance] mTraceState.TypeAssumptions.type_repr
   mTraceState.TypeAssumptions.set_entryGen
   mTraceState.TypeAssumptions.get_oldthrowsplit
   mTraceState.TypeAssumptions.set_oldthrowsplit
+  mTraceState.TypeAssumptions.method_set
+  mTraceState.TypeAssumptions.ptr_method_set
 
 structure pTraceState [FfiSyntax] where
   mk ::
@@ -24810,6 +26214,8 @@ class pTraceState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   set_swept : ∀ (x : pTraceState) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pTraceState.underlying go!"swept") (PairV #x #y) (Val #(({ x with swept' := y } : pTraceState)))
   get_reclaimed : ∀ (x : pTraceState), go.IsGoStepPureDetTagged under (StructFieldGet pTraceState.underlying go!"reclaimed") #x (Val #(x.reclaimed'))
   set_reclaimed : ∀ (x : pTraceState) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pTraceState.underlying go!"reclaimed") (PairV #x #y) (Val #(({ x with reclaimed' := y } : pTraceState)))
+  method_set : go.MethodSetIs pTraceState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType pTraceState.ty) [(go!"runtime.acquireStatus", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.nextSeq", (some (go.signature.Signature [go.uintptr] false [traceArg.ty]))), (go!"runtime.readyNextGen", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.setStatusTraced", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.statusWasTraced", (some (go.signature.Signature [go.uintptr] false [go.bool])))]
 
 attribute [instance] pTraceState.TypeAssumptions.type_repr
   pTraceState.TypeAssumptions.underlying
@@ -24826,6 +26232,8 @@ attribute [instance] pTraceState.TypeAssumptions.type_repr
   pTraceState.TypeAssumptions.set_swept
   pTraceState.TypeAssumptions.get_reclaimed
   pTraceState.TypeAssumptions.set_reclaimed
+  pTraceState.TypeAssumptions.method_set
+  pTraceState.TypeAssumptions.ptr_method_set
 
 abbrev traceBlockReason [FfiSyntax] : Type := w8
 
@@ -24834,8 +26242,12 @@ abbrev traceBlockReason [FfiSyntax] : Type := w8
 
 class traceBlockReason.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq traceBlockReason.ty traceBlockReason.underlying
+  method_set : go.MethodSetIs traceBlockReason.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceBlockReason.ty) []
 
 attribute [instance] traceBlockReason.TypeAssumptions.underlying
+  traceBlockReason.TypeAssumptions.method_set
+  traceBlockReason.TypeAssumptions.ptr_method_set
 
 abbrev traceGoStopReason [FfiSyntax] : Type := w8
 
@@ -24844,8 +26256,12 @@ abbrev traceGoStopReason [FfiSyntax] : Type := w8
 
 class traceGoStopReason.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq traceGoStopReason.ty traceGoStopReason.underlying
+  method_set : go.MethodSetIs traceGoStopReason.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceGoStopReason.ty) []
 
 attribute [instance] traceGoStopReason.TypeAssumptions.underlying
+  traceGoStopReason.TypeAssumptions.method_set
+  traceGoStopReason.TypeAssumptions.ptr_method_set
 
 structure traceStackTable [FfiSyntax] where
   mk ::
@@ -24873,12 +26289,16 @@ class traceStackTable.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCont
   layout : go.StructLayout traceStackTable [(go!"tab", typeSize traceMap, typeAlign traceMap)]
   get_tab : ∀ (x : traceStackTable), go.IsGoStepPureDetTagged under (StructFieldGet traceStackTable.underlying go!"tab") #x (Val #(x.tab'))
   set_tab : ∀ (x : traceStackTable) (y : traceMap), go.IsGoStepPureDetTagged under (StructFieldSet traceStackTable.underlying go!"tab") (PairV #x #y) (Val #(({ x with tab' := y } : traceStackTable)))
+  method_set : go.MethodSetIs traceStackTable.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceStackTable.ty) [(go!"runtime.dump", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.put", (some (go.signature.Signature [(go.GoType.SliceType go.uintptr)] false [go.uint64])))]
 
 attribute [instance] traceStackTable.TypeAssumptions.type_repr
   traceStackTable.TypeAssumptions.underlying
   traceStackTable.TypeAssumptions.layout
   traceStackTable.TypeAssumptions.get_tab
   traceStackTable.TypeAssumptions.set_tab
+  traceStackTable.TypeAssumptions.method_set
+  traceStackTable.TypeAssumptions.ptr_method_set
 
 structure traceFrame [FfiSyntax] where
   mk ::
@@ -24918,6 +26338,8 @@ class traceFrame.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_fileID : ∀ (x : traceFrame) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet traceFrame.underlying go!"fileID") (PairV #x #y) (Val #(({ x with fileID' := y } : traceFrame)))
   get_line : ∀ (x : traceFrame), go.IsGoStepPureDetTagged under (StructFieldGet traceFrame.underlying go!"line") #x (Val #(x.line'))
   set_line : ∀ (x : traceFrame) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet traceFrame.underlying go!"line") (PairV #x #y) (Val #(({ x with line' := y } : traceFrame)))
+  method_set : go.MethodSetIs traceFrame.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceFrame.ty) []
 
 attribute [instance] traceFrame.TypeAssumptions.type_repr
   traceFrame.TypeAssumptions.underlying
@@ -24930,6 +26352,8 @@ attribute [instance] traceFrame.TypeAssumptions.type_repr
   traceFrame.TypeAssumptions.set_fileID
   traceFrame.TypeAssumptions.get_line
   traceFrame.TypeAssumptions.set_line
+  traceFrame.TypeAssumptions.method_set
+  traceFrame.TypeAssumptions.ptr_method_set
 
 structure traceStringTable [FfiSyntax] where
   mk ::
@@ -24965,6 +26389,8 @@ class traceStringTable.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
   set_buf : ∀ (x : traceStringTable) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet traceStringTable.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : traceStringTable)))
   get_tab : ∀ (x : traceStringTable), go.IsGoStepPureDetTagged under (StructFieldGet traceStringTable.underlying go!"tab") #x (Val #(x.tab'))
   set_tab : ∀ (x : traceStringTable) (y : traceMap), go.IsGoStepPureDetTagged under (StructFieldSet traceStringTable.underlying go!"tab") (PairV #x #y) (Val #(({ x with tab' := y } : traceStringTable)))
+  method_set : go.MethodSetIs traceStringTable.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceStringTable.ty) [(go!"runtime.emit", (some (go.signature.Signature [go.uintptr, go.string] false [go.uint64]))), (go!"runtime.put", (some (go.signature.Signature [go.uintptr, go.string] false [go.uint64]))), (go!"runtime.reset", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.writeString", (some (go.signature.Signature [go.uintptr, go.uint64, go.string] false [])))]
 
 attribute [instance] traceStringTable.TypeAssumptions.type_repr
   traceStringTable.TypeAssumptions.underlying
@@ -24975,6 +26401,8 @@ attribute [instance] traceStringTable.TypeAssumptions.type_repr
   traceStringTable.TypeAssumptions.set_buf
   traceStringTable.TypeAssumptions.get_tab
   traceStringTable.TypeAssumptions.set_tab
+  traceStringTable.TypeAssumptions.method_set
+  traceStringTable.TypeAssumptions.ptr_method_set
 
 structure traceTypeTable [FfiSyntax] where
   mk ::
@@ -25002,12 +26430,16 @@ class traceTypeTable.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   layout : go.StructLayout traceTypeTable [(go!"tab", typeSize traceMap, typeAlign traceMap)]
   get_tab : ∀ (x : traceTypeTable), go.IsGoStepPureDetTagged under (StructFieldGet traceTypeTable.underlying go!"tab") #x (Val #(x.tab'))
   set_tab : ∀ (x : traceTypeTable) (y : traceMap), go.IsGoStepPureDetTagged under (StructFieldSet traceTypeTable.underlying go!"tab") (PairV #x #y) (Val #(({ x with tab' := y } : traceTypeTable)))
+  method_set : go.MethodSetIs traceTypeTable.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceTypeTable.ty) [(go!"runtime.dump", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.put", none)]
 
 attribute [instance] traceTypeTable.TypeAssumptions.type_repr
   traceTypeTable.TypeAssumptions.underlying
   traceTypeTable.TypeAssumptions.layout
   traceTypeTable.TypeAssumptions.get_tab
   traceTypeTable.TypeAssumptions.set_tab
+  traceTypeTable.TypeAssumptions.method_set
+  traceTypeTable.TypeAssumptions.ptr_method_set
 
 axiom rtype : Type
 axiom rtype.zero_val : ZeroVal rtype
@@ -25017,10 +26449,14 @@ class rtype.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying rtype.underlying rtype
   underlying : go.UnderlyingDirectedEq rtype.ty rtype.underlying
   isUnderlying : go.IsUnderlying rtype.underlying rtype.underlying
+  method_set : go.MethodSetIs rtype.ty [(go!"Align", (some (go.signature.Signature [] false [go.int]))), (go!"ArrayType", none), (go!"ChanDir", none), (go!"Common", none), (go!"Elem", none), (go!"ExportedMethods", none), (go!"FieldAlign", (some (go.signature.Signature [] false [go.int]))), (go!"FuncType", none), (go!"GcSlice", (some (go.signature.Signature [go.uintptr, go.uintptr] false [(go.GoType.SliceType go.byte)]))), (go!"HasName", (some (go.signature.Signature [] false [go.bool]))), (go!"InterfaceType", none), (go!"IsDirectIface", (some (go.signature.Signature [] false [go.bool]))), (go!"Key", none), (go!"Kind", none), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"MapType", none), (go!"NumMethod", (some (go.signature.Signature [] false [go.int]))), (go!"Pointers", (some (go.signature.Signature [] false [go.bool]))), (go!"Size", (some (go.signature.Signature [] false [go.uintptr]))), (go!"StructType", none), (go!"Uncommon", none), (go!"runtime.name", (some (go.signature.Signature [] false [go.string]))), (go!"runtime.nameOff", (some (go.signature.Signature [nameOff.ty] false [name.ty]))), (go!"runtime.pkgpath", (some (go.signature.Signature [] false [go.string]))), (go!"runtime.string", (some (go.signature.Signature [] false [go.string]))), (go!"runtime.textOff", (some (go.signature.Signature [textOff.ty] false [«unsafe».Pointer]))), (go!"runtime.typeOff", (some (go.signature.Signature [typeOff.ty] false [(go.GoType.PointerType _type.ty)]))), (go!"runtime.uncommon", (some (go.signature.Signature [] false [(go.GoType.PointerType uncommontype.ty)])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType rtype.ty) [(go!"Align", (some (go.signature.Signature [] false [go.int]))), (go!"ArrayType", none), (go!"ChanDir", none), (go!"Common", none), (go!"Elem", none), (go!"ExportedMethods", none), (go!"FieldAlign", (some (go.signature.Signature [] false [go.int]))), (go!"FuncType", none), (go!"GcSlice", (some (go.signature.Signature [go.uintptr, go.uintptr] false [(go.GoType.SliceType go.byte)]))), (go!"HasName", (some (go.signature.Signature [] false [go.bool]))), (go!"InterfaceType", none), (go!"IsDirectIface", (some (go.signature.Signature [] false [go.bool]))), (go!"Key", none), (go!"Kind", none), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"MapType", none), (go!"NumMethod", (some (go.signature.Signature [] false [go.int]))), (go!"Pointers", (some (go.signature.Signature [] false [go.bool]))), (go!"Size", (some (go.signature.Signature [] false [go.uintptr]))), (go!"StructType", none), (go!"Uncommon", none), (go!"runtime.name", (some (go.signature.Signature [] false [go.string]))), (go!"runtime.nameOff", (some (go.signature.Signature [nameOff.ty] false [name.ty]))), (go!"runtime.pkgpath", (some (go.signature.Signature [] false [go.string]))), (go!"runtime.string", (some (go.signature.Signature [] false [go.string]))), (go!"runtime.textOff", (some (go.signature.Signature [textOff.ty] false [«unsafe».Pointer]))), (go!"runtime.typeOff", (some (go.signature.Signature [typeOff.ty] false [(go.GoType.PointerType _type.ty)]))), (go!"runtime.uncommon", (some (go.signature.Signature [] false [(go.GoType.PointerType uncommontype.ty)])))]
 
 attribute [instance] rtype.TypeAssumptions.type_repr
   rtype.TypeAssumptions.underlying
   rtype.TypeAssumptions.isUnderlying
+  rtype.TypeAssumptions.method_set
+  rtype.TypeAssumptions.ptr_method_set
 
 structure bitCursor [FfiSyntax] where
   mk ::
@@ -25052,6 +26488,8 @@ class bitCursor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_ptr : ∀ (x : bitCursor) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet bitCursor.underlying go!"ptr") (PairV #x #y) (Val #(({ x with ptr' := y } : bitCursor)))
   get_n : ∀ (x : bitCursor), go.IsGoStepPureDetTagged under (StructFieldGet bitCursor.underlying go!"n") #x (Val #(x.n'))
   set_n : ∀ (x : bitCursor) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet bitCursor.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : bitCursor)))
+  method_set : go.MethodSetIs bitCursor.ty [(go!"runtime.offset", (some (go.signature.Signature [go.uintptr] false [bitCursor.ty]))), (go!"runtime.write", (some (go.signature.Signature [(go.GoType.PointerType go.byte), go.uintptr] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType bitCursor.ty) [(go!"runtime.offset", (some (go.signature.Signature [go.uintptr] false [bitCursor.ty]))), (go!"runtime.write", (some (go.signature.Signature [(go.GoType.PointerType go.byte), go.uintptr] false [])))]
 
 attribute [instance] bitCursor.TypeAssumptions.type_repr
   bitCursor.TypeAssumptions.underlying
@@ -25060,6 +26498,8 @@ attribute [instance] bitCursor.TypeAssumptions.type_repr
   bitCursor.TypeAssumptions.set_ptr
   bitCursor.TypeAssumptions.get_n
   bitCursor.TypeAssumptions.set_n
+  bitCursor.TypeAssumptions.method_set
+  bitCursor.TypeAssumptions.ptr_method_set
 
 axiom _typePair : Type
 axiom _typePair.zero_val : ZeroVal _typePair
@@ -25069,10 +26509,14 @@ class _typePair.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying _typePair.underlying _typePair
   underlying : go.UnderlyingDirectedEq _typePair.ty _typePair.underlying
   isUnderlying : go.IsUnderlying _typePair.underlying _typePair.underlying
+  method_set : go.MethodSetIs _typePair.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType _typePair.ty) []
 
 attribute [instance] _typePair.TypeAssumptions.type_repr
   _typePair.TypeAssumptions.underlying
   _typePair.TypeAssumptions.isUnderlying
+  _typePair.TypeAssumptions.method_set
+  _typePair.TypeAssumptions.ptr_method_set
 
 structure elfSym [FfiSyntax] where
   mk ::
@@ -25120,6 +26564,8 @@ class elfSym.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_st_value : ∀ (x : elfSym) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet elfSym.underlying go!"st_value") (PairV #x #y) (Val #(({ x with st_value' := y } : elfSym)))
   get_st_size : ∀ (x : elfSym), go.IsGoStepPureDetTagged under (StructFieldGet elfSym.underlying go!"st_size") #x (Val #(x.st_size'))
   set_st_size : ∀ (x : elfSym) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet elfSym.underlying go!"st_size") (PairV #x #y) (Val #(({ x with st_size' := y } : elfSym)))
+  method_set : go.MethodSetIs elfSym.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType elfSym.ty) []
 
 attribute [instance] elfSym.TypeAssumptions.type_repr
   elfSym.TypeAssumptions.underlying
@@ -25136,6 +26582,8 @@ attribute [instance] elfSym.TypeAssumptions.type_repr
   elfSym.TypeAssumptions.set_st_value
   elfSym.TypeAssumptions.get_st_size
   elfSym.TypeAssumptions.set_st_size
+  elfSym.TypeAssumptions.method_set
+  elfSym.TypeAssumptions.ptr_method_set
 
 structure elfVerdef [FfiSyntax] where
   mk ::
@@ -25187,6 +26635,8 @@ class elfVerdef.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [
   set_vd_aux : ∀ (x : elfVerdef) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet elfVerdef.underlying go!"vd_aux") (PairV #x #y) (Val #(({ x with vd_aux' := y } : elfVerdef)))
   get_vd_next : ∀ (x : elfVerdef), go.IsGoStepPureDetTagged under (StructFieldGet elfVerdef.underlying go!"vd_next") #x (Val #(x.vd_next'))
   set_vd_next : ∀ (x : elfVerdef) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet elfVerdef.underlying go!"vd_next") (PairV #x #y) (Val #(({ x with vd_next' := y } : elfVerdef)))
+  method_set : go.MethodSetIs elfVerdef.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType elfVerdef.ty) []
 
 attribute [instance] elfVerdef.TypeAssumptions.type_repr
   elfVerdef.TypeAssumptions.underlying
@@ -25205,6 +26655,8 @@ attribute [instance] elfVerdef.TypeAssumptions.type_repr
   elfVerdef.TypeAssumptions.set_vd_aux
   elfVerdef.TypeAssumptions.get_vd_next
   elfVerdef.TypeAssumptions.set_vd_next
+  elfVerdef.TypeAssumptions.method_set
+  elfVerdef.TypeAssumptions.ptr_method_set
 
 structure elfEhdr [FfiSyntax] where
   mk ::
@@ -25284,6 +26736,8 @@ class elfEhdr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_e_shnum : ∀ (x : elfEhdr) (y : w16), go.IsGoStepPureDetTagged under (StructFieldSet elfEhdr.underlying go!"e_shnum") (PairV #x #y) (Val #(({ x with e_shnum' := y } : elfEhdr)))
   get_e_shstrndx : ∀ (x : elfEhdr), go.IsGoStepPureDetTagged under (StructFieldGet elfEhdr.underlying go!"e_shstrndx") #x (Val #(x.e_shstrndx'))
   set_e_shstrndx : ∀ (x : elfEhdr) (y : w16), go.IsGoStepPureDetTagged under (StructFieldSet elfEhdr.underlying go!"e_shstrndx") (PairV #x #y) (Val #(({ x with e_shstrndx' := y } : elfEhdr)))
+  method_set : go.MethodSetIs elfEhdr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType elfEhdr.ty) []
 
 attribute [instance] elfEhdr.TypeAssumptions.type_repr
   elfEhdr.TypeAssumptions.underlying
@@ -25316,6 +26770,8 @@ attribute [instance] elfEhdr.TypeAssumptions.type_repr
   elfEhdr.TypeAssumptions.set_e_shnum
   elfEhdr.TypeAssumptions.get_e_shstrndx
   elfEhdr.TypeAssumptions.set_e_shstrndx
+  elfEhdr.TypeAssumptions.method_set
+  elfEhdr.TypeAssumptions.ptr_method_set
 
 structure elfPhdr [FfiSyntax] where
   mk ::
@@ -25371,6 +26827,8 @@ class elfPhdr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_p_memsz : ∀ (x : elfPhdr) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet elfPhdr.underlying go!"p_memsz") (PairV #x #y) (Val #(({ x with p_memsz' := y } : elfPhdr)))
   get_p_align : ∀ (x : elfPhdr), go.IsGoStepPureDetTagged under (StructFieldGet elfPhdr.underlying go!"p_align") #x (Val #(x.p_align'))
   set_p_align : ∀ (x : elfPhdr) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet elfPhdr.underlying go!"p_align") (PairV #x #y) (Val #(({ x with p_align' := y } : elfPhdr)))
+  method_set : go.MethodSetIs elfPhdr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType elfPhdr.ty) []
 
 attribute [instance] elfPhdr.TypeAssumptions.type_repr
   elfPhdr.TypeAssumptions.underlying
@@ -25391,6 +26849,8 @@ attribute [instance] elfPhdr.TypeAssumptions.type_repr
   elfPhdr.TypeAssumptions.set_p_memsz
   elfPhdr.TypeAssumptions.get_p_align
   elfPhdr.TypeAssumptions.set_p_align
+  elfPhdr.TypeAssumptions.method_set
+  elfPhdr.TypeAssumptions.ptr_method_set
 
 structure elfShdr [FfiSyntax] where
   mk ::
@@ -25454,6 +26914,8 @@ class elfShdr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   set_sh_addralign : ∀ (x : elfShdr) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet elfShdr.underlying go!"sh_addralign") (PairV #x #y) (Val #(({ x with sh_addralign' := y } : elfShdr)))
   get_sh_entsize : ∀ (x : elfShdr), go.IsGoStepPureDetTagged under (StructFieldGet elfShdr.underlying go!"sh_entsize") #x (Val #(x.sh_entsize'))
   set_sh_entsize : ∀ (x : elfShdr) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet elfShdr.underlying go!"sh_entsize") (PairV #x #y) (Val #(({ x with sh_entsize' := y } : elfShdr)))
+  method_set : go.MethodSetIs elfShdr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType elfShdr.ty) []
 
 attribute [instance] elfShdr.TypeAssumptions.type_repr
   elfShdr.TypeAssumptions.underlying
@@ -25478,6 +26940,8 @@ attribute [instance] elfShdr.TypeAssumptions.type_repr
   elfShdr.TypeAssumptions.set_sh_addralign
   elfShdr.TypeAssumptions.get_sh_entsize
   elfShdr.TypeAssumptions.set_sh_entsize
+  elfShdr.TypeAssumptions.method_set
+  elfShdr.TypeAssumptions.ptr_method_set
 
 structure elfDyn [FfiSyntax] where
   mk ::
@@ -25509,6 +26973,8 @@ class elfDyn.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_d_tag : ∀ (x : elfDyn) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet elfDyn.underlying go!"d_tag") (PairV #x #y) (Val #(({ x with d_tag' := y } : elfDyn)))
   get_d_val : ∀ (x : elfDyn), go.IsGoStepPureDetTagged under (StructFieldGet elfDyn.underlying go!"d_val") #x (Val #(x.d_val'))
   set_d_val : ∀ (x : elfDyn) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet elfDyn.underlying go!"d_val") (PairV #x #y) (Val #(({ x with d_val' := y } : elfDyn)))
+  method_set : go.MethodSetIs elfDyn.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType elfDyn.ty) []
 
 attribute [instance] elfDyn.TypeAssumptions.type_repr
   elfDyn.TypeAssumptions.underlying
@@ -25517,6 +26983,8 @@ attribute [instance] elfDyn.TypeAssumptions.type_repr
   elfDyn.TypeAssumptions.set_d_tag
   elfDyn.TypeAssumptions.get_d_val
   elfDyn.TypeAssumptions.set_d_val
+  elfDyn.TypeAssumptions.method_set
+  elfDyn.TypeAssumptions.ptr_method_set
 
 structure elfVerdaux [FfiSyntax] where
   mk ::
@@ -25548,6 +27016,8 @@ class elfVerdaux.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
   set_vda_name : ∀ (x : elfVerdaux) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet elfVerdaux.underlying go!"vda_name") (PairV #x #y) (Val #(({ x with vda_name' := y } : elfVerdaux)))
   get_vda_next : ∀ (x : elfVerdaux), go.IsGoStepPureDetTagged under (StructFieldGet elfVerdaux.underlying go!"vda_next") #x (Val #(x.vda_next'))
   set_vda_next : ∀ (x : elfVerdaux) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet elfVerdaux.underlying go!"vda_next") (PairV #x #y) (Val #(({ x with vda_next' := y } : elfVerdaux)))
+  method_set : go.MethodSetIs elfVerdaux.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType elfVerdaux.ty) []
 
 attribute [instance] elfVerdaux.TypeAssumptions.type_repr
   elfVerdaux.TypeAssumptions.underlying
@@ -25556,6 +27026,8 @@ attribute [instance] elfVerdaux.TypeAssumptions.type_repr
   elfVerdaux.TypeAssumptions.set_vda_name
   elfVerdaux.TypeAssumptions.get_vda_next
   elfVerdaux.TypeAssumptions.set_vda_next
+  elfVerdaux.TypeAssumptions.method_set
+  elfVerdaux.TypeAssumptions.ptr_method_set
 
 structure vdsoSymbolKey [FfiSyntax] where
   mk ::
@@ -25595,6 +27067,8 @@ class vdsoSymbolKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
   set_gnuHash : ∀ (x : vdsoSymbolKey) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet vdsoSymbolKey.underlying go!"gnuHash") (PairV #x #y) (Val #(({ x with gnuHash' := y } : vdsoSymbolKey)))
   get_ptr : ∀ (x : vdsoSymbolKey), go.IsGoStepPureDetTagged under (StructFieldGet vdsoSymbolKey.underlying go!"ptr") #x (Val #(x.ptr'))
   set_ptr : ∀ (x : vdsoSymbolKey) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet vdsoSymbolKey.underlying go!"ptr") (PairV #x #y) (Val #(({ x with ptr' := y } : vdsoSymbolKey)))
+  method_set : go.MethodSetIs vdsoSymbolKey.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType vdsoSymbolKey.ty) []
 
 attribute [instance] vdsoSymbolKey.TypeAssumptions.type_repr
   vdsoSymbolKey.TypeAssumptions.underlying
@@ -25607,6 +27081,8 @@ attribute [instance] vdsoSymbolKey.TypeAssumptions.type_repr
   vdsoSymbolKey.TypeAssumptions.set_gnuHash
   vdsoSymbolKey.TypeAssumptions.get_ptr
   vdsoSymbolKey.TypeAssumptions.set_ptr
+  vdsoSymbolKey.TypeAssumptions.method_set
+  vdsoSymbolKey.TypeAssumptions.ptr_method_set
 
 structure vdsoVersionKey [FfiSyntax] where
   mk ::
@@ -25638,6 +27114,8 @@ class vdsoVersionKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
   set_version : ∀ (x : vdsoVersionKey) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet vdsoVersionKey.underlying go!"version") (PairV #x #y) (Val #(({ x with version' := y } : vdsoVersionKey)))
   get_verHash : ∀ (x : vdsoVersionKey), go.IsGoStepPureDetTagged under (StructFieldGet vdsoVersionKey.underlying go!"verHash") #x (Val #(x.verHash'))
   set_verHash : ∀ (x : vdsoVersionKey) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet vdsoVersionKey.underlying go!"verHash") (PairV #x #y) (Val #(({ x with verHash' := y } : vdsoVersionKey)))
+  method_set : go.MethodSetIs vdsoVersionKey.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType vdsoVersionKey.ty) []
 
 attribute [instance] vdsoVersionKey.TypeAssumptions.type_repr
   vdsoVersionKey.TypeAssumptions.underlying
@@ -25646,6 +27124,8 @@ attribute [instance] vdsoVersionKey.TypeAssumptions.type_repr
   vdsoVersionKey.TypeAssumptions.set_version
   vdsoVersionKey.TypeAssumptions.get_verHash
   vdsoVersionKey.TypeAssumptions.set_verHash
+  vdsoVersionKey.TypeAssumptions.method_set
+  vdsoVersionKey.TypeAssumptions.ptr_method_set
 
 structure vdsoInfo [FfiSyntax] where
   mk ::
@@ -25713,6 +27193,8 @@ class vdsoInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_versym : ∀ (x : vdsoInfo) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet vdsoInfo.underlying go!"versym") (PairV #x #y) (Val #(({ x with versym' := y } : vdsoInfo)))
   get_verdef : ∀ (x : vdsoInfo), go.IsGoStepPureDetTagged under (StructFieldGet vdsoInfo.underlying go!"verdef") #x (Val #(x.verdef'))
   set_verdef : ∀ (x : vdsoInfo) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet vdsoInfo.underlying go!"verdef") (PairV #x #y) (Val #(({ x with verdef' := y } : vdsoInfo)))
+  method_set : go.MethodSetIs vdsoInfo.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType vdsoInfo.ty) []
 
 attribute [instance] vdsoInfo.TypeAssumptions.type_repr
   vdsoInfo.TypeAssumptions.underlying
@@ -25739,6 +27221,8 @@ attribute [instance] vdsoInfo.TypeAssumptions.type_repr
   vdsoInfo.TypeAssumptions.set_versym
   vdsoInfo.TypeAssumptions.get_verdef
   vdsoInfo.TypeAssumptions.set_verdef
+  vdsoInfo.TypeAssumptions.method_set
+  vdsoInfo.TypeAssumptions.ptr_method_set
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   userArena_instance : userArena.TypeAssumptions
