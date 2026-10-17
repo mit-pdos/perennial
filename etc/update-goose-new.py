@@ -216,6 +216,7 @@ def main():
         run_goose(
             path.join(goose_dir, "testdata/examples"),
             "./append_log",
+            "./filteredimport",
             "./semantics",
             "./unittest/...",
             "./channel/...",

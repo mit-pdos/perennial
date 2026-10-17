@@ -11,6 +11,7 @@ public import Perennial.Code.context
 public import Perennial.Code.io
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics
+public import Perennial.Code.github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport
 
 @[expose] public section
 
@@ -108,6 +109,23 @@ example : go.typeSetContains (Box.ty go.int)
   go_type_set
 
 end generics
+
+section filteredimport
+open github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport
+variable [github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.Assumptions]
+
+/-- `Getter` embeds `withDep`, whose method `Use` mentions a type of a package the translation
+does not import: goose writes `Getter` as `Close`, `Get` and the type term `withDep`, whose
+membership is unspecified (`interfaceTermContains`). A type lacking a written method is still
+known not to implement it. -/
+example : go.typeSetContains T.ty Getter.ty = false := by
+  go_type_set
+
+/-- `PlainCloser` embeds `plain`, all of whose methods are written. -/
+example : go.typeSetContains (go.GoType.PointerType T.ty) PlainCloser.ty = false := by
+  go_type_set
+
+end filteredimport
 
 end std
 
