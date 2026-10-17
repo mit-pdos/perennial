@@ -23,9 +23,9 @@ namespace errors
 /-- `T` can be the element type of the target `*T` of `errors.As`: its underlying type is an
 interface type, or it implements `error` (it is in the type set of `error`: its method set has
 `Error() string`). For any other `T`, Go's `As` panics with
-`errors: *target must be interface or implement error` (when `err` is not `nil`). Method sets
-are uninterpreted in the semantics (`methodSet`), so the second disjunct is, for a concrete
-type, an assumption about the semantics (a class such as `context.ErrorStringIsError`). -/
+`errors: *target must be interface or implement error` (when `err` is not `nil`). For a
+named type of a translated package, `go_type_set` proves or refutes the second disjunct from
+the type's method set (its package's `Assumptions`). -/
 def AsTarget [FfiSyntax] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType) : Prop :=
   (∃ elems, underlying T = go.InterfaceType elems) ∨ go.typeSetContains T go.error = true
 
