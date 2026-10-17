@@ -401,8 +401,9 @@ func (ctx *Ctx) methodSigLean(n locatable, sig *types.Signature) (s string, ok b
 	return glang.LeanTermOf(ctx.signature(n, sig)), true
 }
 
-// typeNameable reports whether every named type (or alias) t mentions is
-// predeclared, of this package or of an imported package.
+// typeNameable reports whether every named type t mentions is predeclared, of
+// this package or of an imported package, and every alias it mentions is the
+// universe's or one this package translates.
 func (ctx *Ctx) typeNameable(t types.Type, seen map[types.Type]bool) bool {
 	if seen[t] {
 		return true
@@ -443,6 +444,13 @@ func (ctx *Ctx) typeNameable(t types.Type, seen map[types.Type]bool) bool {
 	case *types.Named:
 		return named(t.Obj().Pkg(), t.TypeArgs())
 	case *types.Alias:
+		// an alias that is not translated is declared as an axiom without a
+		// descriptor (`axiom A : go.GoType`), which glangType cannot name: only
+		// the universe's aliases (any) and this package's translated ones
+		if pkg := t.Obj().Pkg(); pkg != nil &&
+			(pkg.Path() != ctx.pkgPath || ctx.filter.GetAction(t.Obj().Name()) != declfilter.Translate) {
+			return false
+		}
 		return named(t.Obj().Pkg(), t.TypeArgs())
 	case *types.Pointer:
 		return all(t.Elem())
