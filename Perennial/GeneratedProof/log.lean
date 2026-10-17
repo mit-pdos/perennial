@@ -3,6 +3,9 @@ module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.ManualProof.log
+public import Perennial.GeneratedProof.io
+public import Perennial.GeneratedProof.sync
+public import Perennial.GeneratedProof.sync.atomic
 public import Perennial.Golang.Theory
 public import Perennial.Code.log
 
@@ -27,12 +30,101 @@ variable [sem : go.Semantics]
 variable [package_sem' : log.Assumptions]
 
 instance Logger_typed_pointsto :
-    TypedPointsto (GF := GF) log.Logger :=
-  sorry -- axiomatized type
+    TypedPointsto (GF := GF) log.Logger where
+  typedPointstoDef l v dq := iprop(
+    "outMu" ∷ typedPointsto (structFieldRef log.Logger go!"outMu" l) v.outMu' dq ∗
+    "out" ∷ typedPointsto (structFieldRef log.Logger go!"out" l) v.out' dq ∗
+    "prefix'" ∷ typedPointsto (structFieldRef log.Logger go!"prefix" l) v.prefix' dq ∗
+    "flag" ∷ typedPointsto (structFieldRef log.Logger go!"flag" l) v.flag' dq ∗
+    "isDiscard" ∷ typedPointsto (structFieldRef log.Logger go!"isDiscard" l) v.isDiscard' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 instance Logger_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) log.Logger log.Logger.underlying :=
-  sorry -- axiomatized type
+    IntoValTypedUnderlying (GF := GF) log.Logger log.Logger.underlying := by
+  solve_into_val_typed_struct
+
+instance Logger_access_load_outMu (l : Loc) (v : log.Logger) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef log.Logger go!"outMu" l) v.outMu' dq)
+      (typedPointsto (structFieldRef log.Logger go!"outMu" l) v.outMu' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Logger_access_store_outMu (l : Loc) (v : log.Logger) (outMu' : sync.Mutex) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef log.Logger go!"outMu" l) v.outMu' (DFrac.own 1))
+      (typedPointsto (structFieldRef log.Logger go!"outMu" l) outMu' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with outMu' := outMu' } : log.Logger) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Logger_access_load_out (l : Loc) (v : log.Logger) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef log.Logger go!"out" l) v.out' dq)
+      (typedPointsto (structFieldRef log.Logger go!"out" l) v.out' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Logger_access_store_out (l : Loc) (v : log.Logger) (out' : io.Writer) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef log.Logger go!"out" l) v.out' (DFrac.own 1))
+      (typedPointsto (structFieldRef log.Logger go!"out" l) out' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with out' := out' } : log.Logger) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Logger_access_load_prefix (l : Loc) (v : log.Logger) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef log.Logger go!"prefix" l) v.prefix' dq)
+      (typedPointsto (structFieldRef log.Logger go!"prefix" l) v.prefix' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Logger_access_store_prefix (l : Loc) (v : log.Logger) (prefix' : (sync.atomic.Pointer GoString)) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef log.Logger go!"prefix" l) v.prefix' (DFrac.own 1))
+      (typedPointsto (structFieldRef log.Logger go!"prefix" l) prefix' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with prefix' := prefix' } : log.Logger) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Logger_access_load_flag (l : Loc) (v : log.Logger) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef log.Logger go!"flag" l) v.flag' dq)
+      (typedPointsto (structFieldRef log.Logger go!"flag" l) v.flag' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Logger_access_store_flag (l : Loc) (v : log.Logger) (flag' : sync.atomic.Int32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef log.Logger go!"flag" l) v.flag' (DFrac.own 1))
+      (typedPointsto (structFieldRef log.Logger go!"flag" l) flag' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flag' := flag' } : log.Logger) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+instance Logger_access_load_isDiscard (l : Loc) (v : log.Logger) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef log.Logger go!"isDiscard" l) v.isDiscard' dq)
+      (typedPointsto (structFieldRef log.Logger go!"isDiscard" l) v.isDiscard' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance Logger_access_store_isDiscard (l : Loc) (v : log.Logger) (isDiscard' : sync.atomic.Bool') :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef log.Logger go!"isDiscard" l) v.isDiscard' (DFrac.own 1))
+      (typedPointsto (structFieldRef log.Logger go!"isDiscard" l) isDiscard' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with isDiscard' := isDiscard' } : log.Logger) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end Logger
