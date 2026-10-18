@@ -2,8 +2,8 @@
 Shared definitions of the proofs of the Go `context` package: its `isPkgInit` (`isInit`),
 the ghost names and descriptor of a context (`ContextNames`, `ContextDesc`), the predicates
 (`isContext`, `isContextDone`, `ContextClosed`, `isCancelCtxOf`, the `*cancelCtx` invariants,
-`childCancelSpec`, `cancelSpec`, ...), the method-set assumptions of the initializer
-(`ErrorStringIsError`, `DeadlineExceededIsError`), and lemmas about them.
+`childCancelSpec`, `cancelSpec`, ...), the method-set facts of the initializer
+(`errorString_is_error`, `deadlineExceededError_is_error`), and lemmas about them.
 
 The design of the specs of Go's `context` package (the triples of its functions are in
 `Perennial/Spec/context/`, one per function; the names below that are not the Link's are in
@@ -23,8 +23,8 @@ child whose `cancel` needs nothing of the parent); `wp_withCancel`, `wp_WithCanc
 
 Not proved: `propagateCancel`'s branches for a parent that `parentCancelCtx` does not resolve to a
 `*cancelCtx` (a parent with an `AfterFunc` method, `parent.(afterFuncer)`, and the goroutine for
-any other parent). They need method-set facts (`methodSet` is uninterpreted in the model, so the
-type assertion to `afterFuncer` cannot be decided) and a spec of the parent's `AfterFunc`. The
+any other parent). They need the method set of the parent's dynamic type (for the type assertion
+to `afterFuncer`, decided by `go_type_set` when it is known) and a spec of its `AfterFunc`. The
 proofs show they are not taken: `Background()`'s `Done()` is `nil`, and every `isContext` is
 resolved by `parentCancelCtx` (`"#HParentCC"`, true of the `*cancelCtx` and `*timerCtx` contexts
 made here).
@@ -172,8 +172,9 @@ variable [package_sem : context.Assumptions]
 def closedchanN : Namespace := nroot .@ "context.closedchan"
 
 /-- `e` is a non-nil error whose dynamic type is in the type set of `error` (so the type
-assertion `e.(error)` succeeds). Every error value has this property in Go; the model has no
-method-set facts (`methodSet` is uninterpreted), so it is tracked explicitly. -/
+assertion `e.(error)` succeeds). Every error value has this property in Go; in the model it is a
+fact about the error's dynamic type (`go_type_set` proves it from the type's method set), so it
+is tracked explicitly. -/
 def isTypedErr [GoSemanticsFunctions] (e : GoInterface) : Prop :=
   match e with
   | .ok ii => go.typeSetContains ii.ty go.error = true
@@ -206,15 +207,23 @@ instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.context :=
 
 end init
 
-/-- `*errors.errorString` is in the type set of `error` (it has the method `Error() string`):
-a fact about the method sets, which the semantics leaves uninterpreted. -/
-class ErrorStringIsError [FfiSyntax] [GoGlobalContext] [GoSemanticsFunctions] : Prop where
-  is_error : go.typeSetContains (go.GoType.PointerType errors.errorString.ty) go.error = true
+section is_error
+variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [sem : go.Semantics]
+variable [package_sem : context.Assumptions]
+
+/-- `*errors.errorString` is in the type set of `error` (it has the method `Error() string`,
+with a pointer receiver): from the method sets of `errors.Assumptions`. -/
+theorem errorString_is_error :
+    go.typeSetContains (go.GoType.PointerType errors.errorString.ty) go.error = true := by
+  go_type_set
 
 /-- `context.deadlineExceededError` is in the type set of `error` (it has the method
-`Error() string`): a fact about the method sets, which the semantics leaves uninterpreted. -/
-class DeadlineExceededIsError [FfiSyntax] [GoGlobalContext] [GoSemanticsFunctions] : Prop where
-  is_error : go.typeSetContains context.deadlineExceededError.ty go.error = true
+`Error() string`, with a value receiver). -/
+theorem deadlineExceededError_is_error :
+    go.typeSetContains context.deadlineExceededError.ty go.error = true := by
+  go_type_set
+
+end is_error
 
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
