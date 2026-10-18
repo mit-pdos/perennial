@@ -27,14 +27,20 @@ variable [sem : go.Semantics]
 variable [package_sem : io.Assumptions]
 
 /-- The package-initialized state: `Discard` holds a fixed `Writer` (Go never writes it
-after initialization; `go.etcd.io/raft/v3`'s initializer loads it). -/
+after initialization; `go.etcd.io/raft/v3`'s initializer loads it), a `discard{}`: its
+dynamic type is `io.discard` (an empty struct, so comparable: `log.Logger.SetOutput`
+compares its writer with `Discard`). -/
 abbrev isInit : IProp GF :=
-  iprop(∃ w : GoInterface, typedPointsto (globalAddr Discard) w DFrac.discard)
+  iprop(∃ v : val, typedPointsto (globalAddr Discard) (interface.mkOk discard.ty v) DFrac.discard)
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.io :=
   define_is_pkg_init isInit
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.io :=
   build_get_is_pkg_init_wf
+
+theorem isInit_access :
+    isPkgInit (PROP := IProp GF) pkg_id.io ⊢ isInit (GF := GF) := by
+  with_unfolding_all exact isPkgInit_access (PROP := IProp GF) pkg_id.io
 
 end wps
 
