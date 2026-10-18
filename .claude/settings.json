@@ -23,7 +23,7 @@
             "type": "command",
             "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/etc/hooks/git-guard.sh\"",
             "timeout": 20,
-            "statusMessage": "Guarding lean"
+            "statusMessage": "Guarding the protected branches"
           }
         ]
       }

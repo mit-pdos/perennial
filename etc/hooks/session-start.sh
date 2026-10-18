@@ -7,7 +7,8 @@ cwd=$(printf '%s' "$in" | jq -r '.cwd // ""' 2>/dev/null)
 [ -d "$cwd" ] || cwd=$PWD
 git -C "$cwd" rev-parse --git-dir >/dev/null 2>&1 || exit 0
 br=$(git -C "$cwd" symbolic-ref --short -q HEAD 2>/dev/null) || exit 0
-primary=$(cat "$(git -C "$cwd" rev-parse --show-toplevel)/etc/primary-branch" 2>/dev/null || echo lean)
+. "$(dirname "${BASH_SOURCE[0]}")/../primary-branch.sh"
+primary=$(primary_branch "$(git -C "$cwd" rev-parse --show-toplevel)")
 # the git hooks (etc/githooks) are the tool-independent guard; activate them
 if [ "$(git -C "$cwd" config --get core.hooksPath)" != "etc/githooks" ] && [ -x "$cwd/etc/setup-hooks.sh" ]; then
   (cd "$cwd" && bash etc/setup-hooks.sh)

@@ -1,17 +1,24 @@
 #!/usr/bin/env bash
 # Git pre-push hook (activated by etc/setup-hooks.sh): lean, master and the primary
-# branch (etc/primary-branch) move only
-# through etc/land.sh, which sets PERENNIAL_LAND=1 for its one push after the
-# branch has been built and reviewed. Also refuses non-fast-forward pushes to
-# those branches. stdin: <local ref> <local sha> <remote ref> <remote sha> per ref.
+# branch move only through etc/land.sh, which sets PERENNIAL_LAND=1 for its one
+# push after the branch has been built and reviewed. The primary branch is the one
+# etc/primary-branch names, in this checkout or at the tip of the remote ref pushed
+# to (so that a branch from before the file cannot push to it either).
+# stdin: <local ref> <local sha> <remote ref> <remote sha> per ref.
 [ "${PERENNIAL_LAND:-}" = 1 ] && exit 0
-primary=$(cat "$(git rev-parse --show-toplevel)/etc/primary-branch" 2>/dev/null || echo lean)
+. "$(dirname "$0")/../primary-branch.sh"
+primary=$(primary_branch "$(git rev-parse --show-toplevel)")
 rc=0
 while read -r lref lsha rref rsha; do
+  # the primary branch as the remote ref's current tip names it (`lean` there if absent)
+  rprimary=$primary
+  if [ -n "${rsha//0/}" ] && git cat-file -e "$rsha^{commit}" 2>/dev/null; then
+    rprimary=$(git show "$rsha:etc/primary-branch" 2>/dev/null | primary_branch_of)
+  fi
   case "$rref" in
-    refs/heads/lean|refs/heads/master|"refs/heads/$primary")
+    refs/heads/lean|refs/heads/master|"refs/heads/$primary"|"refs/heads/$rprimary")
       echo "perennial: refusing to push to $rref directly." >&2
-      echo "perennial: land the branch with etc/land.sh push (it merges origin/$primary in, builds, and requires the trusted-base review); see AGENTS.md, Workflow." >&2
+      echo "perennial: land the branch with etc/land.sh push (it merges origin/$rprimary in, builds, and requires the trusted-base review); see AGENTS.md, Workflow." >&2
       rc=1;;
   esac
 done

@@ -33,14 +33,15 @@ for a in "$@"; do case "$a" in --no-build) NOBUILD=1;; *) die "unknown option $a
 
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || die "not in a git checkout"
 cd "$ROOT" || exit 1
-PRIMARY=$(cat etc/primary-branch 2>/dev/null || echo lean)
+. "$ROOT/etc/primary-branch.sh"
+PRIMARY=$(primary_branch "$ROOT")
 GITDIR=$(git rev-parse --git-dir)
 MARK="$GITDIR/review-trusted.ok"
 BRANCH=$(git symbolic-ref --short -q HEAD) || die "detached HEAD; check out a branch"
 # the git hooks are part of the workflow: activate them if this clone has not
 [ "$(git config --get core.hooksPath)" = "etc/githooks" ] || bash etc/setup-hooks.sh
 
-patch_id() { git diff origin/$PRIMARY...HEAD | git patch-id --stable | cut -d' ' -f1; }
+patch_id() { git diff "origin/$PRIMARY...HEAD" | git patch-id --stable | cut -d' ' -f1; }
 
 check_branch() {
   case "$BRANCH" in
@@ -54,13 +55,13 @@ check_branch() {
 
 fetch_and_merge() {
   git fetch -q origin "$PRIMARY" || die "git fetch origin $PRIMARY failed"
-  if ! git merge-base --is-ancestor origin/$PRIMARY HEAD; then
-    echo "land: merging origin/$PRIMARY ($(git rev-parse --short origin/$PRIMARY)) into $BRANCH"
-    if ! git merge --no-edit origin/$PRIMARY; then
+  if ! git merge-base --is-ancestor "origin/$PRIMARY" HEAD; then
+    echo "land: merging origin/$PRIMARY ($(git rev-parse --short "origin/$PRIMARY")) into $BRANCH"
+    if ! git merge --no-edit "origin/$PRIMARY"; then
       die "merge conflicts with origin/$PRIMARY; resolve them, commit, and rerun"
     fi
   fi
-  if git diff --quiet origin/$PRIMARY...HEAD; then
+  if git diff --quiet "origin/$PRIMARY...HEAD"; then
     die "nothing to land: $BRANCH has no changes against origin/$PRIMARY"
   fi
 }
@@ -69,7 +70,7 @@ build_changed() {
   # the layout of the program proofs, and their generated Link.lean files
   python3 etc/gen-link.py --check || die "etc/gen-link.py --check failed (run etc/gen-link.py, or fix the layout)"
   [ "$NOBUILD" = 1 ] && { echo "land: build skipped (--no-build)"; return 0; }
-  mapfile -t files < <(git diff --name-only origin/$PRIMARY...HEAD)
+  mapfile -t files < <(git diff --name-only "origin/$PRIMARY...HEAD")
   lean=(); goose=0
   for f in "${files[@]}"; do
     case "$f" in
@@ -97,8 +98,8 @@ build_changed() {
 
 show_status() {
   echo "branch: $BRANCH"
-  git rev-parse -q --verify origin/$PRIMARY >/dev/null || { echo "origin/$PRIMARY: (not fetched)"; return; }
-  echo "ahead of origin/$PRIMARY: $(git rev-list --count origin/$PRIMARY..HEAD) commit(s); behind: $(git rev-list --count HEAD..origin/$PRIMARY)"
+  git rev-parse -q --verify "origin/$PRIMARY" >/dev/null || { echo "origin/$PRIMARY: (not fetched)"; return; }
+  echo "ahead of origin/$PRIMARY: $(git rev-list --count "origin/$PRIMARY..HEAD") commit(s); behind: $(git rev-list --count "HEAD..origin/$PRIMARY")"
   echo "uncommitted (tracked): $(git status --porcelain --untracked-files=no | wc -l) file(s)"
   if [ -f "$MARK" ]; then
     if [ "$(cat "$MARK")" = "$(patch_id)" ]; then echo "review-trusted: OK for the current changes"
@@ -123,14 +124,14 @@ case "$cmd" in
     [ "$(cat "$MARK")" = "$(patch_id)" ] || die "the branch's changes differ from what /review-trusted passed; rerun /review-trusted --fix"
     build_changed
     echo "land: fast-forwarding origin/$PRIMARY to $(git rev-parse --short HEAD)"
-    if ! PERENNIAL_LAND=1 git push origin HEAD:refs/heads/$PRIMARY; then
+    if ! PERENNIAL_LAND=1 git push origin "HEAD:refs/heads/$PRIMARY"; then
       die "push rejected (origin/$PRIMARY moved?); rerun etc/land.sh push"
     fi
     rm -f "$MARK"
     # update a local checkout of the primary branch if there is a clean one
     while read -r path _ br; do
       case "$br" in "[$PRIMARY]")
-        if [ -z "$(git -C "$path" status --porcelain --untracked-files=no)" ] && git -C "$path" merge -q --ff-only origin/$PRIMARY 2>/dev/null; then
+        if [ -z "$(git -C "$path" status --porcelain --untracked-files=no)" ] && git -C "$path" merge -q --ff-only "origin/$PRIMARY" 2>/dev/null; then
           echo "land: local $PRIMARY at $path fast-forwarded"
         else
           echo "land: local $PRIMARY at $path not updated (dirty or diverged): git -C $path merge --ff-only origin/$PRIMARY"

@@ -20,7 +20,11 @@ deny() {
   exit 0
 }
 c=$(printf '%s' "$cmd" | tr '\n' ' ')
-primary=$(cat "${CLAUDE_PROJECT_DIR:-.}/etc/primary-branch" 2>/dev/null || echo lean)
+. "$(dirname "${BASH_SOURCE[0]}")/../primary-branch.sh"
+primary=$(primary_branch "${CLAUDE_PROJECT_DIR:-.}")
+# the branch name as an extended regular expression matching it literally
+primary_re=$(printf '%s' "$primary" | sed 's/[][\\.*^$+?(){}|]/\\&/g')
+case "$primary" in lean|master) protected="lean or master";; *) protected="$primary, lean or master";; esac
 
 # --- pushes that would move a protected branch directly ---------------------
 # `git [global options] <subcommand>`: global options may take arguments (-C dir),
@@ -29,8 +33,8 @@ if printf '%s' "$c" | grep -Eq '(^|[;&|[:space:]])git[[:space:]]+([^;&|]*[[:spac
   if printf '%s' "$c" | grep -Eq -- '(--force|--force-with-lease|(^|[[:space:]])-f([[:space:]]|$)|[[:space:]]\+[[:alnum:]])'; then
     deny "Force pushes are not allowed in this repository."
   fi
-  if printf '%s' "$c" | grep -Eq "(^|[[:space:]:+])(refs/heads/)?(lean|master|$primary)([[:space:]]|\$)"; then
-    deny "Do not push to $primary, lean or master directly. Land the branch with /land (it merges origin/$primary in, builds, runs /review-trusted --fix, then fast-forwards $primary through etc/land.sh)."
+  if printf '%s' "$c" | grep -Eq "(^|[[:space:]:+])(refs/heads/)?(lean|master|$primary_re)([[:space:]]|\$)"; then
+    deny "Do not push to $protected directly. Land the branch with /land (it merges origin/$primary in, builds, runs /review-trusted --fix, then fast-forwards $primary through etc/land.sh)."
   fi
 fi
 

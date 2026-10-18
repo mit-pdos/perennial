@@ -6,8 +6,9 @@ the trusted base. Input to the `review-trusted` skill
 Usage: etc/trusted-delta.py [TARGET] [--full] [--no-diff] [--check]
 
   TARGET     a commit (reviews that commit: COMMIT^..COMMIT), a range A..B, or
-             nothing: the working tree against the merge base with origin/lean
-             (committed and uncommitted work of the current branch)
+             nothing: the working tree against the merge base with
+             origin/<primary> (the primary branch, etc/primary-branch; `lean`
+             if absent): committed and uncommitted work of the current branch
   --full     print the diff of every changed file, not only the trusted ones
   --no-diff  print only the summary and the signal lines
   --check    exit 1 if the change touches the trusted base (tier 0) at all,
@@ -103,11 +104,22 @@ def git(*args, check=True):
         sys.exit(f"git {' '.join(args)} failed:\n{r.stderr}")
     return r.stdout
 
+def primary_branch():
+    """The branch etc/primary-branch names, by the rule of etc/primary-branch.sh: the
+    file's content without whitespace, or `lean` if the file is absent or that is empty."""
+    try:
+        with open(os.path.join(ROOT, "etc", "primary-branch")) as f:
+            b = "".join(f.read().split())
+    except OSError:
+        b = ""
+    return b or "lean"
+
 def resolve_target(argv):
     """Return (description, diff_args, rev_for_show_new, rev_for_show_old)."""
     if not argv:
-        mb = git("merge-base", "origin/lean", "HEAD").strip()
-        return (f"working tree vs merge-base with origin/lean ({mb[:9]})", [mb], None, mb)
+        base = f"origin/{primary_branch()}"
+        mb = git("merge-base", base, "HEAD").strip()
+        return (f"working tree vs merge-base with {base} ({mb[:9]})", [mb], None, mb)
     t = argv[0]
     if ".." in t:
         a, b = t.split("..", 1)

@@ -9,17 +9,17 @@ argument-hint: "[--no-build]"
 The primary branch (`<primary>`: the one `etc/primary-branch` names, `lean-temp`
 for now) only ever moves by fast-forward to a branch that has been built and
 reviewed. Hooks deny `git commit` on it (and on `lean`/`master`) and `git push`
-to it; the path is
-this skill, whose mechanical half is `etc/land.sh`.
+to it; the path is this skill, whose mechanical half is `etc/land.sh`.
 
 ## Procedure
 
 1. **Be on a branch with everything committed.** If the checkout is on
-   the primary branch (or `lean`), stop: the work should have been done on a branch (`EnterWorktree`,
-   or `git switch -c <topic>`); move the uncommitted changes to one before
-   continuing. Commit all intended work with proper messages (`git status`;
-   do not sweep unrelated files in). If the user asked for a pull request or
-   to hold the work, open a draft PR or stop here instead of landing.
+   the primary branch (or `lean`), stop: the work should have been done on a
+   branch (`EnterWorktree`, or `git switch -c <topic>`); move the uncommitted
+   changes to one before continuing. Commit all intended work with proper
+   messages (`git status`; do not sweep unrelated files in). If the user asked
+   for a pull request or to hold the work, open a draft PR or stop here
+   instead of landing.
 
 2. **Prepare.** From the repo root:
 
@@ -52,10 +52,10 @@ this skill, whose mechanical half is `etc/land.sh`.
    origin/<primary> moved during the build: rerun the command.
 
 5. **Delete the branch.** Once it has landed, the branch is merged into
-   the primary branch: delete it. Remove its worktree if it had one (`git worktree remove
-   <path>`, from another checkout), the local branch (`git branch -d
-   <branch>`, which refuses a branch that is not merged), and its remote copy
-   if it was ever pushed (`git push origin --delete <branch>`). Delete only
+   the primary branch: delete it. Remove its worktree if it had one (`git
+   worktree remove <path>`, from another checkout), the local branch (`git
+   branch -d <branch>`, which refuses a branch that is not merged), and its
+   remote copy if it was ever pushed (`git push origin --delete <branch>`). Delete only
    branches you created.
 
 6. **Report**: the landed commit, what the review found and fixed, anything
