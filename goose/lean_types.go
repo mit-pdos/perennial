@@ -256,6 +256,13 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 
 	ptrTy := "(go.GoType.PointerType " + ty + ")"
 
+	// the method sets of `t` and `*t`, as go/types computes them (the methods
+	// declared with either receiver, and those promoted through embedded fields)
+	add("method_set", leanForall(goBinders, fmt.Sprintf("go.MethodSetIs %s %s",
+		ty, ctx.leanMethodSet(t.Obj(), types.NewMethodSet(t)))))
+	add("ptr_method_set", leanForall(goBinders, fmt.Sprintf("go.MethodSetIs %s %s",
+		ptrTy, ctx.leanMethodSet(t.Obj(), types.NewMethodSet(types.NewPointer(t))))))
+
 	if !types.IsInterface(t) {
 		// for every method in `t`
 		goMset := types.NewMethodSet(t)
@@ -346,6 +353,135 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 	}
 
 	return leanClass(glang.LeanEncodedName(typeName+"_Assumptions"), " [FfiSyntax] "+leanClassParams, fields)
+}
+
+// leanMethodSet is a method set as `go.MethodSetIs` takes it: a list of entries
+// `(id, some sig)`, or `(id, none)` for a signature that cannot be written here
+// (methodSigLean), in the order of types.MethodSet (by id).
+func (ctx *Ctx) leanMethodSet(n locatable, mset *types.MethodSet) string {
+	var entries []string
+	for i := range mset.Len() {
+		sel := mset.At(i)
+		sig := "none"
+		if s, ok := ctx.methodSigLean(n, sel.Type().(*types.Signature)); ok {
+			sig = "(some " + s + ")"
+		}
+		entries = append(entries, fmt.Sprintf("(%s, %s)", glang.LeanStringLit(sel.Obj().Id()), sig))
+	}
+	return "[" + strings.Join(entries, ", ") + "]"
+}
+
+// methodSigLean is the signature of a method of a method set as a Lean term, if
+// it can be written in this package's translation: every named type it mentions
+// is predeclared, of this package or of a package the translation imports (a
+// method that is not translated may mention others), and goose supports its
+// types.
+func (ctx *Ctx) methodSigLean(n locatable, sig *types.Signature) (s string, ok bool) {
+	if !ctx.typeNameable(sig, map[types.Type]bool{}) {
+		return "", false
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			if _, isGooseErr := r.(gooseError); !isGooseErr {
+				panic(r)
+			}
+			s, ok = "", false
+		}
+	}()
+	return glang.LeanTermOf(ctx.signature(n, sig)), true
+}
+
+// typeNameable reports whether every named type t mentions is predeclared, of
+// this package or of an imported package, and every alias it mentions is the
+// universe's or one this package translates.
+func (ctx *Ctx) typeNameable(t types.Type, seen map[types.Type]bool) bool {
+	if seen[t] {
+		return true
+	}
+	seen[t] = true
+	all := func(ts ...types.Type) bool {
+		for _, t := range ts {
+			if !ctx.typeNameable(t, seen) {
+				return false
+			}
+		}
+		return true
+	}
+	vars := func(tup *types.Tuple) bool {
+		for i := range tup.Len() {
+			if !ctx.typeNameable(tup.At(i).Type(), seen) {
+				return false
+			}
+		}
+		return true
+	}
+	named := func(pkg *types.Package, args *types.TypeList) bool {
+		if pkg != nil && pkg.Path() != ctx.pkgPath {
+			if _, ok := ctx.importNames[pkg.Path()]; !ok {
+				return false
+			}
+		}
+		for i := range args.Len() {
+			if !ctx.typeNameable(args.At(i), seen) {
+				return false
+			}
+		}
+		return true
+	}
+	switch t := t.(type) {
+	case *types.Basic, *types.TypeParam:
+		return true
+	case *types.Named:
+		return named(t.Obj().Pkg(), t.TypeArgs())
+	case *types.Alias:
+		// an alias that is not translated is declared as an axiom without a
+		// descriptor (`axiom A : go.GoType`), which glangType cannot name: only
+		// the universe's aliases (any) and this package's translated ones
+		if pkg := t.Obj().Pkg(); pkg != nil &&
+			(pkg.Path() != ctx.pkgPath || ctx.filter.GetAction(t.Obj().Name()) != declfilter.Translate) {
+			return false
+		}
+		return named(t.Obj().Pkg(), t.TypeArgs())
+	case *types.Pointer:
+		return all(t.Elem())
+	case *types.Slice:
+		return all(t.Elem())
+	case *types.Array:
+		return all(t.Elem())
+	case *types.Map:
+		return all(t.Key(), t.Elem())
+	case *types.Chan:
+		return all(t.Elem())
+	case *types.Signature:
+		return vars(t.Params()) && vars(t.Results())
+	case *types.Struct:
+		for i := range t.NumFields() {
+			if !ctx.typeNameable(t.Field(i).Type(), seen) {
+				return false
+			}
+		}
+		return true
+	case *types.Interface:
+		for i := range t.NumMethods() {
+			if !ctx.typeNameable(t.Method(i).Type(), seen) {
+				return false
+			}
+		}
+		for i := range t.NumEmbeddeds() {
+			if !ctx.typeNameable(t.EmbeddedType(i), seen) {
+				return false
+			}
+		}
+		return true
+	case *types.Union:
+		for i := range t.Len() {
+			if !ctx.typeNameable(t.Term(i).Type(), seen) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }
 
 func lparenS(s string) string {

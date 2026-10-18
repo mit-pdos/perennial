@@ -92,8 +92,12 @@ abbrev Disk [FfiSyntax] : Type := GoInterface
 
 class Disk.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Disk.ty Disk.underlying
+  method_set : go.MethodSetIs Disk.ty [(go!"Barrier", (some (go.signature.Signature [] false []))), (go!"Close", (some (go.signature.Signature [] false []))), (go!"Read", (some (go.signature.Signature [go.uint64] false [Block.ty]))), (go!"ReadTo", (some (go.signature.Signature [go.uint64, Block.ty] false []))), (go!"Size", (some (go.signature.Signature [] false [go.uint64]))), (go!"Write", (some (go.signature.Signature [go.uint64, Block.ty] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Disk.ty) []
 
 attribute [instance] Disk.TypeAssumptions.underlying
+  Disk.TypeAssumptions.method_set
+  Disk.TypeAssumptions.ptr_method_set
 
 structure FileDisk [FfiSyntax] where
   mk ::
@@ -124,6 +128,8 @@ class FileDisk.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   set_fd : ∀ (x : FileDisk) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet FileDisk.underlying go!"fd") (PairV #x #y) (Val #(({ x with fd' := y } : FileDisk)))
   get_numBlocks : ∀ (x : FileDisk), go.IsGoStepPureDetTagged under (StructFieldGet FileDisk.underlying go!"numBlocks") #x (Val #(x.numBlocks'))
   set_numBlocks : ∀ (x : FileDisk) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet FileDisk.underlying go!"numBlocks") (PairV #x #y) (Val #(({ x with numBlocks' := y } : FileDisk)))
+  method_set : go.MethodSetIs FileDisk.ty [(go!"Barrier", (some (go.signature.Signature [] false []))), (go!"Close", (some (go.signature.Signature [] false []))), (go!"Read", (some (go.signature.Signature [go.uint64] false [Block.ty]))), (go!"ReadTo", (some (go.signature.Signature [go.uint64, Block.ty] false []))), (go!"Size", (some (go.signature.Signature [] false [go.uint64]))), (go!"Write", (some (go.signature.Signature [go.uint64, Block.ty] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType FileDisk.ty) [(go!"Barrier", (some (go.signature.Signature [] false []))), (go!"Close", (some (go.signature.Signature [] false []))), (go!"Read", (some (go.signature.Signature [go.uint64] false [Block.ty]))), (go!"ReadTo", (some (go.signature.Signature [go.uint64, Block.ty] false []))), (go!"Size", (some (go.signature.Signature [] false [go.uint64]))), (go!"Write", (some (go.signature.Signature [go.uint64, Block.ty] false [])))]
 
 attribute [instance] FileDisk.TypeAssumptions.type_repr
   FileDisk.TypeAssumptions.underlying
@@ -131,6 +137,8 @@ attribute [instance] FileDisk.TypeAssumptions.type_repr
   FileDisk.TypeAssumptions.set_fd
   FileDisk.TypeAssumptions.get_numBlocks
   FileDisk.TypeAssumptions.set_numBlocks
+  FileDisk.TypeAssumptions.method_set
+  FileDisk.TypeAssumptions.ptr_method_set
 
 axiom MemDisk : Type
 axiom MemDisk.zero_val : ZeroVal MemDisk
@@ -140,10 +148,14 @@ class MemDisk.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying MemDisk.underlying MemDisk
   underlying : go.UnderlyingDirectedEq MemDisk.ty MemDisk.underlying
   isUnderlying : go.IsUnderlying MemDisk.underlying MemDisk.underlying
+  method_set : go.MethodSetIs MemDisk.ty [(go!"Barrier", (some (go.signature.Signature [] false []))), (go!"Close", (some (go.signature.Signature [] false []))), (go!"Read", (some (go.signature.Signature [go.uint64] false [Block.ty]))), (go!"ReadTo", (some (go.signature.Signature [go.uint64, Block.ty] false []))), (go!"Size", (some (go.signature.Signature [] false [go.uint64]))), (go!"Write", (some (go.signature.Signature [go.uint64, Block.ty] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType MemDisk.ty) [(go!"Barrier", (some (go.signature.Signature [] false []))), (go!"Close", (some (go.signature.Signature [] false []))), (go!"Read", (some (go.signature.Signature [go.uint64] false [Block.ty]))), (go!"ReadTo", (some (go.signature.Signature [go.uint64, Block.ty] false []))), (go!"Size", (some (go.signature.Signature [] false [go.uint64]))), (go!"Write", (some (go.signature.Signature [go.uint64, Block.ty] false [])))]
 
 attribute [instance] MemDisk.TypeAssumptions.type_repr
   MemDisk.TypeAssumptions.underlying
   MemDisk.TypeAssumptions.isUnderlying
+  MemDisk.TypeAssumptions.method_set
+  MemDisk.TypeAssumptions.ptr_method_set
 
 class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Disk_instance : Disk.TypeAssumptions

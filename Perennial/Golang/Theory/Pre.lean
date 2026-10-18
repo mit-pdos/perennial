@@ -15,6 +15,7 @@ public import Perennial.Golang.Theory.Loop
 public import Perennial.Golang.Theory.Assume
 public import Perennial.Golang.Theory.Pkg
 public import Perennial.Golang.Theory.TacticsSimp
+public import Perennial.Golang.Theory.TypeSet
 public import Perennial.Golang.Theory.Auto
 public import Perennial.Golang.Theory.Defer
 public import Perennial.Golang.Theory.Array

@@ -354,6 +354,8 @@ class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
   set_sz : ∀ (x : Log) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"sz") (PairV #x #y) (Val #(({ x with sz' := y } : Log)))
   get_diskSz : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"diskSz") #x (Val #(x.diskSz'))
   set_diskSz : ∀ (x : Log) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"diskSz") (PairV #x #y) (Val #(({ x with diskSz' := y } : Log)))
+  method_set : go.MethodSetIs Log.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Log.ty) [(go!"Append", none), (go!"Get", none), (go!"Reset", (some (go.signature.Signature [] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log.append", none), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log.get", none), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log.mkHdr", none), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log.reset", (some (go.signature.Signature [] false []))), (go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log.writeHdr", (some (go.signature.Signature [] false [])))]
   ptr_Append_unfold : MethodUnfold (go.GoType.PointerType Log.ty) go!"Append" Log.Append.impl
   ptr_Get_unfold : MethodUnfold (go.GoType.PointerType Log.ty) go!"Get" Log.Get.impl
   ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Log.ty) go!"Reset" Log.Reset.impl
@@ -371,6 +373,8 @@ attribute [instance] Log.TypeAssumptions.type_repr
   Log.TypeAssumptions.set_sz
   Log.TypeAssumptions.get_diskSz
   Log.TypeAssumptions.set_diskSz
+  Log.TypeAssumptions.method_set
+  Log.TypeAssumptions.ptr_method_set
   Log.TypeAssumptions.ptr_Append_unfold
   Log.TypeAssumptions.ptr_Get_unfold
   Log.TypeAssumptions.ptr_Reset_unfold
