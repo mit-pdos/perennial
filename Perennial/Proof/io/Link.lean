@@ -23,7 +23,7 @@ variable [sem : go.Semantics]
 variable [package_sem : io.Assumptions]
 
 theorem io.wp_initialize' : io.initialize'.spec (GF := GF) (hG := hG) :=
-  io.initialize'.wp_proof sync.wp_initialize' errors.wp_initialize' errors.wp_New
+  io.initialize'.wp_proof sync.wp_initialize' errors.wp_initialize'
 
 end link
 
