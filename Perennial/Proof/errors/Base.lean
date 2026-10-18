@@ -1,7 +1,8 @@
 /-
 Shared definitions of the proofs of the Go `errors` package: its `isPkgInit`, the
 predicates of the specs of `Unwrap`, `AsType`, `As` and `Is` (`isUnwrappable`,
-`isErrorTree`, `errorIsTree`, ...), lemmas about them, and the (unprovable) initializer
+`isErrorTree`, `errorIsTree`, ...), lemmas about them, the method-set fact
+`errorString_is_error`, and the (unprovable) initializer
 of the global `errorType`.
 -/
 module
@@ -28,6 +29,18 @@ named type of a translated package, `go_type_set` proves or refutes the second d
 the type's method set (its package's `Assumptions`). -/
 def AsTarget [FfiSyntax] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType) : Prop :=
   (∃ elems, underlying T = go.InterfaceType elems) ∨ go.typeSetContains T go.error = true
+
+section is_error
+variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [sem : go.Semantics]
+variable [package_sem : errors.Assumptions]
+
+/-- `*errors.errorString` is in the type set of `error` (it has the method `Error() string`,
+with a pointer receiver): from the method sets of `errors.Assumptions`. -/
+theorem errorString_is_error :
+    go.typeSetContains (go.GoType.PointerType errorString.ty) go.error = true := by
+  go_type_set
+
+end is_error
 
 section wps
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]

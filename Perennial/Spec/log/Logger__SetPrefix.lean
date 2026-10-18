@@ -26,11 +26,11 @@ variable [package_sem : log.Assumptions]
 variable, `&prefix`) in the atomic `prefix` field. -/
 abbrev log.Logger.SetPrefix.spec : Prop :=
   ∀ (l : Loc) (p0 : Loc) (pfx : GoString),
-    {{ isPkgInit (PROP := IProp GF) pkg_id.log ∗ ⌜log.LoggerAligned l⌝ ∗
-        sync.atomic.ownPointer (T' := GoString) (log.prefixField (GF := GF) l) (DFrac.own 1) p0 }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.log ∗
+        sync.atomic.ownPointer (T' := GoString) (log.loggerPrefix (GF := GF) l) (DFrac.own 1) p0 }}
       (App (Val (l @!! go.GoType.PointerType log.Logger.ty @!! go!"SetPrefix")) (Val #pfx))
     {{ RET #(); ∃ p : Loc,
-        sync.atomic.ownPointer (T' := GoString) (log.prefixField (GF := GF) l) (DFrac.own 1) p ∗
+        sync.atomic.ownPointer (T' := GoString) (log.loggerPrefix (GF := GF) l) (DFrac.own 1) p ∗
         p ↦ pfx }}
 
 end spec

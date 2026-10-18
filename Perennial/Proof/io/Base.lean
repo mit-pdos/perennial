@@ -26,12 +26,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : io.Assumptions]
 
-/-- The package-initialized state: `Discard` holds a fixed `Writer` (Go never writes it
-after initialization; `go.etcd.io/raft/v3`'s initializer loads it), a `discard{}`: its
-dynamic type is `io.discard` (an empty struct, so comparable: `log.Logger.SetOutput`
-compares its writer with `Discard`). -/
+/-- The package invariant: the global `Discard` (Go never writes it after initialization)
+holds a fixed `Writer`, a value of type `discard` (an empty struct, so comparable:
+`log.Logger.SetOutput` compares its writer with `Discard`). -/
 abbrev isInit : IProp GF :=
-  iprop(∃ v : val, typedPointsto (globalAddr Discard) (interface.mkOk discard.ty v) DFrac.discard)
+  iprop(∃ v : val, globalAddr Discard ↦□ interface.mkOk discard.ty v)
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.io :=
   define_is_pkg_init isInit

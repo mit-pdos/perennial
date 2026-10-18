@@ -89,7 +89,7 @@ theorem context.initialize'.wp_proof
   · iexists _
     iframe HC
     ipureintro
-    exact errorString_is_error
+    exact errors.errorString_is_error
   isplitr
   · iexists _
     iframe HDE

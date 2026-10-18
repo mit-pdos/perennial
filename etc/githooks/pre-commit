@@ -4,7 +4,8 @@
 # Work on a branch and land it with etc/land.sh (AGENTS.md, Workflow).
 # Humans who must commit on those branches directly can pass --no-verify; agents must not.
 br=$(git symbolic-ref --short -q HEAD) || exit 0
-primary=$(cat "$(git rev-parse --show-toplevel)/etc/primary-branch" 2>/dev/null || echo lean)
+. "$(dirname "$0")/../primary-branch.sh"
+primary=$(primary_branch "$(git rev-parse --show-toplevel)")
 case "$br" in
   lean|master|"$primary")
     echo "perennial: refusing to commit on '$br'." >&2

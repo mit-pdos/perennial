@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # One-time per clone: run the versioned git hooks in etc/githooks (no commits on
-# lean/master, no direct pushes to them). The setting lives in the clone's
+# the primary branch (etc/primary-branch), lean or master, no direct pushes to them). The setting lives in the clone's
 # config, so every worktree of the clone inherits it. Idempotent; etc/land.sh
 # and the Claude Code session hook run it too.
 set -e

@@ -3,7 +3,7 @@ Shared definitions of the proofs of the Go `context` package: its `isPkgInit` (`
 the ghost names and descriptor of a context (`ContextNames`, `ContextDesc`), the predicates
 (`isContext`, `isContextDone`, `ContextClosed`, `isCancelCtxOf`, the `*cancelCtx` invariants,
 `childCancelSpec`, `cancelSpec`, ...), the method-set facts of the initializer
-(`errorString_is_error`, `deadlineExceededError_is_error`), and lemmas about them.
+(`deadlineExceededError_is_error`), and lemmas about them.
 
 The design of the specs of Go's `context` package (the triples of its functions are in
 `Perennial/Spec/context/`, one per function; the names below that are not the Link's are in
@@ -172,9 +172,9 @@ variable [package_sem : context.Assumptions]
 def closedchanN : Namespace := nroot .@ "context.closedchan"
 
 /-- `e` is a non-nil error whose dynamic type is in the type set of `error` (so the type
-assertion `e.(error)` succeeds). Every error value has this property in Go; in the model it is a
-fact about the error's dynamic type (`go_type_set` proves it from the type's method set), so it
-is tracked explicitly. -/
+assertion `e.(error)` succeeds). Every error value has this property in Go, but a
+`GoInterface` value does not carry it: it is a fact about the value's dynamic type, so it is
+tracked explicitly (`go_type_set` proves it of a given type from its method set). -/
 def isTypedErr [GoSemanticsFunctions] (e : GoInterface) : Prop :=
   match e with
   | .ok ii => go.typeSetContains ii.ty go.error = true
@@ -210,12 +210,6 @@ end init
 section is_error
 variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [sem : go.Semantics]
 variable [package_sem : context.Assumptions]
-
-/-- `*errors.errorString` is in the type set of `error` (it has the method `Error() string`,
-with a pointer receiver): from the method sets of `errors.Assumptions`. -/
-theorem errorString_is_error :
-    go.typeSetContains (go.GoType.PointerType errors.errorString.ty) go.error = true := by
-  go_type_set
 
 /-- `context.deadlineExceededError` is in the type set of `error` (it has the method
 `Error() string`, with a value receiver). -/

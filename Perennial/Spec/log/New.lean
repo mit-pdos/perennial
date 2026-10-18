@@ -22,9 +22,9 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : log.Assumptions]
 
-/-- `log.New(out, prefix, flag)` returns a fresh, non-`nil` `*Logger` (`ownLogger`: writer
-`out` under its mutex, prefix `prefix`, flags `int32(flag)`), for any arguments; it never
-panics. -/
+/-- `log.New(out, prefix, flag)` returns a fresh, non-`nil` `*Logger` (`ownLogger`: prefix
+`prefix` and flags `int32(flag)`, and its mutex guarding some writer: the spec does not say
+it is `out`), for any arguments; it never panics. -/
 abbrev log.New.spec : Prop :=
   ∀ (out : GoInterface) (pfx : GoString) (flag : w64),
     {{ isPkgInit (PROP := IProp GF) pkg_id.log }}

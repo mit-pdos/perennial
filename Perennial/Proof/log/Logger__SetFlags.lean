@@ -27,8 +27,7 @@ theorem log.Logger.SetFlags.wp_proof
     (wp_Store : sync.atomic.Int32.Store.spec (GF := GF) (hG := hG)) :
     log.Logger.SetFlags.spec (GF := GF) (hG := hG) := by
   intro l f flag
-  wp_start as ⟨%Hal, Hf⟩
-  have Hnn : _ ≠ null := Hal
+  wp_start as Hf
   wp_auto
   wp_apply_core wp_Store $$ [] [-]
   · iPkgInit
