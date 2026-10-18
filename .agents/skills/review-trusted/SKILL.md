@@ -42,7 +42,7 @@ Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
    ```
 
    `TARGET` is a commit, a range `A..B`, or nothing (the branch's commits plus
-   the working tree, against the merge base with `origin/lean`). The report
+   the working tree, against the merge base with `origin/<primary>`). The report
    lists changed files by tier, flags *signal* lines (assume, axiom, sorry,
    Panic, step rules, trusted `.impl`s, trust lists, ...), shows the
    before/after of the goose trust lists, and for each new trusted model prints
@@ -133,7 +133,7 @@ Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
    BLOCK and REWORK fixed and committed, or no trusted change at all) and the
    target was the current branch, run `etc/land.sh mark-reviewed`: it records
    the branch's reviewed changes, and `etc/land.sh push` (the `/land` skill)
-   refuses to move `lean` without it. Never record with an open BLOCK or
+   refuses to move the primary branch without it. Never record with an open BLOCK or
    REWORK, and never for a review of some other commit or range.
 
 ## Rules

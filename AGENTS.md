@@ -3,7 +3,10 @@
 For every agent working in this repository, whatever the tool (Claude Code
 reads this file through `CLAUDE.md`; Codex and others read it directly).
 
-* `lean` is the primary branch. Read `README.md` (design decisions,
+* The primary branch is the one `etc/primary-branch` names: for now `lean-temp`
+  (off `lean` at `a54e1999f`, while `lean` is fixed up; the projects built on
+  Perennial follow `lean-temp`). Develop fixes on branches off it and land them
+  on it; below, "the primary branch" (`<primary>`) is that branch. Read `README.md` (design decisions,
   conventions) and `docs/` before working on proofs.
 * Do not consult the Rocq sources (`master`, `new/`, `src/`, or any checkout
   of them such as `../etcd-grove-rr`). They are frozen and out of date, and
@@ -15,29 +18,29 @@ reads this file through `CLAUDE.md`; Codex and others read it directly).
 
 ## Workflow: branch, review, land
 
-`lean` only moves by fast-forward to a branch that has been built and
+The primary branch only moves by fast-forward to a branch that has been built and
 reviewed. Git hooks enforce the branch discipline for every tool; the landing
 script enforces the review.
 
 1. **Once per clone, activate the hooks:** `etc/setup-hooks.sh`. It sets
    `core.hooksPath` to `etc/githooks` (worktrees inherit it); the hooks refuse
-   commits on `lean`/`master` and pushes to them. At the start of a session,
+   commits on the primary branch, `lean` and `master`, and pushes to them. At the start of a session,
    run it if `git config core.hooksPath` does not print `etc/githooks`.
-2. **Never commit on `lean`.** Work on a branch: a worktree
-   (`git worktree add ../perennial-<topic> -b <topic> origin/lean`, or your
+2. **Never commit on the primary branch** (nor on `lean`). Work on a branch: a worktree
+   (`git worktree add ../perennial-<topic> -b <topic> origin/<primary>`, or your
    tool's worktree feature) or `git switch -c <topic>`. Check the base:
    GitHub's default branch is `master`, so a worktree created from "the
-   default branch" is on the wrong history; `git reset --hard origin/lean`
-   if `git merge-base --is-ancestor HEAD origin/lean` fails.
+   default branch" is on the wrong history; `git reset --hard origin/<primary>`
+   if `git merge-base --is-ancestor HEAD origin/<primary>` fails.
 3. **When the work is done, land it** by following
    `.agents/skills/land/SKILL.md` (Claude Code: `/land`; Codex: the `land`
-   skill): commit everything; `etc/land.sh prepare` (merges `origin/lean`
+   skill): commit everything; `etc/land.sh prepare` (merges `origin/<primary>`
    into the branch, builds the changed modules, runs goose's tests if goose
    changed); the trusted-base review of `.agents/skills/review-trusted/SKILL.md`
    in fix mode, committing its fixes, which records an OK verdict with
    `etc/land.sh mark-reviewed`; then `etc/land.sh push`, which refuses
-   without that record and fast-forwards `origin/lean`. Nothing else pushes
-   to `lean`: no `git push origin lean`, no `HEAD:lean`, no force pushes, no
+   without that record and fast-forwards `origin/<primary>`. Nothing else pushes
+   to it: no `git push origin <primary>`, no `HEAD:<primary>`, no force pushes, no
    `--no-verify`. Once landed, delete the branch: its worktree, the local
    branch (`git branch -d`) and its remote copy if it was pushed
    (`git push origin --delete <branch>`); only branches you created.

@@ -1,8 +1,9 @@
 # Perennial
 
 Perennial's goose framework and program proofs, in Lean 4 on top of
-[iris-lean](https://github.com/leanprover-community/iris-lean). This branch
-(`lean`) is the primary branch. It covers Go programs translated by goose,
+[iris-lean](https://github.com/leanprover-community/iris-lean). Branch `lean`
+is the Lean development; for now the primary branch is `lean-temp`
+(`etc/primary-branch`), off `lean` at `a54e1999f`, while `lean` is fixed up. It covers Go programs translated by goose,
 without crash/recovery reasoning.
 
 Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),

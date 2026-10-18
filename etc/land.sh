@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# Land the current branch on `lean`: the mechanical half of the `land` skill
+# Land the current branch on the primary branch (named in etc/primary-branch;
+# `lean` if there is none): the mechanical half of the `land` skill
 # (.agents/skills/land/SKILL.md). This script is the only sanctioned way to
-# move `lean`: the git hooks in etc/githooks (activated by etc/setup-hooks.sh)
-# refuse commits on lean and pushes to it, except the one push this script
-# makes with PERENNIAL_LAND=1 after the branch has been built and reviewed.
+# move the primary branch: the git hooks in etc/githooks (activated by
+# etc/setup-hooks.sh) refuse commits on it (and on lean/master) and pushes to
+# it, except the one push this script makes with PERENNIAL_LAND=1 after the
+# branch has been built and reviewed.
 #
 # Usage: etc/land.sh prepare [--no-build]
-#            merge origin/lean into the branch, check the proofs' layout
+#            merge origin/<primary> into the branch, check the proofs' layout
 #            (etc/gen-link.py --check), build the touched Lean modules,
 #            run goose's tests if goose changed
 #        etc/land.sh mark-reviewed
@@ -14,11 +16,11 @@
 #            (the review skill runs this itself when its verdict is OK)
 #        etc/land.sh push [--no-build]
 #            prepare again, check the review record still matches the branch's
-#            changes, then fast-forward origin/lean to HEAD
+#            changes, then fast-forward origin/<primary> to HEAD
 #        etc/land.sh status
 #
-# The review record is the patch-id of `git diff origin/lean...HEAD`, kept in
-# the branch's git dir, so a merge of new origin/lean commits that does not
+# The review record is the patch-id of `git diff origin/<primary>...HEAD`, kept in
+# the branch's git dir, so a merge of new origin/<primary> commits that does not
 # disturb the branch's own hunks keeps it valid, while any edit to the branch's
 # changes after the review invalidates it.
 set -u
@@ -31,17 +33,18 @@ for a in "$@"; do case "$a" in --no-build) NOBUILD=1;; *) die "unknown option $a
 
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || die "not in a git checkout"
 cd "$ROOT" || exit 1
+PRIMARY=$(cat etc/primary-branch 2>/dev/null || echo lean)
 GITDIR=$(git rev-parse --git-dir)
 MARK="$GITDIR/review-trusted.ok"
 BRANCH=$(git symbolic-ref --short -q HEAD) || die "detached HEAD; check out a branch"
 # the git hooks are part of the workflow: activate them if this clone has not
 [ "$(git config --get core.hooksPath)" = "etc/githooks" ] || bash etc/setup-hooks.sh
 
-patch_id() { git diff origin/lean...HEAD | git patch-id --stable | cut -d' ' -f1; }
+patch_id() { git diff origin/$PRIMARY...HEAD | git patch-id --stable | cut -d' ' -f1; }
 
 check_branch() {
   case "$BRANCH" in
-    lean|master) die "on '$BRANCH'. Work on a branch (EnterWorktree, or git switch -c <topic>) and land it from there.";;
+    lean|master|"$PRIMARY") die "on '$BRANCH'. Work on a branch (EnterWorktree, or git switch -c <topic>) and land it from there.";;
   esac
   if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
     git status --short --untracked-files=no >&2
@@ -50,15 +53,15 @@ check_branch() {
 }
 
 fetch_and_merge() {
-  git fetch -q origin lean || die "git fetch origin lean failed"
-  if ! git merge-base --is-ancestor origin/lean HEAD; then
-    echo "land: merging origin/lean ($(git rev-parse --short origin/lean)) into $BRANCH"
-    if ! git merge --no-edit origin/lean; then
-      die "merge conflicts with origin/lean; resolve them, commit, and rerun"
+  git fetch -q origin "$PRIMARY" || die "git fetch origin $PRIMARY failed"
+  if ! git merge-base --is-ancestor origin/$PRIMARY HEAD; then
+    echo "land: merging origin/$PRIMARY ($(git rev-parse --short origin/$PRIMARY)) into $BRANCH"
+    if ! git merge --no-edit origin/$PRIMARY; then
+      die "merge conflicts with origin/$PRIMARY; resolve them, commit, and rerun"
     fi
   fi
-  if git diff --quiet origin/lean...HEAD; then
-    die "nothing to land: $BRANCH has no changes against origin/lean"
+  if git diff --quiet origin/$PRIMARY...HEAD; then
+    die "nothing to land: $BRANCH has no changes against origin/$PRIMARY"
   fi
 }
 
@@ -66,7 +69,7 @@ build_changed() {
   # the layout of the program proofs, and their generated Link.lean files
   python3 etc/gen-link.py --check || die "etc/gen-link.py --check failed (run etc/gen-link.py, or fix the layout)"
   [ "$NOBUILD" = 1 ] && { echo "land: build skipped (--no-build)"; return 0; }
-  mapfile -t files < <(git diff --name-only origin/lean...HEAD)
+  mapfile -t files < <(git diff --name-only origin/$PRIMARY...HEAD)
   lean=(); goose=0
   for f in "${files[@]}"; do
     case "$f" in
@@ -94,8 +97,8 @@ build_changed() {
 
 show_status() {
   echo "branch: $BRANCH"
-  git rev-parse -q --verify origin/lean >/dev/null || { echo "origin/lean: (not fetched)"; return; }
-  echo "ahead of origin/lean: $(git rev-list --count origin/lean..HEAD) commit(s); behind: $(git rev-list --count HEAD..origin/lean)"
+  git rev-parse -q --verify origin/$PRIMARY >/dev/null || { echo "origin/$PRIMARY: (not fetched)"; return; }
+  echo "ahead of origin/$PRIMARY: $(git rev-list --count origin/$PRIMARY..HEAD) commit(s); behind: $(git rev-list --count HEAD..origin/$PRIMARY)"
   echo "uncommitted (tracked): $(git status --porcelain --untracked-files=no | wc -l) file(s)"
   if [ -f "$MARK" ]; then
     if [ "$(cat "$MARK")" = "$(patch_id)" ]; then echo "review-trusted: OK for the current changes"
@@ -110,7 +113,7 @@ case "$cmd" in
     echo "land: prepared. Next: /review-trusted --fix, then etc/land.sh push";;
   mark-reviewed)
     check_branch
-    git rev-parse -q --verify origin/lean >/dev/null || git fetch -q origin lean
+    git rev-parse -q --verify "origin/$PRIMARY" >/dev/null || git fetch -q origin "$PRIMARY"
     pid=$(patch_id); [ -n "$pid" ] || die "no changes to record"
     printf '%s\n' "$pid" > "$MARK"
     echo "land: review recorded for $BRANCH ($pid)";;
@@ -119,21 +122,21 @@ case "$cmd" in
     [ -f "$MARK" ] || die "no review record: run /review-trusted --fix (it records an OK verdict with etc/land.sh mark-reviewed)"
     [ "$(cat "$MARK")" = "$(patch_id)" ] || die "the branch's changes differ from what /review-trusted passed; rerun /review-trusted --fix"
     build_changed
-    echo "land: fast-forwarding origin/lean to $(git rev-parse --short HEAD)"
-    if ! PERENNIAL_LAND=1 git push origin HEAD:refs/heads/lean; then
-      die "push rejected (origin/lean moved?); rerun etc/land.sh push"
+    echo "land: fast-forwarding origin/$PRIMARY to $(git rev-parse --short HEAD)"
+    if ! PERENNIAL_LAND=1 git push origin HEAD:refs/heads/$PRIMARY; then
+      die "push rejected (origin/$PRIMARY moved?); rerun etc/land.sh push"
     fi
     rm -f "$MARK"
-    # update a local `lean` checkout if there is a clean one
+    # update a local checkout of the primary branch if there is a clean one
     while read -r path _ br; do
-      case "$br" in "[lean]")
-        if [ -z "$(git -C "$path" status --porcelain --untracked-files=no)" ] && git -C "$path" merge -q --ff-only origin/lean 2>/dev/null; then
-          echo "land: local lean at $path fast-forwarded"
+      case "$br" in "[$PRIMARY]")
+        if [ -z "$(git -C "$path" status --porcelain --untracked-files=no)" ] && git -C "$path" merge -q --ff-only origin/$PRIMARY 2>/dev/null; then
+          echo "land: local $PRIMARY at $path fast-forwarded"
         else
-          echo "land: local lean at $path not updated (dirty or diverged): git -C $path merge --ff-only origin/lean"
+          echo "land: local $PRIMARY at $path not updated (dirty or diverged): git -C $path merge --ff-only origin/$PRIMARY"
         fi;;
       esac
     done < <(git worktree list)
-    echo "land: $BRANCH landed on lean as $(git rev-parse --short HEAD)";;
+    echo "land: $BRANCH landed on $PRIMARY as $(git rev-parse --short HEAD)";;
   *) die "usage: etc/land.sh prepare|mark-reviewed|push|status [--no-build]";;
 esac
