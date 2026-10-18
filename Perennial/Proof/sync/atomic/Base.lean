@@ -251,6 +251,22 @@ theorem ownValue_zero (u : Loc) (dq : DFrac) :
     typedPointsto (GF := GF) u (zero_val Value) dq ⊣⊢ ownValue u dq interface.nil := by
   rw [ownValue_unseal]; exact .rfl
 
+/-- A zero `Bool` (as in a freshly allocated struct) holds `false`. -/
+theorem ownBool_zero (u : Loc) (dq : DFrac) :
+    typedPointsto (GF := GF) u (zero_val Bool') dq ⊣⊢ ownBool u dq false := by
+  rw [ownBool_unseal]; exact .rfl
+
+/-- A zero `Int32` (as in a freshly allocated struct) holds `0`. -/
+theorem ownInt32_zero (u : Loc) (dq : DFrac) :
+    typedPointsto (GF := GF) u (zero_val Int32) dq ⊣⊢ ownInt32 u dq (W32 0) := by
+  rw [ownInt32_unseal]; exact .rfl
+
+/-- A zero `Pointer[T]` (as in a freshly allocated struct) holds `nil`. -/
+theorem ownPointer_zero {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] (u : Loc)
+    (dq : DFrac) :
+    typedPointsto (GF := GF) u (zero_val (Pointer T')) dq ⊣⊢ ownPointer (T' := T') u dq null := by
+  rw [ownPointer_unseal]; exact .rfl
+
 /-- The receiver's type in the models of `Value`'s methods (`TrustedCode/sync/atomic.lean`),
 which are below `Value.ty`'s definition. -/
 theorem Value_ty_eq : (go.GoType.Named go!"sync/atomic.Value" [] : go.GoType) = Value.ty := by

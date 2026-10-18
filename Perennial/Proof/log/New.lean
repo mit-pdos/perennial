@@ -36,39 +36,22 @@ theorem log.New.wp_proof
   irename flag => Hflag_arg
   irename «prefix» => Hprefix_arg
   icases typedPointsto_not_null_dup _ _ _ $$ «$r0» with ⟨Hl, %Hnn⟩
-  have Hla : log.LoggerAligned «$r0_ptr» := Hnn
   iStructNamed Hl
-  imod sync.init_Mutex iprop(∃ w : GoInterface, log.outField (GF := GF) «$r0_ptr» ↦ w) ⊤
-      (log.outMuField (GF := GF) «$r0_ptr») $$ [outMu] [out] with #Hmu
+  imod sync.init_Mutex iprop(∃ w : GoInterface, log.loggerOut (GF := GF) «$r0_ptr» ↦ w) ⊤
+      (log.loggerOutMu (GF := GF) «$r0_ptr») $$ [outMu] [out] with #Hmu
   · iexact outMu
   · inext; iexists _; iexact out
-  ihave Hdisc : sync.atomic.ownBool (GF := GF) (log.isDiscardField (GF := GF) «$r0_ptr»)
-      (DFrac.own 1) false $$ [isDiscard]
-  · rw [sync.atomic.ownBool_unseal]; unfold sync.atomic.ownBoolDef
-    rw [show ({ _0' := zero_val _, v' := sync.atomic.b32w false } : sync.atomic.Bool') =
-      zero_val _ from rfl]
-    iexact isDiscard
-  ihave Hpre : sync.atomic.ownPointer (GF := GF) (T' := GoString)
-      (log.prefixField (GF := GF) «$r0_ptr») (DFrac.own 1) null $$ [prefix']
-  · rw [sync.atomic.ownPointer_unseal]; unfold sync.atomic.ownPointerDef; iexact prefix'
-  ihave Hfl : sync.atomic.ownInt32 (GF := GF) (log.flagField (GF := GF) «$r0_ptr»)
-      (DFrac.own 1) (W32 0) $$ [flag]
-  · rw [sync.atomic.ownInt32_unseal]; unfold sync.atomic.ownInt32Def
-    rw [show ({ _0' := zero_val _, v' := W32 0 } : sync.atomic.Int32) = zero_val _ from rfl]
-    iexact flag
+  ihave Hdisc := (sync.atomic.ownBool_zero _ _).1 $$ isDiscard
+  ihave Hpre := (sync.atomic.ownPointer_zero (T' := GoString) _ _).1 $$ prefix'
+  ihave Hfl := (sync.atomic.ownInt32_zero _ _).1 $$ flag
   wp_apply wp_SetOutput «$r0_ptr» false out $$ [$Hmu $Hdisc] as ⟨%b, Hdisc⟩
-  · ipureintro; exact Hla
   wp_apply wp_SetPrefix «$r0_ptr» null pfx $$ [$Hpre] as ⟨%p, Hpre, Hp⟩
-  · ipureintro; exact Hla
   wp_apply wp_SetFlags «$r0_ptr» (W32 0) flag $$ [$Hfl] as Hfl
-  · ipureintro; exact Hla
   iapply HΦ
-  unfold log.ownLogger
+  rw [log.ownLogger_unseal]; unfold log.ownLoggerDef
   iframe Hmu Hfl
   isplitr
   · ipureintro; exact Hnn
-  isplitr
-  · ipureintro; exact Hla
   isplitl [Hpre Hp]
   · iexists p; iframe
   iexists b; iexact Hdisc

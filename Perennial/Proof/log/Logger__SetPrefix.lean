@@ -27,8 +27,7 @@ theorem log.Logger.SetPrefix.wp_proof
     (wp_Store : sync.atomic.Pointer.Store.spec (GF := GF) (hG := hG)) :
     log.Logger.SetPrefix.spec (GF := GF) (hG := hG) := by
   intro l p0 pfx
-  wp_start as ⟨%Hal, Hf⟩
-  have Hnn : _ ≠ null := Hal
+  wp_start as Hf
   wp_auto
   wp_apply_core wp_Store $$ [] [-]
   · iPkgInit
