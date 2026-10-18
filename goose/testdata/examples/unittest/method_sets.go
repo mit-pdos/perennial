@@ -45,3 +45,14 @@ func msUse() bool {
 	_, ok := x.(msNamerTagger)
 	return ok
 }
+
+// an exported type with an unexported method, promoted into a type of another
+// package (externalglobals.extTagged): the method's id is this package's
+// `tag`, which only this package's interfaces (MsTagger) can name
+type MsTagged struct{}
+
+func (MsTagged) tag() uint64 { return 2 }
+
+type MsTagger interface {
+	tag() uint64
+}

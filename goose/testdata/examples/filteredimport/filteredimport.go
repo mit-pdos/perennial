@@ -34,3 +34,10 @@ type PlainCloser interface {
 	plain
 	Close()
 }
+
+// embeds an interface literal that embeds withDep: Get is written out, and the
+// literal stays a type term (written as Get and the type term withDep)
+type litGetter interface {
+	interface{ withDep }
+	Close()
+}

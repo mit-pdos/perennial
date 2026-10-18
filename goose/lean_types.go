@@ -257,15 +257,27 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 	ptrTy := "(go.GoType.PointerType " + ty + ")"
 
 	// the method sets of `t` and `*t`, as go/types computes them (the methods
-	// declared with either receiver, and those promoted through embedded fields)
+	// declared with either receiver, and those promoted through embedded
+	// fields), of `t` instantiated with its own type parameters: go/types then
+	// writes the signatures of `t`'s methods with the declaration's type
+	// parameters, where those of the generic type use the receiver's names
+	// (`func (b Box[U]) Get() U`)
+	goMset := types.NewMethodSet(ctx.selfInstance(t))
+	goPtrMset := types.NewMethodSet(types.NewPointer(ctx.selfInstance(t)))
 	add("method_set", leanForall(goBinders, fmt.Sprintf("go.MethodSetIs %s %s",
-		ty, ctx.leanMethodSet(t.Obj(), types.NewMethodSet(t)))))
+		ty, ctx.leanMethodSet(t.Obj(), goMset))))
 	add("ptr_method_set", leanForall(goBinders, fmt.Sprintf("go.MethodSetIs %s %s",
-		ptrTy, ctx.leanMethodSet(t.Obj(), types.NewMethodSet(types.NewPointer(t))))))
+		ptrTy, ctx.leanMethodSet(t.Obj(), goPtrMset))))
 
 	if !types.IsInterface(t) {
+		// MethodUnfold names a method by its name, not its id: two methods of
+		// the same name (an unexported one of another package, promoted through
+		// an embedded field, and one of this package's) would make two
+		// assumptions about the same name
+		ctx.checkMethodNamesUnique(t.Obj(), goMset)
+		ctx.checkMethodNamesUnique(t.Obj(), goPtrMset)
+
 		// for every method in `t`
-		goMset := types.NewMethodSet(t)
 		for i := range goMset.Len() {
 			selection := goMset.At(i)
 			methodName, index := selection.Obj().Name(), selection.Index()
@@ -298,7 +310,6 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 		}
 
 		// for every method in `*t`
-		goPtrMset := types.NewMethodSet(types.NewPointer(t))
 		for i := range goPtrMset.Len() {
 			selection := goPtrMset.At(i)
 			methodName, index := selection.Obj().Name(), selection.Index()
@@ -329,7 +340,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 				var fieldType types.Type = types.NewPointer(field.Type())
 				var fieldExpr glang.Expr = glang.NewCallExpr(
 					glang.VerbatimExpr("StructFieldRef"),
-					ctx.glangType(t.Obj(), t),
+					ctx.glangType(t.Obj(), ctx.selfInstance(t)),
 					glang.StringLiteral{Value: field.Name()},
 					glang.IdentExpr("$r"),
 				)
@@ -355,6 +366,38 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 	return leanClass(glang.LeanEncodedName(typeName+"_Assumptions"), " [FfiSyntax] "+leanClassParams, fields)
 }
 
+// selfInstance is the generic type t instantiated with its own type parameters
+// (t itself if it is not generic).
+func (ctx *Ctx) selfInstance(t *types.Named) types.Type {
+	tps := t.TypeParams()
+	if tps == nil || tps.Len() == 0 {
+		return t
+	}
+	var args []types.Type
+	for i := range tps.Len() {
+		args = append(args, tps.At(i))
+	}
+	inst, err := types.Instantiate(nil, t, args, false)
+	if err != nil {
+		ctx.nope(t.Obj(), "instantiating %v with its own type parameters: %v", t, err)
+	}
+	return inst
+}
+
+// checkMethodNamesUnique refuses a method set with two methods of the same name
+// (with different ids: unexported methods of two packages), whose MethodUnfold
+// facts, keyed by name, would be about the same method name.
+func (ctx *Ctx) checkMethodNamesUnique(obj types.Object, mset *types.MethodSet) {
+	ids := map[string]string{}
+	for i := range mset.Len() {
+		m := mset.At(i).Obj()
+		if other, ok := ids[m.Name()]; ok {
+			ctx.unsupported(obj, "methods %s and %s of %s have the same name", other, m.Id(), obj.Name())
+		}
+		ids[m.Name()] = m.Id()
+	}
+}
+
 // leanMethodSet is a method set as `go.MethodSetIs` takes it: a list of entries
 // `(id, some sig)`, or `(id, none)` for a signature that cannot be written here
 // (methodSigLean), in the order of types.MethodSet (by id).
@@ -372,116 +415,13 @@ func (ctx *Ctx) leanMethodSet(n locatable, mset *types.MethodSet) string {
 }
 
 // methodSigLean is the signature of a method of a method set as a Lean term, if
-// it can be written in this package's translation: every named type it mentions
-// is predeclared, of this package or of a package the translation imports (a
-// method that is not translated may mention others), and goose supports its
-// types.
+// goose can write it in this package's translation (importedOnly): every named
+// type it mentions is predeclared, of this package or of a package the
+// translation imports (a method that is not translated may mention others), and
+// goose supports its types.
 func (ctx *Ctx) methodSigLean(n locatable, sig *types.Signature) (s string, ok bool) {
-	if !ctx.typeNameable(sig, map[types.Type]bool{}) {
-		return "", false
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			if _, isGooseErr := r.(gooseError); !isGooseErr {
-				panic(r)
-			}
-			s, ok = "", false
-		}
-	}()
-	return glang.LeanTermOf(ctx.signature(n, sig)), true
-}
-
-// typeNameable reports whether every named type t mentions is predeclared, of
-// this package or of an imported package, and every alias it mentions is the
-// universe's or one this package translates.
-func (ctx *Ctx) typeNameable(t types.Type, seen map[types.Type]bool) bool {
-	if seen[t] {
-		return true
-	}
-	seen[t] = true
-	all := func(ts ...types.Type) bool {
-		for _, t := range ts {
-			if !ctx.typeNameable(t, seen) {
-				return false
-			}
-		}
-		return true
-	}
-	vars := func(tup *types.Tuple) bool {
-		for i := range tup.Len() {
-			if !ctx.typeNameable(tup.At(i).Type(), seen) {
-				return false
-			}
-		}
-		return true
-	}
-	named := func(pkg *types.Package, args *types.TypeList) bool {
-		if pkg != nil && pkg.Path() != ctx.pkgPath {
-			if _, ok := ctx.importNames[pkg.Path()]; !ok {
-				return false
-			}
-		}
-		for i := range args.Len() {
-			if !ctx.typeNameable(args.At(i), seen) {
-				return false
-			}
-		}
-		return true
-	}
-	switch t := t.(type) {
-	case *types.Basic, *types.TypeParam:
-		return true
-	case *types.Named:
-		return named(t.Obj().Pkg(), t.TypeArgs())
-	case *types.Alias:
-		// an alias that is not translated is declared as an axiom without a
-		// descriptor (`axiom A : go.GoType`), which glangType cannot name: only
-		// the universe's aliases (any) and this package's translated ones
-		if pkg := t.Obj().Pkg(); pkg != nil &&
-			(pkg.Path() != ctx.pkgPath || ctx.filter.GetAction(t.Obj().Name()) != declfilter.Translate) {
-			return false
-		}
-		return named(t.Obj().Pkg(), t.TypeArgs())
-	case *types.Pointer:
-		return all(t.Elem())
-	case *types.Slice:
-		return all(t.Elem())
-	case *types.Array:
-		return all(t.Elem())
-	case *types.Map:
-		return all(t.Key(), t.Elem())
-	case *types.Chan:
-		return all(t.Elem())
-	case *types.Signature:
-		return vars(t.Params()) && vars(t.Results())
-	case *types.Struct:
-		for i := range t.NumFields() {
-			if !ctx.typeNameable(t.Field(i).Type(), seen) {
-				return false
-			}
-		}
-		return true
-	case *types.Interface:
-		for i := range t.NumMethods() {
-			if !ctx.typeNameable(t.Method(i).Type(), seen) {
-				return false
-			}
-		}
-		for i := range t.NumEmbeddeds() {
-			if !ctx.typeNameable(t.EmbeddedType(i), seen) {
-				return false
-			}
-		}
-		return true
-	case *types.Union:
-		for i := range t.Len() {
-			if !ctx.typeNameable(t.Term(i).Type(), seen) {
-				return false
-			}
-		}
-		return true
-	}
-	return false
+	ok = ctx.importedOnly(func() { s = glang.LeanTermOf(ctx.signature(n, sig)) })
+	return s, ok
 }
 
 func lparenS(s string) string {
@@ -523,6 +463,7 @@ func (ctx *Ctx) toLeanTypeP(l locatable, t types.Type, primed bool) string {
 			// universe types (error) are modeled by the framework
 			baseName = glang.LeanUniverseType(t.Obj().Name())
 		} else if pkg.Path() != ctx.pkgPath {
+			ctx.checkReferable(t.Obj())
 			baseName = glang.LeanQuote(ctx.pkgRef(pkg)) + "." + glang.LeanIdent(t.Obj().Name())
 		} else {
 			baseName = glang.LeanIdent(t.Obj().Name())

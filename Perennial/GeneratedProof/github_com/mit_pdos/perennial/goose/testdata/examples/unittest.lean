@@ -778,6 +778,30 @@ instance msPtrEmbed_access_store_msLeft (l : Loc) (v : github_com.mit_pdos.peren
 end def_
 end msPtrEmbed
 
+namespace MsTagged
+section def_
+
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions]
+
+instance MsTagged_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.MsTagged where
+  typedPointstoDef l v dq := iprop(
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance MsTagged_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.MsTagged github_com.mit_pdos.perennial.goose.testdata.examples.unittest.MsTagged.underlying := by
+  solve_into_val_typed_struct
+
+end def_
+end MsTagged
+
 namespace containsPointer
 section def_
 

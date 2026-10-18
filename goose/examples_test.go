@@ -244,9 +244,11 @@ func getFirstConversionError(err error) *goose.ConversionError {
 }
 
 func TestNegativeExamples(testingT *testing.T) {
-	tests := loadTests("./testdata/negative-tests")
+	const dir = "./testdata/negative-tests"
+	tests := loadTests(dir)
 	for _, t := range tests {
-		if !t.isDir() {
+		// a directory nested in a test's is a package the test imports
+		if !t.isDir() || path.Dir(t.path) != path.Clean(dir) {
 			continue
 		}
 		testingT.Run(t.name, func(testingT *testing.T) {

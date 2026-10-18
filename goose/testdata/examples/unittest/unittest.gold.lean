@@ -188,6 +188,16 @@ def msPtrEmbed.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] msPtrEmbed.ty
 
+def MsTagged.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.MsTagged" [])
+
+attribute [irreducible] MsTagged.ty
+
+def MsTagger.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.MsTagger" [])
+
+attribute [irreducible] MsTagger.ty
+
 def containsPointer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.containsPointer" [])
 
@@ -3554,6 +3564,14 @@ noncomputable def msUse.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "x") (Var "$r0")))))))))
 
+/-- go: method_sets.go:54:17 -/
+noncomputable def MsTagged.tag.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Lam BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (Val #(W64 2))))))
+
 /-- go: multiple.go:3:6 -/
 noncomputable def returnTwo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "p"
@@ -6103,6 +6121,55 @@ attribute [instance] msPtrEmbed.TypeAssumptions.type_repr
   msPtrEmbed.TypeAssumptions.ptr_Name_unfold
   msPtrEmbed.TypeAssumptions.ptr_tag_unfold
 
+structure MsTagged [FfiSyntax] where
+  mk ::
+
+instance MsTagged.zero_val [FfiSyntax] : ZeroVal MsTagged :=
+  ⟨MsTagged.mk⟩
+
+@[reducible] def MsTagged.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  []
+
+@[irreducible] def MsTagged.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  MsTagged.fieldsUnsealed
+
+instance equals_unfold_MsTagged [FfiSyntax] [GoGlobalContext] :
+    EqualsUnfold MsTagged.fields MsTagged.fieldsUnsealed :=
+  ⟨by unfold MsTagged.fields; rfl⟩
+
+@[reducible] def MsTagged.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType MsTagged.fields)
+
+class MsTagged.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying MsTagged.underlying MsTagged
+  underlying : go.UnderlyingDirectedEq MsTagged.ty MsTagged.underlying
+  method_set : go.MethodSetIs MsTagged.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.tag", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType MsTagged.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.tag", (some (go.signature.Signature [] false [go.uint64])))]
+  tag_unfold : MethodUnfold MsTagged.ty go!"tag" MsTagged.tag.impl
+  ptr_tag_unfold : MethodUnfold (go.GoType.PointerType MsTagged.ty) go!"tag" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve MsTagged.ty go!"tag"))) (App (Val (GoInstruction (GoLoad MsTagged.ty))) (Var "$r"))))
+
+attribute [instance] MsTagged.TypeAssumptions.type_repr
+  MsTagged.TypeAssumptions.underlying
+  MsTagged.TypeAssumptions.method_set
+  MsTagged.TypeAssumptions.ptr_method_set
+  MsTagged.TypeAssumptions.tag_unfold
+  MsTagged.TypeAssumptions.ptr_tag_unfold
+
+abbrev MsTagger [FfiSyntax] : Type := GoInterface
+
+@[reducible] def MsTagger.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.tag" (go.signature.Signature [] false [go.uint64]))])
+
+class MsTagger.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq MsTagger.ty MsTagger.underlying
+  method_set : go.MethodSetIs MsTagger.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.tag", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType MsTagger.ty) []
+
+attribute [instance] MsTagger.TypeAssumptions.underlying
+  MsTagger.TypeAssumptions.method_set
+  MsTagger.TypeAssumptions.ptr_method_set
+
 structure containsPointer [FfiSyntax] where
   mk ::
   s' : Loc
@@ -6787,6 +6854,8 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   msBoth_instance : msBoth.TypeAssumptions
   msShadow_instance : msShadow.TypeAssumptions
   msPtrEmbed_instance : msPtrEmbed.TypeAssumptions
+  MsTagged_instance : MsTagged.TypeAssumptions
+  MsTagger_instance : MsTagger.TypeAssumptions
   containsPointer_instance : containsPointer.TypeAssumptions
   wrapExternalStruct_instance : wrapExternalStruct.TypeAssumptions
   typing_instance : typing.TypeAssumptions
@@ -7052,6 +7121,8 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.msBoth_instance
   Assumptions.msShadow_instance
   Assumptions.msPtrEmbed_instance
+  Assumptions.MsTagged_instance
+  Assumptions.MsTagger_instance
   Assumptions.containsPointer_instance
   Assumptions.wrapExternalStruct_instance
   Assumptions.typing_instance

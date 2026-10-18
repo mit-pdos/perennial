@@ -10,6 +10,7 @@ public import Perennial.Code.errors
 public import Perennial.Code.context
 public import Perennial.Code.io
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
+public import Perennial.Code.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport
 
@@ -108,6 +109,24 @@ example : go.typeSetContains (Box.ty go.int)
     (go.InterfaceType [go.MethodElem go!"Get" (go.Signature [] false [go.string])]) = false := by
   go_type_set
 
+/-- `func (p Duo[B, A]) Swap() Duo[A, B]`: the receiver renames the type parameters, and
+the method set is written with the declaration's, `Swap() Duo[B, A]` for `Duo[A, B]`. -/
+example : go.typeSetContains (Duo.ty go.int go.string)
+    (go.InterfaceType [go.MethodElem go!"Swap"
+      (go.Signature [] false [Duo.ty go.string go.int])]) = true := by
+  go_type_set
+
+example : go.typeSetContains (Duo.ty go.int go.string)
+    (go.InterfaceType [go.MethodElem go!"Swap"
+      (go.Signature [] false [Duo.ty go.int go.string])]) = false := by
+  go_type_set
+
+/-- Promotion through an embedded instantiation: `DuoHolder[T]` embeds `Duo[T, uint64]`. -/
+example : go.typeSetContains (go.GoType.PointerType (DuoHolder.ty go.bool))
+    (go.InterfaceType [go.MethodElem go!"Swap"
+      (go.Signature [] false [Duo.ty go.uint64 go.bool])]) = true := by
+  go_type_set
+
 end generics
 
 section filteredimport
@@ -123,6 +142,11 @@ example : go.typeSetContains T.ty Getter.ty = false := by
 
 /-- `PlainCloser` embeds `plain`, all of whose methods are written. -/
 example : go.typeSetContains (go.GoType.PointerType T.ty) PlainCloser.ty = false := by
+  go_type_set
+
+/-- `litGetter` embeds an interface literal embedding `withDep`: the literal is a type term
+too (written as `Get` and the type term `withDep`). -/
+example : go.typeSetContains (go.GoType.PointerType T.ty) litGetter.ty = false := by
   go_type_set
 
 end filteredimport
@@ -178,6 +202,22 @@ example : go.typeSetContains (go.GoType.PointerType go.int) Fooer.ty = false := 
 
 /-- Every type is in `any`'s type set. -/
 example : go.typeSetContains concreteFooer.ty go.any = true := by
+  go_type_set
+
+/-- A promoted unexported method of another package: `externalglobals.extTagged` embeds
+`unittest.MsTagged`, whose `tag` is `unittest`'s. It implements `unittest.MsTagger` and not
+`externalglobals.localTagger`, whose `tag` (the same name) is another method. -/
+example [github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.Assumptions] :
+    go.typeSetContains
+      github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.extTagged.ty
+      MsTagger.ty = true := by
+  go_type_set
+
+example [github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.Assumptions] :
+    go.typeSetContains
+      github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.extTagged.ty
+      github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.localTagger.ty =
+      false := by
   go_type_set
 
 end unittest

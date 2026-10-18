@@ -18,6 +18,47 @@ open Iris Iris.BI
 noncomputable section
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals
 
+namespace extTagged
+section def_
+
+-- the FFI instances are global (from the disk prelude)
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.Assumptions]
+
+instance extTagged_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.extTagged where
+  typedPointstoDef l v dq := iprop(
+    "MsTagged" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.extTagged go!"MsTagged" l) v.MsTagged' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+instance extTagged_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.extTagged github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.extTagged.underlying := by
+  solve_into_val_typed_struct
+
+instance extTagged_access_load_MsTagged (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.extTagged) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.extTagged go!"MsTagged" l) v.MsTagged' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.extTagged go!"MsTagged" l) v.MsTagged' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+instance extTagged_access_store_MsTagged (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.extTagged) (MsTagged' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.MsTagged) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.extTagged go!"MsTagged" l) v.MsTagged' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.extTagged go!"MsTagged" l) MsTagged' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with MsTagged' := MsTagged' } : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals.extTagged) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end extTagged
+
 end github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals
 end
 end Perennial

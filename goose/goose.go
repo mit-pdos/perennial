@@ -103,6 +103,11 @@ type Ctx struct {
 	// using package name "v1".
 	importAssumptions map[string]string
 
+	// Set while goose writes something the source does not name (method sets,
+	// the methods of embedded interfaces: importedOnly): names of other
+	// packages are then restricted to the packages the translation imports.
+	onlyImported bool
+
 	inits []glang.Expr
 
 	filter declfilter.DeclFilter
@@ -415,6 +420,7 @@ func (ctx *Ctx) qualifiedName(obj types.Object) string {
 		// no module name needed
 		return name
 	}
+	ctx.checkReferable(obj)
 	return fmt.Sprintf("%s.%s", ctx.pkgRef(obj.Pkg()), name)
 }
 
@@ -2952,29 +2958,68 @@ func (ctx *Ctx) finalizeImports() {
 	}
 }
 
+// pkgImported reports whether the translation imports the declarations of pkg:
+// pkg is the universe (nil), this package, or a package it imports (one the
+// configuration does not filter out). The translation of an imported package
+// declares each of its package-level named types (`T.ty`).
+func (ctx *Ctx) pkgImported(pkg *types.Package) bool {
+	if pkg == nil || pkg.Path() == ctx.pkgPath {
+		return true
+	}
+	_, ok := ctx.importNames[pkg.Path()]
+	return ok
+}
+
+// pkgReferable reports whether goose may name a declaration of pkg here: always
+// where the source names it (pkgRef), and only if the translation imports pkg
+// (pkgImported) where goose writes what the source does not name
+// (importedOnly).
+func (ctx *Ctx) pkgReferable(pkg *types.Package) bool {
+	return !ctx.onlyImported || ctx.pkgImported(pkg)
+}
+
+// checkReferable reports an error if obj, a declaration of another package,
+// cannot be named here (pkgReferable).
+func (ctx *Ctx) checkReferable(obj types.Object) {
+	if !ctx.pkgReferable(obj.Pkg()) {
+		ctx.unsupported(obj, "%s is declared in %s, which the translation does not import",
+			obj.Name(), obj.Pkg().Path())
+	}
+}
+
+// importedOnly runs f, which writes something the source does not name (a
+// method set, the methods of an embedded interface), restricting the names of
+// other packages to those the translation imports (pkgReferable). It reports
+// whether f succeeded; on failure (an error of goose: such a name, or a type
+// goose does not support), its output is to be discarded.
+func (ctx *Ctx) importedOnly(f func()) bool {
+	saved := ctx.onlyImported
+	ctx.onlyImported = true
+	defer func() { ctx.onlyImported = saved }()
+	var e errorCatcher
+	e.do(f)
+	return len(e.errs) == 0
+}
+
+// pkgRef is the Lean namespace of pkg's translation.
+//
+// Lean namespaces are global, so packages are referred to by their full
+// (unique) namespace; see glang.LeanNamespace. This is unquoted since it is
+// quoted when printed. References are rooted (`_root_.Perennial.<ns>`): a
+// relative reference `errors.X` from inside namespace `a.errors` would resolve
+// to `a.errors.X`.
+//
+// A package the translation does not import (pkgImported: the source does not
+// import it, or the configuration filters it out) is named all the same where
+// the source names one of its declarations (a field or a value of one of its
+// types, through an imported package): the reference resolves if the
+// translation of an imported package imports it in turn. What goose writes on
+// its own does not rely on that (pkgReferable).
 func (ctx *Ctx) pkgRef(pkg *types.Package) string {
 	if pkg == nil {
 		return ""
 	}
-	// Lean namespaces are global, so packages are referred to by their full
-	// (unique) namespace; see glang.LeanNamespace. This is unquoted since it is
-	// quoted when printed.
-	//
-	// References are rooted (`_root_.Perennial.<ns>`): a relative reference
-	// `errors.X` from inside namespace `a.errors` would resolve to
-	// `a.errors.X`.
-	path := pkg.Path()
-	if _, ok := ctx.importNames[path]; !ok && path != ctx.pkgPath {
-		// Not imported (filtered out by the config): refer to an imported
-		// package with the same name, if any.
-		for _, n := range ctx.importNamesOrdered {
-			if n.Imported().Name() == pkg.Name() {
-				path = n.Imported().Path()
-				break
-			}
-		}
-	}
-	return "_root_.Perennial." + strings.ReplaceAll(glang.GoPathToIdentPath(path), "/", ".")
+	return "_root_.Perennial." + strings.ReplaceAll(glang.GoPathToIdentPath(pkg.Path()), "/", ".")
 }
 
 func (ctx *Ctx) importAssumptionName(pkg *types.Package) string {

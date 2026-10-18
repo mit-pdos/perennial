@@ -62,6 +62,16 @@ def useNonStructGeneric.ty [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.Go
 
 attribute [irreducible] useNonStructGeneric.ty
 
+def Duo.ty [FfiSyntax] [GoGlobalContext] (A : go.GoType) (B : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.Duo" [A, B])
+
+attribute [irreducible] Duo.ty
+
+def DuoHolder.ty [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.DuoHolder" [T])
+
+attribute [irreducible] DuoHolder.ty
+
 noncomputable def UnderlyingSlice [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/generics.UnderlyingSlice"
 
@@ -291,6 +301,17 @@ noncomputable def useAnyPointer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Let "$a0" (Var "x")
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers.AnyPointer [go.uint64]))) (Val #())) (Var "$a0"))))))))
+
+/-- go: generics.go:119:20 -/
+noncomputable def Duo.Swap.impl [FfiSyntax] [GoGlobalContext] (B A : go.GoType) : val :=
+  (LamV "p"
+  (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (Duo.ty B A)))) (Var "p"))
+  (App (Val doReturn)
+  (Let "$v0" (App (Val (GoInstruction (GoLoad A))) (App (Val (GoInstruction (StructFieldRef (Duo.ty B A) go!"Y"))) (Var "p")))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad B))) (App (Val (GoInstruction (StructFieldRef (Duo.ty B A) go!"X"))) (Var "p")))
+  (App (Val (GoInstruction (CompositeLiteral (Duo.ty A B)))) (LiteralValue [(KeyedElement (some (KeyField go!"X")) (ElementExpression A (Var "$v0"))), (KeyedElement (some (KeyField go!"Y")) (ElementExpression B (Var "$v1")))])))))))))
 
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics where
   pkgImportedPkgs := [pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers]
@@ -602,6 +623,93 @@ attribute [instance] useNonStructGeneric.TypeAssumptions.type_repr
   useNonStructGeneric.TypeAssumptions.method_set
   useNonStructGeneric.TypeAssumptions.ptr_method_set
 
+structure Duo [FfiSyntax] (A B : Type) where
+  mk ::
+  X' : A
+  Y' : B
+
+instance Duo.zero_val [FfiSyntax] {A B : Type} [ZeroVal A] [ZeroVal B] : ZeroVal (Duo A B) :=
+  ⟨Duo.mk zeroValDef zeroValDef⟩
+
+@[reducible] def Duo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (A B : go.GoType) : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"X" A),
+(go.field_decl.FieldDecl go!"Y" B)]
+
+@[irreducible] def Duo.fields [FfiSyntax] [GoGlobalContext] (A B : go.GoType) : List go.field_decl :=
+  (Duo.fieldsUnsealed A B)
+
+instance equals_unfold_Duo [FfiSyntax] [GoGlobalContext] (A B : go.GoType) :
+    EqualsUnfold (Duo.fields A B) (Duo.fieldsUnsealed A B) :=
+  ⟨by unfold Duo.fields; rfl⟩
+
+@[reducible] def Duo.underlying [FfiSyntax] [GoGlobalContext] (A : go.GoType) (B : go.GoType) : go.GoType :=
+  (go.GoType.StructType (Duo.fields A B))
+
+class Duo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : ∀ (A B : go.GoType) (A' B' : Type) [ZeroVal A'] [TypeRepr A A'] [ZeroVal B'] [TypeRepr B B'], go.TypeReprUnderlying (Duo.underlying A B) (Duo A' B')
+  underlying : ∀ (A B : go.GoType), go.UnderlyingDirectedEq (Duo.ty A B) (Duo.underlying A B)
+  get_X : ∀ (A B : go.GoType) (A' B' : Type) (x : (Duo A' B')), go.IsGoStepPureDetTagged under (StructFieldGet (Duo.underlying A B) go!"X") #x (Val #(x.X'))
+  set_X : ∀ (A B : go.GoType) (A' B' : Type) (x : (Duo A' B')) (y : A'), go.IsGoStepPureDetTagged under (StructFieldSet (Duo.underlying A B) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (Duo A' B'))))
+  get_Y : ∀ (A B : go.GoType) (A' B' : Type) (x : (Duo A' B')), go.IsGoStepPureDetTagged under (StructFieldGet (Duo.underlying A B) go!"Y") #x (Val #(x.Y'))
+  set_Y : ∀ (A B : go.GoType) (A' B' : Type) (x : (Duo A' B')) (y : B'), go.IsGoStepPureDetTagged under (StructFieldSet (Duo.underlying A B) go!"Y") (PairV #x #y) (Val #(({ x with Y' := y } : (Duo A' B'))))
+  method_set : ∀ (A B : go.GoType), go.MethodSetIs (Duo.ty A B) [(go!"Swap", (some (go.signature.Signature [] false [(Duo.ty B A)])))]
+  ptr_method_set : ∀ (A B : go.GoType), go.MethodSetIs (go.GoType.PointerType (Duo.ty A B)) [(go!"Swap", (some (go.signature.Signature [] false [(Duo.ty B A)])))]
+  Swap_unfold : ∀ (A B : go.GoType), MethodUnfold (Duo.ty A B) go!"Swap" (Duo.Swap.impl A B)
+  ptr_Swap_unfold : ∀ (A B : go.GoType), MethodUnfold (go.GoType.PointerType (Duo.ty A B)) go!"Swap" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (Duo.ty A B) go!"Swap"))) (App (Val (GoInstruction (GoLoad (Duo.ty A B)))) (Var "$r"))))
+
+attribute [instance] Duo.TypeAssumptions.type_repr
+  Duo.TypeAssumptions.underlying
+  Duo.TypeAssumptions.get_X
+  Duo.TypeAssumptions.set_X
+  Duo.TypeAssumptions.get_Y
+  Duo.TypeAssumptions.set_Y
+  Duo.TypeAssumptions.method_set
+  Duo.TypeAssumptions.ptr_method_set
+  Duo.TypeAssumptions.Swap_unfold
+  Duo.TypeAssumptions.ptr_Swap_unfold
+
+structure DuoHolder [FfiSyntax] (T : Type) where
+  mk ::
+  Duo' : (Duo T w64)
+
+instance DuoHolder.zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (DuoHolder T) :=
+  ⟨DuoHolder.mk zeroValDef⟩
+
+@[reducible] def DuoHolder.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"Duo" (Duo.ty T go.uint64))]
+
+@[irreducible] def DuoHolder.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+  (DuoHolder.fieldsUnsealed T)
+
+instance equals_unfold_DuoHolder [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
+    EqualsUnfold (DuoHolder.fields T) (DuoHolder.fieldsUnsealed T) :=
+  ⟨by unfold DuoHolder.fields; rfl⟩
+
+@[reducible] def DuoHolder.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (DuoHolder.fields T))
+
+class DuoHolder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (DuoHolder.underlying T) (DuoHolder T')
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (DuoHolder.ty T) (DuoHolder.underlying T)
+  get_Duo : ∀ (T : go.GoType) (T' : Type) (x : (DuoHolder T')), go.IsGoStepPureDetTagged under (StructFieldGet (DuoHolder.underlying T) go!"Duo") #x (Val #(x.Duo'))
+  set_Duo : ∀ (T : go.GoType) (T' : Type) (x : (DuoHolder T')) (y : (Duo T' w64)), go.IsGoStepPureDetTagged under (StructFieldSet (DuoHolder.underlying T) go!"Duo") (PairV #x #y) (Val #(({ x with Duo' := y } : (DuoHolder T'))))
+  method_set : ∀ (T : go.GoType), go.MethodSetIs (DuoHolder.ty T) [(go!"Swap", (some (go.signature.Signature [] false [(Duo.ty go.uint64 T)])))]
+  ptr_method_set : ∀ (T : go.GoType), go.MethodSetIs (go.GoType.PointerType (DuoHolder.ty T)) [(go!"Swap", (some (go.signature.Signature [] false [(Duo.ty go.uint64 T)])))]
+  Swap_unfold : ∀ (T : go.GoType), MethodUnfold (DuoHolder.ty T) go!"Swap" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (Duo.ty T go.uint64) go!"Swap"))) (App (Val (GoInstruction (StructFieldGet (DuoHolder.ty T) go!"Duo"))) (Var "$r"))))
+  ptr_Swap_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (DuoHolder.ty T)) go!"Swap" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Duo.ty T go.uint64)) go!"Swap"))) (App (Val (GoInstruction (StructFieldRef (DuoHolder.ty T) go!"Duo"))) (Var "$r"))))
+
+attribute [instance] DuoHolder.TypeAssumptions.type_repr
+  DuoHolder.TypeAssumptions.underlying
+  DuoHolder.TypeAssumptions.get_Duo
+  DuoHolder.TypeAssumptions.set_Duo
+  DuoHolder.TypeAssumptions.method_set
+  DuoHolder.TypeAssumptions.ptr_method_set
+  DuoHolder.TypeAssumptions.Swap_unfold
+  DuoHolder.TypeAssumptions.ptr_Swap_unfold
+
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Box_instance : Box.TypeAssumptions
   Container_instance : Container.TypeAssumptions
@@ -611,6 +719,8 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   TypeParamCollision_instance : TypeParamCollision.TypeAssumptions
   nonStructGeneric_instance : nonStructGeneric.TypeAssumptions
   useNonStructGeneric_instance : useNonStructGeneric.TypeAssumptions
+  Duo_instance : Duo.TypeAssumptions
+  DuoHolder_instance : DuoHolder.TypeAssumptions
   UnderlyingSlice_unfold : ∀ (T : go.GoType), FuncUnfold UnderlyingSlice [T] (UnderlyingSlice.impl T)
   Clone_unfold : ∀ (S E : go.GoType), FuncUnfold Clone [S, E] (Clone.impl S E)
   BoxGet_unfold : ∀ (T : go.GoType), FuncUnfold BoxGet [T] (BoxGet.impl T)
@@ -634,6 +744,8 @@ attribute [instance] Assumptions.Box_instance
   Assumptions.TypeParamCollision_instance
   Assumptions.nonStructGeneric_instance
   Assumptions.useNonStructGeneric_instance
+  Assumptions.Duo_instance
+  Assumptions.DuoHolder_instance
   Assumptions.UnderlyingSlice_unfold
   Assumptions.Clone_unfold
   Assumptions.BoxGet_unfold

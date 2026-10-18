@@ -23,6 +23,16 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals
 
+def extTagged.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/externalglobals.extTagged" [])
+
+attribute [irreducible] extTagged.ty
+
+def localTagger.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/externalglobals.localTagger" [])
+
+attribute [irreducible] localTagger.ty
+
 noncomputable def f [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/externalglobals.f"
 
@@ -47,11 +57,70 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.initialize') (Val #())))))))
 
+structure extTagged [FfiSyntax] where
+  mk ::
+  MsTagged' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.MsTagged
+
+instance extTagged.zero_val [FfiSyntax] : ZeroVal extTagged :=
+  ⟨extTagged.mk zeroValDef⟩
+
+@[reducible] def extTagged.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"MsTagged" _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.MsTagged.ty)]
+
+@[irreducible] def extTagged.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  extTagged.fieldsUnsealed
+
+instance equals_unfold_extTagged [FfiSyntax] [GoGlobalContext] :
+    EqualsUnfold extTagged.fields extTagged.fieldsUnsealed :=
+  ⟨by unfold extTagged.fields; rfl⟩
+
+@[reducible] def extTagged.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType extTagged.fields)
+
+class extTagged.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying extTagged.underlying extTagged
+  underlying : go.UnderlyingDirectedEq extTagged.ty extTagged.underlying
+  get_MsTagged : ∀ (x : extTagged), go.IsGoStepPureDetTagged under (StructFieldGet extTagged.underlying go!"MsTagged") #x (Val #(x.MsTagged'))
+  set_MsTagged : ∀ (x : extTagged) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.MsTagged), go.IsGoStepPureDetTagged under (StructFieldSet extTagged.underlying go!"MsTagged") (PairV #x #y) (Val #(({ x with MsTagged' := y } : extTagged)))
+  method_set : go.MethodSetIs extTagged.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.tag", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType extTagged.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.tag", (some (go.signature.Signature [] false [go.uint64])))]
+  tag_unfold : MethodUnfold extTagged.ty go!"tag" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.MsTagged.ty go!"tag"))) (App (Val (GoInstruction (StructFieldGet extTagged.ty go!"MsTagged"))) (Var "$r"))))
+  ptr_tag_unfold : MethodUnfold (go.GoType.PointerType extTagged.ty) go!"tag" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.MsTagged.ty) go!"tag"))) (App (Val (GoInstruction (StructFieldRef extTagged.ty go!"MsTagged"))) (Var "$r"))))
+
+attribute [instance] extTagged.TypeAssumptions.type_repr
+  extTagged.TypeAssumptions.underlying
+  extTagged.TypeAssumptions.get_MsTagged
+  extTagged.TypeAssumptions.set_MsTagged
+  extTagged.TypeAssumptions.method_set
+  extTagged.TypeAssumptions.ptr_method_set
+  extTagged.TypeAssumptions.tag_unfold
+  extTagged.TypeAssumptions.ptr_tag_unfold
+
+abbrev localTagger [FfiSyntax] : Type := GoInterface
+
+@[reducible] def localTagger.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/externalglobals.tag" (go.signature.Signature [] false [go.uint64]))])
+
+class localTagger.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq localTagger.ty localTagger.underlying
+  method_set : go.MethodSetIs localTagger.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/externalglobals.tag", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType localTagger.ty) []
+
+attribute [instance] localTagger.TypeAssumptions.underlying
+  localTagger.TypeAssumptions.method_set
+  localTagger.TypeAssumptions.ptr_method_set
+
 class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  extTagged_instance : extTagged.TypeAssumptions
+  localTagger_instance : localTagger.TypeAssumptions
   f_unfold : FuncUnfold f [] f.impl
   import_unittest_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions
 
-attribute [instance] Assumptions.f_unfold
+attribute [instance] Assumptions.extTagged_instance
+  Assumptions.localTagger_instance
+  Assumptions.f_unfold
   Assumptions.import_unittest_Assumption
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals

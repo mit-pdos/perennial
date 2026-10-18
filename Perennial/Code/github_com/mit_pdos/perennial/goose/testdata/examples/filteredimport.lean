@@ -46,6 +46,11 @@ def PlainCloser.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] PlainCloser.ty
 
+def litGetter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport.litGetter" [])
+
+attribute [irreducible] litGetter.ty
+
 axiom withDep.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport where
@@ -154,18 +159,34 @@ attribute [instance] PlainCloser.TypeAssumptions.underlying
   PlainCloser.TypeAssumptions.method_set
   PlainCloser.TypeAssumptions.ptr_method_set
 
+abbrev litGetter [FfiSyntax] : Type := GoInterface
+
+@[reducible] def litGetter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Close" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Get" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Get" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm withDep.ty)])]))])])
+
+class litGetter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq litGetter.ty litGetter.underlying
+  method_set : go.MethodSetIs litGetter.ty [(go!"Close", (some (go.signature.Signature [] false []))), (go!"Get", (some (go.signature.Signature [] false [go.uint64]))), (go!"Use", none)]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType litGetter.ty) []
+
+attribute [instance] litGetter.TypeAssumptions.underlying
+  litGetter.TypeAssumptions.method_set
+  litGetter.TypeAssumptions.ptr_method_set
+
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   T_instance : T.TypeAssumptions
   withDep_instance : withDep.TypeAssumptions
   Getter_instance : Getter.TypeAssumptions
   plain_instance : plain.TypeAssumptions
   PlainCloser_instance : PlainCloser.TypeAssumptions
+  litGetter_instance : litGetter.TypeAssumptions
 
 attribute [instance] Assumptions.T_instance
   Assumptions.withDep_instance
   Assumptions.Getter_instance
   Assumptions.plain_instance
   Assumptions.PlainCloser_instance
+  Assumptions.litGetter_instance
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport
 

@@ -108,3 +108,20 @@ type nonStructGeneric[T any] []T
 type useNonStructGeneric[T any] struct {
 	x nonStructGeneric[T]
 }
+
+// Duo's method renames its type parameters in its receiver (and swaps them):
+// its method set is written with the declaration's names, `Swap() Duo[B, A]`.
+type Duo[A any, B any] struct {
+	X A
+	Y B
+}
+
+func (p Duo[B, A]) Swap() Duo[A, B] {
+	return Duo[A, B]{X: p.Y, Y: p.X}
+}
+
+// DuoHolder promotes Swap through an embedded instantiation: its method set
+// has `Swap() Duo[uint64, T]`.
+type DuoHolder[T any] struct {
+	Duo[T, uint64]
+}
