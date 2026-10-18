@@ -94,6 +94,10 @@ class GoSemanticsFunctions [FfiSyntax] where
   it is unexported) and signature. Constrained by `go.MethodSetIs` facts
   (`Golang/Defn/MethodSet.lean`). -/
   methodSet : go.GoType → GMap GoString go.signature
+  /-- `interfaceTermContains t i`: whether `t` is in the type set of the interface type `i`
+  written as a type term of another interface (`go.TypeTerm i`, `Interface.lean`), which goose
+  does only when it cannot write `i`'s methods. Unspecified: the model does not decide it. -/
+  interfaceTermContains : go.GoType → go.GoType → Bool
 
   /-- This uses a Lean `Type` because there are multiple `go.GoType`s that have
   the same `Type` representation (e.g. uint64/int64, *X/*Y), but offsets are
@@ -116,8 +120,9 @@ class GoSemanticsFunctions [FfiSyntax] where
 
 attribute [instance] GoSemanticsFunctions.float_ops
 
-export GoSemanticsFunctions (underlying globalAddr functions methods methodSet structFieldRef
-  arrayIndexRef mapEmpty mapLookup mapInsert mapDelete is_map_domain is_map_pure mapDefault)
+export GoSemanticsFunctions (underlying globalAddr functions methods methodSet interfaceTermContains
+  structFieldRef arrayIndexRef mapEmpty mapLookup mapInsert mapDelete is_map_domain is_map_pure
+  mapDefault)
 
 /-- The class form of `GoSemanticsFunctions.TypeRepr` (`V` is an output). -/
 class TypeRepr [FfiSyntax] [GoSemanticsFunctions] (t : go.GoType) (V : outParam Type) [ZeroVal V] :

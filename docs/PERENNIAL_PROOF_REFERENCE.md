@@ -625,7 +625,10 @@ It also works with a named interface type of a user package (`Fooer.ty`: its
 the goal: the method set of a type literal with embedded fields, of a type of a package
 that is not translated, or an entry whose signature goose could not write (a method that is
 not translated may mention a type of a package the translation does not import:
-`("Equal", none)`); then the entry still says that the method exists.
+`("Equal", none)`); then the entry still says that the method exists. Likewise an
+interface embedding one with such a method is written with that interface as a type term,
+whose membership is unspecified (`interfaceTermContains`): only non-membership, through a
+missing method that is written, is provable.
 
 ---
 

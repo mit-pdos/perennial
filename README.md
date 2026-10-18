@@ -139,7 +139,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   another. goose writes an interface type as all its methods (go/types' method set of the
   interface, embedded interfaces included), so that `typeSetContains` needs no recursion
   through embedded named interfaces; embedded constraint elements (unions, `comparable`) stay
-  as type terms. Nothing is claimed beyond what is known: a method whose signature mentions a
+  as type terms, and so does an embedded interface with a method whose signature the
+  translation cannot name (a type of a package it does not import): that method is not
+  written, and the membership of an interface type term is unspecified
+  (`interfaceTermContains`), so the model does not decide it. Nothing is claimed beyond what is known: a method whose signature mentions a
   type of a package the translation does not import is an entry without a signature
   (`(id, none)`: it exists), and the method set of any other type (a struct type literal with
   embedded fields, a type declared in a function, a type of an untranslated package) is
