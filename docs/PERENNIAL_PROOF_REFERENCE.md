@@ -597,19 +597,20 @@ gives its results (`sort.wp_Search`, `sort.wp_SearchInts`, `sort.wp_Find`, the
 
 ### Interfaces and method sets (`Golang/Defn/MethodSet.lean`, `Golang/Theory/TypeSet.lean`)
 
-A conversion to an interface, a type assertion `x.(I)` / `x.(I)` with `ok`, and
-`errors.As`'s target check depend on `go.typeSetContains t I`: whether the dynamic type
-`t` implements `I`. Its method elements are decided by `methodSet t`, which the semantics
-constrains by `go.MethodSetIs t ms` facts: goose emits, for every named type `T` of a
-translated package (translated, types-only or axiomatized alike), the method sets of `T`
-and `*T` as the Go type checker computes them (fields `method_set`, `ptr_method_set` of
-`T.TypeAssumptions`, so of the package's `Assumptions`), and `go.InterfaceSemantics`
-gives the empty method set of the types without methods (`go.NoMethods`: predeclared
-types, slices, maps, ..., pointers to them, structs without embedded fields). Methods are
-named by their Go id (an unexported method qualified by its package path, `"context.cancel"`),
-in method sets and in interface types alike, and goose writes an interface type as all its
-methods (those of embedded interfaces included). `go_type_set` (or `go_type_set at h`)
-decides a goal `go.typeSetContains t I = b`:
+A type assertion to an interface type, `x.(I)` and its comma-ok form (and so `errors.As`'s
+target check and `errors.Is`'s `Is` method), depends on `go.typeSetContains t I`: whether
+the dynamic type `t` implements `I` (a conversion to an interface does not consult it: the
+type checker has already checked it). Its method elements are decided by `methodSet t`,
+which the semantics constrains by `go.MethodSetIs t ms` facts: goose emits, for every named
+type `T` of a translated package (translated, types-only or axiomatized alike), the method
+sets of `T` and `*T` as the Go type checker computes them (fields `method_set`,
+`ptr_method_set` of `T.TypeAssumptions`, so of the package's `Assumptions`), and
+`go.InterfaceSemantics` gives the empty method set of the types without methods
+(`go.NoMethods`: predeclared types, slices, maps, ..., pointers to them, structs without
+embedded fields). goose writes an interface type as all its methods (those of embedded
+interfaces included), each a `go.MethodElem`. `go_type_set` (or `go_type_set at h`), a
+`simp only` with the simp set `go_type_set_simp` (extend it with
+`attribute [go_type_set_simp]`), decides a goal `go.typeSetContains t I = b`:
 
 ```
 example [errors.Assumptions] :
@@ -621,14 +622,35 @@ example [errors.Assumptions] : go.typeSetContains errors.errorString.ty go.error
 
 It also works with a named interface type of a user package (`Fooer.ty`: its
 `UnderlyingDirectedEq` gives the interface's methods) and generic types (`Box.ty go.int`);
-`Perennial/ProgramLogic/TypeSetTest.lean` has examples. What it cannot decide is left in
-the goal: the method set of a type literal with embedded fields, of a type of a package
-that is not translated, or an entry whose signature goose could not write (a method that is
-not translated may mention a type of a package the translation does not import:
-`("Equal", none)`); then the entry still says that the method exists. Likewise an
-interface embedding one with such a method is written with that interface as a type term,
-whose membership is unspecified (`interfaceTermContains`): only non-membership, through a
-missing method that is written, is provable.
+`Perennial/ProgramLogic/TypeSetTest.lean` has examples.
+
+*Ids and names.* Method sets and interface types name a method by its Go id
+(`go/types.Id`): its name if it is exported, its name qualified by its package path if not
+(`"context.cancel"`), since an unexported method of one package never implements an
+interface of another. `MethodResolve`, `MethodUnfold` and the `*_unfold` fields of
+`T.TypeAssumptions` name it by its name, as a selector in the source does (in package `p`,
+`x.m` with `m` unexported selects `p`'s `m`). goose refuses a type whose method set has
+two methods of the same name (an unexported method of another package promoted through an
+embedded field, and one of the type's package), whose `*_unfold` facts would be about the
+same name.
+
+*What goose cannot name.* goose writes a method set entry's signature, and the methods of
+a named interface embedded in an interface type, only if every name in them is declared in
+the translation's imports (this package, the universe, or a package the translation
+imports; an alias is written as the type it stands for unless the package translates it).
+The source may not import every package a method mentions (an untranslated method, a
+method promoted from or an interface embedded from another package), or the configuration
+may filter out its import. Otherwise:
+
+* a method-set entry is written without its signature, `("Equal", none)`: it says only
+  that the method exists, and what depends on its signature is left in the goal;
+* an embedded interface with such a method is written as a type term (`go.TypeTerm I`)
+  instead of its methods, and the membership of a type term whose type is an interface is
+  unspecified (`interfaceTermContains`): only non-membership, through a written method that
+  `t` lacks, is provable.
+
+The method set of a type literal with embedded fields, or of a type of a package that is
+not translated, is unconstrained.
 
 ---
 

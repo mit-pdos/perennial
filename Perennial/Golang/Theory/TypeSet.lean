@@ -19,13 +19,14 @@ those of a package's `Assumptions` for its named types (`T.TypeAssumptions.metho
     go_type_set
   ```
   It decides membership in an interface made of methods whenever the method sets of the
-  types involved are known (`Perennial/Golang/Theory/TypeSetTest.lean` has examples,
+  types involved are known (`Perennial/ProgramLogic/TypeSetTest.lean` has examples,
   including non-membership).
 -/
 module
 
 public import Perennial.Golang.Defn.Pre
 public import Perennial.Golang.Theory.TacticsSimp
+public import Perennial.Golang.Theory.TypeSetSimpAttr
 
 @[expose] public section
 
@@ -35,17 +36,17 @@ namespace go
 section lemmas
 variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
 
-theorem typeSetContains_underlying {t t' : go.GoType} {elems : List go.InterfaceElem}
+@[go_type_set_simp] theorem typeSetContains_underlying {t t' : go.GoType} {elems : List go.InterfaceElem}
     [t' ↓u go.InterfaceType elems] :
     typeSetContains t t' = typeSetElemsContains t elems := by
   simp only [typeSetContains, is_underlying]
 
-theorem typeSetElemsContains_nil (t : go.GoType) : typeSetElemsContains t [] = true := rfl
+@[go_type_set_simp] theorem typeSetElemsContains_nil (t : go.GoType) : typeSetElemsContains t [] = true := rfl
 
-theorem typeSetElemsContains_cons (t : go.GoType) (e : go.InterfaceElem) (es : List go.InterfaceElem) :
+@[go_type_set_simp] theorem typeSetElemsContains_cons (t : go.GoType) (e : go.InterfaceElem) (es : List go.InterfaceElem) :
     typeSetElemsContains t (e :: es) = (typeSetElemContains t e && typeSetElemsContains t es) := rfl
 
-theorem typeSetElemContains_method {t : go.GoType} {ms : List (GoString × Option go.signature)}
+@[go_type_set_simp] theorem typeSetElemContains_method {t : go.GoType} {ms : List (GoString × Option go.signature)}
     [MethodSetIs t ms] (m : GoString) (sig : go.signature) :
     typeSetElemContains t (go.MethodElem m sig) =
       (match methodSetLookup ms m with
@@ -62,9 +63,9 @@ theorem typeSetElemContains_method {t : go.GoType} {ms : List (GoString × Optio
     | none => intro _; rfl
     | some s => intro h; simp only [h, Option.some.injEq]
 
-theorem methodSetLookup_nil (m : GoString) : methodSetLookup [] m = none := rfl
+@[go_type_set_simp] theorem methodSetLookup_nil (m : GoString) : methodSetLookup [] m = none := rfl
 
-theorem methodSetLookup_cons (k m : GoString) (s : Option go.signature)
+@[go_type_set_simp] theorem methodSetLookup_cons (k m : GoString) (s : Option go.signature)
     (ms : List (GoString × Option go.signature)) :
     methodSetLookup ((k, s) :: ms) m = if k = m then some s else methodSetLookup ms m := rfl
 
@@ -78,22 +79,31 @@ theorem typeSetElemContains_method_none {t : go.GoType} {ms : List (GoString × 
 end lemmas
 end go
 
+/- The other rewrites of `go_type_set`: the method-set lookups' conditions (`if k = m`)
+and the signature comparisons (`gooseReduceGoTypeEq`), and the boolean and
+propositional connectives they leave. -/
+attribute [go_type_set_simp] gooseReduceIteDecide gooseReduceGoTypeEq
+  go.signature.Signature.injEq List.cons.injEq List.nil_eq decide_True_any decide_False_any
+  decide_eq_self_any and_true true_and and_false false_and Bool.and_true Bool.true_and
+  Bool.and_false Bool.false_and Bool.and_self
+
+/-- `reduceCtorEq` in `go_type_set_simp` (distinct constructors of the signatures' types
+and of `List`): a core simproc can only be added to a simp set from a `module` through a
+declaration of this module. -/
+simproc [go_type_set_simp] goTypeSetReduceCtorEq (_ = _) := reduceCtorEq
+
 /-- `go_type_set` (also `go_type_set at h`): decide `go.typeSetContains t t'` (whether
 `t` implements the interface type `t'`) from the method-set facts of the packages'
-`Assumptions` and of the semantics (`Golang/Theory/TypeSet.lean`): rewrites with
-`go.typeSetContains_underlying` (the instance `t' ↓u u`), `go.typeSetElemContains_method`
-(the instance `MethodSetIs t ms`), evaluates the method-set lookups and compares the
-signatures (`gooseReduceGoTypeEq`). What it cannot decide (a type whose method set is not
-known, an entry whose signature is not known) is left in the goal. -/
+`Assumptions` and of the semantics (`Golang/Theory/TypeSet.lean`): `simp only` with the
+simp set `go_type_set_simp`, which rewrites with `go.typeSetContains_underlying` (the
+instance `t' ↓u u`), `go.typeSetElemContains_method` (the instance `MethodSetIs t ms`),
+evaluates the method-set lookups and compares the signatures (`gooseReduceGoTypeEq`);
+add a lemma to the set with `attribute [go_type_set_simp]`. What it cannot decide (a type
+whose method set is not known, an entry whose signature is not known) is left in the
+goal. -/
 syntax "go_type_set" (Lean.Parser.Tactic.location)? : tactic
 macro_rules
   | `(tactic| go_type_set $[$loc]?) => `(tactic|
-      simp only [go.typeSetContains_underlying, go.typeSetElemsContains_nil,
-        go.typeSetElemsContains_cons, go.typeSetElemContains_method, go.methodSetLookup_nil,
-        go.methodSetLookup_cons, gooseReduceIteDecide, gooseReduceGoTypeEq,
-        go.signature.Signature.injEq, List.cons.injEq, reduceCtorEq, List.nil_eq,
-        decide_True_any, decide_False_any, decide_eq_self_any, and_true, true_and, and_false,
-        false_and, Bool.and_true, Bool.true_and, Bool.and_false, Bool.false_and,
-        Bool.and_self] $[$loc]?)
+      simp only [go_type_set_simp] $[$loc]?)
 
 end Perennial

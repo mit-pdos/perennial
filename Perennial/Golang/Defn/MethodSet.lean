@@ -8,7 +8,9 @@ is Go's (`go/types.Id`): its name if it is exported, and its name qualified by i
 package path (`"context.cancel"`) if not, since two unexported methods `m` of two
 packages are distinct methods in Go (an interface with an unexported method can
 only be implemented in its own package). goose names an interface's methods
-(`go.MethodElem`) by their ids too.
+(`go.MethodElem`) by their ids too. `MethodResolve` and the `MethodUnfold` facts
+(`*_unfold`) name a method by its name, as a selector does (goose refuses a type
+with two methods of the same name, which unexported methods of two packages can be).
 
 The facts:
 * A named type declared in a translated package: goose emits the method sets of `T`
@@ -63,38 +65,49 @@ export MethodSetIs (method_set_is)
 type or a pointer to one, an interface, or a struct with embedded fields has methods;
 the predeclared types other than `error` have none, nor does `unsafe.Pointer`). -/
 class inductive PredeclaredNoMethods : go.GoType → Prop
-  | bool : PredeclaredNoMethods go.bool
-  | string : PredeclaredNoMethods go.string
-  | int : PredeclaredNoMethods go.int
-  | int8 : PredeclaredNoMethods go.int8
-  | int16 : PredeclaredNoMethods go.int16
-  | int32 : PredeclaredNoMethods go.int32
-  | int64 : PredeclaredNoMethods go.int64
-  | uint : PredeclaredNoMethods go.uint
-  | uint8 : PredeclaredNoMethods go.uint8
-  | uint16 : PredeclaredNoMethods go.uint16
-  | uint32 : PredeclaredNoMethods go.uint32
-  | uint64 : PredeclaredNoMethods go.uint64
-  | uintptr : PredeclaredNoMethods go.uintptr
-  | float32 : PredeclaredNoMethods go.float32
-  | float64 : PredeclaredNoMethods go.float64
-  | complex64 : PredeclaredNoMethods go.complex64
-  | complex128 : PredeclaredNoMethods go.complex128
-  | unsafePointer : PredeclaredNoMethods unsafe.Pointer
+  | predeclaredNoMethods_bool : PredeclaredNoMethods go.bool
+  | predeclaredNoMethods_string : PredeclaredNoMethods go.string
+  | predeclaredNoMethods_int : PredeclaredNoMethods go.int
+  | predeclaredNoMethods_int8 : PredeclaredNoMethods go.int8
+  | predeclaredNoMethods_int16 : PredeclaredNoMethods go.int16
+  | predeclaredNoMethods_int32 : PredeclaredNoMethods go.int32
+  | predeclaredNoMethods_int64 : PredeclaredNoMethods go.int64
+  | predeclaredNoMethods_uint : PredeclaredNoMethods go.uint
+  | predeclaredNoMethods_uint8 : PredeclaredNoMethods go.uint8
+  | predeclaredNoMethods_uint16 : PredeclaredNoMethods go.uint16
+  | predeclaredNoMethods_uint32 : PredeclaredNoMethods go.uint32
+  | predeclaredNoMethods_uint64 : PredeclaredNoMethods go.uint64
+  | predeclaredNoMethods_uintptr : PredeclaredNoMethods go.uintptr
+  | predeclaredNoMethods_float32 : PredeclaredNoMethods go.float32
+  | predeclaredNoMethods_float64 : PredeclaredNoMethods go.float64
+  | predeclaredNoMethods_complex64 : PredeclaredNoMethods go.complex64
+  | predeclaredNoMethods_complex128 : PredeclaredNoMethods go.complex128
+  | predeclaredNoMethods_unsafePointer : PredeclaredNoMethods unsafe.Pointer
 
-attribute [instance] PredeclaredNoMethods.bool PredeclaredNoMethods.string
-  PredeclaredNoMethods.int PredeclaredNoMethods.int8 PredeclaredNoMethods.int16
-  PredeclaredNoMethods.int32 PredeclaredNoMethods.int64 PredeclaredNoMethods.uint
-  PredeclaredNoMethods.uint8 PredeclaredNoMethods.uint16 PredeclaredNoMethods.uint32
-  PredeclaredNoMethods.uint64 PredeclaredNoMethods.uintptr PredeclaredNoMethods.float32
-  PredeclaredNoMethods.float64 PredeclaredNoMethods.complex64 PredeclaredNoMethods.complex128
-  PredeclaredNoMethods.unsafePointer
+attribute [instance] PredeclaredNoMethods.predeclaredNoMethods_bool
+  PredeclaredNoMethods.predeclaredNoMethods_string
+  PredeclaredNoMethods.predeclaredNoMethods_int
+  PredeclaredNoMethods.predeclaredNoMethods_int8
+  PredeclaredNoMethods.predeclaredNoMethods_int16
+  PredeclaredNoMethods.predeclaredNoMethods_int32
+  PredeclaredNoMethods.predeclaredNoMethods_int64
+  PredeclaredNoMethods.predeclaredNoMethods_uint
+  PredeclaredNoMethods.predeclaredNoMethods_uint8
+  PredeclaredNoMethods.predeclaredNoMethods_uint16
+  PredeclaredNoMethods.predeclaredNoMethods_uint32
+  PredeclaredNoMethods.predeclaredNoMethods_uint64
+  PredeclaredNoMethods.predeclaredNoMethods_uintptr
+  PredeclaredNoMethods.predeclaredNoMethods_float32
+  PredeclaredNoMethods.predeclaredNoMethods_float64
+  PredeclaredNoMethods.predeclaredNoMethods_complex64
+  PredeclaredNoMethods.predeclaredNoMethods_complex128
+  PredeclaredNoMethods.predeclaredNoMethods_unsafePointer
 
 /-- A struct field that is not embedded (it promotes no method). -/
 class inductive NotEmbedded : go.field_decl → Prop
-  | field (n : GoString) (t : go.GoType) : NotEmbedded (go.FieldDecl n t)
+  | notEmbedded_field (n : GoString) (t : go.GoType) : NotEmbedded (go.FieldDecl n t)
 
-attribute [instance] NotEmbedded.field
+attribute [instance] NotEmbedded.notEmbedded_field
 
 /-- The types whose method set is empty in Go (spec, "Method sets": "The method set of
 a defined type T consists of all methods declared with receiver type T. The method set
@@ -107,30 +120,33 @@ slice, map, channel and function types; struct types without embedded fields; an
 pointers to all of these and to pointers and interfaces (a pointer to an interface has
 no methods). -/
 class inductive NoMethods : go.GoType → Prop
-  | predeclared (t : go.GoType) [PredeclaredNoMethods t] : NoMethods t
-  | ptr_predeclared (t : go.GoType) [PredeclaredNoMethods t] : NoMethods (go.PointerType t)
-  | array (n : Int) (t : go.GoType) : NoMethods (go.ArrayType n t)
-  | slice (t : go.GoType) : NoMethods (go.SliceType t)
-  | map (k v : go.GoType) : NoMethods (go.MapType k v)
-  | chan (d : go.ChanDir) (t : go.GoType) : NoMethods (go.ChannelType d t)
-  | func (sig : go.signature) : NoMethods (go.FunctionType sig)
-  | struct (fds : List go.field_decl) [TCForall NotEmbedded fds] : NoMethods (go.StructType fds)
-  | ptr_array (n : Int) (t : go.GoType) : NoMethods (go.PointerType (go.ArrayType n t))
-  | ptr_slice (t : go.GoType) : NoMethods (go.PointerType (go.SliceType t))
-  | ptr_map (k v : go.GoType) : NoMethods (go.PointerType (go.MapType k v))
-  | ptr_chan (d : go.ChanDir) (t : go.GoType) : NoMethods (go.PointerType (go.ChannelType d t))
-  | ptr_func (sig : go.signature) : NoMethods (go.PointerType (go.FunctionType sig))
-  | ptr_struct (fds : List go.field_decl) [TCForall NotEmbedded fds] :
+  | noMethods_predeclared (t : go.GoType) [PredeclaredNoMethods t] : NoMethods t
+  | noMethods_ptr_predeclared (t : go.GoType) [PredeclaredNoMethods t] :
+      NoMethods (go.PointerType t)
+  | noMethods_array (n : Int) (t : go.GoType) : NoMethods (go.ArrayType n t)
+  | noMethods_slice (t : go.GoType) : NoMethods (go.SliceType t)
+  | noMethods_map (k v : go.GoType) : NoMethods (go.MapType k v)
+  | noMethods_chan (d : go.ChanDir) (t : go.GoType) : NoMethods (go.ChannelType d t)
+  | noMethods_func (sig : go.signature) : NoMethods (go.FunctionType sig)
+  | noMethods_struct (fds : List go.field_decl) [TCForall NotEmbedded fds] :
+      NoMethods (go.StructType fds)
+  | noMethods_ptr_array (n : Int) (t : go.GoType) : NoMethods (go.PointerType (go.ArrayType n t))
+  | noMethods_ptr_slice (t : go.GoType) : NoMethods (go.PointerType (go.SliceType t))
+  | noMethods_ptr_map (k v : go.GoType) : NoMethods (go.PointerType (go.MapType k v))
+  | noMethods_ptr_chan (d : go.ChanDir) (t : go.GoType) :
+      NoMethods (go.PointerType (go.ChannelType d t))
+  | noMethods_ptr_func (sig : go.signature) : NoMethods (go.PointerType (go.FunctionType sig))
+  | noMethods_ptr_struct (fds : List go.field_decl) [TCForall NotEmbedded fds] :
       NoMethods (go.PointerType (go.StructType fds))
-  | ptr_ptr (t : go.GoType) : NoMethods (go.PointerType (go.PointerType t))
-  | ptr_interface (elems : List go.InterfaceElem) :
+  | noMethods_ptr_ptr (t : go.GoType) : NoMethods (go.PointerType (go.PointerType t))
+  | noMethods_ptr_interface (elems : List go.InterfaceElem) :
       NoMethods (go.PointerType (go.InterfaceType elems))
 
-attribute [instance] NoMethods.predeclared NoMethods.ptr_predeclared NoMethods.array
-  NoMethods.slice NoMethods.map NoMethods.chan NoMethods.func NoMethods.struct
-  NoMethods.ptr_array NoMethods.ptr_slice NoMethods.ptr_map NoMethods.ptr_chan
-  NoMethods.ptr_func NoMethods.ptr_struct NoMethods.ptr_ptr NoMethods.ptr_interface
-
-end go
+attribute [instance] NoMethods.noMethods_predeclared NoMethods.noMethods_ptr_predeclared
+  NoMethods.noMethods_array NoMethods.noMethods_slice NoMethods.noMethods_map
+  NoMethods.noMethods_chan NoMethods.noMethods_func NoMethods.noMethods_struct
+  NoMethods.noMethods_ptr_array NoMethods.noMethods_ptr_slice NoMethods.noMethods_ptr_map
+  NoMethods.noMethods_ptr_chan NoMethods.noMethods_ptr_func NoMethods.noMethods_ptr_struct
+  NoMethods.noMethods_ptr_ptr NoMethods.noMethods_ptr_interface end go
 
 end Perennial
