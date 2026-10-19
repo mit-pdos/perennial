@@ -2,6 +2,7 @@
 module
 
 public import Perennial.Golang.Defn
+public import Perennial.TrustedCode.math
 
 @[expose] public section
 
@@ -390,267 +391,161 @@ axiom reduceThreshold [FfiSyntax] [GoGlobalContext] : val
 noncomputable def useFMA [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.useFMA"
 
-axiom useFMA.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def _gamP [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._gamP"
-
-axiom _gamP.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _gamQ [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._gamQ"
 
-axiom _gamQ.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def _gamS [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._gamS"
-
-axiom _gamS.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p0R8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p0R8"
 
-axiom p0R8.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def p0S8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p0S8"
-
-axiom p0S8.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p0R5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p0R5"
 
-axiom p0R5.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def p0S5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p0S5"
-
-axiom p0S5.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p0R3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p0R3"
 
-axiom p0R3.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def p0S3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p0S3"
-
-axiom p0S3.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p0R2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p0R2"
 
-axiom p0R2.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def p0S2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p0S2"
-
-axiom p0S2.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q0R8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q0R8"
 
-axiom q0R8.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def q0S8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q0S8"
-
-axiom q0S8.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q0R5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q0R5"
 
-axiom q0R5.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def q0S5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q0S5"
-
-axiom q0S5.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q0R3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q0R3"
 
-axiom q0R3.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def q0S3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q0S3"
-
-axiom q0S3.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q0R2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q0R2"
 
-axiom q0R2.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def q0S2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q0S2"
-
-axiom q0S2.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p1R8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p1R8"
 
-axiom p1R8.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def p1S8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p1S8"
-
-axiom p1S8.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p1R5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p1R5"
 
-axiom p1R5.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def p1S5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p1S5"
-
-axiom p1S5.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p1R3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p1R3"
 
-axiom p1R3.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def p1S3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p1S3"
-
-axiom p1S3.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def p1R2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p1R2"
 
-axiom p1R2.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def p1S2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.p1S2"
-
-axiom p1S2.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q1R8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q1R8"
 
-axiom q1R8.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def q1S8 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q1S8"
-
-axiom q1S8.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q1R5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q1R5"
 
-axiom q1R5.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def q1S5 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q1S5"
-
-axiom q1S5.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q1R3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q1R3"
 
-axiom q1R3.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def q1S3 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q1S3"
-
-axiom q1S3.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def q1R2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q1R2"
 
-axiom q1R2.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def q1S2 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.q1S2"
-
-axiom q1S2.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _lgamA [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._lgamA"
 
-axiom _lgamA.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def _lgamR [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._lgamR"
-
-axiom _lgamR.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _lgamS [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._lgamS"
 
-axiom _lgamS.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def _lgamT [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._lgamT"
-
-axiom _lgamT.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _lgamU [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._lgamU"
 
-axiom _lgamU.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def _lgamV [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._lgamV"
-
-axiom _lgamV.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _lgamW [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._lgamW"
 
-axiom _lgamW.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def pow10tab [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.pow10tab"
-
-axiom pow10tab.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def pow10postab32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.pow10postab32"
 
-axiom pow10postab32.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def pow10negtab32 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.pow10negtab32"
-
-axiom pow10negtab32.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _sin [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._sin"
 
-axiom _sin.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def _cos [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._cos"
-
-axiom _cos.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def _tanP [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._tanP"
 
-axiom _tanP.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def _tanQ [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math._tanQ"
-
-axiom _tanQ.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def tanhP [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.tanhP"
 
-axiom tanhP.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def tanhQ [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.tanhQ"
 
-axiom tanhQ.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def mPi4 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.mPi4"
-
-axiom mPi4.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def Abs [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.Abs"
@@ -1184,112 +1079,683 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4550039391721496915))
+  (Let "$v1" (Val #(W64 4563136961816477611))
+  (Let "$v2" (Val #(W64 4577161138195338416))
+  (Let "$v3" (Val #(W64 4587026004551410643))
+  (Let "$v4" (Val #(W64 4596642130376424753))
+  (Let "$v5" (Val #(W64 4602574602757202706))
+  (Let "$v6" (Val #(W64 4607182418800017408))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 7 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5"))), (KeyedElement none (ElementExpression go.float64 (Var "$v6")))])))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4537456315613631407))))
+  (Let "$v1" (Val #(W64 4558116206293624179))
+  (Let "$v2" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4571787923612021834))))
+  (Let "$v3" (Val #(W64 4577963916727660823))
+  (Let "$v4" (Val #(W64 4585323551631859303))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4597620080480782274))))
+  (Let "$v6" (Val #(W64 4589811530036231249))
+  (Let "$v7" (Val #(W64 4607182418800017408))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 8 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5"))), (KeyedElement none (ElementExpression go.float64 (Var "$v6"))), (KeyedElement none (ElementExpression go.float64 (Var "$v7")))]))))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4560400889183826579))
+  (Let "$v1" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4552600922804854140))))
+  (Let "$v2" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4568329139749408727))))
+  (Let "$v3" (Val #(W64 4570152821849638397))
+  (Let "$v4" (Val #(W64 4590669220166326662))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 5 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4")))])))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 0))
+  (Let "$v1" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4589730970243956018))))
+  (Let "$v2" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4620739194037184377))))
+  (Let "$v3" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4643229918171883619))))
+  (Let "$v4" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4657683463754599164))))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4662497797445805117))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4637900793828697937))
+  (Let "$v1" (Val #(W64 4660648908942829880))
+  (Let "$v2" (Val #(W64 4675812540598890591))
+  (Let "$v3" (Val #(W64 4682759616392571325))
+  (Let "$v4" (Val #(W64 4676778718732765660))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 5 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4")))])))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4443109657072145868))))
+  (Let "$v1" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4589730969817906118))))
+  (Let "$v2" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4616369323664763839))))
+  (Let "$v3" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4634462605178378115))))
+  (Let "$v4" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4644534698838772835))))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4644802136811736023))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4633747173989205470))
+  (Let "$v1" (Val #(W64 4652338271982856292))
+  (Let "$v2" (Val #(W64 4663295962775428448))
+  (Let "$v3" (Val #(W64 4666517258757405240))
+  (Let "$v4" (Val #(W64 4657509392920078436))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 5 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4")))])))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4478232809368038022))))
+  (Let "$v1" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4589730931450896971))))
+  (Let "$v2" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4612607077094031476))))
+  (Let "$v3" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4626876090679905812))))
+  (Let "$v4" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4633370733887232581))))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4629545027848296463))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4630243105449672147))
+  (Let "$v1" (Val #(W64 4645067437439089678))
+  (Let "$v2" (Val #(W64 4652964358233547222))
+  (Let "$v3" (Val #(W64 4652675797830835070))
+  (Let "$v4" (Val #(W64 4640311352621502593))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 5 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4")))])))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4501298447934489197))))
+  (Let "$v1" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4589730292870028866))))
+  (Let "$v2" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4609212364395685955))))
+  (Let "$v3" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4620283047998105587))))
+  (Let "$v4" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4622490810831889155))))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4614463941795374863))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4626947676037667161))
+  (Let "$v1" (Val #(W64 4638996367093041039))
+  (Let "$v2" (Val #(W64 4643465779653248923))
+  (Let "$v3" (Val #(W64 4639618025689381631))
+  (Let "$v4" (Val #(W64 4624441123253327881))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 5 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4")))])))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 0))
+  (Let "$v1" (Val #(W64 4589942076476489260))
+  (Let "$v2" (Val #(W64 4622814529337898198))
+  (Let "$v3" (Val #(W64 4648116562747725861))
+  (Let "$v4" (Val #(W64 4666096009499702381))
+  (Let "$v5" (Val #(W64 4675320065150686566))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4639966373233768892))
+  (Let "$v1" (Val #(W64 4665626239135581539))
+  (Let "$v2" (Val #(W64 4684137591238528063))
+  (Let "$v3" (Val #(W64 4695147586068491075))
+  (Let "$v4" (Val #(W64 4695467065687804733))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4689651757340766405))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4446246417212411097))
+  (Let "$v1" (Val #(W64 4589942075695476812))
+  (Let "$v2" (Val #(W64 4618256359431159251))
+  (Let "$v3" (Val #(W64 4638957832572995817))
+  (Let "$v4" (Val #(W64 4652232681307292801))
+  (Let "$v5" (Val #(W64 4656466830624744358))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4635525303045592387))
+  (Let "$v1" (Val #(W64 4656787576741544142))
+  (Let "$v2" (Val #(W64 4670909917246856813))
+  (Let "$v3" (Val #(W64 4678032627064644466))
+  (Let "$v4" (Val #(W64 4675177420980638880))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4662609176820434441))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4481869993748646786))
+  (Let "$v1" (Val #(W64 4589941999411202114))
+  (Let "$v2" (Val #(W64 4614712958387526901))
+  (Let "$v3" (Val #(W64 4631195308593622749))
+  (Let "$v4" (Val #(W64 4640213792005750047))
+  (Let "$v5" (Val #(W64 4640070445855023584))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4632059018626679718))
+  (Let "$v1" (Val #(W64 4649453708224253619))
+  (Let "$v2" (Val #(W64 4660363923165150307))
+  (Let "$v3" (Val #(W64 4663825327293164072))
+  (Let "$v4" (Val #(W64 4657751891375010240))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4639455194442953743))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4504779658175671259))
+  (Let "$v1" (Val #(W64 4589940724610907700))
+  (Let "$v2" (Val #(W64 4611677874752550812))
+  (Let "$v3" (Val #(W64 4624349917051711461))
+  (Let "$v4" (Val #(W64 4629606469526608970))
+  (Let "$v5" (Val #(W64 4625267948167187380))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4629240369966512877))
+  (Let "$v1" (Val #(W64 4643446038404877120))
+  (Let "$v2" (Val #(W64 4650642012334440226))
+  (Let "$v3" (Val #(W64 4650977601645232660))
+  (Let "$v4" (Val #(W64 4641686549908427621))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4617665622098258225))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 0))
+  (Let "$v1" (Val #(W64 4593108669964483790))
+  (Let "$v2" (Val #(W64 4623642783075237838))
+  (Let "$v3" (Val #(W64 4645956509072532880))
+  (Let "$v4" (Val #(W64 4660739070293783244))
+  (Let "$v5" (Val #(W64 4665424076983468765))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4637737046166039724))
+  (Let "$v1" (Val #(W64 4660246896882558799))
+  (Let "$v2" (Val #(W64 4675312035863837567))
+  (Let "$v3" (Val #(W64 4681443626114291643))
+  (Let "$v4" (Val #(W64 4674196627785386797))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 5 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4")))])))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4444215450408176253))
+  (Let "$v1" (Val #(W64 4593108669473816643))
+  (Let "$v2" (Val #(W64 4619345235458332131))
+  (Let "$v3" (Val #(W64 4637321927758054125))
+  (Let "$v4" (Val #(W64 4647764391453972041))
+  (Let "$v5" (Val #(W64 4647861843912428727))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4633539819881849661))
+  (Let "$v1" (Val #(W64 4651931674920511233))
+  (Let "$v2" (Val #(W64 4662607993962411771))
+  (Let "$v3" (Val #(W64 4665347342921480981))
+  (Let "$v4" (Val #(W64 4654329683615112785))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 5 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4")))])))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4479388525873962717))
+  (Let "$v1" (Val #(W64 4593108624248787323))
+  (Let "$v2" (Val #(W64 4616038696802495882))
+  (Let "$v3" (Val #(W64 4630139433958953257))
+  (Let "$v4" (Val #(W64 4636107843717306423))
+  (Let "$v5" (Val #(W64 4632030898649841381))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4630093258825139868))
+  (Let "$v1" (Val #(W64 4644632004018677599))
+  (Let "$v2" (Val #(W64 4652319004553631011))
+  (Let "$v3" (Val #(W64 4651046875287138793))
+  (Let "$v4" (Val #(W64 4637003843403443539))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 5 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4")))])))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4502730828338775284))
+  (Let "$v1" (Val #(W64 4593107857116106115))
+  (Let "$v2" (Val #(W64 4612515840360689344))
+  (Let "$v3" (Val #(W64 4623081595299015012))
+  (Let "$v4" (Val #(W64 4625673627793067746))
+  (Let "$v5" (Val #(W64 4617398297642189310))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4626727052061830364))
+  (Let "$v1" (Val #(W64 4638516932880444629))
+  (Let "$v2" (Val #(W64 4642376518279027673))
+  (Let "$v3" (Val #(W64 4637981366650700969))
+  (Let "$v4" (Val #(W64 4620898491152880018))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 5 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4")))])))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 0))
+  (Let "$v1" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4592053138801819123))))
+  (Let "$v2" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4625273309106764279))))
+  (Let "$v3" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4649892743230043510))))
+  (Let "$v4" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4667740114438878229))))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4676890152039128170))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4639882611305205221))
+  (Let "$v1" (Val #(W64 4665326117599085593))
+  (Let "$v2" (Val #(W64 4683839934366703256))
+  (Let "$v3" (Val #(W64 4694429024867752985))
+  (Let "$v4" (Val #(W64 4693973273079819612))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4688802916682017304))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4447016848191496344))))
+  (Let "$v1" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4592053137918492655))))
+  (Let "$v2" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4620724995239423307))))
+  (Let "$v3" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4640666316375046576))))
+  (Let "$v4" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4653754185474470735))))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4657963241073125277))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4635419745701204402))
+  (Let "$v1" (Val #(W64 4656474838921902137))
+  (Let "$v2" (Val #(W64 4670530914603028009))
+  (Let "$v3" (Val #(W64 4677084341551681943))
+  (Let "$v4" (Val #(W64 4673411522359998027))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4661910811885674500))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4482717332423034959))))
+  (Let "$v1" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4592053049977924948))))
+  (Let "$v2" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4616876547389970943))))
+  (Let "$v3" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4633338089993737946))))
+  (Let "$v4" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4642234657412797791))))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4641916787290282998))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4631905091510822884))
+  (Let "$v1" (Val #(W64 4649138596034506302))
+  (Let "$v2" (Val #(W64 4659651449835125914))
+  (Let "$v3" (Val #(W64 4662821807351223462))
+  (Let "$v4" (Val #(W64 4656084822175047499))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4638960985590870303))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4505835098872358610))))
+  (Let "$v1" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4592051552101380112))))
+  (Let "$v2" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4613379835043729114))))
+  (Let "$v3" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4626228033612189823))))
+  (Let "$v4" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4631153575602440874))))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4626708878695820882))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4629006120318297343))
+  (Let "$v1" (Val #(W64 4643105013550423226))
+  (Let "$v2" (Val #(W64 4649874281219072247))
+  (Let "$v3" (Val #(W64 4649714987232968745))
+  (Let "$v4" (Val #(W64 4639690984324520148))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4617269917876217963))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4590228395698008264))
+  (Let "$v1" (Val #(W64 4599480669564178349))
+  (Let "$v2" (Val #(W64 4589517665429971623))
+  (Let "$v3" (Val #(W64 4581589235564434555))
+  (Let "$v4" (Val #(W64 4575164982564483048))
+  (Let "$v5" (Val #(W64 4568811493649781355))
+  (Let "$v6" (Val #(W64 4563143216008740701))
+  (Let "$v7" (Val #(W64 4557843786729364480))
+  (Let "$v8" (Val #(W64 4552280422768239949))
+  (Let "$v9" (Val #(W64 4547598271341525767))
+  (Let "$v10" (Val #(W64 4538063219164248658))
+  (Let "$v11" (Val #(W64 4541745596584974391))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 12 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5"))), (KeyedElement none (ElementExpression go.float64 (Var "$v6"))), (KeyedElement none (ElementExpression go.float64 (Var "$v7"))), (KeyedElement none (ElementExpression go.float64 (Var "$v8"))), (KeyedElement none (ElementExpression go.float64 (Var "$v9"))), (KeyedElement none (ElementExpression go.float64 (Var "$v10"))), (KeyedElement none (ElementExpression go.float64 (Var "$v11")))]))))))))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4607182418800017408))
+  (Let "$v1" (Val #(W64 4608947853879192436))
+  (Let "$v2" (Val #(W64 4604677836871294172))
+  (Let "$v3" (Val #(W64 4595362590636105511))
+  (Let "$v4" (Val #(W64 4581031541704938613))
+  (Let "$v5" (Val #(W64 4560314476338981211))
+  (Let "$v6" (Val #(W64 4530263847980990784))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 7 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5"))), (KeyedElement none (ElementExpression go.float64 (Var "$v6")))])))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4590228395698008264))))
+  (Let "$v1" (Val #(W64 4596913578117826680))
+  (Let "$v2" (Val #(W64 4599540328982355801))
+  (Let "$v3" (Val #(W64 4594440851763360503))
+  (Let "$v4" (Val #(W64 4583336332999498081))
+  (Let "$v5" (Val #(W64 4566129637262422585))
+  (Let "$v6" (Val #(W64 4539839448431978821))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 7 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5"))), (KeyedElement none (ElementExpression go.float64 (Var "$v6")))])))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4602387636645935266))
+  (Let "$v1" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4594485428404798729))))
+  (Let "$v2" (Val #(W64 4589321138371641755))
+  (Let "$v3" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4584886147799693075))))
+  (Let "$v4" (Val #(W64 4580836915846773228))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4577099367182363754))))
+  (Let "$v6" (Val #(W64 4573683464413438788))
+  (Let "$v7" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4570642347597567191))))
+  (Let "$v8" (Val #(W64 4567356815629994261))
+  (Let "$v9" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4564115161432791793))))
+  (Let "$v10" (Val #(W64 4561265769268226281))
+  (Let "$v11" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4558106888150180076))))
+  (Let "$v12" (Val #(W64 4554458007677615095))
+  (Let "$v13" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4554404919746202680))))
+  (Let "$v14" (Val #(W64 4554825044790006772))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 15 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5"))), (KeyedElement none (ElementExpression go.float64 (Var "$v6"))), (KeyedElement none (ElementExpression go.float64 (Var "$v7"))), (KeyedElement none (ElementExpression go.float64 (Var "$v8"))), (KeyedElement none (ElementExpression go.float64 (Var "$v9"))), (KeyedElement none (ElementExpression go.float64 (Var "$v10"))), (KeyedElement none (ElementExpression go.float64 (Var "$v11"))), (KeyedElement none (ElementExpression go.float64 (Var "$v12"))), (KeyedElement none (ElementExpression go.float64 (Var "$v13"))), (KeyedElement none (ElementExpression go.float64 (Var "$v14")))])))))))))))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4590228395698008264))))
+  (Let "$v1" (Val #(W64 4603875219004743167))
+  (Let "$v2" (Val #(W64 4609231207607680367))
+  (Let "$v3" (Val #(W64 4606981716134495312))
+  (Let "$v4" (Val #(W64 4597417307973683492))
+  (Let "$v5" (Val #(W64 4578867296057666313))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4607182418800017408))
+  (Let "$v1" (Val #(W64 4612712789461262748))
+  (Let "$v2" (Val #(W64 4611975351653570805))
+  (Let "$v3" (Val #(W64 4605104324179153071))
+  (Let "$v4" (Val #(W64 4592174453748890760))
+  (Let "$v5" (Val #(W64 4569564532599476065))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4601218545606032745))
+  (Let "$v1" (Val #(W64 4590669220166325563))
+  (Let "$v2" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4568551541995220572))))
+  (Let "$v3" (Val #(W64 4560459357641193654))
+  (Let "$v4" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4558628859545642817))))
+  (Let "$v5" (Val #(W64 4560853097493747153))
+  (Let "$v6" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4565164156937716708))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 7 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5"))), (KeyedElement none (ElementExpression go.float64 (Var "$v6")))])))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4607182418800017408))
+  (Let "$v1" (Val #(W64 4621819117588971520))
+  (Let "$v2" (Val #(W64 4636737291354636288))
+  (Let "$v3" (Val #(W64 4652007308841189376))
+  (Let "$v4" (Val #(W64 4666723172467343360))
+  (Let "$v5" (Val #(W64 4681608360884174848))
+  (Let "$v6" (Val #(W64 4696837146684686336))
+  (Let "$v7" (Val #(W64 4711630319722168320))
+  (Let "$v8" (Val #(W64 4726483295884279808))
+  (Let "$v9" (Val #(W64 4741671816366391296))
+  (Let "$v10" (Val #(W64 4756540486875873280))
+  (Let "$v11" (Val #(W64 4771362005757984768))
+  (Let "$v12" (Val #(W64 4786511204640096256))
+  (Let "$v13" (Val #(W64 4801453603149578240))
+  (Let "$v14" (Val #(W64 4816244402031689728))
+  (Let "$v15" (Val #(W64 4831355200913801216))
+  (Let "$v16" (Val #(W64 4846369599423283200))
+  (Let "$v17" (Val #(W64 4861130398305394688))
+  (Let "$v18" (Val #(W64 4876203697187506176))
+  (Let "$v19" (Val #(W64 4891288408196988160))
+  (Let "$v20" (Val #(W64 4906019910204099648))
+  (Let "$v21" (Val #(W64 4921056587992461136))
+  (Let "$v22" (Val #(W64 4936209963552724370))
+  (Let "$v23" (Val #(W64 4950912855330343670))
+  (Let "$v24" (Val #(W64 4965913770331839924))
+  (Let "$v25" (Val #(W64 4981134201117475473))
+  (Let "$v26" (Val #(W64 4995809153217856309))
+  (Let "$v27" (Val #(W64 5010775143622804482))
+  (Let "$v28" (Val #(W64 5026061058026967681))
+  (Let "$v29" (Val #(W64 5040708725286295329))
+  (Let "$v30" (Val #(W64 5055640609639927018))
+  (Let "$v31" (Val #(W64 5070927765361438756))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 32 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5"))), (KeyedElement none (ElementExpression go.float64 (Var "$v6"))), (KeyedElement none (ElementExpression go.float64 (Var "$v7"))), (KeyedElement none (ElementExpression go.float64 (Var "$v8"))), (KeyedElement none (ElementExpression go.float64 (Var "$v9"))), (KeyedElement none (ElementExpression go.float64 (Var "$v10"))), (KeyedElement none (ElementExpression go.float64 (Var "$v11"))), (KeyedElement none (ElementExpression go.float64 (Var "$v12"))), (KeyedElement none (ElementExpression go.float64 (Var "$v13"))), (KeyedElement none (ElementExpression go.float64 (Var "$v14"))), (KeyedElement none (ElementExpression go.float64 (Var "$v15"))), (KeyedElement none (ElementExpression go.float64 (Var "$v16"))), (KeyedElement none (ElementExpression go.float64 (Var "$v17"))), (KeyedElement none (ElementExpression go.float64 (Var "$v18"))), (KeyedElement none (ElementExpression go.float64 (Var "$v19"))), (KeyedElement none (ElementExpression go.float64 (Var "$v20"))), (KeyedElement none (ElementExpression go.float64 (Var "$v21"))), (KeyedElement none (ElementExpression go.float64 (Var "$v22"))), (KeyedElement none (ElementExpression go.float64 (Var "$v23"))), (KeyedElement none (ElementExpression go.float64 (Var "$v24"))), (KeyedElement none (ElementExpression go.float64 (Var "$v25"))), (KeyedElement none (ElementExpression go.float64 (Var "$v26"))), (KeyedElement none (ElementExpression go.float64 (Var "$v27"))), (KeyedElement none (ElementExpression go.float64 (Var "$v28"))), (KeyedElement none (ElementExpression go.float64 (Var "$v29"))), (KeyedElement none (ElementExpression go.float64 (Var "$v30"))), (KeyedElement none (ElementExpression go.float64 (Var "$v31")))]))))))))))))))))))))))))))))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4607182418800017408))
+  (Let "$v1" (Val #(W64 5085611494797045271))
+  (Let "$v2" (Val #(W64 5564284217833028085))
+  (Let "$v3" (Val #(W64 6043257259031049059))
+  (Let "$v4" (Val #(W64 6521906365687930162))
+  (Let "$v5" (Val #(W64 7000496887210966211))
+  (Let "$v6" (Val #(W64 7479368607221621995))
+  (Let "$v7" (Val #(W64 7958223736346011545))
+  (Let "$v8" (Val #(W64 8436737289693151036))
+  (Let "$v9" (Val #(W64 8915514139102383430))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 10 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5"))), (KeyedElement none (ElementExpression go.float64 (Var "$v6"))), (KeyedElement none (ElementExpression go.float64 (Var "$v7"))), (KeyedElement none (ElementExpression go.float64 (Var "$v8"))), (KeyedElement none (ElementExpression go.float64 (Var "$v9")))]))))))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4607182418800017408))
+  (Let "$v1" (Val #(W64 4128101167230658355))
+  (Let "$v2" (Val #(W64 3649340653511681853))
+  (Let "$v3" (Val #(W64 3170840353250979498))
+  (Let "$v4" (Val #(W64 2691949749288605597))
+  (Let "$v5" (Val #(W64 2213095475689254516))
+  (Let "$v6" (Val #(W64 1734519108376626298))
+  (Let "$v7" (Val #(W64 1255832114822727210))
+  (Let "$v8" (Val #(W64 776877706278891331))
+  (Let "$v9" (Val #(W64 298220099847875929))
+  (Let "$v10" (Val #(W64 2024))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 11 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5"))), (KeyedElement none (ElementExpression go.float64 (Var "$v6"))), (KeyedElement none (ElementExpression go.float64 (Var "$v7"))), (KeyedElement none (ElementExpression go.float64 (Var "$v8"))), (KeyedElement none (ElementExpression go.float64 (Var "$v9"))), (KeyedElement none (ElementExpression go.float64 (Var "$v10")))])))))))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4460209587652500685))
+  (Let "$v1" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4493156352803807069))))
+  (Let "$v2" (Val #(W64 4523617212962785441))
+  (Let "$v3" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4551452160549707523))))
+  (Let "$v4" (Val #(W64 4575957461383575504))
+  (Let "$v5" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4595172819793696072))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4443076226533694107))))
+  (Let "$v1" (Val #(W64 4477121864728985349))
+  (Let "$v2" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4508805056844024774))))
+  (Let "$v3" (Val #(W64 4537941361668146421))
+  (Let "$v4" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4564047942368972689))))
+  (Let "$v5" (Val #(W64 4586165620538955083))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 6 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4"))), (KeyedElement none (ElementExpression go.float64 (Var "$v5")))]))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4668423948685229880))))
+  (Let "$v1" (Val #(W64 4697705128000265693))
+  (Let "$v2" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4715585378259145078))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 3 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2")))])))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4607182418800017408))
+  (Let "$v1" (Val #(W64 4668746986536789362))
+  (Let "$v2" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4698424001140800662))))
+  (Let "$v3" (Val #(W64 4717478346167605487))
+  (Let "$v4" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4722499061901318705))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 5 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2"))), (KeyedElement none (ElementExpression go.float64 (Var "$v3"))), (KeyedElement none (ElementExpression go.float64 (Var "$v4")))])))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4606861755115466571))))
+  (Let "$v1" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4636687169323690029))))
+  (Let "$v2" (App (Val (GoInstruction (Convert go.untypedFloat go.float64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedFloat))) (Val #(W64 4654816286983325027))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 3 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2")))])))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 4637638833080900486))
+  (Let "$v1" (Val #(W64 4657134306032170490))
+  (Let "$v2" (Val #(W64 4662048118353822732))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 3 go.float64)))) (LiteralValue [(KeyedElement none (ElementExpression go.float64 (Var "$v0"))), (KeyedElement none (ElementExpression go.float64 (Var "$v1"))), (KeyedElement none (ElementExpression go.float64 (Var "$v2")))])))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (Val #(W64 5040379952546458195))
+  (Let "$v2" (Val #(W64 17892431488136887169))
+  (Let "$v3" (Val #(W64 13169980181085364355))
+  (Let "$v4" (Val #(W64 18204331823439776451))
+  (Let "$v5" (Val #(W64 7946843935494350272))
+  (Let "$v6" (Val #(W64 905889640498799673))
+  (Let "$v7" (Val #(W64 18175356263134875261))
+  (Let "$v8" (Val #(W64 15061281708168349961))
+  (Let "$v9" (Val #(W64 15220161563773041794))
+  (Let "$v10" (Val #(W64 8296664548579374057))
+  (Let "$v11" (Val #(W64 4109744767560208502))
+  (Let "$v12" (Val #(W64 4607516669194743839))
+  (Let "$v13" (Val #(W64 16023283104648321598))
+  (Let "$v14" (Val #(W64 15739233654134936430))
+  (Let "$v15" (Val #(W64 11424645774684705882))
+  (Let "$v16" (Val #(W64 16883842788696515318))
+  (Let "$v17" (Val #(W64 8795094592981902804))
+  (Let "$v18" (Val #(W64 15561835991111744016))
+  (Let "$v19" (Val #(W64 12395701187267450711))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 20 go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v2"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v3"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v4"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v5"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v6"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v7"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v8"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v9"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v10"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v11"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v12"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v13"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v14"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v15"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v16"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v17"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v18"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v19")))]))))))))))))))))))))))
   (App (Val doExecute)
-  (App (Val mPi4.init) (Val #())))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 20 go.uint64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr mPi4))) (Val #())) (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val tanhQ.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 3 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr tanhQ))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val tanhP.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 3 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr tanhP))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val _tanQ.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 5 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _tanQ))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val _tanP.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 3 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _tanP))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val _cos.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _cos))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val _sin.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _sin))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val pow10negtab32.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 11 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr pow10negtab32))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val pow10postab32.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 10 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr pow10postab32))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val pow10tab.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 32 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr pow10tab))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val _lgamW.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 7 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _lgamW))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val _lgamV.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _lgamV))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val _lgamU.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _lgamU))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val _lgamT.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 15 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _lgamT))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val _lgamS.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 7 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _lgamS))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val _lgamR.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 7 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _lgamR))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val _lgamA.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 12 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _lgamA))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val q1S2.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr q1S2))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val q1R2.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr q1R2))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val q1S3.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr q1S3))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val q1R3.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr q1R3))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val q1S5.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr q1S5))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val q1R5.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr q1R5))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val q1S8.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr q1S8))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val q1R8.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr q1R8))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val p1S2.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 5 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr p1S2))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val p1R2.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr p1R2))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val p1S3.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 5 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr p1S3))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val p1R3.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr p1R3))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val p1S5.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 5 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr p1S5))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val p1R5.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr p1R5))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val p1S8.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 5 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr p1S8))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val p1R8.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr p1R8))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val q0S2.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr q0S2))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val q0R2.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr q0R2))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val q0S3.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr q0S3))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val q0R3.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr q0R3))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val q0S5.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr q0S5))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val q0R5.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr q0R5))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val q0S8.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr q0S8))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val q0R8.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr q0R8))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val p0S2.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 5 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr p0S2))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val p0R2.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr p0R2))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val p0S3.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 5 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr p0S3))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val p0R3.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr p0R3))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val p0S5.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 5 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr p0S5))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val p0R5.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr p0R5))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val p0S8.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 5 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr p0S8))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val p0R8.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 6 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr p0R8))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val _gamS.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 5 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _gamS))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val _gamQ.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 8 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _gamQ))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val _gamP.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 7 go.float64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _gamP))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val useFMA.init) (Val #()))))))))
+  (App (Val useFMA.init) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc _gamP (go.GoType.ArrayType 7 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc _gamQ (go.GoType.ArrayType 8 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc _gamS (go.GoType.ArrayType 5 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc p0R8 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc p0S8 (go.GoType.ArrayType 5 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc p0R5 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc p0S5 (go.GoType.ArrayType 5 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc p0R3 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc p0S3 (go.GoType.ArrayType 5 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc p0R2 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc p0S2 (go.GoType.ArrayType 5 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc q0R8 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc q0S8 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc q0R5 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc q0S5 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc q0R3 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc q0S3 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc q0R2 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc q0S2 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc p1R8 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc p1S8 (go.GoType.ArrayType 5 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc p1R5 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc p1S5 (go.GoType.ArrayType 5 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc p1R3 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc p1S3 (go.GoType.ArrayType 5 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc p1R2 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc p1S2 (go.GoType.ArrayType 5 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc q1R8 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc q1S8 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc q1R5 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc q1S5 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc q1R3 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc q1S3 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc q1R2 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc q1S2 (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc _lgamA (go.GoType.ArrayType 12 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc _lgamR (go.GoType.ArrayType 7 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc _lgamS (go.GoType.ArrayType 7 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc _lgamT (go.GoType.ArrayType 15 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc _lgamU (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc _lgamV (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc _lgamW (go.GoType.ArrayType 7 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc pow10tab (go.GoType.ArrayType 32 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc pow10postab32 (go.GoType.ArrayType 10 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc pow10negtab32 (go.GoType.ArrayType 11 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc _sin (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc _cos (go.GoType.ArrayType 6 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc _tanP (go.GoType.ArrayType 3 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc _tanQ (go.GoType.ArrayType 5 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc tanhP (go.GoType.ArrayType 3 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc tanhQ (go.GoType.ArrayType 3 go.float64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc mPi4 (go.GoType.ArrayType 20 go.uint64))) (Val #()))))))))
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
 
