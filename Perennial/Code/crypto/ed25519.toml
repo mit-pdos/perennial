@@ -1,5 +1,9 @@
 translate = ["PublicKey"]
 imports = ["!*"]
 
+# `cryptocustomrand = godebug.New(...)`: `internal/godebug` is not translated
+# (TrustedCode/crypto/ed25519.lean).
+trusted = ["cryptocustomrand"]
+
 # translate the definitions of all type declarations goose supports
 translate_types = true

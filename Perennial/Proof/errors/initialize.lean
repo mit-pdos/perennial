@@ -21,7 +21,6 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
 
-/-- Uses the unproved `wp_errorType_init` (`Base.lean`). -/
 theorem errors.initialize'.wp_proof
     (wp_New : errors.New.spec (GF := GF) (hG := hG)) :
     errors.initialize'.spec (GF := GF) (hG := hG) := by
@@ -33,7 +32,8 @@ theorem errors.initialize'.wp_proof
   wp_auto
   wp_apply wp_GlobalAlloc (V := GoInterface) ErrUnsupported go.error as _
   wp_apply wp_New as %_ _
-  wp_apply wp_errorType_init
+  -- errorType: its trusted initializer does nothing
+  wp_call
   iframe Hown
   is_pkg_init_finish
 

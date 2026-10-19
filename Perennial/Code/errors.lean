@@ -38,8 +38,6 @@ noncomputable def ErrUnsupported [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def errorType [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"errors.errorType"
 
-axiom errorType.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def New [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"errors.New"
 

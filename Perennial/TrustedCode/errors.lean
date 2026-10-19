@@ -63,6 +63,22 @@ noncomputable def Is.impl : val :=
   (App (Val doExecute)
   (Val #())))))))))
 
+/-- The initializer of `errorType` (`errors/wrap.go`):
+
+```go
+var errorType = reflectlite.TypeOf((*error)(nil)).Elem()
+```
+
+The model does nothing, and `errorType` is not allocated. Its value is the runtime type
+descriptor of `error`, which the semantics cannot represent: `reflectlite.TypeOf` is
+`abi.TypeOf`, which reads the descriptor out of an interface's memory through `unsafe`.
+Go's initializer reads a static descriptor and allocates nothing the program can see, so it
+cannot panic and has no other effect. Its only reader is `As` (it calls
+`targetType.Implements(errorType)`), which is not translated; a translated reader could not
+load the variable (nothing gives a points-to for it). -/
+def errorType.init : val :=
+  λ: <>, #()
+
 end code
 end errors
 

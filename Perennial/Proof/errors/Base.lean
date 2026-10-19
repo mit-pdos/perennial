@@ -1,8 +1,7 @@
 /-
 Shared definitions of the proofs of the Go `errors` package: its `isPkgInit`, the
 predicates of the specs of `Unwrap`, `AsType`, `As` and `Is` (`isUnwrappable`,
-`isErrorTree`, `errorIsTree`, ...), lemmas about them, and the (unprovable) initializer
-of the global `errorType`.
+`isErrorTree`, `errorIsTree`, ...), and lemmas about them.
 -/
 module
 
@@ -40,16 +39,6 @@ instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.errors :=
   define_is_pkg_init iprop(True)
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.errors :=
   build_get_is_pkg_init_wf
-
-theorem wp_errorType_init :
-    {{ (True : IProp GF) }}
-      (App (Val errorType.init) (Val #()))
-    {{ RET #(); True }} := by
-  -- Unprovable: `errorType'init` is opaque (an axiom in Perennial/Code/errors.lean):
-  -- `var errorType = reflectlite.TypeOf((*error)(nil)).Elem()` is not translated
-  -- (`errors.toml` excludes it and the `internal/reflectlite` import), so goose emits only
-  -- an axiomatized `errorType'init : val`, which has no semantics.
-  sorry
 
 def isUnwrappable (err : GoError) : IProp GF :=
   match err with

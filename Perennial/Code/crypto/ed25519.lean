@@ -2,6 +2,7 @@
 module
 
 public import Perennial.Golang.Defn
+public import Perennial.TrustedCode.crypto.ed25519
 
 @[expose] public section
 
@@ -51,8 +52,6 @@ noncomputable def privateKeyCache [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def cryptocustomrand [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.cryptocustomrand"
-
-axiom cryptocustomrand.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def GenerateKey [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.GenerateKey"
