@@ -19,7 +19,7 @@ Entry format:
 **Why.** in the user's words where possible
 ```
 
-## Case 1 — ACCEPTED: string slicing (not yet on `lean`)
+## Case 1 — ACCEPTED: string slicing ("StringSemantics: string slicing")
 
 **Symptom.** Incomplete. Goose translated `s[low:high]` on a string to
 `Slice go.string`, but the semantics had no rule for it, so it was stuck; seven

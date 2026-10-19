@@ -78,6 +78,12 @@ class StringSemantics [GoSemanticsFunctions] : Prop where
      | some b => #b
      | _ => Panic "index out of bounds")
 
+  string_slice (s : GoString) (low high : w64) :
+    ⟦Slice go.string, (#s, #low, #high)⟧ ⤳[under]
+    (if 0 ≤ sint.Z low ∧ sint.Z low ≤ sint.Z high ∧ sint.Z high ≤ s.length then
+       #((s.drop (sint.nat low)).take (sint.nat high - sint.nat low))
+     else Panic "slice bounds out of range")
+
   convert_byte_to_string (c : w8) :
     ⟦Convert go.byte go.string, #c⟧ ⤳[under] #([c] : GoString)
 
@@ -102,11 +108,11 @@ class StringSemantics [GoSemanticsFunctions] : Prop where
     ⟦GoOp GoGe go.string, (#x, #y)⟧ ⤳[under] #(decide (GoStringLe y x))
 
 attribute [instance] StringSemantics.package_sem StringSemantics.internal_string_len_step
-  StringSemantics.string_len_unfold StringSemantics.string_index
+  StringSemantics.string_len_unfold StringSemantics.string_index StringSemantics.string_slice
   StringSemantics.convert_byte_to_string StringSemantics.convert_bytes_to_string
   StringSemantics.convert_string_to_bytes StringSemantics.lt_string StringSemantics.le_string
   StringSemantics.gt_string StringSemantics.ge_string
-export StringSemantics (internal_string_len_step string_len_unfold string_index
+export StringSemantics (internal_string_len_step string_len_unfold string_index string_slice
   convert_byte_to_string convert_bytes_to_string convert_string_to_bytes lt_string le_string
   gt_string ge_string)
 
