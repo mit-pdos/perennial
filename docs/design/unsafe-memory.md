@@ -1,7 +1,7 @@
 # Design: the minimal byte memory and `unsafe.Pointer` for bbolt
 
 - **Date:** 2026-10-19. **Status:** proposal, nothing implemented. This is
-  draft 5, after review rounds 1 and 2 (section 9).
+  draft 6, after review rounds 1 to 4 (section 9).
 - **Base:** `lean` at be3eb77cc (after 864598b33 undid the byte-memory series
   ea1cf23ab..b09644c20).
 - **Target:** `go.etcd.io/bbolt` v1.5.0, its non-test, non-`cmd` sources.
@@ -10,6 +10,9 @@
 - **Platform:** gc for linux/amd64, built without `checkptr`, which `-race`,
   `-msan` and `-asan` turn on. checkptr panics on some conversions that R3
   allows.
+- **Out-of-memory** is outside the model, as it already is. A 2^48-byte
+  allocation passes gc's checks and then dies of a fatal out-of-memory
+  error, which is not a panic.
 - **Acceptance tests:** `goose/testdata/disabled-tests/bboltmini`. Every
   target there must be provable and every `stuck/` probe unprovable.
 
@@ -103,6 +106,28 @@ inductive Plain : go.GoType → Prop
   `n > 2^48`. gc's `makeslice` panics above `maxAlloc = 2^48`, so a `make`
   that large must not succeed. Offset 0 of a byte block is 8-aligned, so `j`
   is the object's address modulo 8.
+- **A plain field of a non-plain struct is its own `AllocBytes` block.** This
+  is how `alloc_struct` already allocates each field through `GoAlloc`. Its
+  offset `j` covers gc's real address modulo 8, which R5's alignment fact
+  needs. `TxStats` inside `Tx`, for example, is one 8-aligned block.
+- **`append` must not grow past what gc can allocate.** Its grow branch
+  (`Slice.lean:182`) picks an arbitrary capacity today. It becomes:
+  - stuck if `new_len·size > 2^46`;
+  - otherwise, a capacity from `[new_len, 2^48/size]`;
+  - for a zero-size element, which gc never makes panic, capacity `new_len`
+    and a zero-size allocation.
+
+  For non-plain elements, `size` must be gc's exact size, the one goose
+  already emits for `unsafe.Sizeof`.
+
+  The obvious cap at 2^48 would be unsound: gc's `growslice` rounds its
+  capacity up (about 1.25× for large slices, then to a size class) and
+  panics when that exceeds `maxAlloc`, even when `new_len·size ≤ 2^48`.
+  Below `2^46` its capacity, at most about twice `new_len` plus a page,
+  never reaches `maxAlloc`, so it never panics. Round 4 checked this against
+  a transcription of gc 1.26's `growslice` over 4.7·10^8 cases. In none of
+  them did gc panic while the model ran on, and in none did gc's capacity
+  fall outside the model's range.
 - **Plain rules are stated on underlying types only** (`internalUnder`), so
   a named type such as `Pgid` reaches them through
   `alloc_underlying`/`load_underlying`/`store_underlying`. They **replace**
@@ -235,14 +260,22 @@ The model enforces gc's invariant on memory, whatever the syntax:
   gc defines it with `memmove`, but the model cannot tell it from `p.A = q.A`
   without looking at syntax.
 - Overlapping whole *loads* stay defined (`testOverlappingLoads`).
+- `copy()` between slices of a plain struct that overlap at a shift that is
+  not a multiple of the element size. gc's `copy` is always `memmove`, but
+  the model's copy goes through a temporary, so the destination sees the
+  source's tags.
 - Non-plain composite types need no tags: overlapping views of them need a
   conversion that R3 makes stuck.
 
-*bbolt meets no conflicting tag:*
-- every whole-struct copy goes to a fresh destination, or to one at its
-  type's fixed offset: `Page` at its buffer's start, `Meta` at +16,
-  elements at 16 + 16i, `InBucket` at a value's start;
-- `pagePool` buffers are zeroed byte by byte before reuse;
+*bbolt meets no conflicting tag.*
+- Every whole-struct copy goes to a fresh destination:
+  - `Meta` from the mmap'd page, at +16, into `tx.meta`;
+  - `tx.meta` into a fresh buffer at +16;
+  - `InBucket` from `tx.meta` at +16, or from a value, into a fresh
+    `InBucket`;
+  - a fresh `InBucket` into a fresh value;
+  - stats copies into locals.
+- `pagePool` buffers are zeroed byte by byte before reuse.
 - bbolt makes no whole-array value copies.
 
 ### R5. Atomics: an encoding and alignment
@@ -277,11 +310,11 @@ Why it is needed:
 - Any view of opaque memory through `unsafe`.
 - A plain view, slice or `unsafe.Add` result that leaves the existing byte
   cells.
-- A store that partially overlaps a whole load or store of its own plain
-  type, with no byte store to those cells in between.
+- A whole store that partially overlaps an earlier whole load of its own
+  plain type, with no byte store to those cells in between.
 - Atomics that overlap with different widths or addresses.
 - Misaligned atomics.
-- `make` above 2^48 bytes.
+- `make` above 2^48 bytes, and an `append` that grows past `2^46` bytes.
 
 ## 5. bbolt's `unsafe` helpers: change bbolt
 
@@ -305,6 +338,8 @@ written in these forms, and its probes keep the originals stuck.
 ## 6. Prerequisites: existing bugs and gaps on `lean`
 
 Each is already wrong or missing today. bbolt, R1 or R3 depends on it.
+Items marked **(bbolt)** block core bbolt paths; without them, bbolt's proofs
+are stuck or vacuous.
 
 **Fixes to make:**
 - **`ArraySemantics` proves `False`.** `arrayIndexRef_null_inv` contradicts
@@ -312,6 +347,10 @@ Each is already wrong or missing today. bbolt, R1 or R3 depends on it.
 - **A field or element address through a nil pointer must panic.**
   `StructFieldRef`, and `IndexRef` on an array pointer, step on `null` today.
   So does slicing a nil array pointer.
+- **A load or store through a nil pointer must panic, even of a zero-size
+  type.** `*(*struct{})(nil)` panics in gc. The model returns the zero value,
+  because a struct with no fields and an array of length 0 load and store
+  nothing. Simplest fix: every `GoLoad`/`GoStore` panics on `null`.
 - **Blank fields:** goose names them `_<i>`, which a real field `_0` can
   spell. They need a non-identifier name. `go_eq_struct` and map-key equality
   must then skip them.
@@ -327,10 +366,41 @@ Each is already wrong or missing today. bbolt, R1 or R3 depends on it.
   assertions).
 
 **Gaps in allocation:**
-- **`alloc_array` is `AngelicExit`.** R1 covers plain element types. Arrays
-  of opaque elements need their own fix, and so do zero-length arrays: these
-  include `atomic.Pointer[T]`'s `_ [0]*T` field and `[]T{}`.
-- **`make` must not succeed above 2^48 bytes.** R1's bound covers this.
+- **(bbolt) `alloc_array` is `AngelicExit`,** and `wp_AngelicExit` proves any
+  postcondition, so a proof after it is vacuous. R1 covers plain element
+  types.
+  - Arrays of opaque elements (`[]*node`, `Inodes`, cursor stacks) need the
+    same scheme as `alloc_struct`: `GoPrealloc`, then a `GoAlloc` of each
+    element at `arrayIndexRef`.
+  - That fix must carry the same allocation bound as R1, `n` times gc's size
+    of the element, or `make([]*T, 1<<47)` would succeed where gc panics.
+    So must `append` (R1).
+- **(bbolt) Zero-size allocation:** `[0]T`, as in `[]T{}` and
+  `common.Pgids{}`, and `atomic.Pointer[T]`'s `_ [0]*T`. `GoAlloc` of a
+  zero-size type should return an arbitrary non-null address with no cells,
+  like gc's `zerobase`.
+
+**Packages bbolt needs:**
+- **(bbolt) `sync.Pool`** (`db.go:140, 290-294, 1169`, `tx.go:588`) is neither
+  translated nor modelled, and the real one is stuck under R3. It needs a Go
+  model under `goose/model/sync`: a mutex-protected multiset.
+  - `Put(nil)` does nothing.
+  - `Put(x)` adds `x` or drops it, chosen by `primitive.RandomUint64`.
+  - `Get` either removes and returns some element, or returns `p.New()`
+    (`nil` only when `New` is nil), even when the multiset is not empty.
+
+  The removal is what lets a proof hand a buffer from `Put` to one `Get`'s
+  caller; gc returns each `Put` value at most once. Dropping, and returning
+  `New()` at any time, cover gc's per-P pools, its victim cache and the
+  clearing at each GC.
+- **(bbolt) `hash/fnv`** (`meta.go:62-64`) needs translating. It is plain Go.
+- **(bbolt) Floats in `node.go:236-243, 375`.** The float representation
+  change must keep comparison, multiplication and the int/float conversions
+  defined. An out-of-range float→int conversion gives a nondeterministic
+  value, not a stuck state: the Go spec says it is implementation-dependent,
+  with no panic. Out of range means `NaN`, `±Inf`, or a truncated value that
+  the target type cannot represent. So `-0.5 → uint` is in range and gives
+  0.
 
 **Conversions that don't exist yet, when they are added:**
 - slice to `*[0]T` must be stuck, because gc does not advance the pointer of
@@ -376,14 +446,37 @@ Trusted:
 Untrusted:
 - **Points-tos.** The 16/32/64-bit points-tos become `w` byte points-tos.
 - **Atomic WPs** take an alignment premise, discharged from the allocation.
-- **Tags.** A byte's points-to includes its tag set:
-  - Load tags only grow, so `TagLoad` needs only fractional ownership.
-  - `TagStore` happens under a store's full ownership.
-  - `l ↦[U]{dq} v`, for a plain `U`, is the bytes `encode v` with every
-    `U`-tag on its cells at its own index.
-- **The byte-view lemma:** `l ↦[T] v ⊣⊢ l ↦*bytes (encode v)` when no cell
-  carries a `T`-tag at another index. Together with "a byte store leaves
-  untagged bytes", this is all bbolt's page code needs.
+- **Tags.** A byte's points-to carries an *admissible* tag set `D`, agreed
+  by all fraction holders. The heap invariant says the actual tags are a
+  subset of `D`.
+  - A `TagLoad` or an atomic under fractional ownership must show its tag is
+    in `D`.
+  - Full ownership may enlarge `D`.
+  - Only a byte store lets the owner choose a smaller `D`: it leaves untagged
+    bytes.
+
+  A bound on the actual tags would not work, because another fraction holder
+  may add tags. Tags only grow, but that gives lower bounds, not upper ones.
+- **`l ↦[U]{dq} v`,** for a plain `U`, is the bytes `encode v` with a `D` that
+  admits `U`-tags on those cells only at their own index. For nested types it
+  also admits only the nested types' own indices: `Meta`'s `InBucket` tags at
+  +16 to +31 have indices 0 to 15.
+- **A field-split lemma:**
+  `l ↦[Meta] m ⊣⊢ … ∗ (l +ₗ 16) ↦[InBucket] m.root ∗ …`, keeping the outer
+  constraint. bbolt needs it at `tx.go:58` and `tx.go:212`.
+- **The atomic WPs** need, besides alignment, `(w, i) ∈ D` and no other
+  `Atomic` tag in `D`. The typed points-tos of atomically accessed fields,
+  such as `TxStats`'s, carry it.
+- **The byte-view lemma:** `l ↦[T] v ⊣⊢ l ↦*bytes (encode v)`, stated on `D`.
+  It holds when `D` admits, for `T` and for every plain type nested in `T`
+  at offset `o`, only that type's own-index tags at `o`. This is exactly
+  the definition of `↦[T]`. A premise that mentions only `T` would be
+  unsound: a whole store of `Meta` also runs `TagStore InBucket` at +16.
+- **Allocation:** `AllocBytes` gives untagged cells with any chosen `D`.
+
+Every whole store in bbolt targets fresh memory, or `tx.meta`, whose `D` is
+fixed when it is allocated. So these principles are all bbolt's page code
+needs.
 
 ## 9. Review log
 
@@ -423,3 +516,33 @@ mechanism; gc's alias analysis treats plain memory as bytes. It did find:
 - **Existing bugs**, now in section 6: nil field and index references, the
   blank-field name, `[]byte("")`, float `==`, struct tags in type identity,
   and zero-length arrays.
+
+**Round 3** (two reviewers: an adversarial pass over the whole draft, and
+bbolt's core paths together with the program-logic principles) found no new
+unsoundness or inconsistency. Every core bbolt conversion, `unsafe.Add`,
+`unsafe.Slice`, whole copy and atomic is covered. It found:
+- **`append`:** its arbitrary capacity hits `AllocBytes`'s bound, so every
+  growing append was unprovable, and the obvious cap is unsound against gc's
+  `growslice`. Fixed in R1.
+- **Wording:** stores do not check against earlier stores, and the
+  plain-field-own-block fact behind R5 was missing.
+- **Prerequisites:** the gaps that block bbolt (non-plain and zero-size
+  allocation, `sync.Pool`, `hash/fnv`, float conversions), now marked
+  **(bbolt)** in section 6.
+- **Program logic:** the fractional-ownership formulation of tags (an
+  admissible set), nested-field splitting, and atomic-tag admissibility,
+  now in section 8.
+
+**Round 4** (one reviewer, on draft 6's changes only) found nothing unsound
+in the plan's own rules:
+- **`append`:** the bound was checked against gc's `growslice` over
+  4.7·10^8 cases, and `make`'s 2^48 boundary matches gc exactly.
+- **Wording fixes:** zero-size elements in `append`; non-plain elements
+  using gc's size; out-of-memory outside the model; the exact `sync.Pool`
+  model; the float range test; the nested-type premise of the byte-view
+  lemma; the atomic points-to.
+- **One more existing bug:** loads and stores of zero-size types through
+  nil don't panic.
+
+The plan is stable: rounds 3 and 4 found no unsoundness in its mechanism,
+only precision fixes and existing bugs outside it.
