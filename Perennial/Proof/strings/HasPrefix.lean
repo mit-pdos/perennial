@@ -49,9 +49,9 @@ theorem strings.HasPrefix.wp_proof :
   · have Hif' := of_decide_eq_true (go.intoVal_inj Hif)
     have Hlt : sint.nat n < pfx.length := by word
     have Hlt' : sint.nat n < s.length := by word
-    rw [List.getElem?_eq_getElem Hlt']
+    rw [if_pos Hn.1, List.getElem?_eq_getElem Hlt']
     wp_auto
-    rw [List.getElem?_eq_getElem Hlt]
+    rw [if_pos Hn.1, List.getElem?_eq_getElem Hlt]
     wp_auto
     wp_if_destruct
     · wp_for_post

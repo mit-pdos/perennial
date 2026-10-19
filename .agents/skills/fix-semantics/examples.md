@@ -240,7 +240,7 @@ unsound once conversions between `unsafe.Pointer` and pointers are allowed;
 here a `uintptr` only appears as a constant argument to a trusted runtime
 check, and `uintptr` ↔ pointer conversions remain stuck.
 
-## Case 9 — ACCEPTED: a negative index panics (not yet on `lean`)
+## Case 9 — ACCEPTED: a negative index panics ("Go semantics: a negative index panics (string and array index, array index ref)")
 
 **Symptom.** Unsound (more defined than Go). `string_index` and `index_array`
 looked up `[sint.nat i]?`; `sint.nat` sends a negative `i` to 0, so `s[-1]`
@@ -257,8 +257,10 @@ none)` for the two lookups, `if 0 ≤ sint.Z i ∧ sint.Z i < n` for the
 reference. Cost: 3 rules refined from defined to stuck, 0 new rules, 0 goose
 changes; no semantics test (a stuck `Panic` is not observable by a
 `test*() bool`). Proofs that index a string discharge the guard with
-`rw [if_pos (show 0 ≤ sint.Z i by word)]` (fmt, math/bits); `Theory/Array`'s
-restated instance follows the rule.
+`rw [if_pos (show 0 ≤ sint.Z i by word)]` (`fmt.Sprintf`, `fmt` SprintfModel,
+`math/bits.Len64`, `strings.HasPrefix`, the strings model's
+`StringToByteSlice`); `Theory/Array`'s restated instance and
+`wp_store_array_loop` follow the rule.
 
 **Bundling.** The user: "Since the array/slice problems are the same logical
 issue, fix all of them in one commit." One bug per change means one *logical*

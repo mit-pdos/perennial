@@ -23,7 +23,8 @@ instance (priority := high) index_ref_array' [FfiSyntax] [GoLocalContext] [GoGlo
     [GoSemanticsFunctions] [go.PreSemantics] (n : Int) (elem_type : go.GoType) (i : w64) (l : Loc)
     {V : Type} {zv : ZeroVal V} [TypeRepr elem_type V] :
     ⟦IndexRef (go.ArrayType n elem_type), (#l, #i)⟧ ⤳[under]
-      (if sint.Z i < n then #(arrayIndexRef V (sint.Z i) l) else Panic "index out of range") :=
+      (if 0 ≤ sint.Z i ∧ sint.Z i < n then #(arrayIndexRef V (sint.Z i) l)
+       else Panic "index out of range") :=
   go.index_ref_array n elem_type i l
 
 instance (priority := high) slice_array_step' [FfiSyntax] [GoLocalContext] [GoGlobalContext]
@@ -317,7 +318,9 @@ theorem wp_store_array_loop (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : I
     wp_pures
     have hk' : sint.Z (W64 (k : Int)) = (k : Int) := by word
     have hk'' : sint.nat (W64 (k : Int)) = k := by word
-    simp only [hk', show ((k : Int) < n) = True from eq_true (by omega), ↓reduceIte]
+    have hk0 : (0 ≤ (k : Int)) = True := eq_true (by omega)
+    simp only [hk', hk0, show ((k : Int) < n) = True from eq_true (by omega), and_self,
+      ↓reduceIte]
     obtain ⟨we, hwe⟩ : ∃ we, w.arr[k]? = some we :=
       ⟨w.arr[k]'(by omega), List.getElem?_eq_getElem (by omega)⟩
     obtain ⟨ve, hve⟩ : ∃ ve, (w.arr.take k ++ vs.drop k)[k]? = some ve :=
@@ -327,7 +330,7 @@ theorem wp_store_array_loop (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : I
         typedPointsto (GF := GF) (arrayIndexRef V (j : Int) l) x (DFrac.own 1)) hve $$ Hl
       with ⟨Hx, Hl⟩
     wp_pures
-    simp only [hk'', hwe]
+    simp only [hk', hk0, ↓reduceIte, hk'', hwe]
     wp_pures
     wp_apply_core wp_store _ _ _ $$ Hx
     iintro Hx

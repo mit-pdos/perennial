@@ -208,7 +208,7 @@ theorem wp_intVerb (format : GoString) (i : w64)
       ⟨_, List.getElem?_eq_getElem Hlt, List.drop_eq_getElem_cons Hlt⟩
     have Hidx : format[sint.nat (i + W64 1)]? = some c := by
       rw [show sint.nat (i + W64 1) = sint.nat i + 1 by word]; exact Hc
-    rw [Hidx]
+    rw [if_pos (show 0 ≤ sint.Z (i + W64 1) by word), Hidx]
     wp_auto
     have Hdrop2 : sint.nat (i + W64 2) = sint.nat i + 2 := by word
     by_cases hd : c = W8 100 ∨ c = W8 118
@@ -226,7 +226,7 @@ theorem wp_intVerb (format : GoString) (i : w64)
       · subst h
         rw [decide_eq_false (by decide)]
         wp_auto
-        rw [Hidx]
+        rw [if_pos (show 0 ≤ sint.Z (i + W64 1) by word), Hidx]
         wp_auto
         iapply HΦ
         isplitl []
@@ -237,14 +237,14 @@ theorem wp_intVerb (format : GoString) (i : w64)
     · rw [not_or] at hd
       rw [decide_eq_false hd.1]
       wp_auto
-      rw [Hidx]
+      rw [if_pos (show 0 ≤ sint.Z (i + W64 1) by word), Hidx]
       wp_auto
       rw [decide_eq_false hd.2]
       wp_auto
       wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %-
       rw [decide_eq_true Hif]
       wp_auto
-      rw [Hidx]
+      rw [if_pos (show 0 ≤ sint.Z (i + W64 1) by word), Hidx]
       wp_auto
       by_cases h0 : c = W8 48
       · subst h0
@@ -274,7 +274,7 @@ theorem wp_intVerb (format : GoString) (i : w64)
         obtain ⟨cj, Hcj, Hdropj⟩ : ∃ cj, format[sint.nat jv]? = some cj ∧
             format.drop (sint.nat jv) = cj :: format.drop (sint.nat jv + 1) :=
           ⟨_, List.getElem?_eq_getElem Hjlt, List.drop_eq_getElem_cons Hjlt⟩
-        rw [Hcj]
+        rw [if_pos (show 0 ≤ sint.Z jv by word), Hcj]
         wp_auto
         wp_if_destruct
         rotate_left
@@ -282,7 +282,7 @@ theorem wp_intVerb (format : GoString) (i : w64)
             (Wn, format.drop (sint.nat jv)) := by
           rw [Hdropj, scanWidth, ite_eq_right (by rintro ⟨h1, -, -⟩; apply Hif; word)]
         rotate_right
-        rw [Hcj]
+        rw [if_pos (show 0 ≤ sint.Z jv by word), Hcj]
         wp_auto
         wp_if_destruct
         rotate_left
@@ -300,7 +300,7 @@ theorem wp_intVerb (format : GoString) (i : w64)
         simp only [decide_eq_true Hwle, ↓reduceIte]
         -- a digit: the loop goes on
         wp_auto
-        rw [Hcj]
+        rw [if_pos (show 0 ≤ sint.Z jv by word), Hcj]
         wp_auto
         wp_for_post
         iframe
@@ -334,7 +334,7 @@ theorem wp_intVerb (format : GoString) (i : w64)
               obtain ⟨ck, Hck, Hdropk⟩ : ∃ ck, format[sint.nat jv]? = some ck ∧
                   format.drop (sint.nat jv) = ck :: format.drop (sint.nat jv + 1) :=
                 ⟨_, List.getElem?_eq_getElem Hk, List.drop_eq_getElem_cons Hk⟩
-              rw [Hck]
+              rw [if_pos (show 0 ≤ sint.Z jv by word), Hck]
               wp_auto
               by_cases hck : ck = W8 100
               · subst hck
@@ -661,7 +661,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
       ⟨_, List.getElem?_eq_getElem Hlt, List.drop_eq_getElem_cons Hlt⟩
     have Hidx : format[sint.nat (i + W64 1)]? = some c := by
       rw [show sint.nat (i + W64 1) = sint.nat i + 1 by word]; exact Hc
-    rw [Hidx]
+    rw [if_pos (show 0 ≤ sint.Z (i + W64 1) by word), Hidx]
     wp_auto
     by_cases hs : c = W8 115
     · -- `%s`
