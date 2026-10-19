@@ -64,10 +64,11 @@ FIPS self-test. Go's initializer only copies an interface value, so it cannot pa
 other effect.
 
 The stored value cannot be told apart from Go's by a proof: it is non-nil and of the right
-dynamic type, as in Go (a nil check or a type switch sees what Go sees), while every operation
-that would inspect the `#()` (calling `Read`, comparing two such values, asserting it to an
-interface type) needs `reader`'s underlying type or methods, which nothing gives, so a proof
-cannot step it. `Int` above does not read its reader. -/
+dynamic type, as in Go (a nil check or a type switch sees what Go sees). Every operation that
+would inspect the `#()` (calling `Read`, comparing two such values) needs `reader`'s underlying
+type or methods, which nothing gives, so a proof cannot step it; asserting it to a non-empty
+interface type steps, but to an outcome fixed by the unspecified `methodSet`, which a proof
+cannot rely on either way. `Int` above does not read its reader. -/
 def Reader.init : val :=
   λ: <>,
     go.GlobalAlloc go!"crypto/rand.Reader" io.Reader.ty #() ;;
