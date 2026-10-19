@@ -445,8 +445,6 @@ axiom asynctimerchan.init [FfiSyntax] [GoGlobalContext] : val
 noncomputable def startNano [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"time.startNano"
 
-axiom startNano.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def UTC [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"time.UTC"
 
@@ -1224,6 +1222,8 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (App (Val (GoInstruction (FuncResolve runtimeNano []))) (Val #())) (Val #())) (Val #(W64 1))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1242,7 +1242,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val utcLoc.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val startNano.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (App (Val (GoInstruction (GlobalVarAddr startNano))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val asynctimerchan.init) (Val #()))))))
   (App (Val doExecute)
@@ -1262,7 +1262,9 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val longDayNames.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val std0x.init) (Val #()))))))))
+  (App (Val std0x.init) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc startNano go.int64)) (Val #()))))))))
 
 structure ParseError [FfiSyntax] where
   mk ::

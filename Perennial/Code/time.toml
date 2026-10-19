@@ -44,6 +44,7 @@ translate = [
   "nsecShift",
   "hasMonotonic",
   "internalToUnix",
+  "startNano", # var startNano = runtimeNano() - 1: read by Since and Until (isPkgInit)
 ]
 
 # translate the definitions of all type declarations goose supports

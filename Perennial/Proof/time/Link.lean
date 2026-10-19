@@ -158,7 +158,7 @@ theorem time.wp_Until : time.Until.spec (GF := GF) (hG := hG) :=
   time.Until.wp_proof time.wp_runtimeIsBubbled time.wp_runtimeNano time.wp_subMono time.wp_Now time.Time.wp_Sub
 
 theorem time.wp_initialize' : time.initialize'.spec (GF := GF) (hG := hG) :=
-  time.initialize'.wp_proof
+  time.initialize'.wp_proof time.wp_runtimeNano
 
 end link
 
