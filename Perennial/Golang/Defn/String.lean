@@ -37,6 +37,26 @@ def GoStringLe (x y : GoString) : Prop :=
 instance goStringLe_dec : DecidableRel GoStringLe :=
   fun x y => inferInstanceAs (Decidable (x = y ∨ GoStringLt x y))
 
+/-! `GoStringLt` is a strict total order (Lean core's facts about `List.Lex`). -/
+
+theorem goStringLt_irrefl (a : GoString) : ¬ GoStringLt a a :=
+  List.lex_irrefl (r := fun (x y : w8) => uint.Z x < uint.Z y) (fun _ => Int.lt_irrefl _) a
+
+theorem goStringLt_trans {a b c : GoString} (h1 : GoStringLt a b) (h2 : GoStringLt b c) :
+    GoStringLt a c :=
+  List.lex_trans (r := fun (x y : w8) => uint.Z x < uint.Z y) (fun h h' => Int.lt_trans h h') h1 h2
+
+theorem goStringLt_asymm {a b : GoString} (h : GoStringLt a b) : ¬ GoStringLt b a :=
+  List.lex_asymm (r := fun (x y : w8) => uint.Z x < uint.Z y) (fun h h' => Int.lt_asymm h h') h
+
+/-- Go's `<` on strings is total. -/
+theorem goStringLt_eq_of_not_lt {a b : GoString} (h1 : ¬ GoStringLt a b)
+    (h2 : ¬ GoStringLt b a) : a = b :=
+  List.lex_trichotomous (r := fun (x y : w8) => uint.Z x < uint.Z y) (fun x y a1 a2 => by
+    apply BitVec.eq_of_toNat_eq
+    simp only [uint.Z] at a1 a2
+    omega) h2 h1
+
 section defs
 variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
 open github_com.mit_pdos.perennial.goose.model

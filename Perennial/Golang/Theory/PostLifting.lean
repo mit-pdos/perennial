@@ -197,6 +197,12 @@ instance typedPointsto_persistent (l : Loc) (v : V) :
     Persistent (typedPointsto (GF := GF) l v .discard) :=
   (typedPointsto_dfractional (GF := GF) l v).dfractional_persistent
 
+/-- A points-to at `q1 + q2` in two parts. -/
+theorem typedPointsto_frac_add (l : Loc) (v : V) (q1 q2 : Qp) :
+    typedPointsto (GF := GF) l v (DFrac.own (q1 + q2)) ⊣⊢
+      typedPointsto (GF := GF) l v (DFrac.own q1) ∗ typedPointsto (GF := GF) l v (DFrac.own q2) :=
+  (typedPointsto_dfractional (GF := GF) l v).dfractional (DFrac.own q1) (DFrac.own q2)
+
 instance typedPointsto_combine_sep_gives (l : Loc) (dq1 dq2 : DFrac) (v1 v2 : V) :
     CombineSepGives (typedPointsto (GF := GF) l v1 dq1) (typedPointsto l v2 dq2)
       iprop(⌜v1 = v2⌝) where

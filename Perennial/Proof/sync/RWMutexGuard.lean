@@ -56,6 +56,10 @@ theorem rfrac_unseal : rfrac = rfracDef := by with_unfolding_all rfl
 theorem actualMaxReaders_pos : 0 < rwmutex.actualMaxReaders := by
   rw [rwmutex.actualMaxReaders_unseal]; decide
 
+/-- The `RWMutex` admits at least two readers. -/
+theorem actualMaxReaders_ge_2 : 2 ≤ Int.toNat rwmutex.actualMaxReaders := by
+  rw [rwmutex.actualMaxReaders_unseal]; decide
+
 /-- The fraction of `P` held by the invariant when there are `n` readers. -/
 abbrev invFrac (n : Nat) : Qp :=
   QpMul (posToQpZ (rwmutex.actualMaxReaders + 1 - (n : Int))) rfrac
@@ -383,6 +387,23 @@ theorem ownRWMutex_guard (rw : Loc) (P : Qp → IProp GF) :
   isplitl
   · iexists γ, γmax, γrlocked, γlocked; iframe; iframe #
   · iexists γ, γmax, γrlocked, γlocked; iframe #
+
+/-- A guard of a lock from its reader slots (there is at least one). -/
+theorem ownRWMutex_slots_guard (rw : Loc) (P : Qp → IProp GF) :
+    ([∗list] _x ∈ List.replicate (Int.toNat rwmutex.actualMaxReaders) (), ownRWMutex rw P) ⊢
+      ([∗list] _x ∈ List.replicate (Int.toNat rwmutex.actualMaxReaders) (), ownRWMutex rw P) ∗
+        isRWMutexGuard rw P := by
+  have hpos : 0 < Int.toNat rwmutex.actualMaxReaders :=
+    Int.lt_toNat.2 (by simpa using actualMaxReaders_pos)
+  obtain ⟨m, hm⟩ : ∃ m, Int.toNat rwmutex.actualMaxReaders = m + 1 :=
+    ⟨_, (Nat.succ_pred_eq_of_pos hpos).symm⟩
+  rw [hm, List.replicate_succ]
+  iintro H
+  icases BigSepL.bigSepL_cons.1 $$ H with ⟨Htok, Htoks⟩
+  icases ownRWMutex_guard _ _ $$ Htok with ⟨Htok, #Hguard⟩
+  iframe Hguard
+  iapply BigSepL.bigSepL_cons.2
+  iframe Htok Htoks
 
 theorem ownRWMutexRLocked_guard (rw : Loc) (P : Qp → IProp GF) :
     ownRWMutexRLocked rw P ⊢ ownRWMutexRLocked rw P ∗ isRWMutexGuard rw P := by

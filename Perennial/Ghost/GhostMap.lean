@@ -12,6 +12,7 @@ module
 
 public import Perennial.Ghost.Own
 public import Perennial.Ghost.Countable
+public import Perennial.Std.Qextra
 
 @[expose] public section
 
@@ -199,6 +200,12 @@ instance ghostMapElem_as_fractional (k : K) (γ : GName) (q : Qp) (v : V) :
   as_fractional := .rfl
   as_fractional_fractional := ghostMapElem_fractional k γ v
 
+/-- A whole ghost map element as two halves. -/
+theorem ghostMapElem_halves (γ : GName) (k : K) (v : V) :
+    (k ↪[γ] v : IProp GF) ⊣⊢ k ↪[γ]{#(1 : Qp).half} v ∗ k ↪[γ]{#(1 : Qp).half} v := by
+  conv => lhs; rw [← Qp.half_add_half 1]
+  exact (ghostMapElem_fractional k γ v).fractional _ _
+
 theorem ghostMapElem_valid (k : K) (γ : GName) (dq : DFrac) (v : V) :
     ⊢ (k ↪[γ]{dq} v : IProp GF) -∗ ⌜✓ dq⌝ := by
   unfold ghostMapElem
@@ -306,6 +313,19 @@ instance ghostMapAuth_as_fractional (γ : GName) (q : Qp) (m : GMap K V) :
     AsFractional (ghostMapAuth γ q m : IProp GF) ioΦ (fun q => ghostMapAuth γ q m) ioq q where
   as_fractional := .rfl
   as_fractional_fractional := ghostMapAuth_fractional γ m
+
+/-- A whole ghost map authority as two halves. -/
+theorem ghostMapAuth_halves (γ : GName) (m : GMap K V) :
+    (ghostMapAuth γ 1 m : IProp GF) ⊣⊢
+      ghostMapAuth γ (1 : Qp).half m ∗ ghostMapAuth γ (1 : Qp).half m := by
+  conv => lhs; rw [← Qp.half_add_half 1]
+  exact (ghostMapAuth_fractional γ m).fractional _ _
+
+theorem ghostMapAuth_half_fractional (γ : GName) (m : GMap K V) :
+    Fractional (fun q : Qp => (ghostMapAuth γ q.half m : IProp GF)) where
+  fractional p q := by
+    rw [Qp_half_add]
+    exact (ghostMapAuth_fractional γ m).fractional p.half q.half
 
 theorem ghostMapAuth_valid (γ : GName) (q : Qp) (m : GMap K V) :
     ⊢ (ghostMapAuth γ q m : IProp GF) -∗ ⌜q ≤ 1⌝ := by

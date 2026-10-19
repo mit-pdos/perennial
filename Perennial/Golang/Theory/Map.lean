@@ -313,6 +313,57 @@ instance ownMap_update_into_persistently (mref : Loc) (dq : DFrac) (m : GMap K V
     imodintro
     iexact H
 
+/-- A map points-to splits and combines by fraction. -/
+theorem ownMap_fractional (mref : Loc) (m : GMap K V) :
+    Fractional (fun q : Qp => (ownMap (GF := GF) mref (DFrac.own q) m : IProp GF)) where
+  fractional p q := by
+    rw [ownMap_unseal]
+    have hh := fun mv => (heapPointsto_fractional mref mv).fractional p q
+    constructor
+    · iintro H
+      unfold ownMapDef
+      iNamed H
+      icases (hh mv).1 $$ Hown with ⟨H1, H2⟩
+      isplitl [H1]
+      · iexists mv, mp; simp only [named]; iframe H1; ipureintro; exact ⟨His_map, Hagree, Hdom, Hdefault⟩
+      · iexists mv, mp; simp only [named]; iframe H2; ipureintro; exact ⟨His_map, Hagree, Hdom, Hdefault⟩
+    · iintro ⟨H1, H2⟩
+      unfold ownMapDef
+      iNamedSuffix H1 "1"
+      iNamedSuffix H2 "2"
+      icombine Hown1 Hown2 gives % ⟨_, Hmv⟩
+      subst Hmv
+      iexists mv, mp
+      simp only [named]
+      isplitl [Hown1 Hown2]
+      · iapply (hh mv).2; iframe
+      ipureintro; exact ⟨His_map2, Hagree2, Hdom2, Hdefault2⟩
+
+/-- Two shares of a map points-to agree on the map (for values whose Go values are injective). -/
+theorem ownMap_agree [go.IntoValInj V] (mref : Loc) (dq1 dq2 : DFrac) (m1 m2 : GMap K V) :
+    ownMap (GF := GF) mref dq1 m1 ∗ ownMap (GF := GF) mref dq2 m2 ⊢ ⌜m1 = m2⌝ := by
+  rw [ownMap_unseal]
+  iintro ⟨H1, H2⟩
+  unfold ownMapDef
+  iNamedSuffix H1 "1"
+  iNamedSuffix H2 "2"
+  icombine Hown1 Hown2 gives % ⟨_, Hmv⟩
+  subst Hmv
+  ipureintro
+  apply GMap.ext
+  intro k
+  have h1 := Hagree1 k
+  have h2 := Hagree2 k
+  rw [← go.mapLookup_pure _ _ _ His_map1, go.mapLookup_pure _ _ _ His_map2] at h1
+  rw [h1] at h2
+  change m1 !! k = m2 !! k
+  cases hk1 : m1 !! k <;> cases hk2 : m2 !! k <;> simp only [hk1, hk2] at h2
+  · rfl
+  · cases h2
+  · cases h2
+  · simp only [Prod.mk.injEq, true_and] at h2
+    rw [go.intoVal_inj h2]
+
 end lemmas
 
 /-! ## `for range` -/
