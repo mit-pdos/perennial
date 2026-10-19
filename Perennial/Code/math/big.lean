@@ -2,7 +2,9 @@
 module
 
 public import Perennial.Code.fmt
+public import Perennial.Code.errors
 public import Perennial.Golang.Defn
+public import Perennial.TrustedCode.math.big
 
 @[expose] public section
 
@@ -148,12 +150,8 @@ axiom _RoundingMode_name [FfiSyntax] [GoGlobalContext] : val
 noncomputable def _Accuracy_index [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big._Accuracy_index"
 
-axiom _Accuracy_index.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def hasADX [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.hasADX"
-
-axiom hasADX.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def floatZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.floatZero"
@@ -161,32 +159,20 @@ noncomputable def floatZero [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def pow5tab [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.pow5tab"
 
-axiom pow5tab.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def intOne [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.intOne"
-
-axiom intOne.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def natOne [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.natOne"
 
-axiom natOne.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def natTwo [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.natTwo"
-
-axiom natTwo.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def natFive [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.natFive"
 
-axiom natFive.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def natTen [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.natTen"
-
-axiom natTen.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def stackPool [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.stackPool"
@@ -194,17 +180,11 @@ noncomputable def stackPool [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def errNoDigits [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.errNoDigits"
 
-axiom errNoDigits.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def errInvalSep [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.errInvalSep"
 
-axiom errInvalSep.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def leafSize [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.leafSize"
-
-axiom leafSize.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def cacheBase10 [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.cacheBase10"
@@ -212,30 +192,20 @@ noncomputable def cacheBase10 [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def divRecursiveThreshold [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.divRecursiveThreshold"
 
-axiom divRecursiveThreshold.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def karatsubaThreshold [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.karatsubaThreshold"
-
-axiom karatsubaThreshold.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def basicSqrThreshold [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.basicSqrThreshold"
 
-axiom basicSqrThreshold.init [FfiSyntax] [GoGlobalContext] : val
-
 noncomputable def karatsubaSqrThreshold [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.karatsubaSqrThreshold"
-
-axiom karatsubaSqrThreshold.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def ratZero [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.ratZero"
 
 noncomputable def _RoundingMode_index [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big._RoundingMode_index"
-
-axiom _RoundingMode_index.init [FfiSyntax] [GoGlobalContext] : val
 
 noncomputable def threeOnce [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math/big.threeOnce"
@@ -547,9 +517,7 @@ noncomputable def Int.Int64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "v") (Var "$r0")))))))))))
 
 instance info' : PkgInfo pkg_id.math.big where
-  pkgImportedPkgs := [pkg_id.fmt]
-
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+  pkgImportedPkgs := [pkg_id.fmt, pkg_id.errors]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -572,54 +540,154 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W8 0))
+  (Let "$v1" (Val #(W8 5))
+  (Let "$v2" (Val #(W8 10))
+  (Let "$v3" (Val #(W8 15))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 4 go.uint8)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint8 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint8 (Var "$v1"))), (KeyedElement none (ElementExpression go.uint8 (Var "$v2"))), (KeyedElement none (ElementExpression go.uint8 (Var "$v3")))]))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (Val #(W64 5))
+  (Let "$v2" (Val #(W64 25))
+  (Let "$v3" (Val #(W64 125))
+  (Let "$v4" (Val #(W64 625))
+  (Let "$v5" (Val #(W64 3125))
+  (Let "$v6" (Val #(W64 15625))
+  (Let "$v7" (Val #(W64 78125))
+  (Let "$v8" (Val #(W64 390625))
+  (Let "$v9" (Val #(W64 1953125))
+  (Let "$v10" (Val #(W64 9765625))
+  (Let "$v11" (Val #(W64 48828125))
+  (Let "$v12" (Val #(W64 244140625))
+  (Let "$v13" (Val #(W64 1220703125))
+  (Let "$v14" (Val #(W64 6103515625))
+  (Let "$v15" (Val #(W64 30517578125))
+  (Let "$v16" (Val #(W64 152587890625))
+  (Let "$v17" (Val #(W64 762939453125))
+  (Let "$v18" (Val #(W64 3814697265625))
+  (Let "$v19" (Val #(W64 19073486328125))
+  (Let "$v20" (Val #(W64 95367431640625))
+  (Let "$v21" (Val #(W64 476837158203125))
+  (Let "$v22" (Val #(W64 2384185791015625))
+  (Let "$v23" (Val #(W64 11920928955078125))
+  (Let "$v24" (Val #(W64 59604644775390625))
+  (Let "$v25" (Val #(W64 298023223876953125))
+  (Let "$v26" (Val #(W64 1490116119384765625))
+  (Let "$v27" (Val #(W64 7450580596923828125))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 28 go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v2"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v3"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v4"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v5"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v6"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v7"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v8"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v9"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v10"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v11"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v12"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v13"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v14"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v15"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v16"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v17"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v18"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v19"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v20"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v21"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v22"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v23"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v24"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v25"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v26"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v27")))]))))))))))))))))))))))))))))))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Float.ty) _root_.Perennial.fmt.Scanner.ty))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType Float.ty)))) (Val UntypedNil)))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Float.ty) _root_.Perennial.fmt.Formatter.ty))) (App (Val (GoInstruction (GlobalVarAddr floatZero))) (Val #())))
+  (Let "$r0" (Let "$v0" (Val #(W64 1))
+  (App (Val (GoInstruction (CompositeLiteral nat.ty))) (LiteralValue [(KeyedElement none (ElementExpression Word.ty (Var "$v0")))])))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc Int'.ty))) (Let "$v0" (Val #false)
+  (Let "$v1" (App (Val (GoInstruction (GoLoad nat.ty))) (App (Val (GoInstruction (GlobalVarAddr natOne))) (Val #())))
+  (App (Val (GoInstruction (CompositeLiteral Int'.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.bool (Var "$v0"))), (KeyedElement none (ElementExpression nat.ty (Var "$v1")))])))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Int'.ty) _root_.Perennial.fmt.Formatter.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int'.ty)))) (App (Val (GoInstruction (GlobalVarAddr intOne))) (Val #()))))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Int'.ty) _root_.Perennial.fmt.Scanner.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int'.ty)))) (App (Val (GoInstruction (GlobalVarAddr intOne))) (Val #()))))
+  (Let "$r0" (Let "$v0" (Val #(W64 2))
+  (App (Val (GoInstruction (CompositeLiteral nat.ty))) (LiteralValue [(KeyedElement none (ElementExpression Word.ty (Var "$v0")))])))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 5))
+  (App (Val (GoInstruction (CompositeLiteral nat.ty))) (LiteralValue [(KeyedElement none (ElementExpression Word.ty (Var "$v0")))])))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 10))
+  (App (Val (GoInstruction (CompositeLiteral nat.ty))) (LiteralValue [(KeyedElement none (ElementExpression Word.ty (Var "$v0")))])))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (Val #(go!"number has no digits"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (Val #(go!"'_' must separate successive digits"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 8))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 40))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 40))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 12))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 80))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType Rat.ty) _root_.Perennial.fmt.Scanner.ty))) (App (Val (GoInstruction (GlobalVarAddr ratZero))) (Val #())))
+  (Let "$r0" (Let "$v0" (Val #(W8 0))
+  (Let "$v1" (Val #(W8 13))
+  (Let "$v2" (Val #(W8 26))
+  (Let "$v3" (Val #(W8 32))
+  (Let "$v4" (Val #(W8 44))
+  (Let "$v5" (Val #(W8 57))
+  (Let "$v6" (Val #(W8 70))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 7 go.uint8)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint8 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint8 (Var "$v1"))), (KeyedElement none (ElementExpression go.uint8 (Var "$v2"))), (KeyedElement none (ElementExpression go.uint8 (Var "$v3"))), (KeyedElement none (ElementExpression go.uint8 (Var "$v4"))), (KeyedElement none (ElementExpression go.uint8 (Var "$v5"))), (KeyedElement none (ElementExpression go.uint8 (Var "$v6")))])))))))))
   (App (Val doExecute)
-  (App (Val _RoundingMode_index.init) (Val #())))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 7 go.uint8)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _RoundingMode_index))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val «_».init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (GlobalVarAddr karatsubaSqrThreshold))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val karatsubaSqrThreshold.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (GlobalVarAddr basicSqrThreshold))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val basicSqrThreshold.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (GlobalVarAddr karatsubaThreshold))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val karatsubaThreshold.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (GlobalVarAddr divRecursiveThreshold))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val divRecursiveThreshold.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (GlobalVarAddr leafSize))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val leafSize.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr errInvalSep))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val errInvalSep.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr errNoDigits))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val errNoDigits.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore nat.ty))) (Pair (App (Val (GoInstruction (GlobalVarAddr natTen))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val natTen.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore nat.ty))) (Pair (App (Val (GoInstruction (GlobalVarAddr natFive))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val natFive.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore nat.ty))) (Pair (App (Val (GoInstruction (GlobalVarAddr natTwo))) (Val #())) (Var "$r0"))))))))))
   (App (Val doExecute)
-  (App (Val natTwo.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Int'.ty)))) (Pair (App (Val (GoInstruction (GlobalVarAddr intOne))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val «_».init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore nat.ty))) (Pair (App (Val (GoInstruction (GlobalVarAddr natOne))) (Val #())) (Var "$r0"))))))))))
   (App (Val doExecute)
-  (App (Val «_».init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val intOne.init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val natOne.init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val «_».init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val «_».init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val pow5tab.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 28 go.uint64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr pow5tab))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val hasADX.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val _Accuracy_index.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 4 go.uint8)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _Accuracy_index))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val _root_.Perennial.fmt.initialize') (Val #()))))))))
+  (App (Val _root_.Perennial.fmt.initialize') (Val #()))))))
+  (App (Val doExecute)
+  (App (Val _root_.Perennial.errors.initialize') (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc _Accuracy_index (go.GoType.ArrayType 4 go.uint8))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc pow5tab (go.GoType.ArrayType 28 go.uint64))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc intOne (go.GoType.PointerType Int'.ty))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc natOne nat.ty)) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc natTwo nat.ty)) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc natFive nat.ty)) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc natTen nat.ty)) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc errNoDigits go.error)) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc errInvalSep go.error)) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc leafSize go.int)) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc divRecursiveThreshold go.int)) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc karatsubaThreshold go.int)) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc basicSqrThreshold go.int)) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc karatsubaSqrThreshold go.int)) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc _RoundingMode_index (go.GoType.ArrayType 7 go.uint8))) (Val #()))))))))
 
 abbrev Word [FfiSyntax] : Type := w64
 
@@ -1004,6 +1072,7 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   NewInt_unfold : FuncUnfold NewInt [] NewInt.impl
   low64_unfold : FuncUnfold low64 [] low64.impl
   import_fmt_Assumption : _root_.Perennial.fmt.Assumptions
+  import_errors_Assumption : _root_.Perennial.errors.Assumptions
 
 attribute [instance] Assumptions.Word_instance
   Assumptions.decimal_instance
@@ -1021,6 +1090,7 @@ attribute [instance] Assumptions.Word_instance
   Assumptions.NewInt_unfold
   Assumptions.low64_unfold
   Assumptions.import_fmt_Assumption
+  Assumptions.import_errors_Assumption
 
 end math.big
 

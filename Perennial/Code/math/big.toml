@@ -1,5 +1,17 @@
-translate = ["NewInt", "Int.Int64", "low64"]
-imports = ["!*", "fmt"]
+translate = [
+  "NewInt", "Int.Int64", "low64",
+
+  # the package variables, all but `hasADX`; `_` is the interface assertions
+  # `var _ fmt.Formatter = intOne`, ...
+  "_Accuracy_index", "_RoundingMode_index", "pow5tab", "intOne", "natOne", "natTwo",
+  "natFive", "natTen", "errNoDigits", "errInvalSep", "leafSize",
+  "divRecursiveThreshold", "karatsubaThreshold", "basicSqrThreshold",
+  "karatsubaSqrThreshold", "_",
+]
+imports = ["!*", "errors", "fmt"]
+
+# `hasADX = cpu.X86.HasADX && cpu.X86.HasBMI2` (TrustedCode/math/big.lean)
+trusted = ["hasADX"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
