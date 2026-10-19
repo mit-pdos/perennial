@@ -53,6 +53,12 @@ def NewProph.impl : val := λ: <>, NewProph
 
 def ResolveProph.impl : val := λ: "p" "val", ResolveProph (Var "p") (Var "val")
 
+/-- `p.ResolveBool(b)` resolves the prophecy `p` with the value `#b`. -/
+def ProphId.ResolveBool.impl : val := λ: "p" "b", ResolveProph (Var "p") (Var "b")
+
+/-- `p.ResolveU64(x)` resolves the prophecy `p` with the value `#x`. -/
+def ProphId.ResolveU64.impl : val := λ: "p" "x", ResolveProph (Var "p") (Var "x")
+
 def Linearize.impl : val := λ: <>, #()
 
 @[reducible] def Mutex.underlying : go.GoType := go.bool

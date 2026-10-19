@@ -85,20 +85,32 @@ attribute [instance] Mutex.TypeAssumptions.type_repr
 class ProphId.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ProphId.underlying ProphId
   underlying : go.UnderlyingDirectedEq ProphId.ty ProphId.underlying
+  ResolveBool_unfold : MethodUnfold ProphId.ty go!"ResolveBool" ProphId.ResolveBool.impl
+  ResolveU64_unfold : MethodUnfold ProphId.ty go!"ResolveU64" ProphId.ResolveU64.impl
+  ptr_ResolveBool_unfold : MethodUnfold (go.GoType.PointerType ProphId.ty) go!"ResolveBool" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve ProphId.ty go!"ResolveBool"))) (App (Val (GoInstruction (GoLoad ProphId.ty))) (Var "$r"))))
+  ptr_ResolveU64_unfold : MethodUnfold (go.GoType.PointerType ProphId.ty) go!"ResolveU64" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve ProphId.ty go!"ResolveU64"))) (App (Val (GoInstruction (GoLoad ProphId.ty))) (Var "$r"))))
 
 attribute [instance] ProphId.TypeAssumptions.type_repr
   ProphId.TypeAssumptions.underlying
+  ProphId.TypeAssumptions.ResolveBool_unfold
+  ProphId.TypeAssumptions.ResolveU64_unfold
+  ProphId.TypeAssumptions.ptr_ResolveBool_unfold
+  ProphId.TypeAssumptions.ptr_ResolveU64_unfold
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Mutex_instance : Mutex.TypeAssumptions
   ProphId_instance : ProphId.TypeAssumptions
   RandomUint64_unfold : FuncUnfold RandomUint64 [] RandomUint64.impl
   Assume_unfold : FuncUnfold Assume [] Assume.impl
+  NewProph_unfold : FuncUnfold NewProph [] NewProph.impl
 
 attribute [instance] Assumptions.Mutex_instance
   Assumptions.ProphId_instance
   Assumptions.RandomUint64_unfold
   Assumptions.Assume_unfold
+  Assumptions.NewProph_unfold
 
 end github_com.goose_lang.primitive
 
