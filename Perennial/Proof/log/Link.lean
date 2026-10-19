@@ -7,6 +7,7 @@ module
 
 public import Perennial.Proof.log.Printf
 public import Perennial.Proof.log.initialize
+public import Perennial.Proof.sync.Link
 
 @[expose] public section
 
@@ -25,7 +26,7 @@ theorem log.wp_Printf : log.Printf.spec (GF := GF) (hG := hG) :=
   log.Printf.wp_proof
 
 theorem log.wp_initialize' : log.initialize'.spec (GF := GF) (hG := hG) :=
-  log.initialize'.wp_proof
+  log.initialize'.wp_proof sync.wp_initialize'
 
 end link
 

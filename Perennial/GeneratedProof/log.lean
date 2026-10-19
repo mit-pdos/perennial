@@ -3,6 +3,7 @@ module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.ManualProof.log
+public import Perennial.GeneratedProof.sync
 public import Perennial.Golang.Theory
 public import Perennial.Code.log
 

@@ -1,8 +1,11 @@
-translate = ["Ldate", "Ltime", "LstdFlags"]
 
-trusted = ["Printf", "Println"]
+translate = ["Ldate", "Ltime", "LstdFlags", "bufferPool"]
 
-imports = ["!*"]
+# `std` needs `os.Stderr` and `init.0` writes `log/internal`'s variable
+# (TrustedCode/log.lean)
+trusted = ["Printf", "Println", "std", "init.0"]
+
+imports = ["!*", "sync"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

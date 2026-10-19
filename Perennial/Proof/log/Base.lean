@@ -4,6 +4,7 @@ Shared definitions of the proofs of the Go `log` package: its `isPkgInit`.
 module
 
 public import Perennial.Proof.ProofPrelude
+public import Perennial.Proof.sync.Base
 public import Perennial.Code.log
 public import Perennial.GeneratedProof.log
 
