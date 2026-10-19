@@ -50,7 +50,15 @@ script enforces the review.
    judge it (the trust ladder: prove > translate real Go > extend the
    semantics or goose > a Go model under `goose/model` > hand-written
    GooseLang > assume > axiom; model assumptions must be unreachable, not
-   unlikely; a model may be less defined than Go, never more).
+   unlikely; a model may be less defined than Go, never more; goose emits
+   each operation annotated with its operands' Go types, and any choice that
+   depends on what a type is, such as signedness, width or a type parameter's
+   instantiation, is made by the Lean semantics, not by goose).
+5. **Fixing a bug in the semantics or goose** follows
+   `.agents/skills/fix-semantics/SKILL.md` (Claude Code: `/fix-semantics`):
+   one bug at a time, the smallest change that completes an existing scheme
+   rather than adding a carve-out, and a plan the user signs off before any
+   trusted file changes. Its `examples.md` holds the user's past decisions.
 
 `.claude/settings.json` adds Claude Code conveniences on top (a reminder to
 land at the end of a turn, a check of a new worktree's base); nothing in the
