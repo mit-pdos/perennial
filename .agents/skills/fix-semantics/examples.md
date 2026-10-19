@@ -183,7 +183,7 @@ conversions: `convert_nil_unsafe_pointer : ⟦Convert go.untypedNil
 conversions; kept with the nil siblings so all `untypedNil` conversions are in
 one list.
 
-## Case 7 — ACCEPTED: init functions are numbered functions (not yet on `lean`)
+## Case 7 — ACCEPTED: init functions are numbered functions ("goose: init functions are ordinary functions init.0, init.1, ... (as gc names them)")
 
 **Symptom.** Incomplete and unsound. `bytealg.toml` trusted `init`, but goose
 dropped a non-translated init silently (`case declfilter.Trust: return`), so
@@ -199,7 +199,8 @@ Translate/trust/axiomatize apply per name, so an unconfigured init has no
 gone. Gold example `inits` (one translated, one trusted init); semantics test
 `testInitOrder` (three inits over two files).
 
-**Configs.** `bytealg` trusts `init.0`. `sync` translates `init.0` and `init.1`
+**Configs.** `bytealg` trusts `init.0` (where `internal/bytealg` is translated; it
+is not on `lean`). `sync` translates `init.0` and `init.1`
 and trusts `runtime_registerPoolCleanup` (a runtime linkname with no Go body;
 model `λ: "cleanup", #()`). The 11 inits of `runtime`, `os` and `log` stay
 stuck: nothing imports those packages, so no proof needs their init.

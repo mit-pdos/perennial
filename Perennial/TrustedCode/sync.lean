@@ -43,6 +43,19 @@ def runtime_notifyListNotifyOne.impl : val :=
 def runtime_notifyListCheck.impl : val :=
   λ: "l", #()
 
+/-- `runtime_registerPoolCleanup` (sync/pool.go), a linkname to the runtime (runtime/mgc.go):
+
+```go
+func sync_runtime_registerPoolCleanup(f func()) {
+	poolcleanup = f
+}
+```
+
+The GC calls `poolcleanup` at the start of each cycle. The model has no GC, and `Pool` is not
+translated, so no translated code observes the pool state it clears. -/
+def runtime_registerPoolCleanup.impl : val :=
+  λ: "cleanup", #()
+
 /-
 inspired by runtime/sema.go:272:
 ```

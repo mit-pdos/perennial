@@ -167,6 +167,9 @@ noncomputable def poolRaceAddr [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def poolCleanup [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sync.poolCleanup"
 
+noncomputable def init.«0» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"sync.init.0"
+
 noncomputable def indexLocal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sync.indexLocal"
 
@@ -214,6 +217,9 @@ noncomputable def runtime_notifyListNotifyOne [FfiSyntax] [GoGlobalContext] : Go
 
 noncomputable def runtime_notifyListCheck [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sync.runtime_notifyListCheck"
+
+noncomputable def init.«1» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"sync.init.1"
 
 noncomputable def throw [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"sync.throw"
@@ -397,6 +403,29 @@ noncomputable def Once.doSlow.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Var "$oldf") (Val #()))))))))))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef Once.ty go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Once.ty)))) (Var "o")))) (Val #())))))))))))
+
+/-- go: pool.go:296:6 -/
+noncomputable def init.«0».impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (FuncResolve poolCleanup []))) (Val #()))
+  (App (App (Val (GoInstruction (FuncResolve runtime_registerPoolCleanup []))) (Val #())) (Var "$a0")))))))
+
+/-- go: runtime.go:53:6 -/
+noncomputable def init.«1».impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "n" (App (Val (GoInstruction (GoAlloc notifyList.ty))) (App (Val (GoInstruction (GoZeroVal notifyList.ty))) (Val #())))
+  (App (Val doExecute)
+  (Let "$a0" (Val #(W64 32))
+  (App (App (Val (GoInstruction (FuncResolve runtime_notifyListCheck []))) (Val #())) (Var "$a0"))))))))
 
 /-- RLock locks rw for reading.
 
@@ -1215,8 +1244,14 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val _root_.Perennial.sync.atomic.initialize') (Val #())))))
+  (App (App (Val (GoInstruction (FuncResolve init.«1» []))) (Val #())) (Val #())))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (FuncResolve init.«0» []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val _root_.Perennial.sync.atomic.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.internal.race.initialize') (Val #()))))))
   (App (Val doExecute)
@@ -1874,6 +1909,8 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   rlocker_instance : rlocker.TypeAssumptions
   WaitGroup_instance : WaitGroup.TypeAssumptions
   NewCond_unfold : FuncUnfold NewCond [] NewCond.impl
+  «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
+  runtime_registerPoolCleanup_unfold : FuncUnfold runtime_registerPoolCleanup [] runtime_registerPoolCleanup.impl
   runtime_Semacquire_unfold : FuncUnfold runtime_Semacquire [] runtime_Semacquire.impl
   runtime_SemacquireWaitGroup_unfold : FuncUnfold runtime_SemacquireWaitGroup [] runtime_SemacquireWaitGroup.impl
   runtime_SemacquireRWMutexR_unfold : FuncUnfold runtime_SemacquireRWMutexR [] runtime_SemacquireRWMutexR.impl
@@ -1884,6 +1921,7 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   runtime_notifyListNotifyAll_unfold : FuncUnfold runtime_notifyListNotifyAll [] runtime_notifyListNotifyAll.impl
   runtime_notifyListNotifyOne_unfold : FuncUnfold runtime_notifyListNotifyOne [] runtime_notifyListNotifyOne.impl
   runtime_notifyListCheck_unfold : FuncUnfold runtime_notifyListCheck [] runtime_notifyListCheck.impl
+  «init.1_unfold» : FuncUnfold init.«1» [] init.«1».impl
   import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
   import_race_Assumption : _root_.Perennial.internal.race.Assumptions
   import_synctest_Assumption : _root_.Perennial.internal.synctest.Assumptions
@@ -1908,6 +1946,8 @@ attribute [instance] Assumptions.Cond_instance
   Assumptions.rlocker_instance
   Assumptions.WaitGroup_instance
   Assumptions.NewCond_unfold
+  Assumptions.«init.0_unfold»
+  Assumptions.runtime_registerPoolCleanup_unfold
   Assumptions.runtime_Semacquire_unfold
   Assumptions.runtime_SemacquireWaitGroup_unfold
   Assumptions.runtime_SemacquireRWMutexR_unfold
@@ -1918,6 +1958,7 @@ attribute [instance] Assumptions.Cond_instance
   Assumptions.runtime_notifyListNotifyAll_unfold
   Assumptions.runtime_notifyListNotifyOne_unfold
   Assumptions.runtime_notifyListCheck_unfold
+  Assumptions.«init.1_unfold»
   Assumptions.import_atomic_Assumption
   Assumptions.import_race_Assumption
   Assumptions.import_synctest_Assumption

@@ -79,6 +79,9 @@ noncomputable def getBuffer [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def putBuffer [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.putBuffer"
 
+noncomputable def init.«0» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"log.init.0"
+
 noncomputable def SetOutput [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.SetOutput"
 
@@ -137,8 +140,11 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (package.init pkg_id.log)) (Lam BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val bufferPool.init) (Val #())))))
+  (App (App (Val (GoInstruction (FuncResolve init.«0» []))) (Val #())) (Val #())))))
+  (App (Val doExecute)
+  (App (Val bufferPool.init) (Val #()))))))
   (App (Val doExecute)
   (App (Val std.init) (Val #()))))))))
 

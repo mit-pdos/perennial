@@ -423,7 +423,8 @@ func (ctx *Ctx) leanPackagePropClass(typeSpecs []*ast.TypeSpec) string {
 			ty: glang.LeanEncodedName(t.Name.Name + "_Assumptions")})
 	}
 	for _, f := range ctx.functions {
-		if ctx.filter.GetAction(f.Name.Name) == declfilter.Axiomatize {
+		name := ctx.funcDeclName(f)
+		if ctx.filter.GetAction(name) == declfilter.Axiomatize {
 			continue
 		}
 		var params []string
@@ -438,10 +439,10 @@ func (ctx *Ctx) leanPackagePropClass(typeSpecs []*ast.TypeSpec) string {
 		for _, p := range params {
 			typeArgs = append(typeArgs, glang.LeanIdent(p))
 		}
-		impl := leanApplied(glang.LeanIdent(glang.FuncImpl(f.Name.Name)), params)
-		fields = append(fields, leanClassField{name: f.Name.Name + "_unfold",
+		impl := leanApplied(glang.LeanIdent(glang.FuncImpl(name)), params)
+		fields = append(fields, leanClassField{name: name + "_unfold",
 			ty: leanForall(leanTypeParamBinders(params, "go.GoType"),
-				fmt.Sprintf("FuncUnfold %s [%s] %s", glang.LeanIdent(f.Name.Name),
+				fmt.Sprintf("FuncUnfold %s [%s] %s", glang.LeanIdent(name),
 					strings.Join(typeArgs, ", "), impl))})
 	}
 	for _, impName := range ctx.importNamesOrdered {

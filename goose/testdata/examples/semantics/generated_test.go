@@ -184,6 +184,10 @@ func (suite *GoTestSuite) TestArgumentOrder() {
 	suite.Equal(true, failing_testArgumentOrder())
 }
 
+func (suite *GoTestSuite) TestInitOrder() {
+	suite.Equal(true, testInitOrder())
+}
+
 func (suite *GoTestSuite) TestU64ToU32() {
 	suite.Equal(true, testU64ToU32())
 }

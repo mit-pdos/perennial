@@ -1,0 +1,2 @@
+translate = ["*", "!init.1"]
+trusted = ["init.1"]

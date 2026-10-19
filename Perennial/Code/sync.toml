@@ -18,6 +18,9 @@ translate = [
   "Locker",
 
   "expunged",
+
+  "init.0",
+  "init.1",
 ]
 
 imports = ["sync/atomic", "internal/race", "internal/synctest"]
@@ -43,6 +46,9 @@ trusted = [
 
   "runtime_Semacquire*",
   "runtime_Semrelease",
+
+  # a runtime linkname with no Go body
+  "runtime_registerPoolCleanup",
 ]
 
 # translate the definitions of all type declarations goose supports

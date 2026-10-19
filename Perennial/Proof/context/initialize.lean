@@ -64,6 +64,9 @@ theorem context.initialize'.wp_proof
   · inext
     iexists _
     iexact Hgo
+  wp_func_call
+  wp_call
+  wp_auto
   wp_apply_core chan.wp_close (V := Unit) ch γ $$ His_ch
   iintro -
   unfold closeAu

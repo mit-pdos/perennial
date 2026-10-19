@@ -39,6 +39,17 @@ theorem sync.initialize'.wp_proof
   wp_apply wp_synctest_initialize _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hsynctest⟩
   wp_apply wp_race_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hrace⟩
   wp_apply wp_atomic_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Hatomic⟩
+  -- init.0: runtime_registerPoolCleanup(poolCleanup)
+  wp_func_call
+  wp_call
+  wp_func_call
+  wp_call
+  -- init.1: runtime_notifyListCheck(unsafe.Sizeof(n))
+  wp_func_call
+  wp_call
+  wp_auto
+  wp_func_call
+  wp_call
   iframe Hown
   is_pkg_init_finish
 

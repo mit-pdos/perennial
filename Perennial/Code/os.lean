@@ -723,6 +723,9 @@ noncomputable def restoreSIGSYS [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def Pipe [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.Pipe"
 
+noncomputable def init.«0» [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"os.init.0"
+
 noncomputable def runtime_args [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.runtime_args"
 
@@ -981,8 +984,11 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val pollSplice.init) (Val #())))))
+  (App (App (Val (GoInstruction (FuncResolve init.«0» []))) (Val #())) (Val #())))))
+  (App (Val doExecute)
+  (App (Val pollSplice.init) (Val #()))))))
   (App (Val doExecute)
   (App (Val pollCopyFileRange.init) (Val #()))))))
   (App (Val doExecute)
