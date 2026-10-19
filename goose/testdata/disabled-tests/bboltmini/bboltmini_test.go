@@ -19,6 +19,7 @@ func TestTargets(t *testing.T) {
 
 		"testDisjointStructCopy":      testDisjointStructCopy,
 		"testTagsClearedByByteStores": testTagsClearedByByteStores,
+		"testOverlappingLoads":        testOverlappingLoads,
 	} {
 		if !f() {
 			t.Errorf("%s returned false", name)

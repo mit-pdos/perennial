@@ -36,6 +36,7 @@ rejects the `unsafe.Add`/`unsafe.Slice` calls and nothing else. It moves to
 | `testInlineBucket` | I1, I7 | R2–R4 | a header and a page at an offset that is 8-aligned for some key lengths and not others; `uintptr(p)` is arbitrary, so both branches of the alignment test must verify; a writable open copies |
 | `testStatsConcurrent` | I10 | R1, R5 | atomics on `int64`s that are byte cells, one through `(*int64)(unsafe.Pointer(*time.Duration))`; their alignment premise is discharged from the allocation |
 | `testDisjointStructCopy` | I1 | R4 | whole-struct copies between disjoint views of one buffer, and onto the same location, are not stuck |
+| `testOverlappingLoads` | (I1, mmap readers) | R4 | whole loads of one type at overlapping offsets are defined; only stores check tags |
 | `testTagsClearedByByteStores` | I1 (`pagePool` reuse) | R4 | after a whole-struct load, zeroing the buffer byte by byte clears its tags, so the buffer can hold a view of the same type at a shifted offset |
 
 Two targets are scale tests rather than new idioms:

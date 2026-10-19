@@ -253,3 +253,13 @@ func testTagsClearedByByteStores() bool {
 	b := *(*InBucket)(unsafe.Pointer(&buf[8]))
 	return old.root == 1 && b.root == 3 && b.sequence == 4 && buf[0] == 0
 }
+
+// Whole loads of one type at overlapping offsets are defined: only a store can
+// complete an overlapping copy, so loads never check tags (design R4).
+func testOverlappingLoads() bool {
+	buf := make([]byte, 24)
+	buf[8] = 1
+	x := *(*InBucket)(unsafe.Pointer(&buf[0]))
+	y := *(*InBucket)(unsafe.Pointer(&buf[8]))
+	return x.sequence == 1 && y.root == 1
+}
