@@ -228,7 +228,7 @@ func testStatsConcurrent() bool {
 	return s.GetWriteTime() == 6 && atomic.LoadInt64(&s.PageCount) == 2
 }
 
-// The tags of whole-struct views (design M3, K3) must not get in the way of
+// The tags of whole-struct views (design R3) must not get in the way of
 // what Go defines. Safe Go can make overlapping arrays (slice-to-array-pointer
 // conversions), and gc copies them with memmove, which is the model's
 // load-then-store.

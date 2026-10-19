@@ -5,7 +5,7 @@
 // unaligned offsets, and an atomic on a *time.Duration cast to *int64.
 //
 // Each construct is written the way go.etcd.io/bbolt v1.5.0 writes it, with
-// the two changes of docs/design/unsafe-memory.md section 5: the helpers use
+// the two changes of docs/design/unsafe-memory.md section 4: the helpers use
 // unsafe.Add instead of uintptr arithmetic, and an element's pos is computed
 // from offsets instead of as a pointer difference. The original forms are in
 // package stuck, with the other constructs the model must not verify.

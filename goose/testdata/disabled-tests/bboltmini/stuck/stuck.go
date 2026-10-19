@@ -148,7 +148,7 @@ func testOverlappingCopy() bool {
 // nothing for overlap made with unsafe ("We don't care about solving 1",
 // ssagen/ssa.go, moveWhichMayOverlap), and only a check it could drop guards
 // its rewrite that fuses the two copies (generic.rules, a Move of a Move). So
-// this must stay unprovable whatever the syntax: the model's tags (design K3)
+// this must stay unprovable whatever the syntax: the model's tags (design R3)
 // make the second, shifted whole-struct view stuck.
 //
 //go:noinline
