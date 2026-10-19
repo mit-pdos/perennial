@@ -135,7 +135,7 @@ easy to understand once you've read the Go spec." The final form is one named
 condition in the single general path, with no type test, so it composes with
 type parameters.
 
-## Case 4 — ACCEPTED: `copy(b, s)` with a string (not yet on `lean`)
+## Case 4 — ACCEPTED: `copy(b, s)` with a string ("goose: copy(dst, src) converts src to dst's type (copy([]byte, string))")
 
 **Symptom.** Incomplete, the same as Case 3: `go/types` reports
 `func([]byte, string) int`, so the source string reached `copy_slice` unchanged

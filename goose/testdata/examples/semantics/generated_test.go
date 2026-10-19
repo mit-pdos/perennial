@@ -548,6 +548,26 @@ func (suite *GoTestSuite) TestAppendNilNamed() {
 	suite.Equal(true, testAppendNilNamed())
 }
 
+func (suite *GoTestSuite) TestCopyStringVar() {
+	suite.Equal(true, testCopyStringVar())
+}
+
+func (suite *GoTestSuite) TestCopyStringConst() {
+	suite.Equal(true, testCopyStringConst())
+}
+
+func (suite *GoTestSuite) TestCopyStringShortDst() {
+	suite.Equal(true, testCopyStringShortDst())
+}
+
+func (suite *GoTestSuite) TestCopyGenericString() {
+	suite.Equal(true, testCopyGenericString())
+}
+
+func (suite *GoTestSuite) TestCopyGenericBytes() {
+	suite.Equal(true, testCopyGenericBytes())
+}
+
 func (suite *GoTestSuite) TestFooBarMutation() {
 	suite.Equal(true, testFooBarMutation())
 }
