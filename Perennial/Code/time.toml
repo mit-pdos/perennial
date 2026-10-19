@@ -1,4 +1,4 @@
-imports = ["!*"]
+imports = ["!*", "errors"]
 trusted = [
   # TODO: these are for verifying (rather than modeling) `After`, but the proof
   # would be blocked by the lack of support for type assertions (needed in time.sendTime)
@@ -10,6 +10,10 @@ trusted = [
 
   "After",
   "Sleep",
+
+  # `asynctimerchan = godebug.New(...)`: `internal/godebug` is not translated
+  # (TrustedCode/time.lean)
+  "asynctimerchan",
 ]
 translate = [
   "Time",
@@ -44,6 +48,13 @@ translate = [
   "nsecShift",
   "hasMonotonic",
   "internalToUnix",
+
+  # the package variables, all but `asynctimerchan`, and the constants `std0x` uses
+  "std0x", "longDayNames", "shortDayNames", "shortMonthNames", "longMonthNames",
+  "errAtoi", "errBad", "errLeadingInt", "unitMap", "startNano", "UTC", "utcLoc",
+  "Local", "localLoc", "errLocation", "errBadData", "platformZoneSources",
+  "stdZeroMonth", "stdZeroDay", "stdZeroHour12", "stdZeroMinute", "stdZeroSecond",
+  "stdYear",
 ]
 
 # translate the definitions of all type declarations goose supports

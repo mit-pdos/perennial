@@ -22,6 +22,7 @@ Notes on the package's specs:
 module
 
 public import Perennial.Proof.ProofPrelude
+public import Perennial.Proof.errors.Base
 public import Perennial.Code.time
 public import Perennial.GeneratedProof.time
 public import Perennial.Golang.Theory.Chan

@@ -71,6 +71,21 @@ def After.impl : val :=
 def Sleep.impl : val :=
   λ: "d", #()
 
+/-- The initializer of `asynctimerchan` (`time/sleep.go`):
+
+```go
+var asynctimerchan = godebug.New("asynctimerchan")
+```
+
+The model does nothing, and `asynctimerchan` is not allocated. `internal/godebug` is not
+translated; its `New(name)` is `return &Setting{name: name}`, an allocation, so Go's
+initializer cannot panic and has no effect beyond the variable. Its only reader is
+`syncTimer` (`asynctimerchan.Value()`, which reads the `GODEBUG` setting the runtime hands to
+`internal/godebug`), whose model above chooses either result arbitrarily instead; a translated
+reader could not load the variable (nothing gives a points-to for it). -/
+def asynctimerchan.init : val :=
+  λ: <>, #()
+
 end code
 end time
 
