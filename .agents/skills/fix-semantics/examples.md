@@ -84,7 +84,7 @@ order) that add `$l<i>`/`$lm<i>`/`$lk<i>` bindings with per-target-kind
 branches. Only the one line was taken; the others are separate items. (On
 `lean` the line arrived inside 84edc3ea5, with the other two changes.)
 
-## Case 3 — ACCEPTED: `append(b, s...)` with a string (not yet on `lean`)
+## Case 3 — ACCEPTED: `append(b, s...)` with a string ("goose: append(s, x...) converts x to append's slice type (append([]byte, string...))")
 
 **Symptom.** Incomplete. For the Go spec's special form `append([]byte, string...)`,
 `go/types` reports the signature `func([]byte, string...)`, so goose bound the

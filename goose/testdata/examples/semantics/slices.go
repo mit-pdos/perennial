@@ -103,3 +103,36 @@ func testSliceRef() bool {
 	*ptr = 1
 	return (sl[0] == 1)
 }
+
+func testAppendStringVar() bool {
+	b := []byte("ab")
+	s := "cd"
+	b = append(b, s...)
+	return string(b) == "abcd"
+}
+
+func testAppendStringConst() bool {
+	b := []byte("ab")
+	b = append(b, "cd"...)
+	return string(b) == "abcd"
+}
+
+func appendBytesOrString[S ~[]byte | ~string](b []byte, s S) []byte {
+	return append(b, s...)
+}
+
+func testAppendGenericString() bool {
+	return string(appendBytesOrString([]byte("ab"), "cd")) == "abcd"
+}
+
+func testAppendGenericBytes() bool {
+	return string(appendBytesOrString([]byte("ab"), []byte("cd"))) == "abcd"
+}
+
+type appendNamedSlice []uint64
+
+func testAppendNilNamed() bool {
+	x := appendNamedSlice{1, 2}
+	y := append(x, nil...)
+	return len(y) == 2 && y[1] == 2
+}

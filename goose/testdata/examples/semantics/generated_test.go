@@ -528,6 +528,26 @@ func (suite *GoTestSuite) TestSliceRef() {
 	suite.Equal(true, testSliceRef())
 }
 
+func (suite *GoTestSuite) TestAppendStringVar() {
+	suite.Equal(true, testAppendStringVar())
+}
+
+func (suite *GoTestSuite) TestAppendStringConst() {
+	suite.Equal(true, testAppendStringConst())
+}
+
+func (suite *GoTestSuite) TestAppendGenericString() {
+	suite.Equal(true, testAppendGenericString())
+}
+
+func (suite *GoTestSuite) TestAppendGenericBytes() {
+	suite.Equal(true, testAppendGenericBytes())
+}
+
+func (suite *GoTestSuite) TestAppendNilNamed() {
+	suite.Equal(true, testAppendNilNamed())
+}
+
 func (suite *GoTestSuite) TestFooBarMutation() {
 	suite.Equal(true, testFooBarMutation())
 }

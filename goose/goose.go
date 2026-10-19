@@ -286,12 +286,10 @@ func (ctx *Ctx) callExprPrelude(call *ast.CallExpr, cont glang.Expr) (expr glang
 		i--
 	}
 	for ; i > 0; i-- {
-		paramTy := funcSig.Params().At(i-1).Type()
-		// `append(b, s...)` with a string `s` (the only variadic string
-		// parameter) appends the bytes of `s`, as `[]byte(s)...` does.
-		if b, ok := paramTy.Underlying().(*types.Basic); ok && funcSig.Variadic() &&
-			i == funcSig.Params().Len() && b.Info()&types.IsString != 0 {
-			paramTy = types.NewSlice(types.Universe.Lookup("byte").Type())
+		paramTy := funcSig.Params().At(i - 1).Type()
+		// handle `append` special case for strings
+		if ctx.appendWithEllipsis(call) {
+			paramTy = funcSig.Params().At(0).Type()
 		}
 		expr = glang.LetExpr{
 			Names: []string{fmt.Sprintf("$a%d", i-1)},
@@ -301,6 +299,12 @@ func (ctx *Ctx) callExprPrelude(call *ast.CallExpr, cont glang.Expr) (expr glang
 		}
 	}
 	return
+}
+
+func (ctx *Ctx) appendWithEllipsis(call *ast.CallExpr) bool {
+	id, ok := ast.Unparen(call.Fun).(*ast.Ident)
+	return ok && ctx.info.Types[call.Fun].IsBuiltin() && id.Name == "append" &&
+		call.Ellipsis != token.NoPos
 }
 
 func (ctx *Ctx) conversionExpr(s *ast.CallExpr) glang.Expr {
