@@ -68,4 +68,10 @@ theorem Qp_lt_densely_ordered (q1 q2 : Qp) (h : q1 < q2) : ∃ q : Qp, q1 < q �
   have hpos : 0 < (q1.val + q2.val) / 2 := by have := q1.2; have := q2.2; grind
   refine ⟨⟨_, hpos⟩, ?_, ?_⟩ <;> (simp only [Qp.lt_iff]; grind)
 
+theorem Qp_half_add (q1 q2 : Qp) : (q1 + q2).half = q1.half + q2.half :=
+  Subtype.ext (by simp only [Qp.val_half, Qp.val_add]; grind)
+
+theorem Qp_one_add_not_le (q : Qp) : ¬ ((1 : Qp) + q ≤ 1) := by
+  have := q.2; simp only [Qp.le_iff, Qp.val_add, Qp.val_one]; grind
+
 end Perennial

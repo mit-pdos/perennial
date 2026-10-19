@@ -6,6 +6,7 @@ module
 
 public import Perennial.Ghost.Own
 public import Perennial.Ghost.Countable
+public import Perennial.Std.Qextra
 
 @[expose] public section
 
@@ -34,6 +35,12 @@ instance ghostVar_as_fractional (γ : GName) (a : A) (q : Qp) :
     AsFractional (ghostVar (GF := GF) γ q a) ioΦ (fun q => ghostVar γ q a) ioq q where
   as_fractional := .rfl
   as_fractional_fractional := ghostVar_fractional γ a
+
+theorem ghostVar_half_fractional (γ : GName) (a : A) :
+    Fractional (fun q : Qp => ghostVar (GF := GF) γ q.half a) where
+  fractional p q := by
+    rw [Qp_half_add]
+    exact (ghostVar_fractional γ a).fractional p.half q.half
 
 theorem ghostVar_alloc_strong (a : A) (P : GName → Prop) (HP : PredInfinite P) :
     ⊢ |==> ∃ γ, ⌜P γ⌝ ∗ (ghostVar (GF := GF) γ 1 a) :=
@@ -80,6 +87,12 @@ instance (priority := default - 20) ghostVar_combine_as (γ : GName) (a1 : A) (q
 theorem ghostVar_split (γ : GName) (a : A) (q1 q2 : Qp) :
     ⊢ ghostVar (GF := GF) γ (q1 + q2) a -∗ ghostVar γ q1 a ∗ ghostVar γ q2 a := by
   iintro ⟨$, $⟩
+
+/-- A ghost variable's fraction as two halves, both ways. -/
+theorem ghostVar_split_half (γ : GName) (q : Qp) (a : A) :
+    (ghostVar (GF := GF) γ q a : IProp GF) ⊣⊢ ghostVar γ q.half a ∗ ghostVar γ q.half a := by
+  conv => lhs; rw [← Qp.half_add_half q]
+  exact (ghostVar_fractional γ a).fractional _ _
 
 /-- Update the ghost variable to new value `b`. -/
 theorem ghostVar_update (b : A) (γ : GName) (a : A) :
