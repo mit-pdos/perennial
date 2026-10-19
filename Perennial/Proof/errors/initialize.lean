@@ -21,7 +21,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
 
-/-- Uses the unproved `wp_errorType_init` (`Base.lean`). -/
+/-- Uses the trust-boundary axiom `wp_errorType_init` (`Base.lean`). -/
 theorem errors.initialize'.wp_proof
     (wp_New : errors.New.spec (GF := GF) (hG := hG)) :
     errors.initialize'.spec (GF := GF) (hG := hG) := by

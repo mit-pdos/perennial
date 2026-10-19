@@ -1,8 +1,8 @@
 /-
 Shared definitions of the proofs of the Go `errors` package: its `isPkgInit`, the
 predicates of the specs of `Unwrap`, `AsType`, `As` and `Is` (`isUnwrappable`,
-`isErrorTree`, `errorIsTree`, ...), lemmas about them, and the (unprovable) initializer
-of the global `errorType`.
+`isErrorTree`, `errorIsTree`, ...), lemmas about them, and the trust-boundary axiom on the
+(untranslated) initializer of the global `errorType`.
 -/
 module
 
@@ -41,15 +41,18 @@ instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.errors :=
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.errors :=
   build_get_is_pkg_init_wf
 
-theorem wp_errorType_init :
+/-- **Trust boundary: `errors`'s untranslated variable initializer returns.**
+`var errorType = reflectlite.TypeOf((*error)(nil)).Elem()` is not translated (`errors.toml`
+excludes it and the `internal/reflectlite` import), so goose emits an axiomatized
+`errorType.init : val` with no semantics (nor a `GlobalAlloc` of `errorType`); in Go it runs at
+program start and returns without panicking. Nothing translated reads `errorType` (its one
+reader, `As`, is an axiom), and the package's `isPkgInit` is `True`, so nothing is assumed
+about what it stores. Satisfiable: `errorType.init` is an uninterpreted constant, and
+`fun _ => #()` meets the triple. -/
+axiom wp_errorType_init [sem : go.Semantics] [package_sem : errors.Assumptions] :
     {{ (True : IProp GF) }}
       (App (Val errorType.init) (Val #()))
-    {{ RET #(); True }} := by
-  -- Unprovable: `errorType'init` is opaque (an axiom in Perennial/Code/errors.lean):
-  -- `var errorType = reflectlite.TypeOf((*error)(nil)).Elem()` is not translated
-  -- (`errors.toml` excludes it and the `internal/reflectlite` import), so goose emits only
-  -- an axiomatized `errorType'init : val`, which has no semantics.
-  sorry
+    {{ RET #(); True }}
 
 def isUnwrappable (err : GoError) : IProp GF :=
   match err with

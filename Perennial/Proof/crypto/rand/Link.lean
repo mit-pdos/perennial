@@ -26,7 +26,7 @@ theorem crypto.rand.wp_Int : crypto.rand.Int.spec (GF := GF) (hG := hG) :=
   crypto.rand.Int.wp_proof math.big.wp_NewInt
 
 theorem crypto.rand.wp_initialize' : crypto.rand.initialize'.spec (GF := GF) (hG := hG) :=
-  crypto.rand.initialize'.wp_proof
+  crypto.rand.initialize'.wp_proof math.big.wp_initialize'
 
 end link
 
