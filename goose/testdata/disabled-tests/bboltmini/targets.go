@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"sync"
 	"sync/atomic"
+	"unsafe"
 )
 
 // The verification targets: each test function returns true in every
@@ -225,4 +226,47 @@ func testStatsConcurrent() bool {
 	}
 	wg.Wait()
 	return s.GetWriteTime() == 6 && atomic.LoadInt64(&s.PageCount) == 2
+}
+
+// The tags of whole-struct views (design M3, K3) must not get in the way of
+// what Go defines. Safe Go can make overlapping arrays (slice-to-array-pointer
+// conversions), and gc copies them with memmove, which is the model's
+// load-then-store.
+func testOverlappingArrayCopy() bool {
+	s := make([]uint64, 16)
+	for i := range s {
+		s[i] = uint64(i)
+	}
+	*(*[8]uint64)(s[1:9]) = *(*[8]uint64)(s[0:8])
+	for i := 1; i <= 8; i++ {
+		if s[i] != uint64(i-1) {
+			return false
+		}
+	}
+	return s[9] == 9
+}
+
+// Whole-struct copies between disjoint views of one buffer, and onto itself.
+func testDisjointStructCopy() bool {
+	buf := make([]byte, 2*int(unsafe.Sizeof(Meta{})))
+	a := (*Meta)(unsafe.Pointer(&buf[0]))
+	b := (*Meta)(unsafe.Pointer(&buf[unsafe.Sizeof(Meta{})]))
+	a.txid = 7
+	*b = *a
+	same := (*Meta)(unsafe.Pointer(&buf[0]))
+	*same = *a
+	return b.txid == 7 && a.txid == 7
+}
+
+// A buffer reused at shifted offsets, as pagePool reuses page buffers: zeroing
+// it byte by byte clears the tags of the whole-struct views it held.
+func testTagsClearedByByteStores() bool {
+	buf := make([]byte, 32)
+	*(*InBucket)(unsafe.Pointer(&buf[0])) = InBucket{root: 1, sequence: 2}
+	for i := range buf {
+		buf[i] = 0
+	}
+	*(*InBucket)(unsafe.Pointer(&buf[8])) = InBucket{root: 3, sequence: 4}
+	b := *(*InBucket)(unsafe.Pointer(&buf[8]))
+	return b.root == 3 && b.sequence == 4 && buf[0] == 0
 }

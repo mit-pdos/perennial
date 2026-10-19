@@ -142,3 +142,26 @@ func testOverlappingCopy() bool {
 	copyMeta((*meta)(unsafe.Pointer(&buf[1])), (*meta)(unsafe.Pointer(&buf[0])))
 	return buf[3] == 2
 }
+
+// The same copy through a temporary. Today gc copies *src into a stack slot
+// first, so the result is memmove's and this is true in Go. But gc promises
+// nothing for overlap made with unsafe ("We don't care about solving 1",
+// ssagen/ssa.go, moveWhichMayOverlap), and only a check it could drop guards
+// its rewrite that fuses the two copies (generic.rules, a Move of a Move). So
+// this must stay unprovable whatever the syntax: the model's tags (design K3)
+// make the second, shifted whole-struct view stuck.
+//
+//go:noinline
+func copyMetaViaTemp(dst, src *meta) {
+	x := *src
+	*dst = x
+}
+
+func testOverlappingCopyViaTemp() bool {
+	buf := make([]uint64, 16)
+	for i := range buf {
+		buf[i] = uint64(i)
+	}
+	copyMetaViaTemp((*meta)(unsafe.Pointer(&buf[1])), (*meta)(unsafe.Pointer(&buf[0])))
+	return buf[3] == 2
+}

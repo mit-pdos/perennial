@@ -16,6 +16,10 @@ func TestTargets(t *testing.T) {
 		"testFreelistOverflow":  testFreelistOverflow,
 		"testInlineBucket":      testInlineBucket,
 		"testStatsConcurrent":   testStatsConcurrent,
+
+		"testOverlappingArrayCopy":    testOverlappingArrayCopy,
+		"testDisjointStructCopy":      testDisjointStructCopy,
+		"testTagsClearedByByteStores": testTagsClearedByByteStores,
 	} {
 		if !f() {
 			t.Errorf("%s returned false", name)

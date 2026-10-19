@@ -19,6 +19,8 @@ func TestGo(t *testing.T) {
 		"testFieldResidue":      {testFieldResidue, false},
 		"testZeroSizeDistinct":  {testZeroSizeDistinct, false},
 		"testOverlappingCopy":   {testOverlappingCopy, false},
+
+		"testOverlappingCopyViaTemp": {testOverlappingCopyViaTemp, true},
 	} {
 		if got := c.f(); got != c.want {
 			t.Errorf("%s = %v in Go, want %v", name, got, c.want)

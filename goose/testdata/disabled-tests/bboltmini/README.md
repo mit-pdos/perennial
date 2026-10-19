@@ -30,6 +30,9 @@ alignment and for staying in its allocation. The package is in
 | `testFreelistRoundTrip`, `testFreelistOverflow` | I2, I3 | M5, M6 | `[]Pgid` over a page after its header, including a count of 0xFFFF and more read as `*(*Pgid)(...)` |
 | `testInlineBucket` | I1, I7 | M2, M8 | a header and a page at an offset that is 8-aligned for some key lengths and not for others, so the alignment test must be verified both ways (M8 may say nothing about the address); a writable open copies |
 | `testStatsConcurrent` | I10 | M4 | atomics on `int64`s that are byte cells, one through `(*int64)(unsafe.Pointer(*time.Duration))`; their alignment premise discharged from the allocation |
+| `testOverlappingArrayCopy` | (safe Go) | M3 | overlapping array views from slice-to-array-pointer conversions copy as memmove, as gc does: arrays carry no tags |
+| `testDisjointStructCopy` | I1 | M3 (K3) | whole-struct copies between disjoint views of one buffer, and onto the same location, are not stuck |
+| `testTagsClearedByByteStores` | I1 (`pagePool` reuse) | M3 (K3) | integer stores reset tags, so a zeroed buffer can hold a view of the same type at a shifted offset |
 
 Two targets are scale tests rather than new idioms. `testFreelistOverflow`
 writes 65536 ids, so its proof must use loop invariants over byte regions, not
@@ -49,13 +52,12 @@ case splits. `testInlineBucket` loops over eight key lengths.
 | `testPaddedView` | true | padded structs are not plain (deliberately incomplete) | M1 |
 | `testMisalignedAtomic` | depends on address and CPU | an atomic on a 1-aligned `[]byte` | M2, M4 |
 | `testByteSliceAligned` | true in practice, not promised | a `[]byte` is only 1-aligned | M2, M8 |
-| `testFieldResidue` | **false** | the residue of a plain field of a non-plain struct (offset 12) | M8: unsound if M8 promises the residue (see below) |
-| `testZeroSizeDistinct` | **false** (heap), true (stack) | pointers to distinct zero-size objects may be equal | M1: unsound if `[0]T` is plain with its own block |
-| `testOverlappingCopy` | **false** | gc copies a 64-byte struct forward in 16-byte chunks: `0 0 1 1 3 3 5 5 7 9`, not memmove's `0 0 1 2 3 4 5 6 7 9` | M3: unsound as the design stands (§6 proposes leaving it) |
+| `testFieldResidue` | **false** | the residue of a plain field of a non-plain struct (offset 12) | M8 promises nothing about the address |
+| `testZeroSizeDistinct` | **false** (heap), true (stack) | pointers to distinct zero-size objects may be equal | M1: plain types have size ≥ 1 |
+| `testOverlappingCopy` | **false** | gc copies a 64-byte struct forward in 16-byte chunks: `0 0 1 1 3 3 5 5 7 9`, not memmove's `0 0 1 2 3 4 5 6 7 9` | M3 (K3): the shifted whole-struct view is stuck |
+| `testOverlappingCopyViaTemp` | true today, not promised | the same copy through a temporary: gc copies through a stack slot today, but disclaims overlap made with `unsafe` and could fuse the two copies | M3 (K3), independent of syntax |
 
-The last three, marked **false**, are where the design as written (commit
-0c65d1126) is unsound. They are the fixes to make before implementing:
-- M8 promises nothing about the address beyond `≠ 0`; `testInlineBucket`
-  still verifies.
-- `Plain` requires size > 0.
-- A whole-struct copy between partially overlapping plain views is stuck.
+The three probes marked **false** found unsound points in the first draft of
+the design (commit 0c65d1126). The revision fixes all three (M8, M1, K3), and
+`testOverlappingCopyViaTemp` keeps the K3 fix from depending on how a copy
+is written.
