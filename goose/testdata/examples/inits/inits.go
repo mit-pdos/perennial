@@ -10,3 +10,10 @@ func init() {
 func init() {
 	y = 2
 }
+
+// z's initializer is trusted: z'init is defined in TrustedCode.
+var z = computeZ()
+
+func computeZ() uint64 {
+	return 3
+}

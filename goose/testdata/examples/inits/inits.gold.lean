@@ -28,11 +28,17 @@ noncomputable def x [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def y [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.y"
 
+noncomputable def z [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.z"
+
 noncomputable def init.«0» [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.init.0"
 
 noncomputable def init.«1» [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.init.1"
+
+noncomputable def computeZ [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/inits.computeZ"
 
 /-- go: inits.go:6:6 -/
 noncomputable def init.«0».impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -45,6 +51,13 @@ noncomputable def init.«0».impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GlobalVarAddr x))) (Val #())) (Var "$r0"))))))))
 
+/-- go: inits.go:17:6 -/
+noncomputable def computeZ.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (Val #(W64 3)))))
+
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.inits where
   pkgImportedPkgs := []
 
@@ -55,10 +68,13 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve init.«1» []))) (Val #())) (Val #())))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve init.«0» []))) (Val #())) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val z.init) (Val #()))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc x go.uint64)) (Val #()))))))
   (App (Val doExecute)
@@ -67,9 +83,11 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
   «init.1_unfold» : FuncUnfold init.«1» [] init.«1».impl
+  computeZ_unfold : FuncUnfold computeZ [] computeZ.impl
 
 attribute [instance] Assumptions.«init.0_unfold»
   Assumptions.«init.1_unfold»
+  Assumptions.computeZ_unfold
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.inits
 

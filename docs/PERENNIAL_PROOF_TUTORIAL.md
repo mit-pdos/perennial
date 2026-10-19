@@ -89,7 +89,9 @@ imports = ["!*"]
 * `translate`: declarations to translate (default: all);
 * `imports`: imports to keep (default: all);
 * `trusted`: declarations with a hand-written model in `Perennial/TrustedCode`
-  (`sync.toml` trusts `"Mutex", "Mutex.*"`, which really have data races);
+  (`sync.toml` trusts `"Mutex", "Mutex.*"`, which really have data races); for a
+  package variable `X`, the model is its whole initialization `X.init : val`
+  (allocation included), called where Go runs the initializer;
 * every other declaration is *axiomatized*: its name and type are emitted,
   without a body. (`sync.toml` also has an `axiomatize = [...]` list; goose does
   not read that key, it documents the intent.)

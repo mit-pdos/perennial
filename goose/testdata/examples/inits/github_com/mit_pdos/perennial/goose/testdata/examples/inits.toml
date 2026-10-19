@@ -1,2 +1,2 @@
-translate = ["*", "!init.1"]
-trusted = ["init.1"]
+translate = ["*", "!init.1", "!z"]
+trusted = ["init.1", "z"]

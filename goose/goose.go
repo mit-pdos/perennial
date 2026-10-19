@@ -2808,10 +2808,12 @@ func (ctx *Ctx) globalVarDecl(d *ast.GenDecl) {
 				},
 				Type: glang.VerbatimExpr("go_string"),
 			})
+			// A trusted variable's initializer X'init (allocation included) is
+			// defined in TrustedCode.
 			switch ctx.filter.GetAction(name.Name) {
 			case declfilter.Translate:
 				ctx.globalVars = append(ctx.globalVars, name)
-			default:
+			case declfilter.Axiomatize:
 				if s.Values != nil {
 					ctx.out.varDecls = append(ctx.out.varDecls, glang.AxiomDecl{
 						DeclName: name.Name + "'init",
@@ -3082,7 +3084,7 @@ func (ctx *Ctx) finalExtraDecls() {
 			glang.Tt), e)
 	}
 
-	if ctx.filter.GetAction("_") != declfilter.Translate {
+	if ctx.filter.GetAction("_") == declfilter.Axiomatize {
 		decls = append(decls, glang.AxiomDecl{
 			DeclName: "_'init",
 			Type:     glang.VerbatimExpr("val"),
