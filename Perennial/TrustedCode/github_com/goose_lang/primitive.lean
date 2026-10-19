@@ -49,6 +49,16 @@ def AfterFunc.impl : val := λ: "duration" "f", Fork "f" ;; Alloc "f"
 
 def RandomUint64.impl : val := λ: <>, ArbitraryInt
 
+/-! Prophecy variables. goose's `primitive` declares `NewProph() ProphId`,
+`(ProphId) ResolveBool(bool)` and `(ProphId) ResolveU64(uint64)` as no-op stubs
+(`proph.go`: `NewProph` returns `ProphId{}`, the resolves have empty bodies). goose
+translates them, but the translation is the no-op: the functions exist to carry the
+meaning of a prophecy variable, which has no runtime effect and which no Go code can
+express. So they are trusted, modelled by GooseLang's prophecy primitives, which touch
+only ghost state; the observable behaviour (no effect, a value of `ProphId`) is the
+stub's. -/
+
+/-- `NewProph()` creates a prophecy variable. -/
 def NewProph.impl : val := λ: <>, NewProph
 
 def ResolveProph.impl : val := λ: "p" "val", ResolveProph (Var "p") (Var "val")
