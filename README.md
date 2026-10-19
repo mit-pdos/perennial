@@ -120,6 +120,25 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `Catch`, so a verified program does not die of a panic within the step bound.
   Run-time panics of builtins (`Panic "msg"`) are stuck. See
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
+* **Trusted package-variable initializers.** A package variable listed in a
+  goose config's `trusted` gets its initializer `X.init` (allocation included)
+  from `Perennial/TrustedCode`. **Accepted for now, to remove later:** five such
+  models are trusted although goose translates the real source, so the
+  `review-trusted` rule R2 grades them REWORK; they were accepted (2026-10-19)
+  to finish the standard library's init proofs, and later reviews and
+  soundness work should translate them away:
+  `crypto/ed25519.cryptocustomrand` and `time.asynctimerchan` (no-ops; the fix
+  translates `internal/godebug`, trusting its runtime hooks `setUpdate` and
+  `setNewIncNonDefault`, with `internal/bisect` and `internal/godebugs`),
+  `log.std` (no-op; needs `os.Stderr`, so `os`'s initialization), `log`'s
+  `init` (no-op; it writes `log/internal.DefaultOutput`, and no ownership of
+  another package's variable reaches an init proof: a program-logic gap), and
+  `crypto/rand.Reader` (stores a value of Go's dynamic type with a placeholder
+  inside; needs `crypto/internal/rand` and `drbg`, whose init runs a FIPS
+  self-test). The no-ops for `errors.errorType` (a reflection type
+  descriptor), `math.useFMA` and `math/big.hasADX` (CPU features the runtime
+  detects) model irreducible behaviour. Each model's docstring says why it is
+  faithful.
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
   `etc/update-goose-new.py` rather than editing them by hand.
