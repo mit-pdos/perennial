@@ -7,6 +7,7 @@ module
 
 public import Perennial.Proof.crypto.rand.Int
 public import Perennial.Proof.crypto.rand.initialize
+public import Perennial.Proof.io.Link
 public import Perennial.Proof.math.big.Link
 
 @[expose] public section
@@ -26,7 +27,7 @@ theorem crypto.rand.wp_Int : crypto.rand.Int.spec (GF := GF) (hG := hG) :=
   crypto.rand.Int.wp_proof math.big.wp_NewInt
 
 theorem crypto.rand.wp_initialize' : crypto.rand.initialize'.spec (GF := GF) (hG := hG) :=
-  crypto.rand.initialize'.wp_proof
+  crypto.rand.initialize'.wp_proof math.big.wp_initialize' io.wp_initialize'
 
 end link
 

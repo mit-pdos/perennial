@@ -1,3 +1,6 @@
 translate = ["!*"]
-imports = ["!*", "math/big"]
-trusted = ["Int"]
+imports = ["!*", "math/big", "io"]
+
+# `Reader`'s initial value is `crypto/internal/rand.Reader`, which is not translated
+# (TrustedCode/crypto/rand.lean)
+trusted = ["Int", "Reader"]

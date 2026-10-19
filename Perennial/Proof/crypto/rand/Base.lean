@@ -5,6 +5,7 @@ Shared definitions of the proofs of the Go `crypto/rand` package: its `isPkgInit
 module
 
 public import Perennial.Proof.math.big.Base
+public import Perennial.Proof.io.Base
 public import Perennial.Code.crypto.rand
 public import Perennial.GeneratedProof.crypto.rand
 

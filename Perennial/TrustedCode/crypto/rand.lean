@@ -6,6 +6,7 @@ module
 
 public import Perennial.Golang.Defn
 public import Perennial.Code.math.big
+public import Perennial.Code.io
 
 @[expose] public section
 
@@ -40,6 +41,38 @@ noncomputable def Int.impl : val :=
       then Panic "crypto/rand: Int is modelled only for 0 < max < 2^63"
       else
         (FuncResolve math.big.NewInt [] #() (ArbitraryInt %⟨go.uint64⟩ "m"), #interface.nil)
+
+/-- The type of `Reader`'s initial value, `crypto/internal/rand`'s unexported `reader`
+(`type reader struct{ drbg.DefaultReader }`, with a `Read` method). `crypto/internal/rand` is
+not translated, so nothing gives this type's underlying type or methods. -/
+def internalReader.ty : go.GoType :=
+  go.GoType.Named go!"crypto/internal/rand.reader" []
+
+/-- The initializer of `Reader` (`crypto/rand/rand.go`):
+
+```go
+var Reader io.Reader = rand.Reader // crypto/internal/rand: var Reader io.Reader = reader{}
+```
+
+The model allocates `Reader` (an `io.Reader`, named by its string as goose names it, since
+this file comes before the generated code) and stores an interface value whose dynamic type
+is the one Go stores, `crypto/internal/rand.reader`, with `#()` in place of the `reader{}`
+value. `crypto/internal/rand` is not translated: goose translates `Reader`'s initializer as a
+load of `crypto/internal/rand.Reader`, but that package's `reader` embeds
+`crypto/internal/fips140/drbg.DefaultReader`, and `drbg`'s initialization runs the DRBG's
+FIPS self-test. Go's initializer only copies an interface value, so it cannot panic and has no
+other effect.
+
+The stored value cannot be told apart from Go's by a proof: it is non-nil and of the right
+dynamic type, as in Go (a nil check or a type switch sees what Go sees), while every operation
+that would inspect the `#()` (calling `Read`, comparing two such values, asserting it to an
+interface type) needs `reader`'s underlying type or methods, which nothing gives, so a proof
+cannot step it. `Int` above does not read its reader. -/
+def Reader.init : val :=
+  λ: <>,
+    go.GlobalAlloc go!"crypto/rand.Reader" io.Reader.ty #() ;;
+    GlobalVarAddr go!"crypto/rand.Reader" #() <-[io.Reader.ty]
+      #(interface.mkOk internalReader.ty #())
 
 end code
 end crypto.rand
