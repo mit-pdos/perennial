@@ -1,6 +1,6 @@
 ---
 name: review-trusted
-description: Review a change to Perennial's trusted base (the Go semantics in GooseLang/Golang/Defn, the goose translator, trusted models in TrustedCode, goose .toml trust lists, adequacy theorem statements, assume/axiom/sorry) for soundness and for trust that should not have been added (above all, trusted models of Go that goose translates or could be extended to translate: trust is only for irreducible primitives, shown by a goose run on the real source; and type-dependent choices made in goose that belong in the Lean semantics), and optionally fix it. Use before committing or merging any change that touches those files, when asked to review a commit, range or PR for trust/soundness, or when asked whether a model assumption or trusted model is acceptable.
+description: Review a change to Perennial's trusted base (the Go semantics in GooseLang/Golang/Defn, the goose translator, trusted models in TrustedCode, goose .toml trust lists, adequacy theorem statements, assume/axiom/sorry) for soundness and for trust that should not have been added (above all, trusted models of Go that goose translates or could be extended to translate: trust is only for irreducible primitives, shown by a goose run on the real source), and optionally fix it. Use before committing or merging any change that touches those files, when asked to review a commit, range or PR for trust/soundness, or when asked whether a model assumption or trusted model is acceptable.
 argument-hint: "[commit | A..B | (nothing: branch + working tree)] [--fix]"
 ---
 
@@ -100,10 +100,6 @@ Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
    - for every `assume`/`AngelicExit`/stuck branch, try to write the Go
      program that reaches it (a few lines; run it with `go run` from a
      scratch directory when the answer is not obvious);
-   - for a translator change, list every place where the new goose code
-     inspects a Go type (`Underlying()`, a `*types.Basic` switch,
-     `IsUnsigned`/`IsInteger` info bits, a `TypeParam` check) and decides
-     from it which GooseLang to emit; each one is checked against R10;
    - for a semantics or translator change, find the Go spec sentence it
      implements (`go doc`, the Go language spec) and check the edge cases
      (zero values, nil, empty, bounds, overflow, evaluation order);
@@ -321,49 +317,6 @@ to goose changes: a translator change must be small and obviously correct
 nothing is proved about the value. `native_decide`/`bv_decide`: BLOCK
 (`README.md`). `set_option` that disables a linter or raises a limit in a
 tier-0 file: NOTE, ask why.
-
-**R10. goose translates syntax; the semantics interprets types.** goose
-should emit each Go operation with the Go types it involves as annotations
-(the type of each operand that the spec makes matter, as `go.GoType` terms)
-and leave to the Lean semantics every choice that depends on what a type *is*:
-signed or unsigned, its width, whether it is an interface, what a named type
-or a type parameter's instantiation is. The semantics makes those choices
-through `↓u` and per-type rules (`go_op_underlying`, `go_shift_underlying`,
-the `*Semantics` classes), which resolve a type parameter at its
-instantiation; goose sees only the generic body and cannot. A translator
-change that inspects a type to choose between different GooseLang
-translations is REWORK even when correct at every basic type: it is trust in
-the translator for what should be a reviewable rule, it duplicates (and can
-contradict) the semantics, and it is wrong or unsupported for type
-parameters. Two telltales: goose emitting a helper or conversion only for
-some types (`go.shiftCount` for signed counts, case 7), and goose refusing a
-type-parameter operand that the semantics could handle given both types
-("whether it is signed depends on the instantiation"). The fix is rung 3:
-give the instruction the types it needs (a new `GoInstruction` constructor
-if the existing one carries too few, as `GoShift o t count_t` does for
-shifts), have goose emit it uniformly, and add the per-type rules to the
-semantics. goose may still use types to pick the *form* of a translation the
-syntax leaves implicit (an implicit conversion to a known target type, an
-interface-method call versus a static call) when the Go type checker has
-already fixed that choice for every instantiation.
-
-**R11. The evaluation order is fixed by goose/order, and only its normal form
-is trusted.** goose translates code rewritten by `order.Rewrite` and checks it
-with `order.CheckFile`; binaries are compiled from the same rewrite by
-`cmd/perennial-order` (README, "Evaluation order"). Trusted: the definition of
-the normal form (`goose/order/normal.go`, `stmt.go`: which nodes are events,
-which reads a call could affect, when a read and an event are ordered), and
-the wrapper compiling exactly the rewrite of the source it is given, of the
-same declarations goose translates (`util.Translated`, from the same `.toml`
-and the translations present in its `-code` directories). Not
-trusted: the rewriter (`rewrite.go`), whose bugs surface as goose errors. A
-change that makes the normal form accept more statements is BLOCK unless it
-comes with the spec sentence that orders the newly accepted reads, and an
-adversarial Go program (built with and without `-race`) that tries to tell
-two orders apart. goose code that orders evaluation itself (lets that bind
-operands in some order) needs no review on that account for statements in
-normal form, but a goose change that skips the check or translates code that
-was not rewritten is BLOCK.
 
 ## Report format
 

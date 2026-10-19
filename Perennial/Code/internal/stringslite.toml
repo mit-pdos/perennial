@@ -1,3 +1,0 @@
-# Goose's translation of the real source; `Clone` (`unsafe.String`) is left out.
-translate = ["*", "!Clone"]
-imports = ["!*", "internal/bytealg"]

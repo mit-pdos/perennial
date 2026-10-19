@@ -1,3 +1,0 @@
-# Goose's translation of the real source, except the functions that range over a string
-# (`for range s`), which goose does not translate; they are left unspecified.
-translate = ["*", "!RuneCountInString", "!Valid", "!ValidString"]

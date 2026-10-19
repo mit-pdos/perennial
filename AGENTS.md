@@ -50,10 +50,7 @@ script enforces the review.
    judge it (the trust ladder: prove > translate real Go > extend the
    semantics or goose > a Go model under `goose/model` > hand-written
    GooseLang > assume > axiom; model assumptions must be unreachable, not
-   unlikely; a model may be less defined than Go, never more; goose emits
-   each operation annotated with its operands' Go types, and any choice that
-   depends on what a type is, such as signedness, width or a type parameter's
-   instantiation, is made by the Lean semantics, not by goose).
+   unlikely; a model may be less defined than Go, never more).
 
 `.claude/settings.json` adds Claude Code conveniences on top (a reminder to
 land at the end of a turn, a check of a new worktree's base); nothing in the

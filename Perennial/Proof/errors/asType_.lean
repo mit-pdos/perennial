@@ -51,13 +51,19 @@ theorem errors.asType.wp_proof :
     wp_auto
     wp_for_post
     iapply HΦ
-    iframe Hppe; iframe
+    iframe
   | ok ii =>
     ihave Hnode := Htree $$ %ii %HSe
     iNamed Hnode
     dsimp only
     obtain ⟨x, hx⟩ := asTypeTyped_val Htyped
     rw [hx]
+    -- (the value bound by the type assertion is `#x` only after `hx`)
+    wp_pures
+    wp_alloc ok_ptr as ok
+    wp_pures
+    wp_alloc e_ptr as e
+    wp_pures
     generalize (if go.isInterfaceType (underlying T) = true then go.typeSetContains ii.ty T
       else decide (ii.ty = T)) = b
     cases b
@@ -65,7 +71,7 @@ theorem errors.asType.wp_proof :
       wp_auto
       wp_for_post
       iapply HΦ
-      iframe Hppe; iframe
+      iframe
     wp_store; wp_pures; wp_store; wp_pures; wp_load; wp_pures
     -- the `As` statement, joined before the `Unwrap` switch: it either returns
     -- or falls through with an updated `*ppe`
@@ -124,7 +130,7 @@ theorem errors.asType.wp_proof :
       wp_auto
       wp_for_post
       iapply HΦ
-      iframe Hppe; iframe
+      iframe
     subst Hv
     wp_auto
     have hu1 : underlying (go.InterfaceType
@@ -148,7 +154,7 @@ theorem errors.asType.wp_proof :
         wp_auto
         wp_for_post
         iapply HΦ
-        iframe Hppe; iframe
+        iframe
       | ok ii' =>
         wp_auto
         wp_for_post
@@ -207,7 +213,7 @@ theorem errors.asType.wp_proof :
               wp_for_post
               wp_for_post
               iapply HΦ
-              iframe Hppe; iframe
+              iframe
             case false =>
               wp_auto
               wp_for_post
@@ -217,13 +223,13 @@ theorem errors.asType.wp_proof :
               ipureintro; word
         · wp_for_post
           iapply HΦ
-          iframe Hppe; iframe
+          iframe
       case false =>
         simp only [Bool.false_eq_true, ↓reduceIte]
         wp_auto
         wp_for_post
         iapply HΦ
-        iframe Hppe; iframe
+        iframe
 
 end proof
 

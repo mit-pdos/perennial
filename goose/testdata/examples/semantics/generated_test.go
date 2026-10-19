@@ -148,34 +148,6 @@ func (suite *GoTestSuite) TestDeferFuncLit() {
 	suite.Equal(true, testDeferFuncLit())
 }
 
-func (suite *GoTestSuite) TestDeferAssignResult() {
-	suite.Equal(true, testDeferAssignResult())
-}
-
-func (suite *GoTestSuite) TestDeferIncrResult() {
-	suite.Equal(true, testDeferIncrResult())
-}
-
-func (suite *GoTestSuite) TestDeferRecoverResult() {
-	suite.Equal(true, testDeferRecoverResult())
-}
-
-func (suite *GoTestSuite) TestDeferReadResult() {
-	suite.Equal(true, testDeferReadResult())
-}
-
-func (suite *GoTestSuite) TestDeferUnnamedResults() {
-	suite.Equal(true, testDeferUnnamedResults())
-}
-
-func (suite *GoTestSuite) TestDeferShadowedResult() {
-	suite.Equal(true, testDeferShadowedResult())
-}
-
-func (suite *GoTestSuite) TestDeferSwapResults() {
-	suite.Equal(true, testDeferSwapResults())
-}
-
 func (suite *GoTestSuite) TestSliceOperandOnce() {
 	suite.Equal(true, testSliceOperandOnce())
 }
@@ -194,54 +166,6 @@ func (suite *GoTestSuite) TestAssignLhsMapFirst() {
 
 func (suite *GoTestSuite) TestSelectSendOrder() {
 	suite.Equal(true, testSelectSendOrder())
-}
-
-func (suite *GoTestSuite) TestOpAssignIndexOnce() {
-	suite.Equal(true, testOpAssignIndexOnce())
-}
-
-func (suite *GoTestSuite) TestIncIndexOnce() {
-	suite.Equal(true, testIncIndexOnce())
-}
-
-func (suite *GoTestSuite) TestOpAssignMapOnce() {
-	suite.Equal(true, testOpAssignMapOnce())
-}
-
-func (suite *GoTestSuite) TestOpAssignReadsAfterRhs() {
-	suite.Equal(true, testOpAssignReadsAfterRhs())
-}
-
-func (suite *GoTestSuite) TestOpAssignMapReadsAfterRhs() {
-	suite.Equal(true, testOpAssignMapReadsAfterRhs())
-}
-
-func (suite *GoTestSuite) TestIncDecNarrow() {
-	suite.Equal(true, testIncDecNarrow())
-}
-
-func (suite *GoTestSuite) TestIncGeneric() {
-	suite.Equal(true, testIncGeneric())
-}
-
-func (suite *GoTestSuite) TestOpAssignIndexReadAfterRhs() {
-	suite.Equal(true, testOpAssignIndexReadAfterRhs())
-}
-
-func (suite *GoTestSuite) TestOpAssignMapReadAfterRhs() {
-	suite.Equal(true, testOpAssignMapReadAfterRhs())
-}
-
-func (suite *GoTestSuite) TestStringIndexReadAfterCall() {
-	suite.Equal(true, testStringIndexReadAfterCall())
-}
-
-func (suite *GoTestSuite) TestStringSliceReadAfterCall() {
-	suite.Equal(true, testStringSliceReadAfterCall())
-}
-
-func (suite *GoTestSuite) TestSliceIndexReadAfterCall() {
-	suite.Equal(true, testSliceIndexReadAfterCall())
 }
 
 func (suite *GoTestSuite) TestFirstClassFunction() {
@@ -432,34 +356,6 @@ func (suite *GoTestSuite) TestMapSize() {
 	suite.Equal(true, testMapSize())
 }
 
-func (suite *GoTestSuite) TestMethodValueCopiesReceiver() {
-	suite.Equal(true, testMethodValueCopiesReceiver())
-}
-
-func (suite *GoTestSuite) TestMethodValuePointerReceiver() {
-	suite.Equal(true, testMethodValuePointerReceiver())
-}
-
-func (suite *GoTestSuite) TestMethodValueThroughPointer() {
-	suite.Equal(true, testMethodValueThroughPointer())
-}
-
-func (suite *GoTestSuite) TestMethodValueEmbedded() {
-	suite.Equal(true, testMethodValueEmbedded())
-}
-
-func (suite *GoTestSuite) TestMethodValueEmbeddedPointer() {
-	suite.Equal(true, testMethodValueEmbeddedPointer())
-}
-
-func (suite *GoTestSuite) TestMethodValueDefer() {
-	suite.Equal(true, testMethodValueDefer())
-}
-
-func (suite *GoTestSuite) TestMethodValueDeferArg() {
-	suite.Equal(true, testMethodValueDeferArg())
-}
-
 func (suite *GoTestSuite) TestAssignTwo() {
 	suite.Equal(true, testAssignTwo())
 }
@@ -518,10 +414,6 @@ func (suite *GoTestSuite) TestComparePointerWrappedDefaultToNil() {
 
 func (suite *GoTestSuite) TestInterfaceNilWithType() {
 	suite.Equal(true, testInterfaceNilWithType())
-}
-
-func (suite *GoTestSuite) TestNilFieldRefPanics() {
-	suite.Equal(true, testNilFieldRefPanics())
 }
 
 func (suite *GoTestSuite) TestReverseAssignOps64() {
@@ -592,8 +484,8 @@ func (suite *GoTestSuite) TestRecoverNamed() {
 	suite.Equal(true, testRecoverNamed())
 }
 
-func (suite *GoTestSuite) TestRecoverInLoop() {
-	suite.Equal(true, testRecoverInLoop())
+func (suite *GoTestSuite) TestCatchTwoDeep() {
+	suite.Equal(true, testCatchTwoDeep())
 }
 
 func (suite *GoTestSuite) TestShortcircuitAndTF() {

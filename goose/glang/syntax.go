@@ -259,9 +259,6 @@ type OpId int
 type BinOp struct {
 	OpId
 	Type Expr
-	// CountType is the type of the count of a shift (OpShl, OpShr), which need
-	// not be Type; unused for the other operators.
-	CountType Expr
 }
 
 // Constants for the supported binary and unary operators

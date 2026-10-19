@@ -23,7 +23,7 @@ variable [sem : go.Semantics]
 variable [package_sem : sync.atomic.Assumptions]
 
 abbrev sync.atomic.LoadPointer.spec : Prop :=
-  ∀ (addr : Loc) (dq : DFrac), Aligned (.cell 8) addr →
+  ∀ (addr : Loc) (dq : DFrac),
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ v : Loc, addr ↦{dq} v ∗ (addr ↦{dq} v ={∅,⊤}=∗ Φ #v)) -∗
     WP (App (Val (@! LoadPointer)) (Val #addr)) {{ Φ }}

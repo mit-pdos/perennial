@@ -26,178 +26,59 @@ variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
-/-- The typed points-to of `V` is the cells of its values' encoding `enc` (the
-`IntoValTyped` instances of the predeclared and primitive types). -/
-class EncodedPointsto (V : Type) [TypedPointsto (GF := GF) V] (enc : outParam Encoding) : Prop where
-  def_eq : ∀ l (v : V) dq,
-    typedPointstoDef (GF := GF) l v dq ⊣⊢ pointstoVals l dq (encodeVals enc #v)
-  encode_some : ∀ v : V, ∃ vs, encode enc #v = some vs
-  inj : Function.Injective (intoVal (V := V))
+/-- Atomic operations on a typed points-to. -/
+class AtomicWps (V : Type) [TypedPointsto (GF := GF) V] [ZeroVal V] : Prop where
+  wp_cmpxchg_fail : ∀ (l : Loc) (v' v1 v2 : V) (dq : DFrac) (s : Stuckness) (E : CoPset),
+    v' ≠ v1 →
+    {{ ▷ (l ↦{dq} v' : IProp GF) }} (CmpXchg (Val #l) (Val #v1) (Val #v2)) @ s; E
+    {{ RET (PairV #v' #false); l ↦{dq} v' }}
+  wp_cmpxchg_suc : ∀ (l : Loc) (v' v1 v2 : V) (s : Stuckness) (E : CoPset),
+    v' = v1 →
+    {{ ▷ (l ↦ v' : IProp GF) }} (CmpXchg (Val #l) (Val #v1) (Val #v2)) @ s; E
+    {{ RET (PairV #v' #true); l ↦ v2 }}
+  wp_atomic_load : ∀ (s : Stuckness) (E : CoPset) (l : Loc) (dq : DFrac) (v : V),
+    {{ ▷ (l ↦{dq} v : IProp GF) }} (Load (Val #l)) @ s; E {{ RET #v; l ↦{dq} v }}
+  wp_atomic_swap : ∀ (s : Stuckness) (E : CoPset) (l : Loc) (v v' : V),
+    {{ (l ↦ v : IProp GF) }} (AtomicSwap (Val #l) (Val #v')) @ s; E {{ RET #v; l ↦ v' }}
 
-/-! The atomic operations on a typed points-to of an encoded value (`typed.wp_atomic_load`,
-…): they need the location to be aligned (`Aligned enc l`; for an integer, to its size),
-and are stuck otherwise. -/
-section atomic_wps
-variable {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V] {enc : Encoding}
-variable [hE : EncodedPointsto (GF := GF) V enc]
-variable {s : Stuckness} {E : CoPset}
-open ProofMode
+export AtomicWps (wp_cmpxchg_fail wp_cmpxchg_suc wp_atomic_load wp_atomic_swap)
 
-theorem typed.typedPointsto_encoded (l : Loc) (v : V) (dq : DFrac) :
-    (l ↦{dq} v : IProp GF) ⊣⊢
-      ∃ vs, ⌜encode enc #v = some vs⌝ ∗ ⌜l ≠ null⌝ ∗ pointstoVals l dq vs := by
-  obtain ⟨vs, hvs⟩ := hE.encode_some v
-  rw [typedPointsto_unseal]; unfold typedPointstoWrap
+/-- Prove `AtomicWps V` for a type whose typed points-to is
+`heapPointsto l dq #v`. -/
+macro "solve_atomic_wps" : tactic => `(tactic| (
   constructor
-  · iintro ⟨H, %Hnn⟩
-    ihave H := (hE.def_eq l v dq).1 $$ H
-    rw [encodeVals_eq hvs]
-    iexists vs
-    iframe H
-    ipureintro; exact ⟨hvs, Hnn⟩
-  · iintro ⟨%vs', %Hvs', %Hnn, H⟩
-    rw [hvs] at Hvs'; cases Hvs'
-    isplitl [H]
-    · iapply (hE.def_eq l v dq).2; rw [encodeVals_eq hvs]; iexact H
-    · ipureintro; exact Hnn
+  all_goals try simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap]
+  · intro l v' v1 v2 dq s E Hne
+    iintro %Φ Hl HΦ
+    icases Hl with ⟨Hl, >%Hnn⟩
+    iapply Perennial.wp_cmpxchg_fail l dq #v' #v1 #v2 (fun h => Hne (go.intoVal_inj h)) $$ Hl
+    inext; iintro Hl
+    iapply HΦ; iframe Hl; ipureintro; exact Hnn
+  · intro l v' v1 v2 s E Heq
+    iintro %Φ Hl HΦ
+    icases Hl with ⟨Hl, >%Hnn⟩
+    iapply Perennial.wp_cmpxchg_suc l #v1 #v2 #v' (congrArg _ Heq) $$ Hl
+    inext; iintro Hl
+    iapply HΦ; iframe Hl; ipureintro; exact Hnn
+  · intro s E l dq v
+    iintro %Φ Hl HΦ
+    icases Hl with ⟨Hl, >%Hnn⟩
+    iapply Perennial.wp_load l dq #v $$ Hl
+    inext; iintro Hl
+    iapply HΦ; iframe Hl; ipureintro; exact Hnn
+  · intro s E l v v'
+    iintro %Φ Hl HΦ
+    icases Hl with ⟨Hl, %Hnn⟩
+    iapply Perennial.wp_atomic_swap l #v #v' $$ Hl
+    inext; iintro Hl
+    iapply HΦ; iframe Hl; ipureintro; exact Hnn))
 
-theorem typed.wp_atomic_load (l : Loc) (dq : DFrac) (v : V) (hal : Aligned enc l) :
-    {{ ▷ (l ↦{dq} v : IProp GF) }} (LoadN enc (Val #l)) @ s; E {{ RET #v; l ↦{dq} v }} := by
-  iintro %Φ Hl HΦ
-  obtain ⟨vs, hvs⟩ := hE.encode_some v
-  ihave Hl : ▷ (pointstoVals l dq vs ∗ ⌜l ≠ null⌝) $$ [Hl]
-  · inext
-    icases (typed.typedPointsto_encoded l v dq).1 $$ Hl with ⟨%vs', %Hvs', %Hnn, H⟩
-    rw [hvs] at Hvs'; cases Hvs'
-    iframe H; ipureintro; exact Hnn
-  icases Hl with ⟨Hl, >%Hnn⟩
-  iapply wp_loadN enc l dq vs #v hal (encode_length hvs) (decode_encode hvs) $$ Hl
-  inext; iintro Hl
-  iapply HΦ
-  iapply (typed.typedPointsto_encoded l v dq).2
-  iexists vs; iframe Hl; ipureintro; exact ⟨hvs, Hnn⟩
-
-theorem typed.wp_atomic_swap (l : Loc) (v v' : V) (hal : Aligned enc l) :
-    {{ ▷ (l ↦ v : IProp GF) }} (SwapN enc (Val #l) (Val #v')) @ s; E {{ RET #v; l ↦ v' }} := by
-  iintro %Φ Hl HΦ
-  obtain ⟨vs, hvs⟩ := hE.encode_some v
-  obtain ⟨vs', hvs'⟩ := hE.encode_some v'
-  ihave Hl : ▷ (pointstoVals l (DFrac.own 1) vs ∗ ⌜l ≠ null⌝) $$ [Hl]
-  · inext
-    icases (typed.typedPointsto_encoded l v _).1 $$ Hl with ⟨%vs'', %Hvs'', %Hnn, H⟩
-    rw [hvs] at Hvs''; cases Hvs''
-    iframe H; ipureintro; exact Hnn
-  icases Hl with ⟨Hl, >%Hnn⟩
-  iapply wp_swapN enc l vs vs' #v #v' hal (encode_length hvs) (decode_encode hvs) hvs' $$ Hl
-  inext; iintro Hl
-  iapply HΦ
-  iapply (typed.typedPointsto_encoded l v' _).2
-  iexists vs'; iframe Hl; ipureintro; exact ⟨hvs', Hnn⟩
-
-theorem typed.wp_cmpxchg_fail (l : Loc) (v' v1 v2 : V) (dq : DFrac) (hal : Aligned enc l)
-    (hne : v' ≠ v1) :
-    {{ ▷ (l ↦{dq} v' : IProp GF) }} (CmpXchgN enc (Val #l) (Val (PairV #v1 #v2))) @ s; E
-    {{ RET (PairV #v' #false); l ↦{dq} v' }} := by
-  iintro %Φ Hl HΦ
-  obtain ⟨vs, hvs⟩ := hE.encode_some v'
-  ihave Hl : ▷ (pointstoVals l dq vs ∗ ⌜l ≠ null⌝) $$ [Hl]
-  · inext
-    icases (typed.typedPointsto_encoded l v' dq).1 $$ Hl with ⟨%vs'', %Hvs'', %Hnn, H⟩
-    rw [hvs] at Hvs''; cases Hvs''
-    iframe H; ipureintro; exact Hnn
-  icases Hl with ⟨Hl, >%Hnn⟩
-  iapply wp_cmpxchgN_fail enc l dq vs #v' #v1 #v2 hal (encode_length hvs) (decode_encode hvs)
-    (fun h => hne (hE.inj h)) $$ Hl
-  inext; iintro Hl
-  iapply HΦ
-  iapply (typed.typedPointsto_encoded l v' dq).2
-  iexists vs; iframe Hl; ipureintro; exact ⟨hvs, Hnn⟩
-
-theorem typed.wp_cmpxchg_suc (l : Loc) (v' v1 v2 : V) (hal : Aligned enc l) (heq : v' = v1) :
-    {{ ▷ (l ↦ v' : IProp GF) }} (CmpXchgN enc (Val #l) (Val (PairV #v1 #v2))) @ s; E
-    {{ RET (PairV #v' #true); l ↦ v2 }} := by
-  iintro %Φ Hl HΦ
-  obtain ⟨vs, hvs⟩ := hE.encode_some v'
-  obtain ⟨vs2, hvs2⟩ := hE.encode_some v2
-  ihave Hl : ▷ (pointstoVals l (DFrac.own 1) vs ∗ ⌜l ≠ null⌝) $$ [Hl]
-  · inext
-    icases (typed.typedPointsto_encoded l v' _).1 $$ Hl with ⟨%vs'', %Hvs'', %Hnn, H⟩
-    rw [hvs] at Hvs''; cases Hvs''
-    iframe H; ipureintro; exact Hnn
-  icases Hl with ⟨Hl, >%Hnn⟩
-  iapply wp_cmpxchgN_suc enc l vs vs2 #v' #v1 #v2 hal (encode_length hvs) (decode_encode hvs)
-    (congrArg _ heq) hvs2 $$ Hl
-  inext; iintro Hl
-  iapply HΦ
-  iapply (typed.typedPointsto_encoded l v2 _).2
-  iexists vs2; iframe Hl; ipureintro; exact ⟨hvs2, Hnn⟩
-
-/-- The atomic add of a word. -/
-theorem typed.wp_atomic_add {n : Nat} [hW : EncodedPointsto (GF := GF) V (.word n)] (l : Loc) (v d r : V)
-    (hal : Aligned (.word n) l) (hadd : atomicAddEval #v #d = some #r) :
-    {{ ▷ (l ↦ v : IProp GF) }} (AddN (.word n) (Val #l) (Val #d)) @ s; E {{ RET #r; l ↦ r }} := by
-  iintro %Φ Hl HΦ
-  obtain ⟨vs, hvs⟩ := hW.encode_some v
-  obtain ⟨vs', hvs'⟩ := hW.encode_some r
-  ihave Hl : ▷ (pointstoVals l (DFrac.own 1) vs ∗ ⌜l ≠ null⌝) $$ [Hl]
-  · inext
-    icases (typed.typedPointsto_encoded (hE := hW) l v _).1 $$ Hl with ⟨%vs'', %Hvs'', %Hnn, H⟩
-    rw [hvs] at Hvs''; cases Hvs''
-    iframe H; ipureintro; exact Hnn
-  icases Hl with ⟨Hl, >%Hnn⟩
-  iapply wp_addN n l vs vs' #v #d #r hal (by rw [encode_length hvs]; rfl) (decode_encode hvs)
-    hadd hvs' $$ Hl
-  inext; iintro Hl
-  iapply HΦ
-  iapply (typed.typedPointsto_encoded (hE := hW) l r _).2
-  iexists vs'; iframe Hl; ipureintro; exact ⟨hvs', Hnn⟩
-
-include hE in
-/-- A full points-to and a discarded one of an encoded value are not at the same place. -/
-theorem word_pointsto_own_discard (l : Loc) (v w : V) :
-    (l ↦ v ∗ l ↦□ w : IProp GF) ⊢ False := by
-  iintro ⟨H1, H2⟩
-  icases (typed.typedPointsto_encoded (GF := GF) l v (DFrac.own 1)).1 $$ H1 with ⟨%vs1, %h1, -, H1⟩
-  icases (typed.typedPointsto_encoded (GF := GF) l w DFrac.discard).1 $$ H2 with ⟨%vs2, %h2, -, H2⟩
-  obtain ⟨c1, cs1, rfl⟩ := List.exists_cons_of_ne_nil (encode_some_ne_nil h1)
-  obtain ⟨c2, cs2, rfl⟩ := List.exists_cons_of_ne_nil (encode_some_ne_nil h2)
-  unfold pointstoVals
-  icases BigSepL.bigSepL_cons.1 $$ H1 with ⟨H1, -⟩
-  icases BigSepL.bigSepL_cons.1 $$ H2 with ⟨H2, -⟩
-  icombine H1 H2 gives %H
-  exact absurd (DFrac.valid_own_op_discard.1 H.1) (by simp)
-
-include hE in
-/-- Two full points-tos of an encoded value are not at the same place. -/
-theorem word_pointsto_excl (l : Loc) (v w : V) :
-    (l ↦ v ∗ l ↦ w : IProp GF) ⊢ False := by
-  iintro ⟨H1, H2⟩
-  icases (typed.typedPointsto_encoded (GF := GF) l v (DFrac.own 1)).1 $$ H1 with ⟨%vs1, %h1, -, H1⟩
-  icases (typed.typedPointsto_encoded (GF := GF) l w (DFrac.own 1)).1 $$ H2 with ⟨%vs2, %h2, -, H2⟩
-  obtain ⟨c1, cs1, rfl⟩ := List.exists_cons_of_ne_nil (encode_some_ne_nil h1)
-  obtain ⟨c2, cs2, rfl⟩ := List.exists_cons_of_ne_nil (encode_some_ne_nil h2)
-  unfold pointstoVals
-  icases BigSepL.bigSepL_cons.1 $$ H1 with ⟨H1, -⟩
-  icases BigSepL.bigSepL_cons.1 $$ H2 with ⟨H2, -⟩
-  icombine H1 H2 gives %H
-  exact absurd (DFrac.valid_op_own H.1) (by simp)
-
-end atomic_wps
-
-instance encoded_w64 : EncodedPointsto (GF := GF) w64 (.word 8) :=
-  ⟨fun _ _ _ => .rfl, encode_w64 (hG := hG), go.intoVal_inj⟩
-instance encoded_w32 : EncodedPointsto (GF := GF) w32 (.word 4) :=
-  ⟨fun _ _ _ => .rfl, encode_w32 (hG := hG), go.intoVal_inj⟩
-instance encoded_w16 : EncodedPointsto (GF := GF) w16 (.word 2) :=
-  ⟨fun _ _ _ => .rfl, encode_w16 (hG := hG), go.intoVal_inj⟩
-instance encoded_w8 : EncodedPointsto (GF := GF) w8 (.word 1) :=
-  ⟨fun _ _ _ => .rfl, encode_w8 (hG := hG), go.intoVal_inj⟩
-instance encoded_loc : EncodedPointsto (GF := GF) Loc (.cell 8) :=
-  ⟨fun _ _ _ => .rfl, fun v => encode_cell 8 (by decide) v, go.intoVal_inj⟩
-instance encoded_bool : EncodedPointsto (GF := GF) Bool (.cell 1) :=
-  ⟨typedPointstoDef_bool, encode_bool' (hG := hG), go.intoVal_inj⟩
-instance encoded_interface : EncodedPointsto (GF := GF) GoInterface (.cell 16) :=
-  ⟨fun _ _ _ => .rfl, fun v => encode_cell 16 (by decide) v, go.intoVal_inj⟩
+instance atomic_wps_uint64 : AtomicWps (GF := GF) w64 := by solve_atomic_wps
+instance atomic_wps_uint32 : AtomicWps (GF := GF) w32 := by solve_atomic_wps
+instance atomic_wps_uint16 : AtomicWps (GF := GF) w16 := by solve_atomic_wps
+instance atomic_wps_uint8 : AtomicWps (GF := GF) w8 := by solve_atomic_wps
+instance atomic_wps_bool : AtomicWps (GF := GF) Bool := by solve_atomic_wps
+instance atomic_wps_loc : AtomicWps (GF := GF) Loc := by solve_atomic_wps
 
 end goose_lang
 
@@ -233,29 +114,6 @@ instance access_trivial {PROP : Type _} [BI PROP] (P P' : PROP) : Access P P' P 
   access := by iintro H; iframe H; iintro H; iexact H
 
 /-! ## Tactic lemmas -/
-
-section alloc_aligned
-open Iris.ProofMode
-variable [FfiSyntax] [GoSemanticsFunctions] {PROP : Type _} [BI PROP]
-
-/-- The alignment of a fresh allocation (`AllocAligned`), as the persistent hypothesis
-`x_al` that the allocation tactics add. It is opaque so that framing leaves it alone;
-`icases x_al with %h` gives the fact. -/
-@[irreducible] def allocAligned (V : Type) (l : Loc) : PROP := iprop(⌜AllocAligned V l⌝)
-
-theorem allocAligned_intro {V : Type} {l : Loc} (h : AllocAligned V l) :
-    ⊢ (allocAligned V l : PROP) := by
-  unfold allocAligned; exact BI.pure_intro h
-
-instance allocAligned_persistent (V : Type) (l : Loc) :
-    Persistent (allocAligned V l : PROP) := by
-  unfold allocAligned; infer_instance
-
-instance allocAligned_intoPure (V : Type) (l : Loc) :
-    IntoPure (allocAligned V l : PROP) (AllocAligned V l) := by
-  unfold allocAligned; infer_instance
-
-end alloc_aligned
 
 section tac_lemmas
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
@@ -318,27 +176,19 @@ theorem tac_wp_store {V : Type} {t : go.GoType} [ZeroVal V] [tpt : TypedPointsto
   iframe HΔ'
   iapply Hclose $$ HA
 
-theorem tac_add_hyp2 {PROP : Type _} [BI PROP] {Δ Δ0 Δ' A P Q : PROP}
-    (hadd0 : iprop(Δ ∗ □?true A) ⊣⊢ Δ0) (hadd : iprop(Δ0 ∗ □?false P) ⊣⊢ Δ') (h : Δ' ⊢ Q) :
-    iprop((Δ ∗ □ A) ∗ P) ⊢ Q :=
-  (BI.sep_mono_left hadd0.1).trans (hadd.1.trans h)
-
 theorem tac_wp_alloc {V : Type} {t : go.GoType} [ZeroVal V] [tpt : TypedPointsto (GF := GF) V]
     [IntoValTyped (GF := GF) V t] {K : List EctxItem} {v : V}
     {Δ : IProp GF} {s : Stuckness} {E : CoPset} {Φ : val → IProp GF}
-    (h : ∀ l : Loc, iprop((Δ ∗ □ allocAligned V l) ∗ (l ↦ v)) ⊢
-      WP (fill K (Val #l)) @ s; E {{ Φ }}) :
+    (h : ∀ l : Loc, Δ ∗ (l ↦ v) ⊢ WP (fill K (Val #l)) @ s; E {{ Φ }}) :
     Δ ⊢ WP (fill K (App (Val (GoInstruction (GoAlloc t))) (Val #v))) @ s; E {{ Φ }} := by
   refine .trans ?_ (wp_bind (fill K))
   iintro HΔ
   iapply IntoValTyped.wp_alloc (t := t) v
   · itrivial
   inext
-  iintro %l ⟨Hl, %Hal⟩
+  iintro %l Hl
   iapply h l
   iframe
-  imodintro
-  iapply allocAligned_intro Hal
 
 end tac_lemmas
 
@@ -429,12 +279,7 @@ meta def iWpLoadStepV {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop
   let GF := (← gooseGSArgs wp.ι)[6]!
   for (_, ivar, p, P) in ← hypsListFor hyps l do
     let saved ← saveState
-    -- the fraction of a typed points-to hypothesis is the one to load at (a struct's
-    -- field points-tos have its fraction): with a fresh one, a store instance (at
-    -- `DFrac.own 1`) would also match a load through a fractional struct points-to
-    let P ← instantiateMVars P
-    let dq? := if P.isAppOfArity ``typedPointsto 6 then some (P.getArg! 5) else none
-    let (A, V, inst, v, dq) ← mkTypedPointstoMVars GF l none none dq?
+    let (A, V, inst, v, dq) ← mkTypedPointstoMVars GF l none none none
     if let some (hacc, P') ← synthAccess A A P then
       if ← isDefEq P' P then
         let r := hyps.remove true ivar
@@ -544,9 +389,8 @@ meta def iWpStoreFuncLit? (wp : GooseWpGoal) (Δ : Lean.Expr) :
 
 /-- A `wp_alloc` step: find `GoAlloc t #v` (optionally only as the argument of
 `let: "x" := _ in _`, when `auto`), and continue under a fresh location `l`
-with the new hypothesis `l ↦ v` and the intuitionistic `x_al : allocAligned V l` (the
-allocation's alignment, for atomic operations). `names` gives the Lean and Iris names
-(from the `let:` binder when `auto`: `x_ptr` and `x`). -/
+with the new hypothesis `l ↦ v`. `names` gives the Lean and Iris names (from
+the `let:` binder when `auto`: `x_ptr` and `x`). -/
 meta def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop)}
     (hyps : Hyps bi ehyps) (wp : GooseWpGoal) (auto : Bool)
     (names : Option (Name × Name))
@@ -600,15 +444,9 @@ meta def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop
       (← mkAppOptM ``GoGlobalContext.intoVal #[none, none, some locTy, some l])
     let filled ← fillExpr K (mkApp2 (mkConst ``Perennial.Expr.Val) wp.ext lv)
     return (pt, filled)
-  let mkAl (l : Lean.Expr) : MetaM Lean.Expr := do
-    instantiateMVars (← mkAppOptM ``allocAligned #[none, none, some prop, none, some V, some l])
-  let alName := hName.appendAfter "_al"
   let hTy ← withLocalDeclD lName locTy fun l => do
     let (pt, filled) ← mkParts l
-    let al ← mkAl l
-    let alI ← instantiateMVars (← mkAppOptM ``BIBase.intuitionistically #[some prop, none, some al])
-    let ehyps0 ← instantiateMVars (← mkAppOptM ``BIBase.sep #[some prop, none, some ehyps, some alI])
-    let lhs ← instantiateMVars (← mkAppOptM ``BIBase.sep #[some prop, none, some ehyps0, some pt])
+    let lhs ← instantiateMVars (← mkAppOptM ``BIBase.sep #[some prop, none, some ehyps, some pt])
     let T ← instantiateMVars
       (← mkAppOptM ``BIBase.Entails #[some prop, none, some lhs, some (wp.mk' filled wp.Φ)])
     mkForallFVars #[l] T
@@ -618,16 +456,13 @@ meta def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop
   m'.withContext do
     let l := mkFVar l
     let (pt, filled) ← mkParts l
-    let al : Q($prop) ← mkAl l
-    let ivar0 ← mkFreshIVarId true
-    let ⟨ehyps0, hyps0, hadd0⟩ := hyps.add bi alName ivar0 q(true) al
     let ivar ← mkFreshIVarId false
-    let ⟨ehyps', hyps', hadd⟩ := hyps0.add bi hName ivar q(false) pt
+    let ⟨ehyps', hyps', hadd⟩ := hyps.add bi hName ivar q(false) pt
     let pfCont ← k hyps' { wp with e := filled }
-    -- `hadd : Δ0 ∗ □?false (l ↦ v) ⊣⊢ Δ'`, `hadd0 : Δ ∗ □?true ⌜…⌝ ⊣⊢ Δ0`
-    let pfl ← mkAppNamed ``tac_add_hyp2
-      [("PROP", prop), ("Δ", ehyps), ("Δ0", ehyps0), ("Δ'", ehyps'), ("Q", wp.mk' filled wp.Φ),
-       ("A", al), ("P", pt), ("hadd0", hadd0), ("hadd", hadd), ("!h", pfCont)]
+    -- `hadd : Δ ∗ □?false (l ↦ v) ⊣⊢ Δ'`
+    let pfl ← mkAppNamed ``tac_add_hyp
+      [("PROP", prop), ("Δ", ehyps), ("Δ'", ehyps'), ("Q", wp.mk' filled wp.Φ), ("P", pt),
+       ("hadd", hadd), ("!h", pfCont)]
     m'.assign pfl
   let pf := m
   wp.mkAppNamed ``tac_wp_alloc

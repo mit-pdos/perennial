@@ -120,12 +120,11 @@ theorem wp_Read_atomic (a : w64) (q : DFrac) :
   wp_apply_core wp_ReadOp a q b $$ [Hda]
   · iexact Hda
   iintro %l ⟨Hda, Hl⟩
-  ihave %Hnn := pointstoBlock_non_null l _ b $$ Hl
   imod Hupd $$ Hda with HQ
   imodintro
   wp_auto
   simp only [show sint.Z (W64 0) = 0 from rfl, go.arrayIndexRef_0,
-    show (W64 4096 - W64 0 : w64) = W64 4096 from rfl, if_neg Hnn]
+    show (W64 4096 - W64 0 : w64) = W64 4096 from rfl]
   wp_pures
   iapply HQ
   unfold isBlockFull

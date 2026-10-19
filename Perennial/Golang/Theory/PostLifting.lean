@@ -24,7 +24,6 @@ public import Perennial.Golang.Theory.Display
 public import Perennial.Golang.Defn.Pre
 public import Perennial.Helpers.NamedProps
 public import Perennial.IrisLib.DFractional
-public import Perennial.Golang.Theory.RawCells
 
 @[expose] public section
 
@@ -44,7 +43,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : G
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
 instance wp_call_go_func (v2 : val) (f x : Binder) (e : Expr) :
-    PureWp (G := G) (L := L) True (App (Val #(func.mk f x e)) (Val v2))
+    PureWp (G := G) (L := L) (v2.isPanic = false) (App (Val #(func.mk f x e)) (Val v2))
       (subst' x v2 (subst' f #(func.mk f x e) e)) := by
   have h : (#(func.mk f x e) : val) = RecV f x e := by
     rw [go.intoVal_unfold GoFunc]
@@ -84,8 +83,7 @@ instance (priority := high) go_zero_val_step' [FfiSyntax] [GoLocalContext] [GoGl
 instance (priority := high) structFieldRef_step' [FfiSyntax] [GoLocalContext]
     [GoGlobalContext] [GoSemanticsFunctions] [go.CoreSemantics] (t : go.GoType) (f : GoString)
     (l : Loc) {V : Type} {zv : ZeroVal V} [TypeRepr t V] :
-    ⟦StructFieldRef t f, #l⟧ ⤳[under]
-      (if l = null then Panic "nil pointer dereference" else #(structFieldRef V f l)) :=
+    ⟦StructFieldRef t f, #l⟧ ⤳[under] #(structFieldRef V f l) :=
   go.structFieldRef_step t f l
 
 section not_named
@@ -223,31 +221,6 @@ theorem typedPointsto_not_null (l : Loc) (v : V) (dq : DFrac) :
   rw [typedPointsto_unseal]; unfold typedPointstoWrap
   iintro ⟨_, %h⟩; ipureintro; exact h
 
-/-- A field address is `null` exactly when the struct's address is
-(`go.structFieldRef_null`, `go.structFieldRef_null_inv`). -/
-@[simp] theorem structFieldRef_eq_null_iff [FfiSyntax] [GoSemanticsFunctions] [GoLocalContext]
-    [GoGlobalContext] [go.CoreSemantics] {V' : Type} {f : GoString} {l : Loc} :
-    structFieldRef V' f l = null ↔ l = null :=
-  ⟨go.structFieldRef_null_inv V' f l, by rintro rfl; exact go.structFieldRef_null V' f⟩
-
-instance locNonNullFrom_field_left [FfiSyntax] [GoSemanticsFunctions] [GoLocalContext]
-    [GoGlobalContext] [go.CoreSemantics] {V' : Type} {f : GoString}
-    {loc l : Loc} [h : LocNonNullFrom loc l] : LocNonNullFrom (structFieldRef V' f loc) l :=
-  ⟨fun hn => h.ne_null (fun e => hn (structFieldRef_eq_null_iff.2 e))⟩
-
-instance locNonNullFrom_field_right [FfiSyntax] [GoSemanticsFunctions] [GoLocalContext]
-    [GoGlobalContext] [go.CoreSemantics] {V' : Type} {f : GoString}
-    {loc l : Loc} [h : LocNonNullFrom loc l] : LocNonNullFrom loc (structFieldRef V' f l) :=
-  ⟨fun hn e => h.ne_null hn (structFieldRef_eq_null_iff.1 e)⟩
-
-/-- A points-to at `loc` shows `l ≠ null` when `loc` and `l` are field addresses of a
-common base (`LocNonNullFrom`): `wp_auto`
-and `wp_pures` use it for the side condition of a field reference
-(`pure_wp_structFieldRef`). -/
-instance typedPointsto_hypPure (loc l : Loc) (v : V) (dq : DFrac) [h : LocNonNullFrom loc l] :
-    HypPure (typedPointsto (GF := GF) loc v dq) (l ≠ null) :=
-  ⟨(typedPointsto_not_null loc v dq).trans (pure_mono h.ne_null)⟩
-
 end typed_pointsto_props
 
 /-! ## `IntoValTyped` -/
@@ -257,11 +230,6 @@ variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ff
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 
-/-- A fresh allocation of a value of representation `V` at `l`: in a real block, at an
-offset aligned to `typeAlign V` (`IsFreshAligned`). -/
-def AllocAligned [GoSemanticsFunctions] (V : Type) (l : Loc) : Prop :=
-  l.locCar ≠ 0 ∧ typeAlign V ∣ l.locOff
-
 /-- `IntoValTypedUnderlying V t_under` provides proofs that allocating, loading
 and storing at any type `t` with underlying type `t_under` respects the typed
 points-to for `V`. -/
@@ -269,7 +237,7 @@ class IntoValTypedUnderlying (V : outParam Type) (t_under : go.GoType) [ZeroVal 
     [TypedPointsto (GF := GF) V] [GoSemanticsFunctions] : Prop where
   wp_alloc_def : ∀ {s : Stuckness} {E : CoPset} {t : go.GoType} [t ↓u t_under] (v : V),
     {{ (True : IProp GF) }} (App (Val (GoInstruction (GoAlloc t))) (Val #v)) @ s; E
-    {{ (l : Loc), RET #l; l ↦ v ∗ ⌜AllocAligned V l⌝ }}
+    {{ (l : Loc), RET #l; l ↦ v }}
   wp_load_def : ∀ {s : Stuckness} {E : CoPset} {t : go.GoType} [t ↓u t_under] (l : Loc)
       (dq : DFrac) (v : V),
     {{ (l ↦{dq} v : IProp GF) }} (App (Val (GoInstruction (GoLoad t))) (Val #l)) @ s; E
@@ -278,38 +246,25 @@ class IntoValTypedUnderlying (V : outParam Type) (t_under : go.GoType) [ZeroVal 
       (v w : V),
     {{ (l ↦ v : IProp GF) }} (App (Val (GoInstruction (GoStore t))) (Val (PairV #l #w))) @ s; E
     {{ RET #(); l ↦ w }}
-  /-- A store into the `typeSize V` cells at `l`, whatever they hold, makes `l ↦ w`: how a
-  fresh allocation (`AllocN`) is initialized. -/
-  wp_store_raw_def : ∀ {s : Stuckness} {E : CoPset} {t : go.GoType} [t ↓u t_under] (l : Loc)
-      (w : V),
-    {{ (⌜l.locCar ≠ 0⌝ ∗ rawCells l (typeSize V) : IProp GF) }}
-      (App (Val (GoInstruction (GoStore t))) (Val (PairV #l #w))) @ s; E
-    {{ RET #(); l ↦ w }}
   type_repr_def : go.TypeReprUnderlying t_under V
 
 /-- `IntoValTyped V t`: allocating, loading and storing at Go type `t` respects
 the typed points-to for `V`. -/
 class IntoValTyped (V : outParam Type) (t : go.GoType) [ZeroVal V] [TypedPointsto (GF := GF) V]
     [GoSemanticsFunctions] : Prop where
-  /-- An allocation is aligned to its type's alignment (`IsFreshAligned`): what Go
-  promises a variable. -/
   wp_alloc : ∀ {s : Stuckness} {E : CoPset} (v : V),
     {{ (True : IProp GF) }} (App (Val (GoInstruction (GoAlloc t))) (Val #v)) @ s; E
-    {{ (l : Loc), RET #l; l ↦ v ∗ ⌜AllocAligned V l⌝ }}
+    {{ (l : Loc), RET #l; l ↦ v }}
   wp_load : ∀ {s : Stuckness} {E : CoPset} (l : Loc) (dq : DFrac) (v : V),
     {{ (l ↦{dq} v : IProp GF) }} (App (Val (GoInstruction (GoLoad t))) (Val #l)) @ s; E
     {{ RET #v; l ↦{dq} v }}
   wp_store : ∀ {s : Stuckness} {E : CoPset} (l : Loc) (v w : V),
     {{ (l ↦ v : IProp GF) }} (App (Val (GoInstruction (GoStore t))) (Val (PairV #l #w))) @ s; E
     {{ RET #(); l ↦ w }}
-  wp_store_raw : ∀ {s : Stuckness} {E : CoPset} (l : Loc) (w : V),
-    {{ (⌜l.locCar ≠ 0⌝ ∗ rawCells l (typeSize V) : IProp GF) }}
-      (App (Val (GoInstruction (GoStore t))) (Val (PairV #l #w))) @ s; E
-    {{ RET #(); l ↦ w }}
   [type_repr : TypeRepr t V]
 
 attribute [instance] IntoValTyped.type_repr
-export IntoValTyped (wp_alloc wp_store wp_store_raw)
+export IntoValTyped (wp_alloc wp_store)
 
 instance underlying_to_into_val_typed {V : Type} {t_under : go.GoType} {zv : ZeroVal V}
     {tp : TypedPointsto (GF := GF) V} [GoSemanticsFunctions] [go.PreSemantics] {t : go.GoType}
@@ -318,7 +273,6 @@ instance underlying_to_into_val_typed {V : Type} {t_under : go.GoType} {zv : Zer
   wp_alloc v := h.wp_alloc_def v
   wp_load l dq v := h.wp_load_def l dq v
   wp_store l v w := h.wp_store_def l v w
-  wp_store_raw l w := h.wp_store_raw_def l w
   type_repr := by
     have := h.type_repr_def
     infer_instance
@@ -335,12 +289,12 @@ variable [GoSemanticsFunctions] [go.PreSemantics]
 
 instance pure_wp_go_step_det (i : GoInstruction) (v : val) (e : Expr)
     [h : go.IsGoStepPureDet i v e] :
-    PureWp (G := G) (L := L) True (App (Val (GoInstruction i)) (Val v)) e where
-  pure_wp_wp s E Φ K _ := by
+    PureWp (G := G) (L := L) (v.isPanic = false) (App (Val (GoInstruction i)) (Val v)) e where
+  pure_wp_wp s E Φ K hv := by
     have hdet := h.isGoStep_det
     have hpure := h.isGoStep_pure_det
     iintro HΦ
-    iapply wp_GoInstruction K i v Φ (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩)
+    iapply wp_GoInstruction K i v Φ (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩) hv
     inext
     iintro %e' %gs %gs' %Hstep Hlc Hctx
     obtain ⟨Hp, rfl⟩ := (hdet gs gs' e').1 Hstep
@@ -350,34 +304,18 @@ instance pure_wp_go_step_det (i : GoInstruction) (v : val) (e : Expr)
     iframe Hctx
     iapply HΦ $$ Hlc
 
-/-- `StructFieldRef t f #l` steps to the field address when `l ≠ null`; on
-`null` it is a stuck run-time panic (`go.structFieldRef_step`). `wp_auto` and
-`wp_pures` discharge the side condition from a Lean hypothesis `l' ≠ null`, or
-from a hypothesis of the context with `HypPure` (a points-to, `isMutex`,
-`isSema`, ... at an address with the same base as `l`: `LocNonNullFrom`), which
-they then keep as a local `Hφ : l ≠ null`. -/
-instance (priority := high) pure_wp_structFieldRef (t : go.GoType) (f : GoString) (l r : Loc)
-    (msg : String)
-    [h : go.IsGoStepPureDet (StructFieldRef t f) #l (if l = null then Panic msg else Val #r)] :
-    PureWp (G := G) (L := L) (l ≠ null) (App (Val (GoInstruction (StructFieldRef t f))) (Val #l))
-      (Val #r) where
-  pure_wp_wp s E Φ K hnn := by
-    have := (pure_wp_go_step_det (G := G) (L := L) _ _ _ (h := h)).pure_wp_wp s E Φ K trivial
-    simp only [hnn, ↓reduceIte] at this
-    exact this
-
 /-- (Time receipts) A deterministic pure Go instruction step
 that also yields an exclusive time receipt `⧗ 1` (`wp_GoInstruction_receipt`).
 Use it with `wp_bind` on the instruction, before `wp_auto` takes the step. -/
 theorem wp_go_step_receipt (i : GoInstruction) (v : val) (e : Expr)
     [h : go.IsGoStepPureDet i v e] {s : Stuckness} {E : CoPset} (Φ : val → IProp GF)
-    (K : List EctxItem) :
+    (K : List EctxItem) (hv : v.isPanic = false) :
     ▷ (⧗ 1 -∗ £ 1 -∗ WP (fill K e) @ s; E {{ Φ }})
     ⊢ WP (fill K (App (Val (GoInstruction i)) (Val v))) @ s; E {{ Φ }} := by
   have hdet := h.isGoStep_det
   have hpure := h.isGoStep_pure_det
   iintro HΦ
-  iapply wp_GoInstruction_receipt K i v Φ (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩)
+  iapply wp_GoInstruction_receipt K i v Φ (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩) hv
   inext
   iintro %e' %gs %gs' %Hstep Hlc Hr Hctx
   obtain ⟨Hp, rfl⟩ := (hdet gs gs' e').1 Hstep
@@ -389,21 +327,22 @@ theorem wp_go_step_receipt (i : GoInstruction) (v : val) (e : Expr)
 
 /-- `wp_go_step_receipt` with an empty evaluation context (use after `wp_bind`). -/
 theorem wp_go_step_receipt' (i : GoInstruction) (v : val) (e : Expr)
-    [h : go.IsGoStepPureDet i v e] {s : Stuckness} {E : CoPset} (Φ : val → IProp GF) :
+    [h : go.IsGoStepPureDet i v e] {s : Stuckness} {E : CoPset} (Φ : val → IProp GF)
+    (hv : v.isPanic = false) :
     ▷ (⧗ 1 -∗ £ 1 -∗ WP e @ s; E {{ Φ }})
     ⊢ WP (App (Val (GoInstruction i)) (Val v)) @ s; E {{ Φ }} :=
-  wp_go_step_receipt i v e Φ []
+  wp_go_step_receipt i v e Φ [] hv
 
 /-- `wp_go_step_receipt` that also increments a persistent time receipt. -/
 theorem wp_go_step_preceipt (i : GoInstruction) (v : val) (e : Expr)
     [h : go.IsGoStepPureDet i v e] {s : Stuckness} {E : CoPset} (Φ : val → IProp GF)
-    (K : List EctxItem) (m : Nat) :
+    (K : List EctxItem) (m : Nat) (hv : v.isPanic = false) :
     ⧖ m ∗ ▷ (⧗ 1 -∗ ⧖ (m + 1) -∗ £ 1 -∗ WP (fill K e) @ s; E {{ Φ }})
     ⊢ WP (fill K (App (Val (GoInstruction i)) (Val v))) @ s; E {{ Φ }} := by
   have hdet := h.isGoStep_det
   have hpure := h.isGoStep_pure_det
   iintro ⟨Hm, HΦ⟩
-  iapply wp_GoInstruction_preceipt K i v Φ m (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩)
+  iapply wp_GoInstruction_preceipt K i v Φ m (fun gs => ⟨e, gs, (hdet gs gs e).2 ⟨by rw [hpure], rfl⟩⟩) hv
   iframe Hm
   inext
   iintro %e' %gs %gs' %Hstep Hlc Hr Hm' Hctx
@@ -456,174 +395,6 @@ theorem wp_AngelicExit (Φ : val → IProp GF) :
   imodintro
   iframe Hctx
   iexact IH
-
-theorem rawCells_of_pointstoVals (l : Loc) (n : Nat) :
-    pointstoVals l (DFrac.own 1) (List.replicate n (LitV LitPad)) ⊢
-      (rawCells l (n : Int) : IProp GF) := by
-  unfold pointstoVals rawCells
-  rw [show ((n : Int)).toNat = n by omega]
-  induction n generalizing l with
-  | zero => iintro _; rw [List.range_zero]; iapply BigSepL.bigSepL_nil.2; itrivial
-  | succ n ih =>
-    rw [List.replicate_succ, List.range_succ_eq_map]
-    iintro H
-    icases BigSepL.bigSepL_cons.1 $$ H with ⟨H0, H⟩
-    iapply BigSepL.bigSepL_cons.2
-    simp only [Int.natCast_zero, loc_add_0]
-    isplitl [H0]
-    · iexact H0
-    rw [BigSepL.bigSepL_map]
-    simp only [loc_add_succ]
-    iapply ih (l +ₗ 1) $$ H
-
-/-- Raw cells are pads. -/
-theorem rawCells_vals (l : Loc) (n : Nat) :
-    rawCells l (n : Int) ⊢
-      (pointstoVals l (DFrac.own 1) (List.replicate n (LitV LitPad)) : IProp GF) := by
-  unfold rawCells pointstoVals
-  rw [show ((n : Int)).toNat = n by omega]
-  induction n generalizing l with
-  | zero =>
-    iintro _; rw [List.replicate_zero]; iapply BigSepL.bigSepL_nil.2; itrivial
-  | succ n ih =>
-    rw [List.range_succ_eq_map, List.replicate_succ]
-    iintro H
-    icases BigSepL.bigSepL_cons.1 $$ H with ⟨H0, H⟩
-    rw [BigSepL.bigSepL_map]
-    simp only [loc_add_succ]
-    ihave H := ih (l +ₗ 1) $$ H
-    iapply BigSepL.bigSepL_cons.2
-    simp only [Int.natCast_zero, loc_add_0, loc_add_succ]
-    iframe H0
-    iexact H
-
-/-- Pads may be overwritten by any store. -/
-theorem writeCompat_pads (enc : Encoding) (n : Nat) :
-    WriteCompat enc (List.replicate n (LitV LitPad)) := by
-  cases enc with
-  | word _ => simp [WriteCompat, List.mem_replicate]
-  | cell _ => left; simp [List.mem_replicate]
-
-/-- The cells of an encoded value may be overwritten by a store of the same encoding. -/
-theorem encode_writeCompat {enc : Encoding} {v : val} {vs : List val}
-    (h : encode enc v = some vs) : WriteCompat enc vs := by
-  cases enc with
-  | word n =>
-    simp only [encode, Option.map_eq_some_iff] at h
-    obtain ⟨z, -, rfl⟩ := h
-    simp only [WriteCompat, List.mem_map]
-    rintro _ ⟨b, -, rfl⟩; exact .inl ⟨b, rfl⟩
-  | cell k =>
-    right; rw [decode_encode h]; rfl
-
-theorem pointstoVals_non_null (l : Loc) (q : DFrac) (vs : List val) (hne : vs ≠ []) :
-    pointstoVals l q vs ⊢ (pointstoVals l q vs ∗ ⌜l.locCar ≠ 0⌝ : IProp GF) := by
-  iintro H
-  icases pointstoVals_split' l q vs hne $$ H with ⟨%hc, H⟩
-  isplitl [H]
-  · iapply pointstoVals_of_na l q vs hc $$ H
-  · ipureintro; exact hc
-
-theorem uint_nat_W64 (n : Nat) (h : n < 2 ^ 64) : uint.nat (W64 (n : Int)) = n := by
-  simp only [uint.nat, W64, BitVec.toNat_ofInt]
-  rw [Int.emod_eq_of_lt (by omega) (by omega)]; omega
-
-theorem uint_nat_W64' (a : Int) (h1 : 1 ≤ a) (h2 : a ≤ 8) : ((uint.nat (W64 a) : Nat) : Int) = a := by
-  simp only [uint.nat, W64, BitVec.toNat_ofInt]
-  rw [Int.emod_eq_of_lt (by omega) (by omega)]; omega
-
-/-- The non-atomic load of an encoded value (`ReadN`). -/
-theorem wp_ReadN (enc : Encoding) (l : Loc) (dq : DFrac) (vs : List val) (v : val)
-    (hlen : vs.length = enc.size) (hdec : decode enc vs = some v) :
-    {{ ▷ pointstoVals (GF := GF) l dq vs }} (App (Val (ReadN enc)) (Val #l)) @ s; E
-    {{ RET v; pointstoVals l dq vs }} := by
-  iintro %Φ Hl HΦ
-  wp_call
-  wp_apply_core wp_start_readN enc l dq vs v hlen hdec $$ Hl
-  iintro Hr
-  wp_pures
-  wp_apply_core wp_finish_readN enc l dq vs hlen $$ Hr
-  iintro Hl
-  wp_pures
-  iapply HΦ $$ Hl
-
-/-- The non-atomic store of an encoded value (`StoreN`), over cells it may overwrite
-(`WriteCompat`). -/
-theorem wp_StoreN (enc : Encoding) (l : Loc) (vs vs' : List val) (v : val)
-    (hlen : vs.length = enc.size) (hne : vs ≠ []) (hcompat : WriteCompat enc vs)
-    (henc : encode enc v = some vs') :
-    {{ ▷ pointstoVals (GF := GF) l (DFrac.own 1) vs }}
-      (App (App (Val (StoreN enc)) (Val #l)) (Val v)) @ s; E
-    {{ RET #(); pointstoVals l (DFrac.own 1) vs' }} := by
-  iintro %Φ Hl HΦ
-  wp_call
-  wp_apply_core wp_prepare_writeN enc l vs hlen hne hcompat $$ Hl
-  iintro Hw
-  wp_pures
-  wp_apply_core wp_finish_storeN enc l vs vs' v hlen henc $$ Hw
-  iintro Hl
-  iapply HΦ $$ Hl
-
-/-- The allocation of an encoded value (`allocEncoded`). -/
-theorem wp_allocEncoded (enc : Encoding) (v : val) (vs : List val) (hpos : 1 ≤ enc.size)
-    (hsize : enc.size < 2 ^ 63) (henc : encode enc v = some vs) :
-    {{ (True : IProp GF) }} (go.allocEncoded enc v) @ s; E
-    {{ (l : Loc), RET #l; ⌜l.locCar ≠ 0 ∧ (enc.align : Int) ∣ l.locOff⌝ ∗
-        pointstoVals l (DFrac.own 1) vs }} := by
-  iintro %Φ _ HΦ
-  have halign : enc.align < 2 ^ 64 := by cases enc <;> simp [Encoding.align, Encoding.size] at * <;> omega
-  unfold go.allocEncoded
-  wp_apply_core wp_allocN _ _ _
-  iintro %l ⟨%Hoff, Hl⟩
-  rw [uint_nat_W64 _ (by omega)]
-  wp_pures
-  wp_apply_core wp_StoreN enc l _ vs v (by simp) (by simp; omega) (writeCompat_pads _ _)
-    henc $$ Hl
-  iintro Hl
-  wp_pures
-  iapply HΦ
-  iframe Hl
-  ipureintro; refine ⟨Hoff.1, ?_⟩
-  have := Hoff.2
-  rwa [uint_nat_W64 _ halign] at this
-
-/-- Allocating `sz` cells (`AllocN`) and storing into them: what `GoAlloc` of a struct or
-an array expands to. -/
-theorem wp_alloc_raw (t : go.GoType) (sz al : Int) (hsz : 0 ≤ sz ∧ sz < 2^63)
-    (hal : 0 ≤ al ∧ al ≤ 8) (v : val) (P : Loc → IProp GF)
-    (hstore : ∀ l, {{ (⌜l.locCar ≠ 0⌝ ∗ rawCells l sz : IProp GF) }}
-      (App (Val (GoInstruction (GoStore t))) (Val (PairV #l v))) @ s; E
-      {{ RET #(); P l }}) :
-    {{ (True : IProp GF) }}
-      (Let "l" (AllocN (Val (PairV (LitV (LitInt (W64 sz))) (LitV (LitInt (W64 al)))))
-          (Val (LitV LitPad)))
-        gl(GoStore t ("l", v) ;; "l")) @ s; E
-    {{ (l : Loc), RET #l; P l ∗ ⌜l.locCar ≠ 0 ∧ al ∣ l.locOff⌝ }} := by
-  iintro %Φ _ HΦ
-  wp_apply_core wp_allocN _ _ _
-  iintro %l ⟨%Hoff, Hpts⟩
-  have hn : ((uint.nat (W64 sz) : Nat) : Int) = sz := by
-    simp only [uint.nat, W64, BitVec.toNat_ofInt]
-    rw [Int.emod_eq_of_lt hsz.1 (by omega)]; omega
-  have hc := Hoff.1
-  rw [show uint.nat (W64 sz) = sz.toNat by
-    simp only [uint.nat, W64, BitVec.toNat_ofInt]
-    rw [Int.emod_eq_of_lt hsz.1 (by omega)]]
-  ihave Hraw := rawCells_of_pointstoVals l _ $$ Hpts
-  rw [show ((sz.toNat : Nat) : Int) = sz by omega]
-  wp_pures
-  wp_apply_core hstore l $$ [Hraw]
-  · iframe; ipureintro; exact hc
-  iintro HP
-  wp_pures
-  iapply HΦ
-  iframe HP
-  ipureintro
-  refine ⟨hc, ?_⟩
-  have := Hoff.2
-  rwa [show ((uint.nat (W64 al) : Nat) : Int) = al by
-    simp only [uint.nat, W64, BitVec.toNat_ofInt]
-    rw [Int.emod_eq_of_lt hal.1 (by omega)]; omega] at this
 
 theorem wp_PackageInitCheck (pkg : GoString) (σ : GMap GoString Bool) :
     {{ ownGoState (GF := GF) σ }} (App (Val (GoInstruction (PackageInitCheck pkg))) (Val #())) @ s; E
@@ -692,7 +463,7 @@ theorem wp_GlobalAlloc (v : GoString) (t : go.GoType) {V : Type} [ZeroVal V]
   iintro %Φ _ HΦ
   wp_call
   wp_apply_core wp_alloc (zero_val V)
-  iintro %l ⟨Hl, -⟩
+  iintro %l Hl
   wp_pures
   by_cases h : l = globalAddr v
   · subst h
@@ -713,7 +484,7 @@ variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable {s : Stuckness} {E : CoPset}
 
-theorem _internal_wp_untyped_read (l : Loc) (dq : DFrac) (v : val) :
+theorem _internal_wp_untyped_read (l : Loc) (dq : DFrac) (v : val) (Hv : v.isPanic = false) :
     {{ ▷ heapPointsto (GF := GF) l dq v }} (App (Val Read) (Val #l)) @ s; E
     {{ RET v; heapPointsto l dq v }} := by
   iintro %Φ Hl HΦ
@@ -727,7 +498,7 @@ theorem _internal_wp_untyped_read (l : Loc) (dq : DFrac) (v : val) :
   wp_pures
   iapply HΦ $$ Hl
 
-theorem _internal_wp_untyped_store (l : Loc) (v v' : val) :
+theorem _internal_wp_untyped_store (l : Loc) (v v' : val) (Hv' : v'.isPanic = false) :
     {{ ▷ heapPointsto (GF := GF) l (.own 1) v }} (App (App (Val Store) (Val #l)) (Val v')) @ s; E
     {{ RET #(); heapPointsto l (.own 1) v' }} := by
   iintro %Φ Hl HΦ
@@ -735,7 +506,7 @@ theorem _internal_wp_untyped_store (l : Loc) (v v' : val) :
   wp_apply_core wp_prepare_write l v $$ Hl
   iintro ⟨Hl, Hl'⟩
   wp_pures
-  wp_apply_core wp_finish_store l v' v $$ [Hl Hl']
+  wp_apply_core wp_finish_store l v' v Hv' $$ [Hl Hl']
   · iframe
   iintro Hl
   iapply HΦ $$ Hl
@@ -774,139 +545,26 @@ theorem typedPointstoDef_heap (V : Type) (hinj : Function.Injective (intoVal (V 
     (l : Loc) (v : V) (dq : DFrac) :
     @typedPointstoDef GF V (heapTypedPointsto V hinj) l v dq = heapPointsto l dq #v := rfl
 
-theorem pointstoVals_agree (l : Loc) (dq1 dq2 : DFrac) (vs1 vs2 : List val)
-    (hlen : vs1.length = vs2.length) :
-    pointstoVals (GF := GF) l dq1 vs1 ∗ pointstoVals l dq2 vs2 ⊢ ⌜vs1 = vs2⌝ := by
-  induction vs1 generalizing l vs2 with
-  | nil => cases vs2 with
-    | nil => iintro _; ipureintro; rfl
-    | cons => simp at hlen
-  | cons v vs1 ih =>
-    cases vs2 with
-    | nil => simp at hlen
-    | cons w vs2 =>
-      simp only [List.length_cons, Nat.add_right_cancel_iff] at hlen
-      unfold pointstoVals
-      iintro ⟨H1, H2⟩
-      icases BigSepL.bigSepL_cons.1 $$ H1 with ⟨Hv, H1⟩
-      icases BigSepL.bigSepL_cons.1 $$ H2 with ⟨Hw, H2⟩
-      icases heapPointsto_agree _ _ _ _ _ $$ [Hv Hw] with %Hvw
-      · iframe
-      have Hk : ∀ k : Nat, l +ₗ ((k + 1 : Nat) : Int) = l +ₗ 1 +ₗ (k : Int) := by
-        intro k; rw [loc_add_assoc]; congr 1; omega
-      simp only [Hk]
-      icases ih (l +ₗ 1) vs2 hlen $$ [H1 H2] with %Hrest
-      · unfold pointstoVals; iframe
-      ipureintro; rw [Hvw, Hrest]
-
-theorem byteVals_inj (bs1 bs2 : List w8) (h : byteVals bs1 = byteVals bs2) : bs1 = bs2 := by
-  unfold byteVals at h
-  induction bs1 generalizing bs2 with
-  | nil => cases bs2 with
-    | nil => rfl
-    | cons => simp at h
-  | cons b bs1 ih =>
-    cases bs2 with
-    | nil => simp at h
-    | cons c bs2 =>
-      simp only [List.map_cons, List.cons.injEq] at h
-      obtain ⟨h1, h2⟩ := h
-      injection h1 with h1; injection h1 with h1
-      rw [h1, ih bs2 h2]
-
-/-- The typed points-to of a type whose values have encoding `enc`: the cells of the
-value's encoding (`encodeVals`). -/
-def encTypedPointsto (V : Type) (enc : Encoding) (hinj : Function.Injective (intoVal (V := V)))
-    (henc : ∀ v : V, ∃ vs, encode enc #v = some vs) :
-    TypedPointsto (GF := GF) V where
-  typedPointstoDef l v dq := pointstoVals l dq (encodeVals enc #v)
-  typedPointstoDef_dfractional l v := by unfold pointstoVals; infer_instance
-  typedPointstoDef_timeless l v dq := by unfold pointstoVals; infer_instance
-  typedPointsto_agree l dq1 dq2 v1 v2 := by
-    obtain ⟨vs1, h1⟩ := henc v1
-    obtain ⟨vs2, h2⟩ := henc v2
-    rw [encodeVals_eq h1, encodeVals_eq h2]
-    iintro H1 H2
-    icases pointstoVals_agree l dq1 dq2 vs1 vs2
-      (by rw [encode_length h1, encode_length h2]) $$ [H1 H2] with %h
-    · iframe
-    ipureintro
-    subst h
-    have e := (decode_encode h1).symm.trans (decode_encode h2)
-    exact hinj (Option.some.inj e)
-
-theorem typedPointstoDef_enc (V : Type) (enc : Encoding) (hinj : Function.Injective (intoVal (V := V)))
-    (henc : ∀ v : V, ∃ vs, encode enc #v = some vs) (l : Loc) (v : V) (dq : DFrac) :
-    @typedPointstoDef GF V (encTypedPointsto V enc hinj henc) l v dq =
-      pointstoVals l dq (encodeVals enc #v) := rfl
-
-theorem typedPointstoDef_enc_iff (V : Type) (enc : Encoding)
-    (hinj : Function.Injective (intoVal (V := V))) (henc : ∀ v : V, ∃ vs, encode enc #v = some vs)
-    (l : Loc) (v : V) (dq : DFrac) :
-    @typedPointstoDef GF V (encTypedPointsto V enc hinj henc) l v dq ⊣⊢
-      pointstoVals l dq (encodeVals enc #v) := .rfl
-
-/-- The representation types whose values are cell heads (`GoGlobalContext.intoVal_head_loc`,
-...), so that they have a cell encoding. -/
-class CellHeadType [GoGlobalContext] (V : Type) : Prop where
-  head : ∀ v : V, IsCellHead (intoVal v)
-
-instance [GoGlobalContext] : CellHeadType Loc := ⟨GoGlobalContext.intoVal_head_loc⟩
-instance [GoGlobalContext] : CellHeadType Bool := ⟨GoGlobalContext.intoVal_head_bool⟩
-instance [GoGlobalContext] : CellHeadType proph_id := ⟨GoGlobalContext.intoVal_head_proph_id⟩
-instance [GoGlobalContext] : CellHeadType GoString := ⟨GoGlobalContext.intoVal_head_string⟩
-instance [GoGlobalContext] : CellHeadType GoSlice := ⟨GoGlobalContext.intoVal_head_slice⟩
-instance [GoGlobalContext] : CellHeadType GoFunc := ⟨GoGlobalContext.intoVal_head_func⟩
-instance [GoGlobalContext] : CellHeadType GoInterface := ⟨GoGlobalContext.intoVal_head_interface⟩
-
-theorem encode_cell (k : Nat) (hk : 2 ≤ k) {V : Type} [CellHeadType V] (v : V) :
-    ∃ vs, encode (.cell k) #v = some vs :=
-  ⟨#v :: tails k, by
-    have h : CellHeadOf k #v := ⟨by omega, CellHeadType.head v, fun h => by omega⟩
-    simp only [encode, if_pos h]⟩
-
-include hG in
-theorem encode_w64 (v : w64) : ∃ vs, encode (.word 8) #v = some vs := by
-  rw [go.intoVal_unfold w64]; exact ⟨_, rfl⟩
-include hG in
-theorem encode_w32 (v : w32) : ∃ vs, encode (.word 4) #v = some vs := by
-  rw [go.intoVal_unfold w32]; exact ⟨_, rfl⟩
-include hG in
-theorem encode_w16 (v : w16) : ∃ vs, encode (.word 2) #v = some vs := by
-  rw [go.intoVal_unfold w16]; exact ⟨_, rfl⟩
-include hG in
-theorem encode_w8 (v : w8) : ∃ vs, encode (.word 1) #v = some vs := by
-  rw [go.intoVal_unfold w8]; exact ⟨_, rfl⟩
-include hG in
-theorem encode_bool (v : Bool) : encode (.cell 1) #v = some [ #v ] := by
-  rw [go.intoVal_unfold Bool]
-  simp [encode, CellHeadOf, IsCellHead, isTail, isBoolLit, byteOf?, tails]
-
-include hG in
-theorem encode_bool' (v : Bool) : ∃ vs, encode (.cell 1) #v = some vs := ⟨_, encode_bool (hG := hG) v⟩
-
 instance typedPointsto_loc : TypedPointsto (GF := GF) Loc :=
-  encTypedPointsto Loc (.cell 8) go.intoVal_inj (fun v => encode_cell 8 (by decide) v)
-/-- An integer is its little-endian bytes. -/
+  heapTypedPointsto Loc go.intoVal_inj
 instance typedPointsto_w64 : TypedPointsto (GF := GF) w64 :=
-  encTypedPointsto w64 (.word 8) go.intoVal_inj (encode_w64 (hG := hG))
+  heapTypedPointsto w64 go.intoVal_inj
 instance typedPointsto_w32 : TypedPointsto (GF := GF) w32 :=
-  encTypedPointsto w32 (.word 4) go.intoVal_inj (encode_w32 (hG := hG))
+  heapTypedPointsto w32 go.intoVal_inj
 instance typedPointsto_w16 : TypedPointsto (GF := GF) w16 :=
-  encTypedPointsto w16 (.word 2) go.intoVal_inj (encode_w16 (hG := hG))
+  heapTypedPointsto w16 go.intoVal_inj
 instance typedPointsto_w8 : TypedPointsto (GF := GF) w8 :=
-  encTypedPointsto w8 (.word 1) go.intoVal_inj (encode_w8 (hG := hG))
-/-- A `bool` is one cell (`Encoding.cell 1`), its `heapPointsto`. -/
+  heapTypedPointsto w8 go.intoVal_inj
 instance typedPointsto_bool : TypedPointsto (GF := GF) Bool :=
   heapTypedPointsto Bool go.intoVal_inj
 instance typedPointsto_string : TypedPointsto (GF := GF) GoString :=
-  encTypedPointsto GoString (.cell 16) go.intoVal_inj (fun v => encode_cell 16 (by decide) v)
+  heapTypedPointsto GoString go.intoVal_inj
 instance typedPointsto_slice : TypedPointsto (GF := GF) GoSlice :=
-  encTypedPointsto GoSlice (.cell 24) go.intoVal_inj (fun v => encode_cell 24 (by decide) v)
+  heapTypedPointsto GoSlice go.intoVal_inj
 instance typedPointsto_interface : TypedPointsto (GF := GF) GoInterface :=
-  encTypedPointsto GoInterface (.cell 16) go.intoVal_inj (fun v => encode_cell 16 (by decide) v)
+  heapTypedPointsto GoInterface go.intoVal_inj
 instance typedPointsto_proph_id : TypedPointsto (GF := GF) proph_id :=
-  encTypedPointsto proph_id (.cell 8) go.intoVal_inj (fun v => encode_cell 8 (by decide) v)
+  heapTypedPointsto proph_id go.intoVal_inj
 
 include hG in
 theorem intoVal_inj_func : Function.Injective (intoVal (V := GoFunc)) := by
@@ -915,37 +573,9 @@ theorem intoVal_inj_func : Function.Injective (intoVal (V := GoFunc)) := by
   cases f1; cases f2; cases h; rfl
 
 instance typedPointsto_func : TypedPointsto (GF := GF) GoFunc :=
-  encTypedPointsto GoFunc (.cell 8) (intoVal_inj_func (hG := hG)) (fun v => encode_cell 8 (by decide) v)
-
-/-- A one-cell points-to is a heap points-to. -/
-theorem pointstoVals_single (l : Loc) (dq : DFrac) (v : val) :
-    pointstoVals (GF := GF) l dq [v] ⊣⊢ (heapPointsto l dq v : IProp GF) := by
-  unfold pointstoVals
-  constructor
-  · iintro H
-    icases BigSepL.bigSepL_singleton.1 $$ H with H
-    rw [show l +ₗ ((0 : Nat) : Int) = l by simp]
-    iexact H
-  · iintro H
-    iapply BigSepL.bigSepL_singleton.2
-    rw [show l +ₗ ((0 : Nat) : Int) = l by simp]
-    iexact H
-
-include hG in
-theorem encodeVals_byte (v : w8) : encodeVals (.word 1) #v = [ (#v : val) ] := by
-  rw [go.intoVal_unfold w8]
-  show [LitV (LitByte (BitVec.ofInt 8 (v.toNat : Int)))] = [LitV (LitByte v)]
-  rw [BitVec.ofInt_natCast, BitVec.ofNat_toNat, BitVec.setWidth_eq]
-
-/-- A byte's typed points-to is its cell. -/
-theorem typedPointstoDef_w8 (l : Loc) (v : w8) (dq : DFrac) :
-    @typedPointstoDef GF w8 typedPointsto_w8 l v dq ⊣⊢ heapPointsto l dq #v := by
-  show pointstoVals l dq (encodeVals (.word 1) #v) ⊣⊢ _
-  rw [encodeVals_byte (hG := hG)]
-  exact pointstoVals_single l dq _
+  heapTypedPointsto GoFunc (intoVal_inj_func (hG := hG))
 
 end typed_pointsto_instances
-
 
 /-! ## `IntoValTypedUnderlying` instances for primitive types -/
 
@@ -970,121 +600,66 @@ theorem heapPointsto_non_null_dup (l : Loc) (dq : DFrac) (v : val) :
   unfold heapPointsto
   iintro ⟨%Hl, H⟩
   iframe H
-  isplit <;> ipureintro
-  · exact Hl
-  · intro h; subst h; exact Hl rfl
+  isplit <;> ipureintro <;> exact Hl
 
-theorem encode_ne_nil {enc : Encoding} {v : val} {vs : List val} (h : encode enc v = some vs)
-    (hpos : 1 ≤ enc.size) : vs ≠ [] := by
-  intro e; have := encode_length h; rw [e] at this; simp at this; omega
-
-theorem rawCells_vals' (l : Loc) (m : Int) (n : Nat) (h : m = n) :
-    rawCells l m ⊢
-      (pointstoVals l (DFrac.own 1) (List.replicate n (LitV LitPad)) : IProp GF) := by
-  subst h; exact rawCells_vals l n
-
-/-- Prove `IntoValTypedUnderlying V t` for a type whose typed points-to is the cells of its
-encoding `enc` (`hdef`) and which is allocated, loaded and stored as an encoded value
-(`allocEncoded`, `ReadN`, `StoreN`). `henc` shows every value has an encoding, `hsize`
-that `typeSize V` is its size. -/
-macro "solve_into_val_typed'" enc:term:max henc:term:max hsize:term:max halign:term:max
-    hdef:term:max :
-    tactic => `(tactic| (
+/-- Prove `IntoValTypedUnderlying V t` for a type whose typed points-to is
+`heapPointsto l dq #v` and which is allocated, loaded and stored with the
+untyped primitives. -/
+macro "solve_into_val_typed" : tactic => `(tactic| (
   constructor
-  all_goals try simp only [typedPointsto_unseal, typedPointstoWrap]
+  all_goals try simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap]
   · intro s E t _ v
     iintro %Φ _ HΦ
     wp_pures
-    obtain ⟨vs, hvs⟩ := $henc v
-    wp_apply_core wp_allocEncoded $enc _ vs (by decide) (by decide) hvs
-    iintro %l ⟨%Hc, Hl⟩
+    wp_apply_core wp_alloc_untyped _ (isPanic_intoVal _)
+    iintro %l Hl
+    icases heapPointsto_non_null_dup l _ _ $$ Hl with ⟨Hl, %Hnn⟩
     iapply HΦ
-    isplitl [Hl]
-    · isplitl [Hl]
-      · iapply ($hdef l v _).2; rw [encodeVals_eq hvs]; iexact Hl
-      ipureintro; intro h; subst h; exact Hc.1 rfl
-    ipureintro; refine ⟨Hc.1, ?_⟩; rw [show typeAlign _ = _ from $halign]
-    simpa [Encoding.align] using Hc.2
+    iframe Hl
+    ipureintro; exact Hnn
   · intro s E t _ l dq v
     iintro %Φ Hl HΦ
     icases Hl with ⟨Hl, %Hnn⟩
-    ihave Hl := ($hdef l v dq).1 $$ Hl
     wp_pures
-    obtain ⟨vs, hvs⟩ := $henc v
-    rw [encodeVals_eq hvs]
-    wp_apply_core wp_ReadN $enc l dq vs _ (encode_length hvs) (decode_encode hvs) $$ Hl
+    wp_apply_core _internal_wp_untyped_read l dq _ (isPanic_intoVal _) $$ Hl
     iintro Hl
     iapply HΦ
-    isplitl [Hl]
-    · iapply ($hdef l v dq).2; rw [encodeVals_eq hvs]; iexact Hl
+    iframe Hl
     ipureintro; exact Hnn
   · intro s E t _ l v w
     iintro %Φ Hl HΦ
     icases Hl with ⟨Hl, %Hnn⟩
-    ihave Hl := ($hdef l v _).1 $$ Hl
     wp_pures
-    obtain ⟨vs, hvs⟩ := $henc v
-    obtain ⟨ws, hws⟩ := $henc w
-    rw [encodeVals_eq hvs]
-    wp_apply_core wp_StoreN $enc l vs ws _ (encode_length hvs)
-      (encode_ne_nil hvs (by decide)) (encode_writeCompat hvs) hws $$ Hl
+    wp_apply_core _internal_wp_untyped_store l _ _ (isPanic_intoVal _) $$ Hl
     iintro Hl
     iapply HΦ
-    isplitl [Hl]
-    · iapply ($hdef l w _).2; rw [encodeVals_eq hws]; iexact Hl
+    iframe Hl
     ipureintro; exact Hnn
-  · intro s E t _ l w
-    iintro %Φ ⟨%Hc, Hraw⟩ HΦ
-    ihave Hl := rawCells_vals' l _ ($enc).size (($hsize).trans (by decide)) $$ Hraw
-    wp_pures
-    obtain ⟨ws, hws⟩ := $henc w
-    wp_apply_core wp_StoreN $enc l _ ws _ (List.length_replicate ..)
-      (by simp [Encoding.size]) (writeCompat_pads _ _) hws $$ Hl
-    iintro Hl
-    iapply HΦ
-    isplitl [Hl]
-    · iapply ($hdef l w _).2; rw [encodeVals_eq hws]; iexact Hl
-    ipureintro; intro h; subst h; exact Hc rfl
   · infer_instance))
-
-/-- `solve_into_val_typed'` for a typed points-to that is `encTypedPointsto V enc`. -/
-macro "solve_into_val_typed" enc:term:max henc:term:max hsize:term:max halign:term:max :
-    tactic =>
-  `(tactic| solve_into_val_typed' $enc $henc $hsize $halign
-    (fun l v dq => typedPointstoDef_enc_iff _ _ _ _ l v dq))
-
-/-- The typed points-to of a `bool` is its cell (`Encoding.cell 1`). -/
-theorem typedPointstoDef_bool (l : Loc) (v : Bool) (dq : DFrac) :
-    @typedPointstoDef GF Bool typedPointsto_bool l v dq ⊣⊢
-      pointstoVals l dq (encodeVals (.cell 1) #v) := by
-  have h1 : encode (.cell 1) (#v : val) = some [ (#v : val) ] := encode_bool (hG := hG) v
-  rw [encodeVals_eq h1,
-    typedPointstoDef_heap]
-  exact (pointstoVals_single l dq _).symm
 
 instance intoVal_typed_loc (t : go.GoType) :
     IntoValTypedUnderlying (GF := GF) Loc (go.PointerType t) := by
-  solve_into_val_typed (Encoding.cell 8) (fun v => encode_cell 8 (by decide) v) go.typeSize_loc go.typeAlign_loc
+  solve_into_val_typed
 
 instance intoVal_typed_func (sig : go.signature) :
     IntoValTypedUnderlying (GF := GF) GoFunc (go.FunctionType sig) := by
-  solve_into_val_typed (Encoding.cell 8) (fun v => encode_cell 8 (by decide) v) go.typeSize_func go.typeAlign_func
+  solve_into_val_typed
 
 instance intoVal_typed_slice (t : go.GoType) :
     IntoValTypedUnderlying (GF := GF) GoSlice (go.SliceType t) := by
-  solve_into_val_typed (Encoding.cell 24) (fun v => encode_cell 24 (by decide) v) go.typeSize_slice go.typeAlign_slice
+  solve_into_val_typed
 
 instance intoVal_typed_interface (elems : List go.InterfaceElem) :
     IntoValTypedUnderlying (GF := GF) GoInterface (go.InterfaceType elems) := by
-  solve_into_val_typed (Encoding.cell 16) (fun v => encode_cell 16 (by decide) v) go.typeSize_interface go.typeAlign_interface
+  solve_into_val_typed
 
 instance intoVal_typed_chan (t : go.GoType) (b : go.ChanDir) :
     IntoValTypedUnderlying (GF := GF) GoChan (go.ChannelType b t) := by
-  solve_into_val_typed (Encoding.cell 8) (fun v => encode_cell 8 (by decide) v) go.typeSize_loc go.typeAlign_loc
+  solve_into_val_typed
 
 instance intoVal_typed_map (k v : go.GoType) :
     IntoValTypedUnderlying (GF := GF) GoMap (go.MapType k v) := by
-  solve_into_val_typed (Encoding.cell 8) (fun v => encode_cell 8 (by decide) v) go.typeSize_loc go.typeAlign_loc
+  solve_into_val_typed
 
 end into_val_typed_instances
 

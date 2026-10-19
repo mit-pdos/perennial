@@ -25,21 +25,19 @@ variable [package_sem : sync.atomic.Assumptions]
 theorem sync.atomic.Value.Swap.wp_proof :
     sync.atomic.Value.Swap.spec (GF := GF) (hG := hG) := by
   intro u v hv
-  wp_start_folded as _
-  iintro %hu %hal
-  (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)
+  wp_start as _
   cases v with
   | nil => exact absurd rfl hv
   | ok ii =>
   simp only
   rw [Value_ty_eq]
   wp_auto
-  wp_bind (SwapN _ _ _)
+  wp_bind (AtomicSwap _ _)
   imod HΦ with ⟨>Hown, HΦ⟩
   simp only [ownValue_unseal, ownValueDef]
   ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
-  wp_apply_core typed.wp_atomic_swap _ (interface.nil : GoInterface) (interface.ok ii) hal $$ v
+  wp_apply_core wp_atomic_swap _ _ _ (interface.nil : GoInterface) (interface.ok ii) $$ v
   iintro Hv
   imod HΦ $$ [Hv] with HΦ
   · iapply typedPointsto_combine _ _ _ Hnn

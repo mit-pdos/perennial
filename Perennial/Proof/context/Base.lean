@@ -387,37 +387,6 @@ def cancelCtxLockInv (c : Loc) (γ : ContextNames) (P R : IProp GF) : IProp GF :
            else ∃ γch, ownBroadcastChan ch γch iprop(P ∗ ContextClosed γ) .Pending))) ∗
     "HR" ∷ R)
 
-/-- The cells of `c.done` and `c.err` are aligned, for their atomic operations. -/
-def cancelCtxAligned (c : Loc) : Prop :=
-  Aligned (.cell 16) (structFieldRef sync.atomic.Value go!"v"
-      (structFieldRef context.cancelCtx go!"done" c)) ∧
-    Aligned (.cell 16) (structFieldRef sync.atomic.Value go!"v"
-      (structFieldRef context.cancelCtx go!"err" c))
-
-include hG sem package_sem in
-/-- A `cancelCtx` allocated at its alignment has `cancelCtxAligned`. -/
-theorem cancelCtx_fields_aligned (c : Loc) (hal : AllocAligned context.cancelCtx c) :
-    cancelCtxAligned (GF := GF) c := by
-  have hv : ∀ f, (f, typeSize sync.atomic.Value, typeAlign sync.atomic.Value) ∈
-      [(go!"Context", typeSize context.Context, typeAlign context.Context),
-       (go!"mu", typeSize _root_.Perennial.sync.Mutex, typeAlign _root_.Perennial.sync.Mutex),
-       (go!"done", typeSize _root_.Perennial.sync.atomic.Value,
-         typeAlign _root_.Perennial.sync.atomic.Value),
-       (go!"children", typeSize GoMap, typeAlign GoMap),
-       (go!"err", typeSize _root_.Perennial.sync.atomic.Value,
-         typeAlign _root_.Perennial.sync.atomic.Value),
-       (go!"cause", typeSize GoError, typeAlign GoError)] →
-      Aligned (.cell 16) (structFieldRef sync.atomic.Value go!"v"
-        (structFieldRef context.cancelCtx f c)) := by
-    intro f hmem
-    have h1 := go.field_aligned (V := context.cancelCtx) hmem
-      (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
-    have hc1 := go.structFieldRef_car' (V := context.cancelCtx) hal.1 hmem
-    have h2 := go.field_aligned (V := _root_.Perennial.sync.atomic.Value) (f := go!"v")
-      (by solve_layout_mem) (by solve_layout_nodup) (by solve_layout_pow2) hc1 h1
-    simpa [Aligned, Encoding.align] using h2
-  exact ⟨hv _ (by solve_layout_mem), hv _ (by solve_layout_mem)⟩
-
 /-- `c` is a (shared) `*cancelCtx` with ghost names `γ`, Done proposition `P` and extra lock
 resource `R` (`cancelCtxLockInv`); it carries `context`'s `isClosedchanInit` (`"#Hcci"`), which
 its methods need. -/
@@ -425,12 +394,7 @@ def isCancelCtxOfR (c : Loc) (γ : ContextNames) (P R : IProp GF) : IProp GF :=
   iprop("#Hmu" ∷ sync.isMutex (structFieldRef context.cancelCtx go!"mu" c)
       (cancelCtxLockInv c γ P R) ∗
     "#Hinv" ∷ inv cancelCtxN (cancelCtxInv c γ P) ∗
-    "#Hcci" ∷ isClosedchanInit ∗
-    "%Hcal" ∷ ⌜cancelCtxAligned (GF := GF) c⌝)
-
-instance isCancelCtxOfR_hypPure (c l : Loc) (γ : ContextNames) (P R : IProp GF)
-    [LocNonNullFrom c l] : HypPure (isCancelCtxOfR c γ P R) (l ≠ null) := by
-  unfold isCancelCtxOfR; infer_instance
+    "#Hcci" ∷ isClosedchanInit)
 
 instance isCancelCtxOfR_pers (c : Loc) (γ : ContextNames) (P R : IProp GF) :
     Persistent (isCancelCtxOfR c γ P R) := by
@@ -443,12 +407,7 @@ def isCancelCtxOf (c : Loc) (γ : ContextNames) (P : IProp GF) : IProp GF :=
     "#Hmu" ∷ sync.isMutex (structFieldRef context.cancelCtx go!"mu" c)
       (cancelCtxLockInv c γ P R) ∗
     "#Hinv" ∷ inv cancelCtxN (cancelCtxInv c γ P) ∗
-    "#Hcci" ∷ isClosedchanInit ∗
-    "%Hcal" ∷ ⌜cancelCtxAligned (GF := GF) c⌝)
-
-instance isCancelCtxOf_hypPure (c l : Loc) (γ : ContextNames) (P : IProp GF)
-    [LocNonNullFrom c l] : HypPure (isCancelCtxOf c γ P) (l ≠ null) := by
-  unfold isCancelCtxOf; infer_instance
+    "#Hcci" ∷ isClosedchanInit)
 
 instance isCancelCtxOf_pers (c : Loc) (γ : ContextNames) (P : IProp GF) :
     Persistent (isCancelCtxOf c γ P) := by
@@ -461,18 +420,11 @@ theorem isCancelCtxOfR_of (c : Loc) (γ : ContextNames) (P R : IProp GF) :
   iexists R
   iexact H
 
-theorem isCancelCtxOf_aligned (c : Loc) (γ : ContextNames) (P : IProp GF) :
-    isCancelCtxOf c γ P ⊢ ⌜cancelCtxAligned (GF := GF) c⌝ := by
-  iintro #Hc
-  iunfold isCancelCtxOf at Hc
-  icases Hc with ⟨%R, -, -, -, %Hal⟩
-  ipureintro; exact Hal
-
 theorem isCancelCtxOf_closedchan (c : Loc) (γ : ContextNames) (P : IProp GF) :
     isCancelCtxOf c γ P ⊢ isClosedchanInit := by
   iintro #Hc
   iunfold isCancelCtxOf at Hc
-  icases Hc with ⟨%R, -, -, #Hcci, -⟩
+  icases Hc with ⟨%R, -, -, #Hcci⟩
   iexact Hcci
 
 /-- `c` is a (shared) `*cancelCtx`. -/
@@ -951,7 +903,7 @@ theorem childCancelSpec_true (Q : IProp GF) (k : GoInterface) :
 /-- A new `*cancelCtx` (all fields zero) with Done proposition `P` and extra lock resource
 `R`: fresh ghost names `γ`, its invariant and the lock invariant of `c.mu`; the `Context` field
 is left out, for `propagateCancel` to set. -/
-theorem cancelCtx_alloc (c : Loc) (P R : IProp GF) (hal : AllocAligned context.cancelCtx c) :
+theorem cancelCtx_alloc (c : Loc) (P R : IProp GF) :
     ⊢ isClosedchanInit -∗ c ↦ (zero_val context.cancelCtx) -∗ R -∗ |={⊤}=>
       ∃ γ : ContextNames, isCancelCtxOfR c γ P R ∗ ctxField c ↦ (interface.nil : GoInterface) := by
   iintro #Hcci Hc HRes
@@ -985,7 +937,6 @@ theorem cancelCtx_alloc (c : Loc) (P R : IProp GF) (hal : AllocAligned context.c
   iexists ⟨gd, gc⟩
   iframe FContext
   unfold isCancelCtxOfR; iframe #
-  ipureintro; exact cancelCtx_fields_aligned (GF := GF) c hal
 
 /-- The spec of `parent.Deadline()`, returning the deadline `dl`. -/
 def deadlineSpec (parent : GoInterfaceOk) (dl : Option time.Time) : IProp GF :=
@@ -1041,19 +992,6 @@ theorem cancel_spec_forget (cancel : GoFunc) (γ : ContextNames) (P : IProp GF) 
 /-- The `cancelCtx` embedded in the `*timerCtx` `c`. -/
 abbrev tcc [GoSemanticsFunctions] (c : Loc) : Loc :=
   structFieldRef context.timerCtx go!"cancelCtx" c
-
-include hG sem package_sem in
-/-- The embedded `cancelCtx` of an aligned `timerCtx` is aligned. -/
-theorem tcc_aligned (c : Loc) (hal : AllocAligned context.timerCtx c) :
-    AllocAligned context.cancelCtx (tcc c) := by
-  have hmem : (go!"cancelCtx", typeSize context.cancelCtx, typeAlign context.cancelCtx) ∈
-      [(go!"cancelCtx", typeSize context.cancelCtx, typeAlign context.cancelCtx),
-       (go!"timer", typeSize Loc, typeAlign Loc),
-       (go!"deadline", typeSize _root_.Perennial.time.Time, typeAlign _root_.Perennial.time.Time)] :=
-    List.mem_cons_self ..
-  exact ⟨go.structFieldRef_car' (V := context.timerCtx) hal.1 hmem,
-    go.field_aligned (V := context.timerCtx) hmem
-      (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2⟩
 
 /-- The extra lock resource of a `*timerCtx` `c` (`cancelCtxLockInv`): its `timer`, which
 `c.mu` protects: `nil`, or a timer made by `AfterFunc`. -/

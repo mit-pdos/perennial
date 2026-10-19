@@ -51,16 +51,10 @@ abbrev OnceLockInv (o : Loc) (P Q : IProp GF) : IProp GF :=
     "done2" ∷ sync.atomic.ownBool (GF := GF) (OnceDone (GF := GF) o) (DFrac.own (1 : Qp).half) done ∗
     "HPQ" ∷ (if done then Q else P))
 
-include hG sem in
-/-- The `v` field of a `Once`'s `done` (where its atomic operations are). -/
-abbrev OnceDoneV (o : Loc) : Loc :=
-  structFieldRef _root_.Perennial.sync.atomic.Bool' go!"v" (OnceDone (GF := GF) o)
-
 def isOnceDef (o : Loc) (P Q : IProp GF) : IProp GF :=
   iprop("#Q_persistent" ∷ □ (Q -∗ □ Q) ∗
     "#Qinv" ∷ inv nroot (OnceInv o Q) ∗
-    "#Hm" ∷ isMutex (OnceM (GF := GF) o) (OnceLockInv o P Q) ∗
-    "%Hal" ∷ ⌜Aligned (.word 4) (OnceDoneV (GF := GF) o)⌝)
+    "#Hm" ∷ isMutex (OnceM (GF := GF) o) (OnceLockInv o P Q))
 @[irreducible] def isOnce (o : Loc) (P Q : IProp GF) : IProp GF := isOnceDef o P Q
 theorem isOnce_unseal : @isOnce = @isOnceDef := by funext; with_unfolding_all rfl
 
@@ -75,19 +69,7 @@ theorem ownBool_halves (u : Loc) (b : Bool) :
   rw [Qp.half_add_half] at h
   exact h
 
-include hG sem package_sem in
-/-- A `Once` allocated at its alignment has its `done` flag aligned. -/
-theorem once_done_aligned (o : Loc) (hal : AllocAligned Once o) :
-    Aligned (.word 4) (OnceDoneV (GF := GF) o) := by
-  have h1 := go.field_aligned (V := Once) (f := go!"done") (by solve_layout_mem)
-    (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
-  have hc1 := go.structFieldRef_car' (V := Once) (f := go!"done") hal.1 (by solve_layout_mem)
-  have h2 := go.field_aligned (V := _root_.Perennial.sync.atomic.Bool') (f := go!"v")
-    (by solve_layout_mem) (by solve_layout_nodup) (by solve_layout_pow2) hc1 h1
-  simpa [Aligned, Encoding.align] using h2
-
-theorem init_Once (o : Loc) (P Q : IProp GF) (E : CoPset) [Persistent Q]
-    (hal : AllocAligned Once o) :
+theorem init_Once (o : Loc) (P Q : IProp GF) (E : CoPset) [Persistent Q] :
     typedPointsto (GF := GF) o (zero_val Once) (DFrac.own 1) ∗ P ⊢ |={E}=> isOnce o P Q := by
   iintro ⟨Ho, HP⟩
   rw [isOnce_unseal]; unfold isOnceDef
@@ -106,12 +88,10 @@ theorem init_Once (o : Loc) (P Q : IProp GF) (E : CoPset) [Persistent Q]
     imodintro; iintro %h; cases h
   imodintro
   iframe #
-  isplitl
-  · imodintro
-    iintro #HQ
-    imodintro
-    iexact HQ
-  ipureintro; exact once_done_aligned o hal
+  imodintro
+  iintro #HQ
+  imodintro
+  iexact HQ
 
 end wps
 

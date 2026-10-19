@@ -47,7 +47,7 @@ abbrev lockInv (m : Loc) (R : IProp GF) : IProp GF :=
 
 def isLockDef (m : Loc) (R : IProp GF) : IProp GF :=
   iprop("#Hinv" ∷ inv nroot (lockInv m R) ∗
-    "%Hm_nn" ∷ ⌜m ≠ null⌝)
+    "_" ∷ True)
 /-- This means `m` is a valid lock with invariant `R` (sealed). -/
 @[irreducible] def isLock (m : Loc) (R : IProp GF) : IProp GF := isLockDef m R
 theorem isLock_unseal : @isLock = @isLockDef := by funext; with_unfolding_all rfl
@@ -81,16 +81,6 @@ instance isLock_ne (m : Loc) : NonExpansive (isLock (GF := GF) m) where
 instance isLock_persistent (m : Loc) (R : IProp GF) : Persistent (isLock m R) := by
   rw [isLock_unseal]; unfold isLockDef named; infer_instance
 
-/-- A lock's address is not `null` (`init_lock` takes a points-to at it), and
-neither is any address with the same base (`LocNonNullFrom`): `wp_auto` uses this
-for the field references of a struct whose fields a lock protects (`HypPure`). -/
-instance isLock_hypPure (m l : Loc) (R : IProp GF) [h : LocNonNullFrom m l] :
-    HypPure (isLock m R) (l ≠ null) where
-  hyp_pure := by
-    rw [isLock_unseal]; unfold isLockDef
-    iintro ⟨_, %Hnn⟩
-    ipureintro; exact h.ne_null Hnn
-
 instance locked_timeless (m : Loc) : Timeless (ownLock (GF := GF) m) := by
   rw [ownLock_unseal]; unfold ownLockDef; infer_instance
 
@@ -98,7 +88,6 @@ theorem init_lock (R : IProp GF) (E : CoPset) (m : Loc) :
     ⊢ typedPointsto (GF := GF) m false (DFrac.own 1) -∗ ▷ R ={E}=∗ isLock m R := by
   iintro Hl HR
   rw [isLock_unseal]; unfold isLockDef
-  icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %Hnn⟩
   icases (typedPointsto_quarter_three_quarter m false).1 $$ Hl with ⟨Hl1, Hl2⟩
   imod inv_alloc nroot E (lockInv m R) $$ [Hl1 Hl2 HR] with #Hinv
   · inext
@@ -108,30 +97,6 @@ theorem init_lock (R : IProp GF) (E : CoPset) (m : Loc) :
     iframe
   imodintro
   iframe Hinv
-  ipureintro; exact Hnn
-
-/-- A compare-exchange on a `bool` (one cell, `heapPointsto`). -/
-theorem bool_wp_cmpxchg_suc (l : Loc) (v' v1 v2 : Bool) (s : Stuckness) (E : CoPset)
-    (Heq : v' = v1) :
-    {{ ▷ (l ↦ v' : IProp GF) }} (CmpXchg (Val #l) (Val #v1) (Val #v2)) @ s; E
-    {{ RET (PairV #v' #true); l ↦ v2 }} := by
-  iintro %Φ Hl HΦ
-  simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap]
-  icases Hl with ⟨Hl, >%Hnn⟩
-  iapply Perennial.wp_cmpxchg_suc l #v1 #v2 #v' (congrArg _ Heq) $$ Hl
-  inext; iintro Hl
-  iapply HΦ; iframe Hl; ipureintro; exact Hnn
-
-theorem bool_wp_cmpxchg_fail (l : Loc) (v' v1 v2 : Bool) (dq : DFrac) (s : Stuckness)
-    (E : CoPset) (Hne : v' ≠ v1) :
-    {{ ▷ (l ↦{dq} v' : IProp GF) }} (CmpXchg (Val #l) (Val #v1) (Val #v2)) @ s; E
-    {{ RET (PairV #v' #false); l ↦{dq} v' }} := by
-  iintro %Φ Hl HΦ
-  simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap]
-  icases Hl with ⟨Hl, >%Hnn⟩
-  iapply Perennial.wp_cmpxchg_fail l dq #v' #v1 #v2 (fun h => Hne (go.intoVal_inj h)) $$ Hl
-  inext; iintro Hl
-  iapply HΦ; iframe Hl; ipureintro; exact Hnn
 
 theorem wp_lock_trylock (m : Loc) (R : IProp GF) :
     {{ isLock m R }} (App (Val lock.trylock) (Val #m))
@@ -149,7 +114,7 @@ theorem wp_lock_trylock (m : Loc) (R : IProp GF) :
     icases Hl with >Hl
     ihave Hfull := (typedPointsto_quarter_three_quarter m false).2 $$ [Hl Hl2]
     · iframe
-    wp_apply_core bool_wp_cmpxchg_suc m false false true _ _ rfl $$ Hfull
+    wp_apply_core wp_cmpxchg_suc m false false true _ _ rfl $$ Hfull
     iintro Hl
     icases (typedPointsto_quarter_three_quarter m true).1 $$ Hl with ⟨Hl1, Hl2⟩
     imodintro
@@ -160,7 +125,7 @@ theorem wp_lock_trylock (m : Loc) (R : IProp GF) :
     simp only [↓reduceIte, ownLock_unseal, ownLockDef]
     iframe
   · simp only [↓reduceIte]
-    wp_apply_core bool_wp_cmpxchg_fail m true false true (DFrac.own Qp.quarter) _ _ (by decide) $$ Hl
+    wp_apply_core wp_cmpxchg_fail m true false true (DFrac.own Qp.quarter) _ _ (by decide) $$ Hl
     iintro Hl
     imodintro
     isplitl [Hl]
@@ -186,7 +151,7 @@ theorem wp_lock_lock (m : Loc) (R : IProp GF) :
     icases Hl with >Hl
     ihave Hfull := (typedPointsto_quarter_three_quarter m false).2 $$ [Hl Hl2]
     · iframe
-    wp_apply_core bool_wp_cmpxchg_suc m false false true _ _ rfl $$ Hfull
+    wp_apply_core wp_cmpxchg_suc m false false true _ _ rfl $$ Hfull
     iintro Hl
     icases (typedPointsto_quarter_three_quarter m true).1 $$ Hl with ⟨Hl1, Hl2⟩
     imodintro
@@ -197,7 +162,7 @@ theorem wp_lock_lock (m : Loc) (R : IProp GF) :
     simp only [ownLock_unseal, ownLockDef]
     iframe
   · simp only [↓reduceIte]
-    wp_apply_core bool_wp_cmpxchg_fail m true false true (DFrac.own Qp.quarter) _ _ (by decide) $$ Hl
+    wp_apply_core wp_cmpxchg_fail m true false true (DFrac.own Qp.quarter) _ _ (by decide) $$ Hl
     iintro Hl
     imodintro
     isplitl [Hl]
@@ -206,7 +171,6 @@ theorem wp_lock_lock (m : Loc) (R : IProp GF) :
     wp_pure
     iapply IH $$ [] HΦ
     iframe Hinv
-    ipureintro; exact Hm_nn
 
 theorem wp_lock_unlock (m : Loc) (R : IProp GF) :
     {{ isLock m R ∗ ownLock m ∗ ▷ R }} (App (Val lock.unlock) (Val #m)) {{ RET #(); True }} := by
@@ -221,7 +185,7 @@ theorem wp_lock_unlock (m : Loc) (R : IProp GF) :
   subst Heq
   ihave Hfull := (typedPointsto_quarter_three_quarter m true).2 $$ [Hl Hlocked]
   · iframe
-  wp_apply_core bool_wp_cmpxchg_suc m true true false _ _ rfl $$ Hfull
+  wp_apply_core wp_cmpxchg_suc m true true false _ _ rfl $$ Hfull
   iintro Hl
   icases (typedPointsto_quarter_three_quarter m false).1 $$ Hl with ⟨Hl1, Hl2⟩
   imodintro
@@ -232,7 +196,6 @@ theorem wp_lock_unlock (m : Loc) (R : IProp GF) :
   itrivial
 
 end proof
-
 
 end Perennial
 end

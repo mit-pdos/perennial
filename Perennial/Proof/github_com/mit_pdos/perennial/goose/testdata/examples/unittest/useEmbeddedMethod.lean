@@ -32,6 +32,14 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.useEmbedd
   wp_auto
   wp_method_call
   wp_auto
+  wp_method_call
+  wp_auto
+  wp_method_call
+  repeat wp_call
+  wp_auto
+  wp_method_call
+  repeat wp_call
+  wp_auto
   iapply HΦ
   itrivial
 

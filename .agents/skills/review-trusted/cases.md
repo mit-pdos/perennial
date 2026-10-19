@@ -111,19 +111,6 @@ the quoted-Go-vs-real-source section showing the model is not the source; the
 docstring's own words "the semantics has no string slicing". That sentence is
 the R2 trigger: the gap it names is a missing feature, and the thing to fix.
 
-**How it was reworked** (branch `string-slice`). `StringSemantics.string_slice`
-added the rule; `Split`, `TrimPrefix`, `HasPrefix`, `Compare` and everything
-they call (`genSplit`, `Count`, `internal/stringslite.Index`, `bytealg`'s
-`IndexRabinKarp`, `HashStr`, `Cutover`, `CompareString`) became goose's
-translation, and their specs were re-proved against it. The goose run on the
-real source left trusted only what has no Go body or reads the CPU:
-`bytealg.IndexByteString`, `IndexString`, `CountString`,
-`abigen_runtime_cmpstring` (assembly) and bytealg's `init` (`MaxLen` from
-`cpu.X86.HasAVX2`, which the runtime sets from `cpuid`; goose gained
-`trusted = ["init"]` for it). The trusted surface went from three
-hundred-line pasted terms to five models of a few lines each, written in
-GooseLang notation.
-
 ## Case 3 — OK (NOTE R3, R8): `Map length: the model assumes a map has fewer than 2^63 keys` (9276bd1ed)
 
 `len(m)` returned `W64 (GMap.size m)` unbounded; the rule now steps to
@@ -170,17 +157,16 @@ it OK. It accepted the docstring's reason and called the length assumption
   automatically: a hand-written model loses exactly the things its author did
   not think of.
 
-**The fix.**
+**The fix (pending, branch `join-translation`).**
 - Translate `Join` and the `Builder` methods; trust only the three
   primitives; `wp_Join` gains a premise that excludes the overflow.
 - Its review found a further R4 BLOCK in the `Builder.String` model
   (`string(b.buf)`): Go's `String` aliases the buffer, so after a Builder is
   saved and restored by value, a write changes an earlier `String()` result.
-  The model, whose strings are values, cannot follow, so it is made stuck
-  there: it leaves the returned bytes read-locked (`lockBytes`), so a later
-  write to them is stuck, and `wp_String` consumes the builder. A model that
-  copies where Go shares is the shape to watch for.
-- The README entry is removed.
+  The model, whose strings are values, cannot follow, so it must be stuck
+  there (for instance by leaving the returned bytes read-locked, so that a
+  later write to them is stuck). A model that copies where Go shares is the
+  shape to watch for.
 
 **Signals.**
 - A `trusted` entry for a function whose `go doc -src` is plain Go.
@@ -207,35 +193,6 @@ outside; (R8) `README.md` and the proof reference describe it. This is what a
 good tier-0 change looks like: it *removed* a reason to add a model
 assumption.
 
-## Case 7 — REWORK (R10): shift counts chosen by goose (3859a488b, 4020291cc)
-
-**What it did.** Fixed a real bug (goose converted the count of `x << y` to
-the type of `x`, so `uint8(1) << uint64(256)` was 1 instead of 0, and a
-negative signed count did not panic) by having goose inspect the count's
-type: an unsigned or untyped count was converted to `uint64`, a signed one
-wrapped in a new `go.shiftCount t` that panics when negative. The adversarial
-review then found that a count of a type-parameter type (`y T`, `T ~int8`)
-fell into the unsigned branch, so `Shl[int8](1, -1)` gave 0 where Go panics;
-the follow-up made goose refuse such counts.
-
-**Why it is wrong.** The Go behaviour was right; the place it was decided was
-not. goose looked at `yT.Underlying()` to pick between two translations,
-which is a semantic choice made in the translator, invisible to the Lean
-rules and impossible for a type parameter (goose sees the generic body, not
-the instantiation). The follow-up turned that limitation into an unsupported
-feature. The fix (`GoShift o t count_t`) gives the semantics both types: goose
-always emits `GoShift GoShiftl t ct (x, y)`, a `go_shift_underlying` rule
-resolves both types through `↓u`, and one rule per count type normalizes the
-count (`Panic "negative shift amount"` for a negative signed count) to the
-same shift at count type `uint64`. A count of type `T` is then handled at the
-instantiation, by proof, with no goose change.
-
-**Signals the report shows.** A goose diff that switches on
-`types.Basic.Info()` bits to emit different GooseLang; a new helper `val` in
-`Golang/Defn` that goose applies only to some types; a follow-up adding
-`ctx.unsupported` for type parameters with "depends on the instantiation" in
-the message.
-
 ## Shapes to watch for (from these cases)
 
 - A trusted model whose docstring quotes Go that is not the Go source, with a
@@ -255,7 +212,3 @@ the message.
 - A goose run that fails, offered as the whole justification: R2 also asks
   whether the failure is irreducible. An unsupported statement form or a
   missing semantics rule is a feature to add, not a reason to trust.
-- goose inspecting a Go type (`Underlying()`, `Info()` bits, a type-parameter
-  check) to choose between translations, or refusing a type parameter because
-  the choice "depends on the instantiation": R10. Annotate the instruction
-  with the types and let the semantics choose (case 7).

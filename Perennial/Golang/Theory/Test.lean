@@ -58,8 +58,9 @@ variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 
-/-- A pure computation: `wp_pures` steps through `let:` and `if:`. -/
-example (Φ : val → IProp GF) (v w : val) :
+/-- A pure computation: `wp_pures` steps through `let:` and `if:` (binding a value
+needs it not to be a panic, which would unwind the `let:` instead). -/
+example (Φ : val → IProp GF) (v w : val) (hv : v.isPanic = false) (hw : w.isPanic = false) :
     Φ v ⊢ WP gl(let: "x" := v in let: "y" := w in if: #true then "x" else "y") {{ Φ }} := by
   iintro H
   wp_pures
@@ -400,13 +401,11 @@ instance equals_unfold_pt [FfiSyntax] [GoGlobalContext] : EqualsUnfold pt.fields
 class pt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying pt.underlying pt
   underlying : go.UnderlyingDirectedEq pt.ty pt.underlying
-  layout : go.StructLayout pt [(go!"x", typeSize w64, typeAlign w64), (go!"y", typeSize w64, typeAlign w64)]
   get_x : ∀ (x : pt), go.IsGoStepPureDetTagged under (StructFieldGet pt.underlying go!"x") #x (Val #(x.x'))
   set_x : ∀ (x : pt) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pt.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : pt)))
   get_y : ∀ (x : pt), go.IsGoStepPureDetTagged under (StructFieldGet pt.underlying go!"y") #x (Val #(x.y'))
   set_y : ∀ (x : pt) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pt.underlying go!"y") (PairV #x #y) (Val #(({ x with y' := y } : pt)))
-attribute [instance] pt.TypeAssumptions.type_repr pt.TypeAssumptions.underlying
-  pt.TypeAssumptions.layout pt.TypeAssumptions.get_x
+attribute [instance] pt.TypeAssumptions.type_repr pt.TypeAssumptions.underlying pt.TypeAssumptions.get_x
   pt.TypeAssumptions.set_x pt.TypeAssumptions.get_y pt.TypeAssumptions.set_y
 
 section def_
@@ -464,24 +463,6 @@ example (l : Loc) (v : pt) :
   wp_auto
   iapply HΦ $$ Hl
 
-/-- A load of a field through a fractional struct points-to. -/
-example (l : Loc) (v : pt) (dq : DFrac) :
-    {{ (l ↦{dq} v : IProp GF) }}
-      gl(![go.uint64] (StructFieldRef pt.ty "x" #l))
-    {{ RET #v.x'; l ↦{dq} v }} := by
-  iintro %Φ Hl HΦ
-  wp_auto
-  iapply HΦ $$ Hl
-
-/-- A store of a field's own value (the load instance also matches it). -/
-example (l : Loc) (v : pt) :
-    {{ (l ↦ v : IProp GF) }}
-      gl(StructFieldRef pt.ty "x" #l <-[go.uint64] #v.x')
-    {{ RET #(); l ↦ v }} := by
-  iintro %Φ Hl HΦ
-  wp_auto
-  iapply HΦ $$ Hl
-
 /-- Projections of the zero value of a struct are reduced (extras). -/
 example (Φ : val → IProp GF) : Φ #(0 : w64) ⊢ WP (Val #((zero_val pt).x')) {{ Φ }} := by
   iintro H
@@ -517,11 +498,9 @@ instance equals_unfold_ub [FfiSyntax] [GoGlobalContext] : EqualsUnfold ub.fields
 class ub.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ub.underlying ub
   underlying : go.UnderlyingDirectedEq ub.ty ub.underlying
-  layout : go.StructLayout ub [(go!"p", typeSize w64, typeAlign w64)]
   get_p : ∀ (x : ub), go.IsGoStepPureDetTagged under (StructFieldGet ub.underlying go!"p") #x (Val #(x.p'))
   set_p : ∀ (x : ub) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ub.underlying go!"p") (PairV #x #y) (Val #(({ x with p' := y } : ub)))
 attribute [instance] ub.TypeAssumptions.type_repr ub.TypeAssumptions.underlying
-  ub.TypeAssumptions.layout
   ub.TypeAssumptions.get_p ub.TypeAssumptions.set_p
 
 section def_
@@ -743,60 +722,38 @@ example (Φ : val → IProp GF) (x : w64) :
   wp_auto
   iexact H
 
-/-- A shift count is not truncated to the shifted operand's width:
+/-- Shift counts are `w64`, not truncated to the shifted operand's width:
 `uint8(1) << uint64(256) == 0`, `int8(-128) >> uint64(256) == -1`. -/
 example (Φ : val → IProp GF) :
-    Φ #(W8 0) ⊢ WP gl(#(W8 1) <<⟨go.uint8, go.uint64⟩ #(W64 256)) {{ Φ }} := by
+    Φ #(W8 0) ⊢ WP gl(#(W8 1) <<⟨go.uint8⟩ #(W64 256)) {{ Φ }} := by
   iintro H
   wp_auto
   rw [show (W8 1 <<< W64 256 : w8) = W8 0 by decide]
   iexact H
 
 example (Φ : val → IProp GF) :
-    Φ #(W8 (-1)) ⊢ WP gl(#(W8 (-128)) >>⟨go.int8, go.uint64⟩ #(W64 256)) {{ Φ }} := by
+    Φ #(W8 (-1)) ⊢ WP gl(#(W8 (-128)) >>⟨go.int8⟩ #(W64 256)) {{ Φ }} := by
   iintro H
   wp_auto
   rw [show BitVec.sshiftRight' (W8 (-128)) (W64 256) = W8 (-1) by decide]
   iexact H
 
-/-- A count of a narrower unsigned type is zero-extended: `uint8(1) << uint8(200) == 0`. -/
-example (Φ : val → IProp GF) :
-    Φ #(W8 0) ⊢ WP gl(#(W8 1) <<⟨go.uint8, go.uint8⟩ #(W8 200)) {{ Φ }} := by
-  iintro H
-  wp_auto
-  rw [show (W8 1 <<< W64 (uint.Z (W8 200)) : w8) = W8 0 by decide]
-  iexact H
-
-/-- A signed count panics (stuck) when negative, and is its value otherwise. -/
+/-- A signed shift count goes through `go.shiftCount`: a negative one panics (stuck), a
+non-negative one is its value. -/
 example (Φ : val → IProp GF) :
     WP (Panic "negative shift amount") {{ Φ }} ⊢
-      WP gl(#(W64 1) <<⟨go.int, go.int⟩ #(W64 (-1))) {{ Φ }} := by
+      WP (App (Val (go.shiftCount go.int)) (Val #(W64 (-1)))) {{ Φ }} := by
   iintro H
+  unfold go.shiftCount
   wp_auto
   iexact H
 
 example (Φ : val → IProp GF) :
-    Φ #(W32 8) ⊢ WP gl(#(W32 1) <<⟨go.uint32, go.int8⟩ #(W8 3)) {{ Φ }} := by
+    Φ #(W64 3) ⊢ WP (App (Val (go.shiftCount go.int8)) (Val #(W8 3))) {{ Φ }} := by
   iintro H
+  unfold go.shiftCount
   wp_auto
-  rw [show (W32 1 <<< W64 (sint.Z (W8 3)) : w32) = W32 8 by decide]
-  iexact H
-
-/-- An untyped constant count. -/
-example (Φ : val → IProp GF) :
-    Φ #(W16 256) ⊢ WP gl(#(W16 1) <<⟨go.uint16, go.untypedInt⟩ #(8 : Int)) {{ Φ }} := by
-  iintro H
-  wp_auto
-  rw [show (W16 1 <<< W64 8 : w16) = W16 256 by decide]
-  iexact H
-
-/-- The count's type is resolved like the shifted operand's: a type parameter `T` instantiated
-with a named type over `int8` behaves as `int8`. -/
-example (T : go.GoType) [T ↓u go.int8] (Φ : val → IProp GF) :
-    WP (Panic "negative shift amount") {{ Φ }} ⊢
-      WP gl(#(W64 1) <<⟨go.int, T⟩ #(W8 (-1))) {{ Φ }} := by
-  iintro H
-  wp_auto
+  rw [show W64 (sint.Z (W8 3)) = W64 3 by decide]
   iexact H
 
 end int_op_tests

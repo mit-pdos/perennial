@@ -25,16 +25,14 @@ variable [package_sem : sync.atomic.Assumptions]
 theorem sync.atomic.Value.Load.wp_proof :
     sync.atomic.Value.Load.spec (GF := GF) (hG := hG) := by
   intro u dq
-  wp_start_folded as _
-  iintro %hu %hal
-  (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)
+  wp_start as _
   rw [Value_ty_eq]
   wp_auto
   imod HΦ with ⟨%x, >Hown, HΦ⟩
   simp only [ownValue_unseal, ownValueDef]
   ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hown
   iStructNamed Hown
-  wp_apply_core typed.wp_atomic_load _ dq (x : GoInterface) hal $$ v
+  wp_apply_core wp_atomic_load _ _ _ dq (x : GoInterface) $$ v
   iintro Hv
   iapply HΦ
   iapply typedPointsto_combine _ _ _ Hnn

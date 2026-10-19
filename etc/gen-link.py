@@ -12,8 +12,7 @@ under `Perennial/Code`) has
   the `Spec` files of its callees and shared files.
 
 The file name `F` is the function's name, `T__M` for a method `M` of `T` (either
-receiver), `initialize` for the package's `initialize'` (and in general without the
-`'` goose appends to a name that clashes, `Index` for `Index'`), with a trailing `_` for
+receiver), and `initialize` for the package's `initialize'`, with a trailing `_` for
 the lower-case one of two names that differ only in case (`asType_` next to `AsType`,
 for case-insensitive file systems). The spec's name is
 written in full below `Perennial` (`sync.Mutex.Lock.spec`), and ends in the
@@ -100,10 +99,8 @@ def check_file_name(path, name, pkg):
     """`F` (the file name) is the last components of `name`, joined by `__`."""
     f = os.path.basename(path)[: -len(".lean")]
     parts = [strip_guillemets(c) for c in components(name)]
-    # goose primes a Go name that clashes with a Lean one (`initialize'`, `Index'`); the
-    # file has the Go name
-    if parts[-1].endswith("'"):
-        parts[-1] = parts[-1][:-1]
+    if parts[-1] == "initialize'":
+        parts[-1] = "initialize"
     # a trailing `_` keeps apart names that differ only in case (`asType_.lean` next to
     # `AsType.lean`), for case-insensitive file systems
     want = (f[:-1] if f.endswith("_") and not f.endswith("__") else f).split("__")

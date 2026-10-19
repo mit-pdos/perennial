@@ -178,7 +178,7 @@ theorem grove_local_ctx_eq (σ : GroveNodeState) :
 open EctxLanguage
 
 /-- The core lifting lemma for Grove operations. -/
-theorem wp_GroveOp (op : GroveOp) (v : val) (Φ : val → IProp GF) :
+theorem wp_GroveOp (op : GroveOp) (v : val) (Φ : val → IProp GF) (Hv : v.isPanic = false) :
     ▷ (∀ σ1 g1 e2 σ2 g2, ⌜IsGroveFfiStep op v e2 σ1 σ2 g1 g2⌝ -∗
         ffiLocalCtx L.gooseFfiLocalGS σ1 -∗ ffiGlobalCtx G.gooseFfiGlobalGS g1 ={E}=∗
         ffiLocalCtx L.gooseFfiLocalGS σ2 ∗ ffiGlobalCtx G.gooseFfiGlobalGS g2 ∗
@@ -186,7 +186,7 @@ theorem wp_GroveOp (op : GroveOp) (v : val) (Φ : val → IProp GF) :
     ⊢ WP (ExternalOp op (Val v)) @ s; E {{ Φ }} := by
   iloeb as IH
   iintro HΦ
-  iapply goose_wp_lift_base_step rfl rfl
+  iapply goose_wp_lift_base_step rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
@@ -231,6 +231,7 @@ theorem wp_ListenOp (c : w64) :
     {{ RET listen_socket c; True }} := by
   iintro %Φ _ HΦ
   iapply wp_GroveOp
+  case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
   obtain ⟨rfl, rfl, He⟩ := Hstep
@@ -248,6 +249,7 @@ theorem wp_ConnectOp (c_r : Endpoint) :
       if err then True else c_l c↦ ∅ }} := by
   iintro %Φ _ HΦ
   iapply wp_GroveOp
+  case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
   obtain ⟨rfl, c_l, Hfresh, H⟩ := Hstep c_r rfl
@@ -284,6 +286,7 @@ theorem wp_AcceptOp (c_l : Endpoint) :
     {{ (c_r : Endpoint), RET connectionSocket c_l c_r; True }} := by
   iintro %Φ _ HΦ
   iapply wp_GroveOp
+  case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
   obtain ⟨rfl, rfl, He⟩ := Hstep
@@ -301,6 +304,7 @@ theorem wp_SendOp (c_l c_r : Endpoint) (ms : GSet message) (data : List w8) :
        c_r c↦ (if err_early then ms else ms ∪ {[Message c_l data]}) }} := by
   iintro %Φ Hc HΦ
   iapply wp_GroveOp
+  case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
   obtain ⟨rfl, He⟩ := Hstep
@@ -331,6 +335,7 @@ theorem wp_RecvOp (c_l c_r : Endpoint) (ms : GSet message) :
         ⌜if err then True else Message c_r data ∈ ms⌝ ∗ c_l c↦ ms }} := by
   iintro %Φ Hc HΦ
   iapply wp_GroveOp
+  case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
   obtain ⟨rfl, rfl, He⟩ := Hstep
@@ -363,6 +368,7 @@ theorem wp_FileReadOp (f : GoString) (q : DFrac) (c : List w8) :
     {{ RET #c; f f↦{q} c }} := by
   iintro %Φ Hc HΦ
   iapply wp_GroveOp
+  case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
   obtain ⟨rfl, rfl, He⟩ := Hstep
@@ -387,6 +393,7 @@ theorem wp_FileWriteOp (f : GoString) (old new : List w8) :
     {{ RET #(); f f↦ new }} := by
   iintro %Φ Hc HΦ
   iapply wp_GroveOp
+  case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
   obtain ⟨rfl, He⟩ := Hstep
@@ -409,6 +416,7 @@ theorem wp_FileAppendOp (f : GoString) (old new : List w8) :
     {{ RET #(); f f↦ (old ++ new) }} := by
   iintro %Φ Hc HΦ
   iapply wp_GroveOp
+  case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
   obtain ⟨rfl, He⟩ := Hstep
@@ -437,6 +445,7 @@ theorem wp_GetTscOp (prev_time : Nat) :
       ⌜prev_time ≤ new_time.toNat⌝ ∗ tscLb new_time.toNat }} := by
   iintro %Φ Hlb HΦ
   iapply wp_GroveOp
+  case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
   obtain ⟨rfl, new_time, Hle, rfl, rfl⟩ := Hstep
@@ -464,6 +473,7 @@ theorem wp_GetTimeRangeOp (Φ : val → IProp GF) :
   unfold ownTime groveTimeAuth
   iintro HΦ
   iapply wp_GroveOp
+  case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
   obtain ⟨rfl, new_time, low, high, Hle, Hlow, Hhigh, rfl, rfl⟩ := Hstep

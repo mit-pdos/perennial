@@ -52,13 +52,13 @@ noncomputable def Log.mkHdr.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.tchajed.marshal.Enc.ty go!"Finish"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.tchajed.marshal.Enc.ty))) (Var "enc"))) (Val #())))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.tchajed.marshal.Enc.ty) go!"Finish"))) (Var "enc")) (Val #())))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log.ty go!"diskSz"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log.ty)))) (Var "log"))))
-  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.tchajed.marshal.Enc.ty go!"PutInt"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.tchajed.marshal.Enc.ty))) (Var "enc"))) (Var "$a0")))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.tchajed.marshal.Enc.ty) go!"PutInt"))) (Var "enc")) (Var "$a0")))))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log.ty go!"sz"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log.ty)))) (Var "log"))))
-  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.tchajed.marshal.Enc.ty go!"PutInt"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.tchajed.marshal.Enc.ty))) (Var "enc"))) (Var "$a0")))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.tchajed.marshal.Enc.ty) go!"PutInt"))) (Var "enc")) (Var "$a0")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.tchajed.marshal.Enc.ty))) (Pair (Var "enc") (Var "$r0")))))))))))
 
@@ -116,10 +116,10 @@ noncomputable def Open.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.tchajed.marshal.NewDec []))) (Val #())) (Var "$a0")))
   (Let "dec" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.tchajed.marshal.Dec.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.tchajed.marshal.Dec.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.tchajed.marshal.Dec.ty go!"GetInt"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.tchajed.marshal.Dec.ty))) (Var "dec"))) (Val #()))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.tchajed.marshal.Dec.ty) go!"GetInt"))) (Var "dec")) (Val #()))
   (Let "sz" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.tchajed.marshal.Dec.ty go!"GetInt"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.tchajed.marshal.Dec.ty))) (Var "dec"))) (Val #()))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.github_com.tchajed.marshal.Dec.ty) go!"GetInt"))) (Var "dec")) (Val #()))
   (Let "diskSz" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -234,10 +234,8 @@ noncomputable def Log.append.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Log.ty) go!"writeHdr"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log.ty)))) (Var "log"))) (Val #()))))))
   (App (Val doExecute)
-  (Let "$opy" (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (Var "bks"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)]))) (Val #())) (Var "$a0"))))
-  (Let "$opa" (App (Val (GoInstruction (StructFieldRef Log.ty go!"sz"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log.ty)))) (Var "log")))
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$opa") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$opa")) (Var "$opy")))))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef Log.ty go!"sz"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log.ty)))) (Var "log"))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Log.ty go!"sz"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log.ty)))) (Var "log")))) (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (Var "bks"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)]))) (Val #())) (Var "$a0"))))))))))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (Var "bks"))
   (Let "$a1" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (Val #(W64 1)) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "sz"))))
@@ -350,7 +348,6 @@ instance equals_unfold_Log [FfiSyntax] [GoGlobalContext] :
 class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Log.underlying Log
   underlying : go.UnderlyingDirectedEq Log.ty Log.underlying
-  layout : go.StructLayout Log [(go!"m", typeSize Loc, typeAlign Loc), (go!"sz", typeSize w64, typeAlign w64), (go!"diskSz", typeSize w64, typeAlign w64)]
   get_m : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"m") #x (Val #(x.m'))
   set_m : ∀ (x : Log) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Log.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : Log)))
   get_sz : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"sz") #x (Val #(x.sz'))
@@ -368,7 +365,6 @@ class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSema
 
 attribute [instance] Log.TypeAssumptions.type_repr
   Log.TypeAssumptions.underlying
-  Log.TypeAssumptions.layout
   Log.TypeAssumptions.get_m
   Log.TypeAssumptions.set_m
   Log.TypeAssumptions.get_sz

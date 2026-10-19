@@ -230,16 +230,11 @@ noncomputable def Bool.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (Let "$r0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
-  (Let "_order1" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint32)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint32)))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint32)))) (Var "_order1"))
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
   (Let "$a1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "val"))
   (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
-  (App (App (App (Val (GoInstruction (FuncResolve StoreUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint32)))) (Pair (Var "_order1") (Var "$r0")))))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve StoreUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- Swap atomically stores new into x and returns the previous value.
 
@@ -251,16 +246,11 @@ noncomputable def Bool.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "old" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bool'.ty)))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "new"))
-  (Let "$r0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
-  (Let "_order2" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint32)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint32)))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint32)))) (Var "_order2"))
+  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
   (Let "$a1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "new"))
   (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
-  (App (App (App (Val (GoInstruction (FuncResolve SwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W32 0))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint32)))) (Pair (Var "_order2") (Var "$r0")))))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve SwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W32 0))))))))))))
 
 /-- CompareAndSwap executes the compare-and-swap operation for the boolean value x.
 
@@ -274,18 +264,13 @@ noncomputable def Bool.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val :
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bool'.ty)))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "new"))
   (Let "old" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "old"))
-  (Let "$r0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
-  (Let "_order3" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint32)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint32)))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint32)))) (Var "_order3"))
+  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
   (Let "$a1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "old"))
   (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
   (Let "$a2" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "new"))
   (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
-  (App (App (App (App (Val (GoInstruction (FuncResolve CompareAndSwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint32)))) (Pair (Var "_order3") (Var "$r0")))))))))))))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve CompareAndSwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))))))))
 
 /-- b32 returns a uint32 0 or 1 representing b.
 
@@ -303,6 +288,18 @@ noncomputable def b32.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #())))))))
 
+/-- Load atomically loads and returns the value stored in x.
+
+    go: type.go:58:22 -/
+noncomputable def Pointer.Load.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+  (LamV "x"
+  (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Pointer.ty T))))) (Var "x"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType T)))) (Let "$a0" (App (Val (GoInstruction (StructFieldRef (Pointer.ty T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Pointer.ty T))))) (Var "x")))
+  (App (App (Val (GoInstruction (FuncResolve LoadPointer []))) (Val #())) (Var "$a0")))))))))
+
 /-- Store atomically stores val into x.
 
     go: type.go:61:22 -/
@@ -319,6 +316,21 @@ noncomputable def Pointer.Store.impl [FfiSyntax] [GoGlobalContext] (T : go.GoTyp
   (Let "$a0" (App (Val (GoInstruction (StructFieldRef (Pointer.ty T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Pointer.ty T))))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (Convert (go.GoType.PointerType T) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType T)))) (Var "val")))
   (App (App (App (Val (GoInstruction (FuncResolve StorePointer []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+
+/-- Swap atomically stores new into x and returns the previous value.
+
+    go: type.go:64:22 -/
+noncomputable def Pointer.Swap.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+  (LamV "x"
+  (Lam "new"
+  (App (Val exceptionDo)
+  (Let "old" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType T)))) (Val #())))
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Pointer.ty T))))) (Var "x"))
+  (Let "new" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (Var "new"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType T)))) (Let "$a0" (App (Val (GoInstruction (StructFieldRef (Pointer.ty T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Pointer.ty T))))) (Var "x")))
+  (Let "$a1" (App (Val (GoInstruction (Convert (go.GoType.PointerType T) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType T)))) (Var "new")))
+  (App (App (App (Val (GoInstruction (FuncResolve SwapPointer []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))))
 
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
@@ -807,11 +819,9 @@ instance equals_unfold_noCopy [FfiSyntax] [GoGlobalContext] :
 class noCopy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying noCopy.underlying noCopy
   underlying : go.UnderlyingDirectedEq noCopy.ty noCopy.underlying
-  layout : go.StructLayout noCopy []
 
 attribute [instance] noCopy.TypeAssumptions.type_repr
   noCopy.TypeAssumptions.underlying
-  noCopy.TypeAssumptions.layout
 
 structure Bool' [FfiSyntax] where
   mk ::
@@ -838,7 +848,6 @@ instance equals_unfold_Bool [FfiSyntax] [GoGlobalContext] :
 class Bool.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Bool'.underlying Bool'
   underlying : go.UnderlyingDirectedEq Bool'.ty Bool'.underlying
-  layout : go.StructLayout Bool' [(go!"_0", typeSize noCopy, typeAlign noCopy), (go!"v", typeSize w32, typeAlign w32)]
   get__0 : ∀ (x : Bool'), go.IsGoStepPureDetTagged under (StructFieldGet Bool'.underlying go!"_0") #x (Val #(x._0'))
   set__0 : ∀ (x : Bool') (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Bool'.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Bool')))
   get_v : ∀ (x : Bool'), go.IsGoStepPureDetTagged under (StructFieldGet Bool'.underlying go!"v") #x (Val #(x.v'))
@@ -850,7 +859,6 @@ class Bool.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 
 attribute [instance] Bool.TypeAssumptions.type_repr
   Bool.TypeAssumptions.underlying
-  Bool.TypeAssumptions.layout
   Bool.TypeAssumptions.get__0
   Bool.TypeAssumptions.set__0
   Bool.TypeAssumptions.get_v
@@ -887,7 +895,6 @@ instance equals_unfold_Pointer [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
 class Pointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Pointer.underlying T) (Pointer T')
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Pointer.ty T) (Pointer.underlying T)
-  layout : ∀ (T' : Type), go.StructLayout (Pointer T') [(go!"_0", typeSize (GoArray Loc 0), typeAlign (GoArray Loc 0)), (go!"_1", typeSize noCopy, typeAlign noCopy), (go!"v", typeSize Loc, typeAlign Loc)]
   get__0 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"_0") #x (Val #(x._0'))
   set__0 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : (GoArray Loc 0)), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : (Pointer T'))))
   get__1 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"_1") #x (Val #(x._1'))
@@ -901,7 +908,6 @@ class Pointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 
 attribute [instance] Pointer.TypeAssumptions.type_repr
   Pointer.TypeAssumptions.underlying
-  Pointer.TypeAssumptions.layout
   Pointer.TypeAssumptions.get__0
   Pointer.TypeAssumptions.set__0
   Pointer.TypeAssumptions.get__1
@@ -938,7 +944,6 @@ instance equals_unfold_Int32 [FfiSyntax] [GoGlobalContext] :
 class Int32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Int32.underlying Int32
   underlying : go.UnderlyingDirectedEq Int32.ty Int32.underlying
-  layout : go.StructLayout Int32 [(go!"_0", typeSize noCopy, typeAlign noCopy), (go!"v", typeSize w32, typeAlign w32)]
   get__0 : ∀ (x : Int32), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"_0") #x (Val #(x._0'))
   set__0 : ∀ (x : Int32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Int32)))
   get_v : ∀ (x : Int32), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"v") #x (Val #(x.v'))
@@ -953,7 +958,6 @@ class Int32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Int32.TypeAssumptions.type_repr
   Int32.TypeAssumptions.underlying
-  Int32.TypeAssumptions.layout
   Int32.TypeAssumptions.get__0
   Int32.TypeAssumptions.set__0
   Int32.TypeAssumptions.get_v
@@ -988,11 +992,9 @@ instance equals_unfold_align64 [FfiSyntax] [GoGlobalContext] :
 class align64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying align64.underlying align64
   underlying : go.UnderlyingDirectedEq align64.ty align64.underlying
-  layout : go.StructLayout align64 []
 
 attribute [instance] align64.TypeAssumptions.type_repr
   align64.TypeAssumptions.underlying
-  align64.TypeAssumptions.layout
 
 structure Int64 [FfiSyntax] where
   mk ::
@@ -1021,7 +1023,6 @@ instance equals_unfold_Int64 [FfiSyntax] [GoGlobalContext] :
 class Int64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Int64.underlying Int64
   underlying : go.UnderlyingDirectedEq Int64.ty Int64.underlying
-  layout : go.StructLayout Int64 [(go!"_0", typeSize noCopy, typeAlign noCopy), (go!"_1", typeSize align64, typeAlign align64), (go!"v", typeSize w64, typeAlign w64)]
   get__0 : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"_0") #x (Val #(x._0'))
   set__0 : ∀ (x : Int64) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Int64)))
   get__1 : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"_1") #x (Val #(x._1'))
@@ -1038,7 +1039,6 @@ class Int64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Int64.TypeAssumptions.type_repr
   Int64.TypeAssumptions.underlying
-  Int64.TypeAssumptions.layout
   Int64.TypeAssumptions.get__0
   Int64.TypeAssumptions.set__0
   Int64.TypeAssumptions.get__1
@@ -1078,7 +1078,6 @@ instance equals_unfold_Uint32 [FfiSyntax] [GoGlobalContext] :
 class Uint32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uint32.underlying Uint32
   underlying : go.UnderlyingDirectedEq Uint32.ty Uint32.underlying
-  layout : go.StructLayout Uint32 [(go!"_0", typeSize noCopy, typeAlign noCopy), (go!"v", typeSize w32, typeAlign w32)]
   get__0 : ∀ (x : Uint32), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"_0") #x (Val #(x._0'))
   set__0 : ∀ (x : Uint32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Uint32)))
   get_v : ∀ (x : Uint32), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"v") #x (Val #(x.v'))
@@ -1093,7 +1092,6 @@ class Uint32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Uint32.TypeAssumptions.type_repr
   Uint32.TypeAssumptions.underlying
-  Uint32.TypeAssumptions.layout
   Uint32.TypeAssumptions.get__0
   Uint32.TypeAssumptions.set__0
   Uint32.TypeAssumptions.get_v
@@ -1133,7 +1131,6 @@ instance equals_unfold_Uint64 [FfiSyntax] [GoGlobalContext] :
 class Uint64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uint64.underlying Uint64
   underlying : go.UnderlyingDirectedEq Uint64.ty Uint64.underlying
-  layout : go.StructLayout Uint64 [(go!"_0", typeSize noCopy, typeAlign noCopy), (go!"_1", typeSize align64, typeAlign align64), (go!"v", typeSize w64, typeAlign w64)]
   get__0 : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"_0") #x (Val #(x._0'))
   set__0 : ∀ (x : Uint64) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Uint64)))
   get__1 : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"_1") #x (Val #(x._1'))
@@ -1150,7 +1147,6 @@ class Uint64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Uint64.TypeAssumptions.type_repr
   Uint64.TypeAssumptions.underlying
-  Uint64.TypeAssumptions.layout
   Uint64.TypeAssumptions.get__0
   Uint64.TypeAssumptions.set__0
   Uint64.TypeAssumptions.get__1
@@ -1190,7 +1186,6 @@ instance equals_unfold_Uintptr [FfiSyntax] [GoGlobalContext] :
 class Uintptr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uintptr.underlying Uintptr
   underlying : go.UnderlyingDirectedEq Uintptr.ty Uintptr.underlying
-  layout : go.StructLayout Uintptr [(go!"_0", typeSize noCopy, typeAlign noCopy), (go!"v", typeSize w64, typeAlign w64)]
   get__0 : ∀ (x : Uintptr), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"_0") #x (Val #(x._0'))
   set__0 : ∀ (x : Uintptr) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Uintptr)))
   get_v : ∀ (x : Uintptr), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"v") #x (Val #(x.v'))
@@ -1198,7 +1193,6 @@ class Uintptr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 
 attribute [instance] Uintptr.TypeAssumptions.type_repr
   Uintptr.TypeAssumptions.underlying
-  Uintptr.TypeAssumptions.layout
   Uintptr.TypeAssumptions.get__0
   Uintptr.TypeAssumptions.set__0
   Uintptr.TypeAssumptions.get_v
@@ -1227,7 +1221,6 @@ instance equals_unfold_Value [FfiSyntax] [GoGlobalContext] :
 class Value.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Value.underlying Value
   underlying : go.UnderlyingDirectedEq Value.ty Value.underlying
-  layout : go.StructLayout Value [(go!"v", typeSize GoInterface, typeAlign GoInterface)]
   get_v : ∀ (x : Value), go.IsGoStepPureDetTagged under (StructFieldGet Value.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Value) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet Value.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Value)))
   ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Value.ty) go!"CompareAndSwap" Value.CompareAndSwap.impl
@@ -1237,7 +1230,6 @@ class Value.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Value.TypeAssumptions.type_repr
   Value.TypeAssumptions.underlying
-  Value.TypeAssumptions.layout
   Value.TypeAssumptions.get_v
   Value.TypeAssumptions.set_v
   Value.TypeAssumptions.ptr_CompareAndSwap_unfold
@@ -1270,7 +1262,6 @@ instance equals_unfold_efaceWords [FfiSyntax] [GoGlobalContext] :
 class efaceWords.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying efaceWords.underlying efaceWords
   underlying : go.UnderlyingDirectedEq efaceWords.ty efaceWords.underlying
-  layout : go.StructLayout efaceWords [(go!"typ", typeSize Loc, typeAlign Loc), (go!"data", typeSize Loc, typeAlign Loc)]
   get_typ : ∀ (x : efaceWords), go.IsGoStepPureDetTagged under (StructFieldGet efaceWords.underlying go!"typ") #x (Val #(x.typ'))
   set_typ : ∀ (x : efaceWords) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet efaceWords.underlying go!"typ") (PairV #x #y) (Val #(({ x with typ' := y } : efaceWords)))
   get_data : ∀ (x : efaceWords), go.IsGoStepPureDetTagged under (StructFieldGet efaceWords.underlying go!"data") #x (Val #(x.data'))
@@ -1278,7 +1269,6 @@ class efaceWords.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] 
 
 attribute [instance] efaceWords.TypeAssumptions.type_repr
   efaceWords.TypeAssumptions.underlying
-  efaceWords.TypeAssumptions.layout
   efaceWords.TypeAssumptions.get_typ
   efaceWords.TypeAssumptions.set_typ
   efaceWords.TypeAssumptions.get_data

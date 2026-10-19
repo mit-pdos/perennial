@@ -59,10 +59,6 @@ def isMutexDef (m : Loc) (R : IProp GF) : IProp GF := isLock m R
 @[irreducible] def isMutex (m : Loc) (R : IProp GF) : IProp GF := isMutexDef m R
 theorem isMutex_unseal : @isMutex = @isMutexDef := by funext; with_unfolding_all rfl
 
-instance isMutex_hypPure (m l : Loc) (R : IProp GF) [LocNonNullFrom m l] :
-    HypPure (isMutex m R) (l ≠ null) where
-  hyp_pure := by rw [isMutex_unseal]; exact (isLock_hypPure m l R).hyp_pure
-
 def ownMutexDef (m : Loc) : IProp GF := ownLock m
 /-- This resource denotes ownership of the fact that the Mutex is currently
 locked (sealed). -/
@@ -86,9 +82,7 @@ theorem init_Mutex (R : IProp GF) (E : CoPset) (m : Loc) :
     ⊢ typedPointsto (GF := GF) m (zero_val sync.Mutex) (DFrac.own 1) -∗ ▷ R ={E}=∗
       isMutex m R := by
   simp only [isMutex_unseal, isMutexDef]
-  iintro Hm HR
-  ihave Hm := typedPointsto_mutex_lock _ _ _ $$ Hm
-  iapply init_lock R E m $$ Hm HR
+  exact init_lock R E m
 
 /-- `i` implements `Locker` with `Lock` producing `P` and `Unlock` consuming it. -/
 def isLocker (i : GoInterfaceOk) (P : IProp GF) : IProp GF :=

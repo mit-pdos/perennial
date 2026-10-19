@@ -27,11 +27,9 @@ theorem sync.atomic.Int64.Add.wp_proof
     (wp_AddInt64 : sync.atomic.AddInt64.spec (GF := GF) (hG := hG)) :
     sync.atomic.Int64.Add.spec (GF := GF) (hG := hG) := by
   intro u delta
-  wp_start_folded as _
-  iintro %hu %hal
-  (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)
+  wp_start as _
   wp_auto
-  wp_apply_core (wp_AddInt64 _ _ (by first | exact hal | simpa using hal)) $$ [] [HΦ]
+  wp_apply_core wp_AddInt64 $$ [] [HΦ]
   · iPkgInit
   imod HΦ with ⟨%old, Hown, HΦ⟩
   imodintro; inext

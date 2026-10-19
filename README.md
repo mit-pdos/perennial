@@ -54,7 +54,8 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   grove/disk ones) hold for every `N` and `T`: they allocate the ghost state
   with `receiptBound GF = N` and `threadBound GF = T` (hypotheses of the WP
   premise `Hwp`, which also receives the main thread's token, and from which
-  the client discharges the proof's premises about the bounds) and are about
+  the client discharges the proof's premises about the bounds; the main
+  thread's postcondition must exclude panics, see "Panics" below) and are about
   real executions of *fewer than `N` steps* along which *fewer than `T`
   threads are live*, explicit hypotheses. See
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts" and "Thread tokens".
@@ -74,121 +75,13 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
 * **64-bit platform.** The Go semantics assumes a 64-bit platform: the
   word-sized types `int`, `uint` and `uintptr` are 64-bit (values `w64`).
   `uintptr` (`go.UintptrSemantics`, `Perennial/Golang/Defn/Predeclared.lean`)
-  is an integer type like `uint64`. The sizes, alignments and field offsets
-  are gc's on linux/amd64 (`Golang/Defn/Layout.lean`; goose emits each struct's
-  layout as a `go.StructLayout` assumption).
-* **Byte-addressed memory and `unsafe`.** A heap location is a block and a byte
-  offset (`Loc`), and each byte of an allocation is a cell
-  (`GooseLang/Lang.lean`, `Encoding`): an integer or float of `n` bytes is
-  stored as its `n` little-endian bytes (`LitByte`; float arithmetic is an
-  uninterpreted function of its operands, except that a NaN result is any NaN,
-  `go.floatResult64`, since which NaN gc's code gives depends on how it was
-  compiled and package `unsafe` reads its bits; the program is assumed built
-  with the default `GOAMD64=v1`, where gc does not fuse `x*y+z` into one
-  rounding as it may with `v3`), and a value with no byte
-  representation (a pointer, string, slice, interface, func, map, chan, `bool`)
-  as itself in its first cell followed by tails `LitTail k i` that record its
-  size and position; padding and fresh cells are `LitPad`. Typed loads and stores go through multi-cell primitives
-  that detect races cell by cell (`StartReadN`/`FinishReadN`,
-  `PrepareWriteN`/`FinishStoreN`: two unsynchronized accesses that overlap, one
-  of them a write, are stuck). A load of cells that do not hold a value of its
-  encoding is stuck (`decode`: bytes read as a pointer, part of a longer value, a
-  pad), and so is a store of bytes over a non-byte value, or of a non-byte value
-  over anything but pads or one whole value of its encoding (`WriteCompat`: Go's
-  garbage collector would read the bytes as a pointer, or not trace the pointer). Atomic operations (`LoadN`,
-  `SwapN`, `AddN`, `CmpXchgN`, used by `sync/atomic` and `sync`) are stuck
-  unless the location is aligned to the encoding (`Aligned`), as amd64 makes
-  a misaligned atomic non-atomic; an allocation is aligned to its type
-  (`AllocN`, `IsFreshAligned`), and proofs get the alignment of a fresh
-  allocation (`AllocAligned`, the `x_al` hypothesis of the allocation
-  tactics) and of a field of an aligned struct (`go.field_aligned`,
-  `Golang/Theory/Align.lean`). A zero-size allocation is any non-null aligned
-  location (gc gives them all `runtime.zerobase`). The lock models
-  (`sync.Mutex`, goose_lang/primitive's `Mutex`) have gc's layout (`go.mutex`,
-  `Golang/Defn/Mutex.lean`: one 8-byte value aligned to 4, the lock in its first
-  cell),
-  so every struct's field offsets are gc's. Package `unsafe`
-  (`go.UnsafeSemantics`, WPs in `Golang/Theory/Unsafe.lean`): memory is reached
-  through an `unsafe.Pointer` only where it is bytes. `(*T)(p)`, `unsafe.Add(p, n)`
-  (and `unsafe.Pointer(uintptr(p) + n)`, which goose emits as it) and
-  `unsafe.Slice(p, n)` check that the cells they reach (`T`'s from `p`, those from
-  `p` to `p + n`, the slice's) are bytes (`CheckBytes`), else they are stuck; and `T`
-  (the element type, for `unsafe.Slice`) must be `go.Reinterpretable`: numbers, and
-  arrays and structs of them of at most 16 bytes (`go.SizeAtMost16`: gc copies a larger
-  one in a forward loop, which overlapping views would corrupt) without padding (their
-  fields' sizes add up to theirs, `go.StructSize`), whose
-  values are their bytes in the model as in Go. So no pointer, string, interface,
-  map, channel, function, `bool`, mutex or padding is ever reinterpreted, and the
-  model's representation of them never shows. `(*T)(nil)` is `nil`. `Sizeof`,
-  `Alignof` and `Offsetof` are constants; `uintptr(p)` is an unspecified address in
-  `[8, 2^48)` congruent to `p`'s offset modulo 8 (an allocation's address is
-  8-aligned), chosen anew at each conversion, so a proof cannot depend on where a
-  block lives; `uintptr(p) - uintptr(q)` in one expression whose operands cannot
-  move the stack (goose's `stackStable`: no call, receive, map index, or conversion
-  that a checkptr build (`-race`) instruments) is exact for two pointers into the
-  same allocation. Any other conversion of a `uintptr` to a pointer is stuck. goose
-  refuses a `primitive.ProphId` inside a struct or an array, behind a pointer or in a
-  type argument (gc's
-  is 0 bytes, the model's a cell value, which would break gc's layout and addresses),
-  a blank field of non-zero size (Go ignores its bytes in `==` and as a map key, the
-  model would not), and a field named like goose's names for blank fields (`_0`, …). The lock models' `Unlock` of an unlocked lock
-  is stuck (Go: a fatal error). `atomic.Pointer[T]`'s `Load` and `Swap` and
-  `strings.Builder.copyCheck` convert an `unsafe.Pointer` back to the pointer type it
-  came from: they are trusted models of that round trip
-  (`TrustedCode/sync/atomic.lean`, `TrustedCode/strings.lean`). A model may be less
-  defined than Go: what is stuck here is what a proof shows does not happen.
-* **Evaluation order.** The Go spec orders a statement's calls and receives
-  (left to right) but leaves the other reads of its operands unordered
-  relative to them, and compilers differ: gc reads `m[0]` in `m[0] + f()`
-  after `f` runs, and before it under `-race`. Perennial fixes one order and
-  compiles with it: a statement's operands are evaluated strictly left to
-  right, each completely (its operands first) before the next one starts, then
-  its assignments are carried out (`x + f()` reads `x`, then calls `f`; in
-  `{e1, e2}` all of `e1` is evaluated before `e2`, whatever `e2` contains).
-  `goose/order` implements it as a source rewrite: a statement is in *normal
-  form* when every read of state that a call could change, and every
-  operation that can panic (whose panic the model makes stuck, and which a
-  compiler must not reach before a call that in the model runs first), is
-  ordered with every call and receive (*event*) by the spec, so that all
-  orders agree on it (about 1.3% of the standard library's statements are
-  not); `order.Rewrite` turns the others into statements in normal form by
-  evaluating, in order, the operands that must come before a later one into
-  temporaries (`_orderN`, which goose translates as ordinary locals; the
-  address, for an operand used as an address). Only the declarations goose
-  translates are rewritten (`util.Translated`: the functions, methods and
-  package-level variables a package's `.toml` translates): code that is not
-  verified keeps the compiler's own order, on which existing Go code may rely
-  (`crypto/x509.ParseOID` returns `o, o.unmarshalOIDText(oid)`, correct only
-  if the call runs first; verifying such a function means rewriting it not to
-  depend on the order). goose translates the rewritten source, and
-  **binaries must be built with the same rewrite**: `go build
-  -toolexec="perennial-order -code DIR"` (`goose/cmd/perennial-order`, built
-  from the same commit as the goose that produced the translation; DIR is
-  goose's output and configuration directory, `-code` repeatable) rewrites, in
-  each package with a translation in a DIR, the declarations its configuration
-  translates, standard-library packages included, without writing anything to
-  the source tree. What is trusted is goose's check that every statement it
-  translates is in normal form (`order.CheckFile`, the definition of the
-  normal form in `goose/order/normal.go`), and that the wrapper compiles the
-  rewrite of the same source with the same selection (a translated package
-  missing from the `-code` directories is compiled unrewritten); the rewriter
-  itself is not: a rewriter bug is a goose error, not an unsound translation. goose loads
-  code with the build tag `goose` and `GOARCH=amd64`; a file whose types
-  differ between that configuration and the real build may be rewritten
-  differently.
+  is an integer type like `uint64`. Pointer/`unsafe.Pointer` to/from `uintptr`
+  conversions are not modelled: they are stuck.
 * **Model assumptions (overflow).** Where Go panics on an overflow that a real
   program cannot reach (it would run out of memory first), the model assumes the
   overflow does not happen, with `assume` (`Golang/Defn/Assume.lean`: an
   `assume` that fails loops forever, so the proofs cover the executions where
   it holds):
-  * A struct or array of `2^63` bytes or more is not allocated (`AngelicExit`,
-    `go.alloc_struct`, `Golang/Defn/PostLang.lean`, and `Golang/Defn/Array.lean`): gc
-    rejects a type of more than `2^50` bytes, and an array whose length is only known
-    at run time (`make`'s backing array) has passed `make`'s check against `maxAlloc`
-    (`2^48` bytes, `go.makeCapBound`), which panics (is stuck) beyond it.
-  * Running out of memory is not modelled: an allocation the model makes (a static type
-    of up to `2^50` bytes, `make` up to `maxAlloc`) may make Go die with "out of
-    memory". A verified program is verified on the executions where memory suffices.
   * `append`'s new length (`sumAssumeNoOverflowSigned`, `Golang/Defn/Slice.lean`).
     **Known to be reachable, not yet fixed:** with zero-size elements no
     memory bounds the length, and Go panics where the model assumes:
@@ -200,9 +93,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   program *can* reach are not assumed away. `strings.Join` is one: Go sums the
   elements' lengths and panics before allocating anything, so a few gigabytes
   of aliased elements (`make([]string, 1<<30+1)` with a long separator) reach
-  the panic. `Join` is Goose's translation of the real source, and
-  `strings.wp_Join` asks its caller for `JoinFits` (the result is at most
-  `internal/bytealg.maxAlloc` bytes). `sync.WaitGroup`'s
+  the panic. **Known, not yet fixed:** `Join` is still a trusted model that
+  omits that panic, and `strings.wp_Join` has no premise excluding it (a fix
+  that translates the real `Join` is on branch `join-translation`; its model of
+  `strings.Builder.String` must first be made stuck where Go's `String`
+  aliases the builder's buffer). `sync.WaitGroup`'s
   `int32` counter is another (two `Add(1 << 30)` calls panic in Go): `WaitGroup.Add`
   is Goose's translation, and `WaitGroup.wp_Add` asks its caller to bound the
   new counter by `2^31`. A caller whose counter is backed by one goroutine per
@@ -210,26 +105,21 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   threadBound GF`, and the client assumes `threadBound GF ≤ 2^31` at adequacy
   time (`ProgramLogic/ThreadTokensTest.lean`, `docs/PERENNIAL_PROOF_REFERENCE.md`
   "Thread tokens").
-* **Panics.** `panic(p)` is a third outcome of the exception monad that models
-  function bodies (`Golang/Defn/Exception.lean`), `panicVal p = ("panic", p)`,
-  next to `do:` and `return:`: like a `return:`, it ends the body (`;;;` and the
-  loop combinators pass it on). The function's deferred functions then run
-  (`wrapDefer`, `Golang/Defn/Defer.lean`), and if one of them calls `recover()`
-  (Goose translates it only directly in a deferred function literal) the
-  function returns its results (`wrapDeferRecover`). As in Go, a function
-  that defers returns its results' values *after* its deferred functions ran,
-  which may modify named results: Goose gives each result a cell `$res<i>` (a
-  named result's own variable), translates `return e1, ..., en` as evaluating
-  the `ei`, storing them in the cells and `return: #()`, and passes the
-  wrapper a thunk reading the cells, which it calls after the deferred chain,
-  on a normal return and on a recovered panic alike. A panic that no
-  deferred function of the function recovers is stuck at the end of the
-  function (`exceptionDo`), like a run-time panic of a builtin (`Panic "msg"`:
-  an index out of range, a field selector or `&p.f` through a nil pointer, ...):
-  a proof shows that it does not happen. The model does not propagate a panic to
-  the caller (in Go the caller's deferred functions run and may recover it), so
-  a program that recovers a callee's panic is not provable. GooseLang itself has
-  no panic construct. See `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
+* **Panics.** A panic outcome is a value, `PanicV p`, that unwinds every
+  evaluation frame but that of `Catch e h k` (`GooseLang/Lang.lean`); `panic(p)`
+  steps to it, a function with `defer`s runs its body under a `Catch`
+  (`Golang/Defn/Defer.lean`), and `recover()` (Goose translates it only directly
+  in a deferred function literal) reads and clears the panic. A postcondition
+  receives panics too, a spec `{{ P }} e {{ RET v; Q }}` excludes them, and a
+  goroutine must not panic (`wp_fork`: `forkPost`). The adequacy theorems
+  (`goose_adequacy` and the grove/disk ones) require the main thread's
+  postcondition `φ` to exclude panics (`hφ : ∀ p, ¬ φ (PanicV p)`, a pure fact
+  about `φ`) and conclude that no thread of the execution has an *unrecovered
+  panic* (`UnrecoveredPanic`, `GooseLang/BoundedLang.lean`): no thread is
+  `PanicV p`, and none is unwinding a panic through frames none of which is a
+  `Catch`, so a verified program does not die of a panic within the step bound.
+  Run-time panics of builtins (`Panic "msg"`) are stuck. See
+  `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
   `etc/update-goose-new.py` rather than editing them by hand.

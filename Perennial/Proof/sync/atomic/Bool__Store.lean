@@ -29,12 +29,10 @@ theorem sync.atomic.Bool.Store.wp_proof
     (wp_StoreUint32 : sync.atomic.StoreUint32.spec (GF := GF) (hG := hG)) :
     sync.atomic.Bool.Store.spec (GF := GF) (hG := hG) := by
   intro u v
-  wp_start_folded as _
-  iintro %hu %hal
-  (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)
+  wp_start as _
   wp_auto
   wp_apply wp_b32
-  wp_apply_core (wp_StoreUint32 _ _ (by first | exact hal | simpa using hal)) $$ [] [HΦ]
+  wp_apply_core wp_StoreUint32 $$ [] [HΦ]
   · iPkgInit
   imod HΦ with ⟨%old, Hown, HΦ⟩
   imodintro; inext

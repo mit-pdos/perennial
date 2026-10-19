@@ -27,11 +27,9 @@ theorem sync.atomic.Pointer.CompareAndSwap.wp_proof
     (wp_CompareAndSwapPointer : sync.atomic.CompareAndSwapPointer.spec (GF := GF) (hG := hG)) :
     sync.atomic.Pointer.CompareAndSwap.spec (GF := GF) (hG := hG) := by
   intro T' _ _ T _ u old new
-  wp_start_folded as _
-  iintro %hu %hal
-  (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)
+  wp_start as _
   wp_auto
-  wp_apply_core (wp_CompareAndSwapPointer _ _ _ (by first | exact hal | simpa using hal)) $$ [] [HΦ]
+  wp_apply_core wp_CompareAndSwapPointer $$ [] [HΦ]
   · iPkgInit
   imod HΦ with H
   imodintro; inext

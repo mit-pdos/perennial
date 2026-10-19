@@ -36,7 +36,6 @@ theorem sync.WaitGroup.Wait.wp_proof
     sync.WaitGroup.Wait.spec (GF := GF) (hG := hG) := by
   intro wg γ N
   wp_start as ⟨#Hwg, HR_in⟩
-  ihave %Hal := isWaitGroup_aligned wg γ N $$ Hwg
   simp only [isWaitGroup_unseal, isWaitGroupDef, ownWaitGroup_unseal, ownWaitGroupDef,
     ownWaitGroupWaitToken_unseal, ownWaitGroupWaitTokenDef]
   iNamed Hwg

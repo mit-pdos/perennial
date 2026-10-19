@@ -26,7 +26,6 @@ abbrev sync.atomic.Int32.Load.spec : Prop :=
   ∀ (u : Loc) (dq : DFrac),
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ v : w32, ownInt32 u dq v ∗ (ownInt32 u dq v ={∅,⊤}=∗ Φ #v)) -∗
-    ⌜u ≠ null⌝ -∗ ⌜Aligned (.word 4) (structFieldRef Int32 go!"v" u)⌝ -∗
     WP (App (Val (u @!! go.GoType.PointerType Int32.ty @!! go!"Load")) (Val #())) {{ Φ }}
 
 end spec

@@ -77,7 +77,7 @@ macro "part_finish" : tactic => `(tactic| (
   wp_pures
   wp_apply wp_store_slice_index data (sint.Z a) _ xj $$ [Hxs] with Hxs
   · iframe Hxs; ipureintro; simp; omega
-  try wp_auto
+  wp_auto
   iapply HΦ
   iframe Hxs
   ipureintro

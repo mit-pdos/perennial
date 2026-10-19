@@ -54,7 +54,7 @@ theorem sync.Once.Do.wp_proof
   cases done
   · (try wp_auto)
     wp_apply wp_Once_doSlow o P Q f $$ [] with HQ'
-    · rw [isOnce_unseal]; unfold isOnceDef; iframe #; simp only [named]; ipureintro; exact Hal
+    · rw [isOnce_unseal]; unfold isOnceDef; iframe #
     iapply HΦ $$ HQ'
   · (try wp_auto)
     iapply HΦ

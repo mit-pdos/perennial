@@ -22,7 +22,8 @@ Notes:
   thread tokens of the thread fuel (`threadFuel t = threadToks t`,
   `Threads.lean`). The lifting lemmas `goose_wp_lift_*` restate iris-lean's for
   the real `base_step` and `gooseStateInterp` (as `gooseCfgInterp`), for the
-  plain redexes; Go instructions, the only counted steps, have their own lemma
+  plain redexes that do not unwind a panic (`Unwinds`; the panic steps are
+  `pure_unwind`, `wp_unwind` and `wp_catch`, section "Panics"); Go instructions, the only counted steps, have their own lemma
   `wp_GoInstruction_receipt`, which handles the stutter by Löb induction and
   hands out a time receipt; `Fork` (`wp_fork_tok`, likewise by Löb induction)
   hands out a thread token and `ThreadExit` (`wp_ThreadExit`) takes one back.
@@ -110,10 +111,9 @@ attribute [local instance] GSet.lawfulSet
 section definitions
 variable [ext : FfiSyntax] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
 
-/-- A location in an allocated block (`locCar ≠ 0`, so non-null, and so is every location
-of its block) with a non-atomic points-to. -/
+/-- A non-null location with a non-atomic points-to. -/
 def heapPointsto (l : Loc) (dq : DFrac) (v : val) : IProp GF :=
-  iprop(⌜l.locCar ≠ 0⌝ ∗ naHeapPointsto l dq v)
+  iprop(⌜l ≠ null⌝ ∗ naHeapPointsto l dq v)
 
 end definitions
 
@@ -193,7 +193,7 @@ theorem heapPointsto_agree (l : Loc) (dq1 dq2 : DFrac) (v1 v2 : val) :
   icombine H1 H2 gives %⟨_, H⟩
   ipureintro; exact H
 
-theorem na_pointsto_to_heap (l : Loc) (dq : DFrac) (v : val) (H : l.locCar ≠ 0) :
+theorem na_pointsto_to_heap (l : Loc) (dq : DFrac) (v : val) (H : l ≠ null) :
     naHeapPointsto (hG := hG) l dq v ⊢ heapPointsto l dq v := by
   unfold heapPointsto
   iintro Hl
@@ -220,18 +220,11 @@ theorem heapPointsto_frac_valid (l : Loc) (q : Qp) (v : val) :
     heapPointsto (hG := hG) l (.own q) v ⊢ ⌜q.val ≤ 1⌝ :=
   heapPointsto_valid l (.own q) v
 
-theorem heapPointsto_car (l : Loc) (dq : DFrac) (v : val) :
-    heapPointsto (hG := hG) l dq v ⊢ ⌜l.locCar ≠ 0⌝ := by
-  unfold heapPointsto
-  iintro ⟨%Hl, _⟩
-  ipureintro; exact Hl
-
 theorem heapPointsto_non_null (l : Loc) (dq : DFrac) (v : val) :
     heapPointsto (hG := hG) l dq v ⊢ ⌜l ≠ null⌝ := by
   unfold heapPointsto
   iintro ⟨%Hl, _⟩
-  ipureintro
-  intro h; subst h; exact Hl rfl
+  ipureintro; exact Hl
 
 end heapPointsto
 
@@ -391,7 +384,7 @@ variable [FfiSemantics ext ffi] [GoGlobalContext]
 instance goose_irisGS [G : GooseGlobalGS hlc GF] [GooseLocalGS GF] : IrisGS_gen hlc Expr GF where
   invGS := G.gooseInvGS
   numLatersPerStep _ := 0
-  forkPost _ := iprop(True)
+  forkPost v := iprop(⌜v.isPanic = false⌝)
   stateInterp_mono σ ns obs nt := by
     let := G.gooseInvGS
     iintro $
@@ -400,513 +393,13 @@ end goose_lang
 
 /-! ## Atomicity -/
 
-/-! ## `heap_array` -/
-
-section heap_array
-variable {V : Type}
-
-theorem heapArray_lookup_lt (l : Loc) (vs : List V) (i : Int) (h : i < 0) :
-    heapArray l vs !! (l +ₗ i) = none := by
-  induction vs generalizing l i with
-  | nil => rfl
-  | cons v vs ih =>
-    show (<[l := v]> (heapArray (l +ₗ 1) vs)) !! (l +ₗ i) = none
-    rw [GMap.lookup_insert_ne _ _ (fun e => by have := loc_add_eq_inv l i e.symm; omega)]
-    have := ih (l +ₗ 1) (i - 1) (by omega)
-    rwa [loc_add_assoc, show 1 + (i - 1) = i by omega] at this
-
-end heap_array
-
-theorem naModeRl_is_read_lock : IsReadLock tls naModeRl := by
-  intro lk n h; cases lk <;> simp_all [tls, naModeRl]
-
-theorem naModeUrl_is_read_unlock : IsReadUnlock tls naModeUrl := by
-  intro lk n h; cases lk <;> simp_all [tls, naModeUrl]
-
-section na_heap_alloc
-variable [ext : FfiSyntax] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
-
-theorem na_heap_alloc_list (σ : GMap Loc (NonAtomic val)) (l : Loc) (vs : List val)
-    (Hfresh : ∀ i : Int, σ !! (l +ₗ i) = none) :
-    ⊢@{IProp GF} naHeapCtx tls σ ==∗ naHeapCtx tls (heapArray l (vs.map Free) ∪ σ) ∗
-      [∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) (.own 1) v := by
-  induction vs generalizing l with
-  | nil =>
-    iintro H
-    imodintro
-    have : heapArray l (([] : List val).map Free) ∪ σ = σ := by
-      apply GMap.ext; intro k; rfl
-    rw [this]
-    iframe H
-    iapply BigSepL.bigSepL_nil.2
-    itrivial
-  | cons v vs ih =>
-    iintro H
-    imod ih (l +ₗ 1) (fun i => by rw [loc_add_assoc]; exact Hfresh _) $$ H with ⟨H, Hpts⟩
-    have Hnone : (heapArray (l +ₗ 1) (vs.map Free) ∪ σ) !! l = none := by
-      refine (GMap.lookup_union_None _ _ _).mpr ⟨?_, ?_⟩
-      · have := heapArray_lookup_lt (l +ₗ 1) (vs.map Free) (-1) (by omega)
-        rwa [loc_add_assoc, show (1 : Int) + -1 = 0 by omega, loc_add_0] at this
-      · have := Hfresh 0; rwa [loc_add_0] at this
-    imod na_heap_alloc tls _ l v (Reading 0) Hnone rfl $$ H with ⟨H, Hl⟩
-    imodintro
-    have Heq : heapArray l ((v :: vs).map Free) ∪ σ =
-        <[l := (Reading 0, v)]> (heapArray (l +ₗ 1) (vs.map Free) ∪ σ) :=
-      (GMap.insert_union_l _ _ _ _).symm
-    rw [Heq]
-    iframe H
-    iapply BigSepL.bigSepL_cons.2
-    have Hk : ∀ k : Nat, l +ₗ ((k + 1 : Nat) : Int) = l +ₗ 1 +ₗ (k : Int) := by
-      intro k; rw [loc_add_assoc]; congr 1; omega
-    simp only [Int.natCast_zero, loc_add_0, Hk]
-    iframe
-
-/-- The cells `l, l +ₗ 1, …` of a list of points-tos are in the heap, readable. -/
-theorem na_heap_read_cells (σ : GMap Loc (NonAtomic val)) (l : Loc) (dq : DFrac) (vs : List val) :
-    ⊢@{IProp GF} naHeapCtx tls σ -∗
-      ([∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) dq v) -∗
-      ⌜∀ i (h : i < vs.length), ∃ k, σ !! (l +ₗ (i : Int)) = some (Reading k, vs[i])⌝ := by
-  induction vs generalizing l with
-  | nil => iintro _ _; ipureintro; intro i h; simp at h
-  | cons v vs ih =>
-    iintro Hσ Hl
-    icases BigSepL.bigSepL_cons.1 $$ Hl with ⟨H0, Hl⟩
-    rw [Int.natCast_zero, loc_add_0]
-    icases na_heap_read tls σ l dq v $$ Hσ H0 with %⟨lk, n, H1, H2⟩
-    have Hk : ∀ k : Nat, l +ₗ ((k + 1 : Nat) : Int) = l +ₗ 1 +ₗ (k : Int) := by
-      intro k; rw [loc_add_assoc]; congr 1; omega
-    simp only [Hk]
-    icases ih (l +ₗ 1) $$ Hσ Hl with %Hrest
-    ipureintro
-    intro i h
-    cases i with
-    | zero =>
-      cases lk with
-      | Reading k => exact ⟨k, by simpa using H1⟩
-      | Writing => simp at H2
-    | succ i =>
-      obtain ⟨k, hk⟩ := Hrest i (by simp at h; omega)
-      exact ⟨k, by rw [Hk]; simpa using hk⟩
-
-/-- With full ownership, the cells are readable by no one else (`Reading 0`). -/
-theorem na_heap_read_cells_1 (σ : GMap Loc (NonAtomic val)) (l : Loc) (vs : List val) :
-    ⊢@{IProp GF} naHeapCtx tls σ -∗
-      ([∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) (.own 1) v) -∗
-      ⌜∀ i (h : i < vs.length), σ !! (l +ₗ (i : Int)) = some (Reading 0, vs[i])⌝ := by
-  induction vs generalizing l with
-  | nil => iintro _ _; ipureintro; intro i h; simp at h
-  | cons v vs ih =>
-    iintro Hσ Hl
-    icases BigSepL.bigSepL_cons.1 $$ Hl with ⟨H0, Hl⟩
-    rw [Int.natCast_zero, loc_add_0]
-    icases na_heap_read_1 tls σ l v $$ Hσ H0 with %⟨lk, H1, H2⟩
-    have Hk : ∀ k : Nat, l +ₗ ((k + 1 : Nat) : Int) = l +ₗ 1 +ₗ (k : Int) := by
-      intro k; rw [loc_add_assoc]; congr 1; omega
-    simp only [Hk]
-    icases ih (l +ₗ 1) $$ Hσ Hl with %Hrest
-    ipureintro
-    intro i h
-    cases i with
-    | zero =>
-      cases lk with
-      | Reading k => simp at H2; subst H2; simpa using H1
-      | Writing => simp at H2
-    | succ i =>
-      have hk := Hrest i (by simp at h; omega)
-      rw [Hk]; simpa using hk
-
-/-- Writing all the cells `l, l +ₗ 1, …` (each readable by no one, `Reading 0`). -/
-theorem na_heap_write_cells (σ : GMap Loc (NonAtomic val)) (l : Loc) (vs vs' : List val)
-    (hlen : vs'.length = vs.length)
-    (Hfree : ∀ i (h : i < vs.length), σ !! (l +ₗ (i : Int)) = some (Reading 0, vs[i])) :
-    ⊢@{IProp GF} naHeapCtx tls σ -∗
-      ([∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) (.own 1) v) ==∗
-      naHeapCtx tls (heapArray l (vs'.map Free) ∪ σ) ∗
-      [∗list] i ↦ v ∈ vs', naHeapPointsto (l +ₗ (i : Int)) (.own 1) v := by
-  induction vs generalizing l vs' with
-  | nil =>
-    cases vs' with
-    | cons => simp at hlen
-    | nil =>
-      iintro Hσ _
-      imodintro
-      have : heapArray l (([] : List val).map Free) ∪ σ = σ := by
-        apply GMap.ext; intro k; rfl
-      rw [this]
-      iframe Hσ
-      iapply BigSepL.bigSepL_nil.2
-      itrivial
-  | cons v vs ih =>
-    cases vs' with
-    | nil => simp at hlen
-    | cons v' vs' =>
-    simp only [List.length_cons, Nat.add_right_cancel_iff] at hlen
-    have Hk : ∀ k : Nat, l +ₗ ((k + 1 : Nat) : Int) = l +ₗ 1 +ₗ (k : Int) := by
-      intro k; rw [loc_add_assoc]; congr 1; omega
-    iintro Hσ Hl
-    icases BigSepL.bigSepL_cons.1 $$ Hl with ⟨H0, Hl⟩
-    simp only [Hk]
-    imod ih (l +ₗ 1) vs' hlen (fun i h => by
-      have := Hfree (i + 1) (by simp; omega)
-      rw [Hk] at this; simpa using this) $$ Hσ Hl with ⟨Hσ, Hl⟩
-    have Hl0 : (heapArray (l +ₗ 1) (vs'.map Free) ∪ σ) !! l = some (Reading 0, v) := by
-      rw [GMap.lookup_union]
-      have := heapArray_lookup_lt (l +ₗ 1) (vs'.map Free) (-1) (by omega)
-      rw [loc_add_assoc, show (1 : Int) + -1 = 0 by omega, loc_add_0] at this
-      rw [this]
-      have := Hfree 0 (by simp)
-      simpa using this
-    rw [Int.natCast_zero, loc_add_0]
-    imod na_heap_write tls _ l (Reading 0) v v' rfl $$ Hσ H0 with ⟨Hσ, H0⟩
-    imodintro
-    have Heq : heapArray l ((v' :: vs').map Free) ∪ σ =
-        <[l := (Reading 0, v')]> (heapArray (l +ₗ 1) (vs'.map Free) ∪ σ) :=
-      (GMap.insert_union_l _ _ _ _).symm
-    rw [Heq]
-    iframe Hσ
-    iapply BigSepL.bigSepL_cons.2
-    rw [Int.natCast_zero, loc_add_0]
-    iframe
-    simp only [Hk]
-    iexact Hl
-
-end na_heap_alloc
-
-/-! ### Multi-cell memory operations
-
-An encoded value (`Encoding`) occupies the cells `l, l +ₗ 1, …` (`pointstoVals`). The
-ghost lemmas below update the lock state of each of a list of cells in one step, as the
-steps of `StartReadN`, `PrepareWriteN`, … do. -/
-
-section cells_lemmas
-variable [ext : FfiSyntax]
-
-theorem loc_add_succ (l : Loc) (k : Nat) : l +ₗ ((k + 1 : Nat) : Int) = l +ₗ 1 +ₗ (k : Int) := by
-  rw [loc_add_assoc]; congr 1; omega
-
-theorem heapArray_union_lookup_self (l : Loc) (cs : List (NonAtomic val))
-    (σ : GMap Loc (NonAtomic val)) : (heapArray (l +ₗ 1) cs ∪ σ) !! l = σ !! l := by
-  rw [GMap.lookup_union]
-  have := heapArray_lookup_lt (l +ₗ 1) cs (-1) (by omega)
-  rw [loc_add_assoc, show (1 : Int) + -1 = 0 by omega, loc_add_0] at this
-  rw [this]; cases σ !! l <;> rfl
-
-theorem heapArray_cons_union (l : Loc) (c : NonAtomic val) (cs : List (NonAtomic val))
-    (σ : GMap Loc (NonAtomic val)) :
-    heapArray l (c :: cs) ∪ σ = <[l := c]> (heapArray (l +ₗ 1) cs ∪ σ) :=
-  (GMap.insert_union_l _ _ _ _).symm
-
-theorem cellsAt_cons (h : GMap Loc (NonAtomic val)) (l : Loc) (c : NonAtomic val)
-    (cs : List (NonAtomic val)) :
-    CellsAt h l (c :: cs) ↔ h !! l = some c ∧ CellsAt h (l +ₗ 1) cs := by
-  constructor
-  · intro H
-    have h0 := H 0 (by simp)
-    rw [List.getElem_cons_zero] at h0
-    refine ⟨by simpa using h0, fun i hi => ?_⟩
-    have := H (i + 1) (by simp; omega)
-    rw [loc_add_succ] at this; simpa using this
-  · rintro ⟨H0, H⟩ i hi
-    cases i with
-    | zero => simpa using H0
-    | succ i => rw [loc_add_succ]; simpa using H i (by simp at hi; omega)
-
-@[simp] theorem cellsAt_nil (h : GMap Loc (NonAtomic val)) (l : Loc) : CellsAt h l [] :=
-  fun i hi => by simp at hi
-
-@[simp] theorem heapArray_nil_union (l : Loc) (σ : GMap Loc (NonAtomic val)) :
-    heapArray l ([] : List (NonAtomic val)) ∪ σ = σ := by
-  apply GMap.ext; intro k; rfl
-
-end cells_lemmas
-
-section na_heap_cells
-variable [ext : FfiSyntax] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
-
-/-- Read-lock each cell (the first half of a non-atomic read, `StartReadNS`). -/
-theorem na_heap_read_prepare_cells (σ : GMap Loc (NonAtomic val)) (l : Loc) (dq : DFrac)
-    (vs : List val) :
-    ⊢@{IProp GF} naHeapCtx tls σ -∗
-      ([∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) dq v) ==∗
-      ∃ cs : List (NonAtomic val),
-        ⌜cs.map Prod.snd = vs ∧ CellsAt σ l cs ∧ ∀ c ∈ cs, ∃ n, c.1 = Reading n⌝ ∗
-        naHeapCtx tls (heapArray l (cs.map fun c => (naModeRl c.1, c.2)) ∪ σ) ∗
-        [∗list] i ↦ v ∈ vs, naHeapPointstoSt (RSt 1) (l +ₗ (i : Int)) dq v := by
-  induction vs generalizing l with
-  | nil =>
-    iintro Hσ _
-    imodintro
-    iexists []
-    simp only [List.map_nil, heapArray_nil_union]
-    iframe Hσ
-    isplitr
-    · ipureintro; simp
-    · iapply BigSepL.bigSepL_nil.2; itrivial
-  | cons v vs ih =>
-    iintro Hσ Hl
-    icases BigSepL.bigSepL_cons.1 $$ Hl with ⟨H0, Hl⟩
-    simp only [loc_add_succ, Int.natCast_zero, loc_add_0]
-    imod ih (l +ₗ 1) $$ Hσ Hl with ⟨%cs, %⟨Hvs, Hcells, Hrd⟩, Hσ, Hl⟩
-    imod na_heap_read_prepare tls naModeRl _ l dq v naModeRl_is_read_lock $$ Hσ H0
-      with ⟨%lk, %n, %⟨Hlk, Htls⟩, Hσ, H0⟩
-    rw [heapArray_union_lookup_self] at Hlk
-    cases lk with
-    | Writing => cases Htls
-    | Reading k =>
-    imodintro
-    iexists (Reading k, v) :: cs
-    simp only [List.map_cons, heapArray_cons_union]
-    iframe Hσ
-    isplitr
-    · ipureintro
-      refine ⟨by simp [Hvs], (cellsAt_cons _ _ _ _).2 ⟨Hlk, Hcells⟩, ?_⟩
-      intro c hc
-      rcases List.mem_cons.1 hc with rfl | hc
-      · exact ⟨k, rfl⟩
-      · exact Hrd c hc
-    iapply BigSepL.bigSepL_cons.2
-    simp only [loc_add_succ, Int.natCast_zero, loc_add_0]
-    iframe
-
-/-- Read-unlock each cell (the second half of a non-atomic read, `FinishReadNS`). -/
-theorem na_heap_read_finish_cells (σ : GMap Loc (NonAtomic val)) (l : Loc) (dq : DFrac)
-    (vs : List val) :
-    ⊢@{IProp GF} naHeapCtx tls σ -∗
-      ([∗list] i ↦ v ∈ vs, naHeapPointstoSt (RSt 1) (l +ₗ (i : Int)) dq v) ==∗
-      ∃ cs : List (NonAtomic val),
-        ⌜cs.map Prod.snd = vs ∧ CellsAt σ l cs ∧ ∀ c ∈ cs, ∃ n, c.1 = Reading (n + 1)⌝ ∗
-        naHeapCtx tls (heapArray l (cs.map fun c => (naModeUrl c.1, c.2)) ∪ σ) ∗
-        [∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) dq v := by
-  induction vs generalizing l with
-  | nil =>
-    iintro Hσ _
-    imodintro
-    iexists []
-    simp only [List.map_nil, heapArray_nil_union]
-    iframe Hσ
-    isplitr
-    · ipureintro; simp
-    · iapply BigSepL.bigSepL_nil.2; itrivial
-  | cons v vs ih =>
-    iintro Hσ Hl
-    icases BigSepL.bigSepL_cons.1 $$ Hl with ⟨H0, Hl⟩
-    simp only [loc_add_succ, Int.natCast_zero, loc_add_0]
-    imod ih (l +ₗ 1) $$ Hσ Hl with ⟨%cs, %⟨Hvs, Hcells, Hrd⟩, Hσ, Hl⟩
-    imod na_heap_read_finish_vs tls naModeUrl l dq v naModeUrl_is_read_unlock $$ H0 %_ Hσ
-      with ⟨%lk, %n, %⟨Hlk, Htls⟩, Hσ, H0⟩
-    rw [heapArray_union_lookup_self] at Hlk
-    cases lk with
-    | Writing => cases Htls
-    | Reading k =>
-    simp only [tls_Reading, LockState.RSt.injEq] at Htls; subst Htls
-    imodintro
-    iexists (Reading (n + 1), v) :: cs
-    simp only [List.map_cons, heapArray_cons_union]
-    iframe Hσ
-    isplitr
-    · ipureintro
-      refine ⟨by simp [Hvs], (cellsAt_cons _ _ _ _).2 ⟨Hlk, Hcells⟩, ?_⟩
-      intro c hc
-      rcases List.mem_cons.1 hc with rfl | hc
-      · exact ⟨n, rfl⟩
-      · exact Hrd c hc
-    iapply BigSepL.bigSepL_cons.2
-    simp only [loc_add_succ, Int.natCast_zero, loc_add_0]
-    iframe
-
-/-- Write-lock each cell (the first half of a non-atomic write, `PrepareWriteNS`). -/
-theorem na_heap_write_prepare_cells (σ : GMap Loc (NonAtomic val)) (l : Loc) (vs : List val) :
-    ⊢@{IProp GF} naHeapCtx tls σ -∗
-      ([∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) (.own 1) v) ==∗
-      ∃ cs : List (NonAtomic val),
-        ⌜cs.map Prod.snd = vs ∧ CellsAt σ l cs ∧ ∀ c ∈ cs, c.1 = Reading 0⌝ ∗
-        naHeapCtx tls (heapArray l (cs.map fun c => (Writing, c.2)) ∪ σ) ∗
-        [∗list] i ↦ v ∈ vs, naHeapPointstoSt WSt (l +ₗ (i : Int)) (.own 1) v := by
-  induction vs generalizing l with
-  | nil =>
-    iintro Hσ _
-    imodintro
-    iexists []
-    simp only [List.map_nil, heapArray_nil_union]
-    iframe Hσ
-    isplitr
-    · ipureintro; simp
-    · iapply BigSepL.bigSepL_nil.2; itrivial
-  | cons v vs ih =>
-    iintro Hσ Hl
-    icases BigSepL.bigSepL_cons.1 $$ Hl with ⟨H0, Hl⟩
-    simp only [loc_add_succ, Int.natCast_zero, loc_add_0]
-    imod ih (l +ₗ 1) $$ Hσ Hl with ⟨%cs, %⟨Hvs, Hcells, Hrd⟩, Hσ, Hl⟩
-    imod na_heap_write_prepare tls _ l v Writing rfl $$ Hσ H0
-      with ⟨%lk, %⟨Hlk, Htls⟩, Hσ, H0⟩
-    rw [heapArray_union_lookup_self] at Hlk
-    cases lk with
-    | Writing => cases Htls
-    | Reading k =>
-    simp only [tls_Reading, LockState.RSt.injEq] at Htls; subst Htls
-    imodintro
-    iexists (Reading 0, v) :: cs
-    simp only [List.map_cons, heapArray_cons_union]
-    iframe Hσ
-    isplitr
-    · ipureintro
-      refine ⟨by simp [Hvs], (cellsAt_cons _ _ _ _).2 ⟨Hlk, Hcells⟩, ?_⟩
-      intro c hc
-      rcases List.mem_cons.1 hc with rfl | hc
-      · rfl
-      · exact Hrd c hc
-    iapply BigSepL.bigSepL_cons.2
-    simp only [loc_add_succ, Int.natCast_zero, loc_add_0]
-    iframe
-
-/-- Write each write-locked cell (the second half of a non-atomic write,
-`FinishStoreNS`). -/
-theorem na_heap_write_finish_cells (σ : GMap Loc (NonAtomic val)) (l : Loc) (vs vs' : List val)
-    (hlen : vs'.length = vs.length) :
-    ⊢@{IProp GF} naHeapCtx tls σ -∗
-      ([∗list] i ↦ v ∈ vs, naHeapPointstoSt WSt (l +ₗ (i : Int)) (.own 1) v) ==∗
-      ∃ cs : List (NonAtomic val),
-        ⌜cs.map Prod.snd = vs ∧ CellsAt σ l cs ∧ ∀ c ∈ cs, c.1 = Writing⌝ ∗
-        naHeapCtx tls (heapArray l (vs'.map Free) ∪ σ) ∗
-        [∗list] i ↦ v ∈ vs', naHeapPointsto (l +ₗ (i : Int)) (.own 1) v := by
-  induction vs generalizing l vs' with
-  | nil =>
-    cases vs' with
-    | cons => simp at hlen
-    | nil =>
-    iintro Hσ _
-    imodintro
-    iexists []
-    simp only [List.map_nil, heapArray_nil_union]
-    iframe Hσ
-    isplitr
-    · ipureintro; simp
-    · iapply BigSepL.bigSepL_nil.2; itrivial
-  | cons v vs ih =>
-    cases vs' with
-    | nil => simp at hlen
-    | cons v' vs' =>
-    simp only [List.length_cons, Nat.add_right_cancel_iff] at hlen
-    iintro Hσ Hl
-    icases BigSepL.bigSepL_cons.1 $$ Hl with ⟨H0, Hl⟩
-    simp only [loc_add_succ, Int.natCast_zero, loc_add_0]
-    imod ih (l +ₗ 1) vs' hlen $$ Hσ Hl with ⟨%cs, %⟨Hvs, Hcells, Hwr⟩, Hσ, Hl⟩
-    imod na_heap_write_finish_vs tls l v v' (Reading 0) rfl $$ H0 %_ Hσ
-      with ⟨%lk, %⟨Hlk, Htls⟩, Hσ, H0⟩
-    rw [heapArray_union_lookup_self] at Hlk
-    cases lk with
-    | Reading k => cases Htls
-    | Writing =>
-    imodintro
-    iexists (Writing, v) :: cs
-    have Heq : heapArray l ((v' :: vs').map Free) ∪ σ =
-        <[l := (Reading 0, v')]> (heapArray (l +ₗ 1) (vs'.map Free) ∪ σ) :=
-      heapArray_cons_union _ _ _ _
-    rw [Heq]
-    iframe Hσ
-    isplitr
-    · ipureintro
-      refine ⟨by simp [Hvs], (cellsAt_cons _ _ _ _).2 ⟨Hlk, Hcells⟩, ?_⟩
-      intro c hc
-      rcases List.mem_cons.1 hc with rfl | hc
-      · rfl
-      · exact Hwr c hc
-    iapply BigSepL.bigSepL_cons.2
-    simp only [loc_add_succ, Int.natCast_zero, loc_add_0]
-    iframe
-
-/-- The cells are readable (an atomic load, `LoadNS`). -/
-theorem na_heap_read_cells' (σ : GMap Loc (NonAtomic val)) (l : Loc) (dq : DFrac)
-    (vs : List val) :
-    ⊢@{IProp GF} naHeapCtx tls σ -∗
-      ([∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) dq v) -∗
-      ⌜∃ cs : List (NonAtomic val), cs.map Prod.snd = vs ∧ CellsAt σ l cs ∧
-        ∀ c ∈ cs, ∃ n, c.1 = Reading n⌝ := by
-  induction vs generalizing l with
-  | nil => iintro _ _; ipureintro; exact ⟨[], rfl, cellsAt_nil _ _, by simp⟩
-  | cons v vs ih =>
-    iintro Hσ Hl
-    icases BigSepL.bigSepL_cons.1 $$ Hl with ⟨H0, Hl⟩
-    simp only [loc_add_succ, Int.natCast_zero, loc_add_0]
-    icases ih (l +ₗ 1) $$ Hσ Hl with %⟨cs, Hvs, Hcells, Hrd⟩
-    icases na_heap_read tls σ l dq v $$ Hσ H0 with %⟨lk, n, Hlk, Htls⟩
-    ipureintro
-    cases lk with
-    | Writing => cases Htls
-    | Reading k =>
-    refine ⟨(Reading k, v) :: cs, by simp [Hvs], (cellsAt_cons _ _ _ _).2 ⟨Hlk, Hcells⟩, ?_⟩
-    intro c hc
-    rcases List.mem_cons.1 hc with rfl | hc
-    · exact ⟨k, rfl⟩
-    · exact Hrd c hc
-
-/-- With full ownership, the cells are readable by no one else (an atomic write). -/
-theorem na_heap_read_cells_1' (σ : GMap Loc (NonAtomic val)) (l : Loc) (vs : List val) :
-    ⊢@{IProp GF} naHeapCtx tls σ -∗
-      ([∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) (.own 1) v) -∗
-      ⌜∃ cs : List (NonAtomic val), cs.map Prod.snd = vs ∧ CellsAt σ l cs ∧
-        ∀ c ∈ cs, c.1 = Reading 0⌝ := by
-  induction vs generalizing l with
-  | nil => iintro _ _; ipureintro; exact ⟨[], rfl, cellsAt_nil _ _, by simp⟩
-  | cons v vs ih =>
-    iintro Hσ Hl
-    icases BigSepL.bigSepL_cons.1 $$ Hl with ⟨H0, Hl⟩
-    simp only [loc_add_succ, Int.natCast_zero, loc_add_0]
-    icases ih (l +ₗ 1) $$ Hσ Hl with %⟨cs, Hvs, Hcells, Hrd⟩
-    icases na_heap_read_1 tls σ l v $$ Hσ H0 with %⟨lk, Hlk, Htls⟩
-    ipureintro
-    cases lk with
-    | Writing => cases Htls
-    | Reading k =>
-    simp only [tls_Reading, LockState.RSt.injEq] at Htls; subst Htls
-    refine ⟨(Reading 0, v) :: cs, by simp [Hvs], (cellsAt_cons _ _ _ _).2 ⟨Hlk, Hcells⟩, ?_⟩
-    intro c hc
-    rcases List.mem_cons.1 hc with rfl | hc
-    · rfl
-    · exact Hrd c hc
-
-/-- Write each cell (with no reader) in one step (an atomic write). -/
-theorem na_heap_write_cells' (σ : GMap Loc (NonAtomic val)) (l : Loc) (vs vs' : List val)
-    (hlen : vs'.length = vs.length) :
-    ⊢@{IProp GF} naHeapCtx tls σ -∗
-      ([∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) (.own 1) v) ==∗
-      naHeapCtx tls (heapArray l (vs'.map Free) ∪ σ) ∗
-      [∗list] i ↦ v ∈ vs', naHeapPointsto (l +ₗ (i : Int)) (.own 1) v := by
-  induction vs generalizing l vs' with
-  | nil =>
-    cases vs' with
-    | cons => simp at hlen
-    | nil =>
-    iintro Hσ _
-    imodintro
-    simp only [List.map_nil, heapArray_nil_union]
-    iframe Hσ
-    iapply BigSepL.bigSepL_nil.2; itrivial
-  | cons v vs ih =>
-    cases vs' with
-    | nil => simp at hlen
-    | cons v' vs' =>
-    simp only [List.length_cons, Nat.add_right_cancel_iff] at hlen
-    iintro Hσ Hl
-    icases BigSepL.bigSepL_cons.1 $$ Hl with ⟨H0, Hl⟩
-    simp only [loc_add_succ, Int.natCast_zero, loc_add_0]
-    imod ih (l +ₗ 1) vs' hlen $$ Hσ Hl with ⟨Hσ, Hl⟩
-    imod na_heap_write tls _ l (Reading 0) v v' rfl $$ Hσ H0 with ⟨Hσ, H0⟩
-    imodintro
-    simp only [List.map_cons, heapArray_cons_union, Free]
-    iframe Hσ
-    iapply BigSepL.bigSepL_cons.2
-    simp only [loc_add_succ, Int.natCast_zero, loc_add_0]
-    iframe
-
-end na_heap_cells
-
 section atomic
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
 
 open EctxLanguage in
-/-- Atomicity from the real base step. Counted redexes (Go instructions) may
-stutter in the bounded semantics and are not atomic, hence `hnc`. -/
+/-- Atomicity from the real base step (an unwinding step ends in a value too).
+Counted redexes (Go instructions) may stutter in the bounded semantics and are
+not atomic, hence `hnc`. -/
 theorem goose_atomic {e : Expr} (a : Language.Atomicity)
     (h : ∀ σ κ e' σ' efs, BaseStep e σ κ e' σ' efs → (toVal e').isSome)
     (hsub : ∀ Ki e', e = fillItem Ki e' → (toVal e').isSome)
@@ -915,7 +408,9 @@ theorem goose_atomic {e : Expr} (a : Language.Atomicity)
   Language.stronglyAtomic_atomic
     (Atomic.ofBaseAtomic _ (fun σ obs e' σ' efs hs => by
         obtain ⟨_, _, hs⟩ := (boundedBaseStep_plain (σ := σ.1) (f := σ.2) hnc).1 hs
-        exact h _ obs e' _ efs hs)
+        cases hs with
+        | unwind => rfl
+        | base _ hs => exact h _ obs e' _ efs hs)
       (EctxItemLanguage.subredexes_are_values hsub))
 
 /-- Discharges the `hsub` side condition of `goose_atomic`. -/
@@ -923,22 +418,6 @@ local macro "solve_sub_redexes" : tactic =>
   `(tactic| (intro Ki e' h; cases Ki <;> simp only [fillItem] at h <;> cases h <;> rfl))
 
 instance alloc_atomic (a : Language.Atomicity) (v : val) : Language.Atomic a (Alloc (Val v)) :=
-  goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
-
-instance allocN_atomic (a : Language.Atomicity) (n v : val) :
-    Language.Atomic a (AllocN (Val n) (Val v)) :=
-  goose_atomic a (fun _ _ _ _ _ h => by cases h <;> rfl) (by solve_sub_redexes)
-
-instance memOp1_atomic (a : Language.Atomicity) (op : MemOp1) (enc : Encoding) (v : val) :
-    Language.Atomic a (Primitive1 (.MemOp1Op op enc) (Val v)) :=
-  goose_atomic a (fun _ _ _ _ _ h => by cases h <;> rfl) (by solve_sub_redexes)
-
-instance memOp2_atomic (a : Language.Atomicity) (op : MemOp2) (enc : Encoding) (v1 v2 : val) :
-    Language.Atomic a (Primitive2 (.MemOp2Op op enc) (Val v1) (Val v2)) :=
-  goose_atomic a (fun _ _ _ _ _ h => by cases h <;> rfl) (by solve_sub_redexes)
-
-instance checkBytes_atomic (a : Language.Atomicity) (v : val) :
-    Language.Atomic a (CheckBytes (Val v)) :=
   goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
 
 /-- `PrepareWrite` and `FinishStore` are individually atomic, but the two need to
@@ -990,18 +469,23 @@ variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalCont
 
 open EctxLanguage in
 /-- A one-step `PureExec` from the real base step relation (for a plain
-redex, which steps in the bounded semantics exactly as in the real one). -/
+redex that does not unwind, which steps in the bounded semantics exactly as in
+the real one). -/
 theorem pureExec_of_base_step {φ : Prop} {e₁ e₂ : Expr}
     (Hsafe : φ → ∀ σ, BaseStep e₁ σ [] e₂ σ [])
     (Hdet : φ → ∀ σ κ e' σ' efs, BaseStep e₁ σ κ e' σ' efs →
       κ = [] ∧ σ' = σ ∧ e' = e₂ ∧ efs = [])
-    (hnc : redexKind e₁ = .plain := by rfl) :
+    (hnc : redexKind e₁ = .plain := by rfl)
+    (Hnu : φ → ∀ p, ¬ Unwinds e₁ p := by intro _; not_unwinds) :
     Language.PureExec φ 1 e₁ e₂ where
   pureExec hφ := by
     refine .tail e₁ (.rfl _) (purePrimStep_of_pureBaseStep
-      ⟨fun σ => ⟨_, _, _, BoundedBaseStep.step (f := σ.2) hnc (Hsafe hφ σ.1)⟩, ?_⟩)
+      ⟨fun σ => ⟨_, _, _, BoundedBaseStep.step (f := σ.2) hnc (.base (Hnu hφ) (Hsafe hφ σ.1))⟩,
+        ?_⟩)
     intro σ₁ σ₂ obs e₂' eₜ h
     obtain ⟨σ', rfl, h'⟩ := (boundedBaseStep_plain (σ := σ₁.1) (f := σ₁.2) hnc).1 h
+    rcases h' with ⟨hu⟩ | ⟨_, h'⟩
+    · exact absurd hu (Hnu hφ _)
     obtain ⟨h1, h2, h3, h4⟩ := Hdet hφ _ _ _ _ _ h'
     subst h2
     exact ⟨h1, rfl, h3.symm, h4⟩
@@ -1012,12 +496,13 @@ instance pure_recc (f x : Binder) (e : Expr) :
     (fun _ _ _ _ _ _ h => by cases h; exact ⟨rfl, rfl, rfl, rfl⟩)
 
 instance pure_pairc (v1 v2 : val) :
-    Language.PureExec True 1 (Pair (Val v1) (Val v2)) (Val (PairV v1 v2)) :=
+    Language.PureExec (v1.isPanic = false ∧ v2.isPanic = false) 1 (Pair (Val v1) (Val v2))
+      (Val (PairV v1 v2)) :=
   pureExec_of_base_step (fun _ σ => BaseStep.PairS v1 v2 σ)
     (fun _ _ _ _ _ _ h => by cases h; exact ⟨rfl, rfl, rfl, rfl⟩)
 
 instance pure_beta (f x : Binder) (e1 : Expr) (v2 : val) :
-    Language.PureExec True 1 (App (Val (RecV f x e1)) (Val v2))
+    Language.PureExec (v2.isPanic = false) 1 (App (Val (RecV f x e1)) (Val v2))
       (subst' x v2 (subst' f (RecV f x e1) e1)) :=
   pureExec_of_base_step (fun _ σ => BaseStep.BetaS f x e1 v2 σ)
     (fun _ _ _ _ _ _ h => by cases h; exact ⟨rfl, rfl, rfl, rfl⟩)
@@ -1058,6 +543,21 @@ instance pure_select_stmt_clauses (d : Option Expr) (cs : List comm_clause) :
     Language.PureExec True 1 (SelectStmtClauses d cs) (Val (SelectStmtClausesV d cs)) :=
   pureExec_of_base_step (fun _ σ => BaseStep.SelectStmtClausesS d cs σ)
     (fun _ _ _ _ _ _ h => by cases h; exact ⟨rfl, rfl, rfl, rfl⟩)
+
+instance pure_raise (v : val) :
+    Language.PureExec (v.isPanic = false) 1 (Raise (Val v)) (Val (PanicV v)) :=
+  pureExec_of_base_step (fun _ σ => BaseStep.RaiseS v σ)
+    (fun _ _ _ _ _ _ h => by cases h; exact ⟨rfl, rfl, rfl, rfl⟩)
+
+instance pure_catch_panic (p : val) (h k : Expr) :
+    Language.PureExec True 1 (Catch (Val (PanicV p)) h k) (App h (Val p)) :=
+  pureExec_of_base_step (fun _ σ => BaseStep.CatchPanicS p h k σ)
+    (fun _ _ _ _ _ _ hs => by cases hs <;> first | exact ⟨rfl, rfl, rfl, rfl⟩ | simp_all)
+
+instance pure_catch_val (v : val) (h k : Expr) :
+    Language.PureExec (v.isPanic = false) 1 (Catch (Val v) h k) (App k (Val v)) :=
+  pureExec_of_base_step (fun hv σ => BaseStep.CatchValS v h k σ hv)
+    (fun hv _ _ _ _ _ hs => by cases hs <;> first | exact ⟨rfl, rfl, rfl, rfl⟩ | simp_all)
 
 end pure
 
@@ -1188,20 +688,29 @@ theorem goose_bstateInterp_eq (σ : CfgState) (c : Fuel) (ns : Nat) (κs : List 
       iprop(gooseCfgInterp σ ns κs nt ∗ receiptFuel c.steps ∗ threadFuel c.threads) := .rfl
 
 theorem goose_baseReducible_of {e : Expr} {σ : CfgState} {c : Fuel} (hnc : redexKind e = .plain)
-    (h : GooseBaseReducible e σ) : BaseStep.Reducible (e, ((σ, c) : BcfgState)) := by
+    (hnu : ∀ p, ¬ Unwinds e p) (h : GooseBaseReducible e σ) :
+    BaseStep.Reducible (e, ((σ, c) : BcfgState)) := by
   obtain ⟨κ, e', σ', efs, h⟩ := h
-  exact ⟨κ, e', (σ', c), efs, .step hnc h⟩
+  exact ⟨κ, e', (σ', c), efs, .step hnc (.base hnu h)⟩
+
+/-- A head step of a redex that does not unwind is a base step. -/
+theorem baseStep_of_headStep {e : Expr} {σ : CfgState} {κ : List Observation} {e' : Expr}
+    {σ' : CfgState} {efs : List Expr} (hnu : ∀ p, ¬ Unwinds e p)
+    (h : HeadStep e σ κ e' σ' efs) : BaseStep e σ κ e' σ' efs := by
+  rcases h with ⟨hu⟩ | ⟨_, h⟩
+  · exact absurd hu (hnu _)
+  · exact h
 
 /-- iris-lean's `wp_lift_base_step` for a plain redex, in terms of the real
 `base_step` and `gooseStateInterp`. -/
 theorem goose_wp_lift_base_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal e₁ = none)
-    (hnc : redexKind e₁ = .plain) :
+    (hnc : redexKind e₁ = .plain) (hnu : ∀ p, ¬ Unwinds e₁ p) :
     (∀ σ₁ ns obs obs' nt, gooseCfgInterp σ₁ ns (obs ++ obs') nt ={E,∅}=∗
       ⌜GooseBaseReducible e₁ σ₁⌝ ∗
       ▷ ∀ e₂ σ₂ eₜ, ⌜BaseStep e₁ σ₁ obs e₂ σ₂ eₜ⌝ -∗ £ 1 ={∅,E}=∗
         gooseCfgInterp σ₂ (ns + 1) obs' (nt + eₜ.length) ∗
         WP e₂ @ s; E {{ Φ }} ∗
-        [∗list] ef ∈ eₜ, WP ef @ s; ⊤ {{ _v, True }})
+        [∗list] ef ∈ eₜ, WP ef @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ }})
     ⊢ WP e₁ @ s; E {{ Φ }} := by
   iintro H
   iapply wp_lift_base_step h
@@ -1211,10 +720,11 @@ theorem goose_wp_lift_base_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal
   imod H $$ %σ %ns %obs %obs' %nt Hσ with ⟨%Hred, H⟩
   imodintro
   isplitr
-  · ipureintro; exact goose_baseReducible_of hnc Hred
+  · ipureintro; exact goose_baseReducible_of hnc hnu Hred
   inext
   iintro %e₂ %s₂ %eₜ %Hstep Hcred
   obtain ⟨σ₂, rfl, Hstep'⟩ := (boundedBaseStep_plain hnc).1 Hstep
+  replace Hstep' := baseStep_of_headStep hnu Hstep'
   imod H $$ %e₂ %σ₂ %eₜ %Hstep' Hcred with ⟨Hσ, Hwp, Hefs⟩
   imodintro
   iframe Hwp Hefs
@@ -1223,13 +733,13 @@ theorem goose_wp_lift_base_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal
 
 /-- iris-lean's `wp_lift_atomic_base_step` for a plain redex. -/
 theorem goose_wp_lift_atomic_base_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal e₁ = none)
-    (hnc : redexKind e₁ = .plain) :
+    (hnc : redexKind e₁ = .plain) (hnu : ∀ p, ¬ Unwinds e₁ p) :
     (∀ σ₁ ns obs obs' nt, gooseCfgInterp σ₁ ns (obs ++ obs') nt ={E}=∗
       ⌜GooseBaseReducible e₁ σ₁⌝ ∗
       ▷ ∀ e₂ σ₂ eₜ, ⌜BaseStep e₁ σ₁ obs e₂ σ₂ eₜ⌝ -∗ £ 1 ={E}=∗
         gooseCfgInterp σ₂ (ns + 1) obs' (nt + eₜ.length) ∗
         (∃ v, ⌜toVal e₂ = some v⌝ ∧ Φ v) ∗
-        [∗list] ef ∈ eₜ, WP ef @ s; ⊤ {{ _v, True }})
+        [∗list] ef ∈ eₜ, WP ef @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ }})
     ⊢ WP e₁ @ s; E {{ Φ }} := by
   iintro H
   iapply wp_lift_atomic_base_step h
@@ -1239,10 +749,11 @@ theorem goose_wp_lift_atomic_base_step {e₁ : Expr} {Φ : val → IProp GF} (h 
   imod H $$ %σ %ns %obs %obs' %nt Hσ with ⟨%Hred, H⟩
   imodintro
   isplitr
-  · ipureintro; exact goose_baseReducible_of hnc Hred
+  · ipureintro; exact goose_baseReducible_of hnc hnu Hred
   inext
   iintro %e₂ %s₂ %eₜ %Hstep Hcred
   obtain ⟨σ₂, rfl, Hstep'⟩ := (boundedBaseStep_plain hnc).1 Hstep
+  replace Hstep' := baseStep_of_headStep hnu Hstep'
   imod H $$ %e₂ %σ₂ %eₜ %Hstep' Hcred with ⟨Hσ, HΦ, Hefs⟩
   imodintro
   iframe HΦ Hefs
@@ -1251,14 +762,14 @@ theorem goose_wp_lift_atomic_base_step {e₁ : Expr} {Φ : val → IProp GF} (h 
 
 /-- iris-lean's `wp_lift_atomic_base_step_no_fork` for a plain redex. -/
 theorem goose_wp_lift_atomic_base_step_no_fork {e₁ : Expr} {Φ : val → IProp GF}
-    (h : toVal e₁ = none) (hnc : redexKind e₁ = .plain) :
+    (h : toVal e₁ = none) (hnc : redexKind e₁ = .plain) (hnu : ∀ p, ¬ Unwinds e₁ p) :
     (∀ σ₁ ns obs obs' nt, gooseCfgInterp σ₁ ns (obs ++ obs') nt ={E}=∗
       ⌜GooseBaseReducible e₁ σ₁⌝ ∗
       ▷ ∀ e₂ σ₂ eₜ, ⌜BaseStep e₁ σ₁ obs e₂ σ₂ eₜ⌝ -∗ £ 1 ={E}=∗
         ⌜eₜ = []⌝ ∗ gooseCfgInterp σ₂ (ns + 1) obs' nt ∗ (∃ v, ⌜toVal e₂ = some v⌝ ∧ Φ v))
     ⊢ WP e₁ @ s; E {{ Φ }} := by
   iintro H
-  iapply goose_wp_lift_atomic_base_step h hnc
+  iapply goose_wp_lift_atomic_base_step h hnc hnu
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   imod H $$ %σ₁ %ns %obs %obs' %nt Hσ with ⟨%Hred, H⟩
   imodintro
@@ -1276,7 +787,7 @@ theorem goose_wp_lift_atomic_base_step_no_fork {e₁ : Expr} {Φ : val → IProp
 
 /-- A lifting lemma for atomic steps that only change the heap. -/
 theorem wp_lift_atomic_heap_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal e₁ = none)
-    (hnc : redexKind e₁ = .plain) :
+    (hnc : redexKind e₁ = .plain) (hnu : ∀ p, ¬ Unwinds e₁ p) :
     (∀ σ₁ : CfgState, naHeapCtx tls σ₁.1.heap ={E}=∗
       ⌜GooseBaseReducible e₁ σ₁⌝ ∗
       ▷ ∀ κ e₂ σ₂ eₜ, ⌜BaseStep e₁ σ₁ κ e₂ σ₂ eₜ⌝ -∗ £ 1 ={E}=∗
@@ -1285,7 +796,7 @@ theorem wp_lift_atomic_heap_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVa
         (∃ v, ⌜toVal e₂ = some v⌝ ∧ Φ v))
     ⊢ WP e₁ @ s; E {{ Φ }} := by
   iintro H
-  iapply goose_wp_lift_atomic_base_step_no_fork h hnc
+  iapply goose_wp_lift_atomic_base_step_no_fork h hnc hnu
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
@@ -1305,6 +816,9 @@ theorem wp_lift_atomic_heap_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVa
   iframe
   ipureintro; exact Hlctx
 
+/-- `Panic msg` (a run-time panic of a builtin: an index out of range, a failed
+type assertion, ...) is stuck: proofs show that it is unreachable. A panic that
+unwinds is `go.panic`'s (`Raise`, `wp_panic`). -/
 theorem wp_PanicOp (msg : String) (Φ : val → IProp GF) :
     ▷ False ⊢ WP (Panic msg) @ s; E {{ Φ }} := by
   iintro >%H
@@ -1313,7 +827,7 @@ theorem wp_PanicOp (msg : String) (Φ : val → IProp GF) :
 theorem wp_ArbitraryInt :
     {{ (True : IProp GF) }} ArbitraryInt @ s; E {{ (x : w64), RET #x; True }} := by
   iintro %Φ _ HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   imodintro
   isplitr
@@ -1337,7 +851,7 @@ theorem wp_load (l : Loc) (q : DFrac) (v : val) :
     {{ ▷ heapPointsto (GF := GF) l q v }} (Load (Val #l)) @ s; E
     {{ RET v; heapPointsto l q v }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   icases heapPointsto_na_acc l q v $$ Hl with ⟨Hl, Hl_rest⟩
   icases na_heap_read tls σ₁.1.heap l q v $$ Hσ Hl with %⟨lk, n, Heq, Hlock⟩
@@ -1368,7 +882,7 @@ theorem wp_prepare_write (l : Loc) (v : val) :
     {{ RET #(); naHeapPointstoSt WSt l (.own 1) v ∗
         (∀ v', naHeapPointsto l (.own 1) v' -∗ heapPointsto l (.own 1) v') }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   icases heapPointsto_na_acc l (.own 1) v $$ Hl with ⟨Hl, Hl_rest⟩
   imod na_heap_write_prepare tls σ₁.1.heap l v Writing rfl $$ Hσ Hl
@@ -1396,13 +910,13 @@ theorem wp_prepare_write (l : Loc) (v : val) :
   iapply HΦ
   iframe
 
-theorem wp_finish_store (l : Loc) (v v' : val) :
+theorem wp_finish_store (l : Loc) (v v' : val) (Hv : v.isPanic = false := by simp) :
     {{ ▷ naHeapPointstoSt (GF := GF) WSt l (.own 1) v' ∗
         (∀ v', naHeapPointsto l (.own 1) v' -∗ heapPointsto l (.own 1) v') }}
       (FinishStore (Val #l) (Val v)) @ s; E
     {{ RET #(); heapPointsto l (.own 1) v }} := by
   iintro %Φ ⟨>Hl, Hl_rest⟩ HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   imod na_heap_write_finish_vs tls l v' v (Reading 0) rfl $$ Hl %σ₁.1.heap Hσ
     with ⟨%lkw, %⟨Hlookup, Hlock⟩, Hσ, Hl⟩
@@ -1431,13 +945,27 @@ theorem isWriting_Some {A : Type} (mna : Option (NonAtomic A)) (a : A)
     (h : mna = some (Writing, a)) : IsWriting mna :=
   ⟨a, h⟩
 
+/-- The read-lock function for `naMode`. -/
+def naModeRl : NaMode → NaMode
+  | Reading n => Reading (n + 1)
+  | m => m
+
+def naModeUrl : NaMode → NaMode
+  | Reading (n + 1) => Reading n
+  | m => m
+
+theorem naModeRl_is_read_lock : IsReadLock tls naModeRl := by
+  intro lk n h; cases lk <;> simp_all [tls, naModeRl]
+
+theorem naModeUrl_is_read_unlock : IsReadUnlock tls naModeUrl := by
+  intro lk n h; cases lk <;> simp_all [tls, naModeUrl]
 
 theorem wp_start_read (l : Loc) (q : DFrac) (v : val) :
     {{ ▷ heapPointsto (GF := GF) l q v }} (StartRead (Val #l)) @ s; E
     {{ RET v; naHeapPointstoSt (RSt 1) l q v ∗
         (∀ v', naHeapPointsto l q v' -∗ heapPointsto l q v') }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   icases heapPointsto_na_acc l q v $$ Hl with ⟨Hl, Hl_rest⟩
   imod na_heap_read_prepare tls naModeRl σ₁.1.heap l q v naModeRl_is_read_lock $$ Hσ Hl
@@ -1470,7 +998,7 @@ theorem wp_finish_read (l : Loc) (q : DFrac) (v : val) :
       (FinishRead (Val #l)) @ s; E
     {{ RET #(); heapPointsto l q v }} := by
   iintro %Φ ⟨>Hl, Hl_rest⟩ HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   imod na_heap_read_finish_vs tls naModeUrl l q v naModeUrl_is_read_unlock $$ Hl %σ₁.1.heap Hσ
     with ⟨%lk1, %n1, %⟨Hlookup, Hlock⟩, Hσ, Hl⟩
@@ -1497,11 +1025,11 @@ theorem wp_finish_read (l : Loc) (q : DFrac) (v : val) :
   iapply HΦ
   iapply Hl_rest $$ Hl
 
-theorem wp_atomic_swap (l : Loc) (v0 v : val) :
+theorem wp_atomic_swap (l : Loc) (v0 v : val) (Hv : v.isPanic = false := by simp) :
     {{ ▷ heapPointsto (GF := GF) l (.own 1) v0 }} (AtomicSwap (Val #l) (Val v)) @ s; E
     {{ RET v0; heapPointsto l (.own 1) v }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   icases heapPointsto_na_acc l (.own 1) v0 $$ Hl with ⟨Hl, Hl_rest⟩
   icases na_heap_read_1 tls σ₁.1.heap l v0 $$ Hσ Hl with %⟨lk, Hlookup, Hlock⟩
@@ -1529,11 +1057,16 @@ theorem wp_atomic_swap (l : Loc) (v0 v : val) :
   iapply HΦ
   iapply Hl_rest $$ Hl
 
+theorem atomicAddEval_not_panic {v0 v1 v : val} (Hev : atomicAddEval v0 v1 = some v) :
+    v1.isPanic = false := by
+  unfold atomicAddEval at Hev; split at Hev <;> simp_all [val.isPanic]
+
 theorem wp_atomic_add (l : Loc) (v0 v1 v : val) (Hev : atomicAddEval v0 v1 = some v) :
     {{ ▷ heapPointsto (GF := GF) l (.own 1) v0 }} (AtomicAdd (Val #l) (Val v1)) @ s; E
     {{ RET v; heapPointsto l (.own 1) v }} := by
+  have Hv1 := atomicAddEval_not_panic Hev
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   icases heapPointsto_na_acc l (.own 1) v0 $$ Hl with ⟨Hl, Hl_rest⟩
   icases na_heap_read_1 tls σ₁.1.heap l v0 $$ Hσ Hl with %⟨lk, Hlookup, Hlock⟩
@@ -1562,11 +1095,12 @@ theorem wp_atomic_add (l : Loc) (v0 v1 v : val) (Hev : atomicAddEval v0 v1 = som
   iapply HΦ
   iapply Hl_rest $$ Hl
 
-theorem wp_cmpxchg_fail (l : Loc) (q : DFrac) (v' v1 v2 : val) (Hne : v' ≠ v1) :
+theorem wp_cmpxchg_fail (l : Loc) (q : DFrac) (v' v1 v2 : val) (Hne : v' ≠ v1)
+    (Hv1 : v1.isPanic = false := by simp) (Hv2 : v2.isPanic = false := by simp) :
     {{ ▷ heapPointsto (GF := GF) l q v' }} (CmpXchg (Val #l) (Val v1) (Val v2)) @ s; E
     {{ RET (PairV v' #false); heapPointsto l q v' }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   icases heapPointsto_na_acc l q v' $$ Hl with ⟨Hl, Hl_rest⟩
   icases na_heap_read tls σ₁.1.heap l q v' $$ Hσ Hl with %⟨lk, n, Hlookup, Hlock⟩
@@ -1596,11 +1130,12 @@ theorem wp_cmpxchg_fail (l : Loc) (q : DFrac) (v' v1 v2 : val) (Hne : v' ≠ v1)
     rw [Hlookup] at Heq'; cases Heq'
     exact (Hne Hvl).elim
 
-theorem wp_cmpxchg_suc (l : Loc) (v1 v2 v' : val) (Heq : v' = v1) :
+theorem wp_cmpxchg_suc (l : Loc) (v1 v2 v' : val) (Heq : v' = v1)
+    (Hv1 : v1.isPanic = false := by simp) (Hv2 : v2.isPanic = false := by simp) :
     {{ ▷ heapPointsto (GF := GF) l (.own 1) v' }} (CmpXchg (Val #l) (Val v1) (Val v2)) @ s; E
     {{ RET (PairV v' #true); heapPointsto l (.own 1) v2 }} := by
   iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   icases heapPointsto_na_acc l (.own 1) v' $$ Hl with ⟨Hl, Hl_rest⟩
   icases na_heap_read_1 tls σ₁.1.heap l v' $$ Hσ Hl with %⟨lk, Hlookup, Hlock⟩
@@ -1642,13 +1177,6 @@ theorem gmap_singleton_union_eq_insert {K V : Type} [DecidableEq K] (m : GMap K 
   rw [show ({[k := v]} : GMap K V).lookup k' = _ from GMap.lookup_singleton_iff k k' v]
   split <;> simp
 
-/-- A fresh block is a real one (`locCar ≠ 0`): its start is non-null at offset `0`. -/
-theorem IsFresh.car {σ : CfgState} {l : Loc} (h : IsFresh σ l) : l.locCar ≠ 0 := by
-  intro hc
-  apply (h.1 0).1
-  have ho : l.locOff = 0 := h.2
-  cases l; simp only [Loc.add, null] at *; congr <;> omega
-
 theorem exists_isFresh (σ : CfgState) : ∃ l, IsFresh σ l := by
   refine ⟨freshLocs σ.1.heap.domList, fun i => ⟨freshLocs_non_null _ i, ?_⟩, freshLocs_off_0 _⟩
   cases h : σ.1.heap !! (freshLocs σ.1.heap.domList +ₗ i) with
@@ -1659,46 +1187,11 @@ theorem exists_isFresh (σ : CfgState) : ∃ l, IsFresh σ l := by
 def pointstoVals (l : Loc) (q : DFrac) (vs : List val) : IProp GF :=
   [∗list] j ↦ vj ∈ vs, heapPointsto (l +ₗ (j : Int)) q vj
 
-instance pointstoVals_timeless (l : Loc) (q : DFrac) (vs : List val) :
-    Timeless (pointstoVals (GF := GF) l q vs) := by
-  unfold pointstoVals; infer_instance
-
-/-- The bytes `bs` as values. -/
-def byteVals (bs : List w8) : List val := bs.map fun b => LitV (LitByte b)
-
-theorem pointstoVals_to_na (l : Loc) (q : DFrac) (vs : List val) :
-    pointstoVals l q vs ⊢ ([∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) q v : IProp GF) := by
-  unfold pointstoVals
-  apply BigSepL.bigSepL_mono
-  intro k x _
-  unfold heapPointsto
-  iintro ⟨-, H⟩
-  iexact H
-
-theorem pointstoVals_of_na (l : Loc) (q : DFrac) (vs : List val) (hc : l.locCar ≠ 0) :
-    ([∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) q v : IProp GF) ⊢ pointstoVals l q vs := by
-  unfold pointstoVals
-  apply BigSepL.bigSepL_mono
-  intro k x _
-  exact na_pointsto_to_heap _ _ _ hc
-
-theorem pointstoVals_car (l : Loc) (q : DFrac) (vs : List val) (h : vs ≠ []) :
-    pointstoVals l q vs ⊢ (⌜l.locCar ≠ 0⌝ : IProp GF) := by
-  cases vs with
-  | nil => exact absurd rfl h
-  | cons v vs =>
-    unfold pointstoVals
-    iintro H
-    icases BigSepL.bigSepL_cons.1 $$ H with ⟨H0, -⟩
-    unfold heapPointsto
-    icases H0 with ⟨%hc, -⟩
-    ipureintro; simpa using hc
-
-theorem wp_allocN_seq (v : val) :
+theorem wp_allocN_seq (v : val) (Hv : v.isPanic = false := by simp) :
     {{ (True : IProp GF) }} (Alloc (Val v)) @ s; E
     {{ l, RET #l; pointstoVals l (.own 1) [v] }} := by
   iintro %Φ _ HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
+  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   imodintro
   isplitr
@@ -1709,7 +1202,7 @@ theorem wp_allocN_seq (v : val) :
   iintro %κ %e₂ %σ₂ %eₜ %Hstep _
   obtain ⟨l, Hfresh, rfl, rfl, rfl, rfl⟩ := baseStep_Alloc_inv Hstep
   have Hnone : σ₁.1.heap !! l = none := by simpa using (Hfresh.1 0).2
-  have Hnn : l.locCar ≠ 0 := Hfresh.car
+  have Hnn : l ≠ null := by simpa using (Hfresh.1 0).1
   imod na_heap_alloc tls σ₁.1.heap l v (Reading 0) Hnone rfl $$ Hσ with ⟨Hσ, Hl⟩
   imodintro
   isplitr
@@ -1726,11 +1219,11 @@ theorem wp_allocN_seq (v : val) :
   rw [show l +ₗ ((0 : Nat) : Int) = l by simp]
   iapply na_pointsto_to_heap l _ v Hnn $$ Hl
 
-theorem wp_alloc_untyped (v : val) :
+theorem wp_alloc_untyped (v : val) (Hv : v.isPanic = false := by simp) :
     {{ (True : IProp GF) }} (Alloc (Val v)) @ s; E
     {{ l, RET #l; heapPointsto l (.own 1) v }} := by
   iintro %Φ _ HΦ
-  iapply wp_allocN_seq v
+  iapply wp_allocN_seq v Hv
   · itrivial
   inext
   iintro %l Hl
@@ -1763,7 +1256,7 @@ theorem wp_ThreadExit (Φ : val → IProp GF) :
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
   imodintro
   isplitr
-  · ipureintro; exact ⟨[], _, _, _, .exit (BaseStep.ThreadExitS σ)⟩
+  · ipureintro; exact ⟨[], _, _, _, .exit (.base not_unwinds_ThreadExit (BaseStep.ThreadExitS σ))⟩
   inext
   iintro %e₂ %s₂ %eₜ %Hstep _
   cases Hstep with
@@ -1771,7 +1264,8 @@ theorem wp_ThreadExit (Φ : val → IProp GF) :
   | tick hc _ => cases hc
   | stutter hc _ => cases hc
   | exit Hb =>
-    obtain ⟨rfl, rfl, rfl, rfl⟩ := baseStep_ThreadExit_inv Hb
+    obtain ⟨rfl, rfl, rfl, rfl⟩ :=
+      baseStep_ThreadExit_inv (baseStep_of_headStep not_unwinds_ThreadExit Hb)
     imodintro
     isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht Htok]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
@@ -1791,35 +1285,38 @@ theorem wp_ThreadExit (Φ : val → IProp GF) :
     iapply BigSepL.bigSepL_nil.2
     itrivial
 
-/-- The forked thread `e ;; ThreadExit` runs `e`, which must end with a thread
-token, and returns the token at its `ThreadExit`. -/
+/-- The forked thread `e ;; ThreadExit` runs `e`, which must not panic and must
+end with a thread token, and returns the token at its `ThreadExit`. -/
 theorem wp_seq_ThreadExit (e : Expr) :
-    WP e @ s; ⊤ {{ _v, (threadTok : IProp GF) }} ⊢ WP (Seq e ThreadExit) @ s; ⊤ {{ _v, True }} := by
+    WP e @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ ∗ (threadTok : IProp GF) }} ⊢
+      WP (Seq e ThreadExit) @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ }} := by
   refine .trans (wp_mono fun v => ?_)
     (wp_bind (fill [EctxItem.AppRCtx (Rec BAnon BAnon ThreadExit)]))
-  refine (?_ : (threadTok : IProp GF) ⊢
-    WP (App (Rec BAnon BAnon ThreadExit) (Val v)) @ s; ⊤ {{ _v, True }})
-  refine .trans ?_ (wp_bind (fill [EctxItem.AppLCtx v]))
-  refine .trans ?_ (wp_pure_step_later (Hexec := pure_recc BAnon BAnon ThreadExit) trivial)
-  refine (?_ : (threadTok : IProp GF) ⊢ ▷ (£ 1 -∗ WP (Val (RecV BAnon BAnon ThreadExit)) @ s; ⊤
-    {{ w, WP (App (Val w) (Val v)) @ s; ⊤ {{ _v, True }} }}))
-  iintro Htok
+  refine (?_ : iprop(⌜v.isPanic = false⌝ ∗ (threadTok : IProp GF)) ⊢
+    WP (App (Rec BAnon BAnon ThreadExit) (Val v)) @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ }})
+  iintro ⟨%hv, Htok⟩
+  iapply (wp_bind (fill [EctxItem.AppLCtx v hv]) : WP (Rec BAnon BAnon ThreadExit) @ s; ⊤
+    {{ w, WP (App (Val w) (Val v)) @ s; ⊤ {{ w, ⌜val.isPanic w = false⌝ }} }} ⊢
+    WP (App (Rec BAnon BAnon ThreadExit) (Val v)) @ s; ⊤ {{ w, ⌜val.isPanic w = false⌝ }})
+  iapply (wp_pure_step_later (Hexec := pure_recc BAnon BAnon ThreadExit) trivial)
   inext
   iintro _
   iapply wp_value'
-  iapply wp_pure_step_later (e₂ := ThreadExit) (Hexec := pure_beta BAnon BAnon ThreadExit v) trivial
+  iapply wp_pure_step_later (e₂ := ThreadExit) (Hexec := pure_beta BAnon BAnon ThreadExit v) hv
   inext
   iintro _
   iapply wp_ThreadExit $$ Htok
   inext
-  itrivial
+  ipureintro
+  exact isPanic_intoVal ()
 
 /-- `Fork e`: the forking thread receives a thread token (out of the thread fuel)
 and the forked thread must end with one (it is returned at its `ThreadExit`).
 Whether the token is kept by the forking thread, given to the forked thread or
 deposited in an invariant is up to the proof. -/
 theorem wp_fork_tok (e : Expr) (Φ : val → IProp GF) :
-    ⊢ ▷ (threadTok -∗ WP e @ s; ⊤ {{ _v, threadTok }} ∗ Φ #()) -∗ WP (Fork e) @ s; E {{ Φ }} := by
+    ⊢ ▷ (threadTok -∗ WP e @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }} ∗ Φ #()) -∗
+      WP (Fork e) @ s; E {{ Φ }} := by
   iloeb as IH
   iintro H
   iapply wp_lift_step rfl
@@ -1831,7 +1328,7 @@ theorem wp_fork_tok (e : Expr) (Φ : val → IProp GF) :
   have Hred : BaseStep.Reducible (Fork e, ((σ, ⟨c, t⟩) : BcfgState)) := by
     cases t with
     | zero => exact ⟨[], _, _, [], .forkStutter⟩
-    | succ t => exact ⟨[], _, _, _, .fork (BaseStep.ForkS e σ)⟩
+    | succ t => exact ⟨[], _, _, _, .fork (.base (not_unwinds_Fork e) (BaseStep.ForkS e σ))⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hclose
   isplitr
@@ -1847,7 +1344,7 @@ theorem wp_fork_tok (e : Expr) (Φ : val → IProp GF) :
   | tick hc _ => cases hc
   | stutter hc _ => cases hc
   | fork Hb =>
-    obtain ⟨rfl, rfl, rfl, rfl⟩ := baseStep_Fork_inv Hb
+    obtain ⟨rfl, rfl, rfl, rfl⟩ := baseStep_Fork_inv (baseStep_of_headStep (not_unwinds_Fork e) Hb)
     rename_i t
     icases threadFuel_fork t $$ Ht with ⟨Ht, Htok⟩
     icases H $$ Htok with ⟨He, HΦ⟩
@@ -1882,24 +1379,28 @@ theorem wp_fork_tok (e : Expr) (Φ : val → IProp GF) :
     iapply BigSepL.bigSepL_nil.2
     itrivial
 
-/-- `Fork e` without thread tokens: the forked thread's token stays with it. -/
+/-- `Fork e` without thread tokens: the forked thread's token stays with it. The
+forked thread must not panic (a panic that unwinds a goroutine kills the
+program). -/
 theorem wp_fork (e : Expr) (Φ : val → IProp GF) :
-    ⊢ ▷ WP e @ s; ⊤ {{ _v, True }} -∗ ▷ Φ #() -∗ WP (Fork e) @ s; E {{ Φ }} := by
+    ⊢ ▷ WP e @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ }} -∗ ▷ Φ #() -∗ WP (Fork e) @ s; E {{ Φ }} := by
   iintro He HΦ
   iapply wp_fork_tok
   inext
   iintro Htok
   iframe HΦ
-  iapply (wp_wand (Φ := fun _ => iprop(threadTok ∗ True))) $$ [He Htok]
-  · iapply (wp_frame_r (Φ := fun _ => iprop(True)))
+  iapply (wp_wand (Φ := fun (v : val) => iprop(threadTok ∗ ⌜v.isPanic = false⌝))) $$ [He Htok]
+  · iapply (wp_frame_l (Φ := fun (v : val) => iprop(⌜v.isPanic = false⌝)))
     iframe
-  iintro %_ ⟨Htok, -⟩
-  iexact Htok
+  iintro %_ ⟨Htok, %Hv⟩
+  iframe Htok
+  ipureintro; exact Hv
 
 /-- `Fork e`, the fresh thread token going to the forked thread: its body receives the token and
 must end with one. (`wp_fork` is this with the token framed through the body.) -/
 theorem wp_fork_tok_body (e : Expr) (Φ : val → IProp GF) :
-    ⊢ ▷ (threadTok -∗ WP e @ s; ⊤ {{ _v, threadTok }}) -∗ ▷ Φ #() -∗ WP (Fork e) @ s; E {{ Φ }} := by
+    ⊢ ▷ (threadTok -∗ WP e @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }}) -∗ ▷ Φ #() -∗
+      WP (Fork e) @ s; E {{ Φ }} := by
   iintro He HΦ
   iapply wp_fork_tok
   inext
@@ -1911,7 +1412,8 @@ theorem wp_fork_tok_body (e : Expr) (Φ : val → IProp GF) :
 with a token of its own, e.g. one it takes back out of an invariant at its `Done`, where the
 forking thread deposited its own before the `go` statement. -/
 theorem wp_fork_tok_self (e : Expr) (Φ : val → IProp GF) :
-    ⊢ ▷ WP e @ s; ⊤ {{ _v, threadTok }} -∗ ▷ (threadTok -∗ Φ #()) -∗ WP (Fork e) @ s; E {{ Φ }} := by
+    ⊢ ▷ WP e @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }} -∗ ▷ (threadTok -∗ Φ #()) -∗
+      WP (Fork e) @ s; E {{ Φ }} := by
   iintro He HΦ
   iapply wp_fork_tok
   inext
@@ -1927,7 +1429,8 @@ an exclusive receipt `⧗ 1` and increments a persistent receipt `⧖ m` (the
 paper's `{⧖ m} tick v {⧗ 1 ∗ ⧖ (m + 1)}`); at the bound the step stutters,
 which is handled by Löb induction. -/
 theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg : val)
-    (Φ : val → IProp GF) (m : Nat) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s') :
+    (Φ : val → IProp GF) (m : Nat) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s')
+    (Harg : arg.isPanic = false) :
     ⧖ m ∗ ▷ (∀ e' gs gs', ⌜IsGoStep op arg e' gs gs'⌝ →
         (£ 1 -∗ ⧗ 1 -∗ ⧖ (m + 1) -∗ ownGoStateCtx gs ={E}=∗
           ownGoStateCtx gs' ∗ WP (fill K e') @ s; E {{ Φ }}))
@@ -1941,12 +1444,13 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
   obtain ⟨e', s', h⟩ := Hok σ₁.1.goState.packageState
-  have Hreal := BaseStep.GoInstructionS op arg e' s' σ₁ (Hlctx ▸ h)
+  have Hreal := HeadStep.base (not_unwinds_GoInstruction Harg)
+    (BaseStep.GoInstructionS op arg e' s' σ₁ (Hlctx ▸ h))
   have Hred : BaseStep.Reducible
       (App (Val (GoInstruction op)) (Val arg), ((σ₁, ⟨c, t⟩) : BcfgState)) := by
     cases c with
-    | zero => exact ⟨[], _, (σ₁, ⟨0, t⟩), [], .stutter rfl Hreal⟩
-    | succ c => exact ⟨[], e', (_, ⟨c, t⟩), [], .tick rfl Hreal⟩
+    | zero => exact ⟨[], _, (σ₁, ⟨0, t⟩), [], .stutter (redexKind_GoInstruction Harg) Hreal⟩
+    | succ c => exact ⟨[], e', (_, ⟨c, t⟩), [], .tick (redexKind_GoInstruction Harg) Hreal⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hclose
   isplitr
@@ -1958,9 +1462,10 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
   obtain ⟨e₂', rfl, Hbs⟩ :=
     exists_baseStep_of_primStep_fill_of_redex_baseStep_reducible Hred Hstep
   cases Hbs with
-  | step hnc _ => cases hnc
+  | step hnc _ => rw [redexKind_GoInstruction Harg] at hnc; cases hnc
   | tick _ Hbs =>
-    obtain ⟨s', Hgo, rfl, rfl, rfl⟩ := baseStep_GoInstruction_inv Hbs
+    obtain ⟨s', Hgo, rfl, rfl, rfl⟩ :=
+      baseStep_GoInstruction_inv (baseStep_of_headStep (not_unwinds_GoInstruction Harg) Hbs)
     rw [Hlctx] at Hgo
     imod Hclose
     imod receiptFuel_tick _ m $$ [Hc] with ⟨Hc, Hr, Hm'⟩
@@ -1998,13 +1503,14 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
 /-- `wp_GoInstruction_preceipt` without persistent receipts: a Go instruction
 step yields an exclusive time receipt `⧗ 1`. -/
 theorem wp_GoInstruction_receipt (K : List EctxItem) (op : GoInstruction) (arg : val)
-    (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s') :
+    (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s')
+    (Harg : arg.isPanic = false) :
     ▷ (∀ e' gs gs', ⌜IsGoStep op arg e' gs gs'⌝ →
         (£ 1 -∗ ⧗ 1 -∗ ownGoStateCtx gs ={E}=∗ ownGoStateCtx gs' ∗ WP (fill K e') @ s; E {{ Φ }}))
     ⊢ WP (fill K (App (Val (GoInstruction op)) (Val arg))) @ s; E {{ Φ }} := by
   iintro HΦ
   imod preceipt_zero (GF := GF) with #H0
-  iapply wp_GoInstruction_preceipt K op arg Φ 0 Hok
+  iapply wp_GoInstruction_preceipt K op arg Φ 0 Hok Harg
   iframe H0
   inext
   iintro %e' %gs %gs' %Hstep Hlc Hr _ Hgs
@@ -2012,23 +1518,25 @@ theorem wp_GoInstruction_receipt (K : List EctxItem) (op : GoInstruction) (arg :
 
 /-- WP for go instructions. -/
 theorem wp_GoInstruction (K : List EctxItem) (op : GoInstruction) (arg : val)
-    (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s') :
+    (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s')
+    (Harg : arg.isPanic = false) :
     ▷ (∀ e' gs gs', ⌜IsGoStep op arg e' gs gs'⌝ →
         (£ 1 -∗ ownGoStateCtx gs ={E}=∗ ownGoStateCtx gs' ∗ WP (fill K e') @ s; E {{ Φ }}))
     ⊢ WP (fill K (App (Val (GoInstruction op)) (Val arg))) @ s; E {{ Φ }} := by
   iintro HΦ
-  iapply wp_GoInstruction_receipt K op arg Φ Hok
+  iapply wp_GoInstruction_receipt K op arg Φ Hok Harg
   inext
   iintro %e' %gs %gs' %Hstep Hlc _ Hgs
   iapply HΦ $$ %e' %gs %gs' %Hstep Hlc Hgs
 
 /-- `wp_GoInstruction` with an empty evaluation context. -/
 theorem wp_GoInstruction' (op : GoInstruction) (arg : val)
-    (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s') :
+    (Φ : val → IProp GF) (Hok : ∀ s, ∃ e' s', IsGoStep op arg e' s s')
+    (Harg : arg.isPanic = false := by simp) :
     ▷ (∀ e' gs gs', ⌜IsGoStep op arg e' gs gs'⌝ →
         (£ 1 -∗ ownGoStateCtx gs ={E}=∗ ownGoStateCtx gs' ∗ WP e' @ s; E {{ Φ }}))
     ⊢ WP (App (Val (GoInstruction op)) (Val arg)) @ s; E {{ Φ }} :=
-  wp_GoInstruction [] op arg Φ Hok
+  wp_GoInstruction [] op arg Φ Hok Harg
 
 /-! ### Prophecy variables -/
 
@@ -2042,7 +1550,7 @@ theorem wp_new_proph :
     {{ (True : IProp GF) }} NewProph @ s; E
     {{ (pvs : List val) (p : proph_id), RET #p; proph p pvs }} := by
   iintro %Φ _ HΦ
-  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl
+  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
@@ -2069,11 +1577,12 @@ theorem wp_new_proph :
   · ipureintro; rfl
   iapply HΦ $$ %_ %p Htok
 
-theorem wp_resolve_proph (p : proph_id) (pvs : List val) (v : val) :
+theorem wp_resolve_proph (p : proph_id) (pvs : List val) (v : val)
+    (Hv : v.isPanic = false := by simp) :
     {{ proph (GF := GF) p pvs }} (ResolveProph (Val #p) (Val v)) @ s; E
     {{ (pvs' : List val), RET #(); ⌜pvs = v :: pvs'⌝ ∗ proph p pvs' }} := by
   iintro %Φ Hp HΦ
-  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl
+  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
@@ -2104,695 +1613,90 @@ theorem wp_resolve_proph (p : proph_id) (pvs : List val) (v : val) :
 
 end lifting
 
-/-! ### Encoded values: allocation, two-phase reads and writes, atomics -/
+/-! ## Panics
 
-section enc_wps
+A panic outcome `PanicV p` unwinds every evaluation frame but `Catch`'s
+(`HeadStep.unwind`), so a postcondition `Φ` also receives panics: `wp_unwind`
+takes `Φ (PanicV p)` through a `Catch`-free evaluation context, and `wp_catch`
+splits on the outcome of the expression under a `Catch`. A spec
+`{{ P }} e {{ RET v; Q }}` names a normal value (no Go value is a panic,
+`isPanic_intoVal`), so it excludes panics. -/
+
+section panic
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable {s : Stuckness} {E : CoPset}
-variable {σ σ' : CfgState} {κ : List Observation} {e' : Expr} {efs : List Expr}
-open ProofMode
 
+open EctxLanguage
 
+/-- The panic in an unwinding redex is unique. -/
+theorem unwinds_det {Ki Ki' : EctxItem} {p p' : val}
+    (h : fillItem Ki (Val (PanicV p)) = fillItem Ki' (Val (PanicV p'))) : p = p' := by
+  cases Ki <;> cases Ki' <;> simp only [fillItem, reduceCtorEq, Expr.App.injEq, Expr.Pair.injEq,
+    Expr.If.injEq, Expr.Fst.injEq, Expr.Snd.injEq, Expr.Primitive1.injEq, Expr.Primitive2.injEq,
+    Expr.ExternalOp.injEq, Expr.CmpXchg.injEq, Expr.ResolveProph.injEq, Expr.Catch.injEq,
+    Expr.Val.injEq, val.PanicV.injEq] at h <;>
+    (repeat (obtain ⟨h₁, h⟩ := h; try subst h₁)) <;> (try subst h) <;> simp_all [val.isPanic]
 
-theorem cellsAt_unique {h : GMap Loc (NonAtomic val)} {l : Loc} {cs cs' : List (NonAtomic val)}
-    (H : CellsAt h l cs) (H' : CellsAt h l cs') (hlen : cs.length = cs'.length) : cs = cs' := by
-  apply List.ext_getElem hlen
-  intro i h1 h2
-  have e1 := H i h1
-  rw [H' i h2] at e1
-  exact (Option.some.inj e1).symm
+/-- The unwinding step: a frame other than `Catch`'s around a panic steps to the panic. -/
+theorem pure_unwind (Ki : EctxItem) (p : val) (hK : Ki.unwinds = true) :
+    Language.PureExec True 1 (fillItem Ki (Val (PanicV p))) (Val (PanicV p)) where
+  pureExec _ := by
+    have hnc := redexKind_unwind Ki p
+    refine .tail _ (.rfl _) (purePrimStep_of_pureBaseStep
+      ⟨fun σ => ⟨_, _, _, BoundedBaseStep.step (f := σ.2) hnc (.unwind ⟨Ki, hK, rfl⟩)⟩, ?_⟩)
+    intro σ₁ σ₂ obs e₂' eₜ h
+    obtain ⟨σ', rfl, h'⟩ := (boundedBaseStep_plain (σ := σ₁.1) (f := σ₁.2) hnc).1 h
+    rcases h' with ⟨⟨Ki', _, hu⟩⟩ | ⟨hnu, _⟩
+    · cases unwinds_det hu; exact ⟨rfl, rfl, rfl, rfl⟩
+    · exact absurd ⟨Ki, hK, rfl⟩ (hnu p)
 
-theorem cellsAt_eq_of_snd {h : GMap Loc (NonAtomic val)} {l : Loc} {cs cs' : List (NonAtomic val)}
-    (H : CellsAt h l cs) (H' : CellsAt h l cs') (hlen : cs'.length = cs.length) : cs' = cs :=
-  cellsAt_unique H' H hlen
+/-- `Raise v` panics with `v`. -/
+theorem wp_raise (v : val) (Φ : val → IProp GF) (hv : v.isPanic = false) :
+    Φ (PanicV v) ⊢ WP (Raise (Val v)) @ s; E {{ Φ }} := by
+  iintro HΦ
+  iapply (wp_pure_step_later (Hexec := pure_raise v) hv)
+  inext
+  iintro _
+  iapply wp_value'
+  iexact HΦ
 
-theorem decode_ne_nil {enc : Encoding} {vs : List val} {v : val} (h : decode enc vs = some v) :
-    vs ≠ [] := by
-  rintro rfl
-  cases enc with
-  | word n =>
-    simp [decode] at h
-    omega
-  | cell k => simp [decode] at h
-
-theorem encode_length {enc : Encoding} {v : val} {vs : List val} (h : encode enc v = some vs) :
-    vs.length = enc.size := by
-  cases enc with
-  | word n =>
-    simp only [encode, Option.map_eq_some_iff] at h
-    obtain ⟨z, -, rfl⟩ := h
-    simp [leBytes_length, Encoding.size]
-  | cell k =>
-    simp only [encode] at h
-    split at h
-    · rename_i hk; cases h; simp [Encoding.size, tails]; have := hk.1; omega
-    · cases h
-
-theorem wordLitZ?_spec {n : Nat} {v : val} {z : Int} (h : wordLitZ? n v = some z) :
-    (n = 1 ∨ n = 2 ∨ n = 4 ∨ n = 8) ∧ 0 ≤ z ∧ z < 2 ^ (8 * n) ∧ wordLit n z = v := by
-  unfold wordLitZ? at h
-  split at h <;> (try cases h)
-  · rename_i x
-    refine ⟨by decide, by omega, by have := x.isLt; simp; omega, ?_⟩
-    show LitV (LitByte (BitVec.ofInt 8 (x.toNat : Int))) = _
-    rw [BitVec.ofInt_natCast, BitVec.ofNat_toNat, BitVec.setWidth_eq]
-  · rename_i x
-    refine ⟨by decide, by omega, by have := x.isLt; simp; omega, ?_⟩
-    show LitV (LitInt16 (BitVec.ofInt 16 (x.toNat : Int))) = _
-    rw [BitVec.ofInt_natCast, BitVec.ofNat_toNat, BitVec.setWidth_eq]
-  · rename_i x
-    refine ⟨by decide, by omega, by have := x.isLt; simp; omega, ?_⟩
-    show LitV (LitInt32 (BitVec.ofInt 32 (x.toNat : Int))) = _
-    rw [BitVec.ofInt_natCast, BitVec.ofNat_toNat, BitVec.setWidth_eq]
-  · rename_i x
-    refine ⟨by decide, by omega, by have := x.isLt; simp; omega, ?_⟩
-    show LitV (LitInt (BitVec.ofInt 64 (x.toNat : Int))) = _
-    rw [BitVec.ofInt_natCast, BitVec.ofNat_toNat, BitVec.setWidth_eq]
-
-theorem mapM_byteOf_map (bs : List w8) :
-    (bs.map fun b => LitV (LitByte b)).mapM byteOf? = some bs := by
-  induction bs with
-  | nil => rfl
-  | cons b bs ih => simp [List.mapM_cons, byteOf?, ih]
-
-/-- An encoded value decodes to itself. -/
-theorem decode_encode {enc : Encoding} {v : val} {vs : List val} (h : encode enc v = some vs) :
-    decode enc vs = some v := by
-  cases enc with
-  | word n =>
-    simp only [encode, Option.map_eq_some_iff] at h
-    obtain ⟨z, hz, rfl⟩ := h
-    obtain ⟨hn, h0, h1, hv⟩ := wordLitZ?_spec hz
-    simp only [decode, if_pos hn, mapM_byteOf_map, Option.bind_some, leBytes_length,
-      ↓reduceIte, leInt_leBytes, Int.emod_eq_of_lt h0 h1, hv]
-  | cell k =>
-    simp only [encode] at h
-    split at h
-    · rename_i hk; cases h; simp [decode, hk]
-    · cases h
-
-/-- An encoding is never empty. -/
-theorem encode_some_ne_nil {enc : Encoding} {v : val} {vs : List val}
-    (h : encode enc v = some vs) : vs ≠ [] := by
-  cases enc with
-  | word n =>
-    simp only [encode, Option.map_eq_some_iff] at h
-    obtain ⟨z, hz, rfl⟩ := h
-    have hn := (wordLitZ?_spec hz).1
-    intro e
-    have := congrArg List.length e
-    simp only [List.length_map, leBytes_length, List.length_nil] at this
-    omega
-  | cell k =>
-    simp only [encode] at h
-    split at h
-    · cases h; simp
-    · cases h
-
-/-- The encoding of a value, when it has one. -/
-noncomputable def encodeVals (enc : Encoding) (v : val) : List val := (encode enc v).getD []
-
-theorem encodeVals_eq {enc : Encoding} {v : val} {vs : List val} (h : encode enc v = some vs) :
-    encodeVals enc v = vs := by
-  simp [encodeVals, h]
-
-
-theorem heapPointsto_list_to_na (f : Nat → Loc) (q : DFrac) (vs : List val) :
-    ([∗list] i ↦ v ∈ vs, heapPointsto (f i) q v) ⊢
-      ([∗list] i ↦ v ∈ vs, naHeapPointsto (f i) q v : IProp GF) := by
-  apply BigSepL.bigSepL_mono
-  intro k x _
-  unfold heapPointsto
-  iintro ⟨-, H⟩
-  iexact H
-
-/-- A points-to of a non-empty list of cells shows its block is a real one. -/
-theorem pointstoVals_split (l : Loc) (q : DFrac) (vs : List val) :
-    pointstoVals l q vs ⊢
-      (⌜vs = [] ∨ l.locCar ≠ 0⌝ ∗
-        [∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) q v : IProp GF) := by
-  cases vs with
-  | nil =>
-    iintro _
-    isplitr
-    · ipureintro; left; rfl
-    · iapply BigSepL.bigSepL_nil.2; itrivial
-  | cons v vs =>
-    unfold pointstoVals
+/-- A panic unwinds an evaluation context without a `Catch` frame. -/
+theorem wp_unwind (K : List EctxItem) (hK : ∀ Ki ∈ K, Ki.unwinds = true) (p : val)
+    (Φ : val → IProp GF) :
+    Φ (PanicV p) ⊢ WP (fill K (Val (PanicV p))) @ s; E {{ Φ }} := by
+  induction K generalizing Φ with
+  | nil => exact wp_value'
+  | cons Ki K ih =>
+    rw [EctxItemLanguage.fill_cons]
+    refine .trans ?_ (wp_bind (fill K))
+    refine .trans (ih (fun Ki h => hK Ki (List.mem_cons_of_mem _ h)) _) ?_
+    refine (?_ : WP (fill K (Val (PanicV p))) @ s; E {{ Φ }} ⊢ _)
     iintro H
-    icases BigSepL.bigSepL_cons.1 $$ H with ⟨H0, H⟩
-    ihave H := heapPointsto_list_to_na (fun k => l +ₗ ((k + 1 : Nat) : Int)) q vs $$ H
-    unfold heapPointsto
-    icases H0 with ⟨%hc, H0⟩
-    isplitr
-    · ipureintro; right; simpa using hc
-    iapply BigSepL.bigSepL_cons.2
-    iframe H0
+    iapply (wp_pure_step_later (Hexec := pure_unwind Ki p (hK Ki List.mem_cons_self)) trivial)
+    inext
+    iintro _
+    iapply wp_value'
     iexact H
 
-theorem pointstoVals_split' (l : Loc) (q : DFrac) (vs : List val) (hne : vs ≠ []) :
-    pointstoVals l q vs ⊢
-      (⌜l.locCar ≠ 0⌝ ∗ [∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) q v : IProp GF) := by
-  iintro H
-  icases pointstoVals_split l q vs $$ H with ⟨%hc, H⟩
-  iframe H
-  ipureintro
-  rcases hc with h | h
-  · exact absurd h hne
-  · exact h
+/-- `Catch e h k`: evaluate `e` first (`wp_catch_panic`, `wp_catch_val` take the
+`Catch` step on its outcome). -/
+theorem wp_catch (e h k : Expr) (Φ : val → IProp GF) :
+    WP e @ s; E {{ v, WP (Catch (Val v) h k) @ s; E {{ Φ }} }} ⊢
+      WP (Catch e h k) @ s; E {{ Φ }} :=
+  wp_bind (fill [EctxItem.CatchCtx h k])
 
-/-! #### Inversion lemmas -/
+/-- A panic reaching a `Catch` continues with the handler. -/
+theorem wp_catch_panic (p : val) (h k : Expr) (Φ : val → IProp GF) :
+    ▷ (£ 1 -∗ WP (App h (Val p)) @ s; E {{ Φ }}) ⊢ WP (Catch (Val (PanicV p)) h k) @ s; E {{ Φ }} :=
+  wp_pure_step_later (Hexec := pure_catch_panic p h k) trivial
 
-theorem baseStep_AllocN_inv {n v : val} (h : BaseStep (AllocN (Val n) (Val v)) σ κ e' σ' efs) :
-    ∃ (k a : w64) (l : Loc), n = PairV (LitV (LitInt k)) (LitV (LitInt a)) ∧
-      κ = [] ∧ e' = Val #l ∧ efs = [] ∧
-      ((uint.nat k ≠ 0 ∧ IsFreshAligned σ l (uint.nat a) ∧
-          σ' = setCells l ((List.replicate (uint.nat k) v).map Free) σ) ∨
-        (uint.nat k = 0 ∧ l.locCar ≠ 0 ∧ (uint.nat a : Int) ∣ l.locOff ∧ σ' = σ)) := by
-  cases h with
-  | AllocNS _ _ _ _ _ hk hf => exact ⟨_, _, _, rfl, rfl, rfl, rfl, .inl ⟨hk, hf, rfl⟩⟩
-  | AllocN0S _ _ _ _ _ hk hc ha => exact ⟨_, _, _, rfl, rfl, rfl, rfl, .inr ⟨hk, hc, ha, rfl⟩⟩
+/-- A value reaching a `Catch` continues with the normal continuation. -/
+theorem wp_catch_val (v : val) (h k : Expr) (Φ : val → IProp GF) (hv : v.isPanic = false) :
+    ▷ (£ 1 -∗ WP (App k (Val v)) @ s; E {{ Φ }}) ⊢ WP (Catch (Val v) h k) @ s; E {{ Φ }} :=
+  wp_pure_step_later (Hexec := pure_catch_val v h k) hv
 
-theorem baseStep_StartReadN_inv {enc : Encoding} {v : val}
-    (h : BaseStep (StartReadN enc (Val v)) σ κ e' σ' efs) :
-    ∃ l cs w, v = #l ∧ cs.length = enc.size ∧ CellsAt σ.1.heap l cs ∧
-      (∀ c ∈ cs, ∃ n, c.1 = Reading n) ∧ decode enc (cs.map Prod.snd) = some w ∧
-      κ = [] ∧ e' = Val w ∧ σ' = setCells l (cs.map fun c => (naModeRl c.1, c.2)) σ ∧
-      efs = [] := by
-  cases h; exact ⟨_, _, _, rfl, ‹_›, ‹_›, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
-
-theorem baseStep_FinishReadN_inv {enc : Encoding} {v : val}
-    (h : BaseStep (FinishReadN enc (Val v)) σ κ e' σ' efs) :
-    ∃ l cs, v = #l ∧ cs.length = enc.size ∧ CellsAt σ.1.heap l cs ∧
-      (∀ c ∈ cs, ∃ n, c.1 = Reading (n + 1)) ∧
-      κ = [] ∧ e' = Val #() ∧ σ' = setCells l (cs.map fun c => (naModeUrl c.1, c.2)) σ ∧
-      efs = [] := by
-  cases h; exact ⟨_, _, rfl, ‹_›, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
-
-theorem baseStep_PrepareWriteN_inv {enc : Encoding} {v : val}
-    (h : BaseStep (PrepareWriteN enc (Val v)) σ κ e' σ' efs) :
-    ∃ l cs, v = #l ∧ cs.length = enc.size ∧ CellsAt σ.1.heap l cs ∧
-      (∀ c ∈ cs, c.1 = Reading 0) ∧ WriteCompat enc (cs.map Prod.snd) ∧
-      κ = [] ∧ e' = Val #() ∧ σ' = setCells l (cs.map fun c => (Writing, c.2)) σ ∧
-      efs = [] := by
-  cases h; exact ⟨_, _, rfl, ‹_›, ‹_›, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
-
-theorem baseStep_FinishStoreN_inv {enc : Encoding} {v1 v2 : val}
-    (h : BaseStep (FinishStoreN enc (Val v1) (Val v2)) σ κ e' σ' efs) :
-    ∃ l cs vs, v1 = #l ∧ cs.length = enc.size ∧ CellsAt σ.1.heap l cs ∧
-      (∀ c ∈ cs, c.1 = Writing) ∧ encode enc v2 = some vs ∧
-      κ = [] ∧ e' = Val #() ∧ σ' = setCells l (vs.map Free) σ ∧ efs = [] := by
-  cases h; exact ⟨_, _, _, rfl, ‹_›, ‹_›, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
-
-theorem baseStep_LoadN_inv {enc : Encoding} {v : val}
-    (h : BaseStep (LoadN enc (Val v)) σ κ e' σ' efs) :
-    ∃ l cs w, v = #l ∧ Aligned enc l ∧ cs.length = enc.size ∧ CellsAt σ.1.heap l cs ∧
-      (∀ c ∈ cs, ∃ n, c.1 = Reading n) ∧ decode enc (cs.map Prod.snd) = some w ∧
-      κ = [] ∧ e' = Val w ∧ σ' = σ ∧ efs = [] := by
-  cases h; exact ⟨_, _, _, rfl, ‹_›, ‹_›, ‹_›, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
-
-theorem baseStep_SwapN_inv {enc : Encoding} {v1 v2 : val}
-    (h : BaseStep (SwapN enc (Val v1) (Val v2)) σ κ e' σ' efs) :
-    ∃ l cs w vs, v1 = #l ∧ Aligned enc l ∧ cs.length = enc.size ∧ CellsAt σ.1.heap l cs ∧
-      (∀ c ∈ cs, c.1 = Reading 0) ∧ decode enc (cs.map Prod.snd) = some w ∧
-      encode enc v2 = some vs ∧
-      κ = [] ∧ e' = Val w ∧ σ' = setCells l (vs.map Free) σ ∧ efs = [] := by
-  cases h; exact ⟨_, _, _, _, rfl, ‹_›, ‹_›, ‹_›, ‹_›, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
-
-theorem baseStep_AddN_inv {enc : Encoding} {v1 v2 : val}
-    (h : BaseStep (AddN enc (Val v1) (Val v2)) σ κ e' σ' efs) :
-    ∃ n l cs w w' vs, enc = .word n ∧ v1 = #l ∧ Aligned (.word n) l ∧ cs.length = n ∧
-      CellsAt σ.1.heap l cs ∧
-      (∀ c ∈ cs, c.1 = Reading 0) ∧ decode (.word n) (cs.map Prod.snd) = some w ∧
-      atomicAddEval w v2 = some w' ∧ encode (.word n) w' = some vs ∧
-      κ = [] ∧ e' = Val w' ∧ σ' = setCells l (vs.map Free) σ ∧ efs = [] := by
-  cases h; exact ⟨_, _, _, _, _, _, rfl, rfl, ‹_›, ‹_›, ‹_›, ‹_›, ‹_›, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
-
-theorem baseStep_CmpXchgN_inv {enc : Encoding} {v1 v2 : val}
-    (h : BaseStep (CmpXchgN enc (Val v1) (Val v2)) σ κ e' σ' efs) :
-    ∃ l cs w o n, v1 = #l ∧ v2 = PairV o n ∧ Aligned enc l ∧ cs.length = enc.size ∧
-      CellsAt σ.1.heap l cs ∧ decode enc (cs.map Prod.snd) = some w ∧ κ = [] ∧ efs = [] ∧
-      (((∀ c ∈ cs, ∃ n, c.1 = Reading n) ∧ w ≠ o ∧ e' = Val (PairV w #false) ∧ σ' = σ) ∨
-       ((∀ c ∈ cs, c.1 = Reading 0) ∧ w = o ∧ ∃ vs, encode enc n = some vs ∧
-         e' = Val (PairV w #true) ∧ σ' = setCells l (vs.map Free) σ)) := by
-  cases h with
-  | CmpXchgNFailS =>
-    exact ⟨_, _, _, _, _, rfl, rfl, ‹_›, ‹_›, ‹_›, ‹_›, rfl, rfl, Or.inl ⟨‹_›, ‹_›, rfl, rfl⟩⟩
-  | CmpXchgNSucS =>
-    exact ⟨_, _, _, _, _, rfl, rfl, ‹_›, ‹_›, ‹_›, ‹_›, rfl, rfl,
-      Or.inr ⟨‹_›, ‹_›, _, ‹_›, rfl, rfl⟩⟩
-
-theorem baseStep_CheckBytes_inv {v : val} (h : BaseStep (CheckBytes (Val v)) σ κ e' σ' efs) :
-    κ = [] ∧ e' = Val #() ∧ σ' = σ ∧ efs = [] := by
-  cases h; exact ⟨rfl, rfl, rfl, rfl⟩
-
-/-! #### WPs -/
-
-theorem exists_isFreshAligned (σ : CfgState) (a : Nat) : ∃ l, IsFreshAligned σ l a := by
-  obtain ⟨l, hl⟩ := exists_isFresh σ
-  exact ⟨l, hl.1, by have := hl.2; simp [Loc.addrOffset] at this; omega,
-    by have := hl.2; simp [Loc.addrOffset] at this; omega,
-    by have := hl.2; simp [Loc.addrOffset] at this; rw [this]; exact Int.dvd_zero _⟩
-
-theorem IsFreshAligned.car {σ : CfgState} {l : Loc} {a : Nat} (h : IsFreshAligned σ l a) :
-    l.locCar ≠ 0 := by
-  intro hc
-  apply (h.1 (-l.locOff)).1
-  cases l; simp only [Loc.add, null] at *; congr <;> omega
-
-/-- `AllocN (n, a) v`: `n` owned cells holding `v` (none if `n = 0`), at a non-null
-location aligned to `a`. -/
-theorem wp_allocN (n a : w64) (v : val) :
-    {{ (True : IProp GF) }}
-      (AllocN (Val (PairV (LitV (LitInt n)) (LitV (LitInt a)))) (Val v)) @ s; E
-    {{ l, RET #l; ⌜l.locCar ≠ 0 ∧ ((uint.nat a : Nat) : Int) ∣ l.locOff⌝ ∗
-        pointstoVals l (.own 1) (List.replicate (uint.nat n) v) }} := by
-  iintro %Φ _ HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
-  iintro %σ₁ Hσ
-  imodintro
-  isplitr
-  · ipureintro
-    obtain ⟨l, hl⟩ := exists_isFreshAligned σ₁ (uint.nat a)
-    by_cases hn : uint.nat n = 0
-    · exact ⟨[], _, _, [], BaseStep.AllocN0S n a v l σ₁ hn hl.car hl.2.2.2⟩
-    · exact ⟨[], _, _, [], BaseStep.AllocNS n a v l σ₁ hn hl⟩
-  inext
-  iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨k, a', l, Hk, rfl, rfl, rfl, Hcase⟩ := baseStep_AllocN_inv Hstep
-  cases Hk
-  rcases Hcase with ⟨_, Hfresh, rfl⟩ | ⟨hk, hc, ha, rfl⟩
-  · have Hnn : l.locCar ≠ 0 := Hfresh.car
-    imod na_heap_alloc_list σ₁.1.heap l (List.replicate (uint.nat n) v) (fun i => (Hfresh.1 i).2)
-      $$ Hσ with ⟨Hσ, Hl⟩
-    imodintro
-    isplitr
-    · ipureintro; exact ⟨rfl, rfl⟩
-    isplitl [Hσ]
-    · iexists _; iframe Hσ; ipureintro; rfl
-    iexists #l
-    isplit
-    · ipureintro; rfl
-    iapply HΦ
-    isplitl []
-    · ipureintro; exact ⟨Hnn, Hfresh.2.2.2⟩
-    unfold pointstoVals
-    iapply (BigSepL.bigSepL_mono (fun {i x} _ =>
-      na_pointsto_to_heap (l +ₗ (i : Int)) _ x Hnn)) $$ Hl
-  · imodintro
-    isplitr
-    · ipureintro; exact ⟨rfl, rfl⟩
-    isplitl [Hσ]
-    · iexists _; iframe Hσ; ipureintro; rfl
-    iexists #l
-    isplit
-    · ipureintro; rfl
-    iapply HΦ
-    isplitl []
-    · ipureintro; exact ⟨hc, ha⟩
-    rw [hk]
-    unfold pointstoVals
-    simp only [List.replicate_zero]
-    iapply BigSepL.bigSepL_nil.2
-    itrivial
-
-/-- The cells of an encoded value being read (between `StartReadN` and `FinishReadN`). -/
-def readingCells (l : Loc) (q : DFrac) (vs : List val) : IProp GF :=
-  iprop(⌜l.locCar ≠ 0⌝ ∗ [∗list] i ↦ v ∈ vs, naHeapPointstoSt (RSt 1) (l +ₗ (i : Int)) q v)
-
-/-- The cells of an encoded value being written (between `PrepareWriteN` and
-`FinishStoreN`). -/
-def writingCells (l : Loc) (vs : List val) : IProp GF :=
-  iprop(⌜l.locCar ≠ 0⌝ ∗ [∗list] i ↦ v ∈ vs, naHeapPointstoSt WSt (l +ₗ (i : Int)) (.own 1) v)
-
-theorem wp_start_readN (enc : Encoding) (l : Loc) (q : DFrac) (vs : List val) (v : val)
-    (hlen : vs.length = enc.size) (hdec : decode enc vs = some v) :
-    {{ ▷ pointstoVals (GF := GF) l q vs }} (StartReadN enc (Val #l)) @ s; E
-    {{ RET v; readingCells l q vs }} := by
-  iintro %Φ >Hl HΦ
-  icases pointstoVals_split' l q vs (decode_ne_nil hdec) $$ Hl with ⟨%hc, Hl⟩
-  iapply wp_lift_atomic_heap_step rfl rfl
-  iintro %σ₁ Hσ
-  imod na_heap_read_prepare_cells σ₁.1.heap l q vs $$ Hσ Hl with ⟨%cs, %⟨Hvs, Hcells, Hrd⟩, Hσ, Hl⟩
-  have hlen' : cs.length = enc.size := by rw [← hlen, ← Hvs, List.length_map]
-  imodintro
-  isplitr
-  · ipureintro
-    exact ⟨[], _, _, [], BaseStep.StartReadNS enc l cs v σ₁ hlen' Hcells Hrd (by rw [Hvs]; exact hdec)⟩
-  inext
-  iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨l', cs', w, Hl', hlen'', Hcells', -, Hdec', rfl, rfl, rfl, rfl⟩ :=
-    baseStep_StartReadN_inv Hstep
-  cases GoGlobalContext.intoVal_inj_loc Hl'
-  cases cellsAt_eq_of_snd Hcells Hcells' (by omega)
-  rw [Hvs, hdec] at Hdec'; cases Hdec'
-  imodintro
-  isplitr
-  · ipureintro; exact ⟨rfl, rfl⟩
-  isplitl [Hσ]
-  · iexists _; iframe Hσ; ipureintro; rfl
-  iexists v
-  isplit
-  · ipureintro; rfl
-  iapply HΦ
-  unfold readingCells
-  iframe Hl
-  ipureintro; exact hc
-
-theorem wp_finish_readN (enc : Encoding) (l : Loc) (q : DFrac) (vs : List val)
-    (hlen : vs.length = enc.size) :
-    {{ ▷ readingCells (GF := GF) l q vs }} (FinishReadN enc (Val #l)) @ s; E
-    {{ RET #(); pointstoVals l q vs }} := by
-  iintro %Φ Hl HΦ
-  unfold readingCells
-  icases Hl with ⟨>%hc, >Hl⟩
-  iapply wp_lift_atomic_heap_step rfl rfl
-  iintro %σ₁ Hσ
-  imod na_heap_read_finish_cells σ₁.1.heap l q vs $$ Hσ Hl with ⟨%cs, %⟨Hvs, Hcells, Hrd⟩, Hσ, Hl⟩
-  have hlen' : cs.length = enc.size := by rw [← hlen, ← Hvs, List.length_map]
-  imodintro
-  isplitr
-  · ipureintro
-    exact ⟨[], _, _, [], BaseStep.FinishReadNS enc l cs σ₁ hlen' Hcells Hrd⟩
-  inext
-  iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨l', cs', Hl', hlen'', Hcells', -, rfl, rfl, rfl, rfl⟩ := baseStep_FinishReadN_inv Hstep
-  cases GoGlobalContext.intoVal_inj_loc Hl'
-  cases cellsAt_eq_of_snd Hcells Hcells' (by omega)
-  imodintro
-  isplitr
-  · ipureintro; exact ⟨rfl, rfl⟩
-  isplitl [Hσ]
-  · iexists _; iframe Hσ; ipureintro; rfl
-  iexists #()
-  isplit
-  · ipureintro; rfl
-  iapply HΦ
-  unfold pointstoVals
-  iapply (BigSepL.bigSepL_mono (fun {i x} _ =>
-    na_pointsto_to_heap (l +ₗ (i : Int)) _ x hc)) $$ Hl
-
-theorem wp_prepare_writeN (enc : Encoding) (l : Loc) (vs : List val)
-    (hlen : vs.length = enc.size) (hne : vs ≠ []) (hcompat : WriteCompat enc vs) :
-    {{ ▷ pointstoVals (GF := GF) l (.own 1) vs }} (PrepareWriteN enc (Val #l)) @ s; E
-    {{ RET #(); writingCells l vs }} := by
-  iintro %Φ >Hl HΦ
-  icases pointstoVals_split' l _ vs hne $$ Hl with ⟨%hc, Hl⟩
-  iapply wp_lift_atomic_heap_step rfl rfl
-  iintro %σ₁ Hσ
-  imod na_heap_write_prepare_cells σ₁.1.heap l vs $$ Hσ Hl with ⟨%cs, %⟨Hvs, Hcells, Hrd⟩, Hσ, Hl⟩
-  have hlen' : cs.length = enc.size := by rw [← hlen, ← Hvs, List.length_map]
-  imodintro
-  isplitr
-  · ipureintro
-    exact ⟨[], _, _, [], BaseStep.PrepareWriteNS enc l cs σ₁ hlen' Hcells Hrd
-      (by rw [Hvs]; exact hcompat)⟩
-  inext
-  iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨l', cs', Hl', hlen'', Hcells', -, -, rfl, rfl, rfl, rfl⟩ := baseStep_PrepareWriteN_inv Hstep
-  cases GoGlobalContext.intoVal_inj_loc Hl'
-  cases cellsAt_eq_of_snd Hcells Hcells' (by omega)
-  imodintro
-  isplitr
-  · ipureintro; exact ⟨rfl, rfl⟩
-  isplitl [Hσ]
-  · iexists _; iframe Hσ; ipureintro; rfl
-  iexists #()
-  isplit
-  · ipureintro; rfl
-  iapply HΦ
-  unfold writingCells
-  iframe Hl
-  ipureintro; exact hc
-
-theorem wp_finish_storeN (enc : Encoding) (l : Loc) (vs vs' : List val) (v : val)
-    (hlen : vs.length = enc.size) (henc : encode enc v = some vs') :
-    {{ ▷ writingCells (GF := GF) l vs }} (FinishStoreN enc (Val #l) (Val v)) @ s; E
-    {{ RET #(); pointstoVals l (.own 1) vs' }} := by
-  iintro %Φ Hl HΦ
-  unfold writingCells
-  icases Hl with ⟨>%hc, >Hl⟩
-  have hlen2 : vs'.length = vs.length := by rw [encode_length henc, hlen]
-  iapply wp_lift_atomic_heap_step rfl rfl
-  iintro %σ₁ Hσ
-  imod na_heap_write_finish_cells σ₁.1.heap l vs vs' hlen2 $$ Hσ Hl
-    with ⟨%cs, %⟨Hvs, Hcells, Hwr⟩, Hσ, Hl⟩
-  have hlen' : cs.length = enc.size := by rw [← hlen, ← Hvs, List.length_map]
-  imodintro
-  isplitr
-  · ipureintro
-    exact ⟨[], _, _, [], BaseStep.FinishStoreNS enc l v cs vs' σ₁ hlen' Hcells Hwr henc⟩
-  inext
-  iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨l', cs', vs'', Hl', -, -, -, Henc', rfl, rfl, rfl, rfl⟩ := baseStep_FinishStoreN_inv Hstep
-  cases GoGlobalContext.intoVal_inj_loc Hl'
-  rw [henc] at Henc'; cases Henc'
-  imodintro
-  isplitr
-  · ipureintro; exact ⟨rfl, rfl⟩
-  isplitl [Hσ]
-  · iexists _; iframe Hσ; ipureintro; rfl
-  iexists #()
-  isplit
-  · ipureintro; rfl
-  iapply HΦ
-  unfold pointstoVals
-  iapply (BigSepL.bigSepL_mono (fun {i x} _ =>
-    na_pointsto_to_heap (l +ₗ (i : Int)) _ x hc)) $$ Hl
-
-theorem wp_loadN (enc : Encoding) (l : Loc) (q : DFrac) (vs : List val) (v : val)
-    (hal : Aligned enc l) (hlen : vs.length = enc.size) (hdec : decode enc vs = some v) :
-    {{ ▷ pointstoVals (GF := GF) l q vs }} (LoadN enc (Val #l)) @ s; E
-    {{ RET v; pointstoVals l q vs }} := by
-  iintro %Φ >Hl HΦ
-  icases pointstoVals_split' l q vs (decode_ne_nil hdec) $$ Hl with ⟨%hc, Hl⟩
-  iapply wp_lift_atomic_heap_step rfl rfl
-  iintro %σ₁ Hσ
-  icases na_heap_read_cells' σ₁.1.heap l q vs $$ Hσ Hl with %⟨cs, Hvs, Hcells, Hrd⟩
-  have hlen' : cs.length = enc.size := by rw [← hlen, ← Hvs, List.length_map]
-  imodintro
-  isplitr
-  · ipureintro
-    exact ⟨[], _, _, [], BaseStep.LoadNS enc l cs v σ₁ hal hlen' Hcells Hrd (by rw [Hvs]; exact hdec)⟩
-  inext
-  iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨l', cs', w, Hl', -, hlen'', Hcells', -, Hdec', rfl, rfl, rfl, rfl⟩ :=
-    baseStep_LoadN_inv Hstep
-  cases GoGlobalContext.intoVal_inj_loc Hl'
-  cases cellsAt_eq_of_snd Hcells Hcells' (by omega)
-  rw [Hvs, hdec] at Hdec'; cases Hdec'
-  imodintro
-  isplitr
-  · ipureintro; exact ⟨rfl, rfl⟩
-  isplitl [Hσ]
-  · iexists _; iframe Hσ; ipureintro; rfl
-  iexists v
-  isplit
-  · ipureintro; rfl
-  iapply HΦ
-  unfold pointstoVals
-  iapply (BigSepL.bigSepL_mono (fun {i x} _ =>
-    na_pointsto_to_heap (l +ₗ (i : Int)) _ x hc)) $$ Hl
-
-theorem wp_swapN (enc : Encoding) (l : Loc) (vs vs' : List val) (v0 v : val)
-    (hal : Aligned enc l) (hlen : vs.length = enc.size) (hdec : decode enc vs = some v0)
-    (henc : encode enc v = some vs') :
-    {{ ▷ pointstoVals (GF := GF) l (.own 1) vs }} (SwapN enc (Val #l) (Val v)) @ s; E
-    {{ RET v0; pointstoVals l (.own 1) vs' }} := by
-  iintro %Φ >Hl HΦ
-  icases pointstoVals_split' l _ vs (decode_ne_nil hdec) $$ Hl with ⟨%hc, Hl⟩
-  have hlen2 : vs'.length = vs.length := by rw [encode_length henc, hlen]
-  iapply wp_lift_atomic_heap_step rfl rfl
-  iintro %σ₁ Hσ
-  icases na_heap_read_cells_1' σ₁.1.heap l vs $$ Hσ Hl with %⟨cs, Hvs, Hcells, Hrd⟩
-  have hlen' : cs.length = enc.size := by rw [← hlen, ← Hvs, List.length_map]
-  imod na_heap_write_cells' σ₁.1.heap l vs vs' hlen2 $$ Hσ Hl with ⟨Hσ, Hl⟩
-  imodintro
-  isplitr
-  · ipureintro
-    exact ⟨[], _, _, [], BaseStep.SwapNS enc l cs v0 v vs' σ₁ hal hlen' Hcells Hrd
-      (by rw [Hvs]; exact hdec) henc⟩
-  inext
-  iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨l', cs', w, vs'', Hl', -, hlen'', Hcells', -, Hdec', Henc', rfl, rfl, rfl, rfl⟩ :=
-    baseStep_SwapN_inv Hstep
-  cases GoGlobalContext.intoVal_inj_loc Hl'
-  cases cellsAt_eq_of_snd Hcells Hcells' (by omega)
-  rw [Hvs, hdec] at Hdec'; cases Hdec'
-  rw [henc] at Henc'; cases Henc'
-  imodintro
-  isplitr
-  · ipureintro; exact ⟨rfl, rfl⟩
-  isplitl [Hσ]
-  · iexists _; iframe Hσ; ipureintro; rfl
-  iexists v0
-  isplit
-  · ipureintro; rfl
-  iapply HΦ
-  unfold pointstoVals
-  iapply (BigSepL.bigSepL_mono (fun {i x} _ =>
-    na_pointsto_to_heap (l +ₗ (i : Int)) _ x hc)) $$ Hl
-
-theorem wp_addN (n : Nat) (l : Loc) (vs vs' : List val) (v0 v v' : val)
-    (hal : Aligned (.word n) l) (hlen : vs.length = n) (hdec : decode (.word n) vs = some v0)
-    (hadd : atomicAddEval v0 v = some v') (henc : encode (.word n) v' = some vs') :
-    {{ ▷ pointstoVals (GF := GF) l (.own 1) vs }} (AddN (.word n) (Val #l) (Val v)) @ s; E
-    {{ RET v'; pointstoVals l (.own 1) vs' }} := by
-  iintro %Φ >Hl HΦ
-  icases pointstoVals_split' l _ vs (decode_ne_nil hdec) $$ Hl with ⟨%hc, Hl⟩
-  have hlen2 : vs'.length = vs.length := by rw [encode_length henc, hlen]; rfl
-  iapply wp_lift_atomic_heap_step rfl rfl
-  iintro %σ₁ Hσ
-  icases na_heap_read_cells_1' σ₁.1.heap l vs $$ Hσ Hl with %⟨cs, Hvs, Hcells, Hrd⟩
-  have hlen' : cs.length = n := by rw [← hlen, ← Hvs, List.length_map]
-  imod na_heap_write_cells' σ₁.1.heap l vs vs' hlen2 $$ Hσ Hl with ⟨Hσ, Hl⟩
-  imodintro
-  isplitr
-  · ipureintro
-    exact ⟨[], _, _, [], BaseStep.AddNS n l cs v0 v v' vs' σ₁ hal hlen' Hcells Hrd
-      (by rw [Hvs]; exact hdec) hadd henc⟩
-  inext
-  iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨n', l', cs', w, w', vs'', Hn, Hl', -, hlen'', Hcells', -, Hdec', Hadd', Henc',
-    rfl, rfl, rfl, rfl⟩ := baseStep_AddN_inv Hstep
-  cases Hn
-  cases GoGlobalContext.intoVal_inj_loc Hl'
-  cases cellsAt_eq_of_snd Hcells Hcells' (by omega)
-  rw [Hvs, hdec] at Hdec'; cases Hdec'
-  rw [hadd] at Hadd'; cases Hadd'
-  rw [henc] at Henc'; cases Henc'
-  imodintro
-  isplitr
-  · ipureintro; exact ⟨rfl, rfl⟩
-  isplitl [Hσ]
-  · iexists _; iframe Hσ; ipureintro; rfl
-  iexists v'
-  isplit
-  · ipureintro; rfl
-  iapply HΦ
-  unfold pointstoVals
-  iapply (BigSepL.bigSepL_mono (fun {i x} _ =>
-    na_pointsto_to_heap (l +ₗ (i : Int)) _ x hc)) $$ Hl
-
-theorem wp_cmpxchgN_fail (enc : Encoding) (l : Loc) (q : DFrac) (vs : List val) (vl v1 v2 : val)
-    (hal : Aligned enc l) (hlen : vs.length = enc.size) (hdec : decode enc vs = some vl)
-    (hne : vl ≠ v1) :
-    {{ ▷ pointstoVals (GF := GF) l q vs }} (CmpXchgN enc (Val #l) (Val (PairV v1 v2))) @ s; E
-    {{ RET (PairV vl #false); pointstoVals l q vs }} := by
-  iintro %Φ >Hl HΦ
-  icases pointstoVals_split' l q vs (decode_ne_nil hdec) $$ Hl with ⟨%hc, Hl⟩
-  iapply wp_lift_atomic_heap_step rfl rfl
-  iintro %σ₁ Hσ
-  icases na_heap_read_cells' σ₁.1.heap l q vs $$ Hσ Hl with %⟨cs, Hvs, Hcells, Hrd⟩
-  have hlen' : cs.length = enc.size := by rw [← hlen, ← Hvs, List.length_map]
-  imodintro
-  isplitr
-  · ipureintro
-    exact ⟨[], _, _, [], BaseStep.CmpXchgNFailS enc l cs vl v1 v2 σ₁ hal hlen' Hcells Hrd
-      (by rw [Hvs]; exact hdec) hne⟩
-  inext
-  iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨l', cs', w, o, n, Hl', Hv2, -, hlen'', Hcells', Hdec', rfl, rfl, Hcase⟩ :=
-    baseStep_CmpXchgN_inv Hstep
-  cases GoGlobalContext.intoVal_inj_loc Hl'
-  cases Hv2
-  cases cellsAt_eq_of_snd Hcells Hcells' (by omega)
-  rw [Hvs, hdec] at Hdec'; cases Hdec'
-  rcases Hcase with ⟨-, -, rfl, rfl⟩ | ⟨-, Heq, -⟩
-  · imodintro
-    isplitr
-    · ipureintro; exact ⟨rfl, rfl⟩
-    isplitl [Hσ]
-    · iexists _; iframe Hσ; ipureintro; rfl
-    iexists PairV vl #false
-    isplit
-    · ipureintro; rfl
-    iapply HΦ
-    unfold pointstoVals
-    iapply (BigSepL.bigSepL_mono (fun {i x} _ =>
-      na_pointsto_to_heap (l +ₗ (i : Int)) _ x hc)) $$ Hl
-  · exact absurd Heq hne
-
-theorem wp_cmpxchgN_suc (enc : Encoding) (l : Loc) (vs vs' : List val) (vl v1 v2 : val)
-    (hal : Aligned enc l) (hlen : vs.length = enc.size) (hdec : decode enc vs = some vl)
-    (heq : vl = v1) (henc : encode enc v2 = some vs') :
-    {{ ▷ pointstoVals (GF := GF) l (.own 1) vs }}
-      (CmpXchgN enc (Val #l) (Val (PairV v1 v2))) @ s; E
-    {{ RET (PairV vl #true); pointstoVals l (.own 1) vs' }} := by
-  iintro %Φ >Hl HΦ
-  icases pointstoVals_split' l _ vs (decode_ne_nil hdec) $$ Hl with ⟨%hc, Hl⟩
-  have hlen2 : vs'.length = vs.length := by rw [encode_length henc, hlen]
-  iapply wp_lift_atomic_heap_step rfl rfl
-  iintro %σ₁ Hσ
-  icases na_heap_read_cells_1' σ₁.1.heap l vs $$ Hσ Hl with %⟨cs, Hvs, Hcells, Hrd⟩
-  have hlen' : cs.length = enc.size := by rw [← hlen, ← Hvs, List.length_map]
-  imod na_heap_write_cells' σ₁.1.heap l vs vs' hlen2 $$ Hσ Hl with ⟨Hσ, Hl⟩
-  imodintro
-  isplitr
-  · ipureintro
-    exact ⟨[], _, _, [], BaseStep.CmpXchgNSucS enc l cs vl v1 v2 vs' σ₁ hal hlen' Hcells Hrd
-      (by rw [Hvs]; exact hdec) heq henc⟩
-  inext
-  iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨l', cs', w, o, n, Hl', Hv2, -, hlen'', Hcells', Hdec', rfl, rfl, Hcase⟩ :=
-    baseStep_CmpXchgN_inv Hstep
-  cases GoGlobalContext.intoVal_inj_loc Hl'
-  cases Hv2
-  cases cellsAt_eq_of_snd Hcells Hcells' (by omega)
-  rw [Hvs, hdec] at Hdec'; cases Hdec'
-  rcases Hcase with ⟨-, Hne, -⟩ | ⟨-, -, vs'', Henc', rfl, rfl⟩
-  · exact absurd heq Hne
-  · rw [henc] at Henc'; cases Henc'
-    imodintro
-    isplitr
-    · ipureintro; exact ⟨rfl, rfl⟩
-    isplitl [Hσ]
-    · iexists _; iframe Hσ; ipureintro; rfl
-    iexists PairV vl #true
-    isplit
-    · ipureintro; rfl
-    iapply HΦ
-    unfold pointstoVals
-    iapply (BigSepL.bigSepL_mono (fun {i x} _ =>
-      na_pointsto_to_heap (l +ₗ (i : Int)) _ x hc)) $$ Hl
-
-/-- `CheckBytes (l, n)` over `n` owned bytes. -/
-theorem wp_checkBytes (l : Loc) (q : DFrac) (vs : List val) (n : w64)
-    (hn : uint.nat n = vs.length) (hb : ∀ v ∈ vs, ∃ b, v = LitV (LitByte b)) :
-    {{ ▷ pointstoVals (GF := GF) l q vs }} (CheckBytes (Val (PairV #l (LitV (LitInt n))))) @ s; E
-    {{ RET #(); pointstoVals l q vs }} := by
-  iintro %Φ >Hl HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl
-  iintro %σ₁ Hσ
-  icases pointstoVals_split l q vs $$ Hl with ⟨%hc, Hl⟩
-  icases na_heap_read_cells' σ₁.1.heap l q vs $$ Hσ Hl with %⟨cs, Hvs, Hcells, Hrd⟩
-  imodintro
-  isplitr
-  · ipureintro
-    refine ⟨[], _, _, [], BaseStep.CheckBytesS l n cs σ₁ (by rw [hn, ← Hvs, List.length_map])
-      Hcells ?_⟩
-    intro c hcm
-    exact hb c.2 (by rw [← Hvs]; exact List.mem_map_of_mem hcm)
-  inext
-  iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨rfl, rfl, rfl, rfl⟩ := baseStep_CheckBytes_inv Hstep
-  imodintro
-  isplitr
-  · ipureintro; exact ⟨rfl, rfl⟩
-  isplitl [Hσ]
-  · iexists _; iframe Hσ; ipureintro; rfl
-  iexists #()
-  isplit
-  · ipureintro; rfl
-  iapply HΦ
-  unfold pointstoVals
-  rcases hc with rfl | hc
-  · iapply BigSepL.bigSepL_nil.2; itrivial
-  · iapply (BigSepL.bigSepL_mono (fun {i x} _ =>
-      na_pointsto_to_heap (l +ₗ (i : Int)) _ x hc)) $$ Hl
-
-end enc_wps
+end panic
 
 end Perennial

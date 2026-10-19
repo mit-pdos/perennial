@@ -1,30 +1,6 @@
-translate = [
-  "Builder",
-  "asciiSpace",
-  # `Join` and the `Builder` methods it calls are goose's translation of the real source
-  "maxInt",
-  "Join",
-  "Builder.Grow",
-  "Builder.grow",
-  "Builder.WriteString",
-  # so are `Split` and what it calls, and `HasPrefix` and `TrimPrefix`
-  "HasPrefix",
-  "TrimPrefix",
-  "Index",
-  "IndexByte",
-  "Count",
-  "Split",
-  "genSplit",
-  "explode",
-  "Compare",
-]
-imports = ["!*", "internal/abi", "internal/bytealg", "internal/stringslite", "unicode/utf8", "unsafe"]
-# `Builder.String` is `unsafe.String(unsafe.SliceData(b.buf), len(b.buf))`, which goose does
-# not translate: a model in TrustedCode/strings.lean.
-# `Builder.copyCheck` sets `b.addr = (*Builder)(abi.NoEscape(unsafe.Pointer(b)))`, converting
-# an `unsafe.Pointer` back to `*Builder`, which the semantics does not reinterpret (a
-# `Builder` holds a pointer, `go.Reinterpretable`): a model in TrustedCode/strings.lean.
-trusted = ["Builder.String", "Builder.copyCheck"]
+translate = ["Builder", "asciiSpace"]
+imports = ["!*"]
+trusted = ["Join", "HasPrefix", "Compare", "TrimPrefix", "Split"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

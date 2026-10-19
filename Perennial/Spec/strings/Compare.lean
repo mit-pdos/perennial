@@ -20,8 +20,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
 
-/-- `strings.Compare(a, b)`: `-1`, `0` or `+1` as `a` is lexicographically less than, equal to
-or greater than `b`. -/
+/-- `strings.Compare(a, b)`: `compareResult a b`. -/
 abbrev strings.Compare.spec : Prop :=
   ∀ (a b : GoString),
     {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}

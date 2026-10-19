@@ -26,7 +26,7 @@ variable [sem : go.Semantics]
 variable [package_sem : github_com.tchajed.marshal.Assumptions]
 
 theorem github_com.tchajed.marshal.ReadBytesCopy.wp_proof :
-    github_com.tchajed.marshal.ReadBytesCopy.spec (GF := GF) (hG := hG) := fun s q len head tail Hlen Hmax => by
+    github_com.tchajed.marshal.ReadBytesCopy.spec (GF := GF) (hG := hG) := fun s q len head tail Hlen => by
   wp_start as Hs
   ihave %Hsz := ownSlice_len _ _ _ $$ Hs
   ihave %Hwf := ownSlice_wf _ _ _ $$ Hs
@@ -38,8 +38,7 @@ theorem github_com.tchajed.marshal.ReadBytesCopy.wp_proof :
     have := uint_Z_nonneg len
     refine ⟨?_, ?_⟩ <;> omega
   wp_auto
-  wp_apply wp_slice_make2 (V := w8) len (make_cap_ok (by rw [go.typeSize_w8]; omega)) $$ []
-    as %sl ⟨Hsl, Hcap⟩
+  wp_apply wp_slice_make2 (V := w8) len $$ [] as %sl ⟨Hsl, Hcap⟩
   · ipureintro; exact hl.1
   rw [ite_eq_left_of_eq_true _ _ (eq_true ⟨by decide, hl.1, by have := Hwf.2; omega⟩)]
   have hhd : sint.nat len = head.length := by simp only [sint.nat, uint.nat, sint.Z, uint.Z] at *; omega

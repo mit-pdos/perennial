@@ -61,9 +61,9 @@ theorem github_com.tchajed.marshal.WriteInt.wp_proof
     (by rw [hBlen]; simp only [List.length_append, sint.nat] at *; omega)
     (by rw [hBlen]; omega) $$ Hb3 with ⟨H0, Hput⟩
   rw [← List.append_nil vs_cap]
-  ihave #Hle := isPkgInit_access (PROP := IProp GF) pkg_id.encoding.binary $$ Hbin
   wp_auto
-  wp_apply wp_littleEndian_PutUint64 _ _ vs_cap [] x hvc $$ [$Hput] as Hput
+  wp_apply encoding.binary.wp_LittleEndian_PutUint64_of wp_littleEndian_PutUint64 _ vs_cap [] x hvc $$ [$Hput]
+    as Hput
   iapply HΦ
   iframe Hb3cap
   iapply (ownSlice_trivial_slice B _ _).2

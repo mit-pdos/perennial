@@ -117,7 +117,7 @@ the wand form, which `wp_start` handles too (`Perennial/Spec/sync/runtime_Semacq
 | Notation | Meaning | File |
 |:--|:--|:--|
 | `l ↦ v`, `l ↦{dq} v`, `l ↦□ v` | typed points-to (`typedPointsto l v dq`) | `Golang/Theory/PostLifting.lean` |
-| `l.[S, go!"f"]` | address of field `f` of the struct at `l` (computing it panics on `l = null`) | `Golang/Defn/PostLang.lean` |
+| `l.[S, go!"f"]` | address of field `f` of the struct at `l` | `Golang/Defn/PostLang.lean` |
 | `s ↦* vs`, `s ↦*{dq} vs` | slice points-to (`ownSlice`) | `Golang/Theory/Slice.lean` |
 | `ownSliceCap V s dq` | ownership of the capacity beyond the length | `Golang/Theory/Slice.lean` |
 | `m ↦$ mv`, `m ↦${dq} mv`, `m ↦$□ mv` | map points-to (`ownMap`), `mv : gmap K V` | `Golang/Theory/Map.lean` |
@@ -207,14 +207,6 @@ and after `wp_auto`:
 ```
 
 (`GoString` literals are displayed as byte lists: `[98#8]` is `go!"b"`.)
-
-Translated code is in Perennial's evaluation order (README, "Evaluation
-order"): a statement whose order the Go spec leaves open is rewritten before
-translation, the operands that must be evaluated before a later one bound to
-locals `_order1`, `_order2`, ... in order (`x := a[i] + f()` becomes
-`_order1 := a[i]; x := _order1 + f()`).
-They are ordinary locals: `wp_auto` allocates, stores and loads them like any
-other.
 
 ### `wp_func_call`, `wp_method_call`
 
@@ -316,11 +308,8 @@ automation. The last goal is the continuation `∀ x, Q -∗ WP K[v] {{ Φ }}`.
 hypothesis `l ↦{dq} v` or one from which it can be accessed (an `Access`
 instance, e.g. the struct points-to for a field address). `wp_store` needs full
 ownership and updates the hypothesis. `wp_alloc l as H` introduces `l` and
-`H : l ↦ v`, and the intuitionistic `H_al : allocAligned V l` (the allocation's
-alignment; `icases H_al with %hal` gives `hal : AllocAligned V l`, see
-"Alignment"). `wp_alloc_auto` names a `let:`-bound allocation after its
-variable (`x_ptr`, `x`, `x_al`), and otherwise does an anonymous allocation
-with inaccessible names.
+`H : l ↦ v`. `wp_alloc_auto` names a `let:`-bound allocation after its
+variable, and otherwise does an anonymous allocation with inaccessible names.
 
 ### `wp_if_destruct`
 
@@ -409,8 +398,8 @@ before `wp_for`.
 
 `wp_for_post` proves a `forPostcondition` goal at the end of an iteration with
 `wp_for_post_do` (fall-through: then the post statement runs, e.g. `i++`),
-`wp_for_post_continue`, `wp_for_post_break`, `wp_for_post_return` or
-`wp_for_post_panic`, then runs `wp_auto`. After it, re-establish the invariant (`iframe; iexists ...; ...`).
+`wp_for_post_continue`, `wp_for_post_break` or `wp_for_post_return`, then runs
+`wp_auto`. After it, re-establish the invariant (`iframe; iexists ...; ...`).
 
 Range loops are `for:` loops too: `slice.forRange`, and for arrays
 `array.forRange n t` (over an array value), `array.forRangePtr n t` (over a
@@ -542,8 +531,7 @@ Specs take `isPkgInit` of their package; `wp_apply` discharges it.
 | Lemma | |
 |:--|:--|
 | `wp_alloc`, `wp_store`, `IntoValTyped.wp_load` | typed allocation/store/load (used by the tactics; `wp_load` is not exported, write `IntoValTyped.wp_load`) |
-| `typed.wp_atomic_load`, `typed.wp_atomic_swap`, `typed.wp_cmpxchg_suc`, `typed.wp_cmpxchg_fail`, `typed.wp_atomic_add` | atomic operations on a typed points-to of a type with an `EncodedPointsto` instance (words, `Loc`, `Bool`, interfaces); each takes `Aligned enc l` |
-| `go.field_aligned`, `go.structFieldRef_car'` (`Golang/Theory/Align.lean`) | a field of an aligned struct is aligned, and is in the struct's block; side conditions by `solve_layout_mem`, `solve_layout_nodup`, `solve_layout_pow2` |
+| `wp_cmpxchg_suc`, `wp_cmpxchg_fail`, `wp_atomic_load`, `wp_atomic_swap` | atomic operations on typed points-to (`AtomicWps`) |
 | `typedPointsto_split` | struct points-to to fields (used by `iStructNamed`) |
 | `wp_AngelicExit` | unreachable code |
 | `wp_GoPrealloc`, `wp_GlobalAlloc` | low level allocation |
@@ -558,7 +546,7 @@ Specs take `isPkgInit` of their package; `wp_apply` discharges it.
 | `ownSlice_split`, `ownSlice_combine`, `ownSlice_slice`, `ownSlice_elem_acc` | splitting and element access |
 | `wp_load_slice_index s i vs dq v (hpos : 0 ≤ i)` | `{{ s ↦*{dq} vs ∗ ⌜vs[i.toNat]? = some v⌝ }} ![t] #(sliceIndexRef V i s) {{ RET #v; s ↦*{dq} vs }}` |
 | `wp_store_slice_index` | `{{ s ↦* vs ∗ ⌜0 ≤ i ∧ i < vs.length⌝ }} ... {{ RET #(); s ↦* vs.set i.toNat v' }}` |
-| `wp_slice_make2 n hmax`, `wp_slice_make3 n c hle hmax` | `make([]T, n)`, `make([]T, n, c)`; `hmax` bounds the capacity by `maxAlloc` (`2^48` bytes), as `make` panics beyond it: `make_cap_ok (h : sint.Z c * typeSize V ≤ 2^48)`, `make_cap_ok_zero` |
+| `wp_slice_make2`, `wp_slice_make3` | `make([]T, n)`, `make([]T, n, c)` |
 | `wp_slice_append`, `wp_slice_copy`, `wp_slice_clear` | `append`, `copy`, `clear` |
 | `wp_slice_literal` | `[]T{...}` (`wp_auto` stops before it) |
 
@@ -578,10 +566,10 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty
 | Lemma | |
 |:--|:--|
 | `wp_for`, `wp_for_post_do/continue/break/return/panic` | loops (used by the tactics) |
-| `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `Once.wp_doSlow`; `wp_auto` first to allocate the result cells); the deferred chain runs after the body, whatever its outcome, then the function returns its results read from their cells |
+| `wp_with_defer` | functions with `defer` (introduce `%defer Hdefer`, see `Once.wp_doSlow`); the body runs under a `Catch` (see "Panics") |
 | `wp_with_defer_recover`, `wp_recoverPanic` | functions whose deferred function literal calls `recover()` (introduce `%defer %pnc defer pnc`) and the `recover()` |
-| `wp_panic`, `wp_exceptionDo_panic` | `panic(p)`, and an unrecovered panic at the end of a function (stuck); see "Panics" |
-| `wp_fork` | `go` statements: `▷ WP e {{ True }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}` |
+| `wp_panic`, `wp_unwind`, `wp_catch`, `wp_catch_panic`, `wp_catch_val` | panics (see "Panics") |
+| `wp_fork` | `go` statements: `▷ WP e {{ v, ⌜v.isPanic = false⌝ }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}` |
 | `wp_fork_tok`, `wp_ThreadExit` | `go` statements with thread tokens: the forking thread receives a `threadTok`, the forked thread `e ;; ThreadExit` must end with one; see "Thread tokens" |
 | `wp_assume`, `wp_sumAssumeNoOverflow`, ... | `primitive.Assume*`; the model's overflow assumptions (`append`) are listed in `README.md`, "Model assumptions (overflow)" |
 | `wp_package_init` | package initialization (in `wp_initialize'`) |
@@ -597,8 +585,7 @@ Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty
 | `sync.init_Once`, `Once.wp_Do` | `sync.Once` |
 | `sync.rwmutex.RWMutex.wp_*` | `RWMutex`, logically atomic (the specs); `sync.RWMutex.wp_*`: the guarded forms (`Results.lean`) |
 | `sync.wp_runtime_Semacquire`, `wp_runtime_Semrelease` | runtime semaphores (atomic-update style specs) |
-| `sync.atomic.wp_*` (`Uint64.wp_Load`, `Bool.wp_Store`, `wp_CompareAndSwapInt32`, ...) | `sync/atomic`; the functions take `Aligned (.word n) addr`, the methods `⌜u ≠ null⌝ -∗ ⌜Aligned _ (structFieldRef X go!"v" u)⌝ -∗` (`X.v_aligned` gives it for an allocated `X`) |
-| `sync.init_WaitGroup`, `sync.init_Once`, `sync.rwmutex.init_RWMutex`, ... | take the allocation's `AllocAligned` (their atomic fields) |
+| `sync.atomic.wp_*` (`Uint64.wp_Load`, `Bool.wp_Store`, `wp_CompareAndSwapInt32`, ...) | `sync/atomic` |
 
 ### Other proved packages
 
@@ -606,11 +593,7 @@ Every package under `Perennial/Spec/` (`sort`, `slices`, `math`, `math/bits`,
 `math/big`, `bytes`, `strings`, `errors`, `cmp`, `time`, `context`, `fmt`, `io`,
 `encoding/binary`, `github_com/goose_lang/std`, ...); `import Perennial.Proof.<pkg>`
 gives its results (`sort.wp_Search`, `sort.wp_SearchInts`, `sort.wp_Find`, the
-`pdqsort` family, `math.big.ownInt`, `math.big.wp_NewInt`, ...). `strings` with
-`internal/stringslite` and `internal/bytealg` gives `strings.wp_Split`, `wp_Count`,
-`wp_Index`, `wp_HasPrefix`, `wp_TrimPrefix`, `wp_Compare`, `wp_Join`; the first
-occurrence of a substring is `internal.bytealg.firstOcc`, and Go's `Index` result
-`indexResult`.
+`pdqsort` family, `math.big.ownInt`, `math.big.wp_NewInt`, ...).
 
 ---
 
@@ -692,39 +675,20 @@ theorem wp_simpleSpawn' [sync.Assumptions] :
 
 ### Panics
 
-GooseLang has no panic construct: `panic(p)` is an outcome of the exception
-monad of function bodies (`Golang/Defn/Exception.lean`), `panicVal p =
-("panic", p)`, next to `executeVal` (`do:`) and `returnVal v` (`return:`).
-`wp_panic : Φ (panicVal #(.ok i)) ⊢ WP (@! go.panic #(.ok i)) {{ Φ }}` (the
-argument converted to an `interface{}`, not `nil`), and `;;;` passes the outcome on
-(`pure_panic_val`), as `return:` is: the rest of the body is skipped. In a loop
-body, `wp_for_post` (`wp_for_post_panic`) ends the loop with it, and a
-`for range` over a map likewise (`forMapPostcondition`).
-
-What happens to the outcome depends on the function:
-
-* no `defer`: the body is `exceptionDo body`, and `exceptionDo (panicVal p)` is
-  stuck (`wp_exceptionDo_panic : ▷ False ⊢ WP ..`), like a run-time panic of a
-  builtin (`Panic "msg"`, `wp_PanicOp`); the proof must show that the panic is
-  unreachable (`Perennial/{Spec,Proof}/github_com/mit_pdos/perennial/goose/testdata/examples/semantics/shouldPanic.lean`);
-* `defer` (`with_defer: r; e`, `wp_with_defer`): the deferred chain runs after
-  the body whatever its outcome; a panic is then stuck (`exceptionDo` as
-  above), and otherwise the function returns `r`, which reads its results'
-  cells. In a function that defers, every result has a cell `$res<i>` (a named
-  result's own variable, a fresh cell for an unnamed or blank result, bound
-  outside the `with_defer:`), and `return e1, ..., en` evaluates the `ei`,
-  stores them in the cells and is `return: #()` (a bare `return` is
-  `return: #()`), so that, as in Go, the function returns its results' values
-  *after* the deferred functions ran, which may read and modify named results
-  (the `testDefer*` tests in `Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics/`);
-* `defer` of a function literal that calls `recover()` (`with_defer_recover:`,
-  `wp_with_defer_recover`): the panic's value is stored in the `$panic` cell
-  (`pnc ↦ nil` while not panicking) before the chain runs; `recover()`
-  (`recoverPanic`, `wp_recoverPanic`) reads and clears it; if the chain cleared
-  it, or the body did not panic, the function returns its results (read from
-  their cells after the chain), and otherwise `exceptionDo` as above. `wp_auto` steps through these
-  checks once the body's outcome is a `returnVal`/`panicVal`
-  (`recoverNamed.lean` and `recoverInLoop.lean` in `Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics/`):
+A panic outcome is a value, `PanicV p` (`GooseLang/Lang.lean`): `panic(p)` steps
+to it (`wp_panic : Φ (PanicV #p) ⊢ WP (@! go.panic #p) {{ Φ }}`), and it unwinds
+every evaluation frame but that of `Catch e h k`, which continues with `h p` (a
+panic) or `k v` (a value). So a postcondition `Φ` also receives panics, while a
+spec `{{ P }} e {{ RET v; Q }}` names a normal value (`#x` is never a panic,
+`isPanic_intoVal`) and therefore excludes them. A spec that lets a function panic
+says what `Φ (PanicV p)` it provides; after `wp_apply` of it, `wp_auto` takes the
+panic through the caller's evaluation context (`wp_unwind`) up to a `Catch`.
+A function with `defer`s runs its body under a `Catch` (`with_defer:`): the
+deferred chain runs on both outcomes and a panic is raised again; if a deferred
+function literal calls `recover()`, Goose emits `with_defer_recover:`, whose
+`$panic` cell the handler sets and `recover()` (`recoverPanic`) reads and
+clears, and the function then returns its named results
+(`Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics/recoverNamed.lean` and its neighbours):
 
 ```lean
 theorem wp_recoverNamed :
@@ -733,80 +697,46 @@ theorem wp_recoverNamed :
   wp_start
   wp_auto
   wp_apply wp_with_defer_recover as %defer %pnc defer pnc
-  wp_auto
-  wp_apply wp_panic                               -- the body's outcome
-  wp_auto                                         -- stored in `pnc`; the deferred literal runs
-  wp_apply wp_recoverPanic $$ [$pnc] as pnc       -- `recover()` in it
-  wp_auto                                         -- sets `x`; the function returns it
+  wp_apply wp_panic                               -- unwinds to the handler
+  wp_apply wp_recoverPanic $$ [$pnc] as pnc       -- in the deferred literal
   iapply HΦ
   itrivial
 ```
 
-The model does not propagate a panic to the caller: a function call evaluates
-to a value or is stuck, so a program that recovers a callee's panic (Go runs the
-caller's deferred functions, which may recover it) is not provable, and neither
-is one that lets a panic escape a goroutine or `main` (in Go, it crashes the
-program). A specification `{{ P }} f args {{ RET v; Q }}` therefore says that
-`f` does not panic, except where its own deferred functions recover it. `panic(nil)` is
-stuck (Go 1.21 turns it into a run-time panic with a `*runtime.PanicNilError`,
-and a `nil` in the `$panic` cell means "not panicking"), so `wp_panic` takes a
-non-nil value `.ok i`. Goose does not translate a `panic(..)` as the post
-statement of a `for` (`doFor` runs the post statement under `do:`, which would
-drop the panic), nor `defer panic(..)` or `go panic(..)`, nor a `recover()` in a
-deferred function literal that itself defers a literal calling `recover()` (the
-inner `with_defer_recover:` would bind its own `$panic` cell, hiding the one the
-outer `recover()` must read).
-
 A loop body that panics proves its `forPostcondition` with `wp_for_post`
 (`wp_for_post_panic`). Run-time panics of builtins (`Panic "msg"`: an index out
 of range, a failed type assertion, an integer division or remainder by zero, a
-negative shift count, a field selector through a nil pointer) are stuck: proofs
-show they are unreachable (`wp_PanicOp : ▷ False ⊢ WP (Panic msg)`). A field
-reference `StructFieldRef t f #l` (Goose's translation of `&p.f`, and the
-address behind `p.f`, `p.f = v`, `p.g.f` and a promoted method called through
-an embedded field) steps to `if l = null then Panic "nil pointer dereference"
-else #(l.[V, f])`; `wp_auto`/`wp_pures` take it as a pure step with the side
-condition `l ≠ null` (`pure_wp_structFieldRef`). A field address is `null`
-exactly when the struct's is (`structFieldRef_eq_null_iff`, from the semantics'
-`go.structFieldRef_null` and `go.structFieldRef_null_inv`), so the side
-condition follows from any non-null address with the same base
-(`LocNonNullFrom`): a Lean hypothesis `l' ≠ null`, or a hypothesis of the
-context with a `HypPure` instance: a points-to (`typedPointsto_hypPure`), a
-pure `⌜l' ≠ null⌝`, `isLock`/`isMutex`/`isSema` (which record their address's
-non-nullness), `isWaitGroup`, `isCancelCtxOf`, and `∗`/`∃`/`□` of these; the
-fact is then kept as a local `Hφ : l ≠ null`. A struct whose fields are all
-behind invariants needs such a fact in its persistent predicate (as
-`isCoordinator` in the `workq` example does). `wp_apply` closes a premise
-`⌜l ≠ null⌝` of a spec the same way (`inonnull`, also usable directly); the
-`sync/atomic` method specs (`Int64.Load`, ...) take one, since the receiver's
-ownership is only available inside their atomic update. A division `x / y` steps to
+negative shift count) are stuck, not unwinding: proofs show they are unreachable
+(`wp_PanicOp : ▷ False ⊢ WP (Panic msg)`). A division `x / y` steps to
 `if uint.Z y = 0 then Panic "integer divide by zero" else #(x / y)` (`sint.Z` at
 signed types): a literal divisor is decided by `wp_pures`, another needs
-`rw [if_neg (show ¬ uint.Z y = 0 by ...)]`. A shift `x << y` is
-`GoShift GoShiftl t ct` with the types of both operands; a signed count `y`
-steps to `if sint.Z y < 0 then Panic "negative shift amount" else ...`, closed
-the same way (`rw [if_neg (show ¬ sint.Z y < 0 by ...)]`).
+`rw [if_neg (show ¬ uint.Z y = 0 by ...)]`. A shift by a signed count goes
+through `go.shiftCount` (`wp_shiftCount_int`).
 
-### Alignment
+**Binding a value needs it not to be a panic.** A step that binds or pairs a
+value (a call, a `let:`, a pair, a Go instruction's argument, a frame holding an
+evaluated operand) needs `v.isPanic = false`, since a panic would unwind it
+instead. The tactics prove it for `#x`, `val` constructors (also behind
+definitions such as `exceptionSeq`), `if`s of those and hypotheses
+`h : v.isPanic = false` or `h : v = w` in the Lean context; for a generic
+`v : val` from a postcondition, get one (`obtain ⟨x, rfl⟩ : ∃ x, v = #x`) or case
+on `v.isPanic` (`val.isPanic_eq_true`). A postcondition `⌜v.isPanic = false⌝ ∗ Q`
+reached at such a value becomes `Q` (and `⌜v.isPanic = false⌝` is closed by
+`wp_auto` and `itrivial`).
 
-The atomic operations are stuck unless their location is aligned to the
-encoding (`Aligned enc l : enc.align ∣ l.locOff`), so a spec of an atomic
-operation takes the alignment, and a proof gets it from the allocation:
-`wp_alloc`, `wp_auto` and `steps` add `x_al : allocAligned V x_ptr` (opaque and
-persistent; `icases x_al with %hal` gives `hal : AllocAligned V x_ptr`, that
-is `x_ptr.locCar ≠ 0 ∧ typeAlign V ∣ x_ptr.locOff`). For a field, chain
-`go.field_aligned` through the struct layouts goose emits:
-
-```lean
-have h := go.field_aligned (V := WaitGroup) (f := go!"state") (by solve_layout_mem)
-  (by solve_layout_nodup) (by solve_layout_pow2) hal.1 hal.2
-```
-
-(`wg_fields_aligned`, `Proof/sync/WaitGroupDefs.lean`; `cancelCtx_fields_aligned`,
-`Proof/context/Base.lean`). A shared object's predicate usually keeps the
-alignment of its atomic fields as a pure conjunct (`isWaitGroup`'s `%Hal`,
-`isCancelCtxOf`'s `%Hcal`), established at its allocation. `wp_apply` closes a
-goal `⌜Aligned enc l⌝` from a hypothesis of that exact type.
+**Goroutines must not panic.** `wp_fork` asks for `WP e {{ v, ⌜v.isPanic = false⌝ }}`
+(`forkPost`), and `goose_adequacy` requires the main thread's postcondition `φ`
+to exclude panics (`hφ : ∀ p, ¬ φ (PanicV p)`; a client with nothing to say
+about the result takes `φ v := v.isPanic = false`, or `v = #()`). It concludes
+that no thread of the execution has an unrecovered panic (`UnrecoveredPanic e`:
+`e` is `PanicV p` under evaluation frames none of which is a `Catch`), whether
+the thread has finished unwinding or is still unwinding when the execution
+stops: an unrecovered panic, which kills a Go program, is a verification
+failure. The proof (`goose_no_unrecovered_panic_blang`) unwinds such a thread
+to `PanicV p` in the bounded language, where unwinding steps are plain and take
+no fuel (`unrecoveredPanic_steps`), and then uses the postconditions of the
+threads (`goose_adequacy_nopanic_blang`, iris-lean's `wp_strong_adequacy`), so
+it needs no larger step bound and no thread bound for the extra steps.
 
 ### Ghost state and invariants
 
@@ -966,11 +896,14 @@ stated for the real semantics and every bound `N` (and every thread bound `T`,
 next section): the WP premise `Hwp` is proved under the hypothesis
 `receiptBound GF = N` (and `threadBound GF = T`, with the main thread's token),
 and the conclusion is about executions of fewer than `N` steps (along which
-fewer than `T` threads are live):
+fewer than `T` threads are live). The postcondition `φ` must exclude panics
+(`hφ`, see "Panics"); the conclusion is that the main thread's final value
+satisfies `φ`, that no thread is stuck, and that no thread has an unrecovered
+panic:
 
 ```
 theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
-    (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
+    (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
     (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
@@ -984,7 +917,8 @@ theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
     (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
     (Hbound : n < N) (Hthreads : g.threads = 1)
     (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
-    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2)
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
+      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2)
 ```
 
 A client chooses `N` and discharges the premises its proof makes about it from
@@ -992,7 +926,7 @@ A client chooses `N` and discharges the premises its proof makes about it from
 `N = 2^64` (or anything smaller) works (`TimeReceiptsTest.lean`):
 
 ```
-  goose_adequacy (2 ^ 64) T e σ g φ Hinitg Hinit
+  goose_adequacy (2 ^ 64) T e σ g φ hφ Hinitg Hinit
     (@fun hG HN _ Hlctx => Hwp (hG := hG) (Nat.le_of_eq HN) Hlctx) n κs t2 σ2 Hsteps Hn
     Hthreads Hlive
 ```
@@ -1082,17 +1016,17 @@ are the thread fuel, owned by the state interpretation
 
 **Getting and returning tokens.**
 
-* `wp_fork_tok`: `▷ (threadTok -∗ WP e {{ _, threadTok }} ∗ Φ #()) ⊢ WP (Fork e) {{ Φ }}`.
+* `wp_fork_tok`: `▷ (threadTok -∗ WP e {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }} ∗ Φ #()) ⊢ WP (Fork e) {{ Φ }}`.
   The forking thread receives a token (out of the thread fuel), and the forked
   thread must end with one (its `ThreadExit` returns it to the fuel). Whether
   the token stays with the forking thread, goes to the forked thread, or is
   deposited in an invariant is up to the proof: every live thread is accounted
   for by exactly one token, wherever it is.
-* `wp_fork`: the usual rule, `▷ WP e {{ True }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}`;
+* `wp_fork`: the usual rule, `▷ WP e {{ v, ⌜v.isPanic = false⌝ }} -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}`;
   the forked thread keeps its token to itself.
-* `wp_fork_tok_body`: `▷ (threadTok -∗ WP e {{ _, threadTok }}) -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}`,
+* `wp_fork_tok_body`: `▷ (threadTok -∗ WP e {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }}) -∗ ▷ Φ #() -∗ WP (Fork e) {{ Φ }}`,
   the token given to the body (which uses it and ends with it);
-  `wp_fork_tok_self`: `▷ WP e {{ _, threadTok }} -∗ ▷ (threadTok -∗ Φ #()) -∗ WP (Fork e) {{ Φ }}`,
+  `wp_fork_tok_self`: `▷ WP e {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }} -∗ ▷ (threadTok -∗ Φ #()) -∗ WP (Fork e) {{ Φ }}`,
   the token kept by the forking thread, the body ending with one from elsewhere (its `Done`).
 * `wp_ThreadExit`: `threadTok -∗ ▷ Φ #() -∗ WP ThreadExit {{ Φ }}` (used by
   `wp_fork_tok`; goose-generated code does not contain `ThreadExit`).

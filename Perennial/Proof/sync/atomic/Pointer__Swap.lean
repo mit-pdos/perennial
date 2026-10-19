@@ -27,14 +27,9 @@ theorem sync.atomic.Pointer.Swap.wp_proof
     (wp_SwapPointer : sync.atomic.SwapPointer.spec (GF := GF) (hG := hG)) :
     sync.atomic.Pointer.Swap.spec (GF := GF) (hG := hG) := by
   intro T' _ _ T _ u v'
-  wp_start_folded as _
-  iintro %hu %hal
-  (try (first | wp_func_call | (wp_method_call; (try wp_call)))); (try wp_call)
-  rw [show go.GoType.Named go!"sync/atomic.Pointer" [T] = sync.atomic.Pointer.ty T by
-      with_unfolding_all rfl,
-    show (go!"sync/atomic.SwapPointer" : GoString) = sync.atomic.SwapPointer by with_unfolding_all rfl]
-  try wp_auto
-  wp_apply_core (wp_SwapPointer _ _ (by first | exact hal | simpa using hal)) $$ [] [HΦ]
+  wp_start as _
+  wp_auto
+  wp_apply_core wp_SwapPointer $$ [] [HΦ]
   · iPkgInit
   imod HΦ with ⟨%v, Hown, HΦ⟩
   imodintro; inext
@@ -49,7 +44,7 @@ theorem sync.atomic.Pointer.Swap.wp_proof
     simp only [TypedPointsto.typedPointstoDef]
     iframe
   imodintro
-  try wp_auto
+  wp_auto
   iexact HΦ
 
 end proof

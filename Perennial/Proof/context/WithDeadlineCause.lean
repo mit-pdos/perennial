@@ -70,7 +70,6 @@ theorem context.WithDeadlineCause.wp_proof
   icases Hctx2 with ⟨#HDeadline, -, -, -, -, -, -, #Hcci⟩
   ihave #Hi := isInit_access $$ Hpkg
   icases Hi with ⟨_, _, ⟨%canceled, #Hcanceled, %hcanceled⟩, ⟨%dexc, #Hdexc, %hdexc⟩, _⟩
-  wp_auto
   iapply wp_with_defer
   iintro %defer Hdefer
   wp_auto
@@ -79,7 +78,7 @@ theorem context.WithDeadlineCause.wp_proof
   | some cur =>
     dsimp only [Option.getD]
     wp_auto
-    wp_apply wp_Before as %b -
+    wp_apply wp_ptr_Before $$ [$cur] as %b cur
     cases b
     case true =>
       wp_auto
@@ -107,8 +106,7 @@ theorem context.WithDeadlineCause.wp_proof
       ipersist cause
       ihave HtR : timerR «$r0_ptr» $$ [Ttimer]
       · unfold timerR; iexists _; iframe; ileft; ipureintro; rfl
-      icases «$r0_al» with %hal
-      imod cancelCtx_alloc (tcc «$r0_ptr») iprop(True) (timerR «$r0_ptr») (tcc_aligned _ hal) $$ Hcci TcancelCtx HtR
+      imod cancelCtx_alloc (tcc «$r0_ptr») iprop(True) (timerR «$r0_ptr») $$ Hcci TcancelCtx HtR
         with ⟨%γ, #Hc, Hf⟩
       ipersist Tdeadline
       ihave #Hk := childCancelSpec_timerCtx «$r0_ptr» γ $$ [$Hpkg $Hc]
@@ -121,6 +119,7 @@ theorem context.WithDeadlineCause.wp_proof
         · simp only [↓reduceIte]
           iexists parent; iframe #
           unfold isParentCtx; iright; iexists parent_desc; iframe #
+        simp only [recv_eq_func_mk]
         iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.timerCtx.ty) #«$r0_ptr») %γ
         isplitl []
         · ipureintro; left; rfl
@@ -157,6 +156,7 @@ theorem context.WithDeadlineCause.wp_proof
           wp_apply wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod Htm0]
           · inext; unfold cancelCtxLockInv; iexists children, cause0, od, closed; iframe
             unfold timerR; iexists tm; iframe; iright; iexact Htm
+          simp only [recv_eq_func_mk]
           iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.timerCtx.ty) #«$r0_ptr») %γ
           isplitl []
           · ipureintro; left; rfl
@@ -177,6 +177,7 @@ theorem context.WithDeadlineCause.wp_proof
           wp_apply wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod Htm0 Htm0r]
           · inext; unfold cancelCtxLockInv; iexists children, cause0, od, closed; iframe
             unfold timerR; iexists tm0; iframe
+          simp only [recv_eq_func_mk]
           iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.timerCtx.ty) #«$r0_ptr») %γ
           isplitl []
           · ipureintro; left; rfl
@@ -200,8 +201,7 @@ theorem context.WithDeadlineCause.wp_proof
     ipersist cause
     ihave HtR : timerR «$r0_ptr» $$ [Ttimer]
     · unfold timerR; iexists _; iframe; ileft; ipureintro; rfl
-    icases «$r0_al» with %hal
-    imod cancelCtx_alloc (tcc «$r0_ptr») iprop(True) (timerR «$r0_ptr») (tcc_aligned _ hal) $$ Hcci TcancelCtx HtR
+    imod cancelCtx_alloc (tcc «$r0_ptr») iprop(True) (timerR «$r0_ptr») $$ Hcci TcancelCtx HtR
       with ⟨%γ, #Hc, Hf⟩
     ipersist Tdeadline
     ihave #Hk := childCancelSpec_timerCtx «$r0_ptr» γ $$ [$Hpkg $Hc]
@@ -214,6 +214,7 @@ theorem context.WithDeadlineCause.wp_proof
       · simp only [↓reduceIte]
         iexists parent; iframe #
         unfold isParentCtx; iright; iexists parent_desc; iframe #
+      simp only [recv_eq_func_mk]
       iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.timerCtx.ty) #«$r0_ptr») %γ
       isplitl []
       · ipureintro; left; rfl
@@ -250,6 +251,7 @@ theorem context.WithDeadlineCause.wp_proof
         wp_apply wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod Htm0]
         · inext; unfold cancelCtxLockInv; iexists children, cause0, od, closed; iframe
           unfold timerR; iexists tm; iframe; iright; iexact Htm
+        simp only [recv_eq_func_mk]
         iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.timerCtx.ty) #«$r0_ptr») %γ
         isplitl []
         · ipureintro; left; rfl
@@ -270,6 +272,7 @@ theorem context.WithDeadlineCause.wp_proof
         wp_apply wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod Htm0 Htm0r]
         · inext; unfold cancelCtxLockInv; iexists children, cause0, od, closed; iframe
           unfold timerR; iexists tm0; iframe
+        simp only [recv_eq_func_mk]
         iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.timerCtx.ty) #«$r0_ptr») %γ
         isplitl []
         · ipureintro; left; rfl

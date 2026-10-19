@@ -48,6 +48,62 @@ instance diskPointsto_timeless {GF : BundledGFunctors} (hL : DiskGS GF) (a : Int
     (b : Block) : Timeless (diskPointsto hL a dq b) := by
   unfold diskPointsto; infer_instance
 
+/-! ## `heap_array` -/
+
+section heap_array
+variable {V : Type}
+
+theorem heapArray_lookup_lt (l : Loc) (vs : List V) (i : Int) (h : i < 0) :
+    heapArray l vs !! (l +ₗ i) = none := by
+  induction vs generalizing l i with
+  | nil => rfl
+  | cons v vs ih =>
+    show (<[l := v]> (heapArray (l +ₗ 1) vs)) !! (l +ₗ i) = none
+    rw [GMap.lookup_insert_ne _ _ (fun e => by have := loc_add_eq_inv l i e.symm; omega)]
+    have := ih (l +ₗ 1) (i - 1) (by omega)
+    rwa [loc_add_assoc, show 1 + (i - 1) = i by omega] at this
+
+end heap_array
+
+section na_heap_alloc
+variable [ext : FfiSyntax] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
+
+theorem na_heap_alloc_list (σ : GMap Loc (NonAtomic val)) (l : Loc) (vs : List val)
+    (Hfresh : ∀ i : Int, σ !! (l +ₗ i) = none) :
+    ⊢@{IProp GF} naHeapCtx tls σ ==∗ naHeapCtx tls (heapArray l (vs.map Free) ∪ σ) ∗
+      [∗list] i ↦ v ∈ vs, naHeapPointsto (l +ₗ (i : Int)) (.own 1) v := by
+  induction vs generalizing l with
+  | nil =>
+    iintro H
+    imodintro
+    have : heapArray l (([] : List val).map Free) ∪ σ = σ := by
+      apply GMap.ext; intro k; rfl
+    rw [this]
+    iframe H
+    iapply BigSepL.bigSepL_nil.2
+    itrivial
+  | cons v vs ih =>
+    iintro H
+    imod ih (l +ₗ 1) (fun i => by rw [loc_add_assoc]; exact Hfresh _) $$ H with ⟨H, Hpts⟩
+    have Hnone : (heapArray (l +ₗ 1) (vs.map Free) ∪ σ) !! l = none := by
+      refine (GMap.lookup_union_None _ _ _).mpr ⟨?_, ?_⟩
+      · have := heapArray_lookup_lt (l +ₗ 1) (vs.map Free) (-1) (by omega)
+        rwa [loc_add_assoc, show (1 : Int) + -1 = 0 by omega, loc_add_0] at this
+      · have := Hfresh 0; rwa [loc_add_0] at this
+    imod na_heap_alloc tls _ l v (Reading 0) Hnone rfl $$ H with ⟨H, Hl⟩
+    imodintro
+    have Heq : heapArray l ((v :: vs).map Free) ∪ σ =
+        <[l := (Reading 0, v)]> (heapArray (l +ₗ 1) (vs.map Free) ∪ σ) :=
+      (GMap.insert_union_l _ _ _ _).symm
+    rw [Heq]
+    iframe H
+    iapply BigSepL.bigSepL_cons.2
+    have Hk : ∀ k : Nat, l +ₗ ((k + 1 : Nat) : Int) = l +ₗ 1 +ₗ (k : Int) := by
+      intro k; rw [loc_add_assoc]; congr 1; omega
+    simp only [Int.natCast_zero, loc_add_0, Hk]
+    iframe
+
+end na_heap_alloc
 
 /-! ## Disk lifting lemmas -/
 
@@ -172,7 +228,7 @@ theorem wp_ReadOp (a : w64) (q : DFrac) (b : Block) :
     {{ ▷ diskPointsto (gooseDiskGS (L := L)) (uint.Z a) q b }} (ExternalOp DiskOp.ReadOp (Val (#a))) @ s; E
     {{ (l : Loc), RET #l; uint.Z a d↦{q} b ∗ pointstoBlock l (.own 1) b }} := by
   iintro %Φ >Ha HΦ
-  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl
+  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
@@ -222,7 +278,7 @@ theorem wp_ReadOp (a : w64) (q : DFrac) (b : Block) :
   unfold pointstoBlock
   iapply BigSepL.bigSepL_mono ?_ $$ Hpts
   intro k x _
-  exact na_pointsto_to_heap _ _ _ Hfresh.car
+  exact na_pointsto_to_heap _ _ _ (Hfresh.1 _).1
 
 theorem wp_WriteOp (a : w64) (b : Block) (q : DFrac) (l : Loc) :
     {{ ▷ ((∃ b0, diskPointsto (gooseDiskGS (L := L)) (uint.Z a) (.own 1) b0) ∗
@@ -230,7 +286,7 @@ theorem wp_WriteOp (a : w64) (b : Block) (q : DFrac) (l : Loc) :
       (ExternalOp DiskOp.WriteOp (Val (PairV (#a) (#l)))) @ s; E
     {{ RET #(); uint.Z a d↦ b ∗ pointstoBlock l q b }} := by
   iintro %Φ >⟨⟨%b0, Ha⟩, Hl⟩ HΦ
-  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl
+  iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩

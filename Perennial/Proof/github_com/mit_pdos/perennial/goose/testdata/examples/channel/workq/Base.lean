@@ -219,11 +219,7 @@ def isCoordinator (γ : WorkqNames) (sh : shared) : IProp GF :=
   iprop(∃ γdone : ChanNames,
     "#Hdone" ∷ ownBroadcastChan sh.done' γdone (isTasksDone γ sh) .Unknown ∗
     "#Hdone_is" ∷ isChan sh.done' γdone Unit ∗
-    "#Hi" ∷ inv nroot (coordinatorInv γ sh γdone) ∗
-    "%Hremaining_nn" ∷ ⌜sh.remaining' ≠ null⌝ ∗
-    "%Htotal_nn" ∷ ⌜sh.total' ≠ null⌝ ∗
-    "%Hremaining_al" ∷ ⌜Aligned (.word 8) (structFieldRef sync.atomic.Int64 go!"v" sh.remaining')⌝ ∗
-    "%Htotal_al" ∷ ⌜Aligned (.word 8) (structFieldRef sync.atomic.Int64 go!"v" sh.total')⌝)
+    "#Hi" ∷ inv nroot (coordinatorInv γ sh γdone))
 
 instance isCoordinator_persistent (γ : WorkqNames) (sh : shared) :
     Persistent (isCoordinator (GF := GF) γ sh) := by

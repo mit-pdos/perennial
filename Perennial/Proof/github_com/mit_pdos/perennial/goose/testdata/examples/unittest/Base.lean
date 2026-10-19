@@ -18,7 +18,6 @@ public import Perennial.Proof.sync.Base
 public import Perennial.Proof.github_com.goose_lang.primitive.Base
 public import Perennial.Proof.github_com.goose_lang.primitive.disk.Base
 public import Perennial.Proof.github_com.goose_lang.std.Base
-public import Perennial.Proof.«unsafe».Base
 
 @[expose] public section
 

@@ -30,7 +30,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.eliminatio
     github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.NewLockedStack.spec
       (GF := GF) (hG := hG) := by
   wp_start
-  wp_apply wp_slice_make2 (V := GoString) (t := go.string) (W64 0) (make_cap_ok_zero _) as %stack_sl ⟨Hsl, Hcap⟩
+  wp_apply wp_slice_make2 (V := GoString) (t := go.string) (W64 0) as %stack_sl ⟨Hsl, Hcap⟩
   · ipureintro; decide
   wp_alloc s as Hs
   iStructNamed Hs

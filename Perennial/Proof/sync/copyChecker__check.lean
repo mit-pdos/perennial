@@ -27,12 +27,11 @@ theorem sync.copyChecker.check.wp_proof :
   intro c
   wp_start as #Hinv
   rw [isCopyChecker_unseal]; unfold isCopyCheckerDef
-  icases Hinv with ⟨#Hinv, %hal⟩
   -- first `uintptr(*c) != uintptr(unsafe.Pointer(c))`
   wp_bind (Primitive1 _ _)
   iinv Hinv with >Hi
   icases Hi with (Hc | #Hc)
-  · wp_apply_core typed.wp_atomic_load c _ (null : Loc) hal $$ Hc
+  · wp_apply_core wp_atomic_load _ _ c _ (null : Loc) $$ Hc
     iintro Hc
     ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hc
     imodintro
@@ -42,10 +41,10 @@ theorem sync.copyChecker.check.wp_proof :
     rw [decide_eq_false (Ne.symm Hnn)]
     wp_auto
     -- `CompareAndSwapUintptr(c, 0, c)`
-    wp_bind (CmpXchgN _ _ _)
+    wp_bind (CmpXchg _ _ _)
     iinv Hinv with >Hi
     icases Hi with (Hc | #Hc)
-    · wp_apply_core typed.wp_cmpxchg_suc c (null : Loc) null c hal rfl $$ Hc
+    · wp_apply_core wp_cmpxchg_suc c (null : Loc) null c _ _ rfl $$ Hc
       iintro Hc
       ipersist Hc
       imodintro
@@ -55,19 +54,19 @@ theorem sync.copyChecker.check.wp_proof :
       iapply HΦ
       itrivial
     · ihave %Hnn' := typedPointsto_not_null _ _ _ $$ Hc
-      wp_apply_core typed.wp_cmpxchg_fail c c null c DFrac.discard hal Hnn $$ Hc
+      wp_apply_core wp_cmpxchg_fail c c null c DFrac.discard _ _ Hnn $$ Hc
       iintro _
       imodintro
       isplitl []
       · inext; iright; iexact Hc
       wp_auto
       -- second `uintptr(*c) != uintptr(unsafe.Pointer(c))`
-      wp_apply_core typed.wp_atomic_load c _ c hal $$ Hc
+      wp_apply_core wp_atomic_load _ _ c _ c $$ Hc
       iintro _
       wp_auto
       iapply HΦ
       itrivial
-  · wp_apply_core typed.wp_atomic_load c _ c hal $$ Hc
+  · wp_apply_core wp_atomic_load _ _ c _ c $$ Hc
     iintro _
     imodintro
     isplitl []

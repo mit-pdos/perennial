@@ -26,8 +26,7 @@ theorem context.withCancel.wp_proof :
     context.withCancel.spec (GF := GF) (hG := hG) := fun parent P Pre Hprop => by
   wp_start as ⟨#Hcci, Hpre⟩
   wp_auto
-  icases «$r0_al» with %hal
-  imod cancelCtx_alloc «$r0_ptr» P iprop(True) hal $$ Hcci «$r0» [] with ⟨%γ, #Hc, FContext⟩
+  imod cancelCtx_alloc «$r0_ptr» P iprop(True) $$ Hcci «$r0» [] with ⟨%γ, #Hc, FContext⟩
   · itrivial
   ihave #Hc' := isCancelCtxOfR_of _ _ _ _ $$ Hc
   iapply wp_fupd

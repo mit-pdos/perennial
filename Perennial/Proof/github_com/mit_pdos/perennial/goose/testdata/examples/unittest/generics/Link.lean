@@ -48,7 +48,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.
   github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.multiParamFunc.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.wp_useBoxGet : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useBoxGet.spec (GF := GF) (hG := hG) :=
-  github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useBoxGet.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.wp_makeGenericBox
+  github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useBoxGet.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.wp_makeGenericBox github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Box.wp_Get
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.wp_useContainer : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useContainer.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useContainer.wp_proof

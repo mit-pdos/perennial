@@ -27,7 +27,6 @@ abbrev sync.atomic.Pointer.Store.spec : Prop :=
   ⊢ ∀ Φ : val → IProp GF, isPkgInit (PROP := IProp GF) pkg_id.sync.atomic -∗
     (|={⊤,∅}=> ▷ ∃ old : Loc, ownPointer (T' := T') u (DFrac.own 1) old ∗
       (ownPointer (T' := T') u (DFrac.own 1) v ={∅,⊤}=∗ Φ #())) -∗
-    ⌜u ≠ null⌝ -∗ ⌜Aligned (.cell 8) (structFieldRef (Pointer T') go!"v" u)⌝ -∗
     WP (App (Val (u @!! go.GoType.PointerType (Pointer.ty T) @!! go!"Store")) (Val #v)) {{ Φ }}
 
 end spec

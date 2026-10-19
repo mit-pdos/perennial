@@ -142,10 +142,7 @@ noncomputable def EliminationStack.Push.impl [FfiSyntax] [GoGlobalContext] : val
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "value"))
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType LockedStack.ty) go!"Push"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack.ty)))) (App (Val (GoInstruction (StructFieldRef EliminationStack.ty go!"base"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EliminationStack.ty)))) (Var "s"))))) (Var "$a0"))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (StructFieldRef EliminationStack.ty go!"exchanger"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EliminationStack.ty)))) (Var "s"))))
-  (Let "_order1" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Var "_order1"))
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (StructFieldRef EliminationStack.ty go!"exchanger"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EliminationStack.ty)))) (Var "s"))))
   (Let "$v0" (App (Val (GoInstruction (GoLoad go.string))) (Var "value"))
   (Let "$ch1" (Let "$a0" (Val timeout)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.After []))) (Val #())) (Var "$a0")))
@@ -153,9 +150,7 @@ noncomputable def EliminationStack.Push.impl [FfiSyntax] [GoGlobalContext] : val
   (Val #()))),
   (CommClause (RecvCase _root_.Perennial.time.Time.ty (Var "$ch1")) (Lam "$recvVal"
   (App (Val doExecute)
-  (Val #()))))])))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Pair (Var "_order1") (Var "$r0"))))))))))))))
+  (Val #()))))]))))))))))))
 
 /-- Pop first tries one-shot elimination; on timeout, falls back to the locked stack.
 
@@ -171,10 +166,7 @@ noncomputable def EliminationStack.Pop.impl [FfiSyntax] [GoGlobalContext] : val 
   (Let "$ret1" (Snd (Var "__p"))
   (App (Val doReturn)
   (Pair (Var "$ret0") (Var "$ret1"))))))))
-  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (StructFieldRef EliminationStack.ty go!"exchanger"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EliminationStack.ty)))) (Var "s"))))
-  (Let "_order2" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Var "_order2"))
+  (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (App (Val (GoInstruction (StructFieldRef EliminationStack.ty go!"exchanger"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType EliminationStack.ty)))) (Var "s"))))
   (Let "$ch1" (Let "$a0" (Val timeout)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.After []))) (Val #())) (Var "$a0")))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (RecvCase go.string (Var "$ch0")) (Lam "$recvVal"
@@ -187,9 +179,7 @@ noncomputable def EliminationStack.Pop.impl [FfiSyntax] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "v") (Var "$r0"))))))))),
   (CommClause (RecvCase _root_.Perennial.time.Time.ty (Var "$ch1")) (Lam "$recvVal"
   (App (Val doExecute)
-  (Val #()))))]))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Pair (Var "_order2") (Var "$r0"))))))))))))
+  (Val #()))))])))))))))
 
 instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack where
   pkgImportedPkgs := [pkg_id.sync, pkg_id.time]
@@ -229,7 +219,6 @@ instance equals_unfold_LockedStack [FfiSyntax] [GoGlobalContext] :
 class LockedStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying LockedStack.underlying LockedStack
   underlying : go.UnderlyingDirectedEq LockedStack.ty LockedStack.underlying
-  layout : go.StructLayout LockedStack [(go!"mu", typeSize _root_.Perennial.sync.Mutex, typeAlign _root_.Perennial.sync.Mutex), (go!"stack", typeSize GoSlice, typeAlign GoSlice)]
   get_mu : ∀ (x : LockedStack), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"mu") #x (Val #(x.mu'))
   set_mu : ∀ (x : LockedStack) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet LockedStack.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : LockedStack)))
   get_stack : ∀ (x : LockedStack), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"stack") #x (Val #(x.stack'))
@@ -239,7 +228,6 @@ class LockedStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
 
 attribute [instance] LockedStack.TypeAssumptions.type_repr
   LockedStack.TypeAssumptions.underlying
-  LockedStack.TypeAssumptions.layout
   LockedStack.TypeAssumptions.get_mu
   LockedStack.TypeAssumptions.set_mu
   LockedStack.TypeAssumptions.get_stack
@@ -272,7 +260,6 @@ instance equals_unfold_EliminationStack [FfiSyntax] [GoGlobalContext] :
 class EliminationStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying EliminationStack.underlying EliminationStack
   underlying : go.UnderlyingDirectedEq EliminationStack.ty EliminationStack.underlying
-  layout : go.StructLayout EliminationStack [(go!"base", typeSize Loc, typeAlign Loc), (go!"exchanger", typeSize GoChan, typeAlign GoChan)]
   get_base : ∀ (x : EliminationStack), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"base") #x (Val #(x.base'))
   set_base : ∀ (x : EliminationStack) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet EliminationStack.underlying go!"base") (PairV #x #y) (Val #(({ x with base' := y } : EliminationStack)))
   get_exchanger : ∀ (x : EliminationStack), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"exchanger") #x (Val #(x.exchanger'))
@@ -282,7 +269,6 @@ class EliminationStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalCon
 
 attribute [instance] EliminationStack.TypeAssumptions.type_repr
   EliminationStack.TypeAssumptions.underlying
-  EliminationStack.TypeAssumptions.layout
   EliminationStack.TypeAssumptions.get_base
   EliminationStack.TypeAssumptions.set_base
   EliminationStack.TypeAssumptions.get_exchanger

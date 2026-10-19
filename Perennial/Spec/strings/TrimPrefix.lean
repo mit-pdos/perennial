@@ -20,7 +20,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strings.Assumptions]
 
-/-- `strings.TrimPrefix(s, prefix)`: `s` without the prefix `prefix` if it has it, else `s`. -/
+/-- `strings.TrimPrefix(s, pfx)`: `trimPrefix s pfx`. -/
 abbrev strings.TrimPrefix.spec : Prop :=
   ∀ (s pfx : GoString),
     {{ isPkgInit (PROP := IProp GF) pkg_id.strings }}
