@@ -8,6 +8,9 @@ module
 public import Perennial.Proof.github_com.goose_lang.primitive.Assume
 public import Perennial.Proof.github_com.goose_lang.primitive.Mutex__Lock
 public import Perennial.Proof.github_com.goose_lang.primitive.Mutex__Unlock
+public import Perennial.Proof.github_com.goose_lang.primitive.NewProph
+public import Perennial.Proof.github_com.goose_lang.primitive.ProphId__ResolveBool
+public import Perennial.Proof.github_com.goose_lang.primitive.ProphId__ResolveU64
 public import Perennial.Proof.github_com.goose_lang.primitive.RandomUint64
 public import Perennial.Proof.github_com.goose_lang.primitive.initialize
 
@@ -32,6 +35,15 @@ theorem github_com.goose_lang.primitive.Mutex.wp_Lock : github_com.goose_lang.pr
 
 theorem github_com.goose_lang.primitive.Mutex.wp_Unlock : github_com.goose_lang.primitive.Mutex.Unlock.spec (GF := GF) (hG := hG) :=
   github_com.goose_lang.primitive.Mutex.Unlock.wp_proof
+
+theorem github_com.goose_lang.primitive.wp_NewProph : github_com.goose_lang.primitive.NewProph.spec (GF := GF) (hG := hG) :=
+  github_com.goose_lang.primitive.NewProph.wp_proof
+
+theorem github_com.goose_lang.primitive.ProphId.wp_ResolveBool : github_com.goose_lang.primitive.ProphId.ResolveBool.spec (GF := GF) (hG := hG) :=
+  github_com.goose_lang.primitive.ProphId.ResolveBool.wp_proof
+
+theorem github_com.goose_lang.primitive.ProphId.wp_ResolveU64 : github_com.goose_lang.primitive.ProphId.ResolveU64.spec (GF := GF) (hG := hG) :=
+  github_com.goose_lang.primitive.ProphId.ResolveU64.wp_proof
 
 theorem github_com.goose_lang.primitive.wp_RandomUint64 : github_com.goose_lang.primitive.RandomUint64.spec (GF := GF) (hG := hG) :=
   github_com.goose_lang.primitive.RandomUint64.wp_proof

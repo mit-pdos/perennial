@@ -5,6 +5,9 @@ trusted = [
   "RandomUint64",
   "Mutex*",
   "ProphId",
+  "NewProph",
+  "ProphId.ResolveBool",
+  "ProphId.ResolveU64",
   # FIXME: add remaining functions
 ]
 [bootstrap]
