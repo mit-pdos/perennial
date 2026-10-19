@@ -17,7 +17,6 @@ func TestTargets(t *testing.T) {
 		"testInlineBucket":      testInlineBucket,
 		"testStatsConcurrent":   testStatsConcurrent,
 
-		"testOverlappingArrayCopy":    testOverlappingArrayCopy,
 		"testDisjointStructCopy":      testDisjointStructCopy,
 		"testTagsClearedByByteStores": testTagsClearedByByteStores,
 	} {

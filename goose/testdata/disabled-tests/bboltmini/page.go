@@ -5,10 +5,11 @@
 // unaligned offsets, and an atomic on a *time.Duration cast to *int64.
 //
 // Each construct is written the way go.etcd.io/bbolt v1.5.0 writes it, with
-// the two changes of docs/design/unsafe-memory.md section 4: the helpers use
-// unsafe.Add instead of uintptr arithmetic, and an element's pos is computed
-// from offsets instead of as a pointer difference. The original forms are in
-// package stuck, with the other constructs the model must not verify.
+// the changes of docs/design/unsafe-memory.md section 5: the helpers use
+// unsafe.Add and unsafe.Slice instead of uintptr arithmetic and a
+// (*[MaxAllocSize]byte) view, and an element's pos is computed from offsets
+// instead of as a pointer difference. The original forms are in package
+// stuck, with the other constructs the model must not verify.
 package bboltmini
 
 import (
@@ -50,11 +51,11 @@ const (
 	pageHeaderSize        = unsafe.Sizeof(Page{})
 	leafPageElementSize   = unsafe.Sizeof(leafPageElement{})
 	branchPageElementSize = unsafe.Sizeof(branchPageElement{})
-	maxAllocSize          = 0x7FFFFFFF
 )
 
 // unsafeAdd, unsafeIndex and unsafeByteSlice are internal/common/unsafe.go's
-// helpers, with unsafe.Add for uintptr(base)+offset.
+// helpers in the patched forms of the design (section 5): unsafe.Add for
+// uintptr(base)+offset, and unsafe.Slice for the (*[MaxAllocSize]byte) view.
 func unsafeAdd(base unsafe.Pointer, offset uintptr) unsafe.Pointer {
 	return unsafe.Add(base, offset)
 }
@@ -64,7 +65,7 @@ func unsafeIndex(base unsafe.Pointer, offset uintptr, elemsz uintptr, n int) uns
 }
 
 func unsafeByteSlice(base unsafe.Pointer, offset uintptr, i, j int) []byte {
-	return (*[maxAllocSize]byte)(unsafeAdd(base, offset))[i:j:j]
+	return unsafe.Slice((*byte)(unsafeAdd(base, offset)), j)[i:j:j]
 }
 
 // pageAt is db.go's pageInBuffer: the page at byte offset off of buf.

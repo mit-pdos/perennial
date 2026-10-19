@@ -7,6 +7,7 @@
 package stuck
 
 import (
+	"io"
 	"sync/atomic"
 	"unsafe"
 )
@@ -148,7 +149,7 @@ func testOverlappingCopy() bool {
 // nothing for overlap made with unsafe ("We don't care about solving 1",
 // ssagen/ssa.go, moveWhichMayOverlap), and only a check it could drop guards
 // its rewrite that fuses the two copies (generic.rules, a Move of a Move). So
-// this must stay unprovable whatever the syntax: the model's tags (design R3)
+// this must stay unprovable whatever the syntax: the model's tags (design R4)
 // make the second, shifted whole-struct view stuck.
 //
 //go:noinline
@@ -164,4 +165,114 @@ func testOverlappingCopyViaTemp() bool {
 	}
 	copyMetaViaTemp((*meta)(unsafe.Pointer(&buf[1])), (*meta)(unsafe.Pointer(&buf[0])))
 	return buf[3] == 2
+}
+
+// Overlapping plain arrays in safe Go (slice-to-array-pointer conversions):
+// gc copies *p = *q with memmove, so this is true in Go. The model's tags
+// (design R4) cannot tell this copy from p.A = q.A below without looking at
+// syntax, so it is stuck: deliberately incomplete.
+func testOverlappingArrayCopy() bool {
+	s := make([]uint64, 16)
+	for i := range s {
+		s[i] = uint64(i)
+	}
+	*(*[8]uint64)(s[1:9]) = *(*[8]uint64)(s[0:8])
+	return s[3] == 2
+}
+
+// An array field copied between overlapping views: gc uses a Move, not
+// memmove, so buf[4] is 2, not value semantics' 3, and this is false in Go.
+type withArray struct {
+	H uint64
+	A [8]uint64
+}
+
+//go:noinline
+func copyArrayField(dst, src *withArray) { dst.A = src.A }
+
+func testArrayFieldOverlapCopy() bool {
+	buf := make([]uint64, 16)
+	for i := range buf {
+		buf[i] = uint64(i)
+	}
+	copyArrayField((*withArray)(unsafe.Pointer(&buf[1])), (*withArray)(unsafe.Pointer(&buf[0])))
+	return buf[4] == 3
+}
+
+// A string stored over a pointer field. Once s escapes, s.q holds the
+// string's length and this is false in Go; when s stays local, gc assumes the
+// string store cannot change a pointer field and returns true. Either way,
+// converting to *string from foreign memory is stuck (design R3).
+type twoPointers struct{ p, q *int }
+
+var sinkTwoPointers *twoPointers
+
+func testStringOverPointer() bool {
+	s := &twoPointers{}
+	sinkTwoPointers = s
+	*(*string)(unsafe.Pointer(&s.p)) = "hello"
+	return s.q == nil
+}
+
+// A map viewed as a map of another key type: Go finds the key (false here).
+func testMapPun() bool {
+	m := map[int]int{1: 10}
+	m2 := *(*map[uint32]int)(unsafe.Pointer(&m))
+	_, ok := m2[1]
+	return !ok
+}
+
+// An io.Reader read as an io.Writer: Go calls Read through the itab (false
+// here).
+type readerWriter struct{}
+
+func (readerWriter) Read([]byte) (int, error)  { return 1, nil }
+func (readerWriter) Write([]byte) (int, error) { return 2, nil }
+
+func testInterfacePun() bool {
+	var r io.Reader = readerWriter{}
+	w := *(*io.Writer)(unsafe.Pointer(&r))
+	n, _ := w.Write(nil)
+	return n == 2
+}
+
+// A pointer stored atomically into an integer's bytes: Go writes the
+// address's bytes (false here).
+func testAtomicPointerIntoBytes() bool {
+	var u uint64
+	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&u)), unsafe.Pointer(new(int)))
+	return (*[8]byte)(unsafe.Pointer(&u))[4] == 0
+}
+
+// An address past an object, compared without being accessed: gc places the
+// two 16-byte objects next to each other, so this is false in Go.
+func testPastEndAddress() bool {
+	a, b := make([]byte, 16), make([]byte, 16)
+	us := unsafe.Slice(&a[0], 32)
+	return &us[16] != &b[0]
+}
+
+// Go's == ignores blank fields (false here).
+type withBlank struct {
+	a uint32
+	_ uint32
+}
+
+func testBlankFieldEq() bool {
+	buf := make([]byte, 16)
+	buf[12] = 1
+	x := (*withBlank)(unsafe.Pointer(&buf[0]))
+	y := (*withBlank)(unsafe.Pointer(&buf[8]))
+	return *x != *y
+}
+
+// Atomics of different widths on the same bytes: true in Go when they are
+// sequential, but Intel promises nothing when they are concurrent, and the
+// model's atomic tags (design R4) cannot tell the two apart: deliberately
+// incomplete.
+func testMixedWidthAtomics() bool {
+	var u uint64
+	atomic.AddUint64(&u, 1)
+	atomic.AddUint32((*uint32)(unsafe.Pointer(&u)), 1)
+	return u == 2
 }
