@@ -92,6 +92,10 @@ func (suite *GoTestSuite) TestCompareLE() {
 	suite.Equal(true, testCompareLE())
 }
 
+func (suite *GoTestSuite) TestConstantCalls() {
+	suite.Equal(true, testConstantCalls())
+}
+
 func (suite *GoTestSuite) TestFallthrough() {
 	suite.Equal(true, testFallthrough())
 }

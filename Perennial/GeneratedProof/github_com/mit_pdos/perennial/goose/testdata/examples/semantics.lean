@@ -6,6 +6,7 @@ public import Perennial.GeneratedProof.encoding.binary
 public import Perennial.GeneratedProof.github_com.goose_lang.primitive
 public import Perennial.GeneratedProof.github_com.goose_lang.primitive.disk
 public import Perennial.GeneratedProof.sync
+public import Perennial.GeneratedProof.«unsafe»
 public import Perennial.Golang.Theory
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.testdata.examples.semantics
 

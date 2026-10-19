@@ -217,7 +217,7 @@ stuck: nothing imports those packages, so no proof needs their init.
   once the measurement showed no proof depends on them; leaving them stuck
   adds no trust.
 
-## Case 8 — ACCEPTED: a constant call is its constant (not yet on `lean`)
+## Case 8 — ACCEPTED: a constant call is its constant ("goose: a constant call (unsafe.Sizeof, len of an array, ...) is its constant")
 
 **Symptom.** Incomplete: `unsafe.Sizeof(n)` in sync's `init.1` was refused
 ("builtin that isn't an ident"), and `constantLiteral` had no `uintptr` case.

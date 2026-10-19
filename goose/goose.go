@@ -327,7 +327,6 @@ func (ctx *Ctx) conversionExpr(s *ast.CallExpr) glang.Expr {
 
 // This handles:
 // - make() and new() because they uniquely take a type as a normal parameter.
-// - array len() and cap() because they are untyped functions
 func (ctx *Ctx) maybeHandleSpecialBuiltin(s *ast.CallExpr) (glang.Expr, bool) {
 	if !ctx.info.Types[s.Fun].IsBuiltin() {
 		return nil, false
@@ -380,19 +379,6 @@ func (ctx *Ctx) maybeHandleSpecialBuiltin(s *ast.CallExpr) (glang.Expr, bool) {
 				"deferred by a defer statement (defer func() { ... recover() ... }())")
 		}
 		return glang.NewCallExpr(glang.VerbatimExpr("recoverPanic"), glang.IdentExpr("$panic")), true
-	case "len", "cap":
-		// go/types gives the builtin a signature type exactly when the call is
-		// not constant-folded; then the ordinary call path applies the operand.
-		if _, ok := ctx.typeOf(s.Fun).(*types.Signature); ok {
-			return nil, false
-		}
-		// Otherwise it is a constant expression (len/cap of an array, len of a
-		// constant string) and go/types has the value. Emit it: there is no
-		// operand to apply go.len to, and Go does not evaluate one here.
-		if ctx.info.Types[s].Value == nil {
-			ctx.nope(s, "%s builtin is neither constant nor of signature type", f.Name)
-		}
-		return ctx.constantLiteral(s), true
 	}
 
 	return nil, false
@@ -409,6 +395,9 @@ func (ctx *Ctx) getNumParams(e ast.Expr) int {
 func (ctx *Ctx) callExpr(s *ast.CallExpr) glang.Expr {
 	if ctx.info.Types[s.Fun].IsType() {
 		return ctx.conversionExpr(s)
+	} else if ctx.info.Types[s].Value != nil {
+		// constant call, e.g. unsafe.Sizeof(x) or len of an array
+		return ctx.constantLiteral(s)
 	} else if e, ok := ctx.maybeHandleSpecialBuiltin(s); ok {
 		return e
 	} else {
@@ -2702,7 +2691,7 @@ func (ctx *Ctx) constantLiteral(e ast.Expr) glang.Expr {
 		switch t.Kind() {
 		case types.Bool, types.UntypedBool:
 			return glang.GooseBoolLiteral(v.(bool))
-		case types.Uint64, types.Int64, types.Int, types.Uint:
+		case types.Uint64, types.Int64, types.Int, types.Uint, types.Uintptr:
 			return constInt("W64")
 		case types.Uint32, types.Int32:
 			return constInt("W32")
