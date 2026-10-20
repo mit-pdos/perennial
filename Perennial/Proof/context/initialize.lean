@@ -78,6 +78,9 @@ theorem context.initialize'.wp_proof
   dsimp only
   iintro Hch
   imod Hmask with -
+  imod inv_alloc closedchanN ⊤ (ownChan γ Unit (.Closed [])) $$ [Hch] with #Hccinv
+  · inext
+    iexact Hch
   imodintro
   wp_auto
   iframe Hown
@@ -98,6 +101,10 @@ theorem context.initialize'.wp_proof
     iframe HDE
     ipureintro
     exact hDE.is_error
+  isplitr
+  · iunfold isClosedchanInit
+    iexists ch, γ
+    iframe Hcl His_ch Hccinv
   itrivial
 
 end proof

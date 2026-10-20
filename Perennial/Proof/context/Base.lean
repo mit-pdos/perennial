@@ -79,13 +79,12 @@ Design (see also the comments at each definition):
   parent's `children` (or canceled at once if the parent is already done); the parent's `cancel`
   cancels each child before it returns (under the parent's lock). The child's Done proposition
   is `parent.PDone ∨ PDone'`.
-* `isInit` (no ghost state): `"#Hclosedchan"`: the global `closedchan` holds a
+* `isInit`: `"#Hclosedchan"`: the global `closedchan` holds a
   fixed channel; `"#HCanceled"`: the global `Canceled` holds a fixed typed error. Go never writes
   either after initialization. `parentCancelCtx` compares `parent.Done()` with `closedchan`.
 * `isClosedchanInit` (persistent; ghost state): `closedchan`'s channel is closed (an
   invariant holds its state `Closed []`; `init` closes it), which `cancel` (it stores
-  `closedchan`) and `Done` need. A package-init fact kept out of `isInit`, which has no
-  ghost state. Every `*cancelCtx`
+  `closedchan`) and `Done` need. A conjunct of `isInit` (`isClosedchanInit_of_init`). Every `*cancelCtx`
   carries it (`isCancelCtxOf`); `wp_WithCancel_Background` (and `wp_withCancel`,
   `wp_WithCancel_gen`) take it as a premise; `wp_WithCancel` gets it from its parent.
 * `isTypedErr e`: `e` is a non-nil error whose dynamic type is in `error`'s type set (so
@@ -182,13 +181,28 @@ def isTypedErr [GoSemanticsFunctions] (e : GoInterface) : Prop :=
 theorem isTypedErr_ne_nil [GoSemanticsFunctions] {e : GoInterface} (h : isTypedErr e) : e ≠ interface.nil := by
   cases e <;> simp_all [isTypedErr]
 
-/-- The package invariant (no ghost state; the ghost facts about `closedchan` are
-`isClosedchanInit`):
+/-- `context`'s package-init fact about `closedchan`: the global `closedchan` holds a fixed
+channel, which is closed (`init` closes it; Go never writes `closedchan` afterwards): an
+invariant holds its channel state `Closed []`. Persistent. Part of `isInit` (`"#Hcci"`;
+`isClosedchanInit_of_init`), so any program that has initialized `context` has it. Every
+`*cancelCtx` also carries it (`isCancelCtxOf`'s `"#Hcci"`), so only creating one from scratch
+(`wp_withCancel`, `wp_WithCancel_gen`, `wp_WithCancel_Background`) takes it as a premise. -/
+def isClosedchanInit : IProp GF :=
+  iprop(∃ (ch : GoChan) (γ : ChanNames), globalAddr context.closedchan ↦□ ch ∗
+    isChan ch γ Unit ∗ inv closedchanN (ownChan γ Unit (.Closed [])))
+
+instance isClosedchanInit_pers : Persistent (isClosedchanInit (GF := GF)) := by
+  unfold isClosedchanInit; infer_instance
+
+/-- The package invariant:
 * `"Hgoroutines"`: the `goroutines` counter;
 * `"#Hclosedchan"`: the global `closedchan` holds a fixed channel;
 * `"#HCanceled"`: the global `Canceled` holds a fixed error (`errors.New("context
   canceled")`), whose type implements `error` (`isTypedErr`);
-* `"#HDeadlineExceeded"`: likewise for `DeadlineExceeded` (`deadlineExceededError{}`).
+* `"#HDeadlineExceeded"`: likewise for `DeadlineExceeded` (`deadlineExceededError{}`);
+* `"#Hcci"`: `closedchan`'s channel is closed (`isClosedchanInit`, ghost state: the channel's
+  names and an invariant on its state). Appended last, so patterns ending in a catch-all
+  that destructure the earlier conjuncts are unaffected.
 Go never writes `closedchan`, `Canceled` or `DeadlineExceeded` after initialization. -/
 abbrev isInit : IProp GF :=
   iprop("Hgoroutines" ∷
@@ -197,6 +211,7 @@ abbrev isInit : IProp GF :=
   "#HCanceled" ∷ (∃ e : GoInterface, globalAddr context.Canceled ↦□ e ∗ ⌜isTypedErr e⌝) ∗
   "#HDeadlineExceeded" ∷
     (∃ e : GoInterface, globalAddr context.DeadlineExceeded ↦□ e ∗ ⌜isTypedErr e⌝) ∗
+  "#Hcci" ∷ isClosedchanInit ∗
   "_" ∷ True)
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.context :=
@@ -229,19 +244,13 @@ theorem isInit_access :
     isPkgInit (PROP := IProp GF) pkg_id.context ⊢ isInit (GF := GF) := by
   with_unfolding_all exact isPkgInit_access (PROP := IProp GF) pkg_id.context
 
-/-- `context`'s package-init fact about `closedchan`, kept out of `isInit` because it is
-ghost state: the global `closedchan` holds a fixed channel, which is closed
-(`init` closes it; Go never writes `closedchan` afterwards): an invariant holds its channel
-state `Closed []`. Like `isInit`, it is established by the package's initialization (a
-program's `main` has it once `context` is initialized). Persistent. Every `*cancelCtx`
-carries it (`isCancelCtxOf`'s `"#Hcci"`), so only creating one from scratch (`wp_withCancel`,
-`wp_WithCancel_gen`, `wp_WithCancel_Background`) takes it as a premise. -/
-def isClosedchanInit : IProp GF :=
-  iprop(∃ (ch : GoChan) (γ : ChanNames), globalAddr context.closedchan ↦□ ch ∗
-    isChan ch γ Unit ∗ inv closedchanN (ownChan γ Unit (.Closed [])))
-
-instance isClosedchanInit_pers : Persistent (isClosedchanInit (GF := GF)) := by
-  unfold isClosedchanInit; infer_instance
+/-- `closedchan` is closed once `context` is initialized. -/
+theorem isClosedchanInit_of_init :
+    isPkgInit (PROP := IProp GF) pkg_id.context ⊢ isClosedchanInit (GF := GF) := by
+  iintro #Hpkg
+  ihave #Hi := isInit_access $$ Hpkg
+  icases Hi with ⟨-, -, -, -, #Hcci, -⟩
+  iexact Hcci
 
 /-- `&cancelCtxKey` converted to `any`: the key for which `Value` returns the
 innermost enclosing `*cancelCtx`. -/
