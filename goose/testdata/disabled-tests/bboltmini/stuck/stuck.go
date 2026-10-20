@@ -144,33 +144,35 @@ func testOverlappingCopy() bool {
 	return buf[3] == 2
 }
 
-// The same copy through a temporary. Today gc copies *src into a stack slot
-// first, so the result is memmove's and this is true in Go. But gc promises
-// nothing for overlap made with unsafe ("We don't care about solving 1",
-// ssagen/ssa.go, moveWhichMayOverlap), and only a check it could drop guards
-// its rewrite that fuses the two copies (generic.rules, a Move of a Move). So
-// this must stay unprovable whatever the syntax: the model's tags (design R4)
-// make the second, shifted whole-struct view stuck.
+// The same overlapping copy, with a call on the left that writes back the
+// bytes it reads. gc calls touch first and then does one Move, so buf[3] is
+// 1 and this is false in Go. goose loads *src before the call, so draft 6's
+// tags were cleared by touch's stores and the model gave value semantics.
+// The check of design R4 compares the two addresses, which no store changes.
 //
 //go:noinline
-func copyMetaViaTemp(dst, src *meta) {
-	x := *src
-	*dst = x
+func touch(buf []uint64, dst *meta) *meta {
+	for i := range buf {
+		v := buf[i]
+		buf[i] = v
+	}
+	return dst
 }
 
-func testOverlappingCopyViaTemp() bool {
+func testOverlapAfterSameValueStore() bool {
 	buf := make([]uint64, 16)
 	for i := range buf {
 		buf[i] = uint64(i)
 	}
-	copyMetaViaTemp((*meta)(unsafe.Pointer(&buf[1])), (*meta)(unsafe.Pointer(&buf[0])))
+	src := (*meta)(unsafe.Pointer(&buf[0]))
+	*touch(buf, (*meta)(unsafe.Pointer(&buf[1]))) = *src
 	return buf[3] == 2
 }
 
 // Overlapping plain arrays in safe Go (slice-to-array-pointer conversions):
-// gc copies *p = *q with memmove, so this is true in Go. The model's tags
-// (design R4) cannot tell this copy from p.A = q.A below without looking at
-// syntax, so it is stuck: deliberately incomplete.
+// gc copies *p = *q with memmove, so this is true in Go. The overlap check of
+// design R4 cannot tell this copy from p.A = q.A below, so it is stuck:
+// deliberately incomplete.
 func testOverlappingArrayCopy() bool {
 	s := make([]uint64, 16)
 	for i := range s {
@@ -268,7 +270,7 @@ func testBlankFieldEq() bool {
 
 // Atomics of different widths on the same bytes: true in Go when they are
 // sequential, but Intel promises nothing when they are concurrent, and the
-// model's atomic tags (design R4) cannot tell the two apart: deliberately
+// model's atomic tags (design R5) cannot tell the two apart: deliberately
 // incomplete.
 func testMixedWidthAtomics() bool {
 	var u uint64

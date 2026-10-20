@@ -240,9 +240,9 @@ func testDisjointStructCopy() bool {
 	return b.txid == 7 && a.txid == 7
 }
 
-// A buffer reused at shifted offsets, as pagePool reuses page buffers: zeroing
-// it byte by byte clears the tags of the whole-struct views it held.
-func testTagsClearedByByteStores() bool {
+// A buffer reused at shifted offsets, as pagePool reuses page buffers: a whole
+// load at one offset does not constrain later views at another.
+func testBufferReuseAtShift() bool {
 	buf := make([]byte, 32)
 	buf[0] = 1
 	old := *(*InBucket)(unsafe.Pointer(&buf[0]))
@@ -254,12 +254,32 @@ func testTagsClearedByByteStores() bool {
 	return old.root == 1 && b.root == 3 && b.sequence == 4 && buf[0] == 0
 }
 
-// Whole loads of one type at overlapping offsets are defined: only a store can
-// complete an overlapping copy, so loads never check tags (design R4).
+// Whole loads of one type at overlapping offsets are defined: only an
+// assignment between overlapping locations is checked (design R4).
 func testOverlappingLoads() bool {
 	buf := make([]byte, 24)
 	buf[8] = 1
 	x := *(*InBucket)(unsafe.Pointer(&buf[0]))
 	y := *(*InBucket)(unsafe.Pointer(&buf[8]))
 	return x.sequence == 1 && y.root == 1
+}
+
+// An overlapping copy through a whole-variable temporary is defined, with
+// value semantics. gc 1.26 copies *src into a stack slot and then into *dst:
+// its rule that fuses the two copies needs a stack source and provably
+// disjoint locations (design R4, a platform fact), so the result is memmove's.
+//
+//go:noinline
+func copyMetaViaTemp(dst, src *Meta) {
+	x := *src
+	*dst = x
+}
+
+func testOverlappingCopyViaTemp() bool {
+	buf := make([]uint64, 16)
+	for i := range buf {
+		buf[i] = uint64(i)
+	}
+	copyMetaViaTemp((*Meta)(unsafe.Pointer(&buf[1])), (*Meta)(unsafe.Pointer(&buf[0])))
+	return buf[3] == 2
 }

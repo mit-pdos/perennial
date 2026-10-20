@@ -36,8 +36,9 @@ rejects the `unsafe.Add`/`unsafe.Slice` calls and nothing else. It moves to
 | `testInlineBucket` | I1, I7 | R2–R4 | a header and a page at an offset that is 8-aligned for some key lengths and not others; `uintptr(p)` is arbitrary, so both branches of the alignment test must verify; a writable open copies |
 | `testStatsConcurrent` | I10 | R1, R5 | atomics on `int64`s that are byte cells, one through `(*int64)(unsafe.Pointer(*time.Duration))`; their alignment premise is discharged from the allocation |
 | `testDisjointStructCopy` | I1 | R4 | whole-struct copies between disjoint views of one buffer, and onto the same location, are not stuck |
-| `testOverlappingLoads` | (I1, mmap readers) | R4 | whole loads of one type at overlapping offsets are defined; only stores check tags |
-| `testTagsClearedByByteStores` | I1 (`pagePool` reuse) | R4 | after a whole-struct load, zeroing the buffer byte by byte clears its tags, so the buffer can hold a view of the same type at a shifted offset |
+| `testOverlappingLoads` | (I1, mmap readers) | R4 | whole loads of one type at overlapping offsets are defined; only an assignment between overlapping locations is checked |
+| `testBufferReuseAtShift` | I1 (`pagePool` reuse) | R4 | after a whole-struct load, the buffer can hold a view of the same type at a shifted offset: the check has no state |
+| `testOverlappingCopyViaTemp` | — | R4 | an overlapping copy through a whole-variable temporary is defined, with value semantics, as gc 1.26 gives it (a platform fact about gc's fusion rule) |
 
 Two targets are scale tests rather than new idioms:
 - `testFreelistOverflow` writes 65536 ids, so its proof must use loop
@@ -67,13 +68,13 @@ stuck on purpose.
 | `testBlankFieldEq` | **false** | `==` ignores blank fields; structs with blank fields are not plain | R1 |
 | `testZeroSizeDistinct` | **false** (heap), true (stack) | pointers to distinct zero-size objects may be equal | R1 |
 | `testMisalignedAtomic` | depends on address and CPU | an atomic on a 1-aligned `[]byte` | R1, R5 |
-| `testMixedWidthAtomics` | true here (sequential) | atomics of two widths on one word; Intel promises nothing when they are concurrent (deliberately incomplete) | R4 |
+| `testMixedWidthAtomics` | true here (sequential) | atomics of two widths on one word; Intel promises nothing when they are concurrent (deliberately incomplete) | R5 |
 | `testByteSliceAligned` | true in practice, not promised | a `[]byte` is only 1-aligned | R3 |
 | `testFieldResidue` | **false** | the residue of a plain field of a non-plain struct (offset 12) | R3 |
 | `testOverlappingCopy` | **false** | gc copies a 64-byte struct forward in 16-byte chunks: `0 0 1 1 3 3 5 5 7 9`, not memmove's `0 0 1 2 3 4 5 6 7 9` | R4 |
-| `testOverlappingCopyViaTemp` | true today, not promised | the same copy through a temporary; gc disclaims overlap made with `unsafe` | R4, whatever the syntax |
-| `testArrayFieldOverlapCopy` | **false** | an array field copied between overlapping views uses a `Move`, not `memmove` | R4 (arrays carry tags) |
-| `testOverlappingArrayCopy` | true | safe Go's overlapping `*p = *q` of plain arrays is `memmove`, but the model cannot tell it from the above (deliberately incomplete) | R4 |
+| `testOverlapAfterSameValueStore` | **false** | the same copy with a call on the left that writes back the bytes it reads: gc calls first, then does one `Move`; it cleared draft 6's tags | R4 (the check has no state) |
+| `testArrayFieldOverlapCopy` | **false** | an array field copied between overlapping views uses a `Move`, not `memmove` | R4 (array fields are checked) |
+| `testOverlappingArrayCopy` | true | safe Go's overlapping `*p = *q` of plain arrays is `memmove`, but the check cannot tell it from the above (deliberately incomplete) | R4 |
 
 Each probe marked **false** found an unsound point in an earlier draft of
 the design. Section 9 of the design records the review rounds.

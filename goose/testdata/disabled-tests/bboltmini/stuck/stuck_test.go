@@ -20,15 +20,15 @@ func TestGo(t *testing.T) {
 		"testZeroSizeDistinct":  {testZeroSizeDistinct, false},
 		"testOverlappingCopy":   {testOverlappingCopy, false},
 
-		"testOverlappingCopyViaTemp": {testOverlappingCopyViaTemp, true},
-		"testOverlappingArrayCopy":   {testOverlappingArrayCopy, true},
-		"testArrayFieldOverlapCopy":  {testArrayFieldOverlapCopy, false},
-		"testStringOverPointer":      {testStringOverPointer, false},
-		"testMapPun":                 {testMapPun, false},
-		"testInterfacePun":           {testInterfacePun, false},
-		"testAtomicPointerIntoBytes": {testAtomicPointerIntoBytes, false},
-		"testBlankFieldEq":           {testBlankFieldEq, false},
-		"testMixedWidthAtomics":      {testMixedWidthAtomics, true},
+		"testOverlapAfterSameValueStore": {testOverlapAfterSameValueStore, false},
+		"testOverlappingArrayCopy":       {testOverlappingArrayCopy, true},
+		"testArrayFieldOverlapCopy":      {testArrayFieldOverlapCopy, false},
+		"testStringOverPointer":          {testStringOverPointer, false},
+		"testMapPun":                     {testMapPun, false},
+		"testInterfacePun":               {testInterfacePun, false},
+		"testAtomicPointerIntoBytes":     {testAtomicPointerIntoBytes, false},
+		"testBlankFieldEq":               {testBlankFieldEq, false},
+		"testMixedWidthAtomics":          {testMixedWidthAtomics, true},
 	} {
 		if got := c.f(); got != c.want {
 			t.Errorf("%s = %v in Go, want %v", name, got, c.want)
