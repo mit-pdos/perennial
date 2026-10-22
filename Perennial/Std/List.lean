@@ -483,4 +483,164 @@ theorem join_same_len_lookup (i c : Nat) (x : List A) (ls : List (List A))
 
 end join_same_len
 
+/-! ## Indexing, `set`, `take` and prefixes -/
+
+section list_index
+variable {A : Type u} {B : Type v}
+
+theorem zip_getElem?_snd (a : List A) (b : List B) (i : Nat) (e : A × B)
+    (h : (a.zip b)[i]? = some e) : b[i]? = some e.2 := by
+  rw [List.getElem?_zip_eq_some] at h; exact h.2
+
+/-- The `i`th entry of a list ending at `a`, of length `i + 1`. -/
+theorem getElem?_of_getLast? {C : List A} {i : Nat} {a : A} (hC : C.length = i + 1)
+    (hl : C.getLast? = some a) : C[i]? = some a := by
+  rw [List.getLast?_eq_getElem?] at hl
+  rw [hC] at hl
+  simpa using hl
+
+/-- In a list with distinct elements, the element at `i` is not after `i`. -/
+theorem nodup_not_mem_drop {l : List A} (hnd : l.Nodup) {i : Nat} {a : A}
+    (h : l[i]? = some a) : a ∉ l.drop (i + 1) := by
+  intro hm
+  have hl := List.take_append_drop (i + 1) l
+  rw [List.take_add_one, h] at hl
+  rw [← hl] at hnd
+  simp only [Option.toList_some] at hnd
+  rw [List.nodup_append] at hnd
+  exact hnd.2.2 a (by simp) a hm rfl
+
+theorem all_congr_mem (l : List A) (f g : A → Bool) (h : ∀ x ∈ l, f x = g x) :
+    l.all f = l.all g := by
+  induction l with
+  | nil => rfl
+  | cons a l ih =>
+    simp only [List.all_cons, h a List.mem_cons_self,
+      ih (fun x hx => h x (List.mem_cons_of_mem _ hx))]
+
+theorem getElem?_snoc_cases {L : List A} {a b : A} {i : Nat} (h : (L ++ [a])[i]? = some b) :
+    (i < L.length ∧ L[i]? = some b) ∨ (i = L.length ∧ b = a) := by
+  by_cases hi : i < L.length
+  · left; rw [List.getElem?_append_left hi] at h; exact ⟨hi, h⟩
+  · right
+    rw [List.getElem?_append_right (by omega)] at h
+    have : i - L.length = 0 := by
+      cases hk : i - L.length with
+      | zero => rfl
+      | succ k => rw [hk] at h; simp at h
+    rw [this] at h; simp at h
+    exact ⟨by omega, h.symm⟩
+
+theorem prefix_snoc_eq {D L : List A} {m : A}
+    (h : D <+: L ++ [m] ∨ L ++ [m] <+: D) (hl : L.length = D.length) : L = D := by
+  rcases h with h | h
+  · rw [List.prefix_iff_eq_take] at h
+    rw [h, List.take_append_of_le_length (by omega), List.take_of_length_le (by omega)]
+  · have := h.length_le; simp at this; omega
+
+/-- `pre ++ l.drop n` (with `pre` of length `n`) at `n` is `l`'s entry at `n`. -/
+theorem getElem?_append_drop_self (pre l : List A) (n : Nat) (h : n < l.length)
+    (hp : pre.length = n) : (pre ++ l.drop n)[n]? = some (l[n]'h) := by
+  rw [List.getElem?_append_right (by omega), hp, Nat.sub_self, List.getElem?_drop]
+  simp [List.getElem?_eq_getElem h]
+
+/-- Setting entry `n` of `pre ++ l.drop n` (with `pre` of length `n`). -/
+theorem set_append_drop_self (pre l : List A) (n : Nat) (x : A) (h : n < l.length)
+    (hp : pre.length = n) : (pre ++ l.drop n).set n x = (pre ++ [x]) ++ l.drop (n + 1) := by
+  subst hp
+  rw [List.set_append_right _ _ (Nat.le_refl _), Nat.sub_self, List.drop_eq_getElem_cons h]
+  simp only [List.set_cons_zero, List.append_assoc, List.singleton_append]
+
+theorem append_drop_eq_snoc (pre l : List A) (n : Nat) (h : n < l.length) :
+    pre ++ l.drop n = (pre ++ [l[n]'h]) ++ l.drop (n + 1) := by
+  rw [List.drop_eq_getElem_cons h]
+  simp
+
+/-- Setting the first entry of a padding `replicate (k + 1) z` after `pre`. -/
+theorem set_length_append_replicate (pre : List A) (k : Nat) (z x : A) :
+    (pre ++ List.replicate (k + 1) z).set pre.length x = (pre ++ [x]) ++ List.replicate k z := by
+  rw [List.set_append_right _ _ (Nat.le_refl _), Nat.sub_self, List.replicate_succ]
+  simp
+
+/-- `set_length_append_replicate` for a padding of positive length `k`. -/
+theorem set_length_append_replicate_pos (pre : List A) (k : Nat) (z x : A) (hk : 0 < k) :
+    (pre ++ List.replicate k z).set pre.length x = (pre ++ [x]) ++ List.replicate (k - 1) z := by
+  obtain ⟨k', rfl⟩ : ∃ k', k = k' + 1 := ⟨k - 1, by omega⟩
+  exact set_length_append_replicate pre k' z x
+
+theorem filterMap_take_succ (f : A → Option B) (l : List A) (n : Nat) (a : A) (b : B)
+    (ha : l[n]? = some a) (hb : f a = some b) :
+    (l.take (n + 1)).filterMap f = (l.take n).filterMap f ++ [b] := by
+  rw [List.take_add_one, ha]
+  simp [List.filterMap_append, hb]
+
+theorem map_take_succ (f : A → B) (l : List A) (n : Nat) (a : A) (ha : l[n]? = some a) :
+    (l.take (n + 1)).map f = (l.take n).map f ++ [f a] := by
+  rw [List.take_add_one, ha]
+  simp
+
+/-- Applying the functions `gs` in order (`gs.foldl (fun o g => g o) o`), one more. -/
+theorem foldl_apply_take_succ (gs : List (A → A)) (o : A) (n : Nat) (g : A → A)
+    (h : gs[n]? = some g) :
+    (gs.take (n + 1)).foldl (fun o g => g o) o = g ((gs.take n).foldl (fun o g => g o) o) := by
+  rw [List.take_add_one, h]
+  simp
+
+theorem getLast?_take {l : List A} {k : Nat} (hk0 : 0 < k) (hk : k ≤ l.length) :
+    (l.take k).getLast? = l[k - 1]? := by
+  rw [List.getLast?_eq_getElem?, List.length_take, Nat.min_eq_left hk,
+    List.getElem?_take_of_lt (by omega)]
+
+/-- A prefix `recv` of `sent`, followed in `sent` by `r`: `recv ++ [r]` is a prefix too. -/
+theorem prefix_drop_cons {sent recv rs : List A} {r : A} (hp : recv <+: sent)
+    (hd : sent.drop recv.length = r :: rs) :
+    recv ++ [r] <+: sent ∧ sent.drop (recv ++ [r]).length = rs := by
+  obtain ⟨t, rfl⟩ := hp
+  simp only [List.drop_left] at hd
+  subst hd
+  refine ⟨⟨rs, by simp⟩, ?_⟩
+  simp
+
+theorem prefix_snoc_drop {sent recv : List A} (r : A) (hp : recv <+: sent) :
+    recv <+: sent ++ [r] ∧ (sent ++ [r]).drop recv.length = sent.drop recv.length ++ [r] := by
+  refine ⟨hp.trans (List.prefix_append _ _), ?_⟩
+  exact List.drop_append_of_le_length hp.length_le
+
+end list_index
+
+section subslice_take
+variable {A : Type u}
+
+theorem take_eq_take_append_subslice (l : List A) {j k : Nat} (hjk : j ≤ k) :
+    l.take k = l.take j ++ subslice j k l := by
+  rw [subslice_def]
+  conv => lhs; rw [← List.take_append_drop j (l.take k)]
+  rw [List.take_take, Nat.min_eq_left hjk]
+
+end subslice_take
+
+section join_same_len_index
+variable {A : Type u}
+
+theorem join_same_len_getElem? (ls : List (List A)) (m : Nat)
+    (hl : ∀ h ∈ ls, h.length = m) (c j : Nat) (hj : j < m) :
+    ls.flatten[c * m + j]? = ls[c]?.bind (·[j]?) := by
+  induction ls generalizing c with
+  | nil => simp
+  | cons h t ih =>
+    have hh : h.length = m := hl h (List.mem_cons_self)
+    have ht : ∀ h' ∈ t, h'.length = m := fun h' hh' => hl h' (List.mem_cons_of_mem _ hh')
+    simp only [List.flatten_cons]
+    cases c with
+    | zero =>
+      rw [Nat.zero_mul, Nat.zero_add, List.getElem?_append_left (by omega)]
+      simp
+    | succ c =>
+      rw [List.getElem?_append_right (by rw [hh, Nat.succ_mul]; omega)]
+      rw [show (c + 1) * m + j - h.length = c * m + j by rw [hh, Nat.succ_mul]; omega]
+      rw [ih ht c]
+      simp
+
+end join_same_len_index
+
 end Perennial

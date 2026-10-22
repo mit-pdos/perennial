@@ -203,6 +203,23 @@ theorem typedPointsto_frac_add (l : Loc) (v : V) (q1 q2 : Qp) :
       typedPointsto (GF := GF) l v (DFrac.own q1) ∗ typedPointsto (GF := GF) l v (DFrac.own q2) :=
   (typedPointsto_dfractional (GF := GF) l v).dfractional (DFrac.own q1) (DFrac.own q2)
 
+/-- A points-to at `q` is two at `q.half`. -/
+theorem typedPointsto_half_split (l : Loc) (v : V) (q : Qp) :
+    typedPointsto (GF := GF) l v (DFrac.own q) ⊣⊢
+      typedPointsto (GF := GF) l v (DFrac.own q.half) ∗
+        typedPointsto (GF := GF) l v (DFrac.own q.half) := by
+  have h := typedPointsto_frac_add (GF := GF) l v q.half q.half
+  rw [Qp.half_add_half] at h
+  exact h
+
+/-- A points-to at half a fraction is fractional in the fraction. -/
+instance typedPointsto_half_fractional (l : Loc) (v : V) :
+    Fractional (fun q : Qp => typedPointsto (GF := GF) l v (DFrac.own q.half)) where
+  fractional p q := by
+    rw [show (p + q).half = p.half + q.half from
+      Subtype.ext (by simp only [Qp.val_half, Qp.val_add]; grind)]
+    exact typedPointsto_frac_add l v p.half q.half
+
 instance typedPointsto_combine_sep_gives (l : Loc) (dq1 dq2 : DFrac) (v1 v2 : V) :
     CombineSepGives (typedPointsto (GF := GF) l v1 dq1) (typedPointsto l v2 dq2)
       iprop(⌜v1 = v2⌝) where
@@ -211,6 +228,19 @@ instance typedPointsto_combine_sep_gives (l : Loc) (dq1 dq2 : DFrac) (v1 v2 : V)
     iintro ⟨⟨H1, _⟩, ⟨H2, _⟩⟩
     icases typedPointsto_agree l dq1 dq2 v1 v2 $$ H1 H2 with %Heq
     imodintro; ipureintro; exact Heq
+
+/-- Two points-tos at `q.half` of one location agree on the value and make one at `q`. -/
+theorem typedPointsto_half_combine (l : Loc) (v w : V) (q : Qp) :
+    typedPointsto (GF := GF) l v (DFrac.own q.half) ∗
+        typedPointsto (GF := GF) l w (DFrac.own q.half) ⊢
+      ⌜v = w⌝ ∗ typedPointsto (GF := GF) l w (DFrac.own q) := by
+  iintro ⟨H1, H2⟩
+  icombine H1 H2 gives %Heq
+  subst Heq
+  isplitr
+  · ipureintro; rfl
+  iapply (typedPointsto_half_split l v q).2
+  iframe
 
 theorem typedPointsto_split (l : Loc) (v : V) (dq : DFrac) :
     typedPointsto (GF := GF) l v dq ⊢ typedPointstoDef l v dq := by

@@ -30,4 +30,12 @@ theorem mask_ndot_ne' (N : Namespace) (x y : String) (h : x ≠ y) :
   rw [LawfulSet.mem_diff]
   exact ⟨CoPset.mem_full, fun h' => ndot_ne_disjoint N h p ⟨hp, h'⟩⟩
 
+/-- A namespace `N.@x` is disjoint from two others `N.@y`, `N.@z`. -/
+theorem mask_ndot_ne2 (N : Namespace) (x y z : String) (hy : x ≠ y) (hz : x ≠ z) :
+    (↑(N.@x) : CoPset) ⊆ (⊤ \ ↑(N.@y)) \ ↑(N.@z) := by
+  intro p hp
+  rw [LawfulSet.mem_diff, LawfulSet.mem_diff]
+  exact ⟨⟨CoPset.mem_full, fun h' => ndot_ne_disjoint N hy p ⟨hp, h'⟩⟩,
+    fun h' => ndot_ne_disjoint N hz p ⟨hp, h'⟩⟩
+
 end Perennial

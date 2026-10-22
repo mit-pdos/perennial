@@ -57,6 +57,20 @@ theorem goStringLt_eq_of_not_lt {a b : GoString} (h1 : ¬ GoStringLt a b)
     simp only [uint.Z] at a1 a2
     omega) h2 h1
 
+theorem goStringLt_cons_iff (x y : w8) (xs ys : GoString) :
+    GoStringLt (x :: xs) (y :: ys) ↔ uint.Z x < uint.Z y ∨ (x = y ∧ GoStringLt xs ys) := by
+  constructor
+  · intro h; cases h with
+    | cons h => exact Or.inr ⟨rfl, h⟩
+    | rel h => exact Or.inl h
+  · rintro (h | ⟨rfl, h⟩)
+    · exact List.Lex.rel h
+    · exact List.Lex.cons h
+
+theorem goStringLt_nil_cons (x : w8) (xs : GoString) : GoStringLt [] (x :: xs) := List.Lex.nil
+
+theorem goStringLt_not_nil (k : GoString) : ¬ GoStringLt k [] := by intro h; cases h
+
 section defs
 variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
 open github_com.mit_pdos.perennial.goose.model
