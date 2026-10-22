@@ -1048,7 +1048,12 @@ bounds the counter by `T` when `Add` opens it, and `T ≤ 2^31` keeps the 32-bit
 counter from overflowing: the informal argument that `2^31` goroutines cannot be
 live at once, made in the logic. `ThreadTokensTest.lean` (`wp_counter_register`)
 is this argument for a counter of live threads in miniature; etcd-grove's cache
-(`cacheWgInv`) uses it for `sync.WaitGroup` itself.
+(`cacheWgInv`) uses it for `sync.WaitGroup` itself. `sync.tokJoin`
+(`Perennial/Proof/sync/WaitGroupTokJoin.lean`) packages it as a join idiom:
+`WaitGroupJoin`'s `Add`/`Done`/`Wait` with the counter backed by thread tokens
+instead of a bound on the `Add`s, and a slot's token lendable to another
+thread-token-backed structure (`lend_acc`, `unlend_acc`) under a client's
+lending law.
 
 **Adequacy: picking `T`.** `goose_adequacy N T` (above) assumes `g.threads = 1`
 of the initial configuration and `RealThreadsBelow T n ([e], (σ, g))`: every
