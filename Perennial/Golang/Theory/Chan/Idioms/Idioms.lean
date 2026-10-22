@@ -11,5 +11,6 @@ public import Perennial.Golang.Theory.Chan.Idioms.Handshake
 public import Perennial.Golang.Theory.Chan.Idioms.Lock
 public import Perennial.Golang.Theory.Chan.Idioms.Mpmc
 public import Perennial.Golang.Theory.Chan.Idioms.Spsc
+public import Perennial.Golang.Theory.Chan.Idioms.SyncSpsc
 
 @[expose] public section
