@@ -1028,6 +1028,11 @@ are the thread fuel, owned by the state interpretation
   the token given to the body (which uses it and ends with it);
   `wp_fork_tok_self`: `▷ WP e {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }} -∗ ▷ (threadTok -∗ Φ #()) -∗ WP (Fork e) {{ Φ }}`,
   the token kept by the forking thread, the body ending with one from elsewhere (its `Done`).
+* `wp_fork_tok_upd`: `▷ (threadTok -∗ £ 1 -∗ |={E}=> (WP e {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }} ∗ Φ #())) ⊢ WP (Fork e) @ E {{ Φ }}`,
+  `wp_fork_tok` with a ghost update at the fork step. `Fork` may stutter, so it
+  is not atomic and no invariant can be opened around a `go` statement; this
+  is how a proof exchanges resources with an invariant exactly at the fork
+  (`wp_fork_tok` is derived from it).
 * `wp_ThreadExit`: `threadTok -∗ ▷ Φ #() -∗ WP ThreadExit {{ Φ }}` (used by
   `wp_fork_tok`; goose-generated code does not contain `ThreadExit`).
 

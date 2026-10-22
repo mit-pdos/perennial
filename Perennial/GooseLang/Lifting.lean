@@ -1310,12 +1310,15 @@ theorem wp_seq_ThreadExit (e : Expr) :
   ipureintro
   exact isPanic_intoVal ()
 
-/-- `Fork e`: the forking thread receives a thread token (out of the thread fuel)
-and the forked thread must end with one (it is returned at its `ThreadExit`).
-Whether the token is kept by the forking thread, given to the forked thread or
-deposited in an invariant is up to the proof. -/
-theorem wp_fork_tok (e : Expr) (Φ : val → IProp GF) :
-    ⊢ ▷ (threadTok -∗ WP e @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }} ∗ Φ #()) -∗
+/-- `Fork e`, with a ghost update at the fork: the forking thread receives a thread token (out of
+the thread fuel) and a later credit, and turns them, by an update at its own mask, into the forked
+thread's `WP` (which must end with a thread token, returned at its `ThreadExit`) and its own
+continuation. `Fork` may stutter, so it is not atomic and an invariant cannot be opened around it;
+the update here is how a proof opens one at the fork itself, e.g. to put the fresh token where a
+resource the forked thread needs was (`wp_fork_tok` is this without the update). -/
+theorem wp_fork_tok_upd (e : Expr) (Φ : val → IProp GF) :
+    ⊢ ▷ (threadTok -∗ £ 1 -∗ |={E}=> (WP e @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }} ∗
+        Φ #())) -∗
       WP (Fork e) @ s; E {{ Φ }} := by
   iloeb as IH
   iintro H
@@ -1347,8 +1350,8 @@ theorem wp_fork_tok (e : Expr) (Φ : val → IProp GF) :
     obtain ⟨rfl, rfl, rfl, rfl⟩ := baseStep_Fork_inv (baseStep_of_headStep (not_unwinds_Fork e) Hb)
     rename_i t
     icases threadFuel_fork t $$ Ht with ⟨Ht, Htok⟩
-    icases H $$ Htok with ⟨He, HΦ⟩
     imod Hclose
+    imod H $$ Htok Hcred with ⟨He, HΦ⟩
     imodintro
     isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
@@ -1378,6 +1381,20 @@ theorem wp_fork_tok (e : Expr) (Φ : val → IProp GF) :
       iexact H
     iapply BigSepL.bigSepL_nil.2
     itrivial
+
+/-- `Fork e`: the forking thread receives a thread token (out of the thread fuel)
+and the forked thread must end with one (it is returned at its `ThreadExit`).
+Whether the token is kept by the forking thread, given to the forked thread or
+deposited in an invariant is up to the proof. -/
+theorem wp_fork_tok (e : Expr) (Φ : val → IProp GF) :
+    ⊢ ▷ (threadTok -∗ WP e @ s; ⊤ {{ v, ⌜v.isPanic = false⌝ ∗ threadTok }} ∗ Φ #()) -∗
+      WP (Fork e) @ s; E {{ Φ }} := by
+  iintro H
+  iapply wp_fork_tok_upd
+  inext
+  iintro Htok _
+  imodintro
+  iapply H $$ Htok
 
 /-- `Fork e` without thread tokens: the forked thread's token stays with it. The
 forked thread must not panic (a panic that unwinds a goroutine kills the
