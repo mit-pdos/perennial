@@ -172,7 +172,7 @@ func Translate(translatePkg PackageTranslator, pkgPatterns []string, outRootDir 
 			fmt.Fprintln(os.Stderr, red("could not write output"))
 			os.Exit(1)
 		}
-		if err := writeChunks(filePath, extra); err != nil {
+		if err := WriteChunks(filePath, extra); err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 			fmt.Fprintln(os.Stderr, red("could not write output"))
 			os.Exit(1)
@@ -180,9 +180,9 @@ func Translate(translatePkg PackageTranslator, pkgPatterns []string, outRootDir 
 	}
 }
 
-// writeChunks writes the extra files of a package to the directory dir and
+// WriteChunks writes the chunk modules of a package to the directory dir and
 // removes stale chunk files (named chunk*.lean) there.
-func writeChunks(dir string, files map[string]string) error {
+func WriteChunks(dir string, files map[string]string) error {
 	old, _ := filepath.Glob(path.Join(dir, "chunk*.lean"))
 	for _, f := range old {
 		name := strings.TrimSuffix(path.Base(f), ".lean")

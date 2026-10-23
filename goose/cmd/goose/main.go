@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/fatih/color"
 
@@ -47,6 +48,16 @@ func translate(pkgPatterns []string, outRootDir string, configDir string, modDir
 			fmt.Fprintln(os.Stderr, red("could not create output directory"))
 		}
 		err = util.WriteFileIfChanged(outFile, fileContents(f), 0666)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			fmt.Fprintln(os.Stderr, red("could not write output"))
+			os.Exit(1)
+		}
+		chunks := make(map[string]string)
+		for name, c := range f.Chunks {
+			chunks[name] = string(fileContents(c))
+		}
+		err = util.WriteChunks(strings.TrimSuffix(outFile, ".lean"), chunks)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 			fmt.Fprintln(os.Stderr, red("could not write output"))

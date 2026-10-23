@@ -57,6 +57,12 @@ or trust, and bootstrapping options. `-lean-root PKG=ROOT` places the modules
 of the packages under Go path `PKG` under the Lean module root `ROOT` instead
 of `Perennial`, for projects that translate their own Go packages.
 
+The output for a large package is split into modules `<pkg>/chunkN` that lake
+checks in parallel, re-exported by the package's module, which downstream code
+imports as usual: goose puts the `TypeAssumptions` classes in chunks of their
+own (`leanChunks` in `interface.go`), and proofgen splits the generated proofs
+by type (`leanChunks` in `proofgen/proofgen.go`).
+
 ## Developing goose
 
 The translation from Go is in `goose.go` (expressions and statements),
