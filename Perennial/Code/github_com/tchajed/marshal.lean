@@ -10,25 +10,24 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.tchajed.marshal : GoString := go!"github.com/tchajed/marshal"
+noncomputable def github_com.tchajed.marshal : GoString := go!"github.com/tchajed/marshal"
 end pkg_id
 
 namespace github_com.tchajed.marshal
 
-def Enc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Enc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/tchajed/marshal.Enc" [])
 
 attribute [irreducible] Enc.ty
 
-def Dec.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Dec.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/tchajed/marshal.Dec" [])
 
 attribute [irreducible] Dec.ty
@@ -568,7 +567,7 @@ noncomputable def WriteSliceLenPrefix.impl [FfiSyntax] [GoGlobalContext] (T : go
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b2") (Var "$r0"))))))))))))))
 
-instance info' : PkgInfo pkg_id.github_com.tchajed.marshal where
+noncomputable instance info' : PkgInfo pkg_id.github_com.tchajed.marshal where
   pkgImportedPkgs := [pkg_id.encoding.binary, pkg_id.github_com.goose_lang.std]
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val
@@ -588,21 +587,21 @@ structure Enc [FfiSyntax] where
   b' : GoSlice
   off' : Loc
 
-instance Enc.zero_val [FfiSyntax] : ZeroVal Enc :=
+noncomputable instance Enc.zero_val [FfiSyntax] : ZeroVal Enc :=
   ⟨Enc.mk zeroValDef zeroValDef⟩
 
-@[reducible] def Enc.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Enc.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"b" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"off" (go.GoType.PointerType go.uint64))]
 
-@[irreducible] def Enc.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Enc.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Enc.fieldsUnsealed
 
-instance equals_unfold_Enc [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Enc [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Enc.fields Enc.fieldsUnsealed :=
   ⟨by unfold Enc.fields; rfl⟩
 
-@[reducible] def Enc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Enc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Enc.fields)
 
 class Enc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -625,21 +624,21 @@ structure Dec [FfiSyntax] where
   b' : GoSlice
   off' : Loc
 
-instance Dec.zero_val [FfiSyntax] : ZeroVal Dec :=
+noncomputable instance Dec.zero_val [FfiSyntax] : ZeroVal Dec :=
   ⟨Dec.mk zeroValDef zeroValDef⟩
 
-@[reducible] def Dec.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Dec.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"b" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"off" (go.GoType.PointerType go.uint64))]
 
-@[irreducible] def Dec.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Dec.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Dec.fieldsUnsealed
 
-instance equals_unfold_Dec [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Dec [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Dec.fields Dec.fieldsUnsealed :=
   ⟨by unfold Dec.fields; rfl⟩
 
-@[reducible] def Dec.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Dec.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Dec.fields)
 
 class Dec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

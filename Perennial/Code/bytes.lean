@@ -10,35 +10,34 @@ public import Perennial.TrustedCode.bytes
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def bytes : GoString := go!"bytes"
+noncomputable def bytes : GoString := go!"bytes"
 end pkg_id
 
 namespace bytes
 
-def Buffer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Buffer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"bytes.Buffer" [])
 
 attribute [irreducible] Buffer.ty
 
-def readOp.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def readOp.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"bytes.readOp" [])
 
 attribute [irreducible] readOp.ty
 
-def asciiSet.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def asciiSet.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"bytes.asciiSet" [])
 
 attribute [irreducible] asciiSet.ty
 
-def Reader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Reader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"bytes.Reader" [])
 
 attribute [irreducible] Reader.ty
@@ -335,7 +334,7 @@ noncomputable def Clone.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #())))))))
 
-instance info' : PkgInfo pkg_id.bytes where
+noncomputable instance info' : PkgInfo pkg_id.bytes where
   pkgImportedPkgs := [pkg_id.errors]
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val
@@ -386,7 +385,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 
 abbrev readOp [FfiSyntax] : Type := w8
 
-@[reducible] def readOp.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def readOp.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int8
 
 class readOp.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -400,22 +399,22 @@ structure Buffer [FfiSyntax] where
   off' : w64
   lastRead' : readOp
 
-instance Buffer.zero_val [FfiSyntax] : ZeroVal Buffer :=
+noncomputable instance Buffer.zero_val [FfiSyntax] : ZeroVal Buffer :=
   ⟨Buffer.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def Buffer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Buffer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"buf" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"off" go.int),
 (go.field_decl.FieldDecl go!"lastRead" readOp.ty)]
 
-@[irreducible] def Buffer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Buffer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Buffer.fieldsUnsealed
 
-instance equals_unfold_Buffer [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Buffer [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Buffer.fields Buffer.fieldsUnsealed :=
   ⟨by unfold Buffer.fields; rfl⟩
 
-@[reducible] def Buffer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Buffer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Buffer.fields)
 
 class Buffer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -439,7 +438,7 @@ attribute [instance] Buffer.TypeAssumptions.type_repr
 
 abbrev asciiSet [FfiSyntax] : Type := (GoArray w32 8)
 
-@[reducible] def asciiSet.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def asciiSet.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.ArrayType 8 go.uint32)
 
 class asciiSet.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -453,22 +452,22 @@ structure Reader [FfiSyntax] where
   i' : w64
   prevRune' : w64
 
-instance Reader.zero_val [FfiSyntax] : ZeroVal Reader :=
+noncomputable instance Reader.zero_val [FfiSyntax] : ZeroVal Reader :=
   ⟨Reader.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def Reader.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Reader.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"s" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"i" go.int64),
 (go.field_decl.FieldDecl go!"prevRune" go.int)]
 
-@[irreducible] def Reader.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Reader.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Reader.fieldsUnsealed
 
-instance equals_unfold_Reader [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Reader [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Reader.fields Reader.fieldsUnsealed :=
   ⟨by unfold Reader.fields; rfl⟩
 
-@[reducible] def Reader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Reader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Reader.fields)
 
 class Reader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

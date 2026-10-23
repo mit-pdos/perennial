@@ -9,9 +9,8 @@ public import Perennial.Code.math.rand
 @[expose] public section
 
 set_option autoImplicit false
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 open Iris Iris.BI
@@ -26,7 +25,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : math.rand.Assumptions]
 
-instance Rand_typed_pointsto :
+noncomputable instance Rand_typed_pointsto :
     TypedPointsto (GF := GF) math.rand.Rand where
   typedPointstoDef l v dq := iprop(
     "src" ∷ typedPointsto (structFieldRef math.rand.Rand go!"src" l) v.src' dq ∗
@@ -38,11 +37,11 @@ instance Rand_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Rand_into_val_typed :
+noncomputable instance Rand_into_val_typed :
     IntoValTypedUnderlying (GF := GF) math.rand.Rand math.rand.Rand.underlying := by
   solve_into_val_typed_struct
 
-instance Rand_access_load_src (l : Loc) (v : math.rand.Rand) (dq : DFrac) :
+noncomputable instance Rand_access_load_src (l : Loc) (v : math.rand.Rand) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Rand go!"src" l) v.src' dq)
       (typedPointsto (structFieldRef math.rand.Rand go!"src" l) v.src' dq)
@@ -50,7 +49,7 @@ instance Rand_access_load_src (l : Loc) (v : math.rand.Rand) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Rand_access_store_src (l : Loc) (v : math.rand.Rand) (src' : math.rand.Source) :
+noncomputable instance Rand_access_store_src (l : Loc) (v : math.rand.Rand) (src' : math.rand.Source) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Rand go!"src" l) v.src' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Rand go!"src" l) src' (DFrac.own 1))
@@ -58,7 +57,7 @@ instance Rand_access_store_src (l : Loc) (v : math.rand.Rand) (src' : math.rand.
  by
   solve_pointsto_access_struct
 
-instance Rand_access_load_s64 (l : Loc) (v : math.rand.Rand) (dq : DFrac) :
+noncomputable instance Rand_access_load_s64 (l : Loc) (v : math.rand.Rand) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Rand go!"s64" l) v.s64' dq)
       (typedPointsto (structFieldRef math.rand.Rand go!"s64" l) v.s64' dq)
@@ -66,7 +65,7 @@ instance Rand_access_load_s64 (l : Loc) (v : math.rand.Rand) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Rand_access_store_s64 (l : Loc) (v : math.rand.Rand) (s64' : math.rand.Source64) :
+noncomputable instance Rand_access_store_s64 (l : Loc) (v : math.rand.Rand) (s64' : math.rand.Source64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Rand go!"s64" l) v.s64' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Rand go!"s64" l) s64' (DFrac.own 1))
@@ -74,7 +73,7 @@ instance Rand_access_store_s64 (l : Loc) (v : math.rand.Rand) (s64' : math.rand.
  by
   solve_pointsto_access_struct
 
-instance Rand_access_load_readVal (l : Loc) (v : math.rand.Rand) (dq : DFrac) :
+noncomputable instance Rand_access_load_readVal (l : Loc) (v : math.rand.Rand) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Rand go!"readVal" l) v.readVal' dq)
       (typedPointsto (structFieldRef math.rand.Rand go!"readVal" l) v.readVal' dq)
@@ -82,7 +81,7 @@ instance Rand_access_load_readVal (l : Loc) (v : math.rand.Rand) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Rand_access_store_readVal (l : Loc) (v : math.rand.Rand) (readVal' : w64) :
+noncomputable instance Rand_access_store_readVal (l : Loc) (v : math.rand.Rand) (readVal' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Rand go!"readVal" l) v.readVal' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Rand go!"readVal" l) readVal' (DFrac.own 1))
@@ -90,7 +89,7 @@ instance Rand_access_store_readVal (l : Loc) (v : math.rand.Rand) (readVal' : w6
  by
   solve_pointsto_access_struct
 
-instance Rand_access_load_readPos (l : Loc) (v : math.rand.Rand) (dq : DFrac) :
+noncomputable instance Rand_access_load_readPos (l : Loc) (v : math.rand.Rand) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Rand go!"readPos" l) v.readPos' dq)
       (typedPointsto (structFieldRef math.rand.Rand go!"readPos" l) v.readPos' dq)
@@ -98,7 +97,7 @@ instance Rand_access_load_readPos (l : Loc) (v : math.rand.Rand) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Rand_access_store_readPos (l : Loc) (v : math.rand.Rand) (readPos' : w8) :
+noncomputable instance Rand_access_store_readPos (l : Loc) (v : math.rand.Rand) (readPos' : w8) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Rand go!"readPos" l) v.readPos' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Rand go!"readPos" l) readPos' (DFrac.own 1))
@@ -117,7 +116,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : math.rand.Assumptions]
 
-instance runtimeSource_typed_pointsto :
+noncomputable instance runtimeSource_typed_pointsto :
     TypedPointsto (GF := GF) math.rand.runtimeSource where
   typedPointstoDef l v dq := iprop(
     "mu" ∷ typedPointsto (structFieldRef math.rand.runtimeSource go!"mu" l) v.mu' dq ∗
@@ -126,11 +125,11 @@ instance runtimeSource_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance runtimeSource_into_val_typed :
+noncomputable instance runtimeSource_into_val_typed :
     IntoValTypedUnderlying (GF := GF) math.rand.runtimeSource math.rand.runtimeSource.underlying := by
   solve_into_val_typed_struct
 
-instance runtimeSource_access_load_mu (l : Loc) (v : math.rand.runtimeSource) (dq : DFrac) :
+noncomputable instance runtimeSource_access_load_mu (l : Loc) (v : math.rand.runtimeSource) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.runtimeSource go!"mu" l) v.mu' dq)
       (typedPointsto (structFieldRef math.rand.runtimeSource go!"mu" l) v.mu' dq)
@@ -138,7 +137,7 @@ instance runtimeSource_access_load_mu (l : Loc) (v : math.rand.runtimeSource) (d
  by
   solve_pointsto_access_struct
 
-instance runtimeSource_access_store_mu (l : Loc) (v : math.rand.runtimeSource) (mu' : sync.Mutex) :
+noncomputable instance runtimeSource_access_store_mu (l : Loc) (v : math.rand.runtimeSource) (mu' : sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.runtimeSource go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.runtimeSource go!"mu" l) mu' (DFrac.own 1))
@@ -157,7 +156,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : math.rand.Assumptions]
 
-instance lockedSource_typed_pointsto :
+noncomputable instance lockedSource_typed_pointsto :
     TypedPointsto (GF := GF) math.rand.lockedSource where
   typedPointstoDef l v dq := iprop(
     "lk" ∷ typedPointsto (structFieldRef math.rand.lockedSource go!"lk" l) v.lk' dq ∗
@@ -167,11 +166,11 @@ instance lockedSource_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance lockedSource_into_val_typed :
+noncomputable instance lockedSource_into_val_typed :
     IntoValTypedUnderlying (GF := GF) math.rand.lockedSource math.rand.lockedSource.underlying := by
   solve_into_val_typed_struct
 
-instance lockedSource_access_load_lk (l : Loc) (v : math.rand.lockedSource) (dq : DFrac) :
+noncomputable instance lockedSource_access_load_lk (l : Loc) (v : math.rand.lockedSource) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.lockedSource go!"lk" l) v.lk' dq)
       (typedPointsto (structFieldRef math.rand.lockedSource go!"lk" l) v.lk' dq)
@@ -179,7 +178,7 @@ instance lockedSource_access_load_lk (l : Loc) (v : math.rand.lockedSource) (dq 
  by
   solve_pointsto_access_struct
 
-instance lockedSource_access_store_lk (l : Loc) (v : math.rand.lockedSource) (lk' : sync.Mutex) :
+noncomputable instance lockedSource_access_store_lk (l : Loc) (v : math.rand.lockedSource) (lk' : sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.lockedSource go!"lk" l) v.lk' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.lockedSource go!"lk" l) lk' (DFrac.own 1))
@@ -187,7 +186,7 @@ instance lockedSource_access_store_lk (l : Loc) (v : math.rand.lockedSource) (lk
  by
   solve_pointsto_access_struct
 
-instance lockedSource_access_load_s (l : Loc) (v : math.rand.lockedSource) (dq : DFrac) :
+noncomputable instance lockedSource_access_load_s (l : Loc) (v : math.rand.lockedSource) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.lockedSource go!"s" l) v.s' dq)
       (typedPointsto (structFieldRef math.rand.lockedSource go!"s" l) v.s' dq)
@@ -195,7 +194,7 @@ instance lockedSource_access_load_s (l : Loc) (v : math.rand.lockedSource) (dq :
  by
   solve_pointsto_access_struct
 
-instance lockedSource_access_store_s (l : Loc) (v : math.rand.lockedSource) (s' : Loc) :
+noncomputable instance lockedSource_access_store_s (l : Loc) (v : math.rand.lockedSource) (s' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.lockedSource go!"s" l) v.s' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.lockedSource go!"s" l) s' (DFrac.own 1))
@@ -214,7 +213,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : math.rand.Assumptions]
 
-instance rngSource_typed_pointsto :
+noncomputable instance rngSource_typed_pointsto :
     TypedPointsto (GF := GF) math.rand.rngSource where
   typedPointstoDef l v dq := iprop(
     "tap" ∷ typedPointsto (structFieldRef math.rand.rngSource go!"tap" l) v.tap' dq ∗
@@ -225,11 +224,11 @@ instance rngSource_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance rngSource_into_val_typed :
+noncomputable instance rngSource_into_val_typed :
     IntoValTypedUnderlying (GF := GF) math.rand.rngSource math.rand.rngSource.underlying := by
   solve_into_val_typed_struct
 
-instance rngSource_access_load_tap (l : Loc) (v : math.rand.rngSource) (dq : DFrac) :
+noncomputable instance rngSource_access_load_tap (l : Loc) (v : math.rand.rngSource) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.rngSource go!"tap" l) v.tap' dq)
       (typedPointsto (structFieldRef math.rand.rngSource go!"tap" l) v.tap' dq)
@@ -237,7 +236,7 @@ instance rngSource_access_load_tap (l : Loc) (v : math.rand.rngSource) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance rngSource_access_store_tap (l : Loc) (v : math.rand.rngSource) (tap' : w64) :
+noncomputable instance rngSource_access_store_tap (l : Loc) (v : math.rand.rngSource) (tap' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.rngSource go!"tap" l) v.tap' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.rngSource go!"tap" l) tap' (DFrac.own 1))
@@ -245,7 +244,7 @@ instance rngSource_access_store_tap (l : Loc) (v : math.rand.rngSource) (tap' : 
  by
   solve_pointsto_access_struct
 
-instance rngSource_access_load_feed (l : Loc) (v : math.rand.rngSource) (dq : DFrac) :
+noncomputable instance rngSource_access_load_feed (l : Loc) (v : math.rand.rngSource) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.rngSource go!"feed" l) v.feed' dq)
       (typedPointsto (structFieldRef math.rand.rngSource go!"feed" l) v.feed' dq)
@@ -253,7 +252,7 @@ instance rngSource_access_load_feed (l : Loc) (v : math.rand.rngSource) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance rngSource_access_store_feed (l : Loc) (v : math.rand.rngSource) (feed' : w64) :
+noncomputable instance rngSource_access_store_feed (l : Loc) (v : math.rand.rngSource) (feed' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.rngSource go!"feed" l) v.feed' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.rngSource go!"feed" l) feed' (DFrac.own 1))
@@ -261,7 +260,7 @@ instance rngSource_access_store_feed (l : Loc) (v : math.rand.rngSource) (feed' 
  by
   solve_pointsto_access_struct
 
-instance rngSource_access_load_vec (l : Loc) (v : math.rand.rngSource) (dq : DFrac) :
+noncomputable instance rngSource_access_load_vec (l : Loc) (v : math.rand.rngSource) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.rngSource go!"vec" l) v.vec' dq)
       (typedPointsto (structFieldRef math.rand.rngSource go!"vec" l) v.vec' dq)
@@ -269,7 +268,7 @@ instance rngSource_access_load_vec (l : Loc) (v : math.rand.rngSource) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance rngSource_access_store_vec (l : Loc) (v : math.rand.rngSource) (vec' : (GoArray w64 607)) :
+noncomputable instance rngSource_access_store_vec (l : Loc) (v : math.rand.rngSource) (vec' : (GoArray w64 607)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.rngSource go!"vec" l) v.vec' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.rngSource go!"vec" l) vec' (DFrac.own 1))
@@ -288,7 +287,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : math.rand.Assumptions]
 
-instance Zipf_typed_pointsto :
+noncomputable instance Zipf_typed_pointsto :
     TypedPointsto (GF := GF) math.rand.Zipf where
   typedPointstoDef l v dq := iprop(
     "r" ∷ typedPointsto (structFieldRef math.rand.Zipf go!"r" l) v.r' dq ∗
@@ -305,11 +304,11 @@ instance Zipf_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Zipf_into_val_typed :
+noncomputable instance Zipf_into_val_typed :
     IntoValTypedUnderlying (GF := GF) math.rand.Zipf math.rand.Zipf.underlying := by
   solve_into_val_typed_struct
 
-instance Zipf_access_load_r (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
+noncomputable instance Zipf_access_load_r (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"r" l) v.r' dq)
       (typedPointsto (structFieldRef math.rand.Zipf go!"r" l) v.r' dq)
@@ -317,7 +316,7 @@ instance Zipf_access_load_r (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_r (l : Loc) (v : math.rand.Zipf) (r' : Loc) :
+noncomputable instance Zipf_access_store_r (l : Loc) (v : math.rand.Zipf) (r' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"r" l) v.r' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"r" l) r' (DFrac.own 1))
@@ -325,7 +324,7 @@ instance Zipf_access_store_r (l : Loc) (v : math.rand.Zipf) (r' : Loc) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_load_imax (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
+noncomputable instance Zipf_access_load_imax (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"imax" l) v.imax' dq)
       (typedPointsto (structFieldRef math.rand.Zipf go!"imax" l) v.imax' dq)
@@ -333,7 +332,7 @@ instance Zipf_access_load_imax (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_imax (l : Loc) (v : math.rand.Zipf) (imax' : w64) :
+noncomputable instance Zipf_access_store_imax (l : Loc) (v : math.rand.Zipf) (imax' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"imax" l) v.imax' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"imax" l) imax' (DFrac.own 1))
@@ -341,7 +340,7 @@ instance Zipf_access_store_imax (l : Loc) (v : math.rand.Zipf) (imax' : w64) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_load_v (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
+noncomputable instance Zipf_access_load_v (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"v" l) v.v' dq)
       (typedPointsto (structFieldRef math.rand.Zipf go!"v" l) v.v' dq)
@@ -349,7 +348,7 @@ instance Zipf_access_load_v (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_v (l : Loc) (v : math.rand.Zipf) (v' : w64) :
+noncomputable instance Zipf_access_store_v (l : Loc) (v : math.rand.Zipf) (v' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"v" l) v' (DFrac.own 1))
@@ -357,7 +356,7 @@ instance Zipf_access_store_v (l : Loc) (v : math.rand.Zipf) (v' : w64) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_load_q (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
+noncomputable instance Zipf_access_load_q (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"q" l) v.q' dq)
       (typedPointsto (structFieldRef math.rand.Zipf go!"q" l) v.q' dq)
@@ -365,7 +364,7 @@ instance Zipf_access_load_q (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_q (l : Loc) (v : math.rand.Zipf) (q' : w64) :
+noncomputable instance Zipf_access_store_q (l : Loc) (v : math.rand.Zipf) (q' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"q" l) v.q' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"q" l) q' (DFrac.own 1))
@@ -373,7 +372,7 @@ instance Zipf_access_store_q (l : Loc) (v : math.rand.Zipf) (q' : w64) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_load_s (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
+noncomputable instance Zipf_access_load_s (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"s" l) v.s' dq)
       (typedPointsto (structFieldRef math.rand.Zipf go!"s" l) v.s' dq)
@@ -381,7 +380,7 @@ instance Zipf_access_load_s (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_s (l : Loc) (v : math.rand.Zipf) (s' : w64) :
+noncomputable instance Zipf_access_store_s (l : Loc) (v : math.rand.Zipf) (s' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"s" l) v.s' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"s" l) s' (DFrac.own 1))
@@ -389,7 +388,7 @@ instance Zipf_access_store_s (l : Loc) (v : math.rand.Zipf) (s' : w64) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_load_oneminusQ (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
+noncomputable instance Zipf_access_load_oneminusQ (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"oneminusQ" l) v.oneminusQ' dq)
       (typedPointsto (structFieldRef math.rand.Zipf go!"oneminusQ" l) v.oneminusQ' dq)
@@ -397,7 +396,7 @@ instance Zipf_access_load_oneminusQ (l : Loc) (v : math.rand.Zipf) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_oneminusQ (l : Loc) (v : math.rand.Zipf) (oneminusQ' : w64) :
+noncomputable instance Zipf_access_store_oneminusQ (l : Loc) (v : math.rand.Zipf) (oneminusQ' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"oneminusQ" l) v.oneminusQ' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"oneminusQ" l) oneminusQ' (DFrac.own 1))
@@ -405,7 +404,7 @@ instance Zipf_access_store_oneminusQ (l : Loc) (v : math.rand.Zipf) (oneminusQ' 
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_load_oneminusQinv (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
+noncomputable instance Zipf_access_load_oneminusQinv (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"oneminusQinv" l) v.oneminusQinv' dq)
       (typedPointsto (structFieldRef math.rand.Zipf go!"oneminusQinv" l) v.oneminusQinv' dq)
@@ -413,7 +412,7 @@ instance Zipf_access_load_oneminusQinv (l : Loc) (v : math.rand.Zipf) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_oneminusQinv (l : Loc) (v : math.rand.Zipf) (oneminusQinv' : w64) :
+noncomputable instance Zipf_access_store_oneminusQinv (l : Loc) (v : math.rand.Zipf) (oneminusQinv' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"oneminusQinv" l) v.oneminusQinv' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"oneminusQinv" l) oneminusQinv' (DFrac.own 1))
@@ -421,7 +420,7 @@ instance Zipf_access_store_oneminusQinv (l : Loc) (v : math.rand.Zipf) (oneminus
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_load_hxm (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
+noncomputable instance Zipf_access_load_hxm (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"hxm" l) v.hxm' dq)
       (typedPointsto (structFieldRef math.rand.Zipf go!"hxm" l) v.hxm' dq)
@@ -429,7 +428,7 @@ instance Zipf_access_load_hxm (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_hxm (l : Loc) (v : math.rand.Zipf) (hxm' : w64) :
+noncomputable instance Zipf_access_store_hxm (l : Loc) (v : math.rand.Zipf) (hxm' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"hxm" l) v.hxm' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"hxm" l) hxm' (DFrac.own 1))
@@ -437,7 +436,7 @@ instance Zipf_access_store_hxm (l : Loc) (v : math.rand.Zipf) (hxm' : w64) :
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_load_hx0minusHxm (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
+noncomputable instance Zipf_access_load_hx0minusHxm (l : Loc) (v : math.rand.Zipf) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"hx0minusHxm" l) v.hx0minusHxm' dq)
       (typedPointsto (structFieldRef math.rand.Zipf go!"hx0minusHxm" l) v.hx0minusHxm' dq)
@@ -445,7 +444,7 @@ instance Zipf_access_load_hx0minusHxm (l : Loc) (v : math.rand.Zipf) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance Zipf_access_store_hx0minusHxm (l : Loc) (v : math.rand.Zipf) (hx0minusHxm' : w64) :
+noncomputable instance Zipf_access_store_hx0minusHxm (l : Loc) (v : math.rand.Zipf) (hx0minusHxm' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Zipf go!"hx0minusHxm" l) v.hx0minusHxm' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Zipf go!"hx0minusHxm" l) hx0minusHxm' (DFrac.own 1))

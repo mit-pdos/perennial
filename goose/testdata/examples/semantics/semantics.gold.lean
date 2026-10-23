@@ -14,236 +14,235 @@ public import Perennial.DiskPrelude
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.semantics : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics"
+noncomputable def github_com.mit_pdos.perennial.goose.testdata.examples.semantics : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.semantics
 
-def unit.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def unit.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.unit" [])
 
 attribute [irreducible] unit.ty
 
-def localPair.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def localPair.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.localPair" [])
 
 attribute [irreducible] localPair.ty
 
-def pair.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def pair.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.pair" [])
 
 attribute [irreducible] pair.ty
 
-def pairs.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def pairs.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.pairs" [])
 
 attribute [irreducible] pairs.ty
 
-def evalCounter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def evalCounter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.evalCounter" [])
 
 attribute [irreducible] evalCounter.ty
 
-def Editor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Editor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Editor" [])
 
 attribute [irreducible] Editor.ty
 
-def Pair'.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Pair'.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Pair" [])
 
 attribute [irreducible] Pair'.ty
 
-def Uint32.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Uint32.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Uint32" [])
 
 attribute [irreducible] Uint32.ty
 
-def geometryInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def geometryInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.geometryInterface" [])
 
 attribute [irreducible] geometryInterface.ty
 
-def SquareStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def SquareStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.SquareStruct" [])
 
 attribute [irreducible] SquareStruct.ty
 
-def NumStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def NumStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.NumStruct" [])
 
 attribute [irreducible] NumStruct.ty
 
-def shapeInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def shapeInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.shapeInterface" [])
 
 attribute [irreducible] shapeInterface.ty
 
-def polygonInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def polygonInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.polygonInterface" [])
 
 attribute [irreducible] polygonInterface.ty
 
-def shapeStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def shapeStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.shapeStruct" [])
 
 attribute [irreducible] shapeStruct.ty
 
-def polygonStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def polygonStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.polygonStruct" [])
 
 attribute [irreducible] polygonStruct.ty
 
-def dogInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def dogInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.dogInterface" [])
 
 attribute [irreducible] dogInterface.ty
 
-def catInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def catInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.catInterface" [])
 
 attribute [irreducible] catInterface.ty
 
-def Puppy.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Puppy.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Puppy" [])
 
 attribute [irreducible] Puppy.ty
 
-def Kitten.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Kitten.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Kitten" [])
 
 attribute [irreducible] Kitten.ty
 
-def printInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def printInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.printInterface" [])
 
 attribute [irreducible] printInterface.ty
 
-def PaperStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def PaperStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.PaperStruct" [])
 
 attribute [irreducible] PaperStruct.ty
 
-def Flower.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Flower.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Flower" [])
 
 attribute [irreducible] Flower.ty
 
-def Flora.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Flora.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Flora" [])
 
 attribute [irreducible] Flora.ty
 
-def Lily.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Lily.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Lily" [])
 
 attribute [irreducible] Lily.ty
 
-def Rose.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Rose.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Rose" [])
 
 attribute [irreducible] Rose.ty
 
-def Daisy.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Daisy.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Daisy" [])
 
 attribute [irreducible] Daisy.ty
 
-def LoopStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def LoopStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.LoopStruct" [])
 
 attribute [irreducible] LoopStruct.ty
 
-def loopCounter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def loopCounter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.loopCounter" [])
 
 attribute [irreducible] loopCounter.ty
 
-def BoolTest.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def BoolTest.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.BoolTest" [])
 
 attribute [irreducible] BoolTest.ty
 
-def ArrayEditor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ArrayEditor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.ArrayEditor" [])
 
 attribute [irreducible] ArrayEditor.ty
 
-def appendNamedSlice.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def appendNamedSlice.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.appendNamedSlice" [])
 
 attribute [irreducible] appendNamedSlice.ty
 
-def Bar.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Bar.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Bar" [])
 
 attribute [irreducible] Bar.ty
 
-def Foo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Foo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Foo" [])
 
 attribute [irreducible] Foo.ty
 
-def TwoInts.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def TwoInts.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.TwoInts" [])
 
 attribute [irreducible] TwoInts.ty
 
-def S.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def S.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.S" [])
 
 attribute [irreducible] S.ty
 
-def StructWrap.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def StructWrap.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.StructWrap" [])
 
 attribute [irreducible] StructWrap.ty
 
-def StructWithFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def StructWithFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.StructWithFunc" [])
 
 attribute [irreducible] StructWithFunc.ty
 
-def switchConcrete.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def switchConcrete.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.switchConcrete" [])
 
 attribute [irreducible] switchConcrete.ty
 
-def switchInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def switchInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.switchInterface" [])
 
 attribute [irreducible] switchInterface.ty
 
-def DefinedStr.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def DefinedStr.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.DefinedStr" [])
 
 attribute [irreducible] DefinedStr.ty
 
-def List'.ty [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+noncomputable def List'.ty [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.List" [T])
 
 attribute [irreducible] List'.ty
 
-def Log.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Log.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Log" [])
 
 attribute [irreducible] Log.ty
 
-@[reducible] def AdderType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def AdderType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [go.uint64] false [go.uint64]))
 
-@[reducible] def MultipleArgsType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def MultipleArgsType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [go.uint64, go.bool] false [go.uint64]))
 
-@[reducible] def DefinedStr2.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def DefinedStr2.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   DefinedStr.ty
 
 /-- 10 is completely arbitrary -/
@@ -7020,7 +7019,7 @@ noncomputable def disabled_testWal.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))
 
-instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.semantics where
+noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.semantics where
   pkgImportedPkgs := [pkg_id.«unsafe», pkg_id.sync, pkg_id.github_com.goose_lang.primitive, pkg_id.encoding.binary, pkg_id.github_com.goose_lang.primitive.disk]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
@@ -7057,20 +7056,20 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 structure unit [FfiSyntax] where
   mk ::
 
-instance unit.zero_val [FfiSyntax] : ZeroVal unit :=
+noncomputable instance unit.zero_val [FfiSyntax] : ZeroVal unit :=
   ⟨unit.mk⟩
 
-@[reducible] def unit.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def unit.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def unit.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def unit.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   unit.fieldsUnsealed
 
-instance equals_unfold_unit [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_unit [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold unit.fields unit.fieldsUnsealed :=
   ⟨by unfold unit.fields; rfl⟩
 
-@[reducible] def unit.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def unit.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType unit.fields)
 
 class unit.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7084,20 +7083,20 @@ structure localPair [FfiSyntax] where
   mk ::
   a' : w64
 
-instance localPair.zero_val [FfiSyntax] : ZeroVal localPair :=
+noncomputable instance localPair.zero_val [FfiSyntax] : ZeroVal localPair :=
   ⟨localPair.mk zeroValDef⟩
 
-@[reducible] def localPair.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def localPair.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.uint64)]
 
-@[irreducible] def localPair.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def localPair.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   localPair.fieldsUnsealed
 
-instance equals_unfold_localPair [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_localPair [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold localPair.fields localPair.fieldsUnsealed :=
   ⟨by unfold localPair.fields; rfl⟩
 
-@[reducible] def localPair.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def localPair.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType localPair.fields)
 
 class localPair.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7116,21 +7115,21 @@ structure pair [FfiSyntax] where
   a' : w64
   b' : w64
 
-instance pair.zero_val [FfiSyntax] : ZeroVal pair :=
+noncomputable instance pair.zero_val [FfiSyntax] : ZeroVal pair :=
   ⟨pair.mk zeroValDef zeroValDef⟩
 
-@[reducible] def pair.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def pair.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.uint64),
 (go.field_decl.FieldDecl go!"b" go.uint64)]
 
-@[irreducible] def pair.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def pair.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   pair.fieldsUnsealed
 
-instance equals_unfold_pair [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_pair [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold pair.fields pair.fieldsUnsealed :=
   ⟨by unfold pair.fields; rfl⟩
 
-@[reducible] def pair.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def pair.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType pair.fields)
 
 class pair.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7150,7 +7149,7 @@ attribute [instance] pair.TypeAssumptions.type_repr
 
 abbrev pairs [FfiSyntax] : Type := GoSlice
 
-@[reducible] def pairs.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def pairs.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType pair.ty)
 
 class pairs.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7163,21 +7162,21 @@ structure evalCounter [FfiSyntax] where
   n' : w64
   buf' : GoSlice
 
-instance evalCounter.zero_val [FfiSyntax] : ZeroVal evalCounter :=
+noncomputable instance evalCounter.zero_val [FfiSyntax] : ZeroVal evalCounter :=
   ⟨evalCounter.mk zeroValDef zeroValDef⟩
 
-@[reducible] def evalCounter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def evalCounter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"n" go.uint64),
 (go.field_decl.FieldDecl go!"buf" (go.GoType.SliceType go.uint64))]
 
-@[irreducible] def evalCounter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def evalCounter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   evalCounter.fieldsUnsealed
 
-instance equals_unfold_evalCounter [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_evalCounter [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold evalCounter.fields evalCounter.fieldsUnsealed :=
   ⟨by unfold evalCounter.fields; rfl⟩
 
-@[reducible] def evalCounter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def evalCounter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType evalCounter.fields)
 
 class evalCounter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7206,21 +7205,21 @@ structure Editor [FfiSyntax] where
   s' : GoSlice
   next_val' : w64
 
-instance Editor.zero_val [FfiSyntax] : ZeroVal Editor :=
+noncomputable instance Editor.zero_val [FfiSyntax] : ZeroVal Editor :=
   ⟨Editor.mk zeroValDef zeroValDef⟩
 
-@[reducible] def Editor.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Editor.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"s" (go.GoType.SliceType go.uint64)),
 (go.field_decl.FieldDecl go!"next_val" go.uint64)]
 
-@[irreducible] def Editor.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Editor.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Editor.fieldsUnsealed
 
-instance equals_unfold_Editor [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Editor [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Editor.fields Editor.fieldsUnsealed :=
   ⟨by unfold Editor.fields; rfl⟩
 
-@[reducible] def Editor.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Editor.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Editor.fields)
 
 class Editor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7245,21 +7244,21 @@ structure Pair' [FfiSyntax] where
   x' : w64
   y' : w64
 
-instance Pair'.zero_val [FfiSyntax] : ZeroVal Pair' :=
+noncomputable instance Pair'.zero_val [FfiSyntax] : ZeroVal Pair' :=
   ⟨Pair'.mk zeroValDef zeroValDef⟩
 
-@[reducible] def Pair.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Pair.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"x" go.uint64),
 (go.field_decl.FieldDecl go!"y" go.uint64)]
 
-@[irreducible] def Pair.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Pair.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Pair.fieldsUnsealed
 
-instance equals_unfold_Pair [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Pair [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Pair.fields Pair.fieldsUnsealed :=
   ⟨by unfold Pair.fields; rfl⟩
 
-@[reducible] def Pair'.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Pair'.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Pair.fields)
 
 class Pair.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7279,7 +7278,7 @@ attribute [instance] Pair.TypeAssumptions.type_repr
 
 abbrev Uint32 [FfiSyntax] : Type := w32
 
-@[reducible] def Uint32.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Uint32.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint32
 
 class Uint32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7289,7 +7288,7 @@ attribute [instance] Uint32.TypeAssumptions.underlying
 
 abbrev geometryInterface [FfiSyntax] : Type := GoInterface
 
-@[reducible] def geometryInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def geometryInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Square" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.MethodElem go!"Volume" (go.signature.Signature [] false [go.uint64]))])
 
 class geometryInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7301,20 +7300,20 @@ structure SquareStruct [FfiSyntax] where
   mk ::
   Side' : w64
 
-instance SquareStruct.zero_val [FfiSyntax] : ZeroVal SquareStruct :=
+noncomputable instance SquareStruct.zero_val [FfiSyntax] : ZeroVal SquareStruct :=
   ⟨SquareStruct.mk zeroValDef⟩
 
-@[reducible] def SquareStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def SquareStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Side" go.uint64)]
 
-@[irreducible] def SquareStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def SquareStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   SquareStruct.fieldsUnsealed
 
-instance equals_unfold_SquareStruct [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_SquareStruct [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold SquareStruct.fields SquareStruct.fieldsUnsealed :=
   ⟨by unfold SquareStruct.fields; rfl⟩
 
-@[reducible] def SquareStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def SquareStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType SquareStruct.fields)
 
 class SquareStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7342,20 +7341,20 @@ structure NumStruct [FfiSyntax] where
   mk ::
   Value' : w64
 
-instance NumStruct.zero_val [FfiSyntax] : ZeroVal NumStruct :=
+noncomputable instance NumStruct.zero_val [FfiSyntax] : ZeroVal NumStruct :=
   ⟨NumStruct.mk zeroValDef⟩
 
-@[reducible] def NumStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def NumStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Value" go.int)]
 
-@[irreducible] def NumStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def NumStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   NumStruct.fieldsUnsealed
 
-instance equals_unfold_NumStruct [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_NumStruct [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold NumStruct.fields NumStruct.fieldsUnsealed :=
   ⟨by unfold NumStruct.fields; rfl⟩
 
-@[reducible] def NumStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def NumStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType NumStruct.fields)
 
 class NumStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7371,7 +7370,7 @@ attribute [instance] NumStruct.TypeAssumptions.type_repr
 
 abbrev shapeInterface [FfiSyntax] : Type := GoInterface
 
-@[reducible] def shapeInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def shapeInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"describe" (go.signature.Signature [] false [go.string]))])
 
 class shapeInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7381,7 +7380,7 @@ attribute [instance] shapeInterface.TypeAssumptions.underlying
 
 abbrev polygonInterface [FfiSyntax] : Type := GoInterface
 
-@[reducible] def polygonInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def polygonInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"sides" (go.signature.Signature [] false [go.uint64]))])
 
 class polygonInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7393,20 +7392,20 @@ structure shapeStruct [FfiSyntax] where
   mk ::
   Shape' : GoString
 
-instance shapeStruct.zero_val [FfiSyntax] : ZeroVal shapeStruct :=
+noncomputable instance shapeStruct.zero_val [FfiSyntax] : ZeroVal shapeStruct :=
   ⟨shapeStruct.mk zeroValDef⟩
 
-@[reducible] def shapeStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def shapeStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Shape" go.string)]
 
-@[irreducible] def shapeStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def shapeStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   shapeStruct.fieldsUnsealed
 
-instance equals_unfold_shapeStruct [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_shapeStruct [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold shapeStruct.fields shapeStruct.fieldsUnsealed :=
   ⟨by unfold shapeStruct.fields; rfl⟩
 
-@[reducible] def shapeStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def shapeStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType shapeStruct.fields)
 
 class shapeStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7430,21 +7429,21 @@ structure polygonStruct [FfiSyntax] where
   Shape' : GoString
   Sides' : w64
 
-instance polygonStruct.zero_val [FfiSyntax] : ZeroVal polygonStruct :=
+noncomputable instance polygonStruct.zero_val [FfiSyntax] : ZeroVal polygonStruct :=
   ⟨polygonStruct.mk zeroValDef zeroValDef⟩
 
-@[reducible] def polygonStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def polygonStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Shape" go.string),
 (go.field_decl.FieldDecl go!"Sides" go.uint64)]
 
-@[irreducible] def polygonStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def polygonStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   polygonStruct.fieldsUnsealed
 
-instance equals_unfold_polygonStruct [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_polygonStruct [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold polygonStruct.fields polygonStruct.fieldsUnsealed :=
   ⟨by unfold polygonStruct.fields; rfl⟩
 
-@[reducible] def polygonStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def polygonStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType polygonStruct.fields)
 
 class polygonStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7474,7 +7473,7 @@ attribute [instance] polygonStruct.TypeAssumptions.type_repr
 
 abbrev dogInterface [FfiSyntax] : Type := GoInterface
 
-@[reducible] def dogInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def dogInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Name" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Speed" (go.signature.Signature [] false [go.uint64]))])
 
 class dogInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7484,7 +7483,7 @@ attribute [instance] dogInterface.TypeAssumptions.underlying
 
 abbrev catInterface [FfiSyntax] : Type := GoInterface
 
-@[reducible] def catInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def catInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Name" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Weight" (go.signature.Signature [] false [go.uint64]))])
 
 class catInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7494,7 +7493,7 @@ attribute [instance] catInterface.TypeAssumptions.underlying
 
 abbrev Puppy [FfiSyntax] : Type := GoString
 
-@[reducible] def Puppy.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Puppy.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
 class Puppy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7514,7 +7513,7 @@ attribute [instance] Puppy.TypeAssumptions.underlying
 
 abbrev Kitten [FfiSyntax] : Type := GoString
 
-@[reducible] def Kitten.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Kitten.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
 class Kitten.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7534,7 +7533,7 @@ attribute [instance] Kitten.TypeAssumptions.underlying
 
 abbrev printInterface [FfiSyntax] : Type := GoInterface
 
-@[reducible] def printInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def printInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Assign" (go.signature.Signature [go.string] false [])), (go.InterfaceElem.MethodElem go!"GetTitle" (go.signature.Signature [] false [go.string]))])
 
 class printInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7546,20 +7545,20 @@ structure PaperStruct [FfiSyntax] where
   mk ::
   Title' : GoString
 
-instance PaperStruct.zero_val [FfiSyntax] : ZeroVal PaperStruct :=
+noncomputable instance PaperStruct.zero_val [FfiSyntax] : ZeroVal PaperStruct :=
   ⟨PaperStruct.mk zeroValDef⟩
 
-@[reducible] def PaperStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def PaperStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Title" go.string)]
 
-@[irreducible] def PaperStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def PaperStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   PaperStruct.fieldsUnsealed
 
-instance equals_unfold_PaperStruct [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_PaperStruct [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold PaperStruct.fields PaperStruct.fieldsUnsealed :=
   ⟨by unfold PaperStruct.fields; rfl⟩
 
-@[reducible] def PaperStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def PaperStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType PaperStruct.fields)
 
 class PaperStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7579,7 +7578,7 @@ attribute [instance] PaperStruct.TypeAssumptions.type_repr
 
 abbrev Flower [FfiSyntax] : Type := GoInterface
 
-@[reducible] def Flower.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Flower.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Petals" (go.signature.Signature [] false [go.uint64]))])
 
 class Flower.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7589,7 +7588,7 @@ attribute [instance] Flower.TypeAssumptions.underlying
 
 abbrev Flora [FfiSyntax] : Type := GoInterface
 
-@[reducible] def Flora.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Flora.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Genus" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Flower.ty)])])
 
 class Flora.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7600,20 +7599,20 @@ attribute [instance] Flora.TypeAssumptions.underlying
 structure Lily [FfiSyntax] where
   mk ::
 
-instance Lily.zero_val [FfiSyntax] : ZeroVal Lily :=
+noncomputable instance Lily.zero_val [FfiSyntax] : ZeroVal Lily :=
   ⟨Lily.mk⟩
 
-@[reducible] def Lily.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Lily.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def Lily.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Lily.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Lily.fieldsUnsealed
 
-instance equals_unfold_Lily [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Lily [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Lily.fields Lily.fieldsUnsealed :=
   ⟨by unfold Lily.fields; rfl⟩
 
-@[reducible] def Lily.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Lily.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Lily.fields)
 
 class Lily.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7636,20 +7635,20 @@ attribute [instance] Lily.TypeAssumptions.type_repr
 structure Rose [FfiSyntax] where
   mk ::
 
-instance Rose.zero_val [FfiSyntax] : ZeroVal Rose :=
+noncomputable instance Rose.zero_val [FfiSyntax] : ZeroVal Rose :=
   ⟨Rose.mk⟩
 
-@[reducible] def Rose.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Rose.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def Rose.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Rose.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Rose.fieldsUnsealed
 
-instance equals_unfold_Rose [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Rose [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Rose.fields Rose.fieldsUnsealed :=
   ⟨by unfold Rose.fields; rfl⟩
 
-@[reducible] def Rose.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Rose.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Rose.fields)
 
 class Rose.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7672,20 +7671,20 @@ attribute [instance] Rose.TypeAssumptions.type_repr
 structure Daisy [FfiSyntax] where
   mk ::
 
-instance Daisy.zero_val [FfiSyntax] : ZeroVal Daisy :=
+noncomputable instance Daisy.zero_val [FfiSyntax] : ZeroVal Daisy :=
   ⟨Daisy.mk⟩
 
-@[reducible] def Daisy.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Daisy.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def Daisy.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Daisy.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Daisy.fieldsUnsealed
 
-instance equals_unfold_Daisy [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Daisy [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Daisy.fields Daisy.fieldsUnsealed :=
   ⟨by unfold Daisy.fields; rfl⟩
 
-@[reducible] def Daisy.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Daisy.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Daisy.fields)
 
 class Daisy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7709,20 +7708,20 @@ structure LoopStruct [FfiSyntax] where
   mk ::
   loopNext' : Loc
 
-instance LoopStruct.zero_val [FfiSyntax] : ZeroVal LoopStruct :=
+noncomputable instance LoopStruct.zero_val [FfiSyntax] : ZeroVal LoopStruct :=
   ⟨LoopStruct.mk zeroValDef⟩
 
-@[reducible] def LoopStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def LoopStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"loopNext" (go.GoType.PointerType go.uint64))]
 
-@[irreducible] def LoopStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def LoopStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   LoopStruct.fieldsUnsealed
 
-instance equals_unfold_LoopStruct [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_LoopStruct [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold LoopStruct.fields LoopStruct.fieldsUnsealed :=
   ⟨by unfold LoopStruct.fields; rfl⟩
 
-@[reducible] def LoopStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def LoopStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType LoopStruct.fields)
 
 class LoopStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7745,20 +7744,20 @@ structure loopCounter [FfiSyntax] where
   mk ::
   n' : w64
 
-instance loopCounter.zero_val [FfiSyntax] : ZeroVal loopCounter :=
+noncomputable instance loopCounter.zero_val [FfiSyntax] : ZeroVal loopCounter :=
   ⟨loopCounter.mk zeroValDef⟩
 
-@[reducible] def loopCounter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def loopCounter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"n" go.uint64)]
 
-@[irreducible] def loopCounter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def loopCounter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   loopCounter.fieldsUnsealed
 
-instance equals_unfold_loopCounter [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_loopCounter [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold loopCounter.fields loopCounter.fieldsUnsealed :=
   ⟨by unfold loopCounter.fields; rfl⟩
 
-@[reducible] def loopCounter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def loopCounter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType loopCounter.fields)
 
 class loopCounter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7781,23 +7780,23 @@ structure BoolTest [FfiSyntax] where
   tc' : w64
   fc' : w64
 
-instance BoolTest.zero_val [FfiSyntax] : ZeroVal BoolTest :=
+noncomputable instance BoolTest.zero_val [FfiSyntax] : ZeroVal BoolTest :=
   ⟨BoolTest.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def BoolTest.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def BoolTest.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"t" go.bool),
 (go.field_decl.FieldDecl go!"f" go.bool),
 (go.field_decl.FieldDecl go!"tc" go.uint64),
 (go.field_decl.FieldDecl go!"fc" go.uint64)]
 
-@[irreducible] def BoolTest.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def BoolTest.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   BoolTest.fieldsUnsealed
 
-instance equals_unfold_BoolTest [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_BoolTest [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold BoolTest.fields BoolTest.fieldsUnsealed :=
   ⟨by unfold BoolTest.fields; rfl⟩
 
-@[reducible] def BoolTest.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def BoolTest.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType BoolTest.fields)
 
 class BoolTest.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7828,21 +7827,21 @@ structure ArrayEditor [FfiSyntax] where
   s' : GoSlice
   next_val' : w64
 
-instance ArrayEditor.zero_val [FfiSyntax] : ZeroVal ArrayEditor :=
+noncomputable instance ArrayEditor.zero_val [FfiSyntax] : ZeroVal ArrayEditor :=
   ⟨ArrayEditor.mk zeroValDef zeroValDef⟩
 
-@[reducible] def ArrayEditor.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def ArrayEditor.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"s" (go.GoType.SliceType go.uint64)),
 (go.field_decl.FieldDecl go!"next_val" go.uint64)]
 
-@[irreducible] def ArrayEditor.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def ArrayEditor.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   ArrayEditor.fieldsUnsealed
 
-instance equals_unfold_ArrayEditor [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_ArrayEditor [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold ArrayEditor.fields ArrayEditor.fieldsUnsealed :=
   ⟨by unfold ArrayEditor.fields; rfl⟩
 
-@[reducible] def ArrayEditor.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def ArrayEditor.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType ArrayEditor.fields)
 
 class ArrayEditor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7864,7 +7863,7 @@ attribute [instance] ArrayEditor.TypeAssumptions.type_repr
 
 abbrev appendNamedSlice [FfiSyntax] : Type := GoSlice
 
-@[reducible] def appendNamedSlice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def appendNamedSlice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.uint64)
 
 class appendNamedSlice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7877,21 +7876,21 @@ structure Bar [FfiSyntax] where
   a' : w64
   b' : w64
 
-instance Bar.zero_val [FfiSyntax] : ZeroVal Bar :=
+noncomputable instance Bar.zero_val [FfiSyntax] : ZeroVal Bar :=
   ⟨Bar.mk zeroValDef zeroValDef⟩
 
-@[reducible] def Bar.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Bar.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.uint64),
 (go.field_decl.FieldDecl go!"b" go.uint64)]
 
-@[irreducible] def Bar.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Bar.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Bar.fieldsUnsealed
 
-instance equals_unfold_Bar [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Bar [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Bar.fields Bar.fieldsUnsealed :=
   ⟨by unfold Bar.fields; rfl⟩
 
-@[reducible] def Bar.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Bar.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Bar.fields)
 
 class Bar.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7915,20 +7914,20 @@ structure Foo [FfiSyntax] where
   mk ::
   bar' : Bar
 
-instance Foo.zero_val [FfiSyntax] : ZeroVal Foo :=
+noncomputable instance Foo.zero_val [FfiSyntax] : ZeroVal Foo :=
   ⟨Foo.mk zeroValDef⟩
 
-@[reducible] def Foo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Foo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"bar" Bar.ty)]
 
-@[irreducible] def Foo.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Foo.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Foo.fieldsUnsealed
 
-instance equals_unfold_Foo [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Foo [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Foo.fields Foo.fieldsUnsealed :=
   ⟨by unfold Foo.fields; rfl⟩
 
-@[reducible] def Foo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Foo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Foo.fields)
 
 class Foo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7949,21 +7948,21 @@ structure TwoInts [FfiSyntax] where
   x' : w64
   y' : w64
 
-instance TwoInts.zero_val [FfiSyntax] : ZeroVal TwoInts :=
+noncomputable instance TwoInts.zero_val [FfiSyntax] : ZeroVal TwoInts :=
   ⟨TwoInts.mk zeroValDef zeroValDef⟩
 
-@[reducible] def TwoInts.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def TwoInts.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"x" go.uint64),
 (go.field_decl.FieldDecl go!"y" go.uint64)]
 
-@[irreducible] def TwoInts.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def TwoInts.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   TwoInts.fieldsUnsealed
 
-instance equals_unfold_TwoInts [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_TwoInts [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold TwoInts.fields TwoInts.fieldsUnsealed :=
   ⟨by unfold TwoInts.fields; rfl⟩
 
-@[reducible] def TwoInts.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def TwoInts.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType TwoInts.fields)
 
 class TwoInts.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -7987,22 +7986,22 @@ structure S [FfiSyntax] where
   b' : TwoInts
   c' : Bool
 
-instance S.zero_val [FfiSyntax] : ZeroVal S :=
+noncomputable instance S.zero_val [FfiSyntax] : ZeroVal S :=
   ⟨S.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def S.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def S.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.uint64),
 (go.field_decl.FieldDecl go!"b" TwoInts.ty),
 (go.field_decl.FieldDecl go!"c" go.bool)]
 
-@[irreducible] def S.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def S.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   S.fieldsUnsealed
 
-instance equals_unfold_S [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_S [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold S.fields S.fieldsUnsealed :=
   ⟨by unfold S.fields; rfl⟩
 
-@[reducible] def S.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def S.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType S.fields)
 
 class S.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -8041,20 +8040,20 @@ structure StructWrap [FfiSyntax] where
   mk ::
   i' : w64
 
-instance StructWrap.zero_val [FfiSyntax] : ZeroVal StructWrap :=
+noncomputable instance StructWrap.zero_val [FfiSyntax] : ZeroVal StructWrap :=
   ⟨StructWrap.mk zeroValDef⟩
 
-@[reducible] def StructWrap.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def StructWrap.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"i" go.uint64)]
 
-@[irreducible] def StructWrap.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def StructWrap.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   StructWrap.fieldsUnsealed
 
-instance equals_unfold_StructWrap [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_StructWrap [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold StructWrap.fields StructWrap.fieldsUnsealed :=
   ⟨by unfold StructWrap.fields; rfl⟩
 
-@[reducible] def StructWrap.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def StructWrap.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType StructWrap.fields)
 
 class StructWrap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -8072,20 +8071,20 @@ structure StructWithFunc [FfiSyntax] where
   mk ::
   fn' : GoFunc
 
-instance StructWithFunc.zero_val [FfiSyntax] : ZeroVal StructWithFunc :=
+noncomputable instance StructWithFunc.zero_val [FfiSyntax] : ZeroVal StructWithFunc :=
   ⟨StructWithFunc.mk zeroValDef⟩
 
-@[reducible] def StructWithFunc.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def StructWithFunc.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"fn" (go.GoType.FunctionType (go.signature.Signature [go.uint64] false [go.uint64])))]
 
-@[irreducible] def StructWithFunc.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def StructWithFunc.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   StructWithFunc.fieldsUnsealed
 
-instance equals_unfold_StructWithFunc [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_StructWithFunc [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold StructWithFunc.fields StructWithFunc.fieldsUnsealed :=
   ⟨by unfold StructWithFunc.fields; rfl⟩
 
-@[reducible] def StructWithFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def StructWithFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType StructWithFunc.fields)
 
 class StructWithFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -8102,20 +8101,20 @@ attribute [instance] StructWithFunc.TypeAssumptions.type_repr
 structure switchConcrete [FfiSyntax] where
   mk ::
 
-instance switchConcrete.zero_val [FfiSyntax] : ZeroVal switchConcrete :=
+noncomputable instance switchConcrete.zero_val [FfiSyntax] : ZeroVal switchConcrete :=
   ⟨switchConcrete.mk⟩
 
-@[reducible] def switchConcrete.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def switchConcrete.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def switchConcrete.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def switchConcrete.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   switchConcrete.fieldsUnsealed
 
-instance equals_unfold_switchConcrete [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_switchConcrete [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold switchConcrete.fields switchConcrete.fieldsUnsealed :=
   ⟨by unfold switchConcrete.fields; rfl⟩
 
-@[reducible] def switchConcrete.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def switchConcrete.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType switchConcrete.fields)
 
 class switchConcrete.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -8129,7 +8128,7 @@ attribute [instance] switchConcrete.TypeAssumptions.type_repr
 
 abbrev switchInterface [FfiSyntax] : Type := GoInterface
 
-@[reducible] def switchInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def switchInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"marker" (go.signature.Signature [] false []))])
 
 class switchInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -8139,7 +8138,7 @@ attribute [instance] switchInterface.TypeAssumptions.underlying
 
 abbrev DefinedStr [FfiSyntax] : Type := GoString
 
-@[reducible] def DefinedStr.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def DefinedStr.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
 class DefinedStr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -8152,21 +8151,21 @@ structure List' [FfiSyntax] (T : Type) where
   X' : T
   Next' : Loc
 
-instance List'.zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (List' T) :=
+noncomputable instance List'.zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (List' T) :=
   ⟨List'.mk zeroValDef zeroValDef⟩
 
-@[reducible] def List.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[reducible] noncomputable def List.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"X" T),
 (go.field_decl.FieldDecl go!"Next" (go.GoType.PointerType (List'.ty T)))]
 
-@[irreducible] def List.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[irreducible] noncomputable def List.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   (List.fieldsUnsealed T)
 
-instance equals_unfold_List [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
+noncomputable instance equals_unfold_List [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
     EqualsUnfold (List.fields T) (List.fieldsUnsealed T) :=
   ⟨by unfold List.fields; rfl⟩
 
-@[reducible] def List'.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+@[reducible] noncomputable def List'.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.StructType (List.fields T))
 
 class List.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -8191,23 +8190,23 @@ structure Log [FfiSyntax] where
   cache' : GoMap
   length' : Loc
 
-instance Log.zero_val [FfiSyntax] : ZeroVal Log :=
+noncomputable instance Log.zero_val [FfiSyntax] : ZeroVal Log :=
   ⟨Log.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def Log.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Log.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"d" _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.ty),
 (go.field_decl.FieldDecl go!"l" (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)),
 (go.field_decl.FieldDecl go!"cache" (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)),
 (go.field_decl.FieldDecl go!"length" (go.GoType.PointerType go.uint64))]
 
-@[irreducible] def Log.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Log.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Log.fieldsUnsealed
 
-instance equals_unfold_Log [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Log [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Log.fields Log.fieldsUnsealed :=
   ⟨by unfold Log.fields; rfl⟩
 
-@[reducible] def Log.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Log.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Log.fields)
 
 class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -10,25 +10,24 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def slices : GoString := go!"slices"
+noncomputable def slices : GoString := go!"slices"
 end pkg_id
 
 namespace slices
 
-def sortedHint.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def sortedHint.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"slices.sortedHint" [])
 
 attribute [irreducible] sortedHint.ty
 
-def xorshift.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def xorshift.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"slices.xorshift" [])
 
 attribute [irreducible] xorshift.ty
@@ -3355,7 +3354,7 @@ noncomputable def rotateOrdered.impl [FfiSyntax] [GoGlobalContext] (E : go.GoTyp
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))))))))
 
-instance info' : PkgInfo pkg_id.slices where
+noncomputable instance info' : PkgInfo pkg_id.slices where
   pkgImportedPkgs := [pkg_id.cmp, pkg_id.math.bits]
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val
@@ -3372,7 +3371,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 
 abbrev sortedHint [FfiSyntax] : Type := w64
 
-@[reducible] def sortedHint.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def sortedHint.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
 class sortedHint.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -3382,7 +3381,7 @@ attribute [instance] sortedHint.TypeAssumptions.underlying
 
 abbrev xorshift [FfiSyntax] : Type := w64
 
-@[reducible] def xorshift.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def xorshift.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
 class xorshift.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

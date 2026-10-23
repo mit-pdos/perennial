@@ -9,20 +9,19 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/lock"
+noncomputable def github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/lock"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock
 
-def Lock.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Lock.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/lock.Lock" [])
 
 attribute [irreducible] Lock.ty
@@ -104,7 +103,7 @@ noncomputable def Lock.LockWithTimeout.impl [FfiSyntax] [GoGlobalContext] : val 
   (App (Val doReturn)
   (Val #false))))]))))))))))
 
-instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock where
+noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock where
   pkgImportedPkgs := [pkg_id.time]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
@@ -118,20 +117,20 @@ structure Lock [FfiSyntax] where
   mk ::
   ch' : GoChan
 
-instance Lock.zero_val [FfiSyntax] : ZeroVal Lock :=
+noncomputable instance Lock.zero_val [FfiSyntax] : ZeroVal Lock :=
   ⟨Lock.mk zeroValDef⟩
 
-@[reducible] def Lock.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Lock.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ch" (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))]
 
-@[irreducible] def Lock.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Lock.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Lock.fieldsUnsealed
 
-instance equals_unfold_Lock [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Lock [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Lock.fields Lock.fieldsUnsealed :=
   ⟨by unfold Lock.fields; rfl⟩
 
-@[reducible] def Lock.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Lock.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Lock.fields)
 
 class Lock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

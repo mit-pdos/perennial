@@ -9,55 +9,54 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def sort : GoString := go!"sort"
+noncomputable def sort : GoString := go!"sort"
 end pkg_id
 
 namespace sort
 
-def Interface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Interface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.Interface" [])
 
 attribute [irreducible] Interface.ty
 
-def sortedHint.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def sortedHint.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.sortedHint" [])
 
 attribute [irreducible] sortedHint.ty
 
-def xorshift.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def xorshift.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.xorshift" [])
 
 attribute [irreducible] xorshift.ty
 
-def lessSwap.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def lessSwap.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.lessSwap" [])
 
 attribute [irreducible] lessSwap.ty
 
-def reverse.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def reverse.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.reverse" [])
 
 attribute [irreducible] reverse.ty
 
-def IntSlice.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def IntSlice.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.IntSlice" [])
 
 attribute [irreducible] IntSlice.ty
 
-def Float64Slice.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Float64Slice.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.Float64Slice" [])
 
 attribute [irreducible] Float64Slice.ty
 
-def StringSlice.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def StringSlice.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.StringSlice" [])
 
 attribute [irreducible] StringSlice.ty
@@ -1935,7 +1934,7 @@ noncomputable def rotate.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))))))))
 
-instance info' : PkgInfo pkg_id.sort where
+noncomputable instance info' : PkgInfo pkg_id.sort where
   pkgImportedPkgs := [pkg_id.math.bits]
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val
@@ -1949,7 +1948,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 
 abbrev Interface [FfiSyntax] : Type := GoInterface
 
-@[reducible] def Interface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Interface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Len" (go.signature.Signature [] false [go.int])), (go.InterfaceElem.MethodElem go!"Less" (go.signature.Signature [go.int, go.int] false [go.bool])), (go.InterfaceElem.MethodElem go!"Swap" (go.signature.Signature [go.int, go.int] false []))])
 
 class Interface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1959,7 +1958,7 @@ attribute [instance] Interface.TypeAssumptions.underlying
 
 abbrev sortedHint [FfiSyntax] : Type := w64
 
-@[reducible] def sortedHint.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def sortedHint.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
 class sortedHint.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1969,7 +1968,7 @@ attribute [instance] sortedHint.TypeAssumptions.underlying
 
 abbrev xorshift [FfiSyntax] : Type := w64
 
-@[reducible] def xorshift.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def xorshift.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
 class xorshift.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1984,21 +1983,21 @@ structure lessSwap [FfiSyntax] where
   Less' : GoFunc
   Swap' : GoFunc
 
-instance lessSwap.zero_val [FfiSyntax] : ZeroVal lessSwap :=
+noncomputable instance lessSwap.zero_val [FfiSyntax] : ZeroVal lessSwap :=
   ⟨lessSwap.mk zeroValDef zeroValDef⟩
 
-@[reducible] def lessSwap.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def lessSwap.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Less" (go.GoType.FunctionType (go.signature.Signature [go.int, go.int] false [go.bool]))),
 (go.field_decl.FieldDecl go!"Swap" (go.GoType.FunctionType (go.signature.Signature [go.int, go.int] false [])))]
 
-@[irreducible] def lessSwap.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def lessSwap.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   lessSwap.fieldsUnsealed
 
-instance equals_unfold_lessSwap [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_lessSwap [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold lessSwap.fields lessSwap.fieldsUnsealed :=
   ⟨by unfold lessSwap.fields; rfl⟩
 
-@[reducible] def lessSwap.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def lessSwap.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType lessSwap.fields)
 
 class lessSwap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2020,20 +2019,20 @@ structure reverse [FfiSyntax] where
   mk ::
   Interface' : Interface
 
-instance reverse.zero_val [FfiSyntax] : ZeroVal reverse :=
+noncomputable instance reverse.zero_val [FfiSyntax] : ZeroVal reverse :=
   ⟨reverse.mk zeroValDef⟩
 
-@[reducible] def reverse.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def reverse.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Interface" Interface.ty)]
 
-@[irreducible] def reverse.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def reverse.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   reverse.fieldsUnsealed
 
-instance equals_unfold_reverse [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_reverse [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold reverse.fields reverse.fieldsUnsealed :=
   ⟨by unfold reverse.fields; rfl⟩
 
-@[reducible] def reverse.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def reverse.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType reverse.fields)
 
 class reverse.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2066,7 +2065,7 @@ attribute [instance] reverse.TypeAssumptions.type_repr
 
 abbrev IntSlice [FfiSyntax] : Type := GoSlice
 
-@[reducible] def IntSlice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def IntSlice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.int)
 
 class IntSlice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2076,7 +2075,7 @@ attribute [instance] IntSlice.TypeAssumptions.underlying
 
 abbrev Float64Slice [FfiSyntax] : Type := GoSlice
 
-@[reducible] def Float64Slice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Float64Slice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.float64)
 
 class Float64Slice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2086,7 +2085,7 @@ attribute [instance] Float64Slice.TypeAssumptions.underlying
 
 abbrev StringSlice [FfiSyntax] : Type := GoSlice
 
-@[reducible] def StringSlice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def StringSlice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.string)
 
 class StringSlice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

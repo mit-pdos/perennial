@@ -12,45 +12,44 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.simpledb : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb"
+noncomputable def github_com.mit_pdos.perennial.goose.testdata.examples.simpledb : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.simpledb
 
-def Table.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Table.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.Table" [])
 
 attribute [irreducible] Table.ty
 
-def Entry.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Entry.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.Entry" [])
 
 attribute [irreducible] Entry.ty
 
-def lazyFileBuf.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def lazyFileBuf.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.lazyFileBuf" [])
 
 attribute [irreducible] lazyFileBuf.ty
 
-def bufFile.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def bufFile.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.bufFile" [])
 
 attribute [irreducible] bufFile.ty
 
-def tableWriter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def tableWriter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.tableWriter" [])
 
 attribute [irreducible] tableWriter.ty
 
-def Database.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Database.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.Database" [])
 
 attribute [irreducible] Database.ty
@@ -1568,7 +1567,7 @@ noncomputable def Close.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$a0" (App (Val (GoInstruction (GoLoad Database.ty))) (Var "db"))
   (App (App (Val (GoInstruction (FuncResolve Compact []))) (Val #())) (Var "$a0")))))))))
 
-instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.simpledb where
+noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.simpledb where
   pkgImportedPkgs := [pkg_id.encoding.binary, pkg_id.sync, pkg_id.github_com.goose_lang.primitive.filesys, pkg_id.github_com.tchajed.marshal]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
@@ -1592,21 +1591,21 @@ structure Table [FfiSyntax] where
   Index' : GoMap
   File' : _root_.Perennial.github_com.goose_lang.primitive.filesys.File
 
-instance Table.zero_val [FfiSyntax] : ZeroVal Table :=
+noncomputable instance Table.zero_val [FfiSyntax] : ZeroVal Table :=
   ⟨Table.mk zeroValDef zeroValDef⟩
 
-@[reducible] def Table.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Table.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Index" (go.GoType.MapType go.uint64 go.uint64)),
 (go.field_decl.FieldDecl go!"File" _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty)]
 
-@[irreducible] def Table.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Table.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Table.fieldsUnsealed
 
-instance equals_unfold_Table [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Table [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Table.fields Table.fieldsUnsealed :=
   ⟨by unfold Table.fields; rfl⟩
 
-@[reducible] def Table.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Table.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Table.fields)
 
 class Table.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1629,21 +1628,21 @@ structure Entry [FfiSyntax] where
   Key' : w64
   Value' : GoSlice
 
-instance Entry.zero_val [FfiSyntax] : ZeroVal Entry :=
+noncomputable instance Entry.zero_val [FfiSyntax] : ZeroVal Entry :=
   ⟨Entry.mk zeroValDef zeroValDef⟩
 
-@[reducible] def Entry.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Entry.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Key" go.uint64),
 (go.field_decl.FieldDecl go!"Value" (go.GoType.SliceType go.byte))]
 
-@[irreducible] def Entry.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Entry.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Entry.fieldsUnsealed
 
-instance equals_unfold_Entry [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Entry [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Entry.fields Entry.fieldsUnsealed :=
   ⟨by unfold Entry.fields; rfl⟩
 
-@[reducible] def Entry.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Entry.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Entry.fields)
 
 class Entry.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1666,21 +1665,21 @@ structure lazyFileBuf [FfiSyntax] where
   offset' : w64
   next' : GoSlice
 
-instance lazyFileBuf.zero_val [FfiSyntax] : ZeroVal lazyFileBuf :=
+noncomputable instance lazyFileBuf.zero_val [FfiSyntax] : ZeroVal lazyFileBuf :=
   ⟨lazyFileBuf.mk zeroValDef zeroValDef⟩
 
-@[reducible] def lazyFileBuf.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def lazyFileBuf.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"offset" go.uint64),
 (go.field_decl.FieldDecl go!"next" (go.GoType.SliceType go.byte))]
 
-@[irreducible] def lazyFileBuf.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def lazyFileBuf.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   lazyFileBuf.fieldsUnsealed
 
-instance equals_unfold_lazyFileBuf [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_lazyFileBuf [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold lazyFileBuf.fields lazyFileBuf.fieldsUnsealed :=
   ⟨by unfold lazyFileBuf.fields; rfl⟩
 
-@[reducible] def lazyFileBuf.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def lazyFileBuf.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType lazyFileBuf.fields)
 
 class lazyFileBuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1703,21 +1702,21 @@ structure bufFile [FfiSyntax] where
   file' : _root_.Perennial.github_com.goose_lang.primitive.filesys.File
   buf' : Loc
 
-instance bufFile.zero_val [FfiSyntax] : ZeroVal bufFile :=
+noncomputable instance bufFile.zero_val [FfiSyntax] : ZeroVal bufFile :=
   ⟨bufFile.mk zeroValDef zeroValDef⟩
 
-@[reducible] def bufFile.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def bufFile.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"file" _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty),
 (go.field_decl.FieldDecl go!"buf" (go.GoType.PointerType (go.GoType.SliceType go.byte)))]
 
-@[irreducible] def bufFile.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def bufFile.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   bufFile.fieldsUnsealed
 
-instance equals_unfold_bufFile [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_bufFile [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold bufFile.fields bufFile.fieldsUnsealed :=
   ⟨by unfold bufFile.fields; rfl⟩
 
-@[reducible] def bufFile.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def bufFile.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType bufFile.fields)
 
 class bufFile.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1742,23 +1741,23 @@ structure tableWriter [FfiSyntax] where
   file' : bufFile
   offset' : Loc
 
-instance tableWriter.zero_val [FfiSyntax] : ZeroVal tableWriter :=
+noncomputable instance tableWriter.zero_val [FfiSyntax] : ZeroVal tableWriter :=
   ⟨tableWriter.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def tableWriter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def tableWriter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"index" (go.GoType.MapType go.uint64 go.uint64)),
 (go.field_decl.FieldDecl go!"name" go.string),
 (go.field_decl.FieldDecl go!"file" bufFile.ty),
 (go.field_decl.FieldDecl go!"offset" (go.GoType.PointerType go.uint64))]
 
-@[irreducible] def tableWriter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def tableWriter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   tableWriter.fieldsUnsealed
 
-instance equals_unfold_tableWriter [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_tableWriter [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold tableWriter.fields tableWriter.fieldsUnsealed :=
   ⟨by unfold tableWriter.fields; rfl⟩
 
-@[reducible] def tableWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def tableWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType tableWriter.fields)
 
 class tableWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1794,10 +1793,10 @@ structure Database [FfiSyntax] where
   tableL' : Loc
   compactionL' : Loc
 
-instance Database.zero_val [FfiSyntax] : ZeroVal Database :=
+noncomputable instance Database.zero_val [FfiSyntax] : ZeroVal Database :=
   ⟨Database.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def Database.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Database.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"wbuffer" (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))),
 (go.field_decl.FieldDecl go!"rbuffer" (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))),
 (go.field_decl.FieldDecl go!"bufferL" (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)),
@@ -1806,14 +1805,14 @@ instance Database.zero_val [FfiSyntax] : ZeroVal Database :=
 (go.field_decl.FieldDecl go!"tableL" (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)),
 (go.field_decl.FieldDecl go!"compactionL" (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty))]
 
-@[irreducible] def Database.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Database.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Database.fieldsUnsealed
 
-instance equals_unfold_Database [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Database [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Database.fields Database.fieldsUnsealed :=
   ⟨by unfold Database.fields; rfl⟩
 
-@[reducible] def Database.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Database.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Database.fields)
 
 class Database.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -9,9 +9,8 @@ public import Perennial.Code.errors
 @[expose] public section
 
 set_option autoImplicit false
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 open Iris Iris.BI
@@ -26,7 +25,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : errors.Assumptions]
 
-instance errorString_typed_pointsto :
+noncomputable instance errorString_typed_pointsto :
     TypedPointsto (GF := GF) errors.errorString where
   typedPointstoDef l v dq := iprop(
     "s" ∷ typedPointsto (structFieldRef errors.errorString go!"s" l) v.s' dq ∗
@@ -35,11 +34,11 @@ instance errorString_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance errorString_into_val_typed :
+noncomputable instance errorString_into_val_typed :
     IntoValTypedUnderlying (GF := GF) errors.errorString errors.errorString.underlying := by
   solve_into_val_typed_struct
 
-instance errorString_access_load_s (l : Loc) (v : errors.errorString) (dq : DFrac) :
+noncomputable instance errorString_access_load_s (l : Loc) (v : errors.errorString) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef errors.errorString go!"s" l) v.s' dq)
       (typedPointsto (structFieldRef errors.errorString go!"s" l) v.s' dq)
@@ -47,7 +46,7 @@ instance errorString_access_load_s (l : Loc) (v : errors.errorString) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance errorString_access_store_s (l : Loc) (v : errors.errorString) (s' : GoString) :
+noncomputable instance errorString_access_store_s (l : Loc) (v : errors.errorString) (s' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef errors.errorString go!"s" l) v.s' (DFrac.own 1))
       (typedPointsto (structFieldRef errors.errorString go!"s" l) s' (DFrac.own 1))
@@ -66,7 +65,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : errors.Assumptions]
 
-instance joinError_typed_pointsto :
+noncomputable instance joinError_typed_pointsto :
     TypedPointsto (GF := GF) errors.joinError where
   typedPointstoDef l v dq := iprop(
     "errs" ∷ typedPointsto (structFieldRef errors.joinError go!"errs" l) v.errs' dq ∗
@@ -75,11 +74,11 @@ instance joinError_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance joinError_into_val_typed :
+noncomputable instance joinError_into_val_typed :
     IntoValTypedUnderlying (GF := GF) errors.joinError errors.joinError.underlying := by
   solve_into_val_typed_struct
 
-instance joinError_access_load_errs (l : Loc) (v : errors.joinError) (dq : DFrac) :
+noncomputable instance joinError_access_load_errs (l : Loc) (v : errors.joinError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef errors.joinError go!"errs" l) v.errs' dq)
       (typedPointsto (structFieldRef errors.joinError go!"errs" l) v.errs' dq)
@@ -87,7 +86,7 @@ instance joinError_access_load_errs (l : Loc) (v : errors.joinError) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance joinError_access_store_errs (l : Loc) (v : errors.joinError) (errs' : GoSlice) :
+noncomputable instance joinError_access_store_errs (l : Loc) (v : errors.joinError) (errs' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef errors.joinError go!"errs" l) v.errs' (DFrac.own 1))
       (typedPointsto (structFieldRef errors.joinError go!"errs" l) errs' (DFrac.own 1))

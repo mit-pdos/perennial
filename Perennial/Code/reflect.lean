@@ -8,200 +8,199 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def reflect : GoString := go!"reflect"
+noncomputable def reflect : GoString := go!"reflect"
 end pkg_id
 
 namespace reflect
 
-def abiStep.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def abiStep.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.abiStep" [])
 
 attribute [irreducible] abiStep.ty
 
-def abiStepKind.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def abiStepKind.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.abiStepKind" [])
 
 attribute [irreducible] abiStepKind.ty
 
-def abiSeq.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def abiSeq.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.abiSeq" [])
 
 attribute [irreducible] abiSeq.ty
 
-def abiDesc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def abiDesc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.abiDesc" [])
 
 attribute [irreducible] abiDesc.ty
 
-def visit.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def visit.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.visit" [])
 
 attribute [irreducible] visit.ty
 
-def makeFuncImpl.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def makeFuncImpl.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.makeFuncImpl" [])
 
 attribute [irreducible] makeFuncImpl.ty
 
-def methodValue.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def methodValue.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.methodValue" [])
 
 attribute [irreducible] methodValue.ty
 
-def makeFuncCtxt.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def makeFuncCtxt.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.makeFuncCtxt" [])
 
 attribute [irreducible] makeFuncCtxt.ty
 
-def MapIter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def MapIter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.MapIter" [])
 
 attribute [irreducible] MapIter.ty
 
-def Type'.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Type'.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.Type" [])
 
 attribute [irreducible] Type'.ty
 
-def Kind.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Kind.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.Kind" [])
 
 attribute [irreducible] Kind.ty
 
-def common.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def common.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.common" [])
 
 attribute [irreducible] common.ty
 
-def rtype.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def rtype.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.rtype" [])
 
 attribute [irreducible] rtype.ty
 
-def ChanDir.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ChanDir.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.ChanDir" [])
 
 attribute [irreducible] ChanDir.ty
 
-def interfaceType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def interfaceType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.interfaceType" [])
 
 attribute [irreducible] interfaceType.ty
 
-def ptrType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ptrType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.ptrType" [])
 
 attribute [irreducible] ptrType.ty
 
-def sliceType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def sliceType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.sliceType" [])
 
 attribute [irreducible] sliceType.ty
 
-def structType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def structType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.structType" [])
 
 attribute [irreducible] structType.ty
 
-def Method.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Method.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.Method" [])
 
 attribute [irreducible] Method.ty
 
-def StructField.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def StructField.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.StructField" [])
 
 attribute [irreducible] StructField.ty
 
-def StructTag.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def StructTag.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.StructTag" [])
 
 attribute [irreducible] StructTag.ty
 
-def fieldScan.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def fieldScan.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.fieldScan" [])
 
 attribute [irreducible] fieldScan.ty
 
-def cacheKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def cacheKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.cacheKey" [])
 
 attribute [irreducible] cacheKey.ty
 
-def structTypeUncommon.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def structTypeUncommon.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.structTypeUncommon" [])
 
 attribute [irreducible] structTypeUncommon.ty
 
-def layoutKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def layoutKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.layoutKey" [])
 
 attribute [irreducible] layoutKey.ty
 
-def layoutType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def layoutType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.layoutType" [])
 
 attribute [irreducible] layoutType.ty
 
-def bitVector.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def bitVector.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.bitVector" [])
 
 attribute [irreducible] bitVector.ty
 
-def Value.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Value.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.Value" [])
 
 attribute [irreducible] Value.ty
 
-def flag.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def flag.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.flag" [])
 
 attribute [irreducible] flag.ty
 
-def ValueError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ValueError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.ValueError" [])
 
 attribute [irreducible] ValueError.ty
 
-def nonEmptyInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def nonEmptyInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.nonEmptyInterface" [])
 
 attribute [irreducible] nonEmptyInterface.ty
 
-def StringHeader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def StringHeader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.StringHeader" [])
 
 attribute [irreducible] StringHeader.ty
 
-def SliceHeader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def SliceHeader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.SliceHeader" [])
 
 attribute [irreducible] SliceHeader.ty
 
-def runtimeSelect.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def runtimeSelect.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.runtimeSelect" [])
 
 attribute [irreducible] runtimeSelect.ty
 
-def SelectDir.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def SelectDir.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.SelectDir" [])
 
 attribute [irreducible] SelectDir.ty
 
-def SelectCase.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def SelectCase.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.SelectCase" [])
 
 attribute [irreducible] SelectCase.ty
 
-def visibleFieldsWalker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def visibleFieldsWalker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.visibleFieldsWalker" [])
 
 attribute [irreducible] visibleFieldsWalker.ty
@@ -1080,7 +1079,7 @@ noncomputable def contentEscapes [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def VisibleFields [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"reflect.VisibleFields"
 
-instance info' : PkgInfo pkg_id.reflect where
+noncomputable instance info' : PkgInfo pkg_id.reflect where
   pkgImportedPkgs := []
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val

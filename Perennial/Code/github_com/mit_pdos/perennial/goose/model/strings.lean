@@ -10,15 +10,14 @@ public import Perennial.Golang.Defn.Defer
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.model.strings : GoString := go!"github.com/mit-pdos/perennial/goose/model/strings"
+noncomputable def github_com.mit_pdos.perennial.goose.model.strings : GoString := go!"github.com/mit-pdos/perennial/goose/model/strings"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.model.strings
@@ -80,7 +79,7 @@ noncomputable def ByteSliceToString.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "c") (Var "$value")))))))))))))))
 
-instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.model.strings where
+noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.model.strings where
   pkgImportedPkgs := []
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=

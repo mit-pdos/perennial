@@ -9,9 +9,8 @@ public import Perennial.Code.internal.synctest
 @[expose] public section
 
 set_option autoImplicit false
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 open Iris Iris.BI
@@ -26,7 +25,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : internal.synctest.Assumptions]
 
-instance Bubble_typed_pointsto :
+noncomputable instance Bubble_typed_pointsto :
     TypedPointsto (GF := GF) internal.synctest.Bubble where
   typedPointstoDef l v dq := iprop(
     "b" ∷ typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) v.b' dq ∗
@@ -35,11 +34,11 @@ instance Bubble_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Bubble_into_val_typed :
+noncomputable instance Bubble_into_val_typed :
     IntoValTypedUnderlying (GF := GF) internal.synctest.Bubble internal.synctest.Bubble.underlying := by
   solve_into_val_typed_struct
 
-instance Bubble_access_load_b (l : Loc) (v : internal.synctest.Bubble) (dq : DFrac) :
+noncomputable instance Bubble_access_load_b (l : Loc) (v : internal.synctest.Bubble) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) v.b' dq)
       (typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) v.b' dq)
@@ -47,7 +46,7 @@ instance Bubble_access_load_b (l : Loc) (v : internal.synctest.Bubble) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance Bubble_access_store_b (l : Loc) (v : internal.synctest.Bubble) (b' : GoInterface) :
+noncomputable instance Bubble_access_store_b (l : Loc) (v : internal.synctest.Bubble) (b' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) v.b' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.synctest.Bubble go!"b" l) b' (DFrac.own 1))

@@ -13,9 +13,8 @@ public import Perennial.Code.encoding.binary
 @[expose] public section
 
 set_option autoImplicit false
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 open Iris Iris.BI
@@ -30,7 +29,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : encoding.binary.Assumptions]
 
-instance littleEndian_typed_pointsto :
+noncomputable instance littleEndian_typed_pointsto :
     TypedPointsto (GF := GF) encoding.binary.littleEndian where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
@@ -38,7 +37,7 @@ instance littleEndian_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance littleEndian_into_val_typed :
+noncomputable instance littleEndian_into_val_typed :
     IntoValTypedUnderlying (GF := GF) encoding.binary.littleEndian encoding.binary.littleEndian.underlying := by
   solve_into_val_typed_struct
 
@@ -53,7 +52,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : encoding.binary.Assumptions]
 
-instance bigEndian_typed_pointsto :
+noncomputable instance bigEndian_typed_pointsto :
     TypedPointsto (GF := GF) encoding.binary.bigEndian where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
@@ -61,7 +60,7 @@ instance bigEndian_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance bigEndian_into_val_typed :
+noncomputable instance bigEndian_into_val_typed :
     IntoValTypedUnderlying (GF := GF) encoding.binary.bigEndian encoding.binary.bigEndian.underlying := by
   solve_into_val_typed_struct
 
@@ -76,7 +75,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : encoding.binary.Assumptions]
 
-instance coder_typed_pointsto :
+noncomputable instance coder_typed_pointsto :
     TypedPointsto (GF := GF) encoding.binary.coder where
   typedPointstoDef l v dq := iprop(
     "order" ∷ typedPointsto (structFieldRef encoding.binary.coder go!"order" l) v.order' dq ∗
@@ -87,11 +86,11 @@ instance coder_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance coder_into_val_typed :
+noncomputable instance coder_into_val_typed :
     IntoValTypedUnderlying (GF := GF) encoding.binary.coder encoding.binary.coder.underlying := by
   solve_into_val_typed_struct
 
-instance coder_access_load_order (l : Loc) (v : encoding.binary.coder) (dq : DFrac) :
+noncomputable instance coder_access_load_order (l : Loc) (v : encoding.binary.coder) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.coder go!"order" l) v.order' dq)
       (typedPointsto (structFieldRef encoding.binary.coder go!"order" l) v.order' dq)
@@ -99,7 +98,7 @@ instance coder_access_load_order (l : Loc) (v : encoding.binary.coder) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance coder_access_store_order (l : Loc) (v : encoding.binary.coder) (order' : encoding.binary.ByteOrder) :
+noncomputable instance coder_access_store_order (l : Loc) (v : encoding.binary.coder) (order' : encoding.binary.ByteOrder) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.coder go!"order" l) v.order' (DFrac.own 1))
       (typedPointsto (structFieldRef encoding.binary.coder go!"order" l) order' (DFrac.own 1))
@@ -107,7 +106,7 @@ instance coder_access_store_order (l : Loc) (v : encoding.binary.coder) (order' 
  by
   solve_pointsto_access_struct
 
-instance coder_access_load_buf (l : Loc) (v : encoding.binary.coder) (dq : DFrac) :
+noncomputable instance coder_access_load_buf (l : Loc) (v : encoding.binary.coder) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.coder go!"buf" l) v.buf' dq)
       (typedPointsto (structFieldRef encoding.binary.coder go!"buf" l) v.buf' dq)
@@ -115,7 +114,7 @@ instance coder_access_load_buf (l : Loc) (v : encoding.binary.coder) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance coder_access_store_buf (l : Loc) (v : encoding.binary.coder) (buf' : GoSlice) :
+noncomputable instance coder_access_store_buf (l : Loc) (v : encoding.binary.coder) (buf' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.coder go!"buf" l) v.buf' (DFrac.own 1))
       (typedPointsto (structFieldRef encoding.binary.coder go!"buf" l) buf' (DFrac.own 1))
@@ -123,7 +122,7 @@ instance coder_access_store_buf (l : Loc) (v : encoding.binary.coder) (buf' : Go
  by
   solve_pointsto_access_struct
 
-instance coder_access_load_offset (l : Loc) (v : encoding.binary.coder) (dq : DFrac) :
+noncomputable instance coder_access_load_offset (l : Loc) (v : encoding.binary.coder) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.coder go!"offset" l) v.offset' dq)
       (typedPointsto (structFieldRef encoding.binary.coder go!"offset" l) v.offset' dq)
@@ -131,7 +130,7 @@ instance coder_access_load_offset (l : Loc) (v : encoding.binary.coder) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance coder_access_store_offset (l : Loc) (v : encoding.binary.coder) (offset' : w64) :
+noncomputable instance coder_access_store_offset (l : Loc) (v : encoding.binary.coder) (offset' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.coder go!"offset" l) v.offset' (DFrac.own 1))
       (typedPointsto (structFieldRef encoding.binary.coder go!"offset" l) offset' (DFrac.own 1))
@@ -150,7 +149,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : encoding.binary.Assumptions]
 
-instance nativeEndian_typed_pointsto :
+noncomputable instance nativeEndian_typed_pointsto :
     TypedPointsto (GF := GF) encoding.binary.nativeEndian where
   typedPointstoDef l v dq := iprop(
     "littleEndian" ∷ typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) v.littleEndian' dq ∗
@@ -159,11 +158,11 @@ instance nativeEndian_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance nativeEndian_into_val_typed :
+noncomputable instance nativeEndian_into_val_typed :
     IntoValTypedUnderlying (GF := GF) encoding.binary.nativeEndian encoding.binary.nativeEndian.underlying := by
   solve_into_val_typed_struct
 
-instance nativeEndian_access_load_littleEndian (l : Loc) (v : encoding.binary.nativeEndian) (dq : DFrac) :
+noncomputable instance nativeEndian_access_load_littleEndian (l : Loc) (v : encoding.binary.nativeEndian) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) v.littleEndian' dq)
       (typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) v.littleEndian' dq)
@@ -171,7 +170,7 @@ instance nativeEndian_access_load_littleEndian (l : Loc) (v : encoding.binary.na
  by
   solve_pointsto_access_struct
 
-instance nativeEndian_access_store_littleEndian (l : Loc) (v : encoding.binary.nativeEndian) (littleEndian' : encoding.binary.littleEndian) :
+noncomputable instance nativeEndian_access_store_littleEndian (l : Loc) (v : encoding.binary.nativeEndian) (littleEndian' : encoding.binary.littleEndian) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) v.littleEndian' (DFrac.own 1))
       (typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) littleEndian' (DFrac.own 1))

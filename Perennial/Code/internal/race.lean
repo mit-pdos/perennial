@@ -8,15 +8,14 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def internal.race : GoString := go!"internal/race"
+noncomputable def internal.race : GoString := go!"internal/race"
 end pkg_id
 
 namespace internal.race
@@ -66,7 +65,7 @@ noncomputable def WriteRange [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def Errors [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/race.Errors"
 
-instance info' : PkgInfo pkg_id.internal.race where
+noncomputable instance info' : PkgInfo pkg_id.internal.race where
   pkgImportedPkgs := []
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val

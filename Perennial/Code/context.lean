@@ -12,95 +12,94 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def context : GoString := go!"context"
+noncomputable def context : GoString := go!"context"
 end pkg_id
 
 namespace context
 
-def Context.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Context.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"context.Context" [])
 
 attribute [irreducible] Context.ty
 
-def deadlineExceededError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def deadlineExceededError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"context.deadlineExceededError" [])
 
 attribute [irreducible] deadlineExceededError.ty
 
-def emptyCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def emptyCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"context.emptyCtx" [])
 
 attribute [irreducible] emptyCtx.ty
 
-def backgroundCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def backgroundCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"context.backgroundCtx" [])
 
 attribute [irreducible] backgroundCtx.ty
 
-def todoCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def todoCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"context.todoCtx" [])
 
 attribute [irreducible] todoCtx.ty
 
-def CancelFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def CancelFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"context.CancelFunc" [])
 
 attribute [irreducible] CancelFunc.ty
 
-def CancelCauseFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def CancelCauseFunc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"context.CancelCauseFunc" [])
 
 attribute [irreducible] CancelCauseFunc.ty
 
-def afterFuncer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def afterFuncer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"context.afterFuncer" [])
 
 attribute [irreducible] afterFuncer.ty
 
-def afterFuncCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def afterFuncCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"context.afterFuncCtx" [])
 
 attribute [irreducible] afterFuncCtx.ty
 
-def stopCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def stopCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"context.stopCtx" [])
 
 attribute [irreducible] stopCtx.ty
 
-def canceler.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def canceler.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"context.canceler" [])
 
 attribute [irreducible] canceler.ty
 
-def cancelCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def cancelCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"context.cancelCtx" [])
 
 attribute [irreducible] cancelCtx.ty
 
-def stringer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def stringer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"context.stringer" [])
 
 attribute [irreducible] stringer.ty
 
-def withoutCancelCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def withoutCancelCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"context.withoutCancelCtx" [])
 
 attribute [irreducible] withoutCancelCtx.ty
 
-def timerCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def timerCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"context.timerCtx" [])
 
 attribute [irreducible] timerCtx.ty
 
-def valueCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def valueCtx.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"context.valueCtx" [])
 
 attribute [irreducible] valueCtx.ty
@@ -1486,7 +1485,7 @@ noncomputable def value.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Lam BAnon
   (Val #()))))))))
 
-instance info' : PkgInfo pkg_id.context where
+noncomputable instance info' : PkgInfo pkg_id.context where
   pkgImportedPkgs := [pkg_id.errors, pkg_id.sync, pkg_id.sync.atomic, pkg_id.time]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
@@ -1538,7 +1537,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 
 abbrev Context [FfiSyntax] : Type := GoInterface
 
-@[reducible] def Context.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Context.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Deadline" (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool])), (go.InterfaceElem.MethodElem go!"Done" (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))])), (go.InterfaceElem.MethodElem go!"Err" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.MethodElem go!"Value" (go.signature.Signature [go.any] false [go.any]))])
 
 class Context.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1549,20 +1548,20 @@ attribute [instance] Context.TypeAssumptions.underlying
 structure deadlineExceededError [FfiSyntax] where
   mk ::
 
-instance deadlineExceededError.zero_val [FfiSyntax] : ZeroVal deadlineExceededError :=
+noncomputable instance deadlineExceededError.zero_val [FfiSyntax] : ZeroVal deadlineExceededError :=
   ⟨deadlineExceededError.mk⟩
 
-@[reducible] def deadlineExceededError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def deadlineExceededError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def deadlineExceededError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def deadlineExceededError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   deadlineExceededError.fieldsUnsealed
 
-instance equals_unfold_deadlineExceededError [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_deadlineExceededError [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold deadlineExceededError.fields deadlineExceededError.fieldsUnsealed :=
   ⟨by unfold deadlineExceededError.fields; rfl⟩
 
-@[reducible] def deadlineExceededError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def deadlineExceededError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType deadlineExceededError.fields)
 
 class deadlineExceededError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1590,20 +1589,20 @@ attribute [instance] deadlineExceededError.TypeAssumptions.type_repr
 structure emptyCtx [FfiSyntax] where
   mk ::
 
-instance emptyCtx.zero_val [FfiSyntax] : ZeroVal emptyCtx :=
+noncomputable instance emptyCtx.zero_val [FfiSyntax] : ZeroVal emptyCtx :=
   ⟨emptyCtx.mk⟩
 
-@[reducible] def emptyCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def emptyCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def emptyCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def emptyCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   emptyCtx.fieldsUnsealed
 
-instance equals_unfold_emptyCtx [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_emptyCtx [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold emptyCtx.fields emptyCtx.fieldsUnsealed :=
   ⟨by unfold emptyCtx.fields; rfl⟩
 
-@[reducible] def emptyCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def emptyCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType emptyCtx.fields)
 
 class emptyCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1637,20 +1636,20 @@ structure backgroundCtx [FfiSyntax] where
   mk ::
   emptyCtx' : emptyCtx
 
-instance backgroundCtx.zero_val [FfiSyntax] : ZeroVal backgroundCtx :=
+noncomputable instance backgroundCtx.zero_val [FfiSyntax] : ZeroVal backgroundCtx :=
   ⟨backgroundCtx.mk zeroValDef⟩
 
-@[reducible] def backgroundCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def backgroundCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"emptyCtx" emptyCtx.ty)]
 
-@[irreducible] def backgroundCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def backgroundCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   backgroundCtx.fieldsUnsealed
 
-instance equals_unfold_backgroundCtx [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_backgroundCtx [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold backgroundCtx.fields backgroundCtx.fieldsUnsealed :=
   ⟨by unfold backgroundCtx.fields; rfl⟩
 
-@[reducible] def backgroundCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def backgroundCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType backgroundCtx.fields)
 
 class backgroundCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1697,20 +1696,20 @@ structure todoCtx [FfiSyntax] where
   mk ::
   emptyCtx' : emptyCtx
 
-instance todoCtx.zero_val [FfiSyntax] : ZeroVal todoCtx :=
+noncomputable instance todoCtx.zero_val [FfiSyntax] : ZeroVal todoCtx :=
   ⟨todoCtx.mk zeroValDef⟩
 
-@[reducible] def todoCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def todoCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"emptyCtx" emptyCtx.ty)]
 
-@[irreducible] def todoCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def todoCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   todoCtx.fieldsUnsealed
 
-instance equals_unfold_todoCtx [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_todoCtx [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold todoCtx.fields todoCtx.fieldsUnsealed :=
   ⟨by unfold todoCtx.fields; rfl⟩
 
-@[reducible] def todoCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def todoCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType todoCtx.fields)
 
 class todoCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1755,7 +1754,7 @@ attribute [instance] todoCtx.TypeAssumptions.type_repr
 
 abbrev CancelFunc [FfiSyntax] : Type := GoFunc
 
-@[reducible] def CancelFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def CancelFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [] false []))
 
 class CancelFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1765,7 +1764,7 @@ attribute [instance] CancelFunc.TypeAssumptions.underlying
 
 abbrev CancelCauseFunc [FfiSyntax] : Type := GoFunc
 
-@[reducible] def CancelCauseFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def CancelCauseFunc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [go.error] false []))
 
 class CancelCauseFunc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1775,7 +1774,7 @@ attribute [instance] CancelCauseFunc.TypeAssumptions.underlying
 
 abbrev afterFuncer [FfiSyntax] : Type := GoInterface
 
-@[reducible] def afterFuncer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def afterFuncer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AfterFunc" (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [] false []))] false [(go.GoType.FunctionType (go.signature.Signature [] false [go.bool]))]))])
 
 class afterFuncer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1792,10 +1791,10 @@ structure cancelCtx [FfiSyntax] where
   err' : _root_.Perennial.sync.atomic.Value
   cause' : GoError
 
-instance cancelCtx.zero_val [FfiSyntax] : ZeroVal cancelCtx :=
+noncomputable instance cancelCtx.zero_val [FfiSyntax] : ZeroVal cancelCtx :=
   ⟨cancelCtx.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def cancelCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def cancelCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Context" Context.ty),
 (go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex.ty),
 (go.field_decl.FieldDecl go!"done" _root_.Perennial.sync.atomic.Value.ty),
@@ -1803,14 +1802,14 @@ instance cancelCtx.zero_val [FfiSyntax] : ZeroVal cancelCtx :=
 (go.field_decl.FieldDecl go!"err" _root_.Perennial.sync.atomic.Value.ty),
 (go.field_decl.FieldDecl go!"cause" go.error)]
 
-@[irreducible] def cancelCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def cancelCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   cancelCtx.fieldsUnsealed
 
-instance equals_unfold_cancelCtx [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_cancelCtx [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold cancelCtx.fields cancelCtx.fieldsUnsealed :=
   ⟨by unfold cancelCtx.fields; rfl⟩
 
-@[reducible] def cancelCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def cancelCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType cancelCtx.fields)
 
 class cancelCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1868,22 +1867,22 @@ structure afterFuncCtx [FfiSyntax] where
   once' : _root_.Perennial.sync.Once
   f' : GoFunc
 
-instance afterFuncCtx.zero_val [FfiSyntax] : ZeroVal afterFuncCtx :=
+noncomputable instance afterFuncCtx.zero_val [FfiSyntax] : ZeroVal afterFuncCtx :=
   ⟨afterFuncCtx.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def afterFuncCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def afterFuncCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"cancelCtx" cancelCtx.ty),
 (go.field_decl.FieldDecl go!"once" _root_.Perennial.sync.Once.ty),
 (go.field_decl.FieldDecl go!"f" (go.GoType.FunctionType (go.signature.Signature [] false [])))]
 
-@[irreducible] def afterFuncCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def afterFuncCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   afterFuncCtx.fieldsUnsealed
 
-instance equals_unfold_afterFuncCtx [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_afterFuncCtx [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold afterFuncCtx.fields afterFuncCtx.fieldsUnsealed :=
   ⟨by unfold afterFuncCtx.fields; rfl⟩
 
-@[reducible] def afterFuncCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def afterFuncCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType afterFuncCtx.fields)
 
 class afterFuncCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1933,21 +1932,21 @@ structure stopCtx [FfiSyntax] where
   Context' : Context
   stop' : GoFunc
 
-instance stopCtx.zero_val [FfiSyntax] : ZeroVal stopCtx :=
+noncomputable instance stopCtx.zero_val [FfiSyntax] : ZeroVal stopCtx :=
   ⟨stopCtx.mk zeroValDef zeroValDef⟩
 
-@[reducible] def stopCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def stopCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Context" Context.ty),
 (go.field_decl.FieldDecl go!"stop" (go.GoType.FunctionType (go.signature.Signature [] false [go.bool])))]
 
-@[irreducible] def stopCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def stopCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   stopCtx.fieldsUnsealed
 
-instance equals_unfold_stopCtx [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_stopCtx [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold stopCtx.fields stopCtx.fieldsUnsealed :=
   ⟨by unfold stopCtx.fields; rfl⟩
 
-@[reducible] def stopCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def stopCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType stopCtx.fields)
 
 class stopCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1991,7 +1990,7 @@ attribute [instance] stopCtx.TypeAssumptions.type_repr
 
 abbrev canceler [FfiSyntax] : Type := GoInterface
 
-@[reducible] def canceler.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def canceler.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Done" (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))])), (go.InterfaceElem.MethodElem go!"cancel" (go.signature.Signature [go.bool, go.error, go.error] false []))])
 
 class canceler.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2001,7 +2000,7 @@ attribute [instance] canceler.TypeAssumptions.underlying
 
 abbrev stringer [FfiSyntax] : Type := GoInterface
 
-@[reducible] def stringer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def stringer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
 
 class stringer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2013,20 +2012,20 @@ structure withoutCancelCtx [FfiSyntax] where
   mk ::
   c' : Context
 
-instance withoutCancelCtx.zero_val [FfiSyntax] : ZeroVal withoutCancelCtx :=
+noncomputable instance withoutCancelCtx.zero_val [FfiSyntax] : ZeroVal withoutCancelCtx :=
   ⟨withoutCancelCtx.mk zeroValDef⟩
 
-@[reducible] def withoutCancelCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def withoutCancelCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"c" Context.ty)]
 
-@[irreducible] def withoutCancelCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def withoutCancelCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   withoutCancelCtx.fieldsUnsealed
 
-instance equals_unfold_withoutCancelCtx [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_withoutCancelCtx [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold withoutCancelCtx.fields withoutCancelCtx.fieldsUnsealed :=
   ⟨by unfold withoutCancelCtx.fields; rfl⟩
 
-@[reducible] def withoutCancelCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def withoutCancelCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType withoutCancelCtx.fields)
 
 class withoutCancelCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2071,22 +2070,22 @@ structure timerCtx [FfiSyntax] where
   timer' : Loc
   deadline' : _root_.Perennial.time.Time
 
-instance timerCtx.zero_val [FfiSyntax] : ZeroVal timerCtx :=
+noncomputable instance timerCtx.zero_val [FfiSyntax] : ZeroVal timerCtx :=
   ⟨timerCtx.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def timerCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def timerCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"cancelCtx" cancelCtx.ty),
 (go.field_decl.FieldDecl go!"timer" (go.GoType.PointerType _root_.Perennial.time.Timer.ty)),
 (go.field_decl.FieldDecl go!"deadline" _root_.Perennial.time.Time.ty)]
 
-@[irreducible] def timerCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def timerCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   timerCtx.fieldsUnsealed
 
-instance equals_unfold_timerCtx [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_timerCtx [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold timerCtx.fields timerCtx.fieldsUnsealed :=
   ⟨by unfold timerCtx.fields; rfl⟩
 
-@[reducible] def timerCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def timerCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType timerCtx.fields)
 
 class timerCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2132,22 +2131,22 @@ structure valueCtx [FfiSyntax] where
   key' : GoInterface
   val' : GoInterface
 
-instance valueCtx.zero_val [FfiSyntax] : ZeroVal valueCtx :=
+noncomputable instance valueCtx.zero_val [FfiSyntax] : ZeroVal valueCtx :=
   ⟨valueCtx.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def valueCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def valueCtx.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Context" Context.ty),
 (go.field_decl.FieldDecl go!"key" go.any),
 (go.field_decl.FieldDecl go!"val" go.any)]
 
-@[irreducible] def valueCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def valueCtx.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   valueCtx.fieldsUnsealed
 
-instance equals_unfold_valueCtx [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_valueCtx [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold valueCtx.fields valueCtx.fieldsUnsealed :=
   ⟨by unfold valueCtx.fields; rfl⟩
 
-@[reducible] def valueCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def valueCtx.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType valueCtx.fields)
 
 class valueCtx.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

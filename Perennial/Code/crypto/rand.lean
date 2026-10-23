@@ -11,15 +11,14 @@ public import Perennial.TrustedCode.crypto.rand
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def crypto.rand : GoString := go!"crypto/rand"
+noncomputable def crypto.rand : GoString := go!"crypto/rand"
 end pkg_id
 
 namespace crypto.rand
@@ -44,7 +43,7 @@ noncomputable def Prime [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def Int' [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/rand.Int"
 
-instance info' : PkgInfo pkg_id.crypto.rand where
+noncomputable instance info' : PkgInfo pkg_id.crypto.rand where
   pkgImportedPkgs := [pkg_id.io, pkg_id.math.big]
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val
