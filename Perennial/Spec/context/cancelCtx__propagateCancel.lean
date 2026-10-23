@@ -24,8 +24,9 @@ variable [package_sem : context.Assumptions]
 `child` with the parent, or cancels it). Three cases (three triples before, now derived from this
 one in `PropagateCancel.lean`, as `wp_propagateCancel_background_of` etc., and under their old
 names in `Results.lean`):
-* `parent` is `Background()` and `child` is `c` (`wp_propagateCancel_background`):
-  `c.propagateCancel(Background(), c)`: the parent is never canceled (`Done()` is `nil`).
+* `parent` is `Background()`, any `child` (`wp_propagateCancel_background_any`; with `child`
+  `c`, `wp_propagateCancel_background`): `c.propagateCancel(Background(), child)`: the parent is
+  never canceled (`Done()` is `nil`), and the child is not looked at.
 * `child` is `c`, and `parent` a `*cancelCtx` (`wp_propagateCancel_cancelCtx`):
   `c.propagateCancel(parent, c)` for a parent that is a `*cancelCtx` described by `s` whose
   Done proposition implies `c`'s: either the parent is already done (then `c` is canceled at once),
@@ -41,8 +42,7 @@ abbrev context.cancelCtx.propagateCancel.spec : Prop :=
       [SafeMapKey (GF := GF) context.canceler.ty k],
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
         ctxField c ↦ (interface.nil : GoInterface) ∗
-        (⌜parent = backgroundCtxVal ∧
-            k = interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c⌝ ∨
+        (⌜parent = backgroundCtxVal⌝ ∨
          (∃ (γ : ContextNames) (P : IProp GF) (s : ContextDesc (IProp GF)),
             ⌜k = interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c⌝ ∗
             isCancelCtxOf c γ P ∗ isContext parent s ∗ isCancelCtxCtx parent s ∗

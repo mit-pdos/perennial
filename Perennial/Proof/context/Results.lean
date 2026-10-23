@@ -2,9 +2,10 @@
 Results of `context` derived from the linked ones, under their old names: the methods of
 `*cancelCtx` and `*timerCtx` (`wp_cancelCtx_Done`, ..., `wp_timerCtx_cancel`, the Link's
 `cancelCtx.wp_Done`, ...), the promoted methods of `*timerCtx` (`wp_timerCtx_Done`, ...), the
-three cases of `propagateCancel`'s spec (`wp_propagateCancel_background`, `_cancelCtx`, `_any`),
-the other triples of `WithCancel` (`wp_WithCancel_gen`, `wp_WithCancel_any`,
-`wp_WithCancel_Background`) and of `parentCancelCtx` (`wp_parentCancelCtx_self`,
+three cases of `propagateCancel`'s spec (`wp_propagateCancel_background`, `_background_any`,
+`_cancelCtx`, `_any`), the other triples of `WithCancel` (`wp_WithCancel_gen`, `wp_WithCancel_any`,
+`wp_WithCancel_Background`), of the deadline constructors (`wp_WithDeadlineCause_Background`,
+`wp_WithDeadline_Background`, `wp_WithTimeout_Background`) and of `parentCancelCtx` (`wp_parentCancelCtx_self`,
 `wp_parentCancelCtx_timer`), the `atomic.Value` cells (`wp_done_Load`, ...) and the `isContext`s of
 `*cancelCtx` and `*timerCtx`: each the shared `_of` lemma applied to the linked results.
 -/
@@ -16,6 +17,7 @@ public import Perennial.Proof.context.CancelCtxContext
 public import Perennial.Proof.context.TimerCtx
 public import Perennial.Proof.context.PropagateCancel
 public import Perennial.Proof.context.WithCancelGen
+public import Perennial.Proof.context.WithDeadlineBackground
 
 @[expose] public section
 
@@ -286,6 +288,63 @@ theorem isContext_timerCtx (c : Loc) (γ : ContextNames) (d : time.Time)
       isContext (interface.mk (go.GoType.PointerType context.timerCtx.ty) #c) s :=
   isContext_timerCtx_of cancelCtx.wp_Done cancelCtx.wp_Err cancelCtx.wp_Value
     sync.atomic.Value.wp_Load c γ d s hγ hP hd
+
+
+/-- `wp_propagateCancel_background_any_of` applied to the linked results (see there). -/
+theorem wp_propagateCancel_background_any (c : Loc) (k : GoInterface)
+    [SafeMapKey (GF := GF) context.canceler.ty k] :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
+        ctxField c ↦ (interface.nil : GoInterface) }}
+      (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
+        (Val #(interface.ok backgroundCtxVal)))
+        (Val #k))
+    {{ RET #(); ctxField c ↦ (interface.ok backgroundCtxVal : GoInterface) }} :=
+  wp_propagateCancel_background_any_of cancelCtx.wp_propagateCancel c k
+
+/-- `WithDeadlineCause(Background(), d, cause)` (`wp_WithDeadlineCause_Background_of` applied to
+the linked results): a context with no values, the deadline `d` and the Done proposition `True`,
+whose `cancel` needs nothing. -/
+theorem wp_WithDeadlineCause_Background (d : time.Time) (cause : GoError) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context }}
+      (App (App (App (Val (@! context.WithDeadlineCause)) (Val #(interface.ok backgroundCtxVal)))
+        (Val #d)) (Val #cause))
+    {{ (ctx' : GoInterfaceOk) (γ' : ContextNames) (cancel : GoFunc),
+        RET (PairV #(interface.ok ctx') #cancel);
+        □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
+          WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
+        isContext ctx' (bgDeadlineDesc d γ') }} :=
+  wp_WithDeadlineCause_Background_of sync.Mutex.wp_Lock sync.Mutex.wp_Unlock
+    sync.atomic.Value.wp_Load time.wp_Until time.wp_AfterFunc cancelCtx.wp_Done cancelCtx.wp_Err
+    cancelCtx.wp_Value cancelCtx.wp_propagateCancel timerCtx.wp_cancel d cause
+
+/-- `WithDeadline(Background(), d)` (see `wp_WithDeadlineCause_Background`). -/
+theorem wp_WithDeadline_Background (d : time.Time) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context }}
+      (App (App (Val (@! context.WithDeadline)) (Val #(interface.ok backgroundCtxVal))) (Val #d))
+    {{ (ctx' : GoInterfaceOk) (γ' : ContextNames) (cancel : GoFunc),
+        RET (PairV #(interface.ok ctx') #cancel);
+        □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
+          WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
+        isContext ctx' (bgDeadlineDesc d γ') }} :=
+  wp_WithDeadline_Background_of sync.Mutex.wp_Lock sync.Mutex.wp_Unlock
+    sync.atomic.Value.wp_Load time.wp_Until time.wp_AfterFunc cancelCtx.wp_Done cancelCtx.wp_Err
+    cancelCtx.wp_Value cancelCtx.wp_propagateCancel timerCtx.wp_cancel d
+
+/-- `WithTimeout(Background(), tmo)` (see `wp_WithDeadlineCause_Background`): the deadline is
+`time.Now().Add(tmo)`, some time `d`. -/
+theorem wp_WithTimeout_Background (tmo : time.Duration) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context }}
+      (App (App (Val (@! context.WithTimeout)) (Val #(interface.ok backgroundCtxVal)))
+        (Val #tmo))
+    {{ (ctx' : GoInterfaceOk) (γ' : ContextNames) (cancel : GoFunc) (d : time.Time),
+        RET (PairV #(interface.ok ctx') #cancel);
+        □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
+          WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
+        isContext ctx' (bgDeadlineDesc d γ') }} :=
+  wp_WithTimeout_Background_of time.Time.wp_Add time.wp_Now sync.Mutex.wp_Lock
+    sync.Mutex.wp_Unlock sync.atomic.Value.wp_Load time.wp_Until time.wp_AfterFunc
+    cancelCtx.wp_Done cancelCtx.wp_Err cancelCtx.wp_Value cancelCtx.wp_propagateCancel
+    timerCtx.wp_cancel tmo
 
 end results
 

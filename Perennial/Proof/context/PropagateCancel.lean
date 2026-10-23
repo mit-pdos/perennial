@@ -29,7 +29,30 @@ variable [package_sem : context.Assumptions]
 
 open ContextDesc
 
-/-- `c.propagateCancel(Background(), c)`: the parent is never canceled (`Done()` is `nil`). -/
+/-- `c.propagateCancel(Background(), child)` for any `child`: the parent is never canceled
+(`Done()` is `nil`), and the child is not looked at (a `*timerCtx` registers itself as the child
+of its `cancelCtx`, `WithDeadlineBackground.lean`). -/
+theorem wp_propagateCancel_background_any_of
+    (wp_propagateCancel : context.cancelCtx.propagateCancel.spec (GF := GF) (hG := hG))
+    (c : Loc) (k : GoInterface) [SafeMapKey (GF := GF) context.canceler.ty k] :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
+        ctxField c ↦ (interface.nil : GoInterface) }}
+      (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
+        (Val #(interface.ok backgroundCtxVal)))
+        (Val #k))
+    {{ RET #(); ctxField c ↦ (interface.ok backgroundCtxVal : GoInterface) }} := by
+  iintro %Φ ⟨#Hpkg, Hf⟩ HΦ
+  iapply wp_propagateCancel c backgroundCtxVal k $$ [Hf] HΦ
+  isplitl []
+  · iexact Hpkg
+  isplitl [Hf]
+  · iexact Hf
+  ileft
+  ipureintro
+  rfl
+
+/-- `c.propagateCancel(Background(), c)`: `wp_propagateCancel_background_any_of` with `c` as the
+child. -/
 theorem wp_propagateCancel_background_of
     (wp_propagateCancel : context.cancelCtx.propagateCancel.spec (GF := GF) (hG := hG))
     (c : Loc) :
@@ -38,17 +61,8 @@ theorem wp_propagateCancel_background_of
       (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
         (Val #(interface.ok backgroundCtxVal)))
         (Val #(interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c)))
-    {{ RET #(); ctxField c ↦ (interface.ok backgroundCtxVal : GoInterface) }} := by
-  iintro %Φ ⟨#Hpkg, Hf⟩ HΦ
-  iapply wp_propagateCancel c backgroundCtxVal
-    (interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c) $$ [Hf] HΦ
-  isplitl []
-  · iexact Hpkg
-  isplitl [Hf]
-  · iexact Hf
-  ileft
-  ipureintro
-  exact ⟨rfl, rfl⟩
+    {{ RET #(); ctxField c ↦ (interface.ok backgroundCtxVal : GoInterface) }} :=
+  wp_propagateCancel_background_any_of wp_propagateCancel c _
 
 /-- `c.propagateCancel(parent, c)` for a parent that is a `*cancelCtx` described by `s` whose
 Done proposition implies `c`'s: either the parent is already done (then `c` is canceled at once),

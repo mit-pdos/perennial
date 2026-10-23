@@ -49,14 +49,14 @@ theorem context.cancelCtx.propagateCancel.wp_proof
   have wp_parentCancelCtx_self := wp_parentCancelCtx_self_of wp_cancelCtx_Done wp_cancelCtx_Value
       wp_VLoad
   have childCancelSpec_cancelCtx := childCancelSpec_cancelCtx_of wp_cancelCtx_cancel
-  have wp_propagateCancel_background : ∀ (c : Loc),
+  have wp_propagateCancel_background : ∀ (c : Loc) (k : GoInterface),
       {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
           ctxField c ↦ (interface.nil : GoInterface) }}
         (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
           (Val #(interface.ok backgroundCtxVal)))
-          (Val #(interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c)))
+          (Val #k))
       {{ RET #(); ctxField c ↦ (interface.ok backgroundCtxVal : GoInterface) }} :=
-    fun c => by
+    fun c k => by
       wp_start as Hf
       wp_auto
       wp_apply wp_background_Done
@@ -440,9 +440,8 @@ theorem context.cancelCtx.propagateCancel.wp_proof
           iapply HΦ $$ Hf
   iintro %Φ ⟨#Hpkg, Hf, Hcase⟩ HΦ
   icases Hcase with (%h | ⟨%γ, %P, %s, %hk, #Hc, #Hctx, #Hcc, #HPP⟩ | ⟨%s, #Hctx, #Hk⟩)
-  · obtain ⟨hp, hk⟩ := h
-    subst hp hk
-    iapply wp_propagateCancel_background c $$ [$Hpkg $Hf] HΦ
+  · subst h
+    iapply wp_propagateCancel_background c k $$ [$Hpkg $Hf] HΦ
   · subst hk
     iapply wp_propagateCancel_cancelCtx c γ P parent s $$ [$Hpkg $Hc $Hf $Hctx $Hcc $HPP] HΦ
   · iapply wp_propagateCancel_any c parent s k $$ [$Hpkg $Hf $Hctx $Hk] HΦ
