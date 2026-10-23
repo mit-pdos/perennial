@@ -257,7 +257,39 @@ theorem typedPointsto_not_null (l : Loc) (v : V) (dq : DFrac) :
   rw [typedPointsto_unseal]; unfold typedPointstoWrap
   iintro ⟨_, %h⟩; ipureintro; exact h
 
+/-! The steps of `solve_typed_pointsto_agree`: agreement of a struct's points-to
+(a `∗` of its field points-tos ending in `True`) from agreement of each field. -/
+
+theorem typedPointsto_agree_wand (l : Loc) (dq1 dq2 : DFrac) (v1 v2 : V) :
+    typedPointsto (GF := GF) l v1 dq1 ⊢ typedPointsto l v2 dq2 -∗ ⌜v1 = v2⌝ := by
+  iintro H1 H2; icombine H1 H2 gives %h; ipureintro; exact h
+
 end typed_pointsto_props
+
+section agree_lemmas
+variable {GF : BundledGFunctors}
+open ProofMode
+
+theorem typedPointsto_agree_sep {P1 P2 Q1 Q2 : IProp GF} {φ ψ : Prop}
+    (h1 : P1 ⊢ P2 -∗ ⌜φ⌝) (h2 : Q1 ⊢ Q2 -∗ ⌜ψ⌝) : P1 ∗ Q1 ⊢ P2 ∗ Q2 -∗ ⌜φ ∧ ψ⌝ := by
+  iintro ⟨HP1, HQ1⟩ ⟨HP2, HQ2⟩
+  icases h1 $$ HP1 HP2 with %h1
+  icases h2 $$ HQ1 HQ2 with %h2
+  ipureintro; exact ⟨h1, h2⟩
+
+theorem typedPointsto_agree_sep_true {P1 P2 : IProp GF} {φ : Prop}
+    (h1 : P1 ⊢ P2 -∗ ⌜φ⌝) : P1 ∗ True ⊢ P2 ∗ True -∗ ⌜φ⌝ := by
+  iintro ⟨HP1, -⟩ ⟨HP2, -⟩
+  iapply h1 $$ HP1 HP2
+
+theorem typedPointsto_agree_true : (iprop(True) : IProp GF) ⊢ iprop(True) -∗ ⌜True⌝ := by
+  iintro _ _; ipureintro; trivial
+
+theorem typedPointsto_agree_of {P Q : IProp GF} {φ ψ : Prop} (h : P ⊢ Q -∗ ⌜φ⌝)
+    (hφ : φ → ψ) : P ⊢ Q -∗ ⌜ψ⌝ :=
+  h.trans (wand_mono_right (pure_mono hφ))
+
+end agree_lemmas
 
 /-! ## `IntoValTyped` -/
 
@@ -737,16 +769,107 @@ macro "solve_typed_pointsto_dfractional" : tactic =>
 macro "solve_typed_pointsto_timeless" : tactic =>
   `(tactic| (intros; simp only [named]; infer_instance))
 
-/-- Prove `typedPointsto_agree` for a
-struct whose typed points-to is the conjunction of its field points-tos. -/
-macro "solve_typed_pointsto_agree" : tactic => `(tactic| (
-  intro l dq1 dq2 v1 v2
-  cases v1; cases v2
-  simp only [named]
-  iintro H1 H2
-  repeat (icases H1 with ⟨Hf, H1⟩; icases H2 with ⟨Hf', H2⟩; icombine Hf Hf' gives %Heq;
-          subst Heq)
-  ipureintro; first | rfl | trivial))
+section agree_tactic
+open Lean Meta Elab Tactic
+
+/-- The constant `n`, whose first argument is `GF : BundledGFunctors.{us}`, at the
+universe levels `us`. -/
+meta def agreeConst (n : Name) (us : List Level) : MetaM Lean.Expr := do
+  let info ← getConstInfo n
+  let .forallE _ (.const _ ls) _ _ := info.type | throwError "agreeConst {n}"
+  return .const n <| info.levelParams.map fun p =>
+    match (ls.zip us).find? (·.1 == .param p) with
+    | some (_, u) => u
+    | none => .zero
+
+/-- `e` without `named` and beta-redexes at its head. -/
+meta partial def agreeNorm (e : Lean.Expr) : MetaM Lean.Expr := do
+  let e := e.headBeta
+  if e.isAppOfArity ``named 3 then agreeNorm e.appArg! else
+  let e' ← whnfR e
+  if e' == e then return e else agreeNorm e'
+
+meta def agreeIsTrue (e : Lean.Expr) : Bool :=
+  e.isAppOfArity ``Iris.BI.BIBase.pure 3 && e.appArg!.isConstOf ``True
+
+/-- For `P1`, `P2` the `∗` of field points-tos (ending in `True`) at the same
+locations, `(φ, h)` with `h : P1 ⊢ P2 -∗ ⌜φ⌝` and `φ` the conjunction of the
+fields' equalities. The proof term is built directly (no unification or proof
+mode), so its size is linear in the number of fields. -/
+meta partial def agreeChain (us : List Level) (GF P1 P2 : Lean.Expr) :
+    MetaM (Lean.Expr × Lean.Expr) := do
+  let P1 ← agreeNorm P1
+  let P2 ← agreeNorm P2
+  if P1.isAppOfArity ``Iris.BI.BIBase.sep 4 && P2.isAppOfArity ``Iris.BI.BIBase.sep 4 then
+    let A1 := P1.appFn!.appArg!; let B1 := P1.appArg!
+    let A2 := P2.appFn!.appArg!; let B2 := P2.appArg!
+    let (φ, h1) ← agreeChain us GF A1 A2
+    if agreeIsTrue (← agreeNorm B1) && agreeIsTrue (← agreeNorm B2) then
+      return (φ, mkAppN (← agreeConst ``typedPointsto_agree_sep_true us) #[GF, A1, A2, φ, h1])
+    let (ψ, h2) ← agreeChain us GF B1 B2
+    return (mkAnd φ ψ,
+      mkAppN (← agreeConst ``typedPointsto_agree_sep us) #[GF, A1, A2, B1, B2, φ, ψ, h1, h2])
+  else if P1.isAppOfArity ``typedPointsto 6 && P2.isAppOfArity ``typedPointsto 6 then
+    -- `@typedPointsto GF V inst l v dq`
+    let a1 := P1.getAppArgs; let a2 := P2.getAppArgs
+    unless a1[1]! == a2[1]! && a1[2]! == a2[2]! && a1[3]! == a2[3]! do
+      throwError "solve_typed_pointsto_agree: points-tos at different locations or types"
+    let h := mkAppN (← agreeConst ``typedPointsto_agree_wand us)
+      #[GF, a1[1]!, a1[2]!, a1[3]!, a1[5]!, a2[5]!, a1[4]!, a2[4]!]
+    return (← mkEq a1[4]! a2[4]!, h)
+  else if agreeIsTrue P1 && agreeIsTrue P2 then
+    return (mkConst ``True, mkApp (← agreeConst ``typedPointsto_agree_true us) GF)
+  else throwError "solve_typed_pointsto_agree: not a field points-to: {P1}"
+
+/-- `φ → v1 = v2`, for `φ` the equalities of all fields of the structure values
+`v1`, `v2` in order, by the constructor's injectivity (`mk.injEq`) and structure
+eta. -/
+meta def agreeFinish (φ v1 v2 : Lean.Expr) : MetaM Lean.Expr := do
+  let ty ← whnf (← inferType v1)
+  let .const S us := ty.getAppFn | throwError "solve_typed_pointsto_agree: not a structure"
+  let some info := getStructureInfo? (← getEnv) S
+    | throwError "solve_typed_pointsto_agree: not a structure"
+  let ctor := getStructureCtor (← getEnv) S
+  let params := ty.getAppArgs
+  withLocalDeclD `h φ fun h => do
+    let pf ← if info.fieldNames.isEmpty then mkEqRefl v1 else
+      let projs (v : Lean.Expr) := info.fieldNames.map fun f =>
+        mkAppN (.const (S ++ f) us) (params.push v)
+      let inj := mkAppN (.const (ctor.name ++ `injEq) us) (params ++ projs v1 ++ projs v2)
+      let some (_, _, rhs) := (← whnfR (← inferType inj)).eq?
+        | throwError "solve_typed_pointsto_agree: injEq"
+      unless ← isDefEq rhs φ do
+        throwError "solve_typed_pointsto_agree: the fields are not those of {S} in order"
+      mkEqMPR inj h
+    unless ← isDefEq (← inferType pf) (← mkEq v1 v2) do
+      throwError "solve_typed_pointsto_agree: eta"
+    mkLambdaFVars #[h] pf
+
+/-- Prove `typedPointsto_agree` for a struct whose typed points-to is the `∗` of
+its field points-tos, in field order and ending in `True` (the shape goose
+emits). Builds the proof term directly from `typedPointsto_agree_sep` and the
+fields' `typedPointsto_agree_wand`, without the proof mode: the term is linear
+in the number of fields. -/
+elab "solve_typed_pointsto_agree" : tactic => do
+  let (#[_, _, _, v1, v2], g) ← (← getMainGoal).introN 5
+    | throwError "solve_typed_pointsto_agree: intro"
+  let v1 := mkFVar v1; let v2 := mkFVar v2
+  g.withContext do
+    let ty ← whnfR (← instantiateMVars (← g.getType))
+    let_expr Iris.BI.Entails _ _ P R := ty | throwError "solve_typed_pointsto_agree: {ty}"
+    let_expr Iris.BI.BIBase.wand _ _ Q _ := (← whnfR R)
+      | throwError "solve_typed_pointsto_agree: {R}"
+    let .app (.const ``Iris.IProp _) GF ← instantiateMVars (← inferType P)
+      | throwError "solve_typed_pointsto_agree: not an IProp"
+    let .const _ us ← instantiateMVars (← inferType GF)
+      | throwError "solve_typed_pointsto_agree: GF"
+    let (φ, h) ← agreeChain us GF P Q
+    let fin ← agreeFinish φ v1 v2
+    g.assign (mkAppN (← agreeConst ``typedPointsto_agree_of us)
+      #[GF, P, Q, φ, ← mkEq v1 v2, h, fin])
+    replaceMainGoal []
+
+end agree_tactic
 
 section tactics
 open Lean Qq Iris.ProofMode
