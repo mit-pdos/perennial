@@ -10,9 +10,8 @@ public import Perennial.Code.bytes
 @[expose] public section
 
 set_option autoImplicit false
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 open Iris Iris.BI
@@ -27,7 +26,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : bytes.Assumptions]
 
-instance Buffer_typed_pointsto :
+noncomputable instance Buffer_typed_pointsto :
     TypedPointsto (GF := GF) bytes.Buffer where
   typedPointstoDef l v dq := iprop(
     "buf" ∷ typedPointsto (structFieldRef bytes.Buffer go!"buf" l) v.buf' dq ∗
@@ -38,11 +37,11 @@ instance Buffer_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Buffer_into_val_typed :
+noncomputable instance Buffer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) bytes.Buffer bytes.Buffer.underlying := by
   solve_into_val_typed_struct
 
-instance Buffer_access_load_buf (l : Loc) (v : bytes.Buffer) (dq : DFrac) :
+noncomputable instance Buffer_access_load_buf (l : Loc) (v : bytes.Buffer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Buffer go!"buf" l) v.buf' dq)
       (typedPointsto (structFieldRef bytes.Buffer go!"buf" l) v.buf' dq)
@@ -50,7 +49,7 @@ instance Buffer_access_load_buf (l : Loc) (v : bytes.Buffer) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Buffer_access_store_buf (l : Loc) (v : bytes.Buffer) (buf' : GoSlice) :
+noncomputable instance Buffer_access_store_buf (l : Loc) (v : bytes.Buffer) (buf' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Buffer go!"buf" l) v.buf' (DFrac.own 1))
       (typedPointsto (structFieldRef bytes.Buffer go!"buf" l) buf' (DFrac.own 1))
@@ -58,7 +57,7 @@ instance Buffer_access_store_buf (l : Loc) (v : bytes.Buffer) (buf' : GoSlice) :
  by
   solve_pointsto_access_struct
 
-instance Buffer_access_load_off (l : Loc) (v : bytes.Buffer) (dq : DFrac) :
+noncomputable instance Buffer_access_load_off (l : Loc) (v : bytes.Buffer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Buffer go!"off" l) v.off' dq)
       (typedPointsto (structFieldRef bytes.Buffer go!"off" l) v.off' dq)
@@ -66,7 +65,7 @@ instance Buffer_access_load_off (l : Loc) (v : bytes.Buffer) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Buffer_access_store_off (l : Loc) (v : bytes.Buffer) (off' : w64) :
+noncomputable instance Buffer_access_store_off (l : Loc) (v : bytes.Buffer) (off' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Buffer go!"off" l) v.off' (DFrac.own 1))
       (typedPointsto (structFieldRef bytes.Buffer go!"off" l) off' (DFrac.own 1))
@@ -74,7 +73,7 @@ instance Buffer_access_store_off (l : Loc) (v : bytes.Buffer) (off' : w64) :
  by
   solve_pointsto_access_struct
 
-instance Buffer_access_load_lastRead (l : Loc) (v : bytes.Buffer) (dq : DFrac) :
+noncomputable instance Buffer_access_load_lastRead (l : Loc) (v : bytes.Buffer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Buffer go!"lastRead" l) v.lastRead' dq)
       (typedPointsto (structFieldRef bytes.Buffer go!"lastRead" l) v.lastRead' dq)
@@ -82,7 +81,7 @@ instance Buffer_access_load_lastRead (l : Loc) (v : bytes.Buffer) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Buffer_access_store_lastRead (l : Loc) (v : bytes.Buffer) (lastRead' : bytes.readOp) :
+noncomputable instance Buffer_access_store_lastRead (l : Loc) (v : bytes.Buffer) (lastRead' : bytes.readOp) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Buffer go!"lastRead" l) v.lastRead' (DFrac.own 1))
       (typedPointsto (structFieldRef bytes.Buffer go!"lastRead" l) lastRead' (DFrac.own 1))
@@ -101,7 +100,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : bytes.Assumptions]
 
-instance Reader_typed_pointsto :
+noncomputable instance Reader_typed_pointsto :
     TypedPointsto (GF := GF) bytes.Reader where
   typedPointstoDef l v dq := iprop(
     "s" ∷ typedPointsto (structFieldRef bytes.Reader go!"s" l) v.s' dq ∗
@@ -112,11 +111,11 @@ instance Reader_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Reader_into_val_typed :
+noncomputable instance Reader_into_val_typed :
     IntoValTypedUnderlying (GF := GF) bytes.Reader bytes.Reader.underlying := by
   solve_into_val_typed_struct
 
-instance Reader_access_load_s (l : Loc) (v : bytes.Reader) (dq : DFrac) :
+noncomputable instance Reader_access_load_s (l : Loc) (v : bytes.Reader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Reader go!"s" l) v.s' dq)
       (typedPointsto (structFieldRef bytes.Reader go!"s" l) v.s' dq)
@@ -124,7 +123,7 @@ instance Reader_access_load_s (l : Loc) (v : bytes.Reader) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_s (l : Loc) (v : bytes.Reader) (s' : GoSlice) :
+noncomputable instance Reader_access_store_s (l : Loc) (v : bytes.Reader) (s' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Reader go!"s" l) v.s' (DFrac.own 1))
       (typedPointsto (structFieldRef bytes.Reader go!"s" l) s' (DFrac.own 1))
@@ -132,7 +131,7 @@ instance Reader_access_store_s (l : Loc) (v : bytes.Reader) (s' : GoSlice) :
  by
   solve_pointsto_access_struct
 
-instance Reader_access_load_i (l : Loc) (v : bytes.Reader) (dq : DFrac) :
+noncomputable instance Reader_access_load_i (l : Loc) (v : bytes.Reader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Reader go!"i" l) v.i' dq)
       (typedPointsto (structFieldRef bytes.Reader go!"i" l) v.i' dq)
@@ -140,7 +139,7 @@ instance Reader_access_load_i (l : Loc) (v : bytes.Reader) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_i (l : Loc) (v : bytes.Reader) (i' : w64) :
+noncomputable instance Reader_access_store_i (l : Loc) (v : bytes.Reader) (i' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Reader go!"i" l) v.i' (DFrac.own 1))
       (typedPointsto (structFieldRef bytes.Reader go!"i" l) i' (DFrac.own 1))
@@ -148,7 +147,7 @@ instance Reader_access_store_i (l : Loc) (v : bytes.Reader) (i' : w64) :
  by
   solve_pointsto_access_struct
 
-instance Reader_access_load_prevRune (l : Loc) (v : bytes.Reader) (dq : DFrac) :
+noncomputable instance Reader_access_load_prevRune (l : Loc) (v : bytes.Reader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Reader go!"prevRune" l) v.prevRune' dq)
       (typedPointsto (structFieldRef bytes.Reader go!"prevRune" l) v.prevRune' dq)
@@ -156,7 +155,7 @@ instance Reader_access_load_prevRune (l : Loc) (v : bytes.Reader) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_prevRune (l : Loc) (v : bytes.Reader) (prevRune' : w64) :
+noncomputable instance Reader_access_store_prevRune (l : Loc) (v : bytes.Reader) (prevRune' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Reader go!"prevRune" l) v.prevRune' (DFrac.own 1))
       (typedPointsto (structFieldRef bytes.Reader go!"prevRune" l) prevRune' (DFrac.own 1))

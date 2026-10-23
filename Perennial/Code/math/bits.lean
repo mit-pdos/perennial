@@ -9,15 +9,14 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def math.bits : GoString := go!"math/bits"
+noncomputable def math.bits : GoString := go!"math/bits"
 end pkg_id
 
 namespace math.bits
@@ -1512,7 +1511,7 @@ noncomputable def Rem64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Var "$r0"))))))))))))))))
 
-instance info' : PkgInfo pkg_id.math.bits where
+noncomputable instance info' : PkgInfo pkg_id.math.bits where
   pkgImportedPkgs := [pkg_id.«unsafe»]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=

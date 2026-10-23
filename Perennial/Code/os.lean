@@ -8,145 +8,144 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def os : GoString := go!"os"
+noncomputable def os : GoString := go!"os"
 end pkg_id
 
 namespace os
 
-def readdirMode.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def readdirMode.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.readdirMode" [])
 
 attribute [irreducible] readdirMode.ty
 
-def dirInfo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def dirInfo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.dirInfo" [])
 
 attribute [irreducible] dirInfo.ty
 
-def timeout.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def timeout.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.timeout" [])
 
 attribute [irreducible] timeout.ty
 
-def SyscallError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def SyscallError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.SyscallError" [])
 
 attribute [irreducible] SyscallError.ty
 
-def processStatus.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def processStatus.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.processStatus" [])
 
 attribute [irreducible] processStatus.ty
 
-def Process.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Process.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.Process" [])
 
 attribute [irreducible] Process.ty
 
-def processHandle.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def processHandle.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.processHandle" [])
 
 attribute [irreducible] processHandle.ty
 
-def ProcAttr.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ProcAttr.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.ProcAttr" [])
 
 attribute [irreducible] ProcAttr.ty
 
-def Signal.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Signal.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.Signal" [])
 
 attribute [irreducible] Signal.ty
 
-def ProcessState.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ProcessState.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.ProcessState" [])
 
 attribute [irreducible] ProcessState.ty
 
-def LinkError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def LinkError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.LinkError" [])
 
 attribute [irreducible] LinkError.ty
 
-def noReadFrom.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def noReadFrom.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.noReadFrom" [])
 
 attribute [irreducible] noReadFrom.ty
 
-def fileWithoutReadFrom.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def fileWithoutReadFrom.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.fileWithoutReadFrom" [])
 
 attribute [irreducible] fileWithoutReadFrom.ty
 
-def noWriteTo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def noWriteTo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.noWriteTo" [])
 
 attribute [irreducible] noWriteTo.ty
 
-def fileWithoutWriteTo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def fileWithoutWriteTo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.fileWithoutWriteTo" [])
 
 attribute [irreducible] fileWithoutWriteTo.ty
 
-def dirFS.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def dirFS.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.dirFS" [])
 
 attribute [irreducible] dirFS.ty
 
-def file.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def file.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.file" [])
 
 attribute [irreducible] file.ty
 
-def newFileKind.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def newFileKind.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.newFileKind" [])
 
 attribute [irreducible] newFileKind.ty
 
-def unixDirent.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def unixDirent.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.unixDirent" [])
 
 attribute [irreducible] unixDirent.ty
 
-def rawConn.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def rawConn.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.rawConn" [])
 
 attribute [irreducible] rawConn.ty
 
-def Root.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Root.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.Root" [])
 
 attribute [irreducible] Root.ty
 
-def rootFS.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def rootFS.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.rootFS" [])
 
 attribute [irreducible] rootFS.ty
 
-def root.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def root.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.root" [])
 
 attribute [irreducible] root.ty
 
-def errSymlink.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def errSymlink.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.errSymlink" [])
 
 attribute [irreducible] errSymlink.ty
 
-def File.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def File.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.File" [])
 
 attribute [irreducible] File.ty
 
-def fileStat.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def fileStat.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"os.fileStat" [])
 
 attribute [irreducible] fileStat.ty
@@ -173,7 +172,7 @@ axiom unixDirent.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
 axiom root.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
 
-@[reducible] def sysfdType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def sysfdType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
 axiom FileInfo [FfiSyntax] [GoGlobalContext] : go.GoType
@@ -948,7 +947,7 @@ noncomputable def wrapSyscallError [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def tryLimitedReader [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"os.tryLimitedReader"
 
-instance info' : PkgInfo pkg_id.os where
+noncomputable instance info' : PkgInfo pkg_id.os where
   pkgImportedPkgs := []
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val
@@ -1046,7 +1045,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 
 abbrev readdirMode [FfiSyntax] : Type := w64
 
-@[reducible] def readdirMode.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def readdirMode.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
 class readdirMode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1069,7 +1068,7 @@ attribute [instance] dirInfo.TypeAssumptions.type_repr
 
 abbrev timeout [FfiSyntax] : Type := GoInterface
 
-@[reducible] def timeout.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def timeout.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Timeout" (go.signature.Signature [] false [go.bool]))])
 
 class timeout.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1082,21 +1081,21 @@ structure SyscallError [FfiSyntax] where
   Syscall' : GoString
   Err' : GoError
 
-instance SyscallError.zero_val [FfiSyntax] : ZeroVal SyscallError :=
+noncomputable instance SyscallError.zero_val [FfiSyntax] : ZeroVal SyscallError :=
   ⟨SyscallError.mk zeroValDef zeroValDef⟩
 
-@[reducible] def SyscallError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def SyscallError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Syscall" go.string),
 (go.field_decl.FieldDecl go!"Err" go.error)]
 
-@[irreducible] def SyscallError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def SyscallError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   SyscallError.fieldsUnsealed
 
-instance equals_unfold_SyscallError [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_SyscallError [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold SyscallError.fields SyscallError.fieldsUnsealed :=
   ⟨by unfold SyscallError.fields; rfl⟩
 
-@[reducible] def SyscallError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def SyscallError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType SyscallError.fields)
 
 class SyscallError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1116,7 +1115,7 @@ attribute [instance] SyscallError.TypeAssumptions.type_repr
 
 abbrev processStatus [FfiSyntax] : Type := w32
 
-@[reducible] def processStatus.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def processStatus.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint32
 
 class processStatus.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1165,7 +1164,7 @@ attribute [instance] ProcAttr.TypeAssumptions.type_repr
 
 abbrev Signal [FfiSyntax] : Type := GoInterface
 
-@[reducible] def Signal.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Signal.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Signal" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
 
 class Signal.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1193,23 +1192,23 @@ structure LinkError [FfiSyntax] where
   New' : GoString
   Err' : GoError
 
-instance LinkError.zero_val [FfiSyntax] : ZeroVal LinkError :=
+noncomputable instance LinkError.zero_val [FfiSyntax] : ZeroVal LinkError :=
   ⟨LinkError.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def LinkError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def LinkError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Op" go.string),
 (go.field_decl.FieldDecl go!"Old" go.string),
 (go.field_decl.FieldDecl go!"New" go.string),
 (go.field_decl.FieldDecl go!"Err" go.error)]
 
-@[irreducible] def LinkError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def LinkError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   LinkError.fieldsUnsealed
 
-instance equals_unfold_LinkError [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_LinkError [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold LinkError.fields LinkError.fieldsUnsealed :=
   ⟨by unfold LinkError.fields; rfl⟩
 
-@[reducible] def LinkError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def LinkError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType LinkError.fields)
 
 class LinkError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1238,20 +1237,20 @@ attribute [instance] LinkError.TypeAssumptions.type_repr
 structure noReadFrom [FfiSyntax] where
   mk ::
 
-instance noReadFrom.zero_val [FfiSyntax] : ZeroVal noReadFrom :=
+noncomputable instance noReadFrom.zero_val [FfiSyntax] : ZeroVal noReadFrom :=
   ⟨noReadFrom.mk⟩
 
-@[reducible] def noReadFrom.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def noReadFrom.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def noReadFrom.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def noReadFrom.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   noReadFrom.fieldsUnsealed
 
-instance equals_unfold_noReadFrom [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_noReadFrom [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold noReadFrom.fields noReadFrom.fieldsUnsealed :=
   ⟨by unfold noReadFrom.fields; rfl⟩
 
-@[reducible] def noReadFrom.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def noReadFrom.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType noReadFrom.fields)
 
 class noReadFrom.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1266,21 +1265,21 @@ structure fileWithoutReadFrom [FfiSyntax] where
   noReadFrom' : noReadFrom
   File' : Loc
 
-instance fileWithoutReadFrom.zero_val [FfiSyntax] : ZeroVal fileWithoutReadFrom :=
+noncomputable instance fileWithoutReadFrom.zero_val [FfiSyntax] : ZeroVal fileWithoutReadFrom :=
   ⟨fileWithoutReadFrom.mk zeroValDef zeroValDef⟩
 
-@[reducible] def fileWithoutReadFrom.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def fileWithoutReadFrom.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"noReadFrom" noReadFrom.ty),
 (go.field_decl.EmbeddedField go!"File" (go.GoType.PointerType File.ty))]
 
-@[irreducible] def fileWithoutReadFrom.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def fileWithoutReadFrom.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   fileWithoutReadFrom.fieldsUnsealed
 
-instance equals_unfold_fileWithoutReadFrom [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_fileWithoutReadFrom [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold fileWithoutReadFrom.fields fileWithoutReadFrom.fieldsUnsealed :=
   ⟨by unfold fileWithoutReadFrom.fields; rfl⟩
 
-@[reducible] def fileWithoutReadFrom.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def fileWithoutReadFrom.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType fileWithoutReadFrom.fields)
 
 class fileWithoutReadFrom.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1301,20 +1300,20 @@ attribute [instance] fileWithoutReadFrom.TypeAssumptions.type_repr
 structure noWriteTo [FfiSyntax] where
   mk ::
 
-instance noWriteTo.zero_val [FfiSyntax] : ZeroVal noWriteTo :=
+noncomputable instance noWriteTo.zero_val [FfiSyntax] : ZeroVal noWriteTo :=
   ⟨noWriteTo.mk⟩
 
-@[reducible] def noWriteTo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def noWriteTo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def noWriteTo.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def noWriteTo.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   noWriteTo.fieldsUnsealed
 
-instance equals_unfold_noWriteTo [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_noWriteTo [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold noWriteTo.fields noWriteTo.fieldsUnsealed :=
   ⟨by unfold noWriteTo.fields; rfl⟩
 
-@[reducible] def noWriteTo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def noWriteTo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType noWriteTo.fields)
 
 class noWriteTo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1329,21 +1328,21 @@ structure fileWithoutWriteTo [FfiSyntax] where
   noWriteTo' : noWriteTo
   File' : Loc
 
-instance fileWithoutWriteTo.zero_val [FfiSyntax] : ZeroVal fileWithoutWriteTo :=
+noncomputable instance fileWithoutWriteTo.zero_val [FfiSyntax] : ZeroVal fileWithoutWriteTo :=
   ⟨fileWithoutWriteTo.mk zeroValDef zeroValDef⟩
 
-@[reducible] def fileWithoutWriteTo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def fileWithoutWriteTo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"noWriteTo" noWriteTo.ty),
 (go.field_decl.EmbeddedField go!"File" (go.GoType.PointerType File.ty))]
 
-@[irreducible] def fileWithoutWriteTo.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def fileWithoutWriteTo.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   fileWithoutWriteTo.fieldsUnsealed
 
-instance equals_unfold_fileWithoutWriteTo [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_fileWithoutWriteTo [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold fileWithoutWriteTo.fields fileWithoutWriteTo.fieldsUnsealed :=
   ⟨by unfold fileWithoutWriteTo.fields; rfl⟩
 
-@[reducible] def fileWithoutWriteTo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def fileWithoutWriteTo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType fileWithoutWriteTo.fields)
 
 class fileWithoutWriteTo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1363,7 +1362,7 @@ attribute [instance] fileWithoutWriteTo.TypeAssumptions.type_repr
 
 abbrev dirFS [FfiSyntax] : Type := GoString
 
-@[reducible] def dirFS.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def dirFS.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
 class dirFS.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1386,7 +1385,7 @@ attribute [instance] file.TypeAssumptions.type_repr
 
 abbrev newFileKind [FfiSyntax] : Type := w64
 
-@[reducible] def newFileKind.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def newFileKind.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
 class newFileKind.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1411,20 +1410,20 @@ structure rawConn [FfiSyntax] where
   mk ::
   file' : Loc
 
-instance rawConn.zero_val [FfiSyntax] : ZeroVal rawConn :=
+noncomputable instance rawConn.zero_val [FfiSyntax] : ZeroVal rawConn :=
   ⟨rawConn.mk zeroValDef⟩
 
-@[reducible] def rawConn.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def rawConn.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"file" (go.GoType.PointerType File.ty))]
 
-@[irreducible] def rawConn.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def rawConn.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   rawConn.fieldsUnsealed
 
-instance equals_unfold_rawConn [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_rawConn [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold rawConn.fields rawConn.fieldsUnsealed :=
   ⟨by unfold rawConn.fields; rfl⟩
 
-@[reducible] def rawConn.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def rawConn.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType rawConn.fields)
 
 class rawConn.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1442,20 +1441,20 @@ structure Root [FfiSyntax] where
   mk ::
   root' : Loc
 
-instance Root.zero_val [FfiSyntax] : ZeroVal Root :=
+noncomputable instance Root.zero_val [FfiSyntax] : ZeroVal Root :=
   ⟨Root.mk zeroValDef⟩
 
-@[reducible] def Root.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Root.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"root" (go.GoType.PointerType root.ty))]
 
-@[irreducible] def Root.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Root.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Root.fieldsUnsealed
 
-instance equals_unfold_Root [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Root [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Root.fields Root.fieldsUnsealed :=
   ⟨by unfold Root.fields; rfl⟩
 
-@[reducible] def Root.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Root.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Root.fields)
 
 class Root.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1471,7 +1470,7 @@ attribute [instance] Root.TypeAssumptions.type_repr
 
 abbrev rootFS [FfiSyntax] : Type := Root
 
-@[reducible] def rootFS.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def rootFS.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   Root.ty
 
 class rootFS.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1494,7 +1493,7 @@ attribute [instance] root.TypeAssumptions.type_repr
 
 abbrev errSymlink [FfiSyntax] : Type := GoString
 
-@[reducible] def errSymlink.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def errSymlink.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.string
 
 class errSymlink.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1506,20 +1505,20 @@ structure File [FfiSyntax] where
   mk ::
   file' : Loc
 
-instance File.zero_val [FfiSyntax] : ZeroVal File :=
+noncomputable instance File.zero_val [FfiSyntax] : ZeroVal File :=
   ⟨File.mk zeroValDef⟩
 
-@[reducible] def File.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def File.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"file" (go.GoType.PointerType file.ty))]
 
-@[irreducible] def File.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def File.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   File.fieldsUnsealed
 
-instance equals_unfold_File [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_File [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold File.fields File.fieldsUnsealed :=
   ⟨by unfold File.fields; rfl⟩
 
-@[reducible] def File.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def File.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType File.fields)
 
 class File.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

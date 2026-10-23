@@ -12,20 +12,19 @@ public import Perennial.DiskPrelude
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.append_log : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log"
+noncomputable def github_com.mit_pdos.perennial.goose.testdata.examples.append_log : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.append_log
 
-def Log.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Log.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log.Log" [])
 
 attribute [irreducible] Log.ty
@@ -305,7 +304,7 @@ noncomputable def Log.Reset.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Log.ty go!"m"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Log.ty)))) (Var "log"))))) (Val #())))))))))
 
-instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.append_log where
+noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.append_log where
   pkgImportedPkgs := [pkg_id.sync, pkg_id.github_com.tchajed.marshal, pkg_id.github_com.goose_lang.primitive.disk]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
@@ -327,22 +326,22 @@ structure Log [FfiSyntax] where
   sz' : w64
   diskSz' : w64
 
-instance Log.zero_val [FfiSyntax] : ZeroVal Log :=
+noncomputable instance Log.zero_val [FfiSyntax] : ZeroVal Log :=
   ⟨Log.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def Log.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Log.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"m" (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)),
 (go.field_decl.FieldDecl go!"sz" go.uint64),
 (go.field_decl.FieldDecl go!"diskSz" go.uint64)]
 
-@[irreducible] def Log.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Log.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Log.fieldsUnsealed
 
-instance equals_unfold_Log [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Log [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Log.fields Log.fieldsUnsealed :=
   ⟨by unfold Log.fields; rfl⟩
 
-@[reducible] def Log.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Log.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Log.fields)
 
 class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

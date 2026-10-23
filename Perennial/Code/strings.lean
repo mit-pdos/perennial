@@ -9,80 +9,79 @@ public import Perennial.TrustedCode.strings
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def strings : GoString := go!"strings"
+noncomputable def strings : GoString := go!"strings"
 end pkg_id
 
 namespace strings
 
-def Builder.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Builder.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strings.Builder" [])
 
 attribute [irreducible] Builder.ty
 
-def Reader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Reader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strings.Reader" [])
 
 attribute [irreducible] Reader.ty
 
-def Replacer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Replacer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strings.Replacer" [])
 
 attribute [irreducible] Replacer.ty
 
-def replacer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def replacer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strings.replacer" [])
 
 attribute [irreducible] replacer.ty
 
-def trieNode.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def trieNode.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strings.trieNode" [])
 
 attribute [irreducible] trieNode.ty
 
-def genericReplacer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def genericReplacer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strings.genericReplacer" [])
 
 attribute [irreducible] genericReplacer.ty
 
-def appendSliceWriter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def appendSliceWriter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strings.appendSliceWriter" [])
 
 attribute [irreducible] appendSliceWriter.ty
 
-def stringWriter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def stringWriter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strings.stringWriter" [])
 
 attribute [irreducible] stringWriter.ty
 
-def singleStringReplacer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def singleStringReplacer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strings.singleStringReplacer" [])
 
 attribute [irreducible] singleStringReplacer.ty
 
-def byteReplacer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def byteReplacer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strings.byteReplacer" [])
 
 attribute [irreducible] byteReplacer.ty
 
-def byteStringReplacer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def byteStringReplacer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strings.byteStringReplacer" [])
 
 attribute [irreducible] byteStringReplacer.ty
 
-def stringFinder.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def stringFinder.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strings.stringFinder" [])
 
 attribute [irreducible] stringFinder.ty
 
-def asciiSet.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def asciiSet.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strings.asciiSet" [])
 
 attribute [irreducible] asciiSet.ty
@@ -335,7 +334,7 @@ noncomputable def CutPrefix [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def CutSuffix [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"strings.CutSuffix"
 
-instance info' : PkgInfo pkg_id.strings where
+noncomputable instance info' : PkgInfo pkg_id.strings where
   pkgImportedPkgs := []
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val
@@ -362,21 +361,21 @@ structure Builder [FfiSyntax] where
   addr' : Loc
   buf' : GoSlice
 
-instance Builder.zero_val [FfiSyntax] : ZeroVal Builder :=
+noncomputable instance Builder.zero_val [FfiSyntax] : ZeroVal Builder :=
   ⟨Builder.mk zeroValDef zeroValDef⟩
 
-@[reducible] def Builder.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Builder.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"addr" (go.GoType.PointerType Builder.ty)),
 (go.field_decl.FieldDecl go!"buf" (go.GoType.SliceType go.byte))]
 
-@[irreducible] def Builder.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Builder.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Builder.fieldsUnsealed
 
-instance equals_unfold_Builder [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Builder [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Builder.fields Builder.fieldsUnsealed :=
   ⟨by unfold Builder.fields; rfl⟩
 
-@[reducible] def Builder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Builder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Builder.fields)
 
 class Builder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -400,22 +399,22 @@ structure Reader [FfiSyntax] where
   i' : w64
   prevRune' : w64
 
-instance Reader.zero_val [FfiSyntax] : ZeroVal Reader :=
+noncomputable instance Reader.zero_val [FfiSyntax] : ZeroVal Reader :=
   ⟨Reader.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def Reader.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Reader.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"s" go.string),
 (go.field_decl.FieldDecl go!"i" go.int64),
 (go.field_decl.FieldDecl go!"prevRune" go.int)]
 
-@[irreducible] def Reader.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Reader.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Reader.fieldsUnsealed
 
-instance equals_unfold_Reader [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Reader [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Reader.fields Reader.fieldsUnsealed :=
   ⟨by unfold Reader.fields; rfl⟩
 
-@[reducible] def Reader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Reader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Reader.fields)
 
 class Reader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -471,24 +470,24 @@ structure trieNode [FfiSyntax] where
   next' : Loc
   table' : GoSlice
 
-instance trieNode.zero_val [FfiSyntax] : ZeroVal trieNode :=
+noncomputable instance trieNode.zero_val [FfiSyntax] : ZeroVal trieNode :=
   ⟨trieNode.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def trieNode.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def trieNode.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"value" go.string),
 (go.field_decl.FieldDecl go!"priority" go.int),
 (go.field_decl.FieldDecl go!"prefix" go.string),
 (go.field_decl.FieldDecl go!"next" (go.GoType.PointerType trieNode.ty)),
 (go.field_decl.FieldDecl go!"table" (go.GoType.SliceType (go.GoType.PointerType trieNode.ty)))]
 
-@[irreducible] def trieNode.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def trieNode.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   trieNode.fieldsUnsealed
 
-instance equals_unfold_trieNode [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_trieNode [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold trieNode.fields trieNode.fieldsUnsealed :=
   ⟨by unfold trieNode.fields; rfl⟩
 
-@[reducible] def trieNode.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def trieNode.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType trieNode.fields)
 
 class trieNode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -524,22 +523,22 @@ structure genericReplacer [FfiSyntax] where
   tableSize' : w64
   mapping' : (GoArray w8 256)
 
-instance genericReplacer.zero_val [FfiSyntax] : ZeroVal genericReplacer :=
+noncomputable instance genericReplacer.zero_val [FfiSyntax] : ZeroVal genericReplacer :=
   ⟨genericReplacer.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def genericReplacer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def genericReplacer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"root" trieNode.ty),
 (go.field_decl.FieldDecl go!"tableSize" go.int),
 (go.field_decl.FieldDecl go!"mapping" (go.GoType.ArrayType 256 go.byte))]
 
-@[irreducible] def genericReplacer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def genericReplacer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   genericReplacer.fieldsUnsealed
 
-instance equals_unfold_genericReplacer [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_genericReplacer [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold genericReplacer.fields genericReplacer.fieldsUnsealed :=
   ⟨by unfold genericReplacer.fields; rfl⟩
 
-@[reducible] def genericReplacer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def genericReplacer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType genericReplacer.fields)
 
 class genericReplacer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -563,7 +562,7 @@ attribute [instance] genericReplacer.TypeAssumptions.type_repr
 
 abbrev appendSliceWriter [FfiSyntax] : Type := GoSlice
 
-@[reducible] def appendSliceWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def appendSliceWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.byte)
 
 class appendSliceWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -589,21 +588,21 @@ structure singleStringReplacer [FfiSyntax] where
   finder' : Loc
   value' : GoString
 
-instance singleStringReplacer.zero_val [FfiSyntax] : ZeroVal singleStringReplacer :=
+noncomputable instance singleStringReplacer.zero_val [FfiSyntax] : ZeroVal singleStringReplacer :=
   ⟨singleStringReplacer.mk zeroValDef zeroValDef⟩
 
-@[reducible] def singleStringReplacer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def singleStringReplacer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"finder" (go.GoType.PointerType stringFinder.ty)),
 (go.field_decl.FieldDecl go!"value" go.string)]
 
-@[irreducible] def singleStringReplacer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def singleStringReplacer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   singleStringReplacer.fieldsUnsealed
 
-instance equals_unfold_singleStringReplacer [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_singleStringReplacer [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold singleStringReplacer.fields singleStringReplacer.fieldsUnsealed :=
   ⟨by unfold singleStringReplacer.fields; rfl⟩
 
-@[reducible] def singleStringReplacer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def singleStringReplacer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType singleStringReplacer.fields)
 
 class singleStringReplacer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -623,7 +622,7 @@ attribute [instance] singleStringReplacer.TypeAssumptions.type_repr
 
 abbrev byteReplacer [FfiSyntax] : Type := (GoArray w8 256)
 
-@[reducible] def byteReplacer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def byteReplacer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.ArrayType 256 go.byte)
 
 class byteReplacer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -636,21 +635,21 @@ structure byteStringReplacer [FfiSyntax] where
   replacements' : (GoArray GoSlice 256)
   toReplace' : GoSlice
 
-instance byteStringReplacer.zero_val [FfiSyntax] : ZeroVal byteStringReplacer :=
+noncomputable instance byteStringReplacer.zero_val [FfiSyntax] : ZeroVal byteStringReplacer :=
   ⟨byteStringReplacer.mk zeroValDef zeroValDef⟩
 
-@[reducible] def byteStringReplacer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def byteStringReplacer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"replacements" (go.GoType.ArrayType 256 (go.GoType.SliceType go.byte))),
 (go.field_decl.FieldDecl go!"toReplace" (go.GoType.SliceType go.string))]
 
-@[irreducible] def byteStringReplacer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def byteStringReplacer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   byteStringReplacer.fieldsUnsealed
 
-instance equals_unfold_byteStringReplacer [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_byteStringReplacer [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold byteStringReplacer.fields byteStringReplacer.fieldsUnsealed :=
   ⟨by unfold byteStringReplacer.fields; rfl⟩
 
-@[reducible] def byteStringReplacer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def byteStringReplacer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType byteStringReplacer.fields)
 
 class byteStringReplacer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -674,22 +673,22 @@ structure stringFinder [FfiSyntax] where
   badCharSkip' : (GoArray w64 256)
   goodSuffixSkip' : GoSlice
 
-instance stringFinder.zero_val [FfiSyntax] : ZeroVal stringFinder :=
+noncomputable instance stringFinder.zero_val [FfiSyntax] : ZeroVal stringFinder :=
   ⟨stringFinder.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def stringFinder.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def stringFinder.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"pattern" go.string),
 (go.field_decl.FieldDecl go!"badCharSkip" (go.GoType.ArrayType 256 go.int)),
 (go.field_decl.FieldDecl go!"goodSuffixSkip" (go.GoType.SliceType go.int))]
 
-@[irreducible] def stringFinder.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def stringFinder.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   stringFinder.fieldsUnsealed
 
-instance equals_unfold_stringFinder [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_stringFinder [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold stringFinder.fields stringFinder.fieldsUnsealed :=
   ⟨by unfold stringFinder.fields; rfl⟩
 
-@[reducible] def stringFinder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def stringFinder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType stringFinder.fields)
 
 class stringFinder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -713,7 +712,7 @@ attribute [instance] stringFinder.TypeAssumptions.type_repr
 
 abbrev asciiSet [FfiSyntax] : Type := (GoArray w32 8)
 
-@[reducible] def asciiSet.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def asciiSet.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.ArrayType 8 go.uint32)
 
 class asciiSet.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

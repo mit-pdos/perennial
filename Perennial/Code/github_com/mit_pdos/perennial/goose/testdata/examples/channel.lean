@@ -11,40 +11,39 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.channel : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel"
+noncomputable def github_com.mit_pdos.perennial.goose.testdata.examples.channel : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel
 
-def Cond.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Cond.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Cond" [])
 
 attribute [irreducible] Cond.ty
 
-def Result.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Result.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Result" [])
 
 attribute [irreducible] Result.ty
 
-def request.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def request.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.request" [])
 
 attribute [irreducible] request.ty
 
-def stream.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def stream.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.stream" [])
 
 attribute [irreducible] stream.ty
 
-def streamold.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def streamold.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.streamold" [])
 
 attribute [irreducible] streamold.ty
@@ -1848,7 +1847,7 @@ noncomputable def select_nb_full_buffer_not_ready.impl [FfiSyntax] [GoGlobalCont
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Pair (Var "ch") (Var "$r0"))))))))))
 
-instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel where
+noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel where
   pkgImportedPkgs := [pkg_id.time, pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock, pkg_id.strings]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
@@ -1869,21 +1868,21 @@ structure Cond [FfiSyntax] where
   L' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock
   waiters' : GoSlice
 
-instance Cond.zero_val [FfiSyntax] : ZeroVal Cond :=
+noncomputable instance Cond.zero_val [FfiSyntax] : ZeroVal Cond :=
   ⟨Cond.mk zeroValDef zeroValDef⟩
 
-@[reducible] def Cond.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Cond.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"L" _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.ty),
 (go.field_decl.FieldDecl go!"waiters" (go.GoType.SliceType (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))]
 
-@[irreducible] def Cond.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Cond.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Cond.fieldsUnsealed
 
-instance equals_unfold_Cond [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Cond [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Cond.fields Cond.fieldsUnsealed :=
   ⟨by unfold Cond.fields; rfl⟩
 
-@[reducible] def Cond.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Cond.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Cond.fields)
 
 class Cond.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1916,21 +1915,21 @@ structure Result [FfiSyntax] where
   value' : GoString
   primary_won' : Bool
 
-instance Result.zero_val [FfiSyntax] : ZeroVal Result :=
+noncomputable instance Result.zero_val [FfiSyntax] : ZeroVal Result :=
   ⟨Result.mk zeroValDef zeroValDef⟩
 
-@[reducible] def Result.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Result.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"value" go.string),
 (go.field_decl.FieldDecl go!"primary_won" go.bool)]
 
-@[irreducible] def Result.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Result.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Result.fieldsUnsealed
 
-instance equals_unfold_Result [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Result [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Result.fields Result.fieldsUnsealed :=
   ⟨by unfold Result.fields; rfl⟩
 
-@[reducible] def Result.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Result.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Result.fields)
 
 class Result.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1953,21 +1952,21 @@ structure request [FfiSyntax] where
   f' : GoFunc
   result' : GoChan
 
-instance request.zero_val [FfiSyntax] : ZeroVal request :=
+noncomputable instance request.zero_val [FfiSyntax] : ZeroVal request :=
   ⟨request.mk zeroValDef zeroValDef⟩
 
-@[reducible] def request.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def request.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"f" (go.GoType.FunctionType (go.signature.Signature [] false [go.string]))),
 (go.field_decl.FieldDecl go!"result" (go.GoType.ChannelType go.ChanDir.sendrecv go.string))]
 
-@[irreducible] def request.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def request.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   request.fieldsUnsealed
 
-instance equals_unfold_request [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_request [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold request.fields request.fieldsUnsealed :=
   ⟨by unfold request.fields; rfl⟩
 
-@[reducible] def request.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def request.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType request.fields)
 
 class request.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1990,21 +1989,21 @@ structure stream [FfiSyntax] where
   req' : GoChan
   res' : GoChan
 
-instance stream.zero_val [FfiSyntax] : ZeroVal stream :=
+noncomputable instance stream.zero_val [FfiSyntax] : ZeroVal stream :=
   ⟨stream.mk zeroValDef zeroValDef⟩
 
-@[reducible] def stream.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def stream.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"req" (go.GoType.ChannelType go.ChanDir.sendrecv go.string)),
 (go.field_decl.FieldDecl go!"res" (go.GoType.ChannelType go.ChanDir.sendrecv go.string))]
 
-@[irreducible] def stream.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def stream.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   stream.fieldsUnsealed
 
-instance equals_unfold_stream [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_stream [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold stream.fields stream.fieldsUnsealed :=
   ⟨by unfold stream.fields; rfl⟩
 
-@[reducible] def stream.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def stream.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType stream.fields)
 
 class stream.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -2028,22 +2027,22 @@ structure streamold [FfiSyntax] where
   res' : GoChan
   f' : GoFunc
 
-instance streamold.zero_val [FfiSyntax] : ZeroVal streamold :=
+noncomputable instance streamold.zero_val [FfiSyntax] : ZeroVal streamold :=
   ⟨streamold.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def streamold.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def streamold.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"req" (go.GoType.ChannelType go.ChanDir.sendrecv go.string)),
 (go.field_decl.FieldDecl go!"res" (go.GoType.ChannelType go.ChanDir.sendrecv go.string)),
 (go.field_decl.FieldDecl go!"f" (go.GoType.FunctionType (go.signature.Signature [go.string] false [go.string])))]
 
-@[irreducible] def streamold.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def streamold.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   streamold.fieldsUnsealed
 
-instance equals_unfold_streamold [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_streamold [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold streamold.fields streamold.fieldsUnsealed :=
   ⟨by unfold streamold.fields; rfl⟩
 
-@[reducible] def streamold.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def streamold.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType streamold.fields)
 
 class streamold.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

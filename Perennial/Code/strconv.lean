@@ -8,20 +8,19 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def strconv : GoString := go!"strconv"
+noncomputable def strconv : GoString := go!"strconv"
 end pkg_id
 
 namespace strconv
 
-def NumError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def NumError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strconv.NumError" [])
 
 attribute [irreducible] NumError.ty
@@ -217,7 +216,7 @@ noncomputable def IsGraphic [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def isInGraphicList [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"strconv.isInGraphicList"
 
-instance info' : PkgInfo pkg_id.strconv where
+noncomputable instance info' : PkgInfo pkg_id.strconv where
   pkgImportedPkgs := []
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val
@@ -253,22 +252,22 @@ structure NumError [FfiSyntax] where
   Num' : GoString
   Err' : GoError
 
-instance NumError.zero_val [FfiSyntax] : ZeroVal NumError :=
+noncomputable instance NumError.zero_val [FfiSyntax] : ZeroVal NumError :=
   ⟨NumError.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def NumError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def NumError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Func" go.string),
 (go.field_decl.FieldDecl go!"Num" go.string),
 (go.field_decl.FieldDecl go!"Err" go.error)]
 
-@[irreducible] def NumError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def NumError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   NumError.fieldsUnsealed
 
-instance equals_unfold_NumError [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_NumError [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold NumError.fields NumError.fieldsUnsealed :=
   ⟨by unfold NumError.fields; rfl⟩
 
-@[reducible] def NumError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def NumError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType NumError.fields)
 
 class NumError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

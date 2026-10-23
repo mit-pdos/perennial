@@ -12,9 +12,8 @@ public import Perennial.Code.sync
 @[expose] public section
 
 set_option autoImplicit false
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 open Iris Iris.BI
@@ -29,7 +28,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
-instance noCopy_typed_pointsto :
+noncomputable instance noCopy_typed_pointsto :
     TypedPointsto (GF := GF) sync.noCopy where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
@@ -37,7 +36,7 @@ instance noCopy_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance noCopy_into_val_typed :
+noncomputable instance noCopy_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.noCopy sync.noCopy.underlying := by
   solve_into_val_typed_struct
 
@@ -52,7 +51,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
-instance notifyList_typed_pointsto :
+noncomputable instance notifyList_typed_pointsto :
     TypedPointsto (GF := GF) sync.notifyList where
   typedPointstoDef l v dq := iprop(
     "wait" ∷ typedPointsto (structFieldRef sync.notifyList go!"wait" l) v.wait' dq ∗
@@ -65,11 +64,11 @@ instance notifyList_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance notifyList_into_val_typed :
+noncomputable instance notifyList_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.notifyList sync.notifyList.underlying := by
   solve_into_val_typed_struct
 
-instance notifyList_access_load_wait (l : Loc) (v : sync.notifyList) (dq : DFrac) :
+noncomputable instance notifyList_access_load_wait (l : Loc) (v : sync.notifyList) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.notifyList go!"wait" l) v.wait' dq)
       (typedPointsto (structFieldRef sync.notifyList go!"wait" l) v.wait' dq)
@@ -77,7 +76,7 @@ instance notifyList_access_load_wait (l : Loc) (v : sync.notifyList) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_store_wait (l : Loc) (v : sync.notifyList) (wait' : w32) :
+noncomputable instance notifyList_access_store_wait (l : Loc) (v : sync.notifyList) (wait' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.notifyList go!"wait" l) v.wait' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.notifyList go!"wait" l) wait' (DFrac.own 1))
@@ -85,7 +84,7 @@ instance notifyList_access_store_wait (l : Loc) (v : sync.notifyList) (wait' : w
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_load_notify (l : Loc) (v : sync.notifyList) (dq : DFrac) :
+noncomputable instance notifyList_access_load_notify (l : Loc) (v : sync.notifyList) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.notifyList go!"notify" l) v.notify' dq)
       (typedPointsto (structFieldRef sync.notifyList go!"notify" l) v.notify' dq)
@@ -93,7 +92,7 @@ instance notifyList_access_load_notify (l : Loc) (v : sync.notifyList) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_store_notify (l : Loc) (v : sync.notifyList) (notify' : w32) :
+noncomputable instance notifyList_access_store_notify (l : Loc) (v : sync.notifyList) (notify' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.notifyList go!"notify" l) v.notify' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.notifyList go!"notify" l) notify' (DFrac.own 1))
@@ -101,7 +100,7 @@ instance notifyList_access_store_notify (l : Loc) (v : sync.notifyList) (notify'
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_load_lock (l : Loc) (v : sync.notifyList) (dq : DFrac) :
+noncomputable instance notifyList_access_load_lock (l : Loc) (v : sync.notifyList) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.notifyList go!"lock" l) v.lock' dq)
       (typedPointsto (structFieldRef sync.notifyList go!"lock" l) v.lock' dq)
@@ -109,7 +108,7 @@ instance notifyList_access_load_lock (l : Loc) (v : sync.notifyList) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_store_lock (l : Loc) (v : sync.notifyList) (lock' : w64) :
+noncomputable instance notifyList_access_store_lock (l : Loc) (v : sync.notifyList) (lock' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.notifyList go!"lock" l) v.lock' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.notifyList go!"lock" l) lock' (DFrac.own 1))
@@ -117,7 +116,7 @@ instance notifyList_access_store_lock (l : Loc) (v : sync.notifyList) (lock' : w
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_load_head (l : Loc) (v : sync.notifyList) (dq : DFrac) :
+noncomputable instance notifyList_access_load_head (l : Loc) (v : sync.notifyList) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.notifyList go!"head" l) v.head' dq)
       (typedPointsto (structFieldRef sync.notifyList go!"head" l) v.head' dq)
@@ -125,7 +124,7 @@ instance notifyList_access_load_head (l : Loc) (v : sync.notifyList) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_store_head (l : Loc) (v : sync.notifyList) (head' : Loc) :
+noncomputable instance notifyList_access_store_head (l : Loc) (v : sync.notifyList) (head' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.notifyList go!"head" l) v.head' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.notifyList go!"head" l) head' (DFrac.own 1))
@@ -133,7 +132,7 @@ instance notifyList_access_store_head (l : Loc) (v : sync.notifyList) (head' : L
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_load_tail (l : Loc) (v : sync.notifyList) (dq : DFrac) :
+noncomputable instance notifyList_access_load_tail (l : Loc) (v : sync.notifyList) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.notifyList go!"tail" l) v.tail' dq)
       (typedPointsto (structFieldRef sync.notifyList go!"tail" l) v.tail' dq)
@@ -141,7 +140,7 @@ instance notifyList_access_load_tail (l : Loc) (v : sync.notifyList) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance notifyList_access_store_tail (l : Loc) (v : sync.notifyList) (tail' : Loc) :
+noncomputable instance notifyList_access_store_tail (l : Loc) (v : sync.notifyList) (tail' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.notifyList go!"tail" l) v.tail' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.notifyList go!"tail" l) tail' (DFrac.own 1))
@@ -160,7 +159,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
-instance Cond_typed_pointsto :
+noncomputable instance Cond_typed_pointsto :
     TypedPointsto (GF := GF) sync.Cond where
   typedPointstoDef l v dq := iprop(
     "noCopy" ∷ typedPointsto (structFieldRef sync.Cond go!"noCopy" l) v.noCopy' dq ∗
@@ -172,11 +171,11 @@ instance Cond_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Cond_into_val_typed :
+noncomputable instance Cond_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.Cond sync.Cond.underlying := by
   solve_into_val_typed_struct
 
-instance Cond_access_load_noCopy (l : Loc) (v : sync.Cond) (dq : DFrac) :
+noncomputable instance Cond_access_load_noCopy (l : Loc) (v : sync.Cond) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Cond go!"noCopy" l) v.noCopy' dq)
       (typedPointsto (structFieldRef sync.Cond go!"noCopy" l) v.noCopy' dq)
@@ -184,7 +183,7 @@ instance Cond_access_load_noCopy (l : Loc) (v : sync.Cond) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Cond_access_store_noCopy (l : Loc) (v : sync.Cond) (noCopy' : sync.noCopy) :
+noncomputable instance Cond_access_store_noCopy (l : Loc) (v : sync.Cond) (noCopy' : sync.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Cond go!"noCopy" l) v.noCopy' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Cond go!"noCopy" l) noCopy' (DFrac.own 1))
@@ -192,7 +191,7 @@ instance Cond_access_store_noCopy (l : Loc) (v : sync.Cond) (noCopy' : sync.noCo
  by
   solve_pointsto_access_struct
 
-instance Cond_access_load_L (l : Loc) (v : sync.Cond) (dq : DFrac) :
+noncomputable instance Cond_access_load_L (l : Loc) (v : sync.Cond) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Cond go!"L" l) v.L' dq)
       (typedPointsto (structFieldRef sync.Cond go!"L" l) v.L' dq)
@@ -200,7 +199,7 @@ instance Cond_access_load_L (l : Loc) (v : sync.Cond) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Cond_access_store_L (l : Loc) (v : sync.Cond) (L' : sync.Locker) :
+noncomputable instance Cond_access_store_L (l : Loc) (v : sync.Cond) (L' : sync.Locker) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Cond go!"L" l) v.L' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Cond go!"L" l) L' (DFrac.own 1))
@@ -208,7 +207,7 @@ instance Cond_access_store_L (l : Loc) (v : sync.Cond) (L' : sync.Locker) :
  by
   solve_pointsto_access_struct
 
-instance Cond_access_load_notify (l : Loc) (v : sync.Cond) (dq : DFrac) :
+noncomputable instance Cond_access_load_notify (l : Loc) (v : sync.Cond) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Cond go!"notify" l) v.notify' dq)
       (typedPointsto (structFieldRef sync.Cond go!"notify" l) v.notify' dq)
@@ -216,7 +215,7 @@ instance Cond_access_load_notify (l : Loc) (v : sync.Cond) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Cond_access_store_notify (l : Loc) (v : sync.Cond) (notify' : sync.notifyList) :
+noncomputable instance Cond_access_store_notify (l : Loc) (v : sync.Cond) (notify' : sync.notifyList) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Cond go!"notify" l) v.notify' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Cond go!"notify" l) notify' (DFrac.own 1))
@@ -224,7 +223,7 @@ instance Cond_access_store_notify (l : Loc) (v : sync.Cond) (notify' : sync.noti
  by
   solve_pointsto_access_struct
 
-instance Cond_access_load_checker (l : Loc) (v : sync.Cond) (dq : DFrac) :
+noncomputable instance Cond_access_load_checker (l : Loc) (v : sync.Cond) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Cond go!"checker" l) v.checker' dq)
       (typedPointsto (structFieldRef sync.Cond go!"checker" l) v.checker' dq)
@@ -232,7 +231,7 @@ instance Cond_access_load_checker (l : Loc) (v : sync.Cond) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Cond_access_store_checker (l : Loc) (v : sync.Cond) (checker' : sync.copyChecker) :
+noncomputable instance Cond_access_store_checker (l : Loc) (v : sync.Cond) (checker' : sync.copyChecker) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Cond go!"checker" l) v.checker' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Cond go!"checker" l) checker' (DFrac.own 1))
@@ -251,11 +250,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
-instance Map_typed_pointsto :
+noncomputable instance Map_typed_pointsto :
     TypedPointsto (GF := GF) sync.Map :=
   sorry -- axiomatized type
 
-instance Map_into_val_typed :
+noncomputable instance Map_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.Map sync.Map.underlying :=
   sorry -- axiomatized type
 
@@ -270,7 +269,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
-instance Once_typed_pointsto :
+noncomputable instance Once_typed_pointsto :
     TypedPointsto (GF := GF) sync.Once where
   typedPointstoDef l v dq := iprop(
     "_0" ∷ typedPointsto (structFieldRef sync.Once go!"_0" l) v._0' dq ∗
@@ -281,11 +280,11 @@ instance Once_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Once_into_val_typed :
+noncomputable instance Once_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.Once sync.Once.underlying := by
   solve_into_val_typed_struct
 
-instance Once_access_load__0 (l : Loc) (v : sync.Once) (dq : DFrac) :
+noncomputable instance Once_access_load__0 (l : Loc) (v : sync.Once) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Once go!"_0" l) v._0' dq)
       (typedPointsto (structFieldRef sync.Once go!"_0" l) v._0' dq)
@@ -293,7 +292,7 @@ instance Once_access_load__0 (l : Loc) (v : sync.Once) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Once_access_store__0 (l : Loc) (v : sync.Once) (_0' : sync.noCopy) :
+noncomputable instance Once_access_store__0 (l : Loc) (v : sync.Once) (_0' : sync.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Once go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Once go!"_0" l) _0' (DFrac.own 1))
@@ -301,7 +300,7 @@ instance Once_access_store__0 (l : Loc) (v : sync.Once) (_0' : sync.noCopy) :
  by
   solve_pointsto_access_struct
 
-instance Once_access_load_done (l : Loc) (v : sync.Once) (dq : DFrac) :
+noncomputable instance Once_access_load_done (l : Loc) (v : sync.Once) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Once go!"done" l) v.done' dq)
       (typedPointsto (structFieldRef sync.Once go!"done" l) v.done' dq)
@@ -309,7 +308,7 @@ instance Once_access_load_done (l : Loc) (v : sync.Once) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Once_access_store_done (l : Loc) (v : sync.Once) (done' : sync.atomic.Bool') :
+noncomputable instance Once_access_store_done (l : Loc) (v : sync.Once) (done' : sync.atomic.Bool') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Once go!"done" l) v.done' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Once go!"done" l) done' (DFrac.own 1))
@@ -317,7 +316,7 @@ instance Once_access_store_done (l : Loc) (v : sync.Once) (done' : sync.atomic.B
  by
   solve_pointsto_access_struct
 
-instance Once_access_load_m (l : Loc) (v : sync.Once) (dq : DFrac) :
+noncomputable instance Once_access_load_m (l : Loc) (v : sync.Once) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Once go!"m" l) v.m' dq)
       (typedPointsto (structFieldRef sync.Once go!"m" l) v.m' dq)
@@ -325,7 +324,7 @@ instance Once_access_load_m (l : Loc) (v : sync.Once) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Once_access_store_m (l : Loc) (v : sync.Once) (m' : sync.Mutex) :
+noncomputable instance Once_access_store_m (l : Loc) (v : sync.Once) (m' : sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Once go!"m" l) v.m' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Once go!"m" l) m' (DFrac.own 1))
@@ -344,7 +343,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
-instance Pool_typed_pointsto :
+noncomputable instance Pool_typed_pointsto :
     TypedPointsto (GF := GF) sync.Pool where
   typedPointstoDef l v dq := iprop(
     "noCopy" ∷ typedPointsto (structFieldRef sync.Pool go!"noCopy" l) v.noCopy' dq ∗
@@ -358,11 +357,11 @@ instance Pool_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Pool_into_val_typed :
+noncomputable instance Pool_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.Pool sync.Pool.underlying := by
   solve_into_val_typed_struct
 
-instance Pool_access_load_noCopy (l : Loc) (v : sync.Pool) (dq : DFrac) :
+noncomputable instance Pool_access_load_noCopy (l : Loc) (v : sync.Pool) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"noCopy" l) v.noCopy' dq)
       (typedPointsto (structFieldRef sync.Pool go!"noCopy" l) v.noCopy' dq)
@@ -370,7 +369,7 @@ instance Pool_access_load_noCopy (l : Loc) (v : sync.Pool) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Pool_access_store_noCopy (l : Loc) (v : sync.Pool) (noCopy' : sync.noCopy) :
+noncomputable instance Pool_access_store_noCopy (l : Loc) (v : sync.Pool) (noCopy' : sync.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"noCopy" l) v.noCopy' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Pool go!"noCopy" l) noCopy' (DFrac.own 1))
@@ -378,7 +377,7 @@ instance Pool_access_store_noCopy (l : Loc) (v : sync.Pool) (noCopy' : sync.noCo
  by
   solve_pointsto_access_struct
 
-instance Pool_access_load_local (l : Loc) (v : sync.Pool) (dq : DFrac) :
+noncomputable instance Pool_access_load_local (l : Loc) (v : sync.Pool) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"local" l) v.local' dq)
       (typedPointsto (structFieldRef sync.Pool go!"local" l) v.local' dq)
@@ -386,7 +385,7 @@ instance Pool_access_load_local (l : Loc) (v : sync.Pool) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Pool_access_store_local (l : Loc) (v : sync.Pool) (local' : Loc) :
+noncomputable instance Pool_access_store_local (l : Loc) (v : sync.Pool) (local' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"local" l) v.local' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Pool go!"local" l) local' (DFrac.own 1))
@@ -394,7 +393,7 @@ instance Pool_access_store_local (l : Loc) (v : sync.Pool) (local' : Loc) :
  by
   solve_pointsto_access_struct
 
-instance Pool_access_load_localSize (l : Loc) (v : sync.Pool) (dq : DFrac) :
+noncomputable instance Pool_access_load_localSize (l : Loc) (v : sync.Pool) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"localSize" l) v.localSize' dq)
       (typedPointsto (structFieldRef sync.Pool go!"localSize" l) v.localSize' dq)
@@ -402,7 +401,7 @@ instance Pool_access_load_localSize (l : Loc) (v : sync.Pool) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Pool_access_store_localSize (l : Loc) (v : sync.Pool) (localSize' : w64) :
+noncomputable instance Pool_access_store_localSize (l : Loc) (v : sync.Pool) (localSize' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"localSize" l) v.localSize' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Pool go!"localSize" l) localSize' (DFrac.own 1))
@@ -410,7 +409,7 @@ instance Pool_access_store_localSize (l : Loc) (v : sync.Pool) (localSize' : w64
  by
   solve_pointsto_access_struct
 
-instance Pool_access_load_victim (l : Loc) (v : sync.Pool) (dq : DFrac) :
+noncomputable instance Pool_access_load_victim (l : Loc) (v : sync.Pool) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"victim" l) v.victim' dq)
       (typedPointsto (structFieldRef sync.Pool go!"victim" l) v.victim' dq)
@@ -418,7 +417,7 @@ instance Pool_access_load_victim (l : Loc) (v : sync.Pool) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Pool_access_store_victim (l : Loc) (v : sync.Pool) (victim' : Loc) :
+noncomputable instance Pool_access_store_victim (l : Loc) (v : sync.Pool) (victim' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"victim" l) v.victim' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Pool go!"victim" l) victim' (DFrac.own 1))
@@ -426,7 +425,7 @@ instance Pool_access_store_victim (l : Loc) (v : sync.Pool) (victim' : Loc) :
  by
   solve_pointsto_access_struct
 
-instance Pool_access_load_victimSize (l : Loc) (v : sync.Pool) (dq : DFrac) :
+noncomputable instance Pool_access_load_victimSize (l : Loc) (v : sync.Pool) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"victimSize" l) v.victimSize' dq)
       (typedPointsto (structFieldRef sync.Pool go!"victimSize" l) v.victimSize' dq)
@@ -434,7 +433,7 @@ instance Pool_access_load_victimSize (l : Loc) (v : sync.Pool) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Pool_access_store_victimSize (l : Loc) (v : sync.Pool) (victimSize' : w64) :
+noncomputable instance Pool_access_store_victimSize (l : Loc) (v : sync.Pool) (victimSize' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"victimSize" l) v.victimSize' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Pool go!"victimSize" l) victimSize' (DFrac.own 1))
@@ -442,7 +441,7 @@ instance Pool_access_store_victimSize (l : Loc) (v : sync.Pool) (victimSize' : w
  by
   solve_pointsto_access_struct
 
-instance Pool_access_load_New (l : Loc) (v : sync.Pool) (dq : DFrac) :
+noncomputable instance Pool_access_load_New (l : Loc) (v : sync.Pool) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"New" l) v.New' dq)
       (typedPointsto (structFieldRef sync.Pool go!"New" l) v.New' dq)
@@ -450,7 +449,7 @@ instance Pool_access_load_New (l : Loc) (v : sync.Pool) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Pool_access_store_New (l : Loc) (v : sync.Pool) (New' : GoFunc) :
+noncomputable instance Pool_access_store_New (l : Loc) (v : sync.Pool) (New' : GoFunc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.Pool go!"New" l) v.New' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.Pool go!"New" l) New' (DFrac.own 1))
@@ -469,11 +468,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
-instance poolChainElt_typed_pointsto :
+noncomputable instance poolChainElt_typed_pointsto :
     TypedPointsto (GF := GF) sync.poolChainElt :=
   sorry -- axiomatized type
 
-instance poolChainElt_into_val_typed :
+noncomputable instance poolChainElt_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.poolChainElt sync.poolChainElt.underlying :=
   sorry -- axiomatized type
 
@@ -488,7 +487,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
-instance poolChain_typed_pointsto :
+noncomputable instance poolChain_typed_pointsto :
     TypedPointsto (GF := GF) sync.poolChain where
   typedPointstoDef l v dq := iprop(
     "head" ∷ typedPointsto (structFieldRef sync.poolChain go!"head" l) v.head' dq ∗
@@ -498,11 +497,11 @@ instance poolChain_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance poolChain_into_val_typed :
+noncomputable instance poolChain_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.poolChain sync.poolChain.underlying := by
   solve_into_val_typed_struct
 
-instance poolChain_access_load_head (l : Loc) (v : sync.poolChain) (dq : DFrac) :
+noncomputable instance poolChain_access_load_head (l : Loc) (v : sync.poolChain) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolChain go!"head" l) v.head' dq)
       (typedPointsto (structFieldRef sync.poolChain go!"head" l) v.head' dq)
@@ -510,7 +509,7 @@ instance poolChain_access_load_head (l : Loc) (v : sync.poolChain) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance poolChain_access_store_head (l : Loc) (v : sync.poolChain) (head' : Loc) :
+noncomputable instance poolChain_access_store_head (l : Loc) (v : sync.poolChain) (head' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolChain go!"head" l) v.head' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolChain go!"head" l) head' (DFrac.own 1))
@@ -518,7 +517,7 @@ instance poolChain_access_store_head (l : Loc) (v : sync.poolChain) (head' : Loc
  by
   solve_pointsto_access_struct
 
-instance poolChain_access_load_tail (l : Loc) (v : sync.poolChain) (dq : DFrac) :
+noncomputable instance poolChain_access_load_tail (l : Loc) (v : sync.poolChain) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolChain go!"tail" l) v.tail' dq)
       (typedPointsto (structFieldRef sync.poolChain go!"tail" l) v.tail' dq)
@@ -526,7 +525,7 @@ instance poolChain_access_load_tail (l : Loc) (v : sync.poolChain) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance poolChain_access_store_tail (l : Loc) (v : sync.poolChain) (tail' : (sync.atomic.Pointer sync.poolChainElt)) :
+noncomputable instance poolChain_access_store_tail (l : Loc) (v : sync.poolChain) (tail' : (sync.atomic.Pointer sync.poolChainElt)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolChain go!"tail" l) v.tail' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolChain go!"tail" l) tail' (DFrac.own 1))
@@ -545,7 +544,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
-instance poolLocalInternal_typed_pointsto :
+noncomputable instance poolLocalInternal_typed_pointsto :
     TypedPointsto (GF := GF) sync.poolLocalInternal where
   typedPointstoDef l v dq := iprop(
     "private'" ∷ typedPointsto (structFieldRef sync.poolLocalInternal go!"private" l) v.private' dq ∗
@@ -555,11 +554,11 @@ instance poolLocalInternal_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance poolLocalInternal_into_val_typed :
+noncomputable instance poolLocalInternal_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.poolLocalInternal sync.poolLocalInternal.underlying := by
   solve_into_val_typed_struct
 
-instance poolLocalInternal_access_load_private (l : Loc) (v : sync.poolLocalInternal) (dq : DFrac) :
+noncomputable instance poolLocalInternal_access_load_private (l : Loc) (v : sync.poolLocalInternal) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolLocalInternal go!"private" l) v.private' dq)
       (typedPointsto (structFieldRef sync.poolLocalInternal go!"private" l) v.private' dq)
@@ -567,7 +566,7 @@ instance poolLocalInternal_access_load_private (l : Loc) (v : sync.poolLocalInte
  by
   solve_pointsto_access_struct
 
-instance poolLocalInternal_access_store_private (l : Loc) (v : sync.poolLocalInternal) (private' : GoInterface) :
+noncomputable instance poolLocalInternal_access_store_private (l : Loc) (v : sync.poolLocalInternal) (private' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolLocalInternal go!"private" l) v.private' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolLocalInternal go!"private" l) private' (DFrac.own 1))
@@ -575,7 +574,7 @@ instance poolLocalInternal_access_store_private (l : Loc) (v : sync.poolLocalInt
  by
   solve_pointsto_access_struct
 
-instance poolLocalInternal_access_load_shared (l : Loc) (v : sync.poolLocalInternal) (dq : DFrac) :
+noncomputable instance poolLocalInternal_access_load_shared (l : Loc) (v : sync.poolLocalInternal) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolLocalInternal go!"shared" l) v.shared' dq)
       (typedPointsto (structFieldRef sync.poolLocalInternal go!"shared" l) v.shared' dq)
@@ -583,7 +582,7 @@ instance poolLocalInternal_access_load_shared (l : Loc) (v : sync.poolLocalInter
  by
   solve_pointsto_access_struct
 
-instance poolLocalInternal_access_store_shared (l : Loc) (v : sync.poolLocalInternal) (shared' : sync.poolChain) :
+noncomputable instance poolLocalInternal_access_store_shared (l : Loc) (v : sync.poolLocalInternal) (shared' : sync.poolChain) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolLocalInternal go!"shared" l) v.shared' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolLocalInternal go!"shared" l) shared' (DFrac.own 1))
@@ -602,7 +601,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
-instance poolLocal_typed_pointsto :
+noncomputable instance poolLocal_typed_pointsto :
     TypedPointsto (GF := GF) sync.poolLocal where
   typedPointstoDef l v dq := iprop(
     "poolLocalInternal" ∷ typedPointsto (structFieldRef sync.poolLocal go!"poolLocalInternal" l) v.poolLocalInternal' dq ∗
@@ -612,11 +611,11 @@ instance poolLocal_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance poolLocal_into_val_typed :
+noncomputable instance poolLocal_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.poolLocal sync.poolLocal.underlying := by
   solve_into_val_typed_struct
 
-instance poolLocal_access_load_poolLocalInternal (l : Loc) (v : sync.poolLocal) (dq : DFrac) :
+noncomputable instance poolLocal_access_load_poolLocalInternal (l : Loc) (v : sync.poolLocal) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolLocal go!"poolLocalInternal" l) v.poolLocalInternal' dq)
       (typedPointsto (structFieldRef sync.poolLocal go!"poolLocalInternal" l) v.poolLocalInternal' dq)
@@ -624,7 +623,7 @@ instance poolLocal_access_load_poolLocalInternal (l : Loc) (v : sync.poolLocal) 
  by
   solve_pointsto_access_struct
 
-instance poolLocal_access_store_poolLocalInternal (l : Loc) (v : sync.poolLocal) (poolLocalInternal' : sync.poolLocalInternal) :
+noncomputable instance poolLocal_access_store_poolLocalInternal (l : Loc) (v : sync.poolLocal) (poolLocalInternal' : sync.poolLocalInternal) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolLocal go!"poolLocalInternal" l) v.poolLocalInternal' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolLocal go!"poolLocalInternal" l) poolLocalInternal' (DFrac.own 1))
@@ -632,7 +631,7 @@ instance poolLocal_access_store_poolLocalInternal (l : Loc) (v : sync.poolLocal)
  by
   solve_pointsto_access_struct
 
-instance poolLocal_access_load_pad (l : Loc) (v : sync.poolLocal) (dq : DFrac) :
+noncomputable instance poolLocal_access_load_pad (l : Loc) (v : sync.poolLocal) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolLocal go!"pad" l) v.pad' dq)
       (typedPointsto (structFieldRef sync.poolLocal go!"pad" l) v.pad' dq)
@@ -640,7 +639,7 @@ instance poolLocal_access_load_pad (l : Loc) (v : sync.poolLocal) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance poolLocal_access_store_pad (l : Loc) (v : sync.poolLocal) (pad' : (GoArray w8 96)) :
+noncomputable instance poolLocal_access_store_pad (l : Loc) (v : sync.poolLocal) (pad' : (GoArray w8 96)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolLocal go!"pad" l) v.pad' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolLocal go!"pad" l) pad' (DFrac.own 1))
@@ -659,7 +658,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
-instance poolDequeue_typed_pointsto :
+noncomputable instance poolDequeue_typed_pointsto :
     TypedPointsto (GF := GF) sync.poolDequeue where
   typedPointstoDef l v dq := iprop(
     "headTail" ∷ typedPointsto (structFieldRef sync.poolDequeue go!"headTail" l) v.headTail' dq ∗
@@ -669,11 +668,11 @@ instance poolDequeue_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance poolDequeue_into_val_typed :
+noncomputable instance poolDequeue_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.poolDequeue sync.poolDequeue.underlying := by
   solve_into_val_typed_struct
 
-instance poolDequeue_access_load_headTail (l : Loc) (v : sync.poolDequeue) (dq : DFrac) :
+noncomputable instance poolDequeue_access_load_headTail (l : Loc) (v : sync.poolDequeue) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolDequeue go!"headTail" l) v.headTail' dq)
       (typedPointsto (structFieldRef sync.poolDequeue go!"headTail" l) v.headTail' dq)
@@ -681,7 +680,7 @@ instance poolDequeue_access_load_headTail (l : Loc) (v : sync.poolDequeue) (dq :
  by
   solve_pointsto_access_struct
 
-instance poolDequeue_access_store_headTail (l : Loc) (v : sync.poolDequeue) (headTail' : sync.atomic.Uint64) :
+noncomputable instance poolDequeue_access_store_headTail (l : Loc) (v : sync.poolDequeue) (headTail' : sync.atomic.Uint64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolDequeue go!"headTail" l) v.headTail' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolDequeue go!"headTail" l) headTail' (DFrac.own 1))
@@ -689,7 +688,7 @@ instance poolDequeue_access_store_headTail (l : Loc) (v : sync.poolDequeue) (hea
  by
   solve_pointsto_access_struct
 
-instance poolDequeue_access_load_vals (l : Loc) (v : sync.poolDequeue) (dq : DFrac) :
+noncomputable instance poolDequeue_access_load_vals (l : Loc) (v : sync.poolDequeue) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolDequeue go!"vals" l) v.vals' dq)
       (typedPointsto (structFieldRef sync.poolDequeue go!"vals" l) v.vals' dq)
@@ -697,7 +696,7 @@ instance poolDequeue_access_load_vals (l : Loc) (v : sync.poolDequeue) (dq : DFr
  by
   solve_pointsto_access_struct
 
-instance poolDequeue_access_store_vals (l : Loc) (v : sync.poolDequeue) (vals' : GoSlice) :
+noncomputable instance poolDequeue_access_store_vals (l : Loc) (v : sync.poolDequeue) (vals' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.poolDequeue go!"vals" l) v.vals' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.poolDequeue go!"vals" l) vals' (DFrac.own 1))
@@ -716,7 +715,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
-instance eface_typed_pointsto :
+noncomputable instance eface_typed_pointsto :
     TypedPointsto (GF := GF) sync.eface where
   typedPointstoDef l v dq := iprop(
     "typ" ∷ typedPointsto (structFieldRef sync.eface go!"typ" l) v.typ' dq ∗
@@ -726,11 +725,11 @@ instance eface_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance eface_into_val_typed :
+noncomputable instance eface_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.eface sync.eface.underlying := by
   solve_into_val_typed_struct
 
-instance eface_access_load_typ (l : Loc) (v : sync.eface) (dq : DFrac) :
+noncomputable instance eface_access_load_typ (l : Loc) (v : sync.eface) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.eface go!"typ" l) v.typ' dq)
       (typedPointsto (structFieldRef sync.eface go!"typ" l) v.typ' dq)
@@ -738,7 +737,7 @@ instance eface_access_load_typ (l : Loc) (v : sync.eface) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance eface_access_store_typ (l : Loc) (v : sync.eface) (typ' : Loc) :
+noncomputable instance eface_access_store_typ (l : Loc) (v : sync.eface) (typ' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.eface go!"typ" l) v.typ' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.eface go!"typ" l) typ' (DFrac.own 1))
@@ -746,7 +745,7 @@ instance eface_access_store_typ (l : Loc) (v : sync.eface) (typ' : Loc) :
  by
   solve_pointsto_access_struct
 
-instance eface_access_load_val (l : Loc) (v : sync.eface) (dq : DFrac) :
+noncomputable instance eface_access_load_val (l : Loc) (v : sync.eface) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.eface go!"val" l) v.val' dq)
       (typedPointsto (structFieldRef sync.eface go!"val" l) v.val' dq)
@@ -754,7 +753,7 @@ instance eface_access_load_val (l : Loc) (v : sync.eface) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance eface_access_store_val (l : Loc) (v : sync.eface) (val' : Loc) :
+noncomputable instance eface_access_store_val (l : Loc) (v : sync.eface) (val' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.eface go!"val" l) v.val' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.eface go!"val" l) val' (DFrac.own 1))
@@ -773,7 +772,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
-instance RWMutex_typed_pointsto :
+noncomputable instance RWMutex_typed_pointsto :
     TypedPointsto (GF := GF) sync.RWMutex where
   typedPointstoDef l v dq := iprop(
     "w" ∷ typedPointsto (structFieldRef sync.RWMutex go!"w" l) v.w' dq ∗
@@ -786,11 +785,11 @@ instance RWMutex_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance RWMutex_into_val_typed :
+noncomputable instance RWMutex_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.RWMutex sync.RWMutex.underlying := by
   solve_into_val_typed_struct
 
-instance RWMutex_access_load_w (l : Loc) (v : sync.RWMutex) (dq : DFrac) :
+noncomputable instance RWMutex_access_load_w (l : Loc) (v : sync.RWMutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"w" l) v.w' dq)
       (typedPointsto (structFieldRef sync.RWMutex go!"w" l) v.w' dq)
@@ -798,7 +797,7 @@ instance RWMutex_access_load_w (l : Loc) (v : sync.RWMutex) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance RWMutex_access_store_w (l : Loc) (v : sync.RWMutex) (w' : sync.Mutex) :
+noncomputable instance RWMutex_access_store_w (l : Loc) (v : sync.RWMutex) (w' : sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"w" l) v.w' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.RWMutex go!"w" l) w' (DFrac.own 1))
@@ -806,7 +805,7 @@ instance RWMutex_access_store_w (l : Loc) (v : sync.RWMutex) (w' : sync.Mutex) :
  by
   solve_pointsto_access_struct
 
-instance RWMutex_access_load_writerSem (l : Loc) (v : sync.RWMutex) (dq : DFrac) :
+noncomputable instance RWMutex_access_load_writerSem (l : Loc) (v : sync.RWMutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"writerSem" l) v.writerSem' dq)
       (typedPointsto (structFieldRef sync.RWMutex go!"writerSem" l) v.writerSem' dq)
@@ -814,7 +813,7 @@ instance RWMutex_access_load_writerSem (l : Loc) (v : sync.RWMutex) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance RWMutex_access_store_writerSem (l : Loc) (v : sync.RWMutex) (writerSem' : w32) :
+noncomputable instance RWMutex_access_store_writerSem (l : Loc) (v : sync.RWMutex) (writerSem' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"writerSem" l) v.writerSem' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.RWMutex go!"writerSem" l) writerSem' (DFrac.own 1))
@@ -822,7 +821,7 @@ instance RWMutex_access_store_writerSem (l : Loc) (v : sync.RWMutex) (writerSem'
  by
   solve_pointsto_access_struct
 
-instance RWMutex_access_load_readerSem (l : Loc) (v : sync.RWMutex) (dq : DFrac) :
+noncomputable instance RWMutex_access_load_readerSem (l : Loc) (v : sync.RWMutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"readerSem" l) v.readerSem' dq)
       (typedPointsto (structFieldRef sync.RWMutex go!"readerSem" l) v.readerSem' dq)
@@ -830,7 +829,7 @@ instance RWMutex_access_load_readerSem (l : Loc) (v : sync.RWMutex) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance RWMutex_access_store_readerSem (l : Loc) (v : sync.RWMutex) (readerSem' : w32) :
+noncomputable instance RWMutex_access_store_readerSem (l : Loc) (v : sync.RWMutex) (readerSem' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"readerSem" l) v.readerSem' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.RWMutex go!"readerSem" l) readerSem' (DFrac.own 1))
@@ -838,7 +837,7 @@ instance RWMutex_access_store_readerSem (l : Loc) (v : sync.RWMutex) (readerSem'
  by
   solve_pointsto_access_struct
 
-instance RWMutex_access_load_readerCount (l : Loc) (v : sync.RWMutex) (dq : DFrac) :
+noncomputable instance RWMutex_access_load_readerCount (l : Loc) (v : sync.RWMutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"readerCount" l) v.readerCount' dq)
       (typedPointsto (structFieldRef sync.RWMutex go!"readerCount" l) v.readerCount' dq)
@@ -846,7 +845,7 @@ instance RWMutex_access_load_readerCount (l : Loc) (v : sync.RWMutex) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance RWMutex_access_store_readerCount (l : Loc) (v : sync.RWMutex) (readerCount' : sync.atomic.Int32) :
+noncomputable instance RWMutex_access_store_readerCount (l : Loc) (v : sync.RWMutex) (readerCount' : sync.atomic.Int32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"readerCount" l) v.readerCount' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.RWMutex go!"readerCount" l) readerCount' (DFrac.own 1))
@@ -854,7 +853,7 @@ instance RWMutex_access_store_readerCount (l : Loc) (v : sync.RWMutex) (readerCo
  by
   solve_pointsto_access_struct
 
-instance RWMutex_access_load_readerWait (l : Loc) (v : sync.RWMutex) (dq : DFrac) :
+noncomputable instance RWMutex_access_load_readerWait (l : Loc) (v : sync.RWMutex) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"readerWait" l) v.readerWait' dq)
       (typedPointsto (structFieldRef sync.RWMutex go!"readerWait" l) v.readerWait' dq)
@@ -862,7 +861,7 @@ instance RWMutex_access_load_readerWait (l : Loc) (v : sync.RWMutex) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance RWMutex_access_store_readerWait (l : Loc) (v : sync.RWMutex) (readerWait' : sync.atomic.Int32) :
+noncomputable instance RWMutex_access_store_readerWait (l : Loc) (v : sync.RWMutex) (readerWait' : sync.atomic.Int32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.RWMutex go!"readerWait" l) v.readerWait' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.RWMutex go!"readerWait" l) readerWait' (DFrac.own 1))
@@ -881,7 +880,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.Assumptions]
 
-instance WaitGroup_typed_pointsto :
+noncomputable instance WaitGroup_typed_pointsto :
     TypedPointsto (GF := GF) sync.WaitGroup where
   typedPointstoDef l v dq := iprop(
     "noCopy" ∷ typedPointsto (structFieldRef sync.WaitGroup go!"noCopy" l) v.noCopy' dq ∗
@@ -892,11 +891,11 @@ instance WaitGroup_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance WaitGroup_into_val_typed :
+noncomputable instance WaitGroup_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.WaitGroup sync.WaitGroup.underlying := by
   solve_into_val_typed_struct
 
-instance WaitGroup_access_load_noCopy (l : Loc) (v : sync.WaitGroup) (dq : DFrac) :
+noncomputable instance WaitGroup_access_load_noCopy (l : Loc) (v : sync.WaitGroup) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.WaitGroup go!"noCopy" l) v.noCopy' dq)
       (typedPointsto (structFieldRef sync.WaitGroup go!"noCopy" l) v.noCopy' dq)
@@ -904,7 +903,7 @@ instance WaitGroup_access_load_noCopy (l : Loc) (v : sync.WaitGroup) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance WaitGroup_access_store_noCopy (l : Loc) (v : sync.WaitGroup) (noCopy' : sync.noCopy) :
+noncomputable instance WaitGroup_access_store_noCopy (l : Loc) (v : sync.WaitGroup) (noCopy' : sync.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.WaitGroup go!"noCopy" l) v.noCopy' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.WaitGroup go!"noCopy" l) noCopy' (DFrac.own 1))
@@ -912,7 +911,7 @@ instance WaitGroup_access_store_noCopy (l : Loc) (v : sync.WaitGroup) (noCopy' :
  by
   solve_pointsto_access_struct
 
-instance WaitGroup_access_load_state (l : Loc) (v : sync.WaitGroup) (dq : DFrac) :
+noncomputable instance WaitGroup_access_load_state (l : Loc) (v : sync.WaitGroup) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.WaitGroup go!"state" l) v.state' dq)
       (typedPointsto (structFieldRef sync.WaitGroup go!"state" l) v.state' dq)
@@ -920,7 +919,7 @@ instance WaitGroup_access_load_state (l : Loc) (v : sync.WaitGroup) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance WaitGroup_access_store_state (l : Loc) (v : sync.WaitGroup) (state' : sync.atomic.Uint64) :
+noncomputable instance WaitGroup_access_store_state (l : Loc) (v : sync.WaitGroup) (state' : sync.atomic.Uint64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.WaitGroup go!"state" l) v.state' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.WaitGroup go!"state" l) state' (DFrac.own 1))
@@ -928,7 +927,7 @@ instance WaitGroup_access_store_state (l : Loc) (v : sync.WaitGroup) (state' : s
  by
   solve_pointsto_access_struct
 
-instance WaitGroup_access_load_sema (l : Loc) (v : sync.WaitGroup) (dq : DFrac) :
+noncomputable instance WaitGroup_access_load_sema (l : Loc) (v : sync.WaitGroup) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.WaitGroup go!"sema" l) v.sema' dq)
       (typedPointsto (structFieldRef sync.WaitGroup go!"sema" l) v.sema' dq)
@@ -936,7 +935,7 @@ instance WaitGroup_access_load_sema (l : Loc) (v : sync.WaitGroup) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance WaitGroup_access_store_sema (l : Loc) (v : sync.WaitGroup) (sema' : w32) :
+noncomputable instance WaitGroup_access_store_sema (l : Loc) (v : sync.WaitGroup) (sema' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.WaitGroup go!"sema" l) v.sema' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.WaitGroup go!"sema" l) sema' (DFrac.own 1))

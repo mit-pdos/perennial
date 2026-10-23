@@ -9,25 +9,24 @@ public import Perennial.TrustedCode.errors
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def errors : GoString := go!"errors"
+noncomputable def errors : GoString := go!"errors"
 end pkg_id
 
 namespace errors
 
-def errorString.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def errorString.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"errors.errorString" [])
 
 attribute [irreducible] errorString.ty
 
-def joinError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def joinError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"errors.joinError" [])
 
 attribute [irreducible] joinError.ty
@@ -363,7 +362,7 @@ noncomputable def asType.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : va
   (Lam BAnon
   (Val #()))))))))))
 
-instance info' : PkgInfo pkg_id.errors where
+noncomputable instance info' : PkgInfo pkg_id.errors where
   pkgImportedPkgs := []
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val
@@ -387,20 +386,20 @@ structure errorString [FfiSyntax] where
   mk ::
   s' : GoString
 
-instance errorString.zero_val [FfiSyntax] : ZeroVal errorString :=
+noncomputable instance errorString.zero_val [FfiSyntax] : ZeroVal errorString :=
   ⟨errorString.mk zeroValDef⟩
 
-@[reducible] def errorString.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def errorString.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"s" go.string)]
 
-@[irreducible] def errorString.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def errorString.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   errorString.fieldsUnsealed
 
-instance equals_unfold_errorString [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_errorString [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold errorString.fields errorString.fieldsUnsealed :=
   ⟨by unfold errorString.fields; rfl⟩
 
-@[reducible] def errorString.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def errorString.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType errorString.fields)
 
 class errorString.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -420,20 +419,20 @@ structure joinError [FfiSyntax] where
   mk ::
   errs' : GoSlice
 
-instance joinError.zero_val [FfiSyntax] : ZeroVal joinError :=
+noncomputable instance joinError.zero_val [FfiSyntax] : ZeroVal joinError :=
   ⟨joinError.mk zeroValDef⟩
 
-@[reducible] def joinError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def joinError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"errs" (go.GoType.SliceType go.error))]
 
-@[irreducible] def joinError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def joinError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   joinError.fieldsUnsealed
 
-instance equals_unfold_joinError [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_joinError [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold joinError.fields joinError.fieldsUnsealed :=
   ⟨by unfold joinError.fields; rfl⟩
 
-@[reducible] def joinError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def joinError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType joinError.fields)
 
 class joinError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -13,6 +13,7 @@ public import Perennial.Code.io
 set_option linter.iris.style.nameCheck false
 
 namespace Perennial
+noncomputable section
 
 namespace crypto.rand
 section code
@@ -77,5 +78,7 @@ def Reader.init : val :=
 
 end code
 end crypto.rand
+
+end
 
 end Perennial

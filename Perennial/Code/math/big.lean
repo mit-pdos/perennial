@@ -11,80 +11,79 @@ public import Perennial.TrustedCode.math.big
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def math.big : GoString := go!"math/big"
+noncomputable def math.big : GoString := go!"math/big"
 end pkg_id
 
 namespace math.big
 
-def Word.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Word.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/big.Word" [])
 
 attribute [irreducible] Word.ty
 
-def decimal.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def decimal.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/big.decimal" [])
 
 attribute [irreducible] decimal.ty
 
-def Float.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Float.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/big.Float" [])
 
 attribute [irreducible] Float.ty
 
-def ErrNaN.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ErrNaN.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/big.ErrNaN" [])
 
 attribute [irreducible] ErrNaN.ty
 
-def form.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def form.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/big.form" [])
 
 attribute [irreducible] form.ty
 
-def RoundingMode.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def RoundingMode.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/big.RoundingMode" [])
 
 attribute [irreducible] RoundingMode.ty
 
-def Accuracy.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Accuracy.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/big.Accuracy" [])
 
 attribute [irreducible] Accuracy.ty
 
-def Int'.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Int'.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/big.Int" [])
 
 attribute [irreducible] Int'.ty
 
-def byteReader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def byteReader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/big.byteReader" [])
 
 attribute [irreducible] byteReader.ty
 
-def nat.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def nat.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/big.nat" [])
 
 attribute [irreducible] nat.ty
 
-def stack.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def stack.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/big.stack" [])
 
 attribute [irreducible] stack.ty
 
-def divisor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def divisor.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/big.divisor" [])
 
 attribute [irreducible] divisor.ty
 
-def Rat.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Rat.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/big.Rat" [])
 
 attribute [irreducible] Rat.ty
@@ -516,7 +515,7 @@ noncomputable def Int.Int64.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "v") (Var "$r0")))))))))))
 
-instance info' : PkgInfo pkg_id.math.big where
+noncomputable instance info' : PkgInfo pkg_id.math.big where
   pkgImportedPkgs := [pkg_id.fmt, pkg_id.errors]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
@@ -691,7 +690,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 
 abbrev Word [FfiSyntax] : Type := w64
 
-@[reducible] def Word.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Word.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint
 
 class Word.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -704,21 +703,21 @@ structure decimal [FfiSyntax] where
   mant' : GoSlice
   exp' : w64
 
-instance decimal.zero_val [FfiSyntax] : ZeroVal decimal :=
+noncomputable instance decimal.zero_val [FfiSyntax] : ZeroVal decimal :=
   ⟨decimal.mk zeroValDef zeroValDef⟩
 
-@[reducible] def decimal.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def decimal.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mant" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"exp" go.int)]
 
-@[irreducible] def decimal.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def decimal.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   decimal.fieldsUnsealed
 
-instance equals_unfold_decimal [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_decimal [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold decimal.fields decimal.fieldsUnsealed :=
   ⟨by unfold decimal.fields; rfl⟩
 
-@[reducible] def decimal.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def decimal.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType decimal.fields)
 
 class decimal.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -738,7 +737,7 @@ attribute [instance] decimal.TypeAssumptions.type_repr
 
 abbrev RoundingMode [FfiSyntax] : Type := w8
 
-@[reducible] def RoundingMode.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def RoundingMode.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.byte
 
 class RoundingMode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -748,7 +747,7 @@ attribute [instance] RoundingMode.TypeAssumptions.underlying
 
 abbrev Accuracy [FfiSyntax] : Type := w8
 
-@[reducible] def Accuracy.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Accuracy.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int8
 
 class Accuracy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -758,7 +757,7 @@ attribute [instance] Accuracy.TypeAssumptions.underlying
 
 abbrev form [FfiSyntax] : Type := w8
 
-@[reducible] def form.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def form.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.byte
 
 class form.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -768,7 +767,7 @@ attribute [instance] form.TypeAssumptions.underlying
 
 abbrev nat [FfiSyntax] : Type := GoSlice
 
-@[reducible] def nat.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def nat.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType Word.ty)
 
 class nat.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -786,10 +785,10 @@ structure Float [FfiSyntax] where
   mant' : nat
   exp' : w32
 
-instance Float.zero_val [FfiSyntax] : ZeroVal Float :=
+noncomputable instance Float.zero_val [FfiSyntax] : ZeroVal Float :=
   ⟨Float.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def Float.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Float.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"prec" go.uint32),
 (go.field_decl.FieldDecl go!"mode" RoundingMode.ty),
 (go.field_decl.FieldDecl go!"acc" Accuracy.ty),
@@ -798,14 +797,14 @@ instance Float.zero_val [FfiSyntax] : ZeroVal Float :=
 (go.field_decl.FieldDecl go!"mant" nat.ty),
 (go.field_decl.FieldDecl go!"exp" go.int32)]
 
-@[irreducible] def Float.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Float.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Float.fieldsUnsealed
 
-instance equals_unfold_Float [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Float [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Float.fields Float.fieldsUnsealed :=
   ⟨by unfold Float.fields; rfl⟩
 
-@[reducible] def Float.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Float.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Float.fields)
 
 class Float.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -847,20 +846,20 @@ structure ErrNaN [FfiSyntax] where
   mk ::
   msg' : GoString
 
-instance ErrNaN.zero_val [FfiSyntax] : ZeroVal ErrNaN :=
+noncomputable instance ErrNaN.zero_val [FfiSyntax] : ZeroVal ErrNaN :=
   ⟨ErrNaN.mk zeroValDef⟩
 
-@[reducible] def ErrNaN.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def ErrNaN.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"msg" go.string)]
 
-@[irreducible] def ErrNaN.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def ErrNaN.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   ErrNaN.fieldsUnsealed
 
-instance equals_unfold_ErrNaN [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_ErrNaN [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold ErrNaN.fields ErrNaN.fieldsUnsealed :=
   ⟨by unfold ErrNaN.fields; rfl⟩
 
-@[reducible] def ErrNaN.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def ErrNaN.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType ErrNaN.fields)
 
 class ErrNaN.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -879,21 +878,21 @@ structure Int' [FfiSyntax] where
   neg' : Bool
   abs' : nat
 
-instance Int'.zero_val [FfiSyntax] : ZeroVal Int' :=
+noncomputable instance Int'.zero_val [FfiSyntax] : ZeroVal Int' :=
   ⟨Int'.mk zeroValDef zeroValDef⟩
 
-@[reducible] def Int.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Int.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"neg" go.bool),
 (go.field_decl.FieldDecl go!"abs" nat.ty)]
 
-@[irreducible] def Int.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Int.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Int.fieldsUnsealed
 
-instance equals_unfold_Int [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Int [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Int.fields Int.fieldsUnsealed :=
   ⟨by unfold Int.fields; rfl⟩
 
-@[reducible] def Int'.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Int'.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Int.fields)
 
 class Int.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -917,20 +916,20 @@ structure byteReader [FfiSyntax] where
   mk ::
   ScanState' : _root_.Perennial.fmt.ScanState
 
-instance byteReader.zero_val [FfiSyntax] : ZeroVal byteReader :=
+noncomputable instance byteReader.zero_val [FfiSyntax] : ZeroVal byteReader :=
   ⟨byteReader.mk zeroValDef⟩
 
-@[reducible] def byteReader.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def byteReader.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"ScanState" _root_.Perennial.fmt.ScanState.ty)]
 
-@[irreducible] def byteReader.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def byteReader.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   byteReader.fieldsUnsealed
 
-instance equals_unfold_byteReader [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_byteReader [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold byteReader.fields byteReader.fieldsUnsealed :=
   ⟨by unfold byteReader.fields; rfl⟩
 
-@[reducible] def byteReader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def byteReader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType byteReader.fields)
 
 class byteReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -948,20 +947,20 @@ structure stack [FfiSyntax] where
   mk ::
   w' : GoSlice
 
-instance stack.zero_val [FfiSyntax] : ZeroVal stack :=
+noncomputable instance stack.zero_val [FfiSyntax] : ZeroVal stack :=
   ⟨stack.mk zeroValDef⟩
 
-@[reducible] def stack.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def stack.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"w" (go.GoType.SliceType Word.ty))]
 
-@[irreducible] def stack.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def stack.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   stack.fieldsUnsealed
 
-instance equals_unfold_stack [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_stack [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold stack.fields stack.fieldsUnsealed :=
   ⟨by unfold stack.fields; rfl⟩
 
-@[reducible] def stack.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def stack.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType stack.fields)
 
 class stack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -981,22 +980,22 @@ structure divisor [FfiSyntax] where
   nbits' : w64
   ndigits' : w64
 
-instance divisor.zero_val [FfiSyntax] : ZeroVal divisor :=
+noncomputable instance divisor.zero_val [FfiSyntax] : ZeroVal divisor :=
   ⟨divisor.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def divisor.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def divisor.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"bbb" nat.ty),
 (go.field_decl.FieldDecl go!"nbits" go.int),
 (go.field_decl.FieldDecl go!"ndigits" go.int)]
 
-@[irreducible] def divisor.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def divisor.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   divisor.fieldsUnsealed
 
-instance equals_unfold_divisor [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_divisor [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold divisor.fields divisor.fieldsUnsealed :=
   ⟨by unfold divisor.fields; rfl⟩
 
-@[reducible] def divisor.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def divisor.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType divisor.fields)
 
 class divisor.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1023,21 +1022,21 @@ structure Rat [FfiSyntax] where
   a' : Int'
   b' : Int'
 
-instance Rat.zero_val [FfiSyntax] : ZeroVal Rat :=
+noncomputable instance Rat.zero_val [FfiSyntax] : ZeroVal Rat :=
   ⟨Rat.mk zeroValDef zeroValDef⟩
 
-@[reducible] def Rat.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Rat.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" Int'.ty),
 (go.field_decl.FieldDecl go!"b" Int'.ty)]
 
-@[irreducible] def Rat.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Rat.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Rat.fieldsUnsealed
 
-instance equals_unfold_Rat [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Rat [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Rat.fields Rat.fieldsUnsealed :=
   ⟨by unfold Rat.fields; rfl⟩
 
-@[reducible] def Rat.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Rat.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Rat.fields)
 
 class Rat.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

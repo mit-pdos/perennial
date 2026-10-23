@@ -10,35 +10,34 @@ public import Perennial.DiskPrelude
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.goose_lang.primitive.disk : GoString := go!"github.com/goose-lang/primitive/disk"
+noncomputable def github_com.goose_lang.primitive.disk : GoString := go!"github.com/goose-lang/primitive/disk"
 end pkg_id
 
 namespace github_com.goose_lang.primitive.disk
 
-def Disk.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Disk.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/goose-lang/primitive/disk.Disk" [])
 
 attribute [irreducible] Disk.ty
 
-def FileDisk.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def FileDisk.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/goose-lang/primitive/disk.FileDisk" [])
 
 attribute [irreducible] FileDisk.ty
 
-def MemDisk.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def MemDisk.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/goose-lang/primitive/disk.MemDisk" [])
 
 attribute [irreducible] MemDisk.ty
 
-@[reducible] def Block.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Block.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.byte)
 
 axiom MemDisk.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
@@ -70,7 +69,7 @@ noncomputable def NewFileDisk [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def NewMemDisk [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive/disk.NewMemDisk"
 
-instance info' : PkgInfo pkg_id.github_com.goose_lang.primitive.disk where
+noncomputable instance info' : PkgInfo pkg_id.github_com.goose_lang.primitive.disk where
   pkgImportedPkgs := []
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val
@@ -87,7 +86,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 
 abbrev Disk [FfiSyntax] : Type := GoInterface
 
-@[reducible] def Disk.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Disk.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Barrier" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Close" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Read" (go.signature.Signature [go.uint64] false [Block.ty])), (go.InterfaceElem.MethodElem go!"ReadTo" (go.signature.Signature [go.uint64, Block.ty] false [])), (go.InterfaceElem.MethodElem go!"Size" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [go.uint64, Block.ty] false []))])
 
 class Disk.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -100,21 +99,21 @@ structure FileDisk [FfiSyntax] where
   fd' : w64
   numBlocks' : w64
 
-instance FileDisk.zero_val [FfiSyntax] : ZeroVal FileDisk :=
+noncomputable instance FileDisk.zero_val [FfiSyntax] : ZeroVal FileDisk :=
   ⟨FileDisk.mk zeroValDef zeroValDef⟩
 
-@[reducible] def FileDisk.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def FileDisk.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"fd" go.int),
 (go.field_decl.FieldDecl go!"numBlocks" go.uint64)]
 
-@[irreducible] def FileDisk.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def FileDisk.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   FileDisk.fieldsUnsealed
 
-instance equals_unfold_FileDisk [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_FileDisk [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold FileDisk.fields FileDisk.fieldsUnsealed :=
   ⟨by unfold FileDisk.fields; rfl⟩
 
-@[reducible] def FileDisk.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def FileDisk.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType FileDisk.fields)
 
 class FileDisk.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

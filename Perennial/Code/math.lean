@@ -9,15 +9,14 @@ public import Perennial.TrustedCode.math
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def math : GoString := go!"math"
+noncomputable def math : GoString := go!"math"
 end pkg_id
 
 namespace math
@@ -1018,7 +1017,7 @@ noncomputable def Float64bits [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def Float64frombits [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"math.Float64frombits"
 
-instance info' : PkgInfo pkg_id.math where
+noncomputable instance info' : PkgInfo pkg_id.math where
   pkgImportedPkgs := []
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val

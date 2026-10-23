@@ -11,9 +11,8 @@ public import Perennial.Code.github_com.mit_pdos.perennial.goose.testdata.exampl
 @[expose] public section
 
 set_option autoImplicit false
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 open Iris Iris.BI
@@ -29,7 +28,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Assumptions]
 
-instance Log_typed_pointsto :
+noncomputable instance Log_typed_pointsto :
     TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log where
   typedPointstoDef l v dq := iprop(
     "m" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"m" l) v.m' dq ∗
@@ -40,11 +39,11 @@ instance Log_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Log_into_val_typed :
+noncomputable instance Log_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log.underlying := by
   solve_into_val_typed_struct
 
-instance Log_access_load_m (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (dq : DFrac) :
+noncomputable instance Log_access_load_m (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"m" l) v.m' dq)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"m" l) v.m' dq)
@@ -52,7 +51,7 @@ instance Log_access_load_m (l : Loc) (v : github_com.mit_pdos.perennial.goose.te
  by
   solve_pointsto_access_struct
 
-instance Log_access_store_m (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (m' : Loc) :
+noncomputable instance Log_access_store_m (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (m' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"m" l) v.m' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"m" l) m' (DFrac.own 1))
@@ -60,7 +59,7 @@ instance Log_access_store_m (l : Loc) (v : github_com.mit_pdos.perennial.goose.t
  by
   solve_pointsto_access_struct
 
-instance Log_access_load_sz (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (dq : DFrac) :
+noncomputable instance Log_access_load_sz (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"sz" l) v.sz' dq)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"sz" l) v.sz' dq)
@@ -68,7 +67,7 @@ instance Log_access_load_sz (l : Loc) (v : github_com.mit_pdos.perennial.goose.t
  by
   solve_pointsto_access_struct
 
-instance Log_access_store_sz (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (sz' : w64) :
+noncomputable instance Log_access_store_sz (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (sz' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"sz" l) v.sz' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"sz" l) sz' (DFrac.own 1))
@@ -76,7 +75,7 @@ instance Log_access_store_sz (l : Loc) (v : github_com.mit_pdos.perennial.goose.
  by
   solve_pointsto_access_struct
 
-instance Log_access_load_diskSz (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (dq : DFrac) :
+noncomputable instance Log_access_load_diskSz (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"diskSz" l) v.diskSz' dq)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"diskSz" l) v.diskSz' dq)
@@ -84,7 +83,7 @@ instance Log_access_load_diskSz (l : Loc) (v : github_com.mit_pdos.perennial.goo
  by
   solve_pointsto_access_struct
 
-instance Log_access_store_diskSz (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (diskSz' : w64) :
+noncomputable instance Log_access_store_diskSz (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log) (diskSz' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"diskSz" l) v.diskSz' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.append_log.Log go!"diskSz" l) diskSz' (DFrac.own 1))

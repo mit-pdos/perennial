@@ -10,25 +10,24 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/workq"
+noncomputable def github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/workq"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq
 
-def Worker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Worker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/workq.Worker" [])
 
 attribute [irreducible] Worker.ty
 
-def shared.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def shared.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/workq.shared" [])
 
 attribute [irreducible] shared.ty
@@ -240,7 +239,7 @@ noncomputable def wordCount.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #())))))))
 
-instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq where
+noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq where
   pkgImportedPkgs := [pkg_id.strings, pkg_id.sync.atomic]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
@@ -258,21 +257,21 @@ structure Worker [FfiSyntax] where
   queue' : GoChan
   steal' : GoChan
 
-instance Worker.zero_val [FfiSyntax] : ZeroVal Worker :=
+noncomputable instance Worker.zero_val [FfiSyntax] : ZeroVal Worker :=
   ⟨Worker.mk zeroValDef zeroValDef⟩
 
-@[reducible] def Worker.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Worker.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"queue" (go.GoType.ChannelType go.ChanDir.sendrecv go.string)),
 (go.field_decl.FieldDecl go!"steal" (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))]
 
-@[irreducible] def Worker.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Worker.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Worker.fieldsUnsealed
 
-instance equals_unfold_Worker [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Worker [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Worker.fields Worker.fieldsUnsealed :=
   ⟨by unfold Worker.fields; rfl⟩
 
-@[reducible] def Worker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Worker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Worker.fields)
 
 class Worker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -300,22 +299,22 @@ structure shared [FfiSyntax] where
   total' : Loc
   done' : GoChan
 
-instance shared.zero_val [FfiSyntax] : ZeroVal shared :=
+noncomputable instance shared.zero_val [FfiSyntax] : ZeroVal shared :=
   ⟨shared.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def shared.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def shared.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"remaining" (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64.ty)),
 (go.field_decl.FieldDecl go!"total" (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64.ty)),
 (go.field_decl.FieldDecl go!"done" (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))]
 
-@[irreducible] def shared.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def shared.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   shared.fieldsUnsealed
 
-instance equals_unfold_shared [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_shared [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold shared.fields shared.fieldsUnsealed :=
   ⟨by unfold shared.fields; rfl⟩
 
-@[reducible] def shared.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def shared.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType shared.fields)
 
 class shared.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

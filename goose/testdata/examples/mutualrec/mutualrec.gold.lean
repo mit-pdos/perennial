@@ -8,15 +8,14 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.mutualrec : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/mutualrec"
+noncomputable def github_com.mit_pdos.perennial.goose.testdata.examples.mutualrec : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/mutualrec"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.mutualrec
@@ -47,7 +46,7 @@ noncomputable def B.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve A []))) (Val #())) (Val #()))))))
 
-instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.mutualrec where
+noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.mutualrec where
   pkgImportedPkgs := []
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=

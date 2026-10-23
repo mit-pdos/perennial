@@ -129,7 +129,7 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 					zvBinders += " [ZeroVal " + glang.LeanIdent(p) + "]"
 				}
 			}
-			fmt.Fprintf(w, "\ninstance %s.zero_val [FfiSyntax]%s : ZeroVal %s :=\n  ⟨%s.mk", ns, zvBinders, tApplied, ns)
+			fmt.Fprintf(w, "\nnoncomputable instance %s.zero_val [FfiSyntax]%s : ZeroVal %s :=\n  ⟨%s.mk", ns, zvBinders, tApplied, ns)
 			for range t.NumFields() {
 				fmt.Fprint(w, " zeroValDef")
 			}
@@ -157,11 +157,11 @@ func (ctx *Ctx) leanFdsDecl(spec *ast.TypeSpec, ty glang.StructType) string {
 	fds := glang.LeanEncodedName(name + "'fds")
 	fdsU := glang.LeanEncodedName(name + "'fds_unsealed")
 	w := new(strings.Builder)
-	fmt.Fprintf(w, "@[reducible] def %s [FfiSyntax] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n", fdsU, binders,
+	fmt.Fprintf(w, "@[reducible] noncomputable def %s [FfiSyntax] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n", fdsU, binders,
 		ty.LeanFields())
-	fmt.Fprintf(w, "\n@[irreducible] def %s [FfiSyntax] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n",
+	fmt.Fprintf(w, "\n@[irreducible] noncomputable def %s [FfiSyntax] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n",
 		fds, binders, leanApplied(fdsU, params))
-	fmt.Fprintf(w, "\ninstance %s [FfiSyntax] [GoGlobalContext]%s :\n    EqualsUnfold %s %s :=\n  ⟨by unfold %s; rfl⟩",
+	fmt.Fprintf(w, "\nnoncomputable instance %s [FfiSyntax] [GoGlobalContext]%s :\n    EqualsUnfold %s %s :=\n  ⟨by unfold %s; rfl⟩",
 		glang.LeanQuoteComponent("equals_unfold_"+name), binders, leanApplied(fds, params),
 		leanApplied(fdsU, params), fds)
 	return w.String()
@@ -462,6 +462,6 @@ func (ctx *Ctx) leanInfoInstance() string {
 	for _, impName := range ctx.importNamesOrdered {
 		imps = append(imps, glang.LeanPkgId(impName.Imported().Path()))
 	}
-	return fmt.Sprintf("instance info' : PkgInfo %s where\n  pkgImportedPkgs := [%s]",
+	return fmt.Sprintf("noncomputable instance info' : PkgInfo %s where\n  pkgImportedPkgs := [%s]",
 		ctx.pkgIdent, strings.Join(imps, ", "))
 }

@@ -10,6 +10,7 @@ public import Perennial.Golang.Defn
 set_option linter.iris.style.nameCheck false
 
 namespace Perennial
+noncomputable section
 
 namespace time
 section code
@@ -88,5 +89,7 @@ def asynctimerchan.init : val :=
 
 end code
 end time
+
+end
 
 end Perennial

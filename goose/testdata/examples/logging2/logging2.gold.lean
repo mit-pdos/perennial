@@ -12,25 +12,24 @@ public import Perennial.DiskPrelude
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.logging2 : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2"
+noncomputable def github_com.mit_pdos.perennial.goose.testdata.examples.logging2 : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.logging2
 
-def Log.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Log.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.Log" [])
 
 attribute [irreducible] Log.ty
 
-def Txn.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Txn.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.Txn" [])
 
 attribute [irreducible] Txn.ty
@@ -587,7 +586,7 @@ noncomputable def Txn.Commit.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))))) (Pair (Var "blks") (Var "$r0")))))))))))
 
-instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.logging2 where
+noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.logging2 where
   pkgImportedPkgs := [pkg_id.encoding.binary, pkg_id.github_com.goose_lang.primitive.disk, pkg_id.sync]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
@@ -613,10 +612,10 @@ structure Log [FfiSyntax] where
   memTxnNxt' : Loc
   logTxnNxt' : Loc
 
-instance Log.zero_val [FfiSyntax] : ZeroVal Log :=
+noncomputable instance Log.zero_val [FfiSyntax] : ZeroVal Log :=
   ⟨Log.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def Log.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Log.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"logLock" (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)),
 (go.field_decl.FieldDecl go!"memLock" (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)),
 (go.field_decl.FieldDecl go!"logSz" go.uint64),
@@ -625,14 +624,14 @@ instance Log.zero_val [FfiSyntax] : ZeroVal Log :=
 (go.field_decl.FieldDecl go!"memTxnNxt" (go.GoType.PointerType go.uint64)),
 (go.field_decl.FieldDecl go!"logTxnNxt" (go.GoType.PointerType go.uint64))]
 
-@[irreducible] def Log.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Log.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Log.fieldsUnsealed
 
-instance equals_unfold_Log [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Log [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Log.fields Log.fieldsUnsealed :=
   ⟨by unfold Log.fields; rfl⟩
 
-@[reducible] def Log.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Log.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Log.fields)
 
 class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -735,21 +734,21 @@ structure Txn [FfiSyntax] where
   log' : Loc
   blks' : GoMap
 
-instance Txn.zero_val [FfiSyntax] : ZeroVal Txn :=
+noncomputable instance Txn.zero_val [FfiSyntax] : ZeroVal Txn :=
   ⟨Txn.mk zeroValDef zeroValDef⟩
 
-@[reducible] def Txn.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Txn.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"log" (go.GoType.PointerType Log.ty)),
 (go.field_decl.FieldDecl go!"blks" (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))]
 
-@[irreducible] def Txn.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Txn.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Txn.fieldsUnsealed
 
-instance equals_unfold_Txn [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Txn [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Txn.fields Txn.fieldsUnsealed :=
   ⟨by unfold Txn.fields; rfl⟩
 
-@[reducible] def Txn.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Txn.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Txn.fields)
 
 class Txn.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
