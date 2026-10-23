@@ -788,37 +788,73 @@ meta def parseGooseWp? (goal : Lean.Expr) : MetaM (Option GooseWpGoal) := do
   return some { wpHead := mkAppN goal.getAppFn args[:5], ι, ext,
                 s := args[5]!, E := args[6]!, e, Φ := args[8]!, tail }
 
-/-- Caches of `needsGooseSimp` (cleared by `wp_auto`/`wp_pures` at the start):
-the simp heads, the result per (shared) subterm, and per constant. Per thread
-(`ThreadRef`): the heads depend on the declaration's environment (a later
+/-- Caches of `needsGooseSimp`: the simp heads, the result per (shared) subterm,
+and per constant. Per thread (`ThreadRef`) and kept for one declaration
+(`enterWpCaches`): the heads depend on the declaration's environment (a later
 declaration may see more `goose_wp_simp` rules). -/
 meta initialize needsHeadsCache : ThreadRef (Option (Option NameSet)) ← ThreadRef.new none
 meta initialize needsCache : ThreadRef (Std.HashMap Lean.Expr Bool) ← ThreadRef.new {}
 meta initialize needsConstCache : ThreadRef (Std.HashMap Name Bool) ← ThreadRef.new {}
 
 /-- Results of `synthPureWp`, per thread (declarations are elaborated in parallel)
-and cleared by every WP tactic (`withNoSorry`). The keys contain the local
-instances, so that a result never mentions free variables of another context. -/
+and kept for one declaration (`enterWpCaches`). The keys contain the local
+instances and the instance arguments of `PureWp`, so that a result never mentions
+free variables of another context. -/
 meta initialize pureWpCache :
-    IO.Ref (Std.HashMap UInt64 (Std.HashMap Lean.Expr (Option (Lean.Expr × Lean.Expr × Lean.Expr)))) ← IO.mkRef {}
+    ThreadRef (Std.HashMap Lean.Expr (Option (Lean.Expr × Lean.Expr × Lean.Expr))) ← ThreadRef.new {}
 
-meta def pureWpCacheFind? (key : Lean.Expr) : BaseIO (Option (Option (Lean.Expr × Lean.Expr × Lean.Expr))) := do
-  let tid ← IO.getTID
-  return (← pureWpCache.get)[tid]? >>= (·[key]?)
+meta def pureWpCacheFind? (key : Lean.Expr) : BaseIO (Option (Option (Lean.Expr × Lean.Expr × Lean.Expr))) :=
+  return (← pureWpCache.get)[key]?
 
+/-- Record the result `r` for `key`, if it mentions no free variable that `key`
+does not (so that it is well-scoped wherever `key` is). -/
 meta def pureWpCacheInsert (key : Lean.Expr) (r : Option (Lean.Expr × Lean.Expr × Lean.Expr)) : BaseIO Unit := do
-  let tid ← IO.getTID
-  pureWpCache.modify fun m =>
-    let c := m.getD tid {}
-    m.insert tid ((if c.size > 10000 then {} else c).insert key r)
+  if let some (φ, e2, inst) := r then
+    let ks := (collectFVars {} key).fvarSet
+    if [φ, e2, inst].any (·.hasAnyFVar (!ks.contains ·)) then return
+  pureWpCache.modify fun c => (if c.size > 10000 then {} else c).insert key r
 
-meta def pureWpCacheClear : BaseIO Unit := do
-  let tid ← IO.getTID
-  pureWpCache.modify (·.erase tid)
+/-- The scope of the caches of `needsGooseSimp` and `synthPureWp` on this thread:
+a metavariable of the declaration that filled them (the goal of its first WP
+tactic), the value of `goose.wp.extras` they were computed with, and the name
+generator after their last use. -/
+meta initialize wpCacheScope : ThreadRef (Option (MVarId × Bool × NameGenerator)) ← ThreadRef.new none
 
-/-- Clear the caches of `needsGooseSimp`. -/
-meta def clearNeedsCaches : BaseIO Unit := do
-  needsHeadsCache.set none; needsCache.set {}; needsConstCache.set {}
+meta def clearWpCaches : BaseIO Unit := do
+  needsHeadsCache.set none; needsCache.set {}; needsConstCache.set {}; pureWpCache.set {}
+  wpCacheScope.set none
+
+/-- Clear the caches of `needsGooseSimp` and `synthPureWp` unless they belong to
+the current declaration: their scope's metavariable is declared in the current
+metavariable context (the elaboration of a declaration starts from an empty
+one; backtracking past the scope's creation also leaves it), with the same
+`goose.wp.extras`, and the name generator has not gone back since their last
+use (as when the language server reuses an earlier state of the declaration).
+Then the free variables and metavariables the entries mention are the ones they
+were computed with, and within a declaration the rules (simp sets, instances,
+reducibility) are fixed: the entries are valid in any local context that
+mentions their free variables (see `needsGooseSimp`, `synthPureWp`). -/
+meta def checkWpCaches : MetaM Unit := do
+  let some (m, extras, ngen) ← wpCacheScope.get | clearWpCaches
+  let ngen' ← getNGen
+  unless (← getMCtx).decls.contains m && extras == goose.wp.extras.get (← getOptions) &&
+      ngen'.namePrefix == ngen.namePrefix && ngen.idx ≤ ngen'.idx do
+    clearWpCaches
+
+/-- Run `k`, which uses the caches (`checkWpCaches` first). -/
+meta def withWpCaches {α} (k : MetaM α) : MetaM α := do
+  checkWpCaches
+  try k finally
+    let ngen ← getNGen
+    wpCacheScope.modify (·.map fun (m, extras, _) => (m, extras, ngen))
+
+/-- Enter the scope of the caches for a WP tactic on the goal `mvar`: keep them
+if they belong to the current declaration (`checkWpCaches`), else start them
+afresh with scope `mvar`. -/
+meta def enterWpCaches (mvar : MVarId) : MetaM Unit := do
+  checkWpCaches
+  if (← wpCacheScope.get).isNone then
+    wpCacheScope.set (some (mvar, goose.wp.extras.get (← getOptions), ← getNGen))
 
 /-- Run the tactic `k` on the main goal with elaboration errors raised as
 exceptions (`Term.withoutErrToSorry`, no error recovery), and fail if the proof
@@ -826,8 +862,8 @@ it produces contains a (synthetic) `sorry` that was not already in the goal.
 All GooseLang WP tactics run under this guard, so that e.g. an ill-typed lemma
 given to `wp_apply` is an error rather than a silently admitted goal. -/
 meta def withNoSorry {α} (tacName : Name) (k : TacticM α) : TacticM α := do
-  pureWpCacheClear
   let mvar ← getMainGoal
+  enterWpCaches mvar
   let hadSorry := (← instantiateMVars (← mvar.getType)).hasSyntheticSorry
   let r ← Term.withoutErrToSorry <| withoutRecover k
   unless hadSorry do
@@ -840,7 +876,6 @@ meta def withNoSorry {α} (tacName : Name) (k : TacticM α) : TacticM α := do
 meta def runTacticGooseWp {α} (tacName : Name)
     (k : MVarId → IrisGoal → GooseWpGoal → ProofModeM α) : TacticM α :=
   withNoSorry tacName <| ProofModeM.runTactic tacName fun mvar g => do
-    clearNeedsCaches
     -- the goal of the proof mode typically mentions assigned (universe level)
     -- metavariables; instantiated here once, so that the hypotheses and the terms
     -- built by the tactics do not contain them (otherwise every `instantiateMVars`
@@ -1145,8 +1180,13 @@ subterm is headed by a constant that a `goose_wp_simp` rule rewrites, a
 matcher/recursor, a projection of a constructor, a `let`, or a beta-redex), so
 that the (expensive) simp call over the whole expression is skipped when it
 would do nothing. The subterms `known` are known to be in normal form (e.g. the
-subterms of the WP expression that a step only moves around) and are skipped. -/
-meta def needsGooseSimp (e : Lean.Expr) (known : Array Lean.Expr := #[]) : MetaM Bool := do
+subterms of the WP expression that a step only moves around) and are skipped.
+
+The result per subterm is cached for the declaration (`needsCache`): it depends
+only on the subterm and the rules, not on the local context, except a result
+that skipped a `known` subterm or that depends on metavariables (which may be
+assigned later), which is not cached. -/
+meta def needsGooseSimp (e : Lean.Expr) (known : Array Lean.Expr := #[]) : MetaM Bool := withWpCaches do
   let heads? ← match ← needsHeadsCache.get with
     | some h => pure h
     | none => do let h ← gooseSimpHeads; needsHeadsCache.set (some h); pure h
@@ -1191,21 +1231,27 @@ meta def needsGooseSimp (e : Lean.Expr) (known : Array Lean.Expr := #[]) : MetaM
         | none => return false
       | _ => return false
     | _ => return false
-  let rec go (s : Lean.Expr) : MetaM Bool := do
-    if known.contains s then return false
-    if let some b := (← needsCache.get)[s]? then return b
-    let b ← do
-      if ← localNeeds s then pure true
+  -- (the result, and whether it holds without the `known` subterms)
+  let rec go (s : Lean.Expr) : MetaM (Bool × Bool) := do
+    if known.contains s then return (false, false)
+    if let some b := (← needsCache.get)[s]? then return (b, true)
+    let both (r1 : Bool × Bool) (r2 : MetaM (Bool × Bool)) : MetaM (Bool × Bool) := do
+      if r1.1 then return (true, true)
+      let (b2, k2) ← r2
+      return (b2, b2 || r1.2 && k2)
+    let (b, k) ← do
+      if ← localNeeds s then pure (true, true)
       else match s with
         -- (the variable set of a closedness annotation is a list of string literals)
         | .app (.app (.app (.const ``fvClosed _) _) _) b => go b
-        | .app f a => do if ← go f then pure true else go a
-        | .lam _ t b _ | .forallE _ t b _ => do if ← go t then pure true else go b
+        | .app f a => both (← go f) (go a)
+        | .lam _ t b _ | .forallE _ t b _ => both (← go t) (go b)
         | .mdata _ b => go b
-        | _ => pure false
-    needsCache.modify (·.insert s b)
-    return b
-  go e
+        | _ => pure (false, true)
+    if k && !s.hasExprMVar then
+      needsCache.modify fun c => (if c.size > 100000 then {} else c).insert s b
+    return (b, k)
+  return (← go e).1
 
 /-- Instance arguments `ext ffi interp sem gctx hlc GF G L` of a `goose_irisGS`
 instance. -/
@@ -1519,23 +1565,17 @@ meta def synthPureWpCore (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option
   let args := ty.getAppArgs
   return some (args[gs.size]!, args[gs.size + 2]!, ← instantiateMVars inst)
 
-/-- Find a `PureWp` instance for `e1`: the structural steps are built directly
-(`directPureWp`); for a small redex, the search is done once per *shape* (within
-one tactic call, `pureWpCache`): the redex with its free variables (other than
-local instances), the payloads of its machine-word and struct values
-(`genericPayloadType`) and the field name of a `StructFieldRef` abstracted, so
-that e.g. all the steps `#x +⟨go.uint64⟩ #(W64 1)` of a function, or all the field
-references of a struct, share one search; a failed generic search is final. A
-redex without such payloads is cached up to its free variables. -/
-meta def synthPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
-  if let some r ← directPureWp gs e1 then return some r
-  if let some r ← arrayLitPureWp? gs e1 then return some r
+/-- The cached search of `synthPureWp`. -/
+meta def synthPureWpCached (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
   let e1 ← instantiateMVars e1
+  let gs ← gs.mapM instantiateMVars
   -- (only small redexes: the key is built at every step)
-  if e1.hasMVar.or !(exprSmall e1 400 (modPayloads := true)) then return ← synthPureWpCore gs e1
-  -- (the local instances are part of the key: the results may mention them)
+  if (e1.hasMVar.or (gs.any (·.hasMVar))).or !(exprSmall e1 400 (modPayloads := true)) then
+    return ← synthPureWpCore gs e1
+  -- (the local instances and `gs` are part of the key: the results may mention
+  -- them; a cached result is kept only if it mentions no other free variable)
   let insts := (← getLocalInstances).map (·.fvar)
-  let mkKey (k : Lean.Expr) : MetaM Lean.Expr := pure (mkAppN k insts)
+  let mkKey (k : Lean.Expr) : MetaM Lean.Expr := pure (mkAppN k (insts ++ gs))
   let inst3 (r : Option (Lean.Expr × Lean.Expr × Lean.Expr)) (args : Array Lean.Expr) :=
     r.map fun (φ, e2, inst) => (φ.beta args, e2.beta args, inst.beta args)
   let abs3 (params : Array Lean.Expr) :
@@ -1585,6 +1625,19 @@ meta def synthPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Le
   let r ← synthPureWpCore gs e1
   if let some ra ← abs3 xs r then pureWpCacheInsert key ra
   return r
+
+/-- Find a `PureWp` instance for `e1`: the structural steps are built directly
+(`directPureWp`); for a small redex, the search is done once per *shape* (within
+one declaration, `pureWpCache`): the redex with its free variables (other than
+local instances), the payloads of its machine-word and struct values
+(`genericPayloadType`) and the field name of a `StructFieldRef` abstracted, so
+that e.g. all the steps `#x +⟨go.uint64⟩ #(W64 1)` of a function, or all the field
+references of a struct, share one search; a failed generic search is final. A
+redex without such payloads is cached up to its free variables. -/
+meta def synthPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
+  if let some r ← directPureWp gs e1 then return some r
+  if let some r ← arrayLitPureWp? gs e1 then return some r
+  withWpCaches (synthPureWpCached gs e1)
 
 /-- Discharge the side condition `φ` of a pure step. `True` is solved
 immediately; otherwise iris-lean's side-condition solver is tried, and if it
