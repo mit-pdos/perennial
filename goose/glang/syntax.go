@@ -462,6 +462,9 @@ type File struct {
 	PkgPath        string
 	PreHeaderDecls []Decl
 	Decls          []Decl
+	// Chunks are the other modules of a package whose translation is split
+	// over several modules, by name (chunkN, in the package's directory).
+	Chunks map[string]File
 }
 
 type CommCase interface {

@@ -180,10 +180,23 @@ func (ctx *Ctx) leanStructImplBody(spec *ast.TypeSpec) glang.Expr {
 	return glang.CallExpr{MethodName: glang.VerbatimExpr("go.StructType"), Args: []glang.Expr{fdsArg}}
 }
 
+// typeAssumptionsDecl is the class of assumptions about a named type. Only the
+// package's Assumptions class refers to it, so a large package's classes go in
+// modules of their own (see leanChunks).
+type typeAssumptionsDecl struct {
+	glang.VerbatimDecl
+	fields int
+}
+
+// packageAssumptionsDecl is the package-level Assumptions class.
+type packageAssumptionsDecl struct {
+	glang.VerbatimDecl
+}
+
 // namedTypeLeanPropClassDecl is the class of assumptions about a named type
 // (X.TypeAssumptions): its type representation, its underlying type, the struct
 // field accessors and its method set.
-func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
+func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDecl {
 	typeName := spec.Name.Name
 	descName := glang.LeanTypeDesc(typeName)
 	implName := glang.LeanIdent(glang.TypeImpl(glang.ToIdent(typeName)))
@@ -345,7 +358,10 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) string {
 		}
 	}
 
-	return leanClass(glang.LeanEncodedName(typeName+"_Assumptions"), " [FfiSyntax] "+leanClassParams, fields)
+	return typeAssumptionsDecl{
+		VerbatimDecl: glang.VerbatimDecl{Content: leanClass(glang.LeanEncodedName(typeName+"_Assumptions"), " [FfiSyntax] "+leanClassParams, fields)},
+		fields:       len(fields),
+	}
 }
 
 func lparenS(s string) string {

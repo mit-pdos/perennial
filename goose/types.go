@@ -147,7 +147,7 @@ func (ctx *Ctx) namedTypeImplDecl(spec *ast.TypeSpec) (decls []glang.Decl) {
 }
 
 func (ctx *Ctx) namedTypePropClassDecl(spec *ast.TypeSpec) []glang.Decl {
-	return []glang.Decl{glang.VerbatimDecl{Content: ctx.namedTypeLeanPropClassDecl(spec)}}
+	return []glang.Decl{ctx.namedTypeLeanPropClassDecl(spec)}
 }
 
 func (ctx *Ctx) typeOf(e ast.Expr) types.Type {
