@@ -83,6 +83,12 @@ func checkAll(modDir string, patterns []string) int {
 			status = 2
 			continue
 		}
+		for _, init := range pkg.TypesInfo.InitOrder {
+			if at, msg, bad := modelcheck.PackageVar(pkg.TypesInfo, init); bad {
+				fmt.Printf("%v: %s\n", pkg.Fset.Position(at.Pos()), msg)
+				status = max(status, 1)
+			}
+		}
 		for _, f := range pkg.Syntax {
 			ast.Inspect(f, func(n ast.Node) bool {
 				var at ast.Node

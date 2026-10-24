@@ -3113,6 +3113,9 @@ InitLoop:
 				continue InitLoop
 			}
 		}
+		if n, msg, bad := modelcheck.PackageVar(ctx.info, init); bad {
+			ctx.unsupported(n, "%s", msg)
+		}
 
 		// Execute assignments left-to-right
 		for i := len(init.Lhs); i > 0; i-- {

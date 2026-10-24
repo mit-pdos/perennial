@@ -95,6 +95,44 @@ func pointerFreeNotPlain(pa, pb *padded, ba, bb *blank, fa, fb *floats, oa, ob *
 	*ea = *eb // want
 }
 
+// Arrays with pointers are reported: in safe Go, overlapping slices converted
+// to a named and an unnamed array pointer are copied with a Move (the review
+// of draft 9): gc gives 0 0 0 0 0 0 0 0 0 9 for strings 0 to 9. Structs with
+// pointers are not: no view of one can partially overlap another.
+type strArr [8]string
+
+func withPointers(rp, rq *ptrs, sp, sq *strs, s []string, ap, aq *[2]*int) {
+	*rp = *rq
+	*sp = *sq
+	*ap = *aq // want
+	p := (*strArr)(s[1:9])
+	q := (*[8]string)(s[0:8])
+	*p = *q // want
+}
+
+// A base with a composite literal is never the same base: types.ExprString
+// abbreviates literals (the review of draft 9).
+type holder struct{ A meta }
+
+func literalBases(p, q *holder) {
+	[]*holder{p, q}[0].A = []*holder{q, p}[0].A // want
+}
+
+// Package-variable literals are built in place (the review of draft 9).
+type withTwo struct {
+	H uint64
+	A [8]uint64
+}
+
+func get() *[8]uint64 { return new([8]uint64) }
+
+var built = withTwo{A: *get()}             // want
+var nested = [1]withTwo{{H: 1, A: *get()}} // want
+
+var arrVar [8]uint64
+var notBuilt = withTwo{H: 1, A: arrVar}
+var notBuilt2 = withTwo{A: [8]uint64{1, 2}}
+
 func next() int { return 0 }
 
 func generic[T any](d, s *T, xs, ys []T, ps []pair[T]) {
@@ -138,9 +176,6 @@ func notReported(p, q *meta, s []meta, m map[int]meta, f func() meta, rp, rq *pt
 	m[1] = *p
 	// Integer copies are one load and one store.
 	*(*uint64)(unsafe.Pointer(&p.b)) = *(*uint64)(unsafe.Pointer(&p.a))
-	// Types with pointers.
-	*rp = *rq
-	*sp = *sq
 	// A range into a whole variable.
 	for _, x = range s {
 	}

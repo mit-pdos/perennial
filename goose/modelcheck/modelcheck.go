@@ -16,8 +16,9 @@
 // syntactic reasons (one side is a whole variable, or both sides have the
 // same base).
 //
-// goose calls Assign and Range on each statement it translates, and reports a
-// finding as an unsupported construct.
+// goose calls Assign and Range on each statement it translates, and
+// PackageVar on each package-variable initializer, and reports a finding as an
+// unsupported construct.
 package modelcheck
 
 import (
@@ -74,6 +75,59 @@ func Range(info *types.Info, s *ast.RangeStmt) (n ast.Node, msg string, ok bool)
 		t, types.ExprString(s.Value)), true
 }
 
+// PackageVar checks the initializer of a package variable. gc builds a
+// composite literal assigned to a package variable in place: each element is
+// stored straight into its part of the variable, X.path = elem, through nested
+// struct, array and slice literals (staticinit). Each such element is checked
+// as that assignment; its left side is a part of X, never X itself, so the
+// whole-variable exemption does not apply.
+func PackageVar(info *types.Info, init *types.Initializer) (n ast.Node, msg string, ok bool) {
+	if len(init.Lhs) != 1 {
+		return nil, "", false
+	}
+	c := checker{info}
+	var found ast.Expr
+	var walk func(e ast.Expr)
+	walk = func(e ast.Expr) {
+		if found != nil {
+			return
+		}
+		e = ast.Unparen(e)
+		if conv, ok := c.conversion(e); ok {
+			walk(conv.Args[0])
+			return
+		}
+		lit, ok := e.(*ast.CompositeLit)
+		if !ok {
+			return
+		}
+		if _, isMap := under(info.TypeOf(lit)).(*types.Map); isMap {
+			return // map entries are copied into the map's own storage
+		}
+		for _, elt := range lit.Elts {
+			if kv, ok := elt.(*ast.KeyValueExpr); ok {
+				elt = kv.Value
+			}
+			v := ast.Unparen(elt)
+			if _, isLit := v.(*ast.CompositeLit); isLit {
+				walk(v)
+				continue
+			}
+			if t := info.TypeOf(v); t != nil && mayBeMoved(t) && c.isSource(v) {
+				found = v
+				return
+			}
+			walk(v)
+		}
+	}
+	walk(init.Rhs)
+	if found == nil {
+		return nil, "", false
+	}
+	return found, report("copy of %s into part of package variable %s (%s), which gc builds in place",
+		info.TypeOf(found), init.Lhs[0].Name(), types.ExprString(found)), true
+}
+
 func report(format string, args ...any) string {
 	return Prefix + fmt.Sprintf(format, args...) +
 		"; the semantics copies by value, but gc does not when the two sides partially overlap" +
@@ -92,18 +146,25 @@ func under(t types.Type) types.Type {
 	return t.Underlying()
 }
 
-// mayBeMoved reports whether a value of type t may be copied with a Move that
-// the semantics models incorrectly: a pointer-free struct or array type, or a
-// type parameter. Pointer-free is a deliberate superset of the design's Plain
-// (R1), so that the guard need not agree with the semantics on padding, blank
-// fields, zero size or floats. A plain integer is one load and one store, not
-// a Move. A type with pointers has no unsafe views (R3), and gc copies safe
-// Go's partially overlapping array views with memmove (design A2).
+// mayBeMoved reports whether two views of type t may partially overlap, so
+// that gc's Move of a t can differ from the semantics' copy by value: any
+// array type, a pointer-free struct type, or a type parameter. This is a
+// deliberate superset of the types with such views:
+//   - plain types (design R1), viewed with unsafe; pointer-free covers them,
+//     so that the guard need not agree with the semantics on padding, blank
+//     fields, zero size or floats;
+//   - arrays of any element type, viewed in safe Go by converting overlapping
+//     slices to array pointers, which gc copies with a Move rather than
+//     memmove when the two sides' array types differ only in being named.
+//
+// A struct with pointers has neither: safe Go cannot view a struct over a
+// slice, and the semantics makes every unsafe view of a non-plain type stuck
+// (R3). A scalar is one load and one store, not a Move.
 func mayBeMoved(t types.Type) bool {
 	switch under(t).(type) {
-	case nil:
+	case nil, *types.Array:
 		return true
-	case *types.Struct, *types.Array:
+	case *types.Struct:
 		return pointerFree(t)
 	}
 	return false
@@ -285,13 +346,15 @@ func (c checker) base(e ast.Expr) (ast.Expr, bool) {
 	}
 }
 
-// callFree reports whether evaluating e cannot change memory: it contains no
-// call other than a conversion or len/cap, no function literal and no receive.
+// callFree reports whether evaluating e cannot change memory and its text
+// (types.ExprString, which abbreviates literals) determines it: it contains no
+// call other than a conversion or len/cap, no receive, and no function or
+// composite literal.
 func (c checker) callFree(e ast.Expr) bool {
 	free := true
 	ast.Inspect(e, func(n ast.Node) bool {
 		switch n := n.(type) {
-		case *ast.FuncLit:
+		case *ast.FuncLit, *ast.CompositeLit:
 			free = false
 		case *ast.UnaryExpr:
 			if n.Op == token.ARROW {

@@ -245,18 +245,26 @@ partially overlap.
 `goose/cmd/modelcheck`). goose runs it on every package it translates and
 refuses to emit the translation when it reports anything. It reports every
 statement `lhs = rhs` where:
-- the type is a **pointer-free** struct or array type, or a type parameter.
-  "Pointer-free" means it contains no pointer, `unsafe.Pointer`, slice,
-  string, map, channel, function or interface. This is a deliberate
-  superset of `Plain`, so that the guard does not have to agree with the
-  semantics on padding, blank fields, zero size or floats. Two kinds of copy
-  are left out, and need no check:
-  - a plain integer is one load and one store, not a `Move`;
-  - a type with pointers is not plain, so R3 makes every `unsafe` view of it
-    stuck. Safe Go can still make two partially overlapping views of an
-    array, `(*[2]E)(s[0:2])` and `(*[2]E)(s[1:3])`, for any `E`. gc copies
-    between them with `memmove`, because both sides are dereferences
-    (A2), and `memmove` is what value semantics gives;
+- the type is **any array type**, a **pointer-free struct type**, or a type
+  parameter. "Pointer-free" means it contains no pointer, `unsafe.Pointer`,
+  slice, string, map, channel, function or interface. These are the types
+  two of whose views can partially overlap, with a margin:
+  - plain types (R1), viewed with `unsafe`. Pointer-free structs are a
+    deliberate superset of plain structs, so that the guard does not have to
+    agree with the semantics on padding, blank fields, zero size or floats;
+  - arrays of any element type, which safe Go views by converting
+    overlapping slices to array pointers, `(*[2]E)(s[0:2])` and
+    `(*[2]E)(s[1:3])`. gc copies between them with `memmove` only when the
+    two sides are dereferences of identical types (A2). With a named and an
+    unnamed array type, `*p = *q` with `p` a `*A` (`type A [8]string`) and
+    `q` a `*[8]string`, gc emits a `Move`, and gives
+    `0 0 0 0 0 0 0 0 0 9` for the strings `0` to `9` (the review of draft 9).
+
+  Two kinds of copy are left out, and need no check:
+  - a scalar is one load and one store, not a `Move`;
+  - a struct with pointers has no partially overlapping views: safe Go
+    cannot view a struct over a slice, and R3 makes every `unsafe` view of a
+    non-plain type stuck;
 - `lhs` is a memory place: a dereference, a field or element of an
   addressable value, or a value-preserving conversion of a place. A map
   index is not one;
@@ -279,7 +287,9 @@ statement `lhs = rhs` where:
 
     The two bases must be the same expression, and neither the bases nor
     any index along either path may contain a call (other than a
-    conversion, `len` or `cap`) or a receive. Then both places lie in the
+    conversion, `len` or `cap`), a receive, or a function or composite
+    literal (two different literals can print alike, and each evaluation
+    makes a new one). Then both places lie in the
     one object at the base's value, whose layout is a tree, so they are
     disjoint or the same place, and a `Move` is correct on both. This
     covers sort's swap `data[i], data[j] = data[j], data[i]`, `p.X = p.Y`,
@@ -299,11 +309,20 @@ statement affects the operand, and the guard does not depend on when gc
 uses a temporary there. It also checks `for _, place = range x` over an
 array, a slice or a pointer to an array.
 
+**Package-variable literals.** gc builds a composite literal assigned to a
+package variable in place (`staticinit`): each element is stored straight
+into its part of the variable. So the guard checks each element `e` of
+`var X = T{…}`, through nested struct, array and slice literals, as the
+assignment `X.path = e`. Its left side is a part of `X`, never `X` itself,
+so the whole-variable exemption does not apply. With `var X = S{A: *f()}`,
+where `f` returns a view of `X` shifted by 8 bytes, gc gives the chunked
+result (the review of draft 9).
+
 **What it checks** is exactly what goose translates. goose calls it from
 its own translation of each assignment and range statement (`assignStmtWith`
-and `rangeStmt`), so it sees every statement goose translates, in function
-and method bodies, function literals and package-variable initializers, and
-no other. The guard does not recompute goose's declaration filter. Trusted
+and `rangeStmt`) and of each package-variable initializer, so it sees every
+statement goose translates, in function and method bodies, function
+literals and package-variable initializers, and no other. The guard does not recompute goose's declaration filter. Trusted
 and axiomatized declarations have no translated body (assumption A4).
 `goose/cmd/modelcheck` runs goose's translation without writing anything
 and prints only the guard's findings.
@@ -322,9 +341,14 @@ non-`memmove` `Move` between two memory places in two ways:
   statement, except the two exemptions above, which cannot partially
   overlap.
 - **By fusing a copy through a stack temporary** (`generic.rules`, the
-  A → B → C rule). This requires a stack source and `disjoint(src, dst)`.
-  That is exact for constant offsets from one base, and "may alias"
-  otherwise. The rule may also fuse a copy of at most 16 bytes that could
+  A → B → C rule). This requires the source to be on the stack, and
+  `disjoint(src, dst)` (`ssa/rewrite.go`). `disjoint` is true for constant
+  offsets from one base that do not overlap, for two different stack or
+  global symbols, for a stack symbol against an argument, and for a
+  pointer-holding pointer-sized element against one with no pointers.
+  Each of those is true in the model too: by R1, different variables are
+  different blocks, and by R3 no plain view covers a pointer cell. The rule
+  may also fuse a copy of at most 16 bytes that could
   overlap (`isInlinableMemmove`), and such copies are lowered with all
   their loads before their stores (`AMD64.rules`, the `Move [1]` to
   `Move [16]` cases), so they are correct even when they overlap. So gc
@@ -334,8 +358,12 @@ Every other copy goes to fresh storage or through a real temporary:
 - `append`, which copies its operands to temporaries first;
 - arguments, results, channel sends and receives;
 - interface boxing;
-- composite literals assigned through a pointer;
+- composite literals assigned through a pointer, or to a local variable
+  (built in place only into a stack variable whose address is not taken,
+  which no view can point into);
 - `range` into a whole variable.
+
+Package-variable literals are built in place, and are checked as above.
 
 gc's `copy` is a `memmove`, which is what value semantics gives.
 
@@ -424,21 +452,28 @@ as stated, but it lacks every declaration with a finding and does not build
   - gc's `Move` copies correctly when its source and destination are
     disjoint or the same place.
 - **A2, gc's copies (a fact about gc 1.26's optimizer, not a language
-  promise).** gc fuses a copy through a temporary into one `Move` only from
-  a stack temporary, when it can show the source and destination disjoint.
-  Its other copies go to fresh storage, through a real temporary, or with
-  `memmove` (R4). A gc that fused overlapping heap copies through a
-  temporary would need the guard to look at such pairs of statements too.
-  - gc copies an array of more than one element with `memmove` when both
-    sides of the assignment are dereferences (`ssagen/ssa.go`,
-    `mayOverlap`), and a slice-to-array conversion `[N]T(s)` is the
-    dereference `*(*[N]T)(s)` by then (`walk/convert.go`,
-    `walkSliceToArray`). This is what makes safe Go's partially
-    overlapping array views correct, for element types the guard does not
-    check (R4).
-  - gc builds a composite literal in place only into a stack variable
-    whose address is not taken (`walk/complit.go`, `oaslit`), which no
-    view can point into.
+  promise).** gc fuses a copy through a temporary into one `Move` only when
+  the source is on the stack and `disjoint` holds (R4 lists when it does).
+  Its other copies between two places go to fresh storage, through a real
+  temporary, or are the single assignments, range assignments and
+  package-variable literal elements the guard checks (R4). A gc that fused
+  overlapping heap copies through a temporary would need the guard to look
+  at such pairs of statements too.
+  - gc builds a composite literal in place only into a stack variable whose
+    address is not taken (`walk/complit.go`, `oaslit`), which no view can
+    point into, or into a package variable (`staticinit`), whose elements
+    the guard checks.
+  - The guard does not rely on gc's `memmove` for arrays (`ssagen/ssa.go`,
+    `mayOverlap`): that applies only when both sides are dereferences with
+    no conversion between them after type checking, which a named array
+    type defeats (R4).
+  - A related gc deviation from the Go spec is outside this design: gc
+    stores the elements of a package-variable literal straight into the
+    variable and leaves its zero fields untouched, so a write to the
+    variable made while the elements are evaluated survives. With
+    `var X = S{A: g()}`, where `g` sets `X.T = 9`, gc gives `X.T == 9`,
+    while the spec gives 0. This is an evaluation-order issue, like the
+    others the semantics leaves open.
 - **A3, mixed-width atomics.** No two atomics with different widths or
   addresses touch the same bytes while they are concurrent. Nothing checks
   this, and no sound syntactic check exists. For example, an atomic on
@@ -993,8 +1028,35 @@ and in-place composite literals (`walk/complit.go`). It found:
 - **Accepted:** mixed-width atomics are defined where today's `lean` makes
   them stuck (A3).
 
-Draft 9 makes these changes. A focused re-review of R4 and section 5
-follows.
+Draft 9 makes these changes.
+
+**Review of draft 9** (one adversarial pass over R4 and section 5, with Go
+probes on gc 1.26). It found:
+- **Unsound, without `unsafe`:** the guard skipped types with pointers, on
+  the grounds that gc copies safe Go's overlapping array views with
+  `memmove`. gc does so only for dereferences of identical types; with a
+  named and an unnamed array type (`*p = *q`, `p` a `*A`, `type A
+  [8]string`, `q` a `*[8]string`) it emits a `Move`, and gives
+  `0 0 0 0 0 0 0 0 0 9`. Fixed in R4: every array type is checked, and A2
+  no longer relies on `memmove`. This is also a gc bug.
+- **Unsound:** gc builds package-variable literals in place, so their
+  elements are copies into a part of the variable that the whole-variable
+  exemption skipped. Fixed in R4: each element is checked as an
+  assignment.
+- **The same-base rule, as worded:** a field promoted through an embedded
+  pointer has the embedded pointer as its base (already so in the guard;
+  R4 now says it), and two composite literals can print alike, so bases
+  may contain none.
+- **A2's description of `disjoint`** was inaccurate. R4 now lists when it
+  holds, and why each case is true in the model too.
+- **Outside the design:** the in-place package-variable literal also lets a
+  write to the variable during initialization survive, against the spec
+  (A2).
+
+The checks above cost nothing on today's code: with them, the guard finds
+nothing in Perennial's or etcd-grove's translations (raft, etcd and
+raft-witness at their pins included), and only the six copies of section 6
+in bbolt v1.5.0.
 
 ## 12. The work, from the current `lean`
 

@@ -40,6 +40,15 @@ func TestCases(t *testing.T) {
 	}
 
 	got := make(map[int]bool)
+	for _, init := range pkg.TypesInfo.InitOrder {
+		if at, msg, bad := PackageVar(pkg.TypesInfo, init); bad {
+			line := pkg.Fset.Position(at.Pos()).Line
+			got[line] = true
+			if !want[line] {
+				t.Errorf("line %d: unexpected finding: %s", line, msg)
+			}
+		}
+	}
 	for _, file := range pkg.Syntax {
 		ast.Inspect(file, func(n ast.Node) bool {
 			var at ast.Node
