@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
+import atexit
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass
 from os import path
 
@@ -97,6 +100,12 @@ def main():
         const="..",
     )
     parser.add_argument(
+        "--modelcheck",
+        help="instead of translating, run goose's modelcheck over the same packages "
+        "and configurations (docs/design/unsafe-memory.md, R4); exit 1 on a finding",
+        action="store_true",
+    )
+    parser.add_argument(
         "--goose-examples",
         help="also translate tests in Goose",
         action="store_true",
@@ -168,6 +177,17 @@ def main():
         os.chdir(old_dir)
         pm.wait_all()
 
+    modelcheck_failures = []
+    if args.modelcheck:
+        modelcheck_dir = tempfile.mkdtemp(prefix="modelcheck-")
+        atexit.register(shutil.rmtree, modelcheck_dir, ignore_errors=True)
+        modelcheck_bin = path.join(modelcheck_dir, "modelcheck")
+        subprocess.run(
+            ["go", "build", "-o", modelcheck_bin, "./goose/cmd/modelcheck"],
+            cwd=perennial_dir,
+            check=True,
+        )
+
     def run_goose(src_path, *pkgs, extra_args=None):
         if src_path is None:
             return
@@ -175,6 +195,14 @@ def main():
             pkgs = ["."]
         else:
             pkgs = list(pkgs)
+
+        if args.modelcheck:
+            cmd = [modelcheck_bin, "-configdir", code_dir, "-dir", src_path] + pkgs
+            if args.dry_run or args.verbose:
+                print(" ".join(cmd))
+            if not args.dry_run and subprocess.run(cmd).returncode != 0:
+                modelcheck_failures.append(f"{src_path}: {' '.join(pkgs)}")
+            return
 
         gopath = os.getenv("GOPATH", default=None)
         if gopath is None or gopath == "":
@@ -268,6 +296,11 @@ def main():
     if args.std_lib:
         run_goose(goose_dir, "internal/runtime/atomic", "internal/runtime/sys")
     pm.wait_all()
+    if modelcheck_failures:
+        print("modelcheck reported code the semantics models incorrectly in:", file=sys.stderr)
+        for f in modelcheck_failures:
+            print("  " + f, file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

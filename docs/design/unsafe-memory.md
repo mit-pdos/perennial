@@ -288,7 +288,10 @@ statement `lhs = rhs` where:
     `x[1][0] = x[0][0]` with `x` a `[][]T`: their bases differ (`pr.y` and
     `pr.x`, and so on). Two pointers or slices loaded from memory can point
     at overlapping views, and gc gives the chunked result for all three
-    (`rejected/`).
+    (`rejected/`). A field promoted through an embedded pointer is never
+    exempt: its base is the embedded pointer, which the expression does
+    not name, so `e.A = e.B` with `A` and `B` promoted through two
+    different embedded pointers of `e` is reported.
 
 It checks each pair of a multiple assignment. That is conservative: gc may
 copy a pair directly when it finds that no earlier assignment of the
@@ -296,20 +299,22 @@ statement affects the operand, and the guard does not depend on when gc
 uses a temporary there. It also checks `for _, place = range x` over an
 array, a slice or a pointer to an array.
 
-**What it checks** is exactly what goose translates. goose calls it on each
-function body, method body and package-variable initializer that goose
-itself decides to translate, at the point where it translates it; the guard
-does not recompute goose's declaration filter. Function literals inside
-these are included. Trusted and axiomatized declarations have no translated
-body (assumption A4).
+**What it checks** is exactly what goose translates. goose calls it from
+its own translation of each assignment and range statement (`assignStmtWith`
+and `rangeStmt`), so it sees every statement goose translates, in function
+and method bodies, function literals and package-variable initializers, and
+no other. The guard does not recompute goose's declaration filter. Trusted
+and axiomatized declarations have no translated body (assumption A4).
+`goose/cmd/modelcheck` runs goose's translation without writing anything
+and prints only the guard's findings.
 
 **A finding is a hard error.** There is no waiver. Any change to the
 guard's rule, or a way to override it, needs the project owner's approval
-first. goose also translates each reported statement to the stuck primitive
-`Panic "modelcheck: …"` (`PanicOp`, which has no step; it is not Go's
-recoverable panic), so a translation emitted despite the error, with
-`-ignore-errors`, is still sound: it is stuck wherever the semantics would
-be wrong.
+first. goose reports a finding as an `unsupported` construct, like any
+other Go it does not translate, which aborts the translation of the
+enclosing declaration. A translation emitted despite the error, with
+`-ignore-errors`, is still sound: the declaration's implementation is
+missing from it, so the package does not build.
 
 *Soundness of the guard* rests on how gc copies (section 5, A2). gc makes a
 non-`memmove` `Move` between two memory places in two ways:
@@ -408,8 +413,8 @@ regenerated:
   configurations, and refuses to land on a finding.
 
 A translation emitted with `-ignore-errors` is not covered by the guarantee
-as stated, but it is stuck at every reported statement (R4), so it is still
-sound.
+as stated, but it lacks every declaration with a finding and does not build
+(R4), so it is still sound.
 
 **Assumptions:**
 - **A1, the platform.**
@@ -594,10 +599,10 @@ Trusted:
    encodings, and the four `atomic.Pointer[T]` models.
 5. **goose**, about 40 lines: `unsafe.Add`, `unsafe.Slice`, and the
    blank-field name.
-6. **The guard,** `goose/modelcheck`, about 300 lines, its calls in goose
-   (and the stuck translation of a reported statement), and its run in
-   `etc/land.sh`. A missed statement is an unsound translation, so the
-   guard is trusted like the translator.
+6. **The guard,** `goose/modelcheck`, about 300 lines, its two calls in
+   goose, and its run in `etc/land.sh` (through
+   `etc/update-goose-new.py --modelcheck`). A missed statement is an
+   unsound translation, so the guard is trusted like the translator.
 7. **Platform facts in the README:** A1 to A3 of section 5:
    - linux/amd64, gc, without checkptr;
    - little-endian;
@@ -970,7 +975,9 @@ and in-place composite literals (`walk/complit.go`). It found:
   the first step that leaves an object.
 - **Gaps in enforcing the guarantee:**
   - `-ignore-errors` emitted a complete translation despite a finding.
-    Fixed in R4 with the stuck translation.
+    Fixed in R4: the prototype checked the package beside the translation;
+    the guard now runs inside goose's translation of each statement, so a
+    finding aborts its declaration like any unsupported construct.
   - Nothing ran the guard on Perennial's checked-in translations. Fixed in
     section 5 with the `etc/land.sh` check.
   - The guard recomputed `Plain` and goose's declaration filter. Fixed in
@@ -993,10 +1000,10 @@ workflow. This branch's commits (this document and `bboltmini`) are carried
 over first.
 
 1. **The guard.**
-   - `goose/modelcheck` and `goose/cmd/modelcheck`, with goose's calls at
-     the bodies it translates, the stuck translation of a reported
-     statement, and tests of each case of R4. The tests include the three
-     loaded-pointer copies of the review of draft 8.
+   - `goose/modelcheck` and `goose/cmd/modelcheck`, with goose's calls in
+     `assignStmtWith` and `rangeStmt`, and tests of each case of R4. The
+     tests include the three loaded-pointer copies of the review of draft
+     8, and goose negative tests (`testdata/negative-tests/modelcheck_*`).
    - The check in `etc/land.sh prepare` (section 5).
    - Run it over every translation Perennial and etcd-grove produce. A
      prototype found nothing in Perennial's standard library, models and

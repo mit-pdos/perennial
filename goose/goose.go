@@ -25,6 +25,7 @@ import (
 
 	"github.com/mit-pdos/perennial/goose/declfilter"
 	"github.com/mit-pdos/perennial/goose/glang"
+	"github.com/mit-pdos/perennial/goose/modelcheck"
 	"github.com/mit-pdos/perennial/goose/util"
 	"github.com/mit-pdos/perennial/goose/util/toposort"
 	"golang.org/x/tools/go/packages"
@@ -1430,6 +1431,9 @@ func (ctx *Ctx) forStmt(s *ast.ForStmt, cont glang.Expr) glang.Expr {
 }
 
 func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
+	if n, msg, bad := modelcheck.Range(ctx.info, s); bad {
+		ctx.unsupported(n, "%s", msg)
+	}
 	// Each iteration has its own iteration variables. A variable the loop
 	// declares is allocated in the body if the body captures it or takes its
 	// address (loopVarEscapes), and otherwise once, before the loop.
@@ -1769,6 +1773,9 @@ func (ctx *Ctx) assignStmt(s *ast.AssignStmt, cont glang.Expr) glang.Expr {
 // assignStmtWith is assignStmt with scope wrapped around the assignments, after
 // the right-hand sides are evaluated; see defineStmt.
 func (ctx *Ctx) assignStmtWith(s *ast.AssignStmt, scope func(glang.Expr) glang.Expr, cont glang.Expr) glang.Expr {
+	if n, msg, bad := modelcheck.Assign(ctx.info, s); bad {
+		ctx.unsupported(n, "%s", msg)
+	}
 	e := cont
 	if len(s.Rhs) == 0 {
 		return scope(e)
