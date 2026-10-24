@@ -196,3 +196,12 @@ models, trust lists, `assume`s); the `review-trusted` skill
   `Pos.Countable` (`Perennial/GooseLang/Countable.lean`, via an injection into
   `GenTree`), so ghost state can store values containing code.
 * Check a file with `lake build Perennial.Path.To.Module` (from the repo root).
+* The proof automation is compiled to native code: `lakefile.toml` declares a
+  second library, `PerennialMeta`, with `precompileModules`, listing the modules
+  that define tactics, elaborators, notation or simprocs and everything they
+  import (about 150 modules, rooted at the generated `PerennialMeta.lean`).
+  After adding such a module, or changing the imports of one, run
+  `etc/meta-lib.py` and commit the result; `etc/lean-ci.sh` and
+  `etc/land.sh prepare` fail until the list is up to date. Editing one of
+  these modules relinks the library and rebuilds everything that loads it.
+  The first build also compiles iris, batteries and Qq to native code (once).

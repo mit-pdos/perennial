@@ -7,7 +7,8 @@
 #
 # Usage: etc/land.sh prepare [--no-build]
 #            merge origin/lean into the branch, check the proofs' layout
-#            (etc/gen-link.py --check), build the touched Lean modules,
+#            (etc/gen-link.py --check) and the native tactic library's module
+#            list (etc/meta-lib.py --check), build the touched Lean modules,
 #            run goose's tests if goose changed
 #        etc/land.sh mark-reviewed
 #            record that /review-trusted passed on the branch's current changes
@@ -65,6 +66,8 @@ fetch_and_merge() {
 build_changed() {
   # the layout of the program proofs, and their generated Link.lean files
   python3 etc/gen-link.py --check || die "etc/gen-link.py --check failed (run etc/gen-link.py, or fix the layout)"
+  # the native-code library of the proof automation (lakefile.toml, PerennialMeta.lean)
+  python3 etc/meta-lib.py --check || die "etc/meta-lib.py --check failed (run etc/meta-lib.py and commit)"
   [ "$NOBUILD" = 1 ] && { echo "land: build skipped (--no-build)"; return 0; }
   mapfile -t files < <(git diff --name-only origin/lean...HEAD)
   lean=(); goose=0

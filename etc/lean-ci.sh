@@ -29,7 +29,8 @@
 # Also writes .lake/lean-ci-status.tsv (module, group, status, seconds) which
 # etc/lean-audit.py uses to decide which modules to import.
 #
-# Exit status: 0 iff every requested module is ok.
+# Exit status: 0 iff every requested module is ok; 2 on a usage error or an
+# out-of-date PerennialMeta list (etc/meta-lib.py --check).
 
 set -u
 cd "$(dirname "$0")/.." || exit 2
@@ -47,7 +48,7 @@ while [ $# -gt 0 ]; do
     --mem-cap) MEMCAP_GB=$2; shift 2;;
     --min-avail) MINAVAIL_GB=$2; shift 2;;
     -q) QUIET=1; shift;;
-    -h|--help) sed -n '2,35p' "$0"; exit 0;;
+    -h|--help) sed -n '2,36p' "$0"; exit 0;;
     *) echo "unknown argument $1" >&2; exit 2;;
   esac
 done
@@ -57,6 +58,10 @@ WDLOG=.lake/lean-ci-watchdog.log
 : > "$WDLOG"
 
 want() { case ",$GROUPS_ARG," in *",$1,"*) return 0;; esac; return 1; }
+
+# the native-code library of the proof automation must list exactly the tactic
+# modules and their imports (etc/meta-lib.py)
+python3 etc/meta-lib.py --check || exit 2
 
 # --- enumerate modules ------------------------------------------------------
 # file path -> module name (path components joined by '.'; lake's own module
