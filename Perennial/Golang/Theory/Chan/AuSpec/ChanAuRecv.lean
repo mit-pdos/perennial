@@ -4,7 +4,7 @@ channel model's `TryReceive` and `Receive`.
 -/
 module
 
-public import Perennial.Golang.Theory.Chan.AuSpec.ChanAuSend
+public import Perennial.Golang.Theory.Chan.AuSpec.ChanAuBase
 
 @[expose] public section
 
