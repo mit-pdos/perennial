@@ -97,6 +97,10 @@ func PackageVar(info *types.Info, init *types.Initializer) (n ast.Node, msg stri
 			walk(conv.Args[0])
 			return
 		}
+		if c.inlinableCall(e) {
+			found = e
+			return
+		}
 		lit, ok := e.(*ast.CompositeLit)
 		if !ok {
 			return
@@ -124,8 +128,61 @@ func PackageVar(info *types.Info, init *types.Initializer) (n ast.Node, msg stri
 	if found == nil {
 		return nil, "", false
 	}
+	if c.inlinableCall(found) {
+		return found, report("call %s in the initializer of package variable %s: gc may inline it and build "+
+			"its result, of type %s, in place, copying parts of it from memory",
+			types.ExprString(found), init.Lhs[0].Name(), info.TypeOf(found)), true
+	}
 	return found, report("copy of %s into part of package variable %s (%s), which gc builds in place",
 		info.TypeOf(found), init.Lhs[0].Name(), types.ExprString(found)), true
+}
+
+// inlinableCall reports whether e is a call that gc may inline and build in
+// place in a package variable (staticinit's staticAssignInlinedCall: a callee
+// whose body is a single return, with arguments free of side effects; the
+// callee may be in any package, so its body is not examined), and whose
+// result contains, by value, a part two views of which may partially overlap.
+// A conversion or a builtin call is not such a call; neither is a call whose
+// result is a pointer, built into a fresh object.
+func (c checker) inlinableCall(e ast.Expr) bool {
+	call, ok := ast.Unparen(e).(*ast.CallExpr)
+	if !ok {
+		return false
+	}
+	if _, isConv := c.conversion(call); isConv {
+		return false
+	}
+	if id, ok := ast.Unparen(call.Fun).(*ast.Ident); ok {
+		if _, isBuiltin := c.info.Uses[id].(*types.Builtin); isBuiltin {
+			return false
+		}
+	}
+	t := c.info.TypeOf(call)
+	return t != nil && containsMovable(t)
+}
+
+// containsMovable reports whether a value of type t contains, by value (not
+// through a pointer, slice, map, channel, function or interface), a part of a
+// type mayBeMoved accepts.
+func containsMovable(t types.Type) bool {
+	if mayBeMoved(t) {
+		return true
+	}
+	switch u := under(t).(type) {
+	case *types.Struct:
+		for i := range u.NumFields() {
+			if containsMovable(u.Field(i).Type()) {
+				return true
+			}
+		}
+	case *types.Tuple:
+		for i := range u.Len() {
+			if containsMovable(u.At(i).Type()) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func report(format string, args ...any) string {

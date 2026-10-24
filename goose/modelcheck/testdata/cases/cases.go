@@ -133,6 +133,17 @@ var arrVar [8]uint64
 var notBuilt = withTwo{H: 1, A: arrVar}
 var notBuilt2 = withTwo{A: [8]uint64{1, 2}}
 
+// A call gc may inline and build in place (the third review): mk's
+// `return withTwo{A: *p}` becomes built.A = *P in the variable.
+func mk(p *[8]uint64) withTwo { return withTwo{A: *p} }
+
+var P *[8]uint64
+var inlined = mk(P)                   // want
+var inlinedNested = [1]withTwo{mk(P)} // want
+var pointerResult = &withTwo{H: 1}    // a fresh object
+var scalarResult = next()             // nothing to move
+var pointerCall = func() *withTwo { return nil }()
+
 func next() int { return 0 }
 
 func generic[T any](d, s *T, xs, ys []T, ps []pair[T]) {

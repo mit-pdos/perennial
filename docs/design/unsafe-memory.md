@@ -318,6 +318,17 @@ so the whole-variable exemption does not apply. With `var X = S{A: *f()}`,
 where `f` returns a view of `X` shifted by 8 bytes, gc gives the chunked
 result (the review of draft 9).
 
+gc also inlines a call there whose callee is a single `return`, with
+arguments free of side effects, and builds the returned literal in place
+(`staticAssignInlinedCall`): `var X = mk(P)`, with
+`func mk(p *[8]uint64) S { return S{A: *p} }`, becomes `X.A = *P`. The
+callee may be in any package, so the guard does not look at its body: it
+reports any call in a package-variable initializer, at the top or as an
+element of an in-place literal, whose result contains by value an array, a
+pointer-free struct or a type parameter (the third review). Conversions,
+builtins, and calls returning pointers are not reported; a pointer's target
+is a fresh object.
+
 **What it checks** is exactly what goose translates. goose calls it from
 its own translation of each assignment and range statement (`assignStmtWith`
 and `rangeStmt`) and of each package-variable initializer, so it sees every
@@ -462,7 +473,11 @@ as stated, but it lacks every declaration with a finding and does not build
   - gc builds a composite literal in place only into a stack variable whose
     address is not taken (`walk/complit.go`, `oaslit`), which no view can
     point into, or into a package variable (`staticinit`), whose elements
-    the guard checks.
+    the guard checks, including the result of a call gc inlines there
+    (`staticAssignInlinedCall`). A literal behind `&T{…}` in a
+    package-variable initializer is built in a fresh static object,
+    reachable only through the variable before it is initialized, which is
+    the evaluation-order class below.
   - The guard does not rely on gc's `memmove` for arrays (`ssagen/ssa.go`,
     `mayOverlap`): that applies only when both sides are dereferences with
     no conversion between them after type checking, which a named array
@@ -1058,6 +1073,17 @@ nothing in Perennial's or etcd-grove's translations (raft, etcd and
 raft-witness at their pins included), and only the six copies of section 6
 in bbolt v1.5.0.
 
+**Review of the implemented guard** (one adversarial pass, with probes; it
+stopped before finishing gc's `disjoint` and `isInlinableMemmove`, generic
+shape stenciling, the other `staticinit` paths and the remaining `ssagen`
+paths for assignments, so those are unreviewed). It found:
+- **Unsound:** a call in a package-variable initializer that gc inlines is
+  built in place, so the callee's `*p` is a `Move` into the variable
+  (`var X = mk(P)`: gc gives `0 1 1 3 3 5 5 7`, value semantics `0 … 7`;
+  with `-gcflags=-d=inlstaticinit=0`, gc agrees with value semantics).
+  Fixed in R4: such calls are reported. This costs nothing on today's code
+  either.
+- **To state:** `&T{…}` in a package-variable initializer (A2).
 ## 12. The work, from the current `lean`
 
 Each step is a branch off the current `lean`, landed by Perennial's
