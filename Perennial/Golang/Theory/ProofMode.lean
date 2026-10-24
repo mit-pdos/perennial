@@ -627,6 +627,18 @@ meta register_option goose.wp.extras : Bool := {
     and (in `wp_auto`) storing function literals and unfolding package constants"
 }
 
+meta register_option goose.wp.symSimp : Bool := {
+  defValue := true
+  descr := "simplify WP expressions with `Lean.Meta.Sym.simp` (`gooseExprSimpSym`) instead of \
+    `Meta.simp` (same results; faster on the largest proofs)"
+}
+
+meta register_option goose.wp.symSimpCheck : Bool := {
+  defValue := false
+  descr := "simplify WP expressions with both `Meta.simp` and `Sym.simp`, use `Meta.simp`'s \
+    result, and fail where they differ"
+}
+
 meta register_option goose.wp.unfoldSliceLiterals : Bool := {
   defValue := false
   descr := "let `wp_pures`/`wp_auto` step slice composite literals \
@@ -1126,21 +1138,9 @@ meta def reduceMatchersDefault (e : Lean.Expr) : MetaM Lean.Expr := do
     | .reduced s' => return .visit s'.headBeta
     | _ => return .continue)
 
-/-- Simplify a GooseLang expression with the `goose_wp_simp` simp set, returning
-the new expression and a proof of `e = e'` (or `none` if unchanged). `match`es
-on (definitions of) constructors are reduced first (`reduceMatchersDefault`). -/
-meta def gooseExprSimp (e : Lean.Expr) : MetaM (Lean.Expr × Option Lean.Expr) := do
-  let e0 := e
-  let e ← reduceMatchersDefault e
-  let p0? ← if e == e0 then pure none
-    else some <$> mkExpectedTypeHint (← mkEqRefl e0) (← mkEq e0 e)
-  let (e', p?) ← gooseExprSimpCore e
-  match p0?, p? with
-  | none, _ => return (e', p?)
-  | some p0, none => return (e', some p0)
-  | some p0, some p => return (e', some (← mkEqTrans p0 p))
-where
-  gooseExprSimpCore (e : Lean.Expr) : MetaM (Lean.Expr × Option Lean.Expr) := do
+/-- The `goose_wp_simp` simp sets (`gooseSimpSets`): their theorems, their simprocs and the
+`Meta.simp` context of `gooseExprSimp`. -/
+meta def gooseSimpContext : MetaM (Array SimpTheorems × Simp.SimprocsArray × Simp.Context) := do
   let mut theorems := #[]
   let mut procs := #[]
   for attr in gooseSimpSets (← getOptions) do
@@ -1153,9 +1153,321 @@ where
   let ctx ← Simp.mkContext (simpTheorems := theorems) (congrTheorems := ← getSimpCongrTheorems)
     (config := { beta := true, eta := true, zeta := true, proj := true, iota := true,
                  decide := false })
+  return (theorems, procs, ctx)
+
+/-- `gooseExprSimp` with `Meta.simp`. -/
+meta def gooseExprSimpMeta (e : Lean.Expr) : MetaM (Lean.Expr × Option Lean.Expr) := do
+  let e0 := e
+  let e ← reduceMatchersDefault e
+  let p0? ← if e == e0 then pure none
+    else some <$> mkExpectedTypeHint (← mkEqRefl e0) (← mkEq e0 e)
+  let (e', p?) ← gooseExprSimpCore e
+  match p0?, p? with
+  | none, _ => return (e', p?)
+  | some p0, none => return (e', some p0)
+  | some p0, some p => return (e', some (← mkEqTrans p0 p))
+where
+  gooseExprSimpCore (e : Lean.Expr) : MetaM (Lean.Expr × Option Lean.Expr) := do
+  let (_, procs, ctx) ← gooseSimpContext
   let ⟨res, _⟩ ← Meta.simp e ctx (simprocs := procs)
   return (res.expr, res.proof?)
 
+/-! ### `gooseExprSimp` with `Lean.Meta.Sym.simp`
+
+`Sym.simp` (Lean's simplifier for symbolic computation, `Lean.Meta.Sym`) works on maximally
+shared terms, caches by pointer, matches rewrite rules syntactically and builds congruence
+proofs without `inferType`: on the large expressions of WP goals it is several times faster
+than `Meta.simp`. `gooseExprSimpSym` gives it the `goose_wp_simp` sets and makes it compute
+what `gooseExprSimp` computes with `Meta.simp` (`goose.wp.symSimpCheck` compares the two):
+* the theorems of the sets, and the equations of the definitions they unfold, as `Sym`
+  rewrite rules (`gooseSymTheorems`); a definition no equation applies to (the last case of
+  an overlapping `match`, whose equation has hypotheses) is unfolded (`unfoldDefinition?`);
+* the sets' simprocs (`Meta.simp` simprocs) run on each subterm (`metaSimprocsAsSym`);
+* abbreviations stay folded (`enforceUnfoldReducible := false`), as with `Meta.simp`; since
+  `Sym` unfolds them in the rules' patterns, a rule is also tried on the unfolding of a
+  term's reducible head or arguments (`Ne`, `zero_val`, `subst x v (Lam ..)`);
+* beta, zeta and structure projections of constructors (`Meta.simp`'s `beta`, `zeta` and
+  `proj`), which `Sym.simp` does not do;
+* the branches of an `if` or `match` are simplified too, and the simprocs run on it
+  (`Sym.simp`'s `simpControl` only simplifies the condition or discriminants);
+* a proof is returned exactly when `Meta.simp` returns one (`symProofStep`): `Meta.simp`
+  returns none for definitional steps, and the callers ignore a change without a proof.
+
+`goose.wp.symSimpCheck` (run on all of Perennial and etcd-grove) finds no difference other
+than in the `Decidable` instance of an `if` whose condition was simplified, which is
+definitional and not shown. -/
+
+/-- The `Sym.simp` theorems of the `goose_wp_simp` sets (their lemmas, and the equations
+of the definitions they unfold), keyed by the sets' names and sizes. -/
+meta initialize symThmsCache : ThreadRef (Option (UInt64 × Sym.Simp.Theorems)) ← ThreadRef.new none
+
+meta def gooseSymTheorems (sets : Array SimpTheorems) : MetaM Sym.Simp.Theorems := do
+  let key := sets.foldl (init := 7) fun h t =>
+    mixHash h (hash (t.post.size, t.pre.size, t.toUnfold.toList.length))
+  if let some (k, thms) ← symThmsCache.get then
+    if k == key then return thms
+  let mut thms : Sym.Simp.Theorems := {}
+  let mut seen : NameSet := {}
+  for t in sets do
+    for st in t.post.values ++ t.pre.values do
+      let .decl n .. := st.origin | continue
+      if seen.contains n then continue
+      seen := seen.insert n
+      -- (a theorem `Sym` cannot use is left out; `goose.wp.symSimpCheck` finds what it misses)
+      try thms := thms.insert (← Sym.Simp.mkTheoremFromDecl n) catch _ => pure ()
+    for n in t.toUnfold.toList do
+      let eqns ← match ← getEqnsFor? n with
+        | some eqns => pure eqns
+        | none => pure ((← getUnfoldEqnFor? n).toArray)
+      for eqn in eqns do
+        try thms := thms.insert (← Sym.Simp.mkTheoremFromDecl eqn) catch _ => pure ()
+  symThmsCache.set (some (key, thms))
+  return thms
+
+/-- Whether the current `gooseExprSimpSym` took a step that `Meta.simp` would have proved:
+a rewrite by a theorem that is not `rfl`, or a simproc step with a proof. `Meta.simp` returns
+no proof when all its steps are definitional ones without proofs (`rfl` theorems, unfolding,
+beta, projections, `dsimproc`s), and `gooseExprSimp`'s callers act on a change only if it
+comes with a proof; `gooseExprSimpSym` returns none in the same case. -/
+meta initialize symProofStep : ThreadRef Bool ← ThreadRef.new false
+
+/-- A `Sym.simp` simproc running the `Meta.simp` simprocs `procs` (pre and post) on a term. -/
+meta def metaSimprocsAsSym (ctx : Simp.Context) (procs : Simp.SimprocsArray) : Sym.Simp.Simproc :=
+  fun e => do
+    let methods := (Simp.mkDefaultMethodsCore procs).toMethodsRef
+    let run (post : Bool) : MetaM Simp.Step :=
+      (if post then Simp.userPostSimprocs procs e else Simp.userPreSimprocs procs e)
+        methods ctx |>.run' {}
+    let toRes (r : Simp.Result) (done : Bool) : Sym.SymM Sym.Simp.Result := do
+      if r.expr == e then return .rfl
+      let e' ← Sym.shareCommon r.expr
+      let h ← match r.proof? with
+        | some h => symProofStep.set true; pure h
+        | none => mkExpectedTypeHint (← mkEqRefl e) (← mkEq e e')
+      return .step e' h (done := done)
+    for post in [false, true] do
+      match ← run post with
+      | .done r => return ← toRes r true
+      | .visit r => return ← toRes r false
+      | .continue (some r) => if r.expr != e then return ← toRes r false
+      | .continue none => pure ()
+    return .rfl
+
+/-- The theorems `Sym.simp`'s `simpControl` reduces an `if`/`cond` with (a step `Meta.simp`
+proves unless the theorem is `rfl`; the rest of its proofs are congruence and `Eq.refl`). -/
+meta def symControlThms : NameSet := NameSet.ofList
+  [``ite_true, ``ite_false, ``dite_true, ``dite_false, ``cond_true, ``cond_false,
+   ``ite_eq_left_of_eq_true, ``ite_eq_right_of_eq_false, ``dite_eq_left_of_eq_true,
+   ``dite_eq_right_of_eq_false, ``Sym.cond_cond_eq_true, ``Sym.cond_cond_eq_false,
+   ``Sym.ite_cond_congr, ``Sym.dite_cond_congr, ``Sym.cond_cond_congr]
+
+/-- Note a rewrite by `thms` that `Meta.simp` would have proved (`symProofStep`). -/
+meta def symRewriteNoting (thms : Sym.Simp.Theorems) (d : Sym.Simp.Discharger) :
+    Sym.Simp.Simproc := fun e => do
+  let r ← thms.rewrite d e
+  if let .step _ h .. := r then
+    if let .const n _ := h.getAppFn then
+      unless ← isRflTheorem n do symProofStep.set true
+    else symProofStep.set true
+  return r
+
+/-- The functions with a `@[congr]` theorem that has a hypothesis under binders (`ite_congr`'s
+`c → x = u`), keyed by the number of functions with `@[congr]` theorems. `Meta.simp` returns
+a proof for a change in the arguments of such a function even if the change is definitional
+(it abstracts the hypothesis' proof), but not for one with only plain hypotheses
+(`fvClosed_congr`'s `e = e'`). -/
+meta initialize binderCongrCache : ThreadRef (Option (Nat × NameSet)) ← ThreadRef.new none
+
+meta def binderCongrFns : MetaM NameSet := do
+  let lemmas := (← getSimpCongrTheorems).lemmas.toList
+  if let some (k, fns) ← binderCongrCache.get then
+    if k == lemmas.length then return fns
+  let mut fns : NameSet := {}
+  for (n, thms) in lemmas do
+    for t in thms do
+      try
+        let ty ← inferType (← mkConstWithFreshMVarLevels t.theoremName)
+        let binderHyp ← forallTelescopeReducing ty fun xs _ => t.hypothesesPos.anyM fun i => do
+          return (← whnfR (← inferType xs[i]!)).isForall
+        if binderHyp then fns := fns.insert n
+      catch _ => pure ()  -- (a private theorem of another module)
+  binderCongrCache.set (some (lemmas.length, fns))
+  return fns
+
+/-- `gooseExprSimp` with `Sym.simp` (see the section's docstring). -/
+meta def gooseExprSimpSym (e : Lean.Expr) : MetaM (Lean.Expr × Option Lean.Expr) := do
+  let e0 := e
+  let e ← reduceMatchersDefault e
+  let p0? ← if e == e0 then pure none
+    else some <$> mkExpectedTypeHint (← mkEqRefl e0) (← mkEq e0 e)
+  let (theorems, procs, ctx) ← gooseSimpContext
+  let thms ← gooseSymTheorems theorems
+  -- (`gooseExprSimpSym` can be reentered by a simproc: keep the caller's flag)
+  let outerProofStep ← symProofStep.get
+  symProofStep.set false
+  try gooseExprSimpSymCore e p0? theorems procs ctx thms
+  finally symProofStep.set outerProofStep
+where gooseExprSimpSymCore (e : Lean.Expr) (p0? : Option Lean.Expr)
+    (theorems : Array SimpTheorems) (procs : Simp.SimprocsArray) (ctx : Simp.Context)
+    (thms : Sym.Simp.Theorems) : MetaM (Lean.Expr × Option Lean.Expr) := do
+  let r ← Sym.SymM.run <|
+      withTheReader Sym.Context (fun c => { c with config.enforceUnfoldReducible := false }) do
+    let e ← Sym.shareCommon (← instantiateMVars e)
+    let bridge := metaSimprocsAsSym ctx procs
+    let rflTo (e e' : Lean.Expr) : Sym.Simp.SimpM Sym.Simp.Result := do
+      let e' ← Sym.shareCommon e'
+      return .step e' (← mkExpectedTypeHint (← mkEqRefl e) (← mkEq e e'))
+    let congrFns ← binderCongrFns
+    let pre : Sym.Simp.Simproc := fun e => do
+      -- `beta := true`, `zeta := true`
+      if e.isApp && e.getAppFn.isLambda then return ← rflTo e e.headBeta
+      if let .letE _ _ v b _ := e then return ← rflTo e (b.instantiate1 v)
+      -- a change in the arguments of a function with a `@[congr]` theorem with hypotheses
+      -- under binders comes with a proof (`binderCongrFns`)
+      if let .const n _ := e.getAppFn then
+        if n != ``ite && n != ``dite && congrFns.contains n then
+          let r ← Sym.Simp.simpAppArgs e
+          if let .step .. := r then symProofStep.set true
+          return r
+      -- `Sym.simp`'s `if`/`match` handling (`simpControl`) simplifies only the condition and
+      -- the discriminants, and marks a term it cannot reduce as done; `Meta.simp` also
+      -- simplifies the branches (with `ite_congr`, so with a proof) and runs the simprocs on it
+      let r ← Sym.Simp.simpControl e
+      let (e₂, h₁?, cd) ← match r with
+        | .rfl true cd => pure (e, none, cd)
+        | .step e₂ h₁ true cd => pure (e₂, some h₁, cd)
+        | r@(.step _ h ..) =>
+          -- (`ite_true`, `ite_false`, ...: `Meta.simp` proves these steps)
+          for n in h.getUsedConstants do
+            if symControlThms.contains n then
+              unless ← isRflTheorem n do symProofStep.set true
+          return r
+        | r => return r
+      let trans (e₂ : Lean.Expr) (h₁? : Option Lean.Expr) (e₃ h₂ : Lean.Expr) := do
+        match h₁? with
+        | none => pure h₂
+        | some h₁ => Sym.Simp.mkEqTrans e e₂ h₁ e₃ h₂
+      let (e₃, h₂?) ← match ← Sym.Simp.simpAppArgs e₂ with
+        | .step e₃ h₂ .. => pure (e₃, some (← trans e₂ h₁? e₃ h₂))
+        | .rfl .. => pure (e₂, h₁?)
+      if h₂?.isSome && (e.isAppOf ``ite || e.isAppOf ``dite) then symProofStep.set true
+      match ← bridge e₃ with
+      | .step e₄ h₃ _ _ => return .step e₄ (← trans e₃ h₂? e₄ h₃) (contextDependent := cd)
+      | .rfl .. =>
+        match h₂? with
+        | some h₂ => return .step e₃ h₂ (contextDependent := cd)
+        | none => return .rfl true cd
+    -- `Meta.simp` matches lemmas up to reducible unfolding (`Ne`, `zero_val`), while `Sym`
+    -- unfolds them in the patterns only: try the lemmas on the unfolding of a reducible head
+    let isReducibleApp (e : Lean.Expr) : MetaM Bool := do
+      let .const n _ := e.getAppFn | return false
+      return (← getReducibilityStatus n) == .reducible
+    let reducibleRw : Sym.Simp.Simproc := fun e => do
+      let .const _ _ := e.getAppFn | return .rfl
+      let u ← if ← isReducibleApp e then
+          let some u ← unfoldDefinition? e | return .rfl
+          pure u.headBeta
+        else
+          -- an argument headed by a reducible definition (`subst x v (Lam ..)`)
+          let args := e.getAppArgs
+          unless ← args.anyM (fun a => isReducibleApp a) do return .rfl
+          let args ← args.mapM fun a => do
+            let mut a := a
+            for _ in [0:8] do
+              unless ← isReducibleApp a do break
+              let some a' ← unfoldDefinition? a | break
+              a := a'.headBeta
+            pure a
+          pure (mkAppN e.getAppFn args)
+      let u ← Sym.shareCommon u
+      match ← symRewriteNoting thms Sym.Simp.dischargeSimpSelf u with
+      | .step e' h done cd => return .step e' (← mkExpectedTypeHint h (← mkEq e e')) done cd
+      | _ =>
+        -- a lemma whose sides agree up to reducible unfolding (`ne_eq`): unfold the head
+        let unfoldsHead := (thms.getMatch (← getMCtx) u).any fun t => t.rhs == t.pattern.pattern
+        if unfoldsHead then return .step u (← mkExpectedTypeHint (← mkEqRefl e) (← mkEq e u))
+        return .rfl
+    -- `proj := true`: a structure projection of a constructor application
+    let projRed : Sym.Simp.Simproc := fun e => do
+      let .const n _ := e.getAppFn | return .rfl
+      let some info ← getProjectionFnInfo? n | return .rfl
+      if info.fromClass then return .rfl
+      let args := e.getAppArgs
+      unless args.size > info.numParams do return .rfl
+      let major := args[info.numParams]!
+      unless major.isAppOf info.ctorName do return .rfl
+      let some (.ctorInfo cv) := (← getEnv).find? info.ctorName | return .rfl
+      unless major.getAppNumArgs == cv.numParams + cv.numFields do return .rfl
+      let r ← Sym.shareCommon <|
+        mkAppN (major.getArg! (cv.numParams + info.i)) (args.extract (info.numParams + 1) args.size)
+      return .step r (← mkExpectedTypeHint (← mkEqRefl e) (← mkEq e r))
+    -- a definition the simp sets unfold, where no equation applies (one with hypotheses,
+    -- like the last case of an overlapping match): unfold it as `Meta.simp` does
+    let toUnfold := theorems.foldl (fun s t => t.toUnfold.fold (fun s n => s.insert n) s) ({} : NameSet)
+    let unfoldRed : Sym.Simp.Simproc := fun e => do
+      let .const n _ := e.getAppFn | return .rfl
+      unless toUnfold.contains n do return .rfl
+      let some u ← unfoldDefinition? e | return .rfl
+      let u ← Sym.shareCommon u.headBeta
+      return .step u (← mkExpectedTypeHint (← mkEqRefl e) (← mkEq e u))
+    Sym.simp e { pre, post := symRewriteNoting thms Sym.Simp.dischargeSimpSelf >> reducibleRw >> projRed >>
+      bridge >> unfoldRed }
+  let (e', p?) ← match r with
+    | .rfl .. => pure (e, none)
+    | .step e' h .. => pure (e', if ← symProofStep.get then some h else none)
+  match p0?, p? with
+  | none, _ => return (e', p?)
+  | some p0, none => return (e', some p0)
+  | some p0, some p => return (e', some (← mkEqTrans p0 p))
+
+/-- The first differing subterms of `a` and `b` (in a left-to-right traversal), with the
+heads of the applications above them (for `goose.wp.symSimpCheck`). -/
+meta partial def firstDiff (a b : Lean.Expr) (path : List Name := []) :
+    Lean.Expr × Lean.Expr × List Name :=
+  if a == b then (a, b, path) else
+  let hd (e : Lean.Expr) : Name := match e.getAppFn with
+    | .const n _ => n | f => .mkSimple f.ctorName
+  match a, b with
+  | .app f x, .app g y =>
+    if f == g then firstDiff x y (hd a :: path)
+    else if f.getAppFn != g.getAppFn then (a, b, path) else firstDiff f g path
+  | .lam _ t x _, .lam _ u y _ => if t == u then firstDiff x y (`fun :: path) else firstDiff t u path
+  | .forallE _ t x _, .forallE _ u y _ => if t == u then firstDiff x y (`forall :: path) else firstDiff t u path
+  | .letE _ t v x _, .letE _ u w y _ =>
+    if t != u then firstDiff t u path else if v != w then firstDiff v w path else firstDiff x y (`let :: path)
+  | .mdata _ x, .mdata _ y => firstDiff x y (`mdata :: path)
+  | _, _ => (a, b, path)
+
+/-- Simplify a GooseLang expression with the `goose_wp_simp` simp set, returning
+the new expression and a proof of `e = e'` (or `none` if unchanged). `match`es
+on (definitions of) constructors are reduced first (`reduceMatchersDefault`).
+With `Sym.simp` (`gooseExprSimpSym`) unless `goose.wp.symSimp` is off;
+`goose.wp.symSimpCheck` runs both and fails where they differ. -/
+meta def gooseExprSimp (e : Lean.Expr) : MetaM (Lean.Expr × Option Lean.Expr) := do
+  let opts ← getOptions
+  unless goose.wp.symSimpCheck.get opts do
+    return ← if goose.wp.symSimp.get opts then gooseExprSimpSym e else gooseExprSimpMeta e
+  let r ← gooseExprSimpMeta e
+  let saved ← saveState
+  let rs ← tryCatchRuntimeEx (gooseExprSimpSym e) fun ex => do
+    -- (also printed: the callers that search for a step discard errors)
+    IO.eprintln s!"goose.wp.symSimpCheck: Sym.simp failed: {(← ex.toMessageData.toString).take 500}"
+    throwError "goose.wp.symSimpCheck: `Sym.simp` failed on{indentExpr e}\n{ex.toMessageData}"
+  saved.restore
+  let (a, b) := (← instantiateMVars r.1, ← instantiateMVars rs.1)
+  let (a, b, path) := firstDiff a b
+  -- a difference inside an instance (the `Decidable` instance of an `if` whose condition was
+  -- simplified: `Sym.simp` synthesizes it for the new condition, `Meta.simp` keeps the old
+  -- one) is definitional and not shown; others are reported
+  unless (a == b) || path.any (Lean.Meta.isInstanceCore (← getEnv)) do
+    IO.eprintln s!"goose.wp.symSimpCheck: differ at {path.reverse}"
+    throwError "goose.wp.symSimpCheck: `Meta.simp` and `Sym.simp` differ on{indentExpr e}\n\
+      at {path.reverse}: `Meta.simp`{indentExpr a}\n`Sym.simp`{indentExpr b}"
+  unless r.2.isSome == rs.2.isSome do
+    IO.eprintln s!"goose.wp.symSimpCheck: proof {r.2.isSome} / {rs.2.isSome}"
+    throwError "goose.wp.symSimpCheck: `Meta.simp` {if r.2.isSome then "proves" else "does not prove"} \
+      the step and `Sym.simp` {if rs.2.isSome then "does" else "does not"}, on{indentExpr e}"
+  return r
 
 /-- Head constants that some `goose_wp_simp` rule (theorem, unfolding or simproc)
 could rewrite, or `none` if some rule is not keyed by a constant. -/
