@@ -76,4 +76,4 @@ stuck on purpose.
 | `testOverlappingArrayCopy` | true | safe Go's overlapping `*p = *q` of plain arrays is `memmove`, but the model cannot tell it from the above (deliberately incomplete) | R4 |
 
 Each probe marked **false** found an unsound point in an earlier draft of
-the design. Section 9 of the design records the review rounds.
+the design. Section 10 of the design records the review rounds.
