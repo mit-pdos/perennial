@@ -8,11 +8,15 @@ module
 public import Perennial.Proof.errors.Link
 public import Perennial.Proof.time.After
 public import Perennial.Proof.time.AfterFunc
+public import Perennial.Proof.time.NewTicker
 public import Perennial.Proof.time.NewTimer
 public import Perennial.Proof.time.Now
 public import Perennial.Proof.time.Since
 public import Perennial.Proof.time.Sleep
+public import Perennial.Proof.time.Ticker__Reset
+public import Perennial.Proof.time.Ticker__Stop
 public import Perennial.Proof.time.Time__Add
+public import Perennial.Proof.time.Time__After
 public import Perennial.Proof.time.Time__Before
 public import Perennial.Proof.time.Time__Equal
 public import Perennial.Proof.time.Time__Sub
@@ -74,6 +78,9 @@ theorem time.wp_when : time.when.spec (GF := GF) (hG := hG) :=
 theorem time.wp_AfterFunc : time.AfterFunc.spec (GF := GF) (hG := hG) :=
   time.AfterFunc.wp_proof time.wp_when
 
+theorem time.wp_NewTicker : time.NewTicker.spec (GF := GF) (hG := hG) :=
+  time.NewTicker.wp_proof
+
 theorem time.wp_NewTimer : time.NewTimer.spec (GF := GF) (hG := hG) :=
   time.NewTimer.wp_proof
 
@@ -124,6 +131,33 @@ theorem time.wp_Since : time.Since.spec (GF := GF) (hG := hG) :=
 
 theorem time.wp_Sleep : time.Sleep.spec (GF := GF) (hG := hG) :=
   time.Sleep.wp_proof
+
+end link
+
+section link
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [go_gctx : GoGlobalContext]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
+variable [sem : go.Semantics]
+variable [package_sem : time.Assumptions]
+
+theorem time.Ticker.wp_Reset : time.Ticker.Reset.spec (GF := GF) (hG := hG) :=
+  time.Ticker.Reset.wp_proof
+
+theorem time.Ticker.wp_Stop : time.Ticker.Stop.spec (GF := GF) (hG := hG) :=
+  time.Ticker.Stop.wp_proof
+
+end link
+
+section link
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem : time.Assumptions]
+
+theorem time.Time.wp_After : time.Time.After.spec (GF := GF) (hG := hG) :=
+  time.Time.After.wp_proof time.Time.wp_sec time.Time.wp_nsec
 
 theorem time.Time.wp_unixSec : time.Time.unixSec.spec (GF := GF) (hG := hG) :=
   time.Time.unixSec.wp_proof time.Time.wp_sec
