@@ -10,20 +10,19 @@ public import Perennial.TrustedCode.log
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def log : GoString := go!"log"
+noncomputable def log : GoString := go!"log"
 end pkg_id
 
 namespace log
 
-def Logger.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Logger.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"log.Logger" [])
 
 attribute [irreducible] Logger.ty
@@ -127,7 +126,7 @@ noncomputable def Panicln [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def Output [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"log.Output"
 
-instance info' : PkgInfo pkg_id.log where
+noncomputable instance info' : PkgInfo pkg_id.log where
   pkgImportedPkgs := [pkg_id.sync]
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val

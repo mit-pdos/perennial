@@ -8,25 +8,24 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def internal.runtime.sys : GoString := go!"internal/runtime/sys"
+noncomputable def internal.runtime.sys : GoString := go!"internal/runtime/sys"
 end pkg_id
 
 namespace internal.runtime.sys
 
-def nih.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def nih.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"internal/runtime/sys.nih" [])
 
 attribute [irreducible] nih.ty
 
-def NotInHeap.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def NotInHeap.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"internal/runtime/sys.NotInHeap" [])
 
 attribute [irreducible] NotInHeap.ty
@@ -128,7 +127,7 @@ noncomputable def DITEnabled [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def DisableDIT [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.DisableDIT"
 
-instance info' : PkgInfo pkg_id.internal.runtime.sys where
+noncomputable instance info' : PkgInfo pkg_id.internal.runtime.sys where
   pkgImportedPkgs := []
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val
@@ -149,20 +148,20 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 structure nih [FfiSyntax] where
   mk ::
 
-instance nih.zero_val [FfiSyntax] : ZeroVal nih :=
+noncomputable instance nih.zero_val [FfiSyntax] : ZeroVal nih :=
   ⟨nih.mk⟩
 
-@[reducible] def nih.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def nih.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def nih.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def nih.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   nih.fieldsUnsealed
 
-instance equals_unfold_nih [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_nih [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold nih.fields nih.fieldsUnsealed :=
   ⟨by unfold nih.fields; rfl⟩
 
-@[reducible] def nih.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def nih.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType nih.fields)
 
 class nih.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -176,20 +175,20 @@ structure NotInHeap [FfiSyntax] where
   mk ::
   _0' : nih
 
-instance NotInHeap.zero_val [FfiSyntax] : ZeroVal NotInHeap :=
+noncomputable instance NotInHeap.zero_val [FfiSyntax] : ZeroVal NotInHeap :=
   ⟨NotInHeap.mk zeroValDef⟩
 
-@[reducible] def NotInHeap.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def NotInHeap.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" nih.ty)]
 
-@[irreducible] def NotInHeap.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def NotInHeap.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   NotInHeap.fieldsUnsealed
 
-instance equals_unfold_NotInHeap [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_NotInHeap [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold NotInHeap.fields NotInHeap.fieldsUnsealed :=
   ⟨by unfold NotInHeap.fields; rfl⟩
 
-@[reducible] def NotInHeap.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def NotInHeap.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType NotInHeap.fields)
 
 class NotInHeap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -8,20 +8,19 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.mapliteral : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/mapliteral"
+noncomputable def github_com.mit_pdos.perennial.goose.testdata.examples.mapliteral : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/mapliteral"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.mapliteral
 
-def Nested.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Nested.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/mapliteral.Nested" [])
 
 attribute [irreducible] Nested.ty
@@ -60,7 +59,7 @@ noncomputable def nestedMapLiteral.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Let "$v1" (App (App (Val (GoInstruction (FuncResolve f []))) (Val #())) (Val #()))
   (App (Val (GoInstruction (CompositeLiteral (go.GoType.MapType go.uint64 Nested.ty)))) (LiteralValue [(KeyedElement (some (KeyExpression go.uint64 (Var "$k0"))) (ElementLiteralValue [(KeyedElement (some (KeyField go!"X")) (ElementExpression go.uint64 (Var "$v1")))]))])))))))
 
-instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.mapliteral where
+noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.mapliteral where
   pkgImportedPkgs := []
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
@@ -74,20 +73,20 @@ structure Nested [FfiSyntax] where
   mk ::
   X' : w64
 
-instance Nested.zero_val [FfiSyntax] : ZeroVal Nested :=
+noncomputable instance Nested.zero_val [FfiSyntax] : ZeroVal Nested :=
   ⟨Nested.mk zeroValDef⟩
 
-@[reducible] def Nested.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Nested.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"X" go.uint64)]
 
-@[irreducible] def Nested.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Nested.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Nested.fieldsUnsealed
 
-instance equals_unfold_Nested [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Nested [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Nested.fields Nested.fieldsUnsealed :=
   ⟨by unfold Nested.fields; rfl⟩
 
-@[reducible] def Nested.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Nested.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Nested.fields)
 
 class Nested.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

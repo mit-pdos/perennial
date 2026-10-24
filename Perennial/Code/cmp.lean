@@ -8,20 +8,19 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def cmp : GoString := go!"cmp"
+noncomputable def cmp : GoString := go!"cmp"
 end pkg_id
 
 namespace cmp
 
-def Ordered.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Ordered.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"cmp.Ordered" [])
 
 attribute [irreducible] Ordered.ty
@@ -155,7 +154,7 @@ noncomputable def Or.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "val") (Var "$value")))))))))))))))
 
-instance info' : PkgInfo pkg_id.cmp where
+noncomputable instance info' : PkgInfo pkg_id.cmp where
   pkgImportedPkgs := []
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
@@ -167,7 +166,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 
 abbrev Ordered [FfiSyntax] : Type := GoInterface
 
-@[reducible] def Ordered.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Ordered.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTermUnderlying go.int), (go.type_term.TypeTermUnderlying go.int8), (go.type_term.TypeTermUnderlying go.int16), (go.type_term.TypeTermUnderlying go.int32), (go.type_term.TypeTermUnderlying go.int64), (go.type_term.TypeTermUnderlying go.uint), (go.type_term.TypeTermUnderlying go.uint8), (go.type_term.TypeTermUnderlying go.uint16), (go.type_term.TypeTermUnderlying go.uint32), (go.type_term.TypeTermUnderlying go.uint64), (go.type_term.TypeTermUnderlying go.uintptr), (go.type_term.TypeTermUnderlying go.float32), (go.type_term.TypeTermUnderlying go.float64), (go.type_term.TypeTermUnderlying go.string)])])
 
 class Ordered.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

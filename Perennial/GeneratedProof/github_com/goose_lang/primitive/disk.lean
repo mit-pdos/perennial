@@ -9,9 +9,8 @@ public import Perennial.Code.github_com.goose_lang.primitive.disk
 @[expose] public section
 
 set_option autoImplicit false
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 open Iris Iris.BI
@@ -27,7 +26,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.goose_lang.primitive.disk.Assumptions]
 
-instance FileDisk_typed_pointsto :
+noncomputable instance FileDisk_typed_pointsto :
     TypedPointsto (GF := GF) github_com.goose_lang.primitive.disk.FileDisk where
   typedPointstoDef l v dq := iprop(
     "fd" ∷ typedPointsto (structFieldRef github_com.goose_lang.primitive.disk.FileDisk go!"fd" l) v.fd' dq ∗
@@ -37,11 +36,11 @@ instance FileDisk_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance FileDisk_into_val_typed :
+noncomputable instance FileDisk_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.goose_lang.primitive.disk.FileDisk github_com.goose_lang.primitive.disk.FileDisk.underlying := by
   solve_into_val_typed_struct
 
-instance FileDisk_access_load_fd (l : Loc) (v : github_com.goose_lang.primitive.disk.FileDisk) (dq : DFrac) :
+noncomputable instance FileDisk_access_load_fd (l : Loc) (v : github_com.goose_lang.primitive.disk.FileDisk) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.goose_lang.primitive.disk.FileDisk go!"fd" l) v.fd' dq)
       (typedPointsto (structFieldRef github_com.goose_lang.primitive.disk.FileDisk go!"fd" l) v.fd' dq)
@@ -49,7 +48,7 @@ instance FileDisk_access_load_fd (l : Loc) (v : github_com.goose_lang.primitive.
  by
   solve_pointsto_access_struct
 
-instance FileDisk_access_store_fd (l : Loc) (v : github_com.goose_lang.primitive.disk.FileDisk) (fd' : w64) :
+noncomputable instance FileDisk_access_store_fd (l : Loc) (v : github_com.goose_lang.primitive.disk.FileDisk) (fd' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.goose_lang.primitive.disk.FileDisk go!"fd" l) v.fd' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.goose_lang.primitive.disk.FileDisk go!"fd" l) fd' (DFrac.own 1))
@@ -57,7 +56,7 @@ instance FileDisk_access_store_fd (l : Loc) (v : github_com.goose_lang.primitive
  by
   solve_pointsto_access_struct
 
-instance FileDisk_access_load_numBlocks (l : Loc) (v : github_com.goose_lang.primitive.disk.FileDisk) (dq : DFrac) :
+noncomputable instance FileDisk_access_load_numBlocks (l : Loc) (v : github_com.goose_lang.primitive.disk.FileDisk) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.goose_lang.primitive.disk.FileDisk go!"numBlocks" l) v.numBlocks' dq)
       (typedPointsto (structFieldRef github_com.goose_lang.primitive.disk.FileDisk go!"numBlocks" l) v.numBlocks' dq)
@@ -65,7 +64,7 @@ instance FileDisk_access_load_numBlocks (l : Loc) (v : github_com.goose_lang.pri
  by
   solve_pointsto_access_struct
 
-instance FileDisk_access_store_numBlocks (l : Loc) (v : github_com.goose_lang.primitive.disk.FileDisk) (numBlocks' : w64) :
+noncomputable instance FileDisk_access_store_numBlocks (l : Loc) (v : github_com.goose_lang.primitive.disk.FileDisk) (numBlocks' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.goose_lang.primitive.disk.FileDisk go!"numBlocks" l) v.numBlocks' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.goose_lang.primitive.disk.FileDisk go!"numBlocks" l) numBlocks' (DFrac.own 1))
@@ -85,11 +84,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : github_com.goose_lang.primitive.disk.Assumptions]
 
-instance MemDisk_typed_pointsto :
+noncomputable instance MemDisk_typed_pointsto :
     TypedPointsto (GF := GF) github_com.goose_lang.primitive.disk.MemDisk :=
   sorry -- axiomatized type
 
-instance MemDisk_into_val_typed :
+noncomputable instance MemDisk_into_val_typed :
     IntoValTypedUnderlying (GF := GF) github_com.goose_lang.primitive.disk.MemDisk github_com.goose_lang.primitive.disk.MemDisk.underlying :=
   sorry -- axiomatized type
 

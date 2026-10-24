@@ -11,30 +11,29 @@ public import Perennial.Golang.Defn.Defer
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.model.channel : GoString := go!"github.com/mit-pdos/perennial/goose/model/channel"
+noncomputable def github_com.mit_pdos.perennial.goose.model.channel : GoString := go!"github.com/mit-pdos/perennial/goose/model/channel"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.model.channel
 
-def offerState.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def offerState.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/model/channel.offerState" [])
 
 attribute [irreducible] offerState.ty
 
-def Channel.ty [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+noncomputable def Channel.ty [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/model/channel.Channel" [T])
 
 attribute [irreducible] Channel.ty
 
-def SelectDir.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def SelectDir.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/model/channel.SelectDir" [])
 
 attribute [irreducible] SelectDir.ty
@@ -1278,7 +1277,7 @@ noncomputable def NonBlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "start") (Var "$r0")))))))))))))))))))))))))))))
 
-instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.model.channel where
+noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.model.channel where
   pkgImportedPkgs := [pkg_id.github_com.goose_lang.primitive]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
@@ -1290,7 +1289,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 
 abbrev offerState [FfiSyntax] : Type := w64
 
-@[reducible] def offerState.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def offerState.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
 class offerState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1306,24 +1305,24 @@ structure Channel [FfiSyntax] (T : Type) where
   buffer' : GoSlice
   v' : T
 
-instance Channel.zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (Channel T) :=
+noncomputable instance Channel.zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (Channel T) :=
   ⟨Channel.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def Channel.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[reducible] noncomputable def Channel.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"cap" go.int),
 (go.field_decl.FieldDecl go!"mu" (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty)),
 (go.field_decl.FieldDecl go!"state" offerState.ty),
 (go.field_decl.FieldDecl go!"buffer" (go.GoType.SliceType T)),
 (go.field_decl.FieldDecl go!"v" T)]
 
-@[irreducible] def Channel.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[irreducible] noncomputable def Channel.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   (Channel.fieldsUnsealed T)
 
-instance equals_unfold_Channel [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
+noncomputable instance equals_unfold_Channel [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
     EqualsUnfold (Channel.fields T) (Channel.fieldsUnsealed T) :=
   ⟨by unfold Channel.fields; rfl⟩
 
-@[reducible] def Channel.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+@[reducible] noncomputable def Channel.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.StructType (Channel.fields T))
 
 class Channel.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1375,7 +1374,7 @@ attribute [instance] Channel.TypeAssumptions.type_repr
 
 abbrev SelectDir [FfiSyntax] : Type := w64
 
-@[reducible] def SelectDir.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def SelectDir.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.uint64
 
 class SelectDir.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -10,25 +10,24 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/elimination_stack"
+noncomputable def github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/elimination_stack"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack
 
-def LockedStack.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def LockedStack.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/elimination_stack.LockedStack" [])
 
 attribute [irreducible] LockedStack.ty
 
-def EliminationStack.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def EliminationStack.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/elimination_stack.EliminationStack" [])
 
 attribute [irreducible] EliminationStack.ty
@@ -181,7 +180,7 @@ noncomputable def EliminationStack.Pop.impl [FfiSyntax] [GoGlobalContext] : val 
   (App (Val doExecute)
   (Val #()))))])))))))))
 
-instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack where
+noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack where
   pkgImportedPkgs := [pkg_id.sync, pkg_id.time]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
@@ -199,21 +198,21 @@ structure LockedStack [FfiSyntax] where
   mu' : _root_.Perennial.sync.Mutex
   stack' : GoSlice
 
-instance LockedStack.zero_val [FfiSyntax] : ZeroVal LockedStack :=
+noncomputable instance LockedStack.zero_val [FfiSyntax] : ZeroVal LockedStack :=
   ⟨LockedStack.mk zeroValDef zeroValDef⟩
 
-@[reducible] def LockedStack.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def LockedStack.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex.ty),
 (go.field_decl.FieldDecl go!"stack" (go.GoType.SliceType go.string))]
 
-@[irreducible] def LockedStack.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def LockedStack.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   LockedStack.fieldsUnsealed
 
-instance equals_unfold_LockedStack [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_LockedStack [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold LockedStack.fields LockedStack.fieldsUnsealed :=
   ⟨by unfold LockedStack.fields; rfl⟩
 
-@[reducible] def LockedStack.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def LockedStack.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType LockedStack.fields)
 
 class LockedStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -240,21 +239,21 @@ structure EliminationStack [FfiSyntax] where
   base' : Loc
   exchanger' : GoChan
 
-instance EliminationStack.zero_val [FfiSyntax] : ZeroVal EliminationStack :=
+noncomputable instance EliminationStack.zero_val [FfiSyntax] : ZeroVal EliminationStack :=
   ⟨EliminationStack.mk zeroValDef zeroValDef⟩
 
-@[reducible] def EliminationStack.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def EliminationStack.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"base" (go.GoType.PointerType LockedStack.ty)),
 (go.field_decl.FieldDecl go!"exchanger" (go.GoType.ChannelType go.ChanDir.sendrecv go.string))]
 
-@[irreducible] def EliminationStack.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def EliminationStack.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   EliminationStack.fieldsUnsealed
 
-instance equals_unfold_EliminationStack [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_EliminationStack [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold EliminationStack.fields EliminationStack.fieldsUnsealed :=
   ⟨by unfold EliminationStack.fields; rfl⟩
 
-@[reducible] def EliminationStack.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def EliminationStack.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType EliminationStack.fields)
 
 class EliminationStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

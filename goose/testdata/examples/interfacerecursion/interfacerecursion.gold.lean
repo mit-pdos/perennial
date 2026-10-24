@@ -8,30 +8,29 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.interfacerecursion : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/interfacerecursion"
+noncomputable def github_com.mit_pdos.perennial.goose.testdata.examples.interfacerecursion : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/interfacerecursion"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.interfacerecursion
 
-def A.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def A.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/interfacerecursion.A" [])
 
 attribute [irreducible] A.ty
 
-def B.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def B.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/interfacerecursion.B" [])
 
 attribute [irreducible] B.ty
 
-def c.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def c.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/interfacerecursion.c" [])
 
 attribute [irreducible] c.ty
@@ -70,7 +69,7 @@ noncomputable def c.Bar.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore A.ty))) (Pair (Var "y") (Var "$r0"))))))))))))
 
-instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.interfacerecursion where
+noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.interfacerecursion where
   pkgImportedPkgs := []
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
@@ -82,7 +81,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 
 abbrev A [FfiSyntax] : Type := GoInterface
 
-@[reducible] def A.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def A.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Foo" (go.signature.Signature [] false []))])
 
 class A.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -92,7 +91,7 @@ attribute [instance] A.TypeAssumptions.underlying
 
 abbrev B [FfiSyntax] : Type := GoInterface
 
-@[reducible] def B.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def B.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Bar" (go.signature.Signature [] false []))])
 
 class B.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -103,20 +102,20 @@ attribute [instance] B.TypeAssumptions.underlying
 structure c [FfiSyntax] where
   mk ::
 
-instance c.zero_val [FfiSyntax] : ZeroVal c :=
+noncomputable instance c.zero_val [FfiSyntax] : ZeroVal c :=
   ⟨c.mk⟩
 
-@[reducible] def c.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def c.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] def c.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def c.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   c.fieldsUnsealed
 
-instance equals_unfold_c [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_c [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold c.fields c.fieldsUnsealed :=
   ⟨by unfold c.fields; rfl⟩
 
-@[reducible] def c.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def c.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType c.fields)
 
 class c.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

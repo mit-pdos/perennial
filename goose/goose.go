@@ -3060,7 +3060,7 @@ func (ctx *Ctx) packagePropClass() []glang.Decl {
 		decls = append(decls, ctx.namedTypeSemanticsDecl(t)...)
 	}
 
-	decls = append(decls, glang.VerbatimDecl{Content: ctx.leanPackagePropClass(ctx.namedTypeSpecs)})
+	decls = append(decls, packageAssumptionsDecl{glang.VerbatimDecl{Content: ctx.leanPackagePropClass(ctx.namedTypeSpecs)}})
 
 	return decls
 }

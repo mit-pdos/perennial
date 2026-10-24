@@ -13,6 +13,7 @@ public import Perennial.Code.github_com.mit_pdos.perennial.goose.model.channel
 @[expose] public section
 
 namespace Perennial
+noncomputable section
 
 namespace chan
 section defns
@@ -143,5 +144,7 @@ end defs
 end go
 
 attribute [irreducible] chan.receive chan.send chan.forRange
+
+end
 
 end Perennial

@@ -9,9 +9,8 @@ public import Perennial.Code.sync.atomic
 @[expose] public section
 
 set_option autoImplicit false
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 open Iris Iris.BI
@@ -26,7 +25,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.atomic.Assumptions]
 
-instance noCopy_typed_pointsto :
+noncomputable instance noCopy_typed_pointsto :
     TypedPointsto (GF := GF) sync.atomic.noCopy where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
@@ -34,7 +33,7 @@ instance noCopy_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance noCopy_into_val_typed :
+noncomputable instance noCopy_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.atomic.noCopy sync.atomic.noCopy.underlying := by
   solve_into_val_typed_struct
 
@@ -49,7 +48,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.atomic.Assumptions]
 
-instance Bool'_typed_pointsto :
+noncomputable instance Bool'_typed_pointsto :
     TypedPointsto (GF := GF) sync.atomic.Bool' where
   typedPointstoDef l v dq := iprop(
     "_0" ∷ typedPointsto (structFieldRef sync.atomic.Bool' go!"_0" l) v._0' dq ∗
@@ -59,11 +58,11 @@ instance Bool'_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Bool'_into_val_typed :
+noncomputable instance Bool'_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.atomic.Bool' sync.atomic.Bool'.underlying := by
   solve_into_val_typed_struct
 
-instance Bool'_access_load__0 (l : Loc) (v : sync.atomic.Bool') (dq : DFrac) :
+noncomputable instance Bool'_access_load__0 (l : Loc) (v : sync.atomic.Bool') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Bool' go!"_0" l) v._0' dq)
       (typedPointsto (structFieldRef sync.atomic.Bool' go!"_0" l) v._0' dq)
@@ -71,7 +70,7 @@ instance Bool'_access_load__0 (l : Loc) (v : sync.atomic.Bool') (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Bool'_access_store__0 (l : Loc) (v : sync.atomic.Bool') (_0' : sync.atomic.noCopy) :
+noncomputable instance Bool'_access_store__0 (l : Loc) (v : sync.atomic.Bool') (_0' : sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Bool' go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Bool' go!"_0" l) _0' (DFrac.own 1))
@@ -79,7 +78,7 @@ instance Bool'_access_store__0 (l : Loc) (v : sync.atomic.Bool') (_0' : sync.ato
  by
   solve_pointsto_access_struct
 
-instance Bool'_access_load_v (l : Loc) (v : sync.atomic.Bool') (dq : DFrac) :
+noncomputable instance Bool'_access_load_v (l : Loc) (v : sync.atomic.Bool') (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Bool' go!"v" l) v.v' dq)
       (typedPointsto (structFieldRef sync.atomic.Bool' go!"v" l) v.v' dq)
@@ -87,7 +86,7 @@ instance Bool'_access_load_v (l : Loc) (v : sync.atomic.Bool') (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Bool'_access_store_v (l : Loc) (v : sync.atomic.Bool') (v' : w32) :
+noncomputable instance Bool'_access_store_v (l : Loc) (v : sync.atomic.Bool') (v' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Bool' go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Bool' go!"v" l) v' (DFrac.own 1))
@@ -106,7 +105,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.atomic.Assumptions]
 
-instance Pointer_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
+noncomputable instance Pointer_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
     TypedPointsto (GF := GF) (sync.atomic.Pointer T') where
   typedPointstoDef l v dq := iprop(
     "_0" ∷ typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_0" l) v._0' dq ∗
@@ -117,11 +116,11 @@ instance Pointer_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Pointer_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
+noncomputable instance Pointer_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
     IntoValTypedUnderlying (GF := GF) (sync.atomic.Pointer T') (sync.atomic.Pointer.underlying T) := by
   solve_into_val_typed_struct
 
-instance Pointer_access_load__0 {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (dq : DFrac) :
+noncomputable instance Pointer_access_load__0 {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_0" l) v._0' dq)
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_0" l) v._0' dq)
@@ -129,7 +128,7 @@ instance Pointer_access_load__0 {T' : Type} [TypedPointsto (GF := GF) T'] (l : L
  by
   solve_pointsto_access_struct
 
-instance Pointer_access_store__0 {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (_0' : (GoArray Loc 0)) :
+noncomputable instance Pointer_access_store__0 {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (_0' : (GoArray Loc 0)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_0" l) _0' (DFrac.own 1))
@@ -137,7 +136,7 @@ instance Pointer_access_store__0 {T' : Type} [TypedPointsto (GF := GF) T'] (l : 
  by
   solve_pointsto_access_struct
 
-instance Pointer_access_load__1 {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (dq : DFrac) :
+noncomputable instance Pointer_access_load__1 {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_1" l) v._1' dq)
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_1" l) v._1' dq)
@@ -145,7 +144,7 @@ instance Pointer_access_load__1 {T' : Type} [TypedPointsto (GF := GF) T'] (l : L
  by
   solve_pointsto_access_struct
 
-instance Pointer_access_store__1 {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (_1' : sync.atomic.noCopy) :
+noncomputable instance Pointer_access_store__1 {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (_1' : sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_1" l) v._1' (DFrac.own 1))
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_1" l) _1' (DFrac.own 1))
@@ -153,7 +152,7 @@ instance Pointer_access_store__1 {T' : Type} [TypedPointsto (GF := GF) T'] (l : 
  by
   solve_pointsto_access_struct
 
-instance Pointer_access_load_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (dq : DFrac) :
+noncomputable instance Pointer_access_load_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"v" l) v.v' dq)
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"v" l) v.v' dq)
@@ -161,7 +160,7 @@ instance Pointer_access_load_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : Lo
  by
   solve_pointsto_access_struct
 
-instance Pointer_access_store_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (v' : Loc) :
+noncomputable instance Pointer_access_store_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) (v' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"v" l) v' (DFrac.own 1))
@@ -180,7 +179,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.atomic.Assumptions]
 
-instance Int32_typed_pointsto :
+noncomputable instance Int32_typed_pointsto :
     TypedPointsto (GF := GF) sync.atomic.Int32 where
   typedPointstoDef l v dq := iprop(
     "_0" ∷ typedPointsto (structFieldRef sync.atomic.Int32 go!"_0" l) v._0' dq ∗
@@ -190,11 +189,11 @@ instance Int32_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Int32_into_val_typed :
+noncomputable instance Int32_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.atomic.Int32 sync.atomic.Int32.underlying := by
   solve_into_val_typed_struct
 
-instance Int32_access_load__0 (l : Loc) (v : sync.atomic.Int32) (dq : DFrac) :
+noncomputable instance Int32_access_load__0 (l : Loc) (v : sync.atomic.Int32) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int32 go!"_0" l) v._0' dq)
       (typedPointsto (structFieldRef sync.atomic.Int32 go!"_0" l) v._0' dq)
@@ -202,7 +201,7 @@ instance Int32_access_load__0 (l : Loc) (v : sync.atomic.Int32) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Int32_access_store__0 (l : Loc) (v : sync.atomic.Int32) (_0' : sync.atomic.noCopy) :
+noncomputable instance Int32_access_store__0 (l : Loc) (v : sync.atomic.Int32) (_0' : sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int32 go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Int32 go!"_0" l) _0' (DFrac.own 1))
@@ -210,7 +209,7 @@ instance Int32_access_store__0 (l : Loc) (v : sync.atomic.Int32) (_0' : sync.ato
  by
   solve_pointsto_access_struct
 
-instance Int32_access_load_v (l : Loc) (v : sync.atomic.Int32) (dq : DFrac) :
+noncomputable instance Int32_access_load_v (l : Loc) (v : sync.atomic.Int32) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int32 go!"v" l) v.v' dq)
       (typedPointsto (structFieldRef sync.atomic.Int32 go!"v" l) v.v' dq)
@@ -218,7 +217,7 @@ instance Int32_access_load_v (l : Loc) (v : sync.atomic.Int32) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Int32_access_store_v (l : Loc) (v : sync.atomic.Int32) (v' : w32) :
+noncomputable instance Int32_access_store_v (l : Loc) (v : sync.atomic.Int32) (v' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int32 go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Int32 go!"v" l) v' (DFrac.own 1))
@@ -237,7 +236,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.atomic.Assumptions]
 
-instance align64_typed_pointsto :
+noncomputable instance align64_typed_pointsto :
     TypedPointsto (GF := GF) sync.atomic.align64 where
   typedPointstoDef l v dq := iprop(
     "_" ∷ True)
@@ -245,7 +244,7 @@ instance align64_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance align64_into_val_typed :
+noncomputable instance align64_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.atomic.align64 sync.atomic.align64.underlying := by
   solve_into_val_typed_struct
 
@@ -260,7 +259,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.atomic.Assumptions]
 
-instance Int64_typed_pointsto :
+noncomputable instance Int64_typed_pointsto :
     TypedPointsto (GF := GF) sync.atomic.Int64 where
   typedPointstoDef l v dq := iprop(
     "_0" ∷ typedPointsto (structFieldRef sync.atomic.Int64 go!"_0" l) v._0' dq ∗
@@ -271,11 +270,11 @@ instance Int64_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Int64_into_val_typed :
+noncomputable instance Int64_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.atomic.Int64 sync.atomic.Int64.underlying := by
   solve_into_val_typed_struct
 
-instance Int64_access_load__0 (l : Loc) (v : sync.atomic.Int64) (dq : DFrac) :
+noncomputable instance Int64_access_load__0 (l : Loc) (v : sync.atomic.Int64) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"_0" l) v._0' dq)
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"_0" l) v._0' dq)
@@ -283,7 +282,7 @@ instance Int64_access_load__0 (l : Loc) (v : sync.atomic.Int64) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Int64_access_store__0 (l : Loc) (v : sync.atomic.Int64) (_0' : sync.atomic.noCopy) :
+noncomputable instance Int64_access_store__0 (l : Loc) (v : sync.atomic.Int64) (_0' : sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"_0" l) _0' (DFrac.own 1))
@@ -291,7 +290,7 @@ instance Int64_access_store__0 (l : Loc) (v : sync.atomic.Int64) (_0' : sync.ato
  by
   solve_pointsto_access_struct
 
-instance Int64_access_load__1 (l : Loc) (v : sync.atomic.Int64) (dq : DFrac) :
+noncomputable instance Int64_access_load__1 (l : Loc) (v : sync.atomic.Int64) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"_1" l) v._1' dq)
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"_1" l) v._1' dq)
@@ -299,7 +298,7 @@ instance Int64_access_load__1 (l : Loc) (v : sync.atomic.Int64) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Int64_access_store__1 (l : Loc) (v : sync.atomic.Int64) (_1' : sync.atomic.align64) :
+noncomputable instance Int64_access_store__1 (l : Loc) (v : sync.atomic.Int64) (_1' : sync.atomic.align64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"_1" l) v._1' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"_1" l) _1' (DFrac.own 1))
@@ -307,7 +306,7 @@ instance Int64_access_store__1 (l : Loc) (v : sync.atomic.Int64) (_1' : sync.ato
  by
   solve_pointsto_access_struct
 
-instance Int64_access_load_v (l : Loc) (v : sync.atomic.Int64) (dq : DFrac) :
+noncomputable instance Int64_access_load_v (l : Loc) (v : sync.atomic.Int64) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"v" l) v.v' dq)
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"v" l) v.v' dq)
@@ -315,7 +314,7 @@ instance Int64_access_load_v (l : Loc) (v : sync.atomic.Int64) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Int64_access_store_v (l : Loc) (v : sync.atomic.Int64) (v' : w64) :
+noncomputable instance Int64_access_store_v (l : Loc) (v : sync.atomic.Int64) (v' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"v" l) v' (DFrac.own 1))
@@ -334,7 +333,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.atomic.Assumptions]
 
-instance Uint32_typed_pointsto :
+noncomputable instance Uint32_typed_pointsto :
     TypedPointsto (GF := GF) sync.atomic.Uint32 where
   typedPointstoDef l v dq := iprop(
     "_0" ∷ typedPointsto (structFieldRef sync.atomic.Uint32 go!"_0" l) v._0' dq ∗
@@ -344,11 +343,11 @@ instance Uint32_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Uint32_into_val_typed :
+noncomputable instance Uint32_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.atomic.Uint32 sync.atomic.Uint32.underlying := by
   solve_into_val_typed_struct
 
-instance Uint32_access_load__0 (l : Loc) (v : sync.atomic.Uint32) (dq : DFrac) :
+noncomputable instance Uint32_access_load__0 (l : Loc) (v : sync.atomic.Uint32) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint32 go!"_0" l) v._0' dq)
       (typedPointsto (structFieldRef sync.atomic.Uint32 go!"_0" l) v._0' dq)
@@ -356,7 +355,7 @@ instance Uint32_access_load__0 (l : Loc) (v : sync.atomic.Uint32) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Uint32_access_store__0 (l : Loc) (v : sync.atomic.Uint32) (_0' : sync.atomic.noCopy) :
+noncomputable instance Uint32_access_store__0 (l : Loc) (v : sync.atomic.Uint32) (_0' : sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint32 go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uint32 go!"_0" l) _0' (DFrac.own 1))
@@ -364,7 +363,7 @@ instance Uint32_access_store__0 (l : Loc) (v : sync.atomic.Uint32) (_0' : sync.a
  by
   solve_pointsto_access_struct
 
-instance Uint32_access_load_v (l : Loc) (v : sync.atomic.Uint32) (dq : DFrac) :
+noncomputable instance Uint32_access_load_v (l : Loc) (v : sync.atomic.Uint32) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint32 go!"v" l) v.v' dq)
       (typedPointsto (structFieldRef sync.atomic.Uint32 go!"v" l) v.v' dq)
@@ -372,7 +371,7 @@ instance Uint32_access_load_v (l : Loc) (v : sync.atomic.Uint32) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Uint32_access_store_v (l : Loc) (v : sync.atomic.Uint32) (v' : w32) :
+noncomputable instance Uint32_access_store_v (l : Loc) (v : sync.atomic.Uint32) (v' : w32) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint32 go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uint32 go!"v" l) v' (DFrac.own 1))
@@ -391,7 +390,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.atomic.Assumptions]
 
-instance Uint64_typed_pointsto :
+noncomputable instance Uint64_typed_pointsto :
     TypedPointsto (GF := GF) sync.atomic.Uint64 where
   typedPointstoDef l v dq := iprop(
     "_0" ∷ typedPointsto (structFieldRef sync.atomic.Uint64 go!"_0" l) v._0' dq ∗
@@ -402,11 +401,11 @@ instance Uint64_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Uint64_into_val_typed :
+noncomputable instance Uint64_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.atomic.Uint64 sync.atomic.Uint64.underlying := by
   solve_into_val_typed_struct
 
-instance Uint64_access_load__0 (l : Loc) (v : sync.atomic.Uint64) (dq : DFrac) :
+noncomputable instance Uint64_access_load__0 (l : Loc) (v : sync.atomic.Uint64) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_0" l) v._0' dq)
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_0" l) v._0' dq)
@@ -414,7 +413,7 @@ instance Uint64_access_load__0 (l : Loc) (v : sync.atomic.Uint64) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Uint64_access_store__0 (l : Loc) (v : sync.atomic.Uint64) (_0' : sync.atomic.noCopy) :
+noncomputable instance Uint64_access_store__0 (l : Loc) (v : sync.atomic.Uint64) (_0' : sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_0" l) _0' (DFrac.own 1))
@@ -422,7 +421,7 @@ instance Uint64_access_store__0 (l : Loc) (v : sync.atomic.Uint64) (_0' : sync.a
  by
   solve_pointsto_access_struct
 
-instance Uint64_access_load__1 (l : Loc) (v : sync.atomic.Uint64) (dq : DFrac) :
+noncomputable instance Uint64_access_load__1 (l : Loc) (v : sync.atomic.Uint64) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_1" l) v._1' dq)
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_1" l) v._1' dq)
@@ -430,7 +429,7 @@ instance Uint64_access_load__1 (l : Loc) (v : sync.atomic.Uint64) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Uint64_access_store__1 (l : Loc) (v : sync.atomic.Uint64) (_1' : sync.atomic.align64) :
+noncomputable instance Uint64_access_store__1 (l : Loc) (v : sync.atomic.Uint64) (_1' : sync.atomic.align64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_1" l) v._1' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_1" l) _1' (DFrac.own 1))
@@ -438,7 +437,7 @@ instance Uint64_access_store__1 (l : Loc) (v : sync.atomic.Uint64) (_1' : sync.a
  by
   solve_pointsto_access_struct
 
-instance Uint64_access_load_v (l : Loc) (v : sync.atomic.Uint64) (dq : DFrac) :
+noncomputable instance Uint64_access_load_v (l : Loc) (v : sync.atomic.Uint64) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"v" l) v.v' dq)
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"v" l) v.v' dq)
@@ -446,7 +445,7 @@ instance Uint64_access_load_v (l : Loc) (v : sync.atomic.Uint64) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Uint64_access_store_v (l : Loc) (v : sync.atomic.Uint64) (v' : w64) :
+noncomputable instance Uint64_access_store_v (l : Loc) (v : sync.atomic.Uint64) (v' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"v" l) v' (DFrac.own 1))
@@ -465,7 +464,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.atomic.Assumptions]
 
-instance Uintptr_typed_pointsto :
+noncomputable instance Uintptr_typed_pointsto :
     TypedPointsto (GF := GF) sync.atomic.Uintptr where
   typedPointstoDef l v dq := iprop(
     "_0" ∷ typedPointsto (structFieldRef sync.atomic.Uintptr go!"_0" l) v._0' dq ∗
@@ -475,11 +474,11 @@ instance Uintptr_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Uintptr_into_val_typed :
+noncomputable instance Uintptr_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.atomic.Uintptr sync.atomic.Uintptr.underlying := by
   solve_into_val_typed_struct
 
-instance Uintptr_access_load__0 (l : Loc) (v : sync.atomic.Uintptr) (dq : DFrac) :
+noncomputable instance Uintptr_access_load__0 (l : Loc) (v : sync.atomic.Uintptr) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uintptr go!"_0" l) v._0' dq)
       (typedPointsto (structFieldRef sync.atomic.Uintptr go!"_0" l) v._0' dq)
@@ -487,7 +486,7 @@ instance Uintptr_access_load__0 (l : Loc) (v : sync.atomic.Uintptr) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance Uintptr_access_store__0 (l : Loc) (v : sync.atomic.Uintptr) (_0' : sync.atomic.noCopy) :
+noncomputable instance Uintptr_access_store__0 (l : Loc) (v : sync.atomic.Uintptr) (_0' : sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uintptr go!"_0" l) v._0' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uintptr go!"_0" l) _0' (DFrac.own 1))
@@ -495,7 +494,7 @@ instance Uintptr_access_store__0 (l : Loc) (v : sync.atomic.Uintptr) (_0' : sync
  by
   solve_pointsto_access_struct
 
-instance Uintptr_access_load_v (l : Loc) (v : sync.atomic.Uintptr) (dq : DFrac) :
+noncomputable instance Uintptr_access_load_v (l : Loc) (v : sync.atomic.Uintptr) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uintptr go!"v" l) v.v' dq)
       (typedPointsto (structFieldRef sync.atomic.Uintptr go!"v" l) v.v' dq)
@@ -503,7 +502,7 @@ instance Uintptr_access_load_v (l : Loc) (v : sync.atomic.Uintptr) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-instance Uintptr_access_store_v (l : Loc) (v : sync.atomic.Uintptr) (v' : w64) :
+noncomputable instance Uintptr_access_store_v (l : Loc) (v : sync.atomic.Uintptr) (v' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uintptr go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uintptr go!"v" l) v' (DFrac.own 1))
@@ -522,7 +521,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.atomic.Assumptions]
 
-instance Value_typed_pointsto :
+noncomputable instance Value_typed_pointsto :
     TypedPointsto (GF := GF) sync.atomic.Value where
   typedPointstoDef l v dq := iprop(
     "v" ∷ typedPointsto (structFieldRef sync.atomic.Value go!"v" l) v.v' dq ∗
@@ -531,11 +530,11 @@ instance Value_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Value_into_val_typed :
+noncomputable instance Value_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.atomic.Value sync.atomic.Value.underlying := by
   solve_into_val_typed_struct
 
-instance Value_access_load_v (l : Loc) (v : sync.atomic.Value) (dq : DFrac) :
+noncomputable instance Value_access_load_v (l : Loc) (v : sync.atomic.Value) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Value go!"v" l) v.v' dq)
       (typedPointsto (structFieldRef sync.atomic.Value go!"v" l) v.v' dq)
@@ -543,7 +542,7 @@ instance Value_access_load_v (l : Loc) (v : sync.atomic.Value) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Value_access_store_v (l : Loc) (v : sync.atomic.Value) (v' : GoInterface) :
+noncomputable instance Value_access_store_v (l : Loc) (v : sync.atomic.Value) (v' : GoInterface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Value go!"v" l) v.v' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Value go!"v" l) v' (DFrac.own 1))
@@ -562,7 +561,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : sync.atomic.Assumptions]
 
-instance efaceWords_typed_pointsto :
+noncomputable instance efaceWords_typed_pointsto :
     TypedPointsto (GF := GF) sync.atomic.efaceWords where
   typedPointstoDef l v dq := iprop(
     "typ" ∷ typedPointsto (structFieldRef sync.atomic.efaceWords go!"typ" l) v.typ' dq ∗
@@ -572,11 +571,11 @@ instance efaceWords_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance efaceWords_into_val_typed :
+noncomputable instance efaceWords_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.atomic.efaceWords sync.atomic.efaceWords.underlying := by
   solve_into_val_typed_struct
 
-instance efaceWords_access_load_typ (l : Loc) (v : sync.atomic.efaceWords) (dq : DFrac) :
+noncomputable instance efaceWords_access_load_typ (l : Loc) (v : sync.atomic.efaceWords) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.efaceWords go!"typ" l) v.typ' dq)
       (typedPointsto (structFieldRef sync.atomic.efaceWords go!"typ" l) v.typ' dq)
@@ -584,7 +583,7 @@ instance efaceWords_access_load_typ (l : Loc) (v : sync.atomic.efaceWords) (dq :
  by
   solve_pointsto_access_struct
 
-instance efaceWords_access_store_typ (l : Loc) (v : sync.atomic.efaceWords) (typ' : Loc) :
+noncomputable instance efaceWords_access_store_typ (l : Loc) (v : sync.atomic.efaceWords) (typ' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.efaceWords go!"typ" l) v.typ' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.efaceWords go!"typ" l) typ' (DFrac.own 1))
@@ -592,7 +591,7 @@ instance efaceWords_access_store_typ (l : Loc) (v : sync.atomic.efaceWords) (typ
  by
   solve_pointsto_access_struct
 
-instance efaceWords_access_load_data (l : Loc) (v : sync.atomic.efaceWords) (dq : DFrac) :
+noncomputable instance efaceWords_access_load_data (l : Loc) (v : sync.atomic.efaceWords) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.efaceWords go!"data" l) v.data' dq)
       (typedPointsto (structFieldRef sync.atomic.efaceWords go!"data" l) v.data' dq)
@@ -600,7 +599,7 @@ instance efaceWords_access_load_data (l : Loc) (v : sync.atomic.efaceWords) (dq 
  by
   solve_pointsto_access_struct
 
-instance efaceWords_access_store_data (l : Loc) (v : sync.atomic.efaceWords) (data' : Loc) :
+noncomputable instance efaceWords_access_store_data (l : Loc) (v : sync.atomic.efaceWords) (data' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.efaceWords go!"data" l) v.data' (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.efaceWords go!"data" l) data' (DFrac.own 1))

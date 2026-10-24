@@ -9,30 +9,29 @@ public import Perennial.TrustedCode.crypto.ed25519
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def crypto.ed25519 : GoString := go!"crypto/ed25519"
+noncomputable def crypto.ed25519 : GoString := go!"crypto/ed25519"
 end pkg_id
 
 namespace crypto.ed25519
 
-def PublicKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def PublicKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"crypto/ed25519.PublicKey" [])
 
 attribute [irreducible] PublicKey.ty
 
-def PrivateKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def PrivateKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"crypto/ed25519.PrivateKey" [])
 
 attribute [irreducible] PrivateKey.ty
 
-def Options.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Options.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"crypto/ed25519.Options" [])
 
 attribute [irreducible] Options.ty
@@ -74,7 +73,7 @@ noncomputable def Verify [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def VerifyWithOptions [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.VerifyWithOptions"
 
-instance info' : PkgInfo pkg_id.crypto.ed25519 where
+noncomputable instance info' : PkgInfo pkg_id.crypto.ed25519 where
   pkgImportedPkgs := []
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val
@@ -88,7 +87,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 
 abbrev PublicKey [FfiSyntax] : Type := GoSlice
 
-@[reducible] def PublicKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def PublicKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.byte)
 
 class PublicKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -98,7 +97,7 @@ attribute [instance] PublicKey.TypeAssumptions.underlying
 
 abbrev PrivateKey [FfiSyntax] : Type := GoSlice
 
-@[reducible] def PrivateKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def PrivateKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.byte)
 
 class PrivateKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

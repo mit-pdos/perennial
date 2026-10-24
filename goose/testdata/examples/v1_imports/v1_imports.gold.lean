@@ -10,15 +10,14 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/v1_imports"
+noncomputable def github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/v1_imports"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports
@@ -36,7 +35,7 @@ noncomputable def AddBoth.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.a.v1.Add []))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.b.v1.Add []))) (Val #())) (Var "$a0")))))))))
 
-instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports where
+noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports where
   pkgImportedPkgs := [pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.a.v1, pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.b.v1]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=

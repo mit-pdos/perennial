@@ -13,20 +13,19 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.goose_lang.std : GoString := go!"github.com/goose-lang/std"
+noncomputable def github_com.goose_lang.std : GoString := go!"github.com/goose-lang/std"
 end pkg_id
 
 namespace github_com.goose_lang.std
 
-def JoinHandle.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def JoinHandle.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/goose-lang/std.JoinHandle" [])
 
 attribute [irreducible] JoinHandle.ty
@@ -481,7 +480,7 @@ noncomputable def WaitTimeout.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "done") (Var "$r0")))))))))))))
 
-instance info' : PkgInfo pkg_id.github_com.goose_lang.std where
+noncomputable instance info' : PkgInfo pkg_id.github_com.goose_lang.std where
   pkgImportedPkgs := [pkg_id.math, pkg_id.sync, pkg_id.time, pkg_id.github_com.goose_lang.primitive, pkg_id.github_com.goose_lang.std.std_core]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
@@ -509,22 +508,22 @@ structure JoinHandle [FfiSyntax] where
   done' : Bool
   cond' : Loc
 
-instance JoinHandle.zero_val [FfiSyntax] : ZeroVal JoinHandle :=
+noncomputable instance JoinHandle.zero_val [FfiSyntax] : ZeroVal JoinHandle :=
   ⟨JoinHandle.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] def JoinHandle.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def JoinHandle.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)),
 (go.field_decl.FieldDecl go!"done" go.bool),
 (go.field_decl.FieldDecl go!"cond" (go.GoType.PointerType _root_.Perennial.sync.Cond.ty))]
 
-@[irreducible] def JoinHandle.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def JoinHandle.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   JoinHandle.fieldsUnsealed
 
-instance equals_unfold_JoinHandle [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_JoinHandle [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold JoinHandle.fields JoinHandle.fieldsUnsealed :=
   ⟨by unfold JoinHandle.fields; rfl⟩
 
-@[reducible] def JoinHandle.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def JoinHandle.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType JoinHandle.fields)
 
 class JoinHandle.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

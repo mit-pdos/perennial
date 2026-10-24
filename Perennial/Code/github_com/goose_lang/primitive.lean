@@ -9,25 +9,24 @@ public import Perennial.TrustedCode.github_com.goose_lang.primitive
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.goose_lang.primitive : GoString := go!"github.com/goose-lang/primitive"
+noncomputable def github_com.goose_lang.primitive : GoString := go!"github.com/goose-lang/primitive"
 end pkg_id
 
 namespace github_com.goose_lang.primitive
 
-def Mutex.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Mutex.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/goose-lang/primitive.Mutex" [])
 
 attribute [irreducible] Mutex.ty
 
-def ProphId.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ProphId.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/goose-lang/primitive.ProphId" [])
 
 attribute [irreducible] ProphId.ty
@@ -59,7 +58,7 @@ noncomputable def Sleep [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def NewProph [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/primitive.NewProph"
 
-instance info' : PkgInfo pkg_id.github_com.goose_lang.primitive where
+noncomputable instance info' : PkgInfo pkg_id.github_com.goose_lang.primitive where
   pkgImportedPkgs := []
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val

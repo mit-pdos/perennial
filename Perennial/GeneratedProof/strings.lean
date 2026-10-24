@@ -9,9 +9,8 @@ public import Perennial.Code.strings
 @[expose] public section
 
 set_option autoImplicit false
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 open Iris Iris.BI
@@ -26,7 +25,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
-instance Builder_typed_pointsto :
+noncomputable instance Builder_typed_pointsto :
     TypedPointsto (GF := GF) strings.Builder where
   typedPointstoDef l v dq := iprop(
     "addr" ∷ typedPointsto (structFieldRef strings.Builder go!"addr" l) v.addr' dq ∗
@@ -36,11 +35,11 @@ instance Builder_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Builder_into_val_typed :
+noncomputable instance Builder_into_val_typed :
     IntoValTypedUnderlying (GF := GF) strings.Builder strings.Builder.underlying := by
   solve_into_val_typed_struct
 
-instance Builder_access_load_addr (l : Loc) (v : strings.Builder) (dq : DFrac) :
+noncomputable instance Builder_access_load_addr (l : Loc) (v : strings.Builder) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Builder go!"addr" l) v.addr' dq)
       (typedPointsto (structFieldRef strings.Builder go!"addr" l) v.addr' dq)
@@ -48,7 +47,7 @@ instance Builder_access_load_addr (l : Loc) (v : strings.Builder) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Builder_access_store_addr (l : Loc) (v : strings.Builder) (addr' : Loc) :
+noncomputable instance Builder_access_store_addr (l : Loc) (v : strings.Builder) (addr' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Builder go!"addr" l) v.addr' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.Builder go!"addr" l) addr' (DFrac.own 1))
@@ -56,7 +55,7 @@ instance Builder_access_store_addr (l : Loc) (v : strings.Builder) (addr' : Loc)
  by
   solve_pointsto_access_struct
 
-instance Builder_access_load_buf (l : Loc) (v : strings.Builder) (dq : DFrac) :
+noncomputable instance Builder_access_load_buf (l : Loc) (v : strings.Builder) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Builder go!"buf" l) v.buf' dq)
       (typedPointsto (structFieldRef strings.Builder go!"buf" l) v.buf' dq)
@@ -64,7 +63,7 @@ instance Builder_access_load_buf (l : Loc) (v : strings.Builder) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Builder_access_store_buf (l : Loc) (v : strings.Builder) (buf' : GoSlice) :
+noncomputable instance Builder_access_store_buf (l : Loc) (v : strings.Builder) (buf' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Builder go!"buf" l) v.buf' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.Builder go!"buf" l) buf' (DFrac.own 1))
@@ -83,7 +82,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
-instance Reader_typed_pointsto :
+noncomputable instance Reader_typed_pointsto :
     TypedPointsto (GF := GF) strings.Reader where
   typedPointstoDef l v dq := iprop(
     "s" ∷ typedPointsto (structFieldRef strings.Reader go!"s" l) v.s' dq ∗
@@ -94,11 +93,11 @@ instance Reader_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance Reader_into_val_typed :
+noncomputable instance Reader_into_val_typed :
     IntoValTypedUnderlying (GF := GF) strings.Reader strings.Reader.underlying := by
   solve_into_val_typed_struct
 
-instance Reader_access_load_s (l : Loc) (v : strings.Reader) (dq : DFrac) :
+noncomputable instance Reader_access_load_s (l : Loc) (v : strings.Reader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Reader go!"s" l) v.s' dq)
       (typedPointsto (structFieldRef strings.Reader go!"s" l) v.s' dq)
@@ -106,7 +105,7 @@ instance Reader_access_load_s (l : Loc) (v : strings.Reader) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_s (l : Loc) (v : strings.Reader) (s' : GoString) :
+noncomputable instance Reader_access_store_s (l : Loc) (v : strings.Reader) (s' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Reader go!"s" l) v.s' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.Reader go!"s" l) s' (DFrac.own 1))
@@ -114,7 +113,7 @@ instance Reader_access_store_s (l : Loc) (v : strings.Reader) (s' : GoString) :
  by
   solve_pointsto_access_struct
 
-instance Reader_access_load_i (l : Loc) (v : strings.Reader) (dq : DFrac) :
+noncomputable instance Reader_access_load_i (l : Loc) (v : strings.Reader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Reader go!"i" l) v.i' dq)
       (typedPointsto (structFieldRef strings.Reader go!"i" l) v.i' dq)
@@ -122,7 +121,7 @@ instance Reader_access_load_i (l : Loc) (v : strings.Reader) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_i (l : Loc) (v : strings.Reader) (i' : w64) :
+noncomputable instance Reader_access_store_i (l : Loc) (v : strings.Reader) (i' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Reader go!"i" l) v.i' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.Reader go!"i" l) i' (DFrac.own 1))
@@ -130,7 +129,7 @@ instance Reader_access_store_i (l : Loc) (v : strings.Reader) (i' : w64) :
  by
   solve_pointsto_access_struct
 
-instance Reader_access_load_prevRune (l : Loc) (v : strings.Reader) (dq : DFrac) :
+noncomputable instance Reader_access_load_prevRune (l : Loc) (v : strings.Reader) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Reader go!"prevRune" l) v.prevRune' dq)
       (typedPointsto (structFieldRef strings.Reader go!"prevRune" l) v.prevRune' dq)
@@ -138,7 +137,7 @@ instance Reader_access_load_prevRune (l : Loc) (v : strings.Reader) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance Reader_access_store_prevRune (l : Loc) (v : strings.Reader) (prevRune' : w64) :
+noncomputable instance Reader_access_store_prevRune (l : Loc) (v : strings.Reader) (prevRune' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.Reader go!"prevRune" l) v.prevRune' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.Reader go!"prevRune" l) prevRune' (DFrac.own 1))
@@ -157,11 +156,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
-instance Replacer_typed_pointsto :
+noncomputable instance Replacer_typed_pointsto :
     TypedPointsto (GF := GF) strings.Replacer :=
   sorry -- axiomatized type
 
-instance Replacer_into_val_typed :
+noncomputable instance Replacer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) strings.Replacer strings.Replacer.underlying :=
   sorry -- axiomatized type
 
@@ -176,11 +175,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
-instance replacer_typed_pointsto :
+noncomputable instance replacer_typed_pointsto :
     TypedPointsto (GF := GF) strings.replacer :=
   sorry -- axiomatized type
 
-instance replacer_into_val_typed :
+noncomputable instance replacer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) strings.replacer strings.replacer.underlying :=
   sorry -- axiomatized type
 
@@ -195,7 +194,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
-instance trieNode_typed_pointsto :
+noncomputable instance trieNode_typed_pointsto :
     TypedPointsto (GF := GF) strings.trieNode where
   typedPointstoDef l v dq := iprop(
     "value" ∷ typedPointsto (structFieldRef strings.trieNode go!"value" l) v.value' dq ∗
@@ -208,11 +207,11 @@ instance trieNode_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance trieNode_into_val_typed :
+noncomputable instance trieNode_into_val_typed :
     IntoValTypedUnderlying (GF := GF) strings.trieNode strings.trieNode.underlying := by
   solve_into_val_typed_struct
 
-instance trieNode_access_load_value (l : Loc) (v : strings.trieNode) (dq : DFrac) :
+noncomputable instance trieNode_access_load_value (l : Loc) (v : strings.trieNode) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.trieNode go!"value" l) v.value' dq)
       (typedPointsto (structFieldRef strings.trieNode go!"value" l) v.value' dq)
@@ -220,7 +219,7 @@ instance trieNode_access_load_value (l : Loc) (v : strings.trieNode) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_store_value (l : Loc) (v : strings.trieNode) (value' : GoString) :
+noncomputable instance trieNode_access_store_value (l : Loc) (v : strings.trieNode) (value' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.trieNode go!"value" l) v.value' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.trieNode go!"value" l) value' (DFrac.own 1))
@@ -228,7 +227,7 @@ instance trieNode_access_store_value (l : Loc) (v : strings.trieNode) (value' : 
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_load_priority (l : Loc) (v : strings.trieNode) (dq : DFrac) :
+noncomputable instance trieNode_access_load_priority (l : Loc) (v : strings.trieNode) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.trieNode go!"priority" l) v.priority' dq)
       (typedPointsto (structFieldRef strings.trieNode go!"priority" l) v.priority' dq)
@@ -236,7 +235,7 @@ instance trieNode_access_load_priority (l : Loc) (v : strings.trieNode) (dq : DF
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_store_priority (l : Loc) (v : strings.trieNode) (priority' : w64) :
+noncomputable instance trieNode_access_store_priority (l : Loc) (v : strings.trieNode) (priority' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.trieNode go!"priority" l) v.priority' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.trieNode go!"priority" l) priority' (DFrac.own 1))
@@ -244,7 +243,7 @@ instance trieNode_access_store_priority (l : Loc) (v : strings.trieNode) (priori
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_load_prefix (l : Loc) (v : strings.trieNode) (dq : DFrac) :
+noncomputable instance trieNode_access_load_prefix (l : Loc) (v : strings.trieNode) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.trieNode go!"prefix" l) v.prefix' dq)
       (typedPointsto (structFieldRef strings.trieNode go!"prefix" l) v.prefix' dq)
@@ -252,7 +251,7 @@ instance trieNode_access_load_prefix (l : Loc) (v : strings.trieNode) (dq : DFra
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_store_prefix (l : Loc) (v : strings.trieNode) (prefix' : GoString) :
+noncomputable instance trieNode_access_store_prefix (l : Loc) (v : strings.trieNode) (prefix' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.trieNode go!"prefix" l) v.prefix' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.trieNode go!"prefix" l) prefix' (DFrac.own 1))
@@ -260,7 +259,7 @@ instance trieNode_access_store_prefix (l : Loc) (v : strings.trieNode) (prefix' 
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_load_next (l : Loc) (v : strings.trieNode) (dq : DFrac) :
+noncomputable instance trieNode_access_load_next (l : Loc) (v : strings.trieNode) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.trieNode go!"next" l) v.next' dq)
       (typedPointsto (structFieldRef strings.trieNode go!"next" l) v.next' dq)
@@ -268,7 +267,7 @@ instance trieNode_access_load_next (l : Loc) (v : strings.trieNode) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_store_next (l : Loc) (v : strings.trieNode) (next' : Loc) :
+noncomputable instance trieNode_access_store_next (l : Loc) (v : strings.trieNode) (next' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.trieNode go!"next" l) v.next' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.trieNode go!"next" l) next' (DFrac.own 1))
@@ -276,7 +275,7 @@ instance trieNode_access_store_next (l : Loc) (v : strings.trieNode) (next' : Lo
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_load_table (l : Loc) (v : strings.trieNode) (dq : DFrac) :
+noncomputable instance trieNode_access_load_table (l : Loc) (v : strings.trieNode) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.trieNode go!"table" l) v.table' dq)
       (typedPointsto (structFieldRef strings.trieNode go!"table" l) v.table' dq)
@@ -284,7 +283,7 @@ instance trieNode_access_load_table (l : Loc) (v : strings.trieNode) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-instance trieNode_access_store_table (l : Loc) (v : strings.trieNode) (table' : GoSlice) :
+noncomputable instance trieNode_access_store_table (l : Loc) (v : strings.trieNode) (table' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.trieNode go!"table" l) v.table' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.trieNode go!"table" l) table' (DFrac.own 1))
@@ -303,7 +302,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
-instance genericReplacer_typed_pointsto :
+noncomputable instance genericReplacer_typed_pointsto :
     TypedPointsto (GF := GF) strings.genericReplacer where
   typedPointstoDef l v dq := iprop(
     "root" ∷ typedPointsto (structFieldRef strings.genericReplacer go!"root" l) v.root' dq ∗
@@ -314,11 +313,11 @@ instance genericReplacer_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance genericReplacer_into_val_typed :
+noncomputable instance genericReplacer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) strings.genericReplacer strings.genericReplacer.underlying := by
   solve_into_val_typed_struct
 
-instance genericReplacer_access_load_root (l : Loc) (v : strings.genericReplacer) (dq : DFrac) :
+noncomputable instance genericReplacer_access_load_root (l : Loc) (v : strings.genericReplacer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.genericReplacer go!"root" l) v.root' dq)
       (typedPointsto (structFieldRef strings.genericReplacer go!"root" l) v.root' dq)
@@ -326,7 +325,7 @@ instance genericReplacer_access_load_root (l : Loc) (v : strings.genericReplacer
  by
   solve_pointsto_access_struct
 
-instance genericReplacer_access_store_root (l : Loc) (v : strings.genericReplacer) (root' : strings.trieNode) :
+noncomputable instance genericReplacer_access_store_root (l : Loc) (v : strings.genericReplacer) (root' : strings.trieNode) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.genericReplacer go!"root" l) v.root' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.genericReplacer go!"root" l) root' (DFrac.own 1))
@@ -334,7 +333,7 @@ instance genericReplacer_access_store_root (l : Loc) (v : strings.genericReplace
  by
   solve_pointsto_access_struct
 
-instance genericReplacer_access_load_tableSize (l : Loc) (v : strings.genericReplacer) (dq : DFrac) :
+noncomputable instance genericReplacer_access_load_tableSize (l : Loc) (v : strings.genericReplacer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.genericReplacer go!"tableSize" l) v.tableSize' dq)
       (typedPointsto (structFieldRef strings.genericReplacer go!"tableSize" l) v.tableSize' dq)
@@ -342,7 +341,7 @@ instance genericReplacer_access_load_tableSize (l : Loc) (v : strings.genericRep
  by
   solve_pointsto_access_struct
 
-instance genericReplacer_access_store_tableSize (l : Loc) (v : strings.genericReplacer) (tableSize' : w64) :
+noncomputable instance genericReplacer_access_store_tableSize (l : Loc) (v : strings.genericReplacer) (tableSize' : w64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.genericReplacer go!"tableSize" l) v.tableSize' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.genericReplacer go!"tableSize" l) tableSize' (DFrac.own 1))
@@ -350,7 +349,7 @@ instance genericReplacer_access_store_tableSize (l : Loc) (v : strings.genericRe
  by
   solve_pointsto_access_struct
 
-instance genericReplacer_access_load_mapping (l : Loc) (v : strings.genericReplacer) (dq : DFrac) :
+noncomputable instance genericReplacer_access_load_mapping (l : Loc) (v : strings.genericReplacer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.genericReplacer go!"mapping" l) v.mapping' dq)
       (typedPointsto (structFieldRef strings.genericReplacer go!"mapping" l) v.mapping' dq)
@@ -358,7 +357,7 @@ instance genericReplacer_access_load_mapping (l : Loc) (v : strings.genericRepla
  by
   solve_pointsto_access_struct
 
-instance genericReplacer_access_store_mapping (l : Loc) (v : strings.genericReplacer) (mapping' : (GoArray w8 256)) :
+noncomputable instance genericReplacer_access_store_mapping (l : Loc) (v : strings.genericReplacer) (mapping' : (GoArray w8 256)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.genericReplacer go!"mapping" l) v.mapping' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.genericReplacer go!"mapping" l) mapping' (DFrac.own 1))
@@ -377,11 +376,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
-instance stringWriter_typed_pointsto :
+noncomputable instance stringWriter_typed_pointsto :
     TypedPointsto (GF := GF) strings.stringWriter :=
   sorry -- axiomatized type
 
-instance stringWriter_into_val_typed :
+noncomputable instance stringWriter_into_val_typed :
     IntoValTypedUnderlying (GF := GF) strings.stringWriter strings.stringWriter.underlying :=
   sorry -- axiomatized type
 
@@ -396,7 +395,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
-instance singleStringReplacer_typed_pointsto :
+noncomputable instance singleStringReplacer_typed_pointsto :
     TypedPointsto (GF := GF) strings.singleStringReplacer where
   typedPointstoDef l v dq := iprop(
     "finder" ∷ typedPointsto (structFieldRef strings.singleStringReplacer go!"finder" l) v.finder' dq ∗
@@ -406,11 +405,11 @@ instance singleStringReplacer_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance singleStringReplacer_into_val_typed :
+noncomputable instance singleStringReplacer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) strings.singleStringReplacer strings.singleStringReplacer.underlying := by
   solve_into_val_typed_struct
 
-instance singleStringReplacer_access_load_finder (l : Loc) (v : strings.singleStringReplacer) (dq : DFrac) :
+noncomputable instance singleStringReplacer_access_load_finder (l : Loc) (v : strings.singleStringReplacer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.singleStringReplacer go!"finder" l) v.finder' dq)
       (typedPointsto (structFieldRef strings.singleStringReplacer go!"finder" l) v.finder' dq)
@@ -418,7 +417,7 @@ instance singleStringReplacer_access_load_finder (l : Loc) (v : strings.singleSt
  by
   solve_pointsto_access_struct
 
-instance singleStringReplacer_access_store_finder (l : Loc) (v : strings.singleStringReplacer) (finder' : Loc) :
+noncomputable instance singleStringReplacer_access_store_finder (l : Loc) (v : strings.singleStringReplacer) (finder' : Loc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.singleStringReplacer go!"finder" l) v.finder' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.singleStringReplacer go!"finder" l) finder' (DFrac.own 1))
@@ -426,7 +425,7 @@ instance singleStringReplacer_access_store_finder (l : Loc) (v : strings.singleS
  by
   solve_pointsto_access_struct
 
-instance singleStringReplacer_access_load_value (l : Loc) (v : strings.singleStringReplacer) (dq : DFrac) :
+noncomputable instance singleStringReplacer_access_load_value (l : Loc) (v : strings.singleStringReplacer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.singleStringReplacer go!"value" l) v.value' dq)
       (typedPointsto (structFieldRef strings.singleStringReplacer go!"value" l) v.value' dq)
@@ -434,7 +433,7 @@ instance singleStringReplacer_access_load_value (l : Loc) (v : strings.singleStr
  by
   solve_pointsto_access_struct
 
-instance singleStringReplacer_access_store_value (l : Loc) (v : strings.singleStringReplacer) (value' : GoString) :
+noncomputable instance singleStringReplacer_access_store_value (l : Loc) (v : strings.singleStringReplacer) (value' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.singleStringReplacer go!"value" l) v.value' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.singleStringReplacer go!"value" l) value' (DFrac.own 1))
@@ -453,7 +452,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
-instance byteStringReplacer_typed_pointsto :
+noncomputable instance byteStringReplacer_typed_pointsto :
     TypedPointsto (GF := GF) strings.byteStringReplacer where
   typedPointstoDef l v dq := iprop(
     "replacements" ∷ typedPointsto (structFieldRef strings.byteStringReplacer go!"replacements" l) v.replacements' dq ∗
@@ -463,11 +462,11 @@ instance byteStringReplacer_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance byteStringReplacer_into_val_typed :
+noncomputable instance byteStringReplacer_into_val_typed :
     IntoValTypedUnderlying (GF := GF) strings.byteStringReplacer strings.byteStringReplacer.underlying := by
   solve_into_val_typed_struct
 
-instance byteStringReplacer_access_load_replacements (l : Loc) (v : strings.byteStringReplacer) (dq : DFrac) :
+noncomputable instance byteStringReplacer_access_load_replacements (l : Loc) (v : strings.byteStringReplacer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.byteStringReplacer go!"replacements" l) v.replacements' dq)
       (typedPointsto (structFieldRef strings.byteStringReplacer go!"replacements" l) v.replacements' dq)
@@ -475,7 +474,7 @@ instance byteStringReplacer_access_load_replacements (l : Loc) (v : strings.byte
  by
   solve_pointsto_access_struct
 
-instance byteStringReplacer_access_store_replacements (l : Loc) (v : strings.byteStringReplacer) (replacements' : (GoArray GoSlice 256)) :
+noncomputable instance byteStringReplacer_access_store_replacements (l : Loc) (v : strings.byteStringReplacer) (replacements' : (GoArray GoSlice 256)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.byteStringReplacer go!"replacements" l) v.replacements' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.byteStringReplacer go!"replacements" l) replacements' (DFrac.own 1))
@@ -483,7 +482,7 @@ instance byteStringReplacer_access_store_replacements (l : Loc) (v : strings.byt
  by
   solve_pointsto_access_struct
 
-instance byteStringReplacer_access_load_toReplace (l : Loc) (v : strings.byteStringReplacer) (dq : DFrac) :
+noncomputable instance byteStringReplacer_access_load_toReplace (l : Loc) (v : strings.byteStringReplacer) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.byteStringReplacer go!"toReplace" l) v.toReplace' dq)
       (typedPointsto (structFieldRef strings.byteStringReplacer go!"toReplace" l) v.toReplace' dq)
@@ -491,7 +490,7 @@ instance byteStringReplacer_access_load_toReplace (l : Loc) (v : strings.byteStr
  by
   solve_pointsto_access_struct
 
-instance byteStringReplacer_access_store_toReplace (l : Loc) (v : strings.byteStringReplacer) (toReplace' : GoSlice) :
+noncomputable instance byteStringReplacer_access_store_toReplace (l : Loc) (v : strings.byteStringReplacer) (toReplace' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.byteStringReplacer go!"toReplace" l) v.toReplace' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.byteStringReplacer go!"toReplace" l) toReplace' (DFrac.own 1))
@@ -510,7 +509,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
-instance stringFinder_typed_pointsto :
+noncomputable instance stringFinder_typed_pointsto :
     TypedPointsto (GF := GF) strings.stringFinder where
   typedPointstoDef l v dq := iprop(
     "pattern" ∷ typedPointsto (structFieldRef strings.stringFinder go!"pattern" l) v.pattern' dq ∗
@@ -521,11 +520,11 @@ instance stringFinder_typed_pointsto :
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-instance stringFinder_into_val_typed :
+noncomputable instance stringFinder_into_val_typed :
     IntoValTypedUnderlying (GF := GF) strings.stringFinder strings.stringFinder.underlying := by
   solve_into_val_typed_struct
 
-instance stringFinder_access_load_pattern (l : Loc) (v : strings.stringFinder) (dq : DFrac) :
+noncomputable instance stringFinder_access_load_pattern (l : Loc) (v : strings.stringFinder) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.stringFinder go!"pattern" l) v.pattern' dq)
       (typedPointsto (structFieldRef strings.stringFinder go!"pattern" l) v.pattern' dq)
@@ -533,7 +532,7 @@ instance stringFinder_access_load_pattern (l : Loc) (v : strings.stringFinder) (
  by
   solve_pointsto_access_struct
 
-instance stringFinder_access_store_pattern (l : Loc) (v : strings.stringFinder) (pattern' : GoString) :
+noncomputable instance stringFinder_access_store_pattern (l : Loc) (v : strings.stringFinder) (pattern' : GoString) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.stringFinder go!"pattern" l) v.pattern' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.stringFinder go!"pattern" l) pattern' (DFrac.own 1))
@@ -541,7 +540,7 @@ instance stringFinder_access_store_pattern (l : Loc) (v : strings.stringFinder) 
  by
   solve_pointsto_access_struct
 
-instance stringFinder_access_load_badCharSkip (l : Loc) (v : strings.stringFinder) (dq : DFrac) :
+noncomputable instance stringFinder_access_load_badCharSkip (l : Loc) (v : strings.stringFinder) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.stringFinder go!"badCharSkip" l) v.badCharSkip' dq)
       (typedPointsto (structFieldRef strings.stringFinder go!"badCharSkip" l) v.badCharSkip' dq)
@@ -549,7 +548,7 @@ instance stringFinder_access_load_badCharSkip (l : Loc) (v : strings.stringFinde
  by
   solve_pointsto_access_struct
 
-instance stringFinder_access_store_badCharSkip (l : Loc) (v : strings.stringFinder) (badCharSkip' : (GoArray w64 256)) :
+noncomputable instance stringFinder_access_store_badCharSkip (l : Loc) (v : strings.stringFinder) (badCharSkip' : (GoArray w64 256)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.stringFinder go!"badCharSkip" l) v.badCharSkip' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.stringFinder go!"badCharSkip" l) badCharSkip' (DFrac.own 1))
@@ -557,7 +556,7 @@ instance stringFinder_access_store_badCharSkip (l : Loc) (v : strings.stringFind
  by
   solve_pointsto_access_struct
 
-instance stringFinder_access_load_goodSuffixSkip (l : Loc) (v : strings.stringFinder) (dq : DFrac) :
+noncomputable instance stringFinder_access_load_goodSuffixSkip (l : Loc) (v : strings.stringFinder) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.stringFinder go!"goodSuffixSkip" l) v.goodSuffixSkip' dq)
       (typedPointsto (structFieldRef strings.stringFinder go!"goodSuffixSkip" l) v.goodSuffixSkip' dq)
@@ -565,7 +564,7 @@ instance stringFinder_access_load_goodSuffixSkip (l : Loc) (v : strings.stringFi
  by
   solve_pointsto_access_struct
 
-instance stringFinder_access_store_goodSuffixSkip (l : Loc) (v : strings.stringFinder) (goodSuffixSkip' : GoSlice) :
+noncomputable instance stringFinder_access_store_goodSuffixSkip (l : Loc) (v : strings.stringFinder) (goodSuffixSkip' : GoSlice) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.stringFinder go!"goodSuffixSkip" l) v.goodSuffixSkip' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.stringFinder go!"goodSuffixSkip" l) goodSuffixSkip' (DFrac.own 1))

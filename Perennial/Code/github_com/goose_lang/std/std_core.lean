@@ -10,15 +10,14 @@ public import Perennial.Golang.Defn.Slice
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.goose_lang.std.std_core : GoString := go!"github.com/goose-lang/std/std_core"
+noncomputable def github_com.goose_lang.std.std_core : GoString := go!"github.com/goose-lang/std/std_core"
 end pkg_id
 
 namespace github_com.goose_lang.std.std_core
@@ -191,7 +190,7 @@ noncomputable def Permutation.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "order") (Var "$r0"))))))))))
 
-instance info' : PkgInfo pkg_id.github_com.goose_lang.std.std_core where
+noncomputable instance info' : PkgInfo pkg_id.github_com.goose_lang.std.std_core where
   pkgImportedPkgs := [pkg_id.github_com.goose_lang.primitive]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=

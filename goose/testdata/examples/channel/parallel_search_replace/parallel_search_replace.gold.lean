@@ -9,15 +9,14 @@ public import Perennial.Golang.Defn
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/parallel_search_replace"
+noncomputable def github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/parallel_search_replace"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace
@@ -189,7 +188,7 @@ noncomputable def SearchReplace.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))))))))
 
-instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace where
+noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace where
   pkgImportedPkgs := [pkg_id.sync]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=

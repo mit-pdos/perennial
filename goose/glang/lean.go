@@ -33,9 +33,8 @@ import (
 const LeanFileOptions = `set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 `
 
 // LeanRoots maps Go package path prefixes to the Lean module root of their
@@ -1178,11 +1177,10 @@ func (d StructType) Lean(m LeanMode) string {
 
 // ---- Decls ----
 
-// GooseLang function bodies and constants are emitted `noncomputable`: nothing runs GooseLang code, and
-// compiling these definitions (which `noncomputable section` alone does not
-// prevent) was the bulk of elaboration time for large packages. So are the
-// go_string constants naming functions and globals. go.type definitions stay
-// computable since Golang/Defn uses some of them in computable definitions.
+// Every generated definition and instance is emitted `noncomputable`: nothing
+// runs GooseLang code, and compiling these definitions (which `noncomputable
+// section` alone does not prevent) was the bulk of elaboration time for large
+// packages.
 const leanDeclParams = "[FfiSyntax] [GoGlobalContext]"
 
 func leanTypeParams(names []TermIdent) string {
@@ -1252,7 +1250,7 @@ func (d TypeDecl) LeanDecl() string {
 		// the descriptor of a named type (or alias), not an underlying type
 		name = LeanTypeDesc(d.Name)
 	}
-	return fmt.Sprintf("%sdef %s %s%s : go.GoType :=\n  %s", attr, name, leanDeclParams, typeParams,
+	return fmt.Sprintf("%snoncomputable def %s %s%s : go.GoType :=\n  %s", attr, name, leanDeclParams, typeParams,
 		indent(2, d.Body.Lean(LeanTerm)))
 }
 

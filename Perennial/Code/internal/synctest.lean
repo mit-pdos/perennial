@@ -9,25 +9,24 @@ public import Perennial.TrustedCode.internal.synctest
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def internal.synctest : GoString := go!"internal/synctest"
+noncomputable def internal.synctest : GoString := go!"internal/synctest"
 end pkg_id
 
 namespace internal.synctest
 
-def Association.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Association.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"internal/synctest.Association" [])
 
 attribute [irreducible] Association.ty
 
-def Bubble.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Bubble.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"internal/synctest.Bubble" [])
 
 attribute [irreducible] Bubble.ty
@@ -77,7 +76,7 @@ noncomputable def inBubble [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def Acquire [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"internal/synctest.Acquire"
 
-instance info' : PkgInfo pkg_id.internal.synctest where
+noncomputable instance info' : PkgInfo pkg_id.internal.synctest where
   pkgImportedPkgs := []
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val
@@ -91,7 +90,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
 
 abbrev Association [FfiSyntax] : Type := w64
 
-@[reducible] def Association.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Association.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   go.int
 
 class Association.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -103,20 +102,20 @@ structure Bubble [FfiSyntax] where
   mk ::
   b' : GoInterface
 
-instance Bubble.zero_val [FfiSyntax] : ZeroVal Bubble :=
+noncomputable instance Bubble.zero_val [FfiSyntax] : ZeroVal Bubble :=
   ⟨Bubble.mk zeroValDef⟩
 
-@[reducible] def Bubble.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Bubble.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"b" go.any)]
 
-@[irreducible] def Bubble.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Bubble.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   Bubble.fieldsUnsealed
 
-instance equals_unfold_Bubble [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Bubble [FfiSyntax] [GoGlobalContext] :
     EqualsUnfold Bubble.fields Bubble.fieldsUnsealed :=
   ⟨by unfold Bubble.fields; rfl⟩
 
-@[reducible] def Bubble.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Bubble.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Bubble.fields)
 
 class Bubble.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

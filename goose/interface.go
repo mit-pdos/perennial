@@ -76,7 +76,8 @@ func pkgErrors(errors []packages.Error) error {
 	return MultipleErrors(errs)
 }
 
-// translatePackage translates an entire package to a single Lean file.
+// translatePackage translates an entire package to a Lean file (with chunks for
+// a large package, see leanChunks).
 //
 // If the source directory has multiple source files, these are processed in
 // alphabetical order; this must be a topological sort of the definitions or the
@@ -94,6 +95,7 @@ func translatePackage(pkg *packages.Package, config declfilter.FilterConfig) (gl
 
 	f.PreHeaderDecls = preDecls
 	f.Decls = decls
+	leanChunks(&f)
 	if len(errs) != 0 {
 		return f, errors.Wrap(MultipleErrors(errs),
 			"conversion failed")
@@ -121,18 +123,88 @@ func (ctx *Ctx) initFile(pkg *packages.Package, config declfilter.FilterConfig) 
 	if ffi != "" {
 		h.WriteString("public import Perennial." + glang.LeanFfiPrelude(ffi) + "\n")
 	}
-	h.WriteString("\n@[expose] public section\n")
-	h.WriteString("\n" + glang.LeanFileOptions)
-	h.WriteString("\nnamespace Perennial\n")
-	h.WriteString("noncomputable section\n\n")
-	h.WriteString("namespace pkg_id\n")
-	fmt.Fprintf(&h, "def %s : GoString := %s\n", glang.LeanNamespace(pkg.PkgPath), glang.LeanStringLit(pkg.PkgPath))
-	h.WriteString("end pkg_id\n\n")
 	ns := glang.LeanNamespace(pkg.PkgPath)
-	fmt.Fprintf(&h, "namespace %s", ns)
-	f.Header = h.String()
+	pkgId := fmt.Sprintf("namespace pkg_id\nnoncomputable def %s : GoString := %s\nend pkg_id\n\n",
+		ns, glang.LeanStringLit(pkg.PkgPath))
+	f.Header = h.String() + leanSectionHeader(ns, pkgId)
 	f.Footer = fmt.Sprintf("\nend %s\n\nend\nend Perennial\n", ns)
 	return
+}
+
+// leanSectionHeader is the part of the header of a module of a package's
+// translation after its imports, with pre declared before the package's
+// namespace.
+func leanSectionHeader(ns string, pre string) string {
+	return "\n@[expose] public section\n" +
+		"\n" + glang.LeanFileOptions +
+		"\nnamespace Perennial\n" +
+		"noncomputable section\n\n" +
+		pre +
+		"namespace " + ns
+}
+
+// The translation of a package whose TypeAssumptions classes have more fields
+// than this is split into chunks, so that lake can check them in parallel (as
+// proofgen splits the generated proofs of a large package).
+const chunkThreshold = 1000
+
+// leanChunks splits the translation of a large package over several modules
+// (leaving a small package in one). The TypeAssumptions classes are about half
+// of the cost of checking a package with many types, and only the package's
+// Assumptions class refers to them: chunk0 has every other declaration,
+// chunk1..chunkN have the classes (in order, about the same number of fields
+// in each) and import chunk0, and the package's module re-exports the chunks
+// and declares the Assumptions class.
+func leanChunks(f *glang.File) {
+	total := 0
+	for _, d := range f.Decls {
+		if c, ok := d.(typeAssumptionsDecl); ok {
+			total += c.fields
+		}
+	}
+	if total <= chunkThreshold {
+		return
+	}
+	target := max(chunkThreshold/2, total/12)
+
+	chunk0 := *f
+	chunk0.Decls = nil
+	var classes [][]glang.Decl
+	var assumptions []glang.Decl
+	cost := 0
+	for _, d := range f.Decls {
+		switch d := d.(type) {
+		case typeAssumptionsDecl:
+			if len(classes) == 0 || cost >= target {
+				classes = append(classes, nil)
+				cost = 0
+			}
+			classes[len(classes)-1] = append(classes[len(classes)-1], d)
+			cost += d.fields
+		case packageAssumptionsDecl:
+			assumptions = append(assumptions, d)
+		default:
+			chunk0.Decls = append(chunk0.Decls, d)
+		}
+	}
+
+	module := glang.LeanModule(glang.LeanRootPrefix(f.PkgPath)+"Code", f.PkgPath)
+	ns := glang.LeanNamespace(f.PkgPath)
+	f.Chunks = map[string]glang.File{"chunk0": chunk0}
+	imports := "public import " + module + ".chunk0\n"
+	for i, ds := range classes {
+		name := fmt.Sprintf("chunk%d", i+1)
+		f.Chunks[name] = glang.File{
+			PkgPath: f.PkgPath,
+			Header:  "public import " + module + ".chunk0\n" + leanSectionHeader(ns, ""),
+			Decls:   ds,
+			Footer:  f.Footer,
+		}
+		imports += "public import " + module + "." + name + "\n"
+	}
+	f.PreHeaderDecls = nil
+	f.Header = imports + leanSectionHeader(ns, "")
+	f.Decls = assumptions
 }
 
 // TranslatePackages loads packages by a list of patterns and translates them

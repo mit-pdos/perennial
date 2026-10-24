@@ -10,15 +10,14 @@ public import Perennial.DiskPrelude
 set_option autoImplicit false
 set_option maxRecDepth 100000
 set_option maxHeartbeats 0
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 noncomputable section
 
 namespace pkg_id
-def github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/externalglobals"
+noncomputable def github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals : GoString := go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/externalglobals"
 end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals
@@ -37,7 +36,7 @@ noncomputable def f.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.GlobalX))) (Val #())) (Var "$r0"))))))))
 
-instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals where
+noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals where
   pkgImportedPkgs := [pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=

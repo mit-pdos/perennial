@@ -9,9 +9,8 @@ public import Perennial.Code.crypto.ed25519
 @[expose] public section
 
 set_option autoImplicit false
-set_option linter.unusedVariables false
-set_option linter.iris.style.nameCheck false
-set_option linter.iris.dupNamespace false
+set_option linter.all false
+set_option linter.deprecated true
 
 namespace Perennial
 open Iris Iris.BI
@@ -26,11 +25,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : crypto.ed25519.Assumptions]
 
-instance Options_typed_pointsto :
+noncomputable instance Options_typed_pointsto :
     TypedPointsto (GF := GF) crypto.ed25519.Options :=
   sorry -- axiomatized type
 
-instance Options_into_val_typed :
+noncomputable instance Options_into_val_typed :
     IntoValTypedUnderlying (GF := GF) crypto.ed25519.Options crypto.ed25519.Options.underlying :=
   sorry -- axiomatized type
 
