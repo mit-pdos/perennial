@@ -11,6 +11,12 @@ trusted = [
   "After",
   "Sleep",
 
+  # `NewTicker` and the `*Ticker` methods convert the runtime's `*Timer` to and from `*Ticker`
+  # through `unsafe.Pointer` (the two structs share a prefix): modeled in TrustedCode/time.lean
+  "NewTicker",
+  "Ticker.Stop",
+  "Ticker.Reset",
+
   # `asynctimerchan = godebug.New(...)`: `internal/godebug` is not translated
   # (TrustedCode/time.lean)
   "asynctimerchan",
@@ -34,6 +40,7 @@ translate = [
   "Time.stripMono",
   "Time.Sub",
   "Time.Before",
+  "Time.After",
   "Time.Equal",
   "subMono",
   "minDuration",

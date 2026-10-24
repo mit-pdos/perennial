@@ -72,6 +72,84 @@ def After.impl : val :=
 def Sleep.impl : val :=
   λ: "d", #()
 
+/-- `NewTicker(d)` (`time/tick.go`):
+
+```go
+func NewTicker(d Duration) *Ticker {
+	if d <= 0 {
+		panic("non-positive interval for NewTicker")
+	}
+	c := make(chan Time, 1)
+	t := (*Ticker)(unsafe.Pointer(newTimer(when(d), int64(d), sendTime, c, syncTimer(c))))
+	t.C = c
+	return t
+}
+```
+
+Go reinterprets the runtime's new `*Timer` as a `*Ticker` (`Ticker` is `Timer`'s prefix: `C` and
+`initTicker`, at `Timer`'s `C` and `initTimer`), which goose cannot translate. The model keeps
+the panic, makes the channel with Go's capacity, and returns a fresh `*Ticker` with `C = c` and
+`initTicker` set (as the runtime's `newTimer` sets `initTimer`, read through the shared prefix).
+The runtime's periodic timer calls `sendTime`, which sends the current time on `c` unless the
+send would block; the model forks a goroutine that sends an arbitrary time on `c` forever
+(`arbitraryTime`, as `After`'s model), blocking while the buffer is full. A receiver can
+distinguish neither the times (arbitrary in both) nor the dropped ticks (Go's dropped sends and
+the model's blocked one both leave one value in the buffer); the delay between ticks is a no-op,
+and an execution in which the ticker never fires is a prefix of the model's. -/
+def NewTicker.impl : val :=
+  λ: "d",
+    if: "d" ≤⟨go.int64⟩ #(W64 0) then Panic "non-positive interval for NewTicker" else
+    let: "c" := FuncResolve go.make2 [go.ChannelType go.sendrecv (go.Named go!"time.Time" [])]
+      #() #(W64 1) in
+    let: "t" := GoAlloc (go.Named go!"time.Ticker" [])
+      (CompositeLiteral (go.Named go!"time.Ticker" []) (LiteralValue [
+        KeyedElement (some (KeyField go!"C"))
+          (ElementExpression (go.ChannelType go.recvonly (go.Named go!"time.Time" [])) "c"),
+        KeyedElement (some (KeyField go!"initTicker")) (ElementExpression go.bool #true)
+      ])) in
+    Fork ((rec: "tick" <> :=
+        chan.send (go.Named go!"time.Time" []) "c" (arbitraryTime #()) ;; "tick" #()) #()) ;;
+    "t"
+
+/-- `(*Ticker).Stop()` (`time/tick.go`):
+
+```go
+func (t *Ticker) Stop() {
+	if !t.initTicker {
+		return
+	}
+	stopTimer((*Timer)(unsafe.Pointer(t)))
+}
+```
+
+The model reads `initTicker` (so that a nil `t` is stuck, as Go's load panics) and does not stop
+the ticker's goroutine: a stopped ticker's channel may still deliver in the model, which only
+adds executions (as `Timer.Stop`'s specs allow of a stopped timer). -/
+def Ticker.Stop.impl : val :=
+  λ: "t" <>,
+    ![go.bool] (StructFieldRef (go.Named go!"time.Ticker" []) go!"initTicker" "t") ;; #()
+
+/-- `(*Ticker).Reset(d)` (`time/tick.go`):
+
+```go
+func (t *Ticker) Reset(d Duration) {
+	if d <= 0 {
+		panic("non-positive interval for Ticker.Reset")
+	}
+	if !t.initTicker {
+		panic("time: Reset called on uninitialized Ticker")
+	}
+	resetTimer((*Timer)(unsafe.Pointer(t)), when(d), int64(d))
+}
+```
+
+The model keeps both panics; rescheduling is a no-op (the model's ticks have no timing). -/
+def Ticker.Reset.impl : val :=
+  λ: "t" "d",
+    if: "d" ≤⟨go.int64⟩ #(W64 0) then Panic "non-positive interval for Ticker.Reset" else
+    if: ![go.bool] (StructFieldRef (go.Named go!"time.Ticker" []) go!"initTicker" "t")
+    then #() else Panic "time: Reset called on uninitialized Ticker"
+
 /-- The initializer of `asynctimerchan` (`time/sleep.go`):
 
 ```go
