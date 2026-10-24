@@ -1,8 +1,9 @@
 # Design: the minimal byte memory and `unsafe.Pointer` for bbolt
 
 - **Date:** 2026-10-24. **Status:** proposal, nothing implemented. This is
-  draft 8. It drops draft 6's tags: whole copies get value semantics, and a
-  translation-time guard refuses the code where that is wrong (R4). Section
+  draft 9, after the review of draft 8 (section 11). Draft 8 dropped draft
+  6's tags: whole copies get value semantics, and a translation-time guard
+  refuses the code where that is wrong (R4). Section
   5 states the end-to-end guarantee and its assumptions, section 10 explains
   why each mechanism is there, section 11 is the review log, and section 12
   the order of the work.
@@ -116,6 +117,11 @@ inductive Plain : go.GoType → Prop
   `n > 2^48`. gc's `makeslice` panics above `maxAlloc = 2^48`, so a `make`
   that large must not succeed. Offset 0 of a byte block is 8-aligned, so `j`
   is the object's address modulo 8.
+- **A variable of plain type is one `AllocBytes` block of exactly its size,**
+  and so is every variable goose allocates (parameters, results, receivers,
+  locals, loop variables, captured variables and package variables): no
+  variable shares a block with another. R4's whole-variable exemption
+  depends on this.
 - **A plain field of a non-plain struct is its own `AllocBytes` block.** This
   is how `alloc_struct` already allocates each field through `GoAlloc`. Its
   offset `j` covers gc's real address modulo 8, which R5's alignment fact
@@ -239,41 +245,71 @@ partially overlap.
 `goose/cmd/modelcheck`). goose runs it on every package it translates and
 refuses to emit the translation when it reports anything. It reports every
 statement `lhs = rhs` where:
-- the type is plain, or could be plain for some instantiation of its type
-  parameters. A plain integer is one load and one store, not a `Move`.
-  Views of a non-plain type cannot partially overlap, because R3 refuses
-  them;
+- the type is a **pointer-free** struct or array type, or a type parameter.
+  "Pointer-free" means it contains no pointer, `unsafe.Pointer`, slice,
+  string, map, channel, function or interface. This is a deliberate
+  superset of `Plain`, so that the guard does not have to agree with the
+  semantics on padding, blank fields, zero size or floats. Two kinds of copy
+  are left out, and need no check:
+  - a plain integer is one load and one store, not a `Move`;
+  - a type with pointers is not plain, so R3 makes every `unsafe` view of it
+    stuck. Safe Go can still make two partially overlapping views of an
+    array, `(*[2]E)(s[0:2])` and `(*[2]E)(s[1:3])`, for any `E`. gc copies
+    between them with `memmove`, because both sides are dereferences
+    (A2), and `memmove` is what value semantics gives;
 - `lhs` is a memory place: a dereference, a field or element of an
   addressable value, or a value-preserving conversion of a place. A map
   index is not one;
 - `rhs` is a memory place, or a slice-to-array conversion `[N]T(s)`, which
   reads from `s`'s array;
 - and neither of these exemptions applies:
-  - **Whole variables.** A variable of plain type `U` is its own block of
-    exactly `sizeof(U)` cells. A view of type `U` that partially overlaps
-    it would leave the block, and R3 makes that stuck. So `x = *p`,
-    `*p = x` and `x = y` are never reported.
-  - **The same root.** Both sides are reached from one root by field
-    selections, indexing and dereferences, and neither the root nor any
-    index contains a call (other than a conversion, `len` or `cap`) or a
-    receive. The layout of a value is a tree, so two places reached from
-    one root are disjoint or the same place, and a `Move` is correct on
-    both. This covers sort's swap `data[i], data[j] = data[j], data[i]`
-    and `p.X = p.Y`.
+  - **Whole variables.** A variable is its own block of exactly its type's
+    size (R1). A view of its type that partially overlaps it would leave
+    the block, and R3 makes that stuck. So `x = *p`, `*p = x` and `x = y`
+    are never reported.
+  - **The same base.** Each side is split into a *base* and a path inside
+    one object:
+    - the path is the outermost run of steps that stay inside one object:
+      direct field selections, indexing of an array *value*, and
+      value-preserving conversions;
+    - the base is what is left once that run is peeled off. It is either a
+      whole variable, or the operand `X` of the first step that leaves the
+      object: `*X`, a field through a pointer `X.f`, or `X[i]` on a slice or
+      on a pointer to an array.
+
+    The two bases must be the same expression, and neither the bases nor
+    any index along either path may contain a call (other than a
+    conversion, `len` or `cap`) or a receive. Then both places lie in the
+    one object at the base's value, whose layout is a tree, so they are
+    disjoint or the same place, and a `Move` is correct on both. This
+    covers sort's swap `data[i], data[j] = data[j], data[i]`, `p.X = p.Y`,
+    `p.next.A = p.next.B`, and `y[i][0] = y[j][0]` with `y` a `[][4]T`.
+    It does not cover `*pr.y = *pr.x`, `s.b[0] = s.a[0]` or
+    `x[1][0] = x[0][0]` with `x` a `[][]T`: their bases differ (`pr.y` and
+    `pr.x`, and so on). Two pointers or slices loaded from memory can point
+    at overlapping views, and gc gives the chunked result for all three
+    (`rejected/`).
 
 It checks each pair of a multiple assignment. That is conservative: gc may
 copy a pair directly when it finds that no earlier assignment of the
 statement affects the operand, and the guard does not depend on when gc
-uses a temporary there. It also
-checks `for _, place = range x` over an array, a slice or a pointer to an
-array. It checks only what goose translates: the bodies of translated
-functions and methods, including their function literals, and the
-initializers of translated package variables. Trusted and axiomatized
-declarations have no translated body (assumption A4).
+uses a temporary there. It also checks `for _, place = range x` over an
+array, a slice or a pointer to an array.
+
+**What it checks** is exactly what goose translates. goose calls it on each
+function body, method body and package-variable initializer that goose
+itself decides to translate, at the point where it translates it; the guard
+does not recompute goose's declaration filter. Function literals inside
+these are included. Trusted and axiomatized declarations have no translated
+body (assumption A4).
 
 **A finding is a hard error.** There is no waiver. Any change to the
 guard's rule, or a way to override it, needs the project owner's approval
-first.
+first. goose also translates each reported statement to the stuck primitive
+`Panic "modelcheck: …"` (`PanicOp`, which has no step; it is not Go's
+recoverable panic), so a translation emitted despite the error, with
+`-ignore-errors`, is still sound: it is stuck wherever the semantics would
+be wrong.
 
 *Soundness of the guard* rests on how gc copies (section 5, A2). gc makes a
 non-`memmove` `Move` between two memory places in two ways:
@@ -283,8 +319,11 @@ non-`memmove` `Move` between two memory places in two ways:
 - **By fusing a copy through a stack temporary** (`generic.rules`, the
   A → B → C rule). This requires a stack source and `disjoint(src, dst)`.
   That is exact for constant offsets from one base, and "may alias"
-  otherwise. Copies of at most 16 bytes are lowered so that they are safe
-  even when they overlap. So gc never fuses an overlapping copy this way.
+  otherwise. The rule may also fuse a copy of at most 16 bytes that could
+  overlap (`isInlinableMemmove`), and such copies are lowered with all
+  their loads before their stores (`AMD64.rules`, the `Move [1]` to
+  `Move [16]` cases), so they are correct even when they overlap. So gc
+  never fuses an overlapping copy incorrectly this way.
 
 Every other copy goes to fresh storage or through a real temporary:
 - `append`, which copies its operands to temporaries first;
@@ -303,7 +342,7 @@ inlined `set(dst, *src)`, gets value semantics, which gc 1.26 also gives.
 - **Safe Go's overlapping `*p = *q` of plain arrays** (`testOverlappingArrayCopy`).
   gc defines it with `memmove`, but the guard cannot tell it from
   `p.A = q.A`, so goose refuses it.
-- **Every whole copy between two places with different roots,** even when
+- **Every whole copy between two places with different bases,** even when
   they never overlap. This includes six of bbolt's copies, which section 6
   rewrites to copy through a local.
 
@@ -349,15 +388,28 @@ Two things are *not* stuck, and the model gets them wrong: section 5.
 
 ## 5. The end-to-end guarantee, and its known limitations
 
-**The guarantee.** Suppose goose translates every package of a program that
-has a translated body, which means the guard of R4 passes on each of them.
-Suppose also that a proof establishes a spec of the translation. Then every
+**The guarantee.** Suppose every translated package of a program was
+produced by the guarded goose, and the guard reported nothing on it. Suppose
+also that a proof establishes a spec of the translation. Then every
 execution of the gc-compiled program on linux/amd64, built without
 `checkptr`, satisfies the spec, provided assumptions A1 to A4 hold.
 
 The guard must pass on **every** translated package, not only those that use
 `unsafe`. A copy in package B can operate on pointers that package A made
 with `unsafe`.
+
+Translations are checked in, so the condition is enforced where they are
+regenerated:
+- etcd-grove's CI runs `etc/goose.py --check`, which regenerates every
+  translation with the pinned goose and fails on any difference, so a
+  finding fails CI;
+- in Perennial, `etc/land.sh prepare` runs `goose/cmd/modelcheck` over the
+  packages `etc/update-goose-new.py` translates, with their Goose
+  configurations, and refuses to land on a finding.
+
+A translation emitted with `-ignore-errors` is not covered by the guarantee
+as stated, but it is stuck at every reported statement (R4), so it is still
+sound.
 
 **Assumptions:**
 - **A1, the platform.**
@@ -372,6 +424,16 @@ with `unsafe`.
   Its other copies go to fresh storage, through a real temporary, or with
   `memmove` (R4). A gc that fused overlapping heap copies through a
   temporary would need the guard to look at such pairs of statements too.
+  - gc copies an array of more than one element with `memmove` when both
+    sides of the assignment are dereferences (`ssagen/ssa.go`,
+    `mayOverlap`), and a slice-to-array conversion `[N]T(s)` is the
+    dereference `*(*[N]T)(s)` by then (`walk/convert.go`,
+    `walkSliceToArray`). This is what makes safe Go's partially
+    overlapping array views correct, for element types the guard does not
+    check (R4).
+  - gc builds a composite literal in place only into a stack variable
+    whose address is not taken (`walk/complit.go`, `oaslit`), which no
+    view can point into.
 - **A3, mixed-width atomics.** No two atomics with different widths or
   addresses touch the same bytes while they are concurrent. Nothing checks
   this, and no sound syntactic check exists. For example, an atomic on
@@ -381,7 +443,9 @@ with `unsafe`.
   dropped with the other tags, for now.
 - **A4, the trust base.** `TrustedCode`, the FFI models, and the specs of
   axiomatized declarations are faithful. The guard does not look inside
-  them.
+  them, so none of them may give value semantics to a whole copy that gc
+  does with a `Move` between places that can partially overlap. No
+  `TrustedCode` model copies a struct or array whole today.
 
 **Known limitations of the semantics:**
 - **L1, overlapping whole copies.** The semantics gives value semantics
@@ -530,9 +594,10 @@ Trusted:
    encodings, and the four `atomic.Pointer[T]` models.
 5. **goose**, about 40 lines: `unsafe.Add`, `unsafe.Slice`, and the
    blank-field name.
-6. **The guard,** `goose/modelcheck`, about 300 lines, and its call in
-   goose's `translatePackage`. A missed statement is an unsound
-   translation, so the guard is trusted like the translator.
+6. **The guard,** `goose/modelcheck`, about 300 lines, its calls in goose
+   (and the stuck translation of a reported statement), and its run in
+   `etc/land.sh`. A missed statement is an unsound translation, so the
+   guard is trusted like the translator.
 7. **Platform facts in the README:** A1 to A3 of section 5:
    - linux/amd64, gc, without checkptr;
    - little-endian;
@@ -730,12 +795,20 @@ never overlap, and bbolt has to copy through locals (section 6).
   always correct under value semantics (`testOverlappingCopyViaTemp`).
 - *Only memory places on both sides.* A whole variable is its own block, so
   no view of its type can partially overlap it (R3).
-- *Only plain types, or type parameters.* Views of non-plain types cannot
-  partially overlap (R3), and plain integers are not copied with a `Move`.
-  Generic code is checked because it may be instantiated at a plain type.
-- *The same-root exemption* keeps common, correct code translatable, such
+- *Only pointer-free struct and array types, or type parameters.* A type
+  with pointers has no `unsafe` views (R3), and its safe-Go overlapping
+  array views are copied with `memmove` (A2). Plain integers are not copied
+  with a `Move`. Generic code is checked because it may be instantiated at
+  a plain type. The guard checks a superset of `Plain` on purpose: if it
+  computed `Plain` itself, any disagreement with the semantics' `Plain`
+  would be a hole.
+- *The same-base exemption* keeps common, correct code translatable, such
   as sort's swaps in `slices`. Without it, Perennial's own translation of
-  the standard library is refused.
+  the standard library is refused. Its base is the operand of the first
+  step that leaves an object, not the outermost expression: draft 8 used
+  the root of the whole expression, which accepted `*pr.y = *pr.x`. That
+  copy goes through two loaded pointers, which can point at overlapping
+  views, and gc then gives the chunked result.
 - *The guard must see every package.* The pointers a copy uses may have
   been made by `unsafe` code anywhere in the program.
 
@@ -884,10 +957,34 @@ in the plan's own rules:
 - restart the implementation from the current `lean` (section 12).
 
 The reasons are in 10.6: draft 6's copy tags turned out unsound, and they
-cost the most in the logic. A review round should check:
-- the guard's rule and its two exemptions against gc;
-- A2's statement against gc 1.26's `generic.rules` and `ssagen`;
-- that section 6's table lists every copy the guard refuses in bbolt.
+cost the most in the logic.
+
+**Review of draft 8** (one adversarial pass, against gc 1.26's sources). It
+confirmed A2: the fusion rule (`generic.rules`), the overlap-safe lowering
+of small copies (`AMD64.rules`), `append`'s temporaries (`walk/builtin.go`),
+and in-place composite literals (`walk/complit.go`). It found:
+- **Unsound:** the same-root exemption accepted copies through two loaded
+  pointers or slices (`*pr.y = *pr.x`, `s.b[0] = s.a[0]`,
+  `x[1][0] = x[0][0]`). gc gives the chunked result on all three, and the
+  prototype guard accepted them. Fixed in R4: the base is the operand of
+  the first step that leaves an object.
+- **Gaps in enforcing the guarantee:**
+  - `-ignore-errors` emitted a complete translation despite a finding.
+    Fixed in R4 with the stuck translation.
+  - Nothing ran the guard on Perennial's checked-in translations. Fixed in
+    section 5 with the `etc/land.sh` check.
+  - The guard recomputed `Plain` and goose's declaration filter. Fixed in
+    R4: it checks a superset of `Plain`, and goose calls it on exactly what
+    it translates. R1 now states that each variable is its own block.
+- **Wrong reasons, right conclusions:**
+  - Non-plain views can partially overlap in safe Go. That is correct only
+    because gc uses `memmove` there, which is now part of A2.
+  - A4 now states that trusted code is outside the guard.
+- **Accepted:** mixed-width atomics are defined where today's `lean` makes
+  them stuck (A3).
+
+Draft 9 makes these changes. A focused re-review of R4 and section 5
+follows.
 
 ## 12. The work, from the current `lean`
 
@@ -896,12 +993,16 @@ workflow. This branch's commits (this document and `bboltmini`) are carried
 over first.
 
 1. **The guard.**
-   - `goose/modelcheck` and `goose/cmd/modelcheck`, with the call in
-     `translatePackage` and tests of each case of R4.
+   - `goose/modelcheck` and `goose/cmd/modelcheck`, with goose's calls at
+     the bodies it translates, the stuck translation of a reported
+     statement, and tests of each case of R4. The tests include the three
+     loaded-pointer copies of the review of draft 8.
+   - The check in `etc/land.sh prepare` (section 5).
    - Run it over every translation Perennial and etcd-grove produce. A
      prototype found nothing in Perennial's standard library, models and
-     goose examples, once the same-root exemption was in. A finding there
-     is a decision for the project owner, not a change to the rule.
+     goose examples, with draft 8's same-root exemption; the run is redone
+     with draft 9's rule. A finding there is a decision for the project
+     owner, not a change to the rule.
    - This step changes no semantics, so it can land on its own.
 2. **The bbolt fork:** `upamanyus/bbolt`, branch `goose` off v1.5.0, with
    section 6's changes. Check that the guard passes on it.
@@ -915,7 +1016,10 @@ over first.
 6. **The acceptance tests,** brought in line with draft 8:
    - **Copies between places:** `testOverlappingCopy`,
      `testArrayFieldOverlapCopy` and `testOverlappingArrayCopy` move to
-     `bboltmini/rejected/`, a package goose must refuse.
+     `bboltmini/rejected/`, a package goose must refuse, together with the
+     review's three copies through loaded pointers and slices
+     (`testCopyViaPointerFields`, `testCopyViaSliceFields`,
+     `testCopyViaNestedSlices`, each false in Go).
    - **Copies through locals:** `testOverlappingCopyViaTemp` becomes a
      target, because it is true in gc 1.26 under A2.
    - **Mixed widths:** `testMixedWidthAtomics` leaves the probes. It is
