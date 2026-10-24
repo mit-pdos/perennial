@@ -956,6 +956,19 @@ theorem savedOffer_lc_agree (lock1 : Option (OfferLock V)) (parked1 cont1 : IPro
 
 end lc_lemmas
 
+section lock
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [go_gctx : GoGlobalContext]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
+variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
+
+/-- `is_lock` is `isMutex` (the channel invariant is stated with `is_lock`). -/
+theorem isLock_eq_is_Mutex (m : Loc) (R : IProp GF) :
+    isLock m R = github_com.goose_lang.primitive.isMutex m R := by
+  rw [github_com.goose_lang.primitive.isMutex_unseal]; rfl
+
+end lock
+
 /-- Unfold the channel model's `offerState` constants (`buffered`, `idle`, ...),
 which `wp_auto` does not unfold when they are stored. -/
 macro "chan_unfold_consts" : tactic => `(tactic|

@@ -30,11 +30,6 @@ variable {V : Type} [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] {
 
 set_option goose.wp.extras true
 
-omit [Pos.Countable V] [ZeroVal V] [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V t] in
-/-- `is_lock` is `isMutex` (the channel invariant is stated with `is_lock`). -/
-theorem isLock_eq_is_Mutex (m : Loc) (R : IProp GF) : isLock m R = isMutex m R := by
-  rw [isMutex_unseal]; rfl
-
 set_option maxHeartbeats 400000 in
 theorem wp_Cap (ch : Loc) (γ : ChanNames) :
     {{ isChan (GF := GF) ch γ V }}
