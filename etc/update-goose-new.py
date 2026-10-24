@@ -247,6 +247,8 @@ def main():
             "slices",
             "reflect",
             "strconv",
+            "internal/strconv",
+            "internal/stringslite",
             "strings",
             "sync",
             "sync/atomic",

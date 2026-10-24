@@ -1,5 +1,12 @@
-translate = ["!*"]
-imports = ["!*"]
+# ParseUint over internal/strconv's, and the errors it returns
+translate = [
+  "ParseUint", "toError", "syntaxError", "rangeError", "baseError", "bitSizeError", "ErrRange",
+  "ErrSyntax", "NumError", "NumError.Unwrap",
+]
+imports = ["!*", "errors", "internal/strconv", "internal/stringslite"]
+# the printable-rune tables, read only by `IsPrint`, `IsGraphic` and the quoting functions, which
+# are not translated (TrustedCode/strconv.lean)
+trusted = ["isPrint16", "isNotPrint16", "isPrint32", "isNotPrint32", "isGraphic"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

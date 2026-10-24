@@ -1,0 +1,7 @@
+translate = ["!*"]
+imports = ["!*"]
+# `Clone` ends in `unsafe.String`, which goose does not translate (TrustedCode/internal/stringslite.lean)
+trusted = ["Clone"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true
