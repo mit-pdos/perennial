@@ -11,6 +11,7 @@ import (
 
 	"github.com/mit-pdos/perennial/goose/declfilter"
 	"github.com/mit-pdos/perennial/goose/glang"
+	"github.com/mit-pdos/perennial/goose/modelcheck"
 	"github.com/mit-pdos/perennial/goose/util"
 	"golang.org/x/tools/go/packages"
 )
@@ -88,9 +89,14 @@ func translatePackage(pkg *packages.Package, config declfilter.FilterConfig) (gl
 			"could not load package %v:\n%v", pkg.PkgPath,
 			pkgErrors(pkg.Errors))
 	}
-	ctx := NewPkgCtx(pkg, util.ExtendFilter(pkg, config, declfilter.New(config)))
+	filter := util.ExtendFilter(pkg, config, declfilter.New(config))
+	ctx := NewPkgCtx(pkg, filter)
 	f := ctx.initFile(pkg, config)
 	preDecls, decls, errs := ctx.files(pkg.Syntax)
+	// Refuse code the semantics is known to model incorrectly.
+	for _, finding := range modelcheck.CheckPackage(pkg, filter) {
+		errs = append(errs, errors.New(finding.String()))
+	}
 
 	f.PreHeaderDecls = preDecls
 	f.Decls = decls
