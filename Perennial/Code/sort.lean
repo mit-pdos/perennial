@@ -2,6 +2,7 @@
 module
 
 public import Perennial.Code.math.bits
+public import Perennial.Code.slices
 public import Perennial.Golang.Defn
 
 @[expose] public section
@@ -407,6 +408,28 @@ noncomputable def SearchInts.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.int)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))) (App (Val (GoInstruction (GoLoad go.int))) (Var "x"))))))))
   (App (App (App (Val (GoInstruction (FuncResolve Search []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
+/-- SearchStrings searches for x in a sorted slice of strings and returns the index
+    as specified by Search. The return value is the index to insert x if x is not
+    present (it could be len(a)).
+    The slice must be sorted in ascending order.
+
+    go: search.go:139:6 -/
+noncomputable def SearchStrings.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "a"
+  (Lam "x"
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.string))) (Var "x"))
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "a"))
+  (App (Val doReturn)
+  (Let "$a0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "a"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0")))
+  (Let "$a1" (Lam "i"
+  (App (Val exceptionDo)
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (Var "i"))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoGe go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.string)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "a")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))) (App (Val (GoInstruction (GoLoad go.string))) (Var "x"))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve Search []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
+
 /-- Sort sorts data in ascending order as determined by the Less method.
     It makes one call to data.Len to determine n and O(n*log(n)) calls to
     data.Less and data.Swap. The sort is not guaranteed to be stable.
@@ -540,6 +563,22 @@ noncomputable def IsSorted.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0"))))))))))
+
+/-- Strings sorts a slice of strings in increasing order.
+
+    Note: as of Go 1.22, this function simply calls [slices.Sort].
+
+    go: sort.go:181:6 -/
+noncomputable def Strings.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "x"
+  (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "x"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.slices.«Sort» [(go.GoType.SliceType go.string), go.string]))) (Val #())) (Var "$a0"))))))))
 
 /-- Stable sorts data in ascending order as determined by the Less method,
     while keeping the original order of equal elements.
@@ -1935,7 +1974,7 @@ noncomputable def rotate.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))))))))
 
 noncomputable instance info' : PkgInfo pkg_id.sort where
-  pkgImportedPkgs := [pkg_id.math.bits]
+  pkgImportedPkgs := [pkg_id.math.bits, pkg_id.slices]
 
 axiom «_».init [FfiSyntax] [GoGlobalContext] : val
 
@@ -1943,8 +1982,11 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.sort)) (Lam BAnon
   (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val _root_.Perennial.math.bits.initialize') (Val #())))))))
+  (App (Val _root_.Perennial.math.bits.initialize') (Val #())))))
+  (App (Val doExecute)
+  (App (Val _root_.Perennial.slices.initialize') (Val #()))))))))
 
 abbrev Interface [FfiSyntax] : Type := GoInterface
 
@@ -2105,10 +2147,12 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Search_unfold : FuncUnfold Search [] Search.impl
   Find_unfold : FuncUnfold Find [] Find.impl
   SearchInts_unfold : FuncUnfold SearchInts [] SearchInts.impl
+  SearchStrings_unfold : FuncUnfold SearchStrings [] SearchStrings.impl
   Sort_unfold : FuncUnfold «Sort» [] «Sort».impl
   nextPowerOfTwo_unfold : FuncUnfold nextPowerOfTwo [] nextPowerOfTwo.impl
   Reverse_unfold : FuncUnfold Reverse [] Reverse.impl
   IsSorted_unfold : FuncUnfold IsSorted [] IsSorted.impl
+  Strings_unfold : FuncUnfold Strings [] Strings.impl
   Stable_unfold : FuncUnfold Stable [] Stable.impl
   insertionSort_unfold : FuncUnfold insertionSort [] insertionSort.impl
   siftDown_unfold : FuncUnfold siftDown [] siftDown.impl
@@ -2128,6 +2172,7 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   symMerge_unfold : FuncUnfold symMerge [] symMerge.impl
   rotate_unfold : FuncUnfold rotate [] rotate.impl
   import_bits_Assumption : _root_.Perennial.math.bits.Assumptions
+  import_slices_Assumption : _root_.Perennial.slices.Assumptions
 
 attribute [instance] Assumptions.Interface_instance
   Assumptions.sortedHint_instance
@@ -2140,10 +2185,12 @@ attribute [instance] Assumptions.Interface_instance
   Assumptions.Search_unfold
   Assumptions.Find_unfold
   Assumptions.SearchInts_unfold
+  Assumptions.SearchStrings_unfold
   Assumptions.Sort_unfold
   Assumptions.nextPowerOfTwo_unfold
   Assumptions.Reverse_unfold
   Assumptions.IsSorted_unfold
+  Assumptions.Strings_unfold
   Assumptions.Stable_unfold
   Assumptions.insertionSort_unfold
   Assumptions.siftDown_unfold
@@ -2163,6 +2210,7 @@ attribute [instance] Assumptions.Interface_instance
   Assumptions.symMerge_unfold
   Assumptions.rotate_unfold
   Assumptions.import_bits_Assumption
+  Assumptions.import_slices_Assumption
 
 end sort
 

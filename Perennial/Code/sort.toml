@@ -5,8 +5,10 @@ translate = [
   "insertionSort", "siftDown", "heapSort", "pdqsort", "partition", "partitionEqual",
   "partialInsertionSort", "breakPatterns", "choosePivot", "order2", "median",
   "medianAdjacent", "reverseRange", "swapRange", "stable", "symMerge", "rotate",
+  # the string helpers: SearchStrings over Search, Strings over slices.Sort
+  "SearchStrings", "Strings",
 ]
-imports = ["!*", "math/bits"]
+imports = ["!*", "math/bits", "slices"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

@@ -23,13 +23,21 @@ variable [package_sem : cmp.Assumptions]
 
 theorem cmp.Less.wp_proof (wp_isNaN : cmp.isNaN.spec (GF := GF) (hG := hG)) :
     cmp.Less.spec (GF := GF) (hG := hG) := by
-  intro x y
-  wp_start
-  wp_auto
-  wp_apply wp_isNaN
-  iapply HΦ
-  ipureintro
-  simp
+  constructor
+  · intro x y
+    wp_start
+    wp_auto
+    wp_apply wp_isNaN.1
+    iapply HΦ
+    ipureintro
+    simp
+  · intro x y
+    wp_start
+    wp_auto
+    wp_apply wp_isNaN.2
+    iapply HΦ
+    ipureintro
+    simp
 
 end proof
 
