@@ -1,12 +1,17 @@
 # Design: the minimal byte memory and `unsafe.Pointer` for bbolt
 
-- **Date:** 2026-10-19. **Status:** proposal, nothing implemented. This is
-  draft 6, after review rounds 1 to 4 (section 10). Section 9 explains
-  why each mechanism is there.
-- **Base:** `lean` at be3eb77cc (after 864598b33 undid the byte-memory series
-  ea1cf23ab..b09644c20).
-- **Target:** `go.etcd.io/bbolt` v1.5.0, its non-test, non-`cmd` sources.
-- **Out of scope:** the mmap'd file (`db.data`); section 7 says what its FFI
+- **Date:** 2026-10-24. **Status:** proposal, nothing implemented. This is
+  draft 8. It drops draft 6's tags: whole copies get value semantics, and a
+  translation-time guard refuses the code where that is wrong (R4). Section
+  5 states the end-to-end guarantee and its assumptions, section 10 explains
+  why each mechanism is there, section 11 is the review log, and section 12
+  the order of the work.
+- **Base:** written against `lean` at be3eb77cc (after 864598b33 undid the
+  byte-memory series ea1cf23ab..b09644c20). The implementation starts from
+  the current `lean` (section 12).
+- **Target:** `go.etcd.io/bbolt` v1.5.0, its non-test, non-`cmd` sources,
+  with the changes of section 6.
+- **Out of scope:** the mmap'd file (`db.data`); section 8 says what its FFI
   will need.
 - **Platform:** gc for linux/amd64, built without `checkptr`, which `-race`,
   `-msan` and `-asan` turn on. checkptr panics on some conversions that R3
@@ -15,10 +20,14 @@
   allocation passes gc's checks and then dies of a fatal out-of-memory
   error, which is not a panic.
 - **Acceptance tests:** `goose/testdata/disabled-tests/bboltmini`. Every
-  target there must be provable and every `stuck/` probe unprovable.
+  target there must be provable, every `stuck/` probe unprovable, and goose
+  must refuse every package under `rejected/` (section 12).
 
 "Sound" means the model is never more defined than gc's behaviour: every gc
-behaviour is a model behaviour, or the model is stuck there.
+behaviour is a model behaviour, or the model is stuck there. The semantics
+alone is not sound for one construct, a whole copy between partially
+overlapping places (R4). A verified program is sound when the guard also
+passes on it (section 5).
 
 ## 1. What bbolt does with memory
 
@@ -56,7 +65,7 @@ performs an atomic on byte memory it reinterprets.
     must be stuck on it.
 
 Code that does not use `unsafe` keeps both invariants by typing, once the
-nil checks of section 6 exist. Under `unsafe`, every reinterpretation goes
+nil checks of section 7 exist. Under `unsafe`, every reinterpretation goes
 through the one conversion of R3, which checks its target. So, beyond
 alignment:
 - loads need no type check;
@@ -101,7 +110,7 @@ inductive Plain : go.GoType → Prop
     every allocation of it would be an `AngelicExit`.
   - **Blank fields must be told apart from real fields.** goose must give a
     blank field a name no Go identifier can spell, such as `_#0`; today it
-    is `_0` (section 6).
+    is `_0` (section 7).
 - **One new primitive, `AllocBytes n a`,** allocates `n` zero bytes at an
   offset `j` of a fresh block, where `0 ≤ j < 8` and `a ∣ j`. It is stuck if
   `n > 2^48`. gc's `makeslice` panics above `maxAlloc = 2^48`, so a `make`
@@ -156,7 +165,7 @@ bytes, including a Go-allocated `Meta`'s cells. I10 then needs no rule.
 A plain integer load reads its `w` cells one by one, each with the existing
 two-phase read, and decodes them. Decoding is stuck unless every cell is a
 `LitByte`. A plain store writes the cells one by one. Structs and arrays go
-field by field and element by element, with R4's tag step around them.
+field by field and element by element.
 
 There is no new heap primitive, and races of any width are detected cell by
 cell. No alignment is needed: on amd64, a misaligned plain access by a
@@ -203,7 +212,7 @@ race-free program is well defined.
 *Needed for bbolt:* I1–I4, I6 and I7. I7 becomes a nondeterministic bool,
 and both of bbolt's branches are correct.
 
-### R4. Tags: no store completes an overlapping copy
+### R4. Whole copies: value semantics, and a guard where gc differs
 
 gc copies a struct or array with a `Move`, which assumes its source and
 destination do not overlap. It promises nothing about overlap made with
@@ -221,63 +230,82 @@ Measured on gc:
   - `a[0] = [8]uint64(s)`;
   - a conversion between struct types that differ only in struct tags.
 
-The model enforces gc's invariant on memory, whatever the syntax:
+**The semantics** copies with value semantics: a whole load, then a whole
+store, with no extra state. That behaves like `memmove`, so it is wrong
+exactly where gc compiles one statement to a `Move` between two places that
+partially overlap.
 
-- **State.** The state gains a set of tags per cell. A tag is `(U, i)`: the
-  cell is byte `i` of a whole value of plain struct or array type `U`. `U` is
-  keyed by its underlying `go.GoType`, without struct tags; goose already
-  drops them, and the key must keep doing so.
-- **Two new primitives,** both stuck unless their cells exist:
-  - `TagLoad U l s` adds `(U, i)` to each cell `l + i`.
-  - `TagStore U l s` is stuck if some cell `l + i` carries `(U, j)` with
-    `j ≠ i`.
-- **Uses.** A `GoLoad` of a plain struct or array type `U` runs `TagLoad`
-  first, and a `GoStore` runs `TagStore` first. Nested types do the same
-  through the recursion.
-- **Clearing.** A **non-atomic** byte store clears every tag of its cell.
-- **Atomics.** An atomic of width `w` at `l` uses a tag of its own, with key
-  `Atomic` and index `(w, i)` (R5). It is stuck if a cell carries a different
-  `(w', i')`, and otherwise adds `(w, i)`. So two atomics that share a byte
-  have the same address and width. Atomics clear no tag.
+**The guard** is a separate tool, `goose/modelcheck` (with a command,
+`goose/cmd/modelcheck`). goose runs it on every package it translates and
+refuses to emit the translation when it reports anything. It reports every
+statement `lhs = rhs` where:
+- the type is plain, or could be plain for some instantiation of its type
+  parameters. A plain integer is one load and one store, not a `Move`.
+  Views of a non-plain type cannot partially overlap, because R3 refuses
+  them;
+- `lhs` is a memory place: a dereference, a field or element of an
+  addressable value, or a value-preserving conversion of a place. A map
+  index is not one;
+- `rhs` is a memory place, or a slice-to-array conversion `[N]T(s)`, which
+  reads from `s`'s array;
+- and neither of these exemptions applies:
+  - **Whole variables.** A variable of plain type `U` is its own block of
+    exactly `sizeof(U)` cells. A view of type `U` that partially overlaps
+    it would leave the block, and R3 makes that stuck. So `x = *p`,
+    `*p = x` and `x = y` are never reported.
+  - **The same root.** Both sides are reached from one root by field
+    selections, indexing and dereferences, and neither the root nor any
+    index contains a call (other than a conversion, `len` or `cap`) or a
+    receive. The layout of a value is a tree, so two places reached from
+    one root are disjoint or the same place, and a `Move` is correct on
+    both. This covers sort's swap `data[i], data[j] = data[j], data[i]`
+    and `p.X = p.Y`.
 
-*Soundness.*
-- **Adding and checking tags only adds stuckness.**
-- **Clearing tags needs an argument.** A non-overlap-assuming copy from
-  `src` to `dst` loads all of `src` before storing to `dst`. If no cell of
-  `src` is written in between, `dst`'s check sees `src`'s tags on every
-  overlapping cell. If such a cell is written in between, nothing can fuse
-  the load and the store into one copy, because that copy would read the
-  new contents.
-- **Atomics.** Suppose two atomics are concurrent and a byte store between
-  them clears their tags. That store conflicts with both atomics, so it races
-  with one of them, and the model has an interleaving where it is stuck.
-  Intel promises nothing for mixed-size atomics on overlapping bytes.
-  Atomics of different widths ordered by happens-before are stuck too:
-  deliberately incomplete, at no cost today, since neither std nor bbolt
-  mixes widths.
+It checks each pair of a multiple assignment. That is conservative: gc may
+copy a pair directly when it finds that no earlier assignment of the
+statement affects the operand, and the guard does not depend on when gc
+uses a temporary there. It also
+checks `for _, place = range x` over an array, a slice or a pointer to an
+array. It checks only what goose translates: the bodies of translated
+functions and methods, including their function literals, and the
+initializers of translated package variables. Trusted and axiomatized
+declarations have no translated body (assumption A4).
+
+**A finding is a hard error.** There is no waiver. Any change to the
+guard's rule, or a way to override it, needs the project owner's approval
+first.
+
+*Soundness of the guard* rests on how gc copies (section 5, A2). gc makes a
+non-`memmove` `Move` between two memory places in two ways:
+- **As the `Move` of one assignment.** The guard reports every such
+  statement, except the two exemptions above, which cannot partially
+  overlap.
+- **By fusing a copy through a stack temporary** (`generic.rules`, the
+  A → B → C rule). This requires a stack source and `disjoint(src, dst)`.
+  That is exact for constant offsets from one base, and "may alias"
+  otherwise. Copies of at most 16 bytes are lowered so that they are safe
+  even when they overlap. So gc never fuses an overlapping copy this way.
+
+Every other copy goes to fresh storage or through a real temporary:
+- `append`, which copies its operands to temporaries first;
+- arguments, results, channel sends and receives;
+- interface boxing;
+- composite literals assigned through a pointer;
+- `range` into a whole variable.
+
+gc's `copy` is a `memmove`, which is what value semantics gives.
+
+*Defined, and the same as gc 1.26.* A copy through a whole-variable
+temporary, `x := *src; *dst = x` (`testOverlappingCopyViaTemp`), or an
+inlined `set(dst, *src)`, gets value semantics, which gc 1.26 also gives.
 
 *Deliberately incomplete.*
-- Safe Go's overlapping `*p = *q` of plain arrays (`testOverlappingArrayCopy`).
-  gc defines it with `memmove`, but the model cannot tell it from `p.A = q.A`
-  without looking at syntax.
-- Overlapping whole *loads* stay defined (`testOverlappingLoads`).
-- `copy()` between slices of a plain struct that overlap at a shift that is
-  not a multiple of the element size. gc's `copy` is always `memmove`, but
-  the model's copy goes through a temporary, so the destination sees the
-  source's tags.
-- Non-plain composite types need no tags: overlapping views of them need a
-  conversion that R3 makes stuck.
-
-*bbolt meets no conflicting tag.*
-- Every whole-struct copy goes to a fresh destination:
-  - `Meta` from the mmap'd page, at +16, into `tx.meta`;
-  - `tx.meta` into a fresh buffer at +16;
-  - `InBucket` from `tx.meta` at +16, or from a value, into a fresh
-    `InBucket`;
-  - a fresh `InBucket` into a fresh value;
-  - stats copies into locals.
-- `pagePool` buffers are zeroed byte by byte before reuse.
-- bbolt makes no whole-array value copies.
+- **Safe Go's overlapping `*p = *q` of plain arrays** (`testOverlappingArrayCopy`).
+  gc defines it with `memmove`, but the guard cannot tell it from
+  `p.A = q.A`, so goose refuses it.
+- **Every whole copy between two places with different roots,** even when
+  they never overlap. This includes six of bbolt's copies, which section 6
+  rewrites to copy through a local.
 
 ### R5. Atomics: an encoding and alignment
 
@@ -287,7 +315,10 @@ take an encoding:
 - **`bytes w`,** with `w ∈ {4, 8}`: `w` byte cells, little-endian, in one
   step; stuck unless all of them are bytes and `w ∣ l.locOff`.
 
-Every atomic also runs R4's atomic tag.
+There is no rule for atomics of different widths or addresses on the same
+bytes. The model gives them sequentially consistent byte-level semantics,
+which Intel does not promise when they are concurrent. This is a known
+limitation (section 5, A3).
 
 Users:
 - `TrustedCode/sync/atomic.lean`'s integer models use `bytes 4` and
@@ -311,16 +342,61 @@ Why it is needed:
 - Any view of opaque memory through `unsafe`.
 - A plain view, slice or `unsafe.Add` result that leaves the existing byte
   cells.
-- A whole store that partially overlaps an earlier whole load of its own
-  plain type, with no byte store to those cells in between.
-- Atomics that overlap with different widths or addresses.
 - Misaligned atomics.
 - `make` above 2^48 bytes, and an `append` that grows past `2^46` bytes.
 
-## 5. bbolt's `unsafe` helpers: change bbolt
+Two things are *not* stuck, and the model gets them wrong: section 5.
 
-`c/unsafe.go`'s helpers become `uintptr`-free forms. Each is identical in Go
-except for the pointer of a capacity-0 slice, which nothing can observe:
+## 5. The end-to-end guarantee, and its known limitations
+
+**The guarantee.** Suppose goose translates every package of a program that
+has a translated body, which means the guard of R4 passes on each of them.
+Suppose also that a proof establishes a spec of the translation. Then every
+execution of the gc-compiled program on linux/amd64, built without
+`checkptr`, satisfies the spec, provided assumptions A1 to A4 hold.
+
+The guard must pass on **every** translated package, not only those that use
+`unsafe`. A copy in package B can operate on pointers that package A made
+with `unsafe`.
+
+**Assumptions:**
+- **A1, the platform.**
+  - gc for linux/amd64, little-endian.
+  - gc's layout of plain types (R1).
+  - `maxAlloc = 2^48`, and `growslice`'s bound (R1).
+  - gc's `Move` copies correctly when its source and destination are
+    disjoint or the same place.
+- **A2, gc's copies (a fact about gc 1.26's optimizer, not a language
+  promise).** gc fuses a copy through a temporary into one `Move` only from
+  a stack temporary, when it can show the source and destination disjoint.
+  Its other copies go to fresh storage, through a real temporary, or with
+  `memmove` (R4). A gc that fused overlapping heap copies through a
+  temporary would need the guard to look at such pairs of statements too.
+- **A3, mixed-width atomics.** No two atomics with different widths or
+  addresses touch the same bytes while they are concurrent. Nothing checks
+  this, and no sound syntactic check exists. For example, an atomic on
+  `&(*[2]uint32)(unsafe.Pointer(&u))[0]` looks like any other `*uint32`
+  atomic, while another atomic uses all 8 bytes of `u`. Neither std nor
+  bbolt mixes widths. Draft 6's atomic tags made this stuck; they are
+  dropped with the other tags, for now.
+- **A4, the trust base.** `TrustedCode`, the FFI models, and the specs of
+  axiomatized declarations are faithful. The guard does not look inside
+  them.
+
+**Known limitations of the semantics:**
+- **L1, overlapping whole copies.** The semantics gives value semantics
+  where gc's `Move` differs (R4). The guard closes this: under A2, goose
+  refuses every program in which the difference can arise.
+- **L2, mixed-width atomics.** These are not stuck (R5). Assumption A3
+  closes this, and nothing checks it.
+
+## 6. bbolt changes: a fork
+
+bbolt is translated from the fork `upamanyus/bbolt`, branch `goose`, which
+starts from v1.5.0 and carries these changes. Each is identical in Go, except
+for the pointer of a capacity-0 slice, which nothing can observe.
+
+**`unsafe` helpers.** `c/unsafe.go`'s helpers become `uintptr`-free forms:
 - `UnsafeAdd` is `unsafe.Add(base, offset)`.
 - `UnsafeIndex` is `unsafe.Add(base, offset+uintptr(n)*elemsz)`.
 - `UnsafeByteSlice` is
@@ -333,10 +409,27 @@ except for the pointer of a capacity-0 slice, which nothing can observe:
 I5, the stored `pos`, is computed as `off − (16 + 16·i)`, which
 `WriteInodeToPage` already holds.
 
-bbolt's `go.mod` requires Go 1.25, which has both builtins. `bboltmini` is
-written in these forms, and its probes keep the originals stuck.
+**Whole copies through a local.** The guard (R4) refuses bbolt's six
+whole-struct copies between memory places, although none of them overlaps.
+Each becomes a copy through a local, which is identical under the Go spec,
+and identical in gc under A2:
 
-## 6. Prerequisites: existing bugs and gaps on `lean`
+| site | v1.5.0 | `goose` |
+|---|---|---|
+| `internal/common/meta.go:38` (`Meta.Copy`) | `*dest = *m` | `v := *m; *dest = v` |
+| `tx.go:58` | `*tx.root.InBucket = *(tx.meta.RootBucket())` | `root := *tx.meta.RootBucket(); *tx.root.InBucket = root` |
+| `tx.go:434` | `*page.Meta() = *tx.meta` | `m := *tx.meta; *page.Meta() = m` |
+| `bucket.go:132` | `*child.InBucket = *(*common.InBucket)(unsafe.Pointer(&value[0]))` | `ib := *(*common.InBucket)(unsafe.Pointer(&value[0])); *child.InBucket = ib` |
+| `bucket.go:764` | `*bucket = *child.InBucket` | `ib := *child.InBucket; *bucket = ib` |
+| `bucket.go:843` | `*bucket = *b.InBucket` | `ib := *b.InBucket; *bucket = ib` |
+
+This list comes from a search of the sources. The guard's run on the fork is
+the check that it is complete (section 12).
+
+bbolt's `go.mod` requires Go 1.25, which has both builtins. `bboltmini` is
+written in these forms, and its probes keep the originals stuck or rejected.
+
+## 7. Prerequisites: existing bugs and gaps on `lean`
 
 Each is already wrong or missing today. bbolt, R1 or R3 depends on it.
 Items marked **(bbolt)** block core bbolt paths; without them, bbolt's proofs
@@ -406,10 +499,10 @@ are stuck or vacuous.
 **Conversions that don't exist yet, when they are added:**
 - slice to `*[0]T` must be stuck, because gc does not advance the pointer of
   a capacity-0 slice;
-- `[N]T(slice)` must be a whole `GoLoad [N]T` from the slice's pointer, so
-  that R4 sees it.
+- `[N]T(slice)` must be a whole `GoLoad [N]T` from the slice's pointer. The
+  guard already treats it as a read from the slice's memory (R4).
 
-## 7. Interface for the mmap work later
+## 8. Interface for the mmap work later
 
 The mapped file can be an FFI call that returns an `AllocBytes` block at
 offset 0, since mmap is page-aligned. `db.data` must then be a `[]byte`
@@ -417,18 +510,17 @@ rather than a `(*[MaxMapSize]byte)`. Still to decide:
 - **Read-only.** A store must be stuck. Cells born with a phantom reader do
   this with no new rule.
 - **Remapping.**
-- **`pwrite`s seen through `MAP_SHARED`.** No tag rule is needed for them,
-  since loads never check tags.
+- **`pwrite`s seen through `MAP_SHARED`.** A later load of a mapped cell
+  sees the bytes the `pwrite` wrote. Nothing else is needed: the semantics
+  keeps no state about earlier loads.
 
-## 8. Trusted delta and proof cost (estimate)
+## 9. Trusted delta and proof cost (estimate)
 
 Trusted:
-1. **`GooseLang/Lang.lean`**, about 90 lines:
+1. **`GooseLang/Lang.lean`**, about 60 lines:
    - `AllocBytes`, with its bound;
    - `CheckBytes`;
-   - the tag sets, `TagLoad` and `TagStore`;
-   - clearing tags on non-atomic byte stores;
-   - encodings on the four atomics, with alignment and the atomic tag.
+   - encodings on the four atomics, with alignment.
 2. **`Golang/Defn`**, about 180 lines:
    - `Plain` and the layout;
    - the replaced alloc/load/store rules;
@@ -438,55 +530,40 @@ Trusted:
    encodings, and the four `atomic.Pointer[T]` models.
 5. **goose**, about 40 lines: `unsafe.Add`, `unsafe.Slice`, and the
    blank-field name.
-6. **Platform facts in the README:**
+6. **The guard,** `goose/modelcheck`, about 300 lines, and its call in
+   goose's `translatePackage`. A missed statement is an unsound
+   translation, so the guard is trusted like the translator.
+7. **Platform facts in the README:** A1 to A3 of section 5:
    - linux/amd64, gc, without checkptr;
    - little-endian;
    - gc's layout of plain types;
-   - `maxAlloc = 2^48`.
+   - `maxAlloc = 2^48`;
+   - gc's copies (A2);
+   - no concurrent mixed-width atomics (A3).
 
 Untrusted:
 - **Points-tos.** The 16/32/64-bit points-tos become `w` byte points-tos.
 - **Atomic WPs** take an alignment premise, discharged from the allocation.
-- **Tags.** A byte's points-to carries an *admissible* tag set `D`, agreed
-  by all fraction holders. The heap invariant says the actual tags are a
-  subset of `D`.
-  - A `TagLoad` or an atomic under fractional ownership must show its tag is
-    in `D`.
-  - Full ownership may enlarge `D`.
-  - Only a byte store lets the owner choose a smaller `D`: it leaves untagged
-    bytes.
-
-  A bound on the actual tags would not work, because another fraction holder
-  may add tags. Tags only grow, but that gives lower bounds, not upper ones.
-- **`l ↦[U]{dq} v`,** for a plain `U`, is the bytes `encode v` with a `D` that
-  admits `U`-tags on those cells only at their own index. For nested types it
-  also admits only the nested types' own indices: `Meta`'s `InBucket` tags at
-  +16 to +31 have indices 0 to 15.
+- **`l ↦[U]{dq} v`,** for a plain `U`, is the bytes `encode v`.
+- **The byte-view lemma:** `l ↦[T] v ⊣⊢ l ↦*bytes (encode v)`, with no
+  premise.
 - **A field-split lemma:**
-  `l ↦[Meta] m ⊣⊢ … ∗ (l +ₗ 16) ↦[InBucket] m.root ∗ …`, keeping the outer
-  constraint. bbolt needs it at `tx.go:58` and `tx.go:212`.
-- **The atomic WPs** need, besides alignment, `(w, i) ∈ D` and no other
-  `Atomic` tag in `D`. The typed points-tos of atomically accessed fields,
-  such as `TxStats`'s, carry it.
-- **The byte-view lemma:** `l ↦[T] v ⊣⊢ l ↦*bytes (encode v)`, stated on `D`.
-  It holds when `D` admits, for `T` and for every plain type nested in `T`
-  at offset `o`, only that type's own-index tags at `o`. This is exactly
-  the definition of `↦[T]`. A premise that mentions only `T` would be
-  unsound: a whole store of `Meta` also runs `TagStore InBucket` at +16.
-- **Allocation:** `AllocBytes` gives untagged cells with any chosen `D`.
+  `l ↦[Meta] m ⊣⊢ … ∗ (l +ₗ 16) ↦[InBucket] m.root ∗ …`, which follows from
+  the byte-view lemma and the layout. bbolt needs it at `tx.go:58` and
+  `tx.go:212`.
+- **Allocation:** `AllocBytes` gives zero bytes.
 
-Every whole store in bbolt targets fresh memory, or `tx.meta`, whose `D` is
-fixed when it is allocated. So these principles are all bbolt's page code
-needs.
+With no tags, a whole store needs only full ownership of its destination,
+as any store does. These principles are all that bbolt's page code needs.
 
-## 9. The subtleties, and why each mechanism is there
+## 10. The subtleties, and why each mechanism is there
 
 The rules above are short. Most of their clauses answer a specific way a
 simpler design is unsound against gc, or makes bbolt unprovable. This
 section gives the reason for each, and the simpler choice it rules out. The
-probe names are in `bboltmini/stuck/`.
+probe names are in `bboltmini/stuck/` and `bboltmini/rejected/`.
 
-### 9.1 Why integers become bytes at all
+### 10.1 Why integers become bytes at all
 
 bbolt views the same cells both as a struct and as a `[]byte`:
 - it checksums a Go-allocated `Meta` through its bytes (I6);
@@ -496,7 +573,7 @@ With one opaque cell per scalar, a `uint64` field is one cell and its bytes
 are not cells at all, so no rule can make both views see the same memory.
 So a plain value *is* its bytes, and a typed load decodes them (R2). Typed
 points-tos become derived notions over byte points-tos (the byte-view
-lemma, section 8).
+lemma, section 9).
 
 Every other type keeps opaque cells. Nothing in bbolt needs to see their
 bytes, and seeing them is where gc's behaviour stops being definable:
@@ -506,7 +583,7 @@ bytes, and seeing them is where gc's behaviour stops being definable:
   depending on escape (`testStringOverPointer`);
 - map and interface values are runtime-private.
 
-### 9.2 Why `Plain` excludes what it excludes
+### 10.2 Why `Plain` excludes what it excludes
 
 Each excluded case is a type whose bytes, once visible, would let a program
 tell the model and gc apart.
@@ -514,7 +591,7 @@ tell the model and gc apart.
   per allocation would make `new([0]uint64) != new([0]uint64)`. But gc
   gives every escaping zero-size object the one address `zerobase`
   (`testZeroSizeDistinct` is false in Go). So zero-size types stay out of
-  `Plain`, and their allocation follows `zerobase` (section 6).
+  `Plain`, and their allocation follows `zerobase` (section 7).
 - **Blank fields.** A value decoded from bytes includes the blank field's
   bytes. gc's `==` and map hashing skip blank fields. So two views whose
   bytes differ only in a blank field are equal in gc but would differ in
@@ -547,7 +624,7 @@ alloc/load/store rules, with a `¬ Plain` premise on the old ones, because
 pure steps are deterministic (`isGoStep_pure_det`). Two rules that both
 fire on one instruction with different results prove `False`.
 
-### 9.3 Why there is exactly one checked conversion
+### 10.3 Why there is exactly one checked conversion
 
 Draft 3 checked at each use instead: a load checked that its cells held its
 type's kind, and stores and atomics carried premises. Round 1 found holes
@@ -568,7 +645,7 @@ get past one rule rather than many.
 The cost is the translated code's one conversion to a non-plain `*T`,
 `atomic.Pointer[T]`'s round trip, which needs trusted models (R3).
 
-### 9.4 Why `uintptr` carries no information
+### 10.4 Why `uintptr` carries no information
 
 gc moves goroutine stacks, so `uintptr(p)` for a stack object can change
 between two conversions of the same `p`. A model in which `uintptr(p)` is a
@@ -578,12 +655,12 @@ make them equal. So each conversion is a fresh `ArbitraryInt`.
 
 There are two consequences:
 - `unsafe.Pointer(u)` must stay stuck: there is no address to give it.
-  bbolt's `UnsafeAdd` is therefore rewritten to `unsafe.Add` (section 5;
+  bbolt's `UnsafeAdd` is therefore rewritten to `unsafe.Add` (section 6;
   `testOriginalUnsafeAdd`).
 - bbolt's stored `pos`, a `uintptr` difference, is recomputed from offsets
   (`testOriginalPos`).
 
-### 9.5 Why pointer arithmetic checks both ends
+### 10.5 Why pointer arithmetic checks both ends
 
 `unsafe.Add(p, n)` is stuck unless the cells at `p` and at `p +ₗ k` exist
 and are bytes. Without the check at the end:
@@ -607,9 +684,7 @@ model's. That is why:
   `unsafe.Add(base, offset+i)`. The latter points one past the end for an
   empty value at the very end of an exactly sized inline bucket.
 
-### 9.6 Why bytes carry tags
-
-This is the least obvious mechanism.
+### 10.6 Why whole copies are guarded rather than modelled
 
 **The problem.** In the model, `*dst = *src` of a struct is a whole load of
 `*src` into a value, then a whole store of that value to `*dst`. That is
@@ -627,87 +702,44 @@ gc:                          0 0 1 1 3 3 5 5 7 9
 Two views of one type at different offsets of the same memory can only be
 made with `unsafe`. gc says outright that it does not care about that case
 (`moveWhichMayOverlap`, "We don't care about solving 1"). A model that
-proves `buf[3] == 2` here is unsound, so the model must be stuck on such a
-copy.
+proves `buf[3] == 2` here is unsound.
 
-**Why the store cannot just check syntax.** The obvious fix is to make
-`*dst = *src` stuck when `dst` and `src` overlap. That fails for three
-reasons:
-- *Temporaries.* `x := *src; *dst = x` is the same copy through a temporary.
-  Today gc copies via a stack slot and gets memmove's answer. But its
-  rewrite rules fuse a `Move` of a `Move` into one `Move`, guarded only by
-  a check gc could drop, so nothing promises the safe answer
-  (`testOverlappingCopyViaTemp`). By the time the model stores `x`, `x` is
-  only a value, which does not say where it came from.
-- *Fields and conversions.* Each of these is a `Move` too, measured with
-  the same result as above:
-  - a field copy `p.A = q.A` (`testArrayFieldOverlapCopy`);
-  - an element of a `[2][8]uint64`;
-  - `a[0] = [8]uint64(s)`;
-  - a conversion between struct types that differ only in struct tags.
-- *Nesting.* A whole store of `Meta` also stores the `InBucket` at its +16.
+**Why not make the semantics stuck there.** Two ways were tried:
+- **Tags (draft 6).** Each cell recorded the whole loads it had been part
+  of, a whole store was stuck on a shifted tag, and byte stores cleared
+  tags so that buffers could be reused. This was unsound. In
+  `*f() = *src`, goose loads `*src` before calling `f`, but gc calls `f`
+  first and then does one `Move`. A byte store in `f` that writes the same
+  value clears the tags, so the model gives value semantics while gc gives
+  the chunked result (`testOverlapAfterSameValueStore`, found on branch
+  `unsafe-overlap-checks`). Tags also cost an admissible set in every
+  points-to and a premise on the byte-view lemma.
+- **A run-time overlap check** emitted by goose before each such statement
+  (draft 7 on `unsafe-overlap-checks`). This is sound and needs no state,
+  but it adds a primitive and a proof obligation to every whole copy.
 
-So the information has to live in memory, not in the syntax or the value.
+Draft 8 keeps the semantics as simple as possible, with no rule and no
+state, and moves the problem to a static guard that refuses the code. The
+cost is completeness: the guard is syntactic, so it refuses copies that
+never overlap, and bbolt has to copy through locals (section 6).
 
-**What a tag records.** A whole load of a plain struct or array type `U` at
-`l` marks each cell `l + i` with `(U, i)`: "this cell was last read as byte
-`i` of a whole `U`" (`TagLoad`). A whole store of `U` at `l'` is stuck if
-some cell `l' + i` carries `(U, j)` with `j ≠ i` (`TagStore`). In the
-shifted copy, cell `src + 8` carries `(meta, 8)` from the load and is byte
-0 of the store, so the store is stuck. Each part of a tag is needed:
-- **The index** keeps harmless copies defined: a copy onto *the same*
-  location, or between disjoint views (`testDisjointStructCopy`), finds
-  every overlapping cell at its own index, where a `Move` is correct.
-- **The type key** limits stuckness to the copies a `Move` could fuse. A
-  `Move` copies a value of one type, so only a load of the store's own type
-  can have been fused with it. Overlapping views of *different* types, such
-  as a `Page` header and a `Meta`, stay defined. The key is the underlying
-  `go.GoType` without struct tags, because gc treats tag-only conversions
-  as the same `Move`.
-- **Nesting** runs the tag steps for every plain type inside `U`, through
-  the recursion. That is how a `Meta` store sees an earlier `InBucket` load
-  at +16.
+**Why the guard's rule is what it is.**
+- *Only one statement at a time.* gc fuses a copy through a temporary only
+  when it can show that the two sides are disjoint (A2). A copy whose two
+  halves are separate statements, `x := *src; *dst = x`, is therefore
+  always correct under value semantics (`testOverlappingCopyViaTemp`).
+- *Only memory places on both sides.* A whole variable is its own block, so
+  no view of its type can partially overlap it (R3).
+- *Only plain types, or type parameters.* Views of non-plain types cannot
+  partially overlap (R3), and plain integers are not copied with a `Move`.
+  Generic code is checked because it may be instantiated at a plain type.
+- *The same-root exemption* keeps common, correct code translatable, such
+  as sort's swaps in `slices`. Without it, Perennial's own translation of
+  the standard library is refused.
+- *The guard must see every package.* The pointers a copy uses may have
+  been made by `unsafe` code anywhere in the program.
 
-**Why loads do not check.** Two overlapping whole loads are just two reads.
-gc defines them, and bbolt's readers of the mmap'd file rely on them
-(`testOverlappingLoads`). Checking on loads would make them stuck for
-nothing.
-
-**Why byte stores clear tags.** Without clearing, tags would only grow. A
-buffer once read as a `Page` at offset 0 could then never be written as a
-`Page` at offset 8. bbolt's `pagePool` reuses buffers in exactly this way,
-after zeroing them byte by byte (`testTagsClearedByByteStores`). Clearing
-is sound because a `Move` from `src` to `dst` loads all of `src` before it
-stores to `dst`:
-- if no cell of `src` is written in between, the store sees every tag;
-- if one is written in between, gc cannot fuse the load and the store,
-  because the fused copy would read the new contents.
-
-Atomics clear no tag (round 2), so the atomic tags of 9.7 survive other
-atomics on the same bytes.
-
-**What tags deliberately get wrong.** Tags cannot see syntax, so they cost
-completeness in two places:
-- Safe Go's overlapping `*p = *q` on plain arrays is a `memmove` in gc, but
-  is stuck in the model, because it is indistinguishable from `p.A = q.A`
-  (`testOverlappingArrayCopy`).
-- `copy()` of plain structs between slices that overlap at a shift that is
-  not a multiple of the element size is a `memmove` in gc. The model's copy
-  goes through a temporary, so its stores see the source's tags and get
-  stuck.
-
-They also constrain conversions added later: `[N]T(s)` must be a whole
-`GoLoad`, or tags would not see it.
-
-**Tags in the logic.** Under fractional ownership, another fraction holder
-can add tags at any time by loading, so a points-to cannot bound the actual
-tags. Instead, every fraction holder agrees on an *admissible* set `D`, and
-the heap invariant keeps the actual tags inside `D` (section 8). `l ↦[U] v`
-admits only own-index tags of `U` and of the types nested in it. That is
-what makes the byte-view lemma hold, and what lets a whole store of `U` to
-`l` be proved.
-
-### 9.7 Why atomics have widths, alignment and tags of their own
+### 10.7 Why atomics have widths and alignment
 
 - **Widths.** Integers are now bytes, so an atomic must say how many byte
   cells it reads and writes in one step (`bytes 4`, `bytes 8`). Lock and
@@ -724,21 +756,18 @@ what makes the byte-view lemma hold, and what lets a whole store of `U` to
     gc's offset of the field modulo 8. At offset 12 the residue is 4
     (`testFieldResidue` is false in Go). Giving every such field offset 0
     would prove alignments gc does not have.
-- **Mixed widths.** Intel promises nothing for concurrent atomics of
-  different sizes on overlapping bytes. Each atomic leaves an
-  `(Atomic, (w, i))` tag and is stuck on a different one, so two atomics
-  that share a byte must have the same address and width. A non-atomic
-  store between them would clear the tag. But that store races with one of
-  them, and the race is itself stuck. Sequential mixed widths, which Go
-  defines, are stuck too (`testMixedWidthAtomics`). That is deliberately
-  incomplete, at no cost to std or bbolt.
+- **Mixed widths** have no rule (A3). Intel promises nothing for concurrent
+  atomics of different sizes on overlapping bytes. Making them stuck needs
+  per-cell state, which draft 6's atomic tags were. They were dropped with
+  the other tags. They could come back on their own: unlike the copy tags,
+  they need no clearing argument.
 
-### 9.8 Why allocation needs bounds
+### 10.8 Why allocation needs bounds
 
 Without a bound, a `make` that gc rejects succeeds in the model, and the
 program goes on past a point where gc panicked:
 - gc's `makeslice` panics above `maxAlloc = 2^48` bytes. `AllocBytes`, and
-  the opaque-array allocation of section 6, are stuck there.
+  the opaque-array allocation of section 7, are stuck there.
 - The bound needs gc's exact element size, for opaque elements too.
   Otherwise `make([]*T, 1<<47)` succeeds.
 - `append`'s grow branch cannot simply cap at 2^48. gc's `growslice`
@@ -753,20 +782,24 @@ program goes on past a point where gc panicked:
 
 Out-of-memory is a fatal error, not a panic, and stays outside the model.
 
-### 9.9 Why the nil fixes come first
+### 10.9 Why the nil fixes come first
 
 V2 holds by typing only if no address or access succeeds where gc panics.
 Today a field or element address through `nil` steps to an address at an
 offset of `null`. That is a non-nil pointer with no cells, made without
 `unsafe`, which breaks V2. A zero-size load through `nil` returns the zero
-value where gc panics. These are existing bugs (section 6), but section 2's
+value where gc panics. These are existing bugs (section 7), but section 2's
 argument for V2 depends on them being fixed.
 
-### 9.10 What needs no mechanism
+### 10.10 What needs no mechanism
 
 - **Alignment of plain loads and stores.** amd64 defines misaligned
   accesses, and races are detected cell by cell. So plain accesses need no
   alignment premise and no new heap primitive.
+- **Overlapping loads, and reused buffers.** With no tags, two overlapping
+  whole loads are just reads (`testOverlappingLoads`). A buffer can hold a
+  view of one type at one offset and later at another
+  (`testBufferReuseShifted`, bbolt's `pagePool`).
 - **Endianness and layout.** These are platform facts (linux/amd64, gc, no
   `checkptr`), stated once in the README rather than as rules. `checkptr`
   must be off because it panics on some conversions R3 allows.
@@ -774,7 +807,7 @@ argument for V2 depends on them being fixed.
   nondeterministic bool. bbolt is correct on both branches, and the proofs
   cover both.
 
-## 10. Review log
+## 11. Review log
 
 **Round 1** (three reviewers: representation, tags, `unsafe`). It found the
 draft unsound in these places:
@@ -809,7 +842,7 @@ mechanism; gc's alias analysis treats plain memory as bytes. It did find:
 - **Allocation:** `make` above 2^48 must not succeed.
 - **The past-the-end wording** in V2 was wrong.
 - **Platform:** checkptr must be off.
-- **Existing bugs**, now in section 6: nil field and index references, the
+- **Existing bugs**, now in section 7: nil field and index references, the
   blank-field name, `[]byte("")`, float `==`, struct tags in type identity,
   and zero-length arrays.
 
@@ -824,10 +857,10 @@ unsoundness or inconsistency. Every core bbolt conversion, `unsafe.Add`,
   plain-field-own-block fact behind R5 was missing.
 - **Prerequisites:** the gaps that block bbolt (non-plain and zero-size
   allocation, `sync.Pool`, `hash/fnv`, float conversions), now marked
-  **(bbolt)** in section 6.
+  **(bbolt)** in section 7.
 - **Program logic:** the fractional-ownership formulation of tags (an
-  admissible set), nested-field splitting, and atomic-tag admissibility,
-  now in section 8.
+  admissible set), nested-field splitting, and atomic-tag admissibility.
+  Draft 8 drops all three with the tags.
 
 **Round 4** (one reviewer, on draft 6's changes only) found nothing unsound
 in the plan's own rules:
@@ -840,5 +873,56 @@ in the plan's own rules:
 - **One more existing bug:** loads and stores of zero-size types through
   nil don't panic.
 
-The plan is stable: rounds 3 and 4 found no unsoundness in its mechanism,
-only precision fixes and existing bugs outside it.
+**Draft 8 (2026-10-24), not yet reviewed.** The project owner decided:
+- drop the tags entirely, including the atomic ones;
+- refuse the overlapping-copy construct with a separate static guard,
+  rather than model it (R4);
+- state the end-to-end guarantee with its assumptions (section 5);
+- make the guard's findings a hard error, changed only with the owner's
+  approval;
+- patch bbolt's six non-overlapping copies on a fork (section 6);
+- restart the implementation from the current `lean` (section 12).
+
+The reasons are in 10.6: draft 6's copy tags turned out unsound, and they
+cost the most in the logic. A review round should check:
+- the guard's rule and its two exemptions against gc;
+- A2's statement against gc 1.26's `generic.rules` and `ssagen`;
+- that section 6's table lists every copy the guard refuses in bbolt.
+
+## 12. The work, from the current `lean`
+
+Each step is a branch off the current `lean`, landed by Perennial's
+workflow. This branch's commits (this document and `bboltmini`) are carried
+over first.
+
+1. **The guard.**
+   - `goose/modelcheck` and `goose/cmd/modelcheck`, with the call in
+     `translatePackage` and tests of each case of R4.
+   - Run it over every translation Perennial and etcd-grove produce. A
+     prototype found nothing in Perennial's standard library, models and
+     goose examples, once the same-root exemption was in. A finding there
+     is a decision for the project owner, not a change to the rule.
+   - This step changes no semantics, so it can land on its own.
+2. **The bbolt fork:** `upamanyus/bbolt`, branch `goose` off v1.5.0, with
+   section 6's changes. Check that the guard passes on it.
+3. **The prerequisites of section 7:** the nil fixes, `ArraySemantics`,
+   blank fields, `[]byte("")`, and the float representation, which must
+   precede R1. Then the allocation gaps, `sync.Pool` and `hash/fnv`.
+4. **R1–R3 and R5** in `Lang.lean` and `Golang/Defn`, and the trusted
+   atomic models.
+5. **goose:** `unsafe.Add` and `unsafe.Slice`. `bboltmini` moves from
+   `disabled-tests` to `testdata/examples`.
+6. **The acceptance tests,** brought in line with draft 8:
+   - **Copies between places:** `testOverlappingCopy`,
+     `testArrayFieldOverlapCopy` and `testOverlappingArrayCopy` move to
+     `bboltmini/rejected/`, a package goose must refuse.
+   - **Copies through locals:** `testOverlappingCopyViaTemp` becomes a
+     target, because it is true in gc 1.26 under A2.
+   - **Mixed widths:** `testMixedWidthAtomics` leaves the probes. It is
+     sequential and true in Go; the concurrent case is A3.
+   - **Renamed targets:** `testTagsClearedByByteStores` becomes
+     `testBufferReuseShifted`.
+   - **Rewritten targets:** the whole copies in the targets and in
+     `bboltmini`'s bbolt code are written through locals, as in section 6
+     (`targets.go:138, 237-239`, `bucket.go:18, 41`, `meta.go:55`).
+7. **The program logic of section 9,** and the proofs of the targets.

@@ -2,7 +2,7 @@
 
 bbolt's use of byte memory, cut to about 400 lines. Every idiom is written
 as `go.etcd.io/bbolt` v1.5.0 writes it, except for the patched forms of
-`docs/design/unsafe-memory.md` section 5:
+`docs/design/unsafe-memory.md` section 6:
 - `unsafeAdd` and `unsafeIndex` use `unsafe.Add`;
 - `unsafeByteSlice` uses `unsafe.Slice` instead of a `(*[MaxAllocSize]byte)`
   view;
@@ -51,8 +51,8 @@ stuck on purpose.
 
 | probe | Go's answer | why the model must not prove `true` | design |
 |---|---|---|---|
-| `testOriginalUnsafeAdd` | true | bbolt's `unsafe.Pointer(uintptr(base)+offset)`: `uintptr → unsafe.Pointer` stays stuck | §5, R3 |
-| `testOriginalPos` | true | bbolt's pointer difference: `uintptr(p)` is arbitrary | §5, R3 |
+| `testOriginalUnsafeAdd` | true | bbolt's `unsafe.Pointer(uintptr(base)+offset)`: `uintptr → unsafe.Pointer` stays stuck | §6, R3 |
+| `testOriginalPos` | true | bbolt's pointer difference: `uintptr(p)` is arbitrary | §6, R3 |
 | `testAddPastEnd` | true | `unsafe.Add` one past the allocation is invalid | R3 |
 | `testSlicePastEnd` | reads another object | an `unsafe.Slice` past the allocation | R3 |
 | `testPastEndAddress` | **false** (the objects are adjacent) | an address past an object compared with the next object's address | R3 (`unsafe.Slice` checks its cells) |
@@ -76,4 +76,5 @@ stuck on purpose.
 | `testOverlappingArrayCopy` | true | safe Go's overlapping `*p = *q` of plain arrays is `memmove`, but the model cannot tell it from the above (deliberately incomplete) | R4 |
 
 Each probe marked **false** found an unsound point in an earlier draft of
-the design. Section 10 of the design records the review rounds.
+the design. Section 11 of the design records the review rounds. Draft 8 of the
+design drops the tags of R4: section 12, step 6, lists the rows above that change.
