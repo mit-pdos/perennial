@@ -16,7 +16,9 @@ linter.unusedSectionVars = false
 
 # The proof automation (tactics, elaborators, notation, simprocs) and its import
 # closure, compiled to native code (-O0: C compile time is on the critical path).
-# Generated: edit the sources, then run etc/meta-lib.py, which says more.
+# Declared after `Perennial`, so that lake takes these modules from here. The
+# list is generated: rerun etc/meta-lib.py (which explains the setup) after
+# changing a tactic module or its imports.
 [[lean_lib]]
 name = "PerennialMeta"
 roots = ["PerennialMeta"]
