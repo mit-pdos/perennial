@@ -461,9 +461,11 @@ as stated, but it lacks every declaration with a finding and does not build
 
 ## 6. bbolt changes: a fork
 
-bbolt is translated from the fork `upamanyus/bbolt`, branch `goose`, which
-starts from v1.5.0 and carries these changes. Each is identical in Go, except
-for the pointer of a capacity-0 slice, which nothing can observe.
+bbolt is translated from the fork `upamanyus/bbolt`, branch `goose` (commit
+`e353cbe`), which starts from v1.5.0 and carries these changes. Each is
+identical in Go, except for the pointer of a capacity-0 slice, which nothing
+can observe. bbolt's tests pass on the fork, also under `-race`, whose
+`checkptr` checks every `unsafe` conversion.
 
 **`unsafe` helpers.** `c/unsafe.go`'s helpers become `uintptr`-free forms:
 - `UnsafeAdd` is `unsafe.Add(base, offset)`.
@@ -492,8 +494,9 @@ and identical in gc under A2:
 | `bucket.go:764` | `*bucket = *child.InBucket` | `ib := *child.InBucket; *bucket = ib` |
 | `bucket.go:843` | `*bucket = *b.InBucket` | `ib := *b.InBucket; *bucket = ib` |
 
-This list comes from a search of the sources. The guard's run on the fork is
-the check that it is complete (section 12).
+The list is complete: `goose/cmd/modelcheck -all` over bbolt's `.`,
+`internal/common` and `internal/freelist` reports exactly these six at
+v1.5.0, and nothing on the fork.
 
 bbolt's `go.mod` requires Go 1.25, which has both builtins. `bboltmini` is
 written in these forms, and its probes keep the originals stuck or rejected.

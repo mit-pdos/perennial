@@ -9,14 +9,17 @@ package main
 import (
 	"flag"
 	"fmt"
+	"go/ast"
 	"os"
 	"strings"
 
 	"github.com/pkg/errors"
+	"golang.org/x/tools/go/packages"
 
 	"github.com/mit-pdos/perennial/goose"
 	"github.com/mit-pdos/perennial/goose/glang"
 	"github.com/mit-pdos/perennial/goose/modelcheck"
+	"github.com/mit-pdos/perennial/goose/util"
 )
 
 func main() {
@@ -29,7 +32,15 @@ func main() {
 	var configDir string
 	flag.StringVar(&configDir, "configdir", ".", "directory containing Goose config files")
 	flag.Var(glang.LeanRootFlag{}, "lean-root", glang.LeanRootUsage)
+	var all bool
+	flag.BoolVar(&all, "all", false,
+		"check every statement of every function body, translated or not, without running goose "+
+			"(for code goose cannot translate yet; goose stops at the first error in a declaration)")
 	flag.Parse()
+
+	if all {
+		os.Exit(checkAll(modDir, flag.Args()))
+	}
 
 	_, errs, patternErr := goose.TranslatePackages(configDir, modDir, flag.Args()...)
 	if patternErr != nil {
@@ -53,6 +64,45 @@ func main() {
 		}
 	}
 	os.Exit(status)
+}
+
+// checkAll checks every assignment and range statement in the packages, and
+// returns the exit status.
+func checkAll(modDir string, patterns []string) int {
+	pkgs, err := packages.Load(util.NewPackageConfig(modDir, false), patterns...)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 2
+	}
+	status := 0
+	for _, pkg := range pkgs {
+		if len(pkg.Errors) > 0 {
+			for _, e := range pkg.Errors {
+				fmt.Fprintln(os.Stderr, e)
+			}
+			status = 2
+			continue
+		}
+		for _, f := range pkg.Syntax {
+			ast.Inspect(f, func(n ast.Node) bool {
+				var at ast.Node
+				var msg string
+				var bad bool
+				switch s := n.(type) {
+				case *ast.AssignStmt:
+					at, msg, bad = modelcheck.Assign(pkg.TypesInfo, s)
+				case *ast.RangeStmt:
+					at, msg, bad = modelcheck.Range(pkg.TypesInfo, s)
+				}
+				if bad {
+					fmt.Printf("%v: %s\n", pkg.Fset.Position(at.Pos()), msg)
+					status = max(status, 1)
+				}
+				return true
+			})
+		}
+	}
+	return status
 }
 
 // flatten returns the individual errors of a package's translation error.
