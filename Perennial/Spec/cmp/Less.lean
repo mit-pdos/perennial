@@ -20,12 +20,17 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : cmp.Assumptions]
 
-/-- `Less` on `uint64` is `<` on the unsigned values. -/
+/-- `Less` at `uint64` is `<` on the unsigned values; at `string`, Go's order on strings
+(`go.GoStringLt`, lexicographic on the bytes). -/
 abbrev cmp.Less.spec : Prop :=
-  ∀ (x y : w64),
+  (∀ (x y : w64),
     {{ (True : IProp GF) }}
       (App (App (Val #(functions Less [go.uint64])) (Val #x)) (Val #y))
-    {{ (b : Bool), RET #b; ⌜b = true ↔ uint.Z x < uint.Z y⌝ }}
+    {{ (b : Bool), RET #b; ⌜b = true ↔ uint.Z x < uint.Z y⌝ }}) ∧
+  (∀ (x y : GoString),
+    {{ (True : IProp GF) }}
+      (App (App (Val #(functions Less [go.string])) (Val #x)) (Val #y))
+    {{ (b : Bool), RET #b; ⌜b = true ↔ go.GoStringLt x y⌝ }})
 
 end spec
 

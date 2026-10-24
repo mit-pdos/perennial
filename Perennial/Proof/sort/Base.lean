@@ -7,6 +7,7 @@ public import Perennial.Proof.ProofPrelude
 public import Perennial.Code.sort
 public import Perennial.GeneratedProof.sort
 public import Perennial.Proof.math.bits.Base
+public import Perennial.Proof.slices.Base
 
 @[expose] public section
 

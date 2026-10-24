@@ -21,10 +21,15 @@ variable [sem : go.Semantics]
 variable [package_sem : cmp.Assumptions]
 
 theorem cmp.isNaN.wp_proof : cmp.isNaN.spec (GF := GF) (hG := hG) := by
-  intro x
-  wp_start
-  wp_auto
-  wp_end
+  constructor
+  · intro x
+    wp_start
+    wp_auto
+    wp_end
+  · intro x
+    wp_start
+    wp_auto
+    wp_end
 
 end proof
 
