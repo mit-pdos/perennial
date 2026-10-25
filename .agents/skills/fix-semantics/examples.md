@@ -388,3 +388,32 @@ new conversion rule for conversions between types that differ only in tags.
 **Why.** Case 7's shape: refuse rather than model, adding no trust. Part of the
 unsafe memory design's prerequisites (`docs/design/unsafe-memory-prerequisites.md`,
 P4); the user: "P4: Ok."
+
+## Case 13 — ACCEPTED: float `==` is IEEE equality, and float→integer conversions are arbitrary (branch `fix-floats`, not yet on `lean`)
+
+**Symptom.** Unsound, and incomplete.
+- `==` on `float64`/`float32` compared the bits (`IsStrictlyComparable … w64`), so the
+  model had `NaN == NaN` and `-0 != +0`; `<` and `>` were `Leb && bits differ`, so the
+  model got `-0 < +0` wrong as well. Struct, array and interface `==` inherit the
+  element's `==`.
+- A conversion from a float to an integer type had no rule (stuck).
+
+**Witness.** `z := 0.0; n := z / z; return n != n` is true in Go and false in the
+model.
+
+**Taken.**
+- Two uninterpreted functions in `FloatOps`, `float64Eq` and `float32Eq`: `==` is
+  `floatNEq`, `<` is `floatNLeb && !floatNEq`, and `>` likewise (2 fields, 6 rules
+  edited).
+- A predicate `IsInteger` on the integer types (11 constructors), and one rule per float
+  type: `T(x)`, for an integer type `T`, is `Convert go.uint64 T ArbitraryInt`, which
+  can be any value of `T`. The Go spec leaves an out-of-range conversion to the
+  implementation; the user chose "arbitraryint always, as it's simpler and sound" over
+  an in-range truncation.
+
+No goose change; no proof used the old float `==`.
+
+**Not taken.** A float representation of its own (`F64`/`F32`); the user: floats stay
+`w64`, "the way int and uint have different ops".
+
+**Why.** P8a and P8d of `docs/design/unsafe-memory-prerequisites.md`.
