@@ -30,6 +30,8 @@ Axiom FileDiskⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, 
 
 Axiom MemDiskⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
+Definition BlockSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := BlockSize.
+
 Definition implicitDisk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive/disk.implicitDisk"%go.
 
 Definition Init {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive/disk.Init"%go.

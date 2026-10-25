@@ -1,0 +1,2 @@
+translate = ["!*"]
+imports = ["!*", "google.golang.org/genproto/googleapis/rpc/status"]

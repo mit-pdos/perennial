@@ -2364,6 +2364,14 @@ func (ctx *Ctx) constSpec(spec *ast.ValueSpec) {
 			continue
 		}
 		switch ctx.filter.GetAction(spec.Names[i].Name) {
+		case declfilter.Trust:
+			// Expose the imported trusted constant under the generated package's
+			// namespace too. The RHS resolves before this definition is bound.
+			ctx.out.constDecls = append(ctx.out.constDecls, glang.ConstDecl{
+				Name: spec.Names[i].Name,
+				Val:  glang.GallinaIdent(spec.Names[i].Name),
+				Type: glang.VerbatimExpr("val"),
+			})
 		case declfilter.Axiomatize:
 			ctx.out.constDecls = append(ctx.out.constDecls, glang.AxiomDecl{DeclName: spec.Names[i].Name,
 				Type: glang.VerbatimExpr("val"),

@@ -52,6 +52,7 @@ projs = [
             "go.etcd.io/etcd/api/v3/v3rpc/rpctypes",
             "google.golang.org/grpc/codes",
             "google.golang.org/grpc/status",
+            "google.golang.org/grpc/internal/status",
             "google.golang.org/genproto/googleapis/rpc/status",
             "go.uber.org/zap",
             "go.uber.org/zap/zapcore",
