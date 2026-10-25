@@ -18,8 +18,8 @@ Definition AddBothⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
   λ: "x",
     exception_do (let: "x" := (GoAlloc go.uint64 "x") in
     return: ((let: "$a0" := (![go.uint64] "x") in
-     (FuncResolve a_v1.Add [] #()) "$a0") +⟨go.uint64⟩ (let: "$a0" := (![go.uint64] "x") in
-     (FuncResolve b_v1.Add [] #()) "$a0"))).
+     (FuncResolve code.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.a.v1.v1.Add [] #()) "$a0") +⟨go.uint64⟩ (let: "$a0" := (![go.uint64] "x") in
+     (FuncResolve code.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.b.v1.v1.Add [] #()) "$a0"))).
 
 #[global] Instance info' : PkgInfo pkg_id.c :=
 {|
@@ -29,14 +29,14 @@ Definition AddBothⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.c (λ: <>,
-      exception_do (do:  (b_v1.initialize' #());;;
-      do:  (a_v1.initialize' #()))
+      exception_do (do:  (code.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.b.v1.v1.initialize' #());;;
+      do:  (code.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.a.v1.v1.initialize' #()))
       ).
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] AddBoth_unfold :: FuncUnfold AddBoth [] (AddBothⁱᵐᵖˡ);
-  #[global] import_a_v1_Assumption :: a_v1.Assumptions;
-  #[global] import_b_v1_Assumption :: b_v1.Assumptions;
+  #[global] import_a_v1_Assumption :: code.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.a.v1.v1.Assumptions;
+  #[global] import_b_v1_Assumption :: code.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.b.v1.v1.Assumptions;
 }.
 End c.
