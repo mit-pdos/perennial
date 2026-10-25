@@ -101,7 +101,7 @@ theorem wp_LittleEndian_PutUint32 (b : GoSlice) (space rem : List w8) (v : w32)
 /-- `(*bigEndian).Uint64` on the global `BigEndian`. -/
 theorem wp_BigEndian_Uint64 (b : GoSlice) (bs : List w8) (dq : DFrac) (rem : List w8)
     (Hlen : bs.length = 8) :
-    {{ (b ↦*{dq} (bs ++ rem) : IProp GF) }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ∗ b ↦*{dq} (bs ++ rem) }}
       (App (Val ((globalAddr BigEndian) @!! go.GoType.PointerType bigEndian.ty @!! go!"Uint64"))
         (Val #b))
     {{ RET #(leToU64 bs.reverse); b ↦*{dq} (bs ++ rem) }} :=
@@ -110,7 +110,7 @@ theorem wp_BigEndian_Uint64 (b : GoSlice) (bs : List w8) (dq : DFrac) (rem : Lis
 /-- `(*bigEndian).PutUint64` on the global `BigEndian`. -/
 theorem wp_BigEndian_PutUint64 (b : GoSlice) (space rem : List w8) (v : w64)
     (Hlen : space.length = 8) :
-    {{ (b ↦* (space ++ rem) : IProp GF) }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ∗ b ↦* (space ++ rem) }}
       (App (App (Val ((globalAddr BigEndian) @!! go.GoType.PointerType bigEndian.ty @!! go!"PutUint64"))
         (Val #b)) (Val #v))
     {{ RET #(); b ↦* ((u64Le v).reverse ++ rem) }} :=
@@ -119,7 +119,7 @@ theorem wp_BigEndian_PutUint64 (b : GoSlice) (space rem : List w8) (v : w64)
 /-- `(*bigEndian).Uint32` on the global `BigEndian`. -/
 theorem wp_BigEndian_Uint32 (b : GoSlice) (bs : List w8) (dq : DFrac) (rem : List w8)
     (Hlen : bs.length = 4) :
-    {{ (b ↦*{dq} (bs ++ rem) : IProp GF) }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ∗ b ↦*{dq} (bs ++ rem) }}
       (App (Val ((globalAddr BigEndian) @!! go.GoType.PointerType bigEndian.ty @!! go!"Uint32"))
         (Val #b))
     {{ RET #(leToU32 bs.reverse); b ↦*{dq} (bs ++ rem) }} :=
@@ -128,7 +128,7 @@ theorem wp_BigEndian_Uint32 (b : GoSlice) (bs : List w8) (dq : DFrac) (rem : Lis
 /-- `(*bigEndian).PutUint32` on the global `BigEndian`. -/
 theorem wp_BigEndian_PutUint32 (b : GoSlice) (space rem : List w8) (v : w32)
     (Hlen : space.length = 4) :
-    {{ (b ↦* (space ++ rem) : IProp GF) }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ∗ b ↦* (space ++ rem) }}
       (App (App (Val ((globalAddr BigEndian) @!! go.GoType.PointerType bigEndian.ty @!! go!"PutUint32"))
         (Val #b)) (Val #v))
     {{ RET #(); b ↦* ((u32Le v).reverse ++ rem) }} :=

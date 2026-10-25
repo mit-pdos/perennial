@@ -1,0 +1,20 @@
+# ParseUint and what it needs
+translate = [
+  "ParseUint", "underscoreOK", "Error", "Error.Error", "ErrRange", "ErrSyntax", "ErrBase",
+  "ErrBitSize", "intSize", "IntSize", "maxUint64",
+  # the package variables (tables of constants), so that the initializer is translated
+  "optimize", "powtab", "float64pow10", "float32pow10", "leftcheats", "float32info", "float64info",
+  "uint64pow10", "div5Tab",
+  # the constants the tables use
+  "float32MantBits", "float32ExpBits", "float32Bias", "float64MantBits", "float64ExpBits",
+  "float64Bias",
+]
+imports = ["!*"]
+# `pow10Tab`, a 696-entry table of 128-bit powers of ten read only by the float conversions,
+# which are not translated (TrustedCode/internal/strconv.lean)
+trusted = ["pow10Tab", "lower"]
+# `lower`: `c | ('x' - 'X')`, whose constant `'x' - 'X'` goose emits as an untyped subtraction
+# the semantics does not step (TrustedCode/internal/strconv.lean)
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

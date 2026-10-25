@@ -5,6 +5,7 @@ Order relations and list facts shared by the `pdqsort` proofs (of the `CmpFunc` 
 module
 
 public import Perennial.Proof.slices.Base
+public import Perennial.Golang.Theory.String
 
 @[expose] public section
 
@@ -54,6 +55,18 @@ theorem StrictWeakOrder_signed_lt :
   strict_weak_order_trans _ _ _ h1 h2 := by omega
   strict_weak_order_equiv :=
     ⟨fun _ => by omega, fun h => by omega, fun h1 h2 => by omega⟩
+
+/-- Go's order on strings is a strict weak order (it is a strict total order). -/
+theorem StrictWeakOrder_goStringLt : StrictWeakOrder go.GoStringLt where
+  strict_weak_order_irrefl := go.goStringLt_irrefl
+  strict_weak_order_trans _ _ _ h1 h2 := go.goStringLt_trans h1 h2
+  strict_weak_order_equiv :=
+    ⟨fun a => ⟨go.goStringLt_irrefl a, go.goStringLt_irrefl a⟩, fun h => ⟨h.2, h.1⟩,
+      fun h1 h2 => by
+        have e1 := go.goStringLt_eq_of_not_lt h1.1 h1.2
+        have e2 := go.goStringLt_eq_of_not_lt h2.1 h2.2
+        subst e1 e2
+        exact h1⟩
 
 theorem swap_perm {T : Type} (xs : List T) (i j : Nat) (xi xj : T)
     (hi : xs[i]? = some xi) (hj : xs[j]? = some xj) :

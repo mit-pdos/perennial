@@ -1284,9 +1284,9 @@ func (f File) Write(w io.Writer) {
 	fmt.Fprint(w, f.Footer)
 }
 
-// LeanFfiPrelude is the name of the prelude module of an FFI ("disk" has
-// DiskPrelude: Perennial.DiskPrelude for code, Perennial.Proof.DiskPrelude for
-// proofs).
+// LeanFfiPrelude is the name of the prelude module of an FFI ("grove" has
+// GrovePrelude: Perennial.GrovePrelude for code, Perennial.Proof.GrovePrelude
+// for proofs).
 func LeanFfiPrelude(ffi string) string {
 	return upperCamel(ffi + "_prelude")
 }

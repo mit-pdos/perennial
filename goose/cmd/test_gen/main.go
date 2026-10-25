@@ -17,16 +17,11 @@ package semantics
 import (
 	"testing"
 
-	"github.com/goose-lang/primitive/disk"
 	"github.com/stretchr/testify/suite"
 )
 
 type GoTestSuite struct {
 	suite.Suite
-}
-
-func (suite *GoTestSuite) SetupTest() {
-	disk.Init(disk.NewMemDisk(30))
 }
 
 `

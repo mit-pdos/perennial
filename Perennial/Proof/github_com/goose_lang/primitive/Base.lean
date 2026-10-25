@@ -4,7 +4,7 @@ the lemma about `RandomUint64.impl`, and the predicates `isMutex`/`ownMutex` of 
 
 The proofs live in the package namespace `github_com.goose_lang.primitive`,
 so that e.g. `primitive.wp_initialize'` and `sync.wp_initialize'` do not clash.
-The disk-only `primitive/disk` package is not covered here.
+`primitive/disk` is not translated: there is no disk FFI for now.
 
 This package lies below the channel theory (`Perennial.Golang.Theory.Chan.AuSpec.ChanInit`
 imports it), so none of its files may import `Perennial.Golang.Theory.Chan*`.

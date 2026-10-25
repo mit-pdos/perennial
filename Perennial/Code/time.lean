@@ -951,6 +951,34 @@ noncomputable def Time.stripMono.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))))
 
+/-- After reports whether the time instant t is after u.
+
+    go: time.go:271:15 -/
+noncomputable def Time.After.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV "t"
+  (Lam "u"
+  (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "t"))
+  (Let "u" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "u"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"sec"))) (Var "t")) (Val #()))
+  (Let "ts" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"sec"))) (Var "u")) (Val #()))
+  (Let "us" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoOp GoGt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "ts")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "us")))) (Val #true) (If (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "ts")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "us")))) (App (Val (GoInstruction (GoOp GoGt go.int32))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "t")) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "u")) (Val #())))) (Val #false))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "us") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "ts") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "u"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))))
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoOp GoGt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "u"))))))
+  (App (Val doExecute)
+  (Val #())))))))))
+
 /-- Before reports whether the time instant t is before u.
 
     go: time.go:281:15 -/
@@ -1540,6 +1568,8 @@ class Ticker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   set_C : ∀ (x : Ticker) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Ticker.underlying go!"C") (PairV #x #y) (Val #(({ x with C' := y } : Ticker)))
   get_initTicker : ∀ (x : Ticker), go.IsGoStepPureDetTagged under (StructFieldGet Ticker.underlying go!"initTicker") #x (Val #(x.initTicker'))
   set_initTicker : ∀ (x : Ticker) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Ticker.underlying go!"initTicker") (PairV #x #y) (Val #(({ x with initTicker' := y } : Ticker)))
+  ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Ticker.ty) go!"Reset" Ticker.Reset.impl
+  ptr_Stop_unfold : MethodUnfold (go.GoType.PointerType Ticker.ty) go!"Stop" Ticker.Stop.impl
 
 attribute [instance] Ticker.TypeAssumptions.type_repr
   Ticker.TypeAssumptions.underlying
@@ -1547,6 +1577,8 @@ attribute [instance] Ticker.TypeAssumptions.type_repr
   Ticker.TypeAssumptions.set_C
   Ticker.TypeAssumptions.get_initTicker
   Ticker.TypeAssumptions.set_initTicker
+  Ticker.TypeAssumptions.ptr_Reset_unfold
+  Ticker.TypeAssumptions.ptr_Stop_unfold
 
 structure Time [FfiSyntax] where
   mk ::
@@ -1582,12 +1614,15 @@ class Time.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
   get_loc : ∀ (x : Time), go.IsGoStepPureDetTagged under (StructFieldGet Time.underlying go!"loc") #x (Val #(x.loc'))
   set_loc : ∀ (x : Time) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Time.underlying go!"loc") (PairV #x #y) (Val #(({ x with loc' := y } : Time)))
   Add_unfold : MethodUnfold Time.ty go!"Add" Time.Add.impl
+  After_unfold : MethodUnfold Time.ty go!"After" Time.After.impl
   Before_unfold : MethodUnfold Time.ty go!"Before" Time.Before.impl
   Equal_unfold : MethodUnfold Time.ty go!"Equal" Time.Equal.impl
   Sub_unfold : MethodUnfold Time.ty go!"Sub" Time.Sub.impl
   UnixNano_unfold : MethodUnfold Time.ty go!"UnixNano" Time.UnixNano.impl
   ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"Add" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Time.ty go!"Add"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
+  ptr_After_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"After" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve Time.ty go!"After"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
   ptr_Before_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"Before" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Time.ty go!"Before"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
   ptr_Equal_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"Equal" (LamV "$r"
@@ -1611,11 +1646,13 @@ attribute [instance] Time.TypeAssumptions.type_repr
   Time.TypeAssumptions.get_loc
   Time.TypeAssumptions.set_loc
   Time.TypeAssumptions.Add_unfold
+  Time.TypeAssumptions.After_unfold
   Time.TypeAssumptions.Before_unfold
   Time.TypeAssumptions.Equal_unfold
   Time.TypeAssumptions.Sub_unfold
   Time.TypeAssumptions.UnixNano_unfold
   Time.TypeAssumptions.ptr_Add_unfold
+  Time.TypeAssumptions.ptr_After_unfold
   Time.TypeAssumptions.ptr_Before_unfold
   Time.TypeAssumptions.ptr_Equal_unfold
   Time.TypeAssumptions.ptr_Sub_unfold
@@ -2038,6 +2075,7 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   After_unfold : FuncUnfold After [] After.impl
   AfterFunc_unfold : FuncUnfold AfterFunc [] AfterFunc.impl
   goFunc_unfold : FuncUnfold goFunc [] goFunc.impl
+  NewTicker_unfold : FuncUnfold NewTicker [] NewTicker.impl
   subMono_unfold : FuncUnfold subMono [] subMono.impl
   Since_unfold : FuncUnfold Since [] Since.impl
   Until_unfold : FuncUnfold Until [] Until.impl
@@ -2075,6 +2113,7 @@ attribute [instance] Assumptions.ParseError_instance
   Assumptions.After_unfold
   Assumptions.AfterFunc_unfold
   Assumptions.goFunc_unfold
+  Assumptions.NewTicker_unfold
   Assumptions.subMono_unfold
   Assumptions.Since_unfold
   Assumptions.Until_unfold

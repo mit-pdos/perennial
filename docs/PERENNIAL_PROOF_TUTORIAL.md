@@ -126,6 +126,7 @@ import Perennial.Proof.sync
 
 ```lean
 section tutorial
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : unittest.Assumptions]
@@ -133,12 +134,11 @@ variable [sem : go.Semantics] [package_sem : unittest.Assumptions]
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 ```
 
-The unit-test package imports `github.com/goose-lang/primitive/disk`, so its
-FFI is fixed to the disk FFI (global instances from `Perennial.Proof.DiskPrelude`)
-and the section does not bind it. Other packages are generic in the FFI and also
-bind `[ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]`,
-as in `Perennial/Spec/sync/Mutex__Lock.lean`. Ghost state comes with `HeapGS`
-(section 10).
+The section is generic in the FFI: it binds
+`[ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]`,
+as in `Perennial/Spec/sync/Mutex__Lock.lean`. (A package that uses an FFI, such
+as grove, has it fixed by global instances from its prelude, and does not bind
+it.) Ghost state comes with `HeapGS` (section 10).
 
 ## 4. Writing a specification
 

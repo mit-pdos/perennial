@@ -4,8 +4,7 @@ The proof prelude for code that uses the Grove FFI
 
 `Perennial.GrovePrelude` makes `grove_op`/`grove_model` instances; here we add
 `grove_semantics` and `grove_interp`. (`gooseGroveGS` and `gooseGroveNodeGS` are
-`abbrev`s that the Grove specs use explicitly, as for the disk FFI in
-`Perennial.Proof.DiskPrelude`.)
+`abbrev`s that the Grove specs use explicitly.)
 -/
 module
 

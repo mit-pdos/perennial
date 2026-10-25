@@ -13,6 +13,7 @@ the user-provided `f` is "adapted" (`adaptPred`) so that `f (-1) = false` and
 module
 
 public import Perennial.Proof.sort.FindBasics
+public import Perennial.Golang.Theory.String
 
 @[expose] public section
 
@@ -112,6 +113,43 @@ theorem searchF_true (x : w64) (xs : List w64) (i : Int) (x_i : w64)
 theorem searchF_false (x : w64) (xs : List w64) (i : Int) (x_i : w64)
     (h : xs[i.toNat]? = some x_i) : searchF x xs i = false ↔ sint.Z x_i < sint.Z x := by
   unfold searchF; rw [h]; simp
+
+/-- The predicate `SearchStrings` searches with: whether the `i`th string is at least `x`. -/
+def searchStringsF (x : GoString) (xs : List GoString) : Int → Bool :=
+  fun i => match xs[i.toNat]? with
+    | some x0 => decide (go.GoStringLe x x0)
+    | none => true -- arbitrary, unreachable
+
+theorem searchStringsF_true (x : GoString) (xs : List GoString) (i : Int) (x_i : GoString)
+    (h : xs[i.toNat]? = some x_i) : searchStringsF x xs i = true ↔ go.GoStringLe x x_i := by
+  unfold searchStringsF; rw [h]; simp
+
+theorem searchStringsF_false (x : GoString) (xs : List GoString) (i : Int) (x_i : GoString)
+    (h : xs[i.toNat]? = some x_i) : searchStringsF x xs i = false ↔ go.GoStringLt x_i x := by
+  unfold searchStringsF; rw [h]
+  simp only [decide_eq_false_iff_not]
+  unfold go.GoStringLe
+  constructor
+  · intro hn
+    apply Classical.byContradiction
+    intro hlt
+    apply hn
+    by_cases h2 : go.GoStringLt x x_i
+    · exact Or.inr h2
+    · exact Or.inl (go.goStringLt_eq_of_not_lt h2 hlt)
+  · intro hlt hle
+    rcases hle with heq | hlt'
+    · subst heq; exact go.goStringLt_irrefl _ hlt
+    · exact go.goStringLt_asymm hlt hlt'
+
+/-- `GoStringLe` is transitive. -/
+theorem goStringLe_trans {a b c : GoString} (h1 : go.GoStringLe a b) (h2 : go.GoStringLe b c) :
+    go.GoStringLe a c := by
+  rcases h1 with rfl | h1
+  · exact h2
+  · rcases h2 with rfl | h2
+    · exact Or.inr h1
+    · exact Or.inr (go.goStringLt_trans h1 h2)
 
 end defs
 

@@ -29,7 +29,7 @@ def create_proj(name=None, repo=None, pkgs=None):
 projs = [
     create_proj(repo="goose-lang/std"),
     create_proj(repo="tchajed/marshal"),
-    create_proj(repo="goose-lang/primitive", pkgs=[".", "./disk"]),
+    create_proj(repo="goose-lang/primitive", pkgs=["."]),
     create_proj(repo="mit-pdos/go-liveness"),
 ]
 
@@ -243,7 +243,6 @@ def main():
     if args.goose_examples:
         run_goose(
             path.join(goose_dir, "testdata/examples"),
-            "./append_log",
             "./semantics",
             "./unittest/...",
             "./channel/...",
@@ -275,6 +274,8 @@ def main():
             "slices",
             "reflect",
             "strconv",
+            "internal/strconv",
+            "internal/stringslite",
             "strings",
             "sync",
             "sync/atomic",

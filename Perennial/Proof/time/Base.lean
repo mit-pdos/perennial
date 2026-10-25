@@ -15,6 +15,9 @@ Notes on the package's specs:
 * `AfterFunc` is translated; the runtime's `newTimer` (a fresh `*Timer` and a goroutine that
   calls the callback) is modeled in `TrustedCode/time.lean`. `Stop` of its timers is (a case
   of) the axiom `Timer.Stop.wp_proof`.
+* `NewTicker`, `Ticker.Stop` and `Ticker.Reset` are modeled in `TrustedCode/time.lean` (Go
+  reinterprets the runtime's `*Timer` as a `*Ticker` through `unsafe.Pointer`); their specs are
+  proved over the model (`isTicker`). `Time.After` is translated and proved.
 * `wp_After`, the timer specs, `wp_when` and `wp_AfterFunc` are stated with the channel
   theory's instances, which fix `hlc := HasLC.hasLC` (sections `chan_*`).
   `Pos.Countable time.Time.t` (for the channel ghost state) is defined here.
@@ -138,6 +141,24 @@ def isFuncTimer (t : Loc) : IProp GF :=
 
 instance isFuncTimer_persistent (t : Loc) : Persistent (isFuncTimer (GF := GF) t) := by
   unfold isFuncTimer; infer_instance
+
+/-! ### Tickers
+
+`NewTicker`, `Ticker.Stop` and `Ticker.Reset` are modeled in `TrustedCode/time.lean` (Go
+reinterprets the runtime's `*Timer` as a `*Ticker` through `unsafe.Pointer`): a fresh `*Ticker`
+with `initTicker` set, and a goroutine that sends arbitrary times on its channel. Like a timer's,
+a ticker's channel may yield some time at a receive (a bag of times with no logical content), or
+nothing; `Stop` and `Reset` change nothing the proof can observe. -/
+
+/-- `t` is a `*Ticker` made by `NewTicker`, whose channel `C` is `ch` (persistent). -/
+def isTicker (t : Loc) (ch : Loc) (γ : ChanNames) : IProp GF :=
+  iprop(structFieldRef time.Ticker go!"C" t ↦□ ch ∗
+    structFieldRef time.Ticker go!"initTicker" t ↦□ true ∗
+    isChanBag γ ch (V := time.Time) (fun _ => iprop(True)))
+
+instance isTicker_persistent (t ch : Loc) (γ : ChanNames) :
+    Persistent (isTicker (GF := GF) t ch γ) := by
+  unfold isTicker; infer_instance
 
 end chan_defs
 

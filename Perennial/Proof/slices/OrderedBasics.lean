@@ -11,6 +11,7 @@ module
 
 public import Perennial.Proof.slices.SortBasics
 public import Perennial.Proof.cmp.Base
+public import Perennial.Spec.cmp.Less
 
 @[expose] public section
 
@@ -45,6 +46,28 @@ instance lessImplements_persistent : Persistent (lessImplements (GF := GF) (Et :
   unfold lessImplements; infer_instance
 
 end proof
+
+section string
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem : cmp.Assumptions]
+
+open Iris.ProofMode in
+/-- At `string`, `cmp.Less` implements Go's order on strings (from `cmp.Less`'s spec). -/
+theorem lessImplements_string_of (wp_Less : cmp.Less.spec (GF := GF) (hG := hG)) :
+    ⊢ lessImplements (GF := GF) (Et := go.string) go.GoStringLt := by
+  unfold lessImplements
+  iintro %x %y
+  imodintro
+  iintro %Φ _ HΦ
+  wp_apply wp_Less.2 x y with %b %Hb
+  iapply HΦ
+  ipureintro
+  exact Hb
+
+end string
 
 end slices
 

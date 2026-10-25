@@ -341,3 +341,106 @@ Cost: 1 instruction, 1 helper plus two one-line yield adapters, 6 iterators,
 (goose refuses labeled statements). Proof rules for pointer-to-array and
 non-`int` integer ranges and for range-over-func are not written yet (no proof
 needs them).
+
+## Case 11 — ACCEPTED: `[]byte("")` is not nil (branch `fix-empty-string-bytes`, not yet on `lean`)
+
+**Symptom.** Unsound. The Go model of the conversion,
+`goose/model/strings/convert.go`'s `StringToByteSlice`, appended onto a nil
+slice, so for `""` it returned nil; in Go, `[]byte("") != nil`.
+
+**Witness.** `s := ""; return []byte(s) != nil` is true in Go and false in the
+model.
+
+**Taken.** One line of the Go model: `a = make([]byte, 0)` before the loop. A
+capacity-0 `make` allocates nothing and returns a non-nil pointer, and keeps
+`append`'s capacity nondeterministic for longer strings (gc gives 3 or 8 for
+`"abc"`). No goose change, no semantics rule; the regenerated translation, one
+step in `StringToByteSlice`'s proof, and a semantics test
+(`testStringToBytesEmptyNonNil`).
+
+**Not taken.** `make([]byte, 0, len(s))`, which fixes the capacity at `len(s)`
+and so is more defined than gc.
+
+**Why.** The smallest change, in the model rather than the rules (Case 7's
+shape). Part of the plans for the unsafe memory design
+(`docs/design/unsafe-memory-prerequisites.md`, P6), which the user signed off
+("P6: ok").
+
+## Case 12 — ACCEPTED: struct tags on unnamed struct types are refused (branch `refuse-anon-struct-tags`, not yet on `lean`)
+
+**Symptom.** Unsound. goose drops struct tags, so two unnamed struct types that
+differ only in tags were one type in the model; in Go they are different types
+(type identity includes tags), so `any(x) == any(y)`, a type assertion or a type
+switch tells them apart.
+
+**Witness.** `any(struct{A int "json:\"a\""}{}) == any(struct{A int "json:\"b\""}{})`
+is false in Go and true in the model.
+
+**Taken.** goose refuses a tag on a struct type that is not a defined type
+(`glangType`'s `*types.Struct` case; a defined type is compared by name, and
+its tags do not matter): 1 goose branch, 1 negative test (`struct_tag_anon`),
+no semantics rule. Nothing translated today is refused.
+
+**Not taken.** Modelling tags: a third `FieldDecl` argument (7 match sites in
+`PostLang.lean`, 37 in Theory), regenerating every tagged defined type, and a
+new conversion rule for conversions between types that differ only in tags.
+
+**Why.** Case 7's shape: refuse rather than model, adding no trust. Part of the
+unsafe memory design's prerequisites (`docs/design/unsafe-memory-prerequisites.md`,
+P4); the user: "P4: Ok."
+
+## Case 13 — ACCEPTED: float `==` is IEEE equality, and float→integer conversions are arbitrary (branch `fix-floats`, not yet on `lean`)
+
+**Symptom.** Unsound, and incomplete.
+- `==` on `float64`/`float32` compared the bits (`IsStrictlyComparable … w64`), so the
+  model had `NaN == NaN` and `-0 != +0`; `<` and `>` were `Leb && bits differ`, so the
+  model got `-0 < +0` wrong as well. Struct, array and interface `==` inherit the
+  element's `==`.
+- A conversion from a float to an integer type had no rule (stuck).
+
+**Witness.** `z := 0.0; n := z / z; return n != n` is true in Go and false in the
+model.
+
+**Taken.**
+- Two uninterpreted functions in `FloatOps`, `float64Eq` and `float32Eq`: `==` is
+  `floatNEq`, `<` is `floatNLeb && !floatNEq`, and `>` likewise (2 fields, 6 rules
+  edited).
+- A predicate `IsInteger` on the integer types (11 constructors), and one rule per float
+  type: `T(x)`, for an integer type `T`, is `Convert go.uint64 T ArbitraryInt`, which
+  can be any value of `T`. The Go spec leaves an out-of-range conversion to the
+  implementation; the user chose "arbitraryint always, as it's simpler and sound" over
+  an in-range truncation.
+
+No goose change; no proof used the old float `==`.
+
+**Not taken.** A float representation of its own (`F64`/`F32`); the user: floats stay
+`w64`, "the way int and uint have different ops".
+
+**Why.** P8a and P8d of `docs/design/unsafe-memory-prerequisites.md`.
+
+## Case 16 — ACCEPTED: a struct or array load or store through `nil` panics (branch `fix-nil-zero-size-access`, not yet on `lean`)
+
+**Symptom.** Unsound. `load_struct`/`store_struct` with no fields and
+`load_array`/`store_array` with length 0 reduced to the zero value or `#()` at
+`null`, while Go panics on `*p` and `*p = v` for a nil `p` of any type, zero-size
+included.
+
+**Witness.** `var p *struct{}; _ = *p` panics in Go ("invalid memory address or nil
+pointer dereference") and is defined in the model.
+
+**Taken.** The four rules wrap their result in
+`if l = #null then Panic "nil pointer dereference" else …` (outside the arrays'
+bounds test). The guard cannot sit once in `load_underlying`/`store_underlying`: two
+tagged rules for one instruction must agree (`isGoStep_pure_det`). The primitive
+`Read`/`Store` rules are already stuck at `null`. Proofs: every typed points-to
+carries `l ≠ null`, which discharges the guard, so only the generic struct/array
+load and store lemmas (`Theory/Auto.lean`, `Theory/Array.lean`) gain a step; and
+`encoding/binary` keeps `BigEndian`'s points-to in its init state, so the four
+`BigEndian` specs take `isPkgInit encoding.binary`, as the `LittleEndian` ones
+already did.
+
+**Not taken.** A guard in `load_underlying` (proves `False`, see above).
+
+**Why.** P3 of `docs/design/unsafe-memory-prerequisites.md`; the user: "P3: This
+shouldn't change any proofs that do loading/storing with points-tos, right? ... If
+so, this is ok."

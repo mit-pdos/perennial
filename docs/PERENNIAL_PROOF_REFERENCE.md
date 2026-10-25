@@ -16,7 +16,7 @@ authoritative.
 ## 0. Layout of the program proofs
 
 The proofs of Go packages (everything under `Perennial/Proof/` but the framework
-files `ProofPrelude`, `DiskPrelude`, `GrovePrelude`, `TokSet`) follow one
+files `ProofPrelude`, `GrovePrelude`, `TokSet`) follow one
 discipline, so that every Go function has exactly one specification, at a
 predictable place, and every proof sees only the *specifications* of what it
 calls. For a Go package with directory `P` (its path as under `Perennial/Code/`:

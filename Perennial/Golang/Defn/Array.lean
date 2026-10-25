@@ -35,7 +35,8 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
 
   load_array (n : Int) (elem_type : go.GoType) (l : val) :
     ⟦GoLoad (go.ArrayType n elem_type), l⟧ ⤳[internalUnder]
-    (if ¬(0 ≤ n ∧ n < 2^63-1) then
+    (if l = #null then Panic "nil pointer dereference" else
+    if ¬(0 ≤ n ∧ n < 2^63-1) then
       gl(AngelicExit #())
     else
       gl((rec: "recur" "n" :=
@@ -52,7 +53,8 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   `load_array`. -/
   store_array (n : Int) (elem_type : go.GoType) (l : val) {V : Type} (v : GoArray V n) :
     ⟦GoStore (go.ArrayType n elem_type), (l, #v)⟧ ⤳[internalUnder]
-    (if ¬(0 ≤ n ∧ n < 2^63-1 ∧ (v.arr.length : Int) = n) then
+    (if l = #null then Panic "nil pointer dereference" else
+    if ¬(0 ≤ n ∧ n < 2^63-1 ∧ (v.arr.length : Int) = n) then
       gl(AngelicExit #())
     else
     List.foldl (fun str_so_far j =>
@@ -128,18 +130,13 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
            (high - low) (max - low))
      else Panic "slice bounds out of range")
 
-  /-- This requires that arrayIndexRef does not ever end up becoming null due
-  to a negative Z offset. Instead, negative offsets should be thought of as
-  clamped to 0. -/
+  /-- A model: `arrayIndexRef t i l` is `l` when `l` is in block 0, and
+  `l +ₗ i·size(t)` otherwise. -/
   arrayIndexRef_null_inv (t : Type) (i : Int) (l : Loc) :
     arrayIndexRef t i l = null → l = null
 
   arrayIndexRef_add (t : Type) (i j : Int) (l : Loc) :
     arrayIndexRef t (i + j) l = arrayIndexRef t j (arrayIndexRef t i l)
-
-  /-- For disk FFI proof. -/
-  arrayIndexRef_add_loc_add (i : Int) (l : Loc) :
-    arrayIndexRef w8 i l = l +ₗ i
 
   intoVal_inj_array (V : Type) (n : Int) [inj_V : go.IntoValInj V] :
     go.IntoValInj (GoArray V n)
@@ -155,7 +152,7 @@ export ArraySemantics (array_set_step array_length_step equals_array type_repr_a
   load_array store_array index_ref_array index_array len_array cap_array composite_literal_array
   slice_array_step
   fullSlice_array_step_pure arrayIndexRef_null_inv arrayIndexRef_add
-  arrayIndexRef_add_loc_add intoVal_inj_array)
+  intoVal_inj_array)
 
 end defs
 end go

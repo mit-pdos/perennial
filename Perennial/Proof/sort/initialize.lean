@@ -5,6 +5,7 @@ module
 
 public import Perennial.Spec.sort.initialize
 public import Perennial.Spec.math.bits.initialize
+public import Perennial.Spec.slices.initialize
 public import Perennial.Proof.sort.Base
 
 @[expose] public section
@@ -23,7 +24,8 @@ variable [sem : go.Semantics]
 variable [package_sem : sort.Assumptions]
 
 theorem sort.initialize'.wp_proof
-    (wp_bits_initialize : math.bits.initialize'.spec (GF := GF) (hG := hG)) :
+    (wp_bits_initialize : math.bits.initialize'.spec (GF := GF) (hG := hG))
+    (wp_slices_initialize : slices.initialize'.spec (GF := GF) (hG := hG)) :
     sort.initialize'.spec (GF := GF) (hG := hG) := by
   intro get_is_pkg_init Hinit
   wp_start as Hown
@@ -31,6 +33,7 @@ theorem sort.initialize'.wp_proof
   iframe Hown
   iintro Hown
   wp_auto
+  wp_apply wp_slices_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hslices⟩
   wp_apply wp_bits_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Hbits⟩
   iframe Hown
   is_pkg_init_finish

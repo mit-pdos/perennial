@@ -4,16 +4,11 @@ package semantics
 import (
 	"testing"
 
-	"github.com/goose-lang/primitive/disk"
 	"github.com/stretchr/testify/suite"
 )
 
 type GoTestSuite struct {
 	suite.Suite
-}
-
-func (suite *GoTestSuite) SetupTest() {
-	disk.Init(disk.NewMemDisk(30))
 }
 
 func (suite *GoTestSuite) TestAllocateDistinct() {
@@ -126,6 +121,10 @@ func (suite *GoTestSuite) TestBreakSelect() {
 
 func (suite *GoTestSuite) TestEmptyBlock() {
 	suite.Equal(true, testEmptyBlock())
+}
+
+func (suite *GoTestSuite) TestStringToBytesEmptyNonNil() {
+	suite.Equal(true, testStringToBytesEmptyNonNil())
 }
 
 func (suite *GoTestSuite) TestByteSliceToString() {
