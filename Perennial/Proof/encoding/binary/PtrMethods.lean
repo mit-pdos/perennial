@@ -48,7 +48,8 @@ theorem wp_LittleEndian_Uint64_of
   wp_start as Hb
   ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg_id.encoding.binary $$ []
   · iPkgInit
-  ihave #Hle := isPkgInit_access (PROP := IProp GF) pkg_id.encoding.binary $$ Hpkg
+  ihave #Hinit := isInit_access $$ Hpkg
+  icases Hinit with ⟨#Hle, -⟩
   wp_auto
   wp_apply wp_littleEndian_Uint64 _ b bs rem dq Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
@@ -66,7 +67,8 @@ theorem wp_LittleEndian_PutUint64_of
   wp_start as Hb
   ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg_id.encoding.binary $$ []
   · iPkgInit
-  ihave #Hle := isPkgInit_access (PROP := IProp GF) pkg_id.encoding.binary $$ Hpkg
+  ihave #Hinit := isInit_access $$ Hpkg
+  icases Hinit with ⟨#Hle, -⟩
   wp_auto
   wp_apply wp_littleEndian_PutUint64 _ b space rem v Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
@@ -84,7 +86,8 @@ theorem wp_LittleEndian_Uint32_of
   wp_start as Hb
   ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg_id.encoding.binary $$ []
   · iPkgInit
-  ihave #Hle := isPkgInit_access (PROP := IProp GF) pkg_id.encoding.binary $$ Hpkg
+  ihave #Hinit := isInit_access $$ Hpkg
+  icases Hinit with ⟨#Hle, -⟩
   wp_auto
   wp_apply wp_littleEndian_Uint32 _ b bs rem dq Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
@@ -102,7 +105,8 @@ theorem wp_LittleEndian_PutUint32_of
   wp_start as Hb
   ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg_id.encoding.binary $$ []
   · iPkgInit
-  ihave #Hle := isPkgInit_access (PROP := IProp GF) pkg_id.encoding.binary $$ Hpkg
+  ihave #Hinit := isInit_access $$ Hpkg
+  icases Hinit with ⟨#Hle, -⟩
   wp_auto
   wp_apply wp_littleEndian_PutUint32 _ b space rem v Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
@@ -113,12 +117,17 @@ theorem wp_BigEndian_Uint64_of
     (wp_bigEndian_Uint64 : bigEndian.Uint64.spec (GF := GF) (hG := hG))
     (b : GoSlice) (bs : List w8) (dq : DFrac) (rem : List w8)
     (Hlen : bs.length = 8) :
-    {{ (b ↦*{dq} (bs ++ rem) : IProp GF) }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ∗ b ↦*{dq} (bs ++ rem) }}
       (App (Val ((globalAddr BigEndian) @!! go.GoType.PointerType bigEndian.ty @!! go!"Uint64"))
         (Val #b))
     {{ RET #(leToU64 bs.reverse); b ↦*{dq} (bs ++ rem) }} := by
   wp_start as Hb
-  wp_apply (wp_load_struct_nofields (V := bigEndian)) as -
+  ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg_id.encoding.binary $$ []
+  · iPkgInit
+  ihave #Hinit := isInit_access $$ Hpkg
+  icases Hinit with ⟨-, #Hbe⟩
+  ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hbe
+  wp_apply (wp_load_struct_nofields (V := bigEndian) _ Hnn) as -
   wp_apply wp_bigEndian_Uint64 _ b bs rem dq Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
 
@@ -128,12 +137,17 @@ theorem wp_BigEndian_PutUint64_of
     (wp_bigEndian_PutUint64 : bigEndian.PutUint64.spec (GF := GF) (hG := hG))
     (b : GoSlice) (space rem : List w8) (v : w64)
     (Hlen : space.length = 8) :
-    {{ (b ↦* (space ++ rem) : IProp GF) }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ∗ b ↦* (space ++ rem) }}
       (App (App (Val ((globalAddr BigEndian) @!! go.GoType.PointerType bigEndian.ty @!! go!"PutUint64"))
         (Val #b)) (Val #v))
     {{ RET #(); b ↦* ((u64Le v).reverse ++ rem) }} := by
   wp_start as Hb
-  wp_apply (wp_load_struct_nofields (V := bigEndian)) as -
+  ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg_id.encoding.binary $$ []
+  · iPkgInit
+  ihave #Hinit := isInit_access $$ Hpkg
+  icases Hinit with ⟨-, #Hbe⟩
+  ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hbe
+  wp_apply (wp_load_struct_nofields (V := bigEndian) _ Hnn) as -
   wp_apply wp_bigEndian_PutUint64 _ b space rem v Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
 
@@ -143,12 +157,17 @@ theorem wp_BigEndian_Uint32_of
     (wp_bigEndian_Uint32 : bigEndian.Uint32.spec (GF := GF) (hG := hG))
     (b : GoSlice) (bs : List w8) (dq : DFrac) (rem : List w8)
     (Hlen : bs.length = 4) :
-    {{ (b ↦*{dq} (bs ++ rem) : IProp GF) }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ∗ b ↦*{dq} (bs ++ rem) }}
       (App (Val ((globalAddr BigEndian) @!! go.GoType.PointerType bigEndian.ty @!! go!"Uint32"))
         (Val #b))
     {{ RET #(leToU32 bs.reverse); b ↦*{dq} (bs ++ rem) }} := by
   wp_start as Hb
-  wp_apply (wp_load_struct_nofields (V := bigEndian)) as -
+  ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg_id.encoding.binary $$ []
+  · iPkgInit
+  ihave #Hinit := isInit_access $$ Hpkg
+  icases Hinit with ⟨-, #Hbe⟩
+  ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hbe
+  wp_apply (wp_load_struct_nofields (V := bigEndian) _ Hnn) as -
   wp_apply wp_bigEndian_Uint32 _ b bs rem dq Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
 
@@ -158,12 +177,17 @@ theorem wp_BigEndian_PutUint32_of
     (wp_bigEndian_PutUint32 : bigEndian.PutUint32.spec (GF := GF) (hG := hG))
     (b : GoSlice) (space rem : List w8) (v : w32)
     (Hlen : space.length = 4) :
-    {{ (b ↦* (space ++ rem) : IProp GF) }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ∗ b ↦* (space ++ rem) }}
       (App (App (Val ((globalAddr BigEndian) @!! go.GoType.PointerType bigEndian.ty @!! go!"PutUint32"))
         (Val #b)) (Val #v))
     {{ RET #(); b ↦* ((u32Le v).reverse ++ rem) }} := by
   wp_start as Hb
-  wp_apply (wp_load_struct_nofields (V := bigEndian)) as -
+  ihave #Hpkg : isPkgInit (PROP := IProp GF) pkg_id.encoding.binary $$ []
+  · iPkgInit
+  ihave #Hinit := isInit_access $$ Hpkg
+  icases Hinit with ⟨-, #Hbe⟩
+  ihave %Hnn := typedPointsto_not_null _ _ _ $$ Hbe
+  wp_apply (wp_load_struct_nofields (V := bigEndian) _ Hnn) as -
   wp_apply wp_bigEndian_PutUint32 _ b space rem v Hlen $$ [$Hb] as Hb
   iapply HΦ $$ Hb
 

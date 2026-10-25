@@ -304,8 +304,8 @@ The owner's answer on R1 ("don't think in terms of blocks"); the design is in
 `unsafe-memory.md`, section 2 and R1.
 - **Change.**
   - `Loc` becomes an integer address, with `null = 0`.
-  - Allocation takes a free range of the type's size, at an address that is
-    a multiple of its alignment and at least 2^16.
+  - Allocation takes a free range of the type's size, at a positive address
+    that is a multiple of its alignment.
   - The layout table gives every type gc's size, alignment and field
     offsets, and `structFieldRef` and `arrayIndexRef` become concrete.
   - A struct or array is one allocation: `GoPrealloc` and `alloc_struct`'s

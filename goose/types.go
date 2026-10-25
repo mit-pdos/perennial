@@ -244,6 +244,11 @@ func (ctx *Ctx) interfaceType(n locatable, t *types.Interface) glang.Expr {
 func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 	switch t := t.(type) {
 	case *types.Struct:
+		for i := range t.NumFields() {
+			if t.Tag(i) != "" {
+				ctx.unsupported(n, "struct tag on a struct type that is not a defined type")
+			}
+		}
 		return ctx.structType(t)
 	case *types.TypeParam:
 		return glang.TermIdent(t.Obj().Name())
