@@ -13,20 +13,16 @@ The order at the end respects their dependencies.
 
 ## Decisions (2026-10-25)
 
-1. **P1.** Replace `arrayIndexRef_null_inv` with `arrayIndexRef_locCar` (an element's
-   address keeps its block). Open: the project owner asked why the axiom is needed at
-   all; the answer follows.
-   - Every typed points-to carries `l ≠ null` (`typedPointstoWrap`,
-     `Theory/PostLifting.lean`).
-   - Splitting an array points-to at element `k` (`Theory/Array.lean:181`) needs that
-     fact for `arrayIndexRef k l`. When the suffix is empty there is no cell to derive
-     it from, so it must come from an axiom about the abstract `arrayIndexRef`.
-   - `Theory/Slice.lean:464` needs the same fact to show that a sub-slice at an
-     element address is not nil.
-   - The design's form, `… = null → l.locCar = 0`, gives one step but not the next (a
-     suffix of a suffix). Preserving `locCar` gives all of them.
-   - For plain types, R1 makes `arrayIndexRef` concrete, and the fact becomes a
-     theorem there.
+1. **P1 is resolved by removing the disk FFI** (owner's decision, 2026-10-25; branch
+   `remove-disk-ffi`). The contradiction needed the disk FFI's axiom
+   `arrayIndexRef_add_loc_add` (`arrayIndexRef w8 i l = l +ₗ i` for every `l`), which
+   sends the non-null `⟨0, -1⟩` to `null`. Without it, `arrayIndexRef_null_inv`,
+   `arrayIndexRef_add` and `arrayIndexRef_0` have a model: `arrayIndexRef t i l` is `l`
+   in block 0 and `l +ₗ i·size(t)` otherwise. So the axiom stays, with no proof
+   change. The `arrayIndexRef_locCar` plan below is not taken. The axiom is needed
+   because every typed points-to carries `l ≠ null`, and splitting an array points-to
+   at an element (`Theory/Array.lean:181`, `Theory/Slice.lean:464`) needs that fact for
+   the element's address even when the suffix has no cells.
 2. **P2 is deferred** until the unsafe memory work is finished, because it changes
    very many proofs; see "Deferred: P2" below. P1 and P3 go ahead without it.
 3. **P3 is accepted.** It changes no proof that loads or stores through a points-to:
@@ -300,7 +296,7 @@ so the byte view adds no new assumption.
 
 This is the order as decided on 2026-10-25.
 
-1. P1, then P3.
+1. P1 (done: the disk FFI is removed), then P3.
 2. P4, P5 and P6: independent; each is its own branch.
 3. P7a, with `InternalDynamicArrayAlloc` through `alloc_array`.
 4. P8a, P8c and P8d.
