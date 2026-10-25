@@ -83,7 +83,6 @@ func WriteFileIfChanged(name string, data []byte, perm os.FileMode) error {
 var ffiMapping = map[string]string{
 	"github.com/sanjit-bhat/pav/cryptoffi/ffi":   "crypto",
 	"github.com/mit-pdos/gokv/grove_ffi":         "grove",
-	"github.com/goose-lang/primitive/disk":       "disk",
 	"github.com/goose-lang/primitive/async_disk": "async_disk",
 }
 

@@ -99,8 +99,6 @@ globs = [
   "Perennial.Golang.Theory.TacticsSimpAttr",
   "Perennial.GooseLang.BoundedLang",
   "Perennial.GooseLang.Countable",
-  "Perennial.GooseLang.Ffi.DiskFfi.Impl",
-  "Perennial.GooseLang.Ffi.DiskFfi.Specs",
   "Perennial.GooseLang.Ffi.GenHeap",
   "Perennial.GooseLang.Ffi.GroveFfi.GroveFfi",
   "Perennial.GooseLang.Ffi.GroveFfi.Impl",

@@ -34,7 +34,7 @@ TIER0 = [
     ("semantics", r"^Perennial/GooseLang/(Lang|BoundedLang|Adequacy|Threads|Receipts|Locations)\.lean$"),
     ("semantics", r"^Perennial/GooseLang/Ffi/"),
     ("semantics", r"^Perennial/Golang/Defn/"),
-    ("semantics", r"^Perennial/(Grove|Disk)Prelude\.lean$"),
+    ("semantics", r"^Perennial/GrovePrelude\.lean$"),
     ("translator", r"^goose/.*\.go$"),
     ("translator-gold", r"^goose/testdata/.*\.gold\.lean$"),
     ("go-model", r"^goose/model/"),
