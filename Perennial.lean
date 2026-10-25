@@ -12,6 +12,8 @@ public import Perennial.GooseLang.Threads
 public import Perennial.GooseLang.Lifting
 public import Perennial.GooseLang.IPersist
 public import Perennial.GooseLang.Adequacy
+public import Perennial.GooseLang.DistLang
+public import Perennial.GooseLang.DistAdequacy
 public import Perennial.ProgramLogic.AtomicFupd
 public import Perennial.GooseLang.Ffi.GroveFfi.Adequacy
 public import Perennial.GooseLang.Ffi.DiskFfi.Adequacy
