@@ -1,7 +1,8 @@
 # Plans: the prerequisites of the unsafe memory design (step 3)
 
-- **Date:** 2026-10-24. **Status:** plans for sign-off (`.agents/skills/fix-semantics`,
-  step 3). Nothing here is implemented.
+- **Date:** 2026-10-24; decisions 2026-10-25. **Status:** signed off with the changes
+  in "Decisions" below, except where they say a question is open. Nothing here is
+  implemented.
 - **Serves:** `docs/design/unsafe-memory.md`, section 7 and step 3 of section 12.
 - **Checked against:** current `lean` (`ef0f3eef4`). Every item below is still open
   there. Each Go witness was run on gc 1.26; scratch programs are in the review job,
@@ -10,21 +11,73 @@
 Each item is one logical bug and gets its own branch, commit and `examples.md` case.
 The order at the end respects their dependencies.
 
-## Decisions needed
+## Decisions (2026-10-25)
 
 1. **P1.** Replace `arrayIndexRef_null_inv` with `arrayIndexRef_locCar` (an element's
-   address keeps its block). The design's literal fix, `… = null → l.locCar = 0`, is
-   consistent but leaves today's three uses unprovable.
-2. **P2 and P3.** Land them together with P1. Their proof cost depends on P1's
-   points-to change.
-3. **P4.** Refuse struct tags on unnamed struct types, rather than model them.
-4. **P5.** Leave the package-of-unexported-field-names defect open, as a recorded item.
-5. **P7.** Stage the fix as 7a (a real `alloc_array`, no new premises), then 7b (the
-   bounds, with a type-layout table in the semantics). 7b puts a length premise on
-   `make`/`append` specs; that is past the skill's red-flag threshold, but needed for
-   soundness.
-6. **P8.** Do 8a (`float64Eq`) now, 8b (the float representation) before R1, and make
-   float map keys stuck (8c). Conversions (8d) are a separate item.
+   address keeps its block). Open: the project owner asked why the axiom is needed at
+   all; the answer follows.
+   - Every typed points-to carries `l ≠ null` (`typedPointstoWrap`,
+     `Theory/PostLifting.lean`).
+   - Splitting an array points-to at element `k` (`Theory/Array.lean:181`) needs that
+     fact for `arrayIndexRef k l`. When the suffix is empty there is no cell to derive
+     it from, so it must come from an axiom about the abstract `arrayIndexRef`.
+   - `Theory/Slice.lean:464` needs the same fact to show that a sub-slice at an
+     element address is not nil.
+   - The design's form, `… = null → l.locCar = 0`, gives one step but not the next (a
+     suffix of a suffix). Preserving `locCar` gives all of them.
+   - For plain types, R1 makes `arrayIndexRef` concrete, and the fact becomes a
+     theorem there.
+2. **P2 is deferred** until the unsafe memory work is finished, because it changes
+   very many proofs; see "Deferred: P2" below. P1 and P3 go ahead without it.
+3. **P3 is accepted.** It changes no proof that loads or stores through a points-to:
+   every typed points-to, zero-size included, carries `l ≠ null`, which discharges the
+   new guard. Only the generic load and store lemmas gain the step.
+4. **P4, P5 and P6 are accepted**, as planned. P5's package-of-unexported-field-names
+   defect stays open, recorded.
+5. **P7.** Do only 7a, with the fix extended to `InternalDynamicArrayAlloc` (dynamic
+   allocation through the real `alloc_array`, not `AngelicExit`). 7b's bounds are
+   skipped, and left as an open defect ("Open defects" below).
+6. **P8.**
+   - 8a goes ahead (`float64Eq`).
+   - 8b is rejected: floats stay `w64`/`w32` as their data, with operations of their
+     own, as `int` and `uint` share a representation and have different operations.
+   - 8c goes ahead (float map keys are stuck); goose and the model are intentionally
+     incomplete.
+   - 8d: every float→int conversion gives `ArbitraryInt`, which is simpler and sound.
+   - Open: 8b's rejection conflicts with the design's R1 (see "R1 and floats").
+
+## Deferred: P2
+
+Field and element addresses through nil (`structFieldRef_step`, `index_ref_array`,
+`slice_array_step`, `fullSlice_array_step_pure`) stay defined at `null`, which Go
+panics on. This is unsound, and stays a known defect until after the unsafe memory
+work, because the fix makes every pure step through a field address need `l ≠ null`.
+While it is open:
+- P3's guard fires only at `null` itself. `p.z`, with `p` nil and `z` of zero size, goes
+  through `StructFieldRef` to a non-null address at an offset from `null`, and loads a
+  value where Go panics.
+- R3 is unaffected: a view or load at such an address finds no cells and is stuck.
+
+## Open defects (accepted)
+
+- **Allocation above `maxAlloc`.** gc panics in `makeslice` and `growslice` above 2^48
+  bytes. The model accepts such a `make` or `append` (P7 without 7b). An array length
+  outside `[0, 2^63-1)` still reaches `AngelicExit` in `alloc_array`, as `load_array`
+  and `store_array` do today.
+
+## R1 and floats (open)
+
+The design's R1 keys `Plain` and the layout functions by the Lean representation `V`.
+With floats as `w64` (decision 6), `Pair[float64]` and `Pair[uint64]` have the same
+`V`, so either:
+- floats are plain too: 8 or 4 byte cells, read and written as their bits. This drops
+  R1's float exclusion and `testFloatBits` becomes provable (it is true in Go); or
+- the layout functions are keyed by `go.GoType` instead of `V`, a larger change.
+
+The first fits decision 6. Its cost: gc does not fix NaN payloads, so a byte view can
+see bits that the uninterpreted float operations treat as a function of their
+arguments. But the model already assumes that (`math.Float64bits` sees the same bits),
+so the byte view adds no new assumption.
 
 ## P1. `ArraySemantics` proves `False` (unsound)
 
@@ -245,8 +298,12 @@ The order at the end respects their dependencies.
 
 ## Order
 
-1. P1, then P2 and P3 together: one branch, because the proofs share the non-null fact.
+This is the order as decided on 2026-10-25.
+
+1. P1, then P3.
 2. P4, P5 and P6: independent; each is its own branch.
-3. P7a, then P7b.
-4. P8a, then P8b and P8c; P8d is independent.
-5. Then R1 to R5 of the design, each with its own plan.
+3. P7a, with `InternalDynamicArrayAlloc` through `alloc_array`.
+4. P8a, P8c and P8d.
+5. Then R1 to R5 of the design, each with its own plan, once "R1 and floats" is
+   decided.
+6. P2, after the unsafe memory work.

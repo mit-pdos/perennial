@@ -562,7 +562,11 @@ are stuck or vacuous.
   `arrayIndexRef_add_loc_add` at `⟨0, -1⟩`. Make it conclude `l.locCar = 0`.
 - **A field or element address through a nil pointer must panic.**
   `StructFieldRef`, and `IndexRef` on an array pointer, step on `null` today.
-  So does slicing a nil array pointer.
+  So does slicing a nil array pointer. **Deferred** until after this design
+  (decision of 2026-10-25, `unsafe-memory-prerequisites.md`, P2), because it
+  changes very many proofs. It stays a known unsoundness, and V2 does not
+  depend on it: an address at an offset from `null` has no cells, so every
+  view of it (R3) and every access through it is stuck.
 - **A load or store through a nil pointer must panic, even of a zero-size
   type.** `*(*struct{})(nil)` panics in gc. The model returns the zero value,
   because a struct with no fields and an array of length 0 load and store
