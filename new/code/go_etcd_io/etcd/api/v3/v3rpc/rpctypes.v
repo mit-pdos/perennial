@@ -284,7 +284,7 @@ Definition ErrorDesc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string 
 Definition EtcdError__Codeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "e" <>,
     exception_do (let: "e" := (GoAlloc EtcdError "e") in
-    return: (![codes.Code] (StructFieldRef EtcdError "code"%go "e"))).
+    return: (![code.google_golang_org.grpc.codes.codes.Code] (StructFieldRef EtcdError "code"%go "e"))).
 
 (* go: error.go:252:20 *)
 Definition EtcdError__Errorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -310,39 +310,39 @@ Definition Errorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
     (if: (⟨go.bool⟩! (![go.bool] "ok"))
     then return: (![go.error] "err")
     else do:  #());;;
-    let: "ev" := (GoAlloc (go.PointerType status.Status) (GoZeroVal (go.PointerType status.Status) #())) in
+    let: "ev" := (GoAlloc (go.PointerType code.google_golang_org.grpc.status.status.Status) (GoZeroVal (go.PointerType code.google_golang_org.grpc.status.status.Status) #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![go.error] "verr") in
-    (FuncResolve status.FromError [] #()) "$a0") in
+    (FuncResolve code.google_golang_org.grpc.status.status.FromError [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("ev" <-[go.PointerType status.Status] "$r0");;;
+    do:  ("ev" <-[go.PointerType code.google_golang_org.grpc.status.status.Status] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
     let: "desc" := (GoAlloc go.string (GoZeroVal go.string #())) in
     (if: ![go.bool] "ok"
     then
-      let: "$r0" := ((MethodResolve (go.PointerType status.Status) "Message"%go (![go.PointerType status.Status] "ev")) #()) in
+      let: "$r0" := ((MethodResolve (go.PointerType code.google_golang_org.grpc.status.status.Status) "Message"%go (![go.PointerType code.google_golang_org.grpc.status.status.Status] "ev")) #()) in
       do:  ("desc" <-[go.string] "$r0")
     else
       let: "$r0" := ((MethodResolve go.error "Error"%go (![go.error] "verr")) #()) in
       do:  ("desc" <-[go.string] "$r0"));;;
-    return: (Convert EtcdError go.error (let: "$v0" := ((MethodResolve (go.PointerType status.Status) "Code"%go (![go.PointerType status.Status] "ev")) #()) in
+    return: (Convert EtcdError go.error (let: "$v0" := ((MethodResolve (go.PointerType code.google_golang_org.grpc.status.status.Status) "Code"%go (![go.PointerType code.google_golang_org.grpc.status.status.Status] "ev")) #()) in
      let: "$v1" := (![go.string] "desc") in
-     CompositeLiteral EtcdError (LiteralValue [KeyedElement (Some (KeyField "code"%go)) (ElementExpression codes.Code "$v0"); KeyedElement (Some (KeyField "desc"%go)) (ElementExpression go.string "$v1")])))).
+     CompositeLiteral EtcdError (LiteralValue [KeyedElement (Some (KeyField "code"%go)) (ElementExpression code.google_golang_org.grpc.codes.codes.Code "$v0"); KeyedElement (Some (KeyField "desc"%go)) (ElementExpression go.string "$v1")])))).
 
 (* go: error.go:274:6 *)
 Definition ErrorDescⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "err",
     exception_do (let: "err" := (GoAlloc go.error "err") in
     (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "s" := (GoAlloc (go.PointerType status.Status) (GoZeroVal (go.PointerType status.Status) #())) in
+    let: "s" := (GoAlloc (go.PointerType code.google_golang_org.grpc.status.status.Status) (GoZeroVal (go.PointerType code.google_golang_org.grpc.status.status.Status) #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![go.error] "err") in
-    (FuncResolve status.FromError [] #()) "$a0") in
+    (FuncResolve code.google_golang_org.grpc.status.status.FromError [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("s" <-[go.PointerType status.Status] "$r0");;;
+    do:  ("s" <-[go.PointerType code.google_golang_org.grpc.status.status.Status] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
     (if: ![go.bool] "ok"
-    then return: ((MethodResolve (go.PointerType status.Status) "Message"%go (![go.PointerType status.Status] "s")) #())
+    then return: ((MethodResolve (go.PointerType code.google_golang_org.grpc.status.status.Status) "Message"%go (![go.PointerType code.google_golang_org.grpc.status.status.Status] "s")) #())
     else do:  #()));;;
     return: ((MethodResolve go.error "Error"%go (![go.error] "err")) #())).
 
@@ -482,261 +482,261 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  (go.GlobalAlloc ErrGRPCValueProvided go.error #());;;
       do:  (go.GlobalAlloc ErrGRPCKeyNotFound go.error #());;;
       do:  (go.GlobalAlloc ErrGRPCEmptyKey go.error #());;;
-      do:  (status.initialize' #());;;
-      do:  (codes.initialize' #());;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      do:  (code.google_golang_org.grpc.status.status.initialize' #());;;
+      do:  (code.google_golang_org.grpc.codes.codes.initialize' #());;;
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: key is not provided"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCEmptyKey #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: key not found"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCKeyNotFound #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: value is provided"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCValueProvided #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: lease is provided"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCLeaseProvided #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: too many operations in txn request"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCTooManyOps #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: duplicate key given in txn request"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCDuplicateKey #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: invalid client api version"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCInvalidClientAPIVersion #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: invalid sort option"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCInvalidSortOption #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.OutOfRange in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.OutOfRange in
       let: "$a1" := #"etcdserver: mvcc: required revision has been compacted"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCCompacted #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.OutOfRange in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.OutOfRange in
       let: "$a1" := #"etcdserver: mvcc: required revision is a future revision"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCFutureRev #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.ResourceExhausted in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.ResourceExhausted in
       let: "$a1" := #"etcdserver: mvcc: database space exceeded"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCNoSpace #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.NotFound in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.NotFound in
       let: "$a1" := #"etcdserver: requested lease not found"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCLeaseNotFound #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: lease already exists"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCLeaseExist #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.OutOfRange in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.OutOfRange in
       let: "$a1" := #"etcdserver: too large lease TTL"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCLeaseTTLTooLarge #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.Canceled in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.Canceled in
       let: "$a1" := #"etcdserver: watch canceled"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCWatchCanceled #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: member ID already exist"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCMemberExist #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: Peer URLs already exists"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCPeerURLExist #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: re-configuration failed due to not enough started members"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCMemberNotEnoughStarted #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: given member URLs are invalid"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCMemberBadURLs #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.NotFound in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.NotFound in
       let: "$a1" := #"etcdserver: member not found"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCMemberNotFound #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: can only promote a learner member"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCMemberNotLearner #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: can only promote a learner member which is in sync with leader"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCLearnerNotReady #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: too many learner members in cluster"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCTooManyLearners #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: cluster ID mismatch"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCClusterIDMismatch #()) <-[go.error] "$r0");;;
       let: "$r0" := (![go.error] (GlobalVarAddr ErrGRPCClusterIDMismatch #())) in
       do:  ((GlobalVarAddr ErrGRPCClusterIdMismatch #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: request is too large"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCRequestTooLarge #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.ResourceExhausted in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.ResourceExhausted in
       let: "$a1" := #"etcdserver: too many requests"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCRequestTooManyRequests #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: root user does not exist"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCRootUserNotExist #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: root user does not have root role"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCRootRoleNotExist #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: user name already exists"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCUserAlreadyExist #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: user name is empty"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCUserEmpty #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: user name not found"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCUserNotFound #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: role name already exists"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCRoleAlreadyExist #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: role name not found"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCRoleNotFound #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: role name is empty"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCRoleEmpty #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: authentication failed, invalid user ID or password"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCAuthFailed #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: permission not given"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCPermissionNotGiven #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.PermissionDenied in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.PermissionDenied in
       let: "$a1" := #"etcdserver: permission denied"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCPermissionDenied #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: role is not granted to the user"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCRoleNotGranted #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: permission is not granted to the role"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCPermissionNotGranted #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: authentication is not enabled"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCAuthNotEnabled #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.Unauthenticated in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.Unauthenticated in
       let: "$a1" := #"etcdserver: invalid auth token"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCInvalidAuthToken #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: invalid auth management"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCInvalidAuthMgmt #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: revision of auth store is old"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCAuthOldRevision #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.Unavailable in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.Unavailable in
       let: "$a1" := #"etcdserver: no leader"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCNoLeader #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: not leader"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCNotLeader #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.Unavailable in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.Unavailable in
       let: "$a1" := #"etcdserver: leader changed"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCLeaderChanged #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: not capable"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCNotCapable #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.Unavailable in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.Unavailable in
       let: "$a1" := #"etcdserver: server stopped"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCStopped #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.Unavailable in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.Unavailable in
       let: "$a1" := #"etcdserver: request timed out"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCTimeout #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.Unavailable in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.Unavailable in
       let: "$a1" := #"etcdserver: request timed out, possibly due to previous leader failure"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCTimeoutDueToLeaderFail #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.Unavailable in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.Unavailable in
       let: "$a1" := #"etcdserver: request timed out, possibly due to connection lost"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCTimeoutDueToConnectionLost #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.Unavailable in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.Unavailable in
       let: "$a1" := #"etcdserver: request timed out, waiting for the applied index took too long"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCTimeoutWaitAppliedIndex #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.Unavailable in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.Unavailable in
       let: "$a1" := #"etcdserver: unhealthy cluster"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCUnhealthy #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.DataLoss in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.DataLoss in
       let: "$a1" := #"etcdserver: corrupt cluster"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCCorrupt #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: rpc not supported for learner"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCNotSupportedForLearner #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: bad leader transferee"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCBadLeaderTransferee #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: wrong downgrade target version format"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCWrongDowngradeVersionFormat #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.InvalidArgument in
       let: "$a1" := #"etcdserver: invalid downgrade target version"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCInvalidDowngradeTargetVersion #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: cluster version not found during downgrade"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCClusterVersionUnavailable #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: cluster has a downgrade job in progress"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCDowngradeInProcess #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: no inflight downgrade job"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCNoInflightDowngrade #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.Canceled in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.Canceled in
       let: "$a1" := #"etcdserver: request canceled"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCCanceled #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$a0" := codes.DeadlineExceeded in
+      let: "$r0" := (let: "$a0" := code.google_golang_org.grpc.codes.codes.DeadlineExceeded in
       let: "$a1" := #"etcdserver: context deadline exceeded"%go in
-      (FuncResolve status.Error [] #()) "$a0" "$a1") in
+      (FuncResolve code.google_golang_org.grpc.status.status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCDeadlineExceeded #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$k0" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCEmptyKey #())) in
       (FuncResolve ErrorDesc [] #()) "$a0") in
@@ -1101,7 +1101,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  code' : codes.Code.t;
+  code' : code.google_golang_org.grpc.codes.codes.Code.t;
   desc' : go_string;
 }.
 
@@ -1112,7 +1112,7 @@ End def.
 End EtcdError.
 
 Definition EtcdError'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "code"%go codes.Code);
+  (go.FieldDecl "code"%go code.google_golang_org.grpc.codes.codes.Code);
   (go.FieldDecl "desc"%go go.string)
 ].
 Program Definition EtcdError'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (EtcdError'fds_unsealed).
@@ -1169,7 +1169,7 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] TokenFieldNameGRPCKey_instance :: TokenFieldNameGRPCKey_Assumptions;
   #[global] Error_unfold :: FuncUnfold Error [] (Errorⁱᵐᵖˡ);
   #[global] ErrorDesc_unfold :: FuncUnfold ErrorDesc [] (ErrorDescⁱᵐᵖˡ);
-  #[global] import_codes_Assumption :: codes.Assumptions;
-  #[global] import_status_Assumption :: status.Assumptions;
+  #[global] import_codes_Assumption :: code.google_golang_org.grpc.codes.codes.Assumptions;
+  #[global] import_status_Assumption :: code.google_golang_org.grpc.status.status.Assumptions;
 }.
 End rpctypes.

@@ -15,7 +15,7 @@ Definition f {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "gith
 Definition fⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "$r0" := #(W64 11) in
-    do:  ((GlobalVarAddr unittest.GlobalX #()) <-[go.uint64] "$r0");;;
+    do:  ((GlobalVarAddr code.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.unittest.GlobalX #()) <-[go.uint64] "$r0");;;
     return: #()).
 
 #[global] Instance info' : PkgInfo pkg_id.externalglobals :=
@@ -26,12 +26,12 @@ Definition fⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.externalglobals (λ: <>,
-      exception_do (do:  (unittest.initialize' #()))
+      exception_do (do:  (code.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.unittest.initialize' #()))
       ).
 
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] f_unfold :: FuncUnfold f [] (fⁱᵐᵖˡ);
-  #[global] import_unittest_Assumption :: unittest.Assumptions;
+  #[global] import_unittest_Assumption :: code.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.unittest.Assumptions;
 }.
 End externalglobals.

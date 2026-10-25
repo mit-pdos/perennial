@@ -63,6 +63,7 @@ func (o *outputDecls) preHeaderDecls() []glang.Decl {
 type Ctx struct {
 	info    *types.Info
 	pkgPath string
+	pkgName string
 
 	// XXX: Initially tried using `pkg.Name` as the Gallina identifier holding
 	// the full package path, but that doesn't work in a `package main` with a `func main`.
@@ -93,9 +94,9 @@ type Ctx struct {
 
 	importNames        map[string]*types.PkgName
 	importNamesOrdered []*types.PkgName
-	// Full Go import path -> Coq module ref used in generated code. For
-	// colliding package names, imports ending in "a/v1" and "b/v1" become
-	// "a_v1" and "b_v1" rather than both using package name "v1".
+	// Full Go import path -> fully qualified Coq module ref used in generated
+	// code. Short names (including aliases) can be shadowed by the current
+	// package or by transitive Require Exports.
 	importRefs map[string]string
 	// Full Go import path -> Assumptions class field name. For the same
 	// "a/v1" and "b/v1" imports, these become "import_a_v1_Assumption" and
@@ -117,6 +118,7 @@ func NewPkgCtx(pkg *packages.Package, filter declfilter.DeclFilter) Ctx {
 	return Ctx{
 		info:               pkg.TypesInfo,
 		pkgPath:            pkg.PkgPath,
+		pkgName:            pkg.Name,
 		declImplicitParams: declImplicitParams,
 		pkgIdent:           "pkg_id" + "." + pkg.Name,
 		errorReporter:      newErrorReporter(pkg.Fset),
@@ -2362,6 +2364,14 @@ func (ctx *Ctx) constSpec(spec *ast.ValueSpec) {
 			continue
 		}
 		switch ctx.filter.GetAction(spec.Names[i].Name) {
+		case declfilter.Trust:
+			// Expose the imported trusted constant under the generated package's
+			// namespace too. The RHS resolves before this definition is bound.
+			ctx.out.constDecls = append(ctx.out.constDecls, glang.ConstDecl{
+				Name: spec.Names[i].Name,
+				Val:  glang.GallinaIdent(spec.Names[i].Name),
+				Type: glang.VerbatimExpr("val"),
+			})
 		case declfilter.Axiomatize:
 			ctx.out.constDecls = append(ctx.out.constDecls, glang.AxiomDecl{DeclName: spec.Names[i].Name,
 				Type: glang.VerbatimExpr("val"),
@@ -2456,6 +2466,10 @@ func stringLitValue(lit *ast.BasicLit) string {
 
 func coqImportQualid(pkgPath string) string {
 	return strings.ReplaceAll(glang.ThisIsBadAndShouldBeDeprecatedGoPathToCoqPath(pkgPath), "/", ".")
+}
+
+func qualifiedImportRef(pkg *types.Package) string {
+	return "code." + coqImportQualid(pkg.Path()) + "." + glang.ToIdent(pkg.Name())
 }
 
 func importSuffixAlias(pkgPath string, suffixLen int) string {
@@ -2554,21 +2568,22 @@ func (ctx *Ctx) finalizeImports() {
 		importsByName[pkg.Name()] = append(importsByName[pkg.Name()], pkg)
 	}
 
-	// Imports with unique package names keep the old simple Coq reference, so
-	// existing generated code is unchanged when there is no collision.
-	usedRefs := make(map[string]bool)
+	// Keep local assumption field names independent of module references.
+	// Reserve the modules generated at file scope, as well as the root used by
+	// qualified references, when allocating compatibility aliases.
+	usedRefs := map[string]bool{glang.ToIdent(ctx.pkgName): true, "pkg_id": true, "code": true}
 	for _, impName := range ctx.importNamesOrdered {
 		pkg := impName.Imported()
+		ctx.importRefs[pkg.Path()] = qualifiedImportRef(pkg)
 		if len(importsByName[pkg.Name()]) == 1 {
 			ref := glang.ToIdent(pkg.Name())
-			ctx.importRefs[pkg.Path()] = ref
 			ctx.importAssumptions[pkg.Path()] = "import_" + ref + "_Assumption"
 			usedRefs[ref] = true
 		}
 	}
 
-	// Imports with colliding package names get path-suffix aliases, and we emit
-	// local Coq module aliases so the rest of code generation can use those refs.
+	// Retain path-suffix aliases for clients of generated code. Generated code
+	// itself always uses the qualified reference, regardless of these aliases.
 	seenName := make(map[string]bool)
 	for _, impName := range ctx.importNamesOrdered {
 		pkg := impName.Imported()
@@ -2582,11 +2597,10 @@ func (ctx *Ctx) finalizeImports() {
 		aliases := uniqueImportAliases(group, usedRefs)
 		for _, groupPkg := range group {
 			ref := aliases[groupPkg.Path()]
-			ctx.importRefs[groupPkg.Path()] = ref
 			ctx.importAssumptions[groupPkg.Path()] = "import_" + ref + "_Assumption"
 			usedRefs[ref] = true
 			ctx.out.importDecls = append(ctx.out.importDecls, glang.VerbatimDecl{
-				Content: fmt.Sprintf("Module %s := code.%s.%s.", ref, coqImportQualid(groupPkg.Path()), glang.ToIdent(groupPkg.Name())),
+				Content: fmt.Sprintf("Module %s := %s.", ref, qualifiedImportRef(groupPkg)),
 			})
 		}
 	}
@@ -2599,7 +2613,13 @@ func (ctx *Ctx) pkgRef(pkg *types.Package) string {
 	if ref, ok := ctx.importRefs[pkg.Path()]; ok {
 		return ref
 	}
-	return glang.ToIdent(pkg.Name())
+	if pkg.Path() == ctx.pkgPath {
+		return glang.ToIdent(pkg.Name())
+	}
+	// Types can mention packages absent from the direct import set (for
+	// example through an imported signature). Filtering imports only controls
+	// Require emission; it must not change the identity of referenced types.
+	return qualifiedImportRef(pkg)
 }
 
 func (ctx *Ctx) importAssumptionName(pkg *types.Package) string {

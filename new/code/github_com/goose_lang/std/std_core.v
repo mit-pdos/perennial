@@ -42,7 +42,7 @@ Definition SumAssumeNoOverflowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     do:  (let: "$a0" := (let: "$a0" := (![go.uint64] "x") in
     let: "$a1" := (![go.uint64] "y") in
     (FuncResolve SumNoOverflow [] #()) "$a0" "$a1") in
-    (FuncResolve primitive.Assume [] #()) "$a0");;;
+    (FuncResolve code.github_com.goose_lang.primitive.primitive.Assume [] #()) "$a0");;;
     return: ((![go.uint64] "x") +⟨go.uint64⟩ (![go.uint64] "y"))).
 
 (* MulNoOverflow returns true if x * y does not overflow
@@ -69,7 +69,7 @@ Definition MulAssumeNoOverflowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     do:  (let: "$a0" := (let: "$a0" := (![go.uint64] "x") in
     let: "$a1" := (![go.uint64] "y") in
     (FuncResolve MulNoOverflow [] #()) "$a0" "$a1") in
-    (FuncResolve primitive.Assume [] #()) "$a0");;;
+    (FuncResolve code.github_com.goose_lang.primitive.primitive.Assume [] #()) "$a0");;;
     return: ((![go.uint64] "x") *⟨go.uint64⟩ (![go.uint64] "y"))).
 
 (* Shuffle shuffles the elements of xs in place, using a Fisher-Yates shuffle.
@@ -88,7 +88,7 @@ Definition Shuffleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") >⟨go.uint64⟩ #(W64 0)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") -⟨go.uint64⟩ #(W64 1)))) := λ: <>,
       let: "j" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-      let: "$r0" := (((FuncResolve primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1))) in
+      let: "$r0" := (((FuncResolve code.github_com.goose_lang.primitive.primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1))) in
       do:  ("j" <-[go.uint64] "$r0");;;
       let: "temp" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
       let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", Convert go.uint64 go.int (![go.uint64] "i")))) in
@@ -127,7 +127,7 @@ Definition Permutationⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.std_core (λ: <>,
-      exception_do (do:  (primitive.initialize' #()))
+      exception_do (do:  (code.github_com.goose_lang.primitive.primitive.initialize' #()))
       ).
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -138,6 +138,6 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] MulAssumeNoOverflow_unfold :: FuncUnfold MulAssumeNoOverflow [] (MulAssumeNoOverflowⁱᵐᵖˡ);
   #[global] Shuffle_unfold :: FuncUnfold Shuffle [] (Shuffleⁱᵐᵖˡ);
   #[global] Permutation_unfold :: FuncUnfold Permutation [] (Permutationⁱᵐᵖˡ);
-  #[global] import_primitive_Assumption :: primitive.Assumptions;
+  #[global] import_primitive_Assumption :: code.github_com.goose_lang.primitive.primitive.Assumptions;
 }.
 End std_core.

@@ -26,8 +26,15 @@ Set Default Proof Using "W".
 #[global] Instance : IsPkgInit (iProp Σ) rpc.status.pkg_id.status := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) rpc.status.pkg_id.status := build_get_is_pkg_init_wf.
 
-#[global] Instance : IsPkgInit (iProp Σ) pkg_id.status := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf (iProp Σ) pkg_id.status := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ)
+  code.google_golang_org.grpc.internal.status.pkg_id.status := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ)
+  code.google_golang_org.grpc.internal.status.pkg_id.status := build_get_is_pkg_init_wf.
+
+#[global] Instance : IsPkgInit (iProp Σ)
+  code.google_golang_org.grpc.status.pkg_id.status := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ)
+  code.google_golang_org.grpc.status.pkg_id.status := build_get_is_pkg_init_wf.
 
 #[global] Instance : IsPkgInit (iProp Σ) codes := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) codes := build_get_is_pkg_init_wf.

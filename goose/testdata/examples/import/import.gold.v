@@ -16,11 +16,11 @@ Module example.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.example (λ: <>,
-      exception_do (do:  (atomic.initialize' #()))
+      exception_do (do:  (code.sync.atomic.atomic.initialize' #()))
       ).
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] import_atomic_Assumption :: atomic.Assumptions;
+  #[global] import_atomic_Assumption :: code.sync.atomic.atomic.Assumptions;
 }.
 End example.

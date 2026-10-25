@@ -337,7 +337,7 @@ Definition Progress__SentEntriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
         do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) (let: "$a0" := #"sending append in unhandled state %s"%go in
         let: "$a1" := ((let: "$sl0" := (Convert StateType go.any (![StateType] (StructFieldRef Progress "State"%go (![go.PointerType Progress] "pr")))) in
         CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-        (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1")) in
+        (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1")) in
         (FuncResolve go.panic [] #()) "$a0")));;;
     return: #()).
 
@@ -460,62 +460,62 @@ Definition Progress__IsPausedⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
 Definition Progress__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "pr" <>,
     exception_do (let: "pr" := (GoAlloc (go.PointerType Progress) "pr") in
-    let: "buf" := (GoAlloc strings.Builder (GoZeroVal strings.Builder #())) in
-    do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+    let: "buf" := (GoAlloc code.strings.strings.Builder (GoZeroVal code.strings.strings.Builder #())) in
+    do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
     let: "$a1" := #"%s match=%d next=%d"%go in
     let: "$a2" := ((let: "$sl0" := (Convert StateType go.any (![StateType] (StructFieldRef Progress "State"%go (![go.PointerType Progress] "pr")))) in
     let: "$sl1" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef Progress "Match"%go (![go.PointerType Progress] "pr")))) in
     let: "$sl2" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef Progress "Next"%go (![go.PointerType Progress] "pr")))) in
     CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1"); KeyedElement None (ElementExpression go.any "$sl2")]))) in
-    (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
+    (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
     (if: ![go.bool] (StructFieldRef Progress "IsLearner"%go (![go.PointerType Progress] "pr"))
     then
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
       let: "$a1" := ((let: "$sl0" := (Convert go.string go.any #" learner"%go) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprint [] #()) "$a0" "$a1")
+      (FuncResolve code.fmt.fmt.Fprint [] #()) "$a0" "$a1")
     else do:  #());;;
     (if: (MethodResolve (go.PointerType Progress) "IsPaused"%go (![go.PointerType Progress] "pr")) #()
     then
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
       let: "$a1" := ((let: "$sl0" := (Convert go.string go.any #" paused"%go) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprint [] #()) "$a0" "$a1")
+      (FuncResolve code.fmt.fmt.Fprint [] #()) "$a0" "$a1")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef Progress "PendingSnapshot"%go (![go.PointerType Progress] "pr"))) >⟨go.uint64⟩ #(W64 0))
     then
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
       let: "$a1" := #" pendingSnap=%d"%go in
       let: "$a2" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef Progress "PendingSnapshot"%go (![go.PointerType Progress] "pr")))) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
     else do:  #());;;
     (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef Progress "RecentActive"%go (![go.PointerType Progress] "pr"))))
     then
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
       let: "$a1" := ((let: "$sl0" := (Convert go.string go.any #" inactive"%go) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprint [] #()) "$a0" "$a1")
+      (FuncResolve code.fmt.fmt.Fprint [] #()) "$a0" "$a1")
     else do:  #());;;
     (let: "n" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := ((MethodResolve (go.PointerType Inflights) "Count"%go (![go.PointerType Inflights] (StructFieldRef Progress "Inflights"%go (![go.PointerType Progress] "pr")))) #()) in
     do:  ("n" <-[go.int] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.int] "n") >⟨go.int⟩ #(W64 0))
     then
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
       let: "$a1" := #" inflight=%d"%go in
       let: "$a2" := ((let: "$sl0" := (Convert go.int go.any (![go.int] "n")) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
       (if: (MethodResolve (go.PointerType Inflights) "Full"%go (![go.PointerType Inflights] (StructFieldRef Progress "Inflights"%go (![go.PointerType Progress] "pr")))) #()
       then
-        do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+        do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
         let: "$a1" := ((let: "$sl0" := (Convert go.string go.any #"[full]"%go) in
         CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-        (FuncResolve fmt.Fprint [] #()) "$a0" "$a1")
+        (FuncResolve code.fmt.fmt.Fprint [] #()) "$a0" "$a1")
       else do:  #())
     else do:  #()));;;
-    return: ((MethodResolve (go.PointerType strings.Builder) "String"%go "buf") #())).
+    return: ((MethodResolve (go.PointerType code.strings.strings.Builder) "String"%go "buf") #())).
 
 (* String prints the ProgressMap in sorted key order, one Progress per line.
 
@@ -537,21 +537,21 @@ Definition ProgressMap__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
       (FuncResolve go.append [go.SliceType go.uint64] #()) "$a0" "$a1") in
       do:  ("ids" <-[go.SliceType go.uint64] "$r0")));;;
     do:  (let: "$a0" := (![go.SliceType go.uint64] "ids") in
-    (FuncResolve slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
-    let: "buf" := (GoAlloc strings.Builder (GoZeroVal strings.Builder #())) in
+    (FuncResolve code.slices.slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
+    let: "buf" := (GoAlloc code.strings.strings.Builder (GoZeroVal code.strings.strings.Builder #())) in
     let: "$range" := (![go.SliceType go.uint64] "ids") in
     (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     slice.for_range go.uint64 "$range" (λ: "$key" "$value",
       do:  ("id" <-[go.uint64] "$value");;;
       do:  "$key";;;
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
       let: "$a1" := #"%d: %s
       "%go in
       let: "$a2" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] "id")) in
       let: "$sl1" := (Convert (go.PointerType Progress) go.any (map.lookup1 go.uint64 (go.PointerType Progress) (![ProgressMap] "m") (![go.uint64] "id"))) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1")]))) in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2")));;;
-    return: ((MethodResolve (go.PointerType strings.Builder) "String"%go "buf") #())).
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2")));;;
+    return: ((MethodResolve (go.PointerType code.strings.strings.Builder) "String"%go "buf") #())).
 
 (* go: state.go:42:21 *)
 Definition StateType__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -563,12 +563,12 @@ Definition StateType__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
 Definition Config__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc Config "c") in
-    let: "buf" := (GoAlloc strings.Builder (GoZeroVal strings.Builder #())) in
-    do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+    let: "buf" := (GoAlloc code.strings.strings.Builder (GoZeroVal code.strings.strings.Builder #())) in
+    do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
     let: "$a1" := #"voters=%s"%go in
-    let: "$a2" := ((let: "$sl0" := (Convert quorum.JointConfig go.any (![quorum.JointConfig] (StructFieldRef Config "Voters"%go "c"))) in
+    let: "$a2" := ((let: "$sl0" := (Convert code.go_etcd_io.raft.v3.quorum.quorum.JointConfig go.any (![code.go_etcd_io.raft.v3.quorum.quorum.JointConfig] (StructFieldRef Config "Voters"%go "c"))) in
     CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-    (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
+    (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
     (if: Convert go.untyped_bool go.bool ((![go.MapType go.uint64 (go.StructType [
 
     ])] (StructFieldRef Config "Learners"%go "c")) ≠⟨go.MapType go.uint64 (go.StructType [
@@ -577,13 +577,13 @@ Definition Config__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
 
     ])) UntypedNil))
     then
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
       let: "$a1" := #" learners=%s"%go in
-      let: "$a2" := ((let: "$sl0" := (Convert go.string go.any ((MethodResolve quorum.MajorityConfig "String"%go (![go.MapType go.uint64 (go.StructType [
+      let: "$a2" := ((let: "$sl0" := (Convert go.string go.any ((MethodResolve code.go_etcd_io.raft.v3.quorum.quorum.MajorityConfig "String"%go (![go.MapType go.uint64 (go.StructType [
 
       ])] (StructFieldRef Config "Learners"%go "c"))) #())) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((![go.MapType go.uint64 (go.StructType [
 
@@ -593,22 +593,22 @@ Definition Config__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
 
     ])) UntypedNil))
     then
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
       let: "$a1" := #" learners_next=%s"%go in
-      let: "$a2" := ((let: "$sl0" := (Convert go.string go.any ((MethodResolve quorum.MajorityConfig "String"%go (![go.MapType go.uint64 (go.StructType [
+      let: "$a2" := ((let: "$sl0" := (Convert go.string go.any ((MethodResolve code.go_etcd_io.raft.v3.quorum.quorum.MajorityConfig "String"%go (![go.MapType go.uint64 (go.StructType [
 
       ])] (StructFieldRef Config "LearnersNext"%go "c"))) #())) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
     else do:  #());;;
     (if: ![go.bool] (StructFieldRef Config "AutoLeave"%go "c")
     then
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
       let: "$a1" := ((let: "$sl0" := (Convert go.string go.any #" autoleave"%go) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprint [] #()) "$a0" "$a1")
+      (FuncResolve code.fmt.fmt.Fprint [] #()) "$a0" "$a1")
     else do:  #());;;
-    return: ((MethodResolve (go.PointerType strings.Builder) "String"%go "buf") #())).
+    return: ((MethodResolve (go.PointerType code.strings.strings.Builder) "String"%go "buf") #())).
 
 (* Clone returns a copy of the Config that shares no memory with the original.
 
@@ -680,19 +680,19 @@ Definition Config__Cloneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
      ])] false [go.MapType go.uint64 (go.StructType [
 
      ])])] "$r0");;;
-    return: (let: "$v0" := (let: "$v0" := (let: "$a0" := (![quorum.MajorityConfig] (IndexRef quorum.JointConfig (![quorum.JointConfig] (StructFieldRef Config "Voters"%go (![go.PointerType Config] "c")), #(W64 0)))) in
+    return: (let: "$v0" := (let: "$v0" := (let: "$a0" := (![code.go_etcd_io.raft.v3.quorum.quorum.MajorityConfig] (IndexRef code.go_etcd_io.raft.v3.quorum.quorum.JointConfig (![code.go_etcd_io.raft.v3.quorum.quorum.JointConfig] (StructFieldRef Config "Voters"%go (![go.PointerType Config] "c")), #(W64 0)))) in
      (![go.FunctionType (go.Signature [go.MapType go.uint64 (go.StructType [
 
       ])] false [go.MapType go.uint64 (go.StructType [
 
       ])])] "clone") "$a0") in
-     let: "$v1" := (let: "$a0" := (![quorum.MajorityConfig] (IndexRef quorum.JointConfig (![quorum.JointConfig] (StructFieldRef Config "Voters"%go (![go.PointerType Config] "c")), #(W64 1)))) in
+     let: "$v1" := (let: "$a0" := (![code.go_etcd_io.raft.v3.quorum.quorum.MajorityConfig] (IndexRef code.go_etcd_io.raft.v3.quorum.quorum.JointConfig (![code.go_etcd_io.raft.v3.quorum.quorum.JointConfig] (StructFieldRef Config "Voters"%go (![go.PointerType Config] "c")), #(W64 1)))) in
      (![go.FunctionType (go.Signature [go.MapType go.uint64 (go.StructType [
 
       ])] false [go.MapType go.uint64 (go.StructType [
 
       ])])] "clone") "$a0") in
-     CompositeLiteral quorum.JointConfig (LiteralValue [KeyedElement None (ElementExpression (go.MapType go.uint64 (go.StructType [
+     CompositeLiteral code.go_etcd_io.raft.v3.quorum.quorum.JointConfig (LiteralValue [KeyedElement None (ElementExpression (go.MapType go.uint64 (go.StructType [
 
       ])) "$v0"); KeyedElement None (ElementExpression (go.MapType go.uint64 (go.StructType [
 
@@ -713,7 +713,7 @@ Definition Config__Cloneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       ])] false [go.MapType go.uint64 (go.StructType [
 
       ])])] "clone") "$a0") in
-     CompositeLiteral Config (LiteralValue [KeyedElement (Some (KeyField "Voters"%go)) (ElementExpression quorum.JointConfig "$v0"); KeyedElement (Some (KeyField "Learners"%go)) (ElementExpression (go.MapType go.uint64 (go.StructType [
+     CompositeLiteral Config (LiteralValue [KeyedElement (Some (KeyField "Voters"%go)) (ElementExpression code.go_etcd_io.raft.v3.quorum.quorum.JointConfig "$v0"); KeyedElement (Some (KeyField "Learners"%go)) (ElementExpression (go.MapType go.uint64 (go.StructType [
 
       ])) "$v1"); KeyedElement (Some (KeyField "LearnersNext"%go)) (ElementExpression (go.MapType go.uint64 (go.StructType [
 
@@ -729,12 +729,12 @@ Definition MakeProgressTrackerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     let: "p" := (GoAlloc ProgressTracker (GoZeroVal ProgressTracker #())) in
     let: "$r0" := (let: "$v0" := (![go.int] "maxInflight") in
     let: "$v1" := (![go.uint64] "maxBytes") in
-    let: "$v2" := (let: "$v0" := (let: "$v0" := (CompositeLiteral quorum.MajorityConfig (LiteralValue [])) in
+    let: "$v2" := (let: "$v0" := (let: "$v0" := (CompositeLiteral code.go_etcd_io.raft.v3.quorum.quorum.MajorityConfig (LiteralValue [])) in
     let: "$v1" := UntypedNil in
-    CompositeLiteral quorum.JointConfig (LiteralValue [KeyedElement None (ElementExpression quorum.MajorityConfig "$v0"); KeyedElement None (ElementExpression go.untyped_nil "$v1")])) in
+    CompositeLiteral code.go_etcd_io.raft.v3.quorum.quorum.JointConfig (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.raft.v3.quorum.quorum.MajorityConfig "$v0"); KeyedElement None (ElementExpression go.untyped_nil "$v1")])) in
     let: "$v1" := UntypedNil in
     let: "$v2" := UntypedNil in
-    CompositeLiteral Config (LiteralValue [KeyedElement (Some (KeyField "Voters"%go)) (ElementExpression quorum.JointConfig "$v0"); KeyedElement (Some (KeyField "Learners"%go)) (ElementExpression go.untyped_nil "$v1"); KeyedElement (Some (KeyField "LearnersNext"%go)) (ElementExpression go.untyped_nil "$v2")])) in
+    CompositeLiteral Config (LiteralValue [KeyedElement (Some (KeyField "Voters"%go)) (ElementExpression code.go_etcd_io.raft.v3.quorum.quorum.JointConfig "$v0"); KeyedElement (Some (KeyField "Learners"%go)) (ElementExpression go.untyped_nil "$v1"); KeyedElement (Some (KeyField "LearnersNext"%go)) (ElementExpression go.untyped_nil "$v2")])) in
     let: "$v3" := (CompositeLiteral (go.MapType go.uint64 go.bool) (LiteralValue [])) in
     let: "$v4" := (CompositeLiteral (go.MapType go.uint64 (go.PointerType Progress)) (LiteralValue [])) in
     CompositeLiteral ProgressTracker (LiteralValue [KeyedElement (Some (KeyField "MaxInflight"%go)) (ElementExpression go.int "$v0"); KeyedElement (Some (KeyField "MaxInflightBytes"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Config"%go)) (ElementExpression Config "$v2"); KeyedElement (Some (KeyField "Votes"%go)) (ElementExpression (go.MapType go.uint64 go.bool) "$v3"); KeyedElement (Some (KeyField "Progress"%go)) (ElementExpression (go.MapType go.uint64 (go.PointerType Progress)) "$v4")])) in
@@ -747,16 +747,16 @@ Definition MakeProgressTrackerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
 Definition ProgressTracker__ConfStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "p" <>,
     exception_do (let: "p" := (GoAlloc (go.PointerType ProgressTracker) "p") in
-    return: (let: "$v0" := ((MethodResolve (go.PointerType quorum.MajorityConfig) "Slice"%go (IndexRef quorum.JointConfig (![quorum.JointConfig] (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))), #(W64 0)))) #()) in
-     let: "$v1" := ((MethodResolve (go.PointerType quorum.MajorityConfig) "Slice"%go (IndexRef quorum.JointConfig (![quorum.JointConfig] (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))), #(W64 1)))) #()) in
-     let: "$v2" := ((MethodResolve quorum.MajorityConfig "Slice"%go (![go.MapType go.uint64 (go.StructType [
+    return: (let: "$v0" := ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.quorum.quorum.MajorityConfig) "Slice"%go (IndexRef code.go_etcd_io.raft.v3.quorum.quorum.JointConfig (![code.go_etcd_io.raft.v3.quorum.quorum.JointConfig] (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))), #(W64 0)))) #()) in
+     let: "$v1" := ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.quorum.quorum.MajorityConfig) "Slice"%go (IndexRef code.go_etcd_io.raft.v3.quorum.quorum.JointConfig (![code.go_etcd_io.raft.v3.quorum.quorum.JointConfig] (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))), #(W64 1)))) #()) in
+     let: "$v2" := ((MethodResolve code.go_etcd_io.raft.v3.quorum.quorum.MajorityConfig "Slice"%go (![go.MapType go.uint64 (go.StructType [
 
      ])] (StructFieldRef Config "Learners"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))))) #()) in
-     let: "$v3" := ((MethodResolve quorum.MajorityConfig "Slice"%go (![go.MapType go.uint64 (go.StructType [
+     let: "$v3" := ((MethodResolve code.go_etcd_io.raft.v3.quorum.quorum.MajorityConfig "Slice"%go (![go.MapType go.uint64 (go.StructType [
 
      ])] (StructFieldRef Config "LearnersNext"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))))) #()) in
      let: "$v4" := (![go.bool] (StructFieldRef Config "AutoLeave"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p")))) in
-     CompositeLiteral raftpb.ConfState (LiteralValue [KeyedElement (Some (KeyField "Voters"%go)) (ElementExpression (go.SliceType go.uint64) "$v0"); KeyedElement (Some (KeyField "VotersOutgoing"%go)) (ElementExpression (go.SliceType go.uint64) "$v1"); KeyedElement (Some (KeyField "Learners"%go)) (ElementExpression (go.SliceType go.uint64) "$v2"); KeyedElement (Some (KeyField "LearnersNext"%go)) (ElementExpression (go.SliceType go.uint64) "$v3"); KeyedElement (Some (KeyField "AutoLeave"%go)) (ElementExpression go.bool "$v4")]))).
+     CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState (LiteralValue [KeyedElement (Some (KeyField "Voters"%go)) (ElementExpression (go.SliceType go.uint64) "$v0"); KeyedElement (Some (KeyField "VotersOutgoing"%go)) (ElementExpression (go.SliceType go.uint64) "$v1"); KeyedElement (Some (KeyField "Learners"%go)) (ElementExpression (go.SliceType go.uint64) "$v2"); KeyedElement (Some (KeyField "LearnersNext"%go)) (ElementExpression (go.SliceType go.uint64) "$v3"); KeyedElement (Some (KeyField "AutoLeave"%go)) (ElementExpression go.bool "$v4")]))).
 
 (* IsSingleton returns true if (and only if) there is only one voting member
    (i.e. the leader) in the current configuration.
@@ -765,9 +765,9 @@ Definition ProgressTracker__ConfStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
 Definition ProgressTracker__IsSingletonⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "p" <>,
     exception_do (let: "p" := (GoAlloc (go.PointerType ProgressTracker) "p") in
-    return: (((let: "$a0" := (![quorum.MajorityConfig] (IndexRef quorum.JointConfig (![quorum.JointConfig] (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))), #(W64 0)))) in
-     (FuncResolve go.len [quorum.MajorityConfig] #()) "$a0") =⟨go.int⟩ #(W64 1)) && ((let: "$a0" := (![quorum.MajorityConfig] (IndexRef quorum.JointConfig (![quorum.JointConfig] (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))), #(W64 1)))) in
-     (FuncResolve go.len [quorum.MajorityConfig] #()) "$a0") =⟨go.int⟩ #(W64 0)))).
+    return: (((let: "$a0" := (![code.go_etcd_io.raft.v3.quorum.quorum.MajorityConfig] (IndexRef code.go_etcd_io.raft.v3.quorum.quorum.JointConfig (![code.go_etcd_io.raft.v3.quorum.quorum.JointConfig] (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))), #(W64 0)))) in
+     (FuncResolve go.len [code.go_etcd_io.raft.v3.quorum.quorum.MajorityConfig] #()) "$a0") =⟨go.int⟩ #(W64 1)) && ((let: "$a0" := (![code.go_etcd_io.raft.v3.quorum.quorum.MajorityConfig] (IndexRef code.go_etcd_io.raft.v3.quorum.quorum.JointConfig (![code.go_etcd_io.raft.v3.quorum.quorum.JointConfig] (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))), #(W64 1)))) in
+     (FuncResolve go.len [code.go_etcd_io.raft.v3.quorum.quorum.MajorityConfig] #()) "$a0") =⟨go.int⟩ #(W64 0)))).
 
 (* AckedIndex implements IndexLookuper.
 
@@ -795,8 +795,8 @@ Definition matchAckIndexer__AckedIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
 Definition ProgressTracker__Committedⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "p" <>,
     exception_do (let: "p" := (GoAlloc (go.PointerType ProgressTracker) "p") in
-    return: (let: "$a0" := (Convert matchAckIndexer quorum.AckedIndexer (![ProgressMap] (StructFieldRef ProgressTracker "Progress"%go (![go.PointerType ProgressTracker] "p")))) in
-     (MethodResolve (go.PointerType quorum.JointConfig) "CommittedIndex"%go (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p")))) "$a0")).
+    return: (let: "$a0" := (Convert matchAckIndexer code.go_etcd_io.raft.v3.quorum.quorum.AckedIndexer (![ProgressMap] (StructFieldRef ProgressTracker "Progress"%go (![go.PointerType ProgressTracker] "p")))) in
+     (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.quorum.quorum.JointConfig) "CommittedIndex"%go (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p")))) "$a0")).
 
 (* Visit invokes the supplied closure for all tracked progresses in stable order.
 
@@ -827,7 +827,7 @@ Definition ProgressTracker__Visitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
       let: "$r0" := (![go.uint64] "id") in
       do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "ids", ![go.int] "n")) <-[go.uint64] "$r0")));;;
     do:  (let: "$a0" := (![go.SliceType go.uint64] "ids") in
-    (FuncResolve slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
+    (FuncResolve code.slices.slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
     let: "$range" := (![go.SliceType go.uint64] "ids") in
     (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     slice.for_range go.uint64 "$range" (λ: "$key" "$value",
@@ -860,7 +860,7 @@ Definition ProgressTracker__QuorumActiveⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx 
       ) in
     (MethodResolve (go.PointerType ProgressTracker) "Visit"%go (![go.PointerType ProgressTracker] "p")) "$a0");;;
     return: ((let: "$a0" := (![go.MapType go.uint64 go.bool] "votes") in
-     (MethodResolve (go.PointerType quorum.JointConfig) "VoteResult"%go (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p")))) "$a0") =⟨quorum.VoteResult⟩ quorum.VoteWon)).
+     (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.quorum.quorum.JointConfig) "VoteResult"%go (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p")))) "$a0") =⟨code.go_etcd_io.raft.v3.quorum.quorum.VoteResult⟩ code.go_etcd_io.raft.v3.quorum.quorum.VoteWon)).
 
 (* VoterNodes returns a sorted slice of voters.
 
@@ -873,7 +873,7 @@ Definition ProgressTracker__VoterNodesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
     ])) (GoZeroVal (go.MapType go.uint64 (go.StructType [
 
     ])) #())) in
-    let: "$r0" := ((MethodResolve (go.PointerType quorum.JointConfig) "IDs"%go (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p")))) #()) in
+    let: "$r0" := ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.quorum.quorum.JointConfig) "IDs"%go (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p")))) #()) in
     do:  ("m" <-[go.MapType go.uint64 (go.StructType [
 
     ])] "$r0");;;
@@ -899,7 +899,7 @@ Definition ProgressTracker__VoterNodesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
       (FuncResolve go.append [go.SliceType go.uint64] #()) "$a0" "$a1") in
       do:  ("nodes" <-[go.SliceType go.uint64] "$r0")));;;
     do:  (let: "$a0" := (![go.SliceType go.uint64] "nodes") in
-    (FuncResolve slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
+    (FuncResolve code.slices.slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
     return: (![go.SliceType go.uint64] "nodes")).
 
 (* LearnerNodes returns a sorted slice of learners.
@@ -938,7 +938,7 @@ Definition ProgressTracker__LearnerNodesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx 
       (FuncResolve go.append [go.SliceType go.uint64] #()) "$a0" "$a1") in
       do:  ("nodes" <-[go.SliceType go.uint64] "$r0")));;;
     do:  (let: "$a0" := (![go.SliceType go.uint64] "nodes") in
-    (FuncResolve slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
+    (FuncResolve code.slices.slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
     return: (![go.SliceType go.uint64] "nodes")).
 
 (* ResetVotes prepares for a new round of vote counting via recordVote.
@@ -979,7 +979,7 @@ Definition ProgressTracker__RecordVoteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
    go: tracker.go:260:27 *)
 Definition ProgressTracker__TallyVotesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "p" <>,
-    exception_do (let: <> := (GoAlloc quorum.VoteResult (GoZeroVal quorum.VoteResult #())) in
+    exception_do (let: <> := (GoAlloc code.go_etcd_io.raft.v3.quorum.quorum.VoteResult (GoZeroVal code.go_etcd_io.raft.v3.quorum.quorum.VoteResult #())) in
     let: "rejected" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "granted" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "p" := (GoAlloc (go.PointerType ProgressTracker) "p") in
@@ -1005,11 +1005,11 @@ Definition ProgressTracker__TallyVotesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
       (if: ![go.bool] "v"
       then do:  ("granted" <-[go.int] ((![go.int] "granted") +⟨go.int⟩ #(W64 1)))
       else do:  ("rejected" <-[go.int] ((![go.int] "rejected") +⟨go.int⟩ #(W64 1))))));;;
-    let: "result" := (GoAlloc quorum.VoteResult (GoZeroVal quorum.VoteResult #())) in
+    let: "result" := (GoAlloc code.go_etcd_io.raft.v3.quorum.quorum.VoteResult (GoZeroVal code.go_etcd_io.raft.v3.quorum.quorum.VoteResult #())) in
     let: "$r0" := (let: "$a0" := (![go.MapType go.uint64 go.bool] (StructFieldRef ProgressTracker "Votes"%go (![go.PointerType ProgressTracker] "p"))) in
-    (MethodResolve (go.PointerType quorum.JointConfig) "VoteResult"%go (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p")))) "$a0") in
-    do:  ("result" <-[quorum.VoteResult] "$r0");;;
-    return: (![go.int] "granted", ![go.int] "rejected", ![quorum.VoteResult] "result")).
+    (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.quorum.quorum.JointConfig) "VoteResult"%go (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p")))) "$a0") in
+    do:  ("result" <-[code.go_etcd_io.raft.v3.quorum.quorum.VoteResult] "$r0");;;
+    return: (![go.int] "granted", ![go.int] "rejected", ![code.go_etcd_io.raft.v3.quorum.quorum.VoteResult] "result")).
 
 #[global] Instance info' : PkgInfo pkg_id.tracker :=
 {|
@@ -1020,17 +1020,17 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.tracker (λ: <>,
       exception_do (do:  (go.GlobalAlloc prstmap (go.ArrayType 3 go.string) #());;;
-      do:  (raftpb.initialize' #());;;
-      do:  (quorum.initialize' #());;;
-      do:  (strings.initialize' #());;;
-      do:  (slices.initialize' #());;;
-      do:  (fmt.initialize' #());;;
+      do:  (code.go_etcd_io.raft.v3.raftpb.raftpb.initialize' #());;;
+      do:  (code.go_etcd_io.raft.v3.quorum.quorum.initialize' #());;;
+      do:  (code.strings.strings.initialize' #());;;
+      do:  (code.slices.slices.initialize' #());;;
+      do:  (code.fmt.fmt.initialize' #());;;
       let: "$r0" := (let: "$v0" := #"StateProbe"%go in
       let: "$v1" := #"StateReplicate"%go in
       let: "$v2" := #"StateSnapshot"%go in
       CompositeLiteral (go.ArrayType 3 go.string) (LiteralValue [KeyedElement None (ElementExpression go.string "$v0"); KeyedElement None (ElementExpression go.string "$v1"); KeyedElement None (ElementExpression go.string "$v2")])) in
       do:  ((GlobalVarAddr prstmap #()) <-[go.ArrayType 3 go.string] "$r0");;;
-      let: "$r0" := (Convert matchAckIndexer quorum.AckedIndexer (Convert go.untyped_nil matchAckIndexer UntypedNil)) in
+      let: "$r0" := (Convert matchAckIndexer code.go_etcd_io.raft.v3.quorum.quorum.AckedIndexer (Convert go.untyped_nil matchAckIndexer UntypedNil)) in
       do:  #())
       ).
 
@@ -1240,7 +1240,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  Voters' : quorum.JointConfig.t;
+  Voters' : code.go_etcd_io.raft.v3.quorum.quorum.JointConfig.t;
   AutoLeave' : bool;
   Learners' : map.t;
   LearnersNext' : map.t;
@@ -1253,7 +1253,7 @@ End def.
 End Config.
 
 Definition Config'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "Voters"%go quorum.JointConfig);
+  (go.FieldDecl "Voters"%go code.go_etcd_io.raft.v3.quorum.quorum.JointConfig);
   (go.FieldDecl "AutoLeave"%go go.bool);
   (go.FieldDecl "Learners"%go (go.MapType go.uint64 (go.StructType [
 
@@ -1374,10 +1374,10 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] matchAckIndexer_instance :: matchAckIndexer_Assumptions;
   #[global] NewInflights_unfold :: FuncUnfold NewInflights [] (NewInflightsⁱᵐᵖˡ);
   #[global] MakeProgressTracker_unfold :: FuncUnfold MakeProgressTracker [] (MakeProgressTrackerⁱᵐᵖˡ);
-  #[global] import_fmt_Assumption :: fmt.Assumptions;
-  #[global] import_slices_Assumption :: slices.Assumptions;
-  #[global] import_strings_Assumption :: strings.Assumptions;
-  #[global] import_quorum_Assumption :: quorum.Assumptions;
-  #[global] import_raftpb_Assumption :: raftpb.Assumptions;
+  #[global] import_fmt_Assumption :: code.fmt.fmt.Assumptions;
+  #[global] import_slices_Assumption :: code.slices.slices.Assumptions;
+  #[global] import_strings_Assumption :: code.strings.strings.Assumptions;
+  #[global] import_quorum_Assumption :: code.go_etcd_io.raft.v3.quorum.quorum.Assumptions;
+  #[global] import_raftpb_Assumption :: code.go_etcd_io.raft.v3.raftpb.raftpb.Assumptions;
 }.
 End tracker.

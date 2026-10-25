@@ -62,7 +62,7 @@ Definition SumNoOverflowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     let: "x" := (GoAlloc go.uint64 "x") in
     return: (let: "$a0" := (![go.uint64] "x") in
      let: "$a1" := (![go.uint64] "y") in
-     (FuncResolve std_core.SumNoOverflow [] #()) "$a0" "$a1")).
+     (FuncResolve code.github_com.goose_lang.std.std_core.std_core.SumNoOverflow [] #()) "$a0" "$a1")).
 
 (* SumAssumeNoOverflow returns x + y, `Assume`ing that this does not overflow.
 
@@ -75,15 +75,15 @@ Definition SumAssumeNoOverflowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     let: "x" := (GoAlloc go.uint64 "x") in
     return: (let: "$a0" := (![go.uint64] "x") in
      let: "$a1" := (![go.uint64] "y") in
-     (FuncResolve std_core.SumAssumeNoOverflow [] #()) "$a0" "$a1")).
+     (FuncResolve code.github_com.goose_lang.std.std_core.std_core.SumAssumeNoOverflow [] #()) "$a0" "$a1")).
 
 (* go: goose_std.go:31:6 *)
 Definition SignedSumAssumeNoOverflowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "y",
     exception_do (let: "y" := (GoAlloc go.int "y") in
     let: "x" := (GoAlloc go.int "x") in
-    do:  (let: "$a0" := ((((![go.int] "y") ≥⟨go.int⟩ #(W64 0)) && ((![go.int] "x") ≤⟨go.int⟩ ((Convert go.untyped_int go.int math.MaxInt) -⟨go.int⟩ (![go.int] "y")))) || (((![go.int] "y") <⟨go.int⟩ #(W64 0)) && ((![go.int] "x") ≥⟨go.int⟩ ((Convert go.untyped_int go.int math.MinInt) -⟨go.int⟩ (![go.int] "y"))))) in
-    (FuncResolve primitive.Assume [] #()) "$a0");;;
+    do:  (let: "$a0" := ((((![go.int] "y") ≥⟨go.int⟩ #(W64 0)) && ((![go.int] "x") ≤⟨go.int⟩ ((Convert go.untyped_int go.int code.math.math.MaxInt) -⟨go.int⟩ (![go.int] "y")))) || (((![go.int] "y") <⟨go.int⟩ #(W64 0)) && ((![go.int] "x") ≥⟨go.int⟩ ((Convert go.untyped_int go.int code.math.math.MinInt) -⟨go.int⟩ (![go.int] "y"))))) in
+    (FuncResolve code.github_com.goose_lang.primitive.primitive.Assume [] #()) "$a0");;;
     return: ((![go.int] "x") +⟨go.int⟩ (![go.int] "y"))).
 
 (* BytesEqual returns if the two byte slices are equal.
@@ -150,27 +150,27 @@ Definition SliceSplitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 (* go: goose_std.go:84:6 *)
 Definition newJoinHandleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (let: "mu" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
-    let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
-    do:  ("mu" <-[go.PointerType sync.Mutex] "$r0");;;
-    let: "cond" := (GoAlloc (go.PointerType sync.Cond) (GoZeroVal (go.PointerType sync.Cond) #())) in
-    let: "$r0" := (let: "$a0" := (Convert (go.PointerType sync.Mutex) sync.Locker (![go.PointerType sync.Mutex] "mu")) in
-    (FuncResolve sync.NewCond [] #()) "$a0") in
-    do:  ("cond" <-[go.PointerType sync.Cond] "$r0");;;
-    return: (GoAlloc JoinHandle (let: "$v0" := (![go.PointerType sync.Mutex] "mu") in
+    exception_do (let: "mu" := (GoAlloc (go.PointerType code.sync.sync.Mutex) (GoZeroVal (go.PointerType code.sync.sync.Mutex) #())) in
+    let: "$r0" := (GoAlloc code.sync.sync.Mutex (GoZeroVal code.sync.sync.Mutex #())) in
+    do:  ("mu" <-[go.PointerType code.sync.sync.Mutex] "$r0");;;
+    let: "cond" := (GoAlloc (go.PointerType code.sync.sync.Cond) (GoZeroVal (go.PointerType code.sync.sync.Cond) #())) in
+    let: "$r0" := (let: "$a0" := (Convert (go.PointerType code.sync.sync.Mutex) code.sync.sync.Locker (![go.PointerType code.sync.sync.Mutex] "mu")) in
+    (FuncResolve code.sync.sync.NewCond [] #()) "$a0") in
+    do:  ("cond" <-[go.PointerType code.sync.sync.Cond] "$r0");;;
+    return: (GoAlloc JoinHandle (let: "$v0" := (![go.PointerType code.sync.sync.Mutex] "mu") in
      let: "$v1" := #false in
-     let: "$v2" := (![go.PointerType sync.Cond] "cond") in
-     CompositeLiteral JoinHandle (LiteralValue [KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (go.PointerType sync.Mutex) "$v0"); KeyedElement (Some (KeyField "done"%go)) (ElementExpression go.bool "$v1"); KeyedElement (Some (KeyField "cond"%go)) (ElementExpression (go.PointerType sync.Cond) "$v2")])))).
+     let: "$v2" := (![go.PointerType code.sync.sync.Cond] "cond") in
+     CompositeLiteral JoinHandle (LiteralValue [KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (go.PointerType code.sync.sync.Mutex) "$v0"); KeyedElement (Some (KeyField "done"%go)) (ElementExpression go.bool "$v1"); KeyedElement (Some (KeyField "cond"%go)) (ElementExpression (go.PointerType code.sync.sync.Cond) "$v2")])))).
 
 (* go: goose_std.go:94:22 *)
 Definition JoinHandle__finishⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "h" <>,
     exception_do (let: "h" := (GoAlloc (go.PointerType JoinHandle) "h") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef JoinHandle "mu"%go (![go.PointerType JoinHandle] "h")))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (![go.PointerType code.sync.sync.Mutex] (StructFieldRef JoinHandle "mu"%go (![go.PointerType JoinHandle] "h")))) #());;;
     let: "$r0" := #true in
     do:  ((StructFieldRef JoinHandle "done"%go (![go.PointerType JoinHandle] "h")) <-[go.bool] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.Cond) "Signal"%go (![go.PointerType sync.Cond] (StructFieldRef JoinHandle "cond"%go (![go.PointerType JoinHandle] "h")))) #());;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef JoinHandle "mu"%go (![go.PointerType JoinHandle] "h")))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Cond) "Signal"%go (![go.PointerType code.sync.sync.Cond] (StructFieldRef JoinHandle "cond"%go (![go.PointerType JoinHandle] "h")))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (![go.PointerType code.sync.sync.Mutex] (StructFieldRef JoinHandle "mu"%go (![go.PointerType JoinHandle] "h")))) #());;;
     return: #()).
 
 (* Spawn runs `f` in a parallel goroutine and returns a handle to wait for
@@ -200,7 +200,7 @@ Definition Spawnⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
 Definition JoinHandle__Joinⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "h" <>,
     exception_do (let: "h" := (GoAlloc (go.PointerType JoinHandle) "h") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef JoinHandle "mu"%go (![go.PointerType JoinHandle] "h")))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (![go.PointerType code.sync.sync.Mutex] (StructFieldRef JoinHandle "mu"%go (![go.PointerType JoinHandle] "h")))) #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: ![go.bool] (StructFieldRef JoinHandle "done"%go (![go.PointerType JoinHandle] "h"))
       then
@@ -208,8 +208,8 @@ Definition JoinHandle__Joinⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
         do:  ((StructFieldRef JoinHandle "done"%go (![go.PointerType JoinHandle] "h")) <-[go.bool] "$r0");;;
         break: #()
       else do:  #());;;
-      do:  ((MethodResolve (go.PointerType sync.Cond) "Wait"%go (![go.PointerType sync.Cond] (StructFieldRef JoinHandle "cond"%go (![go.PointerType JoinHandle] "h")))) #()));;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef JoinHandle "mu"%go (![go.PointerType JoinHandle] "h")))) #());;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.Cond) "Wait"%go (![go.PointerType code.sync.sync.Cond] (StructFieldRef JoinHandle "cond"%go (![go.PointerType JoinHandle] "h")))) #()));;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (![go.PointerType code.sync.sync.Mutex] (StructFieldRef JoinHandle "mu"%go (![go.PointerType JoinHandle] "h")))) #());;;
     return: #()).
 
 (* Multipar runs op(0) ... op(num-1) in parallel and waits for them all to finish.
@@ -226,13 +226,13 @@ Definition Multiparⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     let: "num_left" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (![go.uint64] "num") in
     do:  ("num_left" <-[go.uint64] "$r0");;;
-    let: "num_left_mu" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
-    let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
-    do:  ("num_left_mu" <-[go.PointerType sync.Mutex] "$r0");;;
-    let: "num_left_cond" := (GoAlloc (go.PointerType sync.Cond) (GoZeroVal (go.PointerType sync.Cond) #())) in
-    let: "$r0" := (let: "$a0" := (Convert (go.PointerType sync.Mutex) sync.Locker (![go.PointerType sync.Mutex] "num_left_mu")) in
-    (FuncResolve sync.NewCond [] #()) "$a0") in
-    do:  ("num_left_cond" <-[go.PointerType sync.Cond] "$r0");;;
+    let: "num_left_mu" := (GoAlloc (go.PointerType code.sync.sync.Mutex) (GoZeroVal (go.PointerType code.sync.sync.Mutex) #())) in
+    let: "$r0" := (GoAlloc code.sync.sync.Mutex (GoZeroVal code.sync.sync.Mutex #())) in
+    do:  ("num_left_mu" <-[go.PointerType code.sync.sync.Mutex] "$r0");;;
+    let: "num_left_cond" := (GoAlloc (go.PointerType code.sync.sync.Cond) (GoZeroVal (go.PointerType code.sync.sync.Cond) #())) in
+    let: "$r0" := (let: "$a0" := (Convert (go.PointerType code.sync.sync.Mutex) code.sync.sync.Locker (![go.PointerType code.sync.sync.Mutex] "num_left_mu")) in
+    (FuncResolve code.sync.sync.NewCond [] #()) "$a0") in
+    do:  ("num_left_cond" <-[go.PointerType code.sync.sync.Cond] "$r0");;;
     (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
@@ -243,17 +243,17 @@ Definition Multiparⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
       let: "$go" := (λ: <>,
         exception_do (do:  (let: "$a0" := (![go.uint64] "i") in
         (![go.FunctionType (go.Signature [go.uint64] false [])] "op") "$a0");;;
-        do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] "num_left_mu")) #());;;
+        do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (![go.PointerType code.sync.sync.Mutex] "num_left_mu")) #());;;
         do:  ("num_left" <-[go.uint64] ((![go.uint64] "num_left") -⟨go.uint64⟩ #(W64 1)));;;
-        do:  ((MethodResolve (go.PointerType sync.Cond) "Signal"%go (![go.PointerType sync.Cond] "num_left_cond")) #());;;
-        do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] "num_left_mu")) #());;;
+        do:  ((MethodResolve (go.PointerType code.sync.sync.Cond) "Signal"%go (![go.PointerType code.sync.sync.Cond] "num_left_cond")) #());;;
+        do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (![go.PointerType code.sync.sync.Mutex] "num_left_mu")) #());;;
         return: #())
         ) in
       do:  (Fork ("$go" #()))));;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] "num_left_mu")) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (![go.PointerType code.sync.sync.Mutex] "num_left_mu")) #());;;
     (for: (λ: <>, (![go.uint64] "num_left") >⟨go.uint64⟩ #(W64 0)); (λ: <>, #()) := λ: <>,
-      do:  ((MethodResolve (go.PointerType sync.Cond) "Wait"%go (![go.PointerType sync.Cond] "num_left_cond")) #()));;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] "num_left_mu")) #());;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.Cond) "Wait"%go (![go.PointerType code.sync.sync.Cond] "num_left_cond")) #()));;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (![go.PointerType code.sync.sync.Mutex] "num_left_mu")) #());;;
     return: #()).
 
 (* Skip is a no-op that can be useful in proofs.
@@ -279,7 +279,7 @@ Definition Skipⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val 
 Definition WaitTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "cond" "timeoutMs",
     exception_do (let: "timeoutMs" := (GoAlloc go.uint64 "timeoutMs") in
-    let: "cond" := (GoAlloc (go.PointerType sync.Cond) "cond") in
+    let: "cond" := (GoAlloc (go.PointerType code.sync.sync.Cond) "cond") in
     let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
 
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
@@ -292,8 +292,8 @@ Definition WaitTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 
     ])] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  ((MethodResolve (go.PointerType sync.Cond) "Wait"%go (![go.PointerType sync.Cond] "cond")) #());;;
-      do:  ((MethodResolve sync.Locker "Unlock"%go (![sync.Locker] (StructFieldRef sync.Cond "L"%go (![go.PointerType sync.Cond] "cond")))) #());;;
+      exception_do (do:  ((MethodResolve (go.PointerType code.sync.sync.Cond) "Wait"%go (![go.PointerType code.sync.sync.Cond] "cond")) #());;;
+      do:  ((MethodResolve code.sync.sync.Locker "Unlock"%go (![code.sync.sync.Locker] (StructFieldRef code.sync.sync.Cond "L"%go (![go.PointerType code.sync.sync.Cond] "cond")))) #());;;
       do:  (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
 
       ])] "done") in
@@ -303,18 +303,18 @@ Definition WaitTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    let: "$ch0" := (let: "$a0" := ((Convert go.uint64 time.Duration (![go.uint64] "timeoutMs")) *⟨time.Duration⟩ time.Millisecond) in
-    (FuncResolve time.After [] #()) "$a0") in
+    let: "$ch0" := (let: "$a0" := ((Convert go.uint64 code.time.time.Duration (![go.uint64] "timeoutMs")) *⟨code.time.time.Duration⟩ code.time.time.Millisecond) in
+    (FuncResolve code.time.time.After [] #()) "$a0") in
     let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] "done") in
-    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase time.Time "$ch0") (λ: "$recvVal",
-      do:  ((MethodResolve sync.Locker "Lock"%go (![sync.Locker] (StructFieldRef sync.Cond "L"%go (![go.PointerType sync.Cond] "cond")))) #());;;
+    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase code.time.time.Time "$ch0") (λ: "$recvVal",
+      do:  ((MethodResolve code.sync.sync.Locker "Lock"%go (![code.sync.sync.Locker] (StructFieldRef code.sync.sync.Cond "L"%go (![go.PointerType code.sync.sync.Cond] "cond")))) #());;;
       return: (#())
       )); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (λ: "$recvVal",
-      do:  ((MethodResolve sync.Locker "Lock"%go (![sync.Locker] (StructFieldRef sync.Cond "L"%go (![go.PointerType sync.Cond] "cond")))) #());;;
+      do:  ((MethodResolve code.sync.sync.Locker "Lock"%go (![code.sync.sync.Locker] (StructFieldRef code.sync.sync.Cond "L"%go (![go.PointerType code.sync.sync.Cond] "cond")))) #());;;
       return: (#())
       ))]);;;
     return: #()).
@@ -327,11 +327,11 @@ Definition WaitTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.std (λ: <>,
-      exception_do (do:  (std_core.initialize' #());;;
-      do:  (primitive.initialize' #());;;
-      do:  (time.initialize' #());;;
-      do:  (sync.initialize' #());;;
-      do:  (math.initialize' #()))
+      exception_do (do:  (code.github_com.goose_lang.std.std_core.std_core.initialize' #());;;
+      do:  (code.github_com.goose_lang.primitive.primitive.initialize' #());;;
+      do:  (code.time.time.initialize' #());;;
+      do:  (code.sync.sync.initialize' #());;;
+      do:  (code.math.math.initialize' #()))
       ).
 
 Module JoinHandle.
@@ -351,9 +351,9 @@ End def.
 End JoinHandle.
 
 Definition JoinHandle'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "mu"%go (go.PointerType sync.Mutex));
+  (go.FieldDecl "mu"%go (go.PointerType code.sync.sync.Mutex));
   (go.FieldDecl "done"%go go.bool);
-  (go.FieldDecl "cond"%go (go.PointerType sync.Cond))
+  (go.FieldDecl "cond"%go (go.PointerType code.sync.sync.Cond))
 ].
 Program Definition JoinHandle'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (JoinHandle'fds_unsealed).
 Global Instance equals_unfold_JoinHandle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : JoinHandle'fds =→ JoinHandle'fds_unsealed.
@@ -390,10 +390,10 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] Multipar_unfold :: FuncUnfold Multipar [] (Multiparⁱᵐᵖˡ);
   #[global] Skip_unfold :: FuncUnfold Skip [] (Skipⁱᵐᵖˡ);
   #[global] WaitTimeout_unfold :: FuncUnfold WaitTimeout [] (WaitTimeoutⁱᵐᵖˡ);
-  #[global] import_math_Assumption :: math.Assumptions;
-  #[global] import_sync_Assumption :: sync.Assumptions;
-  #[global] import_time_Assumption :: time.Assumptions;
-  #[global] import_primitive_Assumption :: primitive.Assumptions;
-  #[global] import_std_core_Assumption :: std_core.Assumptions;
+  #[global] import_math_Assumption :: code.math.math.Assumptions;
+  #[global] import_sync_Assumption :: code.sync.sync.Assumptions;
+  #[global] import_time_Assumption :: code.time.time.Assumptions;
+  #[global] import_primitive_Assumption :: code.github_com.goose_lang.primitive.primitive.Assumptions;
+  #[global] import_std_core_Assumption :: code.github_com.goose_lang.std.std_core.std_core.Assumptions;
 }.
 End std.

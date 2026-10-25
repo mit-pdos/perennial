@@ -2462,8 +2462,8 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  (go.GlobalAlloc RangeRequest_SortTarget_name (go.MapType go.int32 go.string) #());;;
       do:  (go.GlobalAlloc RangeRequest_SortOrder_value (go.MapType go.string go.int32) #());;;
       do:  (go.GlobalAlloc RangeRequest_SortOrder_name (go.MapType go.int32 go.string) #());;;
-      do:  (mvccpb.initialize' #());;;
-      do:  (membershippb.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.api.v3.membershippb.membershippb.initialize' #());;;
       do:  (_'init #());;;
       do:  (_'init #());;;
       do:  (_'init #());;;
@@ -2731,9 +2731,9 @@ Definition InternalRaftRequest'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlob
   (go.FieldDecl "AuthRoleGet"%go (go.PointerType AuthRoleGetRequest));
   (go.FieldDecl "AuthRoleGrantPermission"%go (go.PointerType AuthRoleGrantPermissionRequest));
   (go.FieldDecl "AuthRoleRevokePermission"%go (go.PointerType AuthRoleRevokePermissionRequest));
-  (go.FieldDecl "ClusterVersionSet"%go (go.PointerType membershippb.ClusterVersionSetRequest));
-  (go.FieldDecl "ClusterMemberAttrSet"%go (go.PointerType membershippb.ClusterMemberAttrSetRequest));
-  (go.FieldDecl "DowngradeInfoSet"%go (go.PointerType membershippb.DowngradeInfoSetRequest));
+  (go.FieldDecl "ClusterVersionSet"%go (go.PointerType code.go_etcd_io.etcd.api.v3.membershippb.membershippb.ClusterVersionSetRequest));
+  (go.FieldDecl "ClusterMemberAttrSet"%go (go.PointerType code.go_etcd_io.etcd.api.v3.membershippb.membershippb.ClusterMemberAttrSetRequest));
+  (go.FieldDecl "DowngradeInfoSet"%go (go.PointerType code.go_etcd_io.etcd.api.v3.membershippb.membershippb.DowngradeInfoSetRequest));
   (go.FieldDecl "DowngradeVersionTest"%go (go.PointerType DowngradeVersionTestRequest));
   (go.FieldDecl "XXX_NoUnkeyedLiteral"%go (go.StructType [
 
@@ -3239,7 +3239,7 @@ End RangeResponse.
 
 Definition RangeResponse'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "Header"%go (go.PointerType ResponseHeader));
-  (go.FieldDecl "Kvs"%go (go.SliceType (go.PointerType mvccpb.KeyValue)));
+  (go.FieldDecl "Kvs"%go (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)));
   (go.FieldDecl "More"%go go.bool);
   (go.FieldDecl "Count"%go go.int64);
   (go.FieldDecl "XXX_NoUnkeyedLiteral"%go (go.StructType [
@@ -3359,7 +3359,7 @@ End PutResponse.
 
 Definition PutResponse'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "Header"%go (go.PointerType ResponseHeader));
-  (go.FieldDecl "PrevKv"%go (go.PointerType mvccpb.KeyValue));
+  (go.FieldDecl "PrevKv"%go (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue));
   (go.FieldDecl "XXX_NoUnkeyedLiteral"%go (go.StructType [
 
   ]));
@@ -3463,7 +3463,7 @@ End DeleteRangeResponse.
 Definition DeleteRangeResponse'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "Header"%go (go.PointerType ResponseHeader));
   (go.FieldDecl "Deleted"%go go.int64);
-  (go.FieldDecl "PrevKvs"%go (go.SliceType (go.PointerType mvccpb.KeyValue)));
+  (go.FieldDecl "PrevKvs"%go (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)));
   (go.FieldDecl "XXX_NoUnkeyedLiteral"%go (go.StructType [
 
   ]));
@@ -6322,7 +6322,7 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] AuthServer_instance :: AuthServer_Assumptions;
   #[global] UnimplementedAuthServer_instance :: UnimplementedAuthServer_Assumptions;
   #[global] UnsafeAuthServer_instance :: UnsafeAuthServer_Assumptions;
-  #[global] import_membershippb_Assumption :: membershippb.Assumptions;
-  #[global] import_mvccpb_Assumption :: mvccpb.Assumptions;
+  #[global] import_membershippb_Assumption :: code.go_etcd_io.etcd.api.v3.membershippb.membershippb.Assumptions;
+  #[global] import_mvccpb_Assumption :: code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.Assumptions;
 }.
 End etcdserverpb.

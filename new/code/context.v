@@ -140,8 +140,8 @@ Definition deadlineExceededError__Temporaryⁱᵐᵖˡ {ext : ffi_syntax} {go_gc
 Definition emptyCtx__Deadlineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <> <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "deadline" := (GoAlloc time.Time (GoZeroVal time.Time #())) in
-    return: (![time.Time] "deadline", ![go.bool] "ok")).
+    let: "deadline" := (GoAlloc code.time.time.Time (GoZeroVal code.time.time.Time #())) in
+    return: (![code.time.time.Time] "deadline", ![go.bool] "ok")).
 
 (* go: context.go:187:17 *)
 Definition emptyCtx__Doneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -292,11 +292,11 @@ Definition Causeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
     do:  ("ok" <-[go.bool] "$r1");;;
     (if: ![go.bool] "ok"
     then
-      do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "cc"))) #());;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "cc"))) #());;;
       let: "cause" := (GoAlloc go.error (GoZeroVal go.error #())) in
       let: "$r0" := (![go.error] (StructFieldRef cancelCtx "cause"%go (![go.PointerType cancelCtx] "cc"))) in
       do:  ("cause" <-[go.error] "$r0");;;
-      do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "cc"))) #());;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "cc"))) #());;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "cause") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (![go.error] "cause")
       else do:  #())
@@ -343,7 +343,7 @@ Definition AfterFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
          do:  ("stopped" <-[go.bool] "$r0");;;
          return: #())
          ) in
-       (MethodResolve (go.PointerType sync.Once) "Do"%go (StructFieldRef afterFuncCtx "once"%go (![go.PointerType afterFuncCtx] "a"))) "$a0");;;
+       (MethodResolve (go.PointerType code.sync.sync.Once) "Do"%go (StructFieldRef afterFuncCtx "once"%go (![go.PointerType afterFuncCtx] "a"))) "$a0");;;
        (if: ![go.bool] "stopped"
        then
          do:  (let: "$a0" := #true in
@@ -376,7 +376,7 @@ Definition afterFuncCtx__cancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
       do:  (Fork ("$go" #()));;;
       return: #())
       ) in
-    (MethodResolve (go.PointerType sync.Once) "Do"%go (StructFieldRef afterFuncCtx "once"%go (![go.PointerType afterFuncCtx] "a"))) "$a0");;;
+    (MethodResolve (go.PointerType code.sync.sync.Once) "Do"%go (StructFieldRef afterFuncCtx "once"%go (![go.PointerType afterFuncCtx] "a"))) "$a0");;;
     return: #()).
 
 (* parentCancelCtx returns the underlying *cancelCtx for parent.
@@ -436,7 +436,7 @@ Definition parentCancelCtxⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     ])) #())) in
     let: ("$ret0", "$ret1") := (TypeAssert2 (go.ChannelType go.sendrecv (go.StructType [
 
-    ])) ((MethodResolve (go.PointerType atomic.Value) "Load"%go (StructFieldRef cancelCtx "done"%go (![go.PointerType cancelCtx] "p"))) #())) in
+    ])) ((MethodResolve (go.PointerType code.sync.atomic.atomic.Value) "Load"%go (StructFieldRef cancelCtx "done"%go (![go.PointerType cancelCtx] "p"))) #())) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("pdone" <-[go.ChannelType go.sendrecv (go.StructType [
@@ -488,7 +488,7 @@ Definition removeChildⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     (if: (⟨go.bool⟩! (![go.bool] "ok"))
     then return: (#())
     else do:  #());;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "p"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "p"))) #());;;
     (if: Convert go.untyped_bool go.bool ((![go.MapType canceler (go.StructType [
 
     ])] (StructFieldRef cancelCtx "children"%go (![go.PointerType cancelCtx] "p"))) ≠⟨go.MapType canceler (go.StructType [
@@ -505,7 +505,7 @@ Definition removeChildⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 
        ])] #()) "$a0" "$a1")
     else do:  #());;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "p"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "p"))) #());;;
     return: #()).
 
 (* go: context.go:441:21 *)
@@ -525,7 +525,7 @@ Definition cancelCtx__Doneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
   λ: "c" <>,
     with_defer: (let: "c" := (GoAlloc (go.PointerType cancelCtx) "c") in
     let: "d" := (GoAlloc go.any (GoZeroVal go.any #())) in
-    let: "$r0" := ((MethodResolve (go.PointerType atomic.Value) "Load"%go (StructFieldRef cancelCtx "done"%go (![go.PointerType cancelCtx] "c"))) #()) in
+    let: "$r0" := ((MethodResolve (go.PointerType code.sync.atomic.atomic.Value) "Load"%go (StructFieldRef cancelCtx "done"%go (![go.PointerType cancelCtx] "c"))) #()) in
     do:  ("d" <-[go.any] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.any] "d") ≠⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
     then
@@ -537,14 +537,14 @@ Definition cancelCtx__Doneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 
        ])) (![go.any] "d")))
     else do:  #());;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "$r0" := ((MethodResolve (go.PointerType atomic.Value) "Load"%go (StructFieldRef cancelCtx "done"%go (![go.PointerType cancelCtx] "c"))) #()) in
+    let: "$r0" := ((MethodResolve (go.PointerType code.sync.atomic.atomic.Value) "Load"%go (StructFieldRef cancelCtx "done"%go (![go.PointerType cancelCtx] "c"))) #()) in
     do:  ("d" <-[go.any] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.any] "d") =⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
     then
@@ -555,7 +555,7 @@ Definition cancelCtx__Doneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
        ])] #()) #())) in
       do:  ("d" <-[go.any] "$r0");;;
       do:  (let: "$a0" := (![go.any] "d") in
-      (MethodResolve (go.PointerType atomic.Value) "Store"%go (StructFieldRef cancelCtx "done"%go (![go.PointerType cancelCtx] "c"))) "$a0")
+      (MethodResolve (go.PointerType code.sync.atomic.atomic.Value) "Store"%go (StructFieldRef cancelCtx "done"%go (![go.PointerType cancelCtx] "c"))) "$a0")
     else do:  #());;;
     return: (Convert (go.ChannelType go.sendrecv (go.StructType [
 
@@ -570,7 +570,7 @@ Definition cancelCtx__Errⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType cancelCtx) "c") in
     (let: "err" := (GoAlloc go.any (GoZeroVal go.any #())) in
-    let: "$r0" := ((MethodResolve (go.PointerType atomic.Value) "Load"%go (StructFieldRef cancelCtx "err"%go (![go.PointerType cancelCtx] "c"))) #()) in
+    let: "$r0" := ((MethodResolve (go.PointerType code.sync.atomic.atomic.Value) "Load"%go (StructFieldRef cancelCtx "err"%go (![go.PointerType cancelCtx] "c"))) #()) in
     do:  ("err" <-[go.any] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.any] "err") ≠⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
     then
@@ -633,9 +633,9 @@ Definition cancelCtx__propagateCancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
     do:  ("ok" <-[go.bool] "$r1");;;
     (if: ![go.bool] "ok"
     then
-      do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "p"))) #());;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "p"))) #());;;
       (let: "err" := (GoAlloc go.any (GoZeroVal go.any #())) in
-      let: "$r0" := ((MethodResolve (go.PointerType atomic.Value) "Load"%go (StructFieldRef cancelCtx "err"%go (![go.PointerType cancelCtx] "p"))) #()) in
+      let: "$r0" := ((MethodResolve (go.PointerType code.sync.atomic.atomic.Value) "Load"%go (StructFieldRef cancelCtx "err"%go (![go.PointerType cancelCtx] "p"))) #()) in
       do:  ("err" <-[go.any] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.any] "err") ≠⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
       then
@@ -665,7 +665,7 @@ Definition cancelCtx__propagateCancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
         do:  (map.insert canceler (![go.MapType canceler (go.StructType [
 
         ])] (StructFieldRef cancelCtx "children"%go (![go.PointerType cancelCtx] "p"))) (![canceler] "child") "$r0")));;;
-      do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "p"))) #());;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "p"))) #());;;
       return: (#())
     else do:  #()));;;
     (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
@@ -677,7 +677,7 @@ Definition cancelCtx__propagateCancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
     do:  ("ok" <-[go.bool] "$r1");;;
     (if: ![go.bool] "ok"
     then
-      do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) #());;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) #());;;
       let: "stop" := (GoAlloc (go.FunctionType (go.Signature [] false [go.bool])) (GoZeroVal (go.FunctionType (go.Signature [] false [go.bool])) #())) in
       let: "$r0" := (let: "$a0" := (λ: <>,
         exception_do (do:  (let: "$a0" := #false in
@@ -693,11 +693,11 @@ Definition cancelCtx__propagateCancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
       let: "$v1" := (![go.FunctionType (go.Signature [] false [go.bool])] "stop") in
       CompositeLiteral stopCtx (LiteralValue [KeyedElement (Some (KeyField "Context"%go)) (ElementExpression Context "$v0"); KeyedElement (Some (KeyField "stop"%go)) (ElementExpression (go.FunctionType (go.Signature [] false [go.bool])) "$v1")]))) in
       do:  ((StructFieldRef cancelCtx "Context"%go (![go.PointerType cancelCtx] "c")) <-[Context] "$r0");;;
-      do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) #());;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) #());;;
       return: (#())
     else do:  #()));;;
     do:  (let: "$a0" := #(W32 1) in
-    (MethodResolve (go.PointerType atomic.Int32) "Add"%go (GlobalVarAddr goroutines #())) "$a0");;;
+    (MethodResolve (go.PointerType code.sync.atomic.atomic.Int32) "Add"%go (GlobalVarAddr goroutines #())) "$a0");;;
     let: "$go" := (λ: <>,
       exception_do (let: "$ch0" := ((MethodResolve Context "Done"%go (![Context] "parent")) #()) in
       let: "$ch1" := ((MethodResolve canceler "Done"%go (![canceler] "child")) #()) in
@@ -747,14 +747,14 @@ Definition cancelCtx__cancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
       let: "$r0" := (![go.error] "err") in
       do:  ("cause" <-[go.error] "$r0")
     else do:  #());;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) #());;;
-    (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType atomic.Value) "Load"%go (StructFieldRef cancelCtx "err"%go (![go.PointerType cancelCtx] "c"))) #()) ≠⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) #());;;
+    (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType code.sync.atomic.atomic.Value) "Load"%go (StructFieldRef cancelCtx "err"%go (![go.PointerType cancelCtx] "c"))) #()) ≠⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
     then
-      do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) #());;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) #());;;
       return: (#())
     else do:  #());;;
     do:  (let: "$a0" := (Convert go.error go.any (![go.error] "err")) in
-    (MethodResolve (go.PointerType atomic.Value) "Store"%go (StructFieldRef cancelCtx "err"%go (![go.PointerType cancelCtx] "c"))) "$a0");;;
+    (MethodResolve (go.PointerType code.sync.atomic.atomic.Value) "Store"%go (StructFieldRef cancelCtx "err"%go (![go.PointerType cancelCtx] "c"))) "$a0");;;
     let: "$r0" := (![go.error] "cause") in
     do:  ((StructFieldRef cancelCtx "cause"%go (![go.PointerType cancelCtx] "c")) <-[go.error] "$r0");;;
     let: "d" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
@@ -764,7 +764,7 @@ Definition cancelCtx__cancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     ])) #())) in
     let: ("$ret0", "$ret1") := (TypeAssert2 (go.ChannelType go.sendrecv (go.StructType [
 
-    ])) ((MethodResolve (go.PointerType atomic.Value) "Load"%go (StructFieldRef cancelCtx "done"%go (![go.PointerType cancelCtx] "c"))) #())) in
+    ])) ((MethodResolve (go.PointerType code.sync.atomic.atomic.Value) "Load"%go (StructFieldRef cancelCtx "done"%go (![go.PointerType cancelCtx] "c"))) #())) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("d" <-[go.ChannelType go.sendrecv (go.StructType [
@@ -784,7 +784,7 @@ Definition cancelCtx__cancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
       ])) go.any (![go.ChannelType go.sendrecv (go.StructType [
 
       ])] (GlobalVarAddr closedchan #()))) in
-      (MethodResolve (go.PointerType atomic.Value) "Store"%go (StructFieldRef cancelCtx "done"%go (![go.PointerType cancelCtx] "c"))) "$a0")
+      (MethodResolve (go.PointerType code.sync.atomic.atomic.Value) "Store"%go (StructFieldRef cancelCtx "done"%go (![go.PointerType cancelCtx] "c"))) "$a0")
     else
       do:  (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
 
@@ -810,7 +810,7 @@ Definition cancelCtx__cancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     do:  ((StructFieldRef cancelCtx "children"%go (![go.PointerType cancelCtx] "c")) <-[go.MapType canceler (go.StructType [
 
     ])] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) #());;;
     (if: ![go.bool] "removeFromParent"
     then
       do:  (let: "$a0" := (![Context] (StructFieldRef cancelCtx "Context"%go (![go.PointerType cancelCtx] "c"))) in
@@ -840,8 +840,8 @@ Definition WithoutCancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 Definition withoutCancelCtx__Deadlineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <> <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "deadline" := (GoAlloc time.Time (GoZeroVal time.Time #())) in
-    return: (![time.Time] "deadline", ![go.bool] "ok")).
+    let: "deadline" := (GoAlloc code.time.time.Time (GoZeroVal code.time.time.Time #())) in
+    return: (![code.time.time.Time] "deadline", ![go.bool] "ok")).
 
 (* go: context.go:600:25 *)
 Definition withoutCancelCtx__Doneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -884,10 +884,10 @@ Definition withoutCancelCtx__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
    go: context.go:625:6 *)
 Definition WithDeadlineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "parent" "d",
-    exception_do (let: "d" := (GoAlloc time.Time "d") in
+    exception_do (let: "d" := (GoAlloc code.time.time.Time "d") in
     let: "parent" := (GoAlloc Context "parent") in
     let: ("$ret0", "$ret1") := ((let: "$a0" := (![Context] "parent") in
-    let: "$a1" := (![time.Time] "d") in
+    let: "$a1" := (![code.time.time.Time] "d") in
     let: "$a2" := (Convert go.untyped_nil go.error UntypedNil) in
     (FuncResolve WithDeadlineCause [] #()) "$a0" "$a1" "$a2")) in
     return: ("$ret0", "$ret1")).
@@ -900,7 +900,7 @@ Definition WithDeadlineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 Definition WithDeadlineCauseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "parent" "d" "cause",
     with_defer: (let: "cause" := (GoAlloc go.error "cause") in
-    let: "d" := (GoAlloc time.Time "d") in
+    let: "d" := (GoAlloc code.time.time.Time "d") in
     let: "parent" := (GoAlloc Context "parent") in
     (if: Convert go.untyped_bool go.bool ((![Context] "parent") =⟨Context⟩ (Convert go.untyped_nil Context UntypedNil))
     then
@@ -908,31 +908,31 @@ Definition WithDeadlineCauseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "cur" := (GoAlloc time.Time (GoZeroVal time.Time #())) in
+    let: "cur" := (GoAlloc code.time.time.Time (GoZeroVal code.time.time.Time #())) in
     let: ("$ret0", "$ret1") := ((MethodResolve Context "Deadline"%go (![Context] "parent")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("cur" <-[time.Time] "$r0");;;
+    do:  ("cur" <-[code.time.time.Time] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
-    (if: (![go.bool] "ok") && (let: "$a0" := (![time.Time] "d") in
-    (MethodResolve (go.PointerType time.Time) "Before"%go "cur") "$a0")
+    (if: (![go.bool] "ok") && (let: "$a0" := (![code.time.time.Time] "d") in
+    (MethodResolve (go.PointerType code.time.time.Time) "Before"%go "cur") "$a0")
     then
       let: ("$ret0", "$ret1") := ((let: "$a0" := (![Context] "parent") in
       (FuncResolve WithCancel [] #()) "$a0")) in
       return: ("$ret0", "$ret1")
     else do:  #()));;;
     let: "c" := (GoAlloc (go.PointerType timerCtx) (GoZeroVal (go.PointerType timerCtx) #())) in
-    let: "$r0" := (GoAlloc timerCtx (let: "$v0" := (![time.Time] "d") in
-    CompositeLiteral timerCtx (LiteralValue [KeyedElement (Some (KeyField "deadline"%go)) (ElementExpression time.Time "$v0")]))) in
+    let: "$r0" := (GoAlloc timerCtx (let: "$v0" := (![code.time.time.Time] "d") in
+    CompositeLiteral timerCtx (LiteralValue [KeyedElement (Some (KeyField "deadline"%go)) (ElementExpression code.time.time.Time "$v0")]))) in
     do:  ("c" <-[go.PointerType timerCtx] "$r0");;;
     do:  (let: "$a0" := (![Context] "parent") in
     let: "$a1" := (Convert (go.PointerType timerCtx) canceler (![go.PointerType timerCtx] "c")) in
     (MethodResolve (go.PointerType cancelCtx) "propagateCancel"%go (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "c"))) "$a0" "$a1");;;
-    let: "dur" := (GoAlloc time.Duration (GoZeroVal time.Duration #())) in
-    let: "$r0" := (let: "$a0" := (![time.Time] "d") in
-    (FuncResolve time.Until [] #()) "$a0") in
-    do:  ("dur" <-[time.Duration] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![time.Duration] "dur") ≤⟨time.Duration⟩ #(W64 0))
+    let: "dur" := (GoAlloc code.time.time.Duration (GoZeroVal code.time.time.Duration #())) in
+    let: "$r0" := (let: "$a0" := (![code.time.time.Time] "d") in
+    (FuncResolve code.time.time.Until [] #()) "$a0") in
+    do:  ("dur" <-[code.time.time.Duration] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((![code.time.time.Duration] "dur") ≤⟨code.time.time.Duration⟩ #(W64 0))
     then
       do:  (let: "$a0" := #true in
       let: "$a1" := (![go.error] (GlobalVarAddr DeadlineExceeded #())) in
@@ -946,16 +946,16 @@ Definition WithDeadlineCauseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
          return: #())
          ))
     else do:  #());;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "c")))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "c")))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "c")))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "c")))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType atomic.Value) "Load"%go (StructFieldRef cancelCtx "err"%go (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "c")))) #()) =⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
+    (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType code.sync.atomic.atomic.Value) "Load"%go (StructFieldRef cancelCtx "err"%go (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "c")))) #()) =⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
     then
-      let: "$r0" := (let: "$a0" := (![time.Duration] "dur") in
+      let: "$r0" := (let: "$a0" := (![code.time.time.Duration] "dur") in
       let: "$a1" := (λ: <>,
         exception_do (do:  (let: "$a0" := #true in
         let: "$a1" := (![go.error] (GlobalVarAddr DeadlineExceeded #())) in
@@ -963,8 +963,8 @@ Definition WithDeadlineCauseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
         (MethodResolve (go.PointerType timerCtx) "cancel"%go (![go.PointerType timerCtx] "c")) "$a0" "$a1" "$a2");;;
         return: #())
         ) in
-      (FuncResolve time.AfterFunc [] #()) "$a0" "$a1") in
-      do:  ((StructFieldRef timerCtx "timer"%go (![go.PointerType timerCtx] "c")) <-[go.PointerType time.Timer] "$r0")
+      (FuncResolve code.time.time.AfterFunc [] #()) "$a0" "$a1") in
+      do:  ((StructFieldRef timerCtx "timer"%go (![go.PointerType timerCtx] "c")) <-[go.PointerType code.time.time.Timer] "$r0")
     else do:  #());;;
     return: (Convert (go.PointerType timerCtx) Context (![go.PointerType timerCtx] "c"), (λ: <>,
        exception_do (do:  (let: "$a0" := #true in
@@ -978,17 +978,17 @@ Definition WithDeadlineCauseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
 Definition timerCtx__Deadlineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "deadline" := (GoAlloc time.Time (GoZeroVal time.Time #())) in
+    let: "deadline" := (GoAlloc code.time.time.Time (GoZeroVal code.time.time.Time #())) in
     let: "c" := (GoAlloc (go.PointerType timerCtx) "c") in
-    return: (![time.Time] (StructFieldRef timerCtx "deadline"%go (![go.PointerType timerCtx] "c")), #true)).
+    return: (![code.time.time.Time] (StructFieldRef timerCtx "deadline"%go (![go.PointerType timerCtx] "c")), #true)).
 
 (* go: context.go:673:20 *)
 Definition timerCtx__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType timerCtx) "c") in
     return: ((((((let: "$a0" := (![Context] (StructFieldRef cancelCtx "Context"%go (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "c")))) in
-     (FuncResolve contextName [] #()) "$a0") +⟨go.string⟩ #".WithDeadline("%go) +⟨go.string⟩ ((MethodResolve (go.PointerType time.Time) "String"%go (StructFieldRef timerCtx "deadline"%go (![go.PointerType timerCtx] "c"))) #())) +⟨go.string⟩ #" ["%go) +⟨go.string⟩ ((MethodResolve time.Duration "String"%go (let: "$a0" := (![time.Time] (StructFieldRef timerCtx "deadline"%go (![go.PointerType timerCtx] "c"))) in
-     (FuncResolve time.Until [] #()) "$a0")) #())) +⟨go.string⟩ #"])"%go)).
+     (FuncResolve contextName [] #()) "$a0") +⟨go.string⟩ #".WithDeadline("%go) +⟨go.string⟩ ((MethodResolve (go.PointerType code.time.time.Time) "String"%go (StructFieldRef timerCtx "deadline"%go (![go.PointerType timerCtx] "c"))) #())) +⟨go.string⟩ #" ["%go) +⟨go.string⟩ ((MethodResolve code.time.time.Duration "String"%go (let: "$a0" := (![code.time.time.Time] (StructFieldRef timerCtx "deadline"%go (![go.PointerType timerCtx] "c"))) in
+     (FuncResolve code.time.time.Until [] #()) "$a0")) #())) +⟨go.string⟩ #"])"%go)).
 
 (* go: context.go:679:20 *)
 Definition timerCtx__cancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -1007,14 +1007,14 @@ Definition timerCtx__cancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       let: "$a1" := (Convert (go.PointerType timerCtx) canceler (![go.PointerType timerCtx] "c")) in
       (FuncResolve removeChild [] #()) "$a0" "$a1")
     else do:  #());;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "c")))) #());;;
-    (if: Convert go.untyped_bool go.bool ((![go.PointerType time.Timer] (StructFieldRef timerCtx "timer"%go (![go.PointerType timerCtx] "c"))) ≠⟨go.PointerType time.Timer⟩ (Convert go.untyped_nil (go.PointerType time.Timer) UntypedNil))
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "c")))) #());;;
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType code.time.time.Timer] (StructFieldRef timerCtx "timer"%go (![go.PointerType timerCtx] "c"))) ≠⟨go.PointerType code.time.time.Timer⟩ (Convert go.untyped_nil (go.PointerType code.time.time.Timer) UntypedNil))
     then
-      do:  ((MethodResolve (go.PointerType time.Timer) "Stop"%go (![go.PointerType time.Timer] (StructFieldRef timerCtx "timer"%go (![go.PointerType timerCtx] "c")))) #());;;
-      let: "$r0" := (Convert go.untyped_nil (go.PointerType time.Timer) UntypedNil) in
-      do:  ((StructFieldRef timerCtx "timer"%go (![go.PointerType timerCtx] "c")) <-[go.PointerType time.Timer] "$r0")
+      do:  ((MethodResolve (go.PointerType code.time.time.Timer) "Stop"%go (![go.PointerType code.time.time.Timer] (StructFieldRef timerCtx "timer"%go (![go.PointerType timerCtx] "c")))) #());;;
+      let: "$r0" := (Convert go.untyped_nil (go.PointerType code.time.time.Timer) UntypedNil) in
+      do:  ((StructFieldRef timerCtx "timer"%go (![go.PointerType timerCtx] "c")) <-[go.PointerType code.time.time.Timer] "$r0")
     else do:  #());;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "c")))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "c")))) #());;;
     return: #()).
 
 (* WithTimeout returns WithDeadline(parent, time.Now().Add(timeout)).
@@ -1031,11 +1031,11 @@ Definition timerCtx__cancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
    go: context.go:703:6 *)
 Definition WithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "parent" "timeout",
-    exception_do (let: "timeout" := (GoAlloc time.Duration "timeout") in
+    exception_do (let: "timeout" := (GoAlloc code.time.time.Duration "timeout") in
     let: "parent" := (GoAlloc Context "parent") in
     let: ("$ret0", "$ret1") := ((let: "$a0" := (![Context] "parent") in
-    let: "$a1" := (let: "$a0" := (![time.Duration] "timeout") in
-    (MethodResolve time.Time "Add"%go ((FuncResolve time.Now [] #()) #())) "$a0") in
+    let: "$a1" := (let: "$a0" := (![code.time.time.Duration] "timeout") in
+    (MethodResolve code.time.time.Time "Add"%go ((FuncResolve code.time.time.Now [] #()) #())) "$a0") in
     (FuncResolve WithDeadline [] #()) "$a0" "$a1")) in
     return: ("$ret0", "$ret1")).
 
@@ -1047,11 +1047,11 @@ Definition WithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 Definition WithTimeoutCauseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "parent" "timeout" "cause",
     exception_do (let: "cause" := (GoAlloc go.error "cause") in
-    let: "timeout" := (GoAlloc time.Duration "timeout") in
+    let: "timeout" := (GoAlloc code.time.time.Duration "timeout") in
     let: "parent" := (GoAlloc Context "parent") in
     let: ("$ret0", "$ret1") := ((let: "$a0" := (![Context] "parent") in
-    let: "$a1" := (let: "$a0" := (![time.Duration] "timeout") in
-    (MethodResolve time.Time "Add"%go ((FuncResolve time.Now [] #()) #())) "$a0") in
+    let: "$a1" := (let: "$a0" := (![code.time.time.Duration] "timeout") in
+    (MethodResolve code.time.time.Time "Add"%go ((FuncResolve code.time.time.Now [] #()) #())) "$a0") in
     let: "$a2" := (![go.error] "cause") in
     (FuncResolve WithDeadlineCause [] #()) "$a0" "$a1" "$a2")) in
     return: ("$ret0", "$ret1")).
@@ -1146,15 +1146,15 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 
       ])) #());;;
       do:  (go.GlobalAlloc cancelCtxKey go.int #());;;
-      do:  (go.GlobalAlloc goroutines atomic.Int32 #());;;
+      do:  (go.GlobalAlloc goroutines code.sync.atomic.atomic.Int32 #());;;
       do:  (go.GlobalAlloc DeadlineExceeded go.error #());;;
       do:  (go.GlobalAlloc Canceled go.error #());;;
-      do:  (time.initialize' #());;;
-      do:  (atomic.initialize' #());;;
-      do:  (sync.initialize' #());;;
-      do:  (errors.initialize' #());;;
+      do:  (code.time.time.initialize' #());;;
+      do:  (code.sync.atomic.atomic.initialize' #());;;
+      do:  (code.sync.sync.initialize' #());;;
+      do:  (code.errors.errors.initialize' #());;;
       let: "$r0" := (let: "$a0" := #"context canceled"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr Canceled #()) <-[go.error] "$r0");;;
       let: "$r0" := (Convert deadlineExceededError go.error (CompositeLiteral deadlineExceededError (LiteralValue []))) in
       do:  ((GlobalVarAddr DeadlineExceeded #()) <-[go.error] "$r0");;;
@@ -1183,7 +1183,7 @@ Definition t : Type := interface.t.
 End def.
 End Context.
 
-Definition Contextⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Deadline"%go (go.Signature [] false [time.Time; go.bool]); go.MethodElem "Done"%go (go.Signature [] false [go.ChannelType go.recvonly (go.StructType [
+Definition Contextⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Deadline"%go (go.Signature [] false [code.time.time.Time; go.bool]); go.MethodElem "Done"%go (go.Signature [] false [go.ChannelType go.recvonly (go.StructType [
 
   ])]); go.MethodElem "Err"%go (go.Signature [] false [go.error]); go.MethodElem "Value"%go (go.Signature [go.any] false [go.any])].
 
@@ -1395,10 +1395,10 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
   Context' : context.Context.t;
-  mu' : sync.Mutex.t;
-  done' : atomic.Value.t;
+  mu' : code.sync.sync.Mutex.t;
+  done' : code.sync.atomic.atomic.Value.t;
   children' : map.t;
-  err' : atomic.Value.t;
+  err' : code.sync.atomic.atomic.Value.t;
   cause' : error.t;
 }.
 
@@ -1410,12 +1410,12 @@ End cancelCtx.
 
 Definition cancelCtx'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.EmbeddedField "Context"%go Context);
-  (go.FieldDecl "mu"%go sync.Mutex);
-  (go.FieldDecl "done"%go atomic.Value);
+  (go.FieldDecl "mu"%go code.sync.sync.Mutex);
+  (go.FieldDecl "done"%go code.sync.atomic.atomic.Value);
   (go.FieldDecl "children"%go (go.MapType canceler (go.StructType [
 
   ])));
-  (go.FieldDecl "err"%go atomic.Value);
+  (go.FieldDecl "err"%go code.sync.atomic.atomic.Value);
   (go.FieldDecl "cause"%go go.error)
 ].
 Program Definition cancelCtx'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (cancelCtx'fds_unsealed).
@@ -1456,7 +1456,7 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
   cancelCtx' : context.cancelCtx.t;
-  once' : sync.Once.t;
+  once' : code.sync.sync.Once.t;
   f' : func.t;
 }.
 
@@ -1468,7 +1468,7 @@ End afterFuncCtx.
 
 Definition afterFuncCtx'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.EmbeddedField "cancelCtx"%go cancelCtx);
-  (go.FieldDecl "once"%go sync.Once);
+  (go.FieldDecl "once"%go code.sync.sync.Once);
   (go.FieldDecl "f"%go (go.FunctionType (go.Signature [] false [])))
 ].
 Program Definition afterFuncCtx'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (afterFuncCtx'fds_unsealed).
@@ -1620,7 +1620,7 @@ Record t :=
 mk {
   cancelCtx' : context.cancelCtx.t;
   timer' : loc;
-  deadline' : time.Time.t;
+  deadline' : code.time.time.Time.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
@@ -1631,8 +1631,8 @@ End timerCtx.
 
 Definition timerCtx'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.EmbeddedField "cancelCtx"%go cancelCtx);
-  (go.FieldDecl "timer"%go (go.PointerType time.Timer));
-  (go.FieldDecl "deadline"%go time.Time)
+  (go.FieldDecl "timer"%go (go.PointerType code.time.time.Timer));
+  (go.FieldDecl "deadline"%go code.time.time.Time)
 ].
 Program Definition timerCtx'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (timerCtx'fds_unsealed).
 Global Instance equals_unfold_timerCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : timerCtx'fds =→ timerCtx'fds_unsealed.
@@ -1739,9 +1739,9 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] WithTimeout_unfold :: FuncUnfold WithTimeout [] (WithTimeoutⁱᵐᵖˡ);
   #[global] WithTimeoutCause_unfold :: FuncUnfold WithTimeoutCause [] (WithTimeoutCauseⁱᵐᵖˡ);
   #[global] value_unfold :: FuncUnfold value [] (valueⁱᵐᵖˡ);
-  #[global] import_errors_Assumption :: errors.Assumptions;
-  #[global] import_sync_Assumption :: sync.Assumptions;
-  #[global] import_atomic_Assumption :: atomic.Assumptions;
-  #[global] import_time_Assumption :: time.Assumptions;
+  #[global] import_errors_Assumption :: code.errors.errors.Assumptions;
+  #[global] import_sync_Assumption :: code.sync.sync.Assumptions;
+  #[global] import_atomic_Assumption :: code.sync.atomic.atomic.Assumptions;
+  #[global] import_time_Assumption :: code.time.time.Assumptions;
 }.
 End context.

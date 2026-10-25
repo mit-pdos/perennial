@@ -153,9 +153,9 @@ Definition DSPExampleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 (* go: cv_unverified.go:14:6 *)
 Definition NewCondⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "L",
-    exception_do (let: "L" := (GoAlloc lock.Lock "L") in
-    return: (GoAlloc Cond (let: "$v0" := (![lock.Lock] "L") in
-     CompositeLiteral Cond (LiteralValue [KeyedElement (Some (KeyField "L"%go)) (ElementExpression lock.Lock "$v0")])))).
+    exception_do (let: "L" := (GoAlloc code.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.lock.Lock "L") in
+    return: (GoAlloc Cond (let: "$v0" := (![code.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.lock.Lock] "L") in
+     CompositeLiteral Cond (LiteralValue [KeyedElement (Some (KeyField "L"%go)) (ElementExpression code.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.lock.Lock "$v0")])))).
 
 (* Wait blocks until signaled. Caller must hold c.L; will hold c.L on return.
 
@@ -191,13 +191,13 @@ Definition Cond__Waitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     do:  ((StructFieldRef Cond "waiters"%go (![go.PointerType Cond] "c")) <-[go.SliceType (go.ChannelType go.sendrecv (go.StructType [
 
     ]))] "$r0");;;
-    do:  ((MethodResolve (go.PointerType lock.Lock) "Unlock"%go (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.lock.Lock) "Unlock"%go (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c"))) #());;;
     do:  (Fst (chan.receive (go.StructType [
 
     ]) (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] "ch")));;;
-    do:  ((MethodResolve (go.PointerType lock.Lock) "Lock"%go (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.lock.Lock) "Lock"%go (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c"))) #());;;
     return: #()).
 
 (* Signal wakes one waiter (FIFO). Caller must hold c.L.
@@ -313,8 +313,8 @@ Definition Cond__Broadcastⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 Definition Cond__WaitForⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" "d",
     exception_do (let: "c" := (GoAlloc (go.PointerType Cond) "c") in
-    let: "d" := (GoAlloc time.Duration "d") in
-    (if: Convert go.untyped_bool go.bool ((![time.Duration] "d") ≤⟨time.Duration⟩ #(W64 0))
+    let: "d" := (GoAlloc code.time.time.Duration "d") in
+    (if: Convert go.untyped_bool go.bool ((![code.time.time.Duration] "d") ≤⟨code.time.time.Duration⟩ #(W64 0))
     then return: (#false)
     else do:  #());;;
     let: "ch" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
@@ -345,7 +345,7 @@ Definition Cond__WaitForⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     do:  ((StructFieldRef Cond "waiters"%go (![go.PointerType Cond] "c")) <-[go.SliceType (go.ChannelType go.sendrecv (go.StructType [
 
     ]))] "$r0");;;
-    do:  ((MethodResolve (go.PointerType lock.Lock) "Unlock"%go (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.lock.Lock) "Unlock"%go (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c"))) #());;;
     let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
 
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
@@ -358,8 +358,8 @@ Definition Cond__WaitForⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 
     ])] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  (let: "$a0" := (![time.Duration] "d") in
-      (FuncResolve time.Sleep [] #()) "$a0");;;
+      exception_do (do:  (let: "$a0" := (![code.time.time.Duration] "d") in
+      (FuncResolve code.time.time.Sleep [] #()) "$a0");;;
       do:  (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
 
       ])] "done") in
@@ -389,7 +389,7 @@ Definition Cond__WaitForⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       let: "$r0" := #false in
       do:  ("signaled" <-[go.bool] "$r0")
       ))]);;;
-    do:  ((MethodResolve (go.PointerType lock.Lock) "Lock"%go (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.lock.Lock) "Lock"%go (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c"))) #());;;
     (if: (⟨go.bool⟩! (![go.bool] "signaled"))
     then
       let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
@@ -466,9 +466,9 @@ Definition Cond__WaitForⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 Definition Cond__WaitUntilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" "deadline",
     exception_do (let: "c" := (GoAlloc (go.PointerType Cond) "c") in
-    let: "deadline" := (GoAlloc time.Time "deadline") in
-    return: (let: "$a0" := (let: "$a0" := (![time.Time] "deadline") in
-     (FuncResolve time.Until [] #()) "$a0") in
+    let: "deadline" := (GoAlloc code.time.time.Time "deadline") in
+    return: (let: "$a0" := (let: "$a0" := (![code.time.time.Time] "deadline") in
+     (FuncResolve code.time.time.Until [] #()) "$a0") in
      (MethodResolve (go.PointerType Cond) "WaitFor"%go (![go.PointerType Cond] "c")) "$a0")).
 
 (* Fake syscall for demonstration.
@@ -545,8 +545,8 @@ Definition HelloWorldWithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "$r0" := #""%go in
     do:  ("errMsg" <-[go.string] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  (let: "$a0" := (#(W64 10) *⟨time.Duration⟩ time.Millisecond) in
-      (FuncResolve time.Sleep [] #()) "$a0");;;
+      exception_do (do:  (let: "$a0" := (#(W64 10) *⟨code.time.time.Duration⟩ code.time.time.Millisecond) in
+      (FuncResolve code.time.time.Sleep [] #()) "$a0");;;
       let: "$r0" := #"operation timed out"%go in
       do:  ("errMsg" <-[go.string] "$r0");;;
       do:  (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
@@ -941,7 +941,7 @@ Definition CancellableHedgedRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
 
     ])) "done") in
     let: "errStr" := (GoAlloc (go.PointerType go.string) "errStr") in
-    let: "threshold" := (GoAlloc time.Duration "threshold") in
+    let: "threshold" := (GoAlloc code.time.time.Duration "threshold") in
     let: "query" := (GoAlloc go.string "query") in
     let: "c" := (GoAlloc (go.ChannelType go.sendrecv Result) (GoZeroVal (go.ChannelType go.sendrecv Result) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv Result] #()) #(W64 2)) in
@@ -957,8 +957,8 @@ Definition CancellableHedgedRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
       ) in
     do:  (Fork ("$go" #()));;;
     let: "$ch0" := (![go.ChannelType go.sendrecv Result] "c") in
-    let: "$ch1" := (let: "$a0" := (![time.Duration] "threshold") in
-    (FuncResolve time.After [] #()) "$a0") in
+    let: "$ch1" := (let: "$a0" := (![code.time.time.Duration] "threshold") in
+    (FuncResolve code.time.time.After [] #()) "$a0") in
     let: "$ch2" := (![go.ChannelType go.recvonly (go.StructType [
 
     ])] "done") in
@@ -967,7 +967,7 @@ Definition CancellableHedgedRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
       let: "$r0" := (Fst "$recvVal") in
       do:  ("r" <-[Result] "$r0");;;
       return: (![Result] "r")
-      )); (CommClause (RecvCase time.Time "$ch1") (λ: "$recvVal",
+      )); (CommClause (RecvCase code.time.time.Time "$ch1") (λ: "$recvVal",
       let: "$go" := (λ: <>,
         exception_do (do:  (let: "$chan" := (![go.ChannelType go.sendrecv Result] "c") in
         let: "$v" := (let: "$v0" := (let: "$a0" := (![go.string] "query") in
@@ -1089,7 +1089,7 @@ Definition processⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
     exception_do (let: "output" := (GoAlloc (go.PointerType go.string) "output") in
     let: "b" := (GoAlloc (go.PointerType (go.SliceType go.byte)) "b") in
     do:  ((![go.PointerType go.string] "output") <-[go.string] ((![go.string] (![go.PointerType go.string] "output")) +⟨go.string⟩ (let: "$a0" := (Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (![go.PointerType (go.SliceType go.byte)] "b"))) in
-    (FuncResolve strings.ToUpper [] #()) "$a0")));;;
+    (FuncResolve code.strings.strings.ToUpper [] #()) "$a0")));;;
     return: #()).
 
 (* go: leaky_buffer_unverified.go:18:6 *)
@@ -1530,9 +1530,9 @@ Definition select_nb_full_buffer_not_readyⁱᵐᵖˡ {ext : ffi_syntax} {go_gct
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.channel_examples (λ: <>,
-      exception_do (do:  (strings.initialize' #());;;
-      do:  (lock.initialize' #());;;
-      do:  (time.initialize' #()))
+      exception_do (do:  (code.strings.strings.initialize' #());;;
+      do:  (code.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.lock.initialize' #());;;
+      do:  (code.time.time.initialize' #()))
       ).
 
 Module Cond.
@@ -1540,7 +1540,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  L' : lock.Lock.t;
+  L' : code.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.lock.Lock.t;
   waiters' : slice.t;
 }.
 
@@ -1551,7 +1551,7 @@ End def.
 End Cond.
 
 Definition Cond'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "L"%go lock.Lock);
+  (go.FieldDecl "L"%go code.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.lock.Lock);
   (go.FieldDecl "waiters"%go (go.SliceType (go.ChannelType go.sendrecv (go.StructType [
 
   ]))))
@@ -1770,8 +1770,8 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] select_nb_not_ready_unfold :: FuncUnfold select_nb_not_ready [] (select_nb_not_readyⁱᵐᵖˡ);
   #[global] select_nb_guaranteed_ready_unfold :: FuncUnfold select_nb_guaranteed_ready [] (select_nb_guaranteed_readyⁱᵐᵖˡ);
   #[global] select_nb_full_buffer_not_ready_unfold :: FuncUnfold select_nb_full_buffer_not_ready [] (select_nb_full_buffer_not_readyⁱᵐᵖˡ);
-  #[global] import_time_Assumption :: time.Assumptions;
-  #[global] import_lock_Assumption :: lock.Assumptions;
-  #[global] import_strings_Assumption :: strings.Assumptions;
+  #[global] import_time_Assumption :: code.time.time.Assumptions;
+  #[global] import_lock_Assumption :: code.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.lock.Assumptions;
+  #[global] import_strings_Assumption :: code.strings.strings.Assumptions;
 }.
 End channel_examples.

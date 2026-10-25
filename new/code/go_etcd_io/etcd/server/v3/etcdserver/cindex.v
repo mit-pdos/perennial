@@ -49,13 +49,13 @@ Definition consistentIndex__ConsistentIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gc
     with_defer: (let: "ci" := (GoAlloc (go.PointerType consistentIndex) "ci") in
     (let: "index" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := (StructFieldRef consistentIndex "consistentIndex"%go (![go.PointerType consistentIndex] "ci")) in
-    (FuncResolve atomic.LoadUint64 [] #()) "$a0") in
+    (FuncResolve code.sync.atomic.atomic.LoadUint64 [] #()) "$a0") in
     do:  ("index" <-[go.uint64] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "index") >⟨go.uint64⟩ #(W64 0))
     then return: (![go.uint64] "index")
     else do:  #()));;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef consistentIndex "mutex"%go (![go.PointerType consistentIndex] "ci"))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef consistentIndex "mutex"%go (![go.PointerType consistentIndex] "ci"))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (StructFieldRef consistentIndex "mutex"%go (![go.PointerType consistentIndex] "ci"))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef consistentIndex "mutex"%go (![go.PointerType consistentIndex] "ci"))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -64,7 +64,7 @@ Definition consistentIndex__ConsistentIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gc
     let: "term" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "v" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := ((MethodResolve Backend "ReadTx"%go (![Backend] (StructFieldRef consistentIndex "be"%go (![go.PointerType consistentIndex] "ci")))) #()) in
-    (FuncResolve schema.ReadConsistentIndex [] #()) "$a0") in
+    (FuncResolve code.go_etcd_io.etcd.server.v3.storage.schema.schema.ReadConsistentIndex [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("v" <-[go.uint64] "$r0");;;
@@ -80,15 +80,15 @@ Definition consistentIndex__UnsafeConsistentIndexⁱᵐᵖˡ {ext : ffi_syntax} 
     exception_do (let: "ci" := (GoAlloc (go.PointerType consistentIndex) "ci") in
     (let: "index" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := (StructFieldRef consistentIndex "consistentIndex"%go (![go.PointerType consistentIndex] "ci")) in
-    (FuncResolve atomic.LoadUint64 [] #()) "$a0") in
+    (FuncResolve code.sync.atomic.atomic.LoadUint64 [] #()) "$a0") in
     do:  ("index" <-[go.uint64] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "index") >⟨go.uint64⟩ #(W64 0))
     then return: (![go.uint64] "index")
     else do:  #()));;;
     let: "term" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "v" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (Convert backend.ReadTx backend.UnsafeReader ((MethodResolve Backend "ReadTx"%go (![Backend] (StructFieldRef consistentIndex "be"%go (![go.PointerType consistentIndex] "ci")))) #())) in
-    (FuncResolve schema.UnsafeReadConsistentIndex [] #()) "$a0") in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (Convert code.go_etcd_io.etcd.server.v3.storage.backend.backend.ReadTx code.go_etcd_io.etcd.server.v3.storage.backend.backend.UnsafeReader ((MethodResolve Backend "ReadTx"%go (![Backend] (StructFieldRef consistentIndex "be"%go (![go.PointerType consistentIndex] "ci")))) #())) in
+    (FuncResolve code.go_etcd_io.etcd.server.v3.storage.schema.schema.UnsafeReadConsistentIndex [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("v" <-[go.uint64] "$r0");;;
@@ -106,29 +106,29 @@ Definition consistentIndex__SetConsistentIndexⁱᵐᵖˡ {ext : ffi_syntax} {go
     let: "v" := (GoAlloc go.uint64 "v") in
     do:  (let: "$a0" := (StructFieldRef consistentIndex "consistentIndex"%go (![go.PointerType consistentIndex] "ci")) in
     let: "$a1" := (![go.uint64] "v") in
-    (FuncResolve atomic.StoreUint64 [] #()) "$a0" "$a1");;;
+    (FuncResolve code.sync.atomic.atomic.StoreUint64 [] #()) "$a0" "$a1");;;
     do:  (let: "$a0" := (StructFieldRef consistentIndex "term"%go (![go.PointerType consistentIndex] "ci")) in
     let: "$a1" := (![go.uint64] "term") in
-    (FuncResolve atomic.StoreUint64 [] #()) "$a0" "$a1");;;
+    (FuncResolve code.sync.atomic.atomic.StoreUint64 [] #()) "$a0" "$a1");;;
     return: #()).
 
 (* go: cindex.go:117:28 *)
 Definition consistentIndex__UnsafeSaveⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ci" "tx",
     exception_do (let: "ci" := (GoAlloc (go.PointerType consistentIndex) "ci") in
-    let: "tx" := (GoAlloc backend.UnsafeReadWriter "tx") in
+    let: "tx" := (GoAlloc code.go_etcd_io.etcd.server.v3.storage.backend.backend.UnsafeReadWriter "tx") in
     let: "index" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := (StructFieldRef consistentIndex "consistentIndex"%go (![go.PointerType consistentIndex] "ci")) in
-    (FuncResolve atomic.LoadUint64 [] #()) "$a0") in
+    (FuncResolve code.sync.atomic.atomic.LoadUint64 [] #()) "$a0") in
     do:  ("index" <-[go.uint64] "$r0");;;
     let: "term" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := (StructFieldRef consistentIndex "term"%go (![go.PointerType consistentIndex] "ci")) in
-    (FuncResolve atomic.LoadUint64 [] #()) "$a0") in
+    (FuncResolve code.sync.atomic.atomic.LoadUint64 [] #()) "$a0") in
     do:  ("term" <-[go.uint64] "$r0");;;
-    do:  (let: "$a0" := (![backend.UnsafeReadWriter] "tx") in
+    do:  (let: "$a0" := (![code.go_etcd_io.etcd.server.v3.storage.backend.backend.UnsafeReadWriter] "tx") in
     let: "$a1" := (![go.uint64] "index") in
     let: "$a2" := (![go.uint64] "term") in
-    (FuncResolve schema.UnsafeUpdateConsistentIndex [] #()) "$a0" "$a1" "$a2");;;
+    (FuncResolve code.go_etcd_io.etcd.server.v3.storage.schema.schema.UnsafeUpdateConsistentIndex [] #()) "$a0" "$a1" "$a2");;;
     return: #()).
 
 (* go: cindex.go:123:28 *)
@@ -136,8 +136,8 @@ Definition consistentIndex__SetBackendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
   λ: "ci" "be",
     with_defer: (let: "ci" := (GoAlloc (go.PointerType consistentIndex) "ci") in
     let: "be" := (GoAlloc Backend "be") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef consistentIndex "mutex"%go (![go.PointerType consistentIndex] "ci"))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef consistentIndex "mutex"%go (![go.PointerType consistentIndex] "ci"))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (StructFieldRef consistentIndex "mutex"%go (![go.PointerType consistentIndex] "ci"))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef consistentIndex "mutex"%go (![go.PointerType consistentIndex] "ci"))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -155,8 +155,8 @@ Definition consistentIndex__ConsistentApplyingIndexⁱᵐᵖˡ {ext : ffi_syntax
   λ: "ci" <>,
     exception_do (let: "ci" := (GoAlloc (go.PointerType consistentIndex) "ci") in
     return: (let: "$a0" := (StructFieldRef consistentIndex "applyingIndex"%go (![go.PointerType consistentIndex] "ci")) in
-     (FuncResolve atomic.LoadUint64 [] #()) "$a0", let: "$a0" := (StructFieldRef consistentIndex "applyingTerm"%go (![go.PointerType consistentIndex] "ci")) in
-     (FuncResolve atomic.LoadUint64 [] #()) "$a0")).
+     (FuncResolve code.sync.atomic.atomic.LoadUint64 [] #()) "$a0", let: "$a0" := (StructFieldRef consistentIndex "applyingTerm"%go (![go.PointerType consistentIndex] "ci")) in
+     (FuncResolve code.sync.atomic.atomic.LoadUint64 [] #()) "$a0")).
 
 (* go: cindex.go:135:28 *)
 Definition consistentIndex__SetConsistentApplyingIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -166,10 +166,10 @@ Definition consistentIndex__SetConsistentApplyingIndexⁱᵐᵖˡ {ext : ffi_syn
     let: "v" := (GoAlloc go.uint64 "v") in
     do:  (let: "$a0" := (StructFieldRef consistentIndex "applyingIndex"%go (![go.PointerType consistentIndex] "ci")) in
     let: "$a1" := (![go.uint64] "v") in
-    (FuncResolve atomic.StoreUint64 [] #()) "$a0" "$a1");;;
+    (FuncResolve code.sync.atomic.atomic.StoreUint64 [] #()) "$a0" "$a1");;;
     do:  (let: "$a0" := (StructFieldRef consistentIndex "applyingTerm"%go (![go.PointerType consistentIndex] "ci")) in
     let: "$a1" := (![go.uint64] "term") in
-    (FuncResolve atomic.StoreUint64 [] #()) "$a0" "$a1");;;
+    (FuncResolve code.sync.atomic.atomic.StoreUint64 [] #()) "$a0" "$a1");;;
     return: #()).
 
 (* go: cindex.go:140:6 *)
@@ -184,22 +184,22 @@ Definition fakeConsistentIndex__ConsistentIndexⁱᵐᵖˡ {ext : ffi_syntax} {g
   λ: "f" <>,
     exception_do (let: "f" := (GoAlloc (go.PointerType fakeConsistentIndex) "f") in
     return: (let: "$a0" := (StructFieldRef fakeConsistentIndex "index"%go (![go.PointerType fakeConsistentIndex] "f")) in
-     (FuncResolve atomic.LoadUint64 [] #()) "$a0")).
+     (FuncResolve code.sync.atomic.atomic.LoadUint64 [] #()) "$a0")).
 
 (* go: cindex.go:153:31 *)
 Definition fakeConsistentIndex__ConsistentApplyingIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "f" <>,
     exception_do (let: "f" := (GoAlloc (go.PointerType fakeConsistentIndex) "f") in
     return: (let: "$a0" := (StructFieldRef fakeConsistentIndex "index"%go (![go.PointerType fakeConsistentIndex] "f")) in
-     (FuncResolve atomic.LoadUint64 [] #()) "$a0", let: "$a0" := (StructFieldRef fakeConsistentIndex "term"%go (![go.PointerType fakeConsistentIndex] "f")) in
-     (FuncResolve atomic.LoadUint64 [] #()) "$a0")).
+     (FuncResolve code.sync.atomic.atomic.LoadUint64 [] #()) "$a0", let: "$a0" := (StructFieldRef fakeConsistentIndex "term"%go (![go.PointerType fakeConsistentIndex] "f")) in
+     (FuncResolve code.sync.atomic.atomic.LoadUint64 [] #()) "$a0")).
 
 (* go: cindex.go:157:31 *)
 Definition fakeConsistentIndex__UnsafeConsistentIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "f" <>,
     exception_do (let: "f" := (GoAlloc (go.PointerType fakeConsistentIndex) "f") in
     return: (let: "$a0" := (StructFieldRef fakeConsistentIndex "index"%go (![go.PointerType fakeConsistentIndex] "f")) in
-     (FuncResolve atomic.LoadUint64 [] #()) "$a0")).
+     (FuncResolve code.sync.atomic.atomic.LoadUint64 [] #()) "$a0")).
 
 (* go: cindex.go:161:31 *)
 Definition fakeConsistentIndex__SetConsistentIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -209,10 +209,10 @@ Definition fakeConsistentIndex__SetConsistentIndexⁱᵐᵖˡ {ext : ffi_syntax}
     let: "index" := (GoAlloc go.uint64 "index") in
     do:  (let: "$a0" := (StructFieldRef fakeConsistentIndex "index"%go (![go.PointerType fakeConsistentIndex] "f")) in
     let: "$a1" := (![go.uint64] "index") in
-    (FuncResolve atomic.StoreUint64 [] #()) "$a0" "$a1");;;
+    (FuncResolve code.sync.atomic.atomic.StoreUint64 [] #()) "$a0" "$a1");;;
     do:  (let: "$a0" := (StructFieldRef fakeConsistentIndex "term"%go (![go.PointerType fakeConsistentIndex] "f")) in
     let: "$a1" := (![go.uint64] "term") in
-    (FuncResolve atomic.StoreUint64 [] #()) "$a0" "$a1");;;
+    (FuncResolve code.sync.atomic.atomic.StoreUint64 [] #()) "$a0" "$a1");;;
     return: #()).
 
 (* go: cindex.go:166:31 *)
@@ -223,10 +223,10 @@ Definition fakeConsistentIndex__SetConsistentApplyingIndexⁱᵐᵖˡ {ext : ffi
     let: "index" := (GoAlloc go.uint64 "index") in
     do:  (let: "$a0" := (StructFieldRef fakeConsistentIndex "index"%go (![go.PointerType fakeConsistentIndex] "f")) in
     let: "$a1" := (![go.uint64] "index") in
-    (FuncResolve atomic.StoreUint64 [] #()) "$a0" "$a1");;;
+    (FuncResolve code.sync.atomic.atomic.StoreUint64 [] #()) "$a0" "$a1");;;
     do:  (let: "$a0" := (StructFieldRef fakeConsistentIndex "term"%go (![go.PointerType fakeConsistentIndex] "f")) in
     let: "$a1" := (![go.uint64] "term") in
-    (FuncResolve atomic.StoreUint64 [] #()) "$a0" "$a1");;;
+    (FuncResolve code.sync.atomic.atomic.StoreUint64 [] #()) "$a0" "$a1");;;
     return: #()).
 
 (* go: cindex.go:171:31 *)
@@ -246,18 +246,18 @@ Definition UpdateConsistentIndexForceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
   λ: "tx" "index" "term",
     with_defer: (let: "term" := (GoAlloc go.uint64 "term") in
     let: "index" := (GoAlloc go.uint64 "index") in
-    let: "tx" := (GoAlloc backend.BatchTx "tx") in
-    do:  ((MethodResolve backend.BatchTx "LockOutsideApply"%go (![backend.BatchTx] "tx")) #());;;
-    do:  (let: "$f" := (MethodResolve backend.BatchTx "Unlock"%go (![backend.BatchTx] "tx")) in
+    let: "tx" := (GoAlloc code.go_etcd_io.etcd.server.v3.storage.backend.backend.BatchTx "tx") in
+    do:  ((MethodResolve code.go_etcd_io.etcd.server.v3.storage.backend.backend.BatchTx "LockOutsideApply"%go (![code.go_etcd_io.etcd.server.v3.storage.backend.backend.BatchTx] "tx")) #());;;
+    do:  (let: "$f" := (MethodResolve code.go_etcd_io.etcd.server.v3.storage.backend.backend.BatchTx "Unlock"%go (![code.go_etcd_io.etcd.server.v3.storage.backend.backend.BatchTx] "tx")) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    do:  (let: "$a0" := (Convert backend.BatchTx backend.UnsafeReadWriter (![backend.BatchTx] "tx")) in
+    do:  (let: "$a0" := (Convert code.go_etcd_io.etcd.server.v3.storage.backend.backend.BatchTx code.go_etcd_io.etcd.server.v3.storage.backend.backend.UnsafeReadWriter (![code.go_etcd_io.etcd.server.v3.storage.backend.backend.BatchTx] "tx")) in
     let: "$a1" := (![go.uint64] "index") in
     let: "$a2" := (![go.uint64] "term") in
-    (FuncResolve schema.UnsafeUpdateConsistentIndexForce [] #()) "$a0" "$a1" "$a2");;;
+    (FuncResolve code.go_etcd_io.etcd.server.v3.storage.schema.schema.UnsafeUpdateConsistentIndexForce [] #()) "$a0" "$a1" "$a2");;;
     return: #()).
 
 #[global] Instance info' : PkgInfo pkg_id.cindex :=
@@ -268,10 +268,10 @@ Definition UpdateConsistentIndexForceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.cindex (λ: <>,
-      exception_do (do:  (schema.initialize' #());;;
-      do:  (backend.initialize' #());;;
-      do:  (atomic.initialize' #());;;
-      do:  (sync.initialize' #()))
+      exception_do (do:  (code.go_etcd_io.etcd.server.v3.storage.schema.schema.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.server.v3.storage.backend.backend.initialize' #());;;
+      do:  (code.sync.atomic.atomic.initialize' #());;;
+      do:  (code.sync.sync.initialize' #()))
       ).
 
 Module Backend.
@@ -282,7 +282,7 @@ Definition t : Type := interface.t.
 End def.
 End Backend.
 
-Definition Backendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "ReadTx"%go (go.Signature [] false [backend.ReadTx])].
+Definition Backendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "ReadTx"%go (go.Signature [] false [code.go_etcd_io.etcd.server.v3.storage.backend.backend.ReadTx])].
 
 Class Backend_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -297,7 +297,7 @@ Definition t : Type := interface.t.
 End def.
 End ConsistentIndexer.
 
-Definition ConsistentIndexerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "ConsistentApplyingIndex"%go (go.Signature [] false [go.uint64; go.uint64]); go.MethodElem "ConsistentIndex"%go (go.Signature [] false [go.uint64]); go.MethodElem "SetBackend"%go (go.Signature [Backend] false []); go.MethodElem "SetConsistentApplyingIndex"%go (go.Signature [go.uint64; go.uint64] false []); go.MethodElem "SetConsistentIndex"%go (go.Signature [go.uint64; go.uint64] false []); go.MethodElem "UnsafeConsistentIndex"%go (go.Signature [] false [go.uint64]); go.MethodElem "UnsafeSave"%go (go.Signature [backend.UnsafeReadWriter] false [])].
+Definition ConsistentIndexerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "ConsistentApplyingIndex"%go (go.Signature [] false [go.uint64; go.uint64]); go.MethodElem "ConsistentIndex"%go (go.Signature [] false [go.uint64]); go.MethodElem "SetBackend"%go (go.Signature [Backend] false []); go.MethodElem "SetConsistentApplyingIndex"%go (go.Signature [go.uint64; go.uint64] false []); go.MethodElem "SetConsistentIndex"%go (go.Signature [go.uint64; go.uint64] false []); go.MethodElem "UnsafeConsistentIndex"%go (go.Signature [] false [go.uint64]); go.MethodElem "UnsafeSave"%go (go.Signature [code.go_etcd_io.etcd.server.v3.storage.backend.backend.UnsafeReadWriter] false [])].
 
 Class ConsistentIndexer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -314,7 +314,7 @@ mk {
   applyingIndex' : w64;
   applyingTerm' : w64;
   be' : cindex.Backend.t;
-  mutex' : sync.Mutex.t;
+  mutex' : code.sync.sync.Mutex.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
@@ -329,7 +329,7 @@ Definition consistentIndex'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalCo
   (go.FieldDecl "applyingIndex"%go go.uint64);
   (go.FieldDecl "applyingTerm"%go go.uint64);
   (go.FieldDecl "be"%go Backend);
-  (go.FieldDecl "mutex"%go sync.Mutex)
+  (go.FieldDecl "mutex"%go code.sync.sync.Mutex)
 ].
 Program Definition consistentIndex'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (consistentIndex'fds_unsealed).
 Global Instance equals_unfold_consistentIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : consistentIndex'fds =→ consistentIndex'fds_unsealed.
@@ -413,9 +413,9 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] NewConsistentIndex_unfold :: FuncUnfold NewConsistentIndex [] (NewConsistentIndexⁱᵐᵖˡ);
   #[global] NewFakeConsistentIndex_unfold :: FuncUnfold NewFakeConsistentIndex [] (NewFakeConsistentIndexⁱᵐᵖˡ);
   #[global] UpdateConsistentIndexForce_unfold :: FuncUnfold UpdateConsistentIndexForce [] (UpdateConsistentIndexForceⁱᵐᵖˡ);
-  #[global] import_sync_Assumption :: sync.Assumptions;
-  #[global] import_atomic_Assumption :: atomic.Assumptions;
-  #[global] import_backend_Assumption :: backend.Assumptions;
-  #[global] import_schema_Assumption :: schema.Assumptions;
+  #[global] import_sync_Assumption :: code.sync.sync.Assumptions;
+  #[global] import_atomic_Assumption :: code.sync.atomic.atomic.Assumptions;
+  #[global] import_backend_Assumption :: code.go_etcd_io.etcd.server.v3.storage.backend.backend.Assumptions;
+  #[global] import_schema_Assumption :: code.go_etcd_io.etcd.server.v3.storage.schema.schema.Assumptions;
 }.
 End cindex.

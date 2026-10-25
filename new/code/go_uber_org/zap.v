@@ -606,7 +606,7 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.zap (λ: <>,
-      exception_do (do:  (zapcore.initialize' #());;;
+      exception_do (do:  (code.go_uber_org.zap.zapcore.zapcore.initialize' #());;;
       do:  (errNoEncoderNameSpecified'init #());;;
       do:  (_encoderNameToConstructor'init #());;;
       do:  (_errArrayElemPool'init #());;;
@@ -1351,6 +1351,6 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] SugaredLogger_instance :: SugaredLogger_Assumptions;
   #[global] invalidPair_instance :: invalidPair_Assumptions;
   #[global] invalidPairs_instance :: invalidPairs_Assumptions;
-  #[global] import_zapcore_Assumption :: zapcore.Assumptions;
+  #[global] import_zapcore_Assumption :: code.go_uber_org.zap.zapcore.zapcore.Assumptions;
 }.
 End zap.

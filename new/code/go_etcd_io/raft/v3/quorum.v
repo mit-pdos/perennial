@@ -185,10 +185,10 @@ Definition MajorityConfig__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
       (FuncResolve go.append [go.SliceType go.uint64] #()) "$a0" "$a1") in
       do:  ("sl" <-[go.SliceType go.uint64] "$r0")));;;
     do:  (let: "$a0" := (![go.SliceType go.uint64] "sl") in
-    (FuncResolve slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
-    let: "buf" := (GoAlloc strings.Builder (GoZeroVal strings.Builder #())) in
+    (FuncResolve code.slices.slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
+    let: "buf" := (GoAlloc code.strings.strings.Builder (GoZeroVal code.strings.strings.Builder #())) in
     do:  (let: "$a0" := #(W8 40) in
-    (MethodResolve (go.PointerType strings.Builder) "WriteByte"%go "buf") "$a0");;;
+    (MethodResolve (go.PointerType code.strings.strings.Builder) "WriteByte"%go "buf") "$a0");;;
     let: "$range" := (![go.SliceType go.uint64] "sl") in
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     slice.for_range go.uint64 "$range" (λ: "$key" "$value",
@@ -196,15 +196,15 @@ Definition MajorityConfig__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
       (if: Convert go.untyped_bool go.bool ((![go.int] "i") >⟨go.int⟩ #(W64 0))
       then
         do:  (let: "$a0" := #(W8 32) in
-        (MethodResolve (go.PointerType strings.Builder) "WriteByte"%go "buf") "$a0")
+        (MethodResolve (go.PointerType code.strings.strings.Builder) "WriteByte"%go "buf") "$a0")
       else do:  #());;;
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
       let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "sl", ![go.int] "i")))) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprint [] #()) "$a0" "$a1")));;;
+      (FuncResolve code.fmt.fmt.Fprint [] #()) "$a0" "$a1")));;;
     do:  (let: "$a0" := #(W8 41) in
-    (MethodResolve (go.PointerType strings.Builder) "WriteByte"%go "buf") "$a0");;;
-    return: ((MethodResolve (go.PointerType strings.Builder) "String"%go "buf") #())).
+    (MethodResolve (go.PointerType code.strings.strings.Builder) "WriteByte"%go "buf") "$a0");;;
+    return: ((MethodResolve (go.PointerType code.strings.strings.Builder) "String"%go "buf") #())).
 
 (* Describe returns a (multi-line) representation of the commit indexes for the
    given lookuper.
@@ -254,16 +254,16 @@ Definition MajorityConfig__Describeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
       (let: "n" := (GoAlloc go.int (GoZeroVal go.int #())) in
       let: "$r0" := (let: "$a0" := (![Index'] (StructFieldRef tup "idx"%go "a")) in
       let: "$a1" := (![Index'] (StructFieldRef tup "idx"%go "b")) in
-      (FuncResolve cmp.Compare [Index'] #()) "$a0" "$a1") in
+      (FuncResolve code.cmp.cmp.Compare [Index'] #()) "$a0" "$a1") in
       do:  ("n" <-[go.int] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.int] "n") ≠⟨go.int⟩ #(W64 0))
       then return: (![go.int] "n")
       else do:  #()));;;
       return: (let: "$a0" := (![go.uint64] (StructFieldRef tup "id"%go "a")) in
        let: "$a1" := (![go.uint64] (StructFieldRef tup "id"%go "b")) in
-       (FuncResolve cmp.Compare [go.uint64] #()) "$a0" "$a1"))
+       (FuncResolve code.cmp.cmp.Compare [go.uint64] #()) "$a0" "$a1"))
       ) in
-    (FuncResolve slices.SortFunc [go.SliceType tup; tup] #()) "$a0" "$a1");;;
+    (FuncResolve code.slices.slices.SortFunc [go.SliceType tup; tup] #()) "$a0" "$a1");;;
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 1) in
     do:  ("i" <-[go.int] "$r0");;;
@@ -282,17 +282,17 @@ Definition MajorityConfig__Describeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
       let: "a" := (GoAlloc tup "a") in
       return: (let: "$a0" := (![go.uint64] (StructFieldRef tup "id"%go "a")) in
        let: "$a1" := (![go.uint64] (StructFieldRef tup "id"%go "b")) in
-       (FuncResolve cmp.Compare [go.uint64] #()) "$a0" "$a1"))
+       (FuncResolve code.cmp.cmp.Compare [go.uint64] #()) "$a0" "$a1"))
       ) in
-    (FuncResolve slices.SortFunc [go.SliceType tup; tup] #()) "$a0" "$a1");;;
-    let: "buf" := (GoAlloc strings.Builder (GoZeroVal strings.Builder #())) in
-    do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+    (FuncResolve code.slices.slices.SortFunc [go.SliceType tup; tup] #()) "$a0" "$a1");;;
+    let: "buf" := (GoAlloc code.strings.strings.Builder (GoZeroVal code.strings.strings.Builder #())) in
+    do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
     let: "$a1" := ((let: "$sl0" := (Convert go.string go.any ((let: "$a0" := #" "%go in
     let: "$a1" := (![go.int] "n") in
-    (FuncResolve strings.Repeat [] #()) "$a0" "$a1") +⟨go.string⟩ #"    idx
+    (FuncResolve code.strings.strings.Repeat [] #()) "$a0" "$a1") +⟨go.string⟩ #"    idx
     "%go)) in
     CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-    (FuncResolve fmt.Fprint [] #()) "$a0" "$a1");;;
+    (FuncResolve code.fmt.fmt.Fprint [] #()) "$a0" "$a1");;;
     let: "$range" := (![go.SliceType tup] "info") in
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     slice.for_range tup "$range" (λ: "$key" "$value",
@@ -302,29 +302,29 @@ Definition MajorityConfig__Describeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
       do:  ("bar" <-[go.int] "$r0");;;
       (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef tup "ok"%go (IndexRef (go.SliceType tup) (![go.SliceType tup] "info", ![go.int] "i")))))
       then
-        do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+        do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
         let: "$a1" := ((let: "$sl0" := (Convert go.string go.any (#"?"%go +⟨go.string⟩ (let: "$a0" := #" "%go in
         let: "$a1" := (![go.int] "n") in
-        (FuncResolve strings.Repeat [] #()) "$a0" "$a1"))) in
+        (FuncResolve code.strings.strings.Repeat [] #()) "$a0" "$a1"))) in
         CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-        (FuncResolve fmt.Fprint [] #()) "$a0" "$a1")
+        (FuncResolve code.fmt.fmt.Fprint [] #()) "$a0" "$a1")
       else
-        do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+        do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
         let: "$a1" := ((let: "$sl0" := (Convert go.string go.any (((let: "$a0" := #"x"%go in
         let: "$a1" := (![go.int] "bar") in
-        (FuncResolve strings.Repeat [] #()) "$a0" "$a1") +⟨go.string⟩ #">"%go) +⟨go.string⟩ (let: "$a0" := #" "%go in
+        (FuncResolve code.strings.strings.Repeat [] #()) "$a0" "$a1") +⟨go.string⟩ #">"%go) +⟨go.string⟩ (let: "$a0" := #" "%go in
         let: "$a1" := ((![go.int] "n") -⟨go.int⟩ (![go.int] "bar")) in
-        (FuncResolve strings.Repeat [] #()) "$a0" "$a1"))) in
+        (FuncResolve code.strings.strings.Repeat [] #()) "$a0" "$a1"))) in
         CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-        (FuncResolve fmt.Fprint [] #()) "$a0" "$a1"));;;
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+        (FuncResolve code.fmt.fmt.Fprint [] #()) "$a0" "$a1"));;;
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
       let: "$a1" := #" %5d    (id=%d)
       "%go in
       let: "$a2" := ((let: "$sl0" := (Convert Index' go.any (![Index'] (StructFieldRef tup "idx"%go (IndexRef (go.SliceType tup) (![go.SliceType tup] "info", ![go.int] "i"))))) in
       let: "$sl1" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef tup "id"%go (IndexRef (go.SliceType tup) (![go.SliceType tup] "info", ![go.int] "i"))))) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1")]))) in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2")));;;
-    return: ((MethodResolve (go.PointerType strings.Builder) "String"%go "buf") #())).
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2")));;;
+    return: ((MethodResolve (go.PointerType code.strings.strings.Builder) "String"%go "buf") #())).
 
 (* Slice returns the MajorityConfig as a sorted slice.
 
@@ -345,7 +345,7 @@ Definition MajorityConfig__Sliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
       (FuncResolve go.append [go.SliceType go.uint64] #()) "$a0" "$a1") in
       do:  ("sl" <-[go.SliceType go.uint64] "$r0")));;;
     do:  (let: "$a0" := (![go.SliceType go.uint64] "sl") in
-    (FuncResolve slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
+    (FuncResolve code.slices.slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
     return: (![go.SliceType go.uint64] "sl")).
 
 (* CommittedIndex computes the committed index from those supplied via the
@@ -361,7 +361,7 @@ Definition MajorityConfig__CommittedIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx
     (FuncResolve go.len [MajorityConfig] #()) "$a0") in
     do:  ("n" <-[go.int] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.int] "n") =⟨go.int⟩ #(W64 0))
-    then return: (Convert go.untyped_int Index' math.MaxUint64)
+    then return: (Convert go.untyped_int Index' code.math.math.MaxUint64)
     else do:  #());;;
     let: "stk" := (GoAlloc (go.ArrayType 7 go.uint64) (GoZeroVal (go.ArrayType 7 go.uint64) #())) in
     let: "srt" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
@@ -397,7 +397,7 @@ Definition MajorityConfig__CommittedIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx
         do:  ("i" <-[go.int] ((![go.int] "i") -⟨go.int⟩ #(W64 1)))
       else do:  #()))));;;
     do:  (let: "$a0" := (![go.SliceType go.uint64] "srt") in
-    (FuncResolve slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
+    (FuncResolve code.slices.slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
     let: "pos" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := ((![go.int] "n") -⟨go.int⟩ (((![go.int] "n") /⟨go.int⟩ #(W64 2)) +⟨go.int⟩ #(W64 1))) in
     do:  ("pos" <-[go.int] "$r0");;;
@@ -456,12 +456,12 @@ Definition MajorityConfig__VoteResultⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
 Definition Index__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "i" <>,
     exception_do (let: "i" := (GoAlloc Index' "i") in
-    (if: Convert go.untyped_bool go.bool ((![Index'] "i") =⟨Index'⟩ (Convert go.untyped_int Index' math.MaxUint64))
+    (if: Convert go.untyped_bool go.bool ((![Index'] "i") =⟨Index'⟩ (Convert go.untyped_int Index' code.math.math.MaxUint64))
     then return: (#"∞"%go)
     else do:  #());;;
     return: (let: "$a0" := (![Index'] "i") in
      let: "$a1" := #(W64 10) in
-     (FuncResolve strconv.FormatUint [] #()) "$a0" "$a1")).
+     (FuncResolve code.strconv.strconv.FormatUint [] #()) "$a0" "$a1")).
 
 (* go: quorum.go:40:24 *)
 Definition mapAckIndexer__AckedIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -486,7 +486,7 @@ Definition VoteResult__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     then
       return: ((#"VoteResult("%go +⟨go.string⟩ (let: "$a0" := (Convert VoteResult go.int64 ((![VoteResult] "i") +⟨VoteResult⟩ #(W8 1))) in
        let: "$a1" := #(W64 10) in
-       (FuncResolve strconv.FormatInt [] #()) "$a0" "$a1")) +⟨go.string⟩ #")"%go)
+       (FuncResolve code.strconv.strconv.FormatInt [] #()) "$a0" "$a1")) +⟨go.string⟩ #")"%go)
     else do:  #());;;
     return: (let: "$s" := _VoteResult_name in
      Slice go.untyped_string ("$s", ![go.uint8] (IndexRef (go.ArrayType 4 go.uint8) (![go.ArrayType 4 go.uint8] (GlobalVarAddr _VoteResult_index #()), Convert VoteResult go.int (![VoteResult] "i"))), ![go.uint8] (IndexRef (go.ArrayType 4 go.uint8) (![go.ArrayType 4 go.uint8] (GlobalVarAddr _VoteResult_index #()), Convert VoteResult go.int ((![VoteResult] "i") +⟨VoteResult⟩ #(W8 1))))))).
@@ -500,12 +500,12 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.quorum (λ: <>,
       exception_do (do:  (go.GlobalAlloc _VoteResult_index (go.ArrayType 4 go.uint8) #());;;
-      do:  (strconv.initialize' #());;;
-      do:  (strings.initialize' #());;;
-      do:  (slices.initialize' #());;;
-      do:  (math.initialize' #());;;
-      do:  (fmt.initialize' #());;;
-      do:  (cmp.initialize' #());;;
+      do:  (code.strconv.strconv.initialize' #());;;
+      do:  (code.strings.strings.initialize' #());;;
+      do:  (code.slices.slices.initialize' #());;;
+      do:  (code.math.math.initialize' #());;;
+      do:  (code.fmt.fmt.initialize' #());;;
+      do:  (code.cmp.cmp.initialize' #());;;
       let: "$r0" := (let: "$v0" := #(W8 0) in
       let: "$v1" := #(W8 11) in
       let: "$v2" := #(W8 19) in
@@ -684,11 +684,11 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] AckedIndexer_instance :: AckedIndexer_Assumptions;
   #[global] mapAckIndexer_instance :: mapAckIndexer_Assumptions;
   #[global] VoteResult_instance :: VoteResult_Assumptions;
-  #[global] import_cmp_Assumption :: cmp.Assumptions;
-  #[global] import_fmt_Assumption :: fmt.Assumptions;
-  #[global] import_math_Assumption :: math.Assumptions;
-  #[global] import_slices_Assumption :: slices.Assumptions;
-  #[global] import_strings_Assumption :: strings.Assumptions;
-  #[global] import_strconv_Assumption :: strconv.Assumptions;
+  #[global] import_cmp_Assumption :: code.cmp.cmp.Assumptions;
+  #[global] import_fmt_Assumption :: code.fmt.fmt.Assumptions;
+  #[global] import_math_Assumption :: code.math.math.Assumptions;
+  #[global] import_slices_Assumption :: code.slices.slices.Assumptions;
+  #[global] import_strings_Assumption :: code.strings.strings.Assumptions;
+  #[global] import_strconv_Assumption :: code.strconv.strconv.Assumptions;
 }.
 End quorum.

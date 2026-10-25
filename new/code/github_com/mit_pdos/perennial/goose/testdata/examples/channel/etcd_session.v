@@ -30,10 +30,10 @@ Definition sessionMain {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_strin
    go: e.go:15:6 *)
 Definition newSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do ((if: Convert go.untyped_bool go.bool ((((FuncResolve primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0))
+    exception_do ((if: Convert go.untyped_bool go.bool ((((FuncResolve code.github_com.goose_lang.primitive.primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0))
     then
       return: (let: "$a0" := #"session failed"%go in
-       (FuncResolve errors.New [] #()) "$a0")
+       (FuncResolve code.errors.errors.New [] #()) "$a0")
     else do:  #());;;
     return: (Convert go.untyped_nil go.error UntypedNil)).
 
@@ -49,7 +49,7 @@ Definition monitorSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
   λ: <>,
     exception_do ((for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       do:  ((FuncResolve waitForSessionExpiration [] #()) #());;;
-      do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (GlobalVarAddr mu #())) #());;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (GlobalVarAddr mu #())) #());;;
       let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
       ])] (GlobalVarAddr sessionc #())) in
@@ -63,28 +63,28 @@ Definition monitorSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
 
         ])] "$r0")
         ))]);;;
-      do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (GlobalVarAddr mu #())) #());;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (GlobalVarAddr mu #())) #());;;
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
       let: "$r0" := ((FuncResolve newSession [] #()) #()) in
       do:  ("err" <-[go.error] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then continue: #()
       else do:  #());;;
-      do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (GlobalVarAddr mu #())) #());;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (GlobalVarAddr mu #())) #());;;
       do:  (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
 
       ])] (GlobalVarAddr sessionc #())) in
       (FuncResolve go.close [go.ChannelType go.sendrecv (go.StructType [
 
        ])] #()) "$a0");;;
-      do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (GlobalVarAddr mu #())) #()));;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (GlobalVarAddr mu #())) #()));;;
     return: #()).
 
 (* go: e.go:49:6 *)
 Definition waitSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A : go.type) : val :=
   λ: "cancel",
     exception_do (let: "cancel" := (GoAlloc (go.ChannelType go.recvonly A) "cancel") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (GlobalVarAddr mu #())) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (GlobalVarAddr mu #())) #());;;
     let: "s" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
 
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
@@ -96,7 +96,7 @@ Definition waitSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     do:  ("s" <-[go.ChannelType go.sendrecv (go.StructType [
 
     ])] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (GlobalVarAddr mu #())) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (GlobalVarAddr mu #())) #());;;
     let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] "s") in
@@ -107,7 +107,7 @@ Definition waitSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       return: (Convert go.untyped_nil go.error UntypedNil)
       )); (CommClause (RecvCase A "$ch1") (λ: "$recvVal",
       return: (let: "$a0" := #"cancelled"%go in
-       (FuncResolve errors.New [] #()) "$a0")
+       (FuncResolve code.errors.errors.New [] #()) "$a0")
       ))])).
 
 (* go: e.go:61:6 *)
@@ -115,9 +115,9 @@ Definition sessionMainⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
   λ: <>,
     exception_do (let: "$go" := (FuncResolve monitorSession [] #()) in
     do:  (Fork ("$go" #()));;;
-    do:  (let: "$a0" := (let: "$a0" := time.Second in
-    (FuncResolve time.After [] #()) "$a0") in
-    (FuncResolve waitSession [time.Time] #()) "$a0");;;
+    do:  (let: "$a0" := (let: "$a0" := code.time.time.Second in
+    (FuncResolve code.time.time.After [] #()) "$a0") in
+    (FuncResolve waitSession [code.time.time.Time] #()) "$a0");;;
     return: #()).
 
 #[global] Instance info' : PkgInfo pkg_id.etcd_session :=
@@ -128,14 +128,14 @@ Definition sessionMainⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.etcd_session (λ: <>,
-      exception_do (do:  (go.GlobalAlloc mu sync.Mutex #());;;
+      exception_do (do:  (go.GlobalAlloc mu code.sync.sync.Mutex #());;;
       do:  (go.GlobalAlloc sessionc (go.ChannelType go.sendrecv (go.StructType [
 
       ])) #());;;
-      do:  (primitive.initialize' #());;;
-      do:  (time.initialize' #());;;
-      do:  (sync.initialize' #());;;
-      do:  (errors.initialize' #());;;
+      do:  (code.github_com.goose_lang.primitive.primitive.initialize' #());;;
+      do:  (code.time.time.initialize' #());;;
+      do:  (code.sync.sync.initialize' #());;;
+      do:  (code.errors.errors.initialize' #());;;
       let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
 
        ])] #()) #()) in
@@ -151,9 +151,9 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] monitorSession_unfold :: FuncUnfold monitorSession [] (monitorSessionⁱᵐᵖˡ);
   #[global] waitSession_unfold A :: FuncUnfold waitSession [A] (waitSessionⁱᵐᵖˡ A);
   #[global] sessionMain_unfold :: FuncUnfold sessionMain [] (sessionMainⁱᵐᵖˡ);
-  #[global] import_errors_Assumption :: errors.Assumptions;
-  #[global] import_sync_Assumption :: sync.Assumptions;
-  #[global] import_time_Assumption :: time.Assumptions;
-  #[global] import_primitive_Assumption :: primitive.Assumptions;
+  #[global] import_errors_Assumption :: code.errors.errors.Assumptions;
+  #[global] import_sync_Assumption :: code.sync.sync.Assumptions;
+  #[global] import_time_Assumption :: code.time.time.Assumptions;
+  #[global] import_primitive_Assumption :: code.github_com.goose_lang.primitive.primitive.Assumptions;
 }.
 End etcd_session.

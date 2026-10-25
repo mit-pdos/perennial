@@ -123,7 +123,14 @@ func (ctx *Ctx) namedRocqTypeDecl(spec *ast.TypeSpec) (decls []glang.Decl) {
 
 	switch ctx.filter.GetAction(spec.Name.Name) {
 	case declfilter.Trust:
-		return
+		// Importing the trusted package makes this module available by its short
+		// name, but does not expose it under the generated package's qualified
+		// path. Re-export the module so imported Gallina types use that path too.
+		name := glang.ToIdent(spec.Name.Name)
+		return []glang.Decl{glang.VerbatimDecl{
+			Content: fmt.Sprintf("Module %s := trusted_code.%s.%s.%s.",
+				name, coqImportQualid(ctx.pkgPath), glang.ToIdent(ctx.pkgName), name),
+		}}
 	case declfilter.Axiomatize:
 		fmt.Fprintf(w, "Axiom t : ")
 		if tps := namedType.TypeParams(); tps != nil {

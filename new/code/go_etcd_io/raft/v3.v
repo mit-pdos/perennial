@@ -396,7 +396,7 @@ Definition RawNode__Bootstrapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     (FuncResolve go.len [go.SliceType Peer] #()) "$a0") =⟨go.int⟩ #(W64 0))
     then
       return: (let: "$a0" := #"must provide at least one peer to Bootstrap"%go in
-       (FuncResolve errors.New [] #()) "$a0")
+       (FuncResolve code.errors.errors.New [] #()) "$a0")
     else do:  #());;;
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
     let: "lastIndex" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -411,32 +411,32 @@ Definition RawNode__Bootstrapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "lastIndex") ≠⟨go.uint64⟩ #(W64 0))
     then
       return: (let: "$a0" := #"can't bootstrap a nonempty Storage"%go in
-       (FuncResolve errors.New [] #()) "$a0")
+       (FuncResolve code.errors.errors.New [] #()) "$a0")
     else do:  #());;;
-    let: "$r0" := (![raftpb.HardState] (GlobalVarAddr emptyState #())) in
-    do:  ((StructFieldRef RawNode "prevHardSt"%go (![go.PointerType RawNode] "rn")) <-[raftpb.HardState] "$r0");;;
+    let: "$r0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] (GlobalVarAddr emptyState #())) in
+    do:  ((StructFieldRef RawNode "prevHardSt"%go (![go.PointerType RawNode] "rn")) <-[code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "$r0");;;
     do:  (let: "$a0" := #(W64 1) in
     let: "$a1" := None' in
     (MethodResolve (go.PointerType raft) "becomeFollower"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0" "$a1");;;
-    let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) (GoZeroVal (go.SliceType raftpb.Entry) #())) in
-    let: "$r0" := ((FuncResolve go.make2 [go.SliceType raftpb.Entry] #()) (let: "$a0" := (![go.SliceType Peer] "peers") in
+    let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (GoZeroVal (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) (let: "$a0" := (![go.SliceType Peer] "peers") in
     (FuncResolve go.len [go.SliceType Peer] #()) "$a0")) in
-    do:  ("ents" <-[go.SliceType raftpb.Entry] "$r0");;;
+    do:  ("ents" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
     let: "$range" := (![go.SliceType Peer] "peers") in
     (let: "peer" := (GoAlloc Peer (GoZeroVal Peer #())) in
     let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     slice.for_range Peer "$range" (λ: "$key" "$value",
       do:  ("peer" <-[Peer] "$value");;;
       do:  ("i" <-[go.int] "$key");;;
-      let: "cc" := (GoAlloc raftpb.ConfChange (GoZeroVal raftpb.ConfChange #())) in
-      let: "$r0" := (let: "$v0" := raftpb.ConfChangeAddNode in
+      let: "cc" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange #())) in
+      let: "$r0" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeAddNode in
       let: "$v1" := (![go.uint64] (StructFieldRef Peer "ID"%go "peer")) in
       let: "$v2" := (![go.SliceType go.byte] (StructFieldRef Peer "Context"%go "peer")) in
-      CompositeLiteral raftpb.ConfChange (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.ConfChangeType "$v0"); KeyedElement (Some (KeyField "NodeID"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Context"%go)) (ElementExpression (go.SliceType go.byte) "$v2")])) in
-      do:  ("cc" <-[raftpb.ConfChange] "$r0");;;
+      CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeType "$v0"); KeyedElement (Some (KeyField "NodeID"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Context"%go)) (ElementExpression (go.SliceType go.byte) "$v2")])) in
+      do:  ("cc" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange] "$r0");;;
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
       let: "data" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-      let: ("$ret0", "$ret1") := ((MethodResolve (go.PointerType raftpb.ConfChange) "Marshal"%go "cc") #()) in
+      let: ("$ret0", "$ret1") := ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange) "Marshal"%go "cc") #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("data" <-[go.SliceType go.byte] "$r0");;;
@@ -444,25 +444,25 @@ Definition RawNode__Bootstrapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (![go.error] "err")
       else do:  #());;;
-      let: "$r0" := (let: "$v0" := raftpb.EntryConfChange in
+      let: "$r0" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.EntryConfChange in
       let: "$v1" := #(W64 1) in
       let: "$v2" := (Convert go.int go.uint64 ((![go.int] "i") +⟨go.int⟩ #(W64 1))) in
       let: "$v3" := (![go.SliceType go.byte] "data") in
-      CompositeLiteral raftpb.Entry (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.EntryType "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v3")])) in
-      do:  ((IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "ents", ![go.int] "i")) <-[raftpb.Entry] "$r0")));;;
-    do:  (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
+      CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Entry (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v3")])) in
+      do:  ((IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents", ![go.int] "i")) <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0")));;;
+    do:  (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
     (MethodResolve (go.PointerType raftLog) "append"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))))) "$a0");;;
-    let: "$r0" := (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0")) in
+    let: "$r0" := (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0")) in
     do:  ((StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))))) <-[go.uint64] "$r0");;;
     let: "$range" := (![go.SliceType Peer] "peers") in
     (let: "peer" := (GoAlloc Peer (GoZeroVal Peer #())) in
     slice.for_range Peer "$range" (λ: "$key" "$value",
       do:  ("peer" <-[Peer] "$value");;;
       do:  "$key";;;
-      do:  (let: "$a0" := ((MethodResolve raftpb.ConfChange "AsV2"%go (let: "$v0" := (![go.uint64] (StructFieldRef Peer "ID"%go "peer")) in
-      let: "$v1" := raftpb.ConfChangeAddNode in
-      CompositeLiteral raftpb.ConfChange (LiteralValue [KeyedElement (Some (KeyField "NodeID"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.ConfChangeType "$v1")]))) #()) in
+      do:  (let: "$a0" := ((MethodResolve code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange "AsV2"%go (let: "$v0" := (![go.uint64] (StructFieldRef Peer "ID"%go "peer")) in
+      let: "$v1" := code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeAddNode in
+      CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange (LiteralValue [KeyedElement (Some (KeyField "NodeID"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeType "$v1")]))) #()) in
       (MethodResolve (go.PointerType raft) "applyConfChange"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0")));;;
     return: (Convert go.untyped_nil go.error UntypedNil)).
 
@@ -534,10 +534,10 @@ Definition raftLog__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
      let: "$sl2" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftLog "applying"%go (![go.PointerType raftLog] "l")))) in
      let: "$sl3" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef unstable "offset"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l"))))) in
      let: "$sl4" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef unstable "offsetInProgress"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l"))))) in
-     let: "$sl5" := (Convert go.int go.any (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l")))) in
-     (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0")) in
+     let: "$sl5" := (Convert go.int go.any (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l")))) in
+     (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0")) in
      CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1"); KeyedElement None (ElementExpression go.any "$sl2"); KeyedElement None (ElementExpression go.any "$sl3"); KeyedElement None (ElementExpression go.any "$sl4"); KeyedElement None (ElementExpression go.any "$sl5")]))) in
-     (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1")).
+     (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1")).
 
 (* maybeAppend returns (0, false) if the entries cannot be appended. Otherwise,
    it returns (last index of new entries, true).
@@ -554,11 +554,11 @@ Definition raftLog__maybeAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     (MethodResolve (go.PointerType raftLog) "matchTerm"%go (![go.PointerType raftLog] "l")) "$a0"))
     then return: (#(W64 0), #false)
     else do:  #());;;
-    let: "$r0" := ((![go.uint64] (StructFieldRef entryID "index"%go (StructFieldRef logSlice "prev"%go "a"))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef logSlice "entries"%go "a")) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0"))) in
+    let: "$r0" := ((![go.uint64] (StructFieldRef entryID "index"%go (StructFieldRef logSlice "prev"%go "a"))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef logSlice "entries"%go "a")) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0"))) in
     do:  ("lastnewi" <-[go.uint64] "$r0");;;
     let: "ci" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef logSlice "entries"%go "a")) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef logSlice "entries"%go "a")) in
     (MethodResolve (go.PointerType raftLog) "findConflict"%go (![go.PointerType raftLog] "l")) "$a0") in
     do:  ("ci" <-[go.uint64] "$r0");;;
     let: "$sw" := #true in
@@ -576,18 +576,18 @@ Definition raftLog__maybeAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
         let: "offset" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
         let: "$r0" := ((![go.uint64] (StructFieldRef entryID "index"%go (StructFieldRef logSlice "prev"%go "a"))) +⟨go.uint64⟩ #(W64 1)) in
         do:  ("offset" <-[go.uint64] "$r0");;;
-        (if: Convert go.untyped_bool go.bool (((![go.uint64] "ci") -⟨go.uint64⟩ (![go.uint64] "offset")) >⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef logSlice "entries"%go "a")) in
-        (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0")))
+        (if: Convert go.untyped_bool go.bool (((![go.uint64] "ci") -⟨go.uint64⟩ (![go.uint64] "offset")) >⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef logSlice "entries"%go "a")) in
+        (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0")))
         then
           do:  (let: "$a0" := #"index, %d, is out of range [%d]"%go in
           let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) ((![go.uint64] "ci") -⟨go.uint64⟩ (![go.uint64] "offset"))) in
-          let: "$sl1" := (Convert go.int (go.InterfaceType []) (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef logSlice "entries"%go "a")) in
-          (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0")) in
+          let: "$sl1" := (Convert go.int (go.InterfaceType []) (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef logSlice "entries"%go "a")) in
+          (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0")) in
           CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1")]))) in
           (MethodResolve Logger "Panicf"%go (![Logger] (StructFieldRef raftLog "logger"%go (![go.PointerType raftLog] "l")))) "$a0" "$a1")
         else do:  #());;;
-        do:  (let: "$a0" := (let: "$s" := (![go.SliceType raftpb.Entry] (StructFieldRef logSlice "entries"%go "a")) in
-        Slice (go.SliceType raftpb.Entry) ("$s", (![go.uint64] "ci") -⟨go.uint64⟩ (![go.uint64] "offset"), FuncResolve go.len [go.SliceType raftpb.Entry] #() (![go.SliceType raftpb.Entry] (StructFieldRef logSlice "entries"%go "a")))) in
+        do:  (let: "$a0" := (let: "$s" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef logSlice "entries"%go "a")) in
+        Slice (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) ("$s", (![go.uint64] "ci") -⟨go.uint64⟩ (![go.uint64] "offset"), FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #() (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef logSlice "entries"%go "a")))) in
         (MethodResolve (go.PointerType raftLog) "append"%go (![go.PointerType raftLog] "l")) "$a0")));;;
     do:  (let: "$a0" := (let: "$a0" := (![go.uint64] "committed") in
     let: "$a1" := (![go.uint64] "lastnewi") in
@@ -599,13 +599,13 @@ Definition raftLog__maybeAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
 Definition raftLog__appendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "ents",
     exception_do (let: "l" := (GoAlloc (go.PointerType raftLog) "l") in
-    let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) "ents") in
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 0))
+    let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "ents") in
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 0))
     then return: ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] "l")) #())
     else do:  #());;;
     (let: "after" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := ((![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "ents", #(W64 0))))) -⟨go.uint64⟩ #(W64 1)) in
+    let: "$r0" := ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents", #(W64 0))))) -⟨go.uint64⟩ #(W64 1)) in
     do:  ("after" <-[go.uint64] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "after") <⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] "l"))))
     then
@@ -615,7 +615,7 @@ Definition raftLog__appendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1")]))) in
       (MethodResolve Logger "Panicf"%go (![Logger] (StructFieldRef raftLog "logger"%go (![go.PointerType raftLog] "l")))) "$a0" "$a1")
     else do:  #()));;;
-    do:  (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
+    do:  (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
     (MethodResolve (go.PointerType unstable) "truncateAndAppend"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l"))) "$a0");;;
     return: ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] "l")) #())).
 
@@ -634,13 +634,13 @@ Definition raftLog__appendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 Definition raftLog__findConflictⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "ents",
     exception_do (let: "l" := (GoAlloc (go.PointerType raftLog) "l") in
-    let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) "ents") in
-    let: "$range" := (![go.SliceType raftpb.Entry] "ents") in
+    let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "ents") in
+    let: "$range" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
+    slice.for_range code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("i" <-[go.int] "$key");;;
       (let: "id" := (GoAlloc entryID (GoZeroVal entryID #())) in
-      let: "$r0" := (let: "$a0" := (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "ents", ![go.int] "i")) in
+      let: "$r0" := (let: "$a0" := (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents", ![go.int] "i")) in
       (FuncResolve pbEntryID [] #()) "$a0") in
       do:  ("id" <-[entryID] "$r0");;;
       (if: (⟨go.bool⟩! (let: "$a0" := (![entryID] "id") in
@@ -717,7 +717,7 @@ Definition raftLog__hasNextUnstableEntsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
   λ: "l" <>,
     exception_do (let: "l" := (GoAlloc (go.PointerType raftLog) "l") in
     return: ((let: "$a0" := ((MethodResolve (go.PointerType raftLog) "nextUnstableEnts"%go (![go.PointerType raftLog] "l")) #()) in
-     (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0))).
+     (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0))).
 
 (* hasNextOrInProgressUnstableEnts returns if there are any entries that are
    available to be written to the local stable log or in the process of being
@@ -727,8 +727,8 @@ Definition raftLog__hasNextUnstableEntsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
 Definition raftLog__hasNextOrInProgressUnstableEntsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
     exception_do (let: "l" := (GoAlloc (go.PointerType raftLog) "l") in
-    return: ((let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l")))) in
-     (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0))).
+    return: ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l")))) in
+     (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0))).
 
 (* nextCommittedEnts returns all the available entries for execution.
    Entries can be committed even when the local raft instance has not durably
@@ -739,14 +739,14 @@ Definition raftLog__hasNextOrInProgressUnstableEntsⁱᵐᵖˡ {ext : ffi_syntax
    go: log.go:218:19 *)
 Definition raftLog__nextCommittedEntsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "allowUnstable",
-    exception_do (let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) (GoZeroVal (go.SliceType raftpb.Entry) #())) in
+    exception_do (let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (GoZeroVal (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) #())) in
     let: "l" := (GoAlloc (go.PointerType raftLog) "l") in
     let: "allowUnstable" := (GoAlloc go.bool "allowUnstable") in
     (if: ![go.bool] (StructFieldRef raftLog "applyingEntsPaused"%go (![go.PointerType raftLog] "l"))
-    then return: (Convert go.untyped_nil (go.SliceType raftpb.Entry) UntypedNil)
+    then return: (Convert go.untyped_nil (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) UntypedNil)
     else do:  #());;;
     (if: (MethodResolve (go.PointerType raftLog) "hasNextOrInProgressSnapshot"%go (![go.PointerType raftLog] "l")) #()
-    then return: (Convert go.untyped_nil (go.SliceType raftpb.Entry) UntypedNil)
+    then return: (Convert go.untyped_nil (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) UntypedNil)
     else do:  #());;;
     let: "hi" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "lo" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -756,7 +756,7 @@ Definition raftLog__nextCommittedEntsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
     do:  ("lo" <-[go.uint64] "$r0");;;
     do:  ("hi" <-[go.uint64] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "lo") ≥⟨go.uint64⟩ (![go.uint64] "hi"))
-    then return: (Convert go.untyped_nil (go.SliceType raftpb.Entry) UntypedNil)
+    then return: (Convert go.untyped_nil (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) UntypedNil)
     else do:  #());;;
     let: "maxSize" := (GoAlloc entryEncodingSize (GoZeroVal entryEncodingSize #())) in
     let: "$r0" := ((![entryEncodingSize] (StructFieldRef raftLog "maxApplyingEntsSize"%go (![go.PointerType raftLog] "l"))) -⟨entryEncodingSize⟩ (![entryEncodingSize] (StructFieldRef raftLog "applyingEntsSize"%go (![go.PointerType raftLog] "l")))) in
@@ -777,7 +777,7 @@ Definition raftLog__nextCommittedEntsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
     (MethodResolve (go.PointerType raftLog) "slice"%go (![go.PointerType raftLog] "l")) "$a0" "$a1" "$a2") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("ents" <-[go.SliceType raftpb.Entry] "$r0");;;
+    do:  ("ents" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
@@ -786,7 +786,7 @@ Definition raftLog__nextCommittedEntsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0")]))) in
       (MethodResolve Logger "Panicf"%go (![Logger] (StructFieldRef raftLog "logger"%go (![go.PointerType raftLog] "l")))) "$a0" "$a1")
     else do:  #());;;
-    return: (![go.SliceType raftpb.Entry] "ents")).
+    return: (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents")).
 
 (* hasNextCommittedEnts returns if there is any available entries for execution.
    This is a fast check without heavy raftLog.slice() in nextCommittedEnts().
@@ -849,7 +849,7 @@ Definition raftLog__nextUnstableSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx 
 Definition raftLog__hasNextUnstableSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
     exception_do (let: "l" := (GoAlloc (go.PointerType raftLog) "l") in
-    return: (((MethodResolve (go.PointerType unstable) "nextSnapshot"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l"))) #()) ≠⟨go.PointerType raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType raftpb.Snapshot) UntypedNil))).
+    return: (((MethodResolve (go.PointerType unstable) "nextSnapshot"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l"))) #()) ≠⟨go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) UntypedNil))).
 
 (* hasNextOrInProgressSnapshot returns if there is pending snapshot waiting for
    applying or in the process of being applied.
@@ -858,14 +858,14 @@ Definition raftLog__hasNextUnstableSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gc
 Definition raftLog__hasNextOrInProgressSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
     exception_do (let: "l" := (GoAlloc (go.PointerType raftLog) "l") in
-    return: ((![go.PointerType raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l")))) ≠⟨go.PointerType raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType raftpb.Snapshot) UntypedNil))).
+    return: ((![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l")))) ≠⟨go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) UntypedNil))).
 
 (* go: log.go:291:19 *)
 Definition raftLog__snapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
     exception_do (let: "l" := (GoAlloc (go.PointerType raftLog) "l") in
-    (if: Convert go.untyped_bool go.bool ((![go.PointerType raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l")))) ≠⟨go.PointerType raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType raftpb.Snapshot) UntypedNil))
-    then return: (![raftpb.Snapshot] (![go.PointerType raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l")))), Convert go.untyped_nil go.error UntypedNil)
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l")))) ≠⟨go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) UntypedNil))
+    then return: (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l")))), Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
     let: ("$ret0", "$ret1") := (((MethodResolve Storage "Snapshot"%go (![Storage] (StructFieldRef raftLog "storage"%go (![go.PointerType raftLog] "l")))) #())) in
     return: ("$ret0", "$ret1")).
@@ -1105,7 +1105,7 @@ Definition raftLog__entriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     let: "maxSize" := (GoAlloc entryEncodingSize "maxSize") in
     let: "i" := (GoAlloc go.uint64 "i") in
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "i") >⟨go.uint64⟩ ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] "l")) #()))
-    then return: (Convert go.untyped_nil (go.SliceType raftpb.Entry) UntypedNil, Convert go.untyped_nil go.error UntypedNil)
+    then return: (Convert go.untyped_nil (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) UntypedNil, Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
     let: ("$ret0", "$ret1") := ((let: "$a0" := (![go.uint64] "i") in
     let: "$a1" := (((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] "l")) #()) +⟨go.uint64⟩ #(W64 1)) in
@@ -1120,16 +1120,16 @@ Definition raftLog__allEntriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
   λ: "l" <>,
     exception_do (let: "l" := (GoAlloc (go.PointerType raftLog) "l") in
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) (GoZeroVal (go.SliceType raftpb.Entry) #())) in
+    let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (GoZeroVal (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := ((MethodResolve (go.PointerType raftLog) "firstIndex"%go (![go.PointerType raftLog] "l")) #()) in
     let: "$a1" := (Convert go.untyped_int entryEncodingSize noLimit) in
     (MethodResolve (go.PointerType raftLog) "entries"%go (![go.PointerType raftLog] "l")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("ents" <-[go.SliceType raftpb.Entry] "$r0");;;
+    do:  ("ents" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-    then return: (![go.SliceType raftpb.Entry] "ents")
+    then return: (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.error⟩ (![go.error] (GlobalVarAddr ErrCompacted #())))
     then return: ((MethodResolve (go.PointerType raftLog) "allEntries"%go (![go.PointerType raftLog] "l")) #())
@@ -1191,16 +1191,16 @@ Definition raftLog__maybeCommitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
 Definition raftLog__restoreⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "s",
     exception_do (let: "l" := (GoAlloc (go.PointerType raftLog) "l") in
-    let: "s" := (GoAlloc raftpb.Snapshot "s") in
+    let: "s" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "s") in
     do:  (let: "$a0" := #"log [%s] starts to restore snapshot [index: %d, term: %d]"%go in
     let: "$a1" := ((let: "$sl0" := (Convert (go.PointerType raftLog) (go.InterfaceType []) (![go.PointerType raftLog] "l")) in
-    let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "s")))) in
-    let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Term"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "s")))) in
+    let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "s")))) in
+    let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Term"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "s")))) in
     CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2")]))) in
     (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raftLog "logger"%go (![go.PointerType raftLog] "l")))) "$a0" "$a1");;;
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "s"))) in
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "s"))) in
     do:  ((StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] "l")) <-[go.uint64] "$r0");;;
-    do:  (let: "$a0" := (![raftpb.Snapshot] "s") in
+    do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "s") in
     (MethodResolve (go.PointerType unstable) "restore"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l"))) "$a0");;;
     return: #()).
 
@@ -1219,42 +1219,42 @@ Definition raftLog__restoreⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
 Definition raftLog__scanⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "lo" "hi" "pageSize" "v",
     exception_do (let: "l" := (GoAlloc (go.PointerType raftLog) "l") in
-    let: "v" := (GoAlloc (go.FunctionType (go.Signature [go.SliceType raftpb.Entry] false [go.error])) "v") in
+    let: "v" := (GoAlloc (go.FunctionType (go.Signature [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] false [go.error])) "v") in
     let: "pageSize" := (GoAlloc entryEncodingSize "pageSize") in
     let: "hi" := (GoAlloc go.uint64 "hi") in
     let: "lo" := (GoAlloc go.uint64 "lo") in
     (for: (λ: <>, (![go.uint64] "lo") <⟨go.uint64⟩ (![go.uint64] "hi")); (λ: <>, #()) := λ: <>,
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) (GoZeroVal (go.SliceType raftpb.Entry) #())) in
+      let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (GoZeroVal (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) #())) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![go.uint64] "lo") in
       let: "$a1" := (![go.uint64] "hi") in
       let: "$a2" := (![entryEncodingSize] "pageSize") in
       (MethodResolve (go.PointerType raftLog) "slice"%go (![go.PointerType raftLog] "l")) "$a0" "$a1" "$a2") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("ents" <-[go.SliceType raftpb.Entry] "$r0");;;
+      do:  ("ents" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (![go.error] "err")
       else
-        (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-        (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 0))
+        (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+        (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 0))
         then
           return: (let: "$a0" := #"got 0 entries in [%d, %d)"%go in
            let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] "lo")) in
            let: "$sl1" := (Convert go.uint64 go.any (![go.uint64] "hi")) in
            CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1")]))) in
-           (FuncResolve fmt.Errorf [] #()) "$a0" "$a1")
+           (FuncResolve code.fmt.fmt.Errorf [] #()) "$a0" "$a1")
         else do:  #()));;;
       (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-      (![go.FunctionType (go.Signature [go.SliceType raftpb.Entry] false [go.error])] "v") "$a0") in
+      let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+      (![go.FunctionType (go.Signature [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] false [go.error])] "v") "$a0") in
       do:  ("err" <-[go.error] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (![go.error] "err")
       else do:  #()));;;
-      do:  ("lo" <-[go.uint64] ((![go.uint64] "lo") +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-      (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0")))));;;
+      do:  ("lo" <-[go.uint64] ((![go.uint64] "lo") +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+      (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0")))));;;
     return: (Convert go.untyped_nil go.error UntypedNil)).
 
 (* slice returns a slice of log entries from lo through hi-1, inclusive.
@@ -1272,24 +1272,24 @@ Definition raftLog__sliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     (MethodResolve (go.PointerType raftLog) "mustCheckOutOfBounds"%go (![go.PointerType raftLog] "l")) "$a0" "$a1") in
     do:  ("err" <-[go.error] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-    then return: (Convert go.untyped_nil (go.SliceType raftpb.Entry) UntypedNil, ![go.error] "err")
+    then return: (Convert go.untyped_nil (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) UntypedNil, ![go.error] "err")
     else do:  #()));;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "lo") =⟨go.uint64⟩ (![go.uint64] "hi"))
-    then return: (Convert go.untyped_nil (go.SliceType raftpb.Entry) UntypedNil, Convert go.untyped_nil go.error UntypedNil)
+    then return: (Convert go.untyped_nil (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) UntypedNil, Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "lo") ≥⟨go.uint64⟩ (![go.uint64] (StructFieldRef unstable "offset"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l")))))
     then
-      let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) (GoZeroVal (go.SliceType raftpb.Entry) #())) in
+      let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (GoZeroVal (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) #())) in
       let: "$r0" := (let: "$a0" := (let: "$a0" := (![go.uint64] "lo") in
       let: "$a1" := (![go.uint64] "hi") in
       (MethodResolve (go.PointerType unstable) "slice"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l"))) "$a0" "$a1") in
       let: "$a1" := (![entryEncodingSize] "maxSize") in
       (FuncResolve limitSize [] #()) "$a0" "$a1") in
-      do:  ("ents" <-[go.SliceType raftpb.Entry] "$r0");;;
-      return: (let: "$s" := (![go.SliceType raftpb.Entry] "ents") in
-       FullSlice (go.SliceType raftpb.Entry) ("$s", #(W64 0), let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-        (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0", let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-        (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0"), Convert go.untyped_nil go.error UntypedNil)
+      do:  ("ents" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
+      return: (let: "$s" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+       FullSlice (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) ("$s", #(W64 0), let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+        (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0", let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+        (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0"), Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
     let: "cut" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := (![go.uint64] "hi") in
@@ -1297,17 +1297,17 @@ Definition raftLog__sliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     (FuncResolve go.min [go.uint64; go.uint64] #()) "$a0" "$a1") in
     do:  ("cut" <-[go.uint64] "$r0");;;
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) (GoZeroVal (go.SliceType raftpb.Entry) #())) in
+    let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (GoZeroVal (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![go.uint64] "lo") in
     let: "$a1" := (![go.uint64] "cut") in
     let: "$a2" := (![entryEncodingSize] "maxSize") in
     (MethodResolve Storage "Entries"%go (![Storage] (StructFieldRef raftLog "storage"%go (![go.PointerType raftLog] "l")))) "$a0" "$a1" "$a2") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("ents" <-[go.SliceType raftpb.Entry] "$r0");;;
+    do:  ("ents" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.error⟩ (![go.error] (GlobalVarAddr ErrCompacted #())))
-    then return: (Convert go.untyped_nil (go.SliceType raftpb.Entry) UntypedNil, ![go.error] "err")
+    then return: (Convert go.untyped_nil (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) UntypedNil, ![go.error] "err")
     else
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.error⟩ (![go.error] (GlobalVarAddr ErrUnavailable #())))
       then
@@ -1323,33 +1323,33 @@ Definition raftLog__sliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
           (FuncResolve go.panic [] #()) "$a0")
         else do:  #())));;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "hi") ≤⟨go.uint64⟩ (![go.uint64] (StructFieldRef unstable "offset"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l")))))
-    then return: (![go.SliceType raftpb.Entry] "ents", Convert go.untyped_nil go.error UntypedNil)
+    then return: (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents", Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool ((Convert go.int go.uint64 (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0")) <⟨go.uint64⟩ ((![go.uint64] "cut") -⟨go.uint64⟩ (![go.uint64] "lo")))
-    then return: (![go.SliceType raftpb.Entry] "ents", Convert go.untyped_nil go.error UntypedNil)
+    (if: Convert go.untyped_bool go.bool ((Convert go.int go.uint64 (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0")) <⟨go.uint64⟩ ((![go.uint64] "cut") -⟨go.uint64⟩ (![go.uint64] "lo")))
+    then return: (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents", Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
     let: "size" := (GoAlloc entryEncodingSize (GoZeroVal entryEncodingSize #())) in
-    let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
     (FuncResolve entsSize [] #()) "$a0") in
     do:  ("size" <-[entryEncodingSize] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![entryEncodingSize] "size") ≥⟨entryEncodingSize⟩ (![entryEncodingSize] "maxSize"))
-    then return: (![go.SliceType raftpb.Entry] "ents", Convert go.untyped_nil go.error UntypedNil)
+    then return: (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents", Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
-    let: "unstable" := (GoAlloc (go.SliceType raftpb.Entry) (GoZeroVal (go.SliceType raftpb.Entry) #())) in
+    let: "unstable" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (GoZeroVal (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) #())) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![go.uint64] (StructFieldRef unstable "offset"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l")))) in
     let: "$a1" := (![go.uint64] "hi") in
     (MethodResolve (go.PointerType unstable) "slice"%go (StructFieldRef raftLog "unstable"%go (![go.PointerType raftLog] "l"))) "$a0" "$a1") in
     let: "$a1" := ((![entryEncodingSize] "maxSize") -⟨entryEncodingSize⟩ (![entryEncodingSize] "size")) in
     (FuncResolve limitSize [] #()) "$a0" "$a1") in
-    do:  ("unstable" <-[go.SliceType raftpb.Entry] "$r0");;;
-    (if: Convert go.untyped_bool go.bool (((let: "$a0" := (![go.SliceType raftpb.Entry] "unstable") in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 1)) && (((![entryEncodingSize] "size") +⟨entryEncodingSize⟩ (let: "$a0" := (![go.SliceType raftpb.Entry] "unstable") in
+    do:  ("unstable" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
+    (if: Convert go.untyped_bool go.bool (((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "unstable") in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 1)) && (((![entryEncodingSize] "size") +⟨entryEncodingSize⟩ (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "unstable") in
     (FuncResolve entsSize [] #()) "$a0")) >⟨entryEncodingSize⟩ (![entryEncodingSize] "maxSize")))
-    then return: (![go.SliceType raftpb.Entry] "ents", Convert go.untyped_nil go.error UntypedNil)
+    then return: (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents", Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
-    return: (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-     let: "$a1" := (![go.SliceType raftpb.Entry] "unstable") in
+    return: (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+     let: "$a1" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "unstable") in
      (FuncResolve extend [] #()) "$a0" "$a1", Convert go.untyped_nil go.error UntypedNil)).
 
 (* l.firstIndex <= lo <= hi <= l.firstIndex + len(l.entries)
@@ -1414,8 +1414,8 @@ Definition raftLog__zeroTermOnOutOfBoundsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx
 Definition unstable__maybeFirstIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "u" <>,
     exception_do (let: "u" := (GoAlloc (go.PointerType unstable) "u") in
-    (if: Convert go.untyped_bool go.bool ((![go.PointerType raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u"))) ≠⟨go.PointerType raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType raftpb.Snapshot) UntypedNil))
-    then return: ((![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go (![go.PointerType raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u")))))) +⟨go.uint64⟩ #(W64 1), #true)
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u"))) ≠⟨go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) UntypedNil))
+    then return: ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u")))))) +⟨go.uint64⟩ #(W64 1), #true)
     else do:  #());;;
     return: (#(W64 0), #false)).
 
@@ -1427,14 +1427,14 @@ Definition unstable__maybeLastIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
   λ: "u" <>,
     exception_do (let: "u" := (GoAlloc (go.PointerType unstable) "u") in
     (let: "l" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") in
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") in
     do:  ("l" <-[go.int] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.int] "l") ≠⟨go.int⟩ #(W64 0))
     then return: (((![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))) +⟨go.uint64⟩ (Convert go.int go.uint64 (![go.int] "l"))) -⟨go.uint64⟩ #(W64 1), #true)
     else do:  #()));;;
-    (if: Convert go.untyped_bool go.bool ((![go.PointerType raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u"))) ≠⟨go.PointerType raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType raftpb.Snapshot) UntypedNil))
-    then return: (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go (![go.PointerType raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u"))))), #true)
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u"))) ≠⟨go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) UntypedNil))
+    then return: (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u"))))), #true)
     else do:  #());;;
     return: (#(W64 0), #false)).
 
@@ -1448,8 +1448,8 @@ Definition unstable__maybeTermⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     let: "i" := (GoAlloc go.uint64 "i") in
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))))
     then
-      (if: Convert go.untyped_bool go.bool (((![go.PointerType raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u"))) ≠⟨go.PointerType raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType raftpb.Snapshot) UntypedNil)) && ((![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go (![go.PointerType raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u")))))) =⟨go.uint64⟩ (![go.uint64] "i")))
-      then return: (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Term"%go (StructFieldRef raftpb.Snapshot "Metadata"%go (![go.PointerType raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u"))))), #true)
+      (if: Convert go.untyped_bool go.bool (((![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u"))) ≠⟨go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) UntypedNil)) && ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u")))))) =⟨go.uint64⟩ (![go.uint64] "i")))
+      then return: (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Term"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u"))))), #true)
       else do:  #());;;
       return: (#(W64 0), #false)
     else do:  #());;;
@@ -1466,7 +1466,7 @@ Definition unstable__maybeTermⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "i") >⟨go.uint64⟩ (![go.uint64] "last"))
     then return: (#(W64 0), #false)
     else do:  #());;;
-    return: (![go.uint64] (StructFieldRef raftpb.Entry "Term"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")), Convert go.uint64 go.int ((![go.uint64] "i") -⟨go.uint64⟩ (![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))))))), #true)).
+    return: (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Term"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")), Convert go.uint64 go.int ((![go.uint64] "i") -⟨go.uint64⟩ (![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))))))), #true)).
 
 (* nextEntries returns the unstable entries that are not already in the process
    of being written to storage.
@@ -1478,12 +1478,12 @@ Definition unstable__nextEntriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "inProgress" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := (Convert go.uint64 go.int ((![go.uint64] (StructFieldRef unstable "offsetInProgress"%go (![go.PointerType unstable] "u"))) -⟨go.uint64⟩ (![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))))) in
     do:  ("inProgress" <-[go.int] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") =⟨go.int⟩ (![go.int] "inProgress"))
-    then return: (Convert go.untyped_nil (go.SliceType raftpb.Entry) UntypedNil)
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") =⟨go.int⟩ (![go.int] "inProgress"))
+    then return: (Convert go.untyped_nil (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) UntypedNil)
     else do:  #());;;
-    return: (let: "$s" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
-     Slice (go.SliceType raftpb.Entry) ("$s", ![go.int] "inProgress", FuncResolve go.len [go.SliceType raftpb.Entry] #() (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")))))).
+    return: (let: "$s" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
+     Slice (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) ("$s", ![go.int] "inProgress", FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #() (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")))))).
 
 (* nextSnapshot returns the unstable snapshot, if one exists that is not already
    in the process of being written to storage.
@@ -1492,10 +1492,10 @@ Definition unstable__nextEntriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
 Definition unstable__nextSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "u" <>,
     exception_do (let: "u" := (GoAlloc (go.PointerType unstable) "u") in
-    (if: ((![go.PointerType raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u"))) =⟨go.PointerType raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType raftpb.Snapshot) UntypedNil)) || (![go.bool] (StructFieldRef unstable "snapshotInProgress"%go (![go.PointerType unstable] "u")))
-    then return: (Convert go.untyped_nil (go.PointerType raftpb.Snapshot) UntypedNil)
+    (if: ((![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u"))) =⟨go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) UntypedNil)) || (![go.bool] (StructFieldRef unstable "snapshotInProgress"%go (![go.PointerType unstable] "u")))
+    then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) UntypedNil)
     else do:  #());;;
-    return: (![go.PointerType raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u")))).
+    return: (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u")))).
 
 (* acceptInProgress marks all entries and the snapshot, if any, in the unstable
    as having begun the process of being written to storage. The entries/snapshot
@@ -1507,14 +1507,14 @@ Definition unstable__nextSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
 Definition unstable__acceptInProgressⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "u" <>,
     exception_do (let: "u" := (GoAlloc (go.PointerType unstable) "u") in
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0))
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0))
     then
-      let: "$r0" := ((![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")), (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
-       (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") -⟨go.int⟩ #(W64 1))))) +⟨go.uint64⟩ #(W64 1)) in
+      let: "$r0" := ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")), (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
+       (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") -⟨go.int⟩ #(W64 1))))) +⟨go.uint64⟩ #(W64 1)) in
       do:  ((StructFieldRef unstable "offsetInProgress"%go (![go.PointerType unstable] "u")) <-[go.uint64] "$r0")
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool ((![go.PointerType raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u"))) ≠⟨go.PointerType raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType raftpb.Snapshot) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u"))) ≠⟨go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) UntypedNil))
     then
       let: "$r0" := #true in
       do:  ((StructFieldRef unstable "snapshotInProgress"%go (![go.PointerType unstable] "u")) <-[go.bool] "$r0")
@@ -1571,9 +1571,9 @@ Definition unstable__stableToⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     let: "num" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := (Convert go.uint64 go.int (((![go.uint64] (StructFieldRef entryID "index"%go "id")) +⟨go.uint64⟩ #(W64 1)) -⟨go.uint64⟩ (![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))))) in
     do:  ("num" <-[go.int] "$r0");;;
-    let: "$r0" := (let: "$s" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
-    Slice (go.SliceType raftpb.Entry) ("$s", ![go.int] "num", FuncResolve go.len [go.SliceType raftpb.Entry] #() (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))))) in
-    do:  ((StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")) <-[go.SliceType raftpb.Entry] "$r0");;;
+    let: "$r0" := (let: "$s" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
+    Slice (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) ("$s", ![go.int] "num", FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #() (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))))) in
+    do:  ((StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
     let: "$r0" := ((![go.uint64] (StructFieldRef entryID "index"%go "id")) +⟨go.uint64⟩ #(W64 1)) in
     do:  ((StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u")) <-[go.uint64] "$r0");;;
     let: "$r0" := (let: "$a0" := (![go.uint64] (StructFieldRef unstable "offsetInProgress"%go (![go.PointerType unstable] "u"))) in
@@ -1593,25 +1593,25 @@ Definition unstable__shrinkEntriesArrayⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
   λ: "u" <>,
     exception_do (let: "u" := (GoAlloc (go.PointerType unstable) "u") in
     let lenMultiple := #2 in
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 0))
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 0))
     then
-      let: "$r0" := (Convert go.untyped_nil (go.SliceType raftpb.Entry) UntypedNil) in
-      do:  ((StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")) <-[go.SliceType raftpb.Entry] "$r0")
+      let: "$r0" := (Convert go.untyped_nil (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) UntypedNil) in
+      do:  ((StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0")
     else
-      (if: Convert go.untyped_bool go.bool (((let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
-      (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") *⟨go.int⟩ (Convert go.untyped_int go.int lenMultiple)) <⟨go.int⟩ (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
-      (FuncResolve go.cap [go.SliceType raftpb.Entry] #()) "$a0"))
+      (if: Convert go.untyped_bool go.bool (((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
+      (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") *⟨go.int⟩ (Convert go.untyped_int go.int lenMultiple)) <⟨go.int⟩ (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
+      (FuncResolve go.cap [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0"))
       then
-        let: "newEntries" := (GoAlloc (go.SliceType raftpb.Entry) (GoZeroVal (go.SliceType raftpb.Entry) #())) in
-        let: "$r0" := ((FuncResolve go.make2 [go.SliceType raftpb.Entry] #()) (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
-        (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0")) in
-        do:  ("newEntries" <-[go.SliceType raftpb.Entry] "$r0");;;
-        do:  (let: "$a0" := (![go.SliceType raftpb.Entry] "newEntries") in
-        let: "$a1" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
-        (FuncResolve go.copy [go.SliceType raftpb.Entry] #()) "$a0" "$a1");;;
-        let: "$r0" := (![go.SliceType raftpb.Entry] "newEntries") in
-        do:  ((StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")) <-[go.SliceType raftpb.Entry] "$r0")
+        let: "newEntries" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (GoZeroVal (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) #())) in
+        let: "$r0" := ((FuncResolve go.make2 [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
+        (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0")) in
+        do:  ("newEntries" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
+        do:  (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "newEntries") in
+        let: "$a1" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
+        (FuncResolve go.copy [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0" "$a1");;;
+        let: "$r0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "newEntries") in
+        do:  ((StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0")
       else do:  #()));;;
     return: #()).
 
@@ -1620,10 +1620,10 @@ Definition unstable__stableSnapToⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
   λ: "u" "i",
     exception_do (let: "u" := (GoAlloc (go.PointerType unstable) "u") in
     let: "i" := (GoAlloc go.uint64 "i") in
-    (if: Convert go.untyped_bool go.bool (((![go.PointerType raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u"))) ≠⟨go.PointerType raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType raftpb.Snapshot) UntypedNil)) && ((![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go (![go.PointerType raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u")))))) =⟨go.uint64⟩ (![go.uint64] "i")))
+    (if: Convert go.untyped_bool go.bool (((![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u"))) ≠⟨go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) UntypedNil)) && ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u")))))) =⟨go.uint64⟩ (![go.uint64] "i")))
     then
-      let: "$r0" := (Convert go.untyped_nil (go.PointerType raftpb.Snapshot) UntypedNil) in
-      do:  ((StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u")) <-[go.PointerType raftpb.Snapshot] "$r0");;;
+      let: "$r0" := (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) UntypedNil) in
+      do:  ((StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u")) <-[go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "$r0");;;
       let: "$r0" := #false in
       do:  ((StructFieldRef unstable "snapshotInProgress"%go (![go.PointerType unstable] "u")) <-[go.bool] "$r0")
     else do:  #());;;
@@ -1633,15 +1633,15 @@ Definition unstable__stableSnapToⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
 Definition unstable__restoreⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "u" "s",
     exception_do (let: "u" := (GoAlloc (go.PointerType unstable) "u") in
-    let: "s" := (GoAlloc raftpb.Snapshot "s") in
-    let: "$r0" := ((![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "s"))) +⟨go.uint64⟩ #(W64 1)) in
+    let: "s" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "s") in
+    let: "$r0" := ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "s"))) +⟨go.uint64⟩ #(W64 1)) in
     do:  ((StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u")) <-[go.uint64] "$r0");;;
     let: "$r0" := (![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))) in
     do:  ((StructFieldRef unstable "offsetInProgress"%go (![go.PointerType unstable] "u")) <-[go.uint64] "$r0");;;
-    let: "$r0" := (Convert go.untyped_nil (go.SliceType raftpb.Entry) UntypedNil) in
-    do:  ((StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")) <-[go.SliceType raftpb.Entry] "$r0");;;
+    let: "$r0" := (Convert go.untyped_nil (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) UntypedNil) in
+    do:  ((StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
     let: "$r0" := "s" in
-    do:  ((StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u")) <-[go.PointerType raftpb.Snapshot] "$r0");;;
+    do:  ((StructFieldRef unstable "snapshot"%go (![go.PointerType unstable] "u")) <-[go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "$r0");;;
     let: "$r0" := #false in
     do:  ((StructFieldRef unstable "snapshotInProgress"%go (![go.PointerType unstable] "u")) <-[go.bool] "$r0");;;
     return: #()).
@@ -1650,18 +1650,18 @@ Definition unstable__restoreⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
 Definition unstable__truncateAndAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "u" "ents",
     exception_do (let: "u" := (GoAlloc (go.PointerType unstable) "u") in
-    let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) "ents") in
+    let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "ents") in
     let: "fromIndex" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "ents", #(W64 0))))) in
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents", #(W64 0))))) in
     do:  ("fromIndex" <-[go.uint64] "$r0");;;
     let: "$sw" := #true in
-    (if: "$sw" =⟨go.bool⟩ ((![go.uint64] "fromIndex") =⟨go.uint64⟩ ((![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0"))))
+    (if: "$sw" =⟨go.bool⟩ ((![go.uint64] "fromIndex") =⟨go.uint64⟩ ((![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0"))))
     then
-      let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
-      let: "$a1" := (![go.SliceType raftpb.Entry] "ents") in
-      (FuncResolve go.append [go.SliceType raftpb.Entry] #()) "$a0" "$a1") in
-      do:  ((StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")) <-[go.SliceType raftpb.Entry] "$r0")
+      let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
+      let: "$a1" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+      (FuncResolve go.append [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0" "$a1") in
+      do:  ((StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0")
     else
       (if: "$sw" =⟨go.bool⟩ ((![go.uint64] "fromIndex") ≤⟨go.uint64⟩ (![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))))
       then
@@ -1669,8 +1669,8 @@ Definition unstable__truncateAndAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
         let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] "fromIndex")) in
         CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0")]))) in
         (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef unstable "logger"%go (![go.PointerType unstable] "u")))) "$a0" "$a1");;;
-        let: "$r0" := (![go.SliceType raftpb.Entry] "ents") in
-        do:  ((StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")) <-[go.SliceType raftpb.Entry] "$r0");;;
+        let: "$r0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+        do:  ((StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
         let: "$r0" := (![go.uint64] "fromIndex") in
         do:  ((StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u")) <-[go.uint64] "$r0");;;
         let: "$r0" := (![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))) in
@@ -1680,15 +1680,15 @@ Definition unstable__truncateAndAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
         let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] "fromIndex")) in
         CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0")]))) in
         (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef unstable "logger"%go (![go.PointerType unstable] "u")))) "$a0" "$a1");;;
-        let: "keep" := (GoAlloc (go.SliceType raftpb.Entry) (GoZeroVal (go.SliceType raftpb.Entry) #())) in
+        let: "keep" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (GoZeroVal (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) #())) in
         let: "$r0" := (let: "$a0" := (![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))) in
         let: "$a1" := (![go.uint64] "fromIndex") in
         (MethodResolve (go.PointerType unstable) "slice"%go (![go.PointerType unstable] "u")) "$a0" "$a1") in
-        do:  ("keep" <-[go.SliceType raftpb.Entry] "$r0");;;
-        let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Entry] "keep") in
-        let: "$a1" := (![go.SliceType raftpb.Entry] "ents") in
-        (FuncResolve go.append [go.SliceType raftpb.Entry] #()) "$a0" "$a1") in
-        do:  ((StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")) <-[go.SliceType raftpb.Entry] "$r0");;;
+        do:  ("keep" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "keep") in
+        let: "$a1" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+        (FuncResolve go.append [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0" "$a1") in
+        do:  ((StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
         let: "$r0" := (let: "$a0" := (![go.uint64] (StructFieldRef unstable "offsetInProgress"%go (![go.PointerType unstable] "u"))) in
         let: "$a1" := (![go.uint64] "fromIndex") in
         (FuncResolve go.min [go.uint64; go.uint64] #()) "$a0" "$a1") in
@@ -1713,8 +1713,8 @@ Definition unstable__sliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     do:  (let: "$a0" := (![go.uint64] "lo") in
     let: "$a1" := (![go.uint64] "hi") in
     (MethodResolve (go.PointerType unstable) "mustCheckOutOfBounds"%go (![go.PointerType unstable] "u")) "$a0" "$a1");;;
-    return: (let: "$s" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
-     FullSlice (go.SliceType raftpb.Entry) ("$s", (![go.uint64] "lo") -⟨go.uint64⟩ (![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))), (![go.uint64] "hi") -⟨go.uint64⟩ (![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))), (![go.uint64] "hi") -⟨go.uint64⟩ (![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u")))))).
+    return: (let: "$s" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
+     FullSlice (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) ("$s", (![go.uint64] "lo") -⟨go.uint64⟩ (![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))), (![go.uint64] "hi") -⟨go.uint64⟩ (![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))), (![go.uint64] "hi") -⟨go.uint64⟩ (![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u")))))).
 
 (* u.offset <= lo <= hi <= u.offset+len(u.entries)
 
@@ -1733,8 +1733,8 @@ Definition unstable__mustCheckOutOfBoundsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx
       (MethodResolve Logger "Panicf"%go (![Logger] (StructFieldRef unstable "logger"%go (![go.PointerType unstable] "u")))) "$a0" "$a1")
     else do:  #());;;
     let: "upper" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := ((![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0"))) in
+    let: "$r0" := ((![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u"))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef unstable "entries"%go (![go.PointerType unstable] "u"))) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0"))) in
     do:  ("upper" <-[go.uint64] "$r0");;;
     (if: Convert go.untyped_bool go.bool (((![go.uint64] "lo") <⟨go.uint64⟩ (![go.uint64] (StructFieldRef unstable "offset"%go (![go.PointerType unstable] "u")))) || ((![go.uint64] "hi") >⟨go.uint64⟩ (![go.uint64] "upper")))
     then
@@ -1752,10 +1752,10 @@ Definition unstable__mustCheckOutOfBoundsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx
 Definition SetLoggerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l",
     exception_do (let: "l" := (GoAlloc Logger "l") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (GlobalVarAddr raftLoggerMu #())) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (GlobalVarAddr raftLoggerMu #())) #());;;
     let: "$r0" := (![Logger] "l") in
     do:  ((GlobalVarAddr raftLogger #()) <-[Logger] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (GlobalVarAddr raftLoggerMu #())) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (GlobalVarAddr raftLoggerMu #())) #());;;
     return: #()).
 
 (* go: logger.go:51:6 *)
@@ -1768,8 +1768,8 @@ Definition ResetDefaultLoggerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
 (* go: logger.go:55:6 *)
 Definition getLoggerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    with_defer: (do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (GlobalVarAddr raftLoggerMu #())) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (GlobalVarAddr raftLoggerMu #())) in
+    with_defer: (do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (GlobalVarAddr raftLoggerMu #())) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (GlobalVarAddr raftLoggerMu #())) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -1781,7 +1781,7 @@ Definition getLoggerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 Definition DefaultLogger__EnableTimestampsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
     exception_do (let: "l" := (GoAlloc (go.PointerType DefaultLogger) "l") in
-    do:  (let: "$a0" := ((((MethodResolve (go.PointerType DefaultLogger) "Flags"%go (![go.PointerType DefaultLogger] "l")) #()) |⟨go.int⟩ (Convert go.untyped_int go.int log.Ldate)) |⟨go.int⟩ (Convert go.untyped_int go.int log.Ltime)) in
+    do:  (let: "$a0" := ((((MethodResolve (go.PointerType DefaultLogger) "Flags"%go (![go.PointerType DefaultLogger] "l")) #()) |⟨go.int⟩ (Convert go.untyped_int go.int code.log.log.Ldate)) |⟨go.int⟩ (Convert go.untyped_int go.int code.log.log.Ltime)) in
     (MethodResolve (go.PointerType DefaultLogger) "SetFlags"%go (![go.PointerType DefaultLogger] "l")) "$a0");;;
     return: #()).
 
@@ -1803,7 +1803,7 @@ Definition DefaultLogger__Debugⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
       do:  (let: "$a0" := (Convert go.untyped_int go.int calldepth) in
       let: "$a1" := (let: "$a0" := #"DEBUG"%go in
       let: "$a1" := (let: "$a0" := (![go.SliceType (go.InterfaceType [])] "v") in
-      (FuncResolve fmt.Sprint [] #()) "$a0") in
+      (FuncResolve code.fmt.fmt.Sprint [] #()) "$a0") in
       (FuncResolve header [] #()) "$a0" "$a1") in
       (MethodResolve (go.PointerType DefaultLogger) "Output"%go (![go.PointerType DefaultLogger] "l")) "$a0" "$a1")
     else do:  #());;;
@@ -1821,7 +1821,7 @@ Definition DefaultLogger__Debugfⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
       let: "$a1" := (let: "$a0" := #"DEBUG"%go in
       let: "$a1" := (let: "$a0" := (![go.string] "format") in
       let: "$a1" := (![go.SliceType (go.InterfaceType [])] "v") in
-      (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1") in
+      (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1") in
       (FuncResolve header [] #()) "$a0" "$a1") in
       (MethodResolve (go.PointerType DefaultLogger) "Output"%go (![go.PointerType DefaultLogger] "l")) "$a0" "$a1")
     else do:  #());;;
@@ -1835,7 +1835,7 @@ Definition DefaultLogger__Infoⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     do:  (let: "$a0" := (Convert go.untyped_int go.int calldepth) in
     let: "$a1" := (let: "$a0" := #"INFO"%go in
     let: "$a1" := (let: "$a0" := (![go.SliceType (go.InterfaceType [])] "v") in
-    (FuncResolve fmt.Sprint [] #()) "$a0") in
+    (FuncResolve code.fmt.fmt.Sprint [] #()) "$a0") in
     (FuncResolve header [] #()) "$a0" "$a1") in
     (MethodResolve (go.PointerType DefaultLogger) "Output"%go (![go.PointerType DefaultLogger] "l")) "$a0" "$a1");;;
     return: #()).
@@ -1850,7 +1850,7 @@ Definition DefaultLogger__Infofⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     let: "$a1" := (let: "$a0" := #"INFO"%go in
     let: "$a1" := (let: "$a0" := (![go.string] "format") in
     let: "$a1" := (![go.SliceType (go.InterfaceType [])] "v") in
-    (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1") in
+    (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1") in
     (FuncResolve header [] #()) "$a0" "$a1") in
     (MethodResolve (go.PointerType DefaultLogger) "Output"%go (![go.PointerType DefaultLogger] "l")) "$a0" "$a1");;;
     return: #()).
@@ -1863,7 +1863,7 @@ Definition DefaultLogger__Errorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     do:  (let: "$a0" := (Convert go.untyped_int go.int calldepth) in
     let: "$a1" := (let: "$a0" := #"ERROR"%go in
     let: "$a1" := (let: "$a0" := (![go.SliceType (go.InterfaceType [])] "v") in
-    (FuncResolve fmt.Sprint [] #()) "$a0") in
+    (FuncResolve code.fmt.fmt.Sprint [] #()) "$a0") in
     (FuncResolve header [] #()) "$a0" "$a1") in
     (MethodResolve (go.PointerType DefaultLogger) "Output"%go (![go.PointerType DefaultLogger] "l")) "$a0" "$a1");;;
     return: #()).
@@ -1878,7 +1878,7 @@ Definition DefaultLogger__Errorfⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "$a1" := (let: "$a0" := #"ERROR"%go in
     let: "$a1" := (let: "$a0" := (![go.string] "format") in
     let: "$a1" := (![go.SliceType (go.InterfaceType [])] "v") in
-    (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1") in
+    (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1") in
     (FuncResolve header [] #()) "$a0" "$a1") in
     (MethodResolve (go.PointerType DefaultLogger) "Output"%go (![go.PointerType DefaultLogger] "l")) "$a0" "$a1");;;
     return: #()).
@@ -1891,7 +1891,7 @@ Definition DefaultLogger__Warningⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
     do:  (let: "$a0" := (Convert go.untyped_int go.int calldepth) in
     let: "$a1" := (let: "$a0" := #"WARN"%go in
     let: "$a1" := (let: "$a0" := (![go.SliceType (go.InterfaceType [])] "v") in
-    (FuncResolve fmt.Sprint [] #()) "$a0") in
+    (FuncResolve code.fmt.fmt.Sprint [] #()) "$a0") in
     (FuncResolve header [] #()) "$a0" "$a1") in
     (MethodResolve (go.PointerType DefaultLogger) "Output"%go (![go.PointerType DefaultLogger] "l")) "$a0" "$a1");;;
     return: #()).
@@ -1906,7 +1906,7 @@ Definition DefaultLogger__Warningfⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     let: "$a1" := (let: "$a0" := #"WARN"%go in
     let: "$a1" := (let: "$a0" := (![go.string] "format") in
     let: "$a1" := (![go.SliceType (go.InterfaceType [])] "v") in
-    (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1") in
+    (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1") in
     (FuncResolve header [] #()) "$a0" "$a1") in
     (MethodResolve (go.PointerType DefaultLogger) "Output"%go (![go.PointerType DefaultLogger] "l")) "$a0" "$a1");;;
     return: #()).
@@ -1919,11 +1919,11 @@ Definition DefaultLogger__Fatalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     do:  (let: "$a0" := (Convert go.untyped_int go.int calldepth) in
     let: "$a1" := (let: "$a0" := #"FATAL"%go in
     let: "$a1" := (let: "$a0" := (![go.SliceType (go.InterfaceType [])] "v") in
-    (FuncResolve fmt.Sprint [] #()) "$a0") in
+    (FuncResolve code.fmt.fmt.Sprint [] #()) "$a0") in
     (FuncResolve header [] #()) "$a0" "$a1") in
     (MethodResolve (go.PointerType DefaultLogger) "Output"%go (![go.PointerType DefaultLogger] "l")) "$a0" "$a1");;;
     do:  (let: "$a0" := #(W64 1) in
-    (FuncResolve os.Exit [] #()) "$a0");;;
+    (FuncResolve code.os.os.Exit [] #()) "$a0");;;
     return: #()).
 
 (* go: logger.go:127:25 *)
@@ -1936,11 +1936,11 @@ Definition DefaultLogger__Fatalfⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "$a1" := (let: "$a0" := #"FATAL"%go in
     let: "$a1" := (let: "$a0" := (![go.string] "format") in
     let: "$a1" := (![go.SliceType (go.InterfaceType [])] "v") in
-    (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1") in
+    (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1") in
     (FuncResolve header [] #()) "$a0" "$a1") in
     (MethodResolve (go.PointerType DefaultLogger) "Output"%go (![go.PointerType DefaultLogger] "l")) "$a0" "$a1");;;
     do:  (let: "$a0" := #(W64 1) in
-    (FuncResolve os.Exit [] #()) "$a0");;;
+    (FuncResolve code.os.os.Exit [] #()) "$a0");;;
     return: #()).
 
 (* go: logger.go:132:25 *)
@@ -1949,7 +1949,7 @@ Definition DefaultLogger__Panicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     exception_do (let: "l" := (GoAlloc (go.PointerType DefaultLogger) "l") in
     let: "v" := (GoAlloc (go.SliceType (go.InterfaceType [])) "v") in
     do:  (let: "$a0" := (![go.SliceType (go.InterfaceType [])] "v") in
-    (MethodResolve (go.PointerType log.Logger) "Panic"%go (![go.PointerType log.Logger] (StructFieldRef DefaultLogger "Logger"%go (![go.PointerType DefaultLogger] "l")))) "$a0");;;
+    (MethodResolve (go.PointerType code.log.log.Logger) "Panic"%go (![go.PointerType code.log.log.Logger] (StructFieldRef DefaultLogger "Logger"%go (![go.PointerType DefaultLogger] "l")))) "$a0");;;
     return: #()).
 
 (* go: logger.go:136:25 *)
@@ -1960,7 +1960,7 @@ Definition DefaultLogger__Panicfⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "format" := (GoAlloc go.string "format") in
     do:  (let: "$a0" := (![go.string] "format") in
     let: "$a1" := (![go.SliceType (go.InterfaceType [])] "v") in
-    (MethodResolve (go.PointerType log.Logger) "Panicf"%go (![go.PointerType log.Logger] (StructFieldRef DefaultLogger "Logger"%go (![go.PointerType DefaultLogger] "l")))) "$a0" "$a1");;;
+    (MethodResolve (go.PointerType code.log.log.Logger) "Panicf"%go (![go.PointerType code.log.log.Logger] (StructFieldRef DefaultLogger "Logger"%go (![go.PointerType DefaultLogger] "l")))) "$a0" "$a1");;;
     return: #()).
 
 (* go: logger.go:140:6 *)
@@ -1972,7 +1972,7 @@ Definition headerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
      let: "$a1" := ((let: "$sl0" := (Convert go.string go.any (![go.string] "lvl")) in
      let: "$sl1" := (Convert go.string go.any (![go.string] "msg")) in
      CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1")]))) in
-     (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1")).
+     (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1")).
 
 (* go: node.go:45:21 *)
 Definition SoftState__equalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -1984,18 +1984,18 @@ Definition SoftState__equalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
 (* go: node.go:117:6 *)
 Definition isHardStateEqualⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "a" "b",
-    exception_do (let: "b" := (GoAlloc raftpb.HardState "b") in
-    let: "a" := (GoAlloc raftpb.HardState "a") in
-    return: ((((![go.uint64] (StructFieldRef raftpb.HardState "Term"%go "a")) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftpb.HardState "Term"%go "b"))) && ((![go.uint64] (StructFieldRef raftpb.HardState "Vote"%go "a")) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftpb.HardState "Vote"%go "b")))) && ((![go.uint64] (StructFieldRef raftpb.HardState "Commit"%go "a")) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftpb.HardState "Commit"%go "b"))))).
+    exception_do (let: "b" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "b") in
+    let: "a" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "a") in
+    return: ((((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Term"%go "a")) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Term"%go "b"))) && ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Vote"%go "a")) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Vote"%go "b")))) && ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Commit"%go "a")) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Commit"%go "b"))))).
 
 (* IsEmptyHardState returns true if the given HardState is empty.
 
    go: node.go:122:6 *)
 Definition IsEmptyHardStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "st",
-    exception_do (let: "st" := (GoAlloc raftpb.HardState "st") in
-    return: (let: "$a0" := (![raftpb.HardState] "st") in
-     let: "$a1" := (![raftpb.HardState] (GlobalVarAddr emptyState #())) in
+    exception_do (let: "st" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "st") in
+    return: (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "st") in
+     let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] (GlobalVarAddr emptyState #())) in
      (FuncResolve isHardStateEqual [] #()) "$a0" "$a1")).
 
 (* IsEmptySnap returns true if the given Snapshot is empty.
@@ -2003,8 +2003,8 @@ Definition IsEmptyHardStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
    go: node.go:127:6 *)
 Definition IsEmptySnapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "sp",
-    exception_do (let: "sp" := (GoAlloc raftpb.Snapshot "sp") in
-    return: ((![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "sp"))) =⟨go.uint64⟩ #(W64 0))).
+    exception_do (let: "sp" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "sp") in
+    return: ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "sp"))) =⟨go.uint64⟩ #(W64 0))).
 
 (* go: node.go:250:6 *)
 Definition setupNodeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2100,9 +2100,9 @@ Definition newNodeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
   λ: "rn",
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
     return: (let: "$v0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv msgWithResult] #()) #()) in
-     let: "$v1" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv raftpb.Message] #()) #()) in
-     let: "$v2" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv raftpb.ConfChangeV2] #()) #()) in
-     let: "$v3" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv raftpb.ConfState] #()) #()) in
+     let: "$v1" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) #()) in
+     let: "$v2" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2] #()) #()) in
+     let: "$v3" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] #()) #()) in
      let: "$v4" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv Ready] #()) #()) in
      let: "$v5" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
 
@@ -2118,7 +2118,7 @@ Definition newNodeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
       ])] #()) #()) in
      let: "$v9" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.ChannelType go.sendrecv Status)] #()) #()) in
      let: "$v10" := (![go.PointerType RawNode] "rn") in
-     CompositeLiteral node (LiteralValue [KeyedElement (Some (KeyField "propc"%go)) (ElementExpression (go.ChannelType go.sendrecv msgWithResult) "$v0"); KeyedElement (Some (KeyField "recvc"%go)) (ElementExpression (go.ChannelType go.sendrecv raftpb.Message) "$v1"); KeyedElement (Some (KeyField "confc"%go)) (ElementExpression (go.ChannelType go.sendrecv raftpb.ConfChangeV2) "$v2"); KeyedElement (Some (KeyField "confstatec"%go)) (ElementExpression (go.ChannelType go.sendrecv raftpb.ConfState) "$v3"); KeyedElement (Some (KeyField "readyc"%go)) (ElementExpression (go.ChannelType go.sendrecv Ready) "$v4"); KeyedElement (Some (KeyField "advancec"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
+     CompositeLiteral node (LiteralValue [KeyedElement (Some (KeyField "propc"%go)) (ElementExpression (go.ChannelType go.sendrecv msgWithResult) "$v0"); KeyedElement (Some (KeyField "recvc"%go)) (ElementExpression (go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.Message) "$v1"); KeyedElement (Some (KeyField "confc"%go)) (ElementExpression (go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2) "$v2"); KeyedElement (Some (KeyField "confstatec"%go)) (ElementExpression (go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState) "$v3"); KeyedElement (Some (KeyField "readyc"%go)) (ElementExpression (go.ChannelType go.sendrecv Ready) "$v4"); KeyedElement (Some (KeyField "advancec"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
 
       ])) "$v5"); KeyedElement (Some (KeyField "tickc"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
 
@@ -2222,8 +2222,8 @@ Definition node__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
         do:  ("lead" <-[go.uint64] "$r0")
       else do:  #());;;
       let: "$ch0" := (![go.ChannelType go.sendrecv msgWithResult] "propc") in
-      let: "$ch1" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
-      let: "$ch2" := (![go.ChannelType go.sendrecv raftpb.ConfChangeV2] (StructFieldRef node "confc"%go (![go.PointerType node] "n"))) in
+      let: "$ch1" := (![go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
+      let: "$ch2" := (![go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2] (StructFieldRef node "confc"%go (![go.PointerType node] "n"))) in
       let: "$ch3" := (![go.ChannelType go.sendrecv (go.StructType [
 
       ])] (StructFieldRef node "tickc"%go (![go.PointerType node] "n"))) in
@@ -2240,13 +2240,13 @@ Definition node__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
         let: "pm" := (GoAlloc msgWithResult (GoZeroVal msgWithResult #())) in
         let: "$r0" := (Fst "$recvVal") in
         do:  ("pm" <-[msgWithResult] "$r0");;;
-        let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-        let: "$r0" := (![raftpb.Message] (StructFieldRef msgWithResult "m"%go "pm")) in
-        do:  ("m" <-[raftpb.Message] "$r0");;;
+        let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
+        let: "$r0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef msgWithResult "m"%go "pm")) in
+        do:  ("m" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
         let: "$r0" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
-        do:  ((StructFieldRef raftpb.Message "From"%go "m") <-[go.uint64] "$r0");;;
+        do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m") <-[go.uint64] "$r0");;;
         let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-        let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
+        let: "$r0" := (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
         (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] "r")) "$a0") in
         do:  ("err" <-[go.error] "$r0");;;
         (if: Convert go.untyped_bool go.bool ((![go.ChannelType go.sendrecv go.error] (StructFieldRef msgWithResult "result"%go "pm")) ≠⟨go.ChannelType go.sendrecv go.error⟩ (Convert go.untyped_nil (go.ChannelType go.sendrecv go.error) UntypedNil))
@@ -2257,33 +2257,33 @@ Definition node__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
           do:  (let: "$a0" := (![go.ChannelType go.sendrecv go.error] (StructFieldRef msgWithResult "result"%go "pm")) in
           (FuncResolve go.close [go.ChannelType go.sendrecv go.error] #()) "$a0")
         else do:  #())
-        )); (CommClause (RecvCase raftpb.Message "$ch1") (λ: "$recvVal",
-        let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
+        )); (CommClause (RecvCase code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$ch1") (λ: "$recvVal",
+        let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
         let: "$r0" := (Fst "$recvVal") in
-        do:  ("m" <-[raftpb.Message] "$r0");;;
-        (if: ((let: "$a0" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
-        (FuncResolve IsResponseMsg [] #()) "$a0") && (⟨go.bool⟩! (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
-        (FuncResolve IsLocalMsgTarget [] #()) "$a0"))) && ((map.lookup1 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) =⟨go.PointerType tracker.Progress⟩ (Convert go.untyped_nil (go.PointerType tracker.Progress) UntypedNil))
+        do:  ("m" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
+        (if: ((let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) in
+        (FuncResolve IsResponseMsg [] #()) "$a0") && (⟨go.bool⟩! (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
+        (FuncResolve IsLocalMsgTarget [] #()) "$a0"))) && ((map.lookup1 go.uint64 (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) =⟨go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) UntypedNil))
         then break: #()
         else do:  #());;;
-        do:  (let: "$a0" := (![raftpb.Message] "m") in
+        do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
         (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] "r")) "$a0")
-        )); (CommClause (RecvCase raftpb.ConfChangeV2 "$ch2") (λ: "$recvVal",
-        let: "cc" := (GoAlloc raftpb.ConfChangeV2 (GoZeroVal raftpb.ConfChangeV2 #())) in
+        )); (CommClause (RecvCase code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2 "$ch2") (λ: "$recvVal",
+        let: "cc" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2 (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2 #())) in
         let: "$r0" := (Fst "$recvVal") in
-        do:  ("cc" <-[raftpb.ConfChangeV2] "$r0");;;
+        do:  ("cc" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2] "$r0");;;
         let: "okBefore" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-        let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
+        let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  "$r0";;;
         do:  ("okBefore" <-[go.bool] "$r1");;;
-        let: "cs" := (GoAlloc raftpb.ConfState (GoZeroVal raftpb.ConfState #())) in
-        let: "$r0" := (let: "$a0" := (![raftpb.ConfChangeV2] "cc") in
+        let: "cs" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState #())) in
+        let: "$r0" := (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2] "cc") in
         (MethodResolve (go.PointerType raft) "applyConfChange"%go (![go.PointerType raft] "r")) "$a0") in
-        do:  ("cs" <-[raftpb.ConfState] "$r0");;;
+        do:  ("cs" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "$r0");;;
         (let: "okAfter" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-        let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
+        let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  "$r0";;;
@@ -2291,8 +2291,8 @@ Definition node__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
         (if: (![go.bool] "okBefore") && (⟨go.bool⟩! (![go.bool] "okAfter"))
         then
           let: "found" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-          let: "$range" := (let: "$v0" := (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "Voters"%go "cs")) in
-          let: "$v1" := (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "VotersOutgoing"%go "cs")) in
+          let: "$range" := (let: "$v0" := (![go.SliceType go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState "Voters"%go "cs")) in
+          let: "$v1" := (![go.SliceType go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState "VotersOutgoing"%go "cs")) in
           CompositeLiteral (go.SliceType (go.SliceType go.uint64)) (LiteralValue [KeyedElement None (ElementExpression (go.SliceType go.uint64) "$v0"); KeyedElement None (ElementExpression (go.SliceType go.uint64) "$v1")])) in
           (let: "sl" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
           slice.for_range (go.SliceType go.uint64) "$range" (λ: "$key" "$value",
@@ -2318,12 +2318,12 @@ Definition node__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
             do:  ("propc" <-[go.ChannelType go.sendrecv msgWithResult] "$r0")
           else do:  #())
         else do:  #()));;;
-        let: "$v0" := (![raftpb.ConfState] "cs") in
-        let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.ConfState] (StructFieldRef node "confstatec"%go (![go.PointerType node] "n"))) in
+        let: "$v0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "cs") in
+        let: "$ch0" := (![go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] (StructFieldRef node "confstatec"%go (![go.PointerType node] "n"))) in
         let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
         ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
-        SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.ConfState "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
+        SelectStmt (SelectStmtClauses None [(CommClause (SendCase code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
         ]) "$ch1") (λ: "$recvVal",
           do:  #()
@@ -2412,10 +2412,10 @@ Definition node__Tickⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 Definition node__Campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" "ctx",
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    return: (let: "$a0" := (![context.Context] "ctx") in
-     let: "$a1" := (let: "$v0" := raftpb.MsgHup in
-     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0")])) in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    return: (let: "$a0" := (![code.context.context.Context] "ctx") in
+     let: "$a1" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgHup in
+     CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0")])) in
      (MethodResolve (go.PointerType node) "step"%go (![go.PointerType node] "n")) "$a0" "$a1")).
 
 (* go: node.go:469:16 *)
@@ -2423,82 +2423,82 @@ Definition node__Proposeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
   λ: "n" "ctx" "data",
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
     let: "data" := (GoAlloc (go.SliceType go.byte) "data") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    return: (let: "$a0" := (![context.Context] "ctx") in
-     let: "$a1" := (let: "$v0" := raftpb.MsgProp in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    return: (let: "$a0" := (![code.context.context.Context] "ctx") in
+     let: "$a1" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgProp in
      let: "$v1" := (let: "$v0" := (![go.SliceType go.byte] "data") in
-     CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v0")])])) in
-     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v1")])) in
+     CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v0")])])) in
+     CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "$v1")])) in
      (MethodResolve (go.PointerType node) "stepWait"%go (![go.PointerType node] "n")) "$a0" "$a1")).
 
 (* go: node.go:473:16 *)
 Definition node__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" "ctx" "m",
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
-    let: "m" := (GoAlloc raftpb.Message "m") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    (if: (let: "$a0" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
-    (FuncResolve IsLocalMsg [] #()) "$a0") && (⟨go.bool⟩! (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+    let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "m") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    (if: (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) in
+    (FuncResolve IsLocalMsg [] #()) "$a0") && (⟨go.bool⟩! (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
     (FuncResolve IsLocalMsgTarget [] #()) "$a0"))
     then return: (Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
-    return: (let: "$a0" := (![context.Context] "ctx") in
-     let: "$a1" := (![raftpb.Message] "m") in
+    return: (let: "$a0" := (![code.context.context.Context] "ctx") in
+     let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
      (MethodResolve (go.PointerType node) "step"%go (![go.PointerType node] "n")) "$a0" "$a1")).
 
 (* go: node.go:482:6 *)
 Definition confChangeToMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c",
-    exception_do (let: "c" := (GoAlloc raftpb.ConfChangeI "c") in
+    exception_do (let: "c" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI "c") in
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
     let: "data" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-    let: "typ" := (GoAlloc raftpb.EntryType (GoZeroVal raftpb.EntryType #())) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![raftpb.ConfChangeI] "c") in
-    (FuncResolve raftpb.MarshalConfChange [] #()) "$a0") in
+    let: "typ" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType #())) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] "c") in
+    (FuncResolve code.go_etcd_io.raft.v3.raftpb.raftpb.MarshalConfChange [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("typ" <-[raftpb.EntryType] "$r0");;;
+    do:  ("typ" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType] "$r0");;;
     do:  ("data" <-[go.SliceType go.byte] "$r1");;;
     do:  ("err" <-[go.error] "$r2");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-    then return: (CompositeLiteral raftpb.Message (LiteralValue []), ![go.error] "err")
+    then return: (CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue []), ![go.error] "err")
     else do:  #());;;
-    return: (let: "$v0" := raftpb.MsgProp in
-     let: "$v1" := (let: "$v0" := (![raftpb.EntryType] "typ") in
+    return: (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgProp in
+     let: "$v1" := (let: "$v0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType] "typ") in
      let: "$v1" := (![go.SliceType go.byte] "data") in
-     CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.EntryType "$v0"); KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v1")])])) in
-     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v1")]), Convert go.untyped_nil go.error UntypedNil)).
+     CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType "$v0"); KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v1")])])) in
+     CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "$v1")]), Convert go.untyped_nil go.error UntypedNil)).
 
 (* go: node.go:490:16 *)
 Definition node__ProposeConfChangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" "ctx" "cc",
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
-    let: "cc" := (GoAlloc raftpb.ConfChangeI "cc") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
+    let: "cc" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI "cc") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "msg" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![raftpb.ConfChangeI] "cc") in
+    let: "msg" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] "cc") in
     (FuncResolve confChangeToMsg [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("msg" <-[raftpb.Message] "$r0");;;
+    do:  ("msg" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (![go.error] "err")
     else do:  #());;;
-    return: (let: "$a0" := (![context.Context] "ctx") in
-     let: "$a1" := (![raftpb.Message] "msg") in
+    return: (let: "$a0" := (![code.context.context.Context] "ctx") in
+     let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "msg") in
      (MethodResolve (go.PointerType node) "Step"%go (![go.PointerType node] "n")) "$a0" "$a1")).
 
 (* go: node.go:498:16 *)
 Definition node__stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" "ctx" "m",
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
-    let: "m" := (GoAlloc raftpb.Message "m") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    return: (let: "$a0" := (![context.Context] "ctx") in
-     let: "$a1" := (![raftpb.Message] "m") in
+    let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "m") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    return: (let: "$a0" := (![code.context.context.Context] "ctx") in
+     let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
      let: "$a2" := #false in
      (MethodResolve (go.PointerType node) "stepWithWaitOption"%go (![go.PointerType node] "n")) "$a0" "$a1" "$a2")).
 
@@ -2506,10 +2506,10 @@ Definition node__stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 Definition node__stepWaitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" "ctx" "m",
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
-    let: "m" := (GoAlloc raftpb.Message "m") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    return: (let: "$a0" := (![context.Context] "ctx") in
-     let: "$a1" := (![raftpb.Message] "m") in
+    let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "m") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    return: (let: "$a0" := (![code.context.context.Context] "ctx") in
+     let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
      let: "$a2" := #true in
      (MethodResolve (go.PointerType node) "stepWithWaitOption"%go (![go.PointerType node] "n")) "$a0" "$a1" "$a2")).
 
@@ -2521,20 +2521,20 @@ Definition node__stepWithWaitOptionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
   λ: "n" "ctx" "m" "wait",
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
     let: "wait" := (GoAlloc go.bool "wait") in
-    let: "m" := (GoAlloc raftpb.Message "m") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    (if: Convert go.untyped_bool go.bool ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) ≠⟨raftpb.MessageType⟩ raftpb.MsgProp)
+    let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "m") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    (if: Convert go.untyped_bool go.bool ((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) ≠⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgProp)
     then
-      let: "$v0" := (![raftpb.Message] "m") in
-      let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
-      let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
+      let: "$v0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
+      let: "$ch0" := (![go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
+      let: "$ch1" := ((MethodResolve code.context.context.Context "Done"%go (![code.context.context.Context] "ctx")) #()) in
       let: "$ch2" := (![go.ChannelType go.sendrecv (go.StructType [
 
       ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
-      SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message "$ch0" "$v0") (return: (Convert go.untyped_nil go.error UntypedNil))); (CommClause (RecvCase (go.StructType [
+      SelectStmt (SelectStmtClauses None [(CommClause (SendCase code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$ch0" "$v0") (return: (Convert go.untyped_nil go.error UntypedNil))); (CommClause (RecvCase (go.StructType [
 
       ]) "$ch1") (λ: "$recvVal",
-        return: ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #())
+        return: ((MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "ctx")) #())
         )); (CommClause (RecvCase (go.StructType [
 
       ]) "$ch2") (λ: "$recvVal",
@@ -2545,8 +2545,8 @@ Definition node__stepWithWaitOptionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
     let: "$r0" := (![go.ChannelType go.sendrecv msgWithResult] (StructFieldRef node "propc"%go (![go.PointerType node] "n"))) in
     do:  ("ch" <-[go.ChannelType go.sendrecv msgWithResult] "$r0");;;
     let: "pm" := (GoAlloc msgWithResult (GoZeroVal msgWithResult #())) in
-    let: "$r0" := (let: "$v0" := (![raftpb.Message] "m") in
-    CompositeLiteral msgWithResult (LiteralValue [KeyedElement (Some (KeyField "m"%go)) (ElementExpression raftpb.Message "$v0")])) in
+    let: "$r0" := (let: "$v0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
+    CompositeLiteral msgWithResult (LiteralValue [KeyedElement (Some (KeyField "m"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$v0")])) in
     do:  ("pm" <-[msgWithResult] "$r0");;;
     (if: ![go.bool] "wait"
     then
@@ -2555,7 +2555,7 @@ Definition node__stepWithWaitOptionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
     else do:  #());;;
     let: "$v0" := (![msgWithResult] "pm") in
     let: "$ch0" := (![go.ChannelType go.sendrecv msgWithResult] "ch") in
-    let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
+    let: "$ch1" := ((MethodResolve code.context.context.Context "Done"%go (![code.context.context.Context] "ctx")) #()) in
     let: "$ch2" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
@@ -2564,14 +2564,14 @@ Definition node__stepWithWaitOptionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
     else do:  #()))); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (λ: "$recvVal",
-      return: ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #())
+      return: ((MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "ctx")) #())
       )); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch2") (λ: "$recvVal",
       return: (![go.error] (GlobalVarAddr ErrStopped #()))
       ))]);;;
     let: "$ch0" := (![go.ChannelType go.sendrecv go.error] (StructFieldRef msgWithResult "result"%go "pm")) in
-    let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
+    let: "$ch1" := ((MethodResolve code.context.context.Context "Done"%go (![code.context.context.Context] "ctx")) #()) in
     let: "$ch2" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
@@ -2585,7 +2585,7 @@ Definition node__stepWithWaitOptionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
       )); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (λ: "$recvVal",
-      return: ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #())
+      return: ((MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "ctx")) #())
       )); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch2") (λ: "$recvVal",
@@ -2625,25 +2625,25 @@ Definition node__Advanceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 Definition node__ApplyConfChangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" "cc",
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
-    let: "cc" := (GoAlloc raftpb.ConfChangeI "cc") in
-    let: "cs" := (GoAlloc raftpb.ConfState (GoZeroVal raftpb.ConfState #())) in
-    let: "$v0" := ((MethodResolve raftpb.ConfChangeI "AsV2"%go (![raftpb.ConfChangeI] "cc")) #()) in
-    let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.ConfChangeV2] (StructFieldRef node "confc"%go (![go.PointerType node] "n"))) in
+    let: "cc" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI "cc") in
+    let: "cs" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState #())) in
+    let: "$v0" := ((MethodResolve code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI "AsV2"%go (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] "cc")) #()) in
+    let: "$ch0" := (![go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2] (StructFieldRef node "confc"%go (![go.PointerType node] "n"))) in
     let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.ConfChangeV2 "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2 "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (λ: "$recvVal",
       do:  #()
       ))]);;;
-    let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.ConfState] (StructFieldRef node "confstatec"%go (![go.PointerType node] "n"))) in
+    let: "$ch0" := (![go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] (StructFieldRef node "confstatec"%go (![go.PointerType node] "n"))) in
     let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
-    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase raftpb.ConfState "$ch0") (λ: "$recvVal",
+    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState "$ch0") (λ: "$recvVal",
       let: "$r0" := (Fst "$recvVal") in
-      do:  ("cs" <-[raftpb.ConfState] "$r0");;;
+      do:  ("cs" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "$r0");;;
       do:  #()
       )); (CommClause (RecvCase (go.StructType [
 
@@ -2675,14 +2675,14 @@ Definition node__ReportUnreachableⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
   λ: "n" "id",
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
     let: "id" := (GoAlloc go.uint64 "id") in
-    let: "$v0" := (let: "$v0" := raftpb.MsgUnreachable in
+    let: "$v0" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgUnreachable in
     let: "$v1" := (![go.uint64] "id") in
-    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1")])) in
-    let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1")])) in
+    let: "$ch0" := (![go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
     let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (λ: "$recvVal",
       do:  #()
@@ -2698,15 +2698,15 @@ Definition node__ReportSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     let: "rej" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := ((![SnapshotStatus] "status") =⟨SnapshotStatus⟩ SnapshotFailure) in
     do:  ("rej" <-[go.bool] "$r0");;;
-    let: "$v0" := (let: "$v0" := raftpb.MsgSnapStatus in
+    let: "$v0" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgSnapStatus in
     let: "$v1" := (![go.uint64] "id") in
     let: "$v2" := (![go.bool] "rej") in
-    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool "$v2")])) in
-    let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool "$v2")])) in
+    let: "$ch0" := (![go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
     let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (λ: "$recvVal",
       do:  #()
@@ -2719,17 +2719,17 @@ Definition node__TransferLeadershipⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
     let: "transferee" := (GoAlloc go.uint64 "transferee") in
     let: "lead" := (GoAlloc go.uint64 "lead") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    let: "$v0" := (let: "$v0" := raftpb.MsgTransferLeader in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    let: "$v0" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgTransferLeader in
     let: "$v1" := (![go.uint64] "transferee") in
     let: "$v2" := (![go.uint64] "lead") in
-    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v2")])) in
-    let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v2")])) in
+    let: "$ch0" := (![go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
     let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
-    let: "$ch2" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
+    let: "$ch2" := ((MethodResolve code.context.context.Context "Done"%go (![code.context.context.Context] "ctx")) #()) in
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (λ: "$recvVal",
       do:  #()
@@ -2744,10 +2744,10 @@ Definition node__TransferLeadershipⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
 Definition node__ForgetLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" "ctx",
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    return: (let: "$a0" := (![context.Context] "ctx") in
-     let: "$a1" := (let: "$v0" := raftpb.MsgForgetLeader in
-     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0")])) in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    return: (let: "$a0" := (![code.context.context.Context] "ctx") in
+     let: "$a1" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgForgetLeader in
+     CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0")])) in
      (MethodResolve (go.PointerType node) "step"%go (![go.PointerType node] "n")) "$a0" "$a1")).
 
 (* go: node.go:608:16 *)
@@ -2755,12 +2755,12 @@ Definition node__ReadIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
   λ: "n" "ctx" "rctx",
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
     let: "rctx" := (GoAlloc (go.SliceType go.byte) "rctx") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    return: (let: "$a0" := (![context.Context] "ctx") in
-     let: "$a1" := (let: "$v0" := raftpb.MsgReadIndex in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    return: (let: "$a0" := (![code.context.context.Context] "ctx") in
+     let: "$a1" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgReadIndex in
      let: "$v1" := (let: "$v0" := (![go.SliceType go.byte] "rctx") in
-     CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v0")])])) in
-     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v1")])) in
+     CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v0")])])) in
+     CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "$v1")])) in
      (MethodResolve (go.PointerType node) "step"%go (![go.PointerType node] "n")) "$a0" "$a1")).
 
 (* go: raft.go:95:22 *)
@@ -2768,18 +2768,18 @@ Definition lockedRand__Intnⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
   λ: "r" "n",
     exception_do (let: "r" := (GoAlloc (go.PointerType lockedRand) "r") in
     let: "n" := (GoAlloc go.int "n") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef lockedRand "mu"%go (![go.PointerType lockedRand] "r"))) #());;;
-    let: "v" := (GoAlloc (go.PointerType big.Int) (GoZeroVal (go.PointerType big.Int) #())) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![io.Reader] (GlobalVarAddr rand.Reader #())) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (StructFieldRef lockedRand "mu"%go (![go.PointerType lockedRand] "r"))) #());;;
+    let: "v" := (GoAlloc (go.PointerType code.math.big.big.Int) (GoZeroVal (go.PointerType code.math.big.big.Int) #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![code.io.io.Reader] (GlobalVarAddr code.crypto.rand.rand.Reader #())) in
     let: "$a1" := (let: "$a0" := (Convert go.int go.int64 (![go.int] "n")) in
-    (FuncResolve big.NewInt [] #()) "$a0") in
-    (FuncResolve rand.Int [] #()) "$a0" "$a1") in
+    (FuncResolve code.math.big.big.NewInt [] #()) "$a0") in
+    (FuncResolve code.crypto.rand.rand.Int [] #()) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("v" <-[go.PointerType big.Int] "$r0");;;
+    do:  ("v" <-[go.PointerType code.math.big.big.Int] "$r0");;;
     do:  "$r1";;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef lockedRand "mu"%go (![go.PointerType lockedRand] "r"))) #());;;
-    return: (Convert go.int64 go.int ((MethodResolve (go.PointerType big.Int) "Int64"%go (![go.PointerType big.Int] "v")) #()))).
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef lockedRand "mu"%go (![go.PointerType lockedRand] "r"))) #());;;
+    return: (Convert go.int64 go.int ((MethodResolve (go.PointerType code.math.big.big.Int) "Int64"%go (![go.PointerType code.math.big.big.Int] "v")) #()))).
 
 (* go: raft.go:119:21 *)
 Definition StateType__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2794,28 +2794,28 @@ Definition Config__validateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef Config "ID"%go (![go.PointerType Config] "c"))) =⟨go.uint64⟩ None')
     then
       return: (let: "$a0" := #"cannot use none as id"%go in
-       (FuncResolve errors.New [] #()) "$a0")
+       (FuncResolve code.errors.errors.New [] #()) "$a0")
     else do:  #());;;
     (if: let: "$a0" := (![go.uint64] (StructFieldRef Config "ID"%go (![go.PointerType Config] "c"))) in
     (FuncResolve IsLocalMsgTarget [] #()) "$a0"
     then
       return: (let: "$a0" := #"cannot use local target as id"%go in
-       (FuncResolve errors.New [] #()) "$a0")
+       (FuncResolve code.errors.errors.New [] #()) "$a0")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((![go.int] (StructFieldRef Config "HeartbeatTick"%go (![go.PointerType Config] "c"))) ≤⟨go.int⟩ #(W64 0))
     then
       return: (let: "$a0" := #"heartbeat tick must be greater than 0"%go in
-       (FuncResolve errors.New [] #()) "$a0")
+       (FuncResolve code.errors.errors.New [] #()) "$a0")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((![go.int] (StructFieldRef Config "ElectionTick"%go (![go.PointerType Config] "c"))) ≤⟨go.int⟩ (![go.int] (StructFieldRef Config "HeartbeatTick"%go (![go.PointerType Config] "c"))))
     then
       return: (let: "$a0" := #"election tick must be greater than heartbeat tick"%go in
-       (FuncResolve errors.New [] #()) "$a0")
+       (FuncResolve code.errors.errors.New [] #()) "$a0")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((![Storage] (StructFieldRef Config "Storage"%go (![go.PointerType Config] "c"))) =⟨Storage⟩ (Convert go.untyped_nil Storage UntypedNil))
     then
       return: (let: "$a0" := #"storage cannot be nil"%go in
-       (FuncResolve errors.New [] #()) "$a0")
+       (FuncResolve code.errors.errors.New [] #()) "$a0")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef Config "MaxUncommittedEntriesSize"%go (![go.PointerType Config] "c"))) =⟨go.uint64⟩ #(W64 0))
     then
@@ -2830,7 +2830,7 @@ Definition Config__validateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     (if: Convert go.untyped_bool go.bool ((![go.int] (StructFieldRef Config "MaxInflightMsgs"%go (![go.PointerType Config] "c"))) ≤⟨go.int⟩ #(W64 0))
     then
       return: (let: "$a0" := #"max inflight messages must be greater than 0"%go in
-       (FuncResolve errors.New [] #()) "$a0")
+       (FuncResolve code.errors.errors.New [] #()) "$a0")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef Config "MaxInflightBytes"%go (![go.PointerType Config] "c"))) =⟨go.uint64⟩ #(W64 0))
     then
@@ -2840,7 +2840,7 @@ Definition Config__validateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef Config "MaxInflightBytes"%go (![go.PointerType Config] "c"))) <⟨go.uint64⟩ (![go.uint64] (StructFieldRef Config "MaxSizePerMsg"%go (![go.PointerType Config] "c"))))
       then
         return: (let: "$a0" := #"max inflight bytes must be >= max message size"%go in
-         (FuncResolve errors.New [] #()) "$a0")
+         (FuncResolve code.errors.errors.New [] #()) "$a0")
       else do:  #()));;;
     (if: Convert go.untyped_bool go.bool ((![Logger] (StructFieldRef Config "Logger"%go (![go.PointerType Config] "c"))) =⟨Logger⟩ (Convert go.untyped_nil Logger UntypedNil))
     then
@@ -2850,7 +2850,7 @@ Definition Config__validateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     (if: ((![ReadOnlyOption] (StructFieldRef Config "ReadOnlyOption"%go (![go.PointerType Config] "c"))) =⟨ReadOnlyOption⟩ ReadOnlyLeaseBased) && (⟨go.bool⟩! (![go.bool] (StructFieldRef Config "CheckQuorum"%go (![go.PointerType Config] "c"))))
     then
       return: (let: "$a0" := #"CheckQuorum must be enabled when ReadOnlyOption is ReadOnlyLeaseBased"%go in
-       (FuncResolve errors.New [] #()) "$a0")
+       (FuncResolve code.errors.errors.New [] #()) "$a0")
     else do:  #());;;
     return: (Convert go.untyped_nil go.error UntypedNil)).
 
@@ -2873,14 +2873,14 @@ Definition newRaftⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
     (FuncResolve newLogWithSize [] #()) "$a0" "$a1" "$a2") in
     do:  ("raftlog" <-[go.PointerType raftLog] "$r0");;;
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "cs" := (GoAlloc raftpb.ConfState (GoZeroVal raftpb.ConfState #())) in
-    let: "hs" := (GoAlloc raftpb.HardState (GoZeroVal raftpb.HardState #())) in
+    let: "cs" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState #())) in
+    let: "hs" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.HardState (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.HardState #())) in
     let: (("$ret0", "$ret1"), "$ret2") := ((MethodResolve Storage "InitialState"%go (![Storage] (StructFieldRef Config "Storage"%go (![go.PointerType Config] "c")))) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("hs" <-[raftpb.HardState] "$r0");;;
-    do:  ("cs" <-[raftpb.ConfState] "$r1");;;
+    do:  ("hs" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "$r0");;;
+    do:  ("cs" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "$r1");;;
     do:  ("err" <-[go.error] "$r2");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
@@ -2896,7 +2896,7 @@ Definition newRaftⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
     let: "$v5" := (![go.uint64] (StructFieldRef Config "MaxUncommittedEntriesSize"%go (![go.PointerType Config] "c"))) in
     let: "$v6" := (let: "$a0" := (![go.int] (StructFieldRef Config "MaxInflightMsgs"%go (![go.PointerType Config] "c"))) in
     let: "$a1" := (![go.uint64] (StructFieldRef Config "MaxInflightBytes"%go (![go.PointerType Config] "c"))) in
-    (FuncResolve tracker.MakeProgressTracker [] #()) "$a0" "$a1") in
+    (FuncResolve code.go_etcd_io.raft.v3.tracker.tracker.MakeProgressTracker [] #()) "$a0" "$a1") in
     let: "$v7" := (![go.int] (StructFieldRef Config "ElectionTick"%go (![go.PointerType Config] "c"))) in
     let: "$v8" := (![go.int] (StructFieldRef Config "HeartbeatTick"%go (![go.PointerType Config] "c"))) in
     let: "$v9" := (![Logger] (StructFieldRef Config "Logger"%go (![go.PointerType Config] "c"))) in
@@ -2908,25 +2908,25 @@ Definition newRaftⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
     let: "$v14" := (![go.bool] (StructFieldRef Config "DisableConfChangeValidation"%go (![go.PointerType Config] "c"))) in
     let: "$v15" := (![go.bool] (StructFieldRef Config "StepDownOnRemoval"%go (![go.PointerType Config] "c"))) in
     let: "$v16" := (![TraceLogger] (StructFieldRef Config "TraceLogger"%go (![go.PointerType Config] "c"))) in
-    CompositeLiteral raft (LiteralValue [KeyedElement (Some (KeyField "id"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "lead"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "isLearner"%go)) (ElementExpression go.bool "$v2"); KeyedElement (Some (KeyField "raftLog"%go)) (ElementExpression (go.PointerType raftLog) "$v3"); KeyedElement (Some (KeyField "maxMsgSize"%go)) (ElementExpression entryEncodingSize "$v4"); KeyedElement (Some (KeyField "maxUncommittedSize"%go)) (ElementExpression entryPayloadSize "$v5"); KeyedElement (Some (KeyField "trk"%go)) (ElementExpression tracker.ProgressTracker "$v6"); KeyedElement (Some (KeyField "electionTimeout"%go)) (ElementExpression go.int "$v7"); KeyedElement (Some (KeyField "heartbeatTimeout"%go)) (ElementExpression go.int "$v8"); KeyedElement (Some (KeyField "logger"%go)) (ElementExpression Logger "$v9"); KeyedElement (Some (KeyField "checkQuorum"%go)) (ElementExpression go.bool "$v10"); KeyedElement (Some (KeyField "preVote"%go)) (ElementExpression go.bool "$v11"); KeyedElement (Some (KeyField "readOnly"%go)) (ElementExpression (go.PointerType readOnly) "$v12"); KeyedElement (Some (KeyField "disableProposalForwarding"%go)) (ElementExpression go.bool "$v13"); KeyedElement (Some (KeyField "disableConfChangeValidation"%go)) (ElementExpression go.bool "$v14"); KeyedElement (Some (KeyField "stepDownOnRemoval"%go)) (ElementExpression go.bool "$v15"); KeyedElement (Some (KeyField "traceLogger"%go)) (ElementExpression TraceLogger "$v16")]))) in
+    CompositeLiteral raft (LiteralValue [KeyedElement (Some (KeyField "id"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "lead"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "isLearner"%go)) (ElementExpression go.bool "$v2"); KeyedElement (Some (KeyField "raftLog"%go)) (ElementExpression (go.PointerType raftLog) "$v3"); KeyedElement (Some (KeyField "maxMsgSize"%go)) (ElementExpression entryEncodingSize "$v4"); KeyedElement (Some (KeyField "maxUncommittedSize"%go)) (ElementExpression entryPayloadSize "$v5"); KeyedElement (Some (KeyField "trk"%go)) (ElementExpression code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "$v6"); KeyedElement (Some (KeyField "electionTimeout"%go)) (ElementExpression go.int "$v7"); KeyedElement (Some (KeyField "heartbeatTimeout"%go)) (ElementExpression go.int "$v8"); KeyedElement (Some (KeyField "logger"%go)) (ElementExpression Logger "$v9"); KeyedElement (Some (KeyField "checkQuorum"%go)) (ElementExpression go.bool "$v10"); KeyedElement (Some (KeyField "preVote"%go)) (ElementExpression go.bool "$v11"); KeyedElement (Some (KeyField "readOnly"%go)) (ElementExpression (go.PointerType readOnly) "$v12"); KeyedElement (Some (KeyField "disableProposalForwarding"%go)) (ElementExpression go.bool "$v13"); KeyedElement (Some (KeyField "disableConfChangeValidation"%go)) (ElementExpression go.bool "$v14"); KeyedElement (Some (KeyField "stepDownOnRemoval"%go)) (ElementExpression go.bool "$v15"); KeyedElement (Some (KeyField "traceLogger"%go)) (ElementExpression TraceLogger "$v16")]))) in
     do:  ("r" <-[go.PointerType raft] "$r0");;;
     do:  (let: "$a0" := (![go.PointerType raft] "r") in
     (FuncResolve traceInitState [] #()) "$a0");;;
     let: "lastID" := (GoAlloc entryID (GoZeroVal entryID #())) in
     let: "$r0" := ((MethodResolve (go.PointerType raftLog) "lastEntryID"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
     do:  ("lastID" <-[entryID] "$r0");;;
-    let: "trk" := (GoAlloc tracker.ProgressMap (GoZeroVal tracker.ProgressMap #())) in
-    let: "cfg" := (GoAlloc tracker.Config (GoZeroVal tracker.Config #())) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (let: "$v0" := (![tracker.ProgressTracker] (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) in
+    let: "trk" := (GoAlloc code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap (GoZeroVal code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap #())) in
+    let: "cfg" := (GoAlloc code.go_etcd_io.raft.v3.tracker.tracker.Config (GoZeroVal code.go_etcd_io.raft.v3.tracker.tracker.Config #())) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (let: "$v0" := (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker] (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) in
     let: "$v1" := (![go.uint64] (StructFieldRef entryID "index"%go "lastID")) in
-    CompositeLiteral confchange.Changer (LiteralValue [KeyedElement (Some (KeyField "Tracker"%go)) (ElementExpression tracker.ProgressTracker "$v0"); KeyedElement (Some (KeyField "LastIndex"%go)) (ElementExpression go.uint64 "$v1")])) in
-    let: "$a1" := (![raftpb.ConfState] "cs") in
-    (FuncResolve confchange.Restore [] #()) "$a0" "$a1") in
+    CompositeLiteral code.go_etcd_io.raft.v3.confchange.confchange.Changer (LiteralValue [KeyedElement (Some (KeyField "Tracker"%go)) (ElementExpression code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "$v0"); KeyedElement (Some (KeyField "LastIndex"%go)) (ElementExpression go.uint64 "$v1")])) in
+    let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "cs") in
+    (FuncResolve code.go_etcd_io.raft.v3.confchange.confchange.Restore [] #()) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("cfg" <-[tracker.Config] "$r0");;;
-    do:  ("trk" <-[tracker.ProgressMap] "$r1");;;
+    do:  ("cfg" <-[code.go_etcd_io.raft.v3.tracker.tracker.Config] "$r0");;;
+    do:  ("trk" <-[code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] "$r1");;;
     do:  ("err" <-[go.error] "$r2");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
@@ -2934,15 +2934,15 @@ Definition newRaftⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     do:  (let: "$a0" := (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r"))) in
-    let: "$a1" := (![raftpb.ConfState] "cs") in
-    let: "$a2" := (let: "$a0" := (![tracker.Config] "cfg") in
-    let: "$a1" := (![tracker.ProgressMap] "trk") in
+    let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "cs") in
+    let: "$a2" := (let: "$a0" := (![code.go_etcd_io.raft.v3.tracker.tracker.Config] "cfg") in
+    let: "$a1" := (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] "trk") in
     (MethodResolve (go.PointerType raft) "switchToConfig"%go (![go.PointerType raft] "r")) "$a0" "$a1") in
     (FuncResolve assertConfStatesEquivalent [] #()) "$a0" "$a1" "$a2");;;
-    (if: (⟨go.bool⟩! (let: "$a0" := (![raftpb.HardState] "hs") in
+    (if: (⟨go.bool⟩! (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "hs") in
     (FuncResolve IsEmptyHardState [] #()) "$a0"))
     then
-      do:  (let: "$a0" := (![raftpb.HardState] "hs") in
+      do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "hs") in
       (MethodResolve (go.PointerType raft) "loadState"%go (![go.PointerType raft] "r")) "$a0")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef Config "Applied"%go (![go.PointerType Config] "c"))) >⟨go.uint64⟩ #(W64 0))
@@ -2955,7 +2955,7 @@ Definition newRaftⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
     let: "$a1" := None' in
     (MethodResolve (go.PointerType raft) "becomeFollower"%go (![go.PointerType raft] "r")) "$a0" "$a1");;;
     let: "nodesStrs" := (GoAlloc (go.SliceType go.string) (GoZeroVal (go.SliceType go.string) #())) in
-    let: "$range" := ((MethodResolve (go.PointerType tracker.ProgressTracker) "VoterNodes"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #()) in
+    let: "$range" := ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker) "VoterNodes"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #()) in
     (let: "n" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     slice.for_range go.uint64 "$range" (λ: "$key" "$value",
       do:  ("n" <-[go.uint64] "$value");;;
@@ -2964,7 +2964,7 @@ Definition newRaftⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := #"%x"%go in
       let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] "n")) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1") in
+      (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1") in
       CompositeLiteral (go.SliceType go.string) (LiteralValue [KeyedElement None (ElementExpression go.string "$sl0")]))) in
       (FuncResolve go.append [go.SliceType go.string] #()) "$a0" "$a1") in
       do:  ("nodesStrs" <-[go.SliceType go.string] "$r0")));;;
@@ -2972,7 +2972,7 @@ Definition newRaftⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
     let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
     let: "$sl1" := (Convert go.string (go.InterfaceType []) (let: "$a0" := (![go.SliceType go.string] "nodesStrs") in
     let: "$a1" := #","%go in
-    (FuncResolve strings.Join [] #()) "$a0" "$a1")) in
+    (FuncResolve code.strings.strings.Join [] #()) "$a0" "$a1")) in
     let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))) in
     let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))))) in
     let: "$sl4" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftLog "applied"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))))) in
@@ -3003,7 +3003,7 @@ Definition raft__hardStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     return: (let: "$v0" := (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))) in
      let: "$v1" := (![go.uint64] (StructFieldRef raft "Vote"%go (![go.PointerType raft] "r"))) in
      let: "$v2" := (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
-     CompositeLiteral raftpb.HardState (LiteralValue [KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Vote"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Commit"%go)) (ElementExpression go.uint64 "$v2")]))).
+     CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.HardState (LiteralValue [KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Vote"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Commit"%go)) (ElementExpression go.uint64 "$v2")]))).
 
 (* send schedules persisting state to a stable storage and AFTER that
    sending the message (as part of next Ready message processing).
@@ -3012,58 +3012,58 @@ Definition raft__hardStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 Definition raft__sendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "m" := (GoAlloc raftpb.Message "m") in
-    (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) =⟨go.uint64⟩ None')
+    let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "m") in
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) =⟨go.uint64⟩ None')
     then
       let: "$r0" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
-      do:  ((StructFieldRef raftpb.Message "From"%go "m") <-[go.uint64] "$r0")
+      do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m") <-[go.uint64] "$r0")
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool (((((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgVote) || ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgVoteResp)) || ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgPreVote)) || ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgPreVoteResp))
+    (if: Convert go.untyped_bool go.bool (((((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgVote) || ((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgVoteResp)) || ((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgPreVote)) || ((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgPreVoteResp))
     then
-      (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m")) =⟨go.uint64⟩ #(W64 0))
+      (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m")) =⟨go.uint64⟩ #(W64 0))
       then
         do:  (let: "$a0" := #"term should be set when sending %s"%go in
-        let: "$a1" := ((let: "$sl0" := (Convert raftpb.MessageType (go.InterfaceType []) (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m"))) in
+        let: "$a1" := ((let: "$sl0" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType (go.InterfaceType []) (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m"))) in
         CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0")]))) in
         (MethodResolve Logger "Panicf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1")
       else do:  #())
     else
-      (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m")) ≠⟨go.uint64⟩ #(W64 0))
+      (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m")) ≠⟨go.uint64⟩ #(W64 0))
       then
         do:  (let: "$a0" := #"term should not be set when sending %s (was %d)"%go in
-        let: "$a1" := ((let: "$sl0" := (Convert raftpb.MessageType (go.InterfaceType []) (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m"))) in
-        let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m"))) in
+        let: "$a1" := ((let: "$sl0" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType (go.InterfaceType []) (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m"))) in
+        let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m"))) in
         CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1")]))) in
         (MethodResolve Logger "Panicf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1")
       else do:  #());;;
-      (if: Convert go.untyped_bool go.bool (((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) ≠⟨raftpb.MessageType⟩ raftpb.MsgProp) && ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) ≠⟨raftpb.MessageType⟩ raftpb.MsgReadIndex))
+      (if: Convert go.untyped_bool go.bool (((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) ≠⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgProp) && ((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) ≠⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgReadIndex))
       then
         let: "$r0" := (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))) in
-        do:  ((StructFieldRef raftpb.Message "Term"%go "m") <-[go.uint64] "$r0")
+        do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m") <-[go.uint64] "$r0")
       else do:  #()));;;
-    (if: Convert go.untyped_bool go.bool ((((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgAppResp) || ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgVoteResp)) || ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgPreVoteResp))
+    (if: Convert go.untyped_bool go.bool ((((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgAppResp) || ((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgVoteResp)) || ((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgPreVoteResp))
     then
-      let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef raft "msgsAfterAppend"%go (![go.PointerType raft] "r"))) in
-      let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
-      CompositeLiteral (go.SliceType raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression raftpb.Message "$sl0")]))) in
-      (FuncResolve go.append [go.SliceType raftpb.Message] #()) "$a0" "$a1") in
-      do:  ((StructFieldRef raft "msgsAfterAppend"%go (![go.PointerType raft] "r")) <-[go.SliceType raftpb.Message] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef raft "msgsAfterAppend"%go (![go.PointerType raft] "r"))) in
+      let: "$a1" := ((let: "$sl0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
+      CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$sl0")]))) in
+      (FuncResolve go.append [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0" "$a1") in
+      do:  ((StructFieldRef raft "msgsAfterAppend"%go (![go.PointerType raft] "r")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
       do:  (let: "$a0" := (![go.PointerType raft] "r") in
       let: "$a1" := "m" in
       (FuncResolve traceSendMessage [] #()) "$a0" "$a1")
     else
-      (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.Message "To"%go "m")) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))))
+      (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "To"%go "m")) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))))
       then
         do:  (let: "$a0" := #"message should not be self-addressed when sending %s"%go in
-        let: "$a1" := ((let: "$sl0" := (Convert raftpb.MessageType (go.InterfaceType []) (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m"))) in
+        let: "$a1" := ((let: "$sl0" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType (go.InterfaceType []) (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m"))) in
         CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0")]))) in
         (MethodResolve Logger "Panicf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1")
       else do:  #());;;
-      let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef raft "msgs"%go (![go.PointerType raft] "r"))) in
-      let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
-      CompositeLiteral (go.SliceType raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression raftpb.Message "$sl0")]))) in
-      (FuncResolve go.append [go.SliceType raftpb.Message] #()) "$a0" "$a1") in
-      do:  ((StructFieldRef raft "msgs"%go (![go.PointerType raft] "r")) <-[go.SliceType raftpb.Message] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef raft "msgs"%go (![go.PointerType raft] "r"))) in
+      let: "$a1" := ((let: "$sl0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
+      CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$sl0")]))) in
+      (FuncResolve go.append [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0" "$a1") in
+      do:  ((StructFieldRef raft "msgs"%go (![go.PointerType raft] "r")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
       do:  (let: "$a0" := (![go.PointerType raft] "r") in
       let: "$a1" := "m" in
       (FuncResolve traceSendMessage [] #()) "$a0" "$a1"));;;
@@ -3098,14 +3098,14 @@ Definition raft__maybeSendAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
     let: "sendIfEmpty" := (GoAlloc go.bool "sendIfEmpty") in
     let: "to" := (GoAlloc go.uint64 "to") in
-    let: "pr" := (GoAlloc (go.PointerType tracker.Progress) (GoZeroVal (go.PointerType tracker.Progress) #())) in
-    let: "$r0" := (map.lookup1 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] "to")) in
-    do:  ("pr" <-[go.PointerType tracker.Progress] "$r0");;;
-    (if: (MethodResolve (go.PointerType tracker.Progress) "IsPaused"%go (![go.PointerType tracker.Progress] "pr")) #()
+    let: "pr" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (GoZeroVal (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) #())) in
+    let: "$r0" := (map.lookup1 go.uint64 (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] "to")) in
+    do:  ("pr" <-[go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "$r0");;;
+    (if: (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "IsPaused"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) #()
     then return: (#false)
     else do:  #());;;
     let: "prevIndex" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := ((![go.uint64] (StructFieldRef tracker.Progress "Next"%go (![go.PointerType tracker.Progress] "pr"))) -⟨go.uint64⟩ #(W64 1)) in
+    let: "$r0" := ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "Next"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) -⟨go.uint64⟩ #(W64 1)) in
     do:  ("prevIndex" <-[go.uint64] "$r0");;;
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
     let: "prevTerm" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -3118,45 +3118,45 @@ Definition raft__maybeSendAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       return: (let: "$a0" := (![go.uint64] "to") in
-       let: "$a1" := (![go.PointerType tracker.Progress] "pr") in
+       let: "$a1" := (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr") in
        (MethodResolve (go.PointerType raft) "maybeSendSnapshot"%go (![go.PointerType raft] "r")) "$a0" "$a1")
     else do:  #());;;
-    let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) (GoZeroVal (go.SliceType raftpb.Entry) #())) in
-    (if: ((![tracker.StateType] (StructFieldRef tracker.Progress "State"%go (![go.PointerType tracker.Progress] "pr"))) ≠⟨tracker.StateType⟩ tracker.StateReplicate) || (⟨go.bool⟩! ((MethodResolve (go.PointerType tracker.Inflights) "Full"%go (![go.PointerType tracker.Inflights] (StructFieldRef tracker.Progress "Inflights"%go (![go.PointerType tracker.Progress] "pr")))) #()))
+    let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (GoZeroVal (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) #())) in
+    (if: ((![code.go_etcd_io.raft.v3.tracker.tracker.StateType] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "State"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) ≠⟨code.go_etcd_io.raft.v3.tracker.tracker.StateType⟩ code.go_etcd_io.raft.v3.tracker.tracker.StateReplicate) || (⟨go.bool⟩! ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Inflights) "Full"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Inflights] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "Inflights"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")))) #()))
     then
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![go.uint64] (StructFieldRef tracker.Progress "Next"%go (![go.PointerType tracker.Progress] "pr"))) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "Next"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) in
       let: "$a1" := (![entryEncodingSize] (StructFieldRef raft "maxMsgSize"%go (![go.PointerType raft] "r"))) in
       (MethodResolve (go.PointerType raftLog) "entries"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("ents" <-[go.SliceType raftpb.Entry] "$r0");;;
+      do:  ("ents" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
       do:  ("err" <-[go.error] "$r1")
     else do:  #());;;
-    (if: ((let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 0)) && (⟨go.bool⟩! (![go.bool] "sendIfEmpty"))
+    (if: ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 0)) && (⟨go.bool⟩! (![go.bool] "sendIfEmpty"))
     then return: (#false)
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       return: (let: "$a0" := (![go.uint64] "to") in
-       let: "$a1" := (![go.PointerType tracker.Progress] "pr") in
+       let: "$a1" := (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr") in
        (MethodResolve (go.PointerType raft) "maybeSendSnapshot"%go (![go.PointerType raft] "r")) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := (let: "$v0" := (![go.uint64] "to") in
-    let: "$v1" := raftpb.MsgApp in
+    let: "$v1" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgApp in
     let: "$v2" := (![go.uint64] "prevIndex") in
     let: "$v3" := (![go.uint64] "prevTerm") in
-    let: "$v4" := (![go.SliceType raftpb.Entry] "ents") in
+    let: "$v4" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
     let: "$v5" := (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
-    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "LogTerm"%go)) (ElementExpression go.uint64 "$v3"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v4"); KeyedElement (Some (KeyField "Commit"%go)) (ElementExpression go.uint64 "$v5")])) in
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "LogTerm"%go)) (ElementExpression go.uint64 "$v3"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "$v4"); KeyedElement (Some (KeyField "Commit"%go)) (ElementExpression go.uint64 "$v5")])) in
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
-    do:  (let: "$a0" := (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") in
-    let: "$a1" := (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
+    do:  (let: "$a0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") in
+    let: "$a1" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
     (FuncResolve payloadsSize [] #()) "$a0") in
-    (MethodResolve (go.PointerType tracker.Progress) "SentEntries"%go (![go.PointerType tracker.Progress] "pr")) "$a0" "$a1");;;
+    (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "SentEntries"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) "$a0" "$a1");;;
     do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
-    (MethodResolve (go.PointerType tracker.Progress) "SentCommit"%go (![go.PointerType tracker.Progress] "pr")) "$a0");;;
+    (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "SentCommit"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) "$a0");;;
     return: (#true)).
 
 (* maybeSendSnapshot fetches a snapshot from Storage, and sends it to the given
@@ -3166,9 +3166,9 @@ Definition raft__maybeSendAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
 Definition raft__maybeSendSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "to" "pr",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "pr" := (GoAlloc (go.PointerType tracker.Progress) "pr") in
+    let: "pr" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "pr") in
     let: "to" := (GoAlloc go.uint64 "to") in
-    (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef tracker.Progress "RecentActive"%go (![go.PointerType tracker.Progress] "pr"))))
+    (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "RecentActive"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))))
     then
       do:  (let: "$a0" := #"ignore sending snapshot to %x since it is not recently active"%go in
       let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] "to")) in
@@ -3177,11 +3177,11 @@ Definition raft__maybeSendSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
       return: (#false)
     else do:  #());;;
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "snapshot" := (GoAlloc raftpb.Snapshot (GoZeroVal raftpb.Snapshot #())) in
+    let: "snapshot" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot #())) in
     let: ("$ret0", "$ret1") := ((MethodResolve (go.PointerType raftLog) "snapshot"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("snapshot" <-[raftpb.Snapshot] "$r0");;;
+    do:  ("snapshot" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
@@ -3197,7 +3197,7 @@ Definition raft__maybeSendSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
       do:  (let: "$a0" := (Convert go.error (go.InterfaceType []) (![go.error] "err")) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    (if: let: "$a0" := (![raftpb.Snapshot] "snapshot") in
+    (if: let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "snapshot") in
     (FuncResolve IsEmptySnap [] #()) "$a0"
     then
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"need non-empty snapshot"%go) in
@@ -3205,8 +3205,8 @@ Definition raft__maybeSendSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     else do:  #());;;
     let: "sterm" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "sindex" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "snapshot"))) in
-    let: "$r1" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Term"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "snapshot"))) in
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "snapshot"))) in
+    let: "$r1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Term"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "snapshot"))) in
     do:  ("sindex" <-[go.uint64] "$r0");;;
     do:  ("sterm" <-[go.uint64] "$r1");;;
     do:  (let: "$a0" := #"%x [firstindex: %d, commit: %d] sent snapshot[index: %d, term: %d] to %x [%s]"%go in
@@ -3216,21 +3216,21 @@ Definition raft__maybeSendSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] "sindex")) in
     let: "$sl4" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] "sterm")) in
     let: "$sl5" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] "to")) in
-    let: "$sl6" := (Convert (go.PointerType tracker.Progress) (go.InterfaceType []) (![go.PointerType tracker.Progress] "pr")) in
+    let: "$sl6" := (Convert (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (go.InterfaceType []) (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) in
     CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl4"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl5"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl6")]))) in
     (MethodResolve Logger "Debugf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
     do:  (let: "$a0" := (![go.uint64] "sindex") in
-    (MethodResolve (go.PointerType tracker.Progress) "BecomeSnapshot"%go (![go.PointerType tracker.Progress] "pr")) "$a0");;;
+    (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "BecomeSnapshot"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) "$a0");;;
     do:  (let: "$a0" := #"%x paused sending replication messages to %x [%s]"%go in
     let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
     let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] "to")) in
-    let: "$sl2" := (Convert (go.PointerType tracker.Progress) (go.InterfaceType []) (![go.PointerType tracker.Progress] "pr")) in
+    let: "$sl2" := (Convert (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (go.InterfaceType []) (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) in
     CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2")]))) in
     (MethodResolve Logger "Debugf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
     do:  (let: "$a0" := (let: "$v0" := (![go.uint64] "to") in
-    let: "$v1" := raftpb.MsgSnap in
+    let: "$v1" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgSnap in
     let: "$v2" := "snapshot" in
-    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Snapshot"%go)) (ElementExpression (go.PointerType raftpb.Snapshot) "$v2")])) in
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Snapshot"%go)) (ElementExpression (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) "$v2")])) in
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
     return: (#true)).
 
@@ -3242,22 +3242,22 @@ Definition raft__sendHeartbeatⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
     let: "ctx" := (GoAlloc (go.SliceType go.byte) "ctx") in
     let: "to" := (GoAlloc go.uint64 "to") in
-    let: "pr" := (GoAlloc (go.PointerType tracker.Progress) (GoZeroVal (go.PointerType tracker.Progress) #())) in
-    let: "$r0" := (map.lookup1 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] "to")) in
-    do:  ("pr" <-[go.PointerType tracker.Progress] "$r0");;;
+    let: "pr" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (GoZeroVal (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) #())) in
+    let: "$r0" := (map.lookup1 go.uint64 (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] "to")) in
+    do:  ("pr" <-[go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "$r0");;;
     let: "commit" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (let: "$a0" := (![go.uint64] (StructFieldRef tracker.Progress "Match"%go (![go.PointerType tracker.Progress] "pr"))) in
+    let: "$r0" := (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "Match"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) in
     let: "$a1" := (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
     (FuncResolve go.min [go.uint64; go.uint64] #()) "$a0" "$a1") in
     do:  ("commit" <-[go.uint64] "$r0");;;
     do:  (let: "$a0" := (let: "$v0" := (![go.uint64] "to") in
-    let: "$v1" := raftpb.MsgHeartbeat in
+    let: "$v1" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgHeartbeat in
     let: "$v2" := (![go.uint64] "commit") in
     let: "$v3" := (![go.SliceType go.byte] "ctx") in
-    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Commit"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Context"%go)) (ElementExpression (go.SliceType go.byte) "$v3")])) in
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Commit"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Context"%go)) (ElementExpression (go.SliceType go.byte) "$v3")])) in
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
     do:  (let: "$a0" := (![go.uint64] "commit") in
-    (MethodResolve (go.PointerType tracker.Progress) "SentCommit"%go (![go.PointerType tracker.Progress] "pr")) "$a0");;;
+    (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "SentCommit"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) "$a0");;;
     return: #()).
 
 (* bcastAppend sends RPC, with entries to all peers that are not up-to-date
@@ -3276,7 +3276,7 @@ Definition raft__bcastAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
       (MethodResolve (go.PointerType raft) "sendAppend"%go (![go.PointerType raft] "r")) "$a0");;;
       return: #())
       ) in
-    (MethodResolve (go.PointerType tracker.ProgressTracker) "Visit"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) "$a0");;;
+    (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker) "Visit"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) "$a0");;;
     return: #()).
 
 (* bcastHeartbeat sends RPC, without entries to all the peers.
@@ -3304,7 +3304,7 @@ Definition raft__bcastHeartbeatWithCtxⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
       (MethodResolve (go.PointerType raft) "sendHeartbeat"%go (![go.PointerType raft] "r")) "$a0" "$a1");;;
       return: #())
       ) in
-    (MethodResolve (go.PointerType tracker.ProgressTracker) "Visit"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) "$a0");;;
+    (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker) "Visit"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) "$a0");;;
     return: #()).
 
 (* go: raft.go:735:16 *)
@@ -3324,15 +3324,15 @@ Definition raft__appliedToⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     do:  (let: "$a0" := (![go.uint64] "newApplied") in
     let: "$a1" := (![entryEncodingSize] "size") in
     (MethodResolve (go.PointerType raftLog) "appliedTo"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-    (if: ((![go.bool] (StructFieldRef tracker.Config "AutoLeave"%go (StructFieldRef tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) && ((![go.uint64] "newApplied") ≥⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "pendingConfIndex"%go (![go.PointerType raft] "r"))))) && ((![StateType] (StructFieldRef raft "state"%go (![go.PointerType raft] "r"))) =⟨StateType⟩ StateLeader)
+    (if: ((![go.bool] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Config "AutoLeave"%go (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) && ((![go.uint64] "newApplied") ≥⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "pendingConfIndex"%go (![go.PointerType raft] "r"))))) && ((![StateType] (StructFieldRef raft "state"%go (![go.PointerType raft] "r"))) =⟨StateType⟩ StateLeader)
     then
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (Convert go.untyped_nil raftpb.ConfChangeI UntypedNil) in
+      let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (Convert go.untyped_nil code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI UntypedNil) in
       (FuncResolve confChangeToMsg [] #()) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("m" <-[raftpb.Message] "$r0");;;
+      do:  ("m" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then
@@ -3340,19 +3340,19 @@ Definition raft__appliedToⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
         (FuncResolve go.panic [] #()) "$a0")
       else do:  #());;;
       (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
+      let: "$r0" := (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
       (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] "r")) "$a0") in
       do:  ("err" <-[go.error] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then
         do:  (let: "$a0" := #"not initiating automatic transition out of joint configuration %s: %v"%go in
-        let: "$a1" := ((let: "$sl0" := (Convert tracker.Config (go.InterfaceType []) (![tracker.Config] (StructFieldRef tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) in
+        let: "$a1" := ((let: "$sl0" := (Convert code.go_etcd_io.raft.v3.tracker.tracker.Config (go.InterfaceType []) (![code.go_etcd_io.raft.v3.tracker.tracker.Config] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) in
         let: "$sl1" := (Convert go.error (go.InterfaceType []) (![go.error] "err")) in
         CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1")]))) in
         (MethodResolve Logger "Debugf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1")
       else
         do:  (let: "$a0" := #"initiating automatic transition out of joint configuration %s"%go in
-        let: "$a1" := ((let: "$sl0" := (Convert tracker.Config (go.InterfaceType []) (![tracker.Config] (StructFieldRef tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) in
+        let: "$a1" := ((let: "$sl0" := (Convert code.go_etcd_io.raft.v3.tracker.tracker.Config (go.InterfaceType []) (![code.go_etcd_io.raft.v3.tracker.tracker.Config] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) in
         CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0")]))) in
         (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1")))
     else do:  #());;;
@@ -3362,9 +3362,9 @@ Definition raft__appliedToⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 Definition raft__appliedSnapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "snap",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "snap" := (GoAlloc (go.PointerType raftpb.Snapshot) "snap") in
+    let: "snap" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) "snap") in
     let: "index" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go (![go.PointerType raftpb.Snapshot] "snap")))) in
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "snap")))) in
     do:  ("index" <-[go.uint64] "$r0");;;
     do:  (let: "$a0" := (![go.uint64] "index") in
     (MethodResolve (go.PointerType raftLog) "stableSnapTo"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0");;;
@@ -3389,7 +3389,7 @@ Definition raft__maybeCommitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
       "$oldf" #()
       )));;;
     return: (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))) in
-     let: "$v1" := ((MethodResolve (go.PointerType tracker.ProgressTracker) "Committed"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #()) in
+     let: "$v1" := ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker) "Committed"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #()) in
      CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")])) in
      (MethodResolve (go.PointerType raftLog) "maybeCommit"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0")).
 
@@ -3413,26 +3413,26 @@ Definition raft__resetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     do:  ((StructFieldRef raft "heartbeatElapsed"%go (![go.PointerType raft] "r")) <-[go.int] "$r0");;;
     do:  ((MethodResolve (go.PointerType raft) "resetRandomizedElectionTimeout"%go (![go.PointerType raft] "r")) #());;;
     do:  ((MethodResolve (go.PointerType raft) "abortLeaderTransfer"%go (![go.PointerType raft] "r")) #());;;
-    do:  ((MethodResolve (go.PointerType tracker.ProgressTracker) "ResetVotes"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker) "ResetVotes"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #());;;
     do:  (let: "$a0" := (λ: "id" "pr",
-      exception_do (let: "pr" := (GoAlloc (go.PointerType tracker.Progress) "pr") in
+      exception_do (let: "pr" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "pr") in
       let: "id" := (GoAlloc go.uint64 "id") in
       let: "$r0" := (let: "$v0" := #(W64 0) in
       let: "$v1" := (((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) +⟨go.uint64⟩ #(W64 1)) in
-      let: "$v2" := (let: "$a0" := (![go.int] (StructFieldRef tracker.ProgressTracker "MaxInflight"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) in
-      let: "$a1" := (![go.uint64] (StructFieldRef tracker.ProgressTracker "MaxInflightBytes"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) in
-      (FuncResolve tracker.NewInflights [] #()) "$a0" "$a1") in
-      let: "$v3" := (![go.bool] (StructFieldRef tracker.Progress "IsLearner"%go (![go.PointerType tracker.Progress] "pr"))) in
-      CompositeLiteral tracker.Progress (LiteralValue [KeyedElement (Some (KeyField "Match"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Next"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Inflights"%go)) (ElementExpression (go.PointerType tracker.Inflights) "$v2"); KeyedElement (Some (KeyField "IsLearner"%go)) (ElementExpression go.bool "$v3")])) in
-      do:  ((![go.PointerType tracker.Progress] "pr") <-[tracker.Progress] "$r0");;;
+      let: "$v2" := (let: "$a0" := (![go.int] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "MaxInflight"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) in
+      let: "$a1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "MaxInflightBytes"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) in
+      (FuncResolve code.go_etcd_io.raft.v3.tracker.tracker.NewInflights [] #()) "$a0" "$a1") in
+      let: "$v3" := (![go.bool] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "IsLearner"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) in
+      CompositeLiteral code.go_etcd_io.raft.v3.tracker.tracker.Progress (LiteralValue [KeyedElement (Some (KeyField "Match"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Next"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Inflights"%go)) (ElementExpression (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Inflights) "$v2"); KeyedElement (Some (KeyField "IsLearner"%go)) (ElementExpression go.bool "$v3")])) in
+      do:  ((![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr") <-[code.go_etcd_io.raft.v3.tracker.tracker.Progress] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.uint64] "id") =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))))
       then
         let: "$r0" := ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
-        do:  ((StructFieldRef tracker.Progress "Match"%go (![go.PointerType tracker.Progress] "pr")) <-[go.uint64] "$r0")
+        do:  ((StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "Match"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) <-[go.uint64] "$r0")
       else do:  #());;;
       return: #())
       ) in
-    (MethodResolve (go.PointerType tracker.ProgressTracker) "Visit"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) "$a0");;;
+    (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker) "Visit"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) "$a0");;;
     let: "$r0" := #(W64 0) in
     do:  ((StructFieldRef raft "pendingConfIndex"%go (![go.PointerType raft] "r")) <-[go.uint64] "$r0");;;
     let: "$r0" := #(W64 0) in
@@ -3447,19 +3447,19 @@ Definition raft__appendEntryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
   λ: "r" "es",
     exception_do (let: "accepted" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "es" := (GoAlloc (go.SliceType raftpb.Entry) "es") in
+    let: "es" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "es") in
     let: "li" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
     do:  ("li" <-[go.uint64] "$r0");;;
-    let: "$range" := (![go.SliceType raftpb.Entry] "es") in
+    let: "$range" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "es") in
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
+    slice.for_range code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("i" <-[go.int] "$key");;;
       let: "$r0" := (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))) in
-      do:  ((StructFieldRef raftpb.Entry "Term"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "es", ![go.int] "i"))) <-[go.uint64] "$r0");;;
+      do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Term"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "es", ![go.int] "i"))) <-[go.uint64] "$r0");;;
       let: "$r0" := (((![go.uint64] "li") +⟨go.uint64⟩ #(W64 1)) +⟨go.uint64⟩ (Convert go.int go.uint64 (![go.int] "i"))) in
-      do:  ((StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "es", ![go.int] "i"))) <-[go.uint64] "$r0")));;;
-    (if: (⟨go.bool⟩! (let: "$a0" := (![go.SliceType raftpb.Entry] "es") in
+      do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "es", ![go.int] "i"))) <-[go.uint64] "$r0")));;;
+    (if: (⟨go.bool⟩! (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "es") in
     (MethodResolve (go.PointerType raft) "increaseUncommittedSize"%go (![go.PointerType raft] "r")) "$a0"))
     then
       do:  (let: "$a0" := #"%x appending new entries to log would exceed uncommitted entry size limit; dropping proposal"%go in
@@ -3469,15 +3469,15 @@ Definition raft__appendEntryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
       return: (#false)
     else do:  #());;;
     do:  (let: "$a0" := (![go.PointerType raft] "r") in
-    let: "$a1" := (![go.SliceType raftpb.Entry] "es") in
+    let: "$a1" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "es") in
     (FuncResolve traceReplicate [] #()) "$a0" "$a1");;;
-    let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Entry] "es") in
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "es") in
     (MethodResolve (go.PointerType raftLog) "append"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0") in
     do:  ("li" <-[go.uint64] "$r0");;;
     do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
-    let: "$v1" := raftpb.MsgAppResp in
+    let: "$v1" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgAppResp in
     let: "$v2" := (![go.uint64] "li") in
-    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2")])) in
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2")])) in
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
     return: (#true)).
 
@@ -3494,8 +3494,8 @@ Definition raft__tickElectionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       do:  ((StructFieldRef raft "electionElapsed"%go (![go.PointerType raft] "r")) <-[go.int] "$r0");;;
       (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
       let: "$r0" := (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
-      let: "$v1" := raftpb.MsgHup in
-      CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1")])) in
+      let: "$v1" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgHup in
+      CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v1")])) in
       (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] "r")) "$a0") in
       do:  ("err" <-[go.error] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
@@ -3524,8 +3524,8 @@ Definition raft__tickHeartbeatⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
       then
         (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
         let: "$r0" := (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
-        let: "$v1" := raftpb.MsgCheckQuorum in
-        CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1")])) in
+        let: "$v1" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgCheckQuorum in
+        CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v1")])) in
         (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] "r")) "$a0") in
         do:  ("err" <-[go.error] "$r0");;;
         (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
@@ -3549,8 +3549,8 @@ Definition raft__tickHeartbeatⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
       do:  ((StructFieldRef raft "heartbeatElapsed"%go (![go.PointerType raft] "r")) <-[go.int] "$r0");;;
       (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
       let: "$r0" := (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
-      let: "$v1" := raftpb.MsgBeat in
-      CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1")])) in
+      let: "$v1" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgBeat in
+      CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v1")])) in
       (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] "r")) "$a0") in
       do:  ("err" <-[go.error] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
@@ -3627,7 +3627,7 @@ Definition raft__becomePreCandidateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
     else do:  #());;;
     let: "$r0" := (FuncResolve stepCandidate [] #()) in
     do:  ((StructFieldRef raft "step"%go (![go.PointerType raft] "r")) <-[stepFunc] "$r0");;;
-    do:  ((MethodResolve (go.PointerType tracker.ProgressTracker) "ResetVotes"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker) "ResetVotes"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #());;;
     let: "$r0" := (MethodResolve (go.PointerType raft) "tickElection"%go (![go.PointerType raft] "r")) in
     do:  ((StructFieldRef raft "tick"%go (![go.PointerType raft] "r")) <-[go.FunctionType (go.Signature [] false [])] "$r0");;;
     let: "$r0" := None' in
@@ -3660,22 +3660,22 @@ Definition raft__becomeLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     do:  ((StructFieldRef raft "lead"%go (![go.PointerType raft] "r")) <-[go.uint64] "$r0");;;
     let: "$r0" := StateLeader in
     do:  ((StructFieldRef raft "state"%go (![go.PointerType raft] "r")) <-[StateType] "$r0");;;
-    let: "pr" := (GoAlloc (go.PointerType tracker.Progress) (GoZeroVal (go.PointerType tracker.Progress) #())) in
-    let: "$r0" := (map.lookup1 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-    do:  ("pr" <-[go.PointerType tracker.Progress] "$r0");;;
-    do:  ((MethodResolve (go.PointerType tracker.Progress) "BecomeReplicate"%go (![go.PointerType tracker.Progress] "pr")) #());;;
+    let: "pr" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (GoZeroVal (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) #())) in
+    let: "$r0" := (map.lookup1 go.uint64 (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
+    do:  ("pr" <-[go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "$r0");;;
+    do:  ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "BecomeReplicate"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) #());;;
     let: "$r0" := #true in
-    do:  ((StructFieldRef tracker.Progress "RecentActive"%go (![go.PointerType tracker.Progress] "pr")) <-[go.bool] "$r0");;;
+    do:  ((StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "RecentActive"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) <-[go.bool] "$r0");;;
     let: "$r0" := ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
     do:  ((StructFieldRef raft "pendingConfIndex"%go (![go.PointerType raft] "r")) <-[go.uint64] "$r0");;;
     do:  (let: "$a0" := (![go.PointerType raft] "r") in
     (FuncResolve traceBecomeLeader [] #()) "$a0");;;
-    let: "emptyEnt" := (GoAlloc raftpb.Entry (GoZeroVal raftpb.Entry #())) in
+    let: "emptyEnt" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Entry (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Entry #())) in
     let: "$r0" := (let: "$v0" := UntypedNil in
-    CompositeLiteral raftpb.Entry (LiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression go.untyped_nil "$v0")])) in
-    do:  ("emptyEnt" <-[raftpb.Entry] "$r0");;;
-    (if: (⟨go.bool⟩! (let: "$a0" := ((let: "$sl0" := (![raftpb.Entry] "emptyEnt") in
-    CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementExpression raftpb.Entry "$sl0")]))) in
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Entry (LiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression go.untyped_nil "$v0")])) in
+    do:  ("emptyEnt" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
+    (if: (⟨go.bool⟩! (let: "$a0" := ((let: "$sl0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "emptyEnt") in
+    CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "$sl0")]))) in
     (MethodResolve (go.PointerType raft) "appendEntry"%go (![go.PointerType raft] "r")) "$a0"))
     then
       do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string (go.InterfaceType []) #"empty entry was dropped"%go) in
@@ -3752,12 +3752,12 @@ Definition raft__hasUnappliedConfChangesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx 
     let: "$a1" := (![go.uint64] "hi") in
     let: "$a2" := (![entryEncodingSize] "pageSize") in
     let: "$a3" := (λ: "ents",
-      exception_do (let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) "ents") in
-      let: "$range" := (![go.SliceType raftpb.Entry] "ents") in
+      exception_do (let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "ents") in
+      let: "$range" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
       (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
-      slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
+      slice.for_range code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "$range" (λ: "$key" "$value",
         do:  ("i" <-[go.int] "$key");;;
-        (if: Convert go.untyped_bool go.bool (((![raftpb.EntryType] (StructFieldRef raftpb.Entry "Type"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "ents", ![go.int] "i")))) =⟨raftpb.EntryType⟩ raftpb.EntryConfChange) || ((![raftpb.EntryType] (StructFieldRef raftpb.Entry "Type"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "ents", ![go.int] "i")))) =⟨raftpb.EntryType⟩ raftpb.EntryConfChangeV2))
+        (if: Convert go.untyped_bool go.bool (((![code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Type"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents", ![go.int] "i")))) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.EntryConfChange) || ((![code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Type"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents", ![go.int] "i")))) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.EntryConfChangeV2))
         then
           let: "$r0" := #true in
           do:  ("found" <-[go.bool] "$r0");;;
@@ -3794,18 +3794,18 @@ Definition raft__campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       (MethodResolve Logger "Warningf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1")
     else do:  #());;;
     let: "term" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "voteMsg" := (GoAlloc raftpb.MessageType (GoZeroVal raftpb.MessageType #())) in
+    let: "voteMsg" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType #())) in
     (if: Convert go.untyped_bool go.bool ((![CampaignType] "t") =⟨CampaignType⟩ campaignPreElection)
     then
       do:  ((MethodResolve (go.PointerType raft) "becomePreCandidate"%go (![go.PointerType raft] "r")) #());;;
-      let: "$r0" := raftpb.MsgPreVote in
-      do:  ("voteMsg" <-[raftpb.MessageType] "$r0");;;
+      let: "$r0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgPreVote in
+      do:  ("voteMsg" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] "$r0");;;
       let: "$r0" := ((![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))) +⟨go.uint64⟩ #(W64 1)) in
       do:  ("term" <-[go.uint64] "$r0")
     else
       do:  ((MethodResolve (go.PointerType raft) "becomeCandidate"%go (![go.PointerType raft] "r")) #());;;
-      let: "$r0" := raftpb.MsgVote in
-      do:  ("voteMsg" <-[raftpb.MessageType] "$r0");;;
+      let: "$r0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgVote in
+      do:  ("voteMsg" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] "$r0");;;
       let: "$r0" := (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))) in
       do:  ("term" <-[go.uint64] "$r0"));;;
     let: "ids" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
@@ -3814,7 +3814,7 @@ Definition raft__campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     ])) (GoZeroVal (go.MapType go.uint64 (go.StructType [
 
     ])) #())) in
-    let: "$r0" := ((MethodResolve (go.PointerType quorum.JointConfig) "IDs"%go (StructFieldRef tracker.Config "Voters"%go (StructFieldRef tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) #()) in
+    let: "$r0" := ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.quorum.quorum.JointConfig) "IDs"%go (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Config "Voters"%go (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) #()) in
     do:  ("idMap" <-[go.MapType go.uint64 (go.StructType [
 
     ])] "$r0");;;
@@ -3839,7 +3839,7 @@ Definition raft__campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       (FuncResolve go.append [go.SliceType go.uint64] #()) "$a0" "$a1") in
       do:  ("ids" <-[go.SliceType go.uint64] "$r0")));;;
     do:  (let: "$a0" := (![go.SliceType go.uint64] "ids") in
-    (FuncResolve slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
+    (FuncResolve code.slices.slices.Sort [go.SliceType go.uint64; go.uint64] #()) "$a0");;;
     let: "$range" := (![go.SliceType go.uint64] "ids") in
     (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     slice.for_range go.uint64 "$range" (λ: "$key" "$value",
@@ -3849,9 +3849,9 @@ Definition raft__campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       then
         do:  (let: "$a0" := (let: "$v0" := (![go.uint64] "id") in
         let: "$v1" := (![go.uint64] "term") in
-        let: "$v2" := (let: "$a0" := (![raftpb.MessageType] "voteMsg") in
+        let: "$v2" := (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] "voteMsg") in
         (FuncResolve voteRespMsgType [] #()) "$a0") in
-        CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v2")])) in
+        CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v2")])) in
         (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
         continue: #()
       else do:  #());;;
@@ -3862,7 +3862,7 @@ Definition raft__campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
       let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef entryID "term"%go "last"))) in
       let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef entryID "index"%go "last"))) in
-      let: "$sl3" := (Convert raftpb.MessageType (go.InterfaceType []) (![raftpb.MessageType] "voteMsg")) in
+      let: "$sl3" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType (go.InterfaceType []) (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] "voteMsg")) in
       let: "$sl4" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] "id")) in
       let: "$sl5" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))) in
       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl4"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl5")]))) in
@@ -3875,29 +3875,29 @@ Definition raft__campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       else do:  #());;;
       do:  (let: "$a0" := (let: "$v0" := (![go.uint64] "id") in
       let: "$v1" := (![go.uint64] "term") in
-      let: "$v2" := (![raftpb.MessageType] "voteMsg") in
+      let: "$v2" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] "voteMsg") in
       let: "$v3" := (![go.uint64] (StructFieldRef entryID "index"%go "last")) in
       let: "$v4" := (![go.uint64] (StructFieldRef entryID "term"%go "last")) in
       let: "$v5" := (![go.SliceType go.byte] "ctx") in
-      CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v2"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v3"); KeyedElement (Some (KeyField "LogTerm"%go)) (ElementExpression go.uint64 "$v4"); KeyedElement (Some (KeyField "Context"%go)) (ElementExpression (go.SliceType go.byte) "$v5")])) in
+      CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v2"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v3"); KeyedElement (Some (KeyField "LogTerm"%go)) (ElementExpression go.uint64 "$v4"); KeyedElement (Some (KeyField "Context"%go)) (ElementExpression (go.SliceType go.byte) "$v5")])) in
       (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0")));;;
     return: #()).
 
 (* go: raft.go:1070:16 *)
 Definition raft__pollⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "id" "t" "v",
-    exception_do (let: "result" := (GoAlloc quorum.VoteResult (GoZeroVal quorum.VoteResult #())) in
+    exception_do (let: "result" := (GoAlloc code.go_etcd_io.raft.v3.quorum.quorum.VoteResult (GoZeroVal code.go_etcd_io.raft.v3.quorum.quorum.VoteResult #())) in
     let: "rejected" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "granted" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "r" := (GoAlloc (go.PointerType raft) "r") in
     let: "v" := (GoAlloc go.bool "v") in
-    let: "t" := (GoAlloc raftpb.MessageType "t") in
+    let: "t" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "t") in
     let: "id" := (GoAlloc go.uint64 "id") in
     (if: ![go.bool] "v"
     then
       do:  (let: "$a0" := #"%x received %s from %x at term %d"%go in
       let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-      let: "$sl1" := (Convert raftpb.MessageType (go.InterfaceType []) (![raftpb.MessageType] "t")) in
+      let: "$sl1" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType (go.InterfaceType []) (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] "t")) in
       let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] "id")) in
       let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))) in
       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3")]))) in
@@ -3905,37 +3905,37 @@ Definition raft__pollⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     else
       do:  (let: "$a0" := #"%x received %s rejection from %x at term %d"%go in
       let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-      let: "$sl1" := (Convert raftpb.MessageType (go.InterfaceType []) (![raftpb.MessageType] "t")) in
+      let: "$sl1" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType (go.InterfaceType []) (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] "t")) in
       let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] "id")) in
       let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))) in
       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3")]))) in
       (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1"));;;
     do:  (let: "$a0" := (![go.uint64] "id") in
     let: "$a1" := (![go.bool] "v") in
-    (MethodResolve (go.PointerType tracker.ProgressTracker) "RecordVote"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) "$a0" "$a1");;;
-    let: (("$ret0", "$ret1"), "$ret2") := (((MethodResolve (go.PointerType tracker.ProgressTracker) "TallyVotes"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #())) in
+    (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker) "RecordVote"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) "$a0" "$a1");;;
+    let: (("$ret0", "$ret1"), "$ret2") := (((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker) "TallyVotes"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #())) in
     return: ("$ret0", "$ret1", "$ret2")).
 
 (* go: raft.go:1080:16 *)
 Definition raft__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "m" := (GoAlloc raftpb.Message "m") in
+    let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "m") in
     do:  (let: "$a0" := (![go.PointerType raft] "r") in
     let: "$a1" := "m" in
     (FuncResolve traceReceiveMessage [] #()) "$a0" "$a1");;;
     let: "$sw" := #true in
-    (if: "$sw" =⟨go.bool⟩ ((![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m")) =⟨go.uint64⟩ #(W64 0))
+    (if: "$sw" =⟨go.bool⟩ ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m")) =⟨go.uint64⟩ #(W64 0))
     then do:  #()
     else
-      (if: "$sw" =⟨go.bool⟩ ((![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m")) >⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))))
+      (if: "$sw" =⟨go.bool⟩ ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m")) >⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))))
       then
-        (if: Convert go.untyped_bool go.bool (((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgVote) || ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgPreVote))
+        (if: Convert go.untyped_bool go.bool (((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgVote) || ((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgPreVote))
         then
           let: "force" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-          let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef raftpb.Message "Context"%go "m")) in
+          let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Context"%go "m")) in
           let: "$a1" := (Convert CampaignType (go.SliceType go.byte) campaignTransfer) in
-          (FuncResolve bytes.Equal [] #()) "$a0" "$a1") in
+          (FuncResolve code.bytes.bytes.Equal [] #()) "$a0" "$a1") in
           do:  ("force" <-[go.bool] "$r0");;;
           let: "inLease" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
           let: "$r0" := (((![go.bool] (StructFieldRef raft "checkQuorum"%go (![go.PointerType raft] "r"))) && ((![go.uint64] (StructFieldRef raft "lead"%go (![go.PointerType raft] "r"))) ≠⟨go.uint64⟩ None')) && ((![go.int] (StructFieldRef raft "electionElapsed"%go (![go.PointerType raft] "r"))) <⟨go.int⟩ (![go.int] (StructFieldRef raft "electionTimeout"%go (![go.PointerType raft] "r"))))) in
@@ -3950,10 +3950,10 @@ Definition raft__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
             let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef entryID "term"%go "last"))) in
             let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef entryID "index"%go "last"))) in
             let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Vote"%go (![go.PointerType raft] "r")))) in
-            let: "$sl4" := (Convert raftpb.MessageType (go.InterfaceType []) (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m"))) in
-            let: "$sl5" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
-            let: "$sl6" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go "m"))) in
-            let: "$sl7" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m"))) in
+            let: "$sl4" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType (go.InterfaceType []) (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m"))) in
+            let: "$sl5" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
+            let: "$sl6" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "LogTerm"%go "m"))) in
+            let: "$sl7" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m"))) in
             let: "$sl8" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))) in
             let: "$sl9" := (Convert go.int (go.InterfaceType []) ((![go.int] (StructFieldRef raft "electionTimeout"%go (![go.PointerType raft] "r"))) -⟨go.int⟩ (![go.int] (StructFieldRef raft "electionElapsed"%go (![go.PointerType raft] "r"))))) in
             CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl4"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl5"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl6"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl7"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl8"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl9")]))) in
@@ -3962,40 +3962,40 @@ Definition raft__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
           else do:  #())
         else do:  #());;;
         let: "$sw" := #true in
-        (if: "$sw" =⟨go.bool⟩ ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgPreVote)
+        (if: "$sw" =⟨go.bool⟩ ((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgPreVote)
         then do:  #()
         else
-          (if: "$sw" =⟨go.bool⟩ (((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgPreVoteResp) && (⟨go.bool⟩! (![go.bool] (StructFieldRef raftpb.Message "Reject"%go "m"))))
+          (if: "$sw" =⟨go.bool⟩ (((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgPreVoteResp) && (⟨go.bool⟩! (![go.bool] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Reject"%go "m"))))
           then do:  #()
           else
             do:  (let: "$a0" := #"%x [term: %d] received a %s message with higher term from %x [term: %d]"%go in
             let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
             let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))) in
-            let: "$sl2" := (Convert raftpb.MessageType (go.InterfaceType []) (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m"))) in
-            let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
-            let: "$sl4" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m"))) in
+            let: "$sl2" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType (go.InterfaceType []) (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m"))) in
+            let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
+            let: "$sl4" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m"))) in
             CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl4")]))) in
             (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-            (if: Convert go.untyped_bool go.bool ((((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgApp) || ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgHeartbeat)) || ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgSnap))
+            (if: Convert go.untyped_bool go.bool ((((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgApp) || ((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgHeartbeat)) || ((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgSnap))
             then
-              do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m")) in
-              let: "$a1" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+              do:  (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m")) in
+              let: "$a1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
               (MethodResolve (go.PointerType raft) "becomeFollower"%go (![go.PointerType raft] "r")) "$a0" "$a1")
             else
-              do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m")) in
+              do:  (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m")) in
               let: "$a1" := None' in
               (MethodResolve (go.PointerType raft) "becomeFollower"%go (![go.PointerType raft] "r")) "$a0" "$a1"))))
       else
-        (if: "$sw" =⟨go.bool⟩ ((![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m")) <⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))))
+        (if: "$sw" =⟨go.bool⟩ ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m")) <⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))))
         then
-          (if: ((![go.bool] (StructFieldRef raft "checkQuorum"%go (![go.PointerType raft] "r"))) || (![go.bool] (StructFieldRef raft "preVote"%go (![go.PointerType raft] "r")))) && (((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgHeartbeat) || ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgApp))
+          (if: ((![go.bool] (StructFieldRef raft "checkQuorum"%go (![go.PointerType raft] "r"))) || (![go.bool] (StructFieldRef raft "preVote"%go (![go.PointerType raft] "r")))) && (((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgHeartbeat) || ((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgApp))
           then
-            do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
-            let: "$v1" := raftpb.MsgAppResp in
-            CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1")])) in
+            do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
+            let: "$v1" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgAppResp in
+            CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v1")])) in
             (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0")
           else
-            (if: Convert go.untyped_bool go.bool ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgPreVote)
+            (if: Convert go.untyped_bool go.bool ((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgPreVote)
             then
               let: "last" := (GoAlloc entryID (GoZeroVal entryID #())) in
               let: "$r0" := ((MethodResolve (go.PointerType raftLog) "lastEntryID"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
@@ -4005,50 +4005,50 @@ Definition raft__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
               let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef entryID "term"%go "last"))) in
               let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef entryID "index"%go "last"))) in
               let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Vote"%go (![go.PointerType raft] "r")))) in
-              let: "$sl4" := (Convert raftpb.MessageType (go.InterfaceType []) (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m"))) in
-              let: "$sl5" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
-              let: "$sl6" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go "m"))) in
-              let: "$sl7" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m"))) in
+              let: "$sl4" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType (go.InterfaceType []) (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m"))) in
+              let: "$sl5" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
+              let: "$sl6" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "LogTerm"%go "m"))) in
+              let: "$sl7" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m"))) in
               let: "$sl8" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))) in
               CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl4"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl5"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl6"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl7"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl8")]))) in
               (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-              do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+              do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
               let: "$v1" := (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))) in
-              let: "$v2" := raftpb.MsgPreVoteResp in
+              let: "$v2" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgPreVoteResp in
               let: "$v3" := #true in
-              CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v2"); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool "$v3")])) in
+              CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v2"); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool "$v3")])) in
               (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0")
             else
-              (if: Convert go.untyped_bool go.bool ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgStorageAppendResp)
+              (if: Convert go.untyped_bool go.bool ((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgStorageAppendResp)
               then
-                (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")) ≠⟨go.uint64⟩ #(W64 0))
+                (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m")) ≠⟨go.uint64⟩ #(W64 0))
                 then
                   do:  (let: "$a0" := #"%x [term: %d] ignored entry appends from a %s message with lower term [term: %d]"%go in
                   let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
                   let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))) in
-                  let: "$sl2" := (Convert raftpb.MessageType (go.InterfaceType []) (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m"))) in
-                  let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m"))) in
+                  let: "$sl2" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType (go.InterfaceType []) (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m"))) in
+                  let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m"))) in
                   CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3")]))) in
                   (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1")
                 else do:  #());;;
-                (if: Convert go.untyped_bool go.bool ((![go.PointerType raftpb.Snapshot] (StructFieldRef raftpb.Message "Snapshot"%go "m")) ≠⟨go.PointerType raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType raftpb.Snapshot) UntypedNil))
+                (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Snapshot"%go "m")) ≠⟨go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) UntypedNil))
                 then
-                  do:  (let: "$a0" := (![go.PointerType raftpb.Snapshot] (StructFieldRef raftpb.Message "Snapshot"%go "m")) in
+                  do:  (let: "$a0" := (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Snapshot"%go "m")) in
                   (MethodResolve (go.PointerType raft) "appliedSnap"%go (![go.PointerType raft] "r")) "$a0")
                 else do:  #())
               else
                 do:  (let: "$a0" := #"%x [term: %d] ignored a %s message with lower term from %x [term: %d]"%go in
                 let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
                 let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))) in
-                let: "$sl2" := (Convert raftpb.MessageType (go.InterfaceType []) (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m"))) in
-                let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
-                let: "$sl4" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m"))) in
+                let: "$sl2" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType (go.InterfaceType []) (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m"))) in
+                let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
+                let: "$sl4" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m"))) in
                 CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl4")]))) in
                 (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1"))));;;
           return: (Convert go.untyped_nil go.error UntypedNil)
         else do:  #())));;;
-    let: "$sw" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
-    (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgHup
+    let: "$sw" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) in
+    (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgHup
     then
       (if: ![go.bool] (StructFieldRef raft "preVote"%go (![go.PointerType raft] "r"))
       then
@@ -4058,50 +4058,50 @@ Definition raft__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
         do:  (let: "$a0" := campaignElection in
         (MethodResolve (go.PointerType raft) "hup"%go (![go.PointerType raft] "r")) "$a0"))
     else
-      (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgStorageAppendResp
+      (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgStorageAppendResp
       then
-        (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")) ≠⟨go.uint64⟩ #(W64 0))
+        (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m")) ≠⟨go.uint64⟩ #(W64 0))
         then
-          do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go "m")) in
-          let: "$v1" := (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")) in
+          do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "LogTerm"%go "m")) in
+          let: "$v1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m")) in
           CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")])) in
           (MethodResolve (go.PointerType raftLog) "stableTo"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0")
         else do:  #());;;
-        (if: Convert go.untyped_bool go.bool ((![go.PointerType raftpb.Snapshot] (StructFieldRef raftpb.Message "Snapshot"%go "m")) ≠⟨go.PointerType raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType raftpb.Snapshot) UntypedNil))
+        (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Snapshot"%go "m")) ≠⟨go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) UntypedNil))
         then
-          do:  (let: "$a0" := (![go.PointerType raftpb.Snapshot] (StructFieldRef raftpb.Message "Snapshot"%go "m")) in
+          do:  (let: "$a0" := (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Snapshot"%go "m")) in
           (MethodResolve (go.PointerType raft) "appliedSnap"%go (![go.PointerType raft] "r")) "$a0")
         else do:  #())
       else
-        (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgStorageApplyResp
+        (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgStorageApplyResp
         then
-          (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m")) in
-          (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0))
+          (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "m")) in
+          (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0))
           then
             let: "index" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-            let: "$r0" := (![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m"), (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m")) in
-             (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") -⟨go.int⟩ #(W64 1))))) in
+            let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "m"), (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "m")) in
+             (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") -⟨go.int⟩ #(W64 1))))) in
             do:  ("index" <-[go.uint64] "$r0");;;
             do:  (let: "$a0" := (![go.uint64] "index") in
-            let: "$a1" := (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m")) in
+            let: "$a1" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "m")) in
             (FuncResolve entsSize [] #()) "$a0") in
             (MethodResolve (go.PointerType raft) "appliedTo"%go (![go.PointerType raft] "r")) "$a0" "$a1");;;
-            do:  (let: "$a0" := (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m")) in
+            do:  (let: "$a0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "m")) in
             (FuncResolve payloadsSize [] #()) "$a0") in
             (MethodResolve (go.PointerType raft) "reduceUncommittedSize"%go (![go.PointerType raft] "r")) "$a0")
           else do:  #())
         else
-          (if: ("$sw" =⟨raftpb.MessageType⟩ raftpb.MsgPreVote) || ("$sw" =⟨raftpb.MessageType⟩ raftpb.MsgVote)
+          (if: ("$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgPreVote) || ("$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgVote)
           then
             let: "canVote" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-            let: "$r0" := ((((![go.uint64] (StructFieldRef raft "Vote"%go (![go.PointerType raft] "r"))) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) || (((![go.uint64] (StructFieldRef raft "Vote"%go (![go.PointerType raft] "r"))) =⟨go.uint64⟩ None') && ((![go.uint64] (StructFieldRef raft "lead"%go (![go.PointerType raft] "r"))) =⟨go.uint64⟩ None'))) || (((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgPreVote) && ((![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m")) >⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))))) in
+            let: "$r0" := ((((![go.uint64] (StructFieldRef raft "Vote"%go (![go.PointerType raft] "r"))) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) || (((![go.uint64] (StructFieldRef raft "Vote"%go (![go.PointerType raft] "r"))) =⟨go.uint64⟩ None') && ((![go.uint64] (StructFieldRef raft "lead"%go (![go.PointerType raft] "r"))) =⟨go.uint64⟩ None'))) || (((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgPreVote) && ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m")) >⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))))) in
             do:  ("canVote" <-[go.bool] "$r0");;;
             let: "lastID" := (GoAlloc entryID (GoZeroVal entryID #())) in
             let: "$r0" := ((MethodResolve (go.PointerType raftLog) "lastEntryID"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
             do:  ("lastID" <-[entryID] "$r0");;;
             let: "candLastID" := (GoAlloc entryID (GoZeroVal entryID #())) in
-            let: "$r0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go "m")) in
-            let: "$v1" := (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")) in
+            let: "$r0" := (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "LogTerm"%go "m")) in
+            let: "$v1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m")) in
             CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")])) in
             do:  ("candLastID" <-[entryID] "$r0");;;
             (if: (![go.bool] "canVote") && (let: "$a0" := (![entryID] "candLastID") in
@@ -4112,24 +4112,24 @@ Definition raft__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
               let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef entryID "term"%go "lastID"))) in
               let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef entryID "index"%go "lastID"))) in
               let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Vote"%go (![go.PointerType raft] "r")))) in
-              let: "$sl4" := (Convert raftpb.MessageType (go.InterfaceType []) (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m"))) in
-              let: "$sl5" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
+              let: "$sl4" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType (go.InterfaceType []) (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m"))) in
+              let: "$sl5" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
               let: "$sl6" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef entryID "term"%go "candLastID"))) in
               let: "$sl7" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef entryID "index"%go "candLastID"))) in
               let: "$sl8" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))) in
               CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl4"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl5"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl6"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl7"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl8")]))) in
               (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-              do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
-              let: "$v1" := (![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m")) in
-              let: "$v2" := (let: "$a0" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
+              do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
+              let: "$v1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m")) in
+              let: "$v2" := (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) in
               (FuncResolve voteRespMsgType [] #()) "$a0") in
-              CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v2")])) in
+              CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v2")])) in
               (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
-              (if: Convert go.untyped_bool go.bool ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨raftpb.MessageType⟩ raftpb.MsgVote)
+              (if: Convert go.untyped_bool go.bool ((![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgVote)
               then
                 let: "$r0" := #(W64 0) in
                 do:  ((StructFieldRef raft "electionElapsed"%go (![go.PointerType raft] "r")) <-[go.int] "$r0");;;
-                let: "$r0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+                let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
                 do:  ((StructFieldRef raft "Vote"%go (![go.PointerType raft] "r")) <-[go.uint64] "$r0")
               else do:  #())
             else
@@ -4138,24 +4138,24 @@ Definition raft__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
               let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef entryID "term"%go "lastID"))) in
               let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef entryID "index"%go "lastID"))) in
               let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Vote"%go (![go.PointerType raft] "r")))) in
-              let: "$sl4" := (Convert raftpb.MessageType (go.InterfaceType []) (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m"))) in
-              let: "$sl5" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
+              let: "$sl4" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType (go.InterfaceType []) (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m"))) in
+              let: "$sl5" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
               let: "$sl6" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef entryID "term"%go "candLastID"))) in
               let: "$sl7" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef entryID "index"%go "candLastID"))) in
               let: "$sl8" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))) in
               CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl4"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl5"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl6"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl7"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl8")]))) in
               (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-              do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+              do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
               let: "$v1" := (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))) in
-              let: "$v2" := (let: "$a0" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
+              let: "$v2" := (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) in
               (FuncResolve voteRespMsgType [] #()) "$a0") in
               let: "$v3" := #true in
-              CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v2"); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool "$v3")])) in
+              CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v2"); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool "$v3")])) in
               (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0"))
           else
             let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
             let: "$r0" := (let: "$a0" := (![go.PointerType raft] "r") in
-            let: "$a1" := (![raftpb.Message] "m") in
+            let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
             (![stepFunc] (StructFieldRef raft "step"%go (![go.PointerType raft] "r"))) "$a0" "$a1") in
             do:  ("err" <-[go.error] "$r0");;;
             (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
@@ -4166,17 +4166,17 @@ Definition raft__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 (* go: raft.go:1262:6 *)
 Definition stepLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
-    exception_do (let: "m" := (GoAlloc raftpb.Message "m") in
+    exception_do (let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "m") in
     let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "$sw" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
-    (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgBeat
+    let: "$sw" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) in
+    (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgBeat
     then
       do:  ((MethodResolve (go.PointerType raft) "bcastHeartbeat"%go (![go.PointerType raft] "r")) #());;;
       return: (Convert go.untyped_nil go.error UntypedNil)
     else
-      (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgCheckQuorum
+      (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgCheckQuorum
       then
-        (if: (⟨go.bool⟩! ((MethodResolve (go.PointerType tracker.ProgressTracker) "QuorumActive"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #()))
+        (if: (⟨go.bool⟩! ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker) "QuorumActive"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #()))
         then
           do:  (let: "$a0" := #"%x stepped down to follower since quorum is not active"%go in
           let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
@@ -4187,29 +4187,29 @@ Definition stepLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
           (MethodResolve (go.PointerType raft) "becomeFollower"%go (![go.PointerType raft] "r")) "$a0" "$a1")
         else do:  #());;;
         do:  (let: "$a0" := (λ: "id" "pr",
-          exception_do (let: "pr" := (GoAlloc (go.PointerType tracker.Progress) "pr") in
+          exception_do (let: "pr" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "pr") in
           let: "id" := (GoAlloc go.uint64 "id") in
           (if: Convert go.untyped_bool go.bool ((![go.uint64] "id") ≠⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))))
           then
             let: "$r0" := #false in
-            do:  ((StructFieldRef tracker.Progress "RecentActive"%go (![go.PointerType tracker.Progress] "pr")) <-[go.bool] "$r0")
+            do:  ((StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "RecentActive"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) <-[go.bool] "$r0")
           else do:  #());;;
           return: #())
           ) in
-        (MethodResolve (go.PointerType tracker.ProgressTracker) "Visit"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) "$a0");;;
+        (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker) "Visit"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) "$a0");;;
         return: (Convert go.untyped_nil go.error UntypedNil)
       else
-        (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgProp
+        (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgProp
         then
-          (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m")) in
-          (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 0))
+          (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "m")) in
+          (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 0))
           then
             do:  (let: "$a0" := #"%x stepped empty MsgProp"%go in
             let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
             CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0")]))) in
             (MethodResolve Logger "Panicf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1")
           else do:  #());;;
-          (if: Convert go.untyped_bool go.bool ((map.lookup1 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) =⟨go.PointerType tracker.Progress⟩ (Convert go.untyped_nil (go.PointerType tracker.Progress) UntypedNil))
+          (if: Convert go.untyped_bool go.bool ((map.lookup1 go.uint64 (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) =⟨go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) UntypedNil))
           then return: (![go.error] (GlobalVarAddr ErrProposalDropped #()))
           else do:  #());;;
           (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raft "leadTransferee"%go (![go.PointerType raft] "r"))) ≠⟨go.uint64⟩ None')
@@ -4222,56 +4222,56 @@ Definition stepLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
             (MethodResolve Logger "Debugf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
             return: (![go.error] (GlobalVarAddr ErrProposalDropped #()))
           else do:  #());;;
-          let: "$range" := (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m")) in
+          let: "$range" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "m")) in
           (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
-          slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
+          slice.for_range code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "$range" (λ: "$key" "$value",
             do:  ("i" <-[go.int] "$key");;;
-            let: "e" := (GoAlloc (go.PointerType raftpb.Entry) (GoZeroVal (go.PointerType raftpb.Entry) #())) in
-            let: "$r0" := (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m"), ![go.int] "i")) in
-            do:  ("e" <-[go.PointerType raftpb.Entry] "$r0");;;
-            let: "cc" := (GoAlloc raftpb.ConfChangeI (GoZeroVal raftpb.ConfChangeI #())) in
-            (if: Convert go.untyped_bool go.bool ((![raftpb.EntryType] (StructFieldRef raftpb.Entry "Type"%go (![go.PointerType raftpb.Entry] "e"))) =⟨raftpb.EntryType⟩ raftpb.EntryConfChange)
+            let: "e" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (GoZeroVal (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) #())) in
+            let: "$r0" := (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "m"), ![go.int] "i")) in
+            do:  ("e" <-[go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
+            let: "cc" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI #())) in
+            (if: Convert go.untyped_bool go.bool ((![code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Type"%go (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "e"))) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.EntryConfChange)
             then
-              let: "ccc" := (GoAlloc raftpb.ConfChange (GoZeroVal raftpb.ConfChange #())) in
+              let: "ccc" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange #())) in
               (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-              let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef raftpb.Entry "Data"%go (![go.PointerType raftpb.Entry] "e"))) in
-              (MethodResolve (go.PointerType raftpb.ConfChange) "Unmarshal"%go "ccc") "$a0") in
+              let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Data"%go (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "e"))) in
+              (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange) "Unmarshal"%go "ccc") "$a0") in
               do:  ("err" <-[go.error] "$r0");;;
               (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
               then
                 do:  (let: "$a0" := (Convert go.error (go.InterfaceType []) (![go.error] "err")) in
                 (FuncResolve go.panic [] #()) "$a0")
               else do:  #()));;;
-              let: "$r0" := (Convert raftpb.ConfChange raftpb.ConfChangeI (![raftpb.ConfChange] "ccc")) in
-              do:  ("cc" <-[raftpb.ConfChangeI] "$r0")
+              let: "$r0" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange] "ccc")) in
+              do:  ("cc" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] "$r0")
             else
-              (if: Convert go.untyped_bool go.bool ((![raftpb.EntryType] (StructFieldRef raftpb.Entry "Type"%go (![go.PointerType raftpb.Entry] "e"))) =⟨raftpb.EntryType⟩ raftpb.EntryConfChangeV2)
+              (if: Convert go.untyped_bool go.bool ((![code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Type"%go (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "e"))) =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.EntryConfChangeV2)
               then
-                let: "ccc" := (GoAlloc raftpb.ConfChangeV2 (GoZeroVal raftpb.ConfChangeV2 #())) in
+                let: "ccc" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2 (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2 #())) in
                 (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-                let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef raftpb.Entry "Data"%go (![go.PointerType raftpb.Entry] "e"))) in
-                (MethodResolve (go.PointerType raftpb.ConfChangeV2) "Unmarshal"%go "ccc") "$a0") in
+                let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Data"%go (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "e"))) in
+                (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2) "Unmarshal"%go "ccc") "$a0") in
                 do:  ("err" <-[go.error] "$r0");;;
                 (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
                 then
                   do:  (let: "$a0" := (Convert go.error (go.InterfaceType []) (![go.error] "err")) in
                   (FuncResolve go.panic [] #()) "$a0")
                 else do:  #()));;;
-                let: "$r0" := (Convert raftpb.ConfChangeV2 raftpb.ConfChangeI (![raftpb.ConfChangeV2] "ccc")) in
-                do:  ("cc" <-[raftpb.ConfChangeI] "$r0")
+                let: "$r0" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2 code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2] "ccc")) in
+                do:  ("cc" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] "$r0")
               else do:  #()));;;
-            (if: Convert go.untyped_bool go.bool ((![raftpb.ConfChangeI] "cc") ≠⟨raftpb.ConfChangeI⟩ (Convert go.untyped_nil raftpb.ConfChangeI UntypedNil))
+            (if: Convert go.untyped_bool go.bool ((![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] "cc") ≠⟨code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI⟩ (Convert go.untyped_nil code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI UntypedNil))
             then
               let: "alreadyPending" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
               let: "$r0" := ((![go.uint64] (StructFieldRef raft "pendingConfIndex"%go (![go.PointerType raft] "r"))) >⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftLog "applied"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))))) in
               do:  ("alreadyPending" <-[go.bool] "$r0");;;
               let: "alreadyJoint" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-              let: "$r0" := ((let: "$a0" := (![quorum.MajorityConfig] (IndexRef quorum.JointConfig (![quorum.JointConfig] (StructFieldRef tracker.Config "Voters"%go (StructFieldRef tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))), #(W64 1)))) in
-              (FuncResolve go.len [quorum.MajorityConfig] #()) "$a0") >⟨go.int⟩ #(W64 0)) in
+              let: "$r0" := ((let: "$a0" := (![code.go_etcd_io.raft.v3.quorum.quorum.MajorityConfig] (IndexRef code.go_etcd_io.raft.v3.quorum.quorum.JointConfig (![code.go_etcd_io.raft.v3.quorum.quorum.JointConfig] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Config "Voters"%go (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))), #(W64 1)))) in
+              (FuncResolve go.len [code.go_etcd_io.raft.v3.quorum.quorum.MajorityConfig] #()) "$a0") >⟨go.int⟩ #(W64 0)) in
               do:  ("alreadyJoint" <-[go.bool] "$r0");;;
               let: "wantsLeaveJoint" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-              let: "$r0" := ((let: "$a0" := (StructFieldGet raftpb.ConfChangeV2 "Changes" ((MethodResolve raftpb.ConfChangeI "AsV2"%go (![raftpb.ConfChangeI] "cc")) #())) in
-              (FuncResolve go.len [go.SliceType raftpb.ConfChangeSingle] #()) "$a0") =⟨go.int⟩ #(W64 0)) in
+              let: "$r0" := ((let: "$a0" := (StructFieldGet code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2 "Changes" ((MethodResolve code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI "AsV2"%go (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] "cc")) #())) in
+              (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeSingle] #()) "$a0") =⟨go.int⟩ #(W64 0)) in
               do:  ("wantsLeaveJoint" <-[go.bool] "$r0");;;
               let: "failedCheck" := (GoAlloc go.string (GoZeroVal go.string #())) in
               (if: ![go.bool] "alreadyPending"
@@ -4280,7 +4280,7 @@ Definition stepLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
                 let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raft "pendingConfIndex"%go (![go.PointerType raft] "r")))) in
                 let: "$sl1" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftLog "applied"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))))) in
                 CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1")]))) in
-                (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1") in
+                (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1") in
                 do:  ("failedCheck" <-[go.string] "$r0")
               else
                 (if: (![go.bool] "alreadyJoint") && (⟨go.bool⟩! (![go.bool] "wantsLeaveJoint"))
@@ -4297,140 +4297,140 @@ Definition stepLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
               then
                 do:  (let: "$a0" := #"%x ignoring conf change %v at config %s: %s"%go in
                 let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-                let: "$sl1" := (Convert raftpb.ConfChangeI (go.InterfaceType []) (![raftpb.ConfChangeI] "cc")) in
-                let: "$sl2" := (Convert tracker.Config (go.InterfaceType []) (![tracker.Config] (StructFieldRef tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) in
+                let: "$sl1" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI (go.InterfaceType []) (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] "cc")) in
+                let: "$sl2" := (Convert code.go_etcd_io.raft.v3.tracker.tracker.Config (go.InterfaceType []) (![code.go_etcd_io.raft.v3.tracker.tracker.Config] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) in
                 let: "$sl3" := (Convert go.string (go.InterfaceType []) (![go.string] "failedCheck")) in
                 CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3")]))) in
                 (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-                let: "$r0" := (let: "$v0" := raftpb.EntryNormal in
-                CompositeLiteral raftpb.Entry (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.EntryType "$v0")])) in
-                do:  ((IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m"), ![go.int] "i")) <-[raftpb.Entry] "$r0")
+                let: "$r0" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.EntryNormal in
+                CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Entry (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType "$v0")])) in
+                do:  ((IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "m"), ![go.int] "i")) <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0")
               else
                 let: "$r0" := ((((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) +⟨go.uint64⟩ (Convert go.int go.uint64 (![go.int] "i"))) +⟨go.uint64⟩ #(W64 1)) in
                 do:  ((StructFieldRef raft "pendingConfIndex"%go (![go.PointerType raft] "r")) <-[go.uint64] "$r0");;;
-                do:  (let: "$a0" := (![raftpb.ConfChangeI] "cc") in
+                do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] "cc") in
                 let: "$a1" := (![go.PointerType raft] "r") in
                 (FuncResolve traceChangeConfEvent [] #()) "$a0" "$a1"))
             else do:  #())));;;
-          (if: (⟨go.bool⟩! (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m")) in
+          (if: (⟨go.bool⟩! (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "m")) in
           (MethodResolve (go.PointerType raft) "appendEntry"%go (![go.PointerType raft] "r")) "$a0"))
           then return: (![go.error] (GlobalVarAddr ErrProposalDropped #()))
           else do:  #());;;
           do:  ((MethodResolve (go.PointerType raft) "bcastAppend"%go (![go.PointerType raft] "r")) #());;;
           return: (Convert go.untyped_nil go.error UntypedNil)
         else
-          (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgReadIndex
+          (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgReadIndex
           then
-            (if: (MethodResolve (go.PointerType tracker.ProgressTracker) "IsSingleton"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #()
+            (if: (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker) "IsSingleton"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #()
             then
-              (let: "resp" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-              let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
+              (let: "resp" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
+              let: "$r0" := (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
               let: "$a1" := (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
               (MethodResolve (go.PointerType raft) "responseToReadIndexReq"%go (![go.PointerType raft] "r")) "$a0" "$a1") in
-              do:  ("resp" <-[raftpb.Message] "$r0");;;
-              (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.Message "To"%go "resp")) ≠⟨go.uint64⟩ None')
+              do:  ("resp" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
+              (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "To"%go "resp")) ≠⟨go.uint64⟩ None')
               then
-                do:  (let: "$a0" := (![raftpb.Message] "resp") in
+                do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "resp") in
                 (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0")
               else do:  #()));;;
               return: (Convert go.untyped_nil go.error UntypedNil)
             else do:  #());;;
             (if: (⟨go.bool⟩! ((MethodResolve (go.PointerType raft) "committedEntryInCurrentTerm"%go (![go.PointerType raft] "r")) #()))
             then
-              let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef raft "pendingReadIndexMessages"%go (![go.PointerType raft] "r"))) in
-              let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
-              CompositeLiteral (go.SliceType raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression raftpb.Message "$sl0")]))) in
-              (FuncResolve go.append [go.SliceType raftpb.Message] #()) "$a0" "$a1") in
-              do:  ((StructFieldRef raft "pendingReadIndexMessages"%go (![go.PointerType raft] "r")) <-[go.SliceType raftpb.Message] "$r0");;;
+              let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef raft "pendingReadIndexMessages"%go (![go.PointerType raft] "r"))) in
+              let: "$a1" := ((let: "$sl0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
+              CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$sl0")]))) in
+              (FuncResolve go.append [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0" "$a1") in
+              do:  ((StructFieldRef raft "pendingReadIndexMessages"%go (![go.PointerType raft] "r")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
               return: (Convert go.untyped_nil go.error UntypedNil)
             else do:  #());;;
             do:  (let: "$a0" := (![go.PointerType raft] "r") in
-            let: "$a1" := (![raftpb.Message] "m") in
+            let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
             (FuncResolve sendMsgReadIndexResponse [] #()) "$a0" "$a1");;;
             return: (Convert go.untyped_nil go.error UntypedNil)
           else
-            (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgForgetLeader
+            (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgForgetLeader
             then return: (Convert go.untyped_nil go.error UntypedNil)
             else do:  #())))));;;
-    let: "pr" := (GoAlloc (go.PointerType tracker.Progress) (GoZeroVal (go.PointerType tracker.Progress) #())) in
-    let: "$r0" := (map.lookup1 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
-    do:  ("pr" <-[go.PointerType tracker.Progress] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![go.PointerType tracker.Progress] "pr") =⟨go.PointerType tracker.Progress⟩ (Convert go.untyped_nil (go.PointerType tracker.Progress) UntypedNil))
+    let: "pr" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (GoZeroVal (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) #())) in
+    let: "$r0" := (map.lookup1 go.uint64 (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
+    do:  ("pr" <-[go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr") =⟨go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) UntypedNil))
     then
       do:  (let: "$a0" := #"%x no progress available for %x"%go in
       let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-      let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
+      let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1")]))) in
       (MethodResolve Logger "Debugf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
       return: (Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
-    let: "$sw" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
-    (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgAppResp
+    let: "$sw" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) in
+    (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgAppResp
     then
       let: "$r0" := #true in
-      do:  ((StructFieldRef tracker.Progress "RecentActive"%go (![go.PointerType tracker.Progress] "pr")) <-[go.bool] "$r0");;;
-      (if: ![go.bool] (StructFieldRef raftpb.Message "Reject"%go "m")
+      do:  ((StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "RecentActive"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) <-[go.bool] "$r0");;;
+      (if: ![go.bool] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Reject"%go "m")
       then
         do:  (let: "$a0" := #"%x received MsgAppResp(rejected, hint: (index %d, term %d)) from %x for index %d"%go in
         let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-        let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "RejectHint"%go "m"))) in
-        let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go "m"))) in
-        let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
-        let: "$sl4" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m"))) in
+        let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "RejectHint"%go "m"))) in
+        let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "LogTerm"%go "m"))) in
+        let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
+        let: "$sl4" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m"))) in
         CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl4")]))) in
         (MethodResolve Logger "Debugf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
         let: "nextProbeIdx" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-        let: "$r0" := (![go.uint64] (StructFieldRef raftpb.Message "RejectHint"%go "m")) in
+        let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "RejectHint"%go "m")) in
         do:  ("nextProbeIdx" <-[go.uint64] "$r0");;;
-        (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go "m")) >⟨go.uint64⟩ #(W64 0))
+        (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "LogTerm"%go "m")) >⟨go.uint64⟩ #(W64 0))
         then
-          let: ("$ret0", "$ret1") := (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "RejectHint"%go "m")) in
-          let: "$a1" := (![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go "m")) in
+          let: ("$ret0", "$ret1") := (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "RejectHint"%go "m")) in
+          let: "$a1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "LogTerm"%go "m")) in
           (MethodResolve (go.PointerType raftLog) "findConflictByTerm"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0" "$a1") in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
           do:  ("nextProbeIdx" <-[go.uint64] "$r0");;;
           do:  "$r1"
         else do:  #());;;
-        (if: let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")) in
+        (if: let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m")) in
         let: "$a1" := (![go.uint64] "nextProbeIdx") in
-        (MethodResolve (go.PointerType tracker.Progress) "MaybeDecrTo"%go (![go.PointerType tracker.Progress] "pr")) "$a0" "$a1"
+        (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "MaybeDecrTo"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) "$a0" "$a1"
         then
           do:  (let: "$a0" := #"%x decreased progress of %x to [%s]"%go in
           let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-          let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
-          let: "$sl2" := (Convert (go.PointerType tracker.Progress) (go.InterfaceType []) (![go.PointerType tracker.Progress] "pr")) in
+          let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
+          let: "$sl2" := (Convert (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (go.InterfaceType []) (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) in
           CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2")]))) in
           (MethodResolve Logger "Debugf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-          (if: Convert go.untyped_bool go.bool ((![tracker.StateType] (StructFieldRef tracker.Progress "State"%go (![go.PointerType tracker.Progress] "pr"))) =⟨tracker.StateType⟩ tracker.StateReplicate)
-          then do:  ((MethodResolve (go.PointerType tracker.Progress) "BecomeProbe"%go (![go.PointerType tracker.Progress] "pr")) #())
+          (if: Convert go.untyped_bool go.bool ((![code.go_etcd_io.raft.v3.tracker.tracker.StateType] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "State"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) =⟨code.go_etcd_io.raft.v3.tracker.tracker.StateType⟩ code.go_etcd_io.raft.v3.tracker.tracker.StateReplicate)
+          then do:  ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "BecomeProbe"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) #())
           else do:  #());;;
-          do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+          do:  (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
           (MethodResolve (go.PointerType raft) "sendAppend"%go (![go.PointerType raft] "r")) "$a0")
         else do:  #())
       else
-        (if: (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")) in
-        (MethodResolve (go.PointerType tracker.Progress) "MaybeUpdate"%go (![go.PointerType tracker.Progress] "pr")) "$a0") || (((![go.uint64] (StructFieldRef tracker.Progress "Match"%go (![go.PointerType tracker.Progress] "pr"))) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m"))) && ((![tracker.StateType] (StructFieldRef tracker.Progress "State"%go (![go.PointerType tracker.Progress] "pr"))) =⟨tracker.StateType⟩ tracker.StateProbe))
+        (if: (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m")) in
+        (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "MaybeUpdate"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) "$a0") || (((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "Match"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m"))) && ((![code.go_etcd_io.raft.v3.tracker.tracker.StateType] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "State"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) =⟨code.go_etcd_io.raft.v3.tracker.tracker.StateType⟩ code.go_etcd_io.raft.v3.tracker.tracker.StateProbe))
         then
           let: "$sw" := #true in
-          (if: "$sw" =⟨go.bool⟩ ((![tracker.StateType] (StructFieldRef tracker.Progress "State"%go (![go.PointerType tracker.Progress] "pr"))) =⟨tracker.StateType⟩ tracker.StateProbe)
-          then do:  ((MethodResolve (go.PointerType tracker.Progress) "BecomeReplicate"%go (![go.PointerType tracker.Progress] "pr")) #())
+          (if: "$sw" =⟨go.bool⟩ ((![code.go_etcd_io.raft.v3.tracker.tracker.StateType] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "State"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) =⟨code.go_etcd_io.raft.v3.tracker.tracker.StateType⟩ code.go_etcd_io.raft.v3.tracker.tracker.StateProbe)
+          then do:  ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "BecomeReplicate"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) #())
           else
-            (if: "$sw" =⟨go.bool⟩ (((![tracker.StateType] (StructFieldRef tracker.Progress "State"%go (![go.PointerType tracker.Progress] "pr"))) =⟨tracker.StateType⟩ tracker.StateSnapshot) && (((![go.uint64] (StructFieldRef tracker.Progress "Match"%go (![go.PointerType tracker.Progress] "pr"))) +⟨go.uint64⟩ #(W64 1)) ≥⟨go.uint64⟩ ((MethodResolve (go.PointerType raftLog) "firstIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #())))
+            (if: "$sw" =⟨go.bool⟩ (((![code.go_etcd_io.raft.v3.tracker.tracker.StateType] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "State"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) =⟨code.go_etcd_io.raft.v3.tracker.tracker.StateType⟩ code.go_etcd_io.raft.v3.tracker.tracker.StateSnapshot) && (((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "Match"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) +⟨go.uint64⟩ #(W64 1)) ≥⟨go.uint64⟩ ((MethodResolve (go.PointerType raftLog) "firstIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #())))
             then
               do:  (let: "$a0" := #"%x recovered from needing snapshot, resumed sending replication messages to %x [%s]"%go in
               let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-              let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
-              let: "$sl2" := (Convert (go.PointerType tracker.Progress) (go.InterfaceType []) (![go.PointerType tracker.Progress] "pr")) in
+              let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
+              let: "$sl2" := (Convert (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (go.InterfaceType []) (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) in
               CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2")]))) in
               (MethodResolve Logger "Debugf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-              do:  ((MethodResolve (go.PointerType tracker.Progress) "BecomeProbe"%go (![go.PointerType tracker.Progress] "pr")) #());;;
-              do:  ((MethodResolve (go.PointerType tracker.Progress) "BecomeReplicate"%go (![go.PointerType tracker.Progress] "pr")) #())
+              do:  ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "BecomeProbe"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) #());;;
+              do:  ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "BecomeReplicate"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) #())
             else
-              (if: "$sw" =⟨go.bool⟩ ((![tracker.StateType] (StructFieldRef tracker.Progress "State"%go (![go.PointerType tracker.Progress] "pr"))) =⟨tracker.StateType⟩ tracker.StateReplicate)
+              (if: "$sw" =⟨go.bool⟩ ((![code.go_etcd_io.raft.v3.tracker.tracker.StateType] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "State"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) =⟨code.go_etcd_io.raft.v3.tracker.tracker.StateType⟩ code.go_etcd_io.raft.v3.tracker.tracker.StateReplicate)
               then
-                do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")) in
-                (MethodResolve (go.PointerType tracker.Inflights) "FreeLE"%go (![go.PointerType tracker.Inflights] (StructFieldRef tracker.Progress "Inflights"%go (![go.PointerType tracker.Progress] "pr")))) "$a0")
+                do:  (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m")) in
+                (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Inflights) "FreeLE"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Inflights] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "Inflights"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")))) "$a0")
               else do:  #())));;;
           (if: (MethodResolve (go.PointerType raft) "maybeCommit"%go (![go.PointerType raft] "r")) #()
           then
@@ -4438,51 +4438,51 @@ Definition stepLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
             (FuncResolve releasePendingReadIndexMessages [] #()) "$a0");;;
             do:  ((MethodResolve (go.PointerType raft) "bcastAppend"%go (![go.PointerType raft] "r")) #())
           else
-            (if: ((![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) ≠⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) && (let: "$a0" := (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
-            (MethodResolve (go.PointerType tracker.Progress) "CanBumpCommit"%go (![go.PointerType tracker.Progress] "pr")) "$a0")
+            (if: ((![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) ≠⟨go.uint64⟩ (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) && (let: "$a0" := (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
+            (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "CanBumpCommit"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) "$a0")
             then
-              do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+              do:  (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
               (MethodResolve (go.PointerType raft) "sendAppend"%go (![go.PointerType raft] "r")) "$a0")
             else do:  #()));;;
-          (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) ≠⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")))
+          (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) ≠⟨go.uint64⟩ (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")))
           then
-            (for: (λ: <>, let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+            (for: (λ: <>, let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
             let: "$a1" := #false in
             (MethodResolve (go.PointerType raft) "maybeSendAppend"%go (![go.PointerType raft] "r")) "$a0" "$a1"); (λ: <>, #()) := λ: <>,
               do:  #())
           else do:  #());;;
-          (if: Convert go.untyped_bool go.bool (((![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "leadTransferee"%go (![go.PointerType raft] "r")))) && ((![go.uint64] (StructFieldRef tracker.Progress "Match"%go (![go.PointerType tracker.Progress] "pr"))) =⟨go.uint64⟩ ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #())))
+          (if: Convert go.untyped_bool go.bool (((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "leadTransferee"%go (![go.PointerType raft] "r")))) && ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "Match"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) =⟨go.uint64⟩ ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #())))
           then
             do:  (let: "$a0" := #"%x sent MsgTimeoutNow to %x after received MsgAppResp"%go in
             let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-            let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
+            let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
             CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1")]))) in
             (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-            do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+            do:  (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
             (MethodResolve (go.PointerType raft) "sendTimeoutNow"%go (![go.PointerType raft] "r")) "$a0")
           else do:  #())
         else do:  #()))
     else
-      (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgHeartbeatResp
+      (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgHeartbeatResp
       then
         let: "$r0" := #true in
-        do:  ((StructFieldRef tracker.Progress "RecentActive"%go (![go.PointerType tracker.Progress] "pr")) <-[go.bool] "$r0");;;
+        do:  ((StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "RecentActive"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) <-[go.bool] "$r0");;;
         let: "$r0" := #false in
-        do:  ((StructFieldRef tracker.Progress "MsgAppFlowPaused"%go (![go.PointerType tracker.Progress] "pr")) <-[go.bool] "$r0");;;
-        (if: Convert go.untyped_bool go.bool (((![go.uint64] (StructFieldRef tracker.Progress "Match"%go (![go.PointerType tracker.Progress] "pr"))) <⟨go.uint64⟩ ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #())) || ((![tracker.StateType] (StructFieldRef tracker.Progress "State"%go (![go.PointerType tracker.Progress] "pr"))) =⟨tracker.StateType⟩ tracker.StateProbe))
+        do:  ((StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "MsgAppFlowPaused"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) <-[go.bool] "$r0");;;
+        (if: Convert go.untyped_bool go.bool (((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "Match"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) <⟨go.uint64⟩ ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #())) || ((![code.go_etcd_io.raft.v3.tracker.tracker.StateType] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "State"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) =⟨code.go_etcd_io.raft.v3.tracker.tracker.StateType⟩ code.go_etcd_io.raft.v3.tracker.tracker.StateProbe))
         then
-          do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+          do:  (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
           (MethodResolve (go.PointerType raft) "sendAppend"%go (![go.PointerType raft] "r")) "$a0")
         else do:  #());;;
-        (if: Convert go.untyped_bool go.bool (((![ReadOnlyOption] (StructFieldRef readOnly "option"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r"))))) ≠⟨ReadOnlyOption⟩ ReadOnlySafe) || ((let: "$a0" := (![go.SliceType go.byte] (StructFieldRef raftpb.Message "Context"%go "m")) in
+        (if: Convert go.untyped_bool go.bool (((![ReadOnlyOption] (StructFieldRef readOnly "option"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r"))))) ≠⟨ReadOnlyOption⟩ ReadOnlySafe) || ((let: "$a0" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Context"%go "m")) in
         (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") =⟨go.int⟩ #(W64 0)))
         then return: (Convert go.untyped_nil go.error UntypedNil)
         else do:  #());;;
-        do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
-        let: "$a1" := (![go.SliceType go.byte] (StructFieldRef raftpb.Message "Context"%go "m")) in
+        do:  (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
+        let: "$a1" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Context"%go "m")) in
         (MethodResolve (go.PointerType readOnly) "recvAck"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
         let: "rss" := (GoAlloc (go.SliceType (go.PointerType readIndexRequest)) (GoZeroVal (go.SliceType (go.PointerType readIndexRequest)) #())) in
-        let: "$r0" := (let: "$a0" := (![quorum.JointConfig] (StructFieldRef tracker.Config "Voters"%go (StructFieldRef tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) in
+        let: "$r0" := (let: "$a0" := (![code.go_etcd_io.raft.v3.quorum.quorum.JointConfig] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Config "Voters"%go (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) in
         (MethodResolve (go.PointerType readOnly) "maybeAdvance"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r")))) "$a0") in
         do:  ("rss" <-[go.SliceType (go.PointerType readIndexRequest)] "$r0");;;
         let: "$range" := (![go.SliceType (go.PointerType readIndexRequest)] "rss") in
@@ -4490,59 +4490,59 @@ Definition stepLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
         slice.for_range (go.PointerType readIndexRequest) "$range" (λ: "$key" "$value",
           do:  ("rs" <-[go.PointerType readIndexRequest] "$value");;;
           do:  "$key";;;
-          (let: "resp" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-          let: "$r0" := (let: "$a0" := (![raftpb.Message] (StructFieldRef readIndexRequest "req"%go (![go.PointerType readIndexRequest] "rs"))) in
+          (let: "resp" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
+          let: "$r0" := (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef readIndexRequest "req"%go (![go.PointerType readIndexRequest] "rs"))) in
           let: "$a1" := (![go.uint64] (StructFieldRef readIndexRequest "index"%go (![go.PointerType readIndexRequest] "rs"))) in
           (MethodResolve (go.PointerType raft) "responseToReadIndexReq"%go (![go.PointerType raft] "r")) "$a0" "$a1") in
-          do:  ("resp" <-[raftpb.Message] "$r0");;;
-          (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.Message "To"%go "resp")) ≠⟨go.uint64⟩ None')
+          do:  ("resp" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
+          (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "To"%go "resp")) ≠⟨go.uint64⟩ None')
           then
-            do:  (let: "$a0" := (![raftpb.Message] "resp") in
+            do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "resp") in
             (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0")
           else do:  #()))))
       else
-        (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgSnapStatus
+        (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgSnapStatus
         then
-          (if: Convert go.untyped_bool go.bool ((![tracker.StateType] (StructFieldRef tracker.Progress "State"%go (![go.PointerType tracker.Progress] "pr"))) ≠⟨tracker.StateType⟩ tracker.StateSnapshot)
+          (if: Convert go.untyped_bool go.bool ((![code.go_etcd_io.raft.v3.tracker.tracker.StateType] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "State"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) ≠⟨code.go_etcd_io.raft.v3.tracker.tracker.StateType⟩ code.go_etcd_io.raft.v3.tracker.tracker.StateSnapshot)
           then return: (Convert go.untyped_nil go.error UntypedNil)
           else do:  #());;;
-          (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef raftpb.Message "Reject"%go "m")))
+          (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Reject"%go "m")))
           then
-            do:  ((MethodResolve (go.PointerType tracker.Progress) "BecomeProbe"%go (![go.PointerType tracker.Progress] "pr")) #());;;
+            do:  ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "BecomeProbe"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) #());;;
             do:  (let: "$a0" := #"%x snapshot succeeded, resumed sending replication messages to %x [%s]"%go in
             let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-            let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
-            let: "$sl2" := (Convert (go.PointerType tracker.Progress) (go.InterfaceType []) (![go.PointerType tracker.Progress] "pr")) in
+            let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
+            let: "$sl2" := (Convert (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (go.InterfaceType []) (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) in
             CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2")]))) in
             (MethodResolve Logger "Debugf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1")
           else
             let: "$r0" := #(W64 0) in
-            do:  ((StructFieldRef tracker.Progress "PendingSnapshot"%go (![go.PointerType tracker.Progress] "pr")) <-[go.uint64] "$r0");;;
-            do:  ((MethodResolve (go.PointerType tracker.Progress) "BecomeProbe"%go (![go.PointerType tracker.Progress] "pr")) #());;;
+            do:  ((StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "PendingSnapshot"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) <-[go.uint64] "$r0");;;
+            do:  ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "BecomeProbe"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) #());;;
             do:  (let: "$a0" := #"%x snapshot failed, resumed sending replication messages to %x [%s]"%go in
             let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-            let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
-            let: "$sl2" := (Convert (go.PointerType tracker.Progress) (go.InterfaceType []) (![go.PointerType tracker.Progress] "pr")) in
+            let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
+            let: "$sl2" := (Convert (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (go.InterfaceType []) (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) in
             CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2")]))) in
             (MethodResolve Logger "Debugf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1"));;;
           let: "$r0" := #true in
-          do:  ((StructFieldRef tracker.Progress "MsgAppFlowPaused"%go (![go.PointerType tracker.Progress] "pr")) <-[go.bool] "$r0")
+          do:  ((StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "MsgAppFlowPaused"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) <-[go.bool] "$r0")
         else
-          (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgUnreachable
+          (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgUnreachable
           then
-            (if: Convert go.untyped_bool go.bool ((![tracker.StateType] (StructFieldRef tracker.Progress "State"%go (![go.PointerType tracker.Progress] "pr"))) =⟨tracker.StateType⟩ tracker.StateReplicate)
-            then do:  ((MethodResolve (go.PointerType tracker.Progress) "BecomeProbe"%go (![go.PointerType tracker.Progress] "pr")) #())
+            (if: Convert go.untyped_bool go.bool ((![code.go_etcd_io.raft.v3.tracker.tracker.StateType] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "State"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) =⟨code.go_etcd_io.raft.v3.tracker.tracker.StateType⟩ code.go_etcd_io.raft.v3.tracker.tracker.StateReplicate)
+            then do:  ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "BecomeProbe"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) #())
             else do:  #());;;
             do:  (let: "$a0" := #"%x failed to send message to %x because it is unreachable [%s]"%go in
             let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-            let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
-            let: "$sl2" := (Convert (go.PointerType tracker.Progress) (go.InterfaceType []) (![go.PointerType tracker.Progress] "pr")) in
+            let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
+            let: "$sl2" := (Convert (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (go.InterfaceType []) (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) in
             CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2")]))) in
             (MethodResolve Logger "Debugf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1")
           else
-            (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgTransferLeader
+            (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgTransferLeader
             then
-              (if: ![go.bool] (StructFieldRef tracker.Progress "IsLearner"%go (![go.PointerType tracker.Progress] "pr"))
+              (if: ![go.bool] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "IsLearner"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))
               then
                 do:  (let: "$a0" := #"%x is learner. Ignored transferring leadership"%go in
                 let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
@@ -4551,7 +4551,7 @@ Definition stepLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
                 return: (Convert go.untyped_nil go.error UntypedNil)
               else do:  #());;;
               let: "leadTransferee" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-              let: "$r0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+              let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
               do:  ("leadTransferee" <-[go.uint64] "$r0");;;
               let: "lastLeadTransferee" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
               let: "$r0" := (![go.uint64] (StructFieldRef raft "leadTransferee"%go (![go.PointerType raft] "r"))) in
@@ -4595,7 +4595,7 @@ Definition stepLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
               do:  ((StructFieldRef raft "electionElapsed"%go (![go.PointerType raft] "r")) <-[go.int] "$r0");;;
               let: "$r0" := (![go.uint64] "leadTransferee") in
               do:  ((StructFieldRef raft "leadTransferee"%go (![go.PointerType raft] "r")) <-[go.uint64] "$r0");;;
-              (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef tracker.Progress "Match"%go (![go.PointerType tracker.Progress] "pr"))) =⟨go.uint64⟩ ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()))
+              (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "Match"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))) =⟨go.uint64⟩ ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()))
               then
                 do:  (let: "$a0" := (![go.uint64] "leadTransferee") in
                 (MethodResolve (go.PointerType raft) "sendTimeoutNow"%go (![go.PointerType raft] "r")) "$a0");;;
@@ -4617,18 +4617,18 @@ Definition stepLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
    go: raft.go:1660:6 *)
 Definition stepCandidateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
-    exception_do (let: "m" := (GoAlloc raftpb.Message "m") in
+    exception_do (let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "m") in
     let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "myVoteRespType" := (GoAlloc raftpb.MessageType (GoZeroVal raftpb.MessageType #())) in
+    let: "myVoteRespType" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType #())) in
     (if: Convert go.untyped_bool go.bool ((![StateType] (StructFieldRef raft "state"%go (![go.PointerType raft] "r"))) =⟨StateType⟩ StatePreCandidate)
     then
-      let: "$r0" := raftpb.MsgPreVoteResp in
-      do:  ("myVoteRespType" <-[raftpb.MessageType] "$r0")
+      let: "$r0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgPreVoteResp in
+      do:  ("myVoteRespType" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] "$r0")
     else
-      let: "$r0" := raftpb.MsgVoteResp in
-      do:  ("myVoteRespType" <-[raftpb.MessageType] "$r0"));;;
-    let: "$sw" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
-    (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgProp
+      let: "$r0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgVoteResp in
+      do:  ("myVoteRespType" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] "$r0"));;;
+    let: "$sw" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) in
+    (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgProp
     then
       do:  (let: "$a0" := #"%x no leader at term %d; dropping proposal"%go in
       let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
@@ -4637,54 +4637,54 @@ Definition stepCandidateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
       return: (![go.error] (GlobalVarAddr ErrProposalDropped #()))
     else
-      (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgApp
+      (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgApp
       then
-        do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m")) in
-        let: "$a1" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+        do:  (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m")) in
+        let: "$a1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
         (MethodResolve (go.PointerType raft) "becomeFollower"%go (![go.PointerType raft] "r")) "$a0" "$a1");;;
-        do:  (let: "$a0" := (![raftpb.Message] "m") in
+        do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
         (MethodResolve (go.PointerType raft) "handleAppendEntries"%go (![go.PointerType raft] "r")) "$a0")
       else
-        (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgHeartbeat
+        (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgHeartbeat
         then
-          do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m")) in
-          let: "$a1" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+          do:  (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m")) in
+          let: "$a1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
           (MethodResolve (go.PointerType raft) "becomeFollower"%go (![go.PointerType raft] "r")) "$a0" "$a1");;;
-          do:  (let: "$a0" := (![raftpb.Message] "m") in
+          do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
           (MethodResolve (go.PointerType raft) "handleHeartbeat"%go (![go.PointerType raft] "r")) "$a0")
         else
-          (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgSnap
+          (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgSnap
           then
-            do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m")) in
-            let: "$a1" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+            do:  (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m")) in
+            let: "$a1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
             (MethodResolve (go.PointerType raft) "becomeFollower"%go (![go.PointerType raft] "r")) "$a0" "$a1");;;
-            do:  (let: "$a0" := (![raftpb.Message] "m") in
+            do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
             (MethodResolve (go.PointerType raft) "handleSnapshot"%go (![go.PointerType raft] "r")) "$a0")
           else
-            (if: "$sw" =⟨raftpb.MessageType⟩ (![raftpb.MessageType] "myVoteRespType")
+            (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] "myVoteRespType")
             then
-              let: "res" := (GoAlloc quorum.VoteResult (GoZeroVal quorum.VoteResult #())) in
+              let: "res" := (GoAlloc code.go_etcd_io.raft.v3.quorum.quorum.VoteResult (GoZeroVal code.go_etcd_io.raft.v3.quorum.quorum.VoteResult #())) in
               let: "rj" := (GoAlloc go.int (GoZeroVal go.int #())) in
               let: "gr" := (GoAlloc go.int (GoZeroVal go.int #())) in
-              let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
-              let: "$a1" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
-              let: "$a2" := (⟨go.bool⟩! (![go.bool] (StructFieldRef raftpb.Message "Reject"%go "m"))) in
+              let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
+              let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) in
+              let: "$a2" := (⟨go.bool⟩! (![go.bool] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Reject"%go "m"))) in
               (MethodResolve (go.PointerType raft) "poll"%go (![go.PointerType raft] "r")) "$a0" "$a1" "$a2") in
               let: "$r0" := "$ret0" in
               let: "$r1" := "$ret1" in
               let: "$r2" := "$ret2" in
               do:  ("gr" <-[go.int] "$r0");;;
               do:  ("rj" <-[go.int] "$r1");;;
-              do:  ("res" <-[quorum.VoteResult] "$r2");;;
+              do:  ("res" <-[code.go_etcd_io.raft.v3.quorum.quorum.VoteResult] "$r2");;;
               do:  (let: "$a0" := #"%x has received %d %s votes and %d vote rejections"%go in
               let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
               let: "$sl1" := (Convert go.int (go.InterfaceType []) (![go.int] "gr")) in
-              let: "$sl2" := (Convert raftpb.MessageType (go.InterfaceType []) (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m"))) in
+              let: "$sl2" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType (go.InterfaceType []) (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m"))) in
               let: "$sl3" := (Convert go.int (go.InterfaceType []) (![go.int] "rj")) in
               CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3")]))) in
               (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-              let: "$sw" := (![quorum.VoteResult] "res") in
-              (if: "$sw" =⟨quorum.VoteResult⟩ quorum.VoteWon
+              let: "$sw" := (![code.go_etcd_io.raft.v3.quorum.quorum.VoteResult] "res") in
+              (if: "$sw" =⟨code.go_etcd_io.raft.v3.quorum.quorum.VoteResult⟩ code.go_etcd_io.raft.v3.quorum.quorum.VoteWon
               then
                 (if: Convert go.untyped_bool go.bool ((![StateType] (StructFieldRef raft "state"%go (![go.PointerType raft] "r"))) =⟨StateType⟩ StatePreCandidate)
                 then
@@ -4694,20 +4694,20 @@ Definition stepCandidateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
                   do:  ((MethodResolve (go.PointerType raft) "becomeLeader"%go (![go.PointerType raft] "r")) #());;;
                   do:  ((MethodResolve (go.PointerType raft) "bcastAppend"%go (![go.PointerType raft] "r")) #()))
               else
-                (if: "$sw" =⟨quorum.VoteResult⟩ quorum.VoteLost
+                (if: "$sw" =⟨code.go_etcd_io.raft.v3.quorum.quorum.VoteResult⟩ code.go_etcd_io.raft.v3.quorum.quorum.VoteLost
                 then
                   do:  (let: "$a0" := (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))) in
                   let: "$a1" := None' in
                   (MethodResolve (go.PointerType raft) "becomeFollower"%go (![go.PointerType raft] "r")) "$a0" "$a1")
                 else do:  #()))
             else
-              (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgTimeoutNow
+              (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgTimeoutNow
               then
                 do:  (let: "$a0" := #"%x [term %d state %v] ignored MsgTimeoutNow from %x"%go in
                 let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
                 let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))) in
                 let: "$sl2" := (Convert StateType (go.InterfaceType []) (![StateType] (StructFieldRef raft "state"%go (![go.PointerType raft] "r")))) in
-                let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
+                let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
                 CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3")]))) in
                 (MethodResolve Logger "Debugf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1")
               else do:  #()))))));;;
@@ -4716,10 +4716,10 @@ Definition stepCandidateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 (* go: raft.go:1705:6 *)
 Definition stepFollowerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
-    exception_do (let: "m" := (GoAlloc raftpb.Message "m") in
+    exception_do (let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "m") in
     let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "$sw" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
-    (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgProp
+    let: "$sw" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) in
+    (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgProp
     then
       (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raft "lead"%go (![go.PointerType raft] "r"))) =⟨go.uint64⟩ None')
       then
@@ -4741,38 +4741,38 @@ Definition stepFollowerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
           return: (![go.error] (GlobalVarAddr ErrProposalDropped #()))
         else do:  #()));;;
       let: "$r0" := (![go.uint64] (StructFieldRef raft "lead"%go (![go.PointerType raft] "r"))) in
-      do:  ((StructFieldRef raftpb.Message "To"%go "m") <-[go.uint64] "$r0");;;
-      do:  (let: "$a0" := (![raftpb.Message] "m") in
+      do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "To"%go "m") <-[go.uint64] "$r0");;;
+      do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
       (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0")
     else
-      (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgApp
+      (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgApp
       then
         let: "$r0" := #(W64 0) in
         do:  ((StructFieldRef raft "electionElapsed"%go (![go.PointerType raft] "r")) <-[go.int] "$r0");;;
-        let: "$r0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+        let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
         do:  ((StructFieldRef raft "lead"%go (![go.PointerType raft] "r")) <-[go.uint64] "$r0");;;
-        do:  (let: "$a0" := (![raftpb.Message] "m") in
+        do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
         (MethodResolve (go.PointerType raft) "handleAppendEntries"%go (![go.PointerType raft] "r")) "$a0")
       else
-        (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgHeartbeat
+        (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgHeartbeat
         then
           let: "$r0" := #(W64 0) in
           do:  ((StructFieldRef raft "electionElapsed"%go (![go.PointerType raft] "r")) <-[go.int] "$r0");;;
-          let: "$r0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+          let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
           do:  ((StructFieldRef raft "lead"%go (![go.PointerType raft] "r")) <-[go.uint64] "$r0");;;
-          do:  (let: "$a0" := (![raftpb.Message] "m") in
+          do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
           (MethodResolve (go.PointerType raft) "handleHeartbeat"%go (![go.PointerType raft] "r")) "$a0")
         else
-          (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgSnap
+          (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgSnap
           then
             let: "$r0" := #(W64 0) in
             do:  ((StructFieldRef raft "electionElapsed"%go (![go.PointerType raft] "r")) <-[go.int] "$r0");;;
-            let: "$r0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+            let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
             do:  ((StructFieldRef raft "lead"%go (![go.PointerType raft] "r")) <-[go.uint64] "$r0");;;
-            do:  (let: "$a0" := (![raftpb.Message] "m") in
+            do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
             (MethodResolve (go.PointerType raft) "handleSnapshot"%go (![go.PointerType raft] "r")) "$a0")
           else
-            (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgTransferLeader
+            (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgTransferLeader
             then
               (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raft "lead"%go (![go.PointerType raft] "r"))) =⟨go.uint64⟩ None')
               then
@@ -4784,11 +4784,11 @@ Definition stepFollowerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
                 return: (Convert go.untyped_nil go.error UntypedNil)
               else do:  #());;;
               let: "$r0" := (![go.uint64] (StructFieldRef raft "lead"%go (![go.PointerType raft] "r"))) in
-              do:  ((StructFieldRef raftpb.Message "To"%go "m") <-[go.uint64] "$r0");;;
-              do:  (let: "$a0" := (![raftpb.Message] "m") in
+              do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "To"%go "m") <-[go.uint64] "$r0");;;
+              do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
               (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0")
             else
-              (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgForgetLeader
+              (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgForgetLeader
               then
                 (if: Convert go.untyped_bool go.bool ((![ReadOnlyOption] (StructFieldRef readOnly "option"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r"))))) =⟨ReadOnlyOption⟩ ReadOnlyLeaseBased)
                 then
@@ -4809,18 +4809,18 @@ Definition stepFollowerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
                   do:  ((StructFieldRef raft "lead"%go (![go.PointerType raft] "r")) <-[go.uint64] "$r0")
                 else do:  #())
               else
-                (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgTimeoutNow
+                (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgTimeoutNow
                 then
                   do:  (let: "$a0" := #"%x [term %d] received MsgTimeoutNow from %x and starts an election to get leadership."%go in
                   let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
                   let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))) in
-                  let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
+                  let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
                   CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2")]))) in
                   (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
                   do:  (let: "$a0" := campaignTransfer in
                   (MethodResolve (go.PointerType raft) "hup"%go (![go.PointerType raft] "r")) "$a0")
                 else
-                  (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgReadIndex
+                  (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgReadIndex
                   then
                     (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raft "lead"%go (![go.PointerType raft] "r"))) =⟨go.uint64⟩ None')
                     then
@@ -4832,27 +4832,27 @@ Definition stepFollowerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
                       return: (Convert go.untyped_nil go.error UntypedNil)
                     else do:  #());;;
                     let: "$r0" := (![go.uint64] (StructFieldRef raft "lead"%go (![go.PointerType raft] "r"))) in
-                    do:  ((StructFieldRef raftpb.Message "To"%go "m") <-[go.uint64] "$r0");;;
-                    do:  (let: "$a0" := (![raftpb.Message] "m") in
+                    do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "To"%go "m") <-[go.uint64] "$r0");;;
+                    do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
                     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0")
                   else
-                    (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgReadIndexResp
+                    (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgReadIndexResp
                     then
-                      (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m")) in
-                      (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") ≠⟨go.int⟩ #(W64 1))
+                      (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "m")) in
+                      (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") ≠⟨go.int⟩ #(W64 1))
                       then
                         do:  (let: "$a0" := #"%x invalid format of MsgReadIndexResp from %x, entries count: %d"%go in
                         let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-                        let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
-                        let: "$sl2" := (Convert go.int (go.InterfaceType []) (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m")) in
-                        (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0")) in
+                        let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
+                        let: "$sl2" := (Convert go.int (go.InterfaceType []) (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "m")) in
+                        (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0")) in
                         CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2")]))) in
                         (MethodResolve Logger "Errorf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
                         return: (Convert go.untyped_nil go.error UntypedNil)
                       else do:  #());;;
                       let: "$r0" := (let: "$a0" := (![go.SliceType ReadState] (StructFieldRef raft "readStates"%go (![go.PointerType raft] "r"))) in
-                      let: "$a1" := ((let: "$sl0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")) in
-                      let: "$v1" := (![go.SliceType go.byte] (StructFieldRef raftpb.Entry "Data"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m"), #(W64 0))))) in
+                      let: "$a1" := ((let: "$sl0" := (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m")) in
+                      let: "$v1" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Data"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "m"), #(W64 0))))) in
                       CompositeLiteral ReadState (LiteralValue [KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "RequestCtx"%go)) (ElementExpression (go.SliceType go.byte) "$v1")])) in
                       CompositeLiteral (go.SliceType ReadState) (LiteralValue [KeyedElement None (ElementExpression ReadState "$sl0")]))) in
                       (FuncResolve go.append [go.SliceType ReadState] #()) "$a0" "$a1") in
@@ -4865,36 +4865,36 @@ Definition stepFollowerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
    go: raft.go:1769:6 *)
 Definition logSliceFromMsgAppⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "m",
-    exception_do (let: "m" := (GoAlloc (go.PointerType raftpb.Message) "m") in
-    return: (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "Term"%go (![go.PointerType raftpb.Message] "m"))) in
-     let: "$v1" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go (![go.PointerType raftpb.Message] "m"))) in
-     let: "$v1" := (![go.uint64] (StructFieldRef raftpb.Message "Index"%go (![go.PointerType raftpb.Message] "m"))) in
+    exception_do (let: "m" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) "m") in
+    return: (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m"))) in
+     let: "$v1" := (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "LogTerm"%go (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m"))) in
+     let: "$v1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m"))) in
      CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")])) in
-     let: "$v2" := (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go (![go.PointerType raftpb.Message] "m"))) in
-     CompositeLiteral logSlice (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "prev"%go)) (ElementExpression entryID "$v1"); KeyedElement (Some (KeyField "entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v2")]))).
+     let: "$v2" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m"))) in
+     CompositeLiteral logSlice (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "prev"%go)) (ElementExpression entryID "$v1"); KeyedElement (Some (KeyField "entries"%go)) (ElementExpression (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "$v2")]))).
 
 (* go: raft.go:1778:16 *)
 Definition raft__handleAppendEntriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "m" := (GoAlloc raftpb.Message "m") in
+    let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "m") in
     let: "a" := (GoAlloc logSlice (GoZeroVal logSlice #())) in
     let: "$r0" := (let: "$a0" := "m" in
     (FuncResolve logSliceFromMsgApp [] #()) "$a0") in
     do:  ("a" <-[logSlice] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef entryID "index"%go (StructFieldRef logSlice "prev"%go "a"))) <⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))))
     then
-      do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
-      let: "$v1" := raftpb.MsgAppResp in
+      do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
+      let: "$v1" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgAppResp in
       let: "$v2" := (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
-      CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2")])) in
+      CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2")])) in
       (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
       return: (#())
     else do:  #());;;
     (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "mlastIndex" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![logSlice] "a") in
-    let: "$a1" := (![go.uint64] (StructFieldRef raftpb.Message "Commit"%go "m")) in
+    let: "$a1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Commit"%go "m")) in
     (MethodResolve (go.PointerType raftLog) "maybeAppend"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -4902,46 +4902,46 @@ Definition raft__handleAppendEntriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
     do:  ("ok" <-[go.bool] "$r1");;;
     (if: ![go.bool] "ok"
     then
-      do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
-      let: "$v1" := raftpb.MsgAppResp in
+      do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
+      let: "$v1" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgAppResp in
       let: "$v2" := (![go.uint64] "mlastIndex") in
-      CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2")])) in
+      CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2")])) in
       (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
       return: (#())
     else do:  #()));;;
     do:  (let: "$a0" := #"%x [logterm: %d, index: %d] rejected MsgApp [logterm: %d, index: %d] from %x"%go in
     let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-    let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (let: ("$ret0", "$ret1") := ((let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")) in
+    let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (let: ("$ret0", "$ret1") := ((let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m")) in
     (MethodResolve (go.PointerType raftLog) "term"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0")) in
     let: "$a0" := "$ret0" in
     let: "$a1" := "$ret1" in
     (MethodResolve (go.PointerType raftLog) "zeroTermOnOutOfBounds"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0" "$a1")) in
-    let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m"))) in
-    let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go "m"))) in
-    let: "$sl4" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m"))) in
-    let: "$sl5" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) in
+    let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m"))) in
+    let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "LogTerm"%go "m"))) in
+    let: "$sl4" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m"))) in
+    let: "$sl5" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) in
     CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl4"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl5")]))) in
     (MethodResolve Logger "Debugf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
     let: "hintIndex" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")) in
+    let: "$r0" := (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m")) in
     let: "$a1" := ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
     (FuncResolve go.min [go.uint64; go.uint64] #()) "$a0" "$a1") in
     do:  ("hintIndex" <-[go.uint64] "$r0");;;
     let: "hintTerm" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![go.uint64] "hintIndex") in
-    let: "$a1" := (![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go "m")) in
+    let: "$a1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "LogTerm"%go "m")) in
     (MethodResolve (go.PointerType raftLog) "findConflictByTerm"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("hintIndex" <-[go.uint64] "$r0");;;
     do:  ("hintTerm" <-[go.uint64] "$r1");;;
-    do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
-    let: "$v1" := raftpb.MsgAppResp in
-    let: "$v2" := (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")) in
+    do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
+    let: "$v1" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgAppResp in
+    let: "$v2" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m")) in
     let: "$v3" := #true in
     let: "$v4" := (![go.uint64] "hintIndex") in
     let: "$v5" := (![go.uint64] "hintTerm") in
-    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool "$v3"); KeyedElement (Some (KeyField "RejectHint"%go)) (ElementExpression go.uint64 "$v4"); KeyedElement (Some (KeyField "LogTerm"%go)) (ElementExpression go.uint64 "$v5")])) in
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool "$v3"); KeyedElement (Some (KeyField "RejectHint"%go)) (ElementExpression go.uint64 "$v4"); KeyedElement (Some (KeyField "LogTerm"%go)) (ElementExpression go.uint64 "$v5")])) in
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
     return: #()).
 
@@ -4949,13 +4949,13 @@ Definition raft__handleAppendEntriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
 Definition raft__handleHeartbeatⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "m" := (GoAlloc raftpb.Message "m") in
-    do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "Commit"%go "m")) in
+    let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "m") in
+    do:  (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Commit"%go "m")) in
     (MethodResolve (go.PointerType raftLog) "commitTo"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0");;;
-    do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
-    let: "$v1" := raftpb.MsgHeartbeatResp in
-    let: "$v2" := (![go.SliceType go.byte] (StructFieldRef raftpb.Message "Context"%go "m")) in
-    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Context"%go)) (ElementExpression (go.SliceType go.byte) "$v2")])) in
+    do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
+    let: "$v1" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgHeartbeatResp in
+    let: "$v2" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Context"%go "m")) in
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Context"%go)) (ElementExpression (go.SliceType go.byte) "$v2")])) in
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
     return: #()).
 
@@ -4963,20 +4963,20 @@ Definition raft__handleHeartbeatⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
 Definition raft__handleSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "m" := (GoAlloc raftpb.Message "m") in
-    let: "s" := (GoAlloc raftpb.Snapshot (GoZeroVal raftpb.Snapshot #())) in
-    (if: Convert go.untyped_bool go.bool ((![go.PointerType raftpb.Snapshot] (StructFieldRef raftpb.Message "Snapshot"%go "m")) ≠⟨go.PointerType raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType raftpb.Snapshot) UntypedNil))
+    let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "m") in
+    let: "s" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot #())) in
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Snapshot"%go "m")) ≠⟨go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) UntypedNil))
     then
-      let: "$r0" := (![raftpb.Snapshot] (![go.PointerType raftpb.Snapshot] (StructFieldRef raftpb.Message "Snapshot"%go "m"))) in
-      do:  ("s" <-[raftpb.Snapshot] "$r0")
+      let: "$r0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Snapshot"%go "m"))) in
+      do:  ("s" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "$r0")
     else do:  #());;;
     let: "sterm" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "sindex" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "s"))) in
-    let: "$r1" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Term"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "s"))) in
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "s"))) in
+    let: "$r1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Term"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "s"))) in
     do:  ("sindex" <-[go.uint64] "$r0");;;
     do:  ("sterm" <-[go.uint64] "$r1");;;
-    (if: let: "$a0" := (![raftpb.Snapshot] "s") in
+    (if: let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "s") in
     (MethodResolve (go.PointerType raft) "restore"%go (![go.PointerType raft] "r")) "$a0"
     then
       do:  (let: "$a0" := #"%x [commit: %d] restored snapshot [index: %d, term: %d]"%go in
@@ -4986,10 +4986,10 @@ Definition raft__handleSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
       let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] "sterm")) in
       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3")]))) in
       (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-      do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
-      let: "$v1" := raftpb.MsgAppResp in
+      do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
+      let: "$v1" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgAppResp in
       let: "$v2" := ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
-      CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2")])) in
+      CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2")])) in
       (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0")
     else
       do:  (let: "$a0" := #"%x [commit: %d] ignored snapshot [index: %d, term: %d]"%go in
@@ -4999,10 +4999,10 @@ Definition raft__handleSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
       let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] "sterm")) in
       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3")]))) in
       (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-      do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
-      let: "$v1" := raftpb.MsgAppResp in
+      do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
+      let: "$v1" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgAppResp in
       let: "$v2" := (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
-      CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2")])) in
+      CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2")])) in
       (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0"));;;
     return: #()).
 
@@ -5014,8 +5014,8 @@ Definition raft__handleSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
 Definition raft__restoreⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "s",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "s" := (GoAlloc raftpb.Snapshot "s") in
-    (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "s"))) ≤⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))))
+    let: "s" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "s") in
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "s"))) ≤⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))))
     then return: (#false)
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((![StateType] (StructFieldRef raft "state"%go (![go.PointerType raft] "r"))) ≠⟨StateType⟩ StateFollower)
@@ -5032,12 +5032,12 @@ Definition raft__restoreⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     let: "found" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #false in
     do:  ("found" <-[go.bool] "$r0");;;
-    let: "cs" := (GoAlloc raftpb.ConfState (GoZeroVal raftpb.ConfState #())) in
-    let: "$r0" := (![raftpb.ConfState] (StructFieldRef raftpb.SnapshotMetadata "ConfState"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "s"))) in
-    do:  ("cs" <-[raftpb.ConfState] "$r0");;;
-    let: "$range" := (let: "$v0" := (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "Voters"%go "cs")) in
-    let: "$v1" := (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "Learners"%go "cs")) in
-    let: "$v2" := (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "VotersOutgoing"%go "cs")) in
+    let: "cs" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState #())) in
+    let: "$r0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "ConfState"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "s"))) in
+    do:  ("cs" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "$r0");;;
+    let: "$range" := (let: "$v0" := (![go.SliceType go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState "Voters"%go "cs")) in
+    let: "$v1" := (![go.SliceType go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState "Learners"%go "cs")) in
+    let: "$v2" := (![go.SliceType go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState "VotersOutgoing"%go "cs")) in
     CompositeLiteral (go.SliceType (go.SliceType go.uint64)) (LiteralValue [KeyedElement None (ElementExpression (go.SliceType go.uint64) "$v0"); KeyedElement None (ElementExpression (go.SliceType go.uint64) "$v1"); KeyedElement None (ElementExpression (go.SliceType go.uint64) "$v2")])) in
     (let: "set" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     slice.for_range (go.SliceType go.uint64) "$range" (λ: "$key" "$value",
@@ -5061,14 +5061,14 @@ Definition raft__restoreⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     then
       do:  (let: "$a0" := #"%x attempted to restore snapshot but it is not in the ConfState %v; should never happen"%go in
       let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-      let: "$sl1" := (Convert raftpb.ConfState (go.InterfaceType []) (![raftpb.ConfState] "cs")) in
+      let: "$sl1" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState (go.InterfaceType []) (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "cs")) in
       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1")]))) in
       (MethodResolve Logger "Warningf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
       return: (#false)
     else do:  #());;;
     let: "id" := (GoAlloc entryID (GoZeroVal entryID #())) in
-    let: "$r0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Term"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "s"))) in
-    let: "$v1" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "s"))) in
+    let: "$r0" := (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Term"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "s"))) in
+    let: "$v1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "s"))) in
     CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")])) in
     do:  ("id" <-[entryID] "$r0");;;
     (if: let: "$a0" := (![entryID] "id") in
@@ -5086,43 +5086,43 @@ Definition raft__restoreⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       let: "$sl5" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef entryID "term"%go "id"))) in
       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl4"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl5")]))) in
       (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-      do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "s"))) in
+      do:  (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "s"))) in
       (MethodResolve (go.PointerType raftLog) "commitTo"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0");;;
       return: (#false)
     else do:  #());;;
-    do:  (let: "$a0" := (![raftpb.Snapshot] "s") in
+    do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "s") in
     (MethodResolve (go.PointerType raftLog) "restore"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0");;;
-    let: "$r0" := (let: "$a0" := (![go.int] (StructFieldRef tracker.ProgressTracker "MaxInflight"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) in
-    let: "$a1" := (![go.uint64] (StructFieldRef tracker.ProgressTracker "MaxInflightBytes"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) in
-    (FuncResolve tracker.MakeProgressTracker [] #()) "$a0" "$a1") in
-    do:  ((StructFieldRef raft "trk"%go (![go.PointerType raft] "r")) <-[tracker.ProgressTracker] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.int] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "MaxInflight"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) in
+    let: "$a1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "MaxInflightBytes"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) in
+    (FuncResolve code.go_etcd_io.raft.v3.tracker.tracker.MakeProgressTracker [] #()) "$a0" "$a1") in
+    do:  ((StructFieldRef raft "trk"%go (![go.PointerType raft] "r")) <-[code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker] "$r0");;;
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "trk" := (GoAlloc tracker.ProgressMap (GoZeroVal tracker.ProgressMap #())) in
-    let: "cfg" := (GoAlloc tracker.Config (GoZeroVal tracker.Config #())) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (let: "$v0" := (![tracker.ProgressTracker] (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) in
+    let: "trk" := (GoAlloc code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap (GoZeroVal code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap #())) in
+    let: "cfg" := (GoAlloc code.go_etcd_io.raft.v3.tracker.tracker.Config (GoZeroVal code.go_etcd_io.raft.v3.tracker.tracker.Config #())) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (let: "$v0" := (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker] (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) in
     let: "$v1" := ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
-    CompositeLiteral confchange.Changer (LiteralValue [KeyedElement (Some (KeyField "Tracker"%go)) (ElementExpression tracker.ProgressTracker "$v0"); KeyedElement (Some (KeyField "LastIndex"%go)) (ElementExpression go.uint64 "$v1")])) in
-    let: "$a1" := (![raftpb.ConfState] "cs") in
-    (FuncResolve confchange.Restore [] #()) "$a0" "$a1") in
+    CompositeLiteral code.go_etcd_io.raft.v3.confchange.confchange.Changer (LiteralValue [KeyedElement (Some (KeyField "Tracker"%go)) (ElementExpression code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "$v0"); KeyedElement (Some (KeyField "LastIndex"%go)) (ElementExpression go.uint64 "$v1")])) in
+    let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "cs") in
+    (FuncResolve code.go_etcd_io.raft.v3.confchange.confchange.Restore [] #()) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("cfg" <-[tracker.Config] "$r0");;;
-    do:  ("trk" <-[tracker.ProgressMap] "$r1");;;
+    do:  ("cfg" <-[code.go_etcd_io.raft.v3.tracker.tracker.Config] "$r0");;;
+    do:  ("trk" <-[code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] "$r1");;;
     do:  ("err" <-[go.error] "$r2");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) (let: "$a0" := #"unable to restore config %+v: %s"%go in
-      let: "$a1" := ((let: "$sl0" := (Convert raftpb.ConfState go.any (![raftpb.ConfState] "cs")) in
+      let: "$a1" := ((let: "$sl0" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState go.any (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "cs")) in
       let: "$sl1" := (Convert go.error go.any (![go.error] "err")) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1")]))) in
-      (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1")) in
+      (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1")) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     do:  (let: "$a0" := (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r"))) in
-    let: "$a1" := (![raftpb.ConfState] "cs") in
-    let: "$a2" := (let: "$a0" := (![tracker.Config] "cfg") in
-    let: "$a1" := (![tracker.ProgressMap] "trk") in
+    let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "cs") in
+    let: "$a2" := (let: "$a0" := (![code.go_etcd_io.raft.v3.tracker.tracker.Config] "cfg") in
+    let: "$a1" := (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] "trk") in
     (MethodResolve (go.PointerType raft) "switchToConfig"%go (![go.PointerType raft] "r")) "$a0" "$a1") in
     (FuncResolve assertConfStatesEquivalent [] #()) "$a0" "$a1" "$a2");;;
     let: "last" := (GoAlloc entryID (GoZeroVal entryID #())) in
@@ -5146,33 +5146,33 @@ Definition raft__restoreⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 Definition raft__promotableⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "pr" := (GoAlloc (go.PointerType tracker.Progress) (GoZeroVal (go.PointerType tracker.Progress) #())) in
-    let: "$r0" := (map.lookup1 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-    do:  ("pr" <-[go.PointerType tracker.Progress] "$r0");;;
-    return: ((((![go.PointerType tracker.Progress] "pr") ≠⟨go.PointerType tracker.Progress⟩ (Convert go.untyped_nil (go.PointerType tracker.Progress) UntypedNil)) && (⟨go.bool⟩! (![go.bool] (StructFieldRef tracker.Progress "IsLearner"%go (![go.PointerType tracker.Progress] "pr"))))) && (⟨go.bool⟩! ((MethodResolve (go.PointerType raftLog) "hasNextOrInProgressSnapshot"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #())))).
+    let: "pr" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (GoZeroVal (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) #())) in
+    let: "$r0" := (map.lookup1 go.uint64 (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
+    do:  ("pr" <-[go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "$r0");;;
+    return: ((((![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr") ≠⟨go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) UntypedNil)) && (⟨go.bool⟩! (![go.bool] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "IsLearner"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))))) && (⟨go.bool⟩! ((MethodResolve (go.PointerType raftLog) "hasNextOrInProgressSnapshot"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #())))).
 
 (* go: raft.go:1939:16 *)
 Definition raft__applyConfChangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "cc",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "cc" := (GoAlloc raftpb.ConfChangeV2 "cc") in
+    let: "cc" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2 "cc") in
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "trk" := (GoAlloc tracker.ProgressMap (GoZeroVal tracker.ProgressMap #())) in
-    let: "cfg" := (GoAlloc tracker.Config (GoZeroVal tracker.Config #())) in
+    let: "trk" := (GoAlloc code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap (GoZeroVal code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap #())) in
+    let: "cfg" := (GoAlloc code.go_etcd_io.raft.v3.tracker.tracker.Config (GoZeroVal code.go_etcd_io.raft.v3.tracker.tracker.Config #())) in
     let: (("$ret0", "$ret1"), "$ret2") := ((λ: <>,
-      exception_do (let: "changer" := (GoAlloc confchange.Changer (GoZeroVal confchange.Changer #())) in
-      let: "$r0" := (let: "$v0" := (![tracker.ProgressTracker] (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) in
+      exception_do (let: "changer" := (GoAlloc code.go_etcd_io.raft.v3.confchange.confchange.Changer (GoZeroVal code.go_etcd_io.raft.v3.confchange.confchange.Changer #())) in
+      let: "$r0" := (let: "$v0" := (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker] (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) in
       let: "$v1" := ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
-      CompositeLiteral confchange.Changer (LiteralValue [KeyedElement (Some (KeyField "Tracker"%go)) (ElementExpression tracker.ProgressTracker "$v0"); KeyedElement (Some (KeyField "LastIndex"%go)) (ElementExpression go.uint64 "$v1")])) in
-      do:  ("changer" <-[confchange.Changer] "$r0");;;
-      (if: (MethodResolve (go.PointerType raftpb.ConfChangeV2) "LeaveJoint"%go "cc") #()
+      CompositeLiteral code.go_etcd_io.raft.v3.confchange.confchange.Changer (LiteralValue [KeyedElement (Some (KeyField "Tracker"%go)) (ElementExpression code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "$v0"); KeyedElement (Some (KeyField "LastIndex"%go)) (ElementExpression go.uint64 "$v1")])) in
+      do:  ("changer" <-[code.go_etcd_io.raft.v3.confchange.confchange.Changer] "$r0");;;
+      (if: (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2) "LeaveJoint"%go "cc") #()
       then
-        let: (("$ret0", "$ret1"), "$ret2") := (((MethodResolve (go.PointerType confchange.Changer) "LeaveJoint"%go "changer") #())) in
+        let: (("$ret0", "$ret1"), "$ret2") := (((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.confchange.confchange.Changer) "LeaveJoint"%go "changer") #())) in
         return: ("$ret0", "$ret1", "$ret2")
       else
         (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
         let: "autoLeave" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-        let: ("$ret0", "$ret1") := ((MethodResolve (go.PointerType raftpb.ConfChangeV2) "EnterJoint"%go "cc") #()) in
+        let: ("$ret0", "$ret1") := ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2) "EnterJoint"%go "cc") #()) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("autoLeave" <-[go.bool] "$r0");;;
@@ -5180,27 +5180,27 @@ Definition raft__applyConfChangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
         (if: ![go.bool] "ok"
         then
           let: (("$ret0", "$ret1"), "$ret2") := ((let: "$a0" := (![go.bool] "autoLeave") in
-          let: "$a1" := (![go.SliceType raftpb.ConfChangeSingle] (StructFieldRef raftpb.ConfChangeV2 "Changes"%go "cc")) in
-          (MethodResolve (go.PointerType confchange.Changer) "EnterJoint"%go "changer") "$a0" "$a1")) in
+          let: "$a1" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeSingle] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2 "Changes"%go "cc")) in
+          (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.confchange.confchange.Changer) "EnterJoint"%go "changer") "$a0" "$a1")) in
           return: ("$ret0", "$ret1", "$ret2")
         else do:  #())));;;
-      let: (("$ret0", "$ret1"), "$ret2") := ((let: "$a0" := (![go.SliceType raftpb.ConfChangeSingle] (StructFieldRef raftpb.ConfChangeV2 "Changes"%go "cc")) in
-      (MethodResolve (go.PointerType confchange.Changer) "Simple"%go "changer") "$a0")) in
+      let: (("$ret0", "$ret1"), "$ret2") := ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeSingle] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2 "Changes"%go "cc")) in
+      (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.confchange.confchange.Changer) "Simple"%go "changer") "$a0")) in
       return: ("$ret0", "$ret1", "$ret2"))
       ) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("cfg" <-[tracker.Config] "$r0");;;
-    do:  ("trk" <-[tracker.ProgressMap] "$r1");;;
+    do:  ("cfg" <-[code.go_etcd_io.raft.v3.tracker.tracker.Config] "$r0");;;
+    do:  ("trk" <-[code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] "$r1");;;
     do:  ("err" <-[go.error] "$r2");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       do:  (let: "$a0" := (Convert go.error (go.InterfaceType []) (![go.error] "err")) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    return: (let: "$a0" := (![tracker.Config] "cfg") in
-     let: "$a1" := (![tracker.ProgressMap] "trk") in
+    return: (let: "$a0" := (![code.go_etcd_io.raft.v3.tracker.tracker.Config] "cfg") in
+     let: "$a1" := (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] "trk") in
      (MethodResolve (go.PointerType raft) "switchToConfig"%go (![go.PointerType raft] "r")) "$a0" "$a1")).
 
 (* switchToConfig reconfigures this node to use the provided configuration. It
@@ -5214,31 +5214,31 @@ Definition raft__applyConfChangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
 Definition raft__switchToConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "cfg" "trk",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "trk" := (GoAlloc tracker.ProgressMap "trk") in
-    let: "cfg" := (GoAlloc tracker.Config "cfg") in
-    do:  (let: "$a0" := (![tracker.Config] "cfg") in
+    let: "trk" := (GoAlloc code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap "trk") in
+    let: "cfg" := (GoAlloc code.go_etcd_io.raft.v3.tracker.tracker.Config "cfg") in
+    do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.tracker.tracker.Config] "cfg") in
     let: "$a1" := (![go.PointerType raft] "r") in
     (FuncResolve traceConfChangeEvent [] #()) "$a0" "$a1");;;
-    let: "$r0" := (![tracker.Config] "cfg") in
-    do:  ((StructFieldRef tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) <-[tracker.Config] "$r0");;;
-    let: "$r0" := (![tracker.ProgressMap] "trk") in
-    do:  ((StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) <-[tracker.ProgressMap] "$r0");;;
+    let: "$r0" := (![code.go_etcd_io.raft.v3.tracker.tracker.Config] "cfg") in
+    do:  ((StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) <-[code.go_etcd_io.raft.v3.tracker.tracker.Config] "$r0");;;
+    let: "$r0" := (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] "trk") in
+    do:  ((StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) <-[code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] "$r0");;;
     do:  (let: "$a0" := #"%x switched to configuration %s"%go in
     let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-    let: "$sl1" := (Convert tracker.Config (go.InterfaceType []) (![tracker.Config] (StructFieldRef tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) in
+    let: "$sl1" := (Convert code.go_etcd_io.raft.v3.tracker.tracker.Config (go.InterfaceType []) (![code.go_etcd_io.raft.v3.tracker.tracker.Config] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) in
     CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1")]))) in
     (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-    let: "cs" := (GoAlloc raftpb.ConfState (GoZeroVal raftpb.ConfState #())) in
-    let: "$r0" := ((MethodResolve (go.PointerType tracker.ProgressTracker) "ConfState"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #()) in
-    do:  ("cs" <-[raftpb.ConfState] "$r0");;;
+    let: "cs" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState #())) in
+    let: "$r0" := ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker) "ConfState"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #()) in
+    do:  ("cs" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "$r0");;;
     let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "pr" := (GoAlloc (go.PointerType tracker.Progress) (GoZeroVal (go.PointerType tracker.Progress) #())) in
-    let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
+    let: "pr" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (GoZeroVal (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) #())) in
+    let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("pr" <-[go.PointerType tracker.Progress] "$r0");;;
+    do:  ("pr" <-[go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
-    let: "$r0" := ((![go.bool] "ok") && (![go.bool] (StructFieldRef tracker.Progress "IsLearner"%go (![go.PointerType tracker.Progress] "pr")))) in
+    let: "$r0" := ((![go.bool] "ok") && (![go.bool] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "IsLearner"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")))) in
     do:  ((StructFieldRef raft "isLearner"%go (![go.PointerType raft] "r")) <-[go.bool] "$r0");;;
     (if: ((⟨go.bool⟩! (![go.bool] "ok")) || (![go.bool] (StructFieldRef raft "isLearner"%go (![go.PointerType raft] "r")))) && ((![StateType] (StructFieldRef raft "state"%go (![go.PointerType raft] "r"))) =⟨StateType⟩ StateLeader)
     then
@@ -5248,11 +5248,11 @@ Definition raft__switchToConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
         let: "$a1" := None' in
         (MethodResolve (go.PointerType raft) "becomeFollower"%go (![go.PointerType raft] "r")) "$a0" "$a1")
       else do:  #());;;
-      return: (![raftpb.ConfState] "cs")
+      return: (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "cs")
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool (((![StateType] (StructFieldRef raft "state"%go (![go.PointerType raft] "r"))) ≠⟨StateType⟩ StateLeader) || ((let: "$a0" := (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "Voters"%go "cs")) in
+    (if: Convert go.untyped_bool go.bool (((![StateType] (StructFieldRef raft "state"%go (![go.PointerType raft] "r"))) ≠⟨StateType⟩ StateLeader) || ((let: "$a0" := (![go.SliceType go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState "Voters"%go "cs")) in
     (FuncResolve go.len [go.SliceType go.uint64] #()) "$a0") =⟨go.int⟩ #(W64 0)))
-    then return: (![raftpb.ConfState] "cs")
+    then return: (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "cs")
     else do:  #());;;
     (if: (MethodResolve (go.PointerType raft) "maybeCommit"%go (![go.PointerType raft] "r")) #()
     then do:  ((MethodResolve (go.PointerType raft) "bcastAppend"%go (![go.PointerType raft] "r")) #())
@@ -5267,11 +5267,11 @@ Definition raft__switchToConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
         (MethodResolve (go.PointerType raft) "maybeSendAppend"%go (![go.PointerType raft] "r")) "$a0" "$a1");;;
         return: #())
         ) in
-      (MethodResolve (go.PointerType tracker.ProgressTracker) "Visit"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) "$a0"));;;
+      (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker) "Visit"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) "$a0"));;;
     (let: "tOK" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 (go.StructType [
 
-    ]) ((MethodResolve (go.PointerType quorum.JointConfig) "IDs"%go (StructFieldRef tracker.Config "Voters"%go (StructFieldRef tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) #()) (![go.uint64] (StructFieldRef raft "leadTransferee"%go (![go.PointerType raft] "r")))) in
+    ]) ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.quorum.quorum.JointConfig) "IDs"%go (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Config "Voters"%go (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))))) #()) (![go.uint64] (StructFieldRef raft "leadTransferee"%go (![go.PointerType raft] "r")))) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
@@ -5279,28 +5279,28 @@ Definition raft__switchToConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     (if: (⟨go.bool⟩! (![go.bool] "tOK")) && ((![go.uint64] (StructFieldRef raft "leadTransferee"%go (![go.PointerType raft] "r"))) ≠⟨go.uint64⟩ #(W64 0))
     then do:  ((MethodResolve (go.PointerType raft) "abortLeaderTransfer"%go (![go.PointerType raft] "r")) #())
     else do:  #()));;;
-    return: (![raftpb.ConfState] "cs")).
+    return: (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "cs")).
 
 (* go: raft.go:2025:16 *)
 Definition raft__loadStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "state",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "state" := (GoAlloc raftpb.HardState "state") in
-    (if: Convert go.untyped_bool go.bool (((![go.uint64] (StructFieldRef raftpb.HardState "Commit"%go "state")) <⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))))) || ((![go.uint64] (StructFieldRef raftpb.HardState "Commit"%go "state")) >⟨go.uint64⟩ ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #())))
+    let: "state" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "state") in
+    (if: Convert go.untyped_bool go.bool (((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Commit"%go "state")) <⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))))) || ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Commit"%go "state")) >⟨go.uint64⟩ ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #())))
     then
       do:  (let: "$a0" := #"%x state.commit %d is out of range [%d, %d]"%go in
       let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-      let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.HardState "Commit"%go "state"))) in
+      let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Commit"%go "state"))) in
       let: "$sl2" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))))) in
       let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #())) in
       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3")]))) in
       (MethodResolve Logger "Panicf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1")
     else do:  #());;;
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.HardState "Commit"%go "state")) in
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Commit"%go "state")) in
     do:  ((StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) <-[go.uint64] "$r0");;;
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.HardState "Term"%go "state")) in
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Term"%go "state")) in
     do:  ((StructFieldRef raft "Term"%go (![go.PointerType raft] "r")) <-[go.uint64] "$r0");;;
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.HardState "Vote"%go "state")) in
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Vote"%go "state")) in
     do:  ((StructFieldRef raft "Vote"%go (![go.PointerType raft] "r")) <-[go.uint64] "$r0");;;
     return: #()).
 
@@ -5329,8 +5329,8 @@ Definition raft__sendTimeoutNowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
     let: "to" := (GoAlloc go.uint64 "to") in
     do:  (let: "$a0" := (let: "$v0" := (![go.uint64] "to") in
-    let: "$v1" := raftpb.MsgTimeoutNow in
-    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1")])) in
+    let: "$v1" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgTimeoutNow in
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v1")])) in
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
     return: #()).
 
@@ -5362,23 +5362,23 @@ Definition raft__responseToReadIndexReqⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
   λ: "r" "req" "readIndex",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
     let: "readIndex" := (GoAlloc go.uint64 "readIndex") in
-    let: "req" := (GoAlloc raftpb.Message "req") in
-    (if: Convert go.untyped_bool go.bool (((![go.uint64] (StructFieldRef raftpb.Message "From"%go "req")) =⟨go.uint64⟩ None') || ((![go.uint64] (StructFieldRef raftpb.Message "From"%go "req")) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))))
+    let: "req" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "req") in
+    (if: Convert go.untyped_bool go.bool (((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "req")) =⟨go.uint64⟩ None') || ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "req")) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))))
     then
       let: "$r0" := (let: "$a0" := (![go.SliceType ReadState] (StructFieldRef raft "readStates"%go (![go.PointerType raft] "r"))) in
       let: "$a1" := ((let: "$sl0" := (let: "$v0" := (![go.uint64] "readIndex") in
-      let: "$v1" := (![go.SliceType go.byte] (StructFieldRef raftpb.Entry "Data"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "req"), #(W64 0))))) in
+      let: "$v1" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Data"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "req"), #(W64 0))))) in
       CompositeLiteral ReadState (LiteralValue [KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "RequestCtx"%go)) (ElementExpression (go.SliceType go.byte) "$v1")])) in
       CompositeLiteral (go.SliceType ReadState) (LiteralValue [KeyedElement None (ElementExpression ReadState "$sl0")]))) in
       (FuncResolve go.append [go.SliceType ReadState] #()) "$a0" "$a1") in
       do:  ((StructFieldRef raft "readStates"%go (![go.PointerType raft] "r")) <-[go.SliceType ReadState] "$r0");;;
-      return: (CompositeLiteral raftpb.Message (LiteralValue []))
+      return: (CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue []))
     else do:  #());;;
-    return: (let: "$v0" := raftpb.MsgReadIndexResp in
-     let: "$v1" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "req")) in
+    return: (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgReadIndexResp in
+     let: "$v1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "req")) in
      let: "$v2" := (![go.uint64] "readIndex") in
-     let: "$v3" := (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "req")) in
-     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v3")]))).
+     let: "$v3" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "req")) in
+     CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "$v3")]))).
 
 (* increaseUncommittedSize computes the size of the proposed entries and
    determines whether they would push leader over its maxUncommittedSize limit.
@@ -5393,9 +5393,9 @@ Definition raft__responseToReadIndexReqⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
 Definition raft__increaseUncommittedSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "ents",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) "ents") in
+    let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "ents") in
     let: "s" := (GoAlloc entryPayloadSize (GoZeroVal entryPayloadSize #())) in
-    let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
     (FuncResolve payloadsSize [] #()) "$a0") in
     do:  ("s" <-[entryPayloadSize] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((((![entryPayloadSize] (StructFieldRef raft "uncommittedSize"%go (![go.PointerType raft] "r"))) >⟨entryPayloadSize⟩ #(W64 0)) && ((![entryPayloadSize] "s") >⟨entryPayloadSize⟩ #(W64 0))) && (((![entryPayloadSize] (StructFieldRef raft "uncommittedSize"%go (![go.PointerType raft] "r"))) +⟨entryPayloadSize⟩ (![entryPayloadSize] "s")) >⟨entryPayloadSize⟩ (![entryPayloadSize] (StructFieldRef raft "maxUncommittedSize"%go (![go.PointerType raft] "r")))))
@@ -5423,8 +5423,8 @@ Definition raft__reduceUncommittedSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
 Definition releasePendingReadIndexMessagesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef raft "pendingReadIndexMessages"%go (![go.PointerType raft] "r"))) in
-    (FuncResolve go.len [go.SliceType raftpb.Message] #()) "$a0") =⟨go.int⟩ #(W64 0))
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef raft "pendingReadIndexMessages"%go (![go.PointerType raft] "r"))) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0") =⟨go.int⟩ #(W64 0))
     then return: (#())
     else do:  #());;;
     (if: (⟨go.bool⟩! ((MethodResolve (go.PointerType raft) "committedEntryInCurrentTerm"%go (![go.PointerType raft] "r")) #()))
@@ -5434,31 +5434,31 @@ Definition releasePendingReadIndexMessagesⁱᵐᵖˡ {ext : ffi_syntax} {go_gct
       (MethodResolve Logger "Error"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0");;;
       return: (#())
     else do:  #());;;
-    let: "msgs" := (GoAlloc (go.SliceType raftpb.Message) (GoZeroVal (go.SliceType raftpb.Message) #())) in
-    let: "$r0" := (![go.SliceType raftpb.Message] (StructFieldRef raft "pendingReadIndexMessages"%go (![go.PointerType raft] "r"))) in
-    do:  ("msgs" <-[go.SliceType raftpb.Message] "$r0");;;
-    let: "$r0" := (Convert go.untyped_nil (go.SliceType raftpb.Message) UntypedNil) in
-    do:  ((StructFieldRef raft "pendingReadIndexMessages"%go (![go.PointerType raft] "r")) <-[go.SliceType raftpb.Message] "$r0");;;
-    let: "$range" := (![go.SliceType raftpb.Message] "msgs") in
-    (let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-    slice.for_range raftpb.Message "$range" (λ: "$key" "$value",
-      do:  ("m" <-[raftpb.Message] "$value");;;
+    let: "msgs" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) (GoZeroVal (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) #())) in
+    let: "$r0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef raft "pendingReadIndexMessages"%go (![go.PointerType raft] "r"))) in
+    do:  ("msgs" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
+    let: "$r0" := (Convert go.untyped_nil (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) UntypedNil) in
+    do:  ((StructFieldRef raft "pendingReadIndexMessages"%go (![go.PointerType raft] "r")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
+    let: "$range" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "msgs") in
+    (let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
+    slice.for_range code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$range" (λ: "$key" "$value",
+      do:  ("m" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$value");;;
       do:  "$key";;;
       do:  (let: "$a0" := (![go.PointerType raft] "r") in
-      let: "$a1" := (![raftpb.Message] "m") in
+      let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
       (FuncResolve sendMsgReadIndexResponse [] #()) "$a0" "$a1")));;;
     return: #()).
 
 (* go: raft.go:2134:6 *)
 Definition sendMsgReadIndexResponseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "m",
-    exception_do (let: "m" := (GoAlloc raftpb.Message "m") in
+    exception_do (let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "m") in
     let: "r" := (GoAlloc (go.PointerType raft) "r") in
     let: "$sw" := (![ReadOnlyOption] (StructFieldRef readOnly "option"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r"))))) in
     (if: "$sw" =⟨ReadOnlyOption⟩ ReadOnlySafe
     then
       do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
-      let: "$a1" := (![raftpb.Message] "m") in
+      let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
       (MethodResolve (go.PointerType readOnly) "addRequest"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
       do:  (let: "$a0" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
       let: "$a1" := ((MethodResolve (go.PointerType readOnly) "heartbeatCtx"%go (![go.PointerType readOnly] (StructFieldRef raft "readOnly"%go (![go.PointerType raft] "r")))) #()) in
@@ -5467,14 +5467,14 @@ Definition sendMsgReadIndexResponseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
     else
       (if: "$sw" =⟨ReadOnlyOption⟩ ReadOnlyLeaseBased
       then
-        (let: "resp" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-        let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
+        (let: "resp" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
+        let: "$r0" := (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
         let: "$a1" := (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
         (MethodResolve (go.PointerType raft) "responseToReadIndexReq"%go (![go.PointerType raft] "r")) "$a0" "$a1") in
-        do:  ("resp" <-[raftpb.Message] "$r0");;;
-        (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.Message "To"%go "resp")) ≠⟨go.uint64⟩ None')
+        do:  ("resp" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
+        (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "To"%go "resp")) ≠⟨go.uint64⟩ None')
         then
-          do:  (let: "$a0" := (![raftpb.Message] "resp") in
+          do:  (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "resp") in
           (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0")
         else do:  #()))
       else do:  #()));;;
@@ -5508,7 +5508,7 @@ Definition NewRawNodeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "$r0" := "ss" in
     do:  ((StructFieldRef RawNode "prevSoftSt"%go (![go.PointerType RawNode] "rn")) <-[go.PointerType SoftState] "$r0");;;
     let: "$r0" := ((MethodResolve (go.PointerType raft) "hardState"%go (![go.PointerType raft] "r")) #()) in
-    do:  ((StructFieldRef RawNode "prevHardSt"%go (![go.PointerType RawNode] "rn")) <-[raftpb.HardState] "$r0");;;
+    do:  ((StructFieldRef RawNode "prevHardSt"%go (![go.PointerType RawNode] "rn")) <-[code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "$r0");;;
     return: (![go.PointerType RawNode] "rn", Convert go.untyped_nil go.error UntypedNil)).
 
 (* Tick advances the internal logical clock by a single tick.
@@ -5544,8 +5544,8 @@ Definition RawNode__TickQuiescedⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
 Definition RawNode__Campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "rn" <>,
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
-    return: (let: "$a0" := (let: "$v0" := raftpb.MsgHup in
-     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0")])) in
+    return: (let: "$a0" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgHup in
+     CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0")])) in
      (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0")).
 
 (* Propose proposes data be appended to the raft log.
@@ -5555,11 +5555,11 @@ Definition RawNode__Proposeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
   λ: "rn" "data",
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
     let: "data" := (GoAlloc (go.SliceType go.byte) "data") in
-    return: (let: "$a0" := (let: "$v0" := raftpb.MsgProp in
+    return: (let: "$a0" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgProp in
      let: "$v1" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn"))))) in
      let: "$v2" := (let: "$v0" := (![go.SliceType go.byte] "data") in
-     CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v0")])])) in
-     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v2")])) in
+     CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v0")])])) in
+     CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "$v2")])) in
      (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0")).
 
 (* ProposeConfChange proposes a config change. See (Node).ProposeConfChange for
@@ -5569,19 +5569,19 @@ Definition RawNode__Proposeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
 Definition RawNode__ProposeConfChangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "rn" "cc",
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
-    let: "cc" := (GoAlloc raftpb.ConfChangeI "cc") in
+    let: "cc" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI "cc") in
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![raftpb.ConfChangeI] "cc") in
+    let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] "cc") in
     (FuncResolve confChangeToMsg [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("m" <-[raftpb.Message] "$r0");;;
+    do:  ("m" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (![go.error] "err")
     else do:  #());;;
-    return: (let: "$a0" := (![raftpb.Message] "m") in
+    return: (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
      (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0")).
 
 (* ApplyConfChange applies a config change to the local node. The app must call
@@ -5592,11 +5592,11 @@ Definition RawNode__ProposeConfChangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
 Definition RawNode__ApplyConfChangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "rn" "cc",
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
-    let: "cc" := (GoAlloc raftpb.ConfChangeI "cc") in
-    let: "cs" := (GoAlloc raftpb.ConfState (GoZeroVal raftpb.ConfState #())) in
-    let: "$r0" := (let: "$a0" := ((MethodResolve raftpb.ConfChangeI "AsV2"%go (![raftpb.ConfChangeI] "cc")) #()) in
+    let: "cc" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI "cc") in
+    let: "cs" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState #())) in
+    let: "$r0" := (let: "$a0" := ((MethodResolve code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI "AsV2"%go (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] "cc")) #()) in
     (MethodResolve (go.PointerType raft) "applyConfChange"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0") in
-    do:  ("cs" <-[raftpb.ConfState] "$r0");;;
+    do:  ("cs" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "$r0");;;
     return: ("cs")).
 
 (* Step advances the state machine using the given message.
@@ -5605,18 +5605,18 @@ Definition RawNode__ApplyConfChangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
 Definition RawNode__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "rn" "m",
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
-    let: "m" := (GoAlloc raftpb.Message "m") in
-    (if: (let: "$a0" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
-    (FuncResolve IsLocalMsg [] #()) "$a0") && (⟨go.bool⟩! (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+    let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "m") in
+    (if: (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) in
+    (FuncResolve IsLocalMsg [] #()) "$a0") && (⟨go.bool⟩! (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
     (FuncResolve IsLocalMsgTarget [] #()) "$a0"))
     then return: (![go.error] (GlobalVarAddr ErrStepLocalMsg #()))
     else do:  #());;;
-    (if: ((let: "$a0" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
-    (FuncResolve IsResponseMsg [] #()) "$a0") && (⟨go.bool⟩! (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
-    (FuncResolve IsLocalMsgTarget [] #()) "$a0"))) && ((map.lookup1 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))))) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) =⟨go.PointerType tracker.Progress⟩ (Convert go.untyped_nil (go.PointerType tracker.Progress) UntypedNil))
+    (if: ((let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m")) in
+    (FuncResolve IsResponseMsg [] #()) "$a0") && (⟨go.bool⟩! (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
+    (FuncResolve IsLocalMsgTarget [] #()) "$a0"))) && ((map.lookup1 go.uint64 (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) (![code.go_etcd_io.raft.v3.tracker.tracker.ProgressMap] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))))) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m"))) =⟨go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) UntypedNil))
     then return: (![go.error] (GlobalVarAddr ErrStepPeerNotFound #()))
     else do:  #());;;
-    return: (let: "$a0" := (![raftpb.Message] "m") in
+    return: (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
      (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0")).
 
 (* Ready returns the outstanding work that the application needs to handle. This
@@ -5649,8 +5649,8 @@ Definition RawNode__readyWithoutAcceptⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
     let: "$r0" := (let: "$v0" := ((MethodResolve (go.PointerType raftLog) "nextUnstableEnts"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
     let: "$v1" := (let: "$a0" := ((MethodResolve (go.PointerType RawNode) "applyUnstableEntries"%go (![go.PointerType RawNode] "rn")) #()) in
     (MethodResolve (go.PointerType raftLog) "nextCommittedEnts"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0") in
-    let: "$v2" := (![go.SliceType raftpb.Message] (StructFieldRef raft "msgs"%go (![go.PointerType raft] "r"))) in
-    CompositeLiteral Ready (LiteralValue [KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v0"); KeyedElement (Some (KeyField "CommittedEntries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v1"); KeyedElement (Some (KeyField "Messages"%go)) (ElementExpression (go.SliceType raftpb.Message) "$v2")])) in
+    let: "$v2" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef raft "msgs"%go (![go.PointerType raft] "r"))) in
+    CompositeLiteral Ready (LiteralValue [KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "$v0"); KeyedElement (Some (KeyField "CommittedEntries"%go)) (ElementExpression (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "$v1"); KeyedElement (Some (KeyField "Messages"%go)) (ElementExpression (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) "$v2")])) in
     do:  ("rd" <-[Ready] "$r0");;;
     (let: "softSt" := (GoAlloc SoftState (GoZeroVal SoftState #())) in
     let: "$r0" := ((MethodResolve (go.PointerType raft) "softState"%go (![go.PointerType raft] "r")) #()) in
@@ -5664,20 +5664,20 @@ Definition RawNode__readyWithoutAcceptⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
       let: "$r0" := "escapingSoftSt" in
       do:  ((StructFieldRef Ready "SoftState"%go "rd") <-[go.PointerType SoftState] "$r0")
     else do:  #()));;;
-    (let: "hardSt" := (GoAlloc raftpb.HardState (GoZeroVal raftpb.HardState #())) in
+    (let: "hardSt" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.HardState (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.HardState #())) in
     let: "$r0" := ((MethodResolve (go.PointerType raft) "hardState"%go (![go.PointerType raft] "r")) #()) in
-    do:  ("hardSt" <-[raftpb.HardState] "$r0");;;
-    (if: (⟨go.bool⟩! (let: "$a0" := (![raftpb.HardState] "hardSt") in
-    let: "$a1" := (![raftpb.HardState] (StructFieldRef RawNode "prevHardSt"%go (![go.PointerType RawNode] "rn"))) in
+    do:  ("hardSt" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "$r0");;;
+    (if: (⟨go.bool⟩! (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "hardSt") in
+    let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] (StructFieldRef RawNode "prevHardSt"%go (![go.PointerType RawNode] "rn"))) in
     (FuncResolve isHardStateEqual [] #()) "$a0" "$a1"))
     then
-      let: "$r0" := (![raftpb.HardState] "hardSt") in
-      do:  ((StructFieldRef Ready "HardState"%go "rd") <-[raftpb.HardState] "$r0")
+      let: "$r0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "hardSt") in
+      do:  ((StructFieldRef Ready "HardState"%go "rd") <-[code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "$r0")
     else do:  #()));;;
     (if: (MethodResolve (go.PointerType raftLog) "hasNextUnstableSnapshot"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()
     then
-      let: "$r0" := (![raftpb.Snapshot] ((MethodResolve (go.PointerType raftLog) "nextUnstableSnapshot"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #())) in
-      do:  ((StructFieldRef Ready "Snapshot"%go "rd") <-[raftpb.Snapshot] "$r0")
+      let: "$r0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] ((MethodResolve (go.PointerType raftLog) "nextUnstableSnapshot"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #())) in
+      do:  ((StructFieldRef Ready "Snapshot"%go "rd") <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "$r0")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType ReadState] (StructFieldRef raft "readStates"%go (![go.PointerType raft] "r"))) in
     (FuncResolve go.len [go.SliceType ReadState] #()) "$a0") ≠⟨go.int⟩ #(W64 0))
@@ -5686,9 +5686,9 @@ Definition RawNode__readyWithoutAcceptⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
       do:  ((StructFieldRef Ready "ReadStates"%go "rd") <-[go.SliceType ReadState] "$r0")
     else do:  #());;;
     let: "$r0" := (let: "$a0" := ((MethodResolve (go.PointerType raft) "hardState"%go (![go.PointerType raft] "r")) #()) in
-    let: "$a1" := (![raftpb.HardState] (StructFieldRef RawNode "prevHardSt"%go (![go.PointerType RawNode] "rn"))) in
-    let: "$a2" := (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef Ready "Entries"%go "rd")) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") in
+    let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] (StructFieldRef RawNode "prevHardSt"%go (![go.PointerType RawNode] "rn"))) in
+    let: "$a2" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef Ready "Entries"%go "rd")) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") in
     (FuncResolve MustSync [] #()) "$a0" "$a1" "$a2") in
     do:  ((StructFieldRef Ready "MustSync"%go "rd") <-[go.bool] "$r0");;;
     (if: ![go.bool] (StructFieldRef RawNode "asyncStorageWrites"%go (![go.PointerType RawNode] "rn"))
@@ -5697,44 +5697,44 @@ Definition RawNode__readyWithoutAcceptⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
       let: "$a1" := (![Ready] "rd") in
       (FuncResolve needStorageAppendMsg [] #()) "$a0" "$a1"
       then
-        let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
+        let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
         let: "$r0" := (let: "$a0" := (![go.PointerType raft] "r") in
         let: "$a1" := (![Ready] "rd") in
         (FuncResolve newStorageAppendMsg [] #()) "$a0" "$a1") in
-        do:  ("m" <-[raftpb.Message] "$r0");;;
-        let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef Ready "Messages"%go "rd")) in
-        let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
-        CompositeLiteral (go.SliceType raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression raftpb.Message "$sl0")]))) in
-        (FuncResolve go.append [go.SliceType raftpb.Message] #()) "$a0" "$a1") in
-        do:  ((StructFieldRef Ready "Messages"%go "rd") <-[go.SliceType raftpb.Message] "$r0")
+        do:  ("m" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef Ready "Messages"%go "rd")) in
+        let: "$a1" := ((let: "$sl0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
+        CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$sl0")]))) in
+        (FuncResolve go.append [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0" "$a1") in
+        do:  ((StructFieldRef Ready "Messages"%go "rd") <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0")
       else do:  #());;;
       (if: let: "$a0" := (![Ready] "rd") in
       (FuncResolve needStorageApplyMsg [] #()) "$a0"
       then
-        let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
+        let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
         let: "$r0" := (let: "$a0" := (![go.PointerType raft] "r") in
         let: "$a1" := (![Ready] "rd") in
         (FuncResolve newStorageApplyMsg [] #()) "$a0" "$a1") in
-        do:  ("m" <-[raftpb.Message] "$r0");;;
-        let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef Ready "Messages"%go "rd")) in
-        let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
-        CompositeLiteral (go.SliceType raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression raftpb.Message "$sl0")]))) in
-        (FuncResolve go.append [go.SliceType raftpb.Message] #()) "$a0" "$a1") in
-        do:  ((StructFieldRef Ready "Messages"%go "rd") <-[go.SliceType raftpb.Message] "$r0")
+        do:  ("m" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef Ready "Messages"%go "rd")) in
+        let: "$a1" := ((let: "$sl0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
+        CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$sl0")]))) in
+        (FuncResolve go.append [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0" "$a1") in
+        do:  ((StructFieldRef Ready "Messages"%go "rd") <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0")
       else do:  #())
     else
-      let: "$range" := (![go.SliceType raftpb.Message] (StructFieldRef raft "msgsAfterAppend"%go (![go.PointerType raft] "r"))) in
-      (let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-      slice.for_range raftpb.Message "$range" (λ: "$key" "$value",
-        do:  ("m" <-[raftpb.Message] "$value");;;
+      let: "$range" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef raft "msgsAfterAppend"%go (![go.PointerType raft] "r"))) in
+      (let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
+      slice.for_range code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$range" (λ: "$key" "$value",
+        do:  ("m" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$value");;;
         do:  "$key";;;
-        (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.Message "To"%go "m")) ≠⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))))
+        (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "To"%go "m")) ≠⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))))
         then
-          let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef Ready "Messages"%go "rd")) in
-          let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
-          CompositeLiteral (go.SliceType raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression raftpb.Message "$sl0")]))) in
-          (FuncResolve go.append [go.SliceType raftpb.Message] #()) "$a0" "$a1") in
-          do:  ((StructFieldRef Ready "Messages"%go "rd") <-[go.SliceType raftpb.Message] "$r0")
+          let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef Ready "Messages"%go "rd")) in
+          let: "$a1" := ((let: "$sl0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
+          CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$sl0")]))) in
+          (FuncResolve go.append [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0" "$a1") in
+          do:  ((StructFieldRef Ready "Messages"%go "rd") <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0")
         else do:  #()))));;;
     return: (![Ready] "rd")).
 
@@ -5745,27 +5745,27 @@ Definition RawNode__readyWithoutAcceptⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
 Definition MustSyncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "st" "prevst" "entsnum",
     exception_do (let: "entsnum" := (GoAlloc go.int "entsnum") in
-    let: "prevst" := (GoAlloc raftpb.HardState "prevst") in
-    let: "st" := (GoAlloc raftpb.HardState "st") in
-    return: ((((![go.int] "entsnum") ≠⟨go.int⟩ #(W64 0)) || ((![go.uint64] (StructFieldRef raftpb.HardState "Vote"%go "st")) ≠⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftpb.HardState "Vote"%go "prevst")))) || ((![go.uint64] (StructFieldRef raftpb.HardState "Term"%go "st")) ≠⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftpb.HardState "Term"%go "prevst"))))).
+    let: "prevst" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "prevst") in
+    let: "st" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "st") in
+    return: ((((![go.int] "entsnum") ≠⟨go.int⟩ #(W64 0)) || ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Vote"%go "st")) ≠⟨go.uint64⟩ (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Vote"%go "prevst")))) || ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Term"%go "st")) ≠⟨go.uint64⟩ (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Term"%go "prevst"))))).
 
 (* go: rawnode.go:202:6 *)
 Definition needStorageAppendMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "rd",
     exception_do (let: "rd" := (GoAlloc Ready "rd") in
     let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    return: (((((let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef Ready "Entries"%go "rd")) in
-     (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0)) || (⟨go.bool⟩! (let: "$a0" := (![raftpb.HardState] (StructFieldRef Ready "HardState"%go "rd")) in
-     (FuncResolve IsEmptyHardState [] #()) "$a0"))) || (⟨go.bool⟩! (let: "$a0" := (![raftpb.Snapshot] (StructFieldRef Ready "Snapshot"%go "rd")) in
-     (FuncResolve IsEmptySnap [] #()) "$a0"))) || ((let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef raft "msgsAfterAppend"%go (![go.PointerType raft] "r"))) in
-     (FuncResolve go.len [go.SliceType raftpb.Message] #()) "$a0") >⟨go.int⟩ #(W64 0)))).
+    return: (((((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef Ready "Entries"%go "rd")) in
+     (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0)) || (⟨go.bool⟩! (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] (StructFieldRef Ready "HardState"%go "rd")) in
+     (FuncResolve IsEmptyHardState [] #()) "$a0"))) || (⟨go.bool⟩! (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef Ready "Snapshot"%go "rd")) in
+     (FuncResolve IsEmptySnap [] #()) "$a0"))) || ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef raft "msgsAfterAppend"%go (![go.PointerType raft] "r"))) in
+     (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0") >⟨go.int⟩ #(W64 0)))).
 
 (* go: rawnode.go:212:6 *)
 Definition needStorageAppendRespMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "rd",
     exception_do (let: "rd" := (GoAlloc Ready "rd") in
     let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    return: (((MethodResolve (go.PointerType raftLog) "hasNextOrInProgressUnstableEnts"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) || (⟨go.bool⟩! (let: "$a0" := (![raftpb.Snapshot] (StructFieldRef Ready "Snapshot"%go "rd")) in
+    return: (((MethodResolve (go.PointerType raftLog) "hasNextOrInProgressUnstableEnts"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) || (⟨go.bool⟩! (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef Ready "Snapshot"%go "rd")) in
      (FuncResolve IsEmptySnap [] #()) "$a0")))).
 
 (* newStorageAppendMsg creates the message that should be sent to the local
@@ -5779,47 +5779,47 @@ Definition newStorageAppendMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
   λ: "r" "rd",
     exception_do (let: "rd" := (GoAlloc Ready "rd") in
     let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-    let: "$r0" := (let: "$v0" := raftpb.MsgStorageAppend in
+    let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
+    let: "$r0" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgStorageAppend in
     let: "$v1" := LocalAppendThread in
     let: "$v2" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
-    let: "$v3" := (![go.SliceType raftpb.Entry] (StructFieldRef Ready "Entries"%go "rd")) in
-    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v3")])) in
-    do:  ("m" <-[raftpb.Message] "$r0");;;
-    (if: (⟨go.bool⟩! (let: "$a0" := (![raftpb.HardState] (StructFieldRef Ready "HardState"%go "rd")) in
+    let: "$v3" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef Ready "Entries"%go "rd")) in
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "$v3")])) in
+    do:  ("m" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
+    (if: (⟨go.bool⟩! (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] (StructFieldRef Ready "HardState"%go "rd")) in
     (FuncResolve IsEmptyHardState [] #()) "$a0"))
     then
-      let: "$r0" := (![go.uint64] (StructFieldRef raftpb.HardState "Term"%go (StructFieldRef Ready "HardState"%go "rd"))) in
-      do:  ((StructFieldRef raftpb.Message "Term"%go "m") <-[go.uint64] "$r0");;;
-      let: "$r0" := (![go.uint64] (StructFieldRef raftpb.HardState "Vote"%go (StructFieldRef Ready "HardState"%go "rd"))) in
-      do:  ((StructFieldRef raftpb.Message "Vote"%go "m") <-[go.uint64] "$r0");;;
-      let: "$r0" := (![go.uint64] (StructFieldRef raftpb.HardState "Commit"%go (StructFieldRef Ready "HardState"%go "rd"))) in
-      do:  ((StructFieldRef raftpb.Message "Commit"%go "m") <-[go.uint64] "$r0")
+      let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Term"%go (StructFieldRef Ready "HardState"%go "rd"))) in
+      do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m") <-[go.uint64] "$r0");;;
+      let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Vote"%go (StructFieldRef Ready "HardState"%go "rd"))) in
+      do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Vote"%go "m") <-[go.uint64] "$r0");;;
+      let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Commit"%go (StructFieldRef Ready "HardState"%go "rd"))) in
+      do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Commit"%go "m") <-[go.uint64] "$r0")
     else do:  #());;;
-    (if: (⟨go.bool⟩! (let: "$a0" := (![raftpb.Snapshot] (StructFieldRef Ready "Snapshot"%go "rd")) in
+    (if: (⟨go.bool⟩! (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef Ready "Snapshot"%go "rd")) in
     (FuncResolve IsEmptySnap [] #()) "$a0"))
     then
-      let: "snap" := (GoAlloc raftpb.Snapshot (GoZeroVal raftpb.Snapshot #())) in
-      let: "$r0" := (![raftpb.Snapshot] (StructFieldRef Ready "Snapshot"%go "rd")) in
-      do:  ("snap" <-[raftpb.Snapshot] "$r0");;;
+      let: "snap" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot #())) in
+      let: "$r0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef Ready "Snapshot"%go "rd")) in
+      do:  ("snap" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "$r0");;;
       let: "$r0" := "snap" in
-      do:  ((StructFieldRef raftpb.Message "Snapshot"%go "m") <-[go.PointerType raftpb.Snapshot] "$r0")
+      do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Snapshot"%go "m") <-[go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "$r0")
     else do:  #());;;
-    let: "$r0" := (![go.SliceType raftpb.Message] (StructFieldRef raft "msgsAfterAppend"%go (![go.PointerType raft] "r"))) in
-    do:  ((StructFieldRef raftpb.Message "Responses"%go "m") <-[go.SliceType raftpb.Message] "$r0");;;
+    let: "$r0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef raft "msgsAfterAppend"%go (![go.PointerType raft] "r"))) in
+    do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Responses"%go "m") <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
     (if: let: "$a0" := (![go.PointerType raft] "r") in
     let: "$a1" := (![Ready] "rd") in
     (FuncResolve needStorageAppendRespMsg [] #()) "$a0" "$a1"
     then
-      let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef raftpb.Message "Responses"%go "m")) in
+      let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Responses"%go "m")) in
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![go.PointerType raft] "r") in
       let: "$a1" := (![Ready] "rd") in
       (FuncResolve newStorageAppendRespMsg [] #()) "$a0" "$a1") in
-      CompositeLiteral (go.SliceType raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression raftpb.Message "$sl0")]))) in
-      (FuncResolve go.append [go.SliceType raftpb.Message] #()) "$a0" "$a1") in
-      do:  ((StructFieldRef raftpb.Message "Responses"%go "m") <-[go.SliceType raftpb.Message] "$r0")
+      CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$sl0")]))) in
+      (FuncResolve go.append [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0" "$a1") in
+      do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Responses"%go "m") <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0")
     else do:  #());;;
-    return: (![raftpb.Message] "m")).
+    return: (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m")).
 
 (* newStorageAppendRespMsg creates the message that should be returned to node
    after the unstable log entries, hard state, and snapshot in the current Ready
@@ -5831,40 +5831,40 @@ Definition newStorageAppendRespMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
   λ: "r" "rd",
     exception_do (let: "rd" := (GoAlloc Ready "rd") in
     let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-    let: "$r0" := (let: "$v0" := raftpb.MsgStorageAppendResp in
+    let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
+    let: "$r0" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgStorageAppendResp in
     let: "$v1" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
     let: "$v2" := LocalAppendThread in
     let: "$v3" := (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))) in
-    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v3")])) in
-    do:  ("m" <-[raftpb.Message] "$r0");;;
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v3")])) in
+    do:  ("m" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
     (if: (MethodResolve (go.PointerType raftLog) "hasNextOrInProgressUnstableEnts"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()
     then
       let: "last" := (GoAlloc entryID (GoZeroVal entryID #())) in
       let: "$r0" := ((MethodResolve (go.PointerType raftLog) "lastEntryID"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
       do:  ("last" <-[entryID] "$r0");;;
       let: "$r0" := (![go.uint64] (StructFieldRef entryID "index"%go "last")) in
-      do:  ((StructFieldRef raftpb.Message "Index"%go "m") <-[go.uint64] "$r0");;;
+      do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m") <-[go.uint64] "$r0");;;
       let: "$r0" := (![go.uint64] (StructFieldRef entryID "term"%go "last")) in
-      do:  ((StructFieldRef raftpb.Message "LogTerm"%go "m") <-[go.uint64] "$r0")
+      do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "LogTerm"%go "m") <-[go.uint64] "$r0")
     else do:  #());;;
-    (if: (⟨go.bool⟩! (let: "$a0" := (![raftpb.Snapshot] (StructFieldRef Ready "Snapshot"%go "rd")) in
+    (if: (⟨go.bool⟩! (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef Ready "Snapshot"%go "rd")) in
     (FuncResolve IsEmptySnap [] #()) "$a0"))
     then
-      let: "snap" := (GoAlloc raftpb.Snapshot (GoZeroVal raftpb.Snapshot #())) in
-      let: "$r0" := (![raftpb.Snapshot] (StructFieldRef Ready "Snapshot"%go "rd")) in
-      do:  ("snap" <-[raftpb.Snapshot] "$r0");;;
+      let: "snap" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot #())) in
+      let: "$r0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef Ready "Snapshot"%go "rd")) in
+      do:  ("snap" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "$r0");;;
       let: "$r0" := "snap" in
-      do:  ((StructFieldRef raftpb.Message "Snapshot"%go "m") <-[go.PointerType raftpb.Snapshot] "$r0")
+      do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Snapshot"%go "m") <-[go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "$r0")
     else do:  #());;;
-    return: (![raftpb.Message] "m")).
+    return: (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m")).
 
 (* go: rawnode.go:368:6 *)
 Definition needStorageApplyMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "rd",
     exception_do (let: "rd" := (GoAlloc Ready "rd") in
-    return: ((let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef Ready "CommittedEntries"%go "rd")) in
-     (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0))).
+    return: ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef Ready "CommittedEntries"%go "rd")) in
+     (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0))).
 
 (* go: rawnode.go:369:6 *)
 Definition needStorageApplyRespMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -5883,19 +5883,19 @@ Definition newStorageApplyMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
   λ: "r" "rd",
     exception_do (let: "rd" := (GoAlloc Ready "rd") in
     let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) (GoZeroVal (go.SliceType raftpb.Entry) #())) in
-    let: "$r0" := (![go.SliceType raftpb.Entry] (StructFieldRef Ready "CommittedEntries"%go "rd")) in
-    do:  ("ents" <-[go.SliceType raftpb.Entry] "$r0");;;
-    return: (let: "$v0" := raftpb.MsgStorageApply in
+    let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (GoZeroVal (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) #())) in
+    let: "$r0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef Ready "CommittedEntries"%go "rd")) in
+    do:  ("ents" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
+    return: (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgStorageApply in
      let: "$v1" := LocalApplyThread in
      let: "$v2" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
      let: "$v3" := #(W64 0) in
-     let: "$v4" := (![go.SliceType raftpb.Entry] "ents") in
+     let: "$v4" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
      let: "$v5" := (let: "$v0" := (let: "$a0" := (![go.PointerType raft] "r") in
-     let: "$a1" := (![go.SliceType raftpb.Entry] "ents") in
+     let: "$a1" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
      (FuncResolve newStorageApplyRespMsg [] #()) "$a0" "$a1") in
-     CompositeLiteral (go.SliceType raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression raftpb.Message "$v0")])) in
-     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v3"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v4"); KeyedElement (Some (KeyField "Responses"%go)) (ElementExpression (go.SliceType raftpb.Message) "$v5")]))).
+     CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$v0")])) in
+     CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v3"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "$v4"); KeyedElement (Some (KeyField "Responses"%go)) (ElementExpression (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) "$v5")]))).
 
 (* newStorageApplyRespMsg creates the message that should be returned to node
    after the committed entries in the current Ready (along with those in all
@@ -5904,14 +5904,14 @@ Definition newStorageApplyMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
    go: rawnode.go:392:6 *)
 Definition newStorageApplyRespMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" "ents",
-    exception_do (let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) "ents") in
+    exception_do (let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "ents") in
     let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    return: (let: "$v0" := raftpb.MsgStorageApplyResp in
+    return: (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgStorageApplyResp in
      let: "$v1" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
      let: "$v2" := LocalApplyThread in
      let: "$v3" := #(W64 0) in
-     let: "$v4" := (![go.SliceType raftpb.Entry] "ents") in
-     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v3"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v4")]))).
+     let: "$v4" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+     CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v3"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "$v4")]))).
 
 (* acceptReady is called when the consumer of the RawNode has decided to go
    ahead and handle a Ready. Nothing must alter the state of the RawNode between
@@ -5927,11 +5927,11 @@ Definition RawNode__acceptReadyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
       let: "$r0" := (![go.PointerType SoftState] (StructFieldRef Ready "SoftState"%go "rd")) in
       do:  ((StructFieldRef RawNode "prevSoftSt"%go (![go.PointerType RawNode] "rn")) <-[go.PointerType SoftState] "$r0")
     else do:  #());;;
-    (if: (⟨go.bool⟩! (let: "$a0" := (![raftpb.HardState] (StructFieldRef Ready "HardState"%go "rd")) in
+    (if: (⟨go.bool⟩! (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] (StructFieldRef Ready "HardState"%go "rd")) in
     (FuncResolve IsEmptyHardState [] #()) "$a0"))
     then
-      let: "$r0" := (![raftpb.HardState] (StructFieldRef Ready "HardState"%go "rd")) in
-      do:  ((StructFieldRef RawNode "prevHardSt"%go (![go.PointerType RawNode] "rn")) <-[raftpb.HardState] "$r0")
+      let: "$r0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] (StructFieldRef Ready "HardState"%go "rd")) in
+      do:  ((StructFieldRef RawNode "prevHardSt"%go (![go.PointerType RawNode] "rn")) <-[code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "$r0")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType ReadState] (StructFieldRef Ready "ReadStates"%go "rd")) in
     (FuncResolve go.len [go.SliceType ReadState] #()) "$a0") ≠⟨go.int⟩ #(W64 0))
@@ -5941,73 +5941,73 @@ Definition RawNode__acceptReadyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     else do:  #());;;
     (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef RawNode "asyncStorageWrites"%go (![go.PointerType RawNode] "rn"))))
     then
-      (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn"))) in
-      (FuncResolve go.len [go.SliceType raftpb.Message] #()) "$a0") ≠⟨go.int⟩ #(W64 0))
+      (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn"))) in
+      (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0") ≠⟨go.int⟩ #(W64 0))
       then
         do:  (let: "$a0" := #"two accepted Ready structs without call to Advance"%go in
         let: "$a1" := #slice.nil in
         (MethodResolve Logger "Panicf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))))) "$a0" "$a1")
       else do:  #());;;
-      let: "$range" := (![go.SliceType raftpb.Message] (StructFieldRef raft "msgsAfterAppend"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn"))))) in
-      (let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-      slice.for_range raftpb.Message "$range" (λ: "$key" "$value",
-        do:  ("m" <-[raftpb.Message] "$value");;;
+      let: "$range" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef raft "msgsAfterAppend"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn"))))) in
+      (let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
+      slice.for_range code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$range" (λ: "$key" "$value",
+        do:  ("m" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$value");;;
         do:  "$key";;;
-        (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.Message "To"%go "m")) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn"))))))
+        (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "To"%go "m")) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn"))))))
         then
-          let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn"))) in
-          let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
-          CompositeLiteral (go.SliceType raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression raftpb.Message "$sl0")]))) in
-          (FuncResolve go.append [go.SliceType raftpb.Message] #()) "$a0" "$a1") in
-          do:  ((StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn")) <-[go.SliceType raftpb.Message] "$r0")
+          let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn"))) in
+          let: "$a1" := ((let: "$sl0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
+          CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$sl0")]))) in
+          (FuncResolve go.append [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0" "$a1") in
+          do:  ((StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0")
         else do:  #())));;;
       (if: let: "$a0" := (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn"))) in
       let: "$a1" := (![Ready] "rd") in
       (FuncResolve needStorageAppendRespMsg [] #()) "$a0" "$a1"
       then
-        let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
+        let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
         let: "$r0" := (let: "$a0" := (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn"))) in
         let: "$a1" := (![Ready] "rd") in
         (FuncResolve newStorageAppendRespMsg [] #()) "$a0" "$a1") in
-        do:  ("m" <-[raftpb.Message] "$r0");;;
-        let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn"))) in
-        let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
-        CompositeLiteral (go.SliceType raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression raftpb.Message "$sl0")]))) in
-        (FuncResolve go.append [go.SliceType raftpb.Message] #()) "$a0" "$a1") in
-        do:  ((StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn")) <-[go.SliceType raftpb.Message] "$r0")
+        do:  ("m" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn"))) in
+        let: "$a1" := ((let: "$sl0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
+        CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$sl0")]))) in
+        (FuncResolve go.append [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0" "$a1") in
+        do:  ((StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0")
       else do:  #());;;
       (if: let: "$a0" := (![Ready] "rd") in
       (FuncResolve needStorageApplyRespMsg [] #()) "$a0"
       then
-        let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
+        let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
         let: "$r0" := (let: "$a0" := (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn"))) in
-        let: "$a1" := (![go.SliceType raftpb.Entry] (StructFieldRef Ready "CommittedEntries"%go "rd")) in
+        let: "$a1" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef Ready "CommittedEntries"%go "rd")) in
         (FuncResolve newStorageApplyRespMsg [] #()) "$a0" "$a1") in
-        do:  ("m" <-[raftpb.Message] "$r0");;;
-        let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn"))) in
-        let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
-        CompositeLiteral (go.SliceType raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression raftpb.Message "$sl0")]))) in
-        (FuncResolve go.append [go.SliceType raftpb.Message] #()) "$a0" "$a1") in
-        do:  ((StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn")) <-[go.SliceType raftpb.Message] "$r0")
+        do:  ("m" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn"))) in
+        let: "$a1" := ((let: "$sl0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
+        CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$sl0")]))) in
+        (FuncResolve go.append [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0" "$a1") in
+        do:  ((StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0")
       else do:  #())
     else do:  #());;;
-    let: "$r0" := (Convert go.untyped_nil (go.SliceType raftpb.Message) UntypedNil) in
-    do:  ((StructFieldRef raft "msgs"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) <-[go.SliceType raftpb.Message] "$r0");;;
-    let: "$r0" := (Convert go.untyped_nil (go.SliceType raftpb.Message) UntypedNil) in
-    do:  ((StructFieldRef raft "msgsAfterAppend"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) <-[go.SliceType raftpb.Message] "$r0");;;
+    let: "$r0" := (Convert go.untyped_nil (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) UntypedNil) in
+    do:  ((StructFieldRef raft "msgs"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
+    let: "$r0" := (Convert go.untyped_nil (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) UntypedNil) in
+    do:  ((StructFieldRef raft "msgsAfterAppend"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
     do:  ((MethodResolve (go.PointerType raftLog) "acceptUnstable"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))))) #());;;
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef Ready "CommittedEntries"%go "rd")) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0))
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef Ready "CommittedEntries"%go "rd")) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0))
     then
-      let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) (GoZeroVal (go.SliceType raftpb.Entry) #())) in
-      let: "$r0" := (![go.SliceType raftpb.Entry] (StructFieldRef Ready "CommittedEntries"%go "rd")) in
-      do:  ("ents" <-[go.SliceType raftpb.Entry] "$r0");;;
+      let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (GoZeroVal (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) #())) in
+      let: "$r0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef Ready "CommittedEntries"%go "rd")) in
+      do:  ("ents" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
       let: "index" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-      let: "$r0" := (![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "ents", (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-       (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") -⟨go.int⟩ #(W64 1))))) in
+      let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents", (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+       (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") -⟨go.int⟩ #(W64 1))))) in
       do:  ("index" <-[go.uint64] "$r0");;;
       do:  (let: "$a0" := (![go.uint64] "index") in
-      let: "$a1" := (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
+      let: "$a1" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
       (FuncResolve entsSize [] #()) "$a0") in
       let: "$a2" := ((MethodResolve (go.PointerType RawNode) "applyUnstableEntries"%go (![go.PointerType RawNode] "rn")) #()) in
       (MethodResolve (go.PointerType raftLog) "acceptApplying"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))))) "$a0" "$a1" "$a2")
@@ -6042,21 +6042,21 @@ Definition RawNode__HasReadyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     (MethodResolve (go.PointerType SoftState) "equal"%go "softSt") "$a0"))
     then return: (#true)
     else do:  #()));;;
-    (let: "hardSt" := (GoAlloc raftpb.HardState (GoZeroVal raftpb.HardState #())) in
+    (let: "hardSt" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.HardState (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.HardState #())) in
     let: "$r0" := ((MethodResolve (go.PointerType raft) "hardState"%go (![go.PointerType raft] "r")) #()) in
-    do:  ("hardSt" <-[raftpb.HardState] "$r0");;;
-    (if: (⟨go.bool⟩! (let: "$a0" := (![raftpb.HardState] "hardSt") in
-    (FuncResolve IsEmptyHardState [] #()) "$a0")) && (⟨go.bool⟩! (let: "$a0" := (![raftpb.HardState] "hardSt") in
-    let: "$a1" := (![raftpb.HardState] (StructFieldRef RawNode "prevHardSt"%go (![go.PointerType RawNode] "rn"))) in
+    do:  ("hardSt" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "$r0");;;
+    (if: (⟨go.bool⟩! (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "hardSt") in
+    (FuncResolve IsEmptyHardState [] #()) "$a0")) && (⟨go.bool⟩! (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "hardSt") in
+    let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] (StructFieldRef RawNode "prevHardSt"%go (![go.PointerType RawNode] "rn"))) in
     (FuncResolve isHardStateEqual [] #()) "$a0" "$a1"))
     then return: (#true)
     else do:  #()));;;
     (if: (MethodResolve (go.PointerType raftLog) "hasNextUnstableSnapshot"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()
     then return: (#true)
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool (((let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef raft "msgs"%go (![go.PointerType raft] "r"))) in
-    (FuncResolve go.len [go.SliceType raftpb.Message] #()) "$a0") >⟨go.int⟩ #(W64 0)) || ((let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef raft "msgsAfterAppend"%go (![go.PointerType raft] "r"))) in
-    (FuncResolve go.len [go.SliceType raftpb.Message] #()) "$a0") >⟨go.int⟩ #(W64 0)))
+    (if: Convert go.untyped_bool go.bool (((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef raft "msgs"%go (![go.PointerType raft] "r"))) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0") >⟨go.int⟩ #(W64 0)) || ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef raft "msgsAfterAppend"%go (![go.PointerType raft] "r"))) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0") >⟨go.int⟩ #(W64 0)))
     then return: (#true)
     else do:  #());;;
     (if: ((MethodResolve (go.PointerType raftLog) "hasNextUnstableEnts"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) || (let: "$a0" := ((MethodResolve (go.PointerType RawNode) "applyUnstableEntries"%go (![go.PointerType RawNode] "rn")) #()) in
@@ -6085,20 +6085,20 @@ Definition RawNode__Advanceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       let: "$a1" := #slice.nil in
       (MethodResolve Logger "Panicf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))))) "$a0" "$a1")
     else do:  #());;;
-    let: "$range" := (![go.SliceType raftpb.Message] (StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn"))) in
-    (let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
+    let: "$range" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn"))) in
+    (let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
     let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    slice.for_range raftpb.Message "$range" (λ: "$key" "$value",
-      do:  ("m" <-[raftpb.Message] "$value");;;
+    slice.for_range code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$range" (λ: "$key" "$value",
+      do:  ("m" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$value");;;
       do:  ("i" <-[go.int] "$key");;;
-      let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
+      let: "$r0" := (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
       (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0") in
       do:  "$r0";;;
-      let: "$r0" := (CompositeLiteral raftpb.Message (LiteralValue [])) in
-      do:  ((IndexRef (go.SliceType raftpb.Message) (![go.SliceType raftpb.Message] (StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn")), ![go.int] "i")) <-[raftpb.Message] "$r0")));;;
-    let: "$r0" := (let: "$s" := (![go.SliceType raftpb.Message] (StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn"))) in
-    Slice (go.SliceType raftpb.Message) ("$s", #(W64 0), #(W64 0))) in
-    do:  ((StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn")) <-[go.SliceType raftpb.Message] "$r0");;;
+      let: "$r0" := (CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [])) in
+      do:  ((IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn")), ![go.int] "i")) <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0")));;;
+    let: "$r0" := (let: "$s" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn"))) in
+    Slice (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message) ("$s", #(W64 0), #(W64 0))) in
+    do:  ((StructFieldRef RawNode "stepsOnAdvance"%go (![go.PointerType RawNode] "rn")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$r0");;;
     return: #()).
 
 (* Status returns the current status of the given group. This allocates, see
@@ -6131,30 +6131,30 @@ Definition RawNode__BasicStatusⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
 Definition RawNode__WithProgressⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "rn" "visitor",
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
-    let: "visitor" := (GoAlloc (go.FunctionType (go.Signature [go.uint64; ProgressType; tracker.Progress] false [])) "visitor") in
+    let: "visitor" := (GoAlloc (go.FunctionType (go.Signature [go.uint64; ProgressType; code.go_etcd_io.raft.v3.tracker.tracker.Progress] false [])) "visitor") in
     do:  (let: "$a0" := (λ: "id" "pr",
-      exception_do (let: "pr" := (GoAlloc (go.PointerType tracker.Progress) "pr") in
+      exception_do (let: "pr" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "pr") in
       let: "id" := (GoAlloc go.uint64 "id") in
       let: "typ" := (GoAlloc ProgressType (GoZeroVal ProgressType #())) in
       let: "$r0" := ProgressTypePeer in
       do:  ("typ" <-[ProgressType] "$r0");;;
-      (if: ![go.bool] (StructFieldRef tracker.Progress "IsLearner"%go (![go.PointerType tracker.Progress] "pr"))
+      (if: ![go.bool] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "IsLearner"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr"))
       then
         let: "$r0" := ProgressTypeLearner in
         do:  ("typ" <-[ProgressType] "$r0")
       else do:  #());;;
-      let: "p" := (GoAlloc tracker.Progress (GoZeroVal tracker.Progress #())) in
-      let: "$r0" := (![tracker.Progress] (![go.PointerType tracker.Progress] "pr")) in
-      do:  ("p" <-[tracker.Progress] "$r0");;;
-      let: "$r0" := (Convert go.untyped_nil (go.PointerType tracker.Inflights) UntypedNil) in
-      do:  ((StructFieldRef tracker.Progress "Inflights"%go "p") <-[go.PointerType tracker.Inflights] "$r0");;;
+      let: "p" := (GoAlloc code.go_etcd_io.raft.v3.tracker.tracker.Progress (GoZeroVal code.go_etcd_io.raft.v3.tracker.tracker.Progress #())) in
+      let: "$r0" := (![code.go_etcd_io.raft.v3.tracker.tracker.Progress] (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) in
+      do:  ("p" <-[code.go_etcd_io.raft.v3.tracker.tracker.Progress] "$r0");;;
+      let: "$r0" := (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Inflights) UntypedNil) in
+      do:  ((StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "Inflights"%go "p") <-[go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Inflights] "$r0");;;
       do:  (let: "$a0" := (![go.uint64] "id") in
       let: "$a1" := (![ProgressType] "typ") in
-      let: "$a2" := (![tracker.Progress] "p") in
-      (![go.FunctionType (go.Signature [go.uint64; ProgressType; tracker.Progress] false [])] "visitor") "$a0" "$a1" "$a2");;;
+      let: "$a2" := (![code.go_etcd_io.raft.v3.tracker.tracker.Progress] "p") in
+      (![go.FunctionType (go.Signature [go.uint64; ProgressType; code.go_etcd_io.raft.v3.tracker.tracker.Progress] false [])] "visitor") "$a0" "$a1" "$a2");;;
       return: #())
       ) in
-    (MethodResolve (go.PointerType tracker.ProgressTracker) "Visit"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn"))))) "$a0");;;
+    (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker) "Visit"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn"))))) "$a0");;;
     return: #()).
 
 (* ReportUnreachable reports the given node is not reachable for the last send.
@@ -6164,9 +6164,9 @@ Definition RawNode__ReportUnreachableⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
   λ: "rn" "id",
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
     let: "id" := (GoAlloc go.uint64 "id") in
-    let: "$r0" := (let: "$a0" := (let: "$v0" := raftpb.MsgUnreachable in
+    let: "$r0" := (let: "$a0" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgUnreachable in
     let: "$v1" := (![go.uint64] "id") in
-    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1")])) in
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1")])) in
     (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0") in
     do:  "$r0";;;
     return: #()).
@@ -6182,10 +6182,10 @@ Definition RawNode__ReportSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     let: "rej" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := ((![SnapshotStatus] "status") =⟨SnapshotStatus⟩ SnapshotFailure) in
     do:  ("rej" <-[go.bool] "$r0");;;
-    let: "$r0" := (let: "$a0" := (let: "$v0" := raftpb.MsgSnapStatus in
+    let: "$r0" := (let: "$a0" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgSnapStatus in
     let: "$v1" := (![go.uint64] "id") in
     let: "$v2" := (![go.bool] "rej") in
-    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool "$v2")])) in
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool "$v2")])) in
     (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0") in
     do:  "$r0";;;
     return: #()).
@@ -6197,9 +6197,9 @@ Definition RawNode__TransferLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
   λ: "rn" "transferee",
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
     let: "transferee" := (GoAlloc go.uint64 "transferee") in
-    let: "$r0" := (let: "$a0" := (let: "$v0" := raftpb.MsgTransferLeader in
+    let: "$r0" := (let: "$a0" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgTransferLeader in
     let: "$v1" := (![go.uint64] "transferee") in
-    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1")])) in
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1")])) in
     (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0") in
     do:  "$r0";;;
     return: #()).
@@ -6211,8 +6211,8 @@ Definition RawNode__TransferLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
 Definition RawNode__ForgetLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "rn" <>,
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
-    return: (let: "$a0" := (let: "$v0" := raftpb.MsgForgetLeader in
-     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0")])) in
+    return: (let: "$a0" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgForgetLeader in
+     CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0")])) in
      (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0")).
 
 (* ReadIndex requests a read state. The read state will be set in ready.
@@ -6225,10 +6225,10 @@ Definition RawNode__ReadIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
   λ: "rn" "rctx",
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
     let: "rctx" := (GoAlloc (go.SliceType go.byte) "rctx") in
-    let: "$r0" := (let: "$a0" := (let: "$v0" := raftpb.MsgReadIndex in
+    let: "$r0" := (let: "$a0" := (let: "$v0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgReadIndex in
     let: "$v1" := (let: "$v0" := (![go.SliceType go.byte] "rctx") in
-    CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v0")])])) in
-    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v1")])) in
+    CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v0")])])) in
+    CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "$v1")])) in
     (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0") in
     do:  "$r0";;;
     return: #()).
@@ -6250,12 +6250,12 @@ Definition newReadOnlyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 Definition readOnly__addRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ro" "commitIndex" "req",
     exception_do (let: "ro" := (GoAlloc (go.PointerType readOnly) "ro") in
-    let: "req" := (GoAlloc raftpb.Message "req") in
+    let: "req" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "req") in
     let: "commitIndex" := (GoAlloc go.uint64 "commitIndex") in
     let: "$r0" := (let: "$a0" := (![go.SliceType (go.PointerType readIndexRequest)] (StructFieldRef readOnly "unconfirmedReads"%go (![go.PointerType readOnly] "ro"))) in
-    let: "$a1" := ((let: "$sl0" := (GoAlloc readIndexRequest (let: "$v0" := (![raftpb.Message] "req") in
+    let: "$a1" := ((let: "$sl0" := (GoAlloc readIndexRequest (let: "$v0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "req") in
     let: "$v1" := (![go.uint64] "commitIndex") in
-    CompositeLiteral readIndexRequest (LiteralValue [KeyedElement (Some (KeyField "req"%go)) (ElementExpression raftpb.Message "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")]))) in
+    CompositeLiteral readIndexRequest (LiteralValue [KeyedElement (Some (KeyField "req"%go)) (ElementExpression code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")]))) in
     CompositeLiteral (go.SliceType (go.PointerType readIndexRequest)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType readIndexRequest) "$sl0")]))) in
     (FuncResolve go.append [go.SliceType (go.PointerType readIndexRequest)] #()) "$a0" "$a1") in
     do:  ((StructFieldRef readOnly "unconfirmedReads"%go (![go.PointerType readOnly] "ro")) <-[go.SliceType (go.PointerType readIndexRequest)] "$r0");;;
@@ -6274,7 +6274,7 @@ Definition readOnly__recvAckⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     then
       let: "$r0" := (let: "$a0" := (map.lookup1 go.uint64 go.uint64 (![go.MapType go.uint64 go.uint64] (StructFieldRef readOnly "acks"%go (![go.PointerType readOnly] "ro"))) (![go.uint64] "from")) in
       let: "$a1" := (let: "$a0" := (![go.SliceType go.byte] "ctx") in
-      (MethodResolve (go.PointerType binary.littleEndian) "Uint64"%go (GlobalVarAddr binary.LittleEndian #())) "$a0") in
+      (MethodResolve (go.PointerType code.encoding.binary.binary.littleEndian) "Uint64"%go (GlobalVarAddr code.encoding.binary.binary.LittleEndian #())) "$a0") in
       (FuncResolve go.max [go.uint64; go.uint64] #()) "$a0" "$a1") in
       do:  (map.insert go.uint64 (![go.MapType go.uint64 go.uint64] (StructFieldRef readOnly "acks"%go (![go.PointerType readOnly] "ro"))) (![go.uint64] "from") "$r0")
     else do:  #());;;
@@ -6303,10 +6303,10 @@ Definition readOnly__AckedIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
 Definition readOnly__maybeAdvanceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ro" "c",
     exception_do (let: "ro" := (GoAlloc (go.PointerType readOnly) "ro") in
-    let: "c" := (GoAlloc quorum.JointConfig "c") in
+    let: "c" := (GoAlloc code.go_etcd_io.raft.v3.quorum.quorum.JointConfig "c") in
     let: "newConfirmedReads" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (let: "$a0" := (Convert (go.PointerType readOnly) quorum.AckedIndexer (![go.PointerType readOnly] "ro")) in
-    (MethodResolve (go.PointerType quorum.JointConfig) "CommittedIndex"%go "c") "$a0") in
+    let: "$r0" := (let: "$a0" := (Convert (go.PointerType readOnly) code.go_etcd_io.raft.v3.quorum.quorum.AckedIndexer (![go.PointerType readOnly] "ro")) in
+    (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.quorum.quorum.JointConfig) "CommittedIndex"%go "c") "$a0") in
     do:  ("newConfirmedReads" <-[go.uint64] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "newConfirmedReads") ≤⟨go.uint64⟩ (![go.uint64] (StructFieldRef readOnly "confirmedReads"%go (![go.PointerType readOnly] "ro"))))
     then return: (Convert go.untyped_nil (go.SliceType (go.PointerType readIndexRequest)) UntypedNil)
@@ -6342,7 +6342,7 @@ Definition readOnly__heartbeatCtxⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
     do:  ("encLastIndex" <-[go.SliceType go.byte] "$r0");;;
     do:  (let: "$a0" := (![go.SliceType go.byte] "encLastIndex") in
     let: "$a1" := (![go.uint64] "unconfirmedReadPosition") in
-    (MethodResolve (go.PointerType binary.littleEndian) "PutUint64"%go (GlobalVarAddr binary.LittleEndian #())) "$a0" "$a1");;;
+    (MethodResolve (go.PointerType code.encoding.binary.binary.littleEndian) "PutUint64"%go (GlobalVarAddr code.encoding.binary.binary.LittleEndian #())) "$a0" "$a1");;;
     return: (![go.SliceType go.byte] "encLastIndex")).
 
 (* go: state_trace_nop.go:30:6 *)
@@ -6404,25 +6404,25 @@ Definition traceReceiveMessageⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
 Definition getProgressCopyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    let: "m" := (GoAlloc (go.MapType go.uint64 tracker.Progress) (GoZeroVal (go.MapType go.uint64 tracker.Progress) #())) in
-    let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 tracker.Progress] #()) #()) in
-    do:  ("m" <-[go.MapType go.uint64 tracker.Progress] "$r0");;;
+    let: "m" := (GoAlloc (go.MapType go.uint64 code.go_etcd_io.raft.v3.tracker.tracker.Progress) (GoZeroVal (go.MapType go.uint64 code.go_etcd_io.raft.v3.tracker.tracker.Progress) #())) in
+    let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 code.go_etcd_io.raft.v3.tracker.tracker.Progress] #()) #()) in
+    do:  ("m" <-[go.MapType go.uint64 code.go_etcd_io.raft.v3.tracker.tracker.Progress] "$r0");;;
     do:  (let: "$a0" := (λ: "id" "pr",
-      exception_do (let: "pr" := (GoAlloc (go.PointerType tracker.Progress) "pr") in
+      exception_do (let: "pr" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) "pr") in
       let: "id" := (GoAlloc go.uint64 "id") in
-      let: "p" := (GoAlloc tracker.Progress (GoZeroVal tracker.Progress #())) in
-      let: "$r0" := (![tracker.Progress] (![go.PointerType tracker.Progress] "pr")) in
-      do:  ("p" <-[tracker.Progress] "$r0");;;
-      let: "$r0" := ((MethodResolve (go.PointerType tracker.Inflights) "Clone"%go (![go.PointerType tracker.Inflights] (StructFieldRef tracker.Progress "Inflights"%go (![go.PointerType tracker.Progress] "pr")))) #()) in
-      do:  ((StructFieldRef tracker.Progress "Inflights"%go "p") <-[go.PointerType tracker.Inflights] "$r0");;;
-      let: "$r0" := (Convert go.untyped_nil (go.PointerType tracker.Progress) UntypedNil) in
-      do:  ("pr" <-[go.PointerType tracker.Progress] "$r0");;;
-      let: "$r0" := (![tracker.Progress] "p") in
-      do:  (map.insert go.uint64 (![go.MapType go.uint64 tracker.Progress] "m") (![go.uint64] "id") "$r0");;;
+      let: "p" := (GoAlloc code.go_etcd_io.raft.v3.tracker.tracker.Progress (GoZeroVal code.go_etcd_io.raft.v3.tracker.tracker.Progress #())) in
+      let: "$r0" := (![code.go_etcd_io.raft.v3.tracker.tracker.Progress] (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")) in
+      do:  ("p" <-[code.go_etcd_io.raft.v3.tracker.tracker.Progress] "$r0");;;
+      let: "$r0" := ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Inflights) "Clone"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Inflights] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "Inflights"%go (![go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "pr")))) #()) in
+      do:  ((StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "Inflights"%go "p") <-[go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Inflights] "$r0");;;
+      let: "$r0" := (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress) UntypedNil) in
+      do:  ("pr" <-[go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Progress] "$r0");;;
+      let: "$r0" := (![code.go_etcd_io.raft.v3.tracker.tracker.Progress] "p") in
+      do:  (map.insert go.uint64 (![go.MapType go.uint64 code.go_etcd_io.raft.v3.tracker.tracker.Progress] "m") (![go.uint64] "id") "$r0");;;
       return: #())
       ) in
-    (MethodResolve (go.PointerType tracker.ProgressTracker) "Visit"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) "$a0");;;
-    return: (![go.MapType go.uint64 tracker.Progress] "m")).
+    (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker) "Visit"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) "$a0");;;
+    return: (![go.MapType go.uint64 code.go_etcd_io.raft.v3.tracker.tracker.Progress] "m")).
 
 (* go: status.go:56:6 *)
 Definition getBasicStatusⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -6434,7 +6434,7 @@ Definition getBasicStatusⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     CompositeLiteral BasicStatus (LiteralValue [KeyedElement (Some (KeyField "ID"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "LeadTransferee"%go)) (ElementExpression go.uint64 "$v1")])) in
     do:  ("s" <-[BasicStatus] "$r0");;;
     let: "$r0" := ((MethodResolve (go.PointerType raft) "hardState"%go (![go.PointerType raft] "r")) #()) in
-    do:  ((StructFieldRef BasicStatus "HardState"%go "s") <-[raftpb.HardState] "$r0");;;
+    do:  ((StructFieldRef BasicStatus "HardState"%go "s") <-[code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "$r0");;;
     let: "$r0" := ((MethodResolve (go.PointerType raft) "softState"%go (![go.PointerType raft] "r")) #()) in
     do:  ((StructFieldRef BasicStatus "SoftState"%go "s") <-[SoftState] "$r0");;;
     let: "$r0" := (![go.uint64] (StructFieldRef raftLog "applied"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
@@ -6455,10 +6455,10 @@ Definition getStatusⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     then
       let: "$r0" := (let: "$a0" := (![go.PointerType raft] "r") in
       (FuncResolve getProgressCopy [] #()) "$a0") in
-      do:  ((StructFieldRef Status "Progress"%go "s") <-[go.MapType go.uint64 tracker.Progress] "$r0")
+      do:  ((StructFieldRef Status "Progress"%go "s") <-[go.MapType go.uint64 code.go_etcd_io.raft.v3.tracker.tracker.Progress] "$r0")
     else do:  #());;;
-    let: "$r0" := ((MethodResolve (go.PointerType tracker.Config) "Clone"%go (StructFieldRef tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) #()) in
-    do:  ((StructFieldRef Status "Config"%go "s") <-[tracker.Config] "$r0");;;
+    let: "$r0" := ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.tracker.tracker.Config) "Clone"%go (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker "Config"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) #()) in
+    do:  ((StructFieldRef Status "Config"%go "s") <-[code.go_etcd_io.raft.v3.tracker.tracker.Config] "$r0");;;
     return: (![Status] "s")).
 
 (* MarshalJSON translates the raft status into JSON.
@@ -6471,33 +6471,33 @@ Definition Status__MarshalJSONⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     let: "j" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := (let: "$a0" := #"{""id"":""%x"",""term"":%d,""vote"":""%x"",""commit"":%d,""lead"":""%x"",""raftState"":%q,""applied"":%d,""progress"":{"%go in
     let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef BasicStatus "ID"%go (StructFieldRef Status "BasicStatus"%go "s")))) in
-    let: "$sl1" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftpb.HardState "Term"%go (StructFieldRef BasicStatus "HardState"%go (StructFieldRef Status "BasicStatus"%go "s"))))) in
-    let: "$sl2" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftpb.HardState "Vote"%go (StructFieldRef BasicStatus "HardState"%go (StructFieldRef Status "BasicStatus"%go "s"))))) in
-    let: "$sl3" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftpb.HardState "Commit"%go (StructFieldRef BasicStatus "HardState"%go (StructFieldRef Status "BasicStatus"%go "s"))))) in
+    let: "$sl1" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Term"%go (StructFieldRef BasicStatus "HardState"%go (StructFieldRef Status "BasicStatus"%go "s"))))) in
+    let: "$sl2" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Vote"%go (StructFieldRef BasicStatus "HardState"%go (StructFieldRef Status "BasicStatus"%go "s"))))) in
+    let: "$sl3" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Commit"%go (StructFieldRef BasicStatus "HardState"%go (StructFieldRef Status "BasicStatus"%go "s"))))) in
     let: "$sl4" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef SoftState "Lead"%go (StructFieldRef BasicStatus "SoftState"%go (StructFieldRef Status "BasicStatus"%go "s"))))) in
     let: "$sl5" := (Convert StateType go.any (![StateType] (StructFieldRef SoftState "RaftState"%go (StructFieldRef BasicStatus "SoftState"%go (StructFieldRef Status "BasicStatus"%go "s"))))) in
     let: "$sl6" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef BasicStatus "Applied"%go (StructFieldRef Status "BasicStatus"%go "s")))) in
     CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1"); KeyedElement None (ElementExpression go.any "$sl2"); KeyedElement None (ElementExpression go.any "$sl3"); KeyedElement None (ElementExpression go.any "$sl4"); KeyedElement None (ElementExpression go.any "$sl5"); KeyedElement None (ElementExpression go.any "$sl6")]))) in
-    (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1") in
+    (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1") in
     do:  ("j" <-[go.string] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.MapType go.uint64 tracker.Progress] (StructFieldRef Status "Progress"%go "s")) in
-    (FuncResolve go.len [go.MapType go.uint64 tracker.Progress] #()) "$a0") =⟨go.int⟩ #(W64 0))
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.MapType go.uint64 code.go_etcd_io.raft.v3.tracker.tracker.Progress] (StructFieldRef Status "Progress"%go "s")) in
+    (FuncResolve go.len [go.MapType go.uint64 code.go_etcd_io.raft.v3.tracker.tracker.Progress] #()) "$a0") =⟨go.int⟩ #(W64 0))
     then do:  ("j" <-[go.string] ((![go.string] "j") +⟨go.string⟩ #"},"%go))
     else
-      let: "$range" := (![go.MapType go.uint64 tracker.Progress] (StructFieldRef Status "Progress"%go "s")) in
-      (let: "v" := (GoAlloc tracker.Progress (GoZeroVal tracker.Progress #())) in
+      let: "$range" := (![go.MapType go.uint64 code.go_etcd_io.raft.v3.tracker.tracker.Progress] (StructFieldRef Status "Progress"%go "s")) in
+      (let: "v" := (GoAlloc code.go_etcd_io.raft.v3.tracker.tracker.Progress (GoZeroVal code.go_etcd_io.raft.v3.tracker.tracker.Progress #())) in
       let: "k" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-      map.for_range go.uint64 tracker.Progress "$range" (λ: "$key" "$value",
-        do:  ("v" <-[tracker.Progress] "$value");;;
+      map.for_range go.uint64 code.go_etcd_io.raft.v3.tracker.tracker.Progress "$range" (λ: "$key" "$value",
+        do:  ("v" <-[code.go_etcd_io.raft.v3.tracker.tracker.Progress] "$value");;;
         do:  ("k" <-[go.uint64] "$key");;;
         let: "subj" := (GoAlloc go.string (GoZeroVal go.string #())) in
         let: "$r0" := (let: "$a0" := #"""%x"":{""match"":%d,""next"":%d,""state"":%q},"%go in
         let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] "k")) in
-        let: "$sl1" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef tracker.Progress "Match"%go "v"))) in
-        let: "$sl2" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef tracker.Progress "Next"%go "v"))) in
-        let: "$sl3" := (Convert tracker.StateType go.any (![tracker.StateType] (StructFieldRef tracker.Progress "State"%go "v"))) in
+        let: "$sl1" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "Match"%go "v"))) in
+        let: "$sl2" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "Next"%go "v"))) in
+        let: "$sl3" := (Convert code.go_etcd_io.raft.v3.tracker.tracker.StateType go.any (![code.go_etcd_io.raft.v3.tracker.tracker.StateType] (StructFieldRef code.go_etcd_io.raft.v3.tracker.tracker.Progress "State"%go "v"))) in
         CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1"); KeyedElement None (ElementExpression go.any "$sl2"); KeyedElement None (ElementExpression go.any "$sl3")]))) in
-        (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1") in
+        (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1") in
         do:  ("subj" <-[go.string] "$r0");;;
         do:  ("j" <-[go.string] ((![go.string] "j") +⟨go.string⟩ (![go.string] "subj")))));;;
       let: "$r0" := ((let: "$s" := (![go.string] "j") in
@@ -6507,7 +6507,7 @@ Definition Status__MarshalJSONⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     do:  ("j" <-[go.string] ((![go.string] "j") +⟨go.string⟩ (let: "$a0" := #"""leadtransferee"":""%x""}"%go in
     let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef BasicStatus "LeadTransferee"%go (StructFieldRef Status "BasicStatus"%go "s")))) in
     CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-    (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1")));;;
+    (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1")));;;
     return: (Convert go.string (go.SliceType go.byte) (![go.string] "j"), Convert go.untyped_nil go.error UntypedNil)).
 
 (* go: status.go:99:17 *)
@@ -6535,8 +6535,8 @@ Definition Status__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
    go: storage.go:113:6 *)
 Definition NewMemoryStorageⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (return: (GoAlloc MemoryStorage (let: "$v0" := ((FuncResolve go.make2 [go.SliceType raftpb.Entry] #()) #(W64 1)) in
-     CompositeLiteral MemoryStorage (LiteralValue [KeyedElement (Some (KeyField "ents"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v0")])))).
+    exception_do (return: (GoAlloc MemoryStorage (let: "$v0" := ((FuncResolve go.make2 [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) #(W64 1)) in
+     CompositeLiteral MemoryStorage (LiteralValue [KeyedElement (Some (KeyField "ents"%go)) (ElementExpression (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "$v0")])))).
 
 (* InitialState implements the Storage interface.
 
@@ -6545,7 +6545,7 @@ Definition MemoryStorage__InitialStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
   λ: "ms" <>,
     exception_do (let: "ms" := (GoAlloc (go.PointerType MemoryStorage) "ms") in
     do:  ((StructFieldRef inMemStorageCallStats "initialState"%go (StructFieldRef MemoryStorage "callStats"%go (![go.PointerType MemoryStorage] "ms"))) <-[go.int] ((![go.int] (StructFieldRef inMemStorageCallStats "initialState"%go (StructFieldRef MemoryStorage "callStats"%go (![go.PointerType MemoryStorage] "ms")))) +⟨go.int⟩ #(W64 1)));;;
-    return: (![raftpb.HardState] (StructFieldRef MemoryStorage "hardState"%go (![go.PointerType MemoryStorage] "ms")), ![raftpb.ConfState] (StructFieldRef raftpb.SnapshotMetadata "ConfState"%go (StructFieldRef raftpb.Snapshot "Metadata"%go (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms")))), Convert go.untyped_nil go.error UntypedNil)).
+    return: (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] (StructFieldRef MemoryStorage "hardState"%go (![go.PointerType MemoryStorage] "ms")), ![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "ConfState"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms")))), Convert go.untyped_nil go.error UntypedNil)).
 
 (* SetHardState saves the current HardState.
 
@@ -6553,7 +6553,7 @@ Definition MemoryStorage__InitialStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
 Definition MemoryStorage__SetHardStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ms" "st",
     with_defer: (let: "ms" := (GoAlloc (go.PointerType MemoryStorage) "ms") in
-    let: "st" := (GoAlloc raftpb.HardState "st") in
+    let: "st" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "st") in
     do:  ((MethodResolve (go.PointerType MemoryStorage) "Lock"%go (![go.PointerType MemoryStorage] "ms")) #());;;
     do:  (let: "$f" := (MethodResolve (go.PointerType MemoryStorage) "Unlock"%go (![go.PointerType MemoryStorage] "ms")) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
@@ -6561,8 +6561,8 @@ Definition MemoryStorage__SetHardStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "$r0" := (![raftpb.HardState] "st") in
-    do:  ((StructFieldRef MemoryStorage "hardState"%go (![go.PointerType MemoryStorage] "ms")) <-[raftpb.HardState] "$r0");;;
+    let: "$r0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "st") in
+    do:  ((StructFieldRef MemoryStorage "hardState"%go (![go.PointerType MemoryStorage] "ms")) <-[code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "$r0");;;
     return: (Convert go.untyped_nil go.error UntypedNil)).
 
 (* Entries implements the Storage interface.
@@ -6583,10 +6583,10 @@ Definition MemoryStorage__Entriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
       )));;;
     do:  ((StructFieldRef inMemStorageCallStats "entries"%go (StructFieldRef MemoryStorage "callStats"%go (![go.PointerType MemoryStorage] "ms"))) <-[go.int] ((![go.int] (StructFieldRef inMemStorageCallStats "entries"%go (StructFieldRef MemoryStorage "callStats"%go (![go.PointerType MemoryStorage] "ms")))) +⟨go.int⟩ #(W64 1)));;;
     let: "offset" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), #(W64 0))))) in
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), #(W64 0))))) in
     do:  ("offset" <-[go.uint64] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "lo") ≤⟨go.uint64⟩ (![go.uint64] "offset"))
-    then return: (Convert go.untyped_nil (go.SliceType raftpb.Entry) UntypedNil, ![go.error] (GlobalVarAddr ErrCompacted #()))
+    then return: (Convert go.untyped_nil (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) UntypedNil, ![go.error] (GlobalVarAddr ErrCompacted #()))
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "hi") >⟨go.uint64⟩ (((MethodResolve (go.PointerType MemoryStorage) "lastIndex"%go (![go.PointerType MemoryStorage] "ms")) #()) +⟨go.uint64⟩ #(W64 1)))
     then
@@ -6596,20 +6596,20 @@ Definition MemoryStorage__Entriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1")]))) in
       (MethodResolve Logger "Panicf"%go ((FuncResolve getLogger [] #()) #())) "$a0" "$a1")
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 1))
-    then return: (Convert go.untyped_nil (go.SliceType raftpb.Entry) UntypedNil, ![go.error] (GlobalVarAddr ErrUnavailable #()))
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 1))
+    then return: (Convert go.untyped_nil (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) UntypedNil, ![go.error] (GlobalVarAddr ErrUnavailable #()))
     else do:  #());;;
-    let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) (GoZeroVal (go.SliceType raftpb.Entry) #())) in
-    let: "$r0" := (let: "$a0" := (let: "$s" := (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
-    Slice (go.SliceType raftpb.Entry) ("$s", (![go.uint64] "lo") -⟨go.uint64⟩ (![go.uint64] "offset"), (![go.uint64] "hi") -⟨go.uint64⟩ (![go.uint64] "offset"))) in
+    let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (GoZeroVal (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) #())) in
+    let: "$r0" := (let: "$a0" := (let: "$s" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
+    Slice (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) ("$s", (![go.uint64] "lo") -⟨go.uint64⟩ (![go.uint64] "offset"), (![go.uint64] "hi") -⟨go.uint64⟩ (![go.uint64] "offset"))) in
     let: "$a1" := (![go.uint64] "maxSize") in
     (FuncResolve limitSize [] #()) "$a0" "$a1") in
-    do:  ("ents" <-[go.SliceType raftpb.Entry] "$r0");;;
-    return: (let: "$s" := (![go.SliceType raftpb.Entry] "ents") in
-     FullSlice (go.SliceType raftpb.Entry) ("$s", #(W64 0), let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-      (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0", let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-      (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0"), Convert go.untyped_nil go.error UntypedNil)).
+    do:  ("ents" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
+    return: (let: "$s" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+     FullSlice (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) ("$s", #(W64 0), let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+      (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0", let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+      (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0"), Convert go.untyped_nil go.error UntypedNil)).
 
 (* Term implements the Storage interface.
 
@@ -6627,16 +6627,16 @@ Definition MemoryStorage__Termⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
       )));;;
     do:  ((StructFieldRef inMemStorageCallStats "term"%go (StructFieldRef MemoryStorage "callStats"%go (![go.PointerType MemoryStorage] "ms"))) <-[go.int] ((![go.int] (StructFieldRef inMemStorageCallStats "term"%go (StructFieldRef MemoryStorage "callStats"%go (![go.PointerType MemoryStorage] "ms")))) +⟨go.int⟩ #(W64 1)));;;
     let: "offset" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), #(W64 0))))) in
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), #(W64 0))))) in
     do:  ("offset" <-[go.uint64] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "offset"))
     then return: (#(W64 0), ![go.error] (GlobalVarAddr ErrCompacted #()))
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool ((Convert go.uint64 go.int ((![go.uint64] "i") -⟨go.uint64⟩ (![go.uint64] "offset"))) ≥⟨go.int⟩ (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0"))
+    (if: Convert go.untyped_bool go.bool ((Convert go.uint64 go.int ((![go.uint64] "i") -⟨go.uint64⟩ (![go.uint64] "offset"))) ≥⟨go.int⟩ (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0"))
     then return: (#(W64 0), ![go.error] (GlobalVarAddr ErrUnavailable #()))
     else do:  #());;;
-    return: (![go.uint64] (StructFieldRef raftpb.Entry "Term"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), Convert go.uint64 go.int ((![go.uint64] "i") -⟨go.uint64⟩ (![go.uint64] "offset"))))), Convert go.untyped_nil go.error UntypedNil)).
+    return: (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Term"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), Convert go.uint64 go.int ((![go.uint64] "i") -⟨go.uint64⟩ (![go.uint64] "offset"))))), Convert go.untyped_nil go.error UntypedNil)).
 
 (* LastIndex implements the Storage interface.
 
@@ -6658,8 +6658,8 @@ Definition MemoryStorage__LastIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
 Definition MemoryStorage__lastIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ms" <>,
     exception_do (let: "ms" := (GoAlloc (go.PointerType MemoryStorage) "ms") in
-    return: (((![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), #(W64 0))))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
-     (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0"))) -⟨go.uint64⟩ #(W64 1))).
+    return: (((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), #(W64 0))))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
+     (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0"))) -⟨go.uint64⟩ #(W64 1))).
 
 (* FirstIndex implements the Storage interface.
 
@@ -6681,7 +6681,7 @@ Definition MemoryStorage__FirstIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
 Definition MemoryStorage__firstIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ms" <>,
     exception_do (let: "ms" := (GoAlloc (go.PointerType MemoryStorage) "ms") in
-    return: ((![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), #(W64 0))))) +⟨go.uint64⟩ #(W64 1))).
+    return: ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), #(W64 0))))) +⟨go.uint64⟩ #(W64 1))).
 
 (* Snapshot implements the Storage interface.
 
@@ -6697,7 +6697,7 @@ Definition MemoryStorage__Snapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
       "$oldf" #()
       )));;;
     do:  ((StructFieldRef inMemStorageCallStats "snapshot"%go (StructFieldRef MemoryStorage "callStats"%go (![go.PointerType MemoryStorage] "ms"))) <-[go.int] ((![go.int] (StructFieldRef inMemStorageCallStats "snapshot"%go (StructFieldRef MemoryStorage "callStats"%go (![go.PointerType MemoryStorage] "ms")))) +⟨go.int⟩ #(W64 1)));;;
-    return: (![raftpb.Snapshot] (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms")), Convert go.untyped_nil go.error UntypedNil)).
+    return: (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms")), Convert go.untyped_nil go.error UntypedNil)).
 
 (* ApplySnapshot overwrites the contents of this Storage object with
    those of the given snapshot.
@@ -6706,7 +6706,7 @@ Definition MemoryStorage__Snapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
 Definition MemoryStorage__ApplySnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ms" "snap",
     with_defer: (let: "ms" := (GoAlloc (go.PointerType MemoryStorage) "ms") in
-    let: "snap" := (GoAlloc raftpb.Snapshot "snap") in
+    let: "snap" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "snap") in
     do:  ((MethodResolve (go.PointerType MemoryStorage) "Lock"%go (![go.PointerType MemoryStorage] "ms")) #());;;
     do:  (let: "$f" := (MethodResolve (go.PointerType MemoryStorage) "Unlock"%go (![go.PointerType MemoryStorage] "ms")) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
@@ -6715,20 +6715,20 @@ Definition MemoryStorage__ApplySnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
       "$oldf" #()
       )));;;
     let: "msIndex" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms"))))) in
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms"))))) in
     do:  ("msIndex" <-[go.uint64] "$r0");;;
     let: "snapIndex" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "snap"))) in
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "snap"))) in
     do:  ("snapIndex" <-[go.uint64] "$r0");;;
     (if: Convert go.untyped_bool go.bool (((![go.uint64] "msIndex") ≠⟨go.uint64⟩ #(W64 0)) && ((![go.uint64] "msIndex") ≥⟨go.uint64⟩ (![go.uint64] "snapIndex")))
     then return: (![go.error] (GlobalVarAddr ErrSnapOutOfDate #()))
     else do:  #());;;
-    let: "$r0" := (![raftpb.Snapshot] "snap") in
-    do:  ((StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms")) <-[raftpb.Snapshot] "$r0");;;
-    let: "$r0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Term"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "snap"))) in
-    let: "$v1" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "snap"))) in
-    CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v1")])])) in
-    do:  ((StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")) <-[go.SliceType raftpb.Entry] "$r0");;;
+    let: "$r0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "snap") in
+    do:  ((StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms")) <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "$r0");;;
+    let: "$r0" := (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Term"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "snap"))) in
+    let: "$v1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "snap"))) in
+    CompositeLiteral (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v1")])])) in
+    do:  ((StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
     return: (Convert go.untyped_nil go.error UntypedNil)).
 
 (* CreateSnapshot makes a snapshot which can be retrieved with Snapshot() and
@@ -6741,7 +6741,7 @@ Definition MemoryStorage__CreateSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx 
   λ: "ms" "i" "cs" "data",
     with_defer: (let: "ms" := (GoAlloc (go.PointerType MemoryStorage) "ms") in
     let: "data" := (GoAlloc (go.SliceType go.byte) "data") in
-    let: "cs" := (GoAlloc (go.PointerType raftpb.ConfState) "cs") in
+    let: "cs" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState) "cs") in
     let: "i" := (GoAlloc go.uint64 "i") in
     do:  ((MethodResolve (go.PointerType MemoryStorage) "Lock"%go (![go.PointerType MemoryStorage] "ms")) #());;;
     do:  (let: "$f" := (MethodResolve (go.PointerType MemoryStorage) "Unlock"%go (![go.PointerType MemoryStorage] "ms")) in
@@ -6750,11 +6750,11 @@ Definition MemoryStorage__CreateSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx 
       "$f" #();;
       "$oldf" #()
       )));;;
-    (if: Convert go.untyped_bool go.bool ((![go.uint64] "i") ≤⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms"))))))
-    then return: (CompositeLiteral raftpb.Snapshot (LiteralValue []), ![go.error] (GlobalVarAddr ErrSnapOutOfDate #()))
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] "i") ≤⟨go.uint64⟩ (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms"))))))
+    then return: (CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot (LiteralValue []), ![go.error] (GlobalVarAddr ErrSnapOutOfDate #()))
     else do:  #());;;
     let: "offset" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), #(W64 0))))) in
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), #(W64 0))))) in
     do:  ("offset" <-[go.uint64] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "i") >⟨go.uint64⟩ ((MethodResolve (go.PointerType MemoryStorage) "lastIndex"%go (![go.PointerType MemoryStorage] "ms")) #()))
     then
@@ -6765,17 +6765,17 @@ Definition MemoryStorage__CreateSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx 
       (MethodResolve Logger "Panicf"%go ((FuncResolve getLogger [] #()) #())) "$a0" "$a1")
     else do:  #());;;
     let: "$r0" := (![go.uint64] "i") in
-    do:  ((StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms")))) <-[go.uint64] "$r0");;;
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.Entry "Term"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), Convert go.uint64 go.int ((![go.uint64] "i") -⟨go.uint64⟩ (![go.uint64] "offset")))))) in
-    do:  ((StructFieldRef raftpb.SnapshotMetadata "Term"%go (StructFieldRef raftpb.Snapshot "Metadata"%go (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms")))) <-[go.uint64] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![go.PointerType raftpb.ConfState] "cs") ≠⟨go.PointerType raftpb.ConfState⟩ (Convert go.untyped_nil (go.PointerType raftpb.ConfState) UntypedNil))
+    do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms")))) <-[go.uint64] "$r0");;;
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Term"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), Convert go.uint64 go.int ((![go.uint64] "i") -⟨go.uint64⟩ (![go.uint64] "offset")))))) in
+    do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Term"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms")))) <-[go.uint64] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "cs") ≠⟨go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState) UntypedNil))
     then
-      let: "$r0" := (![raftpb.ConfState] (![go.PointerType raftpb.ConfState] "cs")) in
-      do:  ((StructFieldRef raftpb.SnapshotMetadata "ConfState"%go (StructFieldRef raftpb.Snapshot "Metadata"%go (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms")))) <-[raftpb.ConfState] "$r0")
+      let: "$r0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "cs")) in
+      do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "ConfState"%go (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms")))) <-[code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "$r0")
     else do:  #());;;
     let: "$r0" := (![go.SliceType go.byte] "data") in
-    do:  ((StructFieldRef raftpb.Snapshot "Data"%go (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms"))) <-[go.SliceType go.byte] "$r0");;;
-    return: (![raftpb.Snapshot] (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms")), Convert go.untyped_nil go.error UntypedNil)).
+    do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Data"%go (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms"))) <-[go.SliceType go.byte] "$r0");;;
+    return: (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms")), Convert go.untyped_nil go.error UntypedNil)).
 
 (* Compact discards all log entries prior to compactIndex.
    It is the application's responsibility to not attempt to compact an index
@@ -6794,7 +6794,7 @@ Definition MemoryStorage__Compactⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
       "$oldf" #()
       )));;;
     let: "offset" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), #(W64 0))))) in
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), #(W64 0))))) in
     do:  ("offset" <-[go.uint64] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "compactIndex") ≤⟨go.uint64⟩ (![go.uint64] "offset"))
     then return: (![go.error] (GlobalVarAddr ErrCompacted #()))
@@ -6810,21 +6810,21 @@ Definition MemoryStorage__Compactⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
     let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := ((![go.uint64] "compactIndex") -⟨go.uint64⟩ (![go.uint64] "offset")) in
     do:  ("i" <-[go.uint64] "$r0");;;
-    let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) (GoZeroVal (go.SliceType raftpb.Entry) #())) in
-    let: "$r0" := ((FuncResolve go.make3 [go.SliceType raftpb.Entry] #()) #(W64 1) ((Convert go.int go.uint64 (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0")) -⟨go.uint64⟩ (![go.uint64] "i"))) in
-    do:  ("ents" <-[go.SliceType raftpb.Entry] "$r0");;;
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), Convert go.uint64 go.int (![go.uint64] "i"))))) in
-    do:  ((StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "ents", #(W64 0)))) <-[go.uint64] "$r0");;;
-    let: "$r0" := (![go.uint64] (StructFieldRef raftpb.Entry "Term"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), Convert go.uint64 go.int (![go.uint64] "i"))))) in
-    do:  ((StructFieldRef raftpb.Entry "Term"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "ents", #(W64 0)))) <-[go.uint64] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-    let: "$a1" := (let: "$s" := (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
-    Slice (go.SliceType raftpb.Entry) ("$s", (![go.uint64] "i") +⟨go.uint64⟩ #(W64 1), FuncResolve go.len [go.SliceType raftpb.Entry] #() (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))))) in
-    (FuncResolve go.append [go.SliceType raftpb.Entry] #()) "$a0" "$a1") in
-    do:  ("ents" <-[go.SliceType raftpb.Entry] "$r0");;;
-    let: "$r0" := (![go.SliceType raftpb.Entry] "ents") in
-    do:  ((StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")) <-[go.SliceType raftpb.Entry] "$r0");;;
+    let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (GoZeroVal (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) #())) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) #(W64 1) ((Convert go.int go.uint64 (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0")) -⟨go.uint64⟩ (![go.uint64] "i"))) in
+    do:  ("ents" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), Convert go.uint64 go.int (![go.uint64] "i"))))) in
+    do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents", #(W64 0)))) <-[go.uint64] "$r0");;;
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Term"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), Convert go.uint64 go.int (![go.uint64] "i"))))) in
+    do:  ((StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Term"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents", #(W64 0)))) <-[go.uint64] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+    let: "$a1" := (let: "$s" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
+    Slice (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) ("$s", (![go.uint64] "i") +⟨go.uint64⟩ #(W64 1), FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #() (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))))) in
+    (FuncResolve go.append [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0" "$a1") in
+    do:  ("ents" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
+    let: "$r0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+    do:  ((StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
     return: (Convert go.untyped_nil go.error UntypedNil)).
 
 (* Append the new entries to storage.
@@ -6835,9 +6835,9 @@ Definition MemoryStorage__Compactⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
 Definition MemoryStorage__Appendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ms" "entries",
     with_defer: (let: "ms" := (GoAlloc (go.PointerType MemoryStorage) "ms") in
-    let: "entries" := (GoAlloc (go.SliceType raftpb.Entry) "entries") in
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Entry] "entries") in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 0))
+    let: "entries" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "entries") in
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "entries") in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 0))
     then return: (Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
     do:  ((MethodResolve (go.PointerType MemoryStorage) "Lock"%go (![go.PointerType MemoryStorage] "ms")) #());;;
@@ -6851,42 +6851,42 @@ Definition MemoryStorage__Appendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "$r0" := ((MethodResolve (go.PointerType MemoryStorage) "firstIndex"%go (![go.PointerType MemoryStorage] "ms")) #()) in
     do:  ("first" <-[go.uint64] "$r0");;;
     let: "last" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (((![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "entries", #(W64 0))))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType raftpb.Entry] "entries") in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0"))) -⟨go.uint64⟩ #(W64 1)) in
+    let: "$r0" := (((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "entries", #(W64 0))))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "entries") in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0"))) -⟨go.uint64⟩ #(W64 1)) in
     do:  ("last" <-[go.uint64] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "last") <⟨go.uint64⟩ (![go.uint64] "first"))
     then return: (Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool ((![go.uint64] "first") >⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "entries", #(W64 0))))))
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] "first") >⟨go.uint64⟩ (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "entries", #(W64 0))))))
     then
-      let: "$r0" := (let: "$s" := (![go.SliceType raftpb.Entry] "entries") in
-      Slice (go.SliceType raftpb.Entry) ("$s", (![go.uint64] "first") -⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "entries", #(W64 0))))), FuncResolve go.len [go.SliceType raftpb.Entry] #() (![go.SliceType raftpb.Entry] "entries"))) in
-      do:  ("entries" <-[go.SliceType raftpb.Entry] "$r0")
+      let: "$r0" := (let: "$s" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "entries") in
+      Slice (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) ("$s", (![go.uint64] "first") -⟨go.uint64⟩ (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "entries", #(W64 0))))), FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #() (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "entries"))) in
+      do:  ("entries" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0")
     else do:  #());;;
     let: "offset" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := ((![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "entries", #(W64 0))))) -⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), #(W64 0)))))) in
+    let: "$r0" := ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "entries", #(W64 0))))) -⟨go.uint64⟩ (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")), #(W64 0)))))) in
     do:  ("offset" <-[go.uint64] "$r0");;;
     let: "$sw" := #true in
-    (if: "$sw" =⟨go.bool⟩ ((Convert go.int go.uint64 (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0")) >⟨go.uint64⟩ (![go.uint64] "offset"))
+    (if: "$sw" =⟨go.bool⟩ ((Convert go.int go.uint64 (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0")) >⟨go.uint64⟩ (![go.uint64] "offset"))
     then
-      let: "$r0" := (let: "$a0" := (let: "$s" := (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
-      FullSlice (go.SliceType raftpb.Entry) ("$s", #(W64 0), ![go.uint64] "offset", ![go.uint64] "offset")) in
-      let: "$a1" := (![go.SliceType raftpb.Entry] "entries") in
-      (FuncResolve go.append [go.SliceType raftpb.Entry] #()) "$a0" "$a1") in
-      do:  ((StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")) <-[go.SliceType raftpb.Entry] "$r0")
+      let: "$r0" := (let: "$a0" := (let: "$s" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
+      FullSlice (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) ("$s", #(W64 0), ![go.uint64] "offset", ![go.uint64] "offset")) in
+      let: "$a1" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "entries") in
+      (FuncResolve go.append [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0" "$a1") in
+      do:  ((StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0")
     else
-      (if: "$sw" =⟨go.bool⟩ ((Convert go.int go.uint64 (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
-      (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0")) =⟨go.uint64⟩ (![go.uint64] "offset"))
+      (if: "$sw" =⟨go.bool⟩ ((Convert go.int go.uint64 (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
+      (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0")) =⟨go.uint64⟩ (![go.uint64] "offset"))
       then
-        let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
-        let: "$a1" := (![go.SliceType raftpb.Entry] "entries") in
-        (FuncResolve go.append [go.SliceType raftpb.Entry] #()) "$a0" "$a1") in
-        do:  ((StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")) <-[go.SliceType raftpb.Entry] "$r0")
+        let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms"))) in
+        let: "$a1" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "entries") in
+        (FuncResolve go.append [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0" "$a1") in
+        do:  ((StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")) <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0")
       else
         do:  (let: "$a0" := #"missing log entry [last: %d, append at: %d]"%go in
         let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) ((MethodResolve (go.PointerType MemoryStorage) "lastIndex"%go (![go.PointerType MemoryStorage] "ms")) #())) in
-        let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "entries", #(W64 0)))))) in
+        let: "$sl1" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "entries", #(W64 0)))))) in
         CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1")]))) in
         (MethodResolve Logger "Panicf"%go ((FuncResolve getLogger [] #()) #())) "$a0" "$a1")));;;
     return: (Convert go.untyped_nil go.error UntypedNil)).
@@ -6896,9 +6896,9 @@ Definition MemoryStorage__Appendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
    go: types.go:34:6 *)
 Definition pbEntryIDⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "entry",
-    exception_do (let: "entry" := (GoAlloc (go.PointerType raftpb.Entry) "entry") in
-    return: (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Entry "Term"%go (![go.PointerType raftpb.Entry] "entry"))) in
-     let: "$v1" := (![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (![go.PointerType raftpb.Entry] "entry"))) in
+    exception_do (let: "entry" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "entry") in
+    return: (let: "$v0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Term"%go (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "entry"))) in
+     let: "$v1" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "entry"))) in
      CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")]))).
 
 (* lastIndex returns the index of the last entry in this log slice. Returns
@@ -6908,8 +6908,8 @@ Definition pbEntryIDⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 Definition logSlice__lastIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" <>,
     exception_do (let: "s" := (GoAlloc logSlice "s") in
-    return: ((![go.uint64] (StructFieldRef entryID "index"%go (StructFieldRef logSlice "prev"%go "s"))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef logSlice "entries"%go "s")) in
-     (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0")))).
+    return: ((![go.uint64] (StructFieldRef entryID "index"%go (StructFieldRef logSlice "prev"%go "s"))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef logSlice "entries"%go "s")) in
+     (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0")))).
 
 (* lastEntryID returns the ID of the last entry in this log slice, or prev if
    there are no entries.
@@ -6919,12 +6919,12 @@ Definition logSlice__lastEntryIDⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
   λ: "s" <>,
     exception_do (let: "s" := (GoAlloc logSlice "s") in
     (let: "ln" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef logSlice "entries"%go "s")) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") in
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef logSlice "entries"%go "s")) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") in
     do:  ("ln" <-[go.int] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.int] "ln") ≠⟨go.int⟩ #(W64 0))
     then
-      return: (let: "$a0" := (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef logSlice "entries"%go "s"), (![go.int] "ln") -⟨go.int⟩ #(W64 1))) in
+      return: (let: "$a0" := (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef logSlice "entries"%go "s"), (![go.int] "ln") -⟨go.int⟩ #(W64 1))) in
        (FuncResolve pbEntryID [] #()) "$a0")
     else do:  #()));;;
     return: (![entryID] (StructFieldRef logSlice "prev"%go "s"))).
@@ -6939,12 +6939,12 @@ Definition logSlice__validⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "prev" := (GoAlloc entryID (GoZeroVal entryID #())) in
     let: "$r0" := (![entryID] (StructFieldRef logSlice "prev"%go "s")) in
     do:  ("prev" <-[entryID] "$r0");;;
-    let: "$range" := (![go.SliceType raftpb.Entry] (StructFieldRef logSlice "entries"%go "s")) in
+    let: "$range" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef logSlice "entries"%go "s")) in
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
+    slice.for_range code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("i" <-[go.int] "$key");;;
       let: "id" := (GoAlloc entryID (GoZeroVal entryID #())) in
-      let: "$r0" := (let: "$a0" := (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef logSlice "entries"%go "s"), ![go.int] "i")) in
+      let: "$r0" := (let: "$a0" := (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef logSlice "entries"%go "s"), ![go.int] "i")) in
       (FuncResolve pbEntryID [] #()) "$a0") in
       do:  ("id" <-[entryID] "$r0");;;
       (if: Convert go.untyped_bool go.bool (((![go.uint64] (StructFieldRef entryID "term"%go "id")) <⟨go.uint64⟩ (![go.uint64] (StructFieldRef entryID "term"%go "prev"))) || ((![go.uint64] (StructFieldRef entryID "index"%go "id")) ≠⟨go.uint64⟩ ((![go.uint64] (StructFieldRef entryID "index"%go "prev")) +⟨go.uint64⟩ #(W64 1))))
@@ -6954,7 +6954,7 @@ Definition logSlice__validⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
          let: "$sl1" := (Convert entryID go.any (![entryID] "prev")) in
          let: "$sl2" := (Convert entryID go.any (![entryID] "id")) in
          CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1"); KeyedElement None (ElementExpression go.any "$sl2")]))) in
-         (FuncResolve fmt.Errorf [] #()) "$a0" "$a1")
+         (FuncResolve code.fmt.fmt.Errorf [] #()) "$a0" "$a1")
       else do:  #());;;
       let: "$r0" := (![entryID] "id") in
       do:  ("prev" <-[entryID] "$r0")));;;
@@ -6964,7 +6964,7 @@ Definition logSlice__validⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
        let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef logSlice "term"%go "s"))) in
        let: "$sl1" := (Convert entryID go.any (![entryID] "prev")) in
        CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1")]))) in
-       (FuncResolve fmt.Errorf [] #()) "$a0" "$a1")
+       (FuncResolve code.fmt.fmt.Errorf [] #()) "$a0" "$a1")
     else do:  #());;;
     return: (Convert go.untyped_nil go.error UntypedNil)).
 
@@ -6975,15 +6975,15 @@ Definition StateType__MarshalJSONⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
     return: (Convert go.string (go.SliceType go.byte) (let: "$a0" := #"%q"%go in
      let: "$a1" := ((let: "$sl0" := (Convert go.string go.any ((MethodResolve (go.PointerType StateType) "String"%go "st") #())) in
      CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-     (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1"), Convert go.untyped_nil go.error UntypedNil)).
+     (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1"), Convert go.untyped_nil go.error UntypedNil)).
 
 (* go: util.go:52:6 *)
 Definition isMsgInArrayⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "msgt" "arr",
     exception_do (let: "arr" := (GoAlloc (go.SliceType go.bool) "arr") in
-    let: "msgt" := (GoAlloc raftpb.MessageType "msgt") in
+    let: "msgt" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "msgt") in
     let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    let: "$r0" := (Convert raftpb.MessageType go.int (![raftpb.MessageType] "msgt")) in
+    let: "$r0" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType go.int (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] "msgt")) in
     do:  ("i" <-[go.int] "$r0");;;
     return: (((![go.int] "i") <⟨go.int⟩ (let: "$a0" := (![go.SliceType go.bool] "arr") in
      (FuncResolve go.len [go.SliceType go.bool] #()) "$a0")) && (![go.bool] (IndexRef (go.SliceType go.bool) (![go.SliceType go.bool] "arr", ![go.int] "i"))))).
@@ -6991,8 +6991,8 @@ Definition isMsgInArrayⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 (* go: util.go:57:6 *)
 Definition IsLocalMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "msgt",
-    exception_do (let: "msgt" := (GoAlloc raftpb.MessageType "msgt") in
-    return: (let: "$a0" := (![raftpb.MessageType] "msgt") in
+    exception_do (let: "msgt" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "msgt") in
+    return: (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] "msgt") in
      let: "$a1" := (let: "$s" := (![go.ArrayType 23 go.bool] (GlobalVarAddr isLocalMsg #())) in
      Slice (go.ArrayType 23 go.bool) ("$s", #(W64 0), FuncResolve go.len [go.ArrayType 23 go.bool] #() (![go.ArrayType 23 go.bool] (GlobalVarAddr isLocalMsg #())))) in
      (FuncResolve isMsgInArray [] #()) "$a0" "$a1")).
@@ -7000,8 +7000,8 @@ Definition IsLocalMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 (* go: util.go:61:6 *)
 Definition IsResponseMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "msgt",
-    exception_do (let: "msgt" := (GoAlloc raftpb.MessageType "msgt") in
-    return: (let: "$a0" := (![raftpb.MessageType] "msgt") in
+    exception_do (let: "msgt" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "msgt") in
+    return: (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] "msgt") in
      let: "$a1" := (let: "$s" := (![go.ArrayType 23 go.bool] (GlobalVarAddr isResponseMsg #())) in
      Slice (go.ArrayType 23 go.bool) ("$s", #(W64 0), FuncResolve go.len [go.ArrayType 23 go.bool] #() (![go.ArrayType 23 go.bool] (GlobalVarAddr isResponseMsg #())))) in
      (FuncResolve isMsgInArray [] #()) "$a0" "$a1")).
@@ -7017,44 +7017,44 @@ Definition IsLocalMsgTargetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
    go: util.go:70:6 *)
 Definition voteRespMsgTypeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "msgt",
-    exception_do (let: "msgt" := (GoAlloc raftpb.MessageType "msgt") in
-    let: "$sw" := (![raftpb.MessageType] "msgt") in
-    (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgVote
-    then return: (raftpb.MsgVoteResp)
+    exception_do (let: "msgt" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "msgt") in
+    let: "$sw" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] "msgt") in
+    (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgVote
+    then return: (code.go_etcd_io.raft.v3.raftpb.raftpb.MsgVoteResp)
     else
-      (if: "$sw" =⟨raftpb.MessageType⟩ raftpb.MsgPreVote
-      then return: (raftpb.MsgPreVoteResp)
+      (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.MsgPreVote
+      then return: (code.go_etcd_io.raft.v3.raftpb.raftpb.MsgPreVoteResp)
       else
         do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) (let: "$a0" := #"not a vote message: %s"%go in
-        let: "$a1" := ((let: "$sl0" := (Convert raftpb.MessageType go.any (![raftpb.MessageType] "msgt")) in
+        let: "$a1" := ((let: "$sl0" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType go.any (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] "msgt")) in
         CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-        (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1")) in
+        (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1")) in
         (FuncResolve go.panic [] #()) "$a0")))).
 
 (* go: util.go:81:6 *)
 Definition DescribeHardStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "hs",
-    exception_do (let: "hs" := (GoAlloc raftpb.HardState "hs") in
-    let: "buf" := (GoAlloc strings.Builder (GoZeroVal strings.Builder #())) in
-    do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+    exception_do (let: "hs" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "hs") in
+    let: "buf" := (GoAlloc code.strings.strings.Builder (GoZeroVal code.strings.strings.Builder #())) in
+    do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
     let: "$a1" := #"Term:%d"%go in
-    let: "$a2" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftpb.HardState "Term"%go "hs"))) in
+    let: "$a2" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Term"%go "hs"))) in
     CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-    (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
-    (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.HardState "Vote"%go "hs")) ≠⟨go.uint64⟩ #(W64 0))
+    (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Vote"%go "hs")) ≠⟨go.uint64⟩ #(W64 0))
     then
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
       let: "$a1" := #" Vote:%d"%go in
-      let: "$a2" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftpb.HardState "Vote"%go "hs"))) in
+      let: "$a2" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Vote"%go "hs"))) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
     else do:  #());;;
-    do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+    do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
     let: "$a1" := #" Commit:%d"%go in
-    let: "$a2" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftpb.HardState "Commit"%go "hs"))) in
+    let: "$a2" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.HardState "Commit"%go "hs"))) in
     CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-    (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
-    return: ((MethodResolve (go.PointerType strings.Builder) "String"%go "buf") #())).
+    (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
+    return: ((MethodResolve (go.PointerType code.strings.strings.Builder) "String"%go "buf") #())).
 
 (* go: util.go:91:6 *)
 Definition DescribeSoftStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -7064,139 +7064,139 @@ Definition DescribeSoftStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
      let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef SoftState "Lead"%go "ss"))) in
      let: "$sl1" := (Convert StateType go.any (![StateType] (StructFieldRef SoftState "RaftState"%go "ss"))) in
      CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1")]))) in
-     (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1")).
+     (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1")).
 
 (* go: util.go:95:6 *)
 Definition DescribeConfStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "state",
-    exception_do (let: "state" := (GoAlloc raftpb.ConfState "state") in
+    exception_do (let: "state" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState "state") in
     return: (let: "$a0" := #"Voters:%v VotersOutgoing:%v Learners:%v LearnersNext:%v AutoLeave:%v"%go in
-     let: "$a1" := ((let: "$sl0" := (Convert (go.SliceType go.uint64) go.any (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "Voters"%go "state"))) in
-     let: "$sl1" := (Convert (go.SliceType go.uint64) go.any (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "VotersOutgoing"%go "state"))) in
-     let: "$sl2" := (Convert (go.SliceType go.uint64) go.any (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "Learners"%go "state"))) in
-     let: "$sl3" := (Convert (go.SliceType go.uint64) go.any (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "LearnersNext"%go "state"))) in
-     let: "$sl4" := (Convert go.bool go.any (![go.bool] (StructFieldRef raftpb.ConfState "AutoLeave"%go "state"))) in
+     let: "$a1" := ((let: "$sl0" := (Convert (go.SliceType go.uint64) go.any (![go.SliceType go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState "Voters"%go "state"))) in
+     let: "$sl1" := (Convert (go.SliceType go.uint64) go.any (![go.SliceType go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState "VotersOutgoing"%go "state"))) in
+     let: "$sl2" := (Convert (go.SliceType go.uint64) go.any (![go.SliceType go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState "Learners"%go "state"))) in
+     let: "$sl3" := (Convert (go.SliceType go.uint64) go.any (![go.SliceType go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState "LearnersNext"%go "state"))) in
+     let: "$sl4" := (Convert go.bool go.any (![go.bool] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState "AutoLeave"%go "state"))) in
      CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1"); KeyedElement None (ElementExpression go.any "$sl2"); KeyedElement None (ElementExpression go.any "$sl3"); KeyedElement None (ElementExpression go.any "$sl4")]))) in
-     (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1")).
+     (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1")).
 
 (* go: util.go:102:6 *)
 Definition DescribeSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "snap",
-    exception_do (let: "snap" := (GoAlloc raftpb.Snapshot "snap") in
-    let: "m" := (GoAlloc raftpb.SnapshotMetadata (GoZeroVal raftpb.SnapshotMetadata #())) in
-    let: "$r0" := (![raftpb.SnapshotMetadata] (StructFieldRef raftpb.Snapshot "Metadata"%go "snap")) in
-    do:  ("m" <-[raftpb.SnapshotMetadata] "$r0");;;
+    exception_do (let: "snap" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "snap") in
+    let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata #())) in
+    let: "$r0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot "Metadata"%go "snap")) in
+    do:  ("m" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata] "$r0");;;
     return: (let: "$a0" := #"Index:%d Term:%d ConfState:%s"%go in
-     let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go "m"))) in
-     let: "$sl1" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Term"%go "m"))) in
-     let: "$sl2" := (Convert go.string go.any (let: "$a0" := (![raftpb.ConfState] (StructFieldRef raftpb.SnapshotMetadata "ConfState"%go "m")) in
+     let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Index"%go "m"))) in
+     let: "$sl1" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "Term"%go "m"))) in
+     let: "$sl2" := (Convert go.string go.any (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.SnapshotMetadata "ConfState"%go "m")) in
      (FuncResolve DescribeConfState [] #()) "$a0")) in
      CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1"); KeyedElement None (ElementExpression go.any "$sl2")]))) in
-     (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1")).
+     (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1")).
 
 (* go: util.go:107:6 *)
 Definition DescribeReadyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "rd" "f",
     exception_do (let: "f" := (GoAlloc EntryFormatter "f") in
     let: "rd" := (GoAlloc Ready "rd") in
-    let: "buf" := (GoAlloc strings.Builder (GoZeroVal strings.Builder #())) in
+    let: "buf" := (GoAlloc code.strings.strings.Builder (GoZeroVal code.strings.strings.Builder #())) in
     (if: Convert go.untyped_bool go.bool ((![go.PointerType SoftState] (StructFieldRef Ready "SoftState"%go "rd")) ≠⟨go.PointerType SoftState⟩ (Convert go.untyped_nil (go.PointerType SoftState) UntypedNil))
     then
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
       let: "$a1" := ((let: "$sl0" := (Convert go.string go.any (let: "$a0" := (![SoftState] (![go.PointerType SoftState] (StructFieldRef Ready "SoftState"%go "rd"))) in
       (FuncResolve DescribeSoftState [] #()) "$a0")) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprint [] #()) "$a0" "$a1");;;
+      (FuncResolve code.fmt.fmt.Fprint [] #()) "$a0" "$a1");;;
       do:  (let: "$a0" := #(W8 10) in
-      (MethodResolve (go.PointerType strings.Builder) "WriteByte"%go "buf") "$a0")
+      (MethodResolve (go.PointerType code.strings.strings.Builder) "WriteByte"%go "buf") "$a0")
     else do:  #());;;
-    (if: (⟨go.bool⟩! (let: "$a0" := (![raftpb.HardState] (StructFieldRef Ready "HardState"%go "rd")) in
+    (if: (⟨go.bool⟩! (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] (StructFieldRef Ready "HardState"%go "rd")) in
     (FuncResolve IsEmptyHardState [] #()) "$a0"))
     then
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
       let: "$a1" := #"HardState %s"%go in
-      let: "$a2" := ((let: "$sl0" := (Convert go.string go.any (let: "$a0" := (![raftpb.HardState] (StructFieldRef Ready "HardState"%go "rd")) in
+      let: "$a2" := ((let: "$sl0" := (Convert go.string go.any (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] (StructFieldRef Ready "HardState"%go "rd")) in
       (FuncResolve DescribeHardState [] #()) "$a0")) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
       do:  (let: "$a0" := #(W8 10) in
-      (MethodResolve (go.PointerType strings.Builder) "WriteByte"%go "buf") "$a0")
+      (MethodResolve (go.PointerType code.strings.strings.Builder) "WriteByte"%go "buf") "$a0")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType ReadState] (StructFieldRef Ready "ReadStates"%go "rd")) in
     (FuncResolve go.len [go.SliceType ReadState] #()) "$a0") >⟨go.int⟩ #(W64 0))
     then
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
       let: "$a1" := #"ReadStates %v
       "%go in
       let: "$a2" := ((let: "$sl0" := (Convert (go.SliceType ReadState) go.any (![go.SliceType ReadState] (StructFieldRef Ready "ReadStates"%go "rd"))) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef Ready "Entries"%go "rd")) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0))
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef Ready "Entries"%go "rd")) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0))
     then
       do:  (let: "$a0" := #"Entries:
       "%go in
-      (MethodResolve (go.PointerType strings.Builder) "WriteString"%go "buf") "$a0");;;
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
-      let: "$a1" := ((let: "$sl0" := (Convert go.string go.any (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef Ready "Entries"%go "rd")) in
+      (MethodResolve (go.PointerType code.strings.strings.Builder) "WriteString"%go "buf") "$a0");;;
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
+      let: "$a1" := ((let: "$sl0" := (Convert go.string go.any (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef Ready "Entries"%go "rd")) in
       let: "$a1" := (![EntryFormatter] "f") in
       (FuncResolve DescribeEntries [] #()) "$a0" "$a1")) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprint [] #()) "$a0" "$a1")
+      (FuncResolve code.fmt.fmt.Fprint [] #()) "$a0" "$a1")
     else do:  #());;;
-    (if: (⟨go.bool⟩! (let: "$a0" := (![raftpb.Snapshot] (StructFieldRef Ready "Snapshot"%go "rd")) in
+    (if: (⟨go.bool⟩! (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef Ready "Snapshot"%go "rd")) in
     (FuncResolve IsEmptySnap [] #()) "$a0"))
     then
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
       let: "$a1" := #"Snapshot %s
       "%go in
-      let: "$a2" := ((let: "$sl0" := (Convert go.string go.any (let: "$a0" := (![raftpb.Snapshot] (StructFieldRef Ready "Snapshot"%go "rd")) in
+      let: "$a2" := ((let: "$sl0" := (Convert go.string go.any (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef Ready "Snapshot"%go "rd")) in
       (FuncResolve DescribeSnapshot [] #()) "$a0")) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef Ready "CommittedEntries"%go "rd")) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0))
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef Ready "CommittedEntries"%go "rd")) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") >⟨go.int⟩ #(W64 0))
     then
       do:  (let: "$a0" := #"CommittedEntries:
       "%go in
-      (MethodResolve (go.PointerType strings.Builder) "WriteString"%go "buf") "$a0");;;
-      do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
-      let: "$a1" := ((let: "$sl0" := (Convert go.string go.any (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef Ready "CommittedEntries"%go "rd")) in
+      (MethodResolve (go.PointerType code.strings.strings.Builder) "WriteString"%go "buf") "$a0");;;
+      do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
+      let: "$a1" := ((let: "$sl0" := (Convert go.string go.any (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef Ready "CommittedEntries"%go "rd")) in
       let: "$a1" := (![EntryFormatter] "f") in
       (FuncResolve DescribeEntries [] #()) "$a0" "$a1")) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprint [] #()) "$a0" "$a1")
+      (FuncResolve code.fmt.fmt.Fprint [] #()) "$a0" "$a1")
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef Ready "Messages"%go "rd")) in
-    (FuncResolve go.len [go.SliceType raftpb.Message] #()) "$a0") >⟨go.int⟩ #(W64 0))
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef Ready "Messages"%go "rd")) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0") >⟨go.int⟩ #(W64 0))
     then
       do:  (let: "$a0" := #"Messages:
       "%go in
-      (MethodResolve (go.PointerType strings.Builder) "WriteString"%go "buf") "$a0");;;
-      let: "$range" := (![go.SliceType raftpb.Message] (StructFieldRef Ready "Messages"%go "rd")) in
-      (let: "msg" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-      slice.for_range raftpb.Message "$range" (λ: "$key" "$value",
-        do:  ("msg" <-[raftpb.Message] "$value");;;
+      (MethodResolve (go.PointerType code.strings.strings.Builder) "WriteString"%go "buf") "$a0");;;
+      let: "$range" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef Ready "Messages"%go "rd")) in
+      (let: "msg" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
+      slice.for_range code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$range" (λ: "$key" "$value",
+        do:  ("msg" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$value");;;
         do:  "$key";;;
-        do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
-        let: "$a1" := ((let: "$sl0" := (Convert go.string go.any (let: "$a0" := (![raftpb.Message] "msg") in
+        do:  (let: "$a0" := (Convert (go.PointerType code.strings.strings.Builder) code.io.io.Writer "buf") in
+        let: "$a1" := ((let: "$sl0" := (Convert go.string go.any (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "msg") in
         let: "$a1" := (![EntryFormatter] "f") in
         (FuncResolve DescribeMessage [] #()) "$a0" "$a1")) in
         CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-        (FuncResolve fmt.Fprint [] #()) "$a0" "$a1");;;
+        (FuncResolve code.fmt.fmt.Fprint [] #()) "$a0" "$a1");;;
         do:  (let: "$a0" := #(W8 10) in
-        (MethodResolve (go.PointerType strings.Builder) "WriteByte"%go "buf") "$a0")))
+        (MethodResolve (go.PointerType code.strings.strings.Builder) "WriteByte"%go "buf") "$a0")))
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType strings.Builder) "Len"%go "buf") #()) >⟨go.int⟩ #(W64 0))
+    (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType code.strings.strings.Builder) "Len"%go "buf") #()) >⟨go.int⟩ #(W64 0))
     then
       return: (let: "$a0" := #"Ready MustSync=%t:
        %s"%go in
        let: "$a1" := ((let: "$sl0" := (Convert go.bool go.any (![go.bool] (StructFieldRef Ready "MustSync"%go "rd"))) in
-       let: "$sl1" := (Convert go.string go.any ((MethodResolve (go.PointerType strings.Builder) "String"%go "buf") #())) in
+       let: "$sl1" := (Convert go.string go.any ((MethodResolve (go.PointerType code.strings.strings.Builder) "String"%go "buf") #())) in
        CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1")]))) in
-       (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1")
+       (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1")
     else do:  #());;;
     return: (#"<empty Ready>"%go)).
 
@@ -7207,9 +7207,9 @@ Definition DescribeReadyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 Definition DescribeMessageⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "m" "f",
     exception_do (let: "f" := (GoAlloc EntryFormatter "f") in
-    let: "m" := (GoAlloc raftpb.Message "m") in
+    let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "m") in
     return: (let: "$a0" := #""%go in
-     let: "$a1" := (![raftpb.Message] "m") in
+     let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
      let: "$a2" := (![EntryFormatter] "f") in
      (FuncResolve describeMessageWithIndent [] #()) "$a0" "$a1" "$a2")).
 
@@ -7217,131 +7217,131 @@ Definition DescribeMessageⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 Definition describeMessageWithIndentⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "indent" "m" "f",
     exception_do (let: "f" := (GoAlloc EntryFormatter "f") in
-    let: "m" := (GoAlloc raftpb.Message "m") in
+    let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message "m") in
     let: "indent" := (GoAlloc go.string "indent") in
-    let: "buf" := (GoAlloc bytes.Buffer (GoZeroVal bytes.Buffer #())) in
-    do:  (let: "$a0" := (Convert (go.PointerType bytes.Buffer) io.Writer "buf") in
+    let: "buf" := (GoAlloc code.bytes.bytes.Buffer (GoZeroVal code.bytes.bytes.Buffer #())) in
+    do:  (let: "$a0" := (Convert (go.PointerType code.bytes.bytes.Buffer) code.io.io.Writer "buf") in
     let: "$a1" := #"%s%s->%s %v Term:%d Log:%d/%d"%go in
     let: "$a2" := ((let: "$sl0" := (Convert go.string go.any (![go.string] "indent")) in
-    let: "$sl1" := (Convert go.string go.any (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+    let: "$sl1" := (Convert go.string go.any (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "From"%go "m")) in
     (FuncResolve describeTarget [] #()) "$a0")) in
-    let: "$sl2" := (Convert go.string go.any (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "To"%go "m")) in
+    let: "$sl2" := (Convert go.string go.any (let: "$a0" := (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "To"%go "m")) in
     (FuncResolve describeTarget [] #()) "$a0")) in
-    let: "$sl3" := (Convert raftpb.MessageType go.any (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m"))) in
-    let: "$sl4" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m"))) in
-    let: "$sl5" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go "m"))) in
-    let: "$sl6" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m"))) in
+    let: "$sl3" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType go.any (![code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Type"%go "m"))) in
+    let: "$sl4" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Term"%go "m"))) in
+    let: "$sl5" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "LogTerm"%go "m"))) in
+    let: "$sl6" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Index"%go "m"))) in
     CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1"); KeyedElement None (ElementExpression go.any "$sl2"); KeyedElement None (ElementExpression go.any "$sl3"); KeyedElement None (ElementExpression go.any "$sl4"); KeyedElement None (ElementExpression go.any "$sl5"); KeyedElement None (ElementExpression go.any "$sl6")]))) in
-    (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
-    (if: ![go.bool] (StructFieldRef raftpb.Message "Reject"%go "m")
+    (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
+    (if: ![go.bool] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Reject"%go "m")
     then
-      do:  (let: "$a0" := (Convert (go.PointerType bytes.Buffer) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.bytes.bytes.Buffer) code.io.io.Writer "buf") in
       let: "$a1" := #" Rejected (Hint: %d)"%go in
-      let: "$a2" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftpb.Message "RejectHint"%go "m"))) in
+      let: "$a2" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "RejectHint"%go "m"))) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.Message "Commit"%go "m")) ≠⟨go.uint64⟩ #(W64 0))
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Commit"%go "m")) ≠⟨go.uint64⟩ #(W64 0))
     then
-      do:  (let: "$a0" := (Convert (go.PointerType bytes.Buffer) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.bytes.bytes.Buffer) code.io.io.Writer "buf") in
       let: "$a1" := #" Commit:%d"%go in
-      let: "$a2" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftpb.Message "Commit"%go "m"))) in
+      let: "$a2" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Commit"%go "m"))) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.Message "Vote"%go "m")) ≠⟨go.uint64⟩ #(W64 0))
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Vote"%go "m")) ≠⟨go.uint64⟩ #(W64 0))
     then
-      do:  (let: "$a0" := (Convert (go.PointerType bytes.Buffer) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.bytes.bytes.Buffer) code.io.io.Writer "buf") in
       let: "$a1" := #" Vote:%d"%go in
-      let: "$a2" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftpb.Message "Vote"%go "m"))) in
+      let: "$a2" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Vote"%go "m"))) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
     else do:  #());;;
     (let: "ln" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m")) in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") in
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "m")) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") in
     do:  ("ln" <-[go.int] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.int] "ln") =⟨go.int⟩ #(W64 1))
     then
-      do:  (let: "$a0" := (Convert (go.PointerType bytes.Buffer) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.bytes.bytes.Buffer) code.io.io.Writer "buf") in
       let: "$a1" := #" Entries:[%s]"%go in
-      let: "$a2" := ((let: "$sl0" := (Convert go.string go.any (let: "$a0" := (![raftpb.Entry] (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m"), #(W64 0)))) in
+      let: "$a2" := ((let: "$sl0" := (Convert go.string go.any (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "m"), #(W64 0)))) in
       let: "$a1" := (![EntryFormatter] "f") in
       (FuncResolve DescribeEntry [] #()) "$a0" "$a1")) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
     else
       (if: Convert go.untyped_bool go.bool ((![go.int] "ln") >⟨go.int⟩ #(W64 1))
       then
-        do:  (let: "$a0" := (Convert (go.PointerType bytes.Buffer) io.Writer "buf") in
+        do:  (let: "$a0" := (Convert (go.PointerType code.bytes.bytes.Buffer) code.io.io.Writer "buf") in
         let: "$a1" := ((let: "$sl0" := (Convert go.string go.any #" Entries:["%go) in
         CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-        (FuncResolve fmt.Fprint [] #()) "$a0" "$a1");;;
-        let: "$range" := (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m")) in
-        (let: "e" := (GoAlloc raftpb.Entry (GoZeroVal raftpb.Entry #())) in
-        slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
-          do:  ("e" <-[raftpb.Entry] "$value");;;
+        (FuncResolve code.fmt.fmt.Fprint [] #()) "$a0" "$a1");;;
+        let: "$range" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Entries"%go "m")) in
+        (let: "e" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Entry (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Entry #())) in
+        slice.for_range code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "$range" (λ: "$key" "$value",
+          do:  ("e" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$value");;;
           do:  "$key";;;
-          do:  (let: "$a0" := (Convert (go.PointerType bytes.Buffer) io.Writer "buf") in
+          do:  (let: "$a0" := (Convert (go.PointerType code.bytes.bytes.Buffer) code.io.io.Writer "buf") in
           let: "$a1" := #"
           %s  "%go in
           let: "$a2" := ((let: "$sl0" := (Convert go.string go.any (![go.string] "indent")) in
           CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-          (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
-          do:  (let: "$a0" := (let: "$a0" := (![raftpb.Entry] "e") in
+          (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
+          do:  (let: "$a0" := (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "e") in
           let: "$a1" := (![EntryFormatter] "f") in
           (FuncResolve DescribeEntry [] #()) "$a0" "$a1") in
-          (MethodResolve (go.PointerType bytes.Buffer) "WriteString"%go "buf") "$a0")));;;
-        do:  (let: "$a0" := (Convert (go.PointerType bytes.Buffer) io.Writer "buf") in
+          (MethodResolve (go.PointerType code.bytes.bytes.Buffer) "WriteString"%go "buf") "$a0")));;;
+        do:  (let: "$a0" := (Convert (go.PointerType code.bytes.bytes.Buffer) code.io.io.Writer "buf") in
         let: "$a1" := #"
         %s]"%go in
         let: "$a2" := ((let: "$sl0" := (Convert go.string go.any (![go.string] "indent")) in
         CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-        (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
+        (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
       else do:  #())));;;
-    (let: "s" := (GoAlloc (go.PointerType raftpb.Snapshot) (GoZeroVal (go.PointerType raftpb.Snapshot) #())) in
-    let: "$r0" := (![go.PointerType raftpb.Snapshot] (StructFieldRef raftpb.Message "Snapshot"%go "m")) in
-    do:  ("s" <-[go.PointerType raftpb.Snapshot] "$r0");;;
-    (if: ((![go.PointerType raftpb.Snapshot] "s") ≠⟨go.PointerType raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType raftpb.Snapshot) UntypedNil)) && (⟨go.bool⟩! (let: "$a0" := (![raftpb.Snapshot] (![go.PointerType raftpb.Snapshot] "s")) in
+    (let: "s" := (GoAlloc (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) (GoZeroVal (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) #())) in
+    let: "$r0" := (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Snapshot"%go "m")) in
+    do:  ("s" <-[go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "$r0");;;
+    (if: ((![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "s") ≠⟨go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot) UntypedNil)) && (⟨go.bool⟩! (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "s")) in
     (FuncResolve IsEmptySnap [] #()) "$a0"))
     then
-      do:  (let: "$a0" := (Convert (go.PointerType bytes.Buffer) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.bytes.bytes.Buffer) code.io.io.Writer "buf") in
       let: "$a1" := #"
       %s  Snapshot: %s"%go in
       let: "$a2" := ((let: "$sl0" := (Convert go.string go.any (![go.string] "indent")) in
-      let: "$sl1" := (Convert go.string go.any (let: "$a0" := (![raftpb.Snapshot] (![go.PointerType raftpb.Snapshot] "s")) in
+      let: "$sl1" := (Convert go.string go.any (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] (![go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot] "s")) in
       (FuncResolve DescribeSnapshot [] #()) "$a0")) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1")]))) in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
     else do:  #()));;;
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Message] (StructFieldRef raftpb.Message "Responses"%go "m")) in
-    (FuncResolve go.len [go.SliceType raftpb.Message] #()) "$a0") >⟨go.int⟩ #(W64 0))
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Responses"%go "m")) in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] #()) "$a0") >⟨go.int⟩ #(W64 0))
     then
-      do:  (let: "$a0" := (Convert (go.PointerType bytes.Buffer) io.Writer "buf") in
+      do:  (let: "$a0" := (Convert (go.PointerType code.bytes.bytes.Buffer) code.io.io.Writer "buf") in
       let: "$a1" := #" Responses:["%go in
       let: "$a2" := #slice.nil in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
-      let: "$range" := (![go.SliceType raftpb.Message] (StructFieldRef raftpb.Message "Responses"%go "m")) in
-      (let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-      slice.for_range raftpb.Message "$range" (λ: "$key" "$value",
-        do:  ("m" <-[raftpb.Message] "$value");;;
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2");;;
+      let: "$range" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Message "Responses"%go "m")) in
+      (let: "m" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Message (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Message #())) in
+      slice.for_range code.go_etcd_io.raft.v3.raftpb.raftpb.Message "$range" (λ: "$key" "$value",
+        do:  ("m" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "$value");;;
         do:  "$key";;;
         do:  (let: "$a0" := #"
         "%go in
-        (MethodResolve (go.PointerType bytes.Buffer) "WriteString"%go "buf") "$a0");;;
+        (MethodResolve (go.PointerType code.bytes.bytes.Buffer) "WriteString"%go "buf") "$a0");;;
         do:  (let: "$a0" := (let: "$a0" := ((![go.string] "indent") +⟨go.string⟩ #"  "%go) in
-        let: "$a1" := (![raftpb.Message] "m") in
+        let: "$a1" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Message] "m") in
         let: "$a2" := (![EntryFormatter] "f") in
         (FuncResolve describeMessageWithIndent [] #()) "$a0" "$a1" "$a2") in
-        (MethodResolve (go.PointerType bytes.Buffer) "WriteString"%go "buf") "$a0")));;;
-      do:  (let: "$a0" := (Convert (go.PointerType bytes.Buffer) io.Writer "buf") in
+        (MethodResolve (go.PointerType code.bytes.bytes.Buffer) "WriteString"%go "buf") "$a0")));;;
+      do:  (let: "$a0" := (Convert (go.PointerType code.bytes.bytes.Buffer) code.io.io.Writer "buf") in
       let: "$a1" := #"
       %s]"%go in
       let: "$a2" := ((let: "$sl0" := (Convert go.string go.any (![go.string] "indent")) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
+      (FuncResolve code.fmt.fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
     else do:  #());;;
-    return: ((MethodResolve (go.PointerType bytes.Buffer) "String"%go "buf") #())).
+    return: ((MethodResolve (go.PointerType code.bytes.bytes.Buffer) "String"%go "buf") #())).
 
 (* go: util.go:191:6 *)
 Definition describeTargetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -7360,7 +7360,7 @@ Definition describeTargetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
           return: (let: "$a0" := #"%x"%go in
            let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] "id")) in
            CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-           (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1"))))).
+           (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1"))))).
 
 (* DescribeEntry returns a concise human-readable description of an
    Entry for debugging.
@@ -7369,7 +7369,7 @@ Definition describeTargetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
 Definition DescribeEntryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "e" "f",
     exception_do (let: "f" := (GoAlloc EntryFormatter "f") in
-    let: "e" := (GoAlloc raftpb.Entry "e") in
+    let: "e" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "e") in
     (if: Convert go.untyped_bool go.bool ((![EntryFormatter] "f") =⟨EntryFormatter⟩ (Convert go.untyped_nil EntryFormatter UntypedNil))
     then
       let: "$r0" := (λ: "data",
@@ -7377,55 +7377,55 @@ Definition DescribeEntryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
         return: (let: "$a0" := #"%q"%go in
          let: "$a1" := ((let: "$sl0" := (Convert (go.SliceType go.byte) go.any (![go.SliceType go.byte] "data")) in
          CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-         (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1"))
+         (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1"))
         ) in
       do:  ("f" <-[EntryFormatter] "$r0")
     else do:  #());;;
-    let: "formatConfChange" := (GoAlloc (go.FunctionType (go.Signature [raftpb.ConfChangeI] false [go.string])) (GoZeroVal (go.FunctionType (go.Signature [raftpb.ConfChangeI] false [go.string])) #())) in
+    let: "formatConfChange" := (GoAlloc (go.FunctionType (go.Signature [code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] false [go.string])) (GoZeroVal (go.FunctionType (go.Signature [code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] false [go.string])) #())) in
     let: "$r0" := (λ: "cc",
-      exception_do (let: "cc" := (GoAlloc raftpb.ConfChangeI "cc") in
-      return: (let: "$a0" := (StructFieldGet raftpb.ConfChangeV2 "Changes" ((MethodResolve raftpb.ConfChangeI "AsV2"%go (![raftpb.ConfChangeI] "cc")) #())) in
-       (FuncResolve raftpb.ConfChangesToString [] #()) "$a0"))
+      exception_do (let: "cc" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI "cc") in
+      return: (let: "$a0" := (StructFieldGet code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2 "Changes" ((MethodResolve code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI "AsV2"%go (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] "cc")) #())) in
+       (FuncResolve code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangesToString [] #()) "$a0"))
       ) in
-    do:  ("formatConfChange" <-[go.FunctionType (go.Signature [raftpb.ConfChangeI] false [go.string])] "$r0");;;
+    do:  ("formatConfChange" <-[go.FunctionType (go.Signature [code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] false [go.string])] "$r0");;;
     let: "formatted" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    let: "$sw" := (![raftpb.EntryType] (StructFieldRef raftpb.Entry "Type"%go "e")) in
-    (if: "$sw" =⟨raftpb.EntryType⟩ raftpb.EntryNormal
+    let: "$sw" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Type"%go "e")) in
+    (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.EntryNormal
     then
-      let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef raftpb.Entry "Data"%go "e")) in
+      let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Data"%go "e")) in
       (![EntryFormatter] "f") "$a0") in
       do:  ("formatted" <-[go.string] "$r0")
     else
-      (if: "$sw" =⟨raftpb.EntryType⟩ raftpb.EntryConfChange
+      (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.EntryConfChange
       then
-        let: "cc" := (GoAlloc raftpb.ConfChange (GoZeroVal raftpb.ConfChange #())) in
+        let: "cc" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange #())) in
         (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-        let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef raftpb.Entry "Data"%go "e")) in
-        (MethodResolve (go.PointerType raftpb.ConfChange) "Unmarshal"%go "cc") "$a0") in
+        let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Data"%go "e")) in
+        (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange) "Unmarshal"%go "cc") "$a0") in
         do:  ("err" <-[go.error] "$r0");;;
         (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
         then
           let: "$r0" := ((MethodResolve go.error "Error"%go (![go.error] "err")) #()) in
           do:  ("formatted" <-[go.string] "$r0")
         else
-          let: "$r0" := (let: "$a0" := (Convert raftpb.ConfChange raftpb.ConfChangeI (![raftpb.ConfChange] "cc")) in
-          (![go.FunctionType (go.Signature [raftpb.ConfChangeI] false [go.string])] "formatConfChange") "$a0") in
+          let: "$r0" := (let: "$a0" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChange] "cc")) in
+          (![go.FunctionType (go.Signature [code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] false [go.string])] "formatConfChange") "$a0") in
           do:  ("formatted" <-[go.string] "$r0")))
       else
-        (if: "$sw" =⟨raftpb.EntryType⟩ raftpb.EntryConfChangeV2
+        (if: "$sw" =⟨code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType⟩ code.go_etcd_io.raft.v3.raftpb.raftpb.EntryConfChangeV2
         then
-          let: "cc" := (GoAlloc raftpb.ConfChangeV2 (GoZeroVal raftpb.ConfChangeV2 #())) in
+          let: "cc" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2 (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2 #())) in
           (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-          let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef raftpb.Entry "Data"%go "e")) in
-          (MethodResolve (go.PointerType raftpb.ConfChangeV2) "Unmarshal"%go "cc") "$a0") in
+          let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Data"%go "e")) in
+          (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2) "Unmarshal"%go "cc") "$a0") in
           do:  ("err" <-[go.error] "$r0");;;
           (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
           then
             let: "$r0" := ((MethodResolve go.error "Error"%go (![go.error] "err")) #()) in
             do:  ("formatted" <-[go.string] "$r0")
           else
-            let: "$r0" := (let: "$a0" := (Convert raftpb.ConfChangeV2 raftpb.ConfChangeI (![raftpb.ConfChangeV2] "cc")) in
-            (![go.FunctionType (go.Signature [raftpb.ConfChangeI] false [go.string])] "formatConfChange") "$a0") in
+            let: "$r0" := (let: "$a0" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2 code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2] "cc")) in
+            (![go.FunctionType (go.Signature [code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] false [go.string])] "formatConfChange") "$a0") in
             do:  ("formatted" <-[go.string] "$r0")))
         else do:  #())));;;
     (if: Convert go.untyped_bool go.bool ((![go.string] "formatted") ≠⟨go.string⟩ #""%go)
@@ -7434,12 +7434,12 @@ Definition DescribeEntryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       do:  ("formatted" <-[go.string] "$r0")
     else do:  #());;;
     return: (let: "$a0" := #"%d/%d %s%s"%go in
-     let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftpb.Entry "Term"%go "e"))) in
-     let: "$sl1" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef raftpb.Entry "Index"%go "e"))) in
-     let: "$sl2" := (Convert raftpb.EntryType go.any (![raftpb.EntryType] (StructFieldRef raftpb.Entry "Type"%go "e"))) in
+     let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Term"%go "e"))) in
+     let: "$sl1" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Index"%go "e"))) in
+     let: "$sl2" := (Convert code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType go.any (![code.go_etcd_io.raft.v3.raftpb.raftpb.EntryType] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Type"%go "e"))) in
      let: "$sl3" := (Convert go.string go.any (![go.string] "formatted")) in
      CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1"); KeyedElement None (ElementExpression go.any "$sl2"); KeyedElement None (ElementExpression go.any "$sl3")]))) in
-     (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1")).
+     (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1")).
 
 (* DescribeEntries calls DescribeEntry for each Entry, adding a newline to
    each.
@@ -7448,35 +7448,35 @@ Definition DescribeEntryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 Definition DescribeEntriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ents" "f",
     exception_do (let: "f" := (GoAlloc EntryFormatter "f") in
-    let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) "ents") in
-    let: "buf" := (GoAlloc bytes.Buffer (GoZeroVal bytes.Buffer #())) in
-    let: "$range" := (![go.SliceType raftpb.Entry] "ents") in
-    (let: "e" := (GoAlloc raftpb.Entry (GoZeroVal raftpb.Entry #())) in
-    slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
-      do:  ("e" <-[raftpb.Entry] "$value");;;
+    let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "ents") in
+    let: "buf" := (GoAlloc code.bytes.bytes.Buffer (GoZeroVal code.bytes.bytes.Buffer #())) in
+    let: "$range" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+    (let: "e" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Entry (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Entry #())) in
+    slice.for_range code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "$range" (λ: "$key" "$value",
+      do:  ("e" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$value");;;
       do:  "$key";;;
-      let: ("$ret0", "$ret1") := (let: "$a0" := ((let: "$a0" := (![raftpb.Entry] "e") in
+      let: ("$ret0", "$ret1") := (let: "$a0" := ((let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "e") in
       let: "$a1" := (![EntryFormatter] "f") in
       (FuncResolve DescribeEntry [] #()) "$a0" "$a1") +⟨go.string⟩ #"
       "%go) in
-      (MethodResolve (go.PointerType bytes.Buffer) "WriteString"%go "buf") "$a0") in
+      (MethodResolve (go.PointerType code.bytes.bytes.Buffer) "WriteString"%go "buf") "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
       do:  "$r1"));;;
-    return: ((MethodResolve (go.PointerType bytes.Buffer) "String"%go "buf") #())).
+    return: ((MethodResolve (go.PointerType code.bytes.bytes.Buffer) "String"%go "buf") #())).
 
 (* go: util.go:256:6 *)
 Definition entsSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ents",
-    exception_do (let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) "ents") in
+    exception_do (let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "ents") in
     let: "size" := (GoAlloc entryEncodingSize (GoZeroVal entryEncodingSize #())) in
-    let: "$range" := (![go.SliceType raftpb.Entry] "ents") in
-    (let: "ent" := (GoAlloc raftpb.Entry (GoZeroVal raftpb.Entry #())) in
-    slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
-      do:  ("ent" <-[raftpb.Entry] "$value");;;
+    let: "$range" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+    (let: "ent" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Entry (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Entry #())) in
+    slice.for_range code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "$range" (λ: "$key" "$value",
+      do:  ("ent" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$value");;;
       do:  "$key";;;
-      do:  ("size" <-[entryEncodingSize] ((![entryEncodingSize] "size") +⟨entryEncodingSize⟩ (Convert go.int entryEncodingSize ((MethodResolve (go.PointerType raftpb.Entry) "Size"%go "ent") #()))))));;;
+      do:  ("size" <-[entryEncodingSize] ((![entryEncodingSize] "size") +⟨entryEncodingSize⟩ (Convert go.int entryEncodingSize ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "Size"%go "ent") #()))))));;;
     return: (![entryEncodingSize] "size")).
 
 (* limitSize returns the longest prefix of the given entries slice, such that
@@ -7488,34 +7488,34 @@ Definition entsSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
 Definition limitSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ents" "maxSize",
     exception_do (let: "maxSize" := (GoAlloc entryEncodingSize "maxSize") in
-    let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) "ents") in
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 0))
-    then return: (![go.SliceType raftpb.Entry] "ents")
+    let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "ents") in
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") =⟨go.int⟩ #(W64 0))
+    then return: (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents")
     else do:  #());;;
     let: "size" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    let: "$r0" := ((MethodResolve (go.PointerType raftpb.Entry) "Size"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "ents", #(W64 0)))) #()) in
+    let: "$r0" := ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "Size"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents", #(W64 0)))) #()) in
     do:  ("size" <-[go.int] "$r0");;;
     (let: "limit" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 1) in
     do:  ("limit" <-[go.int] "$r0");;;
-    (for: (λ: <>, (![go.int] "limit") <⟨go.int⟩ (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0")); (λ: <>, do:  ("limit" <-[go.int] ((![go.int] "limit") +⟨go.int⟩ #(W64 1)))) := λ: <>,
-      do:  ("size" <-[go.int] ((![go.int] "size") +⟨go.int⟩ ((MethodResolve (go.PointerType raftpb.Entry) "Size"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "ents", ![go.int] "limit"))) #())));;;
+    (for: (λ: <>, (![go.int] "limit") <⟨go.int⟩ (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0")); (λ: <>, do:  ("limit" <-[go.int] ((![go.int] "limit") +⟨go.int⟩ #(W64 1)))) := λ: <>,
+      do:  ("size" <-[go.int] ((![go.int] "size") +⟨go.int⟩ ((MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "Size"%go (IndexRef (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents", ![go.int] "limit"))) #())));;;
       (if: Convert go.untyped_bool go.bool ((Convert go.int entryEncodingSize (![go.int] "size")) >⟨entryEncodingSize⟩ (![entryEncodingSize] "maxSize"))
       then
-        return: (let: "$s" := (![go.SliceType raftpb.Entry] "ents") in
-         Slice (go.SliceType raftpb.Entry) ("$s", #(W64 0), ![go.int] "limit"))
+        return: (let: "$s" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+         Slice (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) ("$s", #(W64 0), ![go.int] "limit"))
       else do:  #())));;;
-    return: (![go.SliceType raftpb.Entry] "ents")).
+    return: (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents")).
 
 (* payloadSize is the size of the payload of the provided entry.
 
    go: util.go:289:6 *)
 Definition payloadSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "e",
-    exception_do (let: "e" := (GoAlloc raftpb.Entry "e") in
-    return: (Convert go.int entryPayloadSize (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef raftpb.Entry "Data"%go "e")) in
+    exception_do (let: "e" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "e") in
+    return: (Convert go.int entryPayloadSize (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "Data"%go "e")) in
      (FuncResolve go.len [go.SliceType go.byte] #()) "$a0"))).
 
 (* payloadsSize is the size of the payloads of the provided entries.
@@ -7523,26 +7523,26 @@ Definition payloadSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
    go: util.go:294:6 *)
 Definition payloadsSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ents",
-    exception_do (let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) "ents") in
+    exception_do (let: "ents" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "ents") in
     let: "s" := (GoAlloc entryPayloadSize (GoZeroVal entryPayloadSize #())) in
-    let: "$range" := (![go.SliceType raftpb.Entry] "ents") in
-    (let: "e" := (GoAlloc raftpb.Entry (GoZeroVal raftpb.Entry #())) in
-    slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
-      do:  ("e" <-[raftpb.Entry] "$value");;;
+    let: "$range" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "ents") in
+    (let: "e" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.Entry (GoZeroVal code.go_etcd_io.raft.v3.raftpb.raftpb.Entry #())) in
+    slice.for_range code.go_etcd_io.raft.v3.raftpb.raftpb.Entry "$range" (λ: "$key" "$value",
+      do:  ("e" <-[code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$value");;;
       do:  "$key";;;
-      do:  ("s" <-[entryPayloadSize] ((![entryPayloadSize] "s") +⟨entryPayloadSize⟩ (let: "$a0" := (![raftpb.Entry] "e") in
+      do:  ("s" <-[entryPayloadSize] ((![entryPayloadSize] "s") +⟨entryPayloadSize⟩ (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "e") in
       (FuncResolve payloadSize [] #()) "$a0")))));;;
     return: (![entryPayloadSize] "s")).
 
 (* go: util.go:302:6 *)
 Definition assertConfStatesEquivalentⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "cs1" "cs2",
-    exception_do (let: "cs2" := (GoAlloc raftpb.ConfState "cs2") in
-    let: "cs1" := (GoAlloc raftpb.ConfState "cs1") in
+    exception_do (let: "cs2" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState "cs2") in
+    let: "cs1" := (GoAlloc code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState "cs1") in
     let: "l" := (GoAlloc Logger "l") in
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "$r0" := (let: "$a0" := (![raftpb.ConfState] "cs2") in
-    (MethodResolve (go.PointerType raftpb.ConfState) "Equivalent"%go "cs1") "$a0") in
+    let: "$r0" := (let: "$a0" := (![code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState] "cs2") in
+    (MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState) "Equivalent"%go "cs1") "$a0") in
     do:  ("err" <-[go.error] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (#())
@@ -7562,32 +7562,32 @@ Definition assertConfStatesEquivalentⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
    go: util.go:316:6 *)
 Definition extendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "dst" "vals",
-    exception_do (let: "vals" := (GoAlloc (go.SliceType raftpb.Entry) "vals") in
-    let: "dst" := (GoAlloc (go.SliceType raftpb.Entry) "dst") in
+    exception_do (let: "vals" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "vals") in
+    let: "dst" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) "dst") in
     let: "need" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    let: "$r0" := ((let: "$a0" := (![go.SliceType raftpb.Entry] "dst") in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") +⟨go.int⟩ (let: "$a0" := (![go.SliceType raftpb.Entry] "vals") in
-    (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0")) in
+    let: "$r0" := ((let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "dst") in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0") +⟨go.int⟩ (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "vals") in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0")) in
     do:  ("need" <-[go.int] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![go.int] "need") ≤⟨go.int⟩ (let: "$a0" := (![go.SliceType raftpb.Entry] "dst") in
-    (FuncResolve go.cap [go.SliceType raftpb.Entry] #()) "$a0"))
+    (if: Convert go.untyped_bool go.bool ((![go.int] "need") ≤⟨go.int⟩ (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "dst") in
+    (FuncResolve go.cap [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0"))
     then
-      return: (let: "$a0" := (![go.SliceType raftpb.Entry] "dst") in
-       let: "$a1" := (![go.SliceType raftpb.Entry] "vals") in
-       (FuncResolve go.append [go.SliceType raftpb.Entry] #()) "$a0" "$a1")
+      return: (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "dst") in
+       let: "$a1" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "vals") in
+       (FuncResolve go.append [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0" "$a1")
     else do:  #());;;
-    let: "buf" := (GoAlloc (go.SliceType raftpb.Entry) (GoZeroVal (go.SliceType raftpb.Entry) #())) in
-    let: "$r0" := ((FuncResolve go.make3 [go.SliceType raftpb.Entry] #()) (![go.int] "need") (![go.int] "need")) in
-    do:  ("buf" <-[go.SliceType raftpb.Entry] "$r0");;;
-    do:  (let: "$a0" := (![go.SliceType raftpb.Entry] "buf") in
-    let: "$a1" := (![go.SliceType raftpb.Entry] "dst") in
-    (FuncResolve go.copy [go.SliceType raftpb.Entry] #()) "$a0" "$a1");;;
-    do:  (let: "$a0" := (let: "$s" := (![go.SliceType raftpb.Entry] "buf") in
-    Slice (go.SliceType raftpb.Entry) ("$s", let: "$a0" := (![go.SliceType raftpb.Entry] "dst") in
-     (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0", FuncResolve go.len [go.SliceType raftpb.Entry] #() (![go.SliceType raftpb.Entry] "buf"))) in
-    let: "$a1" := (![go.SliceType raftpb.Entry] "vals") in
-    (FuncResolve go.copy [go.SliceType raftpb.Entry] #()) "$a0" "$a1");;;
-    return: (![go.SliceType raftpb.Entry] "buf")).
+    let: "buf" := (GoAlloc (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) (GoZeroVal (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) #())) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) (![go.int] "need") (![go.int] "need")) in
+    do:  ("buf" <-[go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "$r0");;;
+    do:  (let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "buf") in
+    let: "$a1" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "dst") in
+    (FuncResolve go.copy [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0" "$a1");;;
+    do:  (let: "$a0" := (let: "$s" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "buf") in
+    Slice (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry) ("$s", let: "$a0" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "dst") in
+     (FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0", FuncResolve go.len [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #() (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "buf"))) in
+    let: "$a1" := (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "vals") in
+    (FuncResolve go.copy [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] #()) "$a0" "$a1");;;
+    return: (![go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry] "buf")).
 
 #[global] Instance info' : PkgInfo pkg_id.raft :=
 {|
@@ -7610,50 +7610,50 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  (go.GlobalAlloc globalRand (go.PointerType lockedRand) #());;;
       do:  (go.GlobalAlloc ErrProposalDropped go.error #());;;
       do:  (go.GlobalAlloc ErrStopped go.error #());;;
-      do:  (go.GlobalAlloc emptyState raftpb.HardState #());;;
+      do:  (go.GlobalAlloc emptyState code.go_etcd_io.raft.v3.raftpb.raftpb.HardState #());;;
       do:  (go.GlobalAlloc raftLogger Logger #());;;
-      do:  (go.GlobalAlloc raftLoggerMu sync.Mutex #());;;
+      do:  (go.GlobalAlloc raftLoggerMu code.sync.sync.Mutex #());;;
       do:  (go.GlobalAlloc discardLogger (go.PointerType DefaultLogger) #());;;
       do:  (go.GlobalAlloc defaultLogger (go.PointerType DefaultLogger) #());;;
-      do:  (binary.initialize' #());;;
-      do:  (tracker.initialize' #());;;
-      do:  (quorum.initialize' #());;;
-      do:  (confchange.initialize' #());;;
-      do:  (strings.initialize' #());;;
-      do:  (slices.initialize' #());;;
-      do:  (big.initialize' #());;;
-      do:  (math.initialize' #());;;
-      do:  (rand.initialize' #());;;
-      do:  (bytes.initialize' #());;;
-      do:  (context.initialize' #());;;
-      do:  (sync.initialize' #());;;
-      do:  (os.initialize' #());;;
-      do:  (log.initialize' #());;;
-      do:  (io.initialize' #());;;
-      do:  (fmt.initialize' #());;;
-      do:  (raftpb.initialize' #());;;
-      do:  (errors.initialize' #());;;
-      let: "$r0" := (GoAlloc DefaultLogger (let: "$v0" := (let: "$a0" := (Convert (go.PointerType os.File) io.Writer (![go.PointerType os.File] (GlobalVarAddr os.Stderr #()))) in
+      do:  (code.encoding.binary.binary.initialize' #());;;
+      do:  (code.go_etcd_io.raft.v3.tracker.tracker.initialize' #());;;
+      do:  (code.go_etcd_io.raft.v3.quorum.quorum.initialize' #());;;
+      do:  (code.go_etcd_io.raft.v3.confchange.confchange.initialize' #());;;
+      do:  (code.strings.strings.initialize' #());;;
+      do:  (code.slices.slices.initialize' #());;;
+      do:  (code.math.big.big.initialize' #());;;
+      do:  (code.math.math.initialize' #());;;
+      do:  (code.crypto.rand.rand.initialize' #());;;
+      do:  (code.bytes.bytes.initialize' #());;;
+      do:  (code.context.context.initialize' #());;;
+      do:  (code.sync.sync.initialize' #());;;
+      do:  (code.os.os.initialize' #());;;
+      do:  (code.log.log.initialize' #());;;
+      do:  (code.io.io.initialize' #());;;
+      do:  (code.fmt.fmt.initialize' #());;;
+      do:  (code.go_etcd_io.raft.v3.raftpb.raftpb.initialize' #());;;
+      do:  (code.errors.errors.initialize' #());;;
+      let: "$r0" := (GoAlloc DefaultLogger (let: "$v0" := (let: "$a0" := (Convert (go.PointerType code.os.os.File) code.io.io.Writer (![go.PointerType code.os.os.File] (GlobalVarAddr code.os.os.Stderr #()))) in
       let: "$a1" := #"raft"%go in
-      let: "$a2" := (Convert go.untyped_int go.int log.LstdFlags) in
-      (FuncResolve log.New [] #()) "$a0" "$a1" "$a2") in
-      CompositeLiteral DefaultLogger (LiteralValue [KeyedElement (Some (KeyField "Logger"%go)) (ElementExpression (go.PointerType log.Logger) "$v0")]))) in
+      let: "$a2" := (Convert go.untyped_int go.int code.log.log.LstdFlags) in
+      (FuncResolve code.log.log.New [] #()) "$a0" "$a1" "$a2") in
+      CompositeLiteral DefaultLogger (LiteralValue [KeyedElement (Some (KeyField "Logger"%go)) (ElementExpression (go.PointerType code.log.log.Logger) "$v0")]))) in
       do:  ((GlobalVarAddr defaultLogger #()) <-[go.PointerType DefaultLogger] "$r0");;;
-      let: "$r0" := (GoAlloc DefaultLogger (let: "$v0" := (let: "$a0" := (![io.Writer] (GlobalVarAddr io.Discard #())) in
+      let: "$r0" := (GoAlloc DefaultLogger (let: "$v0" := (let: "$a0" := (![code.io.io.Writer] (GlobalVarAddr code.io.io.Discard #())) in
       let: "$a1" := #""%go in
       let: "$a2" := #(W64 0) in
-      (FuncResolve log.New [] #()) "$a0" "$a1" "$a2") in
-      CompositeLiteral DefaultLogger (LiteralValue [KeyedElement (Some (KeyField "Logger"%go)) (ElementExpression (go.PointerType log.Logger) "$v0")]))) in
+      (FuncResolve code.log.log.New [] #()) "$a0" "$a1" "$a2") in
+      CompositeLiteral DefaultLogger (LiteralValue [KeyedElement (Some (KeyField "Logger"%go)) (ElementExpression (go.PointerType code.log.log.Logger) "$v0")]))) in
       do:  ((GlobalVarAddr discardLogger #()) <-[go.PointerType DefaultLogger] "$r0");;;
       let: "$r0" := (Convert (go.PointerType DefaultLogger) Logger (![go.PointerType DefaultLogger] (GlobalVarAddr defaultLogger #()))) in
       do:  ((GlobalVarAddr raftLogger #()) <-[Logger] "$r0");;;
-      let: "$r0" := (CompositeLiteral raftpb.HardState (LiteralValue [])) in
-      do:  ((GlobalVarAddr emptyState #()) <-[raftpb.HardState] "$r0");;;
+      let: "$r0" := (CompositeLiteral code.go_etcd_io.raft.v3.raftpb.raftpb.HardState (LiteralValue [])) in
+      do:  ((GlobalVarAddr emptyState #()) <-[code.go_etcd_io.raft.v3.raftpb.raftpb.HardState] "$r0");;;
       let: "$r0" := (let: "$a0" := #"raft: stopped"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrStopped #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"raft proposal dropped"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrProposalDropped #()) <-[go.error] "$r0");;;
       let: "$r0" := (GoAlloc lockedRand (CompositeLiteral lockedRand (LiteralValue []))) in
       do:  ((GlobalVarAddr globalRand #()) <-[go.PointerType lockedRand] "$r0");;;
@@ -7664,63 +7664,63 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       CompositeLiteral (go.ArrayType 4 go.string) (LiteralValue [KeyedElement None (ElementExpression go.string "$v0"); KeyedElement None (ElementExpression go.string "$v1"); KeyedElement None (ElementExpression go.string "$v2"); KeyedElement None (ElementExpression go.string "$v3")])) in
       do:  ((GlobalVarAddr stmap #()) <-[go.ArrayType 4 go.string] "$r0");;;
       let: "$r0" := (let: "$a0" := #"break"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr errBreak #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"raft: cannot step raft local message"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrStepLocalMsg #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"raft: cannot step as peer not found"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrStepPeerNotFound #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"requested index is unavailable due to compaction"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrCompacted #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"requested index is older than the existing snapshot"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrSnapOutOfDate #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"requested entry at index is unavailable"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrUnavailable #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"snapshot is temporarily unavailable"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrSnapshotTemporarilyUnavailable #()) <-[go.error] "$r0");;;
-      let: "$r0" := (let: "$k0" := raftpb.MsgHup in
+      let: "$r0" := (let: "$k0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgHup in
       let: "$v1" := #true in
-      let: "$k2" := raftpb.MsgBeat in
+      let: "$k2" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgBeat in
       let: "$v3" := #true in
-      let: "$k4" := raftpb.MsgUnreachable in
+      let: "$k4" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgUnreachable in
       let: "$v5" := #true in
-      let: "$k6" := raftpb.MsgSnapStatus in
+      let: "$k6" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgSnapStatus in
       let: "$v7" := #true in
-      let: "$k8" := raftpb.MsgCheckQuorum in
+      let: "$k8" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgCheckQuorum in
       let: "$v9" := #true in
-      let: "$k10" := raftpb.MsgStorageAppend in
+      let: "$k10" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgStorageAppend in
       let: "$v11" := #true in
-      let: "$k12" := raftpb.MsgStorageAppendResp in
+      let: "$k12" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgStorageAppendResp in
       let: "$v13" := #true in
-      let: "$k14" := raftpb.MsgStorageApply in
+      let: "$k14" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgStorageApply in
       let: "$v15" := #true in
-      let: "$k16" := raftpb.MsgStorageApplyResp in
+      let: "$k16" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgStorageApplyResp in
       let: "$v17" := #true in
-      CompositeLiteral (go.ArrayType 23 go.bool) (LiteralValue [KeyedElement (Some (KeyExpression raftpb.MessageType "$k0")) (ElementExpression go.bool "$v1"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k2")) (ElementExpression go.bool "$v3"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k4")) (ElementExpression go.bool "$v5"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k6")) (ElementExpression go.bool "$v7"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k8")) (ElementExpression go.bool "$v9"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k10")) (ElementExpression go.bool "$v11"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k12")) (ElementExpression go.bool "$v13"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k14")) (ElementExpression go.bool "$v15"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k16")) (ElementExpression go.bool "$v17")])) in
+      CompositeLiteral (go.ArrayType 23 go.bool) (LiteralValue [KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k0")) (ElementExpression go.bool "$v1"); KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k2")) (ElementExpression go.bool "$v3"); KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k4")) (ElementExpression go.bool "$v5"); KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k6")) (ElementExpression go.bool "$v7"); KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k8")) (ElementExpression go.bool "$v9"); KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k10")) (ElementExpression go.bool "$v11"); KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k12")) (ElementExpression go.bool "$v13"); KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k14")) (ElementExpression go.bool "$v15"); KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k16")) (ElementExpression go.bool "$v17")])) in
       do:  ((GlobalVarAddr isLocalMsg #()) <-[go.ArrayType 23 go.bool] "$r0");;;
-      let: "$r0" := (let: "$k0" := raftpb.MsgAppResp in
+      let: "$r0" := (let: "$k0" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgAppResp in
       let: "$v1" := #true in
-      let: "$k2" := raftpb.MsgVoteResp in
+      let: "$k2" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgVoteResp in
       let: "$v3" := #true in
-      let: "$k4" := raftpb.MsgHeartbeatResp in
+      let: "$k4" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgHeartbeatResp in
       let: "$v5" := #true in
-      let: "$k6" := raftpb.MsgUnreachable in
+      let: "$k6" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgUnreachable in
       let: "$v7" := #true in
-      let: "$k8" := raftpb.MsgReadIndexResp in
+      let: "$k8" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgReadIndexResp in
       let: "$v9" := #true in
-      let: "$k10" := raftpb.MsgPreVoteResp in
+      let: "$k10" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgPreVoteResp in
       let: "$v11" := #true in
-      let: "$k12" := raftpb.MsgStorageAppendResp in
+      let: "$k12" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgStorageAppendResp in
       let: "$v13" := #true in
-      let: "$k14" := raftpb.MsgStorageApplyResp in
+      let: "$k14" := code.go_etcd_io.raft.v3.raftpb.raftpb.MsgStorageApplyResp in
       let: "$v15" := #true in
-      CompositeLiteral (go.ArrayType 23 go.bool) (LiteralValue [KeyedElement (Some (KeyExpression raftpb.MessageType "$k0")) (ElementExpression go.bool "$v1"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k2")) (ElementExpression go.bool "$v3"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k4")) (ElementExpression go.bool "$v5"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k6")) (ElementExpression go.bool "$v7"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k8")) (ElementExpression go.bool "$v9"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k10")) (ElementExpression go.bool "$v11"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k12")) (ElementExpression go.bool "$v13"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k14")) (ElementExpression go.bool "$v15")])) in
+      CompositeLiteral (go.ArrayType 23 go.bool) (LiteralValue [KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k0")) (ElementExpression go.bool "$v1"); KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k2")) (ElementExpression go.bool "$v3"); KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k4")) (ElementExpression go.bool "$v5"); KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k6")) (ElementExpression go.bool "$v7"); KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k8")) (ElementExpression go.bool "$v9"); KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k10")) (ElementExpression go.bool "$v11"); KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k12")) (ElementExpression go.bool "$v13"); KeyedElement (Some (KeyExpression code.go_etcd_io.raft.v3.raftpb.raftpb.MessageType "$k14")) (ElementExpression go.bool "$v15")])) in
       do:  ((GlobalVarAddr isResponseMsg #()) <-[go.ArrayType 23 go.bool] "$r0"))
       ).
 
@@ -7732,7 +7732,7 @@ Definition t : Type := interface.t.
 End def.
 End Storage.
 
-Definition Storageⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Entries"%go (go.Signature [go.uint64; go.uint64; go.uint64] false [go.SliceType raftpb.Entry; go.error]); go.MethodElem "FirstIndex"%go (go.Signature [] false [go.uint64; go.error]); go.MethodElem "InitialState"%go (go.Signature [] false [raftpb.HardState; raftpb.ConfState; go.error]); go.MethodElem "LastIndex"%go (go.Signature [] false [go.uint64; go.error]); go.MethodElem "Snapshot"%go (go.Signature [] false [raftpb.Snapshot; go.error]); go.MethodElem "Term"%go (go.Signature [go.uint64] false [go.uint64; go.error])].
+Definition Storageⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Entries"%go (go.Signature [go.uint64; go.uint64; go.uint64] false [go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry; go.error]); go.MethodElem "FirstIndex"%go (go.Signature [] false [go.uint64; go.error]); go.MethodElem "InitialState"%go (go.Signature [] false [code.go_etcd_io.raft.v3.raftpb.raftpb.HardState; code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState; go.error]); go.MethodElem "LastIndex"%go (go.Signature [] false [go.uint64; go.error]); go.MethodElem "Snapshot"%go (go.Signature [] false [code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot; go.error]); go.MethodElem "Term"%go (go.Signature [go.uint64] false [go.uint64; go.error])].
 
 Class Storage_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -7774,8 +7774,8 @@ End def.
 End unstable.
 
 Definition unstable'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "snapshot"%go (go.PointerType raftpb.Snapshot));
-  (go.FieldDecl "entries"%go (go.SliceType raftpb.Entry));
+  (go.FieldDecl "snapshot"%go (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot));
+  (go.FieldDecl "entries"%go (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry));
   (go.FieldDecl "offset"%go go.uint64);
   (go.FieldDecl "snapshotInProgress"%go go.bool);
   (go.FieldDecl "offsetInProgress"%go go.uint64);
@@ -7947,7 +7947,7 @@ End def.
 End DefaultLogger.
 
 Definition DefaultLogger'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.EmbeddedField "Logger"%go (go.PointerType log.Logger));
+  (go.EmbeddedField "Logger"%go (go.PointerType code.log.log.Logger));
   (go.FieldDecl "debug"%go go.bool)
 ].
 Program Definition DefaultLogger'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (DefaultLogger'fds_unsealed).
@@ -7964,19 +7964,19 @@ Class DefaultLogger_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoca
   #[global] DefaultLogger_set_Logger (x : DefaultLogger.t) y :: ⟦StructFieldSet (DefaultLoggerⁱᵐᵖˡ) "Logger", (#x, #y)⟧ ⤳[under] #(x <|DefaultLogger.Logger' := y|>);
   #[global] DefaultLogger_get_debug (x : DefaultLogger.t) :: ⟦StructFieldGet (DefaultLoggerⁱᵐᵖˡ) "debug", #x⟧ ⤳[under] #x.(DefaultLogger.debug');
   #[global] DefaultLogger_set_debug (x : DefaultLogger.t) y :: ⟦StructFieldSet (DefaultLoggerⁱᵐᵖˡ) "debug", (#x, #y)⟧ ⤳[under] #(x <|DefaultLogger.debug' := y|>);
-  #[global] DefaultLogger_Fatalln_unfold :: MethodUnfold (DefaultLogger) "Fatalln" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Fatalln" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
-  #[global] DefaultLogger_Flags_unfold :: MethodUnfold (DefaultLogger) "Flags" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Flags" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
-  #[global] DefaultLogger_Output_unfold :: MethodUnfold (DefaultLogger) "Output" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Output" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
-  #[global] DefaultLogger_Panicln_unfold :: MethodUnfold (DefaultLogger) "Panicln" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Panicln" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
-  #[global] DefaultLogger_Prefix_unfold :: MethodUnfold (DefaultLogger) "Prefix" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Prefix" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
-  #[global] DefaultLogger_Print_unfold :: MethodUnfold (DefaultLogger) "Print" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Print" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
-  #[global] DefaultLogger_Printf_unfold :: MethodUnfold (DefaultLogger) "Printf" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Printf" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
-  #[global] DefaultLogger_Println_unfold :: MethodUnfold (DefaultLogger) "Println" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Println" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
-  #[global] DefaultLogger_SetFlags_unfold :: MethodUnfold (DefaultLogger) "SetFlags" (λ: "$r", MethodResolve (go.PointerType log.Logger) "SetFlags" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
-  #[global] DefaultLogger_SetOutput_unfold :: MethodUnfold (DefaultLogger) "SetOutput" (λ: "$r", MethodResolve (go.PointerType log.Logger) "SetOutput" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
-  #[global] DefaultLogger_SetPrefix_unfold :: MethodUnfold (DefaultLogger) "SetPrefix" (λ: "$r", MethodResolve (go.PointerType log.Logger) "SetPrefix" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
-  #[global] DefaultLogger_Writer_unfold :: MethodUnfold (DefaultLogger) "Writer" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Writer" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
-  #[global] DefaultLogger_output_unfold :: MethodUnfold (DefaultLogger) "output" (λ: "$r", MethodResolve (go.PointerType log.Logger) "output" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
+  #[global] DefaultLogger_Fatalln_unfold :: MethodUnfold (DefaultLogger) "Fatalln" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Fatalln" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
+  #[global] DefaultLogger_Flags_unfold :: MethodUnfold (DefaultLogger) "Flags" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Flags" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
+  #[global] DefaultLogger_Output_unfold :: MethodUnfold (DefaultLogger) "Output" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Output" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
+  #[global] DefaultLogger_Panicln_unfold :: MethodUnfold (DefaultLogger) "Panicln" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Panicln" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
+  #[global] DefaultLogger_Prefix_unfold :: MethodUnfold (DefaultLogger) "Prefix" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Prefix" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
+  #[global] DefaultLogger_Print_unfold :: MethodUnfold (DefaultLogger) "Print" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Print" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
+  #[global] DefaultLogger_Printf_unfold :: MethodUnfold (DefaultLogger) "Printf" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Printf" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
+  #[global] DefaultLogger_Println_unfold :: MethodUnfold (DefaultLogger) "Println" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Println" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
+  #[global] DefaultLogger_SetFlags_unfold :: MethodUnfold (DefaultLogger) "SetFlags" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "SetFlags" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
+  #[global] DefaultLogger_SetOutput_unfold :: MethodUnfold (DefaultLogger) "SetOutput" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "SetOutput" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
+  #[global] DefaultLogger_SetPrefix_unfold :: MethodUnfold (DefaultLogger) "SetPrefix" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "SetPrefix" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
+  #[global] DefaultLogger_Writer_unfold :: MethodUnfold (DefaultLogger) "Writer" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Writer" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
+  #[global] DefaultLogger_output_unfold :: MethodUnfold (DefaultLogger) "output" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "output" (StructFieldGet (DefaultLogger) "Logger" "$r" ))%V;
   #[global] DefaultLogger'ptr_Debug_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Debug" (DefaultLogger__Debugⁱᵐᵖˡ);
   #[global] DefaultLogger'ptr_Debugf_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Debugf" (DefaultLogger__Debugfⁱᵐᵖˡ);
   #[global] DefaultLogger'ptr_EnableDebug_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "EnableDebug" (DefaultLogger__EnableDebugⁱᵐᵖˡ);
@@ -7985,25 +7985,25 @@ Class DefaultLogger_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoca
   #[global] DefaultLogger'ptr_Errorf_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Errorf" (DefaultLogger__Errorfⁱᵐᵖˡ);
   #[global] DefaultLogger'ptr_Fatal_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Fatal" (DefaultLogger__Fatalⁱᵐᵖˡ);
   #[global] DefaultLogger'ptr_Fatalf_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Fatalf" (DefaultLogger__Fatalfⁱᵐᵖˡ);
-  #[global] DefaultLogger'ptr_Fatalln_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Fatalln" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Fatalln" (![go.PointerType log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
-  #[global] DefaultLogger'ptr_Flags_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Flags" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Flags" (![go.PointerType log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
+  #[global] DefaultLogger'ptr_Fatalln_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Fatalln" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Fatalln" (![go.PointerType code.log.log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
+  #[global] DefaultLogger'ptr_Flags_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Flags" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Flags" (![go.PointerType code.log.log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
   #[global] DefaultLogger'ptr_Info_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Info" (DefaultLogger__Infoⁱᵐᵖˡ);
   #[global] DefaultLogger'ptr_Infof_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Infof" (DefaultLogger__Infofⁱᵐᵖˡ);
-  #[global] DefaultLogger'ptr_Output_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Output" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Output" (![go.PointerType log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
+  #[global] DefaultLogger'ptr_Output_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Output" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Output" (![go.PointerType code.log.log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
   #[global] DefaultLogger'ptr_Panic_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Panic" (DefaultLogger__Panicⁱᵐᵖˡ);
   #[global] DefaultLogger'ptr_Panicf_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Panicf" (DefaultLogger__Panicfⁱᵐᵖˡ);
-  #[global] DefaultLogger'ptr_Panicln_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Panicln" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Panicln" (![go.PointerType log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
-  #[global] DefaultLogger'ptr_Prefix_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Prefix" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Prefix" (![go.PointerType log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
-  #[global] DefaultLogger'ptr_Print_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Print" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Print" (![go.PointerType log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
-  #[global] DefaultLogger'ptr_Printf_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Printf" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Printf" (![go.PointerType log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
-  #[global] DefaultLogger'ptr_Println_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Println" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Println" (![go.PointerType log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
-  #[global] DefaultLogger'ptr_SetFlags_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "SetFlags" (λ: "$r", MethodResolve (go.PointerType log.Logger) "SetFlags" (![go.PointerType log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
-  #[global] DefaultLogger'ptr_SetOutput_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "SetOutput" (λ: "$r", MethodResolve (go.PointerType log.Logger) "SetOutput" (![go.PointerType log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
-  #[global] DefaultLogger'ptr_SetPrefix_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "SetPrefix" (λ: "$r", MethodResolve (go.PointerType log.Logger) "SetPrefix" (![go.PointerType log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
+  #[global] DefaultLogger'ptr_Panicln_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Panicln" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Panicln" (![go.PointerType code.log.log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
+  #[global] DefaultLogger'ptr_Prefix_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Prefix" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Prefix" (![go.PointerType code.log.log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
+  #[global] DefaultLogger'ptr_Print_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Print" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Print" (![go.PointerType code.log.log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
+  #[global] DefaultLogger'ptr_Printf_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Printf" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Printf" (![go.PointerType code.log.log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
+  #[global] DefaultLogger'ptr_Println_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Println" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Println" (![go.PointerType code.log.log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
+  #[global] DefaultLogger'ptr_SetFlags_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "SetFlags" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "SetFlags" (![go.PointerType code.log.log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
+  #[global] DefaultLogger'ptr_SetOutput_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "SetOutput" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "SetOutput" (![go.PointerType code.log.log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
+  #[global] DefaultLogger'ptr_SetPrefix_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "SetPrefix" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "SetPrefix" (![go.PointerType code.log.log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
   #[global] DefaultLogger'ptr_Warning_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Warning" (DefaultLogger__Warningⁱᵐᵖˡ);
   #[global] DefaultLogger'ptr_Warningf_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Warningf" (DefaultLogger__Warningfⁱᵐᵖˡ);
-  #[global] DefaultLogger'ptr_Writer_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Writer" (λ: "$r", MethodResolve (go.PointerType log.Logger) "Writer" (![go.PointerType log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
-  #[global] DefaultLogger'ptr_output_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "output" (λ: "$r", MethodResolve (go.PointerType log.Logger) "output" (![go.PointerType log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
+  #[global] DefaultLogger'ptr_Writer_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "Writer" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "Writer" (![go.PointerType code.log.log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
+  #[global] DefaultLogger'ptr_output_unfold :: MethodUnfold (go.PointerType (DefaultLogger)) "output" (λ: "$r", MethodResolve (go.PointerType code.log.log.Logger) "output" (![go.PointerType code.log.log.Logger] (StructFieldRef DefaultLogger "Logger"%go "$r")));
 }.
 
 Module SnapshotStatus.
@@ -8082,10 +8082,10 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
   SoftState' : loc;
-  HardState' : raftpb.HardState.t;
+  HardState' : code.go_etcd_io.raft.v3.raftpb.raftpb.HardState.t;
   ReadStates' : slice.t;
   Entries' : slice.t;
-  Snapshot' : raftpb.Snapshot.t;
+  Snapshot' : code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot.t;
   CommittedEntries' : slice.t;
   Messages' : slice.t;
   MustSync' : bool;
@@ -8099,12 +8099,12 @@ End Ready.
 
 Definition Ready'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.EmbeddedField "SoftState"%go (go.PointerType SoftState));
-  (go.EmbeddedField "HardState"%go raftpb.HardState);
+  (go.EmbeddedField "HardState"%go code.go_etcd_io.raft.v3.raftpb.raftpb.HardState);
   (go.FieldDecl "ReadStates"%go (go.SliceType ReadState));
-  (go.FieldDecl "Entries"%go (go.SliceType raftpb.Entry));
-  (go.FieldDecl "Snapshot"%go raftpb.Snapshot);
-  (go.FieldDecl "CommittedEntries"%go (go.SliceType raftpb.Entry));
-  (go.FieldDecl "Messages"%go (go.SliceType raftpb.Message));
+  (go.FieldDecl "Entries"%go (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry));
+  (go.FieldDecl "Snapshot"%go code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot);
+  (go.FieldDecl "CommittedEntries"%go (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry));
+  (go.FieldDecl "Messages"%go (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message));
   (go.FieldDecl "MustSync"%go go.bool)
 ].
 Program Definition Ready'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Ready'fds_unsealed).
@@ -8134,20 +8134,20 @@ Class Ready_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
   #[global] Ready_get_MustSync (x : Ready.t) :: ⟦StructFieldGet (Readyⁱᵐᵖˡ) "MustSync", #x⟧ ⤳[under] #x.(Ready.MustSync');
   #[global] Ready_set_MustSync (x : Ready.t) y :: ⟦StructFieldSet (Readyⁱᵐᵖˡ) "MustSync", (#x, #y)⟧ ⤳[under] #(x <|Ready.MustSync' := y|>);
   #[global] Ready_equal_unfold :: MethodUnfold (Ready) "equal" (λ: "$r", MethodResolve (go.PointerType SoftState) "equal" (StructFieldGet (Ready) "SoftState" "$r" ))%V;
-  #[global] Ready'ptr_Descriptor_unfold :: MethodUnfold (go.PointerType (Ready)) "Descriptor" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "Descriptor" (StructFieldRef Ready "HardState"%go "$r"));
-  #[global] Ready'ptr_Marshal_unfold :: MethodUnfold (go.PointerType (Ready)) "Marshal" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "Marshal" (StructFieldRef Ready "HardState"%go "$r"));
-  #[global] Ready'ptr_MarshalTo_unfold :: MethodUnfold (go.PointerType (Ready)) "MarshalTo" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "MarshalTo" (StructFieldRef Ready "HardState"%go "$r"));
-  #[global] Ready'ptr_MarshalToSizedBuffer_unfold :: MethodUnfold (go.PointerType (Ready)) "MarshalToSizedBuffer" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "MarshalToSizedBuffer" (StructFieldRef Ready "HardState"%go "$r"));
-  #[global] Ready'ptr_ProtoMessage_unfold :: MethodUnfold (go.PointerType (Ready)) "ProtoMessage" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "ProtoMessage" (StructFieldRef Ready "HardState"%go "$r"));
-  #[global] Ready'ptr_Reset_unfold :: MethodUnfold (go.PointerType (Ready)) "Reset" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "Reset" (StructFieldRef Ready "HardState"%go "$r"));
-  #[global] Ready'ptr_Size_unfold :: MethodUnfold (go.PointerType (Ready)) "Size" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "Size" (StructFieldRef Ready "HardState"%go "$r"));
-  #[global] Ready'ptr_String_unfold :: MethodUnfold (go.PointerType (Ready)) "String" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "String" (StructFieldRef Ready "HardState"%go "$r"));
-  #[global] Ready'ptr_Unmarshal_unfold :: MethodUnfold (go.PointerType (Ready)) "Unmarshal" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "Unmarshal" (StructFieldRef Ready "HardState"%go "$r"));
-  #[global] Ready'ptr_XXX_DiscardUnknown_unfold :: MethodUnfold (go.PointerType (Ready)) "XXX_DiscardUnknown" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "XXX_DiscardUnknown" (StructFieldRef Ready "HardState"%go "$r"));
-  #[global] Ready'ptr_XXX_Marshal_unfold :: MethodUnfold (go.PointerType (Ready)) "XXX_Marshal" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "XXX_Marshal" (StructFieldRef Ready "HardState"%go "$r"));
-  #[global] Ready'ptr_XXX_Merge_unfold :: MethodUnfold (go.PointerType (Ready)) "XXX_Merge" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "XXX_Merge" (StructFieldRef Ready "HardState"%go "$r"));
-  #[global] Ready'ptr_XXX_Size_unfold :: MethodUnfold (go.PointerType (Ready)) "XXX_Size" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "XXX_Size" (StructFieldRef Ready "HardState"%go "$r"));
-  #[global] Ready'ptr_XXX_Unmarshal_unfold :: MethodUnfold (go.PointerType (Ready)) "XXX_Unmarshal" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "XXX_Unmarshal" (StructFieldRef Ready "HardState"%go "$r"));
+  #[global] Ready'ptr_Descriptor_unfold :: MethodUnfold (go.PointerType (Ready)) "Descriptor" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "Descriptor" (StructFieldRef Ready "HardState"%go "$r"));
+  #[global] Ready'ptr_Marshal_unfold :: MethodUnfold (go.PointerType (Ready)) "Marshal" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "Marshal" (StructFieldRef Ready "HardState"%go "$r"));
+  #[global] Ready'ptr_MarshalTo_unfold :: MethodUnfold (go.PointerType (Ready)) "MarshalTo" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "MarshalTo" (StructFieldRef Ready "HardState"%go "$r"));
+  #[global] Ready'ptr_MarshalToSizedBuffer_unfold :: MethodUnfold (go.PointerType (Ready)) "MarshalToSizedBuffer" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "MarshalToSizedBuffer" (StructFieldRef Ready "HardState"%go "$r"));
+  #[global] Ready'ptr_ProtoMessage_unfold :: MethodUnfold (go.PointerType (Ready)) "ProtoMessage" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "ProtoMessage" (StructFieldRef Ready "HardState"%go "$r"));
+  #[global] Ready'ptr_Reset_unfold :: MethodUnfold (go.PointerType (Ready)) "Reset" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "Reset" (StructFieldRef Ready "HardState"%go "$r"));
+  #[global] Ready'ptr_Size_unfold :: MethodUnfold (go.PointerType (Ready)) "Size" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "Size" (StructFieldRef Ready "HardState"%go "$r"));
+  #[global] Ready'ptr_String_unfold :: MethodUnfold (go.PointerType (Ready)) "String" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "String" (StructFieldRef Ready "HardState"%go "$r"));
+  #[global] Ready'ptr_Unmarshal_unfold :: MethodUnfold (go.PointerType (Ready)) "Unmarshal" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "Unmarshal" (StructFieldRef Ready "HardState"%go "$r"));
+  #[global] Ready'ptr_XXX_DiscardUnknown_unfold :: MethodUnfold (go.PointerType (Ready)) "XXX_DiscardUnknown" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "XXX_DiscardUnknown" (StructFieldRef Ready "HardState"%go "$r"));
+  #[global] Ready'ptr_XXX_Marshal_unfold :: MethodUnfold (go.PointerType (Ready)) "XXX_Marshal" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "XXX_Marshal" (StructFieldRef Ready "HardState"%go "$r"));
+  #[global] Ready'ptr_XXX_Merge_unfold :: MethodUnfold (go.PointerType (Ready)) "XXX_Merge" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "XXX_Merge" (StructFieldRef Ready "HardState"%go "$r"));
+  #[global] Ready'ptr_XXX_Size_unfold :: MethodUnfold (go.PointerType (Ready)) "XXX_Size" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "XXX_Size" (StructFieldRef Ready "HardState"%go "$r"));
+  #[global] Ready'ptr_XXX_Unmarshal_unfold :: MethodUnfold (go.PointerType (Ready)) "XXX_Unmarshal" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "XXX_Unmarshal" (StructFieldRef Ready "HardState"%go "$r"));
   #[global] Ready'ptr_equal_unfold :: MethodUnfold (go.PointerType (Ready)) "equal" (λ: "$r", MethodResolve (go.PointerType SoftState) "equal" (![go.PointerType SoftState] (StructFieldRef Ready "SoftState"%go "$r")));
 }.
 
@@ -8159,7 +8159,7 @@ Definition t : Type := interface.t.
 End def.
 End Node.
 
-Definition Nodeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Advance"%go (go.Signature [] false []); go.MethodElem "ApplyConfChange"%go (go.Signature [raftpb.ConfChangeI] false [go.PointerType raftpb.ConfState]); go.MethodElem "Campaign"%go (go.Signature [context.Context] false [go.error]); go.MethodElem "ForgetLeader"%go (go.Signature [context.Context] false [go.error]); go.MethodElem "Propose"%go (go.Signature [context.Context; go.SliceType go.byte] false [go.error]); go.MethodElem "ProposeConfChange"%go (go.Signature [context.Context; raftpb.ConfChangeI] false [go.error]); go.MethodElem "ReadIndex"%go (go.Signature [context.Context; go.SliceType go.byte] false [go.error]); go.MethodElem "Ready"%go (go.Signature [] false [go.ChannelType go.recvonly Ready]); go.MethodElem "ReportSnapshot"%go (go.Signature [go.uint64; SnapshotStatus] false []); go.MethodElem "ReportUnreachable"%go (go.Signature [go.uint64] false []); go.MethodElem "Status"%go (go.Signature [] false [Status]); go.MethodElem "Step"%go (go.Signature [context.Context; raftpb.Message] false [go.error]); go.MethodElem "Stop"%go (go.Signature [] false []); go.MethodElem "Tick"%go (go.Signature [] false []); go.MethodElem "TransferLeadership"%go (go.Signature [context.Context; go.uint64; go.uint64] false [])].
+Definition Nodeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Advance"%go (go.Signature [] false []); go.MethodElem "ApplyConfChange"%go (go.Signature [code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] false [go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState]); go.MethodElem "Campaign"%go (go.Signature [code.context.context.Context] false [go.error]); go.MethodElem "ForgetLeader"%go (go.Signature [code.context.context.Context] false [go.error]); go.MethodElem "Propose"%go (go.Signature [code.context.context.Context; go.SliceType go.byte] false [go.error]); go.MethodElem "ProposeConfChange"%go (go.Signature [code.context.context.Context; code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeI] false [go.error]); go.MethodElem "ReadIndex"%go (go.Signature [code.context.context.Context; go.SliceType go.byte] false [go.error]); go.MethodElem "Ready"%go (go.Signature [] false [go.ChannelType go.recvonly Ready]); go.MethodElem "ReportSnapshot"%go (go.Signature [go.uint64; SnapshotStatus] false []); go.MethodElem "ReportUnreachable"%go (go.Signature [go.uint64] false []); go.MethodElem "Status"%go (go.Signature [] false [Status]); go.MethodElem "Step"%go (go.Signature [code.context.context.Context; code.go_etcd_io.raft.v3.raftpb.raftpb.Message] false [go.error]); go.MethodElem "Stop"%go (go.Signature [] false []); go.MethodElem "Tick"%go (go.Signature [] false []); go.MethodElem "TransferLeadership"%go (go.Signature [code.context.context.Context; go.uint64; go.uint64] false [])].
 
 Class Node_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -8206,7 +8206,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  m' : raftpb.Message.t;
+  m' : code.go_etcd_io.raft.v3.raftpb.raftpb.Message.t;
   result' : chan.t;
 }.
 
@@ -8217,7 +8217,7 @@ End def.
 End msgWithResult.
 
 Definition msgWithResult'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "m"%go raftpb.Message);
+  (go.FieldDecl "m"%go code.go_etcd_io.raft.v3.raftpb.raftpb.Message);
   (go.FieldDecl "result"%go (go.ChannelType go.sendrecv go.error))
 ].
 Program Definition msgWithResult'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (msgWithResult'fds_unsealed).
@@ -8262,9 +8262,9 @@ End node.
 
 Definition node'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "propc"%go (go.ChannelType go.sendrecv msgWithResult));
-  (go.FieldDecl "recvc"%go (go.ChannelType go.sendrecv raftpb.Message));
-  (go.FieldDecl "confc"%go (go.ChannelType go.sendrecv raftpb.ConfChangeV2));
-  (go.FieldDecl "confstatec"%go (go.ChannelType go.sendrecv raftpb.ConfState));
+  (go.FieldDecl "recvc"%go (go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.Message));
+  (go.FieldDecl "confc"%go (go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.ConfChangeV2));
+  (go.FieldDecl "confstatec"%go (go.ChannelType go.sendrecv code.go_etcd_io.raft.v3.raftpb.raftpb.ConfState));
   (go.FieldDecl "readyc"%go (go.ChannelType go.sendrecv Ready));
   (go.FieldDecl "advancec"%go (go.ChannelType go.sendrecv (go.StructType [
 
@@ -8354,7 +8354,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  mu' : sync.Mutex.t;
+  mu' : code.sync.sync.Mutex.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -8364,7 +8364,7 @@ End def.
 End lockedRand.
 
 Definition lockedRand'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "mu"%go sync.Mutex)
+  (go.FieldDecl "mu"%go code.sync.sync.Mutex)
 ].
 Program Definition lockedRand'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (lockedRand'fds_unsealed).
 Global Instance equals_unfold_lockedRand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : lockedRand'fds =→ lockedRand'fds_unsealed.
@@ -8538,7 +8538,7 @@ Definition t : Type := func.t.
 End def.
 End stepFunc.
 
-Definition stepFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.FunctionType (go.Signature [go.PointerType raft; raftpb.Message] false [go.error]).
+Definition stepFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.FunctionType (go.Signature [go.PointerType raft; code.go_etcd_io.raft.v3.raftpb.raftpb.Message] false [go.error]).
 
 Class stepFunc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -8557,7 +8557,7 @@ mk {
   raftLog' : loc;
   maxMsgSize' : raft.entryEncodingSize.t;
   maxUncommittedSize' : raft.entryPayloadSize.t;
-  trk' : tracker.ProgressTracker.t;
+  trk' : code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker.t;
   state' : raft.StateType.t;
   isLearner' : bool;
   msgs' : slice.t;
@@ -8598,11 +8598,11 @@ Definition raft'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : li
   (go.FieldDecl "raftLog"%go (go.PointerType raftLog));
   (go.FieldDecl "maxMsgSize"%go entryEncodingSize);
   (go.FieldDecl "maxUncommittedSize"%go entryPayloadSize);
-  (go.FieldDecl "trk"%go tracker.ProgressTracker);
+  (go.FieldDecl "trk"%go code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker);
   (go.FieldDecl "state"%go StateType);
   (go.FieldDecl "isLearner"%go go.bool);
-  (go.FieldDecl "msgs"%go (go.SliceType raftpb.Message));
-  (go.FieldDecl "msgsAfterAppend"%go (go.SliceType raftpb.Message));
+  (go.FieldDecl "msgs"%go (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message));
+  (go.FieldDecl "msgsAfterAppend"%go (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message));
   (go.FieldDecl "lead"%go go.uint64);
   (go.FieldDecl "leadTransferee"%go go.uint64);
   (go.FieldDecl "pendingConfIndex"%go go.uint64);
@@ -8621,7 +8621,7 @@ Definition raft'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : li
   (go.FieldDecl "tick"%go (go.FunctionType (go.Signature [] false [])));
   (go.FieldDecl "step"%go stepFunc);
   (go.FieldDecl "logger"%go Logger);
-  (go.FieldDecl "pendingReadIndexMessages"%go (go.SliceType raftpb.Message));
+  (go.FieldDecl "pendingReadIndexMessages"%go (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message));
   (go.FieldDecl "traceLogger"%go TraceLogger)
 ].
 Program Definition raft'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (raft'fds_unsealed).
@@ -8751,7 +8751,7 @@ mk {
   raft' : loc;
   asyncStorageWrites' : bool;
   prevSoftSt' : loc;
-  prevHardSt' : raftpb.HardState.t;
+  prevHardSt' : code.go_etcd_io.raft.v3.raftpb.raftpb.HardState.t;
   stepsOnAdvance' : slice.t;
 }.
 
@@ -8765,8 +8765,8 @@ Definition RawNode'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
   (go.FieldDecl "raft"%go (go.PointerType raft));
   (go.FieldDecl "asyncStorageWrites"%go go.bool);
   (go.FieldDecl "prevSoftSt"%go (go.PointerType SoftState));
-  (go.FieldDecl "prevHardSt"%go raftpb.HardState);
-  (go.FieldDecl "stepsOnAdvance"%go (go.SliceType raftpb.Message))
+  (go.FieldDecl "prevHardSt"%go code.go_etcd_io.raft.v3.raftpb.raftpb.HardState);
+  (go.FieldDecl "stepsOnAdvance"%go (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Message))
 ].
 Program Definition RawNode'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (RawNode'fds_unsealed).
 Global Instance equals_unfold_RawNode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : RawNode'fds =→ RawNode'fds_unsealed.
@@ -8867,7 +8867,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  req' : raftpb.Message.t;
+  req' : code.go_etcd_io.raft.v3.raftpb.raftpb.Message.t;
   index' : w64;
 }.
 
@@ -8878,7 +8878,7 @@ End def.
 End readIndexRequest.
 
 Definition readIndexRequest'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "req"%go raftpb.Message);
+  (go.FieldDecl "req"%go code.go_etcd_io.raft.v3.raftpb.raftpb.Message);
   (go.FieldDecl "index"%go go.uint64)
 ].
 Program Definition readIndexRequest'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (readIndexRequest'fds_unsealed).
@@ -8979,7 +8979,7 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
   ID' : w64;
-  HardState' : raftpb.HardState.t;
+  HardState' : code.go_etcd_io.raft.v3.raftpb.raftpb.HardState.t;
   SoftState' : raft.SoftState.t;
   Applied' : w64;
   LeadTransferee' : w64;
@@ -8993,7 +8993,7 @@ End BasicStatus.
 
 Definition BasicStatus'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "ID"%go go.uint64);
-  (go.EmbeddedField "HardState"%go raftpb.HardState);
+  (go.EmbeddedField "HardState"%go code.go_etcd_io.raft.v3.raftpb.raftpb.HardState);
   (go.EmbeddedField "SoftState"%go SoftState);
   (go.FieldDecl "Applied"%go go.uint64);
   (go.FieldDecl "LeadTransferee"%go go.uint64)
@@ -9018,20 +9018,20 @@ Class BasicStatus_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalC
   #[global] BasicStatus_set_Applied (x : BasicStatus.t) y :: ⟦StructFieldSet (BasicStatusⁱᵐᵖˡ) "Applied", (#x, #y)⟧ ⤳[under] #(x <|BasicStatus.Applied' := y|>);
   #[global] BasicStatus_get_LeadTransferee (x : BasicStatus.t) :: ⟦StructFieldGet (BasicStatusⁱᵐᵖˡ) "LeadTransferee", #x⟧ ⤳[under] #x.(BasicStatus.LeadTransferee');
   #[global] BasicStatus_set_LeadTransferee (x : BasicStatus.t) y :: ⟦StructFieldSet (BasicStatusⁱᵐᵖˡ) "LeadTransferee", (#x, #y)⟧ ⤳[under] #(x <|BasicStatus.LeadTransferee' := y|>);
-  #[global] BasicStatus'ptr_Descriptor_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "Descriptor" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "Descriptor" (StructFieldRef BasicStatus "HardState"%go "$r"));
-  #[global] BasicStatus'ptr_Marshal_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "Marshal" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "Marshal" (StructFieldRef BasicStatus "HardState"%go "$r"));
-  #[global] BasicStatus'ptr_MarshalTo_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "MarshalTo" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "MarshalTo" (StructFieldRef BasicStatus "HardState"%go "$r"));
-  #[global] BasicStatus'ptr_MarshalToSizedBuffer_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "MarshalToSizedBuffer" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "MarshalToSizedBuffer" (StructFieldRef BasicStatus "HardState"%go "$r"));
-  #[global] BasicStatus'ptr_ProtoMessage_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "ProtoMessage" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "ProtoMessage" (StructFieldRef BasicStatus "HardState"%go "$r"));
-  #[global] BasicStatus'ptr_Reset_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "Reset" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "Reset" (StructFieldRef BasicStatus "HardState"%go "$r"));
-  #[global] BasicStatus'ptr_Size_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "Size" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "Size" (StructFieldRef BasicStatus "HardState"%go "$r"));
-  #[global] BasicStatus'ptr_String_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "String" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "String" (StructFieldRef BasicStatus "HardState"%go "$r"));
-  #[global] BasicStatus'ptr_Unmarshal_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "Unmarshal" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "Unmarshal" (StructFieldRef BasicStatus "HardState"%go "$r"));
-  #[global] BasicStatus'ptr_XXX_DiscardUnknown_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "XXX_DiscardUnknown" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "XXX_DiscardUnknown" (StructFieldRef BasicStatus "HardState"%go "$r"));
-  #[global] BasicStatus'ptr_XXX_Marshal_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "XXX_Marshal" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "XXX_Marshal" (StructFieldRef BasicStatus "HardState"%go "$r"));
-  #[global] BasicStatus'ptr_XXX_Merge_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "XXX_Merge" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "XXX_Merge" (StructFieldRef BasicStatus "HardState"%go "$r"));
-  #[global] BasicStatus'ptr_XXX_Size_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "XXX_Size" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "XXX_Size" (StructFieldRef BasicStatus "HardState"%go "$r"));
-  #[global] BasicStatus'ptr_XXX_Unmarshal_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "XXX_Unmarshal" (λ: "$r", MethodResolve (go.PointerType raftpb.HardState) "XXX_Unmarshal" (StructFieldRef BasicStatus "HardState"%go "$r"));
+  #[global] BasicStatus'ptr_Descriptor_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "Descriptor" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "Descriptor" (StructFieldRef BasicStatus "HardState"%go "$r"));
+  #[global] BasicStatus'ptr_Marshal_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "Marshal" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "Marshal" (StructFieldRef BasicStatus "HardState"%go "$r"));
+  #[global] BasicStatus'ptr_MarshalTo_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "MarshalTo" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "MarshalTo" (StructFieldRef BasicStatus "HardState"%go "$r"));
+  #[global] BasicStatus'ptr_MarshalToSizedBuffer_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "MarshalToSizedBuffer" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "MarshalToSizedBuffer" (StructFieldRef BasicStatus "HardState"%go "$r"));
+  #[global] BasicStatus'ptr_ProtoMessage_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "ProtoMessage" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "ProtoMessage" (StructFieldRef BasicStatus "HardState"%go "$r"));
+  #[global] BasicStatus'ptr_Reset_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "Reset" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "Reset" (StructFieldRef BasicStatus "HardState"%go "$r"));
+  #[global] BasicStatus'ptr_Size_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "Size" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "Size" (StructFieldRef BasicStatus "HardState"%go "$r"));
+  #[global] BasicStatus'ptr_String_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "String" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "String" (StructFieldRef BasicStatus "HardState"%go "$r"));
+  #[global] BasicStatus'ptr_Unmarshal_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "Unmarshal" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "Unmarshal" (StructFieldRef BasicStatus "HardState"%go "$r"));
+  #[global] BasicStatus'ptr_XXX_DiscardUnknown_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "XXX_DiscardUnknown" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "XXX_DiscardUnknown" (StructFieldRef BasicStatus "HardState"%go "$r"));
+  #[global] BasicStatus'ptr_XXX_Marshal_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "XXX_Marshal" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "XXX_Marshal" (StructFieldRef BasicStatus "HardState"%go "$r"));
+  #[global] BasicStatus'ptr_XXX_Merge_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "XXX_Merge" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "XXX_Merge" (StructFieldRef BasicStatus "HardState"%go "$r"));
+  #[global] BasicStatus'ptr_XXX_Size_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "XXX_Size" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "XXX_Size" (StructFieldRef BasicStatus "HardState"%go "$r"));
+  #[global] BasicStatus'ptr_XXX_Unmarshal_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "XXX_Unmarshal" (λ: "$r", MethodResolve (go.PointerType code.go_etcd_io.raft.v3.raftpb.raftpb.HardState) "XXX_Unmarshal" (StructFieldRef BasicStatus "HardState"%go "$r"));
   #[global] BasicStatus'ptr_equal_unfold :: MethodUnfold (go.PointerType (BasicStatus)) "equal" (λ: "$r", MethodResolve (go.PointerType SoftState) "equal" (StructFieldRef BasicStatus "SoftState"%go "$r"));
 }.
 
@@ -9041,7 +9041,7 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
   BasicStatus' : raft.BasicStatus.t;
-  Config' : tracker.Config.t;
+  Config' : code.go_etcd_io.raft.v3.tracker.tracker.Config.t;
   Progress' : map.t;
 }.
 
@@ -9053,8 +9053,8 @@ End Status.
 
 Definition Status'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.EmbeddedField "BasicStatus"%go BasicStatus);
-  (go.FieldDecl "Config"%go tracker.Config);
-  (go.FieldDecl "Progress"%go (go.MapType go.uint64 tracker.Progress))
+  (go.FieldDecl "Config"%go code.go_etcd_io.raft.v3.tracker.tracker.Config);
+  (go.FieldDecl "Progress"%go (go.MapType go.uint64 code.go_etcd_io.raft.v3.tracker.tracker.Progress))
 ].
 Program Definition Status'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Status'fds_unsealed).
 Global Instance equals_unfold_Status {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Status'fds =→ Status'fds_unsealed.
@@ -9148,9 +9148,9 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  Mutex' : sync.Mutex.t;
-  hardState' : raftpb.HardState.t;
-  snapshot' : raftpb.Snapshot.t;
+  Mutex' : code.sync.sync.Mutex.t;
+  hardState' : code.go_etcd_io.raft.v3.raftpb.raftpb.HardState.t;
+  snapshot' : code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot.t;
   ents' : slice.t;
   callStats' : raft.inMemStorageCallStats.t;
 }.
@@ -9162,10 +9162,10 @@ End def.
 End MemoryStorage.
 
 Definition MemoryStorage'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.EmbeddedField "Mutex"%go sync.Mutex);
-  (go.FieldDecl "hardState"%go raftpb.HardState);
-  (go.FieldDecl "snapshot"%go raftpb.Snapshot);
-  (go.FieldDecl "ents"%go (go.SliceType raftpb.Entry));
+  (go.EmbeddedField "Mutex"%go code.sync.sync.Mutex);
+  (go.FieldDecl "hardState"%go code.go_etcd_io.raft.v3.raftpb.raftpb.HardState);
+  (go.FieldDecl "snapshot"%go code.go_etcd_io.raft.v3.raftpb.raftpb.Snapshot);
+  (go.FieldDecl "ents"%go (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry));
   (go.FieldDecl "callStats"%go inMemStorageCallStats)
 ].
 Program Definition MemoryStorage'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (MemoryStorage'fds_unsealed).
@@ -9196,12 +9196,12 @@ Class MemoryStorage_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoca
   #[global] MemoryStorage'ptr_FirstIndex_unfold :: MethodUnfold (go.PointerType (MemoryStorage)) "FirstIndex" (MemoryStorage__FirstIndexⁱᵐᵖˡ);
   #[global] MemoryStorage'ptr_InitialState_unfold :: MethodUnfold (go.PointerType (MemoryStorage)) "InitialState" (MemoryStorage__InitialStateⁱᵐᵖˡ);
   #[global] MemoryStorage'ptr_LastIndex_unfold :: MethodUnfold (go.PointerType (MemoryStorage)) "LastIndex" (MemoryStorage__LastIndexⁱᵐᵖˡ);
-  #[global] MemoryStorage'ptr_Lock_unfold :: MethodUnfold (go.PointerType (MemoryStorage)) "Lock" (λ: "$r", MethodResolve (go.PointerType sync.Mutex) "Lock" (StructFieldRef MemoryStorage "Mutex"%go "$r"));
+  #[global] MemoryStorage'ptr_Lock_unfold :: MethodUnfold (go.PointerType (MemoryStorage)) "Lock" (λ: "$r", MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock" (StructFieldRef MemoryStorage "Mutex"%go "$r"));
   #[global] MemoryStorage'ptr_SetHardState_unfold :: MethodUnfold (go.PointerType (MemoryStorage)) "SetHardState" (MemoryStorage__SetHardStateⁱᵐᵖˡ);
   #[global] MemoryStorage'ptr_Snapshot_unfold :: MethodUnfold (go.PointerType (MemoryStorage)) "Snapshot" (MemoryStorage__Snapshotⁱᵐᵖˡ);
   #[global] MemoryStorage'ptr_Term_unfold :: MethodUnfold (go.PointerType (MemoryStorage)) "Term" (MemoryStorage__Termⁱᵐᵖˡ);
-  #[global] MemoryStorage'ptr_TryLock_unfold :: MethodUnfold (go.PointerType (MemoryStorage)) "TryLock" (λ: "$r", MethodResolve (go.PointerType sync.Mutex) "TryLock" (StructFieldRef MemoryStorage "Mutex"%go "$r"));
-  #[global] MemoryStorage'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (MemoryStorage)) "Unlock" (λ: "$r", MethodResolve (go.PointerType sync.Mutex) "Unlock" (StructFieldRef MemoryStorage "Mutex"%go "$r"));
+  #[global] MemoryStorage'ptr_TryLock_unfold :: MethodUnfold (go.PointerType (MemoryStorage)) "TryLock" (λ: "$r", MethodResolve (go.PointerType code.sync.sync.Mutex) "TryLock" (StructFieldRef MemoryStorage "Mutex"%go "$r"));
+  #[global] MemoryStorage'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (MemoryStorage)) "Unlock" (λ: "$r", MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock" (StructFieldRef MemoryStorage "Mutex"%go "$r"));
   #[global] MemoryStorage'ptr_firstIndex_unfold :: MethodUnfold (go.PointerType (MemoryStorage)) "firstIndex" (MemoryStorage__firstIndexⁱᵐᵖˡ);
   #[global] MemoryStorage'ptr_lastIndex_unfold :: MethodUnfold (go.PointerType (MemoryStorage)) "lastIndex" (MemoryStorage__lastIndexⁱᵐᵖˡ);
 }.
@@ -9260,7 +9260,7 @@ End logSlice.
 Definition logSlice'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "term"%go go.uint64);
   (go.FieldDecl "prev"%go entryID);
-  (go.FieldDecl "entries"%go (go.SliceType raftpb.Entry))
+  (go.FieldDecl "entries"%go (go.SliceType code.go_etcd_io.raft.v3.raftpb.raftpb.Entry))
 ].
 Program Definition logSlice'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (logSlice'fds_unsealed).
 Global Instance equals_unfold_logSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : logSlice'fds =→ logSlice'fds_unsealed.
@@ -9407,23 +9407,23 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] payloadsSize_unfold :: FuncUnfold payloadsSize [] (payloadsSizeⁱᵐᵖˡ);
   #[global] assertConfStatesEquivalent_unfold :: FuncUnfold assertConfStatesEquivalent [] (assertConfStatesEquivalentⁱᵐᵖˡ);
   #[global] extend_unfold :: FuncUnfold extend [] (extendⁱᵐᵖˡ);
-  #[global] import_errors_Assumption :: errors.Assumptions;
-  #[global] import_raftpb_Assumption :: raftpb.Assumptions;
-  #[global] import_fmt_Assumption :: fmt.Assumptions;
-  #[global] import_io_Assumption :: io.Assumptions;
-  #[global] import_log_Assumption :: log.Assumptions;
-  #[global] import_os_Assumption :: os.Assumptions;
-  #[global] import_sync_Assumption :: sync.Assumptions;
-  #[global] import_context_Assumption :: context.Assumptions;
-  #[global] import_bytes_Assumption :: bytes.Assumptions;
-  #[global] import_rand_Assumption :: rand.Assumptions;
-  #[global] import_math_Assumption :: math.Assumptions;
-  #[global] import_big_Assumption :: big.Assumptions;
-  #[global] import_slices_Assumption :: slices.Assumptions;
-  #[global] import_strings_Assumption :: strings.Assumptions;
-  #[global] import_confchange_Assumption :: confchange.Assumptions;
-  #[global] import_quorum_Assumption :: quorum.Assumptions;
-  #[global] import_tracker_Assumption :: tracker.Assumptions;
-  #[global] import_binary_Assumption :: binary.Assumptions;
+  #[global] import_errors_Assumption :: code.errors.errors.Assumptions;
+  #[global] import_raftpb_Assumption :: code.go_etcd_io.raft.v3.raftpb.raftpb.Assumptions;
+  #[global] import_fmt_Assumption :: code.fmt.fmt.Assumptions;
+  #[global] import_io_Assumption :: code.io.io.Assumptions;
+  #[global] import_log_Assumption :: code.log.log.Assumptions;
+  #[global] import_os_Assumption :: code.os.os.Assumptions;
+  #[global] import_sync_Assumption :: code.sync.sync.Assumptions;
+  #[global] import_context_Assumption :: code.context.context.Assumptions;
+  #[global] import_bytes_Assumption :: code.bytes.bytes.Assumptions;
+  #[global] import_rand_Assumption :: code.crypto.rand.rand.Assumptions;
+  #[global] import_math_Assumption :: code.math.math.Assumptions;
+  #[global] import_big_Assumption :: code.math.big.big.Assumptions;
+  #[global] import_slices_Assumption :: code.slices.slices.Assumptions;
+  #[global] import_strings_Assumption :: code.strings.strings.Assumptions;
+  #[global] import_confchange_Assumption :: code.go_etcd_io.raft.v3.confchange.confchange.Assumptions;
+  #[global] import_quorum_Assumption :: code.go_etcd_io.raft.v3.quorum.quorum.Assumptions;
+  #[global] import_tracker_Assumption :: code.go_etcd_io.raft.v3.tracker.tracker.Assumptions;
+  #[global] import_binary_Assumption :: code.encoding.binary.binary.Assumptions;
 }.
 End raft.

@@ -16,20 +16,20 @@ Definition UseDisk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string :=
 (* go: async.go:6:6 *)
 Definition TakesDiskⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d",
-    exception_do (let: "d" := (GoAlloc async_disk.Disk "d") in
+    exception_do (let: "d" := (GoAlloc code.github_com.goose_lang.primitive.async_disk.async_disk.Disk "d") in
     do:  #()).
 
 (* go: async.go:8:6 *)
 Definition UseDiskⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d",
-    exception_do (let: "d" := (GoAlloc async_disk.Disk "d") in
+    exception_do (let: "d" := (GoAlloc code.github_com.goose_lang.primitive.async_disk.async_disk.Disk "d") in
     let: "v" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 4096)) in
     do:  ("v" <-[go.SliceType go.byte] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
     let: "$a1" := (![go.SliceType go.byte] "v") in
-    (MethodResolve disk.Disk "Write"%go (![async_disk.Disk] "d")) "$a0" "$a1");;;
-    do:  ((MethodResolve disk.Disk "Barrier"%go (![async_disk.Disk] "d")) #());;;
+    (MethodResolve code.github_com.goose_lang.primitive.disk.disk.Disk "Write"%go (![code.github_com.goose_lang.primitive.async_disk.async_disk.Disk] "d")) "$a0" "$a1");;;
+    do:  ((MethodResolve code.github_com.goose_lang.primitive.disk.disk.Disk "Barrier"%go (![code.github_com.goose_lang.primitive.async_disk.async_disk.Disk] "d")) #());;;
     return: #()).
 
 #[global] Instance info' : PkgInfo pkg_id.async :=
@@ -40,13 +40,13 @@ Definition UseDiskⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.async (λ: <>,
-      exception_do (do:  (async_disk.initialize' #()))
+      exception_do (do:  (code.github_com.goose_lang.primitive.async_disk.async_disk.initialize' #()))
       ).
 
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] TakesDisk_unfold :: FuncUnfold TakesDisk [] (TakesDiskⁱᵐᵖˡ);
   #[global] UseDisk_unfold :: FuncUnfold UseDisk [] (UseDiskⁱᵐᵖˡ);
-  #[global] import_async_disk_Assumption :: async_disk.Assumptions;
+  #[global] import_async_disk_Assumption :: code.github_com.goose_lang.primitive.async_disk.async_disk.Assumptions;
 }.
 End async.

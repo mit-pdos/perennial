@@ -17,7 +17,7 @@ Definition workerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
   λ: "c" "wg" "x" "y",
     exception_do (let: "y" := (GoAlloc go.int "y") in
     let: "x" := (GoAlloc go.int "x") in
-    let: "wg" := (GoAlloc (go.PointerType sync.WaitGroup) "wg") in
+    let: "wg" := (GoAlloc (go.PointerType code.sync.sync.WaitGroup) "wg") in
     let: "c" := (GoAlloc (go.ChannelType go.recvonly (go.SliceType go.int)) "c") in
     (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "s" := (GoAlloc (go.SliceType go.int) (GoZeroVal (go.SliceType go.int) #())) in
@@ -41,7 +41,7 @@ Definition workerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
           let: "$r0" := (![go.int] "y") in
           do:  ((IndexRef (go.SliceType go.int) (![go.SliceType go.int] "s", ![go.int] "i")) <-[go.int] "$r0")
         else do:  #())));;;
-      do:  ((MethodResolve (go.PointerType sync.WaitGroup) "Done"%go (![go.PointerType sync.WaitGroup] "wg")) #())));;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.WaitGroup) "Done"%go (![go.PointerType code.sync.sync.WaitGroup] "wg")) #())));;;
     return: #()).
 
 (* go: parallel_search_replace.go:24:6 *)
@@ -63,7 +63,7 @@ Definition SearchReplaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     let: "c" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.int)) (GoZeroVal (go.ChannelType go.sendrecv (go.SliceType go.int)) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.SliceType go.int)] #()) #(W64 4)) in
     do:  ("c" <-[go.ChannelType go.sendrecv (go.SliceType go.int)] "$r0");;;
-    let: "wg" := (GoAlloc sync.WaitGroup (GoZeroVal sync.WaitGroup #())) in
+    let: "wg" := (GoAlloc code.sync.sync.WaitGroup (GoZeroVal code.sync.sync.WaitGroup #())) in
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.int] "$r0");;;
@@ -94,13 +94,13 @@ Definition SearchReplaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       Slice (go.SliceType go.int) ("$s", ![go.int] "offset", ![go.int] "nextOffset")) in
       do:  ("section" <-[go.SliceType go.int] "$r0");;;
       do:  (let: "$a0" := #(W64 1) in
-      (MethodResolve (go.PointerType sync.WaitGroup) "Add"%go "wg") "$a0");;;
+      (MethodResolve (go.PointerType code.sync.sync.WaitGroup) "Add"%go "wg") "$a0");;;
       do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.SliceType go.int)] "c") in
       let: "$v" := (![go.SliceType go.int] "section") in
       chan.send (go.SliceType go.int) "$chan" "$v");;;
       let: "$r0" := (![go.int] "nextOffset") in
       do:  ("offset" <-[go.int] "$r0")));;;
-    do:  ((MethodResolve (go.PointerType sync.WaitGroup) "Wait"%go "wg") #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.WaitGroup) "Wait"%go "wg") #());;;
     return: #()).
 
 #[global] Instance info' : PkgInfo pkg_id.parallel_search_replace :=
@@ -111,13 +111,13 @@ Definition SearchReplaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.parallel_search_replace (λ: <>,
-      exception_do (do:  (sync.initialize' #()))
+      exception_do (do:  (code.sync.sync.initialize' #()))
       ).
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] worker_unfold :: FuncUnfold worker [] (workerⁱᵐᵖˡ);
   #[global] SearchReplace_unfold :: FuncUnfold SearchReplace [] (SearchReplaceⁱᵐᵖˡ);
-  #[global] import_sync_Assumption :: sync.Assumptions;
+  #[global] import_sync_Assumption :: code.sync.sync.Assumptions;
 }.
 End parallel_search_replace.

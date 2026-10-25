@@ -79,18 +79,18 @@ Definition Lock__TryLockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 Definition Lock__LockWithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "d",
     exception_do (let: "l" := (GoAlloc Lock "l") in
-    let: "d" := (GoAlloc time.Duration "d") in
+    let: "d" := (GoAlloc code.time.time.Duration "d") in
     let: "$v0" := (CompositeLiteral (go.StructType [
 
     ]) (LiteralValue [])) in
     let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef Lock "ch"%go "l")) in
-    let: "$ch1" := (let: "$a0" := (![time.Duration] "d") in
-    (FuncResolve time.After [] #()) "$a0") in
+    let: "$ch1" := (let: "$a0" := (![code.time.time.Duration] "d") in
+    (FuncResolve code.time.time.After [] #()) "$a0") in
     SelectStmt (SelectStmtClauses None [(CommClause (SendCase (go.StructType [
 
-    ]) "$ch0" "$v0") (return: (#true))); (CommClause (RecvCase time.Time "$ch1") (λ: "$recvVal",
+    ]) "$ch0" "$v0") (return: (#true))); (CommClause (RecvCase code.time.time.Time "$ch1") (λ: "$recvVal",
       return: (#false)
       ))])).
 
@@ -102,7 +102,7 @@ Definition Lock__LockWithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.lock (λ: <>,
-      exception_do (do:  (time.initialize' #()))
+      exception_do (do:  (code.time.time.initialize' #()))
       ).
 
 Module Lock.
@@ -150,6 +150,6 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
 {
   #[global] Lock_instance :: Lock_Assumptions;
   #[global] NewLock_unfold :: FuncUnfold NewLock [] (NewLockⁱᵐᵖˡ);
-  #[global] import_time_Assumption :: time.Assumptions;
+  #[global] import_time_Assumption :: code.time.time.Assumptions;
 }.
 End lock.

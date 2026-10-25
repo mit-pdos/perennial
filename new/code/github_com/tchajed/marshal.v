@@ -90,7 +90,7 @@ Definition reserveⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
     let: "$r0" := (let: "$a0" := (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.byte] "b") in
     (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) in
     let: "$a1" := (![go.uint64] "additional") in
-    (FuncResolve std.SumAssumeNoOverflow [] #()) "$a0" "$a1") in
+    (FuncResolve code.github_com.goose_lang.std.std.SumAssumeNoOverflow [] #()) "$a0" "$a1") in
     do:  ("min_cap" <-[go.uint64] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.byte] "b") in
     (FuncResolve go.cap [go.SliceType go.byte] #()) "$a0")) <⟨go.uint64⟩ (![go.uint64] "min_cap"))
@@ -117,7 +117,7 @@ Definition ReadIntⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
     exception_do (let: "b" := (GoAlloc (go.SliceType go.byte) "b") in
     let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
-    (MethodResolve (go.PointerType binary.littleEndian) "Uint64"%go (GlobalVarAddr binary.LittleEndian #())) "$a0") in
+    (MethodResolve (go.PointerType code.encoding.binary.binary.littleEndian) "Uint64"%go (GlobalVarAddr code.encoding.binary.binary.LittleEndian #())) "$a0") in
     do:  ("i" <-[go.uint64] "$r0");;;
     return: (![go.uint64] "i", let: "$s" := (![go.SliceType go.byte] "b") in
      Slice (go.SliceType go.byte) ("$s", #(W64 8), FuncResolve go.len [go.SliceType go.byte] #() (![go.SliceType go.byte] "b")))).
@@ -128,7 +128,7 @@ Definition ReadInt32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     exception_do (let: "b" := (GoAlloc (go.SliceType go.byte) "b") in
     let: "i" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
     let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
-    (MethodResolve (go.PointerType binary.littleEndian) "Uint32"%go (GlobalVarAddr binary.LittleEndian #())) "$a0") in
+    (MethodResolve (go.PointerType code.encoding.binary.binary.littleEndian) "Uint32"%go (GlobalVarAddr code.encoding.binary.binary.LittleEndian #())) "$a0") in
     do:  ("i" <-[go.uint32] "$r0");;;
     return: (![go.uint32] "i", let: "$s" := (![go.SliceType go.byte] "b") in
      Slice (go.SliceType go.byte) ("$s", #(W64 4), FuncResolve go.len [go.SliceType go.byte] #() (![go.SliceType go.byte] "b")))).
@@ -220,7 +220,7 @@ Definition WriteIntⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     do:  (let: "$a0" := (let: "$s" := (![go.SliceType go.byte] "b3") in
     Slice (go.SliceType go.byte) ("$s", ![go.int] "off", FuncResolve go.len [go.SliceType go.byte] #() (![go.SliceType go.byte] "b3"))) in
     let: "$a1" := (![go.uint64] "i") in
-    (MethodResolve (go.PointerType binary.littleEndian) "PutUint64"%go (GlobalVarAddr binary.LittleEndian #())) "$a0" "$a1");;;
+    (MethodResolve (go.PointerType code.encoding.binary.binary.littleEndian) "PutUint64"%go (GlobalVarAddr code.encoding.binary.binary.LittleEndian #())) "$a0" "$a1");;;
     return: (![go.SliceType go.byte] "b3")).
 
 (* WriteInt32 appends 32-bit integer i in little-endian format to b, returning the new slice.
@@ -246,7 +246,7 @@ Definition WriteInt32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     do:  (let: "$a0" := (let: "$s" := (![go.SliceType go.byte] "b3") in
     Slice (go.SliceType go.byte) ("$s", ![go.int] "off", FuncResolve go.len [go.SliceType go.byte] #() (![go.SliceType go.byte] "b3"))) in
     let: "$a1" := (![go.uint32] "i") in
-    (MethodResolve (go.PointerType binary.littleEndian) "PutUint32"%go (GlobalVarAddr binary.LittleEndian #())) "$a0" "$a1");;;
+    (MethodResolve (go.PointerType code.encoding.binary.binary.littleEndian) "PutUint32"%go (GlobalVarAddr code.encoding.binary.binary.LittleEndian #())) "$a0" "$a1");;;
     return: (![go.SliceType go.byte] "b3")).
 
 (* Append data to b, returning the new slice.
@@ -394,8 +394,8 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.marshal (λ: <>,
-      exception_do (do:  (std.initialize' #());;;
-      do:  (binary.initialize' #()))
+      exception_do (do:  (code.github_com.goose_lang.std.std.initialize' #());;;
+      do:  (code.encoding.binary.binary.initialize' #()))
       ).
 
 Module Enc.
@@ -489,7 +489,7 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] ReadSliceLenPrefix_unfold T :: FuncUnfold ReadSliceLenPrefix [T] (ReadSliceLenPrefixⁱᵐᵖˡ T);
   #[global] WriteSlice_unfold T :: FuncUnfold WriteSlice [T] (WriteSliceⁱᵐᵖˡ T);
   #[global] WriteSliceLenPrefix_unfold T :: FuncUnfold WriteSliceLenPrefix [T] (WriteSliceLenPrefixⁱᵐᵖˡ T);
-  #[global] import_binary_Assumption :: binary.Assumptions;
-  #[global] import_std_Assumption :: std.Assumptions;
+  #[global] import_binary_Assumption :: code.encoding.binary.binary.Assumptions;
+  #[global] import_std_Assumption :: code.github_com.goose_lang.std.std.Assumptions;
 }.
 End marshal.
