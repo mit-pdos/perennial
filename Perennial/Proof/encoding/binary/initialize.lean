@@ -42,7 +42,8 @@ theorem encoding.binary.initialize'.wp_proof
   iintro Hown
   wp_auto
   wp_apply wp_GlobalAlloc (V := GoInterface) errOverflow go.error as _
-  wp_apply wp_GlobalAlloc (V := bigEndian) BigEndian bigEndian.ty as _
+  wp_apply wp_GlobalAlloc (V := bigEndian) BigEndian bigEndian.ty as Hbig
+  ipersist Hbig
   wp_apply wp_GlobalAlloc (V := littleEndian) LittleEndian littleEndian.ty as Hlit
   ipersist Hlit
   wp_apply wp_GlobalAlloc (V := GoInterface) errBufferTooSmall go.error as _
@@ -55,6 +56,8 @@ theorem encoding.binary.initialize'.wp_proof
   wp_apply wp_New as %_ _
   iframe Hown
   is_pkg_init_finish
+  imodintro
+  isplitl [] <;> iassumption
 
 end proof
 

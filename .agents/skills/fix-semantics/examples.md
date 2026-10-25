@@ -365,3 +365,30 @@ and so is more defined than gc.
 shape). Part of the plans for the unsafe memory design
 (`docs/design/unsafe-memory-prerequisites.md`, P6), which the user signed off
 ("P6: ok").
+
+## Case 16 — ACCEPTED: a struct or array load or store through `nil` panics (branch `fix-nil-zero-size-access`, not yet on `lean`)
+
+**Symptom.** Unsound. `load_struct`/`store_struct` with no fields and
+`load_array`/`store_array` with length 0 reduced to the zero value or `#()` at
+`null`, while Go panics on `*p` and `*p = v` for a nil `p` of any type, zero-size
+included.
+
+**Witness.** `var p *struct{}; _ = *p` panics in Go ("invalid memory address or nil
+pointer dereference") and is defined in the model.
+
+**Taken.** The four rules wrap their result in
+`if l = #null then Panic "nil pointer dereference" else …` (outside the arrays'
+bounds test). The guard cannot sit once in `load_underlying`/`store_underlying`: two
+tagged rules for one instruction must agree (`isGoStep_pure_det`). The primitive
+`Read`/`Store` rules are already stuck at `null`. Proofs: every typed points-to
+carries `l ≠ null`, which discharges the guard, so only the generic struct/array
+load and store lemmas (`Theory/Auto.lean`, `Theory/Array.lean`) gain a step; and
+`encoding/binary` keeps `BigEndian`'s points-to in its init state, so the four
+`BigEndian` specs take `isPkgInit encoding.binary`, as the `LittleEndian` ones
+already did.
+
+**Not taken.** A guard in `load_underlying` (proves `False`, see above).
+
+**Why.** P3 of `docs/design/unsafe-memory-prerequisites.md`; the user: "P3: This
+shouldn't change any proofs that do loading/storing with points-tos, right? ... If
+so, this is ok."

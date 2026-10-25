@@ -120,18 +120,24 @@ variable [package_sem : encoding.binary.Assumptions]
 
 /-- The package-initialized state: `LittleEndian` holds its zero value. -/
 abbrev isInit : IProp GF :=
-  typedPointsto (globalAddr LittleEndian) (zero_val littleEndian) DFrac.discard
+  iprop(typedPointsto (globalAddr LittleEndian) (zero_val littleEndian) DFrac.discard ∗
+    typedPointsto (globalAddr BigEndian) (zero_val bigEndian) DFrac.discard)
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.encoding.binary :=
   define_is_pkg_init isInit
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.encoding.binary :=
   build_get_is_pkg_init_wf
 
-/-- Loading a struct with no fields reads no memory: it needs no points-to (the
-`bigEndian` methods of the global `BigEndian` load it). -/
+theorem isInit_access :
+    isPkgInit (PROP := IProp GF) pkg_id.encoding.binary ⊢ isInit (GF := GF) := by
+  with_unfolding_all exact isPkgInit_access (PROP := IProp GF) pkg_id.encoding.binary
+
+/-- Loading a struct with no fields reads no memory: it needs no points-to, only a
+non-null address (the `bigEndian` methods of the global `BigEndian` load it). -/
 theorem wp_load_struct_nofields {V : Type} [ZeroVal V] {fds : List go.field_decl}
     [EqualsUnfold fds []] [go.TypeReprUnderlying (go.StructType fds) V]
-    {s : Stuckness} {E : CoPset} {t : go.GoType} [t ↓u go.StructType fds] (l : Loc) :
+    {s : Stuckness} {E : CoPset} {t : go.GoType} [t ↓u go.StructType fds] (l : Loc)
+    (hl : l ≠ null) :
     {{ (emp : IProp GF) }} (App (Val (GoInstruction (GoLoad t))) (Val #l)) @ s; E
     {{ RET #(zero_val V); emp }} := by
   iintro %Φ _ HΦ
@@ -142,7 +148,7 @@ theorem wp_load_struct_nofields {V : Type} [ZeroVal V] {fds : List go.field_decl
     infer_instance
   iapply (wp_pure_raw_step (Hwp := hpw) (by simp))
   inext
-  rw [loadStructRaw_eq]
+  rw [loadStructRaw_eq _ _ _ (fun e => hl (go.intoVal_inj e))]
   simp only [List.foldl_nil]
   wp_pures
   iapply HΦ
