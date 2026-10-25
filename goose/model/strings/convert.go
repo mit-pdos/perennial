@@ -1,6 +1,7 @@
 package strings
 
 func StringToByteSlice(s string) (a []byte) {
+	a = make([]byte, 0)
 	// FIXME: support and then use `range len(s)`
 	for i := 0; i < len(s); i++ {
 		a = append(a, s[i])

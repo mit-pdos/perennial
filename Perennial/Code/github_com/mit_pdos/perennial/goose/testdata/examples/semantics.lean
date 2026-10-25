@@ -366,6 +366,9 @@ noncomputable def stringToByteSlice [FfiSyntax] [GoGlobalContext] : GoString :=
 noncomputable def byteSliceToString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.byteSliceToString"
 
+noncomputable def testStringToBytesEmptyNonNil [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testStringToBytesEmptyNonNil"
+
 noncomputable def testByteSliceToString [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testByteSliceToString"
 
@@ -1964,6 +1967,14 @@ noncomputable def byteSliceToString.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- tests
 
     go: conversions.go:23:6 -/
+noncomputable def testStringToBytesEmptyNonNil.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.SliceType go.byte)))) (Pair (Let "$a0" (Val #(go!""))
+  (App (App (Val (GoInstruction (FuncResolve stringToByteSlice []))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.byte)))) (Val UntypedNil))))))))
+
+/-- go: conversions.go:27:6 -/
 noncomputable def testByteSliceToString.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
@@ -8352,6 +8363,7 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   literalCast_unfold : FuncUnfold literalCast [] literalCast.impl
   stringToByteSlice_unfold : FuncUnfold stringToByteSlice [] stringToByteSlice.impl
   byteSliceToString_unfold : FuncUnfold byteSliceToString [] byteSliceToString.impl
+  testStringToBytesEmptyNonNil_unfold : FuncUnfold testStringToBytesEmptyNonNil [] testStringToBytesEmptyNonNil.impl
   testByteSliceToString_unfold : FuncUnfold testByteSliceToString [] testByteSliceToString.impl
   testCopySimple_unfold : FuncUnfold testCopySimple [] testCopySimple.impl
   testCopyShorterDst_unfold : FuncUnfold testCopyShorterDst [] testCopyShorterDst.impl
@@ -8612,6 +8624,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.literalCast_unfold
   Assumptions.stringToByteSlice_unfold
   Assumptions.byteSliceToString_unfold
+  Assumptions.testStringToBytesEmptyNonNil_unfold
   Assumptions.testByteSliceToString_unfold
   Assumptions.testCopySimple_unfold
   Assumptions.testCopyShorterDst_unfold

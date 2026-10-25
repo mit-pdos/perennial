@@ -341,3 +341,27 @@ Cost: 1 instruction, 1 helper plus two one-line yield adapters, 6 iterators,
 (goose refuses labeled statements). Proof rules for pointer-to-array and
 non-`int` integer ranges and for range-over-func are not written yet (no proof
 needs them).
+
+## Case 11 — ACCEPTED: `[]byte("")` is not nil (branch `fix-empty-string-bytes`, not yet on `lean`)
+
+**Symptom.** Unsound. The Go model of the conversion,
+`goose/model/strings/convert.go`'s `StringToByteSlice`, appended onto a nil
+slice, so for `""` it returned nil; in Go, `[]byte("") != nil`.
+
+**Witness.** `s := ""; return []byte(s) != nil` is true in Go and false in the
+model.
+
+**Taken.** One line of the Go model: `a = make([]byte, 0)` before the loop. A
+capacity-0 `make` allocates nothing and returns a non-nil pointer, and keeps
+`append`'s capacity nondeterministic for longer strings (gc gives 3 or 8 for
+`"abc"`). No goose change, no semantics rule; the regenerated translation, one
+step in `StringToByteSlice`'s proof, and a semantics test
+(`testStringToBytesEmptyNonNil`).
+
+**Not taken.** `make([]byte, 0, len(s))`, which fixes the capacity at `len(s)`
+and so is more defined than gc.
+
+**Why.** The smallest change, in the model rather than the rules (Case 7's
+shape). Part of the plans for the unsafe memory design
+(`docs/design/unsafe-memory-prerequisites.md`, P6), which the user signed off
+("P6: ok").

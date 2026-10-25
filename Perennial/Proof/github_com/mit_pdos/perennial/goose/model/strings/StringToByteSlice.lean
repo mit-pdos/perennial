@@ -24,22 +24,21 @@ theorem github_com.mit_pdos.perennial.goose.model.strings.StringToByteSlice.wp_p
   intro s E str
   wp_start
   wp_auto
+  wp_apply wp_slice_make2 (V := w8) (t := go.byte) (W64 0) with %a0 ⟨Ha0, Ha0_cap⟩
+  · ipureintro; word
   ihave H : (∃ (i : w64) (a : GoSlice),
       "i" ∷ i_ptr ↦ i ∗
       "a" ∷ a_ptr ↦ a ∗
       "Ha" ∷ a ↦* str.take (sint.nat i) ∗
       "Ha_cap" ∷ ownSliceCap w8 a (DFrac.own 1) ∗
-      "%Hi" ∷ ⌜0 ≤ sint.Z i ∧ sint.Z i ≤ str.length⌝ : IProp GF) $$ [a i]
+      "%Hi" ∷ ⌜0 ≤ sint.Z i ∧ sint.Z i ≤ str.length⌝ : IProp GF) $$ [a i Ha0 Ha0_cap]
   · iexists (W64 0)
-    iexists (zero_val GoSlice)
-    have h0 : sint.nat (W64 0) = 0 := rfl
-    rw [h0, List.take_zero]
-    iframe a i
-    isplitl []
-    · iapply ownSlice_nil
-    isplitl []
-    · iapply ownSliceCap_nil
-    · ipureintro; word
+    iexists a0
+    have h0 : str.take (sint.nat (W64 0)) = List.replicate 0 (zero_val w8) := by
+      rw [show sint.nat (W64 0) = 0 from rfl]; rfl
+    rw [h0]
+    iframe a i Ha0 Ha0_cap
+    ipureintro; word
   wp_for H
   wp_apply wp_string_len with %Hoverflow
   wp_if_destruct
@@ -76,7 +75,7 @@ theorem github_com.mit_pdos.perennial.goose.model.strings.StringToByteSlice.wp_p
     ipureintro; word
   · have hP : ¬ sint.Z i < sint.Z (W64 str.length) := fun h => Hif (by rw [decide_eq_true h])
     rw [decide_eq_false hP]
-    simp only [Bool.false_eq_true, ↓reduceIte]
+    simp only [Bool.false_eq_true, decide_true, ↓reduceIte]
     wp_auto
     iapply HΦ
     have hi : sint.nat i = str.length := by word

@@ -128,6 +128,10 @@ func (suite *GoTestSuite) TestEmptyBlock() {
 	suite.Equal(true, testEmptyBlock())
 }
 
+func (suite *GoTestSuite) TestStringToBytesEmptyNonNil() {
+	suite.Equal(true, testStringToBytesEmptyNonNil())
+}
+
 func (suite *GoTestSuite) TestByteSliceToString() {
 	suite.Equal(true, testByteSliceToString())
 }

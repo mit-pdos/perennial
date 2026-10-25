@@ -34,6 +34,8 @@ noncomputable def StringToByteSlice.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 0)))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "a")))))
@@ -53,9 +55,11 @@ noncomputable def StringToByteSlice.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "a") (Var "$r0"))))))))))
 
-/-- go: convert.go:11:6 -/
+/-- go: convert.go:12:6 -/
 noncomputable def ByteSliceToString.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV "a"
   (App (Val exceptionDo)

@@ -20,6 +20,10 @@ func byteSliceToString(p []byte) string {
 }
 
 // tests
+func testStringToBytesEmptyNonNil() bool {
+	return stringToByteSlice("") != nil
+}
+
 func testByteSliceToString() bool {
 	x := make([]byte, 3)
 	x[0] = 65
