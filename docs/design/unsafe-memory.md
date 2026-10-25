@@ -79,7 +79,8 @@ alignment:
 
 ```
 inductive Plain : go.GoType → Prop
-  | int   : t is one of int8…uint64, int, uint, uintptr        → Plain t
+  | int   : t is one of int8…uint64, int, uint, uintptr,
+            float32, float64                                    → Plain t
   | array : Plain e → 1 ≤ N                                     → Plain (ArrayType N e)
   | struct: fds ≠ [] → every field Plain and not blank → no padding → Plain (StructType fds)
   | named : underlying t = u → Plain u                          → Plain t
@@ -98,17 +99,12 @@ inductive Plain : go.GoType → Prop
   per scalar and abstract addresses.
 - **`Plain` is a function of the Lean representation `V`,** because the
   layout functions are keyed by `V`. That makes these changes necessary:
-  - **Floats get their own representation** (`F64`, `F32`), *replacing*
-    `w64`/`w32` in:
-    - goose's `basicLeanType`;
-    - proofgen's `toLeanType`;
-    - `TypeReprUnderlying go.float64/32`;
-    - `FloatOps`;
-    - the float semantics classes.
-
-    This must land before R1. Otherwise `Pair[float64]`, which is `Pair w64`
-    today, would get the plain layout while its fields are opaque cells, and
-    every allocation of it would be an `AngelicExit`.
+  - **Floats are plain** (decision of 2026-10-25,
+    `unsafe-memory-prerequisites.md`, "R1 and floats"). They stay `w64`/`w32`,
+    with operations of their own, so `Pair[float64]` and `Pair[uint64]` have
+    one representation `V`, and must have one layout. A float is 8 or 4 byte
+    cells holding its bits. The float operations are uninterpreted, so a byte
+    view of a float tells a proof nothing that `math.Float64bits` could not.
   - **Blank fields must be told apart from real fields.** goose must give a
     blank field a name no Go identifier can spell, such as `_#0`; today it
     is `_0` (section 7).
@@ -162,8 +158,6 @@ bytes, including a Go-allocated `Meta`'s cells. I10 then needs no rule.
   (`testZeroSizeDistinct`);
 - **blank fields:** `==` and map keys ignore them (`testBlankFieldEq`);
 - **padding:** a plain view would expose the padding bytes;
-- **floats:** the representation collision, and NaN bits that gc does not
-  fix;
 - **bool:** not every byte is a valid bool.
 
 ### R2. Plain loads and stores go byte by byte
@@ -732,15 +726,14 @@ tell the model and gc apart.
   bytes whose contents gc does not define. A padded struct is therefore not
   plain (`testPaddedView`: deliberately incomplete). Trailing padding counts
   too: `struct{uint64; uint32}` is 16 bytes in gc, not 12.
-- **Floats.** There are two separate reasons:
-  - *Representation.* `Plain` is a predicate on the Lean representation `V`,
-    because the layout functions are keyed by `V`. Today `float64` is `w64`.
-    So `Pair[float64]`, which is `Pair w64`, would be plain and get a byte
-    layout while goose allocates its fields as opaque float cells. Every
-    allocation of it would then be an `AngelicExit`. Floats need their own
-    representation first.
-  - *Bits.* gc does not canonicalise NaN payloads, so the bytes of a float
-    produced by arithmetic are not a function of its value.
+- **Floats are not excluded.** Earlier drafts excluded them because gc
+  does not canonicalise NaN payloads, so a float's bytes are not a function
+  of its value. But floats share `w64`/`w32` with the integers, and `Plain`
+  is keyed by the representation, so excluding them would need a float
+  representation of their own (rejected, `unsafe-memory-prerequisites.md`,
+  P8). And the model already treats a float's bits as what its uninterpreted
+  operations compute, which `math.Float64bits` exposes, so a byte view adds
+  no assumption. `testFloatBits` becomes provable; it is true in Go.
 - **bool.** Only bytes 0 and 1 are valid `bool`s. gc compiles `!b` as
   `b XOR 1`, so a byte 2 read as a `bool` is true and so is its negation. A
   byte view would have to decode a byte that has no defined meaning.
@@ -1089,6 +1082,9 @@ paths for assignments, so those are unreviewed). It found:
   Fixed in R4: such calls are reported. This costs nothing on today's code
   either.
 - **To state:** `&T{…}` in a package-variable initializer (A2).
+
+**Decisions (2026-10-25).** The project owner approved the guard's rule as
+tightened by these reviews, and chose plain floats (R1).
 ## 12. The work, from the current `lean`
 
 Each step is a branch off the current `lean`, landed by Perennial's
@@ -1127,6 +1123,8 @@ over first.
      target, because it is true in gc 1.26 under A2.
    - **Mixed widths:** `testMixedWidthAtomics` leaves the probes. It is
      sequential and true in Go; the concurrent case is A3.
+   - **Floats are plain:** `testFloatBits` leaves the probes and becomes a
+     target (true in Go).
    - **Renamed targets:** `testTagsClearedByByteStores` becomes
      `testBufferReuseShifted`.
    - **Rewritten targets:** the whole copies in the targets and in

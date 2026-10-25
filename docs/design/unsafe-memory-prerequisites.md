@@ -40,7 +40,8 @@ The order at the end respects their dependencies.
    - 8c goes ahead (float map keys are stuck); goose and the model are intentionally
      incomplete.
    - 8d: every float→int conversion gives `ArbitraryInt`, which is simpler and sound.
-   - Open: 8b's rejection conflicts with the design's R1 (see "R1 and floats").
+   - 8b's rejection meant revisiting R1's float exclusion: floats are plain (see
+     "R1 and floats").
 
 ## Deferred: P2
 
@@ -61,7 +62,7 @@ While it is open:
   outside `[0, 2^63-1)` still reaches `AngelicExit` in `alloc_array`, as `load_array`
   and `store_array` do today.
 
-## R1 and floats (open)
+## R1 and floats (decided 2026-10-25: floats are plain)
 
 The design's R1 keys `Plain` and the layout functions by the Lean representation `V`.
 With floats as `w64` (decision 6), `Pair[float64]` and `Pair[uint64]` have the same
@@ -74,6 +75,11 @@ The first fits decision 6. Its cost: gc does not fix NaN payloads, so a byte vie
 see bits that the uninterpreted float operations treat as a function of their
 arguments. But the model already assumes that (`math.Float64bits` sees the same bits),
 so the byte view adds no new assumption.
+
+The project owner chose the first: floats are plain, for now ("it won't cause any
+unsoundness because floats are modeled conservatively"). The float operations are
+uninterpreted, so a byte view of a float tells a proof nothing a proof could not
+already get from `math.Float64bits`.
 
 ## P1. `ArraySemantics` proves `False` (unsound)
 
@@ -300,6 +306,5 @@ This is the order as decided on 2026-10-25.
 2. P4, P5 and P6: independent; each is its own branch.
 3. P7a, with `InternalDynamicArrayAlloc` through `alloc_array`.
 4. P8a, P8c and P8d.
-5. Then R1 to R5 of the design, each with its own plan, once "R1 and floats" is
-   decided.
+5. Then R1 to R5 of the design, each with its own plan (floats plain).
 6. P2, after the unsafe memory work.
