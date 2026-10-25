@@ -49,6 +49,8 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       exception_do (do:  #())
       ).
 
+Module Mutex := trusted_code.github_com.goose_lang.primitive.primitive.Mutex.
+
 Class Mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Mutex_type_repr  :: go.TypeReprUnderlying Mutexⁱᵐᵖˡ Mutex.t;
@@ -56,6 +58,8 @@ Class Mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
   #[global] Mutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Lock" (Mutex__Lockⁱᵐᵖˡ);
   #[global] Mutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Unlock" (Mutex__Unlockⁱᵐᵖˡ);
 }.
+
+Module ProphId := trusted_code.github_com.goose_lang.primitive.primitive.ProphId.
 
 Class ProphId_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {

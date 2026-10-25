@@ -95,11 +95,11 @@ Definition Worker__processⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "sh" := (GoAlloc shared "sh") in
     let: "doc" := (GoAlloc go.string "doc") in
     do:  (let: "$a0" := (Convert go.int go.int64 (let: "$a0" := (let: "$a0" := (![go.string] "doc") in
-    (FuncResolve strings.Fields [] #()) "$a0") in
+    (FuncResolve code.strings.strings.Fields [] #()) "$a0") in
     (FuncResolve go.len [go.SliceType go.string] #()) "$a0")) in
-    (MethodResolve (go.PointerType atomic.Int64) "Add"%go (![go.PointerType atomic.Int64] (StructFieldRef shared "total"%go "sh"))) "$a0");;;
+    (MethodResolve (go.PointerType code.sync.atomic.atomic.Int64) "Add"%go (![go.PointerType code.sync.atomic.atomic.Int64] (StructFieldRef shared "total"%go "sh"))) "$a0");;;
     (if: Convert go.untyped_bool go.bool ((let: "$a0" := (Convert go.untyped_int go.int64 (⟨go.untyped_int⟩- #1)) in
-    (MethodResolve (go.PointerType atomic.Int64) "Add"%go (![go.PointerType atomic.Int64] (StructFieldRef shared "remaining"%go "sh"))) "$a0") =⟨go.int64⟩ #(W64 0))
+    (MethodResolve (go.PointerType code.sync.atomic.atomic.Int64) "Add"%go (![go.PointerType code.sync.atomic.atomic.Int64] (StructFieldRef shared "remaining"%go "sh"))) "$a0") =⟨go.int64⟩ #(W64 0))
     then
       do:  (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
 
@@ -140,18 +140,18 @@ Definition wordCountⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
       let: "$v" := (![go.string] "doc") in
       chan.send go.string "$chan" "$v")));;;
     let: "sh" := (GoAlloc shared (GoZeroVal shared #())) in
-    let: "$r0" := (let: "$v0" := (GoAlloc atomic.Int64 (GoZeroVal atomic.Int64 #())) in
-    let: "$v1" := (GoAlloc atomic.Int64 (GoZeroVal atomic.Int64 #())) in
+    let: "$r0" := (let: "$v0" := (GoAlloc code.sync.atomic.atomic.Int64 (GoZeroVal code.sync.atomic.atomic.Int64 #())) in
+    let: "$v1" := (GoAlloc code.sync.atomic.atomic.Int64 (GoZeroVal code.sync.atomic.atomic.Int64 #())) in
     let: "$v2" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
 
      ])] #()) #()) in
-    CompositeLiteral shared (LiteralValue [KeyedElement (Some (KeyField "remaining"%go)) (ElementExpression (go.PointerType atomic.Int64) "$v0"); KeyedElement (Some (KeyField "total"%go)) (ElementExpression (go.PointerType atomic.Int64) "$v1"); KeyedElement (Some (KeyField "done"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
+    CompositeLiteral shared (LiteralValue [KeyedElement (Some (KeyField "remaining"%go)) (ElementExpression (go.PointerType code.sync.atomic.atomic.Int64) "$v0"); KeyedElement (Some (KeyField "total"%go)) (ElementExpression (go.PointerType code.sync.atomic.atomic.Int64) "$v1"); KeyedElement (Some (KeyField "done"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
 
      ])) "$v2")])) in
     do:  ("sh" <-[shared] "$r0");;;
     do:  (let: "$a0" := (Convert go.int go.int64 (let: "$a0" := (![go.SliceType go.string] "docs") in
     (FuncResolve go.len [go.SliceType go.string] #()) "$a0")) in
-    (MethodResolve (go.PointerType atomic.Int64) "Store"%go (![go.PointerType atomic.Int64] (StructFieldRef shared "remaining"%go "sh"))) "$a0");;;
+    (MethodResolve (go.PointerType code.sync.atomic.atomic.Int64) "Store"%go (![go.PointerType code.sync.atomic.atomic.Int64] (StructFieldRef shared "remaining"%go "sh"))) "$a0");;;
     let: "$range" := (![go.SliceType (go.PointerType Worker)] "workers") in
     (let: "w" := (GoAlloc (go.PointerType Worker) (GoZeroVal (go.PointerType Worker) #())) in
     let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
@@ -170,7 +170,7 @@ Definition wordCountⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     ]) (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef shared "done"%go "sh"))));;;
-    return: ((MethodResolve (go.PointerType atomic.Int64) "Load"%go (![go.PointerType atomic.Int64] (StructFieldRef shared "total"%go "sh"))) #())).
+    return: ((MethodResolve (go.PointerType code.sync.atomic.atomic.Int64) "Load"%go (![go.PointerType code.sync.atomic.atomic.Int64] (StructFieldRef shared "total"%go "sh"))) #())).
 
 #[global] Instance info' : PkgInfo pkg_id.workq :=
 {|
@@ -180,8 +180,8 @@ Definition wordCountⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.workq (λ: <>,
-      exception_do (do:  (atomic.initialize' #());;;
-      do:  (strings.initialize' #()))
+      exception_do (do:  (code.sync.atomic.atomic.initialize' #());;;
+      do:  (code.strings.strings.initialize' #()))
       ).
 
 Module Worker.
@@ -238,8 +238,8 @@ End def.
 End shared.
 
 Definition shared'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "remaining"%go (go.PointerType atomic.Int64));
-  (go.FieldDecl "total"%go (go.PointerType atomic.Int64));
+  (go.FieldDecl "remaining"%go (go.PointerType code.sync.atomic.atomic.Int64));
+  (go.FieldDecl "total"%go (go.PointerType code.sync.atomic.atomic.Int64));
   (go.FieldDecl "done"%go (go.ChannelType go.sendrecv (go.StructType [
 
   ])))
@@ -267,7 +267,7 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] Worker_instance :: Worker_Assumptions;
   #[global] shared_instance :: shared_Assumptions;
   #[global] wordCount_unfold :: FuncUnfold wordCount [] (wordCountⁱᵐᵖˡ);
-  #[global] import_strings_Assumption :: strings.Assumptions;
-  #[global] import_atomic_Assumption :: atomic.Assumptions;
+  #[global] import_strings_Assumption :: code.strings.strings.Assumptions;
+  #[global] import_atomic_Assumption :: code.sync.atomic.atomic.Assumptions;
 }.
 End workq.

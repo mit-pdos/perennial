@@ -289,31 +289,31 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  (go.GlobalAlloc ErrShortBuffer go.error #());;;
       do:  (go.GlobalAlloc errInvalidWrite go.error #());;;
       do:  (go.GlobalAlloc ErrShortWrite go.error #());;;
-      do:  (sync.initialize' #());;;
-      do:  (errors.initialize' #());;;
+      do:  (code.sync.sync.initialize' #());;;
+      do:  (code.errors.errors.initialize' #());;;
       let: "$r0" := (let: "$a0" := #"short write"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrShortWrite #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"invalid write result"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr errInvalidWrite #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"short buffer"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrShortBuffer #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"EOF"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr EOF #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"unexpected EOF"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrUnexpectedEOF #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"multiple Read calls return no data or error"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrNoProgress #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"Seek: invalid whence"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr errWhence #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"Seek: invalid offset"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr errOffset #()) <-[go.error] "$r0");;;
       let: "$r0" := (Convert discard Writer (CompositeLiteral discard (LiteralValue []))) in
       do:  ((GlobalVarAddr Discard #()) <-[Writer] "$r0");;;
@@ -322,7 +322,7 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       let: "$r0" := (Convert (go.PointerType multiReader) WriterTo (Convert go.untyped_nil (go.PointerType multiReader) UntypedNil)) in
       let: "$r0" := (Convert (go.PointerType multiWriter) StringWriter (Convert go.untyped_nil (go.PointerType multiWriter) UntypedNil)) in
       let: "$r0" := (let: "$a0" := #"io: read/write on closed pipe"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrClosedPipe #()) <-[go.error] "$r0"))
       ).
 
@@ -977,7 +977,7 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] pipe_instance :: pipe_Assumptions;
   #[global] PipeReader_instance :: PipeReader_Assumptions;
   #[global] PipeWriter_instance :: PipeWriter_Assumptions;
-  #[global] import_errors_Assumption :: errors.Assumptions;
-  #[global] import_sync_Assumption :: sync.Assumptions;
+  #[global] import_errors_Assumption :: code.errors.errors.Assumptions;
+  #[global] import_sync_Assumption :: code.sync.sync.Assumptions;
 }.
 End io.

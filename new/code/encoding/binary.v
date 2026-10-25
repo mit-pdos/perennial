@@ -277,16 +277,16 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       exception_do (do:  (go.GlobalAlloc errOverflow go.error #());;;
       do:  (go.GlobalAlloc LittleEndian littleEndian #());;;
       do:  (go.GlobalAlloc errBufferTooSmall go.error #());;;
-      do:  (sync.initialize' #());;;
-      do:  (slices.initialize' #());;;
-      do:  (math.initialize' #());;;
-      do:  (io.initialize' #());;;
-      do:  (errors.initialize' #());;;
+      do:  (code.sync.sync.initialize' #());;;
+      do:  (code.slices.slices.initialize' #());;;
+      do:  (code.math.math.initialize' #());;;
+      do:  (code.io.io.initialize' #());;;
+      do:  (code.errors.errors.initialize' #());;;
       let: "$r0" := (let: "$a0" := #"buffer too small"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr errBufferTooSmall #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"binary: varint overflows a 64-bit integer"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr errOverflow #()) <-[go.error] "$r0"))
       ).
 
@@ -462,10 +462,10 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] decoder_instance :: decoder_Assumptions;
   #[global] encoder_instance :: encoder_Assumptions;
   #[global] nativeEndian_instance :: nativeEndian_Assumptions;
-  #[global] import_errors_Assumption :: errors.Assumptions;
-  #[global] import_io_Assumption :: io.Assumptions;
-  #[global] import_math_Assumption :: math.Assumptions;
-  #[global] import_slices_Assumption :: slices.Assumptions;
-  #[global] import_sync_Assumption :: sync.Assumptions;
+  #[global] import_errors_Assumption :: code.errors.errors.Assumptions;
+  #[global] import_io_Assumption :: code.io.io.Assumptions;
+  #[global] import_math_Assumption :: code.math.math.Assumptions;
+  #[global] import_slices_Assumption :: code.slices.slices.Assumptions;
+  #[global] import_sync_Assumption :: code.sync.sync.Assumptions;
 }.
 End binary.

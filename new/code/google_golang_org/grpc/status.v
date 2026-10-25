@@ -8,7 +8,7 @@ End pkg_id.
 Export pkg_id.
 Module status.
 
-Definition Status {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := status.Status.
+Definition Status {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := code.google_golang_org.grpc.internal.status.status.Status.
 
 Definition New {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "google.golang.org/grpc/status.New"%go.
 
@@ -40,11 +40,11 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.status (λ: <>,
-      exception_do (do:  (status.initialize' #()))
+      exception_do (do:  (code.google_golang_org.genproto.googleapis.rpc.status.status.initialize' #()))
       ).
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] import_status_Assumption :: status.Assumptions;
+  #[global] import_status_Assumption :: code.google_golang_org.genproto.googleapis.rpc.status.status.Assumptions;
 }.
 End status.

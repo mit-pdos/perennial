@@ -72,8 +72,8 @@ Definition list__Registerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     let: "newCh" := (GoAlloc (go.ChannelType go.sendrecv go.any) (GoZeroVal (go.ChannelType go.sendrecv go.any) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.any] #()) #(W64 1)) in
     do:  ("newCh" <-[go.ChannelType go.sendrecv go.any] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "Lock"%go (StructFieldRef listElement "l"%go (IndexRef (go.SliceType listElement) (![go.SliceType listElement] (StructFieldRef list' "e"%go (![go.PointerType list'] "w")), Convert go.uint64 go.int (![go.uint64] "idx"))))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.RWMutex) "Unlock"%go (StructFieldRef listElement "l"%go (IndexRef (go.SliceType listElement) (![go.SliceType listElement] (StructFieldRef list' "e"%go (![go.PointerType list'] "w")), Convert go.uint64 go.int (![go.uint64] "idx"))))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Lock"%go (StructFieldRef listElement "l"%go (IndexRef (go.SliceType listElement) (![go.SliceType listElement] (StructFieldRef list' "e"%go (![go.PointerType list'] "w")), Convert go.uint64 go.int (![go.uint64] "idx"))))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.RWMutex) "Unlock"%go (StructFieldRef listElement "l"%go (IndexRef (go.SliceType listElement) (![go.SliceType listElement] (StructFieldRef list' "e"%go (![go.PointerType list'] "w")), Convert go.uint64 go.int (![go.uint64] "idx"))))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -93,7 +93,7 @@ Definition list__Registerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       do:  (let: "$a0" := #"dup id %x"%go in
       let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] "id")) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-      (FuncResolve log.Panicf [] #()) "$a0" "$a1")));;;
+      (FuncResolve code.log.log.Panicf [] #()) "$a0" "$a1")));;;
     return: (Convert (go.ChannelType go.sendrecv go.any) (go.ChannelType go.recvonly go.any) (![go.ChannelType go.sendrecv go.any] "newCh"))).
 
 (* go: wait.go:76:16 *)
@@ -105,14 +105,14 @@ Definition list__Triggerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     let: "idx" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := ((![go.uint64] "id") %⟨go.uint64⟩ (Convert go.untyped_int go.uint64 defaultListElementLength)) in
     do:  ("idx" <-[go.uint64] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "Lock"%go (StructFieldRef listElement "l"%go (IndexRef (go.SliceType listElement) (![go.SliceType listElement] (StructFieldRef list' "e"%go (![go.PointerType list'] "w")), Convert go.uint64 go.int (![go.uint64] "idx"))))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Lock"%go (StructFieldRef listElement "l"%go (IndexRef (go.SliceType listElement) (![go.SliceType listElement] (StructFieldRef list' "e"%go (![go.PointerType list'] "w")), Convert go.uint64 go.int (![go.uint64] "idx"))))) #());;;
     let: "ch" := (GoAlloc (go.ChannelType go.sendrecv go.any) (GoZeroVal (go.ChannelType go.sendrecv go.any) #())) in
     let: "$r0" := (map.lookup1 go.uint64 (go.ChannelType go.sendrecv go.any) (![go.MapType go.uint64 (go.ChannelType go.sendrecv go.any)] (StructFieldRef listElement "m"%go (IndexRef (go.SliceType listElement) (![go.SliceType listElement] (StructFieldRef list' "e"%go (![go.PointerType list'] "w")), Convert go.uint64 go.int (![go.uint64] "idx"))))) (![go.uint64] "id")) in
     do:  ("ch" <-[go.ChannelType go.sendrecv go.any] "$r0");;;
     do:  (let: "$a0" := (![go.MapType go.uint64 (go.ChannelType go.sendrecv go.any)] (StructFieldRef listElement "m"%go (IndexRef (go.SliceType listElement) (![go.SliceType listElement] (StructFieldRef list' "e"%go (![go.PointerType list'] "w")), Convert go.uint64 go.int (![go.uint64] "idx"))))) in
     let: "$a1" := (![go.uint64] "id") in
     (FuncResolve go.delete [go.MapType go.uint64 (go.ChannelType go.sendrecv go.any)] #()) "$a0" "$a1");;;
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "Unlock"%go (StructFieldRef listElement "l"%go (IndexRef (go.SliceType listElement) (![go.SliceType listElement] (StructFieldRef list' "e"%go (![go.PointerType list'] "w")), Convert go.uint64 go.int (![go.uint64] "idx"))))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Unlock"%go (StructFieldRef listElement "l"%go (IndexRef (go.SliceType listElement) (![go.SliceType listElement] (StructFieldRef list' "e"%go (![go.PointerType list'] "w")), Convert go.uint64 go.int (![go.uint64] "idx"))))) #());;;
     (if: Convert go.untyped_bool go.bool ((![go.ChannelType go.sendrecv go.any] "ch") ≠⟨go.ChannelType go.sendrecv go.any⟩ (Convert go.untyped_nil (go.ChannelType go.sendrecv go.any) UntypedNil))
     then
       do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.any] "ch") in
@@ -131,8 +131,8 @@ Definition list__IsRegisteredⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     let: "idx" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := ((![go.uint64] "id") %⟨go.uint64⟩ (Convert go.untyped_int go.uint64 defaultListElementLength)) in
     do:  ("idx" <-[go.uint64] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "RLock"%go (StructFieldRef listElement "l"%go (IndexRef (go.SliceType listElement) (![go.SliceType listElement] (StructFieldRef list' "e"%go (![go.PointerType list'] "w")), Convert go.uint64 go.int (![go.uint64] "idx"))))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.RWMutex) "RUnlock"%go (StructFieldRef listElement "l"%go (IndexRef (go.SliceType listElement) (![go.SliceType listElement] (StructFieldRef list' "e"%go (![go.PointerType list'] "w")), Convert go.uint64 go.int (![go.uint64] "idx"))))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "RLock"%go (StructFieldRef listElement "l"%go (IndexRef (go.SliceType listElement) (![go.SliceType listElement] (StructFieldRef list' "e"%go (![go.PointerType list'] "w")), Convert go.uint64 go.int (![go.uint64] "idx"))))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.RWMutex) "RUnlock"%go (StructFieldRef listElement "l"%go (IndexRef (go.SliceType listElement) (![go.SliceType listElement] (StructFieldRef list' "e"%go (![go.PointerType list'] "w")), Convert go.uint64 go.int (![go.uint64] "idx"))))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -191,8 +191,8 @@ Definition timeList__Waitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
   λ: "tl" "deadline",
     with_defer: (let: "tl" := (GoAlloc (go.PointerType timeList) "tl") in
     let: "deadline" := (GoAlloc go.uint64 "deadline") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef timeList "l"%go (![go.PointerType timeList] "tl"))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef timeList "l"%go (![go.PointerType timeList] "tl"))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (StructFieldRef timeList "l"%go (![go.PointerType timeList] "tl"))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef timeList "l"%go (![go.PointerType timeList] "tl"))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -255,8 +255,8 @@ Definition timeList__Triggerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
   λ: "tl" "deadline",
     with_defer: (let: "tl" := (GoAlloc (go.PointerType timeList) "tl") in
     let: "deadline" := (GoAlloc go.uint64 "deadline") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef timeList "l"%go (![go.PointerType timeList] "tl"))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef timeList "l"%go (![go.PointerType timeList] "tl"))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (StructFieldRef timeList "l"%go (![go.PointerType timeList] "tl"))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef timeList "l"%go (![go.PointerType timeList] "tl"))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -309,8 +309,8 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       exception_do (do:  (go.GlobalAlloc closec (go.ChannelType go.sendrecv (go.StructType [
 
       ])) #());;;
-      do:  (sync.initialize' #());;;
-      do:  (log.initialize' #());;;
+      do:  (code.sync.sync.initialize' #());;;
+      do:  (code.log.log.initialize' #());;;
       do:  ((λ: <>,
         exception_do (let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
 
@@ -382,7 +382,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  l' : sync.RWMutex.t;
+  l' : code.sync.sync.RWMutex.t;
   m' : map.t;
 }.
 
@@ -393,7 +393,7 @@ End def.
 End listElement.
 
 Definition listElement'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "l"%go sync.RWMutex);
+  (go.FieldDecl "l"%go code.sync.sync.RWMutex);
   (go.FieldDecl "m"%go (go.MapType go.uint64 (go.ChannelType go.sendrecv go.any)))
 ].
 Program Definition listElement'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (listElement'fds_unsealed).
@@ -468,7 +468,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  l' : sync.Mutex.t;
+  l' : code.sync.sync.Mutex.t;
   lastTriggerDeadline' : w64;
   m' : map.t;
 }.
@@ -480,7 +480,7 @@ End def.
 End timeList.
 
 Definition timeList'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "l"%go sync.Mutex);
+  (go.FieldDecl "l"%go code.sync.sync.Mutex);
   (go.FieldDecl "lastTriggerDeadline"%go go.uint64);
   (go.FieldDecl "m"%go (go.MapType go.uint64 (go.ChannelType go.sendrecv (go.StructType [
 
@@ -517,7 +517,7 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] New_unfold :: FuncUnfold New [] (Newⁱᵐᵖˡ);
   #[global] NewWithResponse_unfold :: FuncUnfold NewWithResponse [] (NewWithResponseⁱᵐᵖˡ);
   #[global] NewTimeList_unfold :: FuncUnfold NewTimeList [] (NewTimeListⁱᵐᵖˡ);
-  #[global] import_log_Assumption :: log.Assumptions;
-  #[global] import_sync_Assumption :: sync.Assumptions;
+  #[global] import_log_Assumption :: code.log.log.Assumptions;
+  #[global] import_sync_Assumption :: code.sync.sync.Assumptions;
 }.
 End wait.

@@ -111,14 +111,14 @@ Definition FreeList__newNodeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
   λ: "f" <>,
     exception_do (let: "n" := (GoAlloc (go.PointerType (node T)) (GoZeroVal (go.PointerType (node T)) #())) in
     let: "f" := (GoAlloc (go.PointerType (FreeList T)) "f") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef (FreeList T) "mu"%go (![go.PointerType (FreeList T)] "f"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (StructFieldRef (FreeList T) "mu"%go (![go.PointerType (FreeList T)] "f"))) #());;;
     let: "index" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := ((let: "$a0" := (![go.SliceType (go.PointerType (node T))] (StructFieldRef (FreeList T) "freelist"%go (![go.PointerType (FreeList T)] "f"))) in
     (FuncResolve go.len [go.SliceType (go.PointerType (node T))] #()) "$a0") -⟨go.int⟩ #(W64 1)) in
     do:  ("index" <-[go.int] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.int] "index") <⟨go.int⟩ #(W64 0))
     then
-      do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef (FreeList T) "mu"%go (![go.PointerType (FreeList T)] "f"))) #());;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef (FreeList T) "mu"%go (![go.PointerType (FreeList T)] "f"))) #());;;
       return: (GoAlloc (node T) (GoZeroVal (node T) #()))
     else do:  #());;;
     let: "$r0" := (![go.PointerType (node T)] (IndexRef (go.SliceType (go.PointerType (node T))) (![go.SliceType (go.PointerType (node T))] (StructFieldRef (FreeList T) "freelist"%go (![go.PointerType (FreeList T)] "f")), ![go.int] "index"))) in
@@ -128,7 +128,7 @@ Definition FreeList__newNodeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     let: "$r0" := (let: "$s" := (![go.SliceType (go.PointerType (node T))] (StructFieldRef (FreeList T) "freelist"%go (![go.PointerType (FreeList T)] "f"))) in
     Slice (go.SliceType (go.PointerType (node T))) ("$s", #(W64 0), ![go.int] "index")) in
     do:  ((StructFieldRef (FreeList T) "freelist"%go (![go.PointerType (FreeList T)] "f")) <-[go.SliceType (go.PointerType (node T))] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef (FreeList T) "mu"%go (![go.PointerType (FreeList T)] "f"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef (FreeList T) "mu"%go (![go.PointerType (FreeList T)] "f"))) #());;;
     return: (![go.PointerType (node T)] "n")).
 
 (* go: btree.go:95:23 *)
@@ -137,7 +137,7 @@ Definition FreeList__freeNodeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     exception_do (let: "out" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "f" := (GoAlloc (go.PointerType (FreeList T)) "f") in
     let: "n" := (GoAlloc (go.PointerType (node T)) "n") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef (FreeList T) "mu"%go (![go.PointerType (FreeList T)] "f"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (StructFieldRef (FreeList T) "mu"%go (![go.PointerType (FreeList T)] "f"))) #());;;
     (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType (go.PointerType (node T))] (StructFieldRef (FreeList T) "freelist"%go (![go.PointerType (FreeList T)] "f"))) in
     (FuncResolve go.len [go.SliceType (go.PointerType (node T))] #()) "$a0") <⟨go.int⟩ (let: "$a0" := (![go.SliceType (go.PointerType (node T))] (StructFieldRef (FreeList T) "freelist"%go (![go.PointerType (FreeList T)] "f"))) in
     (FuncResolve go.cap [go.SliceType (go.PointerType (node T))] #()) "$a0"))
@@ -150,7 +150,7 @@ Definition FreeList__freeNodeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       let: "$r0" := #true in
       do:  ("out" <-[go.bool] "$r0")
     else do:  #());;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef (FreeList T) "mu"%go (![go.PointerType (FreeList T)] "f"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (StructFieldRef (FreeList T) "mu"%go (![go.PointerType (FreeList T)] "f"))) #());;;
     return: (![go.bool] "out")).
 
 (* Less returns a default LessFunc that uses the '<' operator for types that support it.
@@ -332,7 +332,7 @@ Definition items__findⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
        let: "$a1" := (![T] (IndexRef (items T) (![items T] "s", ![go.int] "i"))) in
        (![go.FunctionType (go.Signature [T; T] false [go.bool])] "less") "$a0" "$a1"))
       ) in
-    (FuncResolve sort.Search [] #()) "$a0" "$a1") in
+    (FuncResolve code.sort.sort.Search [] #()) "$a0" "$a1") in
     do:  ("i" <-[go.int] "$r0");;;
     (if: ((![go.int] "i") >⟨go.int⟩ #(W64 0)) && (⟨go.bool⟩! (let: "$a0" := (![T] (IndexRef (items T) (![items T] "s", (![go.int] "i") -⟨go.int⟩ #(W64 1)))) in
     let: "$a1" := (![T] "item") in
@@ -1571,9 +1571,9 @@ Definition node__resetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.btree (λ: <>,
-      exception_do (do:  (sync.initialize' #());;;
-      do:  (sort.initialize' #());;;
-      do:  (cmp.initialize' #()))
+      exception_do (do:  (code.sync.sync.initialize' #());;;
+      do:  (code.sort.sort.initialize' #());;;
+      do:  (code.cmp.cmp.initialize' #()))
       ).
 
 Module FreeList.
@@ -1581,7 +1581,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t {T : Type} :=
 mk {
-  mu' : sync.Mutex.t;
+  mu' : code.sync.sync.Mutex.t;
   freelist' : slice.t;
 }.
 
@@ -1592,7 +1592,7 @@ End def.
 End FreeList.
 
 Definition FreeList'fds_unsealed (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "mu"%go sync.Mutex);
+  (go.FieldDecl "mu"%go code.sync.sync.Mutex);
   (go.FieldDecl "freelist"%go (go.SliceType (go.PointerType (node T))))
 ].
 Program Definition FreeList'fds (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (FreeList'fds_unsealed T).
@@ -1917,8 +1917,8 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] max_unfold T :: FuncUnfold max [T] (maxⁱᵐᵖˡ T);
   #[global] optional_unfold T :: FuncUnfold optional [T] (optionalⁱᵐᵖˡ T);
   #[global] empty_unfold T :: FuncUnfold empty [T] (emptyⁱᵐᵖˡ T);
-  #[global] import_cmp_Assumption :: cmp.Assumptions;
-  #[global] import_sort_Assumption :: sort.Assumptions;
-  #[global] import_sync_Assumption :: sync.Assumptions;
+  #[global] import_cmp_Assumption :: code.cmp.cmp.Assumptions;
+  #[global] import_sort_Assumption :: code.sort.sort.Assumptions;
+  #[global] import_sync_Assumption :: code.sync.sync.Assumptions;
 }.
 End btree.

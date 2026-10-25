@@ -63,8 +63,8 @@ Definition leaseCache__Revⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
   λ: "lc" "key",
     with_defer: (let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
     let: "key" := (GoAlloc go.string "key") in
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -83,8 +83,8 @@ Definition leaseCache__Lockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
   λ: "lc" "key",
     with_defer: (let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
     let: "key" := (GoAlloc go.string "key") in
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -124,8 +124,8 @@ Definition leaseCache__LockRangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
     let: "end" := (GoAlloc go.string "end") in
     let: "begin" := (GoAlloc go.string "begin") in
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -182,12 +182,12 @@ Definition inRangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
     let: "k" := (GoAlloc go.string "k") in
     (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.string] "k") in
     let: "$a1" := (![go.string] "begin") in
-    (FuncResolve strings.Compare [] #()) "$a0" "$a1") <⟨go.int⟩ #(W64 0))
+    (FuncResolve code.strings.strings.Compare [] #()) "$a0" "$a1") <⟨go.int⟩ #(W64 0))
     then return: (#false)
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool (((![go.string] "end") ≠⟨go.string⟩ #" "%go) && ((let: "$a0" := (![go.string] "k") in
     let: "$a1" := (![go.string] "end") in
-    (FuncResolve strings.Compare [] #()) "$a0" "$a1") ≥⟨go.int⟩ #(W64 0)))
+    (FuncResolve code.strings.strings.Compare [] #()) "$a0" "$a1") ≥⟨go.int⟩ #(W64 0)))
     then return: (#false)
     else do:  #());;;
     return: (#true)).
@@ -201,20 +201,20 @@ Definition leaseCache__LockWriteOpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
 
     ]))) #())) in
     let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
-    let: "ops" := (GoAlloc (go.SliceType clientv3.Op) "ops") in
-    let: "$range" := (![go.SliceType clientv3.Op] "ops") in
-    (let: "op" := (GoAlloc clientv3.Op (GoZeroVal clientv3.Op #())) in
-    slice.for_range clientv3.Op "$range" (λ: "$key" "$value",
-      do:  ("op" <-[clientv3.Op] "$value");;;
+    let: "ops" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) "ops") in
+    let: "$range" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
+    (let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Op #())) in
+    slice.for_range code.go_etcd_io.etcd.client.v3.clientv3.Op "$range" (λ: "$key" "$value",
+      do:  ("op" <-[code.go_etcd_io.etcd.client.v3.clientv3.Op] "$value");;;
       do:  "$key";;;
-      (if: (MethodResolve (go.PointerType clientv3.Op) "IsGet"%go "op") #()
+      (if: (MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsGet"%go "op") #()
       then continue: #()
       else do:  #());;;
       let: "key" := (GoAlloc go.string (GoZeroVal go.string #())) in
-      let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "KeyBytes"%go "op") #())) in
+      let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "KeyBytes"%go "op") #())) in
       do:  ("key" <-[go.string] "$r0");;;
       (let: "end" := (GoAlloc go.string (GoZeroVal go.string #())) in
-      let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "RangeBytes"%go "op") #())) in
+      let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "RangeBytes"%go "op") #())) in
       do:  ("end" <-[go.string] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.string] "end") =⟨go.string⟩ #""%go)
       then
@@ -320,20 +320,20 @@ Definition leaseCache__NotifyOpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
 
     ]))) #())) in
     let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
-    let: "ops" := (GoAlloc (go.SliceType clientv3.Op) "ops") in
-    let: "$range" := (![go.SliceType clientv3.Op] "ops") in
-    (let: "op" := (GoAlloc clientv3.Op (GoZeroVal clientv3.Op #())) in
-    slice.for_range clientv3.Op "$range" (λ: "$key" "$value",
-      do:  ("op" <-[clientv3.Op] "$value");;;
+    let: "ops" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) "ops") in
+    let: "$range" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
+    (let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Op #())) in
+    slice.for_range code.go_etcd_io.etcd.client.v3.clientv3.Op "$range" (λ: "$key" "$value",
+      do:  ("op" <-[code.go_etcd_io.etcd.client.v3.clientv3.Op] "$value");;;
       do:  "$key";;;
-      (if: (MethodResolve (go.PointerType clientv3.Op) "IsGet"%go "op") #()
+      (if: (MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsGet"%go "op") #()
       then
         (let: "wc" := (GoAlloc (go.ChannelType go.recvonly (go.StructType [
 
         ])) (GoZeroVal (go.ChannelType go.recvonly (go.StructType [
 
         ])) #())) in
-        let: ("$ret0", "$ret1") := (let: "$a0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "KeyBytes"%go "op") #())) in
+        let: ("$ret0", "$ret1") := (let: "$a0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "KeyBytes"%go "op") #())) in
         (MethodResolve (go.PointerType leaseCache) "notify"%go (![go.PointerType leaseCache] "lc")) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
@@ -377,55 +377,55 @@ Definition leaseCache__MayAcquireⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
   λ: "lc" "key",
     exception_do (let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
     let: "key" := (GoAlloc go.string "key") in
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
     let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "lr" := (GoAlloc time.Time (GoZeroVal time.Time #())) in
-    let: ("$ret0", "$ret1") := (map.lookup2 go.string time.Time (![go.MapType go.string time.Time] (StructFieldRef leaseCache "revokes"%go (![go.PointerType leaseCache] "lc"))) (![go.string] "key")) in
+    let: "lr" := (GoAlloc code.time.time.Time (GoZeroVal code.time.time.Time #())) in
+    let: ("$ret0", "$ret1") := (map.lookup2 go.string code.time.time.Time (![go.MapType go.string code.time.time.Time] (StructFieldRef leaseCache "revokes"%go (![go.PointerType leaseCache] "lc"))) (![go.string] "key")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("lr" <-[time.Time] "$r0");;;
+    do:  ("lr" <-[code.time.time.Time] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
-    return: ((⟨go.bool⟩! (![go.bool] "ok")) || ((let: "$a0" := (![time.Time] "lr") in
-     (FuncResolve time.Since [] #()) "$a0") >⟨time.Duration⟩ revokeBackoff))).
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
+    return: ((⟨go.bool⟩! (![go.bool] "ok")) || ((let: "$a0" := (![code.time.time.Time] "lr") in
+     (FuncResolve code.time.time.Since [] #()) "$a0") >⟨code.time.time.Duration⟩ revokeBackoff))).
 
 (* go: cache.go:127:23 *)
 Definition leaseCache__Addⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lc" "key" "resp" "op",
     exception_do (let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
-    let: "op" := (GoAlloc clientv3.Op "op") in
-    let: "resp" := (GoAlloc (go.PointerType clientv3.GetResponse) "resp") in
+    let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op "op") in
+    let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) "resp") in
     let: "key" := (GoAlloc go.string "key") in
     let: "lk" := (GoAlloc (go.PointerType leaseKey) (GoZeroVal (go.PointerType leaseKey) #())) in
-    let: "$r0" := (GoAlloc leaseKey (let: "$v0" := (![go.PointerType clientv3.GetResponse] "resp") in
-    let: "$v1" := (![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.GetResponse "Header"%go (![go.PointerType clientv3.GetResponse] "resp"))))) in
+    let: "$r0" := (GoAlloc leaseKey (let: "$v0" := (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "resp") in
+    let: "$v1" := (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "resp"))))) in
     let: "$v2" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (GlobalVarAddr closedCh #())) in
-    CompositeLiteral leaseKey (LiteralValue [KeyedElement None (ElementExpression (go.PointerType clientv3.GetResponse) "$v0"); KeyedElement None (ElementExpression go.int64 "$v1"); KeyedElement None (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
+    CompositeLiteral leaseKey (LiteralValue [KeyedElement None (ElementExpression (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) "$v0"); KeyedElement None (ElementExpression go.int64 "$v1"); KeyedElement None (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
 
      ])) "$v2")]))) in
     do:  ("lk" <-[go.PointerType leaseKey] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
-    (if: Convert go.untyped_bool go.bool (((![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef leaseCache "header"%go (![go.PointerType leaseCache] "lc"))) =⟨go.PointerType etcdserverpb.ResponseHeader⟩ (Convert go.untyped_nil (go.PointerType etcdserverpb.ResponseHeader) UntypedNil)) || ((![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef leaseCache "header"%go (![go.PointerType leaseCache] "lc"))))) <⟨go.int64⟩ (![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.GetResponse "Header"%go (![go.PointerType clientv3.GetResponse] "resp")))))))
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
+    (if: Convert go.untyped_bool go.bool (((![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef leaseCache "header"%go (![go.PointerType leaseCache] "lc"))) =⟨go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader) UntypedNil)) || ((![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef leaseCache "header"%go (![go.PointerType leaseCache] "lc"))))) <⟨go.int64⟩ (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "resp")))))))
     then
-      let: "$r0" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.GetResponse "Header"%go (![go.PointerType clientv3.GetResponse] "resp"))) in
-      do:  ((StructFieldRef leaseCache "header"%go (![go.PointerType leaseCache] "lc")) <-[go.PointerType etcdserverpb.ResponseHeader] "$r0")
+      let: "$r0" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "resp"))) in
+      do:  ((StructFieldRef leaseCache "header"%go (![go.PointerType leaseCache] "lc")) <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "$r0")
     else do:  #());;;
     let: "$r0" := (![go.PointerType leaseKey] "lk") in
     do:  (map.insert go.string (![go.MapType go.string (go.PointerType leaseKey)] (StructFieldRef leaseCache "entries"%go (![go.PointerType leaseCache] "lc"))) (![go.string] "key") "$r0");;;
-    let: "ret" := (GoAlloc (go.PointerType clientv3.GetResponse) (GoZeroVal (go.PointerType clientv3.GetResponse) #())) in
-    let: "$r0" := (let: "$a0" := (![clientv3.Op] "op") in
+    let: "ret" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) #())) in
+    let: "$r0" := (let: "$a0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
     (MethodResolve (go.PointerType leaseKey) "get"%go (![go.PointerType leaseKey] "lk")) "$a0") in
-    do:  ("ret" <-[go.PointerType clientv3.GetResponse] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
-    return: (![go.PointerType clientv3.GetResponse] "ret")).
+    do:  ("ret" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "$r0");;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
+    return: (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "ret")).
 
 (* go: cache.go:139:23 *)
 Definition leaseCache__Updateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lc" "key" "val" "respHeader",
     exception_do (let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
-    let: "respHeader" := (GoAlloc (go.PointerType etcdserverpb.ResponseHeader) "respHeader") in
+    let: "respHeader" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader) "respHeader") in
     let: "val" := (GoAlloc (go.SliceType go.byte) "val") in
     let: "key" := (GoAlloc (go.SliceType go.byte) "key") in
     let: "li" := (GoAlloc (go.PointerType leaseKey) (GoZeroVal (go.PointerType leaseKey) #())) in
@@ -434,34 +434,34 @@ Definition leaseCache__Updateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     (if: Convert go.untyped_bool go.bool ((![go.PointerType leaseKey] "li") =⟨go.PointerType leaseKey⟩ (Convert go.untyped_nil (go.PointerType leaseKey) UntypedNil))
     then return: (#())
     else do:  #());;;
-    let: "cacheResp" := (GoAlloc (go.PointerType clientv3.GetResponse) (GoZeroVal (go.PointerType clientv3.GetResponse) #())) in
-    let: "$r0" := (![go.PointerType clientv3.GetResponse] (StructFieldRef leaseKey "response"%go (![go.PointerType leaseKey] "li"))) in
-    do:  ("cacheResp" <-[go.PointerType clientv3.GetResponse] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "cacheResp"))) in
-    (FuncResolve go.len [go.SliceType (go.PointerType mvccpb.KeyValue)] #()) "$a0") =⟨go.int⟩ #(W64 0))
+    let: "cacheResp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) #())) in
+    let: "$r0" := (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] (StructFieldRef leaseKey "response"%go (![go.PointerType leaseKey] "li"))) in
+    do:  ("cacheResp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "cacheResp"))) in
+    (FuncResolve go.len [go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] #()) "$a0") =⟨go.int⟩ #(W64 0))
     then
-      let: "kv" := (GoAlloc (go.PointerType mvccpb.KeyValue) (GoZeroVal (go.PointerType mvccpb.KeyValue) #())) in
-      let: "$r0" := (GoAlloc mvccpb.KeyValue (let: "$v0" := (![go.SliceType go.byte] "key") in
-      let: "$v1" := (![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] "respHeader"))) in
-      CompositeLiteral mvccpb.KeyValue (LiteralValue [KeyedElement (Some (KeyField "Key"%go)) (ElementExpression (go.SliceType go.byte) "$v0"); KeyedElement (Some (KeyField "CreateRevision"%go)) (ElementExpression go.int64 "$v1")]))) in
-      do:  ("kv" <-[go.PointerType mvccpb.KeyValue] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "cacheResp"))) in
-      let: "$a1" := ((let: "$sl0" := (![go.PointerType mvccpb.KeyValue] "kv") in
-      CompositeLiteral (go.SliceType (go.PointerType mvccpb.KeyValue)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType mvccpb.KeyValue) "$sl0")]))) in
-      (FuncResolve go.append [go.SliceType (go.PointerType mvccpb.KeyValue)] #()) "$a0" "$a1") in
-      do:  ((StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "cacheResp")) <-[go.SliceType (go.PointerType mvccpb.KeyValue)] "$r0");;;
+      let: "kv" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue) #())) in
+      let: "$r0" := (GoAlloc code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue (let: "$v0" := (![go.SliceType go.byte] "key") in
+      let: "$v1" := (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "respHeader"))) in
+      CompositeLiteral code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue (LiteralValue [KeyedElement (Some (KeyField "Key"%go)) (ElementExpression (go.SliceType go.byte) "$v0"); KeyedElement (Some (KeyField "CreateRevision"%go)) (ElementExpression go.int64 "$v1")]))) in
+      do:  ("kv" <-[go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "cacheResp"))) in
+      let: "$a1" := ((let: "$sl0" := (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] "kv") in
+      CompositeLiteral (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue) "$sl0")]))) in
+      (FuncResolve go.append [go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] #()) "$a0" "$a1") in
+      do:  ((StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "cacheResp")) <-[go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] "$r0");;;
       let: "$r0" := #(W64 1) in
-      do:  ((StructFieldRef clientv3.GetResponse "Count"%go (![go.PointerType clientv3.GetResponse] "cacheResp")) <-[go.int64] "$r0")
+      do:  ((StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Count"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "cacheResp")) <-[go.int64] "$r0")
     else do:  #());;;
-    do:  ((StructFieldRef mvccpb.KeyValue "Version"%go (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "cacheResp")), #(W64 0))))) <-[go.int64] ((![go.int64] (StructFieldRef mvccpb.KeyValue "Version"%go (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "cacheResp")), #(W64 0)))))) +⟨go.int64⟩ #(W64 1)));;;
-    (if: Convert go.untyped_bool go.bool ((![go.int64] (StructFieldRef mvccpb.KeyValue "ModRevision"%go (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "cacheResp")), #(W64 0)))))) <⟨go.int64⟩ (![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] "respHeader"))))
+    do:  ((StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Version"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "cacheResp")), #(W64 0))))) <-[go.int64] ((![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Version"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "cacheResp")), #(W64 0)))))) +⟨go.int64⟩ #(W64 1)));;;
+    (if: Convert go.untyped_bool go.bool ((![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "ModRevision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "cacheResp")), #(W64 0)))))) <⟨go.int64⟩ (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "respHeader"))))
     then
-      let: "$r0" := (![go.PointerType etcdserverpb.ResponseHeader] "respHeader") in
-      do:  ((StructFieldRef clientv3.GetResponse "Header"%go (![go.PointerType clientv3.GetResponse] "cacheResp")) <-[go.PointerType etcdserverpb.ResponseHeader] "$r0");;;
-      let: "$r0" := (![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] "respHeader"))) in
-      do:  ((StructFieldRef mvccpb.KeyValue "ModRevision"%go (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "cacheResp")), #(W64 0))))) <-[go.int64] "$r0");;;
+      let: "$r0" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "respHeader") in
+      do:  ((StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "cacheResp")) <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "$r0");;;
+      let: "$r0" := (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "respHeader"))) in
+      do:  ((StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "ModRevision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "cacheResp")), #(W64 0))))) <-[go.int64] "$r0");;;
       let: "$r0" := (![go.SliceType go.byte] "val") in
-      do:  ((StructFieldRef mvccpb.KeyValue "Value"%go (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "cacheResp")), #(W64 0))))) <-[go.SliceType go.byte] "$r0")
+      do:  ((StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Value"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "cacheResp")), #(W64 0))))) <-[go.SliceType go.byte] "$r0")
     else do:  #());;;
     return: #()).
 
@@ -469,17 +469,17 @@ Definition leaseCache__Updateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
 Definition leaseCache__Deleteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lc" "key" "hdr",
     with_defer: (let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
-    let: "hdr" := (GoAlloc (go.PointerType etcdserverpb.ResponseHeader) "hdr") in
+    let: "hdr" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader) "hdr") in
     let: "key" := (GoAlloc go.string "key") in
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
     do:  (let: "$a0" := (![go.string] "key") in
-    let: "$a1" := (![go.PointerType etcdserverpb.ResponseHeader] "hdr") in
+    let: "$a1" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "hdr") in
     (MethodResolve (go.PointerType leaseCache) "delete"%go (![go.PointerType leaseCache] "lc")) "$a0" "$a1");;;
     return: #()).
 
@@ -487,18 +487,18 @@ Definition leaseCache__Deleteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
 Definition leaseCache__deleteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lc" "key" "hdr",
     exception_do (let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
-    let: "hdr" := (GoAlloc (go.PointerType etcdserverpb.ResponseHeader) "hdr") in
+    let: "hdr" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader) "hdr") in
     let: "key" := (GoAlloc go.string "key") in
     (let: "li" := (GoAlloc (go.PointerType leaseKey) (GoZeroVal (go.PointerType leaseKey) #())) in
     let: "$r0" := (map.lookup1 go.string (go.PointerType leaseKey) (![go.MapType go.string (go.PointerType leaseKey)] (StructFieldRef leaseCache "entries"%go (![go.PointerType leaseCache] "lc"))) (![go.string] "key")) in
     do:  ("li" <-[go.PointerType leaseKey] "$r0");;;
-    (if: Convert go.untyped_bool go.bool (((![go.PointerType leaseKey] "li") ≠⟨go.PointerType leaseKey⟩ (Convert go.untyped_nil (go.PointerType leaseKey) UntypedNil)) && ((![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] "hdr"))) ≥⟨go.int64⟩ (![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.GetResponse "Header"%go (![go.PointerType clientv3.GetResponse] (StructFieldRef leaseKey "response"%go (![go.PointerType leaseKey] "li")))))))))
+    (if: Convert go.untyped_bool go.bool (((![go.PointerType leaseKey] "li") ≠⟨go.PointerType leaseKey⟩ (Convert go.untyped_nil (go.PointerType leaseKey) UntypedNil)) && ((![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "hdr"))) ≥⟨go.int64⟩ (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] (StructFieldRef leaseKey "response"%go (![go.PointerType leaseKey] "li")))))))))
     then
-      let: "$r0" := (Convert go.untyped_nil (go.SliceType (go.PointerType mvccpb.KeyValue)) UntypedNil) in
-      do:  ((StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] (StructFieldRef leaseKey "response"%go (![go.PointerType leaseKey] "li")))) <-[go.SliceType (go.PointerType mvccpb.KeyValue)] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![go.PointerType etcdserverpb.ResponseHeader] "hdr") in
+      let: "$r0" := (Convert go.untyped_nil (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) UntypedNil) in
+      do:  ((StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] (StructFieldRef leaseKey "response"%go (![go.PointerType leaseKey] "li")))) <-[go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "hdr") in
       (FuncResolve copyHeader [] #()) "$a0") in
-      do:  ((StructFieldRef clientv3.GetResponse "Header"%go (![go.PointerType clientv3.GetResponse] (StructFieldRef leaseKey "response"%go (![go.PointerType leaseKey] "li")))) <-[go.PointerType etcdserverpb.ResponseHeader] "$r0")
+      do:  ((StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] (StructFieldRef leaseKey "response"%go (![go.PointerType leaseKey] "li")))) <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "$r0")
     else do:  #()));;;
     return: #()).
 
@@ -508,8 +508,8 @@ Definition leaseCache__Evictⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     with_defer: (let: "rev" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
     let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
     let: "key" := (GoAlloc go.string "key") in
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -525,8 +525,8 @@ Definition leaseCache__Evictⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
       do:  (let: "$a0" := (![go.MapType go.string (go.PointerType leaseKey)] (StructFieldRef leaseCache "entries"%go (![go.PointerType leaseCache] "lc"))) in
       let: "$a1" := (![go.string] "key") in
       (FuncResolve go.delete [go.MapType go.string (go.PointerType leaseKey)] #()) "$a0" "$a1");;;
-      let: "$r0" := ((FuncResolve time.Now [] #()) #()) in
-      do:  (map.insert go.string (![go.MapType go.string time.Time] (StructFieldRef leaseCache "revokes"%go (![go.PointerType leaseCache] "lc"))) (![go.string] "key") "$r0")
+      let: "$r0" := ((FuncResolve code.time.time.Now [] #()) #()) in
+      do:  (map.insert go.string (![go.MapType go.string code.time.time.Time] (StructFieldRef leaseCache "revokes"%go (![go.PointerType leaseCache] "lc"))) (![go.string] "key") "$r0")
     else do:  #()));;;
     return: (![go.int64] "rev")).
 
@@ -536,8 +536,8 @@ Definition leaseCache__EvictRangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
     with_defer: (let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
     let: "end" := (GoAlloc go.string "end") in
     let: "key" := (GoAlloc go.string "key") in
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -555,30 +555,30 @@ Definition leaseCache__EvictRangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
         do:  (let: "$a0" := (![go.MapType go.string (go.PointerType leaseKey)] (StructFieldRef leaseCache "entries"%go (![go.PointerType leaseCache] "lc"))) in
         let: "$a1" := (![go.string] "key") in
         (FuncResolve go.delete [go.MapType go.string (go.PointerType leaseKey)] #()) "$a0" "$a1");;;
-        let: "$r0" := ((FuncResolve time.Now [] #()) #()) in
-        do:  (map.insert go.string (![go.MapType go.string time.Time] (StructFieldRef leaseCache "revokes"%go (![go.PointerType leaseCache] "lc"))) (![go.string] "key") "$r0")
+        let: "$r0" := ((FuncResolve code.time.time.Now [] #()) #()) in
+        do:  (map.insert go.string (![go.MapType go.string code.time.time.Time] (StructFieldRef leaseCache "revokes"%go (![go.PointerType leaseCache] "lc"))) (![go.string] "key") "$r0")
       else do:  #())));;;
     return: #()).
 
 (* go: cache.go:196:6 *)
 Definition isBadOpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "op",
-    exception_do (let: "op" := (GoAlloc clientv3.Op "op") in
-    return: ((((MethodResolve (go.PointerType clientv3.Op) "Rev"%go "op") #()) >⟨go.int64⟩ #(W64 0)) || ((let: "$a0" := ((MethodResolve (go.PointerType clientv3.Op) "RangeBytes"%go "op") #()) in
+    exception_do (let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op "op") in
+    return: ((((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "Rev"%go "op") #()) >⟨go.int64⟩ #(W64 0)) || ((let: "$a0" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "RangeBytes"%go "op") #()) in
      (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") >⟨go.int⟩ #(W64 0)))).
 
 (* go: cache.go:198:23 *)
 Definition leaseCache__Getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lc" "ctx" "op",
     exception_do (let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
-    let: "op" := (GoAlloc clientv3.Op "op") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    (if: let: "$a0" := (![clientv3.Op] "op") in
+    let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op "op") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    (if: let: "$a0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
     (FuncResolve isBadOp [] #()) "$a0"
-    then return: (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil, #false)
+    then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) UntypedNil, #false)
     else do:  #());;;
     let: "key" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "KeyBytes"%go "op") #())) in
+    let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "KeyBytes"%go "op") #())) in
     do:  ("key" <-[go.string] "$r0");;;
     let: "wc" := (GoAlloc (go.ChannelType go.recvonly (go.StructType [
 
@@ -595,12 +595,12 @@ Definition leaseCache__Getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 
     ])] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.PointerType leaseKey] "li") =⟨go.PointerType leaseKey⟩ (Convert go.untyped_nil (go.PointerType leaseKey) UntypedNil))
-    then return: (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil, #true)
+    then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) UntypedNil, #true)
     else do:  #());;;
     let: "$ch0" := (![go.ChannelType go.recvonly (go.StructType [
 
     ])] "wc") in
-    let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
+    let: "$ch1" := ((MethodResolve code.context.context.Context "Done"%go (![code.context.context.Context] "ctx")) #()) in
     SelectStmt (SelectStmtClauses None [(CommClause (RecvCase (go.StructType [
 
     ]) "$ch0") (λ: "$recvVal",
@@ -608,68 +608,68 @@ Definition leaseCache__Getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       )); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (λ: "$recvVal",
-      return: (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil, #true)
+      return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) UntypedNil, #true)
       ))]);;;
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
     let: "lk" := (GoAlloc leaseKey (GoZeroVal leaseKey #())) in
     let: "$r0" := (![leaseKey] (![go.PointerType leaseKey] "li")) in
     do:  ("lk" <-[leaseKey] "$r0");;;
-    let: "ret" := (GoAlloc (go.PointerType clientv3.GetResponse) (GoZeroVal (go.PointerType clientv3.GetResponse) #())) in
-    let: "$r0" := (let: "$a0" := (![clientv3.Op] "op") in
+    let: "ret" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) #())) in
+    let: "$r0" := (let: "$a0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
     (MethodResolve (go.PointerType leaseKey) "get"%go "lk") "$a0") in
-    do:  ("ret" <-[go.PointerType clientv3.GetResponse] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
-    return: (![go.PointerType clientv3.GetResponse] "ret", #true)).
+    do:  ("ret" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "$r0");;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
+    return: (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "ret", #true)).
 
 (* go: cache.go:219:21 *)
 Definition leaseKey__getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lk" "op",
     exception_do (let: "lk" := (GoAlloc (go.PointerType leaseKey) "lk") in
-    let: "op" := (GoAlloc clientv3.Op "op") in
-    let: "ret" := (GoAlloc clientv3.GetResponse (GoZeroVal clientv3.GetResponse #())) in
-    let: "$r0" := (![clientv3.GetResponse] (![go.PointerType clientv3.GetResponse] (StructFieldRef leaseKey "response"%go (![go.PointerType leaseKey] "lk")))) in
-    do:  ("ret" <-[clientv3.GetResponse] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.GetResponse "Header"%go "ret")) in
+    let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op "op") in
+    let: "ret" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.GetResponse (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.GetResponse #())) in
+    let: "$r0" := (![code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] (StructFieldRef leaseKey "response"%go (![go.PointerType leaseKey] "lk")))) in
+    do:  ("ret" <-[code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Header"%go "ret")) in
     (FuncResolve copyHeader [] #()) "$a0") in
-    do:  ((StructFieldRef clientv3.GetResponse "Header"%go "ret") <-[go.PointerType etcdserverpb.ResponseHeader] "$r0");;;
+    do:  ((StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Header"%go "ret") <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "$r0");;;
     let: "empty" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "$r0" := (((let: "$a0" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go "ret")) in
-    (FuncResolve go.len [go.SliceType (go.PointerType mvccpb.KeyValue)] #()) "$a0") =⟨go.int⟩ #(W64 0)) || ((MethodResolve (go.PointerType clientv3.Op) "IsCountOnly"%go "op") #())) in
+    let: "$r0" := (((let: "$a0" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go "ret")) in
+    (FuncResolve go.len [go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] #()) "$a0") =⟨go.int⟩ #(W64 0)) || ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsCountOnly"%go "op") #())) in
     do:  ("empty" <-[go.bool] "$r0");;;
-    let: "$r0" := ((![go.bool] "empty") || (((MethodResolve (go.PointerType clientv3.Op) "MinModRev"%go "op") #()) >⟨go.int64⟩ (![go.int64] (StructFieldRef mvccpb.KeyValue "ModRevision"%go (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go "ret"), #(W64 0)))))))) in
+    let: "$r0" := ((![go.bool] "empty") || (((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "MinModRev"%go "op") #()) >⟨go.int64⟩ (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "ModRevision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go "ret"), #(W64 0)))))))) in
     do:  ("empty" <-[go.bool] "$r0");;;
-    let: "$r0" := ((![go.bool] "empty") || ((((MethodResolve (go.PointerType clientv3.Op) "MaxModRev"%go "op") #()) ≠⟨go.int64⟩ #(W64 0)) && (((MethodResolve (go.PointerType clientv3.Op) "MaxModRev"%go "op") #()) <⟨go.int64⟩ (![go.int64] (StructFieldRef mvccpb.KeyValue "ModRevision"%go (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go "ret"), #(W64 0))))))))) in
+    let: "$r0" := ((![go.bool] "empty") || ((((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "MaxModRev"%go "op") #()) ≠⟨go.int64⟩ #(W64 0)) && (((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "MaxModRev"%go "op") #()) <⟨go.int64⟩ (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "ModRevision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go "ret"), #(W64 0))))))))) in
     do:  ("empty" <-[go.bool] "$r0");;;
-    let: "$r0" := ((![go.bool] "empty") || (((MethodResolve (go.PointerType clientv3.Op) "MinCreateRev"%go "op") #()) >⟨go.int64⟩ (![go.int64] (StructFieldRef mvccpb.KeyValue "CreateRevision"%go (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go "ret"), #(W64 0)))))))) in
+    let: "$r0" := ((![go.bool] "empty") || (((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "MinCreateRev"%go "op") #()) >⟨go.int64⟩ (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "CreateRevision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go "ret"), #(W64 0)))))))) in
     do:  ("empty" <-[go.bool] "$r0");;;
-    let: "$r0" := ((![go.bool] "empty") || ((((MethodResolve (go.PointerType clientv3.Op) "MaxCreateRev"%go "op") #()) ≠⟨go.int64⟩ #(W64 0)) && (((MethodResolve (go.PointerType clientv3.Op) "MaxCreateRev"%go "op") #()) <⟨go.int64⟩ (![go.int64] (StructFieldRef mvccpb.KeyValue "CreateRevision"%go (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go "ret"), #(W64 0))))))))) in
+    let: "$r0" := ((![go.bool] "empty") || ((((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "MaxCreateRev"%go "op") #()) ≠⟨go.int64⟩ #(W64 0)) && (((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "MaxCreateRev"%go "op") #()) <⟨go.int64⟩ (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "CreateRevision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go "ret"), #(W64 0))))))))) in
     do:  ("empty" <-[go.bool] "$r0");;;
     (if: ![go.bool] "empty"
     then
-      let: "$r0" := (Convert go.untyped_nil (go.SliceType (go.PointerType mvccpb.KeyValue)) UntypedNil) in
-      do:  ((StructFieldRef clientv3.GetResponse "Kvs"%go "ret") <-[go.SliceType (go.PointerType mvccpb.KeyValue)] "$r0")
+      let: "$r0" := (Convert go.untyped_nil (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) UntypedNil) in
+      do:  ((StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go "ret") <-[go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] "$r0")
     else
-      let: "kv" := (GoAlloc mvccpb.KeyValue (GoZeroVal mvccpb.KeyValue #())) in
-      let: "$r0" := (![mvccpb.KeyValue] (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go "ret"), #(W64 0))))) in
-      do:  ("kv" <-[mvccpb.KeyValue] "$r0");;;
-      let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef mvccpb.KeyValue "Key"%go "kv")) in
+      let: "kv" := (GoAlloc code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue (GoZeroVal code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue #())) in
+      let: "$r0" := (![code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go "ret"), #(W64 0))))) in
+      do:  ("kv" <-[code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] "$r0");;;
+      let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Key"%go "kv")) in
       (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) in
-      do:  ((StructFieldRef mvccpb.KeyValue "Key"%go "kv") <-[go.SliceType go.byte] "$r0");;;
-      do:  (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef mvccpb.KeyValue "Key"%go "kv")) in
-      let: "$a1" := (![go.SliceType go.byte] (StructFieldRef mvccpb.KeyValue "Key"%go (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go "ret"), #(W64 0)))))) in
+      do:  ((StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Key"%go "kv") <-[go.SliceType go.byte] "$r0");;;
+      do:  (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Key"%go "kv")) in
+      let: "$a1" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Key"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go "ret"), #(W64 0)))))) in
       (FuncResolve go.copy [go.SliceType go.byte] #()) "$a0" "$a1");;;
-      (if: (⟨go.bool⟩! ((MethodResolve (go.PointerType clientv3.Op) "IsKeysOnly"%go "op") #()))
+      (if: (⟨go.bool⟩! ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsKeysOnly"%go "op") #()))
       then
-        let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef mvccpb.KeyValue "Value"%go "kv")) in
+        let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Value"%go "kv")) in
         (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) in
-        do:  ((StructFieldRef mvccpb.KeyValue "Value"%go "kv") <-[go.SliceType go.byte] "$r0");;;
-        do:  (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef mvccpb.KeyValue "Value"%go "kv")) in
-        let: "$a1" := (![go.SliceType go.byte] (StructFieldRef mvccpb.KeyValue "Value"%go (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go "ret"), #(W64 0)))))) in
+        do:  ((StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Value"%go "kv") <-[go.SliceType go.byte] "$r0");;;
+        do:  (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Value"%go "kv")) in
+        let: "$a1" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Value"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go "ret"), #(W64 0)))))) in
         (FuncResolve go.copy [go.SliceType go.byte] #()) "$a0" "$a1")
       else do:  #());;;
       let: "$r0" := (let: "$v0" := "kv" in
-      CompositeLiteral (go.SliceType (go.PointerType mvccpb.KeyValue)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType mvccpb.KeyValue) "$v0")])) in
-      do:  ((StructFieldRef clientv3.GetResponse "Kvs"%go "ret") <-[go.SliceType (go.PointerType mvccpb.KeyValue)] "$r0"));;;
+      CompositeLiteral (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue) "$v0")])) in
+      do:  ((StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go "ret") <-[go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] "$r0"));;;
     return: ("ret")).
 
 (* go: cache.go:242:23 *)
@@ -677,8 +677,8 @@ Definition leaseCache__notifyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
   λ: "lc" "key",
     with_defer: (let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
     let: "key" := (GoAlloc go.string "key") in
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -705,32 +705,32 @@ Definition leaseCache__notifyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
 Definition leaseCache__clearOldRevokesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lc" "ctx",
     exception_do (let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "$ch0" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
-      let: "$ch1" := (let: "$a0" := time.Second in
-      (FuncResolve time.After [] #()) "$a0") in
+      let: "$ch0" := ((MethodResolve code.context.context.Context "Done"%go (![code.context.context.Context] "ctx")) #()) in
+      let: "$ch1" := (let: "$a0" := code.time.time.Second in
+      (FuncResolve code.time.time.After [] #()) "$a0") in
       SelectStmt (SelectStmtClauses None [(CommClause (RecvCase (go.StructType [
 
       ]) "$ch0") (λ: "$recvVal",
         return: (#())
-        )); (CommClause (RecvCase time.Time "$ch1") (λ: "$recvVal",
-        do:  ((MethodResolve (go.PointerType sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
-        let: "$range" := (![go.MapType go.string time.Time] (StructFieldRef leaseCache "revokes"%go (![go.PointerType leaseCache] "lc"))) in
-        (let: "lr" := (GoAlloc time.Time (GoZeroVal time.Time #())) in
+        )); (CommClause (RecvCase code.time.time.Time "$ch1") (λ: "$recvVal",
+        do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
+        let: "$range" := (![go.MapType go.string code.time.time.Time] (StructFieldRef leaseCache "revokes"%go (![go.PointerType leaseCache] "lc"))) in
+        (let: "lr" := (GoAlloc code.time.time.Time (GoZeroVal code.time.time.Time #())) in
         let: "k" := (GoAlloc go.string (GoZeroVal go.string #())) in
-        map.for_range go.string time.Time "$range" (λ: "$key" "$value",
-          do:  ("lr" <-[time.Time] "$value");;;
+        map.for_range go.string code.time.time.Time "$range" (λ: "$key" "$value",
+          do:  ("lr" <-[code.time.time.Time] "$value");;;
           do:  ("k" <-[go.string] "$key");;;
           (if: Convert go.untyped_bool go.bool ((let: "$a0" := (let: "$a0" := revokeBackoff in
-          (MethodResolve (go.PointerType time.Time) "Add"%go "lr") "$a0") in
-          (FuncResolve time.Since [] #()) "$a0") >⟨time.Duration⟩ #(W64 0))
+          (MethodResolve (go.PointerType code.time.time.Time) "Add"%go "lr") "$a0") in
+          (FuncResolve code.time.time.Since [] #()) "$a0") >⟨code.time.time.Duration⟩ #(W64 0))
           then
-            do:  (let: "$a0" := (![go.MapType go.string time.Time] (StructFieldRef leaseCache "revokes"%go (![go.PointerType leaseCache] "lc"))) in
+            do:  (let: "$a0" := (![go.MapType go.string code.time.time.Time] (StructFieldRef leaseCache "revokes"%go (![go.PointerType leaseCache] "lc"))) in
             let: "$a1" := (![go.string] "k") in
-            (FuncResolve go.delete [go.MapType go.string time.Time] #()) "$a0" "$a1")
+            (FuncResolve go.delete [go.MapType go.string code.time.time.Time] #()) "$a0" "$a1")
           else do:  #())));;;
-        do:  ((MethodResolve (go.PointerType sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #())
+        do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #())
         ))]));;;
     return: #()).
 
@@ -740,24 +740,24 @@ Definition leaseCache__evalCmpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "cmpVal" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
-    let: "cmps" := (GoAlloc (go.SliceType clientv3.Cmp) "cmps") in
-    let: "$range" := (![go.SliceType clientv3.Cmp] "cmps") in
-    (let: "cmp" := (GoAlloc clientv3.Cmp (GoZeroVal clientv3.Cmp #())) in
-    slice.for_range clientv3.Cmp "$range" (λ: "$key" "$value",
-      do:  ("cmp" <-[clientv3.Cmp] "$value");;;
+    let: "cmps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) "cmps") in
+    let: "$range" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "cmps") in
+    (let: "cmp" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Cmp (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Cmp #())) in
+    slice.for_range code.go_etcd_io.etcd.client.v3.clientv3.Cmp "$range" (λ: "$key" "$value",
+      do:  ("cmp" <-[code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "$value");;;
       do:  "$key";;;
-      (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.byte] (StructFieldRef clientv3.Cmp "RangeEnd"%go "cmp")) in
+      (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.Cmp "RangeEnd"%go "cmp")) in
       (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") >⟨go.int⟩ #(W64 0))
       then return: (#false, #false)
       else do:  #());;;
       let: "lk" := (GoAlloc (go.PointerType leaseKey) (GoZeroVal (go.PointerType leaseKey) #())) in
-      let: "$r0" := (map.lookup1 go.string (go.PointerType leaseKey) (![go.MapType go.string (go.PointerType leaseKey)] (StructFieldRef leaseCache "entries"%go (![go.PointerType leaseCache] "lc"))) (Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (StructFieldRef clientv3.Cmp "Key"%go "cmp")))) in
+      let: "$r0" := (map.lookup1 go.string (go.PointerType leaseKey) (![go.MapType go.string (go.PointerType leaseKey)] (StructFieldRef leaseCache "entries"%go (![go.PointerType leaseCache] "lc"))) (Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.Cmp "Key"%go "cmp")))) in
       do:  ("lk" <-[go.PointerType leaseKey] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.PointerType leaseKey] "lk") =⟨go.PointerType leaseKey⟩ (Convert go.untyped_nil (go.PointerType leaseKey) UntypedNil))
       then return: (#false, #false)
       else do:  #());;;
-      (if: (⟨go.bool⟩! (let: "$a0" := (![go.PointerType clientv3.GetResponse] (StructFieldRef leaseKey "response"%go (![go.PointerType leaseKey] "lk"))) in
-      let: "$a1" := (![clientv3.Cmp] "cmp") in
+      (if: (⟨go.bool⟩! (let: "$a0" := (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] (StructFieldRef leaseKey "response"%go (![go.PointerType leaseKey] "lk"))) in
+      let: "$a1" := (![code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "cmp") in
       (FuncResolve evalCmp [] #()) "$a0" "$a1"))
       then return: (#false, #true)
       else do:  #())));;;
@@ -767,76 +767,76 @@ Definition leaseCache__evalCmpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
 Definition leaseCache__evalOpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lc" "ops",
     exception_do (let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
-    let: "ops" := (GoAlloc (go.SliceType clientv3.Op) "ops") in
-    let: "resps" := (GoAlloc (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) (GoZeroVal (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) #())) in
-    let: "$r0" := ((FuncResolve go.make2 [go.SliceType (go.PointerType etcdserverpb.ResponseOp)] #()) (let: "$a0" := (![go.SliceType clientv3.Op] "ops") in
-    (FuncResolve go.len [go.SliceType clientv3.Op] #()) "$a0")) in
-    do:  ("resps" <-[go.SliceType (go.PointerType etcdserverpb.ResponseOp)] "$r0");;;
-    let: "$range" := (![go.SliceType clientv3.Op] "ops") in
-    (let: "op" := (GoAlloc clientv3.Op (GoZeroVal clientv3.Op #())) in
+    let: "ops" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) "ops") in
+    let: "resps" := (GoAlloc (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) (GoZeroVal (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] #()) (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] #()) "$a0")) in
+    do:  ("resps" <-[go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] "$r0");;;
+    let: "$range" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
+    (let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Op #())) in
     let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    slice.for_range clientv3.Op "$range" (λ: "$key" "$value",
-      do:  ("op" <-[clientv3.Op] "$value");;;
+    slice.for_range code.go_etcd_io.etcd.client.v3.clientv3.Op "$range" (λ: "$key" "$value",
+      do:  ("op" <-[code.go_etcd_io.etcd.client.v3.clientv3.Op] "$value");;;
       do:  ("i" <-[go.int] "$key");;;
-      (if: (⟨go.bool⟩! ((MethodResolve (go.PointerType clientv3.Op) "IsGet"%go "op") #())) || (let: "$a0" := (![clientv3.Op] "op") in
+      (if: (⟨go.bool⟩! ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsGet"%go "op") #())) || (let: "$a0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
       (FuncResolve isBadOp [] #()) "$a0")
-      then return: (Convert go.untyped_nil (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) UntypedNil, #false)
+      then return: (Convert go.untyped_nil (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) UntypedNil, #false)
       else do:  #());;;
       let: "lk" := (GoAlloc (go.PointerType leaseKey) (GoZeroVal (go.PointerType leaseKey) #())) in
-      let: "$r0" := (map.lookup1 go.string (go.PointerType leaseKey) (![go.MapType go.string (go.PointerType leaseKey)] (StructFieldRef leaseCache "entries"%go (![go.PointerType leaseCache] "lc"))) (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "KeyBytes"%go "op") #()))) in
+      let: "$r0" := (map.lookup1 go.string (go.PointerType leaseKey) (![go.MapType go.string (go.PointerType leaseKey)] (StructFieldRef leaseCache "entries"%go (![go.PointerType leaseCache] "lc"))) (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "KeyBytes"%go "op") #()))) in
       do:  ("lk" <-[go.PointerType leaseKey] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.PointerType leaseKey] "lk") =⟨go.PointerType leaseKey⟩ (Convert go.untyped_nil (go.PointerType leaseKey) UntypedNil))
-      then return: (Convert go.untyped_nil (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) UntypedNil, #false)
+      then return: (Convert go.untyped_nil (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) UntypedNil, #false)
       else do:  #());;;
-      let: "resp" := (GoAlloc (go.PointerType clientv3.GetResponse) (GoZeroVal (go.PointerType clientv3.GetResponse) #())) in
-      let: "$r0" := (let: "$a0" := (![clientv3.Op] "op") in
+      let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) #())) in
+      let: "$r0" := (let: "$a0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
       (MethodResolve (go.PointerType leaseKey) "get"%go (![go.PointerType leaseKey] "lk")) "$a0") in
-      do:  ("resp" <-[go.PointerType clientv3.GetResponse] "$r0");;;
-      (if: Convert go.untyped_bool go.bool ((![go.PointerType clientv3.GetResponse] "resp") =⟨go.PointerType clientv3.GetResponse⟩ (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil))
-      then return: (Convert go.untyped_nil (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) UntypedNil, #false)
+      do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "$r0");;;
+      (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "resp") =⟨go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) UntypedNil))
+      then return: (Convert go.untyped_nil (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) UntypedNil, #false)
       else do:  #());;;
-      let: "$r0" := (GoAlloc etcdserverpb.ResponseOp (let: "$v0" := (GoAlloc etcdserverpb.ResponseOp_ResponseRange (let: "$v0" := (Convert (go.PointerType clientv3.GetResponse) (go.PointerType etcdserverpb.RangeResponse) (![go.PointerType clientv3.GetResponse] "resp")) in
-      CompositeLiteral etcdserverpb.ResponseOp_ResponseRange (LiteralValue [KeyedElement (Some (KeyField "ResponseRange"%go)) (ElementExpression (go.PointerType etcdserverpb.RangeResponse) "$v0")]))) in
-      CompositeLiteral etcdserverpb.ResponseOp (LiteralValue [KeyedElement (Some (KeyField "Response"%go)) (ElementExpression (go.PointerType etcdserverpb.ResponseOp_ResponseRange) "$v0")]))) in
-      do:  ((IndexRef (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] "resps", ![go.int] "i")) <-[go.PointerType etcdserverpb.ResponseOp] "$r0")));;;
-    return: (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] "resps", #true)).
+      let: "$r0" := (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp (let: "$v0" := (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp_ResponseRange (let: "$v0" := (Convert (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeResponse) (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "resp")) in
+      CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp_ResponseRange (LiteralValue [KeyedElement (Some (KeyField "ResponseRange"%go)) (ElementExpression (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeResponse) "$v0")]))) in
+      CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp (LiteralValue [KeyedElement (Some (KeyField "Response"%go)) (ElementExpression (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp_ResponseRange) "$v0")]))) in
+      do:  ((IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] "resps", ![go.int] "i")) <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp] "$r0")));;;
+    return: (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] "resps", #true)).
 
 (* NewKV wraps a KV instance so that all requests are wired through a leasing protocol.
 
    go: kv.go:57:6 *)
 Definition NewKVⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "cl" "pfx" "opts",
-    exception_do (let: "opts" := (GoAlloc (go.SliceType concurrency.SessionOption) "opts") in
+    exception_do (let: "opts" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.SessionOption) "opts") in
     let: "pfx" := (GoAlloc go.string "pfx") in
-    let: "cl" := (GoAlloc (go.PointerType clientv3.Client) "cl") in
-    let: "cancel" := (GoAlloc context.CancelFunc (GoZeroVal context.CancelFunc #())) in
-    let: "cctx" := (GoAlloc context.Context (GoZeroVal context.Context #())) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := ((MethodResolve (go.PointerType clientv3.Client) "Ctx"%go (![go.PointerType clientv3.Client] "cl")) #()) in
-    (FuncResolve context.WithCancel [] #()) "$a0") in
+    let: "cl" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Client) "cl") in
+    let: "cancel" := (GoAlloc code.context.context.CancelFunc (GoZeroVal code.context.context.CancelFunc #())) in
+    let: "cctx" := (GoAlloc code.context.context.Context (GoZeroVal code.context.context.Context #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Client) "Ctx"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Client] "cl")) #()) in
+    (FuncResolve code.context.context.WithCancel [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("cctx" <-[context.Context] "$r0");;;
-    do:  ("cancel" <-[context.CancelFunc] "$r1");;;
+    do:  ("cctx" <-[code.context.context.Context] "$r0");;;
+    do:  ("cancel" <-[code.context.context.CancelFunc] "$r1");;;
     let: "lkv" := (GoAlloc (go.PointerType leasingKV) (GoZeroVal (go.PointerType leasingKV) #())) in
-    let: "$r0" := (GoAlloc leasingKV (let: "$v0" := (![go.PointerType clientv3.Client] "cl") in
-    let: "$v1" := (![clientv3.KV] (StructFieldRef clientv3.Client "KV"%go (![go.PointerType clientv3.Client] "cl"))) in
+    let: "$r0" := (GoAlloc leasingKV (let: "$v0" := (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Client] "cl") in
+    let: "$v1" := (![code.go_etcd_io.etcd.client.v3.clientv3.KV] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.Client "KV"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Client] "cl"))) in
     let: "$v2" := (![go.string] "pfx") in
-    let: "$v3" := (let: "$v0" := ((FuncResolve go.make1 [go.MapType go.string time.Time] #()) #()) in
-    CompositeLiteral leaseCache (LiteralValue [KeyedElement (Some (KeyField "revokes"%go)) (ElementExpression (go.MapType go.string time.Time) "$v0")])) in
-    let: "$v4" := (![context.Context] "cctx") in
-    let: "$v5" := (![context.CancelFunc] "cancel") in
-    let: "$v6" := (![go.SliceType concurrency.SessionOption] "opts") in
+    let: "$v3" := (let: "$v0" := ((FuncResolve go.make1 [go.MapType go.string code.time.time.Time] #()) #()) in
+    CompositeLiteral leaseCache (LiteralValue [KeyedElement (Some (KeyField "revokes"%go)) (ElementExpression (go.MapType go.string code.time.time.Time) "$v0")])) in
+    let: "$v4" := (![code.context.context.Context] "cctx") in
+    let: "$v5" := (![code.context.context.CancelFunc] "cancel") in
+    let: "$v6" := (![go.SliceType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.SessionOption] "opts") in
     let: "$v7" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
 
      ])] #()) #()) in
-    CompositeLiteral leasingKV (LiteralValue [KeyedElement (Some (KeyField "cl"%go)) (ElementExpression (go.PointerType clientv3.Client) "$v0"); KeyedElement (Some (KeyField "kv"%go)) (ElementExpression clientv3.KV "$v1"); KeyedElement (Some (KeyField "pfx"%go)) (ElementExpression go.string "$v2"); KeyedElement (Some (KeyField "leases"%go)) (ElementExpression leaseCache "$v3"); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context "$v4"); KeyedElement (Some (KeyField "cancel"%go)) (ElementExpression context.CancelFunc "$v5"); KeyedElement (Some (KeyField "sessionOpts"%go)) (ElementExpression (go.SliceType concurrency.SessionOption) "$v6"); KeyedElement (Some (KeyField "sessionc"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
+    CompositeLiteral leasingKV (LiteralValue [KeyedElement (Some (KeyField "cl"%go)) (ElementExpression (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Client) "$v0"); KeyedElement (Some (KeyField "kv"%go)) (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.KV "$v1"); KeyedElement (Some (KeyField "pfx"%go)) (ElementExpression go.string "$v2"); KeyedElement (Some (KeyField "leases"%go)) (ElementExpression leaseCache "$v3"); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression code.context.context.Context "$v4"); KeyedElement (Some (KeyField "cancel"%go)) (ElementExpression code.context.context.CancelFunc "$v5"); KeyedElement (Some (KeyField "sessionOpts"%go)) (ElementExpression (go.SliceType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.SessionOption) "$v6"); KeyedElement (Some (KeyField "sessionc"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
 
      ])) "$v7")]))) in
     do:  ("lkv" <-[go.PointerType leasingKV] "$r0");;;
     do:  (let: "$a0" := #(W64 2) in
-    (MethodResolve (go.PointerType sync.WaitGroup) "Add"%go (StructFieldRef leasingKV "wg"%go (![go.PointerType leasingKV] "lkv"))) "$a0");;;
+    (MethodResolve (go.PointerType code.sync.sync.WaitGroup) "Add"%go (StructFieldRef leasingKV "wg"%go (![go.PointerType leasingKV] "lkv"))) "$a0");;;
     let: "$go" := (λ: <>,
-      with_defer: (do:  (let: "$f" := (MethodResolve (go.PointerType sync.WaitGroup) "Done"%go (StructFieldRef leasingKV "wg"%go (![go.PointerType leasingKV] "lkv"))) in
+      with_defer: (do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.WaitGroup) "Done"%go (StructFieldRef leasingKV "wg"%go (![go.PointerType leasingKV] "lkv"))) in
       "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
       (λ: <>,
         "$f" #();;
@@ -847,39 +847,39 @@ Definition NewKVⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
       ) in
     do:  (Fork ("$go" #()));;;
     let: "$go" := (λ: <>,
-      with_defer: (do:  (let: "$f" := (MethodResolve (go.PointerType sync.WaitGroup) "Done"%go (StructFieldRef leasingKV "wg"%go (![go.PointerType leasingKV] "lkv"))) in
+      with_defer: (do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.WaitGroup) "Done"%go (StructFieldRef leasingKV "wg"%go (![go.PointerType leasingKV] "lkv"))) in
       "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
       (λ: <>,
         "$f" #();;
         "$oldf" #()
         )));;;
-      do:  (let: "$a0" := (![context.Context] "cctx") in
+      do:  (let: "$a0" := (![code.context.context.Context] "cctx") in
       (MethodResolve (go.PointerType leaseCache) "clearOldRevokes"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv"))) "$a0");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    return: (Convert (go.PointerType leasingKV) clientv3.KV (![go.PointerType leasingKV] "lkv"), MethodResolve (go.PointerType leasingKV) "Close"%go (![go.PointerType leasingKV] "lkv"), let: "$a0" := (![context.Context] "cctx") in
+    return: (Convert (go.PointerType leasingKV) code.go_etcd_io.etcd.client.v3.clientv3.KV (![go.PointerType leasingKV] "lkv"), MethodResolve (go.PointerType leasingKV) "Close"%go (![go.PointerType leasingKV] "lkv"), let: "$a0" := (![code.context.context.Context] "cctx") in
      (MethodResolve (go.PointerType leasingKV) "waitSession"%go (![go.PointerType leasingKV] "lkv")) "$a0")).
 
 (* go: kv.go:81:23 *)
 Definition leasingKV__Closeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" <>,
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    do:  ((![context.CancelFunc] (StructFieldRef leasingKV "cancel"%go (![go.PointerType leasingKV] "lkv"))) #());;;
-    do:  ((MethodResolve (go.PointerType sync.WaitGroup) "Wait"%go (StructFieldRef leasingKV "wg"%go (![go.PointerType leasingKV] "lkv"))) #());;;
+    do:  ((![code.context.context.CancelFunc] (StructFieldRef leasingKV "cancel"%go (![go.PointerType leasingKV] "lkv"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.WaitGroup) "Wait"%go (StructFieldRef leasingKV "wg"%go (![go.PointerType leasingKV] "lkv"))) #());;;
     return: #()).
 
 (* go: kv.go:86:23 *)
 Definition leasingKV__Getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" "ctx" "key" "opts",
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    let: "opts" := (GoAlloc (go.SliceType clientv3.OpOption) "opts") in
+    let: "opts" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption) "opts") in
     let: "key" := (GoAlloc go.string "key") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    let: ("$ret0", "$ret1") := ((let: "$a0" := (![context.Context] "ctx") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (![code.context.context.Context] "ctx") in
     let: "$a1" := (let: "$a0" := (![go.string] "key") in
-    let: "$a1" := (![go.SliceType clientv3.OpOption] "opts") in
-    (FuncResolve clientv3.OpGet [] #()) "$a0" "$a1") in
+    let: "$a1" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption] "opts") in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.OpGet [] #()) "$a0" "$a1") in
     (MethodResolve (go.PointerType leasingKV) "get"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1")) in
     return: ("$ret0", "$ret1")).
 
@@ -887,15 +887,15 @@ Definition leasingKV__Getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
 Definition leasingKV__Putⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" "ctx" "key" "val" "opts",
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    let: "opts" := (GoAlloc (go.SliceType clientv3.OpOption) "opts") in
+    let: "opts" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption) "opts") in
     let: "val" := (GoAlloc go.string "val") in
     let: "key" := (GoAlloc go.string "key") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    let: ("$ret0", "$ret1") := ((let: "$a0" := (![context.Context] "ctx") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (![code.context.context.Context] "ctx") in
     let: "$a1" := (let: "$a0" := (![go.string] "key") in
     let: "$a1" := (![go.string] "val") in
-    let: "$a2" := (![go.SliceType clientv3.OpOption] "opts") in
-    (FuncResolve clientv3.OpPut [] #()) "$a0" "$a1" "$a2") in
+    let: "$a2" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption] "opts") in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.OpPut [] #()) "$a0" "$a1" "$a2") in
     (MethodResolve (go.PointerType leasingKV) "put"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1")) in
     return: ("$ret0", "$ret1")).
 
@@ -903,13 +903,13 @@ Definition leasingKV__Putⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
 Definition leasingKV__Deleteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" "ctx" "key" "opts",
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    let: "opts" := (GoAlloc (go.SliceType clientv3.OpOption) "opts") in
+    let: "opts" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption) "opts") in
     let: "key" := (GoAlloc go.string "key") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    let: ("$ret0", "$ret1") := ((let: "$a0" := (![context.Context] "ctx") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (![code.context.context.Context] "ctx") in
     let: "$a1" := (let: "$a0" := (![go.string] "key") in
-    let: "$a1" := (![go.SliceType clientv3.OpOption] "opts") in
-    (FuncResolve clientv3.OpDelete [] #()) "$a0" "$a1") in
+    let: "$a1" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption] "opts") in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.OpDelete [] #()) "$a0" "$a1") in
     (MethodResolve (go.PointerType leasingKV) "delete"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1")) in
     return: ("$ret0", "$ret1")).
 
@@ -917,108 +917,108 @@ Definition leasingKV__Deleteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
 Definition leasingKV__Doⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" "ctx" "op",
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    let: "op" := (GoAlloc clientv3.Op "op") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
+    let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op "op") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
     let: "$sw" := #true in
-    (if: "$sw" =⟨go.bool⟩ ((MethodResolve (go.PointerType clientv3.Op) "IsGet"%go "op") #())
+    (if: "$sw" =⟨go.bool⟩ ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsGet"%go "op") #())
     then
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "resp" := (GoAlloc (go.PointerType clientv3.GetResponse) (GoZeroVal (go.PointerType clientv3.GetResponse) #())) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
-      let: "$a1" := (![clientv3.Op] "op") in
+      let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) #())) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
+      let: "$a1" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
       (MethodResolve (go.PointerType leasingKV) "get"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("resp" <-[go.PointerType clientv3.GetResponse] "$r0");;;
+      do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
-      return: ((MethodResolve (go.PointerType clientv3.GetResponse) "OpResponse"%go (![go.PointerType clientv3.GetResponse] "resp")) #(), ![go.error] "err")
+      return: ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) "OpResponse"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "resp")) #(), ![go.error] "err")
     else
-      (if: "$sw" =⟨go.bool⟩ ((MethodResolve (go.PointerType clientv3.Op) "IsPut"%go "op") #())
+      (if: "$sw" =⟨go.bool⟩ ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsPut"%go "op") #())
       then
         let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-        let: "resp" := (GoAlloc (go.PointerType clientv3.PutResponse) (GoZeroVal (go.PointerType clientv3.PutResponse) #())) in
-        let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
-        let: "$a1" := (![clientv3.Op] "op") in
+        let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.PutResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.PutResponse) #())) in
+        let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
+        let: "$a1" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
         (MethodResolve (go.PointerType leasingKV) "put"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ("resp" <-[go.PointerType clientv3.PutResponse] "$r0");;;
+        do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.PutResponse] "$r0");;;
         do:  ("err" <-[go.error] "$r1");;;
-        return: ((MethodResolve (go.PointerType clientv3.PutResponse) "OpResponse"%go (![go.PointerType clientv3.PutResponse] "resp")) #(), ![go.error] "err")
+        return: ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.PutResponse) "OpResponse"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.PutResponse] "resp")) #(), ![go.error] "err")
       else
-        (if: "$sw" =⟨go.bool⟩ ((MethodResolve (go.PointerType clientv3.Op) "IsDelete"%go "op") #())
+        (if: "$sw" =⟨go.bool⟩ ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsDelete"%go "op") #())
         then
           let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-          let: "resp" := (GoAlloc (go.PointerType clientv3.DeleteResponse) (GoZeroVal (go.PointerType clientv3.DeleteResponse) #())) in
-          let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
-          let: "$a1" := (![clientv3.Op] "op") in
+          let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) #())) in
+          let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
+          let: "$a1" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
           (MethodResolve (go.PointerType leasingKV) "delete"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1") in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
-          do:  ("resp" <-[go.PointerType clientv3.DeleteResponse] "$r0");;;
+          do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse] "$r0");;;
           do:  ("err" <-[go.error] "$r1");;;
-          return: ((MethodResolve (go.PointerType clientv3.DeleteResponse) "OpResponse"%go (![go.PointerType clientv3.DeleteResponse] "resp")) #(), ![go.error] "err")
+          return: ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) "OpResponse"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse] "resp")) #(), ![go.error] "err")
         else
-          (if: "$sw" =⟨go.bool⟩ ((MethodResolve (go.PointerType clientv3.Op) "IsTxn"%go "op") #())
+          (if: "$sw" =⟨go.bool⟩ ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsTxn"%go "op") #())
           then
-            let: "elseOps" := (GoAlloc (go.SliceType clientv3.Op) (GoZeroVal (go.SliceType clientv3.Op) #())) in
-            let: "thenOps" := (GoAlloc (go.SliceType clientv3.Op) (GoZeroVal (go.SliceType clientv3.Op) #())) in
-            let: "cmps" := (GoAlloc (go.SliceType clientv3.Cmp) (GoZeroVal (go.SliceType clientv3.Cmp) #())) in
-            let: (("$ret0", "$ret1"), "$ret2") := ((MethodResolve (go.PointerType clientv3.Op) "Txn"%go "op") #()) in
+            let: "elseOps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) #())) in
+            let: "thenOps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) #())) in
+            let: "cmps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) #())) in
+            let: (("$ret0", "$ret1"), "$ret2") := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "Txn"%go "op") #()) in
             let: "$r0" := "$ret0" in
             let: "$r1" := "$ret1" in
             let: "$r2" := "$ret2" in
-            do:  ("cmps" <-[go.SliceType clientv3.Cmp] "$r0");;;
-            do:  ("thenOps" <-[go.SliceType clientv3.Op] "$r1");;;
-            do:  ("elseOps" <-[go.SliceType clientv3.Op] "$r2");;;
+            do:  ("cmps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "$r0");;;
+            do:  ("thenOps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r1");;;
+            do:  ("elseOps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r2");;;
             let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-            let: "resp" := (GoAlloc (go.PointerType clientv3.TxnResponse) (GoZeroVal (go.PointerType clientv3.TxnResponse) #())) in
-            let: ("$ret0", "$ret1") := ((MethodResolve clientv3.Txn "Commit"%go (let: "$a0" := (![go.SliceType clientv3.Op] "elseOps") in
-            (MethodResolve clientv3.Txn "Else"%go (let: "$a0" := (![go.SliceType clientv3.Op] "thenOps") in
-            (MethodResolve clientv3.Txn "Then"%go (let: "$a0" := (![go.SliceType clientv3.Cmp] "cmps") in
-            (MethodResolve clientv3.Txn "If"%go (let: "$a0" := (![context.Context] "ctx") in
+            let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) #())) in
+            let: ("$ret0", "$ret1") := ((MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Commit"%go (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "elseOps") in
+            (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Else"%go (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "thenOps") in
+            (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Then"%go (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "cmps") in
+            (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "If"%go (let: "$a0" := (![code.context.context.Context] "ctx") in
             (MethodResolve (go.PointerType leasingKV) "Txn"%go (![go.PointerType leasingKV] "lkv")) "$a0")) "$a0")) "$a0")) "$a0")) #()) in
             let: "$r0" := "$ret0" in
             let: "$r1" := "$ret1" in
-            do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
+            do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "$r0");;;
             do:  ("err" <-[go.error] "$r1");;;
-            return: ((MethodResolve (go.PointerType clientv3.TxnResponse) "OpResponse"%go (![go.PointerType clientv3.TxnResponse] "resp")) #(), ![go.error] "err")
+            return: ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) "OpResponse"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp")) #(), ![go.error] "err")
           else do:  #()))));;;
-    return: (CompositeLiteral clientv3.OpResponse (LiteralValue []), Convert go.untyped_nil go.error UntypedNil)).
+    return: (CompositeLiteral code.go_etcd_io.etcd.client.v3.clientv3.OpResponse (LiteralValue []), Convert go.untyped_nil go.error UntypedNil)).
 
 (* go: kv.go:117:23 *)
 Definition leasingKV__Compactⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" "ctx" "rev" "opts",
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    let: "opts" := (GoAlloc (go.SliceType clientv3.CompactOption) "opts") in
+    let: "opts" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.CompactOption) "opts") in
     let: "rev" := (GoAlloc go.int64 "rev") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    let: ("$ret0", "$ret1") := ((let: "$a0" := (![context.Context] "ctx") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (![code.context.context.Context] "ctx") in
     let: "$a1" := (![go.int64] "rev") in
-    let: "$a2" := (![go.SliceType clientv3.CompactOption] "opts") in
-    (MethodResolve clientv3.KV "Compact"%go (![clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0" "$a1" "$a2")) in
+    let: "$a2" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.CompactOption] "opts") in
+    (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.KV "Compact"%go (![code.go_etcd_io.etcd.client.v3.clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0" "$a1" "$a2")) in
     return: ("$ret0", "$ret1")).
 
 (* go: kv.go:121:23 *)
 Definition leasingKV__Txnⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" "ctx",
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    return: (Convert (go.PointerType txnLeasing) clientv3.Txn (GoAlloc txnLeasing (let: "$v0" := (let: "$a0" := (![context.Context] "ctx") in
-     (MethodResolve clientv3.KV "Txn"%go (![clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    return: (Convert (go.PointerType txnLeasing) code.go_etcd_io.etcd.client.v3.clientv3.Txn (GoAlloc txnLeasing (let: "$v0" := (let: "$a0" := (![code.context.context.Context] "ctx") in
+     (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.KV "Txn"%go (![code.go_etcd_io.etcd.client.v3.clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0") in
      let: "$v1" := (![go.PointerType leasingKV] "lkv") in
-     let: "$v2" := (![context.Context] "ctx") in
-     CompositeLiteral txnLeasing (LiteralValue [KeyedElement (Some (KeyField "Txn"%go)) (ElementExpression clientv3.Txn "$v0"); KeyedElement (Some (KeyField "lkv"%go)) (ElementExpression (go.PointerType leasingKV) "$v1"); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context "$v2")]))))).
+     let: "$v2" := (![code.context.context.Context] "ctx") in
+     CompositeLiteral txnLeasing (LiteralValue [KeyedElement (Some (KeyField "Txn"%go)) (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Txn "$v0"); KeyedElement (Some (KeyField "lkv"%go)) (ElementExpression (go.PointerType leasingKV) "$v1"); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression code.context.context.Context "$v2")]))))).
 
 (* go: kv.go:125:23 *)
 Definition leasingKV__monitorSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" <>,
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    (for: (λ: <>, ((MethodResolve context.Context "Err"%go (![context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv")))) #()) =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)); (λ: <>, #()) := λ: <>,
-      (if: Convert go.untyped_bool go.bool ((![go.PointerType concurrency.Session] (StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv"))) ≠⟨go.PointerType concurrency.Session⟩ (Convert go.untyped_nil (go.PointerType concurrency.Session) UntypedNil))
+    (for: (λ: <>, ((MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv")))) #()) =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)); (λ: <>, #()) := λ: <>,
+      (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session] (StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv"))) ≠⟨go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session) UntypedNil))
       then
-        let: "$ch0" := ((MethodResolve (go.PointerType concurrency.Session) "Done"%go (![go.PointerType concurrency.Session] (StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv")))) #()) in
-        let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv")))) #()) in
+        let: "$ch0" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session) "Done"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session] (StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv")))) #()) in
+        let: "$ch1" := ((MethodResolve code.context.context.Context "Done"%go (![code.context.context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv")))) #()) in
         SelectStmt (SelectStmtClauses None [(CommClause (RecvCase (go.StructType [
 
         ]) "$ch0") (λ: "$recvVal",
@@ -1029,7 +1029,7 @@ Definition leasingKV__monitorSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
           return: (#())
           ))])
       else do:  #());;;
-      do:  ((MethodResolve (go.PointerType sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
       let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
       ])] (StructFieldRef leasingKV "sessionc"%go (![go.PointerType leasingKV] "lkv"))) in
@@ -1045,29 +1045,29 @@ Definition leasingKV__monitorSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
         ))]);;;
       let: "$r0" := ((FuncResolve go.make1 [go.MapType go.string (go.PointerType leaseKey)] #()) #()) in
       do:  ((StructFieldRef leaseCache "entries"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv"))) <-[go.MapType go.string (go.PointerType leaseKey)] "$r0");;;
-      do:  ((MethodResolve (go.PointerType sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "s" := (GoAlloc (go.PointerType concurrency.Session) (GoZeroVal (go.PointerType concurrency.Session) #())) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![go.PointerType clientv3.Client] (StructFieldRef leasingKV "cl"%go (![go.PointerType leasingKV] "lkv"))) in
-      let: "$a1" := (![go.SliceType concurrency.SessionOption] (StructFieldRef leasingKV "sessionOpts"%go (![go.PointerType leasingKV] "lkv"))) in
-      (FuncResolve concurrency.NewSession [] #()) "$a0" "$a1") in
+      let: "s" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session) #())) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Client] (StructFieldRef leasingKV "cl"%go (![go.PointerType leasingKV] "lkv"))) in
+      let: "$a1" := (![go.SliceType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.SessionOption] (StructFieldRef leasingKV "sessionOpts"%go (![go.PointerType leasingKV] "lkv"))) in
+      (FuncResolve code.go_etcd_io.etcd.client.v3.concurrency.concurrency.NewSession [] #()) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("s" <-[go.PointerType concurrency.Session] "$r0");;;
+      do:  ("s" <-[go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then continue: #()
       else do:  #());;;
-      do:  ((MethodResolve (go.PointerType sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
-      let: "$r0" := (![go.PointerType concurrency.Session] "s") in
-      do:  ((StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv")) <-[go.PointerType concurrency.Session] "$r0");;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
+      let: "$r0" := (![go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session] "s") in
+      do:  ((StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv")) <-[go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session] "$r0");;;
       do:  (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
 
       ])] (StructFieldRef leasingKV "sessionc"%go (![go.PointerType leasingKV] "lkv"))) in
       (FuncResolve go.close [go.ChannelType go.sendrecv (go.StructType [
 
        ])] #()) "$a0");;;
-      do:  ((MethodResolve (go.PointerType sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #()));;;
+      do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #()));;;
     return: #()).
 
 (* go: kv.go:155:23 *)
@@ -1076,74 +1076,74 @@ Definition leasingKV__monitorLeaseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     with_defer: (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
     let: "rev" := (GoAlloc go.int64 "rev") in
     let: "key" := (GoAlloc go.string "key") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    let: "cancel" := (GoAlloc context.CancelFunc (GoZeroVal context.CancelFunc #())) in
-    let: "cctx" := (GoAlloc context.Context (GoZeroVal context.Context #())) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv"))) in
-    (FuncResolve context.WithCancel [] #()) "$a0") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    let: "cancel" := (GoAlloc code.context.context.CancelFunc (GoZeroVal code.context.context.CancelFunc #())) in
+    let: "cctx" := (GoAlloc code.context.context.Context (GoZeroVal code.context.context.Context #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv"))) in
+    (FuncResolve code.context.context.WithCancel [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("cctx" <-[context.Context] "$r0");;;
-    do:  ("cancel" <-[context.CancelFunc] "$r1");;;
-    do:  (let: "$f" := (![context.CancelFunc] "cancel") in
+    do:  ("cctx" <-[code.context.context.Context] "$r0");;;
+    do:  ("cancel" <-[code.context.context.CancelFunc] "$r1");;;
+    do:  (let: "$f" := (![code.context.context.CancelFunc] "cancel") in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    (for: (λ: <>, ((MethodResolve context.Context "Err"%go (![context.Context] "cctx")) #()) =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)); (λ: <>, #()) := λ: <>,
+    (for: (λ: <>, ((MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "cctx")) #()) =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)); (λ: <>, #()) := λ: <>,
       (if: Convert go.untyped_bool go.bool ((![go.int64] "rev") =⟨go.int64⟩ #(W64 0))
       then
         let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-        let: "resp" := (GoAlloc (go.PointerType clientv3.GetResponse) (GoZeroVal (go.PointerType clientv3.GetResponse) #())) in
-        let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
+        let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) #())) in
+        let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
         let: "$a1" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) +⟨go.string⟩ (![go.string] "key")) in
         let: "$a2" := #slice.nil in
-        (MethodResolve clientv3.KV "Get"%go (![clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0" "$a1" "$a2") in
+        (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.KV "Get"%go (![code.go_etcd_io.etcd.client.v3.clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0" "$a1" "$a2") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ("resp" <-[go.PointerType clientv3.GetResponse] "$r0");;;
+        do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "$r0");;;
         do:  ("err" <-[go.error] "$r1");;;
         (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
         then continue: #()
         else do:  #());;;
-        let: "$r0" := (![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.GetResponse "Header"%go (![go.PointerType clientv3.GetResponse] "resp"))))) in
+        let: "$r0" := (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "resp"))))) in
         do:  ("rev" <-[go.int64] "$r0");;;
-        (if: Convert go.untyped_bool go.bool (((let: "$a0" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "resp"))) in
-        (FuncResolve go.len [go.SliceType (go.PointerType mvccpb.KeyValue)] #()) "$a0") =⟨go.int⟩ #(W64 0)) || ((Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (StructFieldRef mvccpb.KeyValue "Value"%go (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "resp")), #(W64 0))))))) =⟨go.string⟩ #"REVOKE"%go))
+        (if: Convert go.untyped_bool go.bool (((let: "$a0" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "resp"))) in
+        (FuncResolve go.len [go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] #()) "$a0") =⟨go.int⟩ #(W64 0)) || ((Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Value"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "resp")), #(W64 0))))))) =⟨go.string⟩ #"REVOKE"%go))
         then
-          do:  (let: "$a0" := (![context.Context] "cctx") in
+          do:  (let: "$a0" := (![code.context.context.Context] "cctx") in
           let: "$a1" := (![go.string] "key") in
           let: "$a2" := (![go.int64] "rev") in
           (MethodResolve (go.PointerType leasingKV) "rescind"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1" "$a2");;;
           return: (#())
         else do:  #())
       else do:  #());;;
-      let: "wch" := (GoAlloc clientv3.WatchChan (GoZeroVal clientv3.WatchChan #())) in
-      let: "$r0" := (let: "$a0" := (![context.Context] "cctx") in
+      let: "wch" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.WatchChan (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.WatchChan #())) in
+      let: "$r0" := (let: "$a0" := (![code.context.context.Context] "cctx") in
       let: "$a1" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) +⟨go.string⟩ (![go.string] "key")) in
       let: "$a2" := ((let: "$sl0" := (let: "$a0" := ((![go.int64] "rev") +⟨go.int64⟩ #(W64 1)) in
-      (FuncResolve clientv3.WithRev [] #()) "$a0") in
-      CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption "$sl0")]))) in
-      (MethodResolve (go.PointerType clientv3.Client) "Watch"%go (![go.PointerType clientv3.Client] (StructFieldRef leasingKV "cl"%go (![go.PointerType leasingKV] "lkv")))) "$a0" "$a1" "$a2") in
-      do:  ("wch" <-[clientv3.WatchChan] "$r0");;;
-      let: "$range" := (![clientv3.WatchChan] "wch") in
-      (let: "resp" := (GoAlloc clientv3.WatchResponse (GoZeroVal clientv3.WatchResponse #())) in
-      chan.for_range clientv3.WatchResponse "$range" (λ: "$key",
-        do:  ("resp" <-[clientv3.WatchResponse] "$key");;;
-        let: "$range" := (![go.SliceType (go.PointerType clientv3.Event)] (StructFieldRef clientv3.WatchResponse "Events"%go "resp")) in
-        (let: "ev" := (GoAlloc (go.PointerType clientv3.Event) (GoZeroVal (go.PointerType clientv3.Event) #())) in
-        slice.for_range (go.PointerType clientv3.Event) "$range" (λ: "$key" "$value",
-          do:  ("ev" <-[go.PointerType clientv3.Event] "$value");;;
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.WithRev [] #()) "$a0") in
+      CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.OpOption "$sl0")]))) in
+      (MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Client) "Watch"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Client] (StructFieldRef leasingKV "cl"%go (![go.PointerType leasingKV] "lkv")))) "$a0" "$a1" "$a2") in
+      do:  ("wch" <-[code.go_etcd_io.etcd.client.v3.clientv3.WatchChan] "$r0");;;
+      let: "$range" := (![code.go_etcd_io.etcd.client.v3.clientv3.WatchChan] "wch") in
+      (let: "resp" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.WatchResponse (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.WatchResponse #())) in
+      chan.for_range code.go_etcd_io.etcd.client.v3.clientv3.WatchResponse "$range" (λ: "$key",
+        do:  ("resp" <-[code.go_etcd_io.etcd.client.v3.clientv3.WatchResponse] "$key");;;
+        let: "$range" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Event)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.WatchResponse "Events"%go "resp")) in
+        (let: "ev" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Event) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Event) #())) in
+        slice.for_range (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Event) "$range" (λ: "$key" "$value",
+          do:  ("ev" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Event] "$value");;;
           do:  "$key";;;
-          (if: Convert go.untyped_bool go.bool ((Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (StructFieldRef mvccpb.KeyValue "Value"%go (![go.PointerType mvccpb.KeyValue] (StructFieldRef clientv3.Event "Kv"%go (![go.PointerType clientv3.Event] "ev")))))) ≠⟨go.string⟩ #"REVOKE"%go)
+          (if: Convert go.untyped_bool go.bool ((Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Value"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.Event "Kv"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Event] "ev")))))) ≠⟨go.string⟩ #"REVOKE"%go)
           then continue: #()
           else do:  #());;;
-          (if: Convert go.untyped_bool go.bool ((![go.int64] (StructFieldRef mvccpb.KeyValue "Lease"%go (![go.PointerType mvccpb.KeyValue] (StructFieldRef clientv3.Event "Kv"%go (![go.PointerType clientv3.Event] "ev"))))) =⟨clientv3.LeaseID⟩ ((MethodResolve (go.PointerType leasingKV) "leaseID"%go (![go.PointerType leasingKV] "lkv")) #()))
+          (if: Convert go.untyped_bool go.bool ((![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Lease"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.Event "Kv"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Event] "ev"))))) =⟨code.go_etcd_io.etcd.client.v3.clientv3.LeaseID⟩ ((MethodResolve (go.PointerType leasingKV) "leaseID"%go (![go.PointerType leasingKV] "lkv")) #()))
           then
-            do:  (let: "$a0" := (![context.Context] "cctx") in
+            do:  (let: "$a0" := (![code.context.context.Context] "cctx") in
             let: "$a1" := (![go.string] "key") in
-            let: "$a2" := (![go.int64] (StructFieldRef mvccpb.KeyValue "ModRevision"%go (![go.PointerType mvccpb.KeyValue] (StructFieldRef clientv3.Event "Kv"%go (![go.PointerType clientv3.Event] "ev"))))) in
+            let: "$a2" := (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "ModRevision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.Event "Kv"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Event] "ev"))))) in
             (MethodResolve (go.PointerType leasingKV) "rescind"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1" "$a2")
           else do:  #());;;
           return: (#())))));;;
@@ -1159,31 +1159,31 @@ Definition leasingKV__rescindⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
     let: "rev" := (GoAlloc go.int64 "rev") in
     let: "key" := (GoAlloc go.string "key") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
     (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.string] "key") in
     (MethodResolve (go.PointerType leaseCache) "Evict"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv"))) "$a0") >⟨go.int64⟩ (![go.int64] "rev"))
     then return: (#())
     else do:  #());;;
-    let: "cmp" := (GoAlloc clientv3.Cmp (GoZeroVal clientv3.Cmp #())) in
+    let: "cmp" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Cmp (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Cmp #())) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) +⟨go.string⟩ (![go.string] "key")) in
-    (FuncResolve clientv3.CreateRevision [] #()) "$a0") in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.CreateRevision [] #()) "$a0") in
     let: "$a1" := #"<"%go in
     let: "$a2" := (Convert go.int64 go.any (![go.int64] "rev")) in
-    (FuncResolve clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
-    do:  ("cmp" <-[clientv3.Cmp] "$r0");;;
-    let: "op" := (GoAlloc clientv3.Op (GoZeroVal clientv3.Op #())) in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
+    do:  ("cmp" <-[code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "$r0");;;
+    let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Op #())) in
     let: "$r0" := (let: "$a0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) +⟨go.string⟩ (![go.string] "key")) in
     let: "$a1" := #slice.nil in
-    (FuncResolve clientv3.OpDelete [] #()) "$a0" "$a1") in
-    do:  ("op" <-[clientv3.Op] "$r0");;;
-    (for: (λ: <>, ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #()) =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)); (λ: <>, #()) := λ: <>,
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.OpDelete [] #()) "$a0" "$a1") in
+    do:  ("op" <-[code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0");;;
+    (for: (λ: <>, ((MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "ctx")) #()) =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)); (λ: <>, #()) := λ: <>,
       (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: ("$ret0", "$ret1") := ((MethodResolve clientv3.Txn "Commit"%go (let: "$a0" := ((let: "$sl0" := (![clientv3.Op] "op") in
-      CompositeLiteral (go.SliceType clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression clientv3.Op "$sl0")]))) in
-      (MethodResolve clientv3.Txn "Then"%go (let: "$a0" := ((let: "$sl0" := (![clientv3.Cmp] "cmp") in
-      CompositeLiteral (go.SliceType clientv3.Cmp) (LiteralValue [KeyedElement None (ElementExpression clientv3.Cmp "$sl0")]))) in
-      (MethodResolve clientv3.Txn "If"%go (let: "$a0" := (![context.Context] "ctx") in
-      (MethodResolve clientv3.KV "Txn"%go (![clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0")) "$a0")) "$a0")) #()) in
+      let: ("$ret0", "$ret1") := ((MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Commit"%go (let: "$a0" := ((let: "$sl0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
+      CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Op "$sl0")]))) in
+      (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Then"%go (let: "$a0" := ((let: "$sl0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "cmp") in
+      CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Cmp "$sl0")]))) in
+      (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "If"%go (let: "$a0" := (![code.context.context.Context] "ctx") in
+      (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.KV "Txn"%go (![code.go_etcd_io.etcd.client.v3.clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0")) "$a0")) "$a0")) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
@@ -1199,51 +1199,51 @@ Definition leasingKV__waitRescindⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
     with_defer: (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
     let: "rev" := (GoAlloc go.int64 "rev") in
     let: "key" := (GoAlloc go.string "key") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    let: "cancel" := (GoAlloc context.CancelFunc (GoZeroVal context.CancelFunc #())) in
-    let: "cctx" := (GoAlloc context.Context (GoZeroVal context.Context #())) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
-    (FuncResolve context.WithCancel [] #()) "$a0") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    let: "cancel" := (GoAlloc code.context.context.CancelFunc (GoZeroVal code.context.context.CancelFunc #())) in
+    let: "cctx" := (GoAlloc code.context.context.Context (GoZeroVal code.context.context.Context #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
+    (FuncResolve code.context.context.WithCancel [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("cctx" <-[context.Context] "$r0");;;
-    do:  ("cancel" <-[context.CancelFunc] "$r1");;;
-    do:  (let: "$f" := (![context.CancelFunc] "cancel") in
+    do:  ("cctx" <-[code.context.context.Context] "$r0");;;
+    do:  ("cancel" <-[code.context.context.CancelFunc] "$r1");;;
+    do:  (let: "$f" := (![code.context.context.CancelFunc] "cancel") in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "wch" := (GoAlloc clientv3.WatchChan (GoZeroVal clientv3.WatchChan #())) in
-    let: "$r0" := (let: "$a0" := (![context.Context] "cctx") in
+    let: "wch" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.WatchChan (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.WatchChan #())) in
+    let: "$r0" := (let: "$a0" := (![code.context.context.Context] "cctx") in
     let: "$a1" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) +⟨go.string⟩ (![go.string] "key")) in
     let: "$a2" := ((let: "$sl0" := (let: "$a0" := ((![go.int64] "rev") +⟨go.int64⟩ #(W64 1)) in
-    (FuncResolve clientv3.WithRev [] #()) "$a0") in
-    CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption "$sl0")]))) in
-    (MethodResolve (go.PointerType clientv3.Client) "Watch"%go (![go.PointerType clientv3.Client] (StructFieldRef leasingKV "cl"%go (![go.PointerType leasingKV] "lkv")))) "$a0" "$a1" "$a2") in
-    do:  ("wch" <-[clientv3.WatchChan] "$r0");;;
-    let: "$range" := (![clientv3.WatchChan] "wch") in
-    (let: "resp" := (GoAlloc clientv3.WatchResponse (GoZeroVal clientv3.WatchResponse #())) in
-    chan.for_range clientv3.WatchResponse "$range" (λ: "$key",
-      do:  ("resp" <-[clientv3.WatchResponse] "$key");;;
-      let: "$range" := (![go.SliceType (go.PointerType clientv3.Event)] (StructFieldRef clientv3.WatchResponse "Events"%go "resp")) in
-      (let: "ev" := (GoAlloc (go.PointerType clientv3.Event) (GoZeroVal (go.PointerType clientv3.Event) #())) in
-      slice.for_range (go.PointerType clientv3.Event) "$range" (λ: "$key" "$value",
-        do:  ("ev" <-[go.PointerType clientv3.Event] "$value");;;
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.WithRev [] #()) "$a0") in
+    CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.OpOption "$sl0")]))) in
+    (MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Client) "Watch"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Client] (StructFieldRef leasingKV "cl"%go (![go.PointerType leasingKV] "lkv")))) "$a0" "$a1" "$a2") in
+    do:  ("wch" <-[code.go_etcd_io.etcd.client.v3.clientv3.WatchChan] "$r0");;;
+    let: "$range" := (![code.go_etcd_io.etcd.client.v3.clientv3.WatchChan] "wch") in
+    (let: "resp" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.WatchResponse (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.WatchResponse #())) in
+    chan.for_range code.go_etcd_io.etcd.client.v3.clientv3.WatchResponse "$range" (λ: "$key",
+      do:  ("resp" <-[code.go_etcd_io.etcd.client.v3.clientv3.WatchResponse] "$key");;;
+      let: "$range" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Event)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.WatchResponse "Events"%go "resp")) in
+      (let: "ev" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Event) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Event) #())) in
+      slice.for_range (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Event) "$range" (λ: "$key" "$value",
+        do:  ("ev" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Event] "$value");;;
         do:  "$key";;;
-        (if: Convert go.untyped_bool go.bool ((![mvccpb.Event_EventType] (StructFieldRef clientv3.Event "Type"%go (![go.PointerType clientv3.Event] "ev"))) =⟨mvccpb.Event_EventType⟩ clientv3.EventTypeDelete)
-        then return: ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #())
+        (if: Convert go.untyped_bool go.bool ((![code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.Event_EventType] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.Event "Type"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Event] "ev"))) =⟨code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.Event_EventType⟩ code.go_etcd_io.etcd.client.v3.clientv3.EventTypeDelete)
+        then return: ((MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "ctx")) #())
         else do:  #())))));;;
-    return: ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #())).
+    return: ((MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "ctx")) #())).
 
 (* go: kv.go:214:23 *)
 Definition leasingKV__tryModifyOpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" "ctx" "op",
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    let: "op" := (GoAlloc clientv3.Op "op") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
+    let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op "op") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
     let: "key" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "KeyBytes"%go "op") #())) in
+    let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "KeyBytes"%go "op") #())) in
     do:  ("key" <-[go.string] "$r0");;;
     let: "rev" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
     let: "wc" := (GoAlloc (go.ChannelType go.sendonly (go.StructType [
@@ -1259,24 +1259,24 @@ Definition leasingKV__tryModifyOpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
 
     ])] "$r0");;;
     do:  ("rev" <-[go.int64] "$r1");;;
-    let: "cmp" := (GoAlloc clientv3.Cmp (GoZeroVal clientv3.Cmp #())) in
+    let: "cmp" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Cmp (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Cmp #())) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) +⟨go.string⟩ (![go.string] "key")) in
-    (FuncResolve clientv3.CreateRevision [] #()) "$a0") in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.CreateRevision [] #()) "$a0") in
     let: "$a1" := #"<"%go in
     let: "$a2" := (Convert go.int64 go.any ((![go.int64] "rev") +⟨go.int64⟩ #(W64 1))) in
-    (FuncResolve clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
-    do:  ("cmp" <-[clientv3.Cmp] "$r0");;;
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
+    do:  ("cmp" <-[code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "$r0");;;
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "resp" := (GoAlloc (go.PointerType clientv3.TxnResponse) (GoZeroVal (go.PointerType clientv3.TxnResponse) #())) in
-    let: ("$ret0", "$ret1") := ((MethodResolve clientv3.Txn "Commit"%go (let: "$a0" := ((let: "$sl0" := (![clientv3.Op] "op") in
-    CompositeLiteral (go.SliceType clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression clientv3.Op "$sl0")]))) in
-    (MethodResolve clientv3.Txn "Then"%go (let: "$a0" := ((let: "$sl0" := (![clientv3.Cmp] "cmp") in
-    CompositeLiteral (go.SliceType clientv3.Cmp) (LiteralValue [KeyedElement None (ElementExpression clientv3.Cmp "$sl0")]))) in
-    (MethodResolve clientv3.Txn "If"%go (let: "$a0" := (![context.Context] "ctx") in
-    (MethodResolve clientv3.KV "Txn"%go (![clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0")) "$a0")) "$a0")) #()) in
+    let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) #())) in
+    let: ("$ret0", "$ret1") := ((MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Commit"%go (let: "$a0" := ((let: "$sl0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
+    CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Op "$sl0")]))) in
+    (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Then"%go (let: "$a0" := ((let: "$sl0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "cmp") in
+    CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Cmp "$sl0")]))) in
+    (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "If"%go (let: "$a0" := (![code.context.context.Context] "ctx") in
+    (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.KV "Txn"%go (![code.go_etcd_io.etcd.client.v3.clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0")) "$a0")) "$a0")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
+    do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
     let: "$sw" := #true in
     (if: "$sw" =⟨go.bool⟩ ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
@@ -1298,11 +1298,11 @@ Definition leasingKV__tryModifyOpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
 
          ])] #()) "$a0")
       else do:  #());;;
-      return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, Convert go.untyped_nil (go.ChannelType go.sendonly (go.StructType [
+      return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) UntypedNil, Convert go.untyped_nil (go.ChannelType go.sendonly (go.StructType [
 
        ])) UntypedNil, ![go.error] "err")
     else
-      (if: "$sw" =⟨go.bool⟩ (⟨go.bool⟩! (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))))
+      (if: "$sw" =⟨go.bool⟩ (⟨go.bool⟩! (![go.bool] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Succeeded"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))))
       then
         (if: Convert go.untyped_bool go.bool ((![go.ChannelType go.sendonly (go.StructType [
 
@@ -1319,11 +1319,11 @@ Definition leasingKV__tryModifyOpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
 
            ])] #()) "$a0")
         else do:  #());;;
-        return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, Convert go.untyped_nil (go.ChannelType go.sendonly (go.StructType [
+        return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) UntypedNil, Convert go.untyped_nil (go.ChannelType go.sendonly (go.StructType [
 
          ])) UntypedNil, ![go.error] "err")
       else do:  #()));;;
-    return: (![go.PointerType clientv3.TxnResponse] "resp", ![go.ChannelType go.sendonly (go.StructType [
+    return: (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp", ![go.ChannelType go.sendonly (go.StructType [
 
      ])] "wc", Convert go.untyped_nil go.error UntypedNil)).
 
@@ -1331,32 +1331,32 @@ Definition leasingKV__tryModifyOpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
 Definition leasingKV__putⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" "ctx" "op",
     exception_do (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "pr" := (GoAlloc (go.PointerType clientv3.PutResponse) (GoZeroVal (go.PointerType clientv3.PutResponse) #())) in
+    let: "pr" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.PutResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.PutResponse) #())) in
     let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    let: "op" := (GoAlloc clientv3.Op "op") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
+    let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op "op") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
     (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "$r0" := (let: "$a0" := (![context.Context] "ctx") in
+    let: "$r0" := (let: "$a0" := (![code.context.context.Context] "ctx") in
     (MethodResolve (go.PointerType leasingKV) "waitSession"%go (![go.PointerType leasingKV] "lkv")) "$a0") in
     do:  ("err" <-[go.error] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-    then return: (Convert go.untyped_nil (go.PointerType clientv3.PutResponse) UntypedNil, ![go.error] "err")
+    then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.PutResponse) UntypedNil, ![go.error] "err")
     else do:  #()));;;
-    (for: (λ: <>, ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #()) =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)); (λ: <>, #()) := λ: <>,
+    (for: (λ: <>, ((MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "ctx")) #()) =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)); (λ: <>, #()) := λ: <>,
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
       let: "wc" := (GoAlloc (go.ChannelType go.sendonly (go.StructType [
 
       ])) (GoZeroVal (go.ChannelType go.sendonly (go.StructType [
 
       ])) #())) in
-      let: "resp" := (GoAlloc (go.PointerType clientv3.TxnResponse) (GoZeroVal (go.PointerType clientv3.TxnResponse) #())) in
-      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![context.Context] "ctx") in
-      let: "$a1" := (![clientv3.Op] "op") in
+      let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) #())) in
+      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![code.context.context.Context] "ctx") in
+      let: "$a1" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
       (MethodResolve (go.PointerType leasingKV) "tryModifyOp"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
-      do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
+      do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "$r0");;;
       do:  ("wc" <-[go.ChannelType go.sendonly (go.StructType [
 
       ])] "$r1");;;
@@ -1369,30 +1369,30 @@ Definition leasingKV__putⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
 
       ])) UntypedNil)))
       then
-        let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
-        let: "$a1" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "KeyBytes"%go "op") #())) in
-        let: "$a2" := (![clientv3.Op] "op") in
+        let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
+        let: "$a1" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "KeyBytes"%go "op") #())) in
+        let: "$a2" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
         (MethodResolve (go.PointerType leasingKV) "revoke"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1" "$a2") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
+        do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "$r0");;;
         do:  ("err" <-[go.error] "$r1")
       else do:  #());;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-      then return: (Convert go.untyped_nil (go.PointerType clientv3.PutResponse) UntypedNil, ![go.error] "err")
+      then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.PutResponse) UntypedNil, ![go.error] "err")
       else do:  #());;;
-      (if: ![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))
+      (if: ![go.bool] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Succeeded"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))
       then
-        do:  ((MethodResolve (go.PointerType sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
-        do:  (let: "$a0" := ((MethodResolve (go.PointerType clientv3.Op) "KeyBytes"%go "op") #()) in
-        let: "$a1" := ((MethodResolve (go.PointerType clientv3.Op) "ValueBytes"%go "op") #()) in
-        let: "$a2" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.TxnResponse "Header"%go (![go.PointerType clientv3.TxnResponse] "resp"))) in
+        do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
+        do:  (let: "$a0" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "KeyBytes"%go "op") #()) in
+        let: "$a1" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "ValueBytes"%go "op") #()) in
+        let: "$a2" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))) in
         (MethodResolve (go.PointerType leaseCache) "Update"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv"))) "$a0" "$a1" "$a2");;;
-        do:  ((MethodResolve (go.PointerType sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
-        let: "$r0" := (Convert (go.PointerType etcdserverpb.PutResponse) (go.PointerType clientv3.PutResponse) ((MethodResolve (go.PointerType etcdserverpb.ResponseOp) "GetResponsePut"%go (![go.PointerType etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] (StructFieldRef clientv3.TxnResponse "Responses"%go (![go.PointerType clientv3.TxnResponse] "resp")), #(W64 0))))) #())) in
-        do:  ("pr" <-[go.PointerType clientv3.PutResponse] "$r0");;;
-        let: "$r0" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.TxnResponse "Header"%go (![go.PointerType clientv3.TxnResponse] "resp"))) in
-        do:  ((StructFieldRef clientv3.PutResponse "Header"%go (![go.PointerType clientv3.PutResponse] "pr")) <-[go.PointerType etcdserverpb.ResponseHeader] "$r0")
+        do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
+        let: "$r0" := (Convert (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutResponse) (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.PutResponse) ((MethodResolve (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp) "GetResponsePut"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Responses"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp")), #(W64 0))))) #())) in
+        do:  ("pr" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.PutResponse] "$r0");;;
+        let: "$r0" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))) in
+        do:  ((StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.PutResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.PutResponse] "pr")) <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "$r0")
       else do:  #());;;
       (if: Convert go.untyped_bool go.bool ((![go.ChannelType go.sendonly (go.StructType [
 
@@ -1409,198 +1409,198 @@ Definition leasingKV__putⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
 
          ])] #()) "$a0")
       else do:  #());;;
-      (if: ![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))
-      then return: (![go.PointerType clientv3.PutResponse] "pr", Convert go.untyped_nil go.error UntypedNil)
+      (if: ![go.bool] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Succeeded"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))
+      then return: (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.PutResponse] "pr", Convert go.untyped_nil go.error UntypedNil)
       else do:  #()));;;
-    return: (Convert go.untyped_nil (go.PointerType clientv3.PutResponse) UntypedNil, (MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #())).
+    return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.PutResponse) UntypedNil, (MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "ctx")) #())).
 
 (* go: kv.go:265:23 *)
 Definition leasingKV__acquireⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" "ctx" "key" "op",
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    let: "op" := (GoAlloc clientv3.Op "op") in
+    let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op "op") in
     let: "key" := (GoAlloc go.string "key") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    (for: (λ: <>, ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #()) =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)); (λ: <>, #()) := λ: <>,
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    (for: (λ: <>, ((MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "ctx")) #()) =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)); (λ: <>, #()) := λ: <>,
       (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "$r0" := (let: "$a0" := (![context.Context] "ctx") in
+      let: "$r0" := (let: "$a0" := (![code.context.context.Context] "ctx") in
       (MethodResolve (go.PointerType leasingKV) "waitSession"%go (![go.PointerType leasingKV] "lkv")) "$a0") in
       do:  ("err" <-[go.error] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-      then return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, ![go.error] "err")
+      then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) UntypedNil, ![go.error] "err")
       else do:  #()));;;
-      let: "lcmp" := (GoAlloc clientv3.Cmp (GoZeroVal clientv3.Cmp #())) in
+      let: "lcmp" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Cmp (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Cmp #())) in
       let: "$r0" := (let: "$v0" := (Convert go.string (go.SliceType go.byte) (![go.string] "key")) in
-      let: "$v1" := etcdserverpb.Compare_LEASE in
-      CompositeLiteral clientv3.Cmp (LiteralValue [KeyedElement (Some (KeyField "Key"%go)) (ElementExpression (go.SliceType go.byte) "$v0"); KeyedElement (Some (KeyField "Target"%go)) (ElementExpression etcdserverpb.Compare_CompareTarget "$v1")])) in
-      do:  ("lcmp" <-[clientv3.Cmp] "$r0");;;
+      let: "$v1" := code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_LEASE in
+      CompositeLiteral code.go_etcd_io.etcd.client.v3.clientv3.Cmp (LiteralValue [KeyedElement (Some (KeyField "Key"%go)) (ElementExpression (go.SliceType go.byte) "$v0"); KeyedElement (Some (KeyField "Target"%go)) (ElementExpression code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CompareTarget "$v1")])) in
+      do:  ("lcmp" <-[code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "$r0");;;
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "resp" := (GoAlloc (go.PointerType clientv3.TxnResponse) (GoZeroVal (go.PointerType clientv3.TxnResponse) #())) in
-      let: ("$ret0", "$ret1") := ((MethodResolve clientv3.Txn "Commit"%go (let: "$a0" := ((let: "$sl0" := (![clientv3.Op] "op") in
+      let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) #())) in
+      let: ("$ret0", "$ret1") := ((MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Commit"%go (let: "$a0" := ((let: "$sl0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
       let: "$sl1" := (let: "$a0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) +⟨go.string⟩ (![go.string] "key")) in
       let: "$a1" := #slice.nil in
-      (FuncResolve clientv3.OpGet [] #()) "$a0" "$a1") in
-      CompositeLiteral (go.SliceType clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression clientv3.Op "$sl0"); KeyedElement None (ElementExpression clientv3.Op "$sl1")]))) in
-      (MethodResolve clientv3.Txn "Else"%go (let: "$a0" := ((let: "$sl0" := (![clientv3.Op] "op") in
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.OpGet [] #()) "$a0" "$a1") in
+      CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Op "$sl0"); KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Op "$sl1")]))) in
+      (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Else"%go (let: "$a0" := ((let: "$sl0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
       let: "$sl1" := (let: "$a0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) +⟨go.string⟩ (![go.string] "key")) in
       let: "$a1" := #""%go in
       let: "$a2" := ((let: "$sl0" := (let: "$a0" := ((MethodResolve (go.PointerType leasingKV) "leaseID"%go (![go.PointerType leasingKV] "lkv")) #()) in
-      (FuncResolve clientv3.WithLease [] #()) "$a0") in
-      CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption "$sl0")]))) in
-      (FuncResolve clientv3.OpPut [] #()) "$a0" "$a1" "$a2") in
-      CompositeLiteral (go.SliceType clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression clientv3.Op "$sl0"); KeyedElement None (ElementExpression clientv3.Op "$sl1")]))) in
-      (MethodResolve clientv3.Txn "Then"%go (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (let: "$a0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) +⟨go.string⟩ (![go.string] "key")) in
-      (FuncResolve clientv3.CreateRevision [] #()) "$a0") in
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.WithLease [] #()) "$a0") in
+      CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.OpOption "$sl0")]))) in
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.OpPut [] #()) "$a0" "$a1" "$a2") in
+      CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Op "$sl0"); KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Op "$sl1")]))) in
+      (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Then"%go (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (let: "$a0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) +⟨go.string⟩ (![go.string] "key")) in
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.CreateRevision [] #()) "$a0") in
       let: "$a1" := #"="%go in
       let: "$a2" := (Convert go.int go.any #(W64 0)) in
-      (FuncResolve clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
-      let: "$sl1" := (let: "$a0" := (![clientv3.Cmp] "lcmp") in
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
+      let: "$sl1" := (let: "$a0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "lcmp") in
       let: "$a1" := #"="%go in
       let: "$a2" := (Convert go.int go.any #(W64 0)) in
-      (FuncResolve clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
-      CompositeLiteral (go.SliceType clientv3.Cmp) (LiteralValue [KeyedElement None (ElementExpression clientv3.Cmp "$sl0"); KeyedElement None (ElementExpression clientv3.Cmp "$sl1")]))) in
-      (MethodResolve clientv3.Txn "If"%go (let: "$a0" := (![context.Context] "ctx") in
-      (MethodResolve clientv3.KV "Txn"%go (![clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0")) "$a0")) "$a0")) "$a0")) #()) in
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
+      CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Cmp "$sl0"); KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Cmp "$sl1")]))) in
+      (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "If"%go (let: "$a0" := (![code.context.context.Context] "ctx") in
+      (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.KV "Txn"%go (![code.go_etcd_io.etcd.client.v3.clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0")) "$a0")) "$a0")) "$a0")) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
+      do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then
-        (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))))
+        (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Succeeded"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))))
         then
-          let: "kvs" := (GoAlloc (go.SliceType (go.PointerType mvccpb.KeyValue)) (GoZeroVal (go.SliceType (go.PointerType mvccpb.KeyValue)) #())) in
-          let: "$r0" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef etcdserverpb.RangeResponse "Kvs"%go ((MethodResolve (go.PointerType etcdserverpb.ResponseOp) "GetResponseRange"%go (![go.PointerType etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] (StructFieldRef clientv3.TxnResponse "Responses"%go (![go.PointerType clientv3.TxnResponse] "resp")), #(W64 1))))) #()))) in
-          do:  ("kvs" <-[go.SliceType (go.PointerType mvccpb.KeyValue)] "$r0");;;
-          let: "$r0" := (((let: "$a0" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] "kvs") in
-          (FuncResolve go.len [go.SliceType (go.PointerType mvccpb.KeyValue)] #()) "$a0") >⟨go.int⟩ #(W64 0)) && ((![go.int64] (StructFieldRef mvccpb.KeyValue "Lease"%go (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] "kvs", #(W64 0)))))) =⟨clientv3.LeaseID⟩ ((MethodResolve (go.PointerType leasingKV) "leaseID"%go (![go.PointerType leasingKV] "lkv")) #()))) in
-          do:  ((StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp")) <-[go.bool] "$r0")
+          let: "kvs" := (GoAlloc (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (GoZeroVal (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) #())) in
+          let: "$r0" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeResponse "Kvs"%go ((MethodResolve (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp) "GetResponseRange"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Responses"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp")), #(W64 1))))) #()))) in
+          do:  ("kvs" <-[go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] "$r0");;;
+          let: "$r0" := (((let: "$a0" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] "kvs") in
+          (FuncResolve go.len [go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] #()) "$a0") >⟨go.int⟩ #(W64 0)) && ((![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Lease"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] "kvs", #(W64 0)))))) =⟨code.go_etcd_io.etcd.client.v3.clientv3.LeaseID⟩ ((MethodResolve (go.PointerType leasingKV) "leaseID"%go (![go.PointerType leasingKV] "lkv")) #()))) in
+          do:  ((StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Succeeded"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp")) <-[go.bool] "$r0")
         else do:  #());;;
-        return: (![go.PointerType clientv3.TxnResponse] "resp", Convert go.untyped_nil go.error UntypedNil)
+        return: (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp", Convert go.untyped_nil go.error UntypedNil)
       else do:  #());;;
-      let: "serverErr" := (GoAlloc rpctypes.EtcdError (GoZeroVal rpctypes.EtcdError #())) in
+      let: "serverErr" := (GoAlloc code.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.rpctypes.EtcdError (GoZeroVal code.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.rpctypes.EtcdError #())) in
       (if: let: "$a0" := (![go.error] "err") in
-      let: "$a1" := (Convert (go.PointerType rpctypes.EtcdError) go.any "serverErr") in
-      (FuncResolve errors.As [] #()) "$a0" "$a1"
-      then return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, ![go.error] "err")
+      let: "$a1" := (Convert (go.PointerType code.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.rpctypes.EtcdError) go.any "serverErr") in
+      (FuncResolve code.errors.errors.As [] #()) "$a0" "$a1"
+      then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) UntypedNil, ![go.error] "err")
       else do:  #());;;
       (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-      let: "ev" := (GoAlloc (go.PointerType status.Status) (GoZeroVal (go.PointerType status.Status) #())) in
+      let: "ev" := (GoAlloc (go.PointerType code.google_golang_org.grpc.status.status.Status) (GoZeroVal (go.PointerType code.google_golang_org.grpc.status.status.Status) #())) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![go.error] "err") in
-      (FuncResolve status.FromError [] #()) "$a0") in
+      (FuncResolve code.google_golang_org.grpc.status.status.FromError [] #()) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("ev" <-[go.PointerType status.Status] "$r0");;;
+      do:  ("ev" <-[go.PointerType code.google_golang_org.grpc.status.status.Status] "$r0");;;
       do:  ("ok" <-[go.bool] "$r1");;;
-      (if: (![go.bool] "ok") && (((MethodResolve (go.PointerType status.Status) "Code"%go (![go.PointerType status.Status] "ev")) #()) ≠⟨codes.Code⟩ codes.Unavailable)
-      then return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, ![go.error] "err")
+      (if: (![go.bool] "ok") && (((MethodResolve (go.PointerType code.google_golang_org.grpc.status.status.Status) "Code"%go (![go.PointerType code.google_golang_org.grpc.status.status.Status] "ev")) #()) ≠⟨code.google_golang_org.grpc.codes.codes.Code⟩ code.google_golang_org.grpc.codes.codes.Unavailable)
+      then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) UntypedNil, ![go.error] "err")
       else do:  #())));;;
-    return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, (MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #())).
+    return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) UntypedNil, (MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "ctx")) #())).
 
 (* go: kv.go:301:23 *)
 Definition leasingKV__getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" "ctx" "op",
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    let: "op" := (GoAlloc clientv3.Op "op") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    let: "do" := (GoAlloc (go.FunctionType (go.Signature [] false [go.PointerType clientv3.GetResponse; go.error])) (GoZeroVal (go.FunctionType (go.Signature [] false [go.PointerType clientv3.GetResponse; go.error])) #())) in
+    let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op "op") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    let: "do" := (GoAlloc (go.FunctionType (go.Signature [] false [go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse; go.error])) (GoZeroVal (go.FunctionType (go.Signature [] false [go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse; go.error])) #())) in
     let: "$r0" := (λ: <>,
       exception_do (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "r" := (GoAlloc clientv3.OpResponse (GoZeroVal clientv3.OpResponse #())) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
-      let: "$a1" := (![clientv3.Op] "op") in
-      (MethodResolve clientv3.KV "Do"%go (![clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0" "$a1") in
+      let: "r" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.OpResponse (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.OpResponse #())) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
+      let: "$a1" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
+      (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.KV "Do"%go (![code.go_etcd_io.etcd.client.v3.clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("r" <-[clientv3.OpResponse] "$r0");;;
+      do:  ("r" <-[code.go_etcd_io.etcd.client.v3.clientv3.OpResponse] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
-      return: ((MethodResolve (go.PointerType clientv3.OpResponse) "Get"%go "r") #(), ![go.error] "err"))
+      return: ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.OpResponse) "Get"%go "r") #(), ![go.error] "err"))
       ) in
-    do:  ("do" <-[go.FunctionType (go.Signature [] false [go.PointerType clientv3.GetResponse; go.error])] "$r0");;;
+    do:  ("do" <-[go.FunctionType (go.Signature [] false [go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse; go.error])] "$r0");;;
     (if: (⟨go.bool⟩! ((MethodResolve (go.PointerType leasingKV) "readySession"%go (![go.PointerType leasingKV] "lkv")) #()))
     then
-      let: ("$ret0", "$ret1") := (((![go.FunctionType (go.Signature [] false [go.PointerType clientv3.GetResponse; go.error])] "do") #())) in
+      let: ("$ret0", "$ret1") := (((![go.FunctionType (go.Signature [] false [go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse; go.error])] "do") #())) in
       return: ("$ret0", "$ret1")
     else do:  #());;;
     (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "resp" := (GoAlloc (go.PointerType clientv3.GetResponse) (GoZeroVal (go.PointerType clientv3.GetResponse) #())) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
-    let: "$a1" := (![clientv3.Op] "op") in
+    let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
+    let: "$a1" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
     (MethodResolve (go.PointerType leaseCache) "Get"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv"))) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("resp" <-[go.PointerType clientv3.GetResponse] "$r0");;;
+    do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
-    (if: Convert go.untyped_bool go.bool ((![go.PointerType clientv3.GetResponse] "resp") ≠⟨go.PointerType clientv3.GetResponse⟩ (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil))
-    then return: (![go.PointerType clientv3.GetResponse] "resp", Convert go.untyped_nil go.error UntypedNil)
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "resp") ≠⟨go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) UntypedNil))
+    then return: (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "resp", Convert go.untyped_nil go.error UntypedNil)
     else
-      (if: (⟨go.bool⟩! (![go.bool] "ok")) || ((MethodResolve (go.PointerType clientv3.Op) "IsSerializable"%go "op") #())
+      (if: (⟨go.bool⟩! (![go.bool] "ok")) || ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsSerializable"%go "op") #())
       then
-        let: ("$ret0", "$ret1") := (((![go.FunctionType (go.Signature [] false [go.PointerType clientv3.GetResponse; go.error])] "do") #())) in
+        let: ("$ret0", "$ret1") := (((![go.FunctionType (go.Signature [] false [go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse; go.error])] "do") #())) in
         return: ("$ret0", "$ret1")
       else do:  #())));;;
     let: "key" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "KeyBytes"%go "op") #())) in
+    let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "KeyBytes"%go "op") #())) in
     do:  ("key" <-[go.string] "$r0");;;
     (if: (⟨go.bool⟩! (let: "$a0" := (![go.string] "key") in
     (MethodResolve (go.PointerType leaseCache) "MayAcquire"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv"))) "$a0"))
     then
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "resp" := (GoAlloc clientv3.OpResponse (GoZeroVal clientv3.OpResponse #())) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
-      let: "$a1" := (![clientv3.Op] "op") in
-      (MethodResolve clientv3.KV "Do"%go (![clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0" "$a1") in
+      let: "resp" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.OpResponse (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.OpResponse #())) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
+      let: "$a1" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
+      (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.KV "Do"%go (![code.go_etcd_io.etcd.client.v3.clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("resp" <-[clientv3.OpResponse] "$r0");;;
+      do:  ("resp" <-[code.go_etcd_io.etcd.client.v3.clientv3.OpResponse] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
-      return: ((MethodResolve (go.PointerType clientv3.OpResponse) "Get"%go "resp") #(), ![go.error] "err")
+      return: ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.OpResponse) "Get"%go "resp") #(), ![go.error] "err")
     else do:  #());;;
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "resp" := (GoAlloc (go.PointerType clientv3.TxnResponse) (GoZeroVal (go.PointerType clientv3.TxnResponse) #())) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
+    let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
     let: "$a1" := (![go.string] "key") in
     let: "$a2" := (let: "$a0" := (![go.string] "key") in
     let: "$a1" := #slice.nil in
-    (FuncResolve clientv3.OpGet [] #()) "$a0" "$a1") in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.OpGet [] #()) "$a0" "$a1") in
     (MethodResolve (go.PointerType leasingKV) "acquire"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1" "$a2") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
+    do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-    then return: (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil, ![go.error] "err")
+    then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) UntypedNil, ![go.error] "err")
     else do:  #());;;
-    let: "getResp" := (GoAlloc (go.PointerType clientv3.GetResponse) (GoZeroVal (go.PointerType clientv3.GetResponse) #())) in
-    let: "$r0" := (Convert (go.PointerType etcdserverpb.RangeResponse) (go.PointerType clientv3.GetResponse) ((MethodResolve (go.PointerType etcdserverpb.ResponseOp) "GetResponseRange"%go (![go.PointerType etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] (StructFieldRef clientv3.TxnResponse "Responses"%go (![go.PointerType clientv3.TxnResponse] "resp")), #(W64 0))))) #())) in
-    do:  ("getResp" <-[go.PointerType clientv3.GetResponse] "$r0");;;
-    let: "$r0" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.TxnResponse "Header"%go (![go.PointerType clientv3.TxnResponse] "resp"))) in
-    do:  ((StructFieldRef clientv3.GetResponse "Header"%go (![go.PointerType clientv3.GetResponse] "getResp")) <-[go.PointerType etcdserverpb.ResponseHeader] "$r0");;;
-    (if: ![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))
+    let: "getResp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) #())) in
+    let: "$r0" := (Convert (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeResponse) (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) ((MethodResolve (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp) "GetResponseRange"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Responses"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp")), #(W64 0))))) #())) in
+    do:  ("getResp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "$r0");;;
+    let: "$r0" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))) in
+    do:  ((StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "getResp")) <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "$r0");;;
+    (if: ![go.bool] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Succeeded"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))
     then
       let: "$r0" := (let: "$a0" := (![go.string] "key") in
-      let: "$a1" := (![go.PointerType clientv3.GetResponse] "getResp") in
-      let: "$a2" := (![clientv3.Op] "op") in
+      let: "$a1" := (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "getResp") in
+      let: "$a2" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
       (MethodResolve (go.PointerType leaseCache) "Add"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv"))) "$a0" "$a1" "$a2") in
-      do:  ("getResp" <-[go.PointerType clientv3.GetResponse] "$r0");;;
+      do:  ("getResp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "$r0");;;
       do:  (let: "$a0" := #(W64 1) in
-      (MethodResolve (go.PointerType sync.WaitGroup) "Add"%go (StructFieldRef leasingKV "wg"%go (![go.PointerType leasingKV] "lkv"))) "$a0");;;
+      (MethodResolve (go.PointerType code.sync.sync.WaitGroup) "Add"%go (StructFieldRef leasingKV "wg"%go (![go.PointerType leasingKV] "lkv"))) "$a0");;;
       let: "$go" := (λ: <>,
-        with_defer: (do:  (let: "$f" := (MethodResolve (go.PointerType sync.WaitGroup) "Done"%go (StructFieldRef leasingKV "wg"%go (![go.PointerType leasingKV] "lkv"))) in
+        with_defer: (do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.WaitGroup) "Done"%go (StructFieldRef leasingKV "wg"%go (![go.PointerType leasingKV] "lkv"))) in
         "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
         (λ: <>,
           "$f" #();;
           "$oldf" #()
           )));;;
-        do:  (let: "$a0" := (![context.Context] "ctx") in
+        do:  (let: "$a0" := (![code.context.context.Context] "ctx") in
         let: "$a1" := (![go.string] "key") in
-        let: "$a2" := (![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.TxnResponse "Header"%go (![go.PointerType clientv3.TxnResponse] "resp"))))) in
+        let: "$a2" := (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))))) in
         (MethodResolve (go.PointerType leasingKV) "monitorLease"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1" "$a2");;;
         return: #())
         ) in
       do:  (Fork ("$go" #()))
     else do:  #());;;
-    return: (![go.PointerType clientv3.GetResponse] "getResp", Convert go.untyped_nil go.error UntypedNil)).
+    return: (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "getResp", Convert go.untyped_nil go.error UntypedNil)).
 
 (* go: kv.go:340:23 *)
 Definition leasingKV__deleteRangeRPCⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -1609,7 +1609,7 @@ Definition leasingKV__deleteRangeRPCⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
     let: "end" := (GoAlloc go.string "end") in
     let: "key" := (GoAlloc go.string "key") in
     let: "maxLeaseRev" := (GoAlloc go.int64 "maxLeaseRev") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
     let: "lend" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "lkey" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) +⟨go.string⟩ (![go.string] "key")) in
@@ -1617,73 +1617,73 @@ Definition leasingKV__deleteRangeRPCⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
     do:  ("lkey" <-[go.string] "$r0");;;
     do:  ("lend" <-[go.string] "$r1");;;
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "resp" := (GoAlloc (go.PointerType clientv3.TxnResponse) (GoZeroVal (go.PointerType clientv3.TxnResponse) #())) in
-    let: ("$ret0", "$ret1") := ((MethodResolve clientv3.Txn "Commit"%go (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (![go.string] "key") in
+    let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) #())) in
+    let: ("$ret0", "$ret1") := ((MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Commit"%go (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (![go.string] "key") in
     let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![go.string] "end") in
-    (FuncResolve clientv3.WithRange [] #()) "$a0") in
-    let: "$sl1" := ((FuncResolve clientv3.WithKeysOnly [] #()) #()) in
-    CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption "$sl0"); KeyedElement None (ElementExpression clientv3.OpOption "$sl1")]))) in
-    (FuncResolve clientv3.OpGet [] #()) "$a0" "$a1") in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.WithRange [] #()) "$a0") in
+    let: "$sl1" := ((FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.WithKeysOnly [] #()) #()) in
+    CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.OpOption "$sl0"); KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.OpOption "$sl1")]))) in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.OpGet [] #()) "$a0" "$a1") in
     let: "$sl1" := (let: "$a0" := (![go.string] "key") in
     let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![go.string] "end") in
-    (FuncResolve clientv3.WithRange [] #()) "$a0") in
-    CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption "$sl0")]))) in
-    (FuncResolve clientv3.OpDelete [] #()) "$a0" "$a1") in
-    CompositeLiteral (go.SliceType clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression clientv3.Op "$sl0"); KeyedElement None (ElementExpression clientv3.Op "$sl1")]))) in
-    (MethodResolve clientv3.Txn "Then"%go (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (let: "$a0" := (![go.string] "lend") in
-    (MethodResolve clientv3.Cmp "WithRange"%go (let: "$a0" := (![go.string] "lkey") in
-    (FuncResolve clientv3.CreateRevision [] #()) "$a0")) "$a0") in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.WithRange [] #()) "$a0") in
+    CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.OpOption "$sl0")]))) in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.OpDelete [] #()) "$a0" "$a1") in
+    CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Op "$sl0"); KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Op "$sl1")]))) in
+    (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Then"%go (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (let: "$a0" := (![go.string] "lend") in
+    (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Cmp "WithRange"%go (let: "$a0" := (![go.string] "lkey") in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.CreateRevision [] #()) "$a0")) "$a0") in
     let: "$a1" := #"<"%go in
     let: "$a2" := (Convert go.int64 go.any ((![go.int64] "maxLeaseRev") +⟨go.int64⟩ #(W64 1))) in
-    (FuncResolve clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
-    CompositeLiteral (go.SliceType clientv3.Cmp) (LiteralValue [KeyedElement None (ElementExpression clientv3.Cmp "$sl0")]))) in
-    (MethodResolve clientv3.Txn "If"%go (let: "$a0" := (![context.Context] "ctx") in
-    (MethodResolve clientv3.KV "Txn"%go (![clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0")) "$a0")) "$a0")) #()) in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
+    CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Cmp "$sl0")]))) in
+    (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "If"%go (let: "$a0" := (![code.context.context.Context] "ctx") in
+    (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.KV "Txn"%go (![code.go_etcd_io.etcd.client.v3.clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0")) "$a0")) "$a0")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
+    do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       do:  (let: "$a0" := (![go.string] "key") in
       let: "$a1" := (![go.string] "end") in
       (MethodResolve (go.PointerType leaseCache) "EvictRange"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv"))) "$a0" "$a1");;;
-      return: (Convert go.untyped_nil (go.PointerType clientv3.DeleteResponse) UntypedNil, ![go.error] "err")
+      return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) UntypedNil, ![go.error] "err")
     else do:  #());;;
-    (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))))
-    then return: (Convert go.untyped_nil (go.PointerType clientv3.DeleteResponse) UntypedNil, Convert go.untyped_nil go.error UntypedNil)
+    (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Succeeded"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))))
+    then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) UntypedNil, Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
-    let: "$range" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef etcdserverpb.RangeResponse "Kvs"%go ((MethodResolve (go.PointerType etcdserverpb.ResponseOp) "GetResponseRange"%go (![go.PointerType etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] (StructFieldRef clientv3.TxnResponse "Responses"%go (![go.PointerType clientv3.TxnResponse] "resp")), #(W64 0))))) #()))) in
-    (let: "kv" := (GoAlloc (go.PointerType mvccpb.KeyValue) (GoZeroVal (go.PointerType mvccpb.KeyValue) #())) in
-    slice.for_range (go.PointerType mvccpb.KeyValue) "$range" (λ: "$key" "$value",
-      do:  ("kv" <-[go.PointerType mvccpb.KeyValue] "$value");;;
+    let: "$range" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeResponse "Kvs"%go ((MethodResolve (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp) "GetResponseRange"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Responses"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp")), #(W64 0))))) #()))) in
+    (let: "kv" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue) #())) in
+    slice.for_range (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue) "$range" (λ: "$key" "$value",
+      do:  ("kv" <-[go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] "$value");;;
       do:  "$key";;;
-      do:  (let: "$a0" := (Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (StructFieldRef mvccpb.KeyValue "Key"%go (![go.PointerType mvccpb.KeyValue] "kv")))) in
-      let: "$a1" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.TxnResponse "Header"%go (![go.PointerType clientv3.TxnResponse] "resp"))) in
+      do:  (let: "$a0" := (Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Key"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] "kv")))) in
+      let: "$a1" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))) in
       (MethodResolve (go.PointerType leaseCache) "Delete"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv"))) "$a0" "$a1")));;;
-    let: "delResp" := (GoAlloc (go.PointerType clientv3.DeleteResponse) (GoZeroVal (go.PointerType clientv3.DeleteResponse) #())) in
-    let: "$r0" := (Convert (go.PointerType etcdserverpb.DeleteRangeResponse) (go.PointerType clientv3.DeleteResponse) ((MethodResolve (go.PointerType etcdserverpb.ResponseOp) "GetResponseDeleteRange"%go (![go.PointerType etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] (StructFieldRef clientv3.TxnResponse "Responses"%go (![go.PointerType clientv3.TxnResponse] "resp")), #(W64 1))))) #())) in
-    do:  ("delResp" <-[go.PointerType clientv3.DeleteResponse] "$r0");;;
-    let: "$r0" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.TxnResponse "Header"%go (![go.PointerType clientv3.TxnResponse] "resp"))) in
-    do:  ((StructFieldRef clientv3.DeleteResponse "Header"%go (![go.PointerType clientv3.DeleteResponse] "delResp")) <-[go.PointerType etcdserverpb.ResponseHeader] "$r0");;;
-    return: (![go.PointerType clientv3.DeleteResponse] "delResp", Convert go.untyped_nil go.error UntypedNil)).
+    let: "delResp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) #())) in
+    let: "$r0" := (Convert (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.DeleteRangeResponse) (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) ((MethodResolve (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp) "GetResponseDeleteRange"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Responses"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp")), #(W64 1))))) #())) in
+    do:  ("delResp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse] "$r0");;;
+    let: "$r0" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))) in
+    do:  ((StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse] "delResp")) <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "$r0");;;
+    return: (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse] "delResp", Convert go.untyped_nil go.error UntypedNil)).
 
 (* go: kv.go:363:23 *)
 Definition leasingKV__deleteRangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" "ctx" "op",
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    let: "op" := (GoAlloc clientv3.Op "op") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
+    let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op "op") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
     let: "end" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "key" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "KeyBytes"%go "op") #())) in
-    let: "$r1" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "RangeBytes"%go "op") #())) in
+    let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "KeyBytes"%go "op") #())) in
+    let: "$r1" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "RangeBytes"%go "op") #())) in
     do:  ("key" <-[go.string] "$r0");;;
     do:  ("end" <-[go.string] "$r1");;;
-    (for: (λ: <>, ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #()) =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)); (λ: <>, #()) := λ: <>,
+    (for: (λ: <>, ((MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "ctx")) #()) =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)); (λ: <>, #()) := λ: <>,
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
       let: "maxLeaseRev" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
       let: "$a1" := (![go.string] "key") in
       let: "$a2" := (![go.string] "end") in
       (MethodResolve (go.PointerType leasingKV) "revokeRange"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1" "$a2") in
@@ -1692,7 +1692,7 @@ Definition leasingKV__deleteRangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
       do:  ("maxLeaseRev" <-[go.int64] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-      then return: (Convert go.untyped_nil (go.PointerType clientv3.DeleteResponse) UntypedNil, ![go.error] "err")
+      then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) UntypedNil, ![go.error] "err")
       else do:  #());;;
       let: "wcs" := (GoAlloc (go.SliceType (go.ChannelType go.sendonly (go.StructType [
 
@@ -1705,66 +1705,66 @@ Definition leasingKV__deleteRangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
       do:  ("wcs" <-[go.SliceType (go.ChannelType go.sendonly (go.StructType [
 
       ]))] "$r0");;;
-      let: "delResp" := (GoAlloc (go.PointerType clientv3.DeleteResponse) (GoZeroVal (go.PointerType clientv3.DeleteResponse) #())) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
+      let: "delResp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) #())) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
       let: "$a1" := (![go.int64] "maxLeaseRev") in
       let: "$a2" := (![go.string] "key") in
       let: "$a3" := (![go.string] "end") in
       (MethodResolve (go.PointerType leasingKV) "deleteRangeRPC"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1" "$a2" "$a3") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("delResp" <-[go.PointerType clientv3.DeleteResponse] "$r0");;;
+      do:  ("delResp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
       do:  (let: "$a0" := (![go.SliceType (go.ChannelType go.sendonly (go.StructType [
 
       ]))] "wcs") in
       (FuncResolve closeAll [] #()) "$a0");;;
-      (if: Convert go.untyped_bool go.bool (((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)) || ((![go.PointerType clientv3.DeleteResponse] "delResp") ≠⟨go.PointerType clientv3.DeleteResponse⟩ (Convert go.untyped_nil (go.PointerType clientv3.DeleteResponse) UntypedNil)))
-      then return: (![go.PointerType clientv3.DeleteResponse] "delResp", ![go.error] "err")
+      (if: Convert go.untyped_bool go.bool (((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)) || ((![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse] "delResp") ≠⟨go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) UntypedNil)))
+      then return: (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse] "delResp", ![go.error] "err")
       else do:  #()));;;
-    return: (Convert go.untyped_nil (go.PointerType clientv3.DeleteResponse) UntypedNil, (MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #())).
+    return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) UntypedNil, (MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "ctx")) #())).
 
 (* go: kv.go:380:23 *)
 Definition leasingKV__deleteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" "ctx" "op",
     exception_do (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "dr" := (GoAlloc (go.PointerType clientv3.DeleteResponse) (GoZeroVal (go.PointerType clientv3.DeleteResponse) #())) in
+    let: "dr" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) #())) in
     let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    let: "op" := (GoAlloc clientv3.Op "op") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
+    let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op "op") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
     (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "$r0" := (let: "$a0" := (![context.Context] "ctx") in
+    let: "$r0" := (let: "$a0" := (![code.context.context.Context] "ctx") in
     (MethodResolve (go.PointerType leasingKV) "waitSession"%go (![go.PointerType leasingKV] "lkv")) "$a0") in
     do:  ("err" <-[go.error] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-    then return: (Convert go.untyped_nil (go.PointerType clientv3.DeleteResponse) UntypedNil, ![go.error] "err")
+    then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) UntypedNil, ![go.error] "err")
     else do:  #()));;;
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := ((MethodResolve (go.PointerType clientv3.Op) "RangeBytes"%go "op") #()) in
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "RangeBytes"%go "op") #()) in
     (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") >⟨go.int⟩ #(W64 0))
     then
-      let: ("$ret0", "$ret1") := ((let: "$a0" := (![context.Context] "ctx") in
-      let: "$a1" := (![clientv3.Op] "op") in
+      let: ("$ret0", "$ret1") := ((let: "$a0" := (![code.context.context.Context] "ctx") in
+      let: "$a1" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
       (MethodResolve (go.PointerType leasingKV) "deleteRange"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1")) in
       return: ("$ret0", "$ret1")
     else do:  #());;;
     let: "key" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "KeyBytes"%go "op") #())) in
+    let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "KeyBytes"%go "op") #())) in
     do:  ("key" <-[go.string] "$r0");;;
-    (for: (λ: <>, ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #()) =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)); (λ: <>, #()) := λ: <>,
+    (for: (λ: <>, ((MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "ctx")) #()) =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)); (λ: <>, #()) := λ: <>,
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
       let: "wc" := (GoAlloc (go.ChannelType go.sendonly (go.StructType [
 
       ])) (GoZeroVal (go.ChannelType go.sendonly (go.StructType [
 
       ])) #())) in
-      let: "resp" := (GoAlloc (go.PointerType clientv3.TxnResponse) (GoZeroVal (go.PointerType clientv3.TxnResponse) #())) in
-      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![context.Context] "ctx") in
-      let: "$a1" := (![clientv3.Op] "op") in
+      let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) #())) in
+      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![code.context.context.Context] "ctx") in
+      let: "$a1" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
       (MethodResolve (go.PointerType leasingKV) "tryModifyOp"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
-      do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
+      do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "$r0");;;
       do:  ("wc" <-[go.ChannelType go.sendonly (go.StructType [
 
       ])] "$r1");;;
@@ -1777,29 +1777,29 @@ Definition leasingKV__deleteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
 
       ])) UntypedNil)))
       then
-        let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
+        let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
         let: "$a1" := (![go.string] "key") in
-        let: "$a2" := (![clientv3.Op] "op") in
+        let: "$a2" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
         (MethodResolve (go.PointerType leasingKV) "revoke"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1" "$a2") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
+        do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "$r0");;;
         do:  ("err" <-[go.error] "$r1")
       else do:  #());;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then
         do:  (let: "$a0" := (![go.string] "key") in
         (MethodResolve (go.PointerType leaseCache) "Evict"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv"))) "$a0");;;
-        return: (Convert go.untyped_nil (go.PointerType clientv3.DeleteResponse) UntypedNil, ![go.error] "err")
+        return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) UntypedNil, ![go.error] "err")
       else do:  #());;;
-      (if: ![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))
+      (if: ![go.bool] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Succeeded"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))
       then
-        let: "$r0" := (Convert (go.PointerType etcdserverpb.DeleteRangeResponse) (go.PointerType clientv3.DeleteResponse) ((MethodResolve (go.PointerType etcdserverpb.ResponseOp) "GetResponseDeleteRange"%go (![go.PointerType etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] (StructFieldRef clientv3.TxnResponse "Responses"%go (![go.PointerType clientv3.TxnResponse] "resp")), #(W64 0))))) #())) in
-        do:  ("dr" <-[go.PointerType clientv3.DeleteResponse] "$r0");;;
-        let: "$r0" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.TxnResponse "Header"%go (![go.PointerType clientv3.TxnResponse] "resp"))) in
-        do:  ((StructFieldRef clientv3.DeleteResponse "Header"%go (![go.PointerType clientv3.DeleteResponse] "dr")) <-[go.PointerType etcdserverpb.ResponseHeader] "$r0");;;
+        let: "$r0" := (Convert (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.DeleteRangeResponse) (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) ((MethodResolve (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp) "GetResponseDeleteRange"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Responses"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp")), #(W64 0))))) #())) in
+        do:  ("dr" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse] "$r0");;;
+        let: "$r0" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))) in
+        do:  ((StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse] "dr")) <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "$r0");;;
         do:  (let: "$a0" := (![go.string] "key") in
-        let: "$a1" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.DeleteResponse "Header"%go (![go.PointerType clientv3.DeleteResponse] "dr"))) in
+        let: "$a1" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse] "dr"))) in
         (MethodResolve (go.PointerType leaseCache) "Delete"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv"))) "$a0" "$a1")
       else do:  #());;;
       (if: Convert go.untyped_bool go.bool ((![go.ChannelType go.sendonly (go.StructType [
@@ -1817,53 +1817,53 @@ Definition leasingKV__deleteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
 
          ])] #()) "$a0")
       else do:  #());;;
-      (if: ![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))
-      then return: (![go.PointerType clientv3.DeleteResponse] "dr", Convert go.untyped_nil go.error UntypedNil)
+      (if: ![go.bool] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Succeeded"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))
+      then return: (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse] "dr", Convert go.untyped_nil go.error UntypedNil)
       else do:  #()));;;
-    return: (Convert go.untyped_nil (go.PointerType clientv3.DeleteResponse) UntypedNil, (MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #())).
+    return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.DeleteResponse) UntypedNil, (MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "ctx")) #())).
 
 (* go: kv.go:413:23 *)
 Definition leasingKV__revokeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" "ctx" "key" "op",
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    let: "op" := (GoAlloc clientv3.Op "op") in
+    let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op "op") in
     let: "key" := (GoAlloc go.string "key") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
     let: "rev" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
     let: "$r0" := (let: "$a0" := (![go.string] "key") in
     (MethodResolve (go.PointerType leaseCache) "Rev"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv"))) "$a0") in
     do:  ("rev" <-[go.int64] "$r0");;;
-    let: "txn" := (GoAlloc clientv3.Txn (GoZeroVal clientv3.Txn #())) in
-    let: "$r0" := (let: "$a0" := ((let: "$sl0" := (![clientv3.Op] "op") in
-    CompositeLiteral (go.SliceType clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression clientv3.Op "$sl0")]))) in
-    (MethodResolve clientv3.Txn "Then"%go (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (let: "$a0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) +⟨go.string⟩ (![go.string] "key")) in
-    (FuncResolve clientv3.CreateRevision [] #()) "$a0") in
+    let: "txn" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Txn (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Txn #())) in
+    let: "$r0" := (let: "$a0" := ((let: "$sl0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
+    CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Op "$sl0")]))) in
+    (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Then"%go (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (let: "$a0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) +⟨go.string⟩ (![go.string] "key")) in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.CreateRevision [] #()) "$a0") in
     let: "$a1" := #"<"%go in
     let: "$a2" := (Convert go.int64 go.any ((![go.int64] "rev") +⟨go.int64⟩ #(W64 1))) in
-    (FuncResolve clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
-    CompositeLiteral (go.SliceType clientv3.Cmp) (LiteralValue [KeyedElement None (ElementExpression clientv3.Cmp "$sl0")]))) in
-    (MethodResolve clientv3.Txn "If"%go (let: "$a0" := (![context.Context] "ctx") in
-    (MethodResolve clientv3.KV "Txn"%go (![clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0")) "$a0")) "$a0") in
-    do:  ("txn" <-[clientv3.Txn] "$r0");;;
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
+    CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Cmp "$sl0")]))) in
+    (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "If"%go (let: "$a0" := (![code.context.context.Context] "ctx") in
+    (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.KV "Txn"%go (![code.go_etcd_io.etcd.client.v3.clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0")) "$a0")) "$a0") in
+    do:  ("txn" <-[code.go_etcd_io.etcd.client.v3.clientv3.Txn] "$r0");;;
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "resp" := (GoAlloc (go.PointerType clientv3.TxnResponse) (GoZeroVal (go.PointerType clientv3.TxnResponse) #())) in
-    let: ("$ret0", "$ret1") := ((MethodResolve clientv3.Txn "Commit"%go (let: "$a0" := ((let: "$sl0" := (let: "$a0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) +⟨go.string⟩ (![go.string] "key")) in
+    let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) #())) in
+    let: ("$ret0", "$ret1") := ((MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Commit"%go (let: "$a0" := ((let: "$sl0" := (let: "$a0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) +⟨go.string⟩ (![go.string] "key")) in
     let: "$a1" := #"REVOKE"%go in
-    let: "$a2" := ((let: "$sl0" := ((FuncResolve clientv3.WithIgnoreLease [] #()) #()) in
-    CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption "$sl0")]))) in
-    (FuncResolve clientv3.OpPut [] #()) "$a0" "$a1" "$a2") in
-    CompositeLiteral (go.SliceType clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression clientv3.Op "$sl0")]))) in
-    (MethodResolve clientv3.Txn "Else"%go (![clientv3.Txn] "txn")) "$a0")) #()) in
+    let: "$a2" := ((let: "$sl0" := ((FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.WithIgnoreLease [] #()) #()) in
+    CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.OpOption "$sl0")]))) in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.OpPut [] #()) "$a0" "$a1" "$a2") in
+    CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Op "$sl0")]))) in
+    (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Else"%go (![code.go_etcd_io.etcd.client.v3.clientv3.Txn] "txn")) "$a0")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
+    do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
-    (if: ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)) || (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp")))
-    then return: (![go.PointerType clientv3.TxnResponse] "resp", ![go.error] "err")
+    (if: ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)) || (![go.bool] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Succeeded"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp")))
+    then return: (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp", ![go.error] "err")
     else do:  #());;;
-    return: (![go.PointerType clientv3.TxnResponse] "resp", let: "$a0" := (![context.Context] "ctx") in
+    return: (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp", let: "$a0" := (![code.context.context.Context] "ctx") in
      let: "$a1" := (![go.string] "key") in
-     let: "$a2" := (![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.TxnResponse "Header"%go (![go.PointerType clientv3.TxnResponse] "resp"))))) in
+     let: "$a2" := (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))))) in
      (MethodResolve (go.PointerType leasingKV) "waitRescind"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1" "$a2")).
 
 (* go: kv.go:423:23 *)
@@ -1872,7 +1872,7 @@ Definition leasingKV__revokeRangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
     let: "end" := (GoAlloc go.string "end") in
     let: "begin" := (GoAlloc go.string "begin") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
     let: "lend" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "lkey" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) +⟨go.string⟩ (![go.string] "begin")) in
@@ -1886,22 +1886,22 @@ Definition leasingKV__revokeRangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
       do:  ("lend" <-[go.string] "$r0")
     else do:  #());;;
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "leaseKeys" := (GoAlloc (go.PointerType clientv3.GetResponse) (GoZeroVal (go.PointerType clientv3.GetResponse) #())) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
+    let: "leaseKeys" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
     let: "$a1" := (![go.string] "lkey") in
     let: "$a2" := ((let: "$sl0" := (let: "$a0" := (![go.string] "lend") in
-    (FuncResolve clientv3.WithRange [] #()) "$a0") in
-    CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption "$sl0")]))) in
-    (MethodResolve clientv3.KV "Get"%go (![clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0" "$a1" "$a2") in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.WithRange [] #()) "$a0") in
+    CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.OpOption "$sl0")]))) in
+    (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.KV "Get"%go (![code.go_etcd_io.etcd.client.v3.clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] "lkv")))) "$a0" "$a1" "$a2") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("leaseKeys" <-[go.PointerType clientv3.GetResponse] "$r0");;;
+    do:  ("leaseKeys" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (#(W64 0), ![go.error] "err")
     else do:  #());;;
-    let: ("$ret0", "$ret1") := ((let: "$a0" := (![context.Context] "ctx") in
-    let: "$a1" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "leaseKeys"))) in
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (![code.context.context.Context] "ctx") in
+    let: "$a1" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "leaseKeys"))) in
     (MethodResolve (go.PointerType leasingKV) "revokeLeaseKvs"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1")) in
     return: ("$ret0", "$ret1")).
 
@@ -1909,38 +1909,38 @@ Definition leasingKV__revokeRangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
 Definition leasingKV__revokeLeaseKvsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" "ctx" "kvs",
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    let: "kvs" := (GoAlloc (go.SliceType (go.PointerType mvccpb.KeyValue)) "kvs") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
+    let: "kvs" := (GoAlloc (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) "kvs") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
     let: "maxLeaseRev" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("maxLeaseRev" <-[go.int64] "$r0");;;
-    let: "$range" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] "kvs") in
-    (let: "kv" := (GoAlloc (go.PointerType mvccpb.KeyValue) (GoZeroVal (go.PointerType mvccpb.KeyValue) #())) in
-    slice.for_range (go.PointerType mvccpb.KeyValue) "$range" (λ: "$key" "$value",
-      do:  ("kv" <-[go.PointerType mvccpb.KeyValue] "$value");;;
+    let: "$range" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] "kvs") in
+    (let: "kv" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue) #())) in
+    slice.for_range (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue) "$range" (λ: "$key" "$value",
+      do:  ("kv" <-[go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] "$value");;;
       do:  "$key";;;
       (let: "rev" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
-      let: "$r0" := (![go.int64] (StructFieldRef mvccpb.KeyValue "CreateRevision"%go (![go.PointerType mvccpb.KeyValue] "kv"))) in
+      let: "$r0" := (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "CreateRevision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] "kv"))) in
       do:  ("rev" <-[go.int64] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.int64] "rev") >⟨go.int64⟩ (![go.int64] "maxLeaseRev"))
       then
         let: "$r0" := (![go.int64] "rev") in
         do:  ("maxLeaseRev" <-[go.int64] "$r0")
       else do:  #()));;;
-      (if: Convert go.untyped_bool go.bool ((![go.int64] (StructFieldRef mvccpb.KeyValue "Lease"%go (![go.PointerType mvccpb.KeyValue] "kv"))) =⟨clientv3.LeaseID⟩ ((MethodResolve (go.PointerType leasingKV) "leaseID"%go (![go.PointerType leasingKV] "lkv")) #()))
+      (if: Convert go.untyped_bool go.bool ((![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Lease"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] "kv"))) =⟨code.go_etcd_io.etcd.client.v3.clientv3.LeaseID⟩ ((MethodResolve (go.PointerType leasingKV) "leaseID"%go (![go.PointerType leasingKV] "lkv")) #()))
       then continue: #()
       else do:  #());;;
       let: "key" := (GoAlloc go.string (GoZeroVal go.string #())) in
-      let: "$r0" := (let: "$a0" := (Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (StructFieldRef mvccpb.KeyValue "Key"%go (![go.PointerType mvccpb.KeyValue] "kv")))) in
+      let: "$r0" := (let: "$a0" := (Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Key"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] "kv")))) in
       let: "$a1" := (![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] "lkv"))) in
-      (FuncResolve strings.TrimPrefix [] #()) "$a0" "$a1") in
+      (FuncResolve code.strings.strings.TrimPrefix [] #()) "$a0" "$a1") in
       do:  ("key" <-[go.string] "$r0");;;
       (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
       let: "$a1" := (![go.string] "key") in
       let: "$a2" := (let: "$a0" := (![go.string] "key") in
       let: "$a1" := #slice.nil in
-      (FuncResolve clientv3.OpGet [] #()) "$a0" "$a1") in
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.OpGet [] #()) "$a0" "$a1") in
       (MethodResolve (go.PointerType leasingKV) "revoke"%go (![go.PointerType leasingKV] "lkv")) "$a0" "$a1" "$a2") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
@@ -1955,8 +1955,8 @@ Definition leasingKV__revokeLeaseKvsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
 Definition leasingKV__waitSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" "ctx",
     exception_do (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
     let: "sessionc" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
 
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
@@ -1968,12 +1968,12 @@ Definition leasingKV__waitSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
     do:  ("sessionc" <-[go.ChannelType go.sendrecv (go.StructType [
 
     ])] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
     let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] "sessionc") in
-    let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv")))) #()) in
-    let: "$ch2" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
+    let: "$ch1" := ((MethodResolve code.context.context.Context "Done"%go (![code.context.context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv")))) #()) in
+    let: "$ch2" := ((MethodResolve code.context.context.Context "Done"%go (![code.context.context.Context] "ctx")) #()) in
     SelectStmt (SelectStmtClauses None [(CommClause (RecvCase (go.StructType [
 
     ]) "$ch0") (λ: "$recvVal",
@@ -1981,28 +1981,28 @@ Definition leasingKV__waitSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
       )); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (λ: "$recvVal",
-      return: ((MethodResolve context.Context "Err"%go (![context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv")))) #())
+      return: ((MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv")))) #())
       )); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch2") (λ: "$recvVal",
-      return: ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #())
+      return: ((MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "ctx")) #())
       ))])).
 
 (* go: kv.go:467:23 *)
 Definition leasingKV__readySessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" <>,
     with_defer: (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    (if: Convert go.untyped_bool go.bool ((![go.PointerType concurrency.Session] (StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv"))) =⟨go.PointerType concurrency.Session⟩ (Convert go.untyped_nil (go.PointerType concurrency.Session) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session] (StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv"))) =⟨go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session) UntypedNil))
     then return: (#false)
     else do:  #());;;
-    let: "$ch0" := ((MethodResolve (go.PointerType concurrency.Session) "Done"%go (![go.PointerType concurrency.Session] (StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv")))) #()) in
+    let: "$ch0" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session) "Done"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session] (StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv")))) #()) in
     SelectStmt (SelectStmtClauses (Some (return: (#true))) [(CommClause (RecvCase (go.StructType [
 
     ]) "$ch0") (λ: "$recvVal",
@@ -2014,70 +2014,70 @@ Definition leasingKV__readySessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
 Definition leasingKV__leaseIDⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lkv" <>,
     with_defer: (let: "lkv" := (GoAlloc (go.PointerType leasingKV) "lkv") in
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    return: ((MethodResolve (go.PointerType concurrency.Session) "Lease"%go (![go.PointerType concurrency.Session] (StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv")))) #())).
+    return: ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session) "Lease"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session] (StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv")))) #())).
 
 (* go: txn.go:34:24 *)
 Definition txnLeasing__Ifⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "cs",
     exception_do (let: "txn" := (GoAlloc (go.PointerType txnLeasing) "txn") in
-    let: "cs" := (GoAlloc (go.SliceType clientv3.Cmp) "cs") in
-    let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Cmp] (StructFieldRef txnLeasing "cs"%go (![go.PointerType txnLeasing] "txn"))) in
-    let: "$a1" := (![go.SliceType clientv3.Cmp] "cs") in
-    (FuncResolve go.append [go.SliceType clientv3.Cmp] #()) "$a0" "$a1") in
-    do:  ((StructFieldRef txnLeasing "cs"%go (![go.PointerType txnLeasing] "txn")) <-[go.SliceType clientv3.Cmp] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Cmp] "cs") in
-    (MethodResolve clientv3.Txn "If"%go (![clientv3.Txn] (StructFieldRef txnLeasing "Txn"%go (![go.PointerType txnLeasing] "txn")))) "$a0") in
-    do:  ((StructFieldRef txnLeasing "Txn"%go (![go.PointerType txnLeasing] "txn")) <-[clientv3.Txn] "$r0");;;
-    return: (Convert (go.PointerType txnLeasing) clientv3.Txn (![go.PointerType txnLeasing] "txn"))).
+    let: "cs" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) "cs") in
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] (StructFieldRef txnLeasing "cs"%go (![go.PointerType txnLeasing] "txn"))) in
+    let: "$a1" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "cs") in
+    (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] #()) "$a0" "$a1") in
+    do:  ((StructFieldRef txnLeasing "cs"%go (![go.PointerType txnLeasing] "txn")) <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "cs") in
+    (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "If"%go (![code.go_etcd_io.etcd.client.v3.clientv3.Txn] (StructFieldRef txnLeasing "Txn"%go (![go.PointerType txnLeasing] "txn")))) "$a0") in
+    do:  ((StructFieldRef txnLeasing "Txn"%go (![go.PointerType txnLeasing] "txn")) <-[code.go_etcd_io.etcd.client.v3.clientv3.Txn] "$r0");;;
+    return: (Convert (go.PointerType txnLeasing) code.go_etcd_io.etcd.client.v3.clientv3.Txn (![go.PointerType txnLeasing] "txn"))).
 
 (* go: txn.go:40:24 *)
 Definition txnLeasing__Thenⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "ops",
     exception_do (let: "txn" := (GoAlloc (go.PointerType txnLeasing) "txn") in
-    let: "ops" := (GoAlloc (go.SliceType clientv3.Op) "ops") in
-    let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] (StructFieldRef txnLeasing "opst"%go (![go.PointerType txnLeasing] "txn"))) in
-    let: "$a1" := (![go.SliceType clientv3.Op] "ops") in
-    (FuncResolve go.append [go.SliceType clientv3.Op] #()) "$a0" "$a1") in
-    do:  ((StructFieldRef txnLeasing "opst"%go (![go.PointerType txnLeasing] "txn")) <-[go.SliceType clientv3.Op] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] "ops") in
-    (MethodResolve clientv3.Txn "Then"%go (![clientv3.Txn] (StructFieldRef txnLeasing "Txn"%go (![go.PointerType txnLeasing] "txn")))) "$a0") in
-    do:  ((StructFieldRef txnLeasing "Txn"%go (![go.PointerType txnLeasing] "txn")) <-[clientv3.Txn] "$r0");;;
-    return: (Convert (go.PointerType txnLeasing) clientv3.Txn (![go.PointerType txnLeasing] "txn"))).
+    let: "ops" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) "ops") in
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] (StructFieldRef txnLeasing "opst"%go (![go.PointerType txnLeasing] "txn"))) in
+    let: "$a1" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
+    (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] #()) "$a0" "$a1") in
+    do:  ((StructFieldRef txnLeasing "opst"%go (![go.PointerType txnLeasing] "txn")) <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
+    (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Then"%go (![code.go_etcd_io.etcd.client.v3.clientv3.Txn] (StructFieldRef txnLeasing "Txn"%go (![go.PointerType txnLeasing] "txn")))) "$a0") in
+    do:  ((StructFieldRef txnLeasing "Txn"%go (![go.PointerType txnLeasing] "txn")) <-[code.go_etcd_io.etcd.client.v3.clientv3.Txn] "$r0");;;
+    return: (Convert (go.PointerType txnLeasing) code.go_etcd_io.etcd.client.v3.clientv3.Txn (![go.PointerType txnLeasing] "txn"))).
 
 (* go: txn.go:46:24 *)
 Definition txnLeasing__Elseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "ops",
     exception_do (let: "txn" := (GoAlloc (go.PointerType txnLeasing) "txn") in
-    let: "ops" := (GoAlloc (go.SliceType clientv3.Op) "ops") in
-    let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] (StructFieldRef txnLeasing "opse"%go (![go.PointerType txnLeasing] "txn"))) in
-    let: "$a1" := (![go.SliceType clientv3.Op] "ops") in
-    (FuncResolve go.append [go.SliceType clientv3.Op] #()) "$a0" "$a1") in
-    do:  ((StructFieldRef txnLeasing "opse"%go (![go.PointerType txnLeasing] "txn")) <-[go.SliceType clientv3.Op] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] "ops") in
-    (MethodResolve clientv3.Txn "Else"%go (![clientv3.Txn] (StructFieldRef txnLeasing "Txn"%go (![go.PointerType txnLeasing] "txn")))) "$a0") in
-    do:  ((StructFieldRef txnLeasing "Txn"%go (![go.PointerType txnLeasing] "txn")) <-[clientv3.Txn] "$r0");;;
-    return: (Convert (go.PointerType txnLeasing) clientv3.Txn (![go.PointerType txnLeasing] "txn"))).
+    let: "ops" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) "ops") in
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] (StructFieldRef txnLeasing "opse"%go (![go.PointerType txnLeasing] "txn"))) in
+    let: "$a1" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
+    (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] #()) "$a0" "$a1") in
+    do:  ((StructFieldRef txnLeasing "opse"%go (![go.PointerType txnLeasing] "txn")) <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
+    (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Else"%go (![code.go_etcd_io.etcd.client.v3.clientv3.Txn] (StructFieldRef txnLeasing "Txn"%go (![go.PointerType txnLeasing] "txn")))) "$a0") in
+    do:  ((StructFieldRef txnLeasing "Txn"%go (![go.PointerType txnLeasing] "txn")) <-[code.go_etcd_io.etcd.client.v3.clientv3.Txn] "$r0");;;
+    return: (Convert (go.PointerType txnLeasing) code.go_etcd_io.etcd.client.v3.clientv3.Txn (![go.PointerType txnLeasing] "txn"))).
 
 (* go: txn.go:52:24 *)
 Definition txnLeasing__Commitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" <>,
     exception_do (let: "txn" := (GoAlloc (go.PointerType txnLeasing) "txn") in
     (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "resp" := (GoAlloc (go.PointerType clientv3.TxnResponse) (GoZeroVal (go.PointerType clientv3.TxnResponse) #())) in
+    let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) #())) in
     let: ("$ret0", "$ret1") := ((MethodResolve (go.PointerType txnLeasing) "eval"%go (![go.PointerType txnLeasing] "txn")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
+    do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool (((![go.PointerType clientv3.TxnResponse] "resp") ≠⟨go.PointerType clientv3.TxnResponse⟩ (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil)) || ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)))
-    then return: (![go.PointerType clientv3.TxnResponse] "resp", ![go.error] "err")
+    (if: Convert go.untyped_bool go.bool (((![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp") ≠⟨go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) UntypedNil)) || ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)))
+    then return: (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp", ![go.error] "err")
     else do:  #()));;;
     let: ("$ret0", "$ret1") := (((MethodResolve (go.PointerType txnLeasing) "serverTxn"%go (![go.PointerType txnLeasing] "txn")) #())) in
     return: ("$ret0", "$ret1")).
@@ -2086,28 +2086,28 @@ Definition txnLeasing__Commitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
 Definition txnLeasing__evalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" <>,
     with_defer: (let: "txn" := (GoAlloc (go.PointerType txnLeasing) "txn") in
-    let: "elseOps" := (GoAlloc (go.SliceType clientv3.Op) (GoZeroVal (go.SliceType clientv3.Op) #())) in
-    let: "thenOps" := (GoAlloc (go.SliceType clientv3.Op) (GoZeroVal (go.SliceType clientv3.Op) #())) in
-    let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] (StructFieldRef txnLeasing "opst"%go (![go.PointerType txnLeasing] "txn"))) in
+    let: "elseOps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) #())) in
+    let: "thenOps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) #())) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] (StructFieldRef txnLeasing "opst"%go (![go.PointerType txnLeasing] "txn"))) in
     (FuncResolve gatherOps [] #()) "$a0") in
-    let: "$r1" := (let: "$a0" := (![go.SliceType clientv3.Op] (StructFieldRef txnLeasing "opse"%go (![go.PointerType txnLeasing] "txn"))) in
+    let: "$r1" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] (StructFieldRef txnLeasing "opse"%go (![go.PointerType txnLeasing] "txn"))) in
     (FuncResolve gatherOps [] #()) "$a0") in
-    do:  ("thenOps" <-[go.SliceType clientv3.Op] "$r0");;;
-    do:  ("elseOps" <-[go.SliceType clientv3.Op] "$r1");;;
-    let: "ops" := (GoAlloc (go.SliceType clientv3.Op) (GoZeroVal (go.SliceType clientv3.Op) #())) in
-    let: "$r0" := ((FuncResolve go.make3 [go.SliceType clientv3.Op] #()) #(W64 0) ((let: "$a0" := (![go.SliceType clientv3.Op] "thenOps") in
-    (FuncResolve go.len [go.SliceType clientv3.Op] #()) "$a0") +⟨go.int⟩ (let: "$a0" := (![go.SliceType clientv3.Op] "elseOps") in
-    (FuncResolve go.len [go.SliceType clientv3.Op] #()) "$a0"))) in
-    do:  ("ops" <-[go.SliceType clientv3.Op] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] "ops") in
-    let: "$a1" := (![go.SliceType clientv3.Op] "thenOps") in
-    (FuncResolve go.append [go.SliceType clientv3.Op] #()) "$a0" "$a1") in
-    do:  ("ops" <-[go.SliceType clientv3.Op] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] "ops") in
-    let: "$a1" := (![go.SliceType clientv3.Op] "elseOps") in
-    (FuncResolve go.append [go.SliceType clientv3.Op] #()) "$a0" "$a1") in
-    do:  ("ops" <-[go.SliceType clientv3.Op] "$r0");;;
-    let: "$range" := (let: "$a0" := (![go.SliceType clientv3.Op] "ops") in
+    do:  ("thenOps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0");;;
+    do:  ("elseOps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r1");;;
+    let: "ops" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) #())) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] #()) #(W64 0) ((let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "thenOps") in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] #()) "$a0") +⟨go.int⟩ (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "elseOps") in
+    (FuncResolve go.len [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] #()) "$a0"))) in
+    do:  ("ops" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
+    let: "$a1" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "thenOps") in
+    (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] #()) "$a0" "$a1") in
+    do:  ("ops" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
+    let: "$a1" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "elseOps") in
+    (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] #()) "$a0" "$a1") in
+    do:  ("ops" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0");;;
+    let: "$range" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
     (MethodResolve (go.PointerType leaseCache) "NotifyOps"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) "$a0") in
     (let: "ch" := (GoAlloc (go.ChannelType go.recvonly (go.StructType [
 
@@ -2124,7 +2124,7 @@ Definition txnLeasing__evalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       let: "$ch0" := (![go.ChannelType go.recvonly (go.StructType [
 
       ])] "ch") in
-      let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn")))) #()) in
+      let: "$ch1" := ((MethodResolve code.context.context.Context "Done"%go (![code.context.context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn")))) #()) in
       SelectStmt (SelectStmtClauses None [(CommClause (RecvCase (go.StructType [
 
       ]) "$ch0") (λ: "$recvVal",
@@ -2132,10 +2132,10 @@ Definition txnLeasing__evalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
         )); (CommClause (RecvCase (go.StructType [
 
       ]) "$ch1") (λ: "$recvVal",
-        return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, (MethodResolve context.Context "Err"%go (![context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn")))) #())
+        return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) UntypedNil, (MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn")))) #())
         ))])));;;
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -2143,37 +2143,37 @@ Definition txnLeasing__evalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       )));;;
     let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "succeeded" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType clientv3.Cmp] (StructFieldRef txnLeasing "cs"%go (![go.PointerType txnLeasing] "txn"))) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] (StructFieldRef txnLeasing "cs"%go (![go.PointerType txnLeasing] "txn"))) in
     (MethodResolve (go.PointerType leaseCache) "evalCmp"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("succeeded" <-[go.bool] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
-    (if: (⟨go.bool⟩! (![go.bool] "ok")) || ((![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef leaseCache "header"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) =⟨go.PointerType etcdserverpb.ResponseHeader⟩ (Convert go.untyped_nil (go.PointerType etcdserverpb.ResponseHeader) UntypedNil))
-    then return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, Convert go.untyped_nil go.error UntypedNil)
+    (if: (⟨go.bool⟩! (![go.bool] "ok")) || ((![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef leaseCache "header"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) =⟨go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader) UntypedNil))
+    then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) UntypedNil, Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
-    (let: "$r0" := (![go.SliceType clientv3.Op] (StructFieldRef txnLeasing "opst"%go (![go.PointerType txnLeasing] "txn"))) in
-    do:  ("ops" <-[go.SliceType clientv3.Op] "$r0");;;
+    (let: "$r0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] (StructFieldRef txnLeasing "opst"%go (![go.PointerType txnLeasing] "txn"))) in
+    do:  ("ops" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0");;;
     (if: (⟨go.bool⟩! (![go.bool] "succeeded"))
     then
-      let: "$r0" := (![go.SliceType clientv3.Op] (StructFieldRef txnLeasing "opse"%go (![go.PointerType txnLeasing] "txn"))) in
-      do:  ("ops" <-[go.SliceType clientv3.Op] "$r0")
+      let: "$r0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] (StructFieldRef txnLeasing "opse"%go (![go.PointerType txnLeasing] "txn"))) in
+      do:  ("ops" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0")
     else do:  #()));;;
-    let: "resps" := (GoAlloc (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) (GoZeroVal (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) #())) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType clientv3.Op] "ops") in
+    let: "resps" := (GoAlloc (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) (GoZeroVal (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
     (MethodResolve (go.PointerType leaseCache) "evalOps"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("resps" <-[go.SliceType (go.PointerType etcdserverpb.ResponseOp)] "$r0");;;
+    do:  ("resps" <-[go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
     (if: (⟨go.bool⟩! (![go.bool] "ok"))
-    then return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, Convert go.untyped_nil go.error UntypedNil)
+    then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) UntypedNil, Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
-    return: (GoAlloc clientv3.TxnResponse (let: "$v0" := (let: "$a0" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef leaseCache "header"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) in
+    return: (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse (let: "$v0" := (let: "$a0" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef leaseCache "header"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) in
      (FuncResolve copyHeader [] #()) "$a0") in
      let: "$v1" := (![go.bool] "succeeded") in
-     let: "$v2" := (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] "resps") in
-     CompositeLiteral clientv3.TxnResponse (LiteralValue [KeyedElement (Some (KeyField "Header"%go)) (ElementExpression (go.PointerType etcdserverpb.ResponseHeader) "$v0"); KeyedElement (Some (KeyField "Succeeded"%go)) (ElementExpression go.bool "$v1"); KeyedElement (Some (KeyField "Responses"%go)) (ElementExpression (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) "$v2")])), Convert go.untyped_nil go.error UntypedNil)).
+     let: "$v2" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] "resps") in
+     CompositeLiteral code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse (LiteralValue [KeyedElement (Some (KeyField "Header"%go)) (ElementExpression (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader) "$v0"); KeyedElement (Some (KeyField "Succeeded"%go)) (ElementExpression go.bool "$v1"); KeyedElement (Some (KeyField "Responses"%go)) (ElementExpression (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) "$v2")])), Convert go.untyped_nil go.error UntypedNil)).
 
 (* fallback computes the ops to fetch all possible conflicting
    leasing keys for a list of ops.
@@ -2181,58 +2181,58 @@ Definition txnLeasing__evalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
    go: txn.go:93:24 *)
 Definition txnLeasing__fallbackⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "ops",
-    exception_do (let: "fbOps" := (GoAlloc (go.SliceType clientv3.Op) (GoZeroVal (go.SliceType clientv3.Op) #())) in
+    exception_do (let: "fbOps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) #())) in
     let: "txn" := (GoAlloc (go.PointerType txnLeasing) "txn") in
-    let: "ops" := (GoAlloc (go.SliceType clientv3.Op) "ops") in
-    let: "$range" := (![go.SliceType clientv3.Op] "ops") in
-    (let: "op" := (GoAlloc clientv3.Op (GoZeroVal clientv3.Op #())) in
-    slice.for_range clientv3.Op "$range" (λ: "$key" "$value",
-      do:  ("op" <-[clientv3.Op] "$value");;;
+    let: "ops" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) "ops") in
+    let: "$range" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
+    (let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Op #())) in
+    slice.for_range code.go_etcd_io.etcd.client.v3.clientv3.Op "$range" (λ: "$key" "$value",
+      do:  ("op" <-[code.go_etcd_io.etcd.client.v3.clientv3.Op] "$value");;;
       do:  "$key";;;
-      (if: (MethodResolve (go.PointerType clientv3.Op) "IsGet"%go "op") #()
+      (if: (MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsGet"%go "op") #()
       then continue: #()
       else do:  #());;;
       let: "lend" := (GoAlloc go.string (GoZeroVal go.string #())) in
       let: "lkey" := (GoAlloc go.string (GoZeroVal go.string #())) in
-      let: "$r0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) +⟨go.string⟩ (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "KeyBytes"%go "op") #()))) in
+      let: "$r0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) +⟨go.string⟩ (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "KeyBytes"%go "op") #()))) in
       let: "$r1" := #""%go in
       do:  ("lkey" <-[go.string] "$r0");;;
       do:  ("lend" <-[go.string] "$r1");;;
-      (if: Convert go.untyped_bool go.bool ((let: "$a0" := ((MethodResolve (go.PointerType clientv3.Op) "RangeBytes"%go "op") #()) in
+      (if: Convert go.untyped_bool go.bool ((let: "$a0" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "RangeBytes"%go "op") #()) in
       (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") >⟨go.int⟩ #(W64 0))
       then
-        let: "$r0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) +⟨go.string⟩ (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "RangeBytes"%go "op") #()))) in
+        let: "$r0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) +⟨go.string⟩ (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "RangeBytes"%go "op") #()))) in
         do:  ("lend" <-[go.string] "$r0")
       else do:  #());;;
-      let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] "fbOps") in
+      let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "fbOps") in
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![go.string] "lkey") in
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![go.string] "lend") in
-      (FuncResolve clientv3.WithRange [] #()) "$a0") in
-      CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption "$sl0")]))) in
-      (FuncResolve clientv3.OpGet [] #()) "$a0" "$a1") in
-      CompositeLiteral (go.SliceType clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression clientv3.Op "$sl0")]))) in
-      (FuncResolve go.append [go.SliceType clientv3.Op] #()) "$a0" "$a1") in
-      do:  ("fbOps" <-[go.SliceType clientv3.Op] "$r0")));;;
-    return: (![go.SliceType clientv3.Op] "fbOps")).
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.WithRange [] #()) "$a0") in
+      CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.OpOption "$sl0")]))) in
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.OpGet [] #()) "$a0" "$a1") in
+      CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Op "$sl0")]))) in
+      (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] #()) "$a0" "$a1") in
+      do:  ("fbOps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0")));;;
+    return: (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "fbOps")).
 
 (* go: txn.go:107:24 *)
 Definition txnLeasing__guardKeysⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "ops",
-    exception_do (let: "cmps" := (GoAlloc (go.SliceType clientv3.Cmp) (GoZeroVal (go.SliceType clientv3.Cmp) #())) in
+    exception_do (let: "cmps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) #())) in
     let: "txn" := (GoAlloc (go.PointerType txnLeasing) "txn") in
-    let: "ops" := (GoAlloc (go.SliceType clientv3.Op) "ops") in
+    let: "ops" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) "ops") in
     let: "seen" := (GoAlloc (go.MapType go.string go.bool) (GoZeroVal (go.MapType go.string go.bool) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.MapType go.string go.bool] #()) #()) in
     do:  ("seen" <-[go.MapType go.string go.bool] "$r0");;;
-    let: "$range" := (![go.SliceType clientv3.Op] "ops") in
-    (let: "op" := (GoAlloc clientv3.Op (GoZeroVal clientv3.Op #())) in
-    slice.for_range clientv3.Op "$range" (λ: "$key" "$value",
-      do:  ("op" <-[clientv3.Op] "$value");;;
+    let: "$range" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
+    (let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Op #())) in
+    slice.for_range code.go_etcd_io.etcd.client.v3.clientv3.Op "$range" (λ: "$key" "$value",
+      do:  ("op" <-[code.go_etcd_io.etcd.client.v3.clientv3.Op] "$value");;;
       do:  "$key";;;
       let: "key" := (GoAlloc go.string (GoZeroVal go.string #())) in
-      let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "KeyBytes"%go "op") #())) in
+      let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "KeyBytes"%go "op") #())) in
       do:  ("key" <-[go.string] "$r0");;;
-      (if: (((MethodResolve (go.PointerType clientv3.Op) "IsGet"%go "op") #()) || ((let: "$a0" := ((MethodResolve (go.PointerType clientv3.Op) "RangeBytes"%go "op") #()) in
+      (if: (((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsGet"%go "op") #()) || ((let: "$a0" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "RangeBytes"%go "op") #()) in
       (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") ≠⟨go.int⟩ #(W64 0))) || (map.lookup1 go.string go.bool (![go.MapType go.string go.bool] "seen") (![go.string] "key"))
       then continue: #()
       else do:  #());;;
@@ -2240,44 +2240,44 @@ Definition txnLeasing__guardKeysⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
       let: "$r0" := (let: "$a0" := (![go.string] "key") in
       (MethodResolve (go.PointerType leaseCache) "Rev"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) "$a0") in
       do:  ("rev" <-[go.int64] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Cmp] "cmps") in
+      let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "cmps") in
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := (let: "$a0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) +⟨go.string⟩ (![go.string] "key")) in
-      (FuncResolve clientv3.CreateRevision [] #()) "$a0") in
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.CreateRevision [] #()) "$a0") in
       let: "$a1" := #"<"%go in
       let: "$a2" := (Convert go.int64 go.any ((![go.int64] "rev") +⟨go.int64⟩ #(W64 1))) in
-      (FuncResolve clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
-      CompositeLiteral (go.SliceType clientv3.Cmp) (LiteralValue [KeyedElement None (ElementExpression clientv3.Cmp "$sl0")]))) in
-      (FuncResolve go.append [go.SliceType clientv3.Cmp] #()) "$a0" "$a1") in
-      do:  ("cmps" <-[go.SliceType clientv3.Cmp] "$r0");;;
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
+      CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Cmp "$sl0")]))) in
+      (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] #()) "$a0" "$a1") in
+      do:  ("cmps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "$r0");;;
       let: "$r0" := #true in
       do:  (map.insert go.string (![go.MapType go.string go.bool] "seen") (![go.string] "key") "$r0")));;;
-    return: (![go.SliceType clientv3.Cmp] "cmps")).
+    return: (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "cmps")).
 
 (* go: txn.go:121:24 *)
 Definition txnLeasing__guardRangesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "ops",
     exception_do (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "cmps" := (GoAlloc (go.SliceType clientv3.Cmp) (GoZeroVal (go.SliceType clientv3.Cmp) #())) in
+    let: "cmps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) #())) in
     let: "txn" := (GoAlloc (go.PointerType txnLeasing) "txn") in
-    let: "ops" := (GoAlloc (go.SliceType clientv3.Op) "ops") in
-    let: "$range" := (![go.SliceType clientv3.Op] "ops") in
-    (let: "op" := (GoAlloc clientv3.Op (GoZeroVal clientv3.Op #())) in
-    slice.for_range clientv3.Op "$range" (λ: "$key" "$value",
-      do:  ("op" <-[clientv3.Op] "$value");;;
+    let: "ops" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) "ops") in
+    let: "$range" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
+    (let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Op #())) in
+    slice.for_range code.go_etcd_io.etcd.client.v3.clientv3.Op "$range" (λ: "$key" "$value",
+      do:  ("op" <-[code.go_etcd_io.etcd.client.v3.clientv3.Op] "$value");;;
       do:  "$key";;;
-      (if: ((MethodResolve (go.PointerType clientv3.Op) "IsGet"%go "op") #()) || ((let: "$a0" := ((MethodResolve (go.PointerType clientv3.Op) "RangeBytes"%go "op") #()) in
+      (if: ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsGet"%go "op") #()) || ((let: "$a0" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "RangeBytes"%go "op") #()) in
       (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") =⟨go.int⟩ #(W64 0))
       then continue: #()
       else do:  #());;;
       let: "end" := (GoAlloc go.string (GoZeroVal go.string #())) in
       let: "key" := (GoAlloc go.string (GoZeroVal go.string #())) in
-      let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "KeyBytes"%go "op") #())) in
-      let: "$r1" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "RangeBytes"%go "op") #())) in
+      let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "KeyBytes"%go "op") #())) in
+      let: "$r1" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "RangeBytes"%go "op") #())) in
       do:  ("key" <-[go.string] "$r0");;;
       do:  ("end" <-[go.string] "$r1");;;
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
       let: "maxRevLK" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn"))) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn"))) in
       let: "$a1" := (![go.string] "key") in
       let: "$a2" := (![go.string] "end") in
       (MethodResolve (go.PointerType leasingKV) "revokeRange"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))) "$a0" "$a1" "$a2") in
@@ -2286,107 +2286,107 @@ Definition txnLeasing__guardRangesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
       do:  ("maxRevLK" <-[go.int64] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-      then return: (Convert go.untyped_nil (go.SliceType clientv3.Cmp) UntypedNil, ![go.error] "err")
+      then return: (Convert go.untyped_nil (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) UntypedNil, ![go.error] "err")
       else do:  #());;;
-      let: "opts" := (GoAlloc (go.SliceType clientv3.OpOption) (GoZeroVal (go.SliceType clientv3.OpOption) #())) in
-      let: "$r0" := (let: "$a0" := ((FuncResolve clientv3.WithLastRev [] #()) #()) in
+      let: "opts" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption) #())) in
+      let: "$r0" := (let: "$a0" := ((FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.WithLastRev [] #()) #()) in
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![go.string] "end") in
-      (FuncResolve clientv3.WithRange [] #()) "$a0") in
-      CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption "$sl0")]))) in
-      (FuncResolve go.append [go.SliceType clientv3.OpOption] #()) "$a0" "$a1") in
-      do:  ("opts" <-[go.SliceType clientv3.OpOption] "$r0");;;
-      let: "getResp" := (GoAlloc (go.PointerType clientv3.GetResponse) (GoZeroVal (go.PointerType clientv3.GetResponse) #())) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn"))) in
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.WithRange [] #()) "$a0") in
+      CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.OpOption "$sl0")]))) in
+      (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption] #()) "$a0" "$a1") in
+      do:  ("opts" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption] "$r0");;;
+      let: "getResp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) #())) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn"))) in
       let: "$a1" := (![go.string] "key") in
-      let: "$a2" := (![go.SliceType clientv3.OpOption] "opts") in
-      (MethodResolve clientv3.KV "Get"%go (![clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) "$a0" "$a1" "$a2") in
+      let: "$a2" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption] "opts") in
+      (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.KV "Get"%go (![code.go_etcd_io.etcd.client.v3.clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) "$a0" "$a1" "$a2") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("getResp" <-[go.PointerType clientv3.GetResponse] "$r0");;;
+      do:  ("getResp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-      then return: (Convert go.untyped_nil (go.SliceType clientv3.Cmp) UntypedNil, ![go.error] "err")
+      then return: (Convert go.untyped_nil (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) UntypedNil, ![go.error] "err")
       else do:  #());;;
       let: "maxModRev" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
       let: "$r0" := #(W64 0) in
       do:  ("maxModRev" <-[go.int64] "$r0");;;
-      (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "getResp"))) in
-      (FuncResolve go.len [go.SliceType (go.PointerType mvccpb.KeyValue)] #()) "$a0") >⟨go.int⟩ #(W64 0))
+      (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "getResp"))) in
+      (FuncResolve go.len [go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] #()) "$a0") >⟨go.int⟩ #(W64 0))
       then
-        let: "$r0" := (![go.int64] (StructFieldRef mvccpb.KeyValue "ModRevision"%go (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "getResp")), #(W64 0)))))) in
+        let: "$r0" := (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "ModRevision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "getResp")), #(W64 0)))))) in
         do:  ("maxModRev" <-[go.int64] "$r0")
       else do:  #());;;
-      let: "noKeyUpdate" := (GoAlloc clientv3.Cmp (GoZeroVal clientv3.Cmp #())) in
+      let: "noKeyUpdate" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Cmp (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Cmp #())) in
       let: "$r0" := (let: "$a0" := (let: "$a0" := (![go.string] "end") in
-      (MethodResolve clientv3.Cmp "WithRange"%go (let: "$a0" := (![go.string] "key") in
-      (FuncResolve clientv3.ModRevision [] #()) "$a0")) "$a0") in
+      (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Cmp "WithRange"%go (let: "$a0" := (![go.string] "key") in
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.ModRevision [] #()) "$a0")) "$a0") in
       let: "$a1" := #"<"%go in
       let: "$a2" := (Convert go.int64 go.any ((![go.int64] "maxModRev") +⟨go.int64⟩ #(W64 1))) in
-      (FuncResolve clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
-      do:  ("noKeyUpdate" <-[clientv3.Cmp] "$r0");;;
-      let: "noLeaseUpdate" := (GoAlloc clientv3.Cmp (GoZeroVal clientv3.Cmp #())) in
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
+      do:  ("noKeyUpdate" <-[code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "$r0");;;
+      let: "noLeaseUpdate" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Cmp (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Cmp #())) in
       let: "$r0" := (let: "$a0" := (let: "$a0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) +⟨go.string⟩ (![go.string] "end")) in
-      (MethodResolve clientv3.Cmp "WithRange"%go (let: "$a0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) +⟨go.string⟩ (![go.string] "key")) in
-      (FuncResolve clientv3.CreateRevision [] #()) "$a0")) "$a0") in
+      (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Cmp "WithRange"%go (let: "$a0" := ((![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) +⟨go.string⟩ (![go.string] "key")) in
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.CreateRevision [] #()) "$a0")) "$a0") in
       let: "$a1" := #"<"%go in
       let: "$a2" := (Convert go.int64 go.any ((![go.int64] "maxRevLK") +⟨go.int64⟩ #(W64 1))) in
-      (FuncResolve clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
-      do:  ("noLeaseUpdate" <-[clientv3.Cmp] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Cmp] "cmps") in
-      let: "$a1" := ((let: "$sl0" := (![clientv3.Cmp] "noKeyUpdate") in
-      let: "$sl1" := (![clientv3.Cmp] "noLeaseUpdate") in
-      CompositeLiteral (go.SliceType clientv3.Cmp) (LiteralValue [KeyedElement None (ElementExpression clientv3.Cmp "$sl0"); KeyedElement None (ElementExpression clientv3.Cmp "$sl1")]))) in
-      (FuncResolve go.append [go.SliceType clientv3.Cmp] #()) "$a0" "$a1") in
-      do:  ("cmps" <-[go.SliceType clientv3.Cmp] "$r0")));;;
-    return: (![go.SliceType clientv3.Cmp] "cmps", Convert go.untyped_nil go.error UntypedNil)).
+      (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.Compare [] #()) "$a0" "$a1" "$a2") in
+      do:  ("noLeaseUpdate" <-[code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "cmps") in
+      let: "$a1" := ((let: "$sl0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "noKeyUpdate") in
+      let: "$sl1" := (![code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "noLeaseUpdate") in
+      CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Cmp "$sl0"); KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Cmp "$sl1")]))) in
+      (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] #()) "$a0" "$a1") in
+      do:  ("cmps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "$r0")));;;
+    return: (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "cmps", Convert go.untyped_nil go.error UntypedNil)).
 
 (* go: txn.go:153:24 *)
 Definition txnLeasing__guardⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "ops",
     exception_do (let: "txn" := (GoAlloc (go.PointerType txnLeasing) "txn") in
-    let: "ops" := (GoAlloc (go.SliceType clientv3.Op) "ops") in
-    let: "cmps" := (GoAlloc (go.SliceType clientv3.Cmp) (GoZeroVal (go.SliceType clientv3.Cmp) #())) in
-    let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] "ops") in
+    let: "ops" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) "ops") in
+    let: "cmps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) #())) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
     (MethodResolve (go.PointerType txnLeasing) "guardKeys"%go (![go.PointerType txnLeasing] "txn")) "$a0") in
-    do:  ("cmps" <-[go.SliceType clientv3.Cmp] "$r0");;;
+    do:  ("cmps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "$r0");;;
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "rangeCmps" := (GoAlloc (go.SliceType clientv3.Cmp) (GoZeroVal (go.SliceType clientv3.Cmp) #())) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType clientv3.Op] "ops") in
+    let: "rangeCmps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
     (MethodResolve (go.PointerType txnLeasing) "guardRanges"%go (![go.PointerType txnLeasing] "txn")) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("rangeCmps" <-[go.SliceType clientv3.Cmp] "$r0");;;
+    do:  ("rangeCmps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
-    return: (let: "$a0" := (![go.SliceType clientv3.Cmp] "cmps") in
-     let: "$a1" := (![go.SliceType clientv3.Cmp] "rangeCmps") in
-     (FuncResolve go.append [go.SliceType clientv3.Cmp] #()) "$a0" "$a1", ![go.error] "err")).
+    return: (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "cmps") in
+     let: "$a1" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "rangeCmps") in
+     (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] #()) "$a0" "$a1", ![go.error] "err")).
 
 (* go: txn.go:159:24 *)
 Definition txnLeasing__commitToCacheⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "txnResp" "userTxn",
     exception_do (let: "txn" := (GoAlloc (go.PointerType txnLeasing) "txn") in
-    let: "userTxn" := (GoAlloc clientv3.Op "userTxn") in
-    let: "txnResp" := (GoAlloc (go.PointerType etcdserverpb.TxnResponse) "txnResp") in
-    let: "ops" := (GoAlloc (go.SliceType clientv3.Op) (GoZeroVal (go.SliceType clientv3.Op) #())) in
-    let: "$r0" := (let: "$a0" := (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] (StructFieldRef etcdserverpb.TxnResponse "Responses"%go (![go.PointerType etcdserverpb.TxnResponse] "txnResp"))) in
-    let: "$a1" := (let: "$v0" := (![clientv3.Op] "userTxn") in
-    CompositeLiteral (go.SliceType clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression clientv3.Op "$v0")])) in
+    let: "userTxn" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op "userTxn") in
+    let: "txnResp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse) "txnResp") in
+    let: "ops" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) #())) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse "Responses"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse] "txnResp"))) in
+    let: "$a1" := (let: "$v0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "userTxn") in
+    CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Op "$v0")])) in
     (FuncResolve gatherResponseOps [] #()) "$a0" "$a1") in
-    do:  ("ops" <-[go.SliceType clientv3.Op] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) #());;;
-    let: "$range" := (![go.SliceType clientv3.Op] "ops") in
-    (let: "op" := (GoAlloc clientv3.Op (GoZeroVal clientv3.Op #())) in
-    slice.for_range clientv3.Op "$range" (λ: "$key" "$value",
-      do:  ("op" <-[clientv3.Op] "$value");;;
+    do:  ("ops" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0");;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) #());;;
+    let: "$range" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
+    (let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Op #())) in
+    slice.for_range code.go_etcd_io.etcd.client.v3.clientv3.Op "$range" (λ: "$key" "$value",
+      do:  ("op" <-[code.go_etcd_io.etcd.client.v3.clientv3.Op] "$value");;;
       do:  "$key";;;
       let: "key" := (GoAlloc go.string (GoZeroVal go.string #())) in
-      let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "KeyBytes"%go "op") #())) in
+      let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "KeyBytes"%go "op") #())) in
       do:  ("key" <-[go.string] "$r0");;;
-      (if: ((MethodResolve (go.PointerType clientv3.Op) "IsDelete"%go "op") #()) && ((let: "$a0" := ((MethodResolve (go.PointerType clientv3.Op) "RangeBytes"%go "op") #()) in
+      (if: ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsDelete"%go "op") #()) && ((let: "$a0" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "RangeBytes"%go "op") #()) in
       (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") >⟨go.int⟩ #(W64 0))
       then
         let: "end" := (GoAlloc go.string (GoZeroVal go.string #())) in
-        let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType clientv3.Op) "RangeBytes"%go "op") #())) in
+        let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "RangeBytes"%go "op") #())) in
         do:  ("end" <-[go.string] "$r0");;;
         let: "$range" := (![go.MapType go.string (go.PointerType leaseKey)] (StructFieldRef leaseCache "entries"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) in
         (let: "k" := (GoAlloc go.string (GoZeroVal go.string #())) in
@@ -2398,39 +2398,39 @@ Definition txnLeasing__commitToCacheⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
           (FuncResolve inRange [] #()) "$a0" "$a1" "$a2"
           then
             do:  (let: "$a0" := (![go.string] "k") in
-            let: "$a1" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef etcdserverpb.TxnResponse "Header"%go (![go.PointerType etcdserverpb.TxnResponse] "txnResp"))) in
+            let: "$a1" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse] "txnResp"))) in
             (MethodResolve (go.PointerType leaseCache) "delete"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) "$a0" "$a1")
           else do:  #())))
       else
-        (if: (MethodResolve (go.PointerType clientv3.Op) "IsDelete"%go "op") #()
+        (if: (MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsDelete"%go "op") #()
         then
           do:  (let: "$a0" := (![go.string] "key") in
-          let: "$a1" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef etcdserverpb.TxnResponse "Header"%go (![go.PointerType etcdserverpb.TxnResponse] "txnResp"))) in
+          let: "$a1" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse] "txnResp"))) in
           (MethodResolve (go.PointerType leaseCache) "delete"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) "$a0" "$a1")
         else do:  #()));;;
-      (if: (MethodResolve (go.PointerType clientv3.Op) "IsPut"%go "op") #()
+      (if: (MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsPut"%go "op") #()
       then
-        do:  (let: "$a0" := ((MethodResolve (go.PointerType clientv3.Op) "KeyBytes"%go "op") #()) in
-        let: "$a1" := ((MethodResolve (go.PointerType clientv3.Op) "ValueBytes"%go "op") #()) in
-        let: "$a2" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef etcdserverpb.TxnResponse "Header"%go (![go.PointerType etcdserverpb.TxnResponse] "txnResp"))) in
+        do:  (let: "$a0" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "KeyBytes"%go "op") #()) in
+        let: "$a1" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "ValueBytes"%go "op") #()) in
+        let: "$a2" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse] "txnResp"))) in
         (MethodResolve (go.PointerType leaseCache) "Update"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) "$a0" "$a1" "$a2")
       else do:  #())));;;
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) #());;;
     return: #()).
 
 (* go: txn.go:181:24 *)
 Definition txnLeasing__revokeFallbackⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "fbResps",
     exception_do (let: "txn" := (GoAlloc (go.PointerType txnLeasing) "txn") in
-    let: "fbResps" := (GoAlloc (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) "fbResps") in
-    let: "$range" := (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] "fbResps") in
-    (let: "resp" := (GoAlloc (go.PointerType etcdserverpb.ResponseOp) (GoZeroVal (go.PointerType etcdserverpb.ResponseOp) #())) in
-    slice.for_range (go.PointerType etcdserverpb.ResponseOp) "$range" (λ: "$key" "$value",
-      do:  ("resp" <-[go.PointerType etcdserverpb.ResponseOp] "$value");;;
+    let: "fbResps" := (GoAlloc (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) "fbResps") in
+    let: "$range" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] "fbResps") in
+    (let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp) #())) in
+    slice.for_range (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp) "$range" (λ: "$key" "$value",
+      do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp] "$value");;;
       do:  "$key";;;
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn"))) in
-      let: "$a1" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef etcdserverpb.RangeResponse "Kvs"%go ((MethodResolve (go.PointerType etcdserverpb.ResponseOp) "GetResponseRange"%go (![go.PointerType etcdserverpb.ResponseOp] "resp")) #()))) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn"))) in
+      let: "$a1" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeResponse "Kvs"%go ((MethodResolve (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp) "GetResponseRange"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp] "resp")) #()))) in
       (MethodResolve (go.PointerType leasingKV) "revokeLeaseKvs"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
@@ -2446,29 +2446,29 @@ Definition txnLeasing__serverTxnⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
   λ: "txn" <>,
     with_defer: (let: "txn" := (GoAlloc (go.PointerType txnLeasing) "txn") in
     (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "$r0" := (let: "$a0" := (![context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn"))) in
+    let: "$r0" := (let: "$a0" := (![code.context.context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn"))) in
     (MethodResolve (go.PointerType leasingKV) "waitSession"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))) "$a0") in
     do:  ("err" <-[go.error] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-    then return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, ![go.error] "err")
+    then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) UntypedNil, ![go.error] "err")
     else do:  #()));;;
-    let: "userOps" := (GoAlloc (go.SliceType clientv3.Op) (GoZeroVal (go.SliceType clientv3.Op) #())) in
-    let: "$r0" := (let: "$a0" := (let: "$a0" := (![go.SliceType clientv3.Op] (StructFieldRef txnLeasing "opst"%go (![go.PointerType txnLeasing] "txn"))) in
-    let: "$a1" := (![go.SliceType clientv3.Op] (StructFieldRef txnLeasing "opse"%go (![go.PointerType txnLeasing] "txn"))) in
-    (FuncResolve go.append [go.SliceType clientv3.Op] #()) "$a0" "$a1") in
+    let: "userOps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) #())) in
+    let: "$r0" := (let: "$a0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] (StructFieldRef txnLeasing "opst"%go (![go.PointerType txnLeasing] "txn"))) in
+    let: "$a1" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] (StructFieldRef txnLeasing "opse"%go (![go.PointerType txnLeasing] "txn"))) in
+    (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] #()) "$a0" "$a1") in
     (FuncResolve gatherOps [] #()) "$a0") in
-    do:  ("userOps" <-[go.SliceType clientv3.Op] "$r0");;;
-    let: "userTxn" := (GoAlloc clientv3.Op (GoZeroVal clientv3.Op #())) in
-    let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Cmp] (StructFieldRef txnLeasing "cs"%go (![go.PointerType txnLeasing] "txn"))) in
-    let: "$a1" := (![go.SliceType clientv3.Op] (StructFieldRef txnLeasing "opst"%go (![go.PointerType txnLeasing] "txn"))) in
-    let: "$a2" := (![go.SliceType clientv3.Op] (StructFieldRef txnLeasing "opse"%go (![go.PointerType txnLeasing] "txn"))) in
-    (FuncResolve clientv3.OpTxn [] #()) "$a0" "$a1" "$a2") in
-    do:  ("userTxn" <-[clientv3.Op] "$r0");;;
-    let: "fbOps" := (GoAlloc (go.SliceType clientv3.Op) (GoZeroVal (go.SliceType clientv3.Op) #())) in
-    let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] "userOps") in
+    do:  ("userOps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0");;;
+    let: "userTxn" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Op #())) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] (StructFieldRef txnLeasing "cs"%go (![go.PointerType txnLeasing] "txn"))) in
+    let: "$a1" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] (StructFieldRef txnLeasing "opst"%go (![go.PointerType txnLeasing] "txn"))) in
+    let: "$a2" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] (StructFieldRef txnLeasing "opse"%go (![go.PointerType txnLeasing] "txn"))) in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.OpTxn [] #()) "$a0" "$a1" "$a2") in
+    do:  ("userTxn" <-[code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0");;;
+    let: "fbOps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) #())) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "userOps") in
     (MethodResolve (go.PointerType txnLeasing) "fallback"%go (![go.PointerType txnLeasing] "txn")) "$a0") in
-    do:  ("fbOps" <-[go.SliceType clientv3.Op] "$r0");;;
-    do:  (let: "$a0" := (let: "$a0" := (![go.SliceType clientv3.Op] "userOps") in
+    do:  ("fbOps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0");;;
+    do:  (let: "$a0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "userOps") in
     (MethodResolve (go.PointerType leaseCache) "LockWriteOps"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) "$a0") in
     let: "$f" := (FuncResolve closeAll [] #()) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
@@ -2478,58 +2478,58 @@ Definition txnLeasing__serverTxnⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
       )));;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "cmps" := (GoAlloc (go.SliceType clientv3.Cmp) (GoZeroVal (go.SliceType clientv3.Cmp) #())) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType clientv3.Op] "userOps") in
+      let: "cmps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp) #())) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "userOps") in
       (MethodResolve (go.PointerType txnLeasing) "guard"%go (![go.PointerType txnLeasing] "txn")) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("cmps" <-[go.SliceType clientv3.Cmp] "$r0");;;
+      do:  ("cmps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-      then return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, ![go.error] "err")
+      then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) UntypedNil, ![go.error] "err")
       else do:  #());;;
-      let: "resp" := (GoAlloc (go.PointerType clientv3.TxnResponse) (GoZeroVal (go.PointerType clientv3.TxnResponse) #())) in
-      let: ("$ret0", "$ret1") := ((MethodResolve clientv3.Txn "Commit"%go (let: "$a0" := (![go.SliceType clientv3.Op] "fbOps") in
-      (MethodResolve clientv3.Txn "Else"%go (let: "$a0" := ((let: "$sl0" := (![clientv3.Op] "userTxn") in
-      CompositeLiteral (go.SliceType clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression clientv3.Op "$sl0")]))) in
-      (MethodResolve clientv3.Txn "Then"%go (let: "$a0" := (![go.SliceType clientv3.Cmp] "cmps") in
-      (MethodResolve clientv3.Txn "If"%go (let: "$a0" := (![context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn"))) in
-      (MethodResolve clientv3.KV "Txn"%go (![clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) "$a0")) "$a0")) "$a0")) "$a0")) #()) in
+      let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) #())) in
+      let: ("$ret0", "$ret1") := ((MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Commit"%go (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "fbOps") in
+      (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Else"%go (let: "$a0" := ((let: "$sl0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "userTxn") in
+      CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Op "$sl0")]))) in
+      (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "Then"%go (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "cmps") in
+      (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.Txn "If"%go (let: "$a0" := (![code.context.context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn"))) in
+      (MethodResolve code.go_etcd_io.etcd.client.v3.clientv3.KV "Txn"%go (![code.go_etcd_io.etcd.client.v3.clientv3.KV] (StructFieldRef leasingKV "kv"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) "$a0")) "$a0")) "$a0")) "$a0")) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
+      do:  ("resp" <-[go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then
-        let: "$range" := (![go.SliceType clientv3.Cmp] "cmps") in
-        (let: "cmp" := (GoAlloc clientv3.Cmp (GoZeroVal clientv3.Cmp #())) in
-        slice.for_range clientv3.Cmp "$range" (λ: "$key" "$value",
-          do:  ("cmp" <-[clientv3.Cmp] "$value");;;
+        let: "$range" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "cmps") in
+        (let: "cmp" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Cmp (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Cmp #())) in
+        slice.for_range code.go_etcd_io.etcd.client.v3.clientv3.Cmp "$range" (λ: "$key" "$value",
+          do:  ("cmp" <-[code.go_etcd_io.etcd.client.v3.clientv3.Cmp] "$value");;;
           do:  "$key";;;
-          do:  (let: "$a0" := (let: "$a0" := (Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (StructFieldRef clientv3.Cmp "Key"%go "cmp"))) in
+          do:  (let: "$a0" := (let: "$a0" := (Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.Cmp "Key"%go "cmp"))) in
           let: "$a1" := (![go.string] (StructFieldRef leasingKV "pfx"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) in
-          (FuncResolve strings.TrimPrefix [] #()) "$a0" "$a1") in
+          (FuncResolve code.strings.strings.TrimPrefix [] #()) "$a0" "$a1") in
           (MethodResolve (go.PointerType leaseCache) "Evict"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn"))))) "$a0")));;;
-        return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, ![go.error] "err")
+        return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) UntypedNil, ![go.error] "err")
       else do:  #());;;
-      (if: ![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))
+      (if: ![go.bool] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Succeeded"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))
       then
-        do:  (let: "$a0" := (Convert (go.PointerType clientv3.TxnResponse) (go.PointerType etcdserverpb.TxnResponse) (![go.PointerType clientv3.TxnResponse] "resp")) in
-        let: "$a1" := (![clientv3.Op] "userTxn") in
+        do:  (let: "$a0" := (Convert (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse) (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp")) in
+        let: "$a1" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "userTxn") in
         (MethodResolve (go.PointerType txnLeasing) "commitToCache"%go (![go.PointerType txnLeasing] "txn")) "$a0" "$a1");;;
-        let: "userResp" := (GoAlloc (go.PointerType etcdserverpb.TxnResponse) (GoZeroVal (go.PointerType etcdserverpb.TxnResponse) #())) in
-        let: "$r0" := ((MethodResolve (go.PointerType etcdserverpb.ResponseOp) "GetResponseTxn"%go (![go.PointerType etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] (StructFieldRef clientv3.TxnResponse "Responses"%go (![go.PointerType clientv3.TxnResponse] "resp")), #(W64 0))))) #()) in
-        do:  ("userResp" <-[go.PointerType etcdserverpb.TxnResponse] "$r0");;;
-        let: "$r0" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.TxnResponse "Header"%go (![go.PointerType clientv3.TxnResponse] "resp"))) in
-        do:  ((StructFieldRef etcdserverpb.TxnResponse "Header"%go (![go.PointerType etcdserverpb.TxnResponse] "userResp")) <-[go.PointerType etcdserverpb.ResponseHeader] "$r0");;;
-        return: (Convert (go.PointerType etcdserverpb.TxnResponse) (go.PointerType clientv3.TxnResponse) (![go.PointerType etcdserverpb.TxnResponse] "userResp"), Convert go.untyped_nil go.error UntypedNil)
+        let: "userResp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse) #())) in
+        let: "$r0" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp) "GetResponseTxn"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Responses"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp")), #(W64 0))))) #()) in
+        do:  ("userResp" <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse] "$r0");;;
+        let: "$r0" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))) in
+        do:  ((StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse "Header"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse] "userResp")) <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "$r0");;;
+        return: (Convert (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse) (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse] "userResp"), Convert go.untyped_nil go.error UntypedNil)
       else do:  #());;;
       (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "$r0" := (let: "$a0" := (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] (StructFieldRef clientv3.TxnResponse "Responses"%go (![go.PointerType clientv3.TxnResponse] "resp"))) in
+      let: "$r0" := (let: "$a0" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse "Responses"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse] "resp"))) in
       (MethodResolve (go.PointerType txnLeasing) "revokeFallback"%go (![go.PointerType txnLeasing] "txn")) "$a0") in
       do:  ("err" <-[go.error] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-      then return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, ![go.error] "err")
+      then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.TxnResponse) UntypedNil, ![go.error] "err")
       else do:  #())))).
 
 (* go: util.go:24:6 *)
@@ -2548,92 +2548,92 @@ Definition compareInt64ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 (* go: util.go:35:6 *)
 Definition evalCmpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "resp" "tcmp",
-    exception_do (let: "tcmp" := (GoAlloc clientv3.Cmp "tcmp") in
-    let: "resp" := (GoAlloc (go.PointerType clientv3.GetResponse) "resp") in
+    exception_do (let: "tcmp" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Cmp "tcmp") in
+    let: "resp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) "resp") in
     let: "result" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "resp"))) in
-    (FuncResolve go.len [go.SliceType (go.PointerType mvccpb.KeyValue)] #()) "$a0") ≠⟨go.int⟩ #(W64 0))
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "resp"))) in
+    (FuncResolve go.len [go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] #()) "$a0") ≠⟨go.int⟩ #(W64 0))
     then
-      let: "kv" := (GoAlloc (go.PointerType mvccpb.KeyValue) (GoZeroVal (go.PointerType mvccpb.KeyValue) #())) in
-      let: "$r0" := (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "resp")), #(W64 0)))) in
-      do:  ("kv" <-[go.PointerType mvccpb.KeyValue] "$r0");;;
-      let: "$sw" := (![etcdserverpb.Compare_CompareTarget] (StructFieldRef clientv3.Cmp "Target"%go "tcmp")) in
-      (if: "$sw" =⟨etcdserverpb.Compare_CompareTarget⟩ etcdserverpb.Compare_VALUE
+      let: "kv" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue) #())) in
+      let: "$r0" := (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.GetResponse "Kvs"%go (![go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse] "resp")), #(W64 0)))) in
+      do:  ("kv" <-[go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] "$r0");;;
+      let: "$sw" := (![code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CompareTarget] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.Cmp "Target"%go "tcmp")) in
+      (if: "$sw" =⟨code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CompareTarget⟩ code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_VALUE
       then
-        (let: "tv" := (GoAlloc (go.PointerType etcdserverpb.Compare_Value) (GoZeroVal (go.PointerType etcdserverpb.Compare_Value) #())) in
-        let: ("$ret0", "$ret1") := (TypeAssert2 (go.PointerType etcdserverpb.Compare_Value) (![etcdserverpb.isCompare_TargetUnion] (StructFieldRef clientv3.Cmp "TargetUnion"%go "tcmp"))) in
+        (let: "tv" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Value) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Value) #())) in
+        let: ("$ret0", "$ret1") := (TypeAssert2 (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Value) (![code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.isCompare_TargetUnion] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.Cmp "TargetUnion"%go "tcmp"))) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ("tv" <-[go.PointerType etcdserverpb.Compare_Value] "$r0");;;
+        do:  ("tv" <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Value] "$r0");;;
         do:  "$r1";;;
-        (if: Convert go.untyped_bool go.bool ((![go.PointerType etcdserverpb.Compare_Value] "tv") ≠⟨go.PointerType etcdserverpb.Compare_Value⟩ (Convert go.untyped_nil (go.PointerType etcdserverpb.Compare_Value) UntypedNil))
+        (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Value] "tv") ≠⟨go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Value⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Value) UntypedNil))
         then
-          let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef mvccpb.KeyValue "Value"%go (![go.PointerType mvccpb.KeyValue] "kv"))) in
-          let: "$a1" := (![go.SliceType go.byte] (StructFieldRef etcdserverpb.Compare_Value "Value"%go (![go.PointerType etcdserverpb.Compare_Value] "tv"))) in
-          (FuncResolve bytes.Compare [] #()) "$a0" "$a1") in
+          let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Value"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] "kv"))) in
+          let: "$a1" := (![go.SliceType go.byte] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Value "Value"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Value] "tv"))) in
+          (FuncResolve code.bytes.bytes.Compare [] #()) "$a0" "$a1") in
           do:  ("result" <-[go.int] "$r0")
         else do:  #()))
       else
-        (if: "$sw" =⟨etcdserverpb.Compare_CompareTarget⟩ etcdserverpb.Compare_CREATE
+        (if: "$sw" =⟨code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CompareTarget⟩ code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CREATE
         then
-          (let: "tv" := (GoAlloc (go.PointerType etcdserverpb.Compare_CreateRevision) (GoZeroVal (go.PointerType etcdserverpb.Compare_CreateRevision) #())) in
-          let: ("$ret0", "$ret1") := (TypeAssert2 (go.PointerType etcdserverpb.Compare_CreateRevision) (![etcdserverpb.isCompare_TargetUnion] (StructFieldRef clientv3.Cmp "TargetUnion"%go "tcmp"))) in
+          (let: "tv" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CreateRevision) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CreateRevision) #())) in
+          let: ("$ret0", "$ret1") := (TypeAssert2 (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CreateRevision) (![code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.isCompare_TargetUnion] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.Cmp "TargetUnion"%go "tcmp"))) in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
-          do:  ("tv" <-[go.PointerType etcdserverpb.Compare_CreateRevision] "$r0");;;
+          do:  ("tv" <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CreateRevision] "$r0");;;
           do:  "$r1";;;
-          (if: Convert go.untyped_bool go.bool ((![go.PointerType etcdserverpb.Compare_CreateRevision] "tv") ≠⟨go.PointerType etcdserverpb.Compare_CreateRevision⟩ (Convert go.untyped_nil (go.PointerType etcdserverpb.Compare_CreateRevision) UntypedNil))
+          (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CreateRevision] "tv") ≠⟨go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CreateRevision⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CreateRevision) UntypedNil))
           then
-            let: "$r0" := (let: "$a0" := (![go.int64] (StructFieldRef mvccpb.KeyValue "CreateRevision"%go (![go.PointerType mvccpb.KeyValue] "kv"))) in
-            let: "$a1" := (![go.int64] (StructFieldRef etcdserverpb.Compare_CreateRevision "CreateRevision"%go (![go.PointerType etcdserverpb.Compare_CreateRevision] "tv"))) in
+            let: "$r0" := (let: "$a0" := (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "CreateRevision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] "kv"))) in
+            let: "$a1" := (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CreateRevision "CreateRevision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CreateRevision] "tv"))) in
             (FuncResolve compareInt64 [] #()) "$a0" "$a1") in
             do:  ("result" <-[go.int] "$r0")
           else do:  #()))
         else
-          (if: "$sw" =⟨etcdserverpb.Compare_CompareTarget⟩ etcdserverpb.Compare_MOD
+          (if: "$sw" =⟨code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CompareTarget⟩ code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_MOD
           then
-            (let: "tv" := (GoAlloc (go.PointerType etcdserverpb.Compare_ModRevision) (GoZeroVal (go.PointerType etcdserverpb.Compare_ModRevision) #())) in
-            let: ("$ret0", "$ret1") := (TypeAssert2 (go.PointerType etcdserverpb.Compare_ModRevision) (![etcdserverpb.isCompare_TargetUnion] (StructFieldRef clientv3.Cmp "TargetUnion"%go "tcmp"))) in
+            (let: "tv" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_ModRevision) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_ModRevision) #())) in
+            let: ("$ret0", "$ret1") := (TypeAssert2 (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_ModRevision) (![code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.isCompare_TargetUnion] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.Cmp "TargetUnion"%go "tcmp"))) in
             let: "$r0" := "$ret0" in
             let: "$r1" := "$ret1" in
-            do:  ("tv" <-[go.PointerType etcdserverpb.Compare_ModRevision] "$r0");;;
+            do:  ("tv" <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_ModRevision] "$r0");;;
             do:  "$r1";;;
-            (if: Convert go.untyped_bool go.bool ((![go.PointerType etcdserverpb.Compare_ModRevision] "tv") ≠⟨go.PointerType etcdserverpb.Compare_ModRevision⟩ (Convert go.untyped_nil (go.PointerType etcdserverpb.Compare_ModRevision) UntypedNil))
+            (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_ModRevision] "tv") ≠⟨go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_ModRevision⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_ModRevision) UntypedNil))
             then
-              let: "$r0" := (let: "$a0" := (![go.int64] (StructFieldRef mvccpb.KeyValue "ModRevision"%go (![go.PointerType mvccpb.KeyValue] "kv"))) in
-              let: "$a1" := (![go.int64] (StructFieldRef etcdserverpb.Compare_ModRevision "ModRevision"%go (![go.PointerType etcdserverpb.Compare_ModRevision] "tv"))) in
+              let: "$r0" := (let: "$a0" := (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "ModRevision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] "kv"))) in
+              let: "$a1" := (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_ModRevision "ModRevision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_ModRevision] "tv"))) in
               (FuncResolve compareInt64 [] #()) "$a0" "$a1") in
               do:  ("result" <-[go.int] "$r0")
             else do:  #()))
           else
-            (if: "$sw" =⟨etcdserverpb.Compare_CompareTarget⟩ etcdserverpb.Compare_VERSION
+            (if: "$sw" =⟨code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CompareTarget⟩ code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_VERSION
             then
-              (let: "tv" := (GoAlloc (go.PointerType etcdserverpb.Compare_Version) (GoZeroVal (go.PointerType etcdserverpb.Compare_Version) #())) in
-              let: ("$ret0", "$ret1") := (TypeAssert2 (go.PointerType etcdserverpb.Compare_Version) (![etcdserverpb.isCompare_TargetUnion] (StructFieldRef clientv3.Cmp "TargetUnion"%go "tcmp"))) in
+              (let: "tv" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Version) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Version) #())) in
+              let: ("$ret0", "$ret1") := (TypeAssert2 (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Version) (![code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.isCompare_TargetUnion] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.Cmp "TargetUnion"%go "tcmp"))) in
               let: "$r0" := "$ret0" in
               let: "$r1" := "$ret1" in
-              do:  ("tv" <-[go.PointerType etcdserverpb.Compare_Version] "$r0");;;
+              do:  ("tv" <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Version] "$r0");;;
               do:  "$r1";;;
-              (if: Convert go.untyped_bool go.bool ((![go.PointerType etcdserverpb.Compare_Version] "tv") ≠⟨go.PointerType etcdserverpb.Compare_Version⟩ (Convert go.untyped_nil (go.PointerType etcdserverpb.Compare_Version) UntypedNil))
+              (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Version] "tv") ≠⟨go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Version⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Version) UntypedNil))
               then
-                let: "$r0" := (let: "$a0" := (![go.int64] (StructFieldRef mvccpb.KeyValue "Version"%go (![go.PointerType mvccpb.KeyValue] "kv"))) in
-                let: "$a1" := (![go.int64] (StructFieldRef etcdserverpb.Compare_Version "Version"%go (![go.PointerType etcdserverpb.Compare_Version] "tv"))) in
+                let: "$r0" := (let: "$a0" := (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue "Version"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue] "kv"))) in
+                let: "$a1" := (![go.int64] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Version "Version"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_Version] "tv"))) in
                 (FuncResolve compareInt64 [] #()) "$a0" "$a1") in
                 do:  ("result" <-[go.int] "$r0")
               else do:  #()))
             else do:  #()))))
     else do:  #());;;
-    let: "$sw" := (![etcdserverpb.Compare_CompareResult] (StructFieldRef clientv3.Cmp "Result"%go "tcmp")) in
-    (if: "$sw" =⟨etcdserverpb.Compare_CompareResult⟩ etcdserverpb.Compare_EQUAL
+    let: "$sw" := (![code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CompareResult] (StructFieldRef code.go_etcd_io.etcd.client.v3.clientv3.Cmp "Result"%go "tcmp")) in
+    (if: "$sw" =⟨code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CompareResult⟩ code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_EQUAL
     then return: ((![go.int] "result") =⟨go.int⟩ #(W64 0))
     else
-      (if: "$sw" =⟨etcdserverpb.Compare_CompareResult⟩ etcdserverpb.Compare_NOT_EQUAL
+      (if: "$sw" =⟨code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CompareResult⟩ code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_NOT_EQUAL
       then return: ((![go.int] "result") ≠⟨go.int⟩ #(W64 0))
       else
-        (if: "$sw" =⟨etcdserverpb.Compare_CompareResult⟩ etcdserverpb.Compare_GREATER
+        (if: "$sw" =⟨code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CompareResult⟩ code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_GREATER
         then return: ((![go.int] "result") >⟨go.int⟩ #(W64 0))
         else
-          (if: "$sw" =⟨etcdserverpb.Compare_CompareResult⟩ etcdserverpb.Compare_LESS
+          (if: "$sw" =⟨code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_CompareResult⟩ code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare_LESS
           then return: ((![go.int] "result") <⟨go.int⟩ #(W64 0))
           else do:  #()))));;;
     return: (#true)).
@@ -2641,97 +2641,97 @@ Definition evalCmpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
 (* go: util.go:71:6 *)
 Definition gatherOpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ops",
-    exception_do (let: "ret" := (GoAlloc (go.SliceType clientv3.Op) (GoZeroVal (go.SliceType clientv3.Op) #())) in
-    let: "ops" := (GoAlloc (go.SliceType clientv3.Op) "ops") in
-    let: "$range" := (![go.SliceType clientv3.Op] "ops") in
-    (let: "op" := (GoAlloc clientv3.Op (GoZeroVal clientv3.Op #())) in
-    slice.for_range clientv3.Op "$range" (λ: "$key" "$value",
-      do:  ("op" <-[clientv3.Op] "$value");;;
+    exception_do (let: "ret" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) #())) in
+    let: "ops" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) "ops") in
+    let: "$range" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
+    (let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Op #())) in
+    slice.for_range code.go_etcd_io.etcd.client.v3.clientv3.Op "$range" (λ: "$key" "$value",
+      do:  ("op" <-[code.go_etcd_io.etcd.client.v3.clientv3.Op] "$value");;;
       do:  "$key";;;
-      (if: (⟨go.bool⟩! ((MethodResolve (go.PointerType clientv3.Op) "IsTxn"%go "op") #()))
+      (if: (⟨go.bool⟩! ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsTxn"%go "op") #()))
       then
-        let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] "ret") in
-        let: "$a1" := ((let: "$sl0" := (![clientv3.Op] "op") in
-        CompositeLiteral (go.SliceType clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression clientv3.Op "$sl0")]))) in
-        (FuncResolve go.append [go.SliceType clientv3.Op] #()) "$a0" "$a1") in
-        do:  ("ret" <-[go.SliceType clientv3.Op] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ret") in
+        let: "$a1" := ((let: "$sl0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
+        CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Op "$sl0")]))) in
+        (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] #()) "$a0" "$a1") in
+        do:  ("ret" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0");;;
         continue: #()
       else do:  #());;;
-      let: "elseOps" := (GoAlloc (go.SliceType clientv3.Op) (GoZeroVal (go.SliceType clientv3.Op) #())) in
-      let: "thenOps" := (GoAlloc (go.SliceType clientv3.Op) (GoZeroVal (go.SliceType clientv3.Op) #())) in
-      let: (("$ret0", "$ret1"), "$ret2") := ((MethodResolve (go.PointerType clientv3.Op) "Txn"%go "op") #()) in
+      let: "elseOps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) #())) in
+      let: "thenOps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) #())) in
+      let: (("$ret0", "$ret1"), "$ret2") := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "Txn"%go "op") #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
       do:  "$r0";;;
-      do:  ("thenOps" <-[go.SliceType clientv3.Op] "$r1");;;
-      do:  ("elseOps" <-[go.SliceType clientv3.Op] "$r2");;;
-      let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] "ret") in
-      let: "$a1" := (let: "$a0" := (let: "$a0" := (![go.SliceType clientv3.Op] "thenOps") in
-      let: "$a1" := (![go.SliceType clientv3.Op] "elseOps") in
-      (FuncResolve go.append [go.SliceType clientv3.Op] #()) "$a0" "$a1") in
+      do:  ("thenOps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r1");;;
+      do:  ("elseOps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r2");;;
+      let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ret") in
+      let: "$a1" := (let: "$a0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "thenOps") in
+      let: "$a1" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "elseOps") in
+      (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] #()) "$a0" "$a1") in
       (FuncResolve gatherOps [] #()) "$a0") in
-      (FuncResolve go.append [go.SliceType clientv3.Op] #()) "$a0" "$a1") in
-      do:  ("ret" <-[go.SliceType clientv3.Op] "$r0")));;;
-    return: (![go.SliceType clientv3.Op] "ret")).
+      (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] #()) "$a0" "$a1") in
+      do:  ("ret" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0")));;;
+    return: (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ret")).
 
 (* go: util.go:83:6 *)
 Definition gatherResponseOpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "resp" "ops",
-    exception_do (let: "ret" := (GoAlloc (go.SliceType clientv3.Op) (GoZeroVal (go.SliceType clientv3.Op) #())) in
-    let: "ops" := (GoAlloc (go.SliceType clientv3.Op) "ops") in
-    let: "resp" := (GoAlloc (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) "resp") in
-    let: "$range" := (![go.SliceType clientv3.Op] "ops") in
-    (let: "op" := (GoAlloc clientv3.Op (GoZeroVal clientv3.Op #())) in
+    exception_do (let: "ret" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) #())) in
+    let: "ops" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) "ops") in
+    let: "resp" := (GoAlloc (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) "resp") in
+    let: "$range" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ops") in
+    (let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Op #())) in
     let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    slice.for_range clientv3.Op "$range" (λ: "$key" "$value",
-      do:  ("op" <-[clientv3.Op] "$value");;;
+    slice.for_range code.go_etcd_io.etcd.client.v3.clientv3.Op "$range" (λ: "$key" "$value",
+      do:  ("op" <-[code.go_etcd_io.etcd.client.v3.clientv3.Op] "$value");;;
       do:  ("i" <-[go.int] "$key");;;
-      (if: (⟨go.bool⟩! ((MethodResolve (go.PointerType clientv3.Op) "IsTxn"%go "op") #()))
+      (if: (⟨go.bool⟩! ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsTxn"%go "op") #()))
       then
-        let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] "ret") in
-        let: "$a1" := ((let: "$sl0" := (![clientv3.Op] "op") in
-        CompositeLiteral (go.SliceType clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression clientv3.Op "$sl0")]))) in
-        (FuncResolve go.append [go.SliceType clientv3.Op] #()) "$a0" "$a1") in
-        do:  ("ret" <-[go.SliceType clientv3.Op] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ret") in
+        let: "$a1" := ((let: "$sl0" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
+        CompositeLiteral (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (LiteralValue [KeyedElement None (ElementExpression code.go_etcd_io.etcd.client.v3.clientv3.Op "$sl0")]))) in
+        (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] #()) "$a0" "$a1") in
+        do:  ("ret" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0");;;
         continue: #()
       else do:  #());;;
-      let: "elseOps" := (GoAlloc (go.SliceType clientv3.Op) (GoZeroVal (go.SliceType clientv3.Op) #())) in
-      let: "thenOps" := (GoAlloc (go.SliceType clientv3.Op) (GoZeroVal (go.SliceType clientv3.Op) #())) in
-      let: (("$ret0", "$ret1"), "$ret2") := ((MethodResolve (go.PointerType clientv3.Op) "Txn"%go "op") #()) in
+      let: "elseOps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) #())) in
+      let: "thenOps" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) (GoZeroVal (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op) #())) in
+      let: (("$ret0", "$ret1"), "$ret2") := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "Txn"%go "op") #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
       do:  "$r0";;;
-      do:  ("thenOps" <-[go.SliceType clientv3.Op] "$r1");;;
-      do:  ("elseOps" <-[go.SliceType clientv3.Op] "$r2");;;
-      (let: "txnResp" := (GoAlloc (go.PointerType etcdserverpb.TxnResponse) (GoZeroVal (go.PointerType etcdserverpb.TxnResponse) #())) in
-      let: "$r0" := ((MethodResolve (go.PointerType etcdserverpb.ResponseOp) "GetResponseTxn"%go (![go.PointerType etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] "resp", ![go.int] "i")))) #()) in
-      do:  ("txnResp" <-[go.PointerType etcdserverpb.TxnResponse] "$r0");;;
-      (if: ![go.bool] (StructFieldRef etcdserverpb.TxnResponse "Succeeded"%go (![go.PointerType etcdserverpb.TxnResponse] "txnResp"))
+      do:  ("thenOps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r1");;;
+      do:  ("elseOps" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r2");;;
+      (let: "txnResp" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse) #())) in
+      let: "$r0" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp) "GetResponseTxn"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] "resp", ![go.int] "i")))) #()) in
+      do:  ("txnResp" <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse] "$r0");;;
+      (if: ![go.bool] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse "Succeeded"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse] "txnResp"))
       then
-        let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] "ret") in
-        let: "$a1" := (let: "$a0" := (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] (StructFieldRef etcdserverpb.TxnResponse "Responses"%go (![go.PointerType etcdserverpb.TxnResponse] "txnResp"))) in
-        let: "$a1" := (![go.SliceType clientv3.Op] "thenOps") in
+        let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ret") in
+        let: "$a1" := (let: "$a0" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse "Responses"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse] "txnResp"))) in
+        let: "$a1" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "thenOps") in
         (FuncResolve gatherResponseOps [] #()) "$a0" "$a1") in
-        (FuncResolve go.append [go.SliceType clientv3.Op] #()) "$a0" "$a1") in
-        do:  ("ret" <-[go.SliceType clientv3.Op] "$r0")
+        (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] #()) "$a0" "$a1") in
+        do:  ("ret" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0")
       else
-        let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] "ret") in
-        let: "$a1" := (let: "$a0" := (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] (StructFieldRef etcdserverpb.TxnResponse "Responses"%go (![go.PointerType etcdserverpb.TxnResponse] "txnResp"))) in
-        let: "$a1" := (![go.SliceType clientv3.Op] "elseOps") in
+        let: "$r0" := (let: "$a0" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ret") in
+        let: "$a1" := (let: "$a0" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseOp)] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse "Responses"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse] "txnResp"))) in
+        let: "$a1" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "elseOps") in
         (FuncResolve gatherResponseOps [] #()) "$a0" "$a1") in
-        (FuncResolve go.append [go.SliceType clientv3.Op] #()) "$a0" "$a1") in
-        do:  ("ret" <-[go.SliceType clientv3.Op] "$r0")))));;;
-    return: (![go.SliceType clientv3.Op] "ret")).
+        (FuncResolve go.append [go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] #()) "$a0" "$a1") in
+        do:  ("ret" <-[go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0")))));;;
+    return: (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op] "ret")).
 
 (* go: util.go:99:6 *)
 Definition copyHeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "hdr",
-    exception_do (let: "hdr" := (GoAlloc (go.PointerType etcdserverpb.ResponseHeader) "hdr") in
-    let: "h" := (GoAlloc etcdserverpb.ResponseHeader (GoZeroVal etcdserverpb.ResponseHeader #())) in
-    let: "$r0" := (![etcdserverpb.ResponseHeader] (![go.PointerType etcdserverpb.ResponseHeader] "hdr")) in
-    do:  ("h" <-[etcdserverpb.ResponseHeader] "$r0");;;
+    exception_do (let: "hdr" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader) "hdr") in
+    let: "h" := (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader (GoZeroVal code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader #())) in
+    let: "$r0" := (![code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "hdr")) in
+    do:  ("h" <-[code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader] "$r0");;;
     return: ("h")).
 
 (* go: util.go:104:6 *)
@@ -2774,19 +2774,19 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       exception_do (do:  (go.GlobalAlloc closedCh (go.ChannelType go.sendrecv (go.StructType [
 
       ])) #());;;
-      do:  (bytes.initialize' #());;;
-      do:  (concurrency.initialize' #());;;
-      do:  (rpctypes.initialize' #());;;
-      do:  (status.initialize' #());;;
-      do:  (codes.initialize' #());;;
-      do:  (errors.initialize' #());;;
-      do:  (clientv3.initialize' #());;;
-      do:  (mvccpb.initialize' #());;;
-      do:  (etcdserverpb.initialize' #());;;
-      do:  (time.initialize' #());;;
-      do:  (sync.initialize' #());;;
-      do:  (strings.initialize' #());;;
-      do:  (context.initialize' #());;;
+      do:  (code.bytes.bytes.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.client.v3.concurrency.concurrency.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.rpctypes.initialize' #());;;
+      do:  (code.google_golang_org.grpc.status.status.initialize' #());;;
+      do:  (code.google_golang_org.grpc.codes.codes.initialize' #());;;
+      do:  (code.errors.errors.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.client.v3.clientv3.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.initialize' #());;;
+      do:  (code.time.time.initialize' #());;;
+      do:  (code.sync.sync.initialize' #());;;
+      do:  (code.strings.strings.initialize' #());;;
+      do:  (code.context.context.initialize' #());;;
       do:  ((λ: <>,
         exception_do (let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
 
@@ -2809,7 +2809,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  mu' : sync.RWMutex.t;
+  mu' : code.sync.sync.RWMutex.t;
   entries' : map.t;
   revokes' : map.t;
   header' : loc;
@@ -2822,10 +2822,10 @@ End def.
 End leaseCache.
 
 Definition leaseCache'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "mu"%go sync.RWMutex);
+  (go.FieldDecl "mu"%go code.sync.sync.RWMutex);
   (go.FieldDecl "entries"%go (go.MapType go.string (go.PointerType leaseKey)));
-  (go.FieldDecl "revokes"%go (go.MapType go.string time.Time));
-  (go.FieldDecl "header"%go (go.PointerType etcdserverpb.ResponseHeader))
+  (go.FieldDecl "revokes"%go (go.MapType go.string code.time.time.Time));
+  (go.FieldDecl "header"%go (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader))
 ].
 Program Definition leaseCache'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (leaseCache'fds_unsealed).
 Global Instance equals_unfold_leaseCache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : leaseCache'fds =→ leaseCache'fds_unsealed.
@@ -2881,7 +2881,7 @@ End def.
 End leaseKey.
 
 Definition leaseKey'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "response"%go (go.PointerType clientv3.GetResponse));
+  (go.FieldDecl "response"%go (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse));
   (go.FieldDecl "rev"%go go.int64);
   (go.FieldDecl "waitc"%go (go.ChannelType go.sendrecv (go.StructType [
 
@@ -2912,12 +2912,12 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
   cl' : loc;
-  kv' : clientv3.KV.t;
+  kv' : code.go_etcd_io.etcd.client.v3.clientv3.KV.t;
   pfx' : go_string;
   leases' : leasing.leaseCache.t;
-  ctx' : context.Context.t;
-  cancel' : context.CancelFunc.t;
-  wg' : sync.WaitGroup.t;
+  ctx' : code.context.context.Context.t;
+  cancel' : code.context.context.CancelFunc.t;
+  wg' : code.sync.sync.WaitGroup.t;
   sessionOpts' : slice.t;
   session' : loc;
   sessionc' : chan.t;
@@ -2930,15 +2930,15 @@ End def.
 End leasingKV.
 
 Definition leasingKV'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "cl"%go (go.PointerType clientv3.Client));
-  (go.FieldDecl "kv"%go clientv3.KV);
+  (go.FieldDecl "cl"%go (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Client));
+  (go.FieldDecl "kv"%go code.go_etcd_io.etcd.client.v3.clientv3.KV);
   (go.FieldDecl "pfx"%go go.string);
   (go.FieldDecl "leases"%go leaseCache);
-  (go.FieldDecl "ctx"%go context.Context);
-  (go.FieldDecl "cancel"%go context.CancelFunc);
-  (go.FieldDecl "wg"%go sync.WaitGroup);
-  (go.FieldDecl "sessionOpts"%go (go.SliceType concurrency.SessionOption));
-  (go.FieldDecl "session"%go (go.PointerType concurrency.Session));
+  (go.FieldDecl "ctx"%go code.context.context.Context);
+  (go.FieldDecl "cancel"%go code.context.context.CancelFunc);
+  (go.FieldDecl "wg"%go code.sync.sync.WaitGroup);
+  (go.FieldDecl "sessionOpts"%go (go.SliceType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.SessionOption));
+  (go.FieldDecl "session"%go (go.PointerType code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Session));
   (go.FieldDecl "sessionc"%go (go.ChannelType go.sendrecv (go.StructType [
 
   ])))
@@ -3004,9 +3004,9 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  Txn' : clientv3.Txn.t;
+  Txn' : code.go_etcd_io.etcd.client.v3.clientv3.Txn.t;
   lkv' : loc;
-  ctx' : context.Context.t;
+  ctx' : code.context.context.Context.t;
   cs' : slice.t;
   opst' : slice.t;
   opse' : slice.t;
@@ -3019,12 +3019,12 @@ End def.
 End txnLeasing.
 
 Definition txnLeasing'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.EmbeddedField "Txn"%go clientv3.Txn);
+  (go.EmbeddedField "Txn"%go code.go_etcd_io.etcd.client.v3.clientv3.Txn);
   (go.FieldDecl "lkv"%go (go.PointerType leasingKV));
-  (go.FieldDecl "ctx"%go context.Context);
-  (go.FieldDecl "cs"%go (go.SliceType clientv3.Cmp));
-  (go.FieldDecl "opst"%go (go.SliceType clientv3.Op));
-  (go.FieldDecl "opse"%go (go.SliceType clientv3.Op))
+  (go.FieldDecl "ctx"%go code.context.context.Context);
+  (go.FieldDecl "cs"%go (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Cmp));
+  (go.FieldDecl "opst"%go (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op));
+  (go.FieldDecl "opse"%go (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.Op))
 ].
 Program Definition txnLeasing'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (txnLeasing'fds_unsealed).
 Global Instance equals_unfold_txnLeasing {ext : ffi_syntax} {go_gctx : GoGlobalContext} : txnLeasing'fds =→ txnLeasing'fds_unsealed.
@@ -3077,18 +3077,18 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] gatherResponseOps_unfold :: FuncUnfold gatherResponseOps [] (gatherResponseOpsⁱᵐᵖˡ);
   #[global] copyHeader_unfold :: FuncUnfold copyHeader [] (copyHeaderⁱᵐᵖˡ);
   #[global] closeAll_unfold :: FuncUnfold closeAll [] (closeAllⁱᵐᵖˡ);
-  #[global] import_context_Assumption :: context.Assumptions;
-  #[global] import_strings_Assumption :: strings.Assumptions;
-  #[global] import_sync_Assumption :: sync.Assumptions;
-  #[global] import_time_Assumption :: time.Assumptions;
-  #[global] import_etcdserverpb_Assumption :: etcdserverpb.Assumptions;
-  #[global] import_mvccpb_Assumption :: mvccpb.Assumptions;
-  #[global] import_clientv3_Assumption :: clientv3.Assumptions;
-  #[global] import_errors_Assumption :: errors.Assumptions;
-  #[global] import_codes_Assumption :: codes.Assumptions;
-  #[global] import_status_Assumption :: status.Assumptions;
-  #[global] import_rpctypes_Assumption :: rpctypes.Assumptions;
-  #[global] import_concurrency_Assumption :: concurrency.Assumptions;
-  #[global] import_bytes_Assumption :: bytes.Assumptions;
+  #[global] import_context_Assumption :: code.context.context.Assumptions;
+  #[global] import_strings_Assumption :: code.strings.strings.Assumptions;
+  #[global] import_sync_Assumption :: code.sync.sync.Assumptions;
+  #[global] import_time_Assumption :: code.time.time.Assumptions;
+  #[global] import_etcdserverpb_Assumption :: code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Assumptions;
+  #[global] import_mvccpb_Assumption :: code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.Assumptions;
+  #[global] import_clientv3_Assumption :: code.go_etcd_io.etcd.client.v3.clientv3.Assumptions;
+  #[global] import_errors_Assumption :: code.errors.errors.Assumptions;
+  #[global] import_codes_Assumption :: code.google_golang_org.grpc.codes.codes.Assumptions;
+  #[global] import_status_Assumption :: code.google_golang_org.grpc.status.status.Assumptions;
+  #[global] import_rpctypes_Assumption :: code.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.rpctypes.Assumptions;
+  #[global] import_concurrency_Assumption :: code.go_etcd_io.etcd.client.v3.concurrency.concurrency.Assumptions;
+  #[global] import_bytes_Assumption :: code.bytes.bytes.Assumptions;
 }.
 End leasing.

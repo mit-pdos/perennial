@@ -276,7 +276,7 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.fmt (λ: <>,
-      exception_do (do:  (io.initialize' #());;;
+      exception_do (do:  (code.io.io.initialize' #());;;
       do:  (ppFree'init #());;;
       do:  (space'init #());;;
       do:  (ssFree'init #());;;
@@ -577,6 +577,6 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] readRune_instance :: readRune_Assumptions;
   #[global] Printf_unfold :: FuncUnfold Printf [] (Printfⁱᵐᵖˡ);
   #[global] Print_unfold :: FuncUnfold Print [] (Printⁱᵐᵖˡ);
-  #[global] import_io_Assumption :: io.Assumptions;
+  #[global] import_io_Assumption :: code.io.io.Assumptions;
 }.
 End fmt.

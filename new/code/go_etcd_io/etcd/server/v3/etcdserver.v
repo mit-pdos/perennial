@@ -503,55 +503,55 @@ Definition NewRaftLoggerFromZapCore {ext : ffi_syntax} {go_gctx : GoGlobalContex
 Definition EtcdServer__Putⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" "ctx" "r",
     with_defer: (let: "s" := (GoAlloc (go.PointerType EtcdServer) "s") in
-    let: "r" := (GoAlloc (go.PointerType etcdserverpb.PutRequest) "r") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
-    let: "span" := (GoAlloc trace.Span (GoZeroVal trace.Span #())) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
+    let: "r" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutRequest) "r") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
+    let: "span" := (GoAlloc code.go_opentelemetry_io.otel.trace.trace.Span (GoZeroVal code.go_opentelemetry_io.otel.trace.trace.Span #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
     let: "$a1" := #"put"%go in
-    let: "$a2" := ((let: "$sl0" := (Convert trace.SpanStartEventOption trace.SpanStartOption (let: "$a0" := ((let: "$sl0" := (let: "$a0" := #"key"%go in
-    let: "$a1" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType etcdserverpb.PutRequest) "GetKey"%go (![go.PointerType etcdserverpb.PutRequest] "r")) #())) in
-    (FuncResolve attribute.String [] #()) "$a0" "$a1") in
-    CompositeLiteral (go.SliceType attribute.KeyValue) (LiteralValue [KeyedElement None (ElementExpression attribute.KeyValue "$sl0")]))) in
-    (FuncResolve trace.WithAttributes [] #()) "$a0")) in
-    CompositeLiteral (go.SliceType trace.SpanStartOption) (LiteralValue [KeyedElement None (ElementExpression trace.SpanStartOption "$sl0")]))) in
-    (MethodResolve trace.Tracer "Start"%go (![trace.Tracer] (GlobalVarAddr traceutil.Tracer #()))) "$a0" "$a1" "$a2") in
+    let: "$a2" := ((let: "$sl0" := (Convert code.go_opentelemetry_io.otel.trace.trace.SpanStartEventOption code.go_opentelemetry_io.otel.trace.trace.SpanStartOption (let: "$a0" := ((let: "$sl0" := (let: "$a0" := #"key"%go in
+    let: "$a1" := (Convert (go.SliceType go.byte) go.string ((MethodResolve (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutRequest) "GetKey"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutRequest] "r")) #())) in
+    (FuncResolve code.go_opentelemetry_io.otel.attribute.attribute.String [] #()) "$a0" "$a1") in
+    CompositeLiteral (go.SliceType code.go_opentelemetry_io.otel.attribute.attribute.KeyValue) (LiteralValue [KeyedElement None (ElementExpression code.go_opentelemetry_io.otel.attribute.attribute.KeyValue "$sl0")]))) in
+    (FuncResolve code.go_opentelemetry_io.otel.trace.trace.WithAttributes [] #()) "$a0")) in
+    CompositeLiteral (go.SliceType code.go_opentelemetry_io.otel.trace.trace.SpanStartOption) (LiteralValue [KeyedElement None (ElementExpression code.go_opentelemetry_io.otel.trace.trace.SpanStartOption "$sl0")]))) in
+    (MethodResolve code.go_opentelemetry_io.otel.trace.trace.Tracer "Start"%go (![code.go_opentelemetry_io.otel.trace.trace.Tracer] (GlobalVarAddr code.go_etcd_io.etcd.pkg.v3.traceutil.traceutil.Tracer #()))) "$a0" "$a1" "$a2") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("ctx" <-[context.Context] "$r0");;;
-    do:  ("span" <-[trace.Span] "$r1");;;
+    do:  ("ctx" <-[code.context.context.Context] "$r0");;;
+    do:  ("span" <-[code.go_opentelemetry_io.otel.trace.trace.Span] "$r1");;;
     do:  (let: "$a0" := #slice.nil in
-    let: "$f" := (MethodResolve trace.Span "End"%go (![trace.Span] "span")) in
+    let: "$f" := (MethodResolve code.go_opentelemetry_io.otel.trace.trace.Span "End"%go (![code.go_opentelemetry_io.otel.trace.trace.Span] "span")) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "$r0" := (let: "$a0" := (![context.Context] "ctx") in
-    let: "$a1" := (Convert traceutil.StartTimeKey go.any (CompositeLiteral traceutil.StartTimeKey (LiteralValue []))) in
-    let: "$a2" := (Convert time.Time go.any ((FuncResolve time.Now [] #()) #())) in
-    (FuncResolve context.WithValue [] #()) "$a0" "$a1" "$a2") in
-    do:  ("ctx" <-[context.Context] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![code.context.context.Context] "ctx") in
+    let: "$a1" := (Convert code.go_etcd_io.etcd.pkg.v3.traceutil.traceutil.StartTimeKey go.any (CompositeLiteral code.go_etcd_io.etcd.pkg.v3.traceutil.traceutil.StartTimeKey (LiteralValue []))) in
+    let: "$a2" := (Convert code.time.time.Time go.any ((FuncResolve code.time.time.Now [] #()) #())) in
+    (FuncResolve code.context.context.WithValue [] #()) "$a0" "$a1" "$a2") in
+    do:  ("ctx" <-[code.context.context.Context] "$r0");;;
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-    let: "resp" := (GoAlloc proto.Message (GoZeroVal proto.Message #())) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
-    let: "$a1" := (let: "$v0" := (![go.PointerType etcdserverpb.PutRequest] "r") in
-    CompositeLiteral etcdserverpb.InternalRaftRequest (LiteralValue [KeyedElement (Some (KeyField "Put"%go)) (ElementExpression (go.PointerType etcdserverpb.PutRequest) "$v0")])) in
+    let: "resp" := (GoAlloc code.github_com.gogo.protobuf.proto.proto.Message (GoZeroVal code.github_com.gogo.protobuf.proto.proto.Message #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
+    let: "$a1" := (let: "$v0" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutRequest] "r") in
+    CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.InternalRaftRequest (LiteralValue [KeyedElement (Some (KeyField "Put"%go)) (ElementExpression (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutRequest) "$v0")])) in
     (MethodResolve (go.PointerType EtcdServer) "raftRequest"%go (![go.PointerType EtcdServer] "s")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("resp" <-[proto.Message] "$r0");;;
+    do:  ("resp" <-[code.github_com.gogo.protobuf.proto.proto.Message] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-    then return: (Convert go.untyped_nil (go.PointerType etcdserverpb.PutResponse) UntypedNil, ![go.error] "err")
+    then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutResponse) UntypedNil, ![go.error] "err")
     else do:  #());;;
-    return: (TypeAssert (go.PointerType etcdserverpb.PutResponse) (![proto.Message] "resp"), Convert go.untyped_nil go.error UntypedNil)).
+    return: (TypeAssert (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutResponse) (![code.github_com.gogo.protobuf.proto.proto.Message] "resp"), Convert go.untyped_nil go.error UntypedNil)).
 
 (* go: v3_server.go:925:22 *)
 Definition EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" "ctx" "r",
     with_defer: (let: "s" := (GoAlloc (go.PointerType EtcdServer) "s") in
-    let: "r" := (GoAlloc etcdserverpb.InternalRaftRequest "r") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
+    let: "r" := (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.InternalRaftRequest "r") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
     let: "ai" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := ((MethodResolve (go.PointerType EtcdServer) "getAppliedIndex"%go (![go.PointerType EtcdServer] "s")) #()) in
     do:  ("ai" <-[go.uint64] "$r0");;;
@@ -561,55 +561,55 @@ Definition EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ {ext : ffi_synt
     (if: let: "$a0" := (![go.uint64] "ai") in
     let: "$a1" := (![go.uint64] "ci") in
     let: "$a2" := "r" in
-    let: "$a3" := (let: "$a0" := features.PriorityRequest in
+    let: "$a3" := (let: "$a0" := code.go_etcd_io.etcd.server.v3.features.features.PriorityRequest in
     (MethodResolve (go.PointerType EtcdServer) "FeatureEnabled"%go (![go.PointerType EtcdServer] "s")) "$a0") in
     (FuncResolve exceedsRequestLimit [] #()) "$a0" "$a1" "$a2" "$a3"
-    then return: (Convert go.untyped_nil (go.PointerType apply.Result) UntypedNil, ![go.error] (GlobalVarAddr errors.ErrTooManyRequests #()))
+    then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.server.v3.etcdserver.apply.apply.Result) UntypedNil, ![go.error] (GlobalVarAddr code.go_etcd_io.etcd.server.v3.etcdserver.errors.errors.ErrTooManyRequests #()))
     else do:  #());;;
-    let: "$r0" := (GoAlloc etcdserverpb.RequestHeader (let: "$v0" := ((MethodResolve (go.PointerType idutil.Generator) "Next"%go (![go.PointerType idutil.Generator] (StructFieldRef EtcdServer "reqIDGen"%go (![go.PointerType EtcdServer] "s")))) #()) in
-    CompositeLiteral etcdserverpb.RequestHeader (LiteralValue [KeyedElement (Some (KeyField "ID"%go)) (ElementExpression go.uint64 "$v0")]))) in
-    do:  ((StructFieldRef etcdserverpb.InternalRaftRequest "Header"%go "r") <-[go.PointerType etcdserverpb.RequestHeader] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![go.PointerType etcdserverpb.InternalAuthenticateRequest] (StructFieldRef etcdserverpb.InternalRaftRequest "Authenticate"%go "r")) =⟨go.PointerType etcdserverpb.InternalAuthenticateRequest⟩ (Convert go.untyped_nil (go.PointerType etcdserverpb.InternalAuthenticateRequest) UntypedNil))
+    let: "$r0" := (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestHeader (let: "$v0" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.pkg.v3.idutil.idutil.Generator) "Next"%go (![go.PointerType code.go_etcd_io.etcd.pkg.v3.idutil.idutil.Generator] (StructFieldRef EtcdServer "reqIDGen"%go (![go.PointerType EtcdServer] "s")))) #()) in
+    CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestHeader (LiteralValue [KeyedElement (Some (KeyField "ID"%go)) (ElementExpression go.uint64 "$v0")]))) in
+    do:  ((StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.InternalRaftRequest "Header"%go "r") <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestHeader] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.InternalAuthenticateRequest] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.InternalRaftRequest "Authenticate"%go "r")) =⟨go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.InternalAuthenticateRequest⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.InternalAuthenticateRequest) UntypedNil))
     then
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "authInfo" := (GoAlloc (go.PointerType auth.AuthInfo) (GoZeroVal (go.PointerType auth.AuthInfo) #())) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
+      let: "authInfo" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.server.v3.auth.auth.AuthInfo) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.server.v3.auth.auth.AuthInfo) #())) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
       (MethodResolve (go.PointerType EtcdServer) "AuthInfoFromCtx"%go (![go.PointerType EtcdServer] "s")) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("authInfo" <-[go.PointerType auth.AuthInfo] "$r0");;;
+      do:  ("authInfo" <-[go.PointerType code.go_etcd_io.etcd.server.v3.auth.auth.AuthInfo] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-      then return: (Convert go.untyped_nil (go.PointerType apply.Result) UntypedNil, ![go.error] "err")
+      then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.server.v3.etcdserver.apply.apply.Result) UntypedNil, ![go.error] "err")
       else do:  #());;;
-      (if: Convert go.untyped_bool go.bool ((![go.PointerType auth.AuthInfo] "authInfo") ≠⟨go.PointerType auth.AuthInfo⟩ (Convert go.untyped_nil (go.PointerType auth.AuthInfo) UntypedNil))
+      (if: Convert go.untyped_bool go.bool ((![go.PointerType code.go_etcd_io.etcd.server.v3.auth.auth.AuthInfo] "authInfo") ≠⟨go.PointerType code.go_etcd_io.etcd.server.v3.auth.auth.AuthInfo⟩ (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.server.v3.auth.auth.AuthInfo) UntypedNil))
       then
-        let: "$r0" := (![go.string] (StructFieldRef auth.AuthInfo "Username"%go (![go.PointerType auth.AuthInfo] "authInfo"))) in
-        do:  ((StructFieldRef etcdserverpb.RequestHeader "Username"%go (![go.PointerType etcdserverpb.RequestHeader] (StructFieldRef etcdserverpb.InternalRaftRequest "Header"%go "r"))) <-[go.string] "$r0");;;
-        let: "$r0" := (![go.uint64] (StructFieldRef auth.AuthInfo "Revision"%go (![go.PointerType auth.AuthInfo] "authInfo"))) in
-        do:  ((StructFieldRef etcdserverpb.RequestHeader "AuthRevision"%go (![go.PointerType etcdserverpb.RequestHeader] (StructFieldRef etcdserverpb.InternalRaftRequest "Header"%go "r"))) <-[go.uint64] "$r0")
+        let: "$r0" := (![go.string] (StructFieldRef code.go_etcd_io.etcd.server.v3.auth.auth.AuthInfo "Username"%go (![go.PointerType code.go_etcd_io.etcd.server.v3.auth.auth.AuthInfo] "authInfo"))) in
+        do:  ((StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestHeader "Username"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestHeader] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.InternalRaftRequest "Header"%go "r"))) <-[go.string] "$r0");;;
+        let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.etcd.server.v3.auth.auth.AuthInfo "Revision"%go (![go.PointerType code.go_etcd_io.etcd.server.v3.auth.auth.AuthInfo] "authInfo"))) in
+        do:  ((StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestHeader "AuthRevision"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestHeader] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.InternalRaftRequest "Header"%go "r"))) <-[go.uint64] "$r0")
       else do:  #())
     else do:  #());;;
     let: "reqType" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := (let: "$a0" := "r" in
     (FuncResolve getRequestType [] #()) "$a0") in
     do:  ("reqType" <-[go.string] "$r0");;;
-    let: "start" := (GoAlloc time.Time (GoZeroVal time.Time #())) in
-    let: "$r0" := ((FuncResolve time.Now [] #()) #()) in
-    do:  ("start" <-[time.Time] "$r0");;;
+    let: "start" := (GoAlloc code.time.time.Time (GoZeroVal code.time.time.Time #())) in
+    let: "$r0" := ((FuncResolve code.time.time.Now [] #()) #()) in
+    do:  ("start" <-[code.time.time.Time] "$r0");;;
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
     let: "data" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     do:  (let: "$f" := (λ: <>,
       exception_do (let: "success" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
       let: "$r0" := ((![go.error] "err") =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)) in
       do:  ("success" <-[go.bool] "$r0");;;
-      do:  (let: "$a0" := ((MethodResolve time.Duration "Seconds"%go (let: "$a0" := (![time.Time] "start") in
-      (FuncResolve time.Since [] #()) "$a0")) #()) in
-      (MethodResolve prometheus.Observer "Observe"%go (let: "$a0" := ((let: "$sl0" := (![go.string] "reqType") in
+      do:  (let: "$a0" := ((MethodResolve code.time.time.Duration "Seconds"%go (let: "$a0" := (![code.time.time.Time] "start") in
+      (FuncResolve code.time.time.Since [] #()) "$a0")) #()) in
+      (MethodResolve code.github_com.prometheus.client_golang.prometheus.prometheus.Observer "Observe"%go (let: "$a0" := ((let: "$sl0" := (![go.string] "reqType") in
       let: "$sl1" := (let: "$a0" := (![go.bool] "success") in
-      (FuncResolve strconv.FormatBool [] #()) "$a0") in
+      (FuncResolve code.strconv.strconv.FormatBool [] #()) "$a0") in
       CompositeLiteral (go.SliceType go.string) (LiteralValue [KeyedElement None (ElementExpression go.string "$sl0"); KeyedElement None (ElementExpression go.string "$sl1")]))) in
-      (MethodResolve (go.PointerType prometheus.HistogramVec) "WithLabelValues"%go (![go.PointerType prometheus.HistogramVec] (GlobalVarAddr requestDurationSec #()))) "$a0")) "$a0");;;
+      (MethodResolve (go.PointerType code.github_com.prometheus.client_golang.prometheus.prometheus.HistogramVec) "WithLabelValues"%go (![go.PointerType code.github_com.prometheus.client_golang.prometheus.prometheus.HistogramVec] (GlobalVarAddr requestDurationSec #()))) "$a0")) "$a0");;;
       return: #())
       ) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
@@ -617,73 +617,73 @@ Definition EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ {ext : ffi_synt
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: ("$ret0", "$ret1") := ((MethodResolve (go.PointerType etcdserverpb.InternalRaftRequest) "Marshal"%go "r") #()) in
+    let: ("$ret0", "$ret1") := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.InternalRaftRequest) "Marshal"%go "r") #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("data" <-[go.SliceType go.byte] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-    then return: (Convert go.untyped_nil (go.PointerType apply.Result) UntypedNil, ![go.error] "err")
+    then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.server.v3.etcdserver.apply.apply.Result) UntypedNil, ![go.error] "err")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.byte] "data") in
-    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") >⟨go.int⟩ (Convert go.uint go.int (![go.uint] (StructFieldRef config.ServerConfig "MaxRequestBytes"%go (StructFieldRef EtcdServer "Cfg"%go (![go.PointerType EtcdServer] "s"))))))
-    then return: (Convert go.untyped_nil (go.PointerType apply.Result) UntypedNil, ![go.error] (GlobalVarAddr errors.ErrRequestTooLarge #()))
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") >⟨go.int⟩ (Convert go.uint go.int (![go.uint] (StructFieldRef code.go_etcd_io.etcd.server.v3.config.config.ServerConfig "MaxRequestBytes"%go (StructFieldRef EtcdServer "Cfg"%go (![go.PointerType EtcdServer] "s"))))))
+    then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.server.v3.etcdserver.apply.apply.Result) UntypedNil, ![go.error] (GlobalVarAddr code.go_etcd_io.etcd.server.v3.etcdserver.errors.errors.ErrRequestTooLarge #()))
     else do:  #());;;
     let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (![go.uint64] (StructFieldRef etcdserverpb.InternalRaftRequest "ID"%go "r")) in
+    let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.InternalRaftRequest "ID"%go "r")) in
     do:  ("id" <-[go.uint64] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "id") =⟨go.uint64⟩ #(W64 0))
     then
-      let: "$r0" := (![go.uint64] (StructFieldRef etcdserverpb.RequestHeader "ID"%go (![go.PointerType etcdserverpb.RequestHeader] (StructFieldRef etcdserverpb.InternalRaftRequest "Header"%go "r")))) in
+      let: "$r0" := (![go.uint64] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestHeader "ID"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestHeader] (StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.InternalRaftRequest "Header"%go "r")))) in
       do:  ("id" <-[go.uint64] "$r0")
     else do:  #());;;
     let: "ch" := (GoAlloc (go.ChannelType go.recvonly go.any) (GoZeroVal (go.ChannelType go.recvonly go.any) #())) in
     let: "$r0" := (let: "$a0" := (![go.uint64] "id") in
-    (MethodResolve wait.Wait "Register"%go (![wait.Wait] (StructFieldRef EtcdServer "w"%go (![go.PointerType EtcdServer] "s")))) "$a0") in
+    (MethodResolve code.go_etcd_io.etcd.pkg.v3.wait.wait.Wait "Register"%go (![code.go_etcd_io.etcd.pkg.v3.wait.wait.Wait] (StructFieldRef EtcdServer "w"%go (![go.PointerType EtcdServer] "s")))) "$a0") in
     do:  ("ch" <-[go.ChannelType go.recvonly go.any] "$r0");;;
-    let: "cancel" := (GoAlloc context.CancelFunc (GoZeroVal context.CancelFunc #())) in
-    let: "cctx" := (GoAlloc context.Context (GoZeroVal context.Context #())) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
-    let: "$a1" := ((MethodResolve (go.PointerType config.ServerConfig) "ReqTimeout"%go (StructFieldRef EtcdServer "Cfg"%go (![go.PointerType EtcdServer] "s"))) #()) in
-    (FuncResolve context.WithTimeout [] #()) "$a0" "$a1") in
+    let: "cancel" := (GoAlloc code.context.context.CancelFunc (GoZeroVal code.context.context.CancelFunc #())) in
+    let: "cctx" := (GoAlloc code.context.context.Context (GoZeroVal code.context.context.Context #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
+    let: "$a1" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.server.v3.config.config.ServerConfig) "ReqTimeout"%go (StructFieldRef EtcdServer "Cfg"%go (![go.PointerType EtcdServer] "s"))) #()) in
+    (FuncResolve code.context.context.WithTimeout [] #()) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("cctx" <-[context.Context] "$r0");;;
-    do:  ("cancel" <-[context.CancelFunc] "$r1");;;
-    do:  (let: "$f" := (![context.CancelFunc] "cancel") in
+    do:  ("cctx" <-[code.context.context.Context] "$r0");;;
+    do:  ("cancel" <-[code.context.context.CancelFunc] "$r1");;;
+    do:  (let: "$f" := (![code.context.context.CancelFunc] "cancel") in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "span" := (GoAlloc trace.Span (GoZeroVal trace.Span #())) in
-    let: "$r0" := (let: "$a0" := (![context.Context] "ctx") in
-    (FuncResolve trace.SpanFromContext [] #()) "$a0") in
-    do:  ("span" <-[trace.Span] "$r0");;;
+    let: "span" := (GoAlloc code.go_opentelemetry_io.otel.trace.trace.Span (GoZeroVal code.go_opentelemetry_io.otel.trace.trace.Span #())) in
+    let: "$r0" := (let: "$a0" := (![code.context.context.Context] "ctx") in
+    (FuncResolve code.go_opentelemetry_io.otel.trace.trace.SpanFromContext [] #()) "$a0") in
+    do:  ("span" <-[code.go_opentelemetry_io.otel.trace.trace.Span] "$r0");;;
     do:  (let: "$a0" := #"Send raft proposal"%go in
     let: "$a1" := #slice.nil in
-    (MethodResolve trace.Span "AddEvent"%go (![trace.Span] "span")) "$a0" "$a1");;;
-    let: "$r0" := (let: "$a0" := (![context.Context] "cctx") in
+    (MethodResolve code.go_opentelemetry_io.otel.trace.trace.Span "AddEvent"%go (![code.go_opentelemetry_io.otel.trace.trace.Span] "span")) "$a0" "$a1");;;
+    let: "$r0" := (let: "$a0" := (![code.context.context.Context] "cctx") in
     let: "$a1" := (![go.SliceType go.byte] "data") in
     (MethodResolve (go.PointerType raftNode) "Propose"%go (StructFieldRef EtcdServer "r"%go (![go.PointerType EtcdServer] "s"))) "$a0" "$a1") in
     do:  ("err" <-[go.error] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
-      do:  ((MethodResolve prometheus.Counter "Inc"%go (![prometheus.Counter] (GlobalVarAddr proposalsFailed #()))) #());;;
+      do:  ((MethodResolve code.github_com.prometheus.client_golang.prometheus.prometheus.Counter "Inc"%go (![code.github_com.prometheus.client_golang.prometheus.prometheus.Counter] (GlobalVarAddr proposalsFailed #()))) #());;;
       do:  (let: "$a0" := (![go.uint64] "id") in
       let: "$a1" := (Convert go.untyped_nil go.any UntypedNil) in
-      (MethodResolve wait.Wait "Trigger"%go (![wait.Wait] (StructFieldRef EtcdServer "w"%go (![go.PointerType EtcdServer] "s")))) "$a0" "$a1");;;
-      return: (Convert go.untyped_nil (go.PointerType apply.Result) UntypedNil, ![go.error] "err")
+      (MethodResolve code.go_etcd_io.etcd.pkg.v3.wait.wait.Wait "Trigger"%go (![code.go_etcd_io.etcd.pkg.v3.wait.wait.Wait] (StructFieldRef EtcdServer "w"%go (![go.PointerType EtcdServer] "s")))) "$a0" "$a1");;;
+      return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.server.v3.etcdserver.apply.apply.Result) UntypedNil, ![go.error] "err")
     else do:  #());;;
-    do:  ((MethodResolve prometheus.Gauge "Inc"%go (![prometheus.Gauge] (GlobalVarAddr proposalsPending #()))) #());;;
-    do:  (let: "$f" := (MethodResolve prometheus.Gauge "Dec"%go (![prometheus.Gauge] (GlobalVarAddr proposalsPending #()))) in
+    do:  ((MethodResolve code.github_com.prometheus.client_golang.prometheus.prometheus.Gauge "Inc"%go (![code.github_com.prometheus.client_golang.prometheus.prometheus.Gauge] (GlobalVarAddr proposalsPending #()))) #());;;
+    do:  (let: "$f" := (MethodResolve code.github_com.prometheus.client_golang.prometheus.prometheus.Gauge "Dec"%go (![code.github_com.prometheus.client_golang.prometheus.prometheus.Gauge] (GlobalVarAddr proposalsPending #()))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
     let: "$ch0" := (![go.ChannelType go.recvonly go.any] "ch") in
-    let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "cctx")) #()) in
+    let: "$ch1" := ((MethodResolve code.context.context.Context "Done"%go (![code.context.context.Context] "cctx")) #()) in
     let: "$ch2" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef EtcdServer "done"%go (![go.PointerType EtcdServer] "s"))) in
@@ -693,22 +693,22 @@ Definition EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ {ext : ffi_synt
       do:  ("x" <-[go.any] "$r0");;;
       do:  (let: "$a0" := #"Receive raft result"%go in
       let: "$a1" := #slice.nil in
-      (MethodResolve trace.Span "AddEvent"%go (![trace.Span] "span")) "$a0" "$a1");;;
-      return: (TypeAssert (go.PointerType apply.Result) (![go.any] "x"), Convert go.untyped_nil go.error UntypedNil)
+      (MethodResolve code.go_opentelemetry_io.otel.trace.trace.Span "AddEvent"%go (![code.go_opentelemetry_io.otel.trace.trace.Span] "span")) "$a0" "$a1");;;
+      return: (TypeAssert (go.PointerType code.go_etcd_io.etcd.server.v3.etcdserver.apply.apply.Result) (![go.any] "x"), Convert go.untyped_nil go.error UntypedNil)
       )); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (λ: "$recvVal",
-      do:  ((MethodResolve prometheus.Counter "Inc"%go (![prometheus.Counter] (GlobalVarAddr proposalsFailed #()))) #());;;
+      do:  ((MethodResolve code.github_com.prometheus.client_golang.prometheus.prometheus.Counter "Inc"%go (![code.github_com.prometheus.client_golang.prometheus.prometheus.Counter] (GlobalVarAddr proposalsFailed #()))) #());;;
       do:  (let: "$a0" := (![go.uint64] "id") in
       let: "$a1" := (Convert go.untyped_nil go.any UntypedNil) in
-      (MethodResolve wait.Wait "Trigger"%go (![wait.Wait] (StructFieldRef EtcdServer "w"%go (![go.PointerType EtcdServer] "s")))) "$a0" "$a1");;;
-      return: (Convert go.untyped_nil (go.PointerType apply.Result) UntypedNil, let: "$a0" := ((MethodResolve context.Context "Err"%go (![context.Context] "cctx")) #()) in
-       let: "$a1" := (![time.Time] "start") in
+      (MethodResolve code.go_etcd_io.etcd.pkg.v3.wait.wait.Wait "Trigger"%go (![code.go_etcd_io.etcd.pkg.v3.wait.wait.Wait] (StructFieldRef EtcdServer "w"%go (![go.PointerType EtcdServer] "s")))) "$a0" "$a1");;;
+      return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.server.v3.etcdserver.apply.apply.Result) UntypedNil, let: "$a0" := ((MethodResolve code.context.context.Context "Err"%go (![code.context.context.Context] "cctx")) #()) in
+       let: "$a1" := (![code.time.time.Time] "start") in
        (MethodResolve (go.PointerType EtcdServer) "parseProposeCtxErr"%go (![go.PointerType EtcdServer] "s")) "$a0" "$a1")
       )); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch2") (λ: "$recvVal",
-      return: (Convert go.untyped_nil (go.PointerType apply.Result) UntypedNil, ![go.error] (GlobalVarAddr errors.ErrStopped #()))
+      return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.server.v3.etcdserver.apply.apply.Result) UntypedNil, ![go.error] (GlobalVarAddr code.go_etcd_io.etcd.server.v3.etcdserver.errors.errors.ErrStopped #()))
       ))])).
 
 #[global] Instance info' : PkgInfo pkg_id.etcdserver :=
@@ -721,22 +721,22 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.etcdserver (λ: <>,
-      exception_do (do:  (trace.initialize' #());;;
-      do:  (attribute.initialize' #());;;
-      do:  (proto.initialize' #());;;
-      do:  (features.initialize' #());;;
-      do:  (apply.initialize' #());;;
-      do:  (auth.initialize' #());;;
-      do:  (wait.initialize' #());;;
-      do:  (traceutil.initialize' #());;;
-      do:  (idutil.initialize' #());;;
-      do:  (prometheus.initialize' #());;;
-      do:  (raft.initialize' #());;;
-      do:  (errors.initialize' #());;;
-      do:  (config.initialize' #());;;
-      do:  (time.initialize' #());;;
-      do:  (etcdserverpb.initialize' #());;;
-      do:  (context.initialize' #());;;
+      exception_do (do:  (code.go_opentelemetry_io.otel.trace.trace.initialize' #());;;
+      do:  (code.go_opentelemetry_io.otel.attribute.attribute.initialize' #());;;
+      do:  (code.github_com.gogo.protobuf.proto.proto.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.server.v3.features.features.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.server.v3.etcdserver.apply.apply.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.server.v3.auth.auth.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.pkg.v3.wait.wait.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.pkg.v3.traceutil.traceutil.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.pkg.v3.idutil.idutil.initialize' #());;;
+      do:  (code.github_com.prometheus.client_golang.prometheus.prometheus.initialize' #());;;
+      do:  (code.go_etcd_io.raft.v3.raft.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.server.v3.etcdserver.errors.errors.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.server.v3.config.config.initialize' #());;;
+      do:  (code.time.time.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.initialize' #());;;
+      do:  (code.context.context.initialize' #());;;
       do:  (_'init #());;;
       do:  (hasLeader'init #());;;
       do:  (isLeader'init #());;;
@@ -1051,8 +1051,8 @@ Class raftNodeConfig_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoc
   #[global] raftNodeConfig_type_repr  :: go.TypeReprUnderlying raftNodeConfigⁱᵐᵖˡ raftNodeConfig.t;
   #[global] raftNodeConfig_underlying :: (raftNodeConfig) <u (raftNodeConfigⁱᵐᵖˡ);
   #[global] raftNodeConfigⁱᵐᵖˡ_underlying :: (raftNodeConfigⁱᵐᵖˡ) ↓u (raftNodeConfigⁱᵐᵖˡ);
-  #[global] raftNodeConfig_Propose_unfold :: MethodUnfold (raftNodeConfig) "Propose" (λ: "$r", MethodResolve raft.Node "Propose" (StructFieldGet (raftNodeConfig) "Node" "$r" ))%V;
-  #[global] raftNodeConfig'ptr_Propose_unfold :: MethodUnfold (go.PointerType (raftNodeConfig)) "Propose" (λ: "$r", MethodResolve raft.Node "Propose" (![raft.Node] (StructFieldRef raftNodeConfig "Node"%go "$r")));
+  #[global] raftNodeConfig_Propose_unfold :: MethodUnfold (raftNodeConfig) "Propose" (λ: "$r", MethodResolve code.go_etcd_io.raft.v3.raft.Node "Propose" (StructFieldGet (raftNodeConfig) "Node" "$r" ))%V;
+  #[global] raftNodeConfig'ptr_Propose_unfold :: MethodUnfold (go.PointerType (raftNodeConfig)) "Propose" (λ: "$r", MethodResolve code.go_etcd_io.raft.v3.raft.Node "Propose" (![code.go_etcd_io.raft.v3.raft.Node] (StructFieldRef raftNodeConfig "Node"%go "$r")));
 }.
 
 Module Response.
@@ -1366,21 +1366,21 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] Lessor_instance :: Lessor_Assumptions;
   #[global] Authenticator_instance :: Authenticator_Assumptions;
   #[global] zapRaftLogger_instance :: zapRaftLogger_Assumptions;
-  #[global] import_context_Assumption :: context.Assumptions;
-  #[global] import_etcdserverpb_Assumption :: etcdserverpb.Assumptions;
-  #[global] import_time_Assumption :: time.Assumptions;
-  #[global] import_config_Assumption :: config.Assumptions;
-  #[global] import_errors_Assumption :: errors.Assumptions;
-  #[global] import_raft_Assumption :: raft.Assumptions;
-  #[global] import_prometheus_Assumption :: prometheus.Assumptions;
-  #[global] import_idutil_Assumption :: idutil.Assumptions;
-  #[global] import_traceutil_Assumption :: traceutil.Assumptions;
-  #[global] import_wait_Assumption :: wait.Assumptions;
-  #[global] import_auth_Assumption :: auth.Assumptions;
-  #[global] import_apply_Assumption :: apply.Assumptions;
-  #[global] import_features_Assumption :: features.Assumptions;
-  #[global] import_proto_Assumption :: proto.Assumptions;
-  #[global] import_attribute_Assumption :: attribute.Assumptions;
-  #[global] import_trace_Assumption :: trace.Assumptions;
+  #[global] import_context_Assumption :: code.context.context.Assumptions;
+  #[global] import_etcdserverpb_Assumption :: code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Assumptions;
+  #[global] import_time_Assumption :: code.time.time.Assumptions;
+  #[global] import_config_Assumption :: code.go_etcd_io.etcd.server.v3.config.config.Assumptions;
+  #[global] import_errors_Assumption :: code.go_etcd_io.etcd.server.v3.etcdserver.errors.errors.Assumptions;
+  #[global] import_raft_Assumption :: code.go_etcd_io.raft.v3.raft.Assumptions;
+  #[global] import_prometheus_Assumption :: code.github_com.prometheus.client_golang.prometheus.prometheus.Assumptions;
+  #[global] import_idutil_Assumption :: code.go_etcd_io.etcd.pkg.v3.idutil.idutil.Assumptions;
+  #[global] import_traceutil_Assumption :: code.go_etcd_io.etcd.pkg.v3.traceutil.traceutil.Assumptions;
+  #[global] import_wait_Assumption :: code.go_etcd_io.etcd.pkg.v3.wait.wait.Assumptions;
+  #[global] import_auth_Assumption :: code.go_etcd_io.etcd.server.v3.auth.auth.Assumptions;
+  #[global] import_apply_Assumption :: code.go_etcd_io.etcd.server.v3.etcdserver.apply.apply.Assumptions;
+  #[global] import_features_Assumption :: code.go_etcd_io.etcd.server.v3.features.features.Assumptions;
+  #[global] import_proto_Assumption :: code.github_com.gogo.protobuf.proto.proto.Assumptions;
+  #[global] import_attribute_Assumption :: code.go_opentelemetry_io.otel.attribute.attribute.Assumptions;
+  #[global] import_trace_Assumption :: code.go_opentelemetry_io.otel.trace.trace.Assumptions;
 }.
 End etcdserver.

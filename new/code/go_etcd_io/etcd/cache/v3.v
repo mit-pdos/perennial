@@ -218,71 +218,71 @@ Definition newWatcher {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string
 Definition Cache__Getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" "ctx" "key" "opts",
     exception_do (let: "c" := (GoAlloc (go.PointerType Cache) "c") in
-    let: "opts" := (GoAlloc (go.SliceType clientv3.OpOption) "opts") in
+    let: "opts" := (GoAlloc (go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption) "opts") in
     let: "key" := (GoAlloc go.string "key") in
-    let: "ctx" := (GoAlloc context.Context "ctx") in
+    let: "ctx" := (GoAlloc code.context.context.Context "ctx") in
     (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType store) "LatestRev"%go (![go.PointerType store] (StructFieldRef Cache "store"%go (![go.PointerType Cache] "c")))) #()) =⟨go.int64⟩ #(W64 0))
     then
       (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "$r0" := (let: "$a0" := (![context.Context] "ctx") in
+      let: "$r0" := (let: "$a0" := (![code.context.context.Context] "ctx") in
       (MethodResolve (go.PointerType Cache) "WaitReady"%go (![go.PointerType Cache] "c")) "$a0") in
       do:  ("err" <-[go.error] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-      then return: (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil, ![go.error] "err")
+      then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) UntypedNil, ![go.error] "err")
       else do:  #()))
     else do:  #());;;
-    let: "op" := (GoAlloc clientv3.Op (GoZeroVal clientv3.Op #())) in
+    let: "op" := (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.Op (GoZeroVal code.go_etcd_io.etcd.client.v3.clientv3.Op #())) in
     let: "$r0" := (let: "$a0" := (![go.string] "key") in
-    let: "$a1" := (![go.SliceType clientv3.OpOption] "opts") in
-    (FuncResolve clientv3.OpGet [] #()) "$a0" "$a1") in
-    do:  ("op" <-[clientv3.Op] "$r0");;;
+    let: "$a1" := (![go.SliceType code.go_etcd_io.etcd.client.v3.clientv3.OpOption] "opts") in
+    (FuncResolve code.go_etcd_io.etcd.client.v3.clientv3.OpGet [] #()) "$a0" "$a1") in
+    do:  ("op" <-[code.go_etcd_io.etcd.client.v3.clientv3.Op] "$r0");;;
     (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![go.string] "key") in
-    let: "$a1" := (![clientv3.Op] "op") in
+    let: "$a1" := (![code.go_etcd_io.etcd.client.v3.clientv3.Op] "op") in
     (MethodResolve (go.PointerType Cache) "validateGet"%go (![go.PointerType Cache] "c")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("err" <-[go.error] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-    then return: (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil, ![go.error] "err")
+    then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) UntypedNil, ![go.error] "err")
     else do:  #()));;;
     let: "startKey" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := (Convert go.string (go.SliceType go.byte) (![go.string] "key")) in
     do:  ("startKey" <-[go.SliceType go.byte] "$r0");;;
     let: "endKey" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-    let: "$r0" := ((MethodResolve (go.PointerType clientv3.Op) "RangeBytes"%go "op") #()) in
+    let: "$r0" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "RangeBytes"%go "op") #()) in
     do:  ("endKey" <-[go.SliceType go.byte] "$r0");;;
     let: "requestedRev" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
-    let: "$r0" := ((MethodResolve (go.PointerType clientv3.Op) "Rev"%go "op") #()) in
+    let: "$r0" := ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "Rev"%go "op") #()) in
     do:  ("requestedRev" <-[go.int64] "$r0");;;
-    (if: (⟨go.bool⟩! ((MethodResolve (go.PointerType clientv3.Op) "IsSerializable"%go "op") #()))
+    (if: (⟨go.bool⟩! ((MethodResolve (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.Op) "IsSerializable"%go "op") #()))
     then
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
       let: "serverRev" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![code.context.context.Context] "ctx") in
       (MethodResolve (go.PointerType Cache) "serverRevision"%go (![go.PointerType Cache] "c")) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("serverRev" <-[go.int64] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-      then return: (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil, ![go.error] "err")
+      then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) UntypedNil, ![go.error] "err")
       else do:  #());;;
       (if: Convert go.untyped_bool go.bool ((![go.int64] "requestedRev") >⟨go.int64⟩ (![go.int64] "serverRev"))
-      then return: (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil, ![go.error] (GlobalVarAddr rpctypes.ErrFutureRev #()))
+      then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) UntypedNil, ![go.error] (GlobalVarAddr code.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.rpctypes.ErrFutureRev #()))
       else do:  #());;;
-      (let: "$r0" := (let: "$a0" := (![context.Context] "ctx") in
+      (let: "$r0" := (let: "$a0" := (![code.context.context.Context] "ctx") in
       let: "$a1" := (![go.int64] "serverRev") in
       (MethodResolve (go.PointerType Cache) "waitTillRevision"%go (![go.PointerType Cache] "c")) "$a0" "$a1") in
       do:  ("err" <-[go.error] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-      then return: (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil, ![go.error] "err")
+      then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) UntypedNil, ![go.error] "err")
       else do:  #()))
     else do:  #());;;
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
     let: "latestRev" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
-    let: "kvs" := (GoAlloc (go.SliceType (go.PointerType mvccpb.KeyValue)) (GoZeroVal (go.SliceType (go.PointerType mvccpb.KeyValue)) #())) in
+    let: "kvs" := (GoAlloc (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) (GoZeroVal (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) #())) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "startKey") in
     let: "$a1" := (![go.SliceType go.byte] "endKey") in
     let: "$a2" := (![go.int64] "requestedRev") in
@@ -290,35 +290,35 @@ Definition Cache__Getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("kvs" <-[go.SliceType (go.PointerType mvccpb.KeyValue)] "$r0");;;
+    do:  ("kvs" <-[go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] "$r0");;;
     do:  ("latestRev" <-[go.int64] "$r1");;;
     do:  ("err" <-[go.error] "$r2");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
-    then return: (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil, ![go.error] "err")
+    then return: (Convert go.untyped_nil (go.PointerType code.go_etcd_io.etcd.client.v3.clientv3.GetResponse) UntypedNil, ![go.error] "err")
     else do:  #());;;
-    return: (GoAlloc clientv3.GetResponse (let: "$v0" := (GoAlloc etcdserverpb.ResponseHeader (let: "$v0" := (![go.int64] "latestRev") in
-     CompositeLiteral etcdserverpb.ResponseHeader (LiteralValue [KeyedElement (Some (KeyField "Revision"%go)) (ElementExpression go.int64 "$v0")]))) in
-     let: "$v1" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] "kvs") in
-     let: "$v2" := (Convert go.int go.int64 (let: "$a0" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] "kvs") in
-     (FuncResolve go.len [go.SliceType (go.PointerType mvccpb.KeyValue)] #()) "$a0")) in
-     CompositeLiteral clientv3.GetResponse (LiteralValue [KeyedElement (Some (KeyField "Header"%go)) (ElementExpression (go.PointerType etcdserverpb.ResponseHeader) "$v0"); KeyedElement (Some (KeyField "Kvs"%go)) (ElementExpression (go.SliceType (go.PointerType mvccpb.KeyValue)) "$v1"); KeyedElement (Some (KeyField "Count"%go)) (ElementExpression go.int64 "$v2")])), Convert go.untyped_nil go.error UntypedNil)).
+    return: (GoAlloc code.go_etcd_io.etcd.client.v3.clientv3.GetResponse (let: "$v0" := (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader (let: "$v0" := (![go.int64] "latestRev") in
+     CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader (LiteralValue [KeyedElement (Some (KeyField "Revision"%go)) (ElementExpression go.int64 "$v0")]))) in
+     let: "$v1" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] "kvs") in
+     let: "$v2" := (Convert go.int go.int64 (let: "$a0" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] "kvs") in
+     (FuncResolve go.len [go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)] #()) "$a0")) in
+     CompositeLiteral code.go_etcd_io.etcd.client.v3.clientv3.GetResponse (LiteralValue [KeyedElement (Some (KeyField "Header"%go)) (ElementExpression (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader) "$v0"); KeyedElement (Some (KeyField "Kvs"%go)) (ElementExpression (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.KeyValue)) "$v1"); KeyedElement (Some (KeyField "Count"%go)) (ElementExpression go.int64 "$v2")])), Convert go.untyped_nil go.error UntypedNil)).
 
 (* go: snapshot.go:29:6 *)
 Definition newClonedSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "rev" "t",
-    exception_do (let: "t" := (GoAlloc (go.PointerType (btree.BTree (go.PointerType kvItem))) "t") in
+    exception_do (let: "t" := (GoAlloc (go.PointerType (code.k8s_io.utils.third_party.forked.golang.btree.btree.BTree (go.PointerType kvItem))) "t") in
     let: "rev" := (GoAlloc go.int64 "rev") in
     return: (GoAlloc snapshot (let: "$v0" := (![go.int64] "rev") in
-     let: "$v1" := ((MethodResolve (go.PointerType (btree.BTree (go.PointerType kvItem))) "Clone"%go (![go.PointerType (btree.BTree (go.PointerType kvItem))] "t")) #()) in
-     CompositeLiteral snapshot (LiteralValue [KeyedElement (Some (KeyField "rev"%go)) (ElementExpression go.int64 "$v0"); KeyedElement (Some (KeyField "tree"%go)) (ElementExpression (go.PointerType (btree.BTree (go.PointerType kvItem))) "$v1")])))).
+     let: "$v1" := ((MethodResolve (go.PointerType (code.k8s_io.utils.third_party.forked.golang.btree.btree.BTree (go.PointerType kvItem))) "Clone"%go (![go.PointerType (code.k8s_io.utils.third_party.forked.golang.btree.btree.BTree (go.PointerType kvItem))] "t")) #()) in
+     CompositeLiteral snapshot (LiteralValue [KeyedElement (Some (KeyField "rev"%go)) (ElementExpression go.int64 "$v0"); KeyedElement (Some (KeyField "tree"%go)) (ElementExpression (go.PointerType (code.k8s_io.utils.third_party.forked.golang.btree.btree.BTree (go.PointerType kvItem))) "$v1")])))).
 
 (* go: store.go:74:17 *)
 Definition store__getSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" "rev",
     with_defer: (let: "s" := (GoAlloc (go.PointerType store) "s") in
     let: "rev" := (GoAlloc go.int64 "rev") in
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "RLock"%go (StructFieldRef store "mu"%go (![go.PointerType store] "s"))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.RWMutex) "RUnlock"%go (StructFieldRef store "mu"%go (![go.PointerType store] "s"))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "RLock"%go (StructFieldRef store "mu"%go (![go.PointerType store] "s"))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.RWMutex) "RUnlock"%go (StructFieldRef store "mu"%go (![go.PointerType store] "s"))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -332,7 +332,7 @@ Definition store__getSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       return: (Convert go.untyped_nil (go.PointerType snapshot) UntypedNil, #(W64 0), let: "$a0" := #"invalid revision: %d"%go in
        let: "$a1" := ((let: "$sl0" := (Convert go.int64 go.any (![go.int64] "rev")) in
        CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
-       (FuncResolve fmt.Errorf [] #()) "$a0" "$a1")
+       (FuncResolve code.fmt.fmt.Errorf [] #()) "$a0" "$a1")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((![go.int64] "rev") =⟨go.int64⟩ #(W64 0))
     then
@@ -340,7 +340,7 @@ Definition store__getSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       do:  ("rev" <-[go.int64] "$r0")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((![go.int64] "rev") >⟨go.int64⟩ (![go.int64] (StructFieldRef snapshot "rev"%go (StructFieldRef store "latest"%go (![go.PointerType store] "s")))))
-    then return: (Convert go.untyped_nil (go.PointerType snapshot) UntypedNil, #(W64 0), ![go.error] (GlobalVarAddr rpctypes.ErrFutureRev #()))
+    then return: (Convert go.untyped_nil (go.PointerType snapshot) UntypedNil, #(W64 0), ![go.error] (GlobalVarAddr code.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.rpctypes.ErrFutureRev #()))
     else do:  #());;;
     let: "targetSnapshot" := (GoAlloc (go.PointerType snapshot) (GoZeroVal (go.PointerType snapshot) #())) in
     do:  (let: "$a0" := (![go.int64] "rev") in
@@ -353,7 +353,7 @@ Definition store__getSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       ) in
     (MethodResolve (go.PointerType (ringBuffer (go.PointerType snapshot))) "DescendLessOrEqual"%go (StructFieldRef store "history"%go (![go.PointerType store] "s"))) "$a0" "$a1");;;
     (if: Convert go.untyped_bool go.bool ((![go.PointerType snapshot] "targetSnapshot") =⟨go.PointerType snapshot⟩ (Convert go.untyped_nil (go.PointerType snapshot) UntypedNil))
-    then return: (Convert go.untyped_nil (go.PointerType snapshot) UntypedNil, #(W64 0), ![go.error] (GlobalVarAddr rpctypes.ErrCompacted #()))
+    then return: (Convert go.untyped_nil (go.PointerType snapshot) UntypedNil, #(W64 0), ![go.error] (GlobalVarAddr code.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.rpctypes.ErrCompacted #()))
     else do:  #());;;
     return: (![go.PointerType snapshot] "targetSnapshot", ![go.int64] (StructFieldRef snapshot "rev"%go (StructFieldRef store "latest"%go (![go.PointerType store] "s"))), Convert go.untyped_nil go.error UntypedNil)).
 
@@ -361,8 +361,8 @@ Definition store__getSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
 Definition store__LatestRevⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" <>,
     with_defer: (let: "s" := (GoAlloc (go.PointerType store) "s") in
-    do:  ((MethodResolve (go.PointerType sync.RWMutex) "RLock"%go (StructFieldRef store "mu"%go (![go.PointerType store] "s"))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType sync.RWMutex) "RUnlock"%go (StructFieldRef store "mu"%go (![go.PointerType store] "s"))) in
+    do:  ((MethodResolve (go.PointerType code.sync.sync.RWMutex) "RLock"%go (StructFieldRef store "mu"%go (![go.PointerType store] "s"))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType code.sync.sync.RWMutex) "RUnlock"%go (StructFieldRef store "mu"%go (![go.PointerType store] "s"))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -380,11 +380,11 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.cache (λ: <>,
-      exception_do (do:  (btree.initialize' #());;;
-      do:  (clientv3.initialize' #());;;
-      do:  (rpctypes.initialize' #());;;
-      do:  (sync.initialize' #());;;
-      do:  (fmt.initialize' #());;;
+      exception_do (do:  (code.k8s_io.utils.third_party.forked.golang.btree.btree.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.client.v3.clientv3.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.rpctypes.initialize' #());;;
+      do:  (code.sync.sync.initialize' #());;;
+      do:  (code.fmt.fmt.initialize' #());;;
       do:  (ErrUnsupportedRequest'init #());;;
       do:  (ErrKeyRangeInvalid'init #());;;
       do:  (ErrCacheTimeout'init #());;;
@@ -430,14 +430,14 @@ Record t :=
 mk {
   prefix' : go_string;
   cfg' : cache.Config.t;
-  watcher' : clientv3.Watcher.t;
-  kv' : clientv3.KV.t;
+  watcher' : code.go_etcd_io.etcd.client.v3.clientv3.Watcher.t;
+  kv' : code.go_etcd_io.etcd.client.v3.clientv3.KV.t;
   demux' : loc;
   store' : loc;
   ready' : loc;
-  stop' : context.CancelFunc.t;
-  waitGroup' : sync.WaitGroup.t;
-  internalCtx' : context.Context.t;
+  stop' : code.context.context.CancelFunc.t;
+  waitGroup' : code.sync.sync.WaitGroup.t;
+  internalCtx' : code.context.context.Context.t;
   progressRequestor' : cache.progressRequestor.t;
 }.
 
@@ -450,14 +450,14 @@ End Cache.
 Definition Cache'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "prefix"%go go.string);
   (go.FieldDecl "cfg"%go Config);
-  (go.FieldDecl "watcher"%go clientv3.Watcher);
-  (go.FieldDecl "kv"%go clientv3.KV);
+  (go.FieldDecl "watcher"%go code.go_etcd_io.etcd.client.v3.clientv3.Watcher);
+  (go.FieldDecl "kv"%go code.go_etcd_io.etcd.client.v3.clientv3.KV);
   (go.FieldDecl "demux"%go (go.PointerType demux));
   (go.FieldDecl "store"%go (go.PointerType store));
   (go.FieldDecl "ready"%go (go.PointerType ready));
-  (go.FieldDecl "stop"%go context.CancelFunc);
-  (go.FieldDecl "waitGroup"%go sync.WaitGroup);
-  (go.FieldDecl "internalCtx"%go context.Context);
+  (go.FieldDecl "stop"%go code.context.context.CancelFunc);
+  (go.FieldDecl "waitGroup"%go code.sync.sync.WaitGroup);
+  (go.FieldDecl "internalCtx"%go code.context.context.Context);
   (go.FieldDecl "progressRequestor"%go progressRequestor)
 ].
 Program Definition Cache'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Cache'fds_unsealed).
@@ -752,7 +752,7 @@ End snapshot.
 
 Definition snapshot'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "rev"%go go.int64);
-  (go.FieldDecl "tree"%go (go.PointerType (btree.BTree (go.PointerType kvItem))))
+  (go.FieldDecl "tree"%go (go.PointerType (code.k8s_io.utils.third_party.forked.golang.btree.btree.BTree (go.PointerType kvItem))))
 ].
 Program Definition snapshot'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (snapshot'fds_unsealed).
 Global Instance equals_unfold_snapshot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : snapshot'fds =→ snapshot'fds_unsealed.
@@ -775,7 +775,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  mu' : sync.RWMutex.t;
+  mu' : code.sync.sync.RWMutex.t;
   revCond' : loc;
   degree' : w64;
   latest' : cache.snapshot.t;
@@ -789,8 +789,8 @@ End def.
 End store.
 
 Definition store'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "mu"%go sync.RWMutex);
-  (go.FieldDecl "revCond"%go (go.PointerType sync.Cond));
+  (go.FieldDecl "mu"%go code.sync.sync.RWMutex);
+  (go.FieldDecl "revCond"%go (go.PointerType code.sync.sync.Cond));
   (go.FieldDecl "degree"%go go.int);
   (go.FieldDecl "latest"%go snapshot);
   (go.FieldDecl "history"%go (ringBuffer (go.PointerType snapshot)))
@@ -876,10 +876,10 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] kvItem_instance :: kvItem_Assumptions;
   #[global] watcher_instance :: watcher_Assumptions;
   #[global] newClonedSnapshot_unfold :: FuncUnfold newClonedSnapshot [] (newClonedSnapshotⁱᵐᵖˡ);
-  #[global] import_fmt_Assumption :: fmt.Assumptions;
-  #[global] import_sync_Assumption :: sync.Assumptions;
-  #[global] import_rpctypes_Assumption :: rpctypes.Assumptions;
-  #[global] import_clientv3_Assumption :: clientv3.Assumptions;
-  #[global] import_btree_Assumption :: btree.Assumptions;
+  #[global] import_fmt_Assumption :: code.fmt.fmt.Assumptions;
+  #[global] import_sync_Assumption :: code.sync.sync.Assumptions;
+  #[global] import_rpctypes_Assumption :: code.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.rpctypes.Assumptions;
+  #[global] import_clientv3_Assumption :: code.go_etcd_io.etcd.client.v3.clientv3.Assumptions;
+  #[global] import_btree_Assumption :: code.k8s_io.utils.third_party.forked.golang.btree.btree.Assumptions;
 }.
 End cache.

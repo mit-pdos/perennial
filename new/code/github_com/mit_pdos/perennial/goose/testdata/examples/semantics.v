@@ -1473,11 +1473,11 @@ Definition testDowncastInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
    go: lock.go:7:6 *)
 Definition testsUseLocksⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (let: "m" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
-    let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
-    do:  ("m" <-[go.PointerType sync.Mutex] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] "m")) #());;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] "m")) #());;;
+    exception_do (let: "m" := (GoAlloc (go.PointerType code.sync.sync.Mutex) (GoZeroVal (go.PointerType code.sync.sync.Mutex) #())) in
+    let: "$r0" := (GoAlloc code.sync.sync.Mutex (GoZeroVal code.sync.sync.Mutex #())) in
+    do:  ("m" <-[go.PointerType code.sync.sync.Mutex] "$r0");;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (![go.PointerType code.sync.sync.Mutex] "m")) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (![go.PointerType code.sync.sync.Mutex] "m")) #());;;
     return: (#true)).
 
 (* helpers
@@ -2290,12 +2290,12 @@ Definition testShiftModⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 (* go: prims.go:9:6 *)
 Definition testLinearizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (let: "m" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
-    let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
-    do:  ("m" <-[go.PointerType sync.Mutex] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] "m")) #());;;
-    do:  ((FuncResolve primitive.Linearize [] #()) #());;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] "m")) #());;;
+    exception_do (let: "m" := (GoAlloc (go.PointerType code.sync.sync.Mutex) (GoZeroVal (go.PointerType code.sync.sync.Mutex) #())) in
+    let: "$r0" := (GoAlloc code.sync.sync.Mutex (GoZeroVal code.sync.sync.Mutex #())) in
+    do:  ("m" <-[go.PointerType code.sync.sync.Mutex] "$r0");;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (![go.PointerType code.sync.sync.Mutex] "m")) #());;;
+    do:  ((FuncResolve code.github_com.goose_lang.primitive.primitive.Linearize [] #()) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (![go.PointerType code.sync.sync.Mutex] "m")) #());;;
     return: (#true)).
 
 (* go: shortcircuiting.go:11:6 *)
@@ -2989,72 +2989,72 @@ Definition intToBlockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
   λ: "a",
     exception_do (let: "a" := (GoAlloc go.uint64 "a") in
     let: "b" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-    let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) disk.BlockSize) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) code.github_com.goose_lang.primitive.disk.disk.BlockSize) in
     do:  ("b" <-[go.SliceType go.byte] "$r0");;;
     do:  (let: "$a0" := (![go.SliceType go.byte] "b") in
     let: "$a1" := (![go.uint64] "a") in
-    (MethodResolve (go.PointerType binary.littleEndian) "PutUint64"%go (GlobalVarAddr binary.LittleEndian #())) "$a0" "$a1");;;
+    (MethodResolve (go.PointerType code.encoding.binary.binary.littleEndian) "PutUint64"%go (GlobalVarAddr code.encoding.binary.binary.LittleEndian #())) "$a0" "$a1");;;
     return: (![go.SliceType go.byte] "b")).
 
 (* go: wal.go:30:6 *)
 Definition blockToIntⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "v",
-    exception_do (let: "v" := (GoAlloc disk.Block "v") in
-    return: (let: "$a0" := (![disk.Block] "v") in
-     (MethodResolve (go.PointerType binary.littleEndian) "Uint64"%go (GlobalVarAddr binary.LittleEndian #())) "$a0")).
+    exception_do (let: "v" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Block "v") in
+    return: (let: "$a0" := (![code.github_com.goose_lang.primitive.disk.disk.Block] "v") in
+     (MethodResolve (go.PointerType code.encoding.binary.binary.littleEndian) "Uint64"%go (GlobalVarAddr code.encoding.binary.binary.LittleEndian #())) "$a0")).
 
 (* New initializes a fresh log
 
    go: wal.go:35:6 *)
 Definition Newⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (let: "d" := (GoAlloc disk.Disk (GoZeroVal disk.Disk #())) in
-    let: "$r0" := ((FuncResolve disk.Get [] #()) #()) in
-    do:  ("d" <-[disk.Disk] "$r0");;;
+    exception_do (let: "d" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Disk (GoZeroVal code.github_com.goose_lang.primitive.disk.disk.Disk #())) in
+    let: "$r0" := ((FuncResolve code.github_com.goose_lang.primitive.disk.disk.Get [] #()) #()) in
+    do:  ("d" <-[code.github_com.goose_lang.primitive.disk.disk.Disk] "$r0");;;
     let: "diskSize" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := ((MethodResolve disk.Disk "Size"%go (![disk.Disk] "d")) #()) in
+    let: "$r0" := ((MethodResolve code.github_com.goose_lang.primitive.disk.disk.Disk "Size"%go (![code.github_com.goose_lang.primitive.disk.disk.Disk] "d")) #()) in
     do:  ("diskSize" <-[go.uint64] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "diskSize") ≤⟨go.uint64⟩ logLength)
     then
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"disk is too small to host log"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    let: "cache" := (GoAlloc (go.MapType go.uint64 disk.Block) (GoZeroVal (go.MapType go.uint64 disk.Block) #())) in
-    let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 disk.Block] #()) #()) in
-    do:  ("cache" <-[go.MapType go.uint64 disk.Block] "$r0");;;
-    let: "header" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
+    let: "cache" := (GoAlloc (go.MapType go.uint64 code.github_com.goose_lang.primitive.disk.disk.Block) (GoZeroVal (go.MapType go.uint64 code.github_com.goose_lang.primitive.disk.disk.Block) #())) in
+    let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 code.github_com.goose_lang.primitive.disk.disk.Block] #()) #()) in
+    do:  ("cache" <-[go.MapType go.uint64 code.github_com.goose_lang.primitive.disk.disk.Block] "$r0");;;
+    let: "header" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Block (GoZeroVal code.github_com.goose_lang.primitive.disk.disk.Block #())) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
     (FuncResolve intToBlock [] #()) "$a0") in
-    do:  ("header" <-[disk.Block] "$r0");;;
+    do:  ("header" <-[code.github_com.goose_lang.primitive.disk.disk.Block] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
-    let: "$a1" := (![disk.Block] "header") in
-    (MethodResolve disk.Disk "Write"%go (![disk.Disk] "d")) "$a0" "$a1");;;
+    let: "$a1" := (![code.github_com.goose_lang.primitive.disk.disk.Block] "header") in
+    (MethodResolve code.github_com.goose_lang.primitive.disk.disk.Disk "Write"%go (![code.github_com.goose_lang.primitive.disk.disk.Disk] "d")) "$a0" "$a1");;;
     let: "lengthPtr" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
     let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     do:  ("lengthPtr" <-[go.PointerType go.uint64] "$r0");;;
     let: "$r0" := #(W64 0) in
     do:  ((![go.PointerType go.uint64] "lengthPtr") <-[go.uint64] "$r0");;;
-    let: "l" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
-    let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
-    do:  ("l" <-[go.PointerType sync.Mutex] "$r0");;;
-    return: (let: "$v0" := (![disk.Disk] "d") in
-     let: "$v1" := (![go.MapType go.uint64 disk.Block] "cache") in
+    let: "l" := (GoAlloc (go.PointerType code.sync.sync.Mutex) (GoZeroVal (go.PointerType code.sync.sync.Mutex) #())) in
+    let: "$r0" := (GoAlloc code.sync.sync.Mutex (GoZeroVal code.sync.sync.Mutex #())) in
+    do:  ("l" <-[go.PointerType code.sync.sync.Mutex] "$r0");;;
+    return: (let: "$v0" := (![code.github_com.goose_lang.primitive.disk.disk.Disk] "d") in
+     let: "$v1" := (![go.MapType go.uint64 code.github_com.goose_lang.primitive.disk.disk.Block] "cache") in
      let: "$v2" := (![go.PointerType go.uint64] "lengthPtr") in
-     let: "$v3" := (![go.PointerType sync.Mutex] "l") in
-     CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "d"%go)) (ElementExpression disk.Disk "$v0"); KeyedElement (Some (KeyField "cache"%go)) (ElementExpression (go.MapType go.uint64 disk.Block) "$v1"); KeyedElement (Some (KeyField "length"%go)) (ElementExpression (go.PointerType go.uint64) "$v2"); KeyedElement (Some (KeyField "l"%go)) (ElementExpression (go.PointerType sync.Mutex) "$v3")]))).
+     let: "$v3" := (![go.PointerType code.sync.sync.Mutex] "l") in
+     CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "d"%go)) (ElementExpression code.github_com.goose_lang.primitive.disk.disk.Disk "$v0"); KeyedElement (Some (KeyField "cache"%go)) (ElementExpression (go.MapType go.uint64 code.github_com.goose_lang.primitive.disk.disk.Block) "$v1"); KeyedElement (Some (KeyField "length"%go)) (ElementExpression (go.PointerType go.uint64) "$v2"); KeyedElement (Some (KeyField "l"%go)) (ElementExpression (go.PointerType code.sync.sync.Mutex) "$v3")]))).
 
 (* go: wal.go:50:14 *)
 Definition Log__lockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
     exception_do (let: "l" := (GoAlloc Log "l") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef Log "l"%go "l"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Lock"%go (![go.PointerType code.sync.sync.Mutex] (StructFieldRef Log "l"%go "l"))) #());;;
     return: #()).
 
 (* go: wal.go:54:14 *)
 Definition Log__unlockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
     exception_do (let: "l" := (GoAlloc Log "l") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef Log "l"%go "l"))) #());;;
+    do:  ((MethodResolve (go.PointerType code.sync.sync.Mutex) "Unlock"%go (![go.PointerType code.sync.sync.Mutex] (StructFieldRef Log "l"%go "l"))) #());;;
     return: #()).
 
 (* BeginTxn allocates space for a new transaction in the log.
@@ -3088,30 +3088,30 @@ Definition Log__Readⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     let: "a" := (GoAlloc go.uint64 "a") in
     do:  ((MethodResolve (go.PointerType Log) "lock"%go "l") #());;;
     let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "v" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
-    let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 disk.Block (![go.MapType go.uint64 disk.Block] (StructFieldRef Log "cache"%go "l")) (![go.uint64] "a")) in
+    let: "v" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Block (GoZeroVal code.github_com.goose_lang.primitive.disk.disk.Block #())) in
+    let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 code.github_com.goose_lang.primitive.disk.disk.Block (![go.MapType go.uint64 code.github_com.goose_lang.primitive.disk.disk.Block] (StructFieldRef Log "cache"%go "l")) (![go.uint64] "a")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("v" <-[disk.Block] "$r0");;;
+    do:  ("v" <-[code.github_com.goose_lang.primitive.disk.disk.Block] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
     (if: ![go.bool] "ok"
     then
       do:  ((MethodResolve (go.PointerType Log) "unlock"%go "l") #());;;
-      return: (![disk.Block] "v")
+      return: (![code.github_com.goose_lang.primitive.disk.disk.Block] "v")
     else do:  #());;;
     do:  ((MethodResolve (go.PointerType Log) "unlock"%go "l") #());;;
-    let: "dv" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
+    let: "dv" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Block (GoZeroVal code.github_com.goose_lang.primitive.disk.disk.Block #())) in
     let: "$r0" := (let: "$a0" := (logLength +⟨go.uint64⟩ (![go.uint64] "a")) in
-    (MethodResolve disk.Disk "Read"%go (![disk.Disk] (StructFieldRef Log "d"%go "l"))) "$a0") in
-    do:  ("dv" <-[disk.Block] "$r0");;;
-    return: (![disk.Block] "dv")).
+    (MethodResolve code.github_com.goose_lang.primitive.disk.disk.Disk "Read"%go (![code.github_com.goose_lang.primitive.disk.disk.Disk] (StructFieldRef Log "d"%go "l"))) "$a0") in
+    do:  ("dv" <-[code.github_com.goose_lang.primitive.disk.disk.Block] "$r0");;;
+    return: (![code.github_com.goose_lang.primitive.disk.disk.Block] "dv")).
 
 (* go: wal.go:88:14 *)
 Definition Log__Sizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
     exception_do (let: "l" := (GoAlloc Log "l") in
     let: "sz" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := ((MethodResolve disk.Disk "Size"%go (![disk.Disk] (StructFieldRef Log "d"%go "l"))) #()) in
+    let: "$r0" := ((MethodResolve code.github_com.goose_lang.primitive.disk.disk.Disk "Size"%go (![code.github_com.goose_lang.primitive.disk.disk.Disk] (StructFieldRef Log "d"%go "l"))) #()) in
     do:  ("sz" <-[go.uint64] "$r0");;;
     return: ((![go.uint64] "sz") -⟨go.uint64⟩ logLength)).
 
@@ -3121,7 +3121,7 @@ Definition Log__Sizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 Definition Log__Writeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "a" "v",
     exception_do (let: "l" := (GoAlloc Log "l") in
-    let: "v" := (GoAlloc disk.Block "v") in
+    let: "v" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Block "v") in
     let: "a" := (GoAlloc go.uint64 "a") in
     do:  ((MethodResolve (go.PointerType Log) "lock"%go "l") #());;;
     let: "length" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -3132,21 +3132,21 @@ Definition Log__Writeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"transaction is at capacity"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    let: "aBlock" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
+    let: "aBlock" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Block (GoZeroVal code.github_com.goose_lang.primitive.disk.disk.Block #())) in
     let: "$r0" := (let: "$a0" := (![go.uint64] "a") in
     (FuncResolve intToBlock [] #()) "$a0") in
-    do:  ("aBlock" <-[disk.Block] "$r0");;;
+    do:  ("aBlock" <-[code.github_com.goose_lang.primitive.disk.disk.Block] "$r0");;;
     let: "nextAddr" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (#(W64 1) +⟨go.uint64⟩ (#(W64 2) *⟨go.uint64⟩ (![go.uint64] "length"))) in
     do:  ("nextAddr" <-[go.uint64] "$r0");;;
     do:  (let: "$a0" := (![go.uint64] "nextAddr") in
-    let: "$a1" := (![disk.Block] "aBlock") in
-    (MethodResolve disk.Disk "Write"%go (![disk.Disk] (StructFieldRef Log "d"%go "l"))) "$a0" "$a1");;;
+    let: "$a1" := (![code.github_com.goose_lang.primitive.disk.disk.Block] "aBlock") in
+    (MethodResolve code.github_com.goose_lang.primitive.disk.disk.Disk "Write"%go (![code.github_com.goose_lang.primitive.disk.disk.Disk] (StructFieldRef Log "d"%go "l"))) "$a0" "$a1");;;
     do:  (let: "$a0" := ((![go.uint64] "nextAddr") +⟨go.uint64⟩ #(W64 1)) in
-    let: "$a1" := (![disk.Block] "v") in
-    (MethodResolve disk.Disk "Write"%go (![disk.Disk] (StructFieldRef Log "d"%go "l"))) "$a0" "$a1");;;
-    let: "$r0" := (![disk.Block] "v") in
-    do:  (map.insert go.uint64 (![go.MapType go.uint64 disk.Block] (StructFieldRef Log "cache"%go "l")) (![go.uint64] "a") "$r0");;;
+    let: "$a1" := (![code.github_com.goose_lang.primitive.disk.disk.Block] "v") in
+    (MethodResolve code.github_com.goose_lang.primitive.disk.disk.Disk "Write"%go (![code.github_com.goose_lang.primitive.disk.disk.Disk] (StructFieldRef Log "d"%go "l"))) "$a0" "$a1");;;
+    let: "$r0" := (![code.github_com.goose_lang.primitive.disk.disk.Block] "v") in
+    do:  (map.insert go.uint64 (![go.MapType go.uint64 code.github_com.goose_lang.primitive.disk.disk.Block] (StructFieldRef Log "cache"%go "l")) (![go.uint64] "a") "$r0");;;
     let: "$r0" := ((![go.uint64] "length") +⟨go.uint64⟩ #(W64 1)) in
     do:  ((![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l")) <-[go.uint64] "$r0");;;
     do:  ((MethodResolve (go.PointerType Log) "unlock"%go "l") #());;;
@@ -3163,36 +3163,36 @@ Definition Log__Commitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l"))) in
     do:  ("length" <-[go.uint64] "$r0");;;
     do:  ((MethodResolve (go.PointerType Log) "unlock"%go "l") #());;;
-    let: "header" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
+    let: "header" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Block (GoZeroVal code.github_com.goose_lang.primitive.disk.disk.Block #())) in
     let: "$r0" := (let: "$a0" := (![go.uint64] "length") in
     (FuncResolve intToBlock [] #()) "$a0") in
-    do:  ("header" <-[disk.Block] "$r0");;;
+    do:  ("header" <-[code.github_com.goose_lang.primitive.disk.disk.Block] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
-    let: "$a1" := (![disk.Block] "header") in
-    (MethodResolve disk.Disk "Write"%go (![disk.Disk] (StructFieldRef Log "d"%go "l"))) "$a0" "$a1");;;
+    let: "$a1" := (![code.github_com.goose_lang.primitive.disk.disk.Block] "header") in
+    (MethodResolve code.github_com.goose_lang.primitive.disk.disk.Disk "Write"%go (![code.github_com.goose_lang.primitive.disk.disk.Disk] (StructFieldRef Log "d"%go "l"))) "$a0" "$a1");;;
     return: #()).
 
 (* go: wal.go:120:6 *)
 Definition getLogEntryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d" "logOffset",
     exception_do (let: "logOffset" := (GoAlloc go.uint64 "logOffset") in
-    let: "d" := (GoAlloc disk.Disk "d") in
+    let: "d" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Disk "d") in
     let: "diskAddr" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (#(W64 1) +⟨go.uint64⟩ (#(W64 2) *⟨go.uint64⟩ (![go.uint64] "logOffset"))) in
     do:  ("diskAddr" <-[go.uint64] "$r0");;;
-    let: "aBlock" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
+    let: "aBlock" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Block (GoZeroVal code.github_com.goose_lang.primitive.disk.disk.Block #())) in
     let: "$r0" := (let: "$a0" := (![go.uint64] "diskAddr") in
-    (MethodResolve disk.Disk "Read"%go (![disk.Disk] "d")) "$a0") in
-    do:  ("aBlock" <-[disk.Block] "$r0");;;
+    (MethodResolve code.github_com.goose_lang.primitive.disk.disk.Disk "Read"%go (![code.github_com.goose_lang.primitive.disk.disk.Disk] "d")) "$a0") in
+    do:  ("aBlock" <-[code.github_com.goose_lang.primitive.disk.disk.Block] "$r0");;;
     let: "a" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (let: "$a0" := (![disk.Block] "aBlock") in
+    let: "$r0" := (let: "$a0" := (![code.github_com.goose_lang.primitive.disk.disk.Block] "aBlock") in
     (FuncResolve blockToInt [] #()) "$a0") in
     do:  ("a" <-[go.uint64] "$r0");;;
-    let: "v" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
+    let: "v" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Block (GoZeroVal code.github_com.goose_lang.primitive.disk.disk.Block #())) in
     let: "$r0" := (let: "$a0" := ((![go.uint64] "diskAddr") +⟨go.uint64⟩ #(W64 1)) in
-    (MethodResolve disk.Disk "Read"%go (![disk.Disk] "d")) "$a0") in
-    do:  ("v" <-[disk.Block] "$r0");;;
-    return: (![go.uint64] "a", ![disk.Block] "v")).
+    (MethodResolve code.github_com.goose_lang.primitive.disk.disk.Disk "Read"%go (![code.github_com.goose_lang.primitive.disk.disk.Disk] "d")) "$a0") in
+    do:  ("v" <-[code.github_com.goose_lang.primitive.disk.disk.Block] "$r0");;;
+    return: (![go.uint64] "a", ![code.github_com.goose_lang.primitive.disk.disk.Block] "v")).
 
 (* applyLog assumes we are running sequentially
 
@@ -3200,25 +3200,25 @@ Definition getLogEntryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 Definition applyLogⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d" "length",
     exception_do (let: "length" := (GoAlloc go.uint64 "length") in
-    let: "d" := (GoAlloc disk.Disk "d") in
+    let: "d" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Disk "d") in
     (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: Convert go.untyped_bool go.bool ((![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "length"))
       then
-        let: "v" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
+        let: "v" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Block (GoZeroVal code.github_com.goose_lang.primitive.disk.disk.Block #())) in
         let: "a" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-        let: ("$ret0", "$ret1") := (let: "$a0" := (![disk.Disk] "d") in
+        let: ("$ret0", "$ret1") := (let: "$a0" := (![code.github_com.goose_lang.primitive.disk.disk.Disk] "d") in
         let: "$a1" := (![go.uint64] "i") in
         (FuncResolve getLogEntry [] #()) "$a0" "$a1") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("a" <-[go.uint64] "$r0");;;
-        do:  ("v" <-[disk.Block] "$r1");;;
+        do:  ("v" <-[code.github_com.goose_lang.primitive.disk.disk.Block] "$r1");;;
         do:  (let: "$a0" := (logLength +⟨go.uint64⟩ (![go.uint64] "a")) in
-        let: "$a1" := (![disk.Block] "v") in
-        (MethodResolve disk.Disk "Write"%go (![disk.Disk] "d")) "$a0" "$a1");;;
+        let: "$a1" := (![code.github_com.goose_lang.primitive.disk.disk.Block] "v") in
+        (MethodResolve code.github_com.goose_lang.primitive.disk.disk.Disk "Write"%go (![code.github_com.goose_lang.primitive.disk.disk.Disk] "d")) "$a0" "$a1");;;
         let: "$r0" := ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)) in
         do:  ("i" <-[go.uint64] "$r0");;;
         continue: #()
@@ -3229,14 +3229,14 @@ Definition applyLogⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
 (* go: wal.go:140:6 *)
 Definition clearLogⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d",
-    exception_do (let: "d" := (GoAlloc disk.Disk "d") in
-    let: "header" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
+    exception_do (let: "d" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Disk "d") in
+    let: "header" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Block (GoZeroVal code.github_com.goose_lang.primitive.disk.disk.Block #())) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
     (FuncResolve intToBlock [] #()) "$a0") in
-    do:  ("header" <-[disk.Block] "$r0");;;
+    do:  ("header" <-[code.github_com.goose_lang.primitive.disk.disk.Block] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
-    let: "$a1" := (![disk.Block] "header") in
-    (MethodResolve disk.Disk "Write"%go (![disk.Disk] "d")) "$a0" "$a1");;;
+    let: "$a1" := (![code.github_com.goose_lang.primitive.disk.disk.Block] "header") in
+    (MethodResolve code.github_com.goose_lang.primitive.disk.disk.Disk "Write"%go (![code.github_com.goose_lang.primitive.disk.disk.Disk] "d")) "$a0" "$a1");;;
     return: #()).
 
 (* Apply all the committed transactions.
@@ -3251,10 +3251,10 @@ Definition Log__Applyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "length" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l"))) in
     do:  ("length" <-[go.uint64] "$r0");;;
-    do:  (let: "$a0" := (![disk.Disk] (StructFieldRef Log "d"%go "l")) in
+    do:  (let: "$a0" := (![code.github_com.goose_lang.primitive.disk.disk.Disk] (StructFieldRef Log "d"%go "l")) in
     let: "$a1" := (![go.uint64] "length") in
     (FuncResolve applyLog [] #()) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![disk.Disk] (StructFieldRef Log "d"%go "l")) in
+    do:  (let: "$a0" := (![code.github_com.goose_lang.primitive.disk.disk.Disk] (StructFieldRef Log "d"%go "l")) in
     (FuncResolve clearLog [] #()) "$a0");;;
     let: "$r0" := #(W64 0) in
     do:  ((![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l")) <-[go.uint64] "$r0");;;
@@ -3266,38 +3266,38 @@ Definition Log__Applyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
    go: wal.go:161:6 *)
 Definition Openⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (let: "d" := (GoAlloc disk.Disk (GoZeroVal disk.Disk #())) in
-    let: "$r0" := ((FuncResolve disk.Get [] #()) #()) in
-    do:  ("d" <-[disk.Disk] "$r0");;;
-    let: "header" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
+    exception_do (let: "d" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Disk (GoZeroVal code.github_com.goose_lang.primitive.disk.disk.Disk #())) in
+    let: "$r0" := ((FuncResolve code.github_com.goose_lang.primitive.disk.disk.Get [] #()) #()) in
+    do:  ("d" <-[code.github_com.goose_lang.primitive.disk.disk.Disk] "$r0");;;
+    let: "header" := (GoAlloc code.github_com.goose_lang.primitive.disk.disk.Block (GoZeroVal code.github_com.goose_lang.primitive.disk.disk.Block #())) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (MethodResolve disk.Disk "Read"%go (![disk.Disk] "d")) "$a0") in
-    do:  ("header" <-[disk.Block] "$r0");;;
+    (MethodResolve code.github_com.goose_lang.primitive.disk.disk.Disk "Read"%go (![code.github_com.goose_lang.primitive.disk.disk.Disk] "d")) "$a0") in
+    do:  ("header" <-[code.github_com.goose_lang.primitive.disk.disk.Block] "$r0");;;
     let: "length" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (let: "$a0" := (![disk.Block] "header") in
+    let: "$r0" := (let: "$a0" := (![code.github_com.goose_lang.primitive.disk.disk.Block] "header") in
     (FuncResolve blockToInt [] #()) "$a0") in
     do:  ("length" <-[go.uint64] "$r0");;;
-    do:  (let: "$a0" := (![disk.Disk] "d") in
+    do:  (let: "$a0" := (![code.github_com.goose_lang.primitive.disk.disk.Disk] "d") in
     let: "$a1" := (![go.uint64] "length") in
     (FuncResolve applyLog [] #()) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![disk.Disk] "d") in
+    do:  (let: "$a0" := (![code.github_com.goose_lang.primitive.disk.disk.Disk] "d") in
     (FuncResolve clearLog [] #()) "$a0");;;
-    let: "cache" := (GoAlloc (go.MapType go.uint64 disk.Block) (GoZeroVal (go.MapType go.uint64 disk.Block) #())) in
-    let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 disk.Block] #()) #()) in
-    do:  ("cache" <-[go.MapType go.uint64 disk.Block] "$r0");;;
+    let: "cache" := (GoAlloc (go.MapType go.uint64 code.github_com.goose_lang.primitive.disk.disk.Block) (GoZeroVal (go.MapType go.uint64 code.github_com.goose_lang.primitive.disk.disk.Block) #())) in
+    let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 code.github_com.goose_lang.primitive.disk.disk.Block] #()) #()) in
+    do:  ("cache" <-[go.MapType go.uint64 code.github_com.goose_lang.primitive.disk.disk.Block] "$r0");;;
     let: "lengthPtr" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
     let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     do:  ("lengthPtr" <-[go.PointerType go.uint64] "$r0");;;
     let: "$r0" := #(W64 0) in
     do:  ((![go.PointerType go.uint64] "lengthPtr") <-[go.uint64] "$r0");;;
-    let: "l" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
-    let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
-    do:  ("l" <-[go.PointerType sync.Mutex] "$r0");;;
-    return: (let: "$v0" := (![disk.Disk] "d") in
-     let: "$v1" := (![go.MapType go.uint64 disk.Block] "cache") in
+    let: "l" := (GoAlloc (go.PointerType code.sync.sync.Mutex) (GoZeroVal (go.PointerType code.sync.sync.Mutex) #())) in
+    let: "$r0" := (GoAlloc code.sync.sync.Mutex (GoZeroVal code.sync.sync.Mutex #())) in
+    do:  ("l" <-[go.PointerType code.sync.sync.Mutex] "$r0");;;
+    return: (let: "$v0" := (![code.github_com.goose_lang.primitive.disk.disk.Disk] "d") in
+     let: "$v1" := (![go.MapType go.uint64 code.github_com.goose_lang.primitive.disk.disk.Block] "cache") in
      let: "$v2" := (![go.PointerType go.uint64] "lengthPtr") in
-     let: "$v3" := (![go.PointerType sync.Mutex] "l") in
-     CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "d"%go)) (ElementExpression disk.Disk "$v0"); KeyedElement (Some (KeyField "cache"%go)) (ElementExpression (go.MapType go.uint64 disk.Block) "$v1"); KeyedElement (Some (KeyField "length"%go)) (ElementExpression (go.PointerType go.uint64) "$v2"); KeyedElement (Some (KeyField "l"%go)) (ElementExpression (go.PointerType sync.Mutex) "$v3")]))).
+     let: "$v3" := (![go.PointerType code.sync.sync.Mutex] "l") in
+     CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "d"%go)) (ElementExpression code.github_com.goose_lang.primitive.disk.disk.Disk "$v0"); KeyedElement (Some (KeyField "cache"%go)) (ElementExpression (go.MapType go.uint64 code.github_com.goose_lang.primitive.disk.disk.Block) "$v1"); KeyedElement (Some (KeyField "length"%go)) (ElementExpression (go.PointerType go.uint64) "$v2"); KeyedElement (Some (KeyField "l"%go)) (ElementExpression (go.PointerType code.sync.sync.Mutex) "$v3")]))).
 
 (* disabled since performance is quite poor
 
@@ -3322,12 +3322,12 @@ Definition disabled_testWalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     (FuncResolve blockToInt [] #()) "$a0") =⟨go.uint64⟩ #(W64 11))) in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
-    (MethodResolve disk.Disk "Read"%go (![disk.Disk] (StructFieldRef Log "d"%go "lg"))) "$a0") in
+    (MethodResolve code.github_com.goose_lang.primitive.disk.disk.Disk "Read"%go (![code.github_com.goose_lang.primitive.disk.disk.Disk] (StructFieldRef Log "d"%go "lg"))) "$a0") in
     (FuncResolve blockToInt [] #()) "$a0") =⟨go.uint64⟩ #(W64 0))) in
     do:  ("ok" <-[go.bool] "$r0");;;
     do:  ((MethodResolve (go.PointerType Log) "Commit"%go "lg") #());;;
     let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
-    (MethodResolve disk.Disk "Read"%go (![disk.Disk] (StructFieldRef Log "d"%go "lg"))) "$a0") in
+    (MethodResolve code.github_com.goose_lang.primitive.disk.disk.Disk "Read"%go (![code.github_com.goose_lang.primitive.disk.disk.Disk] (StructFieldRef Log "d"%go "lg"))) "$a0") in
     (FuncResolve blockToInt [] #()) "$a0") =⟨go.uint64⟩ #(W64 1))) in
     do:  ("ok" <-[go.bool] "$r0");;;
     do:  ((MethodResolve (go.PointerType Log) "Apply"%go "lg") #());;;
@@ -3343,10 +3343,10 @@ Definition disabled_testWalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.semantics (λ: <>,
-      exception_do (do:  (disk.initialize' #());;;
-      do:  (binary.initialize' #());;;
-      do:  (primitive.initialize' #());;;
-      do:  (sync.initialize' #()))
+      exception_do (do:  (code.github_com.goose_lang.primitive.disk.disk.initialize' #());;;
+      do:  (code.encoding.binary.binary.initialize' #());;;
+      do:  (code.github_com.goose_lang.primitive.primitive.initialize' #());;;
+      do:  (code.sync.sync.initialize' #()))
       ).
 
 Module unit.
@@ -4309,7 +4309,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  d' : disk.Disk.t;
+  d' : code.github_com.goose_lang.primitive.disk.disk.Disk.t;
   l' : loc;
   cache' : map.t;
   length' : loc;
@@ -4322,9 +4322,9 @@ End def.
 End Log.
 
 Definition Log'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "d"%go disk.Disk);
-  (go.FieldDecl "l"%go (go.PointerType sync.Mutex));
-  (go.FieldDecl "cache"%go (go.MapType go.uint64 disk.Block));
+  (go.FieldDecl "d"%go code.github_com.goose_lang.primitive.disk.disk.Disk);
+  (go.FieldDecl "l"%go (go.PointerType code.sync.sync.Mutex));
+  (go.FieldDecl "cache"%go (go.MapType go.uint64 code.github_com.goose_lang.primitive.disk.disk.Block));
   (go.FieldDecl "length"%go (go.PointerType go.uint64))
 ].
 Program Definition Log'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Log'fds_unsealed).
@@ -4556,9 +4556,9 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] clearLog_unfold :: FuncUnfold clearLog [] (clearLogⁱᵐᵖˡ);
   #[global] Open_unfold :: FuncUnfold Open [] (Openⁱᵐᵖˡ);
   #[global] disabled_testWal_unfold :: FuncUnfold disabled_testWal [] (disabled_testWalⁱᵐᵖˡ);
-  #[global] import_sync_Assumption :: sync.Assumptions;
-  #[global] import_primitive_Assumption :: primitive.Assumptions;
-  #[global] import_binary_Assumption :: binary.Assumptions;
-  #[global] import_disk_Assumption :: disk.Assumptions;
+  #[global] import_sync_Assumption :: code.sync.sync.Assumptions;
+  #[global] import_primitive_Assumption :: code.github_com.goose_lang.primitive.primitive.Assumptions;
+  #[global] import_binary_Assumption :: code.encoding.binary.binary.Assumptions;
+  #[global] import_disk_Assumption :: code.github_com.goose_lang.primitive.disk.disk.Assumptions;
 }.
 End semantics.

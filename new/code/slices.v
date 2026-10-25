@@ -205,7 +205,7 @@ Definition SortFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (S
     let: "$a1" := #(W64 0) in
     let: "$a2" := (![go.int] "n") in
     let: "$a3" := (let: "$a0" := (Convert go.int go.uint (![go.int] "n")) in
-    (FuncResolve bits.Len [] #()) "$a0") in
+    (FuncResolve code.math.bits.bits.Len [] #()) "$a0") in
     let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
     (FuncResolve pdqsortCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4");;;
     return: #()).
@@ -1153,7 +1153,7 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.slices (λ: <>,
-      exception_do (do:  (bits.initialize' #()))
+      exception_do (do:  (code.math.bits.bits.initialize' #()))
       ).
 
 Module sortedHint.
@@ -1209,6 +1209,6 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] stableCmpFunc_unfold E :: FuncUnfold stableCmpFunc [E] (stableCmpFuncⁱᵐᵖˡ E);
   #[global] symMergeCmpFunc_unfold E :: FuncUnfold symMergeCmpFunc [E] (symMergeCmpFuncⁱᵐᵖˡ E);
   #[global] rotateCmpFunc_unfold E :: FuncUnfold rotateCmpFunc [E] (rotateCmpFuncⁱᵐᵖˡ E);
-  #[global] import_bits_Assumption :: bits.Assumptions;
+  #[global] import_bits_Assumption :: code.math.bits.bits.Assumptions;
 }.
 End slices.

@@ -196,7 +196,7 @@ Definition useAnyPointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     do:  (let: "$a0" := "x" in
-    (FuncResolve helpers.AnyPointer [go.uint64] #()) "$a0");;;
+    (FuncResolve code.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers.helpers.AnyPointer [go.uint64] #()) "$a0");;;
     return: #()).
 
 #[global] Instance info' : PkgInfo pkg_id.generics :=
@@ -207,7 +207,7 @@ Definition useAnyPointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.generics (λ: <>,
-      exception_do (do:  (helpers.initialize' #()))
+      exception_do (do:  (code.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers.helpers.initialize' #()))
       ).
 
 Module Box.
@@ -491,6 +491,6 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] multiParamFunc_unfold A B :: FuncUnfold multiParamFunc [A; B] (multiParamFuncⁱᵐᵖˡ A B);
   #[global] useMultiParamFunc_unfold :: FuncUnfold useMultiParamFunc [] (useMultiParamFuncⁱᵐᵖˡ);
   #[global] useAnyPointer_unfold :: FuncUnfold useAnyPointer [] (useAnyPointerⁱᵐᵖˡ);
-  #[global] import_helpers_Assumption :: helpers.Assumptions;
+  #[global] import_helpers_Assumption :: code.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers.helpers.Assumptions;
 }.
 End generics.

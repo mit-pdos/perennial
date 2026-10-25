@@ -932,11 +932,11 @@ Definition streamKeyFromCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_
    go: client.go:124:6 *)
 Definition WithZapLoggerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lg",
-    exception_do (let: "lg" := (GoAlloc (go.PointerType zap.Logger) "lg") in
+    exception_do (let: "lg" := (GoAlloc (go.PointerType code.go_uber_org.zap.zap.Logger) "lg") in
     return: ((λ: "c",
        exception_do (let: "c" := (GoAlloc (go.PointerType Client) "c") in
-       do:  (let: "$a0" := (![go.PointerType zap.Logger] "lg") in
-       (MethodResolve (go.PointerType (atomic.Pointer zap.Logger)) "Store"%go (StructFieldRef Client "lg"%go (![go.PointerType Client] "c"))) "$a0");;;
+       do:  (let: "$a0" := (![go.PointerType code.go_uber_org.zap.zap.Logger] "lg") in
+       (MethodResolve (go.PointerType (code.sync.atomic.atomic.Pointer code.go_uber_org.zap.zap.Logger)) "Store"%go (StructFieldRef Client "lg"%go (![go.PointerType Client] "c"))) "$a0");;;
        return: #())
        ))).
 
@@ -1186,8 +1186,8 @@ Definition Op__toRangeRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"op.t != tRange"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    let: "r" := (GoAlloc (go.PointerType etcdserverpb.RangeRequest) (GoZeroVal (go.PointerType etcdserverpb.RangeRequest) #())) in
-    let: "$r0" := (GoAlloc etcdserverpb.RangeRequest (let: "$v0" := (![go.SliceType go.byte] (StructFieldRef Op "key"%go "op")) in
+    let: "r" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest) #())) in
+    let: "$r0" := (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest (let: "$v0" := (![go.SliceType go.byte] (StructFieldRef Op "key"%go "op")) in
     let: "$v1" := (![go.SliceType go.byte] (StructFieldRef Op "end"%go "op")) in
     let: "$v2" := (![go.int64] (StructFieldRef Op "limit"%go "op")) in
     let: "$v3" := (![go.int64] (StructFieldRef Op "rev"%go "op")) in
@@ -1198,25 +1198,25 @@ Definition Op__toRangeRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     let: "$v8" := (![go.int64] (StructFieldRef Op "maxModRev"%go "op")) in
     let: "$v9" := (![go.int64] (StructFieldRef Op "minCreateRev"%go "op")) in
     let: "$v10" := (![go.int64] (StructFieldRef Op "maxCreateRev"%go "op")) in
-    CompositeLiteral etcdserverpb.RangeRequest (LiteralValue [KeyedElement (Some (KeyField "Key"%go)) (ElementExpression (go.SliceType go.byte) "$v0"); KeyedElement (Some (KeyField "RangeEnd"%go)) (ElementExpression (go.SliceType go.byte) "$v1"); KeyedElement (Some (KeyField "Limit"%go)) (ElementExpression go.int64 "$v2"); KeyedElement (Some (KeyField "Revision"%go)) (ElementExpression go.int64 "$v3"); KeyedElement (Some (KeyField "Serializable"%go)) (ElementExpression go.bool "$v4"); KeyedElement (Some (KeyField "KeysOnly"%go)) (ElementExpression go.bool "$v5"); KeyedElement (Some (KeyField "CountOnly"%go)) (ElementExpression go.bool "$v6"); KeyedElement (Some (KeyField "MinModRevision"%go)) (ElementExpression go.int64 "$v7"); KeyedElement (Some (KeyField "MaxModRevision"%go)) (ElementExpression go.int64 "$v8"); KeyedElement (Some (KeyField "MinCreateRevision"%go)) (ElementExpression go.int64 "$v9"); KeyedElement (Some (KeyField "MaxCreateRevision"%go)) (ElementExpression go.int64 "$v10")]))) in
-    do:  ("r" <-[go.PointerType etcdserverpb.RangeRequest] "$r0");;;
+    CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest (LiteralValue [KeyedElement (Some (KeyField "Key"%go)) (ElementExpression (go.SliceType go.byte) "$v0"); KeyedElement (Some (KeyField "RangeEnd"%go)) (ElementExpression (go.SliceType go.byte) "$v1"); KeyedElement (Some (KeyField "Limit"%go)) (ElementExpression go.int64 "$v2"); KeyedElement (Some (KeyField "Revision"%go)) (ElementExpression go.int64 "$v3"); KeyedElement (Some (KeyField "Serializable"%go)) (ElementExpression go.bool "$v4"); KeyedElement (Some (KeyField "KeysOnly"%go)) (ElementExpression go.bool "$v5"); KeyedElement (Some (KeyField "CountOnly"%go)) (ElementExpression go.bool "$v6"); KeyedElement (Some (KeyField "MinModRevision"%go)) (ElementExpression go.int64 "$v7"); KeyedElement (Some (KeyField "MaxModRevision"%go)) (ElementExpression go.int64 "$v8"); KeyedElement (Some (KeyField "MinCreateRevision"%go)) (ElementExpression go.int64 "$v9"); KeyedElement (Some (KeyField "MaxCreateRevision"%go)) (ElementExpression go.int64 "$v10")]))) in
+    do:  ("r" <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.PointerType SortOption] (StructFieldRef Op "sort"%go "op")) ≠⟨go.PointerType SortOption⟩ (Convert go.untyped_nil (go.PointerType SortOption) UntypedNil))
     then
-      let: "$r0" := (Convert SortOrder etcdserverpb.RangeRequest_SortOrder (![SortOrder] (StructFieldRef SortOption "Order"%go (![go.PointerType SortOption] (StructFieldRef Op "sort"%go "op"))))) in
-      do:  ((StructFieldRef etcdserverpb.RangeRequest "SortOrder"%go (![go.PointerType etcdserverpb.RangeRequest] "r")) <-[etcdserverpb.RangeRequest_SortOrder] "$r0");;;
-      let: "$r0" := (Convert SortTarget etcdserverpb.RangeRequest_SortTarget (![SortTarget] (StructFieldRef SortOption "Target"%go (![go.PointerType SortOption] (StructFieldRef Op "sort"%go "op"))))) in
-      do:  ((StructFieldRef etcdserverpb.RangeRequest "SortTarget"%go (![go.PointerType etcdserverpb.RangeRequest] "r")) <-[etcdserverpb.RangeRequest_SortTarget] "$r0")
+      let: "$r0" := (Convert SortOrder code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest_SortOrder (![SortOrder] (StructFieldRef SortOption "Order"%go (![go.PointerType SortOption] (StructFieldRef Op "sort"%go "op"))))) in
+      do:  ((StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest "SortOrder"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest] "r")) <-[code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest_SortOrder] "$r0");;;
+      let: "$r0" := (Convert SortTarget code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest_SortTarget (![SortTarget] (StructFieldRef SortOption "Target"%go (![go.PointerType SortOption] (StructFieldRef Op "sort"%go "op"))))) in
+      do:  ((StructFieldRef code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest "SortTarget"%go (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest] "r")) <-[code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest_SortTarget] "$r0")
     else do:  #());;;
-    return: (![go.PointerType etcdserverpb.RangeRequest] "r")).
+    return: (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest] "r")).
 
 (* go: op.go:200:14 *)
 Definition Op__toTxnRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "op" <>,
     exception_do (let: "op" := (GoAlloc Op "op") in
-    let: "thenOps" := (GoAlloc (go.SliceType (go.PointerType etcdserverpb.RequestOp)) (GoZeroVal (go.SliceType (go.PointerType etcdserverpb.RequestOp)) #())) in
-    let: "$r0" := ((FuncResolve go.make2 [go.SliceType (go.PointerType etcdserverpb.RequestOp)] #()) (let: "$a0" := (![go.SliceType Op] (StructFieldRef Op "thenOps"%go "op")) in
+    let: "thenOps" := (GoAlloc (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp)) (GoZeroVal (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp)) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp)] #()) (let: "$a0" := (![go.SliceType Op] (StructFieldRef Op "thenOps"%go "op")) in
     (FuncResolve go.len [go.SliceType Op] #()) "$a0")) in
-    do:  ("thenOps" <-[go.SliceType (go.PointerType etcdserverpb.RequestOp)] "$r0");;;
+    do:  ("thenOps" <-[go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp)] "$r0");;;
     let: "$range" := (![go.SliceType Op] (StructFieldRef Op "thenOps"%go "op")) in
     (let: "tOp" := (GoAlloc Op (GoZeroVal Op #())) in
     let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
@@ -1224,11 +1224,11 @@ Definition Op__toTxnRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       do:  ("tOp" <-[Op] "$value");;;
       do:  ("i" <-[go.int] "$key");;;
       let: "$r0" := ((MethodResolve (go.PointerType Op) "toRequestOp"%go "tOp") #()) in
-      do:  ((IndexRef (go.SliceType (go.PointerType etcdserverpb.RequestOp)) (![go.SliceType (go.PointerType etcdserverpb.RequestOp)] "thenOps", ![go.int] "i")) <-[go.PointerType etcdserverpb.RequestOp] "$r0")));;;
-    let: "elseOps" := (GoAlloc (go.SliceType (go.PointerType etcdserverpb.RequestOp)) (GoZeroVal (go.SliceType (go.PointerType etcdserverpb.RequestOp)) #())) in
-    let: "$r0" := ((FuncResolve go.make2 [go.SliceType (go.PointerType etcdserverpb.RequestOp)] #()) (let: "$a0" := (![go.SliceType Op] (StructFieldRef Op "elseOps"%go "op")) in
+      do:  ((IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp)] "thenOps", ![go.int] "i")) <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp] "$r0")));;;
+    let: "elseOps" := (GoAlloc (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp)) (GoZeroVal (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp)) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp)] #()) (let: "$a0" := (![go.SliceType Op] (StructFieldRef Op "elseOps"%go "op")) in
     (FuncResolve go.len [go.SliceType Op] #()) "$a0")) in
-    do:  ("elseOps" <-[go.SliceType (go.PointerType etcdserverpb.RequestOp)] "$r0");;;
+    do:  ("elseOps" <-[go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp)] "$r0");;;
     let: "$range" := (![go.SliceType Op] (StructFieldRef Op "elseOps"%go "op")) in
     (let: "eOp" := (GoAlloc Op (GoZeroVal Op #())) in
     let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
@@ -1236,21 +1236,21 @@ Definition Op__toTxnRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       do:  ("eOp" <-[Op] "$value");;;
       do:  ("i" <-[go.int] "$key");;;
       let: "$r0" := ((MethodResolve (go.PointerType Op) "toRequestOp"%go "eOp") #()) in
-      do:  ((IndexRef (go.SliceType (go.PointerType etcdserverpb.RequestOp)) (![go.SliceType (go.PointerType etcdserverpb.RequestOp)] "elseOps", ![go.int] "i")) <-[go.PointerType etcdserverpb.RequestOp] "$r0")));;;
-    let: "cmps" := (GoAlloc (go.SliceType (go.PointerType etcdserverpb.Compare)) (GoZeroVal (go.SliceType (go.PointerType etcdserverpb.Compare)) #())) in
-    let: "$r0" := ((FuncResolve go.make2 [go.SliceType (go.PointerType etcdserverpb.Compare)] #()) (let: "$a0" := (![go.SliceType Cmp] (StructFieldRef Op "cmps"%go "op")) in
+      do:  ((IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp)] "elseOps", ![go.int] "i")) <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp] "$r0")));;;
+    let: "cmps" := (GoAlloc (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare)) (GoZeroVal (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare)) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare)] #()) (let: "$a0" := (![go.SliceType Cmp] (StructFieldRef Op "cmps"%go "op")) in
     (FuncResolve go.len [go.SliceType Cmp] #()) "$a0")) in
-    do:  ("cmps" <-[go.SliceType (go.PointerType etcdserverpb.Compare)] "$r0");;;
+    do:  ("cmps" <-[go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare)] "$r0");;;
     let: "$range" := (![go.SliceType Cmp] (StructFieldRef Op "cmps"%go "op")) in
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     slice.for_range Cmp "$range" (λ: "$key" "$value",
       do:  ("i" <-[go.int] "$key");;;
-      let: "$r0" := (Convert (go.PointerType Cmp) (go.PointerType etcdserverpb.Compare) (IndexRef (go.SliceType Cmp) (![go.SliceType Cmp] (StructFieldRef Op "cmps"%go "op"), ![go.int] "i"))) in
-      do:  ((IndexRef (go.SliceType (go.PointerType etcdserverpb.Compare)) (![go.SliceType (go.PointerType etcdserverpb.Compare)] "cmps", ![go.int] "i")) <-[go.PointerType etcdserverpb.Compare] "$r0")));;;
-    return: (GoAlloc etcdserverpb.TxnRequest (let: "$v0" := (![go.SliceType (go.PointerType etcdserverpb.Compare)] "cmps") in
-     let: "$v1" := (![go.SliceType (go.PointerType etcdserverpb.RequestOp)] "thenOps") in
-     let: "$v2" := (![go.SliceType (go.PointerType etcdserverpb.RequestOp)] "elseOps") in
-     CompositeLiteral etcdserverpb.TxnRequest (LiteralValue [KeyedElement (Some (KeyField "Compare"%go)) (ElementExpression (go.SliceType (go.PointerType etcdserverpb.Compare)) "$v0"); KeyedElement (Some (KeyField "Success"%go)) (ElementExpression (go.SliceType (go.PointerType etcdserverpb.RequestOp)) "$v1"); KeyedElement (Some (KeyField "Failure"%go)) (ElementExpression (go.SliceType (go.PointerType etcdserverpb.RequestOp)) "$v2")])))).
+      let: "$r0" := (Convert (go.PointerType Cmp) (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare) (IndexRef (go.SliceType Cmp) (![go.SliceType Cmp] (StructFieldRef Op "cmps"%go "op"), ![go.int] "i"))) in
+      do:  ((IndexRef (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare)) (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare)] "cmps", ![go.int] "i")) <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare] "$r0")));;;
+    return: (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnRequest (let: "$v0" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare)] "cmps") in
+     let: "$v1" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp)] "thenOps") in
+     let: "$v2" := (![go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp)] "elseOps") in
+     CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnRequest (LiteralValue [KeyedElement (Some (KeyField "Compare"%go)) (ElementExpression (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare)) "$v0"); KeyedElement (Some (KeyField "Success"%go)) (ElementExpression (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp)) "$v1"); KeyedElement (Some (KeyField "Failure"%go)) (ElementExpression (go.SliceType (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp)) "$v2")])))).
 
 (* go: op.go:216:14 *)
 Definition Op__toRequestOpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -1259,42 +1259,42 @@ Definition Op__toRequestOpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "$sw" := (![opType] (StructFieldRef Op "t"%go "op")) in
     (if: "$sw" =⟨opType⟩ tRange
     then
-      return: (GoAlloc etcdserverpb.RequestOp (let: "$v0" := (GoAlloc etcdserverpb.RequestOp_RequestRange (let: "$v0" := ((MethodResolve (go.PointerType Op) "toRangeRequest"%go "op") #()) in
-       CompositeLiteral etcdserverpb.RequestOp_RequestRange (LiteralValue [KeyedElement (Some (KeyField "RequestRange"%go)) (ElementExpression (go.PointerType etcdserverpb.RangeRequest) "$v0")]))) in
-       CompositeLiteral etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType etcdserverpb.RequestOp_RequestRange) "$v0")])))
+      return: (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp (let: "$v0" := (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp_RequestRange (let: "$v0" := ((MethodResolve (go.PointerType Op) "toRangeRequest"%go "op") #()) in
+       CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp_RequestRange (LiteralValue [KeyedElement (Some (KeyField "RequestRange"%go)) (ElementExpression (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest) "$v0")]))) in
+       CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp_RequestRange) "$v0")])))
     else
       (if: "$sw" =⟨opType⟩ tPut
       then
-        let: "r" := (GoAlloc (go.PointerType etcdserverpb.PutRequest) (GoZeroVal (go.PointerType etcdserverpb.PutRequest) #())) in
-        let: "$r0" := (GoAlloc etcdserverpb.PutRequest (let: "$v0" := (![go.SliceType go.byte] (StructFieldRef Op "key"%go "op")) in
+        let: "r" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutRequest) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutRequest) #())) in
+        let: "$r0" := (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutRequest (let: "$v0" := (![go.SliceType go.byte] (StructFieldRef Op "key"%go "op")) in
         let: "$v1" := (![go.SliceType go.byte] (StructFieldRef Op "val"%go "op")) in
         let: "$v2" := (![LeaseID] (StructFieldRef Op "leaseID"%go "op")) in
         let: "$v3" := (![go.bool] (StructFieldRef Op "prevKV"%go "op")) in
         let: "$v4" := (![go.bool] (StructFieldRef Op "ignoreValue"%go "op")) in
         let: "$v5" := (![go.bool] (StructFieldRef Op "ignoreLease"%go "op")) in
-        CompositeLiteral etcdserverpb.PutRequest (LiteralValue [KeyedElement (Some (KeyField "Key"%go)) (ElementExpression (go.SliceType go.byte) "$v0"); KeyedElement (Some (KeyField "Value"%go)) (ElementExpression (go.SliceType go.byte) "$v1"); KeyedElement (Some (KeyField "Lease"%go)) (ElementExpression go.int64 "$v2"); KeyedElement (Some (KeyField "PrevKv"%go)) (ElementExpression go.bool "$v3"); KeyedElement (Some (KeyField "IgnoreValue"%go)) (ElementExpression go.bool "$v4"); KeyedElement (Some (KeyField "IgnoreLease"%go)) (ElementExpression go.bool "$v5")]))) in
-        do:  ("r" <-[go.PointerType etcdserverpb.PutRequest] "$r0");;;
-        return: (GoAlloc etcdserverpb.RequestOp (let: "$v0" := (GoAlloc etcdserverpb.RequestOp_RequestPut (let: "$v0" := (![go.PointerType etcdserverpb.PutRequest] "r") in
-         CompositeLiteral etcdserverpb.RequestOp_RequestPut (LiteralValue [KeyedElement (Some (KeyField "RequestPut"%go)) (ElementExpression (go.PointerType etcdserverpb.PutRequest) "$v0")]))) in
-         CompositeLiteral etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType etcdserverpb.RequestOp_RequestPut) "$v0")])))
+        CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutRequest (LiteralValue [KeyedElement (Some (KeyField "Key"%go)) (ElementExpression (go.SliceType go.byte) "$v0"); KeyedElement (Some (KeyField "Value"%go)) (ElementExpression (go.SliceType go.byte) "$v1"); KeyedElement (Some (KeyField "Lease"%go)) (ElementExpression go.int64 "$v2"); KeyedElement (Some (KeyField "PrevKv"%go)) (ElementExpression go.bool "$v3"); KeyedElement (Some (KeyField "IgnoreValue"%go)) (ElementExpression go.bool "$v4"); KeyedElement (Some (KeyField "IgnoreLease"%go)) (ElementExpression go.bool "$v5")]))) in
+        do:  ("r" <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutRequest] "$r0");;;
+        return: (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp (let: "$v0" := (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp_RequestPut (let: "$v0" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutRequest] "r") in
+         CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp_RequestPut (LiteralValue [KeyedElement (Some (KeyField "RequestPut"%go)) (ElementExpression (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutRequest) "$v0")]))) in
+         CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp_RequestPut) "$v0")])))
       else
         (if: "$sw" =⟨opType⟩ tDeleteRange
         then
-          let: "r" := (GoAlloc (go.PointerType etcdserverpb.DeleteRangeRequest) (GoZeroVal (go.PointerType etcdserverpb.DeleteRangeRequest) #())) in
-          let: "$r0" := (GoAlloc etcdserverpb.DeleteRangeRequest (let: "$v0" := (![go.SliceType go.byte] (StructFieldRef Op "key"%go "op")) in
+          let: "r" := (GoAlloc (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.DeleteRangeRequest) (GoZeroVal (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.DeleteRangeRequest) #())) in
+          let: "$r0" := (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.DeleteRangeRequest (let: "$v0" := (![go.SliceType go.byte] (StructFieldRef Op "key"%go "op")) in
           let: "$v1" := (![go.SliceType go.byte] (StructFieldRef Op "end"%go "op")) in
           let: "$v2" := (![go.bool] (StructFieldRef Op "prevKV"%go "op")) in
-          CompositeLiteral etcdserverpb.DeleteRangeRequest (LiteralValue [KeyedElement (Some (KeyField "Key"%go)) (ElementExpression (go.SliceType go.byte) "$v0"); KeyedElement (Some (KeyField "RangeEnd"%go)) (ElementExpression (go.SliceType go.byte) "$v1"); KeyedElement (Some (KeyField "PrevKv"%go)) (ElementExpression go.bool "$v2")]))) in
-          do:  ("r" <-[go.PointerType etcdserverpb.DeleteRangeRequest] "$r0");;;
-          return: (GoAlloc etcdserverpb.RequestOp (let: "$v0" := (GoAlloc etcdserverpb.RequestOp_RequestDeleteRange (let: "$v0" := (![go.PointerType etcdserverpb.DeleteRangeRequest] "r") in
-           CompositeLiteral etcdserverpb.RequestOp_RequestDeleteRange (LiteralValue [KeyedElement (Some (KeyField "RequestDeleteRange"%go)) (ElementExpression (go.PointerType etcdserverpb.DeleteRangeRequest) "$v0")]))) in
-           CompositeLiteral etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType etcdserverpb.RequestOp_RequestDeleteRange) "$v0")])))
+          CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.DeleteRangeRequest (LiteralValue [KeyedElement (Some (KeyField "Key"%go)) (ElementExpression (go.SliceType go.byte) "$v0"); KeyedElement (Some (KeyField "RangeEnd"%go)) (ElementExpression (go.SliceType go.byte) "$v1"); KeyedElement (Some (KeyField "PrevKv"%go)) (ElementExpression go.bool "$v2")]))) in
+          do:  ("r" <-[go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.DeleteRangeRequest] "$r0");;;
+          return: (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp (let: "$v0" := (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp_RequestDeleteRange (let: "$v0" := (![go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.DeleteRangeRequest] "r") in
+           CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp_RequestDeleteRange (LiteralValue [KeyedElement (Some (KeyField "RequestDeleteRange"%go)) (ElementExpression (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.DeleteRangeRequest) "$v0")]))) in
+           CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp_RequestDeleteRange) "$v0")])))
         else
           (if: "$sw" =⟨opType⟩ tTxn
           then
-            return: (GoAlloc etcdserverpb.RequestOp (let: "$v0" := (GoAlloc etcdserverpb.RequestOp_RequestTxn (let: "$v0" := ((MethodResolve (go.PointerType Op) "toTxnRequest"%go "op") #()) in
-             CompositeLiteral etcdserverpb.RequestOp_RequestTxn (LiteralValue [KeyedElement (Some (KeyField "RequestTxn"%go)) (ElementExpression (go.PointerType etcdserverpb.TxnRequest) "$v0")]))) in
-             CompositeLiteral etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType etcdserverpb.RequestOp_RequestTxn) "$v0")])))
+            return: (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp (let: "$v0" := (GoAlloc code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp_RequestTxn (let: "$v0" := ((MethodResolve (go.PointerType Op) "toTxnRequest"%go "op") #()) in
+             CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp_RequestTxn (LiteralValue [KeyedElement (Some (KeyField "RequestTxn"%go)) (ElementExpression (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnRequest) "$v0")]))) in
+             CompositeLiteral code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RequestOp_RequestTxn) "$v0")])))
           else
             do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"Unknown Op"%go) in
             (FuncResolve go.panic [] #()) "$a0")))))).
@@ -1935,7 +1935,7 @@ Definition Op__IsSortOptionValidⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
       let: "$r0" := (Convert SortTarget go.int32 (![SortTarget] (StructFieldRef SortOption "Target"%go (![go.PointerType SortOption] (StructFieldRef Op "sort"%go "op"))))) in
       do:  ("sortTarget" <-[go.int32] "$r0");;;
       (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-      let: ("$ret0", "$ret1") := (map.lookup2 go.int32 go.string (![go.MapType go.int32 go.string] (GlobalVarAddr etcdserverpb.RangeRequest_SortOrder_name #())) (![go.int32] "sortOrder")) in
+      let: ("$ret0", "$ret1") := (map.lookup2 go.int32 go.string (![go.MapType go.int32 go.string] (GlobalVarAddr code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest_SortOrder_name #())) (![go.int32] "sortOrder")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
@@ -1944,7 +1944,7 @@ Definition Op__IsSortOptionValidⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
       then return: (#false)
       else do:  #()));;;
       (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-      let: ("$ret0", "$ret1") := (map.lookup2 go.int32 go.string (![go.MapType go.int32 go.string] (GlobalVarAddr etcdserverpb.RangeRequest_SortTarget_name #())) (![go.int32] "sortTarget")) in
+      let: ("$ret0", "$ret1") := (map.lookup2 go.int32 go.string (![go.MapType go.int32 go.string] (GlobalVarAddr code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeRequest_SortTarget_name #())) (![go.int32] "sortTarget")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
@@ -1965,10 +1965,10 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.clientv3 (λ: <>,
-      exception_do (do:  (mvccpb.initialize' #());;;
-      do:  (zap.initialize' #());;;
-      do:  (etcdserverpb.initialize' #());;;
-      do:  (context.initialize' #());;;
+      exception_do (do:  (code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.initialize' #());;;
+      do:  (code.go_uber_org.zap.zap.initialize' #());;;
+      do:  (code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.initialize' #());;;
+      do:  (code.context.context.initialize' #());;;
       do:  (ErrNoAvailableEndpoints'init #());;;
       do:  (ErrOldCluster'init #());;;
       do:  (ErrMutuallyExclusiveCfg'init #());;;
@@ -2476,7 +2476,7 @@ Definition t : Type := interface.t.
 End def.
 End Cluster.
 
-Definition Clusterⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "MemberAdd"%go (go.Signature [context.Context; go.SliceType go.string] false [go.PointerType MemberAddResponse; go.error]); go.MethodElem "MemberAddAsLearner"%go (go.Signature [context.Context; go.SliceType go.string] false [go.PointerType MemberAddResponse; go.error]); go.MethodElem "MemberList"%go (go.Signature [context.Context; go.SliceType OpOption] true [go.PointerType MemberListResponse; go.error]); go.MethodElem "MemberPromote"%go (go.Signature [context.Context; go.uint64] false [go.PointerType MemberPromoteResponse; go.error]); go.MethodElem "MemberRemove"%go (go.Signature [context.Context; go.uint64] false [go.PointerType MemberRemoveResponse; go.error]); go.MethodElem "MemberUpdate"%go (go.Signature [context.Context; go.uint64; go.SliceType go.string] false [go.PointerType MemberUpdateResponse; go.error])].
+Definition Clusterⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "MemberAdd"%go (go.Signature [code.context.context.Context; go.SliceType go.string] false [go.PointerType MemberAddResponse; go.error]); go.MethodElem "MemberAddAsLearner"%go (go.Signature [code.context.context.Context; go.SliceType go.string] false [go.PointerType MemberAddResponse; go.error]); go.MethodElem "MemberList"%go (go.Signature [code.context.context.Context; go.SliceType OpOption] true [go.PointerType MemberListResponse; go.error]); go.MethodElem "MemberPromote"%go (go.Signature [code.context.context.Context; go.uint64] false [go.PointerType MemberPromoteResponse; go.error]); go.MethodElem "MemberRemove"%go (go.Signature [code.context.context.Context; go.uint64] false [go.PointerType MemberRemoveResponse; go.error]); go.MethodElem "MemberUpdate"%go (go.Signature [code.context.context.Context; go.uint64; go.SliceType go.string] false [go.PointerType MemberUpdateResponse; go.error])].
 
 Class Cluster_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -2566,12 +2566,12 @@ Class CompareResult_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoca
 Module Cmp.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t : Type := etcdserverpb.Compare.t.
+Definition t : Type := code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare.t.
 #[global] Arguments t : clear implicits.
 End def.
 End Cmp.
 
-Definition Cmpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := etcdserverpb.Compare.
+Definition Cmpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Compare.
 
 Class Cmp_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -2661,12 +2661,12 @@ Class CompactResponse_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLo
 Module PutResponse.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t : Type := etcdserverpb.PutResponse.t.
+Definition t : Type := code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutResponse.t.
 #[global] Arguments t : clear implicits.
 End def.
 End PutResponse.
 
-Definition PutResponseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := etcdserverpb.PutResponse.
+Definition PutResponseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.PutResponse.
 
 Class PutResponse_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -2676,12 +2676,12 @@ Class PutResponse_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalC
 Module GetResponse.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t : Type := etcdserverpb.RangeResponse.t.
+Definition t : Type := code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeResponse.t.
 #[global] Arguments t : clear implicits.
 End def.
 End GetResponse.
 
-Definition GetResponseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := etcdserverpb.RangeResponse.
+Definition GetResponseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.RangeResponse.
 
 Class GetResponse_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -2691,12 +2691,12 @@ Class GetResponse_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalC
 Module DeleteResponse.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t : Type := etcdserverpb.DeleteRangeResponse.t.
+Definition t : Type := code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.DeleteRangeResponse.t.
 #[global] Arguments t : clear implicits.
 End def.
 End DeleteResponse.
 
-Definition DeleteResponseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := etcdserverpb.DeleteRangeResponse.
+Definition DeleteResponseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.DeleteRangeResponse.
 
 Class DeleteResponse_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -2706,12 +2706,12 @@ Class DeleteResponse_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoc
 Module TxnResponse.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t : Type := etcdserverpb.TxnResponse.t.
+Definition t : Type := code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse.t.
 #[global] Arguments t : clear implicits.
 End def.
 End TxnResponse.
 
-Definition TxnResponseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := etcdserverpb.TxnResponse.
+Definition TxnResponseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.TxnResponse.
 
 Class TxnResponse_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -2726,7 +2726,7 @@ Definition t : Type := interface.t.
 End def.
 End KV.
 
-Definition KVⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Compact"%go (go.Signature [context.Context; go.int64; go.SliceType CompactOption] true [go.PointerType CompactResponse; go.error]); go.MethodElem "Delete"%go (go.Signature [context.Context; go.string; go.SliceType OpOption] true [go.PointerType DeleteResponse; go.error]); go.MethodElem "Do"%go (go.Signature [context.Context; Op] false [OpResponse; go.error]); go.MethodElem "Get"%go (go.Signature [context.Context; go.string; go.SliceType OpOption] true [go.PointerType GetResponse; go.error]); go.MethodElem "Put"%go (go.Signature [context.Context; go.string; go.string; go.SliceType OpOption] true [go.PointerType PutResponse; go.error]); go.MethodElem "Txn"%go (go.Signature [context.Context] false [Txn])].
+Definition KVⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Compact"%go (go.Signature [code.context.context.Context; go.int64; go.SliceType CompactOption] true [go.PointerType CompactResponse; go.error]); go.MethodElem "Delete"%go (go.Signature [code.context.context.Context; go.string; go.SliceType OpOption] true [go.PointerType DeleteResponse; go.error]); go.MethodElem "Do"%go (go.Signature [code.context.context.Context; Op] false [OpResponse; go.error]); go.MethodElem "Get"%go (go.Signature [code.context.context.Context; go.string; go.SliceType OpOption] true [go.PointerType GetResponse; go.error]); go.MethodElem "Put"%go (go.Signature [code.context.context.Context; go.string; go.string; go.SliceType OpOption] true [go.PointerType PutResponse; go.error]); go.MethodElem "Txn"%go (go.Signature [code.context.context.Context] false [Txn])].
 
 Class KV_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -2841,7 +2841,7 @@ End def.
 End LeaseGrantResponse.
 
 Definition LeaseGrantResponse'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.EmbeddedField "ResponseHeader"%go (go.PointerType etcdserverpb.ResponseHeader));
+  (go.EmbeddedField "ResponseHeader"%go (go.PointerType code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader));
   (go.FieldDecl "ID"%go LeaseID);
   (go.FieldDecl "TTL"%go go.int64);
   (go.FieldDecl "Error"%go go.string)
@@ -2954,7 +2954,7 @@ Definition t : Type := interface.t.
 End def.
 End Lease.
 
-Definition Leaseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Close"%go (go.Signature [] false [go.error]); go.MethodElem "Grant"%go (go.Signature [context.Context; go.int64] false [go.PointerType LeaseGrantResponse; go.error]); go.MethodElem "KeepAlive"%go (go.Signature [context.Context; LeaseID] false [go.ChannelType go.recvonly (go.PointerType LeaseKeepAliveResponse); go.error]); go.MethodElem "KeepAliveOnce"%go (go.Signature [context.Context; LeaseID] false [go.PointerType LeaseKeepAliveResponse; go.error]); go.MethodElem "Leases"%go (go.Signature [context.Context] false [go.PointerType LeaseLeasesResponse; go.error]); go.MethodElem "Revoke"%go (go.Signature [context.Context; LeaseID] false [go.PointerType LeaseRevokeResponse; go.error]); go.MethodElem "TimeToLive"%go (go.Signature [context.Context; LeaseID; go.SliceType LeaseOption] true [go.PointerType LeaseTimeToLiveResponse; go.error])].
+Definition Leaseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Close"%go (go.Signature [] false [go.error]); go.MethodElem "Grant"%go (go.Signature [code.context.context.Context; go.int64] false [go.PointerType LeaseGrantResponse; go.error]); go.MethodElem "KeepAlive"%go (go.Signature [code.context.context.Context; LeaseID] false [go.ChannelType go.recvonly (go.PointerType LeaseKeepAliveResponse); go.error]); go.MethodElem "KeepAliveOnce"%go (go.Signature [code.context.context.Context; LeaseID] false [go.PointerType LeaseKeepAliveResponse; go.error]); go.MethodElem "Leases"%go (go.Signature [code.context.context.Context] false [go.PointerType LeaseLeasesResponse; go.error]); go.MethodElem "Revoke"%go (go.Signature [code.context.context.Context; LeaseID] false [go.PointerType LeaseRevokeResponse; go.error]); go.MethodElem "TimeToLive"%go (go.Signature [code.context.context.Context; LeaseID; go.SliceType LeaseOption] true [go.PointerType LeaseTimeToLiveResponse; go.error])].
 
 Class Lease_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -3745,12 +3745,12 @@ Class txn_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} 
 Module Event.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t : Type := mvccpb.Event.t.
+Definition t : Type := code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.Event.t.
 #[global] Arguments t : clear implicits.
 End def.
 End Event.
 
-Definition Eventⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := mvccpb.Event.
+Definition Eventⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.Event.
 
 Class Event_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -3780,7 +3780,7 @@ Definition t : Type := interface.t.
 End def.
 End Watcher.
 
-Definition Watcherⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Close"%go (go.Signature [] false [go.error]); go.MethodElem "RequestProgress"%go (go.Signature [context.Context] false [go.error]); go.MethodElem "Watch"%go (go.Signature [context.Context; go.string; go.SliceType OpOption] true [WatchChan])].
+Definition Watcherⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Close"%go (go.Signature [] false [go.error]); go.MethodElem "RequestProgress"%go (go.Signature [code.context.context.Context] false [go.error]); go.MethodElem "Watch"%go (go.Signature [code.context.context.Context; go.string; go.SliceType OpOption] true [WatchChan])].
 
 Class Watcher_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -3792,7 +3792,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  Header' : etcdserverpb.ResponseHeader.t;
+  Header' : code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader.t;
   Events' : slice.t;
   CompactRevision' : w64;
   Canceled' : bool;
@@ -3808,7 +3808,7 @@ End def.
 End WatchResponse.
 
 Definition WatchResponse'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "Header"%go etcdserverpb.ResponseHeader);
+  (go.FieldDecl "Header"%go code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.ResponseHeader);
   (go.FieldDecl "Events"%go (go.SliceType (go.PointerType Event)));
   (go.FieldDecl "CompactRevision"%go go.int64);
   (go.FieldDecl "Canceled"%go go.bool);
@@ -4094,9 +4094,9 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] WithIgnoreValue_unfold :: FuncUnfold WithIgnoreValue [] (WithIgnoreValueⁱᵐᵖˡ);
   #[global] WithIgnoreLease_unfold :: FuncUnfold WithIgnoreLease [] (WithIgnoreLeaseⁱᵐᵖˡ);
   #[global] WithAttachedKeys_unfold :: FuncUnfold WithAttachedKeys [] (WithAttachedKeysⁱᵐᵖˡ);
-  #[global] import_context_Assumption :: context.Assumptions;
-  #[global] import_etcdserverpb_Assumption :: etcdserverpb.Assumptions;
-  #[global] import_zap_Assumption :: zap.Assumptions;
-  #[global] import_mvccpb_Assumption :: mvccpb.Assumptions;
+  #[global] import_context_Assumption :: code.context.context.Assumptions;
+  #[global] import_etcdserverpb_Assumption :: code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb.Assumptions;
+  #[global] import_zap_Assumption :: code.go_uber_org.zap.zap.Assumptions;
+  #[global] import_mvccpb_Assumption :: code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb.Assumptions;
 }.
 End clientv3.

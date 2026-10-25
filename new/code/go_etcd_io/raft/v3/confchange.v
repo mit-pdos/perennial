@@ -48,7 +48,7 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.confchange (λ: <>,
-      exception_do (do:  (tracker.initialize' #()))
+      exception_do (do:  (code.go_etcd_io.raft.v3.tracker.tracker.initialize' #()))
       ).
 
 Module Changer.
@@ -56,7 +56,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  Tracker' : tracker.ProgressTracker.t;
+  Tracker' : code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker.t;
   LastIndex' : w64;
 }.
 
@@ -67,7 +67,7 @@ End def.
 End Changer.
 
 Definition Changer'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "Tracker"%go tracker.ProgressTracker);
+  (go.FieldDecl "Tracker"%go code.go_etcd_io.raft.v3.tracker.tracker.ProgressTracker);
   (go.FieldDecl "LastIndex"%go go.uint64)
 ].
 Program Definition Changer'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Changer'fds_unsealed).
@@ -89,6 +89,6 @@ Class Changer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Changer_instance :: Changer_Assumptions;
-  #[global] import_tracker_Assumption :: tracker.Assumptions;
+  #[global] import_tracker_Assumption :: code.go_etcd_io.raft.v3.tracker.tracker.Assumptions;
 }.
 End confchange.

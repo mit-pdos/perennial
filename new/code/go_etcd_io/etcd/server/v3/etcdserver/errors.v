@@ -65,7 +65,7 @@ Definition DiscoveryError__Errorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
      let: "$a1" := ((let: "$sl0" := (Convert go.string go.any (![go.string] (StructFieldRef DiscoveryError "Op"%go "e"))) in
      let: "$sl1" := (Convert go.error go.any (![go.error] (StructFieldRef DiscoveryError "Err"%go "e"))) in
      CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1")]))) in
-     (FuncResolve fmt.Sprintf [] #()) "$a0" "$a1")).
+     (FuncResolve code.fmt.fmt.Sprintf [] #()) "$a0" "$a1")).
 
 #[global] Instance info' : PkgInfo pkg_id.errors :=
 {|
@@ -97,73 +97,73 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  (go.GlobalAlloc ErrCanceled go.error #());;;
       do:  (go.GlobalAlloc ErrStopped go.error #());;;
       do:  (go.GlobalAlloc ErrUnknownMethod go.error #());;;
-      do:  (fmt.initialize' #());;;
-      do:  (errors.initialize' #());;;
+      do:  (code.fmt.fmt.initialize' #());;;
+      do:  (code.errors.errors.initialize' #());;;
       let: "$r0" := (let: "$a0" := #"etcdserver: unknown method"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrUnknownMethod #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: server stopped"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrStopped #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: request cancelled"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrCanceled #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: request timed out"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrTimeout #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: request timed out, possibly due to previous leader failure"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrTimeoutDueToLeaderFail #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: request timed out, possibly due to connection lost"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrTimeoutDueToConnectionLost #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: request timed out, leader transfer took too long"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrTimeoutLeaderTransfer #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: request timed out, waiting for the applied index took too long"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrTimeoutWaitAppliedIndex #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: leader changed"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrLeaderChanged #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: re-configuration failed due to not enough started members"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrNotEnoughStartedMembers #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: can only promote a learner member which is in sync with leader"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrLearnerNotReady #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: no leader"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrNoLeader #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: not leader"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrNotLeader #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: request is too large"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrRequestTooLarge #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: no space"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrNoSpace #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: too many requests"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrTooManyRequests #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: unhealthy cluster"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrUnhealthy #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: corrupt cluster"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrCorrupt #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: bad leader transferee"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrBadLeaderTransferee #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: cluster version not found during downgrade"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrClusterVersionUnavailable #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: wrong downgrade target version format"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrWrongDowngradeVersionFormat #()) <-[go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: key not found"%go in
-      (FuncResolve errors.New [] #()) "$a0") in
+      (FuncResolve code.errors.errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrKeyNotFound #()) <-[go.error] "$r0"))
       ).
 
@@ -207,7 +207,7 @@ Class DiscoveryError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoc
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] DiscoveryError_instance :: DiscoveryError_Assumptions;
-  #[global] import_errors_Assumption :: errors.Assumptions;
-  #[global] import_fmt_Assumption :: fmt.Assumptions;
+  #[global] import_errors_Assumption :: code.errors.errors.Assumptions;
+  #[global] import_fmt_Assumption :: code.fmt.fmt.Assumptions;
 }.
 End errors.
