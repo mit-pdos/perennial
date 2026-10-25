@@ -128,9 +128,8 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
            (high - low) (max - low))
      else Panic "slice bounds out of range")
 
-  /-- This requires that arrayIndexRef does not ever end up becoming null due
-  to a negative Z offset. Instead, negative offsets should be thought of as
-  clamped to 0. -/
+  /-- A model: `arrayIndexRef t i l` is `l` when `l` is in block 0, and
+  `l +ₗ i·size(t)` otherwise. -/
   arrayIndexRef_null_inv (t : Type) (i : Int) (l : Loc) :
     arrayIndexRef t i l = null → l = null
 
