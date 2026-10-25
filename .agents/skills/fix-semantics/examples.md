@@ -365,3 +365,26 @@ and so is more defined than gc.
 shape). Part of the plans for the unsafe memory design
 (`docs/design/unsafe-memory-prerequisites.md`, P6), which the user signed off
 ("P6: ok").
+
+## Case 12 — ACCEPTED: struct tags on unnamed struct types are refused (branch `refuse-anon-struct-tags`, not yet on `lean`)
+
+**Symptom.** Unsound. goose drops struct tags, so two unnamed struct types that
+differ only in tags were one type in the model; in Go they are different types
+(type identity includes tags), so `any(x) == any(y)`, a type assertion or a type
+switch tells them apart.
+
+**Witness.** `any(struct{A int "json:\"a\""}{}) == any(struct{A int "json:\"b\""}{})`
+is false in Go and true in the model.
+
+**Taken.** goose refuses a tag on a struct type that is not a defined type
+(`glangType`'s `*types.Struct` case; a defined type is compared by name, and
+its tags do not matter): 1 goose branch, 1 negative test (`struct_tag_anon`),
+no semantics rule. Nothing translated today is refused.
+
+**Not taken.** Modelling tags: a third `FieldDecl` argument (7 match sites in
+`PostLang.lean`, 37 in Theory), regenerating every tagged defined type, and a
+new conversion rule for conversions between types that differ only in tags.
+
+**Why.** Case 7's shape: refuse rather than model, adding no trust. Part of the
+unsafe memory design's prerequisites (`docs/design/unsafe-memory-prerequisites.md`,
+P4); the user: "P4: Ok."
