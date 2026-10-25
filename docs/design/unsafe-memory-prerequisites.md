@@ -298,13 +298,51 @@ already get from `math.Float64bits`.
 - **Closest cases.** `8fcfd9fa4` (a wrong row in a per-type table) and `bf935cbd5`
   (uninterpreted float functions).
 
+## P9. Flat addresses (new, 2026-10-25)
+
+The owner's answer on R1 ("don't think in terms of blocks"); the design is in
+`unsafe-memory.md`, section 2 and R1.
+- **Change.**
+  - `Loc` becomes an integer address, with `null = 0`.
+  - Allocation takes a free range of the type's size, at an address that is
+    a multiple of its alignment and at least 2^16.
+  - The layout table gives every type gc's size, alignment and field
+    offsets, and `structFieldRef` and `arrayIndexRef` become concrete.
+  - A struct or array is one allocation: `GoPrealloc` and `alloc_struct`'s
+    per-field `AngelicExit` check go.
+- **Points-tos** carry `0 < l` instead of `l ≠ null`. `arrayIndexRef_null_inv`
+  is false for concrete integer addresses (`l + i·size` can be `0` for
+  `i < 0`), so it goes; an element's address `l + i·size` with `0 < l` and
+  `0 ≤ i` is non-null.
+- **Cost.** `Locations.lean`, `Lang.lean`'s allocation and freshness rules,
+  `Lifting.lean`'s allocation lemmas, the layout table (about 30 lines), and
+  the struct and array allocation rules. About 30 lines use the
+  (block, offset) structure today (`locCar`, `locOff`, `Loc.mk`, `addrBase`,
+  `freshLocs`, `IsFresh`), in 3 to 5 files, and `+ₗ` appears in 7 files. No
+  etcd-grove proof uses them.
+- **P7a** becomes part of it: arrays are allocated as one range, like
+  structs.
+
+## P8c, refined (2026-10-25)
+
+Without P8b, a value cannot tell a float from an integer, so a float map key
+has to be recognised by its type:
+- `InternalMapCheckKey key_type k` is defined only for key types whose `==`
+  is equality of values: integers, strings, booleans, pointers, channels,
+  and structs and arrays of those.
+- For an interface key, the check recurses on the dynamic type that the
+  interface value carries.
+- Float keys get no rule, so they are stuck.
+- The map proofs reach the check only through `SafeMapKey`
+  (`Theory/Map.lean`), so the proof cost is that class and its instances.
+
 ## Order
 
 This is the order as decided on 2026-10-25.
 
 1. P1 (done: the disk FFI is removed), then P3.
 2. P4, P5 and P6: independent; each is its own branch.
-3. P7a, with `InternalDynamicArrayAlloc` through `alloc_array`.
+3. P9 (flat addresses), which includes P7a.
 4. P8a, P8c and P8d.
 5. Then R1 to R5 of the design, each with its own plan (floats plain).
 6. P2, after the unsafe memory work.

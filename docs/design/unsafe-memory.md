@@ -1,12 +1,20 @@
 # Design: the minimal byte memory and `unsafe.Pointer` for bbolt
 
-- **Date:** 2026-10-24. **Status:** proposal, nothing implemented. This is
-  draft 9, after the review of draft 8 (section 11). Draft 8 dropped draft
-  6's tags: whole copies get value semantics, and a translation-time guard
-  refuses the code where that is wrong (R4). Section
+- **Date:** 2026-10-25. **Status:** draft 10, partly implemented (section
+  12). Draft 10 adopts the owner's answers of 2026-10-25 on R1–R5:
+  - flat integer addresses instead of blocks, with gc's layout for every
+    type (section 2, R1);
+  - a plain view needs no checked conversion: its loads and stores check
+    the cells (R2, R3);
+  - pointer arithmetic checks only that its result is allocated (R3);
+  - integer atomics are byte atomics with an alignment check, and there are
+    no tags (R5).
+
+  Draft 8 dropped draft 6's tags: whole copies get value semantics, and a
+  translation-time guard refuses the code where that is wrong (R4). Section
   5 states the end-to-end guarantee and its assumptions, section 10 explains
   why each mechanism is there, section 11 is the review log, and section 12
-  the order of the work.
+  the work.
 - **Base:** written against `lean` at be3eb77cc (after 864598b33 undid the
   byte-memory series ea1cf23ab..b09644c20). The implementation starts from
   the current `lean` (section 12).
@@ -54,33 +62,50 @@ The idioms, with sites listed in `bboltmini/README.md`:
 bbolt never puts a pointer, string, float or bool in byte memory, and never
 performs an atomic on byte memory it reinterprets.
 
-## 2. Two invariants carry the design
+## 2. The memory model, and the invariant that carries the design
 
+- **Flat addresses.** A location is an integer address; `null` is `0`, and
+  every allocated cell is at a positive address. There are no blocks.
+  - An allocation of `n` cells with alignment `a` takes a free range
+    `[l, l + n)` with `2^16 ≤ l` and `a ∣ l`. The choice is nondeterministic: a
+    new object may sit right after an existing one, or leave a gap.
+  - Every allocation is at an address of at least 2^16, as on Linux
+    (`mmap_min_addr`) and in gc, so an access at a small offset from `nil`
+    finds no cell (10.9).
+  - Pointer arithmetic is integer arithmetic (`l + k`), so it never wraps:
+    an address outside every allocation simply has no cell.
 - **(V1)** A cell is a byte cell or an opaque cell from its allocation on,
   never both.
-- **(V2)** A dereferenceable pointer of a plain type covers only existing byte
-  cells. Every element a slice of a plain type can reach is an existing byte
-  cell. A pointer of any other type points at a value of its own type.
-  - A slice of capacity 0 may hold a past-the-end pointer, as `s[len:]`
-    does. Nothing reads or converts that pointer. A future `unsafe.SliceData`
-    must be stuck on it.
+- **(V2)** A pointer of a non-plain type points at a value of its own type.
+  Pointers of plain types may point anywhere; their accesses check the
+  cells (R2).
 
-Code that does not use `unsafe` keeps both invariants by typing, once the
-nil checks of section 7 exist. Under `unsafe`, every reinterpretation goes
-through the one conversion of R3, which checks its target. So, beyond
-alignment:
-- loads need no type check;
-- stores need no kind check;
-- atomics need no premise.
+Code that does not use `unsafe` keeps both by typing, once the nil checks
+of section 7 exist. Under `unsafe`, a conversion to a non-plain pointer
+type is stuck (R3), so V2 holds there too.
+
+Why flat addresses rather than blocks (the owner's decision of
+2026-10-25):
+- **The layout is concrete for every type.** A value of any type occupies
+  `sizeof(T)` cells from its address, with gc's field offsets, so a struct
+  is one allocation, and `&s.f` is `l + offset(f)` (R1). With blocks, a
+  struct's fields had to be separate blocks, a plain field's alignment had
+  to be recorded as an offset inside its block, and `GoPrealloc` had to be
+  matched against each field's allocation.
+- **It is more nondeterministic, which is sound.** Comparing a past-the-end
+  address with the next object's (`testPastEndAddress`) is true in some
+  executions and false in others, so no proof can depend on it. A read or
+  write past an object is stuck in every execution that leaves a gap there,
+  so no verified program does one.
+- **Alignment is the address modulo the alignment**, with no device.
 
 ## 3. The rules
 
-### R1. Plain types are bytes
+### R1. Plain types are bytes, and every type has gc's layout
 
 ```
 inductive Plain : go.GoType → Prop
-  | int   : t is one of int8…uint64, int, uint, uintptr,
-            float32, float64                                    → Plain t
+  | int   : IsInteger t, or t is float32 or float64            → Plain t
   | array : Plain e → 1 ≤ N                                     → Plain (ArrayType N e)
   | struct: fds ≠ [] → every field Plain and not blank → no padding → Plain (StructType fds)
   | named : underlying t = u → Plain u                          → Plain t
@@ -92,122 +117,119 @@ inductive Plain : go.GoType → Prop
   before it, and the struct's alignment (its largest field alignment) divides
   the total. That excludes trailing padding too: gc pads
   `struct{uint64; uint32}` to 16 bytes.
-- **Representation.** A plain value of size `n` is `n` cells holding
-  `LitByte`, little-endian. On a plain type,
-  `structFieldRef V f l = l +ₗ (sum of the preceding sizes)` and
-  `arrayIndexRef V i l = l +ₗ i·size`. Every other type keeps one opaque cell
-  per scalar and abstract addresses.
-- **`Plain` is a function of the Lean representation `V`,** because the
-  layout functions are keyed by `V`. That makes these changes necessary:
-  - **Floats are plain** (decision of 2026-10-25,
-    `unsafe-memory-prerequisites.md`, "R1 and floats"). They stay `w64`/`w32`,
-    with operations of their own, so `Pair[float64]` and `Pair[uint64]` have
-    one representation `V`, and must have one layout. A float is 8 or 4 byte
-    cells holding its bits. The float operations are uninterpreted, so a byte
-    view of a float tells a proof nothing that `math.Float64bits` could not.
-  - **Blank fields must be told apart from real fields.** goose must give a
-    blank field a name no Go identifier can spell, such as `_#0`; today it
-    is `_0` (section 7).
-- **One new primitive, `AllocBytes n a`,** allocates `n` zero bytes at an
-  offset `j` of a fresh block, where `0 ≤ j < 8` and `a ∣ j`. It is stuck if
-  `n > 2^48`. gc's `makeslice` panics above `maxAlloc = 2^48`, so a `make`
-  that large must not succeed. Offset 0 of a byte block is 8-aligned, so `j`
-  is the object's address modulo 8.
-- **A variable of plain type is one `AllocBytes` block of exactly its size,**
-  and so is every variable goose allocates (parameters, results, receivers,
-  locals, loop variables, captured variables and package variables): no
-  variable shares a block with another. R4's whole-variable exemption
-  depends on this.
-- **A plain field of a non-plain struct is its own `AllocBytes` block.** This
-  is how `alloc_struct` already allocates each field through `GoAlloc`. Its
-  offset `j` covers gc's real address modulo 8, which R5's alignment fact
-  needs. `TxStats` inside `Tx`, for example, is one 8-aligned block.
-- **`append` must not grow past what gc can allocate.** Its grow branch
-  (`Slice.lean:182`) picks an arbitrary capacity today. It becomes:
-  - stuck if `new_len·size > 2^46`;
-  - otherwise, a capacity from `[new_len, 2^48/size]`;
-  - for a zero-size element, which gc never makes panic, capacity `new_len`
-    and a zero-size allocation.
+- **Floats are plain** (decision of 2026-10-25,
+  `unsafe-memory-prerequisites.md`, "R1 and floats"). They stay `w64`/`w32`
+  with operations of their own; a float is 8 or 4 byte cells holding its
+  bits. The float operations are uninterpreted, so a byte view of a float
+  tells a proof nothing that `math.Float64bits` could not.
+- **Blank fields must be told apart from real fields.** goose must give a
+  blank field a name no Go identifier can spell, such as `_#0`; today it is
+  `_0` (section 7, P5).
+- **The layout table.** `go.TypeLayout t size align` gives gc's size and
+  alignment on linux/amd64 for every type:
+  - the predeclared types; pointers, functions, maps, channels and
+    `unsafe.Pointer` (8); strings and interfaces (16); slices (24);
+  - arrays (`n·size`);
+  - structs: gc's offsets, plus the extra byte gc adds after a trailing
+    zero-size field, rounded up to the alignment;
+  - named types, through their underlying type.
 
-  For non-plain elements, `size` must be gc's exact size, the one goose
-  already emits for `unsafe.Sizeof`.
-
-  The obvious cap at 2^48 would be unsound: gc's `growslice` rounds its
-  capacity up (about 1.25× for large slices, then to a size class) and
-  panics when that exceeds `maxAlloc`, even when `new_len·size ≤ 2^48`.
-  Below `2^46` its capacity, at most about twice `new_len` plus a page,
-  never reaches `maxAlloc`, so it never panics. Round 4 checked this against
-  a transcription of gc 1.26's `growslice` over 4.7·10^8 cases. In none of
-  them did gc panic while the model ran on, and in none did gc's capacity
-  fall outside the model's range.
+  The semantics decides it, not goose, because a type parameter's layout
+  depends on its instantiation.
+- **Representation.** A value of type `T` at `l` occupies `[l, l + size)`:
+  - a plain scalar of size `n` is `n` cells holding `LitByte`,
+    little-endian;
+  - any other scalar (a pointer, string, slice, interface, map, channel,
+    function or bool) is one opaque cell at `l`; the rest of its slot has no
+    cells, so a byte view of it is stuck;
+  - a struct field is at `l + offset(f)` (`structFieldRef T f l`), and an
+    array element at `l + i·size(e)` (`arrayIndexRef T i l`), for every
+    type.
+- **Allocation.** `GoAlloc T v` takes a free range of `size(T)` cells at an
+  address with `align(T) ∣ l` (section 2), and stores `v` there.
+  - A zero-size type gets an arbitrary positive address and no cells, which
+    covers gc's `zerobase`: two such addresses may be equal
+    (`testZeroSizeDistinct`).
+  - A `[]byte` is aligned 1, so its address is arbitrary
+    (`testByteSliceAligned` is unprovable).
+  - A field at offset 12 of an 8-aligned struct is at an address that is 4
+    modulo 8 (`testFieldResidue`).
+- **Every variable is its own allocation of exactly its size** (parameters,
+  results, receivers, locals, loop variables, captured variables and package
+  variables). R4's whole-variable exemption depends on this.
+- **Allocation bounds are not modelled** (decision of 2026-10-25, P7). gc
+  panics in `makeslice` and `growslice` above `maxAlloc = 2^48` bytes; the
+  model accepts such a `make` or `append`. That is an open defect (section
+  5, L3).
 - **Plain rules are stated on underlying types only** (`internalUnder`), so
   a named type such as `Pgid` reaches them through
   `alloc_underlying`/`load_underlying`/`store_underlying`. They **replace**
   these rules, because pure steps are functional (`isGoStep_pure_det`) and
   two rules for one instruction prove `False`:
   - `alloc_predeclared`, `load_predeclared` and `store_predeclared` lose the
-    integer cases of `IsPredeclared` (`Predeclared.lean:151-161`);
+    integer and float cases of `IsPredeclared`;
   - `alloc_struct`, `load_struct` and `store_struct`, and `alloc_array`,
     `load_array` and `store_array`, gain a `¬ Plain` premise.
 
 *Needed for bbolt:* I1, I3 and I6 view the same cells both as a struct and as
 bytes, including a Go-allocated `Meta`'s cells. I10 then needs no rule.
 
-*Each exclusion is needed for soundness:*
-- **zero size:** gc gives zero-size heap objects one address
-  (`testZeroSizeDistinct`);
+*Each exclusion from `Plain` is needed for soundness:*
+- **zero size:** gc gives zero-size heap objects one address;
 - **blank fields:** `==` and map keys ignore them (`testBlankFieldEq`);
 - **padding:** a plain view would expose the padding bytes;
 - **bool:** not every byte is a valid bool.
 
-### R2. Plain loads and stores go byte by byte
+### R2. Plain loads and stores go byte by byte, and check the cells
 
-A plain integer load reads its `w` cells one by one, each with the existing
+A plain scalar load reads its `w` cells one by one, each with the existing
 two-phase read, and decodes them. Decoding is stuck unless every cell is a
-`LitByte`. A plain store writes the cells one by one. Structs and arrays go
-field by field and element by element.
+`LitByte`.
 
-There is no new heap primitive, and races of any width are detected cell by
-cell. No alignment is needed: on amd64, a misaligned plain access by a
-race-free program is well defined.
+A plain store writes the cells one by one, and is stuck if a cell it would
+overwrite is not a byte cell (`testBytesOverPointer`: bytes written over a
+pointer). Structs and arrays go field by field and element by element.
 
-### R3. `unsafe`: one checked conversion, and arithmetic only on bytes
+These two checks replace draft 9's checked conversion (R3): a plain view may
+point anywhere, and its accesses find out what is there. Races of any width
+are detected cell by cell. No alignment is needed: on amd64, a misaligned
+plain access by a race-free program is well defined.
 
-- **`(*T)(unsafe.Pointer(p))`** *replaces*
-  `convert_unsafe_to_pointer` (`Predeclared.lean:61`):
-  - `nil` gives `nil`.
-  - For a plain `T`, it gives `p` if the `sizeof(T)` cells from `p` exist and
-    are bytes, and is stuck otherwise. One new primitive, `CheckBytes p n`,
-    does this check.
-  - For any other `T`, it is stuck.
+### R3. `unsafe`: arithmetic checks that the result is in an allocation
 
-  This conversion is V2's only entry point. The only translated code that
-  converts to a non-plain `*T` is `atomic.Pointer[T]`, which round-trips its
-  own `*T`. Its four methods become trusted models: an opaque atomic on the
-  `*T` cell.
+- **`(*T)(unsafe.Pointer(p))`** *replaces* `convert_unsafe_to_pointer`
+  (`Predeclared.lean`):
+  - for a plain `T`, it is the identity (`nil` gives `nil`): the accesses
+    check the cells (R2);
+  - for any other `T`, it is stuck, so V2 holds. A typed load of a pointer
+    or string does not check the shape of the value it reads, so a `*string`
+    view over bytes would produce a malformed value.
+
+  The only translated code that converts to a non-plain `*T` is
+  `atomic.Pointer[T]`, which round-trips its own `*T`. Its four methods
+  become trusted models: an opaque atomic on the `*T` cell.
 - **`unsafe.Pointer(p)`** from any `*T` stays the identity.
 - **`uintptr(p)`** is `ArbitraryInt`. Conversions are unrelated to each other,
   as moving stacks require.
 - **`unsafe.Pointer(u)`** stays stuck (fix-semantics Case 6).
-- **`unsafe.Add(p, n)`** is `p +ₗ k`, where `k = sint.Z (uintptr(n))` uses
-  Go's conversion of `n`. It is stuck unless the cells `p` and `p +ₗ k` are
-  bytes.
+- **`unsafe.Add(p, n)`** is `p + k`, where `k = sint.Z (uintptr(n))` uses Go's
+  conversion of `n`. It is stuck unless there is a cell at `p + k`, of any
+  kind.
+  - Go's `unsafe` rules make a pointer outside its allocation invalid,
+    past-the-end included, and gc's garbage collector can crash on one
+    ("found bad pointer in Go heap").
+  - A cell at `p + k` means the address is inside some allocation.
 - **`unsafe.Slice(p, n)`**, for a plain `T` of size `s`, with `n` converted to
   `int` as gc converts it, is `⟨p, n, n⟩` if all of these hold, and stuck
   otherwise:
-  - `0 ≤ n`;
-  - `p ≠ nil`;
-  - the `n·s` cells from `p` are bytes.
-
-  Where gc panics, stuck is less defined. Since the cells exist, nothing can
-  overflow or wrap.
+  - `0 ≤ n` and `p ≠ nil`;
+  - there is a cell at each of `p, p + 1, …, p + n·s - 1`. Reslicing can
+    later form pointers anywhere up to the capacity, so all of them must be
+    inside allocations.
 - **goose** translates `unsafe.Add` and `unsafe.Slice` as builtins, with
-  their operands evaluated in order.
-  - `Sizeof`, `Offsetof` and `Alignof` are already constants, taken from
-    `go/types` with `GOARCH=amd64` (fix-semantics Case 8). On plain types
-    they equal R1's layout.
-  - On other types they are meaningless numbers, which is harmless:
-    arithmetic on opaque memory is stuck.
+  their operands evaluated in order. `Sizeof`, `Offsetof` and `Alignof` are
+  already constants, taken from `go/types` with `GOARCH=amd64`
+  (fix-semantics Case 8), and they equal R1's layout table.
 
 *Needed for bbolt:* I1–I4, I6 and I7. I7 becomes a nondeterministic bool,
 and both of bbolt's branches are correct.
@@ -265,10 +287,11 @@ statement `lhs = rhs` where:
 - `rhs` is a memory place, or a slice-to-array conversion `[N]T(s)`, which
   reads from `s`'s array;
 - and neither of these exemptions applies:
-  - **Whole variables.** A variable is its own block of exactly its type's
-    size (R1). A view of its type that partially overlaps it would leave
-    the block, and R3 makes that stuck. So `x = *p`, `*p = x` and `x = y`
-    are never reported.
+  - **Whole variables.** A variable is its own allocation of exactly its
+    type's size (R1). A view of its type that partially overlaps it
+    extends past the variable's allocation, and some placement leaves a gap
+    there (section 2), where the access is stuck. So `x = *p`, `*p = x` and
+    `x = y` are never reported.
   - **The same base.** Each side is split into a *base* and a path inside
     one object:
     - the path is the outermost run of steps that stay inside one object:
@@ -352,7 +375,8 @@ non-`memmove` `Move` between two memory places in two ways:
   global symbols, for a stack symbol against an argument, and for a
   pointer-holding pointer-sized element against one with no pointers.
   Each of those is true in the model too: by R1, different variables are
-  different blocks, and by R3 no plain view covers a pointer cell. The rule
+  different allocations, and by R2 no plain access reaches a pointer
+  cell. The rule
   may also fuse a copy of at most 16 bytes that could
   overlap (`isInlinableMemmove`), and such copies are lowered with all
   their loads before their stores (`AMD64.rules`, the `Move [1]` to
@@ -384,45 +408,44 @@ inlined `set(dst, *src)`, gets value semantics, which gc 1.26 also gives.
   they never overlap. This includes six of bbolt's copies, which section 6
   rewrites to copy through a local.
 
-### R5. Atomics: an encoding and alignment
+### R5. Atomics on integers are byte atomics, with an alignment check
 
-The four atomic primitives (`Load`, `AtomicSwap`, `AtomicAdd`, `CmpXchg`)
-take an encoding:
-- **`opaque`:** one opaque cell, as today; stuck on a byte cell.
-- **`bytes w`,** with `w ∈ {4, 8}`: `w` byte cells, little-endian, in one
-  step; stuck unless all of them are bytes and `w ∣ l.locOff`.
+Every integer is bytes (R1), including the integer state of `Lock.lean` and
+`copyChecker`. So the atomics split by what they act on:
+- **Integer atomics:** new byte-level primitives (load, store, swap, add,
+  compare-and-swap), with a width `w ∈ {4, 8}`.
+  - Each reads or writes `w` byte cells, little-endian, in one step.
+  - Each is stuck unless all of them are bytes and `w ∣ l`.
+  - Users: `TrustedCode/sync/atomic.lean`'s integer models,
+    `TrustedCode/sync.lean`'s semaphores (`*uint32`, `w = 4`), `Lock.lean`
+    and `copyChecker`.
+- **Pointer and interface atomics** keep the existing primitives, on one
+  opaque cell: `LoadPointer`/`StorePointer`/`CompareAndSwapPointer`,
+  `atomic.Pointer[T]` and `atomic.Value`.
 
-There is no rule for atomics of different widths or addresses on the same
-bytes. The model gives them sequentially consistent byte-level semantics,
-which Intel does not promise when they are concurrent. This is a known
-limitation (section 5, A3).
-
-Users:
-- `TrustedCode/sync/atomic.lean`'s integer models use `bytes 4` and
-  `bytes 8`.
-- `TrustedCode/sync.lean`'s semaphores (`runtime_Semacquire` and
-  `runtime_Semrelease` on `*uint32`) use `bytes 4`.
-- `Lock.lean`, `copyChecker`, `atomic.Value`, `LoadPointer` and the
-  `atomic.Pointer[T]` models use `opaque`.
+There is no per-cell state: no tags. There is no rule for atomics of
+different widths or addresses on the same bytes. The model gives them
+sequentially consistent byte-level semantics, which Intel does not promise
+when they are concurrent. This is a known limitation (section 5, A3).
 
 Why it is needed:
 - *Needed for bbolt and every `sync/atomic` user,* since integers are now
   bytes.
 - *Alignment is needed for soundness:* a misaligned `atomic.LoadUint64` is a
   plain `MOVQ`, which tears across a cache line (`testMisalignedAtomic`).
-  Alignment is meaningful only on byte blocks, whose offset 0 is 8-aligned
-  (R1).
+  With flat addresses (section 2), alignment is `w ∣ l`.
 
 ## 4. Everything else is stuck
 
 - `uintptr → unsafe.Pointer`.
-- Any view of opaque memory through `unsafe`.
-- A plain view, slice or `unsafe.Add` result that leaves the existing byte
-  cells.
-- Misaligned atomics.
-- `make` above 2^48 bytes, and an `append` that grows past `2^46` bytes.
+- A conversion of an `unsafe.Pointer` to a non-plain pointer type.
+- A plain load of a cell that is not a byte, and a plain store over one.
+- An `unsafe.Add` result, or an `unsafe.Slice` element, that is not an
+  allocated cell.
+- Misaligned integer atomics.
 
-Two things are *not* stuck, and the model gets them wrong: section 5.
+Three things are *not* stuck, and the model gets them wrong (L1 to L3):
+section 5.
 
 ## 5. The end-to-end guarantee, and its known limitations
 
@@ -502,6 +525,9 @@ as stated, but it lacks every declaration with a finding and does not build
   refuses every program in which the difference can arise.
 - **L2, mixed-width atomics.** These are not stuck (R5). Assumption A3
   closes this, and nothing checks it.
+- **L3, allocation above `maxAlloc`.** gc panics in `makeslice` and
+  `growslice` above 2^48 bytes; the model accepts such a `make` or `append`
+  (R1, 10.8). Accepted as an open defect on 2026-10-25.
 
 ## 6. bbolt changes: a fork
 
@@ -552,8 +578,10 @@ Items marked **(bbolt)** block core bbolt paths; without them, bbolt's proofs
 are stuck or vacuous.
 
 **Fixes to make:**
-- **`ArraySemantics` proves `False`.** `arrayIndexRef_null_inv` contradicts
-  `arrayIndexRef_add_loc_add` at `⟨0, -1⟩`. Make it conclude `l.locCar = 0`.
+- **`ArraySemantics` proved `False`:** `arrayIndexRef_null_inv` contradicted
+  the disk FFI's `arrayIndexRef_add_loc_add` at `⟨0, -1⟩`. Fixed by removing
+  the disk FFI (P1). With flat addresses (P9), the axiom is replaced by
+  positive addresses in points-tos (section 9).
 - **A field or element address through a nil pointer must panic.**
   `StructFieldRef`, and `IndexRef` on an array pointer, step on `null` today.
   So does slicing a nil array pointer. **Deferred** until after this design
@@ -625,8 +653,9 @@ are stuck or vacuous.
 
 ## 8. Interface for the mmap work later
 
-The mapped file can be an FFI call that returns an `AllocBytes` block at
-offset 0, since mmap is page-aligned. `db.data` must then be a `[]byte`
+The mapped file can be an FFI call that returns an allocation of byte
+cells at a page-aligned address (the FFIs are being redesigned; the disk FFI
+was removed on 2026-10-25). `db.data` must then be a `[]byte`
 rather than a `(*[MaxMapSize]byte)`. Still to decide:
 - **Read-only.** A store must be stuck. Cells born with a phantom reader do
   this with no new rule.
@@ -638,42 +667,46 @@ rather than a `(*[MaxMapSize]byte)`. Still to decide:
 ## 9. Trusted delta and proof cost (estimate)
 
 Trusted:
-1. **`GooseLang/Lang.lean`**, about 60 lines:
-   - `AllocBytes`, with its bound;
-   - `CheckBytes`;
-   - encodings on the four atomics, with alignment.
-2. **`Golang/Defn`**, about 180 lines:
-   - `Plain` and the layout;
-   - the replaced alloc/load/store rules;
-   - the four `unsafe` rules.
-3. **The float representation:** goose, proofgen and `Predeclared`.
-4. **`TrustedCode/sync/atomic.lean`, `TrustedCode/sync.lean`, `Lock.lean`:**
-   encodings, and the four `atomic.Pointer[T]` models.
-5. **goose**, about 40 lines: `unsafe.Add`, `unsafe.Slice`, and the
+1. **`GooseLang/Locations.lean`, `Lang.lean`:** `Loc` is an integer
+   address, and allocation takes a free aligned range (section 2); the byte
+   cells and the integer atomics, with alignment (R5).
+2. **`Golang/Defn`:**
+   - `Plain`, `IsInteger` and the layout table (R1);
+   - the concrete `structFieldRef` and `arrayIndexRef`, and allocation by
+     range (R1);
+   - the replaced alloc/load/store rules, with R2's checks;
+   - the four `unsafe` rules (R3).
+3. **`TrustedCode/sync/atomic.lean`, `TrustedCode/sync.lean`, `Lock.lean`:**
+   the integer atomics, and the four `atomic.Pointer[T]` models.
+4. **goose**, about 40 lines: `unsafe.Add`, `unsafe.Slice`, and the
    blank-field name.
-6. **The guard,** `goose/modelcheck`, about 300 lines, its two calls in
-   goose, and its run in `etc/land.sh` (through
-   `etc/update-goose-new.py --modelcheck`). A missed statement is an
-   unsound translation, so the guard is trusted like the translator.
-7. **Platform facts in the README:** A1 to A3 of section 5:
+5. **The guard,** `goose/modelcheck`, about 300 lines, its calls in goose,
+   and its run in `etc/land.sh` (through `etc/update-goose-new.py
+   --modelcheck`). A missed statement is an unsound translation, so the
+   guard is trusted like the translator.
+6. **Platform facts in the README:** A1 to A3 of section 5:
    - linux/amd64, gc, without checkptr;
    - little-endian;
-   - gc's layout of plain types;
-   - `maxAlloc = 2^48`;
+   - gc's layout (the table of R1);
    - gc's copies (A2);
    - no concurrent mixed-width atomics (A3).
 
 Untrusted:
 - **Points-tos.** The 16/32/64-bit points-tos become `w` byte points-tos.
+  A typed points-to carries `0 < l`, which allocation gives. It replaces
+  today's `l ≠ null`: with integer addresses, `arrayIndexRef_null_inv` is
+  false (`l + i·size` can be `0`), and an element's address is non-null
+  only because `l > 0` and `i ≥ 0`.
 - **Atomic WPs** take an alignment premise, discharged from the allocation.
 - **`l ↦[U]{dq} v`,** for a plain `U`, is the bytes `encode v`.
 - **The byte-view lemma:** `l ↦[T] v ⊣⊢ l ↦*bytes (encode v)`, with no
   premise.
 - **A field-split lemma:**
-  `l ↦[Meta] m ⊣⊢ … ∗ (l +ₗ 16) ↦[InBucket] m.root ∗ …`, which follows from
+  `l ↦[Meta] m ⊣⊢ … ∗ (l + 16) ↦[InBucket] m.root ∗ …`, which follows from
   the byte-view lemma and the layout. bbolt needs it at `tx.go:58` and
   `tx.go:212`.
-- **Allocation:** `AllocBytes` gives zero bytes.
+- **Allocation:** a typed allocation gives the typed points-to of the
+  zero value over its range.
 
 With no tags, a whole store needs only full ownership of its destination,
 as any store does. These principles are all that bbolt's page code needs.
@@ -709,11 +742,12 @@ bytes, and seeing them is where gc's behaviour stops being definable:
 
 Each excluded case is a type whose bytes, once visible, would let a program
 tell the model and gc apart.
-- **Zero size.** A plain value of size 0 is 0 cells. A fresh 0-cell block
-  per allocation would make `new([0]uint64) != new([0]uint64)`. But gc
-  gives every escaping zero-size object the one address `zerobase`
-  (`testZeroSizeDistinct` is false in Go). So zero-size types stay out of
-  `Plain`, and their allocation follows `zerobase` (section 7).
+- **Zero size.** A plain value of size 0 is 0 cells. gc gives every
+  escaping zero-size object the one address `zerobase`
+  (`testZeroSizeDistinct` is false in Go). With flat addresses, a zero-size
+  allocation is an arbitrary address with no cells, so two of them may be
+  equal or not, which covers gc. Zero-size types stay out of `Plain`, so that
+  no byte view of one exists.
 - **Blank fields.** A value decoded from bytes includes the blank field's
   bytes. gc's `==` and map hashing skip blank fields. So two views whose
   bytes differ only in a blank field are equal in gc but would differ in
@@ -745,23 +779,28 @@ alloc/load/store rules, with a `¬ Plain` premise on the old ones, because
 pure steps are deterministic (`isGoStep_pure_det`). Two rules that both
 fire on one instruction with different results prove `False`.
 
-### 10.3 Why there is exactly one checked conversion
+### 10.3 Why accesses check the cells, and non-plain conversions are stuck
 
-Draft 3 checked at each use instead: a load checked that its cells held its
-type's kind, and stores and atomics carried premises. Round 1 found holes
-in that design, among them:
-- a store through a reinterpreted pointer writes over another type's opaque
-  cell, and no later load notices;
+Draft 3 checked at each use, and round 1 found holes in that design:
+- a store through a reinterpreted pointer wrote over another type's opaque
+  cell, and no later load noticed;
 - `StorePointer` into an integer's bytes slipped past the atomics' premise
   (`testAtomicPointerIntoBytes`);
-- map and interface punning load the right *kind* of cell at the wrong type
+- map and interface punning loaded the right *kind* of cell at the wrong type
   (`testMapPun`, `testInterfacePun`).
 
-R3 moves the check to the one place a reinterpretation can happen,
-`(*T)(unsafe.Pointer(p))`. It succeeds only for a plain `T` over existing
-byte cells. Every pointer then satisfies V2 from the moment it exists. So
-loads, stores and atomics need no type check, and an unsound case has to
-get past one rule rather than many.
+Draft 9 answered with one checked conversion. Draft 10 keeps the part that
+mattered and drops the rest:
+- **A conversion to a non-plain pointer type is stuck.** That closes the
+  punning holes: a value of a non-plain type is only ever read through a
+  pointer of its own type, so no typed load meets a malformed value.
+- **Plain accesses check the cells themselves.** A plain load decodes only
+  byte cells, and a plain store refuses to overwrite a non-byte cell (R2).
+  That closes the store hole without a check at the conversion. A plain
+  view may then point anywhere: what it can do there is decided by what it
+  finds.
+- **Integer atomics act only on byte cells,** and pointer atomics only on
+  opaque cells (R5), so `testAtomicPointerIntoBytes` stays stuck.
 
 The cost is the translated code's one conversion to a non-plain `*T`,
 `atomic.Pointer[T]`'s round trip, which needs trusted models (R3).
@@ -781,24 +820,27 @@ There are two consequences:
 - bbolt's stored `pos`, a `uintptr` difference, is recomputed from offsets
   (`testOriginalPos`).
 
-### 10.5 Why pointer arithmetic checks both ends
+### 10.5 Why pointer arithmetic checks that its result is allocated
 
-`unsafe.Add(p, n)` is stuck unless the cells at `p` and at `p +ₗ k` exist
-and are bytes. Without the check at the end:
-- `unsafe.Add` one past the allocation is invalid in Go, but would be a
-  defined address in the model (`testAddPastEnd`);
-- a past-the-end address can be *compared* with another object's address
-  without being accessed. gc can place two small objects next to each
-  other, so `&us[16] == &b[0]` (`testPastEndAddress` is false in Go). The
-  model's blocks are unrelated, so it would say the addresses differ.
+Go's `unsafe` rules make a pointer outside its allocation invalid, including
+one past the end, and this is not only the spec: gc's garbage collector can
+crash with "found bad pointer in Go heap" when it scans one. So
+`unsafe.Add` is stuck unless its result is an allocated cell, and
+`unsafe.Slice` unless all of its elements are (R3). Only existence matters,
+not what the cells hold: what a view can read or write is decided by R2.
 
-`unsafe.Slice` checks all `n·s` cells for the same reason
-(`testSlicePastEnd`). Since the cells exist, `n·s` cannot overflow and no
-address can wrap.
+With flat addresses, two things that blocks had to handle are free:
+- **Comparing addresses of different objects.** A past-the-end address can
+  equal the next object's in gc (`testPastEndAddress` is false in Go). The
+  model places objects nondeterministically, adjacent or not, so both
+  answers are model behaviours, and no proof can rely on either.
+- **Wrapping.** Addresses are integers, and an address outside every
+  allocation has no cell, so `unsafe.Add` cannot produce a wrapped pointer
+  that is not stuck.
 
 One past-the-end pointer is unavoidable: `s[len(s):]` of a full slice. It
 is allowed only inside a capacity-0 slice, where nothing reads or converts
-it (V2). gc does not advance that pointer, so its value is unrelated to the
+it. gc does not advance that pointer, so its value is unrelated to the
 model's. That is why:
 - `unsafe.SliceData` and slice-to-`*[0]T` conversions must be stuck on it;
 - bbolt's `UnsafeByteSlice` becomes `unsafe.Slice(...)[i:j:j]` rather than
@@ -849,8 +891,9 @@ never overlap, and bbolt has to copy through locals (section 6).
   when it can show that the two sides are disjoint (A2). A copy whose two
   halves are separate statements, `x := *src; *dst = x`, is therefore
   always correct under value semantics (`testOverlappingCopyViaTemp`).
-- *Only memory places on both sides.* A whole variable is its own block, so
-  no view of its type can partially overlap it (R3).
+- *Only memory places on both sides.* A whole variable is its own
+  allocation, so a view of its type that partially overlaps it extends
+  past the allocation, where some placement leaves no cell (section 2).
 - *Only pointer-free struct and array types, or type parameters.* A type
   with pointers has no `unsafe` views (R3), and its safe-Go overlapping
   array views are copied with `memmove` (A2). Plain integers are not copied
@@ -868,57 +911,46 @@ never overlap, and bbolt has to copy through locals (section 6).
 - *The guard must see every package.* The pointers a copy uses may have
   been made by `unsafe` code anywhere in the program.
 
-### 10.7 Why atomics have widths and alignment
+### 10.7 Why integer atomics have widths and alignment
 
-- **Widths.** Integers are now bytes, so an atomic must say how many byte
-  cells it reads and writes in one step (`bytes 4`, `bytes 8`). Lock and
-  pointer atomics keep their opaque cells (`opaque`).
+- **Widths.** Integers are now bytes, so an integer atomic must say how many
+  byte cells it reads and writes in one step (`w ∈ {4, 8}`). Pointer and
+  interface atomics keep their opaque cells (R5).
 - **Alignment.** A misaligned `atomic.LoadUint64` compiles to a plain
   `MOVQ`, which tears across a cache line (`testMisalignedAtomic`), so an
-  atomic needs `w ∣ l.locOff`. That is meaningful only if a block's offset
-  0 has a known alignment. Byte blocks are 8-aligned at offset 0, and
-  `AllocBytes n a` places the object at an offset `j` with `a ∣ j`, which
-  stands for its real address modulo 8:
-  - a `[]byte` is promised only 1-alignment, so its `j` is arbitrary
+  integer atomic needs `w ∣ l`. With flat addresses, the layout gives the
+  real alignment:
+  - a `[]byte` is aligned 1, so its address is arbitrary
     (`testByteSliceAligned` is unprovable);
-  - a plain field of a non-plain struct is its own block, with `j` equal to
-    gc's offset of the field modulo 8. At offset 12 the residue is 4
-    (`testFieldResidue` is false in Go). Giving every such field offset 0
-    would prove alignments gc does not have.
+  - a field at offset 12 of an 8-aligned struct is at an address that is 4
+    modulo 8 (`testFieldResidue` is false in Go).
 - **Mixed widths** have no rule (A3). Intel promises nothing for concurrent
   atomics of different sizes on overlapping bytes. Making them stuck needs
-  per-cell state, which draft 6's atomic tags were. They were dropped with
-  the other tags. They could come back on their own: unlike the copy tags,
-  they need no clearing argument.
+  per-cell state, which draft 6's atomic tags were; they were dropped with
+  the other tags.
 
-### 10.8 Why allocation needs bounds
+### 10.8 Why allocation bounds are left open
 
-Without a bound, a `make` that gc rejects succeeds in the model, and the
-program goes on past a point where gc panicked:
-- gc's `makeslice` panics above `maxAlloc = 2^48` bytes. `AllocBytes`, and
-  the opaque-array allocation of section 7, are stuck there.
-- The bound needs gc's exact element size, for opaque elements too.
-  Otherwise `make([]*T, 1<<47)` succeeds.
-- `append`'s grow branch cannot simply cap at 2^48. gc's `growslice`
-  rounds the capacity up, by about 1.25× and then to a size class. It
-  panics when the result exceeds `maxAlloc`, even when `new_len·size` is
-  below it. Below 2^46 its capacity never reaches `maxAlloc`. So the model
-  is stuck above 2^46, and below it picks a capacity in
-  `[new_len, 2^48/size]` (checked against a transcription of gc's code over
-  4.7·10^8 cases).
-- With no range at all, the grow branch's arbitrary capacity can exceed
-  the bound, and every growing `append` is unprovable (round 3).
+gc's `makeslice` panics above `maxAlloc = 2^48` bytes, and `growslice`
+panics when its rounded-up capacity exceeds it. A model without these
+bounds lets such a `make` or `append` succeed: an open defect (section 5,
+L3), accepted on 2026-10-25 (P7). Draft 9's analysis of the bounds, should
+they come back, is in the review log (rounds 3 and 4): `make` is stuck above
+2^48, and the grow branch of `append` is stuck above `new_len·size > 2^46`
+and otherwise picks a capacity in `[new_len, 2^48/size]`. An array length
+outside `[0, 2^63-1)` still reaches `AngelicExit`, as today.
 
-Out-of-memory is a fatal error, not a panic, and stays outside the model.
+### 10.9 Why the nil fixes matter more with flat addresses
 
-### 10.9 Why the nil fixes come first
+A field or element address through `nil` is `0 + offset`, a small positive
+address (P2, deferred). Two things keep that from reaching another object:
+- every allocation is at an address of at least 2^16 (section 2), so an
+  access at a smaller offset from `nil` finds no cell and is stuck;
+- a zero-size load or store through `nil` panics (P3).
 
-V2 holds by typing only if no address or access succeeds where gc panics.
-Today a field or element address through `nil` steps to an address at an
-offset of `null`. That is a non-nil pointer with no cells, made without
-`unsafe`, which breaks V2. A zero-size load through `nil` returns the zero
-value where gc panics. These are existing bugs (section 7), but section 2's
-argument for V2 depends on them being fixed.
+A larger offset from `nil`, of a struct over 64 KiB, could reach an
+allocation; gc inserts an explicit nil check there. P2's fix (a field or
+element address through `nil` panics) closes it.
 
 ### 10.10 What needs no mechanism
 
@@ -1085,34 +1117,48 @@ paths for assignments, so those are unreviewed). It found:
 
 **Decisions (2026-10-25).** The project owner approved the guard's rule as
 tightened by these reviews, and chose plain floats (R1).
+
+**Draft 10 (2026-10-25), from the owner's answers on R1–R5.**
+- **R1:** "don't think in terms of blocks": `Loc` becomes an integer, so a
+  struct is one allocation with gc's offsets, and the per-field blocks,
+  `GoPrealloc` and the alignment-offset device go (section 2).
+- **R3:** "the pointer conversion shouldn't care if there are bytes at the
+  location": the conversion to a plain pointer type is the identity, and R2's
+  loads and stores check the cells. `unsafe.Add` and `unsafe.Slice` keep a
+  check, but only that the addresses are allocated, which gc's garbage
+  collector needs (it crashes on pointers outside allocations).
+- **R5:** "every integer should be stored as bytes": integer atomics are
+  byte primitives with an alignment check; only pointer and interface
+  atomics keep opaque cells; no tags.
+- **Added in drafting:** allocations at addresses of at least 2^16, so that
+  an access at a small offset from `nil` is stuck while P2 is deferred
+  (10.9). Not yet reviewed.
 ## 12. The work, from the current `lean`
 
-Each step is a branch off the current `lean`, landed by Perennial's
-workflow. This branch's commits (this document and `bboltmini`) are carried
-over first.
+Status on 2026-10-25. Each step is a branch off the current `lean`.
 
-1. **The guard.**
-   - `goose/modelcheck` and `goose/cmd/modelcheck`, with goose's calls in
-     `assignStmtWith` and `rangeStmt`, and tests of each case of R4. The
-     tests include the three loaded-pointer copies of the review of draft
-     8, and goose negative tests (`testdata/negative-tests/modelcheck_*`).
-   - The check in `etc/land.sh prepare` (section 5).
-   - Run it over every translation Perennial and etcd-grove produce. A
-     prototype found nothing in Perennial's standard library, models and
-     goose examples, with draft 8's same-root exemption; the run is redone
-     with draft 9's rule. A finding there is a decision for the project
-     owner, not a change to the rule.
-   - This step changes no semantics, so it can land on its own.
-2. **The bbolt fork:** `upamanyus/bbolt`, branch `goose` off v1.5.0, with
-   section 6's changes. Check that the guard passes on it.
-3. **The prerequisites of section 7:** the nil fixes, `ArraySemantics`,
-   blank fields, `[]byte("")`, and the float representation, which must
-   precede R1. Then the allocation gaps, `sync.Pool` and `hash/fnv`.
-4. **R1–R3 and R5** in `Lang.lean` and `Golang/Defn`, and the trusted
+1. **The guard** (branch `unsafe-guard`): built, reviewed three times, rule
+   approved. To land.
+2. **The bbolt fork** (`upamanyus/bbolt`, branch `goose`, `e353cbe`): done.
+3. **The prerequisites** (`unsafe-memory-prerequisites.md`):
+   - done: P1 (the disk FFI is removed), P6 (`[]byte("")`, merged);
+   - on branches: P4 (`refuse-anon-struct-tags`), P8a and P8d
+     (`fix-floats`), P3 (`fix-nil-zero-size-access`, in progress);
+   - to do: P5 (blank fields), P8c (stuck float map keys, by key type),
+     P9 (flat `Loc`, below), P7a (real array allocation, after P9);
+   - deferred: P2; skipped: P7b, P8b.
+4. **P9, flat `Loc`** (section 2), before R1:
+   - `Loc` is an integer address, and allocation takes a free aligned range
+     of the type's size;
+   - the layout table, and concrete `structFieldRef`/`arrayIndexRef`
+     (`GoPrealloc` and the per-field `AngelicExit` check go away);
+   - typed points-tos carry `0 < l`, which replaces
+     `arrayIndexRef_null_inv`.
+5. **R1, R2, R3 and R5** in `Lang.lean` and `Golang/Defn`, and the trusted
    atomic models.
-5. **goose:** `unsafe.Add` and `unsafe.Slice`. `bboltmini` moves from
+6. **goose:** `unsafe.Add` and `unsafe.Slice`. `bboltmini` moves from
    `disabled-tests` to `testdata/examples`.
-6. **The acceptance tests,** brought in line with draft 8:
+7. **The acceptance tests,** brought in line with this draft:
    - **Copies between places:** `testOverlappingCopy`,
      `testArrayFieldOverlapCopy` and `testOverlappingArrayCopy` move to
      `bboltmini/rejected/`, a package goose must refuse, together with the
@@ -1125,9 +1171,11 @@ over first.
      sequential and true in Go; the concurrent case is A3.
    - **Floats are plain:** `testFloatBits` leaves the probes and becomes a
      target (true in Go).
+   - **Flat addresses:** `testPastEndAddress` stays a probe: it is now
+     unprovable because both answers are model behaviours.
    - **Renamed targets:** `testTagsClearedByByteStores` becomes
      `testBufferReuseShifted`.
    - **Rewritten targets:** the whole copies in the targets and in
      `bboltmini`'s bbolt code are written through locals, as in section 6
      (`targets.go:138, 237-239`, `bucket.go:18, 41`, `meta.go:55`).
-7. **The program logic of section 9,** and the proofs of the targets.
+8. **The program logic of section 9,** and the proofs of the targets.
