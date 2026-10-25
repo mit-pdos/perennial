@@ -566,7 +566,8 @@ are stuck or vacuous.
   (decision of 2026-10-25, `unsafe-memory-prerequisites.md`, P2), because it
   changes very many proofs. It stays a known unsoundness, and V2 does not
   depend on it: an address at an offset from `null` has no cells, so every
-  view of it (R3) and every access through it is stuck.
+  view of it (R3) and every access of a non-zero size through it is stuck.
+  A zero-size load there still returns a value where Go panics.
 - **A load or store through a nil pointer must panic, even of a zero-size
   type.** `*(*struct{})(nil)` panics in gc. The model returns the zero value,
   because a struct with no fields and an array of length 0 load and store
