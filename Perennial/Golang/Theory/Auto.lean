@@ -1215,7 +1215,8 @@ theorem struct_wp_alloc {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
 /-! ### Load -/
 
 /-- The expansion of `GoLoad (go.StructType fds) l` (`go.load_struct`). -/
-def loadStructRaw (fds : List go.field_decl) (l : val) (fds_unsealed : List go.field_decl) : Expr :=
+noncomputable def loadStructRaw (fds : List go.field_decl) (l : val) (fds_unsealed : List go.field_decl) : Expr :=
+  if l = #null then Panic "nil pointer dereference" else
   gl(List.foldl (fun struct_so_far fd =>
                 let (field_name, field_type) := match fd with
                                                 | go.FieldDecl n t => (n, t)
@@ -1231,7 +1232,8 @@ def loadFieldExpr (T : go.GoType) (l : val) (so_far : Expr) (fd : go.field_decl)
   gl(StructFieldSet T (fieldDeclName fd)
     (so_far, GoLoad (fieldDeclType fd) (StructFieldRef T (fieldDeclName fd) l)))
 
-theorem loadStructRaw_eq (fds : List go.field_decl) (l : val) (fds_unsealed : List go.field_decl) :
+theorem loadStructRaw_eq (fds : List go.field_decl) (l : val) (fds_unsealed : List go.field_decl)
+    (hl : l ≠ #null) :
     loadStructRaw fds l fds_unsealed =
       List.foldl (loadFieldExpr (go.StructType fds) l) gl(GoZeroVal (go.StructType fds) #())
         fds_unsealed := by
@@ -1245,7 +1247,7 @@ theorem loadStructRaw_eq (fds : List go.field_decl) (l : val) (fds_unsealed : Li
       loadFieldExpr (go.StructType fds) l := by
     funext so_far fd; cases fd <;> rfl
   unfold loadStructRaw
-  rw [h]
+  rw [ite_eq_right_of_eq_false _ _ (eq_false hl), h]
 
 /-- The struct value built by the field-by-field load: the fields of `fs` set in `acc`
 to the ones of `x`. -/
@@ -1358,7 +1360,7 @@ theorem struct_wp_load {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
     infer_instance
   iapply (wp_pure_raw_step (Hwp := hpw) (by simp))
   inext
-  rw [loadStructRaw_eq]
+  rw [loadStructRaw_eq _ _ _ (fun e => Hnn (go.intoVal_inj e))]
   have he0 : ∀ (K : List EctxItem) (Ψ : val → IProp GF),
       iprop(emp ∗ (emp -∗ WP (fill K (Val #(zero_val V))) @ s; E {{ Ψ }})) ⊢
         WP (fill K gl(GoZeroVal (go.StructType fds) #())) @ s; E {{ Ψ }} := by
@@ -1381,8 +1383,9 @@ theorem struct_wp_load {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
 /-! ### Store -/
 
 /-- The expansion of `GoStore (go.StructType fds) (l, v)` (`go.store_struct`). -/
-def storeStructRaw (fds : List go.field_decl) (l v : val) (fds_unsealed : List go.field_decl) :
+noncomputable def storeStructRaw (fds : List go.field_decl) (l v : val) (fds_unsealed : List go.field_decl) :
     Expr :=
+  if l = #null then Panic "nil pointer dereference" else
   gl(List.foldl (fun store_so_far fd =>
                 gl(store_so_far ;;
                   (let (field_name, field_type) := match fd with
@@ -1400,7 +1403,7 @@ def storeFieldExpr (T : go.GoType) (l v : val) (so_far : Expr) (fd : go.field_de
     (StructFieldRef T (fieldDeclName fd) l, StructFieldGet T (fieldDeclName fd) v))
 
 theorem storeStructRaw_eq (fds : List go.field_decl) (l v : val)
-    (fds_unsealed : List go.field_decl) :
+    (fds_unsealed : List go.field_decl) (hl : l ≠ #null) :
     storeStructRaw fds l v fds_unsealed =
       List.foldl (storeFieldExpr (go.StructType fds) l v) (Val #()) fds_unsealed := by
   have h : (fun store_so_far fd =>
@@ -1414,7 +1417,7 @@ theorem storeStructRaw_eq (fds : List go.field_decl) (l v : val)
       storeFieldExpr (go.StructType fds) l v := by
     funext so_far fd; cases fd <;> rfl
   unfold storeStructRaw
-  rw [h]
+  rw [ite_eq_right_of_eq_false _ _ (eq_false hl), h]
 
 theorem struct_store_fields {V : Type} {fdsT : List go.field_decl} [ZeroVal V]
     [go.TypeReprUnderlying (go.StructType fdsT) V] (x y : V) (l : Loc) (s : Stuckness)
@@ -1538,7 +1541,7 @@ theorem struct_wp_store {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
     infer_instance
   iapply (wp_pure_raw_step (Hwp := hpw) (by simp))
   inext
-  rw [storeStructRaw_eq]
+  rw [storeStructRaw_eq _ _ _ _ (fun e => Hnn (go.intoVal_inj e))]
   iapply (struct_store_fields' v w l s E fds_unsealed fs hfs Φ)
   iframe Hl
   iintro Hl
@@ -1714,6 +1717,7 @@ macro "solve_into_val_typed_struct_steps" : tactic => `(tactic| (
     have _tagged := @go.tagged_internal_inst
     wp_pure
     clear _tagged
+    try rw [ite_eq_right_of_eq_false _ _ (eq_false (fun e => Hnn (go.intoVal_inj e)))]
     try wp_auto
     cases v
     try simp only
@@ -1729,6 +1733,7 @@ macro "solve_into_val_typed_struct_steps" : tactic => `(tactic| (
     have _tagged := @go.tagged_internal_inst
     wp_pure
     clear _tagged
+    try rw [ite_eq_right_of_eq_false _ _ (eq_false (fun e => Hnn (go.intoVal_inj e)))]
     try wp_auto
     cases w
     iapply HΦ
