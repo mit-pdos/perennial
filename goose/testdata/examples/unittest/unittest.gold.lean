@@ -4,11 +4,9 @@ module
 public import Perennial.Code.fmt
 public import Perennial.Code.sync
 public import Perennial.Code.github_com.goose_lang.primitive
-public import Perennial.Code.github_com.goose_lang.primitive.disk
 public import Perennial.Code.log
 public import Perennial.Code.github_com.goose_lang.std
 public import Perennial.Golang.Defn
-public import Perennial.DiskPrelude
 
 @[expose] public section
 
@@ -56,11 +54,6 @@ noncomputable def withInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.withInterface" [])
 
 attribute [irreducible] withInterface.ty
-
-noncomputable def diskWrapper.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.diskWrapper" [])
-
-attribute [irreducible] diskWrapper.ty
 
 noncomputable def embedA.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.embedA" [])
@@ -186,11 +179,6 @@ noncomputable def RecursiveEmbedded.ty [FfiSyntax] [GoGlobalContext] : go.GoType
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.RecursiveEmbedded" [])
 
 attribute [irreducible] RecursiveEmbedded.ty
-
-noncomputable def Block.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.Block" [])
-
-attribute [irreducible] Block.ty
 
 noncomputable def SliceAlias.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.SliceAlias" [])
@@ -352,15 +340,6 @@ attribute [irreducible] UseNamedType.ty
 @[reducible] noncomputable def ConstWithAbbrevType [FfiSyntax] [GoGlobalContext] : val :=
   #(W32 3)
 
-@[reducible] noncomputable def Disk1 [FfiSyntax] [GoGlobalContext] : val :=
-  #(W64 0)
-
-@[reducible] noncomputable def Disk2 [FfiSyntax] [GoGlobalContext] : val :=
-  #(W64 0)
-
-@[reducible] noncomputable def DiskSize [FfiSyntax] [GoGlobalContext] : val :=
-  #(W64 1000)
-
 noncomputable def GlobalX [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.GlobalX"
 
@@ -516,9 +495,6 @@ noncomputable def iterMapKeys [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def getRandom [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.getRandom"
-
-noncomputable def diskArgument [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.diskArgument"
 
 noncomputable def returnEmbedVal [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.returnEmbedVal"
@@ -849,27 +825,6 @@ noncomputable def ifJoinDemo [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def repeatLocalVars [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.repeatLocalVars"
-
-noncomputable def TwoDiskWrite [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.TwoDiskWrite"
-
-noncomputable def TwoDiskRead [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.TwoDiskRead"
-
-noncomputable def TwoDiskLock [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.TwoDiskLock"
-
-noncomputable def TwoDiskUnlock [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.TwoDiskUnlock"
-
-noncomputable def ReplicatedDiskRead [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.ReplicatedDiskRead"
-
-noncomputable def ReplicatedDiskWrite [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.ReplicatedDiskWrite"
-
-noncomputable def ReplicatedDiskRecover [FfiSyntax] [GoGlobalContext] : GoString :=
-  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.ReplicatedDiskRecover"
 
 noncomputable def BasicNamedReturn [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.BasicNamedReturn"
@@ -2045,25 +2000,6 @@ noncomputable def getRandom.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "r")))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "r") (Var "$r0")))))))))
-
-/-- go: disk.go:9:6 -/
-noncomputable def diskArgument.impl [FfiSyntax] [GoGlobalContext] : val :=
-  (LamV "d"
-  (App (Val exceptionDo)
-  (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.ty))) (Var "d"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (Let "$r0" (Let "$a0" (Val #(W64 0))
-  (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.ty go!"Read"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.ty))) (Var "d"))) (Var "$a0")))
-  (Let "b" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doExecute)
-  (Let "$a0" (Val #(W64 1))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Var "b"))
-  (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.ty go!"Write"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.ty))) (Var "d"))) (Var "$a0")) (Var "$a1")))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Pair (Var "b") (Var "$r0")))))))))))
 
 /-- go: embedded.go:19:17 -/
 noncomputable def embedA.Foo.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -3995,191 +3931,6 @@ noncomputable def repeatLocalVars.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "g") (Var "$r0"))))))))))
 
-/-- TwoDiskWrite is a dummy function to represent the base layer's disk write
-
-    go: replicated_disk.go:12:6 -/
-noncomputable def TwoDiskWrite.impl [FfiSyntax] [GoGlobalContext] : val :=
-  (LamV "diskId"
-  (Lam "a"
-  (Lam "v"
-  (App (Val exceptionDo)
-  (Let "v" (App (Val (GoInstruction (GoAlloc Block.ty))) (Var "v"))
-  (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
-  (Let "diskId" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "diskId"))
-  (App (Val doReturn)
-  (Val #true)))))))))
-
-/-- TwoDiskRead is a dummy function to represent the base layer's disk read
-
-    go: replicated_disk.go:17:6 -/
-noncomputable def TwoDiskRead.impl [FfiSyntax] [GoGlobalContext] : val :=
-  (LamV "diskId"
-  (Lam "a"
-  (App (Val exceptionDo)
-  (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
-  (Let "diskId" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "diskId"))
-  (App (Val doReturn)
-  (Pair (Let "$v0" (Val #(W64 0))
-  (App (Val (GoInstruction (CompositeLiteral Block.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Value")) (ElementExpression go.uint64 (Var "$v0")))]))) (Val #true))))))))
-
-/-- TwoDiskLock is a dummy function to represent locking an address in the
-    base layer
-
-    go: replicated_disk.go:23:6 -/
-noncomputable def TwoDiskLock.impl [FfiSyntax] [GoGlobalContext] : val :=
-  (LamV "a"
-  (App (Val exceptionDo)
-  (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
-  (App (Val doReturn)
-  (Val #())))))
-
-/-- TwoDiskUnlock is a dummy function to represent unlocking an address in the
-    base layer
-
-    go: replicated_disk.go:27:6 -/
-noncomputable def TwoDiskUnlock.impl [FfiSyntax] [GoGlobalContext] : val :=
-  (LamV "a"
-  (App (Val exceptionDo)
-  (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
-  (App (Val doReturn)
-  (Val #())))))
-
-/-- go: replicated_disk.go:29:6 -/
-noncomputable def ReplicatedDiskRead.impl [FfiSyntax] [GoGlobalContext] : val :=
-  (LamV "a"
-  (App (Val exceptionDo)
-  (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (Let "$a0" (Val Disk1)
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (App (App (App (Val (GoInstruction (FuncResolve TwoDiskRead []))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (Let "$ret0" (Fst (Var "__p"))
-  (Let "$ret1" (Snd (Var "__p"))
-  (Let "$r0" (Var "$ret0")
-  (Let "$r1" (Var "$ret1")
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "v" (App (Val (GoInstruction (GoAlloc Block.ty))) (App (Val (GoInstruction (GoZeroVal Block.ty))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (Let "$a0" (Val Disk2)
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (App (App (App (Val (GoInstruction (FuncResolve TwoDiskRead []))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (Let "$ret0" (Fst (Var "__p"))
-  (Let "$ret1" (Snd (Var "__p"))
-  (Let "$r0" (Var "$ret0")
-  (Let "$r1" (Var "$ret1")
-  (Let "v2" (App (Val (GoInstruction (GoAlloc Block.ty))) (App (Val (GoInstruction (GoZeroVal Block.ty))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad Block.ty))) (Var "v2")))))
-  (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (App (App (Val (GoInstruction (FuncResolve TwoDiskUnlock []))) (Val #())) (Var "$a0")))))))
-  (App (Val doExecute)
-  (Var "$r1")))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Block.ty))) (Pair (Var "v2") (Var "$r0")))))))))))))
-  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad Block.ty))) (Var "v")))))
-  (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (App (App (Val (GoInstruction (FuncResolve TwoDiskUnlock []))) (Val #())) (Var "$a0")))))
-  (App (Val doExecute)
-  (Val #()))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Block.ty))) (Pair (Var "v") (Var "$r0"))))))))))))))
-  (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (App (App (Val (GoInstruction (FuncResolve TwoDiskLock []))) (Val #())) (Var "$a0"))))))))
-
-/-- go: replicated_disk.go:42:6 -/
-noncomputable def ReplicatedDiskWrite.impl [FfiSyntax] [GoGlobalContext] : val :=
-  (LamV "a"
-  (Lam "v"
-  (App (Val exceptionDo)
-  (Let "v" (App (Val (GoInstruction (GoAlloc Block.ty))) (Var "v"))
-  (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "a"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (App (App (Val (GoInstruction (FuncResolve TwoDiskUnlock []))) (Val #())) (Var "$a0"))))))
-  (App (Val doExecute)
-  (Let "$a0" (Val Disk2)
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (Let "$a2" (App (Val (GoInstruction (GoLoad Block.ty))) (Var "v"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve TwoDiskWrite []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))
-  (App (Val doExecute)
-  (Let "$a0" (Val Disk1)
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (Let "$a2" (App (Val (GoInstruction (GoLoad Block.ty))) (Var "v"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve TwoDiskWrite []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))))
-  (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (App (App (Val (GoInstruction (FuncResolve TwoDiskLock []))) (Val #())) (Var "$a0")))))))))))
-
-/-- go: replicated_disk.go:49:6 -/
-noncomputable def ReplicatedDiskRecover.impl [FfiSyntax] [GoGlobalContext] : val :=
-  (LamV BAnon
-  (App (Val exceptionDo)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (Let "$r0" (Val #(W64 0))
-  (Let "a" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (App (Val doFor) (Lam BAnon
-  (Val #true))) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "__p" (Let "$a0" (Val Disk1)
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (App (App (App (Val (GoInstruction (FuncResolve TwoDiskRead []))) (Val #())) (Var "$a0")) (Var "$a1"))))
-  (Let "$ret0" (Fst (Var "__p"))
-  (Let "$ret1" (Snd (Var "__p"))
-  (Let "$r0" (Var "$ret0")
-  (Let "$r1" (Var "$ret1")
-  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let "v" (App (Val (GoInstruction (GoAlloc Block.ty))) (App (Val (GoInstruction (GoZeroVal Block.ty))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a")) (Val #(W64 1))))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doContinue) (Val #()))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "a") (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
-  (App (Val doExecute)
-  (Let "$a0" (Val Disk2)
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a"))
-  (Let "$a2" (App (Val (GoInstruction (GoLoad Block.ty))) (Var "v"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve TwoDiskWrite []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))
-  (App (Val doExecute)
-  (Val #()))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Block.ty))) (Pair (Var "v") (Var "$r0"))))))))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "a")) (Val DiskSize))))
-  (App (Val doBreak) (Val #()))
-  (App (Val doExecute)
-  (Val #()))))))
-  (Lam BAnon
-  (Val #())))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "a") (Var "$r0"))))))))))
-
 /-- go: returns.go:3:6 -/
 noncomputable def BasicNamedReturn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -5027,13 +4778,12 @@ noncomputable def LocalConsts.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val c))))))))))))))
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest where
-  pkgImportedPkgs := [pkg_id.fmt, pkg_id.sync, pkg_id.github_com.goose_lang.primitive, pkg_id.github_com.goose_lang.primitive.disk, pkg_id.log, pkg_id.github_com.goose_lang.std]
+  pkgImportedPkgs := [pkg_id.fmt, pkg_id.sync, pkg_id.github_com.goose_lang.primitive, pkg_id.log, pkg_id.github_com.goose_lang.std]
 
 noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest)) (Lam BAnon
   (App (Val exceptionDo)
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -5081,8 +4831,6 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.initialize') (Val #()))))))
-  (App (Val doExecute)
-  (App (Val _root_.Perennial.github_com.goose_lang.primitive.disk.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.log.initialize') (Val #()))))))
   (App (Val doExecute)
@@ -5198,37 +4946,6 @@ attribute [instance] withInterface.TypeAssumptions.type_repr
   withInterface.TypeAssumptions.underlying
   withInterface.TypeAssumptions.get_a
   withInterface.TypeAssumptions.set_a
-
-structure diskWrapper [FfiSyntax] where
-  mk ::
-  d' : _root_.Perennial.github_com.goose_lang.primitive.disk.Disk
-
-noncomputable instance diskWrapper.zero_val [FfiSyntax] : ZeroVal diskWrapper :=
-  ⟨diskWrapper.mk zeroValDef⟩
-
-@[reducible] noncomputable def diskWrapper.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"d" _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.ty)]
-
-@[irreducible] noncomputable def diskWrapper.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  diskWrapper.fieldsUnsealed
-
-noncomputable instance equals_unfold_diskWrapper [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold diskWrapper.fields diskWrapper.fieldsUnsealed :=
-  ⟨by unfold diskWrapper.fields; rfl⟩
-
-@[reducible] noncomputable def diskWrapper.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType diskWrapper.fields)
-
-class diskWrapper.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying diskWrapper.underlying diskWrapper
-  underlying : go.UnderlyingDirectedEq diskWrapper.ty diskWrapper.underlying
-  get_d : ∀ (x : diskWrapper), go.IsGoStepPureDetTagged under (StructFieldGet diskWrapper.underlying go!"d") #x (Val #(x.d'))
-  set_d : ∀ (x : diskWrapper) (y : _root_.Perennial.github_com.goose_lang.primitive.disk.Disk), go.IsGoStepPureDetTagged under (StructFieldSet diskWrapper.underlying go!"d") (PairV #x #y) (Val #(({ x with d' := y } : diskWrapper)))
-
-attribute [instance] diskWrapper.TypeAssumptions.type_repr
-  diskWrapper.TypeAssumptions.underlying
-  diskWrapper.TypeAssumptions.get_d
-  diskWrapper.TypeAssumptions.set_d
 
 structure embedA [FfiSyntax] where
   mk ::
@@ -5928,37 +5645,6 @@ attribute [instance] RecursiveEmbedded.TypeAssumptions.type_repr
   RecursiveEmbedded.TypeAssumptions.set_Other
   RecursiveEmbedded.TypeAssumptions.ptr_recurEmbeddedMethod_unfold
 
-structure Block [FfiSyntax] where
-  mk ::
-  Value' : w64
-
-noncomputable instance Block.zero_val [FfiSyntax] : ZeroVal Block :=
-  ⟨Block.mk zeroValDef⟩
-
-@[reducible] noncomputable def Block.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"Value" go.uint64)]
-
-@[irreducible] noncomputable def Block.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  Block.fieldsUnsealed
-
-noncomputable instance equals_unfold_Block [FfiSyntax] [GoGlobalContext] :
-    EqualsUnfold Block.fields Block.fieldsUnsealed :=
-  ⟨by unfold Block.fields; rfl⟩
-
-@[reducible] noncomputable def Block.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType Block.fields)
-
-class Block.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying Block.underlying Block
-  underlying : go.UnderlyingDirectedEq Block.ty Block.underlying
-  get_Value : ∀ (x : Block), go.IsGoStepPureDetTagged under (StructFieldGet Block.underlying go!"Value") #x (Val #(x.Value'))
-  set_Value : ∀ (x : Block) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Block.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : Block)))
-
-attribute [instance] Block.TypeAssumptions.type_repr
-  Block.TypeAssumptions.underlying
-  Block.TypeAssumptions.get_Value
-  Block.TypeAssumptions.set_Value
-
 abbrev SliceAlias [FfiSyntax] : Type := GoSlice
 
 @[reducible] noncomputable def SliceAlias.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
@@ -6270,14 +5956,13 @@ class UseNamedType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] UseNamedType.TypeAssumptions.underlying
 
-class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Foo_instance : Foo.TypeAssumptions
   importantStruct_instance : importantStruct.TypeAssumptions
   stringWrapper_instance : stringWrapper.TypeAssumptions
   Uint32_instance : Uint32.TypeAssumptions
   numWrapper_instance : numWrapper.TypeAssumptions
   withInterface_instance : withInterface.TypeAssumptions
-  diskWrapper_instance : diskWrapper.TypeAssumptions
   embedA_instance : embedA.TypeAssumptions
   embedB_instance : embedB.TypeAssumptions
   embedC_instance : embedC.TypeAssumptions
@@ -6303,7 +5988,6 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   R_instance : R.TypeAssumptions
   Other_instance : Other.TypeAssumptions
   RecursiveEmbedded_instance : RecursiveEmbedded.TypeAssumptions
-  Block_instance : Block.TypeAssumptions
   SliceAlias_instance : SliceAlias.TypeAssumptions
   thing_instance : thing.TypeAssumptions
   sliceOfThings_instance : sliceOfThings.TypeAssumptions
@@ -6361,7 +6045,6 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   iterMapKeysAndValues_unfold : FuncUnfold iterMapKeysAndValues [] iterMapKeysAndValues.impl
   iterMapKeys_unfold : FuncUnfold iterMapKeys [] iterMapKeys.impl
   getRandom_unfold : FuncUnfold getRandom [] getRandom.impl
-  diskArgument_unfold : FuncUnfold diskArgument [] diskArgument.impl
   returnEmbedVal_unfold : FuncUnfold returnEmbedVal [] returnEmbedVal.impl
   returnEmbedValWithPointer_unfold : FuncUnfold returnEmbedValWithPointer [] returnEmbedValWithPointer.impl
   useEmbeddedField_unfold : FuncUnfold useEmbeddedField [] useEmbeddedField.impl
@@ -6472,13 +6155,6 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   useRenamedImport_unfold : FuncUnfold useRenamedImport [] useRenamedImport.impl
   ifJoinDemo_unfold : FuncUnfold ifJoinDemo [] ifJoinDemo.impl
   repeatLocalVars_unfold : FuncUnfold repeatLocalVars [] repeatLocalVars.impl
-  TwoDiskWrite_unfold : FuncUnfold TwoDiskWrite [] TwoDiskWrite.impl
-  TwoDiskRead_unfold : FuncUnfold TwoDiskRead [] TwoDiskRead.impl
-  TwoDiskLock_unfold : FuncUnfold TwoDiskLock [] TwoDiskLock.impl
-  TwoDiskUnlock_unfold : FuncUnfold TwoDiskUnlock [] TwoDiskUnlock.impl
-  ReplicatedDiskRead_unfold : FuncUnfold ReplicatedDiskRead [] ReplicatedDiskRead.impl
-  ReplicatedDiskWrite_unfold : FuncUnfold ReplicatedDiskWrite [] ReplicatedDiskWrite.impl
-  ReplicatedDiskRecover_unfold : FuncUnfold ReplicatedDiskRecover [] ReplicatedDiskRecover.impl
   BasicNamedReturn_unfold : FuncUnfold BasicNamedReturn [] BasicNamedReturn.impl
   NamedReturn_unfold : FuncUnfold NamedReturn [] NamedReturn.impl
   BasicNamedReturnMany_unfold : FuncUnfold BasicNamedReturnMany [] BasicNamedReturnMany.impl
@@ -6526,7 +6202,6 @@ class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Pr
   import_fmt_Assumption : _root_.Perennial.fmt.Assumptions
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
   import_primitive_Assumption : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
-  import_disk_Assumption : _root_.Perennial.github_com.goose_lang.primitive.disk.Assumptions
   import_log_Assumption : _root_.Perennial.log.Assumptions
   import_std_Assumption : _root_.Perennial.github_com.goose_lang.std.Assumptions
 
@@ -6536,7 +6211,6 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.Uint32_instance
   Assumptions.numWrapper_instance
   Assumptions.withInterface_instance
-  Assumptions.diskWrapper_instance
   Assumptions.embedA_instance
   Assumptions.embedB_instance
   Assumptions.embedC_instance
@@ -6562,7 +6236,6 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.R_instance
   Assumptions.Other_instance
   Assumptions.RecursiveEmbedded_instance
-  Assumptions.Block_instance
   Assumptions.SliceAlias_instance
   Assumptions.thing_instance
   Assumptions.sliceOfThings_instance
@@ -6620,7 +6293,6 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.iterMapKeysAndValues_unfold
   Assumptions.iterMapKeys_unfold
   Assumptions.getRandom_unfold
-  Assumptions.diskArgument_unfold
   Assumptions.returnEmbedVal_unfold
   Assumptions.returnEmbedValWithPointer_unfold
   Assumptions.useEmbeddedField_unfold
@@ -6731,13 +6403,6 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.useRenamedImport_unfold
   Assumptions.ifJoinDemo_unfold
   Assumptions.repeatLocalVars_unfold
-  Assumptions.TwoDiskWrite_unfold
-  Assumptions.TwoDiskRead_unfold
-  Assumptions.TwoDiskLock_unfold
-  Assumptions.TwoDiskUnlock_unfold
-  Assumptions.ReplicatedDiskRead_unfold
-  Assumptions.ReplicatedDiskWrite_unfold
-  Assumptions.ReplicatedDiskRecover_unfold
   Assumptions.BasicNamedReturn_unfold
   Assumptions.NamedReturn_unfold
   Assumptions.BasicNamedReturnMany_unfold
@@ -6785,7 +6450,6 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.import_fmt_Assumption
   Assumptions.import_sync_Assumption
   Assumptions.import_primitive_Assumption
-  Assumptions.import_disk_Assumption
   Assumptions.import_log_Assumption
   Assumptions.import_std_Assumption
 

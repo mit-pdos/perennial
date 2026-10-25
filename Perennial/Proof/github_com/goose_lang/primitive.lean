@@ -2,7 +2,7 @@
 The proofs of `github.com/goose-lang/primitive` (`Assume`, `RandomUint64`, `Mutex`): the
 shared definitions (`Base`), the linked results (`Link`),
 `github_com.goose_lang.primitive.wp_<F>` for each function `F`, and their corollaries
-(`Results`). The disk-only `primitive/disk` package is not covered here.
+(`Results`). `primitive/disk` is not translated: there is no disk FFI for now.
 -/
 module
 

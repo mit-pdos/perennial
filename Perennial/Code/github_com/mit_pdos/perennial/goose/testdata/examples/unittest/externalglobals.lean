@@ -3,7 +3,6 @@ module
 
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 public import Perennial.Golang.Defn
-public import Perennial.DiskPrelude
 
 @[expose] public section
 
@@ -46,7 +45,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.initialize') (Val #())))))))
 
-class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   f_unfold : FuncUnfold f [] f.impl
   import_unittest_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions
 

@@ -14,7 +14,6 @@ public import Perennial.GooseLang.IPersist
 public import Perennial.GooseLang.Adequacy
 public import Perennial.ProgramLogic.AtomicFupd
 public import Perennial.GooseLang.Ffi.GroveFfi.Adequacy
-public import Perennial.GooseLang.Ffi.DiskFfi.Adequacy
 public import Perennial.Ghost
 public import Perennial.Golang.Defn
 public import Perennial.Golang.Theory

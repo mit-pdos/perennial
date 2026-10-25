@@ -74,8 +74,6 @@ public import Perennial.Golang.Theory.TacticsSimp
 public import Perennial.Golang.Theory.TacticsSimpAttr
 public import Perennial.GooseLang.BoundedLang
 public import Perennial.GooseLang.Countable
-public import Perennial.GooseLang.Ffi.DiskFfi.Impl
-public import Perennial.GooseLang.Ffi.DiskFfi.Specs
 public import Perennial.GooseLang.Ffi.GenHeap
 public import Perennial.GooseLang.Ffi.GroveFfi.GroveFfi
 public import Perennial.GooseLang.Ffi.GroveFfi.Impl

@@ -150,7 +150,7 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
 | `Perennial/Std`              | general libraries (gmap, words, lists, bytes)               |
 | `Perennial/Algebra`          | cameras and ghost-state algebra                             |
 | `Perennial/GooseLang`        | GooseLang: semantics, lifting, bounded-step layer, receipts |
-| `Perennial/GooseLang/Ffi`    | grove and disk FFIs                                         |
+| `Perennial/GooseLang/Ffi`    | the grove FFI                                               |
 | `Perennial/Golang/Defn`      | the Go model                                                |
 | `Perennial/Golang/Theory`    | its program logic and spec lemmas                           |
 | `Perennial/Ghost`            | ghost-state libraries                                       |

@@ -137,10 +137,6 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   arrayIndexRef_add (t : Type) (i j : Int) (l : Loc) :
     arrayIndexRef t (i + j) l = arrayIndexRef t j (arrayIndexRef t i l)
 
-  /-- For disk FFI proof. -/
-  arrayIndexRef_add_loc_add (i : Int) (l : Loc) :
-    arrayIndexRef w8 i l = l +ₗ i
-
   intoVal_inj_array (V : Type) (n : Int) [inj_V : go.IntoValInj V] :
     go.IntoValInj (GoArray V n)
 
@@ -155,7 +151,7 @@ export ArraySemantics (array_set_step array_length_step equals_array type_repr_a
   load_array store_array index_ref_array index_array len_array cap_array composite_literal_array
   slice_array_step
   fullSlice_array_step_pure arrayIndexRef_null_inv arrayIndexRef_add
-  arrayIndexRef_add_loc_add intoVal_inj_array)
+  intoVal_inj_array)
 
 end defs
 end go

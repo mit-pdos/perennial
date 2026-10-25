@@ -112,11 +112,10 @@ func TestDot(t *testing.T) {
 func TestMultiplePatterns(t *testing.T) {
 	dir := testDir(t)
 	withCleanOutput(t, dir)
-	mustRunGoose(t, dir, "-out", "Goose", ".", "./use_disk", "./use_grove")
+	mustRunGoose(t, dir, "-out", "Goose", ".", "./use_grove")
 
 	out := outDir(dir)
 	assertFileExists(t, filepath.Join(out, "m.lean"))
-	assertFileExists(t, filepath.Join(out, "m", "use_disk.lean"))
 	assertFileExists(t, filepath.Join(out, "m", "use_grove.lean"))
 }
 
@@ -171,7 +170,7 @@ func TestWildcard(t *testing.T) {
 
 	out := outDir(dir)
 	assertFileExists(t, filepath.Join(out, "m.lean"))
-	assertFileExists(t, filepath.Join(out, "m", "use_disk.lean"))
+	assertFileExists(t, filepath.Join(out, "m", "use_grove.lean"))
 	assertFileExists(t, filepath.Join(out, "m", "errors", "build_tag.lean"))
 }
 
@@ -213,11 +212,11 @@ func TestLocalPath(t *testing.T) {
 func TestLocalPathWithSubdir(t *testing.T) {
 	dir := testDir(t)
 	withCleanOutput(t, dir)
-	mustRunGoose(t, dir, "-out", "Goose", "-dir", "use_disk", "example.com/goose-demo/m")
+	mustRunGoose(t, dir, "-out", "Goose", "-dir", "use_grove", "example.com/goose-demo/m")
 
 	out := outDir(dir)
 	assertFileExists(t, filepath.Join(out, "m.lean"))
-	assertFileNotExist(t, filepath.Join(out, "m", "use_disk.lean"))
+	assertFileNotExist(t, filepath.Join(out, "m", "use_grove.lean"))
 }
 
 func TestAfterChange(t *testing.T) {

@@ -3,23 +3,16 @@ Common setup for the goose semantics tests: the package's `isPkgInit` instances,
 `TestFunOk`, the `semantics_auto` tactic, and helper lemmas (`exact_eq`,
 `w64_pointsto_excl`).
 
-The `semantics` package imports `github.com/goose-lang/primitive/disk`, so the
-FFI is the disk FFI (via `DiskPrelude`): the generated
-  `semantics.Assumptions` is stated for `disk_op`, and the sections below do not
-bind `FfiSyntax`/`FfiModel`.
-
 `wp_testAllocateDistinct` (`allocator.go`) is not stated (TODO: no map alloc?):
 the map literal `map[uint64]unit{}` steps to a raw `AllocOp` of `map_empty`,
 for which there is no spec. Nothing to state here yet.
 -/
 module
 
-public import Perennial.Proof.DiskPrelude
 public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics
 public import Perennial.Proof.sync.Base
 public import Perennial.Proof.encoding.binary.Base
 public import Perennial.Proof.github_com.goose_lang.primitive.Base
-public import Perennial.Proof.github_com.goose_lang.primitive.disk.Base
 
 @[expose] public section
 
@@ -34,6 +27,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.semantics
 
 section wps
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]

@@ -2,21 +2,15 @@
 Shared definitions of the proofs of some of the goose unit tests
 (`goose/testdata/examples/unittest`): the package's `isPkgInit` and two tactic macros of the
 proofs (`wp_auto_neg`, `wp_append_lit`).
-
-`unittest` imports `github.com/goose-lang/primitive/disk`, so the FFI is the
-disk FFI (the generated `unittest.Assumptions` is stated for `disk_op`); the
-sections do not bind `FfiSyntax`/`FfiModel`.
 -/
 module
 
-public import Perennial.Proof.DiskPrelude
 public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 public import Perennial.Golang.Theory.IfJoin
 public import Perennial.Proof.fmt.Base
 public import Perennial.Proof.log.Base
 public import Perennial.Proof.sync.Base
 public import Perennial.Proof.github_com.goose_lang.primitive.Base
-public import Perennial.Proof.github_com.goose_lang.primitive.disk.Base
 public import Perennial.Proof.github_com.goose_lang.std.Base
 
 @[expose] public section
@@ -33,6 +27,7 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest
 
 
 section wps
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
