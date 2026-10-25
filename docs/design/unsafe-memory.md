@@ -67,11 +67,8 @@ performs an atomic on byte memory it reinterprets.
 - **Flat addresses.** A location is an integer address; `null` is `0`, and
   every allocated cell is at a positive address. There are no blocks.
   - An allocation of `n` cells with alignment `a` takes a free range
-    `[l, l + n)` with `2^16 ≤ l` and `a ∣ l`. The choice is nondeterministic: a
+    `[l, l + n)` with `0 < l` and `a ∣ l`. The choice is nondeterministic: a
     new object may sit right after an existing one, or leave a gap.
-  - Every allocation is at an address of at least 2^16, as on Linux
-    (`mmap_min_addr`) and in gc, so an access at a small offset from `nil`
-    finds no cell (10.9).
   - Pointer arithmetic is integer arithmetic (`l + k`), so it never wraps:
     an address outside every allocation simply has no cell.
 - **(V1)** A cell is a byte cell or an opaque cell from its allocation on,
@@ -940,17 +937,15 @@ they come back, is in the review log (rounds 3 and 4): `make` is stuck above
 and otherwise picks a capacity in `[new_len, 2^48/size]`. An array length
 outside `[0, 2^63-1)` still reaches `AngelicExit`, as today.
 
-### 10.9 Why the nil fixes matter more with flat addresses
+### 10.9 Why a field address through `nil` reaches no object
 
-A field or element address through `nil` is `0 + offset`, a small positive
-address (P2, deferred). Two things keep that from reaching another object:
-- every allocation is at an address of at least 2^16 (section 2), so an
-  access at a smaller offset from `nil` finds no cell and is stuck;
-- a zero-size load or store through `nil` panics (P3).
-
-A larger offset from `nil`, of a struct over 64 KiB, could reach an
-allocation; gc inserts an explicit nil check there. P2's fix (a field or
-element address through `nil` panics) closes it.
+A field or element address through `nil` is `0 + offset`, a small address
+(P2, deferred, makes it panic, as in Go). Until then, an access there is
+stuck in some execution: allocation is nondeterministic (section 2), so for
+any address some execution places no object there. So no verified program
+depends on such an access, and none needs a floor on addresses. What P2
+still fixes is the address itself: comparing `&p.f` with `nil`, and a
+zero-size access through it, which finds no cell to miss.
 
 ### 10.10 What needs no mechanism
 
@@ -1130,9 +1125,11 @@ tightened by these reviews, and chose plain floats (R1).
 - **R5:** "every integer should be stored as bytes": integer atomics are
   byte primitives with an alignment check; only pointer and interface
   atomics keep opaque cells; no tags.
-- **Added in drafting:** allocations at addresses of at least 2^16, so that
-  an access at a small offset from `nil` is stuck while P2 is deferred
-  (10.9). Not yet reviewed.
+- **Not adopted:** a floor of 2^16 on addresses, proposed while drafting so
+  that an access at a small offset from `nil` would be stuck. The owner: "the
+  2^16 stopgap is unnecessary". Placement is nondeterministic, so whatever
+  address a nil-derived access reaches, some execution has no cell there and
+  the access is stuck, as for an access past an object (10.9).
 ## 12. The work, from the current `lean`
 
 Status on 2026-10-25. Each step is a branch off the current `lean`.
