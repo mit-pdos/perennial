@@ -326,8 +326,8 @@ attribute [instance] synctestDeadlockError.TypeAssumptions.type_repr
 class specialBubble.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying specialBubble.underlying specialBubble
   underlying : go.UnderlyingDirectedEq specialBubble.ty specialBubble.underlying
-  get__0 : ∀ (x : specialBubble), go.IsGoStepPureDetTagged under (StructFieldGet specialBubble.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : specialBubble) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet specialBubble.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : specialBubble)))
+  «get__#0» : ∀ (x : specialBubble), go.IsGoStepPureDetTagged under (StructFieldGet specialBubble.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : specialBubble) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet specialBubble.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : specialBubble)))
   get_special : ∀ (x : specialBubble), go.IsGoStepPureDetTagged under (StructFieldGet specialBubble.underlying go!"special") #x (Val #(x.special'))
   set_special : ∀ (x : specialBubble) (y : special), go.IsGoStepPureDetTagged under (StructFieldSet specialBubble.underlying go!"special") (PairV #x #y) (Val #(({ x with special' := y } : specialBubble)))
   get_bubbleid : ∀ (x : specialBubble), go.IsGoStepPureDetTagged under (StructFieldGet specialBubble.underlying go!"bubbleid") #x (Val #(x.bubbleid'))
@@ -335,8 +335,8 @@ class specialBubble.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
 
 attribute [instance] specialBubble.TypeAssumptions.type_repr
   specialBubble.TypeAssumptions.underlying
-  specialBubble.TypeAssumptions.get__0
-  specialBubble.TypeAssumptions.set__0
+  specialBubble.TypeAssumptions.«get__#0»
+  specialBubble.TypeAssumptions.«set__#0»
   specialBubble.TypeAssumptions.get_special
   specialBubble.TypeAssumptions.set_special
   specialBubble.TypeAssumptions.get_bubbleid
@@ -553,8 +553,8 @@ attribute [instance] traceBufHeader.TypeAssumptions.type_repr
 class traceBuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying traceBuf.underlying traceBuf
   underlying : go.UnderlyingDirectedEq traceBuf.ty traceBuf.underlying
-  get__0 : ∀ (x : traceBuf), go.IsGoStepPureDetTagged under (StructFieldGet traceBuf.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : traceBuf) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet traceBuf.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : traceBuf)))
+  «get__#0» : ∀ (x : traceBuf), go.IsGoStepPureDetTagged under (StructFieldGet traceBuf.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : traceBuf) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet traceBuf.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : traceBuf)))
   get_traceBufHeader : ∀ (x : traceBuf), go.IsGoStepPureDetTagged under (StructFieldGet traceBuf.underlying go!"traceBufHeader") #x (Val #(x.traceBufHeader'))
   set_traceBufHeader : ∀ (x : traceBuf) (y : traceBufHeader), go.IsGoStepPureDetTagged under (StructFieldSet traceBuf.underlying go!"traceBufHeader") (PairV #x #y) (Val #(({ x with traceBufHeader' := y } : traceBuf)))
   get_arr : ∀ (x : traceBuf), go.IsGoStepPureDetTagged under (StructFieldGet traceBuf.underlying go!"arr") #x (Val #(x.arr'))
@@ -562,8 +562,8 @@ class traceBuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] traceBuf.TypeAssumptions.type_repr
   traceBuf.TypeAssumptions.underlying
-  traceBuf.TypeAssumptions.get__0
-  traceBuf.TypeAssumptions.set__0
+  traceBuf.TypeAssumptions.«get__#0»
+  traceBuf.TypeAssumptions.«set__#0»
   traceBuf.TypeAssumptions.get_traceBufHeader
   traceBuf.TypeAssumptions.set_traceBufHeader
   traceBuf.TypeAssumptions.get_arr
@@ -612,8 +612,8 @@ attribute [instance] traceMap.TypeAssumptions.type_repr
 class traceMapNode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying traceMapNode.underlying traceMapNode
   underlying : go.UnderlyingDirectedEq traceMapNode.ty traceMapNode.underlying
-  get__0 : ∀ (x : traceMapNode), go.IsGoStepPureDetTagged under (StructFieldGet traceMapNode.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : traceMapNode) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet traceMapNode.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : traceMapNode)))
+  «get__#0» : ∀ (x : traceMapNode), go.IsGoStepPureDetTagged under (StructFieldGet traceMapNode.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : traceMapNode) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet traceMapNode.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : traceMapNode)))
   get_children : ∀ (x : traceMapNode), go.IsGoStepPureDetTagged under (StructFieldGet traceMapNode.underlying go!"children") #x (Val #(x.children'))
   set_children : ∀ (x : traceMapNode) (y : (GoArray _root_.Perennial.internal.runtime.atomic.UnsafePointer 4)), go.IsGoStepPureDetTagged under (StructFieldSet traceMapNode.underlying go!"children") (PairV #x #y) (Val #(({ x with children' := y } : traceMapNode)))
   get_hash : ∀ (x : traceMapNode), go.IsGoStepPureDetTagged under (StructFieldGet traceMapNode.underlying go!"hash") #x (Val #(x.hash'))
@@ -625,8 +625,8 @@ class traceMapNode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext
 
 attribute [instance] traceMapNode.TypeAssumptions.type_repr
   traceMapNode.TypeAssumptions.underlying
-  traceMapNode.TypeAssumptions.get__0
-  traceMapNode.TypeAssumptions.set__0
+  traceMapNode.TypeAssumptions.«get__#0»
+  traceMapNode.TypeAssumptions.«set__#0»
   traceMapNode.TypeAssumptions.get_children
   traceMapNode.TypeAssumptions.set_children
   traceMapNode.TypeAssumptions.get_hash
@@ -677,8 +677,8 @@ attribute [instance] traceRegionAllocBlockHeader.TypeAssumptions.type_repr
 class traceRegionAllocBlock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying traceRegionAllocBlock.underlying traceRegionAllocBlock
   underlying : go.UnderlyingDirectedEq traceRegionAllocBlock.ty traceRegionAllocBlock.underlying
-  get__0 : ∀ (x : traceRegionAllocBlock), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAllocBlock.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : traceRegionAllocBlock) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAllocBlock.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : traceRegionAllocBlock)))
+  «get__#0» : ∀ (x : traceRegionAllocBlock), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAllocBlock.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : traceRegionAllocBlock) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAllocBlock.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : traceRegionAllocBlock)))
   get_traceRegionAllocBlockHeader : ∀ (x : traceRegionAllocBlock), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAllocBlock.underlying go!"traceRegionAllocBlockHeader") #x (Val #(x.traceRegionAllocBlockHeader'))
   set_traceRegionAllocBlockHeader : ∀ (x : traceRegionAllocBlock) (y : traceRegionAllocBlockHeader), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAllocBlock.underlying go!"traceRegionAllocBlockHeader") (PairV #x #y) (Val #(({ x with traceRegionAllocBlockHeader' := y } : traceRegionAllocBlock)))
   get_data : ∀ (x : traceRegionAllocBlock), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAllocBlock.underlying go!"data") #x (Val #(x.data'))
@@ -686,8 +686,8 @@ class traceRegionAllocBlock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLoc
 
 attribute [instance] traceRegionAllocBlock.TypeAssumptions.type_repr
   traceRegionAllocBlock.TypeAssumptions.underlying
-  traceRegionAllocBlock.TypeAssumptions.get__0
-  traceRegionAllocBlock.TypeAssumptions.set__0
+  traceRegionAllocBlock.TypeAssumptions.«get__#0»
+  traceRegionAllocBlock.TypeAssumptions.«set__#0»
   traceRegionAllocBlock.TypeAssumptions.get_traceRegionAllocBlockHeader
   traceRegionAllocBlock.TypeAssumptions.set_traceRegionAllocBlockHeader
   traceRegionAllocBlock.TypeAssumptions.get_data

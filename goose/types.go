@@ -99,7 +99,7 @@ func (ctx *Ctx) namedTypeSemanticsDecl(spec *ast.TypeSpec) []glang.Decl {
 
 func fieldName(i int, s string) string {
 	if s == "_" {
-		return s + fmt.Sprint(i)
+		return "_#" + fmt.Sprint(i)
 	}
 	return s
 }

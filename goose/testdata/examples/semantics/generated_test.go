@@ -51,6 +51,18 @@ func (suite *GoTestSuite) TestRangeArrayLit() {
 	suite.Equal(true, testRangeArrayLit())
 }
 
+func (suite *GoTestSuite) TestBlankFieldEq() {
+	suite.Equal(true, testBlankFieldEq())
+}
+
+func (suite *GoTestSuite) TestBlankFieldMapKey() {
+	suite.Equal(true, testBlankFieldMapKey())
+}
+
+func (suite *GoTestSuite) TestBlankFieldIdentity() {
+	suite.Equal(true, testBlankFieldIdentity())
+}
+
 func (suite *GoTestSuite) TestExplicitBlockStmt() {
 	suite.Equal(true, testExplicitBlockStmt())
 }

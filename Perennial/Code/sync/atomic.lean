@@ -824,14 +824,14 @@ attribute [instance] noCopy.TypeAssumptions.type_repr
 
 structure Bool' [FfiSyntax] where
   mk ::
-  _0' : noCopy
+  «_#0'» : noCopy
   v' : w32
 
 noncomputable instance Bool'.zero_val [FfiSyntax] : ZeroVal Bool' :=
   ⟨Bool'.mk zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def Bool.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" noCopy.ty),
+  [(go.field_decl.FieldDecl go!"_#0" noCopy.ty),
 (go.field_decl.FieldDecl go!"v" go.uint32)]
 
 @[irreducible] noncomputable def Bool.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -847,8 +847,8 @@ noncomputable instance equals_unfold_Bool [FfiSyntax] [GoGlobalContext] :
 class Bool.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Bool'.underlying Bool'
   underlying : go.UnderlyingDirectedEq Bool'.ty Bool'.underlying
-  get__0 : ∀ (x : Bool'), go.IsGoStepPureDetTagged under (StructFieldGet Bool'.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : Bool') (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Bool'.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Bool')))
+  «get__#0» : ∀ (x : Bool'), go.IsGoStepPureDetTagged under (StructFieldGet Bool'.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : Bool') (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Bool'.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Bool')))
   get_v : ∀ (x : Bool'), go.IsGoStepPureDetTagged under (StructFieldGet Bool'.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Bool') (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Bool'.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Bool')))
   ptr_CompareAndSwap_unfold : MethodUnfold (go.GoType.PointerType Bool'.ty) go!"CompareAndSwap" Bool.CompareAndSwap.impl
@@ -858,8 +858,8 @@ class Bool.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 
 attribute [instance] Bool.TypeAssumptions.type_repr
   Bool.TypeAssumptions.underlying
-  Bool.TypeAssumptions.get__0
-  Bool.TypeAssumptions.set__0
+  Bool.TypeAssumptions.«get__#0»
+  Bool.TypeAssumptions.«set__#0»
   Bool.TypeAssumptions.get_v
   Bool.TypeAssumptions.set_v
   Bool.TypeAssumptions.ptr_CompareAndSwap_unfold
@@ -869,16 +869,16 @@ attribute [instance] Bool.TypeAssumptions.type_repr
 
 structure Pointer [FfiSyntax] (T : Type) where
   mk ::
-  _0' : (GoArray Loc 0)
-  _1' : noCopy
+  «_#0'» : (GoArray Loc 0)
+  «_#1'» : noCopy
   v' : Loc
 
 noncomputable instance Pointer.zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (Pointer T) :=
   ⟨Pointer.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def Pointer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" (go.GoType.ArrayType 0 (go.GoType.PointerType T))),
-(go.field_decl.FieldDecl go!"_1" noCopy.ty),
+  [(go.field_decl.FieldDecl go!"_#0" (go.GoType.ArrayType 0 (go.GoType.PointerType T))),
+(go.field_decl.FieldDecl go!"_#1" noCopy.ty),
 (go.field_decl.FieldDecl go!"v" «unsafe».Pointer)]
 
 @[irreducible] noncomputable def Pointer.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
@@ -894,10 +894,10 @@ noncomputable instance equals_unfold_Pointer [FfiSyntax] [GoGlobalContext] (T : 
 class Pointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Pointer.underlying T) (Pointer T')
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Pointer.ty T) (Pointer.underlying T)
-  get__0 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : (GoArray Loc 0)), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : (Pointer T'))))
-  get__1 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"_1") #x (Val #(x._1'))
-  set__1 : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : (Pointer T'))))
+  «get__#0» : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : (GoArray Loc 0)), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : (Pointer T'))))
+  «get__#1» : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"_#1") #x (Val #(x.«_#1'»))
+  «set__#1» : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : (Pointer T'))))
   get_v : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"v") #x (Val #(x.v'))
   set_v : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"v") (PairV #x #y) (Val #(({ x with v' := y } : (Pointer T'))))
   ptr_CompareAndSwap_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Pointer.ty T)) go!"CompareAndSwap" (Pointer.CompareAndSwap.impl T)
@@ -907,10 +907,10 @@ class Pointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
 
 attribute [instance] Pointer.TypeAssumptions.type_repr
   Pointer.TypeAssumptions.underlying
-  Pointer.TypeAssumptions.get__0
-  Pointer.TypeAssumptions.set__0
-  Pointer.TypeAssumptions.get__1
-  Pointer.TypeAssumptions.set__1
+  Pointer.TypeAssumptions.«get__#0»
+  Pointer.TypeAssumptions.«set__#0»
+  Pointer.TypeAssumptions.«get__#1»
+  Pointer.TypeAssumptions.«set__#1»
   Pointer.TypeAssumptions.get_v
   Pointer.TypeAssumptions.set_v
   Pointer.TypeAssumptions.ptr_CompareAndSwap_unfold
@@ -920,14 +920,14 @@ attribute [instance] Pointer.TypeAssumptions.type_repr
 
 structure Int32 [FfiSyntax] where
   mk ::
-  _0' : noCopy
+  «_#0'» : noCopy
   v' : w32
 
 noncomputable instance Int32.zero_val [FfiSyntax] : ZeroVal Int32 :=
   ⟨Int32.mk zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def Int32.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" noCopy.ty),
+  [(go.field_decl.FieldDecl go!"_#0" noCopy.ty),
 (go.field_decl.FieldDecl go!"v" go.int32)]
 
 @[irreducible] noncomputable def Int32.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -943,8 +943,8 @@ noncomputable instance equals_unfold_Int32 [FfiSyntax] [GoGlobalContext] :
 class Int32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Int32.underlying Int32
   underlying : go.UnderlyingDirectedEq Int32.ty Int32.underlying
-  get__0 : ∀ (x : Int32), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : Int32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Int32)))
+  «get__#0» : ∀ (x : Int32), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : Int32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Int32)))
   get_v : ∀ (x : Int32), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Int32) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Int32)))
   ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Int32.ty) go!"Add" Int32.Add.impl
@@ -957,8 +957,8 @@ class Int32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Int32.TypeAssumptions.type_repr
   Int32.TypeAssumptions.underlying
-  Int32.TypeAssumptions.get__0
-  Int32.TypeAssumptions.set__0
+  Int32.TypeAssumptions.«get__#0»
+  Int32.TypeAssumptions.«set__#0»
   Int32.TypeAssumptions.get_v
   Int32.TypeAssumptions.set_v
   Int32.TypeAssumptions.ptr_Add_unfold
@@ -997,16 +997,16 @@ attribute [instance] align64.TypeAssumptions.type_repr
 
 structure Int64 [FfiSyntax] where
   mk ::
-  _0' : noCopy
-  _1' : align64
+  «_#0'» : noCopy
+  «_#1'» : align64
   v' : w64
 
 noncomputable instance Int64.zero_val [FfiSyntax] : ZeroVal Int64 :=
   ⟨Int64.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def Int64.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" noCopy.ty),
-(go.field_decl.FieldDecl go!"_1" align64.ty),
+  [(go.field_decl.FieldDecl go!"_#0" noCopy.ty),
+(go.field_decl.FieldDecl go!"_#1" align64.ty),
 (go.field_decl.FieldDecl go!"v" go.int64)]
 
 @[irreducible] noncomputable def Int64.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -1022,10 +1022,10 @@ noncomputable instance equals_unfold_Int64 [FfiSyntax] [GoGlobalContext] :
 class Int64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Int64.underlying Int64
   underlying : go.UnderlyingDirectedEq Int64.ty Int64.underlying
-  get__0 : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : Int64) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Int64)))
-  get__1 : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"_1") #x (Val #(x._1'))
-  set__1 : ∀ (x : Int64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : Int64)))
+  «get__#0» : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : Int64) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Int64)))
+  «get__#1» : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"_#1") #x (Val #(x.«_#1'»))
+  «set__#1» : ∀ (x : Int64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : Int64)))
   get_v : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Int64) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Int64)))
   ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Int64.ty) go!"Add" Int64.Add.impl
@@ -1038,10 +1038,10 @@ class Int64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Int64.TypeAssumptions.type_repr
   Int64.TypeAssumptions.underlying
-  Int64.TypeAssumptions.get__0
-  Int64.TypeAssumptions.set__0
-  Int64.TypeAssumptions.get__1
-  Int64.TypeAssumptions.set__1
+  Int64.TypeAssumptions.«get__#0»
+  Int64.TypeAssumptions.«set__#0»
+  Int64.TypeAssumptions.«get__#1»
+  Int64.TypeAssumptions.«set__#1»
   Int64.TypeAssumptions.get_v
   Int64.TypeAssumptions.set_v
   Int64.TypeAssumptions.ptr_Add_unfold
@@ -1054,14 +1054,14 @@ attribute [instance] Int64.TypeAssumptions.type_repr
 
 structure Uint32 [FfiSyntax] where
   mk ::
-  _0' : noCopy
+  «_#0'» : noCopy
   v' : w32
 
 noncomputable instance Uint32.zero_val [FfiSyntax] : ZeroVal Uint32 :=
   ⟨Uint32.mk zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def Uint32.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" noCopy.ty),
+  [(go.field_decl.FieldDecl go!"_#0" noCopy.ty),
 (go.field_decl.FieldDecl go!"v" go.uint32)]
 
 @[irreducible] noncomputable def Uint32.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -1077,8 +1077,8 @@ noncomputable instance equals_unfold_Uint32 [FfiSyntax] [GoGlobalContext] :
 class Uint32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uint32.underlying Uint32
   underlying : go.UnderlyingDirectedEq Uint32.ty Uint32.underlying
-  get__0 : ∀ (x : Uint32), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : Uint32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Uint32)))
+  «get__#0» : ∀ (x : Uint32), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : Uint32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Uint32)))
   get_v : ∀ (x : Uint32), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Uint32) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Uint32)))
   ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Uint32.ty) go!"Add" Uint32.Add.impl
@@ -1091,8 +1091,8 @@ class Uint32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Uint32.TypeAssumptions.type_repr
   Uint32.TypeAssumptions.underlying
-  Uint32.TypeAssumptions.get__0
-  Uint32.TypeAssumptions.set__0
+  Uint32.TypeAssumptions.«get__#0»
+  Uint32.TypeAssumptions.«set__#0»
   Uint32.TypeAssumptions.get_v
   Uint32.TypeAssumptions.set_v
   Uint32.TypeAssumptions.ptr_Add_unfold
@@ -1105,16 +1105,16 @@ attribute [instance] Uint32.TypeAssumptions.type_repr
 
 structure Uint64 [FfiSyntax] where
   mk ::
-  _0' : noCopy
-  _1' : align64
+  «_#0'» : noCopy
+  «_#1'» : align64
   v' : w64
 
 noncomputable instance Uint64.zero_val [FfiSyntax] : ZeroVal Uint64 :=
   ⟨Uint64.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def Uint64.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" noCopy.ty),
-(go.field_decl.FieldDecl go!"_1" align64.ty),
+  [(go.field_decl.FieldDecl go!"_#0" noCopy.ty),
+(go.field_decl.FieldDecl go!"_#1" align64.ty),
 (go.field_decl.FieldDecl go!"v" go.uint64)]
 
 @[irreducible] noncomputable def Uint64.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -1130,10 +1130,10 @@ noncomputable instance equals_unfold_Uint64 [FfiSyntax] [GoGlobalContext] :
 class Uint64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uint64.underlying Uint64
   underlying : go.UnderlyingDirectedEq Uint64.ty Uint64.underlying
-  get__0 : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : Uint64) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Uint64)))
-  get__1 : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"_1") #x (Val #(x._1'))
-  set__1 : ∀ (x : Uint64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : Uint64)))
+  «get__#0» : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : Uint64) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Uint64)))
+  «get__#1» : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"_#1") #x (Val #(x.«_#1'»))
+  «set__#1» : ∀ (x : Uint64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : Uint64)))
   get_v : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Uint64) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Uint64)))
   ptr_Add_unfold : MethodUnfold (go.GoType.PointerType Uint64.ty) go!"Add" Uint64.Add.impl
@@ -1146,10 +1146,10 @@ class Uint64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
 
 attribute [instance] Uint64.TypeAssumptions.type_repr
   Uint64.TypeAssumptions.underlying
-  Uint64.TypeAssumptions.get__0
-  Uint64.TypeAssumptions.set__0
-  Uint64.TypeAssumptions.get__1
-  Uint64.TypeAssumptions.set__1
+  Uint64.TypeAssumptions.«get__#0»
+  Uint64.TypeAssumptions.«set__#0»
+  Uint64.TypeAssumptions.«get__#1»
+  Uint64.TypeAssumptions.«set__#1»
   Uint64.TypeAssumptions.get_v
   Uint64.TypeAssumptions.set_v
   Uint64.TypeAssumptions.ptr_Add_unfold
@@ -1162,14 +1162,14 @@ attribute [instance] Uint64.TypeAssumptions.type_repr
 
 structure Uintptr [FfiSyntax] where
   mk ::
-  _0' : noCopy
+  «_#0'» : noCopy
   v' : w64
 
 noncomputable instance Uintptr.zero_val [FfiSyntax] : ZeroVal Uintptr :=
   ⟨Uintptr.mk zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def Uintptr.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" noCopy.ty),
+  [(go.field_decl.FieldDecl go!"_#0" noCopy.ty),
 (go.field_decl.FieldDecl go!"v" go.uintptr)]
 
 @[irreducible] noncomputable def Uintptr.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -1185,15 +1185,15 @@ noncomputable instance equals_unfold_Uintptr [FfiSyntax] [GoGlobalContext] :
 class Uintptr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uintptr.underlying Uintptr
   underlying : go.UnderlyingDirectedEq Uintptr.ty Uintptr.underlying
-  get__0 : ∀ (x : Uintptr), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : Uintptr) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Uintptr)))
+  «get__#0» : ∀ (x : Uintptr), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : Uintptr) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Uintptr)))
   get_v : ∀ (x : Uintptr), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Uintptr) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Uintptr)))
 
 attribute [instance] Uintptr.TypeAssumptions.type_repr
   Uintptr.TypeAssumptions.underlying
-  Uintptr.TypeAssumptions.get__0
-  Uintptr.TypeAssumptions.set__0
+  Uintptr.TypeAssumptions.«get__#0»
+  Uintptr.TypeAssumptions.«set__#0»
   Uintptr.TypeAssumptions.get_v
   Uintptr.TypeAssumptions.set_v
 

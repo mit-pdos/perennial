@@ -43,6 +43,11 @@ noncomputable def pairs.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] pairs.ty
 
+noncomputable def blankFieldStruct.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.blankFieldStruct" [])
+
+attribute [irreducible] blankFieldStruct.ty
+
 noncomputable def evalCounter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.evalCounter" [])
 
@@ -281,6 +286,15 @@ noncomputable def sumArrayLit [FfiSyntax] [GoGlobalContext] : GoString :=
 
 noncomputable def testRangeArrayLit [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeArrayLit"
+
+noncomputable def testBlankFieldEq [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBlankFieldEq"
+
+noncomputable def testBlankFieldMapKey [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBlankFieldMapKey"
+
+noncomputable def testBlankFieldIdentity [FfiSyntax] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBlankFieldIdentity"
 
 noncomputable def testExplicitBlockStmt [FfiSyntax] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testExplicitBlockStmt"
@@ -1303,6 +1317,72 @@ noncomputable def testRangeArrayLit.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val exceptionDo)
   (App (Val doReturn)
   (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (FuncResolve sumArrayLit []))) (Val #())) (Val #())) (Val #(W64 9)))))))
+
+/-- go: blank_fields.go:8:6 -/
+noncomputable def testBlankFieldEq.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (Let "$r0" (Val #false)
+  (Let "evaluated" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Lam BAnon
+  (App (Val exceptionDo)
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #(W64 2)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "evaluated") (Var "$r0"))))))))
+  (Let "setEvaluated" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false [go.int]))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false [go.int]))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoOp GoEquals blankFieldStruct.ty))) (Pair (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [go.int]))))) (Var "setEvaluated")) (Val #()))
+  (App (Val (GoInstruction (CompositeLiteral blankFieldStruct.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.int (Var "$v0"))), (KeyedElement none (ElementExpression go.int (Var "$v1")))])))) (Let "$v0" (Val #(W64 1))
+  (App (Val (GoInstruction (CompositeLiteral blankFieldStruct.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.int (Var "$v0")))]))))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "evaluated")) (Val #false)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [go.int]))))) (Pair (Var "setEvaluated") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "evaluated") (Var "$r0")))))))))
+
+/-- go: blank_fields.go:17:6 -/
+noncomputable def testBlankFieldMapKey.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType blankFieldStruct.ty go.int)]))) (Val #())) (Val #()))
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType blankFieldStruct.ty go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType blankFieldStruct.ty go.int)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 3))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (App (App (Val (map.lookup2 blankFieldStruct.ty go.int)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType blankFieldStruct.ty go.int)))) (Var "m"))) (Let "$v0" (Val #(W64 1))
+  (App (Val (GoInstruction (CompositeLiteral blankFieldStruct.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.int (Var "$v0")))]))))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "v" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "v")) (Val #(W64 3)))) (Val #false)))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "v") (Var "$r0"))))))))))))))
+  (App (Val doExecute)
+  (App (App (App (Val (map.insert blankFieldStruct.ty)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType blankFieldStruct.ty go.int)))) (Var "m"))) (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (Val #(W64 2))
+  (App (Val (GoInstruction (CompositeLiteral blankFieldStruct.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.int (Var "$v0"))), (KeyedElement none (ElementExpression go.int (Var "$v1")))]))))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType blankFieldStruct.ty go.int)))) (Pair (Var "m") (Var "$r0")))))))))
+
+/-- go: blank_fields.go:24:6 -/
+noncomputable def testBlankFieldIdentity.impl [FfiSyntax] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (App (Val exceptionDo)
+  (App (Val doReturn)
+  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (Convert (go.GoType.StructType [(go.field_decl.FieldDecl go!"_#0" go.int)]) go.any))) (App (Val (GoInstruction (CompositeLiteral (go.GoType.StructType [(go.field_decl.FieldDecl go!"_#0" go.int)])))) (LiteralValue []))) (App (Val (GoInstruction (Convert (go.GoType.StructType [(go.field_decl.FieldDecl go!"_0" go.int)]) go.any))) (App (Val (GoInstruction (CompositeLiteral (go.GoType.StructType [(go.field_decl.FieldDecl go!"_0" go.int)])))) (LiteralValue [])))))))))
 
 /-- go: block.go:3:6 -/
 noncomputable def testExplicitBlockStmt.impl [FfiSyntax] [GoGlobalContext] : val :=
@@ -6568,6 +6648,43 @@ class pairs.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] pairs.TypeAssumptions.underlying
 
+structure blankFieldStruct [FfiSyntax] where
+  mk ::
+  x' : w64
+  «_#1'» : w64
+
+noncomputable instance blankFieldStruct.zero_val [FfiSyntax] : ZeroVal blankFieldStruct :=
+  ⟨blankFieldStruct.mk zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def blankFieldStruct.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"x" go.int),
+(go.field_decl.FieldDecl go!"_#1" go.int)]
+
+@[irreducible] noncomputable def blankFieldStruct.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+  blankFieldStruct.fieldsUnsealed
+
+noncomputable instance equals_unfold_blankFieldStruct [FfiSyntax] [GoGlobalContext] :
+    EqualsUnfold blankFieldStruct.fields blankFieldStruct.fieldsUnsealed :=
+  ⟨by unfold blankFieldStruct.fields; rfl⟩
+
+@[reducible] noncomputable def blankFieldStruct.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType blankFieldStruct.fields)
+
+class blankFieldStruct.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying blankFieldStruct.underlying blankFieldStruct
+  underlying : go.UnderlyingDirectedEq blankFieldStruct.ty blankFieldStruct.underlying
+  get_x : ∀ (x : blankFieldStruct), go.IsGoStepPureDetTagged under (StructFieldGet blankFieldStruct.underlying go!"x") #x (Val #(x.x'))
+  set_x : ∀ (x : blankFieldStruct) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet blankFieldStruct.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : blankFieldStruct)))
+  «get__#1» : ∀ (x : blankFieldStruct), go.IsGoStepPureDetTagged under (StructFieldGet blankFieldStruct.underlying go!"_#1") #x (Val #(x.«_#1'»))
+  «set__#1» : ∀ (x : blankFieldStruct) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet blankFieldStruct.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : blankFieldStruct)))
+
+attribute [instance] blankFieldStruct.TypeAssumptions.type_repr
+  blankFieldStruct.TypeAssumptions.underlying
+  blankFieldStruct.TypeAssumptions.get_x
+  blankFieldStruct.TypeAssumptions.set_x
+  blankFieldStruct.TypeAssumptions.«get__#1»
+  blankFieldStruct.TypeAssumptions.«set__#1»
+
 structure evalCounter [FfiSyntax] where
   mk ::
   n' : w64
@@ -7599,6 +7716,7 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   localPair_instance : localPair.TypeAssumptions
   pair_instance : pair.TypeAssumptions
   pairs_instance : pairs.TypeAssumptions
+  blankFieldStruct_instance : blankFieldStruct.TypeAssumptions
   evalCounter_instance : evalCounter.TypeAssumptions
   Editor_instance : Editor.TypeAssumptions
   Pair_instance : Pair.TypeAssumptions
@@ -7650,6 +7768,9 @@ class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testLocalType_unfold : FuncUnfold testLocalType [] testLocalType.impl
   sumArrayLit_unfold : FuncUnfold sumArrayLit [] sumArrayLit.impl
   testRangeArrayLit_unfold : FuncUnfold testRangeArrayLit [] testRangeArrayLit.impl
+  testBlankFieldEq_unfold : FuncUnfold testBlankFieldEq [] testBlankFieldEq.impl
+  testBlankFieldMapKey_unfold : FuncUnfold testBlankFieldMapKey [] testBlankFieldMapKey.impl
+  testBlankFieldIdentity_unfold : FuncUnfold testBlankFieldIdentity [] testBlankFieldIdentity.impl
   testExplicitBlockStmt_unfold : FuncUnfold testExplicitBlockStmt [] testExplicitBlockStmt.impl
   testMinUint64_unfold : FuncUnfold testMinUint64 [] testMinUint64.impl
   testMaxUint64_unfold : FuncUnfold testMaxUint64 [] testMaxUint64.impl
@@ -7849,6 +7970,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.localPair_instance
   Assumptions.pair_instance
   Assumptions.pairs_instance
+  Assumptions.blankFieldStruct_instance
   Assumptions.evalCounter_instance
   Assumptions.Editor_instance
   Assumptions.Pair_instance
@@ -7900,6 +8022,9 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testLocalType_unfold
   Assumptions.sumArrayLit_unfold
   Assumptions.testRangeArrayLit_unfold
+  Assumptions.testBlankFieldEq_unfold
+  Assumptions.testBlankFieldMapKey_unfold
+  Assumptions.testBlankFieldIdentity_unfold
   Assumptions.testExplicitBlockStmt_unfold
   Assumptions.testMinUint64_unfold
   Assumptions.testMaxUint64_unfold

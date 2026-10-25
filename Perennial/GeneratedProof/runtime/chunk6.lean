@@ -962,7 +962,7 @@ variable [package_sem' : runtime.Assumptions]
 noncomputable instance traceMapNode_typed_pointsto :
     TypedPointsto (GF := GF) runtime.traceMapNode where
   typedPointstoDef l v dq := iprop(
-    "_0" ∷ typedPointsto (structFieldRef runtime.traceMapNode go!"_0" l) v._0' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef runtime.traceMapNode go!"_#0" l) v.«_#0'» dq ∗
     "children" ∷ typedPointsto (structFieldRef runtime.traceMapNode go!"children" l) v.children' dq ∗
     "hash" ∷ typedPointsto (structFieldRef runtime.traceMapNode go!"hash" l) v.hash' dq ∗
     "id" ∷ typedPointsto (structFieldRef runtime.traceMapNode go!"id" l) v.id' dq ∗
@@ -976,19 +976,19 @@ noncomputable instance traceMapNode_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.traceMapNode runtime.traceMapNode.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance traceMapNode_access_load__0 (l : Loc) (v : runtime.traceMapNode) (dq : DFrac) :
+noncomputable instance «traceMapNode_access_load__#0» (l : Loc) (v : runtime.traceMapNode) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceMapNode go!"_0" l) v._0' dq)
-      (typedPointsto (structFieldRef runtime.traceMapNode go!"_0" l) v._0' dq)
+      (typedPointsto (structFieldRef runtime.traceMapNode go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef runtime.traceMapNode go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceMapNode_access_store__0 (l : Loc) (v : runtime.traceMapNode) (_0' : internal.runtime.sys.NotInHeap) :
+noncomputable instance «traceMapNode_access_store__#0» (l : Loc) (v : runtime.traceMapNode) («_#0'» : internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceMapNode go!"_0" l) v._0' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.traceMapNode go!"_0" l) _0' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with _0' := _0' } : runtime.traceMapNode) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.traceMapNode go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.traceMapNode go!"_#0" l) «_#0'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : runtime.traceMapNode) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

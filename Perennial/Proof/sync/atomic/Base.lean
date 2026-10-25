@@ -40,7 +40,7 @@ instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.sync.atomic :=
 /-! ### Uint64 -/
 
 def ownUint64Def (u : Loc) (dq : DFrac) (v : w64) : IProp GF :=
-  typedPointsto (GF := GF) u ({ _0' := zero_val _, _1' := zero_val _, v' := v : Uint64 }) dq
+  typedPointsto (GF := GF) u ({ «_#0'» := zero_val _, «_#1'» := zero_val _, v' := v : Uint64 }) dq
 @[irreducible] def ownUint64 (u : Loc) (dq : DFrac) (v : w64) : IProp GF := ownUint64Def u dq v
 theorem ownUint64_unseal : @ownUint64 = @ownUint64Def := by funext; with_unfolding_all rfl
 
@@ -68,7 +68,7 @@ instance ownUint64_combines_gives (u : Loc) (v v' : w64) (dq dq' : DFrac) :
 /-! ### Int64 -/
 
 def ownInt64Def (u : Loc) (dq : DFrac) (v : w64) : IProp GF :=
-  typedPointsto (GF := GF) u ({ _0' := zero_val _, _1' := zero_val _, v' := v : Int64 }) dq
+  typedPointsto (GF := GF) u ({ «_#0'» := zero_val _, «_#1'» := zero_val _, v' := v : Int64 }) dq
 @[irreducible] def ownInt64 (u : Loc) (dq : DFrac) (v : w64) : IProp GF := ownInt64Def u dq v
 theorem ownInt64_unseal : @ownInt64 = @ownInt64Def := by funext; with_unfolding_all rfl
 
@@ -96,7 +96,7 @@ instance ownInt64_combines_gives (u : Loc) (v v' : w64) (dq dq' : DFrac) :
 /-! ### Uint32 -/
 
 def ownUint32Def (u : Loc) (dq : DFrac) (v : w32) : IProp GF :=
-  typedPointsto (GF := GF) u ({ _0' := zero_val _, v' := v : Uint32 }) dq
+  typedPointsto (GF := GF) u ({ «_#0'» := zero_val _, v' := v : Uint32 }) dq
 @[irreducible] def ownUint32 (u : Loc) (dq : DFrac) (v : w32) : IProp GF := ownUint32Def u dq v
 theorem ownUint32_unseal : @ownUint32 = @ownUint32Def := by funext; with_unfolding_all rfl
 
@@ -124,7 +124,7 @@ instance ownUint32_combines_gives (u : Loc) (v v' : w32) (dq dq' : DFrac) :
 /-! ### Int32 -/
 
 def ownInt32Def (u : Loc) (dq : DFrac) (v : w32) : IProp GF :=
-  typedPointsto (GF := GF) u ({ _0' := zero_val _, v' := v : Int32 }) dq
+  typedPointsto (GF := GF) u ({ «_#0'» := zero_val _, v' := v : Int32 }) dq
 @[irreducible] def ownInt32 (u : Loc) (dq : DFrac) (v : w32) : IProp GF := ownInt32Def u dq v
 theorem ownInt32_unseal : @ownInt32 = @ownInt32Def := by funext; with_unfolding_all rfl
 
@@ -155,7 +155,7 @@ section pointer
 variable {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] (T : go.GoType) [IntoValTyped (GF := GF) T' T]
 
 def ownPointerDef (u : Loc) (dq : DFrac) (v : Loc) : IProp GF :=
-  typedPointsto (GF := GF) u ({ _0' := zero_val _, _1' := zero_val _, v' := v } : Pointer T') dq
+  typedPointsto (GF := GF) u ({ «_#0'» := zero_val _, «_#1'» := zero_val _, v' := v } : Pointer T') dq
 @[irreducible] def ownPointer (u : Loc) (dq : DFrac) (v : Loc) : IProp GF :=
   ownPointerDef (T' := T') u dq v
 theorem ownPointer_unseal : @ownPointer = @ownPointerDef := by funext; with_unfolding_all rfl
@@ -176,7 +176,7 @@ theorem b32w_inj {b1 b2 : Bool} (h : b32w b1 = b32w b2) : b1 = b2 := by
   cases b1 <;> cases b2 <;> first | rfl | (exfalso; revert h; decide)
 
 def ownBoolDef (u : Loc) (dq : DFrac) (v : Bool) : IProp GF :=
-  typedPointsto (GF := GF) u ({ _0' := zero_val _, v' := b32w v } : Bool') dq
+  typedPointsto (GF := GF) u ({ «_#0'» := zero_val _, v' := b32w v } : Bool') dq
 @[irreducible] def ownBool (u : Loc) (dq : DFrac) (v : Bool) : IProp GF := ownBoolDef u dq v
 theorem ownBool_unseal : @ownBool = @ownBoolDef := by funext; with_unfolding_all rfl
 

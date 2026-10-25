@@ -772,7 +772,7 @@ variable [package_sem' : runtime.Assumptions]
 noncomputable instance PanicNilError_typed_pointsto :
     TypedPointsto (GF := GF) runtime.PanicNilError where
   typedPointstoDef l v dq := iprop(
-    "_0" ∷ typedPointsto (structFieldRef runtime.PanicNilError go!"_0" l) v._0' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef runtime.PanicNilError go!"_#0" l) v.«_#0'» dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
@@ -782,19 +782,19 @@ noncomputable instance PanicNilError_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.PanicNilError runtime.PanicNilError.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance PanicNilError_access_load__0 (l : Loc) (v : runtime.PanicNilError) (dq : DFrac) :
+noncomputable instance «PanicNilError_access_load__#0» (l : Loc) (v : runtime.PanicNilError) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.PanicNilError go!"_0" l) v._0' dq)
-      (typedPointsto (structFieldRef runtime.PanicNilError go!"_0" l) v._0' dq)
+      (typedPointsto (structFieldRef runtime.PanicNilError go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef runtime.PanicNilError go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance PanicNilError_access_store__0 (l : Loc) (v : runtime.PanicNilError) (_0' : (GoArray Loc 0)) :
+noncomputable instance «PanicNilError_access_store__#0» (l : Loc) (v : runtime.PanicNilError) («_#0'» : (GoArray Loc 0)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.PanicNilError go!"_0" l) v._0' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.PanicNilError go!"_0" l) _0' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with _0' := _0' } : runtime.PanicNilError) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.PanicNilError go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.PanicNilError go!"_#0" l) «_#0'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : runtime.PanicNilError) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

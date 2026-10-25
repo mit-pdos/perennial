@@ -131,7 +131,7 @@ noncomputable instance Int64_typed_pointsto :
     TypedPointsto (GF := GF) internal.runtime.atomic.Int64 where
   typedPointstoDef l v dq := iprop(
     "noCopy" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Int64 go!"noCopy" l) v.noCopy' dq ∗
-    "_1" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Int64 go!"_1" l) v._1' dq ∗
+    "«_#1»" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Int64 go!"_#1" l) v.«_#1'» dq ∗
     "value" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Int64 go!"value" l) v.value' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -158,19 +158,19 @@ noncomputable instance Int64_access_store_noCopy (l : Loc) (v : internal.runtime
  by
   solve_pointsto_access_struct
 
-noncomputable instance Int64_access_load__1 (l : Loc) (v : internal.runtime.atomic.Int64) (dq : DFrac) :
+noncomputable instance «Int64_access_load__#1» (l : Loc) (v : internal.runtime.atomic.Int64) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.runtime.atomic.Int64 go!"_1" l) v._1' dq)
-      (typedPointsto (structFieldRef internal.runtime.atomic.Int64 go!"_1" l) v._1' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int64 go!"_#1" l) v.«_#1'» dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int64 go!"_#1" l) v.«_#1'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Int64_access_store__1 (l : Loc) (v : internal.runtime.atomic.Int64) (_1' : internal.runtime.atomic.align64) :
+noncomputable instance «Int64_access_store__#1» (l : Loc) (v : internal.runtime.atomic.Int64) («_#1'» : internal.runtime.atomic.align64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.runtime.atomic.Int64 go!"_1" l) v._1' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.runtime.atomic.Int64 go!"_1" l) _1' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with _1' := _1' } : internal.runtime.atomic.Int64) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int64 go!"_#1" l) v.«_#1'» (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Int64 go!"_#1" l) «_#1'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#1'» := «_#1'» } : internal.runtime.atomic.Int64) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
@@ -359,7 +359,7 @@ noncomputable instance Uint64_typed_pointsto :
     TypedPointsto (GF := GF) internal.runtime.atomic.Uint64 where
   typedPointstoDef l v dq := iprop(
     "noCopy" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Uint64 go!"noCopy" l) v.noCopy' dq ∗
-    "_1" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Uint64 go!"_1" l) v._1' dq ∗
+    "«_#1»" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Uint64 go!"_#1" l) v.«_#1'» dq ∗
     "value" ∷ typedPointsto (structFieldRef internal.runtime.atomic.Uint64 go!"value" l) v.value' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -386,19 +386,19 @@ noncomputable instance Uint64_access_store_noCopy (l : Loc) (v : internal.runtim
  by
   solve_pointsto_access_struct
 
-noncomputable instance Uint64_access_load__1 (l : Loc) (v : internal.runtime.atomic.Uint64) (dq : DFrac) :
+noncomputable instance «Uint64_access_load__#1» (l : Loc) (v : internal.runtime.atomic.Uint64) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64 go!"_1" l) v._1' dq)
-      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64 go!"_1" l) v._1' dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64 go!"_#1" l) v.«_#1'» dq)
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64 go!"_#1" l) v.«_#1'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Uint64_access_store__1 (l : Loc) (v : internal.runtime.atomic.Uint64) (_1' : internal.runtime.atomic.align64) :
+noncomputable instance «Uint64_access_store__#1» (l : Loc) (v : internal.runtime.atomic.Uint64) («_#1'» : internal.runtime.atomic.align64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64 go!"_1" l) v._1' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64 go!"_1" l) _1' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with _1' := _1' } : internal.runtime.atomic.Uint64) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64 go!"_#1" l) v.«_#1'» (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.atomic.Uint64 go!"_#1" l) «_#1'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#1'» := «_#1'» } : internal.runtime.atomic.Uint64) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

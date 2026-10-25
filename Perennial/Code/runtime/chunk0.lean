@@ -10996,14 +10996,14 @@ noncomputable instance equals_unfold_debugCallWrapArgs [FfiSyntax] [GoGlobalCont
 
 structure debugLogBuf [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   b' : (GoArray w8 16384)
 
 noncomputable instance debugLogBuf.zero_val [FfiSyntax] : ZeroVal debugLogBuf :=
   ⟨debugLogBuf.mk zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def debugLogBuf.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"b" (go.GoType.ArrayType 16384 go.byte))]
 
 @[irreducible] noncomputable def debugLogBuf.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -11046,7 +11046,7 @@ noncomputable instance equals_unfold_debugLogReader [FfiSyntax] [GoGlobalContext
 
 structure debugLogWriter [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   write' : w64
   data' : debugLogBuf
   tick' : w64
@@ -11058,7 +11058,7 @@ noncomputable instance debugLogWriter.zero_val [FfiSyntax] : ZeroVal debugLogWri
   ⟨debugLogWriter.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def debugLogWriter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"write" go.uint64),
 (go.field_decl.FieldDecl go!"data" debugLogBuf.ty),
 (go.field_decl.FieldDecl go!"tick" go.uint64),
@@ -11078,7 +11078,7 @@ noncomputable instance equals_unfold_debugLogWriter [FfiSyntax] [GoGlobalContext
 
 structure dloggerImpl [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   w' : debugLogWriter
   allLink' : Loc
   owned' : _root_.Perennial.internal.runtime.atomic.Uint32
@@ -11087,7 +11087,7 @@ noncomputable instance dloggerImpl.zero_val [FfiSyntax] : ZeroVal dloggerImpl :=
   ⟨dloggerImpl.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def dloggerImpl.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"w" debugLogWriter.ty),
 (go.field_decl.FieldDecl go!"allLink" (go.GoType.PointerType dloggerImpl.ty)),
 (go.field_decl.FieldDecl go!"owned" _root_.Perennial.internal.runtime.atomic.Uint32.ty)]
@@ -11239,14 +11239,14 @@ noncomputable instance equals_unfold_siginfoFields [FfiSyntax] [GoGlobalContext]
 structure siginfo [FfiSyntax] where
   mk ::
   siginfoFields' : siginfoFields
-  _1' : (GoArray w8 104)
+  «_#1'» : (GoArray w8 104)
 
 noncomputable instance siginfo.zero_val [FfiSyntax] : ZeroVal siginfo :=
   ⟨siginfo.mk zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def siginfo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"siginfoFields" siginfoFields.ty),
-(go.field_decl.FieldDecl go!"_1" (go.GoType.ArrayType 104 go.byte))]
+(go.field_decl.FieldDecl go!"_#1" (go.GoType.ArrayType 104 go.byte))]
 
 @[irreducible] noncomputable def siginfo.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   siginfo.fieldsUnsealed
@@ -11331,14 +11331,14 @@ noncomputable instance equals_unfold_sigeventFields [FfiSyntax] [GoGlobalContext
 structure sigevent [FfiSyntax] where
   mk ::
   sigeventFields' : sigeventFields
-  _1' : (GoArray w8 40)
+  «_#1'» : (GoArray w8 40)
 
 noncomputable instance sigevent.zero_val [FfiSyntax] : ZeroVal sigevent :=
   ⟨sigevent.mk zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def sigevent.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"sigeventFields" sigeventFields.ty),
-(go.field_decl.FieldDecl go!"_1" (go.GoType.ArrayType 40 go.byte))]
+(go.field_decl.FieldDecl go!"_#1" (go.GoType.ArrayType 40 go.byte))]
 
 @[irreducible] noncomputable def sigevent.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   sigevent.fieldsUnsealed
@@ -12132,13 +12132,13 @@ noncomputable instance equals_unfold_linearAlloc [FfiSyntax] [GoGlobalContext] :
 
 structure notInHeap [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
 
 noncomputable instance notInHeap.zero_val [FfiSyntax] : ZeroVal notInHeap :=
   ⟨notInHeap.mk zeroValDef⟩
 
 @[reducible] noncomputable def notInHeap.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty)]
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty)]
 
 @[irreducible] noncomputable def notInHeap.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   notInHeap.fieldsUnsealed
@@ -12207,7 +12207,7 @@ noncomputable instance equals_unfold_stackfreelist [FfiSyntax] [GoGlobalContext]
 
 structure mcache [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   nextSample' : w64
   memProfRate' : w64
   scanAlloc' : w64
@@ -12223,7 +12223,7 @@ noncomputable instance mcache.zero_val [FfiSyntax] : ZeroVal mcache :=
   ⟨mcache.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def mcache.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"nextSample" go.int64),
 (go.field_decl.FieldDecl go!"memProfRate" go.int),
 (go.field_decl.FieldDecl go!"scanAlloc" go.uintptr),
@@ -12340,7 +12340,7 @@ noncomputable instance equals_unfold_spanSet [FfiSyntax] [GoGlobalContext] :
 
 structure mcentral [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   spanclass' : spanClass
   partial' : (GoArray spanSet 2)
   full' : (GoArray spanSet 2)
@@ -12349,7 +12349,7 @@ noncomputable instance mcentral.zero_val [FfiSyntax] : ZeroVal mcentral :=
   ⟨mcentral.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def mcentral.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"spanclass" spanClass.ty),
 (go.field_decl.FieldDecl go!"partial" (go.GoType.ArrayType 2 spanSet.ty)),
 (go.field_decl.FieldDecl go!"full" (go.GoType.ArrayType 2 spanSet.ty))]
@@ -12366,14 +12366,14 @@ noncomputable instance equals_unfold_mcentral [FfiSyntax] [GoGlobalContext] :
 
 structure checkmarksMap [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   b' : (GoArray w8 1048576)
 
 noncomputable instance checkmarksMap.zero_val [FfiSyntax] : ZeroVal checkmarksMap :=
   ⟨checkmarksMap.mk zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def checkmarksMap.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"b" (go.GoType.ArrayType 1048576 go.uint8))]
 
 @[irreducible] noncomputable def checkmarksMap.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -12432,7 +12432,7 @@ noncomputable instance equals_unfold_lfnode [FfiSyntax] [GoGlobalContext] :
 
 structure cleanupBlockHeader [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   lfnode' : lfnode
   alllink' : Loc
   n' : w32
@@ -12441,7 +12441,7 @@ noncomputable instance cleanupBlockHeader.zero_val [FfiSyntax] : ZeroVal cleanup
   ⟨cleanupBlockHeader.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def cleanupBlockHeader.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.EmbeddedField go!"lfnode" lfnode.ty),
 (go.field_decl.FieldDecl go!"alllink" (go.GoType.PointerType cleanupBlock.ty)),
 (go.field_decl.FieldDecl go!"n" go.uint32)]
@@ -12528,12 +12528,12 @@ structure cleanupQueue [FfiSyntax] where
   mk ::
   full' : lfstack
   workUnits' : _root_.Perennial.internal.runtime.atomic.Uint64
-  _2' : (GoArray w8 48)
+  «_#2'» : (GoArray w8 48)
   free' : lfstack
   flushed' : _root_.Perennial.internal.runtime.atomic.Bool'
-  _5' : (GoArray w8 55)
+  «_#5'» : (GoArray w8 55)
   all' : _root_.Perennial.internal.runtime.atomic.UnsafePointer
-  _7' : (GoArray w8 56)
+  «_#7'» : (GoArray w8 56)
   lock' : mutex
   sleeping' : gList
   asleep' : _root_.Perennial.internal.runtime.atomic.Uint32
@@ -12549,12 +12549,12 @@ noncomputable instance cleanupQueue.zero_val [FfiSyntax] : ZeroVal cleanupQueue 
 @[reducible] noncomputable def cleanupQueue.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"full" lfstack.ty),
 (go.field_decl.FieldDecl go!"workUnits" _root_.Perennial.internal.runtime.atomic.Uint64.ty),
-(go.field_decl.FieldDecl go!"_2" (go.GoType.ArrayType 48 go.byte)),
+(go.field_decl.FieldDecl go!"_#2" (go.GoType.ArrayType 48 go.byte)),
 (go.field_decl.FieldDecl go!"free" lfstack.ty),
 (go.field_decl.FieldDecl go!"flushed" _root_.Perennial.internal.runtime.atomic.Bool'.ty),
-(go.field_decl.FieldDecl go!"_5" (go.GoType.ArrayType 55 go.byte)),
+(go.field_decl.FieldDecl go!"_#5" (go.GoType.ArrayType 55 go.byte)),
 (go.field_decl.FieldDecl go!"all" _root_.Perennial.internal.runtime.atomic.UnsafePointer.ty),
-(go.field_decl.FieldDecl go!"_7" (go.GoType.ArrayType 56 go.byte)),
+(go.field_decl.FieldDecl go!"_#7" (go.GoType.ArrayType 56 go.byte)),
 (go.field_decl.FieldDecl go!"lock" mutex.ty),
 (go.field_decl.FieldDecl go!"sleeping" gList.ty),
 (go.field_decl.FieldDecl go!"asleep" _root_.Perennial.internal.runtime.atomic.Uint32.ty),
@@ -13002,22 +13002,22 @@ attribute [instance] finalizer.zero_val
 
 structure finBlock [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   alllink' : Loc
   next' : Loc
   cnt' : w32
-  _4' : w32
+  «_#4'» : w32
   fin' : (GoArray finalizer 101)
 
 noncomputable instance finBlock.zero_val [FfiSyntax] : ZeroVal finBlock :=
   ⟨finBlock.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def finBlock.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"alllink" (go.GoType.PointerType finBlock.ty)),
 (go.field_decl.FieldDecl go!"next" (go.GoType.PointerType finBlock.ty)),
 (go.field_decl.FieldDecl go!"cnt" go.uint32),
-(go.field_decl.FieldDecl go!"_4" go.int32),
+(go.field_decl.FieldDecl go!"_#4" go.int32),
 (go.field_decl.FieldDecl go!"fin" (go.GoType.ArrayType 101 finalizer.ty))]
 
 @[irreducible] noncomputable def finBlock.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -13070,14 +13070,14 @@ noncomputable instance equals_unfold_fixalloc [FfiSyntax] [GoGlobalContext] :
 
 structure mlink [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   next' : Loc
 
 noncomputable instance mlink.zero_val [FfiSyntax] : ZeroVal mlink :=
   ⟨mlink.mk zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def mlink.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"next" (go.GoType.PointerType mlink.ty))]
 
 @[irreducible] noncomputable def mlink.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -13255,7 +13255,7 @@ attribute [instance] spanQueue.zero_val
 
 structure spanSPMC [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   allnode' : listNodeManual
   dead' : _root_.Perennial.internal.runtime.atomic.Bool'
   prev' : _root_.Perennial.internal.runtime.atomic.UnsafePointer
@@ -13268,7 +13268,7 @@ noncomputable instance spanSPMC.zero_val [FfiSyntax] : ZeroVal spanSPMC :=
   ⟨spanSPMC.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def spanSPMC.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"allnode" listNodeManual.ty),
 (go.field_decl.FieldDecl go!"dead" _root_.Perennial.internal.runtime.atomic.Bool'.ty),
 (go.field_decl.FieldDecl go!"prev" _root_.Perennial.internal.runtime.atomic.UnsafePointer.ty),
@@ -13555,7 +13555,7 @@ noncomputable instance equals_unfold_workbufhdr [FfiSyntax] [GoGlobalContext] :
 
 structure stackWorkBufHdr [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   workbufhdr' : workbufhdr
   next' : Loc
 
@@ -13563,7 +13563,7 @@ noncomputable instance stackWorkBufHdr.zero_val [FfiSyntax] : ZeroVal stackWorkB
   ⟨stackWorkBufHdr.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def stackWorkBufHdr.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.EmbeddedField go!"workbufhdr" workbufhdr.ty),
 (go.field_decl.FieldDecl go!"next" (go.GoType.PointerType stackWorkBuf.ty))]
 
@@ -13579,7 +13579,7 @@ noncomputable instance equals_unfold_stackWorkBufHdr [FfiSyntax] [GoGlobalContex
 
 structure stackWorkBuf [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   stackWorkBufHdr' : stackWorkBufHdr
   obj' : (GoArray w64 252)
 
@@ -13587,7 +13587,7 @@ noncomputable instance stackWorkBuf.zero_val [FfiSyntax] : ZeroVal stackWorkBuf 
   ⟨stackWorkBuf.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def stackWorkBuf.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.EmbeddedField go!"stackWorkBufHdr" stackWorkBufHdr.ty),
 (go.field_decl.FieldDecl go!"obj" (go.GoType.ArrayType 252 go.uintptr))]
 
@@ -13603,7 +13603,7 @@ noncomputable instance equals_unfold_stackWorkBuf [FfiSyntax] [GoGlobalContext] 
 
 structure stackObjectBufHdr [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   workbufhdr' : workbufhdr
   next' : Loc
 
@@ -13611,7 +13611,7 @@ noncomputable instance stackObjectBufHdr.zero_val [FfiSyntax] : ZeroVal stackObj
   ⟨stackObjectBufHdr.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def stackObjectBufHdr.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.EmbeddedField go!"workbufhdr" workbufhdr.ty),
 (go.field_decl.FieldDecl go!"next" (go.GoType.PointerType stackObjectBuf.ty))]
 
@@ -13627,7 +13627,7 @@ noncomputable instance equals_unfold_stackObjectBufHdr [FfiSyntax] [GoGlobalCont
 
 structure stackObject [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   off' : w32
   size' : w32
   r' : Loc
@@ -13638,7 +13638,7 @@ noncomputable instance stackObject.zero_val [FfiSyntax] : ZeroVal stackObject :=
   ⟨stackObject.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def stackObject.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"off" go.uint32),
 (go.field_decl.FieldDecl go!"size" go.uint32),
 (go.field_decl.FieldDecl go!"r" (go.GoType.PointerType stackObjectRecord.ty)),
@@ -13657,7 +13657,7 @@ noncomputable instance equals_unfold_stackObject [FfiSyntax] [GoGlobalContext] :
 
 structure stackObjectBuf [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   stackObjectBufHdr' : stackObjectBufHdr
   obj' : (GoArray stackObject 63)
 
@@ -13665,7 +13665,7 @@ noncomputable instance stackObjectBuf.zero_val [FfiSyntax] : ZeroVal stackObject
   ⟨stackObjectBuf.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def stackObjectBuf.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.EmbeddedField go!"stackObjectBufHdr" stackObjectBufHdr.ty),
 (go.field_decl.FieldDecl go!"obj" (go.GoType.ArrayType 63 stackObject.ty))]
 
@@ -13872,7 +13872,7 @@ noncomputable instance equals_unfold_gcWork [FfiSyntax] [GoGlobalContext] :
 
 structure workbuf [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   workbufhdr' : workbufhdr
   obj' : (GoArray w64 253)
 
@@ -13880,7 +13880,7 @@ noncomputable instance workbuf.zero_val [FfiSyntax] : ZeroVal workbuf :=
   ⟨workbuf.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def workbuf.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.EmbeddedField go!"workbufhdr" workbufhdr.ty),
 (go.field_decl.FieldDecl go!"obj" (go.GoType.ArrayType 253 go.uintptr))]
 
@@ -13900,7 +13900,7 @@ attribute [instance] mheap.zero_val
 
 structure heapArena [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   spans' : (GoArray Loc 8192)
   pageInUse' : (GoArray w8 1024)
   pageMarks' : (GoArray w8 1024)
@@ -13913,7 +13913,7 @@ noncomputable instance heapArena.zero_val [FfiSyntax] : ZeroVal heapArena :=
   ⟨heapArena.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def heapArena.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"spans" (go.GoType.ArrayType 8192 (go.GoType.PointerType mspan.ty))),
 (go.field_decl.FieldDecl go!"pageInUse" (go.GoType.ArrayType 1024 go.uint8)),
 (go.field_decl.FieldDecl go!"pageMarks" (go.GoType.ArrayType 1024 go.uint8)),
@@ -13934,7 +13934,7 @@ noncomputable instance equals_unfold_heapArena [FfiSyntax] [GoGlobalContext] :
 
 structure arenaHint [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   addr' : w64
   down' : Bool
   next' : Loc
@@ -13943,7 +13943,7 @@ noncomputable instance arenaHint.zero_val [FfiSyntax] : ZeroVal arenaHint :=
   ⟨arenaHint.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def arenaHint.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"addr" go.uintptr),
 (go.field_decl.FieldDecl go!"down" go.bool),
 (go.field_decl.FieldDecl go!"next" (go.GoType.PointerType arenaHint.ty))]
@@ -13999,7 +13999,7 @@ abbrev spanAllocType [FfiSyntax] : Type := w8
 
 structure mSpanList [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   first' : Loc
   last' : Loc
 
@@ -14007,7 +14007,7 @@ noncomputable instance mSpanList.zero_val [FfiSyntax] : ZeroVal mSpanList :=
   ⟨mSpanList.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def mSpanList.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"first" (go.GoType.PointerType mspan.ty)),
 (go.field_decl.FieldDecl go!"last" (go.GoType.PointerType mspan.ty))]
 
@@ -14023,7 +14023,7 @@ noncomputable instance equals_unfold_mSpanList [FfiSyntax] [GoGlobalContext] :
 
 structure special [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   next' : Loc
   offset' : w64
   kind' : w8
@@ -14032,7 +14032,7 @@ noncomputable instance special.zero_val [FfiSyntax] : ZeroVal special :=
   ⟨special.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def special.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"next" (go.GoType.PointerType special.ty)),
 (go.field_decl.FieldDecl go!"offset" go.uintptr),
 (go.field_decl.FieldDecl go!"kind" go.byte)]
@@ -14053,7 +14053,7 @@ attribute [instance] specialfinalizer.zero_val
 
 structure specialCleanup [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   special' : special
   cleanup' : cleanupFn
   id' : w64
@@ -14062,7 +14062,7 @@ noncomputable instance specialCleanup.zero_val [FfiSyntax] : ZeroVal specialClea
   ⟨specialCleanup.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def specialCleanup.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"special" special.ty),
 (go.field_decl.FieldDecl go!"cleanup" cleanupFn.ty),
 (go.field_decl.FieldDecl go!"id" go.uint64)]
@@ -14083,14 +14083,14 @@ attribute [instance] specialCheckFinalizer.zero_val
 
 structure specialTinyBlock [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   special' : special
 
 noncomputable instance specialTinyBlock.zero_val [FfiSyntax] : ZeroVal specialTinyBlock :=
   ⟨specialTinyBlock.mk zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def specialTinyBlock.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"special" special.ty)]
 
 @[irreducible] noncomputable def specialTinyBlock.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -14105,7 +14105,7 @@ noncomputable instance equals_unfold_specialTinyBlock [FfiSyntax] [GoGlobalConte
 
 structure specialWeakHandle [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   special' : special
   handle' : Loc
 
@@ -14113,7 +14113,7 @@ noncomputable instance specialWeakHandle.zero_val [FfiSyntax] : ZeroVal specialW
   ⟨specialWeakHandle.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def specialWeakHandle.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"special" special.ty),
 (go.field_decl.FieldDecl go!"handle" (go.GoType.PointerType _root_.Perennial.internal.runtime.atomic.Uintptr.ty))]
 
@@ -14149,7 +14149,7 @@ noncomputable instance equals_unfold_immortalWeakHandleMap [FfiSyntax] [GoGlobal
 
 structure immortalWeakHandle [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   children' : (GoArray _root_.Perennial.internal.runtime.atomic.UnsafePointer 2)
   ptr' : w64
 
@@ -14157,7 +14157,7 @@ noncomputable instance immortalWeakHandle.zero_val [FfiSyntax] : ZeroVal immorta
   ⟨immortalWeakHandle.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def immortalWeakHandle.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"children" (go.GoType.ArrayType 2 _root_.Perennial.internal.runtime.atomic.UnsafePointer.ty)),
 (go.field_decl.FieldDecl go!"ptr" go.uintptr)]
 
@@ -14173,7 +14173,7 @@ noncomputable instance equals_unfold_immortalWeakHandle [FfiSyntax] [GoGlobalCon
 
 structure specialprofile [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   special' : special
   b' : Loc
 
@@ -14181,7 +14181,7 @@ noncomputable instance specialprofile.zero_val [FfiSyntax] : ZeroVal specialprof
   ⟨specialprofile.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def specialprofile.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"special" special.ty),
 (go.field_decl.FieldDecl go!"b" (go.GoType.PointerType bucket.ty))]
 
@@ -14243,7 +14243,7 @@ noncomputable instance equals_unfold_specialPinCounter [FfiSyntax] [GoGlobalCont
 
 structure specialSecret [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   special' : special
   size' : w64
 
@@ -14251,7 +14251,7 @@ noncomputable instance specialSecret.zero_val [FfiSyntax] : ZeroVal specialSecre
   ⟨specialSecret.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def specialSecret.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"special" special.ty),
 (go.field_decl.FieldDecl go!"size" go.uintptr)]
 
@@ -14289,14 +14289,14 @@ noncomputable instance equals_unfold_specialsIter [FfiSyntax] [GoGlobalContext] 
 
 structure gcBits [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   x' : w8
 
 noncomputable instance gcBits.zero_val [FfiSyntax] : ZeroVal gcBits :=
   ⟨gcBits.mk zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def gcBits.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"x" go.uint8)]
 
 @[irreducible] noncomputable def gcBits.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -14333,7 +14333,7 @@ noncomputable instance equals_unfold_gcBitsHeader [FfiSyntax] [GoGlobalContext] 
 
 structure gcBitsArena [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   free' : w64
   next' : Loc
   bits' : (GoArray gcBits 65520)
@@ -14342,7 +14342,7 @@ noncomputable instance gcBitsArena.zero_val [FfiSyntax] : ZeroVal gcBitsArena :=
   ⟨gcBitsArena.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def gcBitsArena.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"free" go.uintptr),
 (go.field_decl.FieldDecl go!"next" (go.GoType.PointerType gcBitsArena.ty)),
 (go.field_decl.FieldDecl go!"bits" (go.GoType.ArrayType 65520 gcBits.ty))]
@@ -14439,7 +14439,7 @@ abbrev bucketType [FfiSyntax] : Type := w64
 
 structure bucket [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   next' : Loc
   allnext' : Loc
   typ' : bucketType
@@ -14451,7 +14451,7 @@ noncomputable instance bucket.zero_val [FfiSyntax] : ZeroVal bucket :=
   ⟨bucket.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def bucket.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"next" (go.GoType.PointerType bucket.ty)),
 (go.field_decl.FieldDecl go!"allnext" (go.GoType.PointerType bucket.ty)),
 (go.field_decl.FieldDecl go!"typ" bucketType.ty),
@@ -15014,7 +15014,7 @@ noncomputable instance equals_unfold_timer [FfiSyntax] [GoGlobalContext] :
 
 structure pollDesc [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   link' : Loc
   fd' : w64
   fdseq' : _root_.Perennial.internal.runtime.atomic.Uintptr
@@ -15038,7 +15038,7 @@ noncomputable instance pollDesc.zero_val [FfiSyntax] : ZeroVal pollDesc :=
   ⟨pollDesc.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def pollDesc.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"link" (go.GoType.PointerType pollDesc.ty)),
 (go.field_decl.FieldDecl go!"fd" go.uintptr),
 (go.field_decl.FieldDecl go!"fdseq" _root_.Perennial.internal.runtime.atomic.Uintptr.ty),
@@ -15210,13 +15210,13 @@ abbrev throwType [FfiSyntax] : Type := w32
 
 structure PanicNilError [FfiSyntax] where
   mk ::
-  _0' : (GoArray Loc 0)
+  «_#0'» : (GoArray Loc 0)
 
 noncomputable instance PanicNilError.zero_val [FfiSyntax] : ZeroVal PanicNilError :=
   ⟨PanicNilError.mk zeroValDef⟩
 
 @[reducible] noncomputable def PanicNilError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" (go.GoType.ArrayType 0 (go.GoType.PointerType PanicNilError.ty)))]
+  [(go.field_decl.FieldDecl go!"_#0" (go.GoType.ArrayType 0 (go.GoType.PointerType PanicNilError.ty)))]
 
 @[irreducible] noncomputable def PanicNilError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   PanicNilError.fieldsUnsealed
@@ -15427,14 +15427,14 @@ noncomputable instance equals_unfold_xRegs [FfiSyntax] [GoGlobalContext] :
 
 structure xRegState [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   regs' : xRegs
 
 noncomputable instance xRegState.zero_val [FfiSyntax] : ZeroVal xRegState :=
   ⟨xRegState.mk zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def xRegState.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"regs" xRegs.ty)]
 
 @[irreducible] noncomputable def xRegState.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -16291,14 +16291,14 @@ attribute [instance] m.zero_val
 structure mPadded [FfiSyntax] where
   mk ::
   m' : m
-  _1' : (GoArray w8 216)
+  «_#1'» : (GoArray w8 216)
 
 noncomputable instance mPadded.zero_val [FfiSyntax] : ZeroVal mPadded :=
   ⟨mPadded.mk zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def mPadded.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"m" m.ty),
-(go.field_decl.FieldDecl go!"_1" (go.GoType.ArrayType 216 go.byte))]
+(go.field_decl.FieldDecl go!"_#1" (go.GoType.ArrayType 216 go.byte))]
 
 @[irreducible] noncomputable def mPadded.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   mPadded.fieldsUnsealed
@@ -16792,7 +16792,7 @@ noncomputable instance equals_unfold_notInHeapSlice [FfiSyntax] [GoGlobalContext
 
 structure stackpoolItem [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   mu' : mutex
   span' : mSpanList
 
@@ -16800,7 +16800,7 @@ noncomputable instance stackpoolItem.zero_val [FfiSyntax] : ZeroVal stackpoolIte
   ⟨stackpoolItem.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def stackpoolItem.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"mu" mutex.ty),
 (go.field_decl.FieldDecl go!"span" mSpanList.ty)]
 
@@ -17414,7 +17414,7 @@ noncomputable instance equals_unfold_synctestDeadlockError [FfiSyntax] [GoGlobal
 
 structure specialBubble [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   special' : special
   bubbleid' : w64
 
@@ -17422,7 +17422,7 @@ noncomputable instance specialBubble.zero_val [FfiSyntax] : ZeroVal specialBubbl
   ⟨specialBubble.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def specialBubble.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"special" special.ty),
 (go.field_decl.FieldDecl go!"bubbleid" go.uint64)]
 
@@ -17679,7 +17679,7 @@ noncomputable instance equals_unfold_traceBufHeader [FfiSyntax] [GoGlobalContext
 
 structure traceBuf [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   traceBufHeader' : traceBufHeader
   arr' : (GoArray w8 65504)
 
@@ -17687,7 +17687,7 @@ noncomputable instance traceBuf.zero_val [FfiSyntax] : ZeroVal traceBuf :=
   ⟨traceBuf.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def traceBuf.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.EmbeddedField go!"traceBufHeader" traceBufHeader.ty),
 (go.field_decl.FieldDecl go!"arr" (go.GoType.ArrayType 65504 go.byte))]
 
@@ -17754,7 +17754,7 @@ attribute [instance] traceMap.zero_val
 
 structure traceMapNode [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   children' : (GoArray _root_.Perennial.internal.runtime.atomic.UnsafePointer 4)
   hash' : w64
   id' : w64
@@ -17764,7 +17764,7 @@ noncomputable instance traceMapNode.zero_val [FfiSyntax] : ZeroVal traceMapNode 
   ⟨traceMapNode.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def traceMapNode.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.FieldDecl go!"children" (go.GoType.ArrayType 4 _root_.Perennial.internal.runtime.atomic.UnsafePointer.ty)),
 (go.field_decl.FieldDecl go!"hash" go.uintptr),
 (go.field_decl.FieldDecl go!"id" go.uint64),
@@ -17830,7 +17830,7 @@ noncomputable instance equals_unfold_traceRegionAllocBlockHeader [FfiSyntax] [Go
 
 structure traceRegionAllocBlock [FfiSyntax] where
   mk ::
-  _0' : _root_.Perennial.internal.runtime.sys.NotInHeap
+  «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   traceRegionAllocBlockHeader' : traceRegionAllocBlockHeader
   data' : (GoArray w8 65520)
 
@@ -17838,7 +17838,7 @@ noncomputable instance traceRegionAllocBlock.zero_val [FfiSyntax] : ZeroVal trac
   ⟨traceRegionAllocBlock.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def traceRegionAllocBlock.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
+  [(go.field_decl.FieldDecl go!"_#0" _root_.Perennial.internal.runtime.sys.NotInHeap.ty),
 (go.field_decl.EmbeddedField go!"traceRegionAllocBlockHeader" traceRegionAllocBlockHeader.ty),
 (go.field_decl.FieldDecl go!"data" (go.GoType.ArrayType 65520 go.byte))]
 

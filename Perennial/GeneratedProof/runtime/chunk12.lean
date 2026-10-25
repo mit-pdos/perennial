@@ -2082,7 +2082,7 @@ variable [package_sem' : runtime.Assumptions]
 noncomputable instance stackpoolItem_typed_pointsto :
     TypedPointsto (GF := GF) runtime.stackpoolItem where
   typedPointstoDef l v dq := iprop(
-    "_0" ∷ typedPointsto (structFieldRef runtime.stackpoolItem go!"_0" l) v._0' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef runtime.stackpoolItem go!"_#0" l) v.«_#0'» dq ∗
     "mu" ∷ typedPointsto (structFieldRef runtime.stackpoolItem go!"mu" l) v.mu' dq ∗
     "span" ∷ typedPointsto (structFieldRef runtime.stackpoolItem go!"span" l) v.span' dq ∗
     "_" ∷ True)
@@ -2094,19 +2094,19 @@ noncomputable instance stackpoolItem_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.stackpoolItem runtime.stackpoolItem.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance stackpoolItem_access_load__0 (l : Loc) (v : runtime.stackpoolItem) (dq : DFrac) :
+noncomputable instance «stackpoolItem_access_load__#0» (l : Loc) (v : runtime.stackpoolItem) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stackpoolItem go!"_0" l) v._0' dq)
-      (typedPointsto (structFieldRef runtime.stackpoolItem go!"_0" l) v._0' dq)
+      (typedPointsto (structFieldRef runtime.stackpoolItem go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef runtime.stackpoolItem go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance stackpoolItem_access_store__0 (l : Loc) (v : runtime.stackpoolItem) (_0' : internal.runtime.sys.NotInHeap) :
+noncomputable instance «stackpoolItem_access_store__#0» (l : Loc) (v : runtime.stackpoolItem) («_#0'» : internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stackpoolItem go!"_0" l) v._0' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.stackpoolItem go!"_0" l) _0' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with _0' := _0' } : runtime.stackpoolItem) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.stackpoolItem go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.stackpoolItem go!"_#0" l) «_#0'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : runtime.stackpoolItem) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

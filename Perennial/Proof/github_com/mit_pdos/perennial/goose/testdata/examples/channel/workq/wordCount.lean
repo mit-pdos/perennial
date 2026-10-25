@@ -196,13 +196,13 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq.word
   ihave Hrem : sync.atomic.ownInt64 (GF := GF) «$v0_ptr» (DFrac.own 1) (W64 0) $$ [«$v0»]
   · rw [sync.atomic.ownInt64_unseal]
     unfold sync.atomic.ownInt64Def
-    rw [show ({ _0' := zero_val _, _1' := zero_val _, v' := W64 0 } : sync.atomic.Int64) =
+    rw [show ({ «_#0'» := zero_val _, «_#1'» := zero_val _, v' := W64 0 } : sync.atomic.Int64) =
       zero_val _ from rfl]
     iexact «$v0»
   ihave Htot : sync.atomic.ownInt64 (GF := GF) «$v1_ptr» (DFrac.own 1) (W64 0) $$ [«$v1»]
   · rw [sync.atomic.ownInt64_unseal]
     unfold sync.atomic.ownInt64Def
-    rw [show ({ _0' := zero_val _, _1' := zero_val _, v' := W64 0 } : sync.atomic.Int64) =
+    rw [show ({ «_#0'» := zero_val _, «_#1'» := zero_val _, v' := W64 0 } : sync.atomic.Int64) =
       zero_val _ from rfl]
     iexact «$v1»
   wp_apply chan.wp_make1 (V := Unit) as %done %γdone ⟨#Hdone_is, %Hdcap, Hdone⟩
