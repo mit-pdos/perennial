@@ -35,7 +35,8 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
 
   load_array (n : Int) (elem_type : go.GoType) (l : val) :
     ⟦GoLoad (go.ArrayType n elem_type), l⟧ ⤳[internalUnder]
-    (if ¬(0 ≤ n ∧ n < 2^63-1) then
+    (if l = #null then Panic "nil pointer dereference" else
+    if ¬(0 ≤ n ∧ n < 2^63-1) then
       gl(AngelicExit #())
     else
       gl((rec: "recur" "n" :=
@@ -52,7 +53,8 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   `load_array`. -/
   store_array (n : Int) (elem_type : go.GoType) (l : val) {V : Type} (v : GoArray V n) :
     ⟦GoStore (go.ArrayType n elem_type), (l, #v)⟧ ⤳[internalUnder]
-    (if ¬(0 ≤ n ∧ n < 2^63-1 ∧ (v.arr.length : Int) = n) then
+    (if l = #null then Panic "nil pointer dereference" else
+    if ¬(0 ≤ n ∧ n < 2^63-1 ∧ (v.arr.length : Int) = n) then
       gl(AngelicExit #())
     else
     List.foldl (fun str_so_far j =>

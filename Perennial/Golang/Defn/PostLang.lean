@@ -550,7 +550,8 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
   load_struct (fds : List go.field_decl) (l : val) {fds_unsealed : List go.field_decl}
     [fds =→ fds_unsealed] :
     ⟦GoLoad (go.StructType fds), l⟧ ⤳[internalUnder]
-      (List.foldl (fun struct_so_far fd =>
+      (if l = #null then Panic "nil pointer dereference" else
+       List.foldl (fun struct_so_far fd =>
                 let (field_name, field_type) := match fd with
                                                 | go.FieldDecl n t => (n, t)
                                                 | go.EmbeddedField n t => (n, t)
@@ -563,7 +564,8 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
     ⟦GoStore u, (l, v)⟧ ⤳[internalUnder] Store l v
   store_struct {fds fds_unsealed : List go.field_decl} [fds =→ fds_unsealed] (l v : val) :
     ⟦GoStore (go.StructType fds), (l, v)⟧ ⤳[internalUnder]
-      (List.foldl (fun store_so_far fd =>
+      (if l = #null then Panic "nil pointer dereference" else
+       List.foldl (fun store_so_far fd =>
                 gl(store_so_far ;;
                   (let (field_name, field_type) := match fd with
                                                   | go.FieldDecl n t => (n, t)

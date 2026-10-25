@@ -354,13 +354,14 @@ instance intoVal_typed_array (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : 
     have _tagged := @go.tagged_internal_inst
     wp_pure
     clear _tagged
+    icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %Hnn⟩
+    rw [ite_eq_right_of_eq_false _ _ (eq_false Hnn)]
     by_cases hn : 0 ≤ n ∧ n < 2^63-1
     case neg =>
       simp only [show (¬(0 ≤ n ∧ n < 2^63-1)) = True from eq_true hn, ↓reduceIte]
       iapply wp_AngelicExit
     simp only [show (¬(0 ≤ n ∧ n < 2^63-1)) = False from eq_false (fun h => h hn), ↓reduceIte]
     obtain ⟨vs⟩ := v
-    icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %Hnn⟩
     icases typedPointsto_split _ _ _ $$ Hl with Hl
     simp only [TypedPointsto.typedPointstoDef]
     icases Hl with ⟨%Hlen, Hl⟩
@@ -383,6 +384,8 @@ instance intoVal_typed_array (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : 
     have _tagged := @go.tagged_internal_inst
     wp_pure
     clear _tagged
+    icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %Hnn⟩
+    rw [ite_eq_right_of_eq_false _ _ (eq_false Hnn)]
     by_cases hn : 0 ≤ n ∧ n < 2^63-1
     case neg =>
       simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = True from
@@ -396,7 +399,6 @@ instance intoVal_typed_array (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : 
     simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = False from
         eq_false (fun h => h ⟨hn.1, hn.2, hwlen⟩), ↓reduceIte]
     obtain ⟨vs⟩ := v
-    icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %Hnn⟩
     icases typedPointsto_split _ _ _ $$ Hl with Hl
     simp only [TypedPointsto.typedPointstoDef]
     icases Hl with ⟨%Hlen, Hl⟩
