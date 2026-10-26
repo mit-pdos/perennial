@@ -13,6 +13,7 @@ public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testd
 public import Perennial.Proof.sync.Base
 public import Perennial.Proof.encoding.binary.Base
 public import Perennial.Proof.github_com.goose_lang.primitive.Base
+public import Perennial.Proof.iter.Base
 
 @[expose] public section
 
