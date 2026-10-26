@@ -25,7 +25,7 @@ not panic (its assertions hold). -/
 abbrev github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.Main.spec : Prop :=
   ∀ (N : Namespace) (γ : GName),
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs ∗
-        inv N (fileInv γ) }}
+        inv N (fileInv gooseFsGS γ) }}
       (App (Val (@! Main)) (Val #()))
     {{ RET #(); True }}
 

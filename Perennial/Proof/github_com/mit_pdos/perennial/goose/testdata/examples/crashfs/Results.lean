@@ -40,16 +40,11 @@ def fileN : Namespace := nroot.@"crashfs"
 section adequacy
 variable [GoGlobalContext] {GF : BundledGFunctors}
 
-/-- `fileInv` depends on the local ghost state only through the files' ghost state. -/
-theorem fileInv_congr (G : GooseGlobalGS .hasLC GF) (L L' : GooseLocalGS GF) (γ : GName)
-    (h : extLocalGS fsExt (L := L') = extLocalGS fsExt (L := L)) :
-    fileInv (hG := ⟨G, L'⟩) γ = fileInv (hG := ⟨G, L⟩) γ := by
-  unfold fileInv gooseFsGS
-  rw [h]
-
-/-- The precondition of the boot program in the generation with local ghost state `L`. -/
+/-- The precondition of the boot program in the generation with local ghost
+state `L`: the invariant of the file, under `L`'s files' ghost state, and the
+package state of a fresh program. -/
 def bootPre [G : GooseGlobalGS .hasLC GF] (L : GooseLocalGS GF) : IProp GF :=
-  iprop((∃ γ, inv fileN (fileInv (hG := ⟨G, L⟩) γ)) ∗
+  iprop((∃ γ, inv fileN (fileInv (hG := ⟨G, L⟩) (extLocalGS fsExt (L := L)) γ)) ∗
     ownGoState (hG := L.goose_go_stateGS) ∅)
 
 /-- The `get_is_pkg_init` of the boot program: the package and `fsffi`. -/
@@ -88,8 +83,8 @@ theorem crash_safety [lctx : GoLocalContext] [sem : go.Semantics] [package_sem :
     iintro Hf Hgs
     icases (BigSepM.bigSepM_lookup (Φ := fun f c => (f fs↦ c : IProp GF)) Hfile) $$ Hf with Hf
     imod dghostVar_alloc (GF := GF) () with ⟨%γ, Hown⟩
-    imod inv_alloc fileN ⊤ (fileInv γ) $$ [Hf Hown] with #Hinv
-    · inext; unfold fileInv; iexists go!""; iframe Hf; ileft; iframe Hown; ipureintro; rfl
+    imod inv_alloc fileN ⊤ (fileInv gooseFsGS γ) $$ [Hf Hown] with #Hinv
+    · inext; iexists go!""; iframe Hf; ileft; iframe Hown; ipureintro; rfl
     imodintro
     unfold bootPre
     iframe Hgs
@@ -100,7 +95,6 @@ theorem crash_safety [lctx : GoLocalContext] [sem : go.Semantics] [package_sem :
     -- the generation's Go context is `lctx`, for which the Go semantics holds
     rw [Hlctx] at Hlctx'
     obtain ⟨G, ⟨Lexts, Llctx, Lheap, Lgs, Lthr, Lcr⟩⟩ := hG
-    try dsimp only at Hlctx'
     subst Hlctx'
     letI hG : HeapGS .hasLC GF := ⟨G, ⟨Lexts, Llctx, Lheap, Lgs, Lthr, Lcr⟩⟩
     have Hne : pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi ≠
@@ -117,16 +111,16 @@ theorem crash_safety [lctx : GoLocalContext] [sem : go.Semantics] [package_sem :
     imodintro
     isplitl [Hgs]
     · -- the boot program
-      ihave Hown : ownInitializing (getIsPkgInit (GF := GF)) $$ [Hgs]
-      · rw [ownInitializing_unseal]
+      unfold boot
+      wp_apply wp_initialize' getIsPkgInit Hinit $$ [Hgs] as ⟨_, #Hpkg⟩
+      · -- no package is initialized
+        rw [ownInitializing_unseal]
         unfold ownInitializingDef
         iexists ∅
         iframe Hgs
         iintro !>
         iapply BigSepM.bigSepM_empty.2
         iempintro
-      unfold boot
-      wp_apply wp_initialize' getIsPkgInit Hinit $$ Hown as ⟨Hown, #Hpkg⟩
       wp_pures
       try wp_func_call
       wp_apply wp_Main' fileN γ $$ [Hinv]
@@ -137,7 +131,7 @@ theorem crash_safety [lctx : GoLocalContext] [sem : go.Semantics] [package_sem :
       imodintro
       iframe Hgs'
       iexists γ
-      rw [fileInv_congr G _ L' γ Hfs]
+      rw [Hfs]
       iexact Hinv
 
 end adequacy

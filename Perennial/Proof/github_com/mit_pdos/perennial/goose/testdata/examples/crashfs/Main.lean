@@ -30,22 +30,19 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.Main.wp_pr
     (wp_Read : github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.Read.spec (GF := GF) (hG := hG))
     (wp_Write : github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.Write.spec (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.Main.spec (GF := GF) (hG := hG) := fun N γ => by
-  -- the specs of the calls, for the functions' implementations (`wp_pures` resolves
-  -- a call to its implementation, `wp_func_call` too)
-  have wp_Read' := fun name => (FuncUnfold.func_unfold (f := github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.Read) (type_args := [])) ▸
-    wp_Read name
+  -- the specs for the functions' implementations, to which `wp_pures` and
+  -- `wp_func_call` resolve the calls
+  have wp_Read' := fun name =>
+    (FuncUnfold.func_unfold (f := github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.Read) (type_args := [])) ▸ wp_Read name
   have wp_Write' := fun name data =>
     (FuncUnfold.func_unfold (f := github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.Write) (type_args := [])) ▸ wp_Write name data
   wp_start as #Hinv
   wp_func_call
   wp_pures
   -- the first read
-  try wp_func_call
   wp_apply_core wp_Read' go!"f"
-  iinv Hinv with Hi Hclose
-  try unfold fileInv
-  icases Hi with ⟨%c, >Hf, >Hc⟩
-  icases fileInv_cases γ c $$ Hc with ⟨%Hgood, #Hdone, Hc⟩
+  iinv Hinv with ⟨%c, >Hf, >Hc⟩ Hclose
+  icases fileState_read γ c $$ Hc with ⟨%Hgood, #Hdone, Hc⟩
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   iexists (DFrac.own 1), c
@@ -53,47 +50,38 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.Main.wp_pr
   iintro Hf
   imod Hmask with -
   imod Hclose $$ [Hf Hc] with -
-  · inext; try unfold fileInv
-    iexists c; iframe
+  · inext; iexists c; iframe
   imodintro
   wp_auto
-  wp_join iprop(dghostVar γ .discard ()) with [-HΦ] as #Hd
+  wp_join iprop(fileDone γ) with [-HΦ] as #Hd
   · -- `s == ""`: the write
-    try wp_func_call
+    wp_func_call
     wp_apply_core wp_Write' go!"f" go!"done"
-    iinv Hinv with Hi Hclose
-    try unfold fileInv
-    icases Hi with ⟨%c2, >Hf, >Hc⟩
-    imod fileInv_witness γ c2 $$ Hc with #Hd
+    iinv Hinv with ⟨%c, >Hf, >Hc⟩ Hclose
+    imod fileState_write γ c $$ Hc with ⟨#Hd, Hc⟩
     iapply fupd_mask_intro Std.LawfulSet.empty_subset
     iintro Hmask
-    iexists c2
+    iexists c
     iframe Hf
     iintro Hf
     imod Hmask with -
-    imod Hclose $$ [Hf] with -
-    · inext; try unfold fileInv
-      iexists go!"done"; iframe Hf; iright; isplitr
-      · ipureintro; rfl
-      iexact Hd
+    imod Hclose $$ [Hf Hc] with -
+    · inext; iexists go!"done"; iframe
     imodintro
     wp_auto
     wp_join_done
     iexact Hd
-  · -- `s != ""`: then `s` is `"done"`, and the first read saw the witness
+  · -- `s != ""`: then the file is `"done"`, and the first read saw the witness
     obtain rfl : c = go!"done" := Hgood.resolve_left Hif
-    ihave #Hd := Hdone $$ %rfl
     wp_auto
     wp_join_done
-    iexact Hd
+    iapply Hdone $$ %rfl
   -- the second read
-  try wp_func_call
+  wp_func_call
   wp_apply_core wp_Read' go!"f"
-  iinv Hinv with Hi Hclose
-  try unfold fileInv
-  icases Hi with ⟨%c3, >Hf, >Hc⟩
-  icases fileInv_done γ c3 $$ Hd Hc with ⟨%Hc3, Hc⟩
-  subst Hc3
+  iinv Hinv with ⟨%c, >Hf, >Hc⟩ Hclose
+  icases fileState_done γ c $$ Hd Hc with ⟨%Hc', Hc⟩
+  subst Hc'
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
   iexists (DFrac.own 1), go!"done"
@@ -101,8 +89,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.Main.wp_pr
   iintro Hf
   imod Hmask with -
   imod Hclose $$ [Hf Hc] with -
-  · inext; try unfold fileInv
-    iexists go!"done"; iframe
+  · inext; iexists go!"done"; iframe
   imodintro
   wp_auto
   iapply HΦ
