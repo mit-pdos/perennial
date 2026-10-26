@@ -93,3 +93,24 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   equal Lean types mean equal gc layouts, or making a conversion between pointers to
   types of different layouts stuck (R1 and R3 of `docs/design/unsafe-memory.md`).
   Found 2026-10-26 by a blind trusted-base review of the flat-address change.
+
+## The step bound of the adequacy theorems
+
+Not unsound, but hard to read. Every adequacy theorem (`goose_adequacy`,
+`goose_crash_adequacy`, `goose_dist_adequacy`, `goose_dist_crash_adequacy`) is about
+executions of fewer than `N` steps, for the time-receipt bound `N` (`receiptBound GF`,
+`README.md`, "Bounded layer, time receipts and thread tokens"). For a distributed
+system, `N` bounds the *aggregate* number of steps: the interleaved steps of all nodes
+together, crashes included (`DistNsteps`, `DistCrashNsteps`, `DistLang.lean`), since the
+step fuel and the receipts are global.
+
+As long as a proof does not need the bound to be small, this costs nothing: the client
+takes `N = n + 1`, and the top-level theorem mentions no bound (`netfs_crash_safety`).
+Once a proof needs `receiptBound GF ≤ B` (a counter that receipts keep below `2^64`,
+`wp_clock_incr`), the client's theorem holds only for executions of fewer than `B`
+steps in total over all nodes. That is an assumption about a count of parallel steps,
+which is hard to relate to anything a reader knows about a running system. An
+assumption about real time would be cleaner: each node takes at most so many steps per
+unit of time, and the system runs for so long. A per-node step bound (receipts in the
+local ghost state, raised in the review of PR #636) would be a step towards that, but is
+not what the theorems say today.
