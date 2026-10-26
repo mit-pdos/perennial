@@ -87,6 +87,25 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   panicking. Fix: run `$oldf` also when `$f` panics, with `$f`'s panic replacing the
   current one. Found 2026-10-26 by the trusted-base review of the range-over-func change.
 
+- **`panic(nil)` counts as recovered under `with_defer_recover:` (unsound).** Since Go
+  1.21, `panic(nil)` panics with a `*runtime.PanicNilError`, so `recover()` returns a
+  non-nil value and an unrecovered `panic(nil)` crashes. The model raises the nil
+  interface, and `wrapDeferRecover` (`Golang/Defn/Defer.lean`) takes a nil `$panic` after
+  the deferred chain to mean "recovered":
+
+  ```go
+  func F() (r int) {
+  	defer func() { if recover() == nil { r = 1 } }()
+  	panic(nil)
+  }
+  // Go: F() == 0 (recover() returns the PanicNilError); the model: 1. Without the
+  // recover() in that branch, Go crashes and the model returns normally.
+  ```
+
+  Fix: make `panic(nil)` raise a non-nil value, as Go does (or reject it), or stop using
+  nil in `$panic` to mean "not panicking". Found 2026-10-26 by the trusted-base review of
+  the uniform results change.
+
 ## Allocation
 
 - **No limit on allocation size (unsound).** gc refuses an allocation above `maxAlloc`
