@@ -20,7 +20,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.Assumptions]
 
-/-- The package's `initialize'`: initialize `fsffi`. -/
+/-- The package's `initialize'`: initialize `fsext`. -/
 abbrev github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.initialize'.spec : Prop :=
   ∀ (get_is_pkg_init : GoString → IProp GF),
   GetIsPkgInitProp pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs get_is_pkg_init →

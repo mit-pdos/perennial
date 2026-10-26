@@ -2,7 +2,7 @@
 module
 
 public import Perennial.Proof.FsPrelude
-public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi
+public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext
 public import Perennial.Golang.Theory
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs
 

@@ -1,9 +1,9 @@
 /-
-The proof of `github.com/mit-pdos/perennial/goose/testdata/examples/crashfs/fsffi.initialize'`.
+The proof of `github.com/mit-pdos/perennial/goose/testdata/examples/crashfs/fsext.initialize'`.
 -/
 module
 
-public import Perennial.Spec.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.initialize
+public import Perennial.Spec.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.initialize
 
 @[expose] public section
 
@@ -18,10 +18,10 @@ variable [GooseExts] [GooseSemantics] [GooseInterp] [HasExt fsExt]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.Assumptions]
+variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Assumptions]
 
-theorem github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.initialize'.wp_proof :
-    github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.initialize'.spec (GF := GF) (hG := hG) := by
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.initialize'.wp_proof :
+    github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.initialize'.spec (GF := GF) (hG := hG) := by
   intro get_is_pkg_init Hinit
   wp_start as Hown
   iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ

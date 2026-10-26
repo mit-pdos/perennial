@@ -88,7 +88,7 @@ var extMapping = map[string]string{
 	"github.com/mit-pdos/gokv/grove_ffi":         "grove",
 	"github.com/goose-lang/primitive/async_disk": "async_disk",
 	// the toy filesystem of the crash example (Perennial/GooseLang/Ext/Fs)
-	"github.com/mit-pdos/perennial/goose/testdata/examples/crashfs/fsffi": "fs",
+	"github.com/mit-pdos/perennial/goose/testdata/examples/crashfs/fsext": "fs",
 }
 
 // GetExts returns the short names of the extensions a package uses, directly

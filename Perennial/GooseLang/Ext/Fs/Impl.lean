@@ -4,13 +4,22 @@ The filesystem extension of GooseLang [Trusted definitions!].
 A node's durable filesystem: a map from file names to contents, with
 whole-file operations.
 
+**A toy, not a sound model of a Linux filesystem.** It is the example
+extension of the crash adequacy theorem (`crashfs`). Known divergences from its
+Go side (`crashfs/fsext`) on a real filesystem, where the model is more defined
+than Go: names are byte strings, so two names of one file (`x`, `./x`,
+`sub/../x`) are two files of the model; files the operating system changes on
+its own (`/proc/self/stat`) are constant in the model; a temporary file left by
+a `Write` interrupted by a crash is not in the model; a `Read` of a huge file
+may exhaust memory in Go and not in the model.
+
 * `ReadOp f` returns the entire contents of the file `f`. Reading a file that
   does not exist is stuck.
 * `WriteOp (f, data)` replaces the entire contents of the file `f` by `data`,
   creating it if it does not exist. The write is atomic and durable: once it
   is visible (to a read), a crash keeps it, and a crash never exposes a
   partial write.
-* Neither operation fails. The Go side (`crashfs/fsffi`, whose
+* Neither operation fails. The Go side (`crashfs/fsext`, whose
   `TrustedCode` model states what is trusted about it) retries a failed
   operation instead of reporting it, and serializes the operations, so that a
   write is durable before any read sees it.

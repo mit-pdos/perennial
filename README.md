@@ -40,7 +40,8 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `GooseLang/CrashToken.lean`). There are no crash reasoning principles yet
   (no `crash_own`). End-to-end example: the Go package
   `goose/testdata/examples/crashfs`, a boot program on a toy filesystem
-  (`GooseLang/Ext/Fs`, Go side `crashfs/fsffi`) whose `panic` assertions never
+  (`GooseLang/Ext/Fs`, Go side `crashfs/fsext`; not a sound model of a Linux
+  filesystem, see `GooseLang/Ext/Fs/Impl.lean`) whose `panic` assertions never
   fire however many times the node crashes (`crash_safety`,
   `Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/crashfs/Results.lean`).
 * **Bounded layer, time receipts and thread tokens.** The trusted semantics

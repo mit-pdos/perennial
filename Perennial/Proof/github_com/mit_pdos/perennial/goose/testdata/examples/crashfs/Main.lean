@@ -4,8 +4,8 @@ The proof of `github.com/mit-pdos/perennial/goose/testdata/examples/crashfs.Main
 module
 
 public import Perennial.Spec.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.Main
-public import Perennial.Spec.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.Read
-public import Perennial.Spec.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.Write
+public import Perennial.Spec.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Read
+public import Perennial.Spec.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Write
 
 @[expose] public section
 
@@ -22,20 +22,20 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.Assumptions]
 
-/-- Each call of `fsffi` opens the invariant of the file for its step. The
+/-- Each call of `fsext` opens the invariant of the file for its step. The
 first read learns that the file is `""` or `"done"`; both branches of the `if`
 end with the witness that it is done (the write produces it), so the second
 read returns `"done"`. -/
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.Main.wp_proof
-    (wp_Read : github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.Read.spec (GF := GF) (hG := hG))
-    (wp_Write : github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.Write.spec (GF := GF) (hG := hG)) :
+    (wp_Read : github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Read.spec (GF := GF) (hG := hG))
+    (wp_Write : github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Write.spec (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.Main.spec (GF := GF) (hG := hG) := fun N γ => by
   -- the specs for the functions' implementations, to which `wp_pures` and
   -- `wp_func_call` resolve the calls
   have wp_Read' := fun name =>
-    (FuncUnfold.func_unfold (f := github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.Read) (type_args := [])) ▸ wp_Read name
+    (FuncUnfold.func_unfold (f := github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Read) (type_args := [])) ▸ wp_Read name
   have wp_Write' := fun name data =>
-    (FuncUnfold.func_unfold (f := github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.Write) (type_args := [])) ▸ wp_Write name data
+    (FuncUnfold.func_unfold (f := github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Write) (type_args := [])) ▸ wp_Write name data
   wp_start as #Hinv
   wp_func_call
   wp_pures

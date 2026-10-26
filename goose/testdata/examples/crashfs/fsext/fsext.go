@@ -1,7 +1,7 @@
-// Package fsffi is a durable filesystem with whole-file operations: the Go
+// Package fsext is a durable filesystem with whole-file operations: the Go
 // side of GooseLang's filesystem extension (Perennial/GooseLang/Ext/Fs). Its
 // functions are trusted: Perennial models them with the extension's operations
-// (Perennial/TrustedCode/.../crashfs/fsffi.lean) instead of translating them.
+// (Perennial/TrustedCode/.../crashfs/fsext.lean) instead of translating them.
 //
 // The model makes each operation one atomic step that cannot fail, and a
 // written file durable. The implementation provides that:
@@ -12,7 +12,7 @@
 //   - an operation that fails (an I/O error, a missing file) is retried
 //     forever instead of panicking, so the program never sees a failure (it
 //     may not return, which the model, as a safety model, allows).
-package fsffi
+package fsext
 
 import (
 	"os"
@@ -47,7 +47,7 @@ func Write(name string, data string) {
 // unless the rename succeeds, and then the file holds data.
 func tryWrite(name string, data string) bool {
 	dir := filepath.Dir(name)
-	f, err := os.CreateTemp(dir, ".fsffi-*")
+	f, err := os.CreateTemp(dir, ".fsext-*")
 	if err != nil {
 		return false
 	}

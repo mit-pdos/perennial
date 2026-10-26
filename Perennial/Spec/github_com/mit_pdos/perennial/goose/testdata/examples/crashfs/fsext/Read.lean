@@ -1,9 +1,9 @@
 /-
-`github.com/mit-pdos/perennial/goose/testdata/examples/crashfs/fsffi.Read`'s spec.
+`github.com/mit-pdos/perennial/goose/testdata/examples/crashfs/fsext.Read`'s spec.
 -/
 module
 
-public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.Base
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Base
 
 @[expose] public section
 
@@ -18,11 +18,11 @@ variable [GooseExts] [GooseSemantics] [GooseInterp] [HasExt fsExt]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.Assumptions]
+variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Assumptions]
 
 /-- `Read(name)`: the contents of the file `name`, a logically atomic spec (the
 file's points-to is needed only at the read, so it can come from an invariant). -/
-abbrev github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.Read.spec : Prop :=
+abbrev github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Read.spec : Prop :=
   ∀ (name : GoString),
   ⊢ ∀ Φ : val → IProp GF, (|={⊤,∅}=> ∃ (q : DFrac) (c : GoString),
         name fs↦{q} c ∗ (name fs↦{q} c ={∅,⊤}=∗ Φ #c)) -∗

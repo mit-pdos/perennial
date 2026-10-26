@@ -48,13 +48,13 @@ def bootPre [G : GooseGlobalGS .hasLC GF] (L : GooseLocalGS GF) : IProp GF :=
   iprop((∃ γ, inv fileN (fileInv (hG := ⟨G, L⟩) (extLocalGS fsExt (L := L)) γ)) ∗
     ownGoState (hG := L.goose_go_stateGS) ∅)
 
-/-- The `get_is_pkg_init` of the boot program: the package and `fsffi`. -/
+/-- The `get_is_pkg_init` of the boot program: the package and `fsext`. -/
 def getIsPkgInit [HeapGS .hasLC GF] (p : GoString) : IProp GF :=
   if p = pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs then
     isPkgInit (PROP := IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs
-  else if p = pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi then
+  else if p = pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext then
     isPkgInit (PROP := IProp GF)
-      pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi
+      pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext
   else iprop(True)
 
 /-- `crash_safety` for executions of fewer than `N` steps along which fewer than
@@ -94,9 +94,9 @@ theorem crash_safety_bounded [lctx : GoLocalContext] [sem : go.Semantics] [packa
     obtain ⟨G, ⟨Lexts, Llctx, Lheap, Lgs, Lthr, Lcr⟩⟩ := hG
     subst Hlctx'
     letI hG : HeapGS .hasLC GF := ⟨G, ⟨Lexts, Llctx, Lheap, Lgs, Lthr, Lcr⟩⟩
-    have Hne : pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi ≠
+    have Hne : pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext ≠
         pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs := by
-      unfold pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi
+      unfold pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext
         pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs
       decide
     have Hinit : GetIsPkgInitProp pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs (getIsPkgInit (GF := GF)) := by

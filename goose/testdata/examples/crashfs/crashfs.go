@@ -6,16 +6,16 @@
 // Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/crashfs.
 package crashfs
 
-import "github.com/mit-pdos/perennial/goose/testdata/examples/crashfs/fsffi"
+import "github.com/mit-pdos/perennial/goose/testdata/examples/crashfs/fsext"
 
 func Main() {
-	s := fsffi.Read("f")
+	s := fsext.Read("f")
 	if s == "" {
-		fsffi.Write("f", "done")
+		fsext.Write("f", "done")
 	} else if s != "done" {
 		panic("unexpected contents")
 	}
-	if fsffi.Read("f") != "done" {
+	if fsext.Read("f") != "done" {
 		panic("write lost")
 	}
 }

@@ -4,7 +4,7 @@ The proof of `github.com/mit-pdos/perennial/goose/testdata/examples/crashfs.init
 module
 
 public import Perennial.Spec.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.initialize
-public import Perennial.Spec.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.initialize
+public import Perennial.Spec.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.initialize
 
 @[expose] public section
 
@@ -22,7 +22,7 @@ variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.Assumptions]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.initialize'.wp_proof
-    (wp_fsffi_initialize' : github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.initialize'.spec (GF := GF) (hG := hG)) :
+    (wp_fsext_initialize' : github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.initialize'.spec (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.initialize'.spec (GF := GF) (hG := hG) := by
   intro get_is_pkg_init Hinit
   wp_start as Hown
@@ -30,7 +30,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.initialize
   iframe Hown
   iintro Hown
   wp_auto
-  wp_apply wp_fsffi_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #Hfs⟩
+  wp_apply wp_fsext_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #Hfs⟩
   iframe Hown
   is_pkg_init_finish
 

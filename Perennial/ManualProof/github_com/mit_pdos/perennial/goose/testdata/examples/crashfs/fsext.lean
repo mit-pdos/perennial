@@ -1,6 +1,6 @@
 /-
 Manually written proof support for
-`github.com/mit-pdos/perennial/goose/testdata/examples/crashfs/fsffi`.
+`github.com/mit-pdos/perennial/goose/testdata/examples/crashfs/fsext`.
 -/
 module
 

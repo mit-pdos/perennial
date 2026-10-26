@@ -4,7 +4,7 @@ of the file `"f"`.
 -/
 module
 
-public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi.Base
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Base
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs
 public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs
 
