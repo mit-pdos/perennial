@@ -205,8 +205,9 @@ theorem netfs_safety_bounded [lctx : GoLocalContext] [sem : go.Semantics] [packa
 the real semantics), from local states whose Go contexts satisfy the Go
 semantics and the package's assumptions, with no package initialized, their
 main threads only and the addresses `"a"`, `"b"` and `"c"`, where `"a"`'s file
-`"in"` holds `c0` and `"b"`'s file `"out"` exists, and where no message has
-been sent to `"a"` or `"b"` yet, every node's boot program returns `#()` if it
+`"in"` holds `c0` and `"b"`'s file `"out"` exists, and where the network has
+entries for `"a"` and `"b"` without messages (an entry, not just no messages:
+the network's start resources are the points-to of its entries), every node's boot program returns `#()` if it
 returns, no thread of any node is stuck and none has an unrecovered panic: the
 checks of `NodeA` and `NodeB` hold, however the network delays, duplicates,
 reorders or loses messages and whatever `"c"` sends. (`netfs_safety_bounded`

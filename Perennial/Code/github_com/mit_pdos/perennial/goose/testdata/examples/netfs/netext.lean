@@ -37,7 +37,7 @@ noncomputable def Recv [GooseExts] [GoGlobalContext] : GoString :=
 /-- Send sends data to the node with address to. The network may deliver the
     message any number of times, in any order, or never.
 
-    go: netext.go:31:6 -/
+    go: netext.go:32:6 -/
 noncomputable def Send.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "to"
   (Lam "data"
@@ -55,7 +55,7 @@ noncomputable def Send.impl [GooseExts] [GoGlobalContext] : val :=
 /-- Recv waits for a message sent to this node, and returns its sender's address
     and its data.
 
-    go: netext.go:37:6 -/
+    go: netext.go:38:6 -/
 noncomputable def Recv.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)

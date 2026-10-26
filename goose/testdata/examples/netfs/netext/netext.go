@@ -9,7 +9,8 @@
 // of translating them. They have no implementation here: they block forever,
 // so that every run of this Go code is a run of the model in which the calling
 // goroutine stops at the call (a stub that panicked would be a Go panic the
-// model omits). The extension is a specification of a network, not a model of
+// model omits). Once every goroutine is so blocked, Go's deadlock detector
+// ends the process, as for any goose program that deadlocks. The extension is a specification of a network, not a model of
 // existing code.
 // Send and Recv, which convert between []byte and the primitives' strings,
 // are translated.
