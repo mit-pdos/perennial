@@ -316,15 +316,16 @@ def GoInstruction.toTree : GoInstruction → GenTree
   | .ArraySet => node 29 []
   | .ArrayLength => node 30 []
   | .InternalMapCheckKey x0 => node 31 [of x0]
-  | .InternalMapLookup => node 32 []
-  | .InternalMapInsert => node 33 []
-  | .InternalMapDelete => node 34 []
+  | .InternalMapLookup x0 => node 32 [of x0]
+  | .InternalMapInsert x0 => node 33 [of x0]
+  | .InternalMapDelete x0 => node 34 [of x0]
   | .InternalMapLength => node 35 []
   | .InternalMapForRange x0 x1 => node 36 [of x0, of x1]
   | .InternalMapMake => node 37 []
   | .CompositeLiteral x0 => node 38 [of x0]
   | .SelectStmt => node 39 []
   | .InternalStringLen => node 40 []
+  | .InternalMapLookupId => node 41 []
 def GoInstruction.ofTree : GenTree → GoInstruction
   | node 0 [] => .AngelicExit
   | node 1 [x0, x1] => .Convert (decLeaf x0) (decLeaf x1)
@@ -358,15 +359,16 @@ def GoInstruction.ofTree : GenTree → GoInstruction
   | node 29 [] => .ArraySet
   | node 30 [] => .ArrayLength
   | node 31 [x0] => .InternalMapCheckKey (decLeaf x0)
-  | node 32 [] => .InternalMapLookup
-  | node 33 [] => .InternalMapInsert
-  | node 34 [] => .InternalMapDelete
+  | node 32 [x0] => .InternalMapLookup (decLeaf x0)
+  | node 33 [x0] => .InternalMapInsert (decLeaf x0)
+  | node 34 [x0] => .InternalMapDelete (decLeaf x0)
   | node 35 [] => .InternalMapLength
   | node 36 [x0, x1] => .InternalMapForRange (decLeaf x0) (decLeaf x1)
   | node 37 [] => .InternalMapMake
   | node 38 [x0] => .CompositeLiteral (decLeaf x0)
   | node 39 [] => .SelectStmt
   | node 40 [] => .InternalStringLen
+  | node 41 [] => .InternalMapLookupId
   | _ => default
 instance GoInstruction.countable : Pos.Countable GoInstruction :=
   countableOfLeftInverse GoInstruction.toTree GoInstruction.ofTree

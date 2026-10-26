@@ -805,20 +805,14 @@ abbrev backgroundCtxVal : GoInterfaceOk :=
 /-- `child` as a key of a `children` map (`canceler`) is safe (comparable). -/
 instance safeMapKey_cancelCtx (c : Loc) :
     SafeMapKey (GF := GF) context.canceler.ty
-      (interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c : GoInterface) where
-  wp_go_eq_safe_map_key s E Φ := by
-    iintro HΦ
-    wp_auto
-    iapply HΦ
+      (interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c : GoInterface) :=
+  safeMapKey_interface_pointer _ _ _
 
 /-- A `*timerCtx` as a key of a `children` map is safe (comparable). -/
 instance safeMapKey_timerCtx (c : Loc) :
     SafeMapKey (GF := GF) context.canceler.ty
-      (interface.mkOk (go.GoType.PointerType context.timerCtx.ty) #c : GoInterface) where
-  wp_go_eq_safe_map_key s E Φ := by
-    iintro HΦ
-    wp_auto
-    iapply HΦ
+      (interface.mkOk (go.GoType.PointerType context.timerCtx.ty) #c : GoInterface) :=
+  safeMapKey_interface_pointer _ _ _
 
 /-- A parent context in the scope of these specs: `Background()`, or a context (`isContext`). -/
 def isParentCtx (parent : GoInterfaceOk) : IProp GF :=
@@ -890,10 +884,10 @@ theorem ownMap_not_nil_dup (mref : Loc) (m : GMap GoInterface Unit) :
   iNamed H
   icases heapPointsto_non_null_dup _ _ _ $$ Hown with ⟨Hown, %h⟩
   isplitl
-  · iexists mv, mp
+  · iexists mv, ps
     simp only [named]
     iframe
-    ipureintro; exact ⟨His_map, Hagree, Hdom, Hdefault⟩
+    ipureintro; exact Hrepr
   · ipureintro; exact h
 
 /-- A `childCancelSpec` that needs nothing of the parent's Done proposition holds for any. -/

@@ -561,6 +561,13 @@ Specs take `isPkgInit` of their package; `wp_apply` discharges it.
 
 Simplify lookups with `lookup_insert_eq`, `lookup_insert_ne`, `GMap.insert_empty`.
 
+`SafeMapKey key_type k`: `k == k'` at `key_type` is `decide (k = k')` for every key `k'` the
+map may hold (`MapKeys.keyOk`, all keys but for interfaces: `nil` or a pointer). Instance
+search finds it for strictly comparable key types (`safeMapKey_of_go_eq`) and interface
+pointers (`safeMapKey_interface_pointer`); a proof with other interface keys gives its own
+`MapKeys GoInterface` instance (as `testConversionLiteral` does). Float keys have no
+`SafeMapKey` (`NaN != NaN`).
+
 ### Control (`Golang/Theory/Loop.lean`, `Defer.lean`, `Assume.lean`, `GooseLang/Lifting.lean`)
 
 | Lemma | |

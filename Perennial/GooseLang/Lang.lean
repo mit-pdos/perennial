@@ -158,12 +158,13 @@ inductive GoInstruction where
   /- internal steps; the Go map lookup has to be implemented as multiple
      instructions because it is not atomic. -/
   | InternalMapCheckKey (key_type : go.GoType)
-  | InternalMapLookup
-  | InternalMapInsert
-  | InternalMapDelete
+  | InternalMapLookup (key_type : go.GoType)
+  | InternalMapInsert (key_type : go.GoType)
+  | InternalMapDelete (key_type : go.GoType)
   | InternalMapLength
   | InternalMapForRange (key_type elem_type : go.GoType)
   | InternalMapMake
+  | InternalMapLookupId
   | CompositeLiteral (t : go.GoType)
   | SelectStmt
   | InternalStringLen
@@ -292,8 +293,8 @@ export GoInstruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad GoS
   PackageInitStart PackageInitFinish GlobalVarAddr StructFieldRef StructFieldGet StructFieldSet
   InternalSliceLen InternalSliceCap InternalDynamicArrayAlloc InternalMakeSlice IndexRef Index
   Slice FullSlice ArraySet ArrayLength InternalMapCheckKey InternalMapLookup InternalMapInsert
-  InternalMapDelete InternalMapLength InternalMapForRange InternalMapMake CompositeLiteral
-  SelectStmt InternalStringLen)
+  InternalMapDelete InternalMapLength InternalMapForRange InternalMapMake InternalMapLookupId
+  CompositeLiteral SelectStmt InternalStringLen)
 
 section derived
 variable [GooseExts]
