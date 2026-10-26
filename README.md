@@ -31,12 +31,12 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   each extension's local state by the extension's own relation
   (`ExtSemantics.crash`); the global state is kept. `goose_crash_adequacy`
   (`GooseLang/CrashAdequacy.lean`) is about executions with crashes
-  (`RealCrashNsteps`, `GooseLang/CrashLang.lean`) of a program and its
-  recovery procedure: each generation is proved with the standard WP, under
-  the shared global ghost state and its own local ghost state
-  (`GooseLocalGS`), and a *crash frame* `Ψ` set aside by each generation's
-  proof crosses the crash, with the crashed generation's persistent `crashed`
-  token (exclusive with the `notCrashed` that its state interpretation owns,
+  (`RealCrashNsteps`, `GooseLang/CrashLang.lean`) of a boot program, which
+  runs at the start and after every crash: each generation is proved with the
+  standard WP, under the shared global ghost state and its own local ghost
+  state (`GooseLocalGS`), from one premise for every boot (`bootStart`), and a
+  *crash frame* `Ψ` set aside by each generation's proof crosses the crash,
+  with the crashed generation's persistent `crashed` token (exclusive with the `notCrashed` that its state interpretation owns,
   `GooseLang/CrashToken.lean`). There are no crash reasoning principles yet
   (no `crash_own`).
 * **Bounded layer, time receipts and thread tokens.** The trusted semantics

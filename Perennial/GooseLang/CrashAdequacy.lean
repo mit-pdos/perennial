@@ -15,17 +15,23 @@ Notes:
 * At a crash, the threads and the resources they own are gone; what crosses
   the crash is what lives outside of them: invariants, and the *crash frame*
   `Ψ` of the theorem, a resource that the proof of each generation sets aside
-  for the next one (`Hwp` and `Hrec` produce it, `Hrec` consumes it).
-  The adequacy proof performs the crash itself (`goose_crash_step`): it throws
-  away the old generation's heap and package state, crashes the extensions'
-  local ghost state (`ExtCrashInterp.local_crash`), allocates the new
-  generation's local ghost state, and turns the old generation's `notCrashed`
-  (owned by the state interpretation, `CrashToken.lean`) into its persistent
-  `crashed`. The recovery premise `Hrec` receives the crash frame of the old
-  generation, its `crashed`, the extensions' `crashStart` resources relating
-  the old and the new generation's ghost state, the new package state (none
-  initialized) and the new main thread's token, and proves the WP of `r` and
-  the crash frame of the new generation.
+  for the next one. The adequacy proof performs the crash itself
+  (`goose_crash_step`): it throws away the old generation's heap and package
+  state, crashes the extensions' local ghost state
+  (`ExtCrashInterp.local_crash`), allocates the new generation's local ghost
+  state, and turns the old generation's `notCrashed` (owned by the state
+  interpretation, `CrashToken.lean`) into its persistent `crashed`.
+* `goose_crash_adequacy` is for a single boot program `e`, which runs at the
+  start and after every crash. Its one premise proves, for any generation, the
+  WP of `e` and the generation's crash frame from what the boot gives
+  (`bootStart Ψ σ g prev`): on the first boot (`prev = none`) the extensions'
+  start resources and the initial package state; after the crash of a
+  generation `L` (`prev = some L`) `L`'s crash frame, `L`'s `crashed`, the
+  extensions' `crashStart` resources relating `L` and the new generation, and
+  the package state of a restarted program (none initialized).
+  `goose_crash_adequacy_recovery`, from which it follows, allows a recovery
+  procedure `r` other than `e`, with separate premises for the first boot
+  (`Hwp`) and the others (`Hrec`).
 * Every extension of the program must say how its ghost state survives a crash
   (`ExtCrashInterp`, collected in `GooseCrashInterp`).
 * Time receipts bound the steps of all generations together (the step fuel
@@ -411,8 +417,9 @@ theorem goose_crash_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < 
     | (iintro %H; ipureintro; rintro v ⟨⟩; exact H)
     | (iintro _; ipureintro; rintro v ⟨⟩)
 
-/-- Crash adequacy of GooseLang, for the real semantics: for any bounds `N` and
-`T`, if
+/-- Crash adequacy of GooseLang, for the real semantics, with a recovery
+procedure `r` that may differ from the program `e` (for a single boot program,
+see `goose_crash_adequacy`): for any bounds `N` and `T`, if
 
 * `Hwp`: the WP of the program `e` is proved, for receipt bound `N` and thread
   bound `T`, as for `goose_adequacy`, together with the crash frame `Ψ` of the
@@ -432,7 +439,7 @@ which fewer than `T` threads are live (`RealCrashThreadsBelow`):
   crash, `φr v` if there was;
 * every thread is a value or can take a step;
 * no thread has an unrecovered panic. -/
-theorem goose_crash_adequacy [hPre : GooseGpreS GF] (N T : Nat)
+theorem goose_crash_adequacy_recovery [hPre : GooseGpreS GF] (N T : Nat)
     (e r : Expr) (σ : state) (g : GlobalState) (φ φr : val → Prop)
     (hφ : ∀ p, ¬ φ (PanicV p)) (hφr : ∀ p, ¬ φr (PanicV p))
     (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
@@ -475,6 +482,67 @@ theorem goose_crash_adequacy [hPre : GooseGpreS GF] (N T : Nat)
   have := (goose_crash_adequacy_blang N T (by omega) hT e r σ g φ φr hφ hφr Hinitg Hinit Ψ
     Hwp Hrec (Hb.append Hm)).2.2 (PanicV p) (by simp)
   simp [val.isPanic] at this
+
+/-- What a boot of the node gives the boot program, in the generation `hG`
+(the precondition of every boot, `goose_crash_adequacy`): on the first boot
+(`prev = none`), the extensions' start resources and the initial package state;
+on the boot after the crash of the generation with local ghost state `L`
+(`prev = some L`), that generation's crash frame `Ψ`, its `crashed`, the
+extensions' `crashStart` resources relating it to `hG`, and the package state
+of a restarted program (no package initialized). -/
+def bootStart (Ψ : HeapGS .hasLC GF → IProp GF) (σ : state) (g : GlobalState)
+    [hG : HeapGS .hasLC GF] : Option (GooseLocalGS GF) → IProp GF
+  | none => iprop(extsGlobalStart (G := hG.goose_globalGS) g.globalWorld ∗
+      extsLocalStart (L := hG.goose_localGS) σ.world ∗
+      ownGoState (hG := hG.goose_localGS.goose_go_stateGS) σ.goState.packageState)
+  | some L => iprop(Ψ ⟨hG.goose_globalGS, L⟩ ∗ crashed (hC := L.goose_crashGS) ∗
+      extsCrashStart L hG.goose_localGS ∗ ownGoState (hG := hG.goose_localGS.goose_go_stateGS) ∅)
+
+/-- Crash adequacy of GooseLang for a single boot program `e`, which runs at the
+start and again after every crash, for the real semantics: for any bounds `N`
+and `T`, if the WP of `e` is proved, for receipt bound `N` and thread bound `T`,
+from what any boot gives it (`bootStart Ψ σ g prev`, for the first boot and for
+the boot after any crash) and the main thread's token, together with the crash
+frame `Ψ` of its own generation, with a postcondition `φ` that excludes panics,
+then in every real execution with crashes of `e` (`RealCrashNsteps e`) of fewer
+than `N` steps in all, from a configuration with the main thread only, along
+which fewer than `T` threads are live (`RealCrashThreadsBelow`):
+* if the main thread has terminated with `v`, then `φ v`;
+* every thread is a value or can take a step;
+* no thread has an unrecovered panic. -/
+theorem goose_crash_adequacy [hPre : GooseGpreS GF] (N T : Nat)
+    (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
+    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
+    (Ψ : HeapGS .hasLC GF → IProp GF)
+    (Hwp : ∀ [hG : HeapGS .hasLC GF] (prev : Option (GooseLocalGS GF)),
+      receiptBound GF = N →
+      threadBound GF = T →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ bootStart Ψ σ g prev -∗ threadTok ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }} ∗ Ψ hG)
+    (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState) (b : Bool)
+    (Hsteps : RealCrashNsteps e n ([e], ((σ, g) : CfgState)) κs (t2, σ2) b)
+    (Hbound : n < N) (Hthreads : σ.threads = 1)
+    (Hlive : RealCrashThreadsBelow e T n ([e], ((σ, g) : CfgState))) :
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧
+      (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
+      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) := by
+  have H := goose_crash_adequacy_recovery N T e e σ g φ φ hφ hφ Hinitg Hinit Ψ ?_ ?_ n κs t2 σ2 b
+    Hsteps Hbound Hthreads Hlive
+  · exact ⟨fun v t2' h => by have := H.1 v t2' h; cases b <;> exact this, H.2⟩
+  · intro hG HN HT Hlctx
+    iintro Hg Hl Hgs Htok
+    iapply Hwp none HN HT Hlctx $$ [Hg Hl Hgs] Htok
+    dsimp only [bootStart]
+    iframe
+  · intro hG hG' HG HN HT Hlctx
+    obtain ⟨G, L⟩ := hG
+    obtain ⟨G', L'⟩ := hG'
+    cases HG
+    iintro HΨ Hcr Hcs Hgs Htok
+    iapply Hwp (hG := ⟨G, L'⟩) (some L) HN HT Hlctx $$ [HΨ Hcr Hcs Hgs] Htok
+    dsimp only [bootStart]
+    iframe
 
 end crash
 
