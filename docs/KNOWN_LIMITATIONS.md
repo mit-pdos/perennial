@@ -62,6 +62,31 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   Fix: make the application of `func.nil` stuck (a nil check in the translation of a
   call of a function value, or a stuck body for `func.nil`).
 
+## Defer
+
+- **A panicking deferred function skips the rest of the chain (unsound).** `defer`
+  links each deferred function to the previous ones as `$f #() ;; $oldf #()`
+  (`deferStmt`, `goose/goose.go`), so if `$f` panics the functions deferred before it,
+  including a `recover()` or an unlock, never run. Go runs every remaining deferred
+  function, and a later `recover()` catches the new panic:
+
+  ```go
+  func H() int {
+  	defer func() { recover() }()
+  	defer func() { panic("x") }()
+  	return 5
+  }
+  func Caller() (r int) {
+  	defer func() { if recover() != nil { r = 42 } }()
+  	return H()
+  }
+  // Go: Caller() == 5; the model: H panics, and Caller returns 42
+  ```
+
+  The same holds for a deferred function that panics while the function is already
+  panicking. Fix: run `$oldf` also when `$f` panics, with `$f`'s panic replacing the
+  current one. Found 2026-10-26 by the trusted-base review of the range-over-func change.
+
 ## Allocation
 
 - **No limit on allocation size (unsound).** gc refuses an allocation above `maxAlloc`
