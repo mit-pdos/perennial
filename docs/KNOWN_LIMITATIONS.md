@@ -50,9 +50,15 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 
 ## Allocation
 
-- **No limit on allocation size (unsound).** gc panics in `makeslice` and `growslice`
-  above `maxAlloc` (2^48 bytes); the model lets such a `make` or `append` succeed. An
-  array length outside `[0, 2^63-1)` reaches `AngelicExit`.
+- **No limit on allocation size (unsound).** gc refuses an allocation above `maxAlloc`
+  (2^48 bytes). A `make` or `append` panics (`makeslice`, `growslice`). A `new`, an
+  escaping variable or a composite literal of a larger array type ends the program with
+  a fatal, unrecoverable "out of memory": `p := new([1<<46]int64)` gives `runtime: out of
+  memory: cannot allocate 562949953421312-byte block`. The model lets all of these
+  succeed. Array types are bounded only by Go's maximum length (`[1<<63 - 1]struct{}` is
+  valid; a length of `2^63` or more is not a Go type, and reaches `AngelicExit`). A size
+  check needs the layout table, which R1 of `docs/design/unsafe-memory.md` adds for plain
+  types only.
 
 ## Struct types
 
