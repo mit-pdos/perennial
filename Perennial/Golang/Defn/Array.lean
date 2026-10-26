@@ -29,14 +29,39 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   type_repr_array (ty : go.GoType) (V : Type) (n : Int) [ZeroVal V] [TypeRepr ty V] :
     go.TypeReprUnderlying (go.ArrayType n ty) (GoArray V n)
 
-  -- TODO: implement alloc_array
-  alloc_array (n : Int) (elem : go.GoType) (v : val) :
-    ⟦GoAlloc (go.ArrayType n elem), v⟧ ⤳[internalUnder] AngelicExit #()
+  /-- An array is allocated as a struct is (`alloc_struct`): an arbitrary non-null address
+  `l` (`GoPrealloc`), then each element `j` by its own `GoAlloc`, which must land at the
+  element's address `arrayIndexRef _ j l`; a placement that does not is not an execution of
+  the model (`AngelicExit`). For every Go execution there is a placement that does: the model
+  never frees cells, so it cannot reuse gc's addresses, but placement is nondeterministic, so it
+  can put each allocation at fresh addresses laid out as gc lays them out
+  (`arrayIndexRef _ j l = l +ₗ j·size` there), a renaming of gc's addresses that Go code cannot
+  observe.
+  A length `n` outside `[0, 2^63)` is not a Go array type (an array length is a non-negative
+  `int`; `[1<<63 - 1]struct{}` is valid), and a value `#v` whose length is not `n` (possible,
+  `GoArray V n` does not enforce it) is not a Go value of the type, so those cases are
+  `AngelicExit`, as in `load_array` and `store_array`. Allocation bounds are not modelled:
+  gc refuses an array above `maxAlloc` (2^48 bytes), with a fatal "out of memory" for `new`
+  or a variable (`docs/KNOWN_LIMITATIONS.md`). -/
+  alloc_array (n : Int) (elem : go.GoType) {V : Type} (v : GoArray V n) :
+    ⟦GoAlloc (go.ArrayType n elem), #v⟧ ⤳[internalUnder]
+    (if ¬(0 ≤ n ∧ n < 2^63 ∧ (v.arr.length : Int) = n) then
+      gl(AngelicExit #())
+    else
+      gl(let: "l" := GoPrealloc #() in
+         List.foldl (fun so_far (j : Nat) =>
+             gl(so_far ;;
+               (let: "l_elem" := GoAlloc elem (Index (go.ArrayType n elem) (#v, #(W64 (j : Int)))) in
+                if: "l_elem" =⟨go.PointerType elem⟩
+                    IndexRef (go.ArrayType n elem) ("l", #(W64 (j : Int)))
+                then #() else AngelicExit #())))
+           (#() : Expr) (List.range n.toNat) ;;
+         "l"))
 
   load_array (n : Int) (elem_type : go.GoType) (l : val) :
     ⟦GoLoad (go.ArrayType n elem_type), l⟧ ⤳[internalUnder]
     (if l = #null then Panic "nil pointer dereference" else
-    if ¬(0 ≤ n ∧ n < 2^63-1) then
+    if ¬(0 ≤ n ∧ n < 2^63) then
       gl(AngelicExit #())
     else
       gl((rec: "recur" "n" :=
@@ -54,7 +79,7 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   store_array (n : Int) (elem_type : go.GoType) (l : val) {V : Type} (v : GoArray V n) :
     ⟦GoStore (go.ArrayType n elem_type), (l, #v)⟧ ⤳[internalUnder]
     (if l = #null then Panic "nil pointer dereference" else
-    if ¬(0 ≤ n ∧ n < 2^63-1 ∧ (v.arr.length : Int) = n) then
+    if ¬(0 ≤ n ∧ n < 2^63 ∧ (v.arr.length : Int) = n) then
       gl(AngelicExit #())
     else
     List.foldl (fun str_so_far j =>
@@ -130,8 +155,12 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
            (high - low) (max - low))
      else Panic "slice bounds out of range")
 
-  /-- A model: `arrayIndexRef t i l` is `l` when `l` is in block 0, and
-  `l +ₗ i·size(t)` otherwise. -/
+  /-- These axioms are consistent: `arrayIndexRef t i l = l` satisfies them. That instance is
+  not gc's layout: under it every array of two or more elements with cells reaches
+  `AngelicExit` in `alloc_array`. gc's layout is `l +ₗ i·size(t)` on the addresses of allocated
+  arrays; with this axiom it cannot be that for every `l` and `i` (`l +ₗ i·size(t)` is `null`
+  for some), so an instance matching gc is a bijection on non-null addresses, fixing `null`,
+  that agrees with `l +ₗ i·size(t)` on allocated arrays. -/
   arrayIndexRef_null_inv (t : Type) (i : Int) (l : Loc) :
     arrayIndexRef t i l = null → l = null
 

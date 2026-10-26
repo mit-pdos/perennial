@@ -143,7 +143,7 @@ end go
 /-! ## Locations, slices and base literals -/
 
 instance Loc.countable : Pos.Countable Loc :=
-  countableOfLeftInverse (fun l : Loc => (l.locCar, l.locOff)) (fun p => ⟨p.1, p.2⟩)
+  countableOfLeftInverse (fun l : Loc => l.addr) (fun a => ⟨a⟩)
     (fun _ => rfl)
 
 instance slice.countable : Pos.Countable GoSlice :=

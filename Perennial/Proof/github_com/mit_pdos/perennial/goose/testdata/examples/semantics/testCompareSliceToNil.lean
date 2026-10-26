@@ -25,13 +25,12 @@ variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.se
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCompareSliceToNil.wp_proof :
     github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCompareSliceToNil.spec (GF := GF) (hG := hG) := by
-  -- allocations are non-nil: `steps` unfolds
-  -- `make([]byte, 0)`, which allocates at an arbitrary offset of block 1.
+  -- `make([]byte, 0)` points at an arbitrary non-null address (`GoPrealloc`)
   semantics_auto
-  wp_apply wp_ArbitraryInt with %x _
+  wp_apply wp_GoPrealloc as %p %hp
   steps
-  have h : ¬ slice.mk ({ locCar := 1, locOff := 0 } +ₗ sint.Z x) (W64 0) (W64 0) = slice.nil := by
-    intro h; injection h with h1; simp [Loc.add, null] at h1
+  have h : ¬ slice.mk p (W64 0) (W64 0) = slice.nil := by
+    intro h; injection h with h1; exact hp h1
   simp only [h, decide_false, Bool.not_false]
   iexact HΦ
 

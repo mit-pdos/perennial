@@ -235,7 +235,7 @@ abbrev loadArrayBody (n : Int) (elem_type : go.GoType) (l : val) : Expr :=
 
 theorem wp_load_array_loop (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int)
     {s : Stuckness} {E : CoPset} (l : Loc) (dq : DFrac) (vs : List V)
-    (hlen : (vs.length : Int) = n) (hn : 0 ≤ n ∧ n < 2^63-1) (m : Nat) (hm : (m : Int) ≤ n) :
+    (hlen : (vs.length : Int) = n) (hn : 0 ≤ n ∧ n < 2^63) (m : Nat) (hm : (m : Int) ≤ n) :
     {{ arrayElems (GF := GF) l vs dq }}
       (App (Val (RecV "recur" "n" (loadArrayBody n t #l))) (Val #(W64 m))) @ s; E
     {{ RET #(array.mk n (vs.take m ++ (List.replicate n.toNat (zero_val V)).drop m));
@@ -296,7 +296,7 @@ abbrev storeArrayStep (n : Int) (elem_type : go.GoType) (l v : val) (str_so_far 
 theorem wp_store_array_loop (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int)
     {s : Stuckness} {E : CoPset} (l : Loc) (vs : List V) (w : GoArray V n)
     (hlen : (vs.length : Int) = n) (hwlen : (w.arr.length : Int) = n)
-    (hn : 0 ≤ n ∧ n < 2^63-1) (k : Nat) (hk : (k : Int) ≤ n) :
+    (hn : 0 ≤ n ∧ n < 2^63) (k : Nat) (hk : (k : Int) ≤ n) :
     ⊢ ∀ Φ, arrayElems (GF := GF) l vs (DFrac.own 1) -∗
       (arrayElems l (w.arr.take k ++ vs.drop k) (DFrac.own 1) -∗ Φ #()) -∗
       WP (List.foldl (storeArrayStep n t #l #w) (#() : Expr)
@@ -340,6 +340,73 @@ theorem wp_store_array_loop (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : I
     iapply HΦ
     iexact Hl
 
+/-- One step of the loop of `go.alloc_array`, with the array's address `l`. -/
+abbrev allocArrayStep (n : Int) (elem_type : go.GoType) (l v : Expr) (so_far : Expr) (j : Nat) :
+    Expr :=
+  gl(so_far ;;
+    (let: "l_elem" := GoAlloc elem_type (Index (go.ArrayType n elem_type) (v, #(W64 (j : Int)))) in
+     if: "l_elem" =⟨go.PointerType elem_type⟩
+         IndexRef (go.ArrayType n elem_type) (l, #(W64 (j : Int)))
+     then #() else AngelicExit #()))
+
+theorem subst_allocArray (n : Int) (elem_type : go.GoType) (l v : val) (js : List Nat)
+    (acc : Expr) :
+    subst "l" l (List.foldl (allocArrayStep n elem_type (Var "l") (Val v)) acc js) =
+      List.foldl (allocArrayStep n elem_type (Val l) (Val v)) (subst "l" l acc) js := by
+  induction js generalizing acc with
+  | nil => rfl
+  | cons j js ih =>
+    simp only [List.foldl_cons]
+    rw [ih]
+    simp [allocArrayStep, subst]
+
+theorem wp_alloc_array_loop (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int)
+    {s : Stuckness} {E : CoPset} (l : Loc) (w : GoArray V n)
+    (hwlen : (w.arr.length : Int) = n) (hn : 0 ≤ n ∧ n < 2^63) (k : Nat) (hk : (k : Int) ≤ n) :
+    ⊢ ∀ Φ, (arrayElems (GF := GF) l (w.arr.take k) (DFrac.own 1) -∗ Φ #()) -∗
+      WP (List.foldl (allocArrayStep n t (Val #l) (Val #w)) (#() : Expr) (List.range k))
+        @ s; E {{ Φ }} := by
+  induction k with
+  | zero =>
+    iintro %Φ HΦ
+    simp only [List.range_zero, List.foldl_nil, List.take_zero]
+    wp_pures
+    iapply HΦ
+    unfold arrayElems
+    iapply bigSepL_nil.2
+    itrivial
+  | succ k ih =>
+    iintro %Φ HΦ
+    simp only [List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil]
+    wp_apply_core ih (by omega)
+    iintro Hl
+    wp_pures
+    have hk' : sint.Z (W64 (k : Int)) = (k : Int) := by word
+    have hk'' : sint.nat (W64 (k : Int)) = k := by word
+    have hk0 : (0 ≤ (k : Int)) = True := eq_true (by omega)
+    obtain ⟨we, hwe⟩ : ∃ we, w.arr[k]? = some we :=
+      ⟨w.arr[k]'(by omega), List.getElem?_eq_getElem (by omega)⟩
+    simp only [hk', hk0, hk'', hwe, ↓reduceIte]
+    wp_pures
+    wp_apply +noauto (IntoValTyped.wp_alloc (V := V) (t := t) we) as %lf Hlf
+    wp_pures
+    simp only [hk', hk0, show ((k : Int) < n) = True from eq_true (by omega), and_self,
+      ↓reduceIte]
+    wp_pures
+    wp_if_angelic
+    iintro %Hlf_eq
+    subst Hlf_eq
+    wp_pures
+    iapply HΦ
+    have htake : w.arr.take (k + 1) = w.arr.take k ++ [we] := by
+      rw [List.take_succ, hwe]; rfl
+    rw [htake]
+    unfold arrayElems
+    iapply bigSepL_snoc.2
+    have hlen : (w.arr.take k).length = k := by simp; omega
+    rw [hlen]
+    iframe
+
 instance intoVal_typed_array (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : Int) :
     IntoValTypedUnderlying (GF := GF) (GoArray V n) (go.ArrayType n t) := by
   constructor
@@ -348,7 +415,35 @@ instance intoVal_typed_array (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : 
     have _tagged := @go.tagged_internal_inst
     wp_pure
     clear _tagged
-    iapply wp_AngelicExit
+    by_cases hn : 0 ≤ n ∧ n < 2^63
+    case neg =>
+      simp only [show (¬(0 ≤ n ∧ n < 2^63 ∧ (v.arr.length : Int) = n)) = True from
+        eq_true (fun h => hn ⟨h.1, h.2.1⟩), ↓reduceIte]
+      iapply wp_AngelicExit
+    by_cases hvlen : (v.arr.length : Int) = n
+    case neg =>
+      simp only [show (¬(0 ≤ n ∧ n < 2^63 ∧ (v.arr.length : Int) = n)) = True from
+        eq_true (fun h => hvlen h.2.2), ↓reduceIte]
+      iapply wp_AngelicExit
+    simp only [show (¬(0 ≤ n ∧ n < 2^63 ∧ (v.arr.length : Int) = n)) = False from
+        eq_false (fun h => h ⟨hn.1, hn.2, hvlen⟩), ↓reduceIte]
+    wp_bind (GoPrealloc #())
+    iapply wp_GoPrealloc
+    · itrivial
+    inext
+    iintro %l %Hl
+    wp_pures
+    rw [subst_allocArray, show subst "l" #l (#() : Expr) = #() from rfl]
+    wp_apply_core wp_alloc_array_loop t n l v hvlen hn n.toNat (by omega)
+    iintro Hl
+    wp_pures
+    iapply HΦ
+    iapply typedPointsto_combine _ _ _ Hl
+    simp only [TypedPointsto.typedPointstoDef]
+    isplit
+    · ipureintro; exact hvlen
+    · rw [List.take_of_length_le (by omega)]
+      iexact Hl
   · intro s E t' _ l dq v
     iintro %Φ Hl HΦ
     have _tagged := @go.tagged_internal_inst
@@ -356,11 +451,11 @@ instance intoVal_typed_array (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : 
     clear _tagged
     icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %Hnn⟩
     rw [ite_eq_right_of_eq_false _ _ (eq_false Hnn)]
-    by_cases hn : 0 ≤ n ∧ n < 2^63-1
+    by_cases hn : 0 ≤ n ∧ n < 2^63
     case neg =>
-      simp only [show (¬(0 ≤ n ∧ n < 2^63-1)) = True from eq_true hn, ↓reduceIte]
+      simp only [show (¬(0 ≤ n ∧ n < 2^63)) = True from eq_true hn, ↓reduceIte]
       iapply wp_AngelicExit
-    simp only [show (¬(0 ≤ n ∧ n < 2^63-1)) = False from eq_false (fun h => h hn), ↓reduceIte]
+    simp only [show (¬(0 ≤ n ∧ n < 2^63)) = False from eq_false (fun h => h hn), ↓reduceIte]
     obtain ⟨vs⟩ := v
     icases typedPointsto_split _ _ _ $$ Hl with Hl
     simp only [TypedPointsto.typedPointstoDef]
@@ -386,17 +481,17 @@ instance intoVal_typed_array (t : go.GoType) [IntoValTyped (GF := GF) V t] (n : 
     clear _tagged
     icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨Hl, %Hnn⟩
     rw [ite_eq_right_of_eq_false _ _ (eq_false Hnn)]
-    by_cases hn : 0 ≤ n ∧ n < 2^63-1
+    by_cases hn : 0 ≤ n ∧ n < 2^63
     case neg =>
-      simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = True from
+      simp only [show (¬(0 ≤ n ∧ n < 2^63 ∧ (w.arr.length : Int) = n)) = True from
         eq_true (fun h => hn ⟨h.1, h.2.1⟩), ↓reduceIte]
       iapply wp_AngelicExit
     by_cases hwlen : (w.arr.length : Int) = n
     case neg =>
-      simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = True from
+      simp only [show (¬(0 ≤ n ∧ n < 2^63 ∧ (w.arr.length : Int) = n)) = True from
         eq_true (fun h => hwlen h.2.2), ↓reduceIte]
       iapply wp_AngelicExit
-    simp only [show (¬(0 ≤ n ∧ n < 2^63-1 ∧ (w.arr.length : Int) = n)) = False from
+    simp only [show (¬(0 ≤ n ∧ n < 2^63 ∧ (w.arr.length : Int) = n)) = False from
         eq_false (fun h => h ⟨hn.1, hn.2, hwlen⟩), ↓reduceIte]
     obtain ⟨vs⟩ := v
     icases typedPointsto_split _ _ _ $$ Hl with Hl

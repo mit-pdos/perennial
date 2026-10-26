@@ -50,9 +50,15 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 
 ## Allocation
 
-- **No limit on allocation size (unsound).** gc panics in `makeslice` and `growslice`
-  above `maxAlloc` (2^48 bytes); the model lets such a `make` or `append` succeed. An
-  array length outside `[0, 2^63-1)` reaches `AngelicExit`.
+- **No limit on allocation size (unsound).** gc refuses an allocation above `maxAlloc`
+  (2^48 bytes). A `make` or `append` panics (`makeslice`, `growslice`). A `new`, an
+  escaping variable or a composite literal of a larger array type ends the program with
+  a fatal, unrecoverable "out of memory": `p := new([1<<46]int64)` gives `runtime: out of
+  memory: cannot allocate 562949953421312-byte block`. The model lets all of these
+  succeed. Array types are bounded only by Go's maximum length (`[1<<63 - 1]struct{}` is
+  valid; a length of `2^63` or more is not a Go type, and reaches `AngelicExit`). A size
+  check needs the layout table, which R1 of `docs/design/unsafe-memory.md` adds for plain
+  types only.
 
 ## Struct types
 
@@ -61,3 +67,29 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   `struct{ a int }{}` from its own package, and the model has one type. Refusing such
   types would reject common code (`struct{ mu sync.Mutex; … }`); modelling it means
   qualifying field names everywhere.
+
+## `unsafe` and layouts
+
+- **`bool` and `sync.Mutex` share element addresses (unsound).** Element and field
+  addresses (`arrayIndexRef V i l`, `structFieldRef V f l`) are keyed by the Lean type
+  `V`, and `sync.Mutex` and `primitive.Mutex` are represented as `Bool`
+  (`Mutex.underlying := go.bool`, `TrustedCode/sync.lean`,
+  `TrustedCode/github_com/goose_lang/primitive.lean`), so a 1-byte `bool` and an 8-byte
+  `Mutex` get the same element addresses. `unsafe.Pointer` conversions are the identity
+  (`convert_unsafe_to_pointer`, `Golang/Defn/Predeclared.lean`), so a view of one as the
+  other reads the wrong cell:
+
+  ```go
+  var mus [2]sync.Mutex
+  mus[1].Lock()
+  return (*[2]bool)(unsafe.Pointer(&mus))[1] // Go: false (byte 1 of mus[0]); the model: true
+  ```
+
+  goose translates this, and the model's only answer is `true`. The reverse view
+  (`[16]bool` read as `[2]sync.Mutex`, then `TryLock`) and a generic struct instantiated
+  at `bool` and at `sync.Mutex` go wrong the same way. Before arrays were allocated
+  (`05ef8d959`), the allocation reached `AngelicExit`, so such a program verified any
+  spec vacuously. Fixes: a Lean representation of the mutexes of their own, so that
+  equal Lean types mean equal gc layouts, or making a conversion between pointers to
+  types of different layouts stuck (R1 and R3 of `docs/design/unsafe-memory.md`).
+  Found 2026-10-26 by a blind trusted-base review of the flat-address change.

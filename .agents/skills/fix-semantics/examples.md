@@ -526,3 +526,27 @@ map are unprovable.
 
 **Why.** P8c of `docs/design/unsafe-memory-prerequisites.md`; the user: "Implement this
 map plan."
+
+## Case 17 — ACCEPTED: locations are integer addresses, and arrays are allocated (branch `flat-addresses`)
+
+**Symptom.** Incomplete and in the way of the unsafe design. A location was a (block,
+offset) pair, so addresses could not be compared or masked as integers (bbolt's alignment
+test `uintptr(p) & mask`), and every array allocation (`[n]T` locals, `make` with a
+non-zero capacity through `InternalDynamicArrayAlloc`) reached `AngelicExit`, so any
+spec of code that allocates an array was vacuous.
+
+**Taken.** `Loc` is `⟨addr : Int⟩` with `null = ⟨0⟩` and `l +ₗ i` integer addition;
+`IsFresh σ l` is `0 < l.addr` and no cell at `l`. `make` with capacity 0 points at
+`GoPrealloc` (an arbitrary non-null address) instead of `(1, 0) + ArbitraryInt`, which
+can be `0` with integer addresses. `alloc_array` allocates as `alloc_struct` does:
+`GoPrealloc`, then each element's `GoAlloc`, which must land at `arrayIndexRef`
+(`AngelicExit` otherwise), with a length check as in `store_array`. Proofs: the array
+instance's allocation is now proved (`wp_alloc_array_loop`).
+
+**Not taken.** The layout table and concrete `structFieldRef`/`arrayIndexRef` (P9b):
+the owner, "let's not do P9b and do the bare minimum in R1". Only plain types need
+concrete addresses, so R1 adds rules for them from the Go type. Reserving whole
+allocation ranges: unneeded, since extra placements only add model executions.
+
+**Why.** P9 and P7a of `docs/design/unsafe-memory-prerequisites.md`; the owner: "Do P9
+now here."

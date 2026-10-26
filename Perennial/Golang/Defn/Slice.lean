@@ -133,9 +133,8 @@ class SliceSemantics [GoSemanticsFunctions] : Prop where
        if: ("cap" <⟨go.int⟩ "len") then Panic "makeslice: cap out of range" else #() ;;
        if: ("len" <⟨go.int⟩ #(W64 0)) then Panic "makeslice: len out of range" else #() ;;
        if: "cap" =⟨go.int⟩ #(W64 0) then
-         -- XXX: this computes a nondeterministic unallocated address by using
-         -- "(Loc 1 0) +ₗ ArbiraryInt"
-         InternalMakeSlice (#(Loc.mk 1 0) +⟨go.PointerType elem_type⟩ ArbitraryInt, "len", "cap")
+         -- no elements: an arbitrary non-null address with no cells (gc's `zerobase`)
+         InternalMakeSlice (GoPrealloc #(), "len", "cap")
        else
          let: "p" := (InternalDynamicArrayAlloc elem_type) "cap" in
          InternalMakeSlice ("p", "len", "cap") : val)

@@ -193,6 +193,35 @@ outside; (R8) `README.md` and the proof reference describe it. This is what a
 good tier-0 change looks like: it *removed* a reason to add a model
 assumption.
 
+## Case 7 — OK after a fix (R3, R5): integer addresses and array allocation (`de797e8ab`, `05ef8d959`)
+
+`alloc_array` was `AngelicExit` outright, which made every spec of code that
+allocates an array vacuous; it became `alloc_struct`'s scheme (`GoPrealloc`,
+each element's `GoAlloc`, `AngelicExit` unless it lands at `arrayIndexRef`).
+Three `AngelicExit`s, three different gradings:
+- **On the model's own nondeterminism** (an element placed elsewhere): OK, if
+  for every Go execution some choice avoids it and matches Go. Here the model
+  never frees cells, so it cannot reuse gc's addresses, but it can place each
+  allocation at fresh addresses with gc's layout, a renaming Go cannot observe.
+  The argument is about existence of a matching choice, not about likelihood.
+- **On a value no Go program builds** (a `GoArray V n` whose list is not of
+  length `n`): OK, same as `store_array`.
+- **On a Go-reachable input** (`n ≥ 2^63-1`, copied from `load_array`): BLOCK.
+  `var x [1<<63 - 1]struct{}` compiles and runs. Test the bound against Go's
+  own limit (an array length is a non-negative `int`), not against a nearby
+  constant. Fixed in `05ef8d959` (`n < 2^63`), for `load_array` and
+  `store_array` too.
+
+Two grading questions this case settled:
+- **Go dies where the model succeeds** (a fatal, unrecoverable "out of memory"
+  for `new([1<<46]int64)`): as severe as an omitted panic (R4), since a
+  verified program would crash. If already listed in
+  `docs/KNOWN_LIMITATIONS.md`, NOTE, and the entry must cover the new case.
+- **A defect that was hidden behind `AngelicExit` becomes defined** (the
+  allocations above `maxAlloc`, which reached `AngelicExit` before and now
+  succeed): not worse, since both were unsound there, but record it in
+  `docs/KNOWN_LIMITATIONS.md`.
+
 ## Shapes to watch for (from these cases)
 
 - A trusted model whose docstring quotes Go that is not the Go source, with a
