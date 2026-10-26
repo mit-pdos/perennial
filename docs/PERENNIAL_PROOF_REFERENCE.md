@@ -1112,6 +1112,50 @@ threads (`RealCrashThreadsBelow.of_single`), and `fsGF` (with `fsGpreS`)
 provides the ghost state of a filesystem program, so the example's
 `crash_safety` mentions neither.
 
+### Distributed systems
+
+Files: `Perennial/GooseLang/DistLang.lean` (`DistCfg`, `DistStep`,
+`DistNsteps`, `distInit`, `DistThreadsBelow`), `GooseLang/DistAdequacy.lean`
+(`goose_dist_adequacy`, `nodeWp`), `GooseLang/Ext/Net` (the toy network
+`netExt`), `GooseLang/Ext/Net/Adequacy.lean` (the closed list `[fsExt, netExt]`,
+`fsNetGF`), and the example
+`Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/netfs/`.
+
+A distributed system is a list of nodes, each with its own thread pool and
+local `state` (heap, Go runtime, the extensions' local states), sharing one
+`GlobalState` (the extensions' global states, e.g. the network). A step is a
+real thread-pool step of one node, on its local state and the global state;
+forked threads join that node. There is no distributed WP: each node's program
+is proved with the standard WP, under the shared `GooseGlobalGS` and its own
+`GooseLocalGS`.
+
+`goose_dist_adequacy N T es g φ ... Hwp` is about executions of the system
+`distInit es g` (node `i` runs `es[i].1` from `es[i].2`) of fewer than `N` steps
+in all along which every node has fewer than `T` live threads. Its hypothesis
+`Hwp`: for every global ghost state with receipt bound `N`, from the
+extensions' global start resources (e.g. the network's points-to),
+`|={⊤}=> [∗list] i ↦ n ∈ es, nodeWp T n.1 n.2 (φ i)`. The fancy update is the
+global setup, where the client allocates the invariants the nodes share (a
+protocol over the network); `nodeWp T e σ φ` is, for every local ghost state
+`L` of the node (thread bound `T`, the node's Go context), the WP of `e` with
+postcondition `φ` from the node's start resources (the extensions' local start
+resources, the package state, the main thread's token), as `Hwp` of
+`goose_adequacy`. Under `nodeWp`, the client builds `hG : HeapGS := ⟨G, L⟩`
+for its specs; to use specs that assume a fixed `GoLocalContext`, destructure
+`L` and substitute its Go context (the example's `Results.lean`). The
+conclusion is, for every node, that of `goose_adequacy`. Time receipts count
+the steps of all nodes together; thread tokens are per node. With
+`DistThreadsBelow.of_single` and `fsNetGF`, the example's `netfs_safety`
+mentions no bound and no ghost state.
+
+The network (`netExt`): a node's local state is its address; the network maps
+each address to the set of messages sent to it, each with its sender's address.
+`wp_NetSend_atomic` adds `⟨netAddr, data⟩` to the messages of `to`
+(`to n↦ ms`), and `wp_NetRecv_atomic` returns some message of `netAddr n↦{q} ms`;
+a receive may also wait (stutter) forever, and a message may be delivered any
+number of times. Both are logically atomic, for a protocol invariant that owns
+the network's points-to (the example's `netInv`).
+
 ### Package initialization
 
 ```lean

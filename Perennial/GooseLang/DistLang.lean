@@ -9,7 +9,10 @@ the used prophecy variables) is shared by all nodes. A step of the system is a
 step of one node: one thread of that node takes a real step (`gooseRealLang`,
 as in a single-node execution) on the node's local state and the global state;
 the threads it forks join that node's pool. Nodes interact only through the
-global state, that is, through the extensions' operations on it.
+global state, that is, through the extensions' operations on it. The nodes
+share the encoding of Go values (`GoGlobalContext`), as parts of one Go program
+do; each has its own Go context (`goLctx`, the semantics of its Go
+instructions).
 
 `DistNsteps` is such an execution of the real semantics (the trusted model);
 the distributed adequacy theorem (`goose_dist_adequacy`, `DistAdequacy.lean`)

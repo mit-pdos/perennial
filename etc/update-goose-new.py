@@ -247,6 +247,7 @@ def main():
             "./unittest/...",
             "./channel/...",
             "./crashfs/...",
+            "./netfs/...",
         )
 
     if args.models:

@@ -44,6 +44,19 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   filesystem, see `GooseLang/Ext/Fs/Impl.lean`) whose `panic` assertions never
   fire however many times the node crashes (`crash_safety`,
   `Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/crashfs/Results.lean`).
+* **Distributed systems.** A distributed system (`GooseLang/DistLang.lean`) is a
+  list of nodes, each with its own thread pool and local state, sharing the
+  global state; a step is a real thread-pool step of one node.
+  `goose_dist_adequacy` (`GooseLang/DistAdequacy.lean`) is about its
+  executions: each node's program is proved with the standard WP, under the
+  shared global ghost state and its own local ghost state (`nodeWp`), after a
+  global setup that may allocate the invariants the nodes share. There is no
+  distributed program logic and no crash. End-to-end example: the Go package
+  `goose/testdata/examples/netfs`, three nodes on a toy network
+  (`GooseLang/Ext/Net`, Go side `netfs/netext`, whose primitives are stubs: the
+  extension is a specification of a network) and the toy filesystem, whose
+  `panic` assertions never fire (`netfs_safety`,
+  `Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/netfs/Results.lean`).
 * **Bounded layer, time receipts and thread tokens.** The trusted semantics
   `BaseStep` (and its iris-lean language `gooseRealEctxiLang`,
   `GooseLang/Lang.lean`) is the model of Go, but the language instance used by

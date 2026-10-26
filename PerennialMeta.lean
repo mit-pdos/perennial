@@ -81,6 +81,8 @@ public import Perennial.GooseLang.Ext.Fs.Specs
 public import Perennial.GooseLang.Ext.GenHeap
 public import Perennial.GooseLang.Ext.Grove.Impl
 public import Perennial.GooseLang.Ext.Grove.Specs
+public import Perennial.GooseLang.Ext.Net.Impl
+public import Perennial.GooseLang.Ext.Net.Specs
 public import Perennial.GooseLang.IPersist
 public import Perennial.GooseLang.Lang
 public import Perennial.GooseLang.Lifting

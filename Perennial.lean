@@ -20,6 +20,7 @@ public import Perennial.GooseLang.DistAdequacy
 public import Perennial.ProgramLogic.AtomicFupd
 public import Perennial.GooseLang.Ext.Grove.Adequacy
 public import Perennial.GooseLang.Ext.Fs.Adequacy
+public import Perennial.GooseLang.Ext.Net.Adequacy
 public import Perennial.Ghost
 public import Perennial.Golang.Defn
 public import Perennial.Golang.Theory

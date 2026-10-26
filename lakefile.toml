@@ -106,6 +106,8 @@ globs = [
   "Perennial.GooseLang.Ext.GenHeap",
   "Perennial.GooseLang.Ext.Grove.Impl",
   "Perennial.GooseLang.Ext.Grove.Specs",
+  "Perennial.GooseLang.Ext.Net.Impl",
+  "Perennial.GooseLang.Ext.Net.Specs",
   "Perennial.GooseLang.IPersist",
   "Perennial.GooseLang.Lang",
   "Perennial.GooseLang.Lifting",

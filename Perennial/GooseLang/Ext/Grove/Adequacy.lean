@@ -7,8 +7,9 @@ Adequacy for a Grove program.
   with these instances.
 * The theorem is fail-stop; Grove has no `ExtCrashInterp`, so no crash adequacy.
 * Only the (fail-stop) single-node theorem `grove_single_node_adequacy` is
-  proved. Distributed adequacy theorems would need a distributed-language
-  semantics, which is not available.
+  proved here. A distributed Grove program is closed off by the distributed
+  adequacy theorem `goose_dist_adequacy` (`DistAdequacy.lean`) with these
+  instances.
 -/
 module
 
