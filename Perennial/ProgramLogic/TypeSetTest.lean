@@ -119,9 +119,12 @@ translation does not import: goose writes it as `go.Named "<dep>.X" []`. `T` lac
 example : go.typeSetContains T.ty Getter.ty = false := by
   go_type_set
 
-/-- `*T` has `Get` and `Use(*dep.X)`, the latter's signature written out the same way in
-`T`'s method set and in `withDep`. -/
-example : go.typeSetContains (go.GoType.PointerType T.ty) withDep.ty = true := by
+/-- `*T` has `Use(*dep.X)`, its signature written out as the interface below writes it. -/
+example : go.typeSetContains (go.GoType.PointerType T.ty)
+    (go.InterfaceType [go.MethodElem go!"Use" (go.Signature
+      [go.PointerType (go.Named
+        go!"github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport/dep.X" [])]
+      false [])]) = true := by
   go_type_set
 
 /-- `PlainCloser` embeds `plain`, all of whose methods are written. -/
