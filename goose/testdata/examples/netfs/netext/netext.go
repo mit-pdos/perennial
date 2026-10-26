@@ -6,21 +6,24 @@
 //
 // The primitives send and recv are trusted: Perennial models them with the
 // extension's operations (Perennial/TrustedCode/.../netfs/netext.lean) instead
-// of translating them. They have no implementation here (they panic): the
-// extension is a specification of a network, not a model of existing code.
+// of translating them. They have no implementation here: they block forever,
+// so that every run of this Go code is a run of the model in which the calling
+// goroutine stops at the call (a stub that panicked would be a Go panic the
+// model omits). The extension is a specification of a network, not a model of
+// existing code.
 // Send and Recv, which convert between []byte and the primitives' strings,
 // are translated.
 package netext
 
 // send sends data to the node with address to.
 func send(to string, data string) {
-	panic("netext: the toy network has no implementation")
+	select {}
 }
 
 // recv waits for a message sent to this node, and returns its sender's address
 // and its data.
 func recv() (string, string) {
-	panic("netext: the toy network has no implementation")
+	select {}
 }
 
 // Send sends data to the node with address to. The network may deliver the

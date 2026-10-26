@@ -35,7 +35,7 @@ noncomputable def Recv [GooseExts] [GoGlobalContext] : GoString :=
 
 /-- send sends data to the node with address to.
 
-    go: netext.go:16:6 -/
+    go: netext.go:19:6 -/
 noncomputable def send.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "to"
   (Lam "data"
@@ -45,25 +45,21 @@ noncomputable def send.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
-  (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"netext: the toy network has no implementation")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))))))
+  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none []))))))))
 
 /-- recv waits for a message sent to this node, and returns its sender's address
     and its data.
 
-    go: netext.go:22:6 -/
+    go: netext.go:25:6 -/
 noncomputable def recv.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
-  (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"netext: the toy network has no implementation")))
-  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))))
+  (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none []))))
 
 /-- Send sends data to the node with address to. The network may deliver the
     message any number of times, in any order, or never.
 
-    go: netext.go:28:6 -/
+    go: netext.go:31:6 -/
 noncomputable def Send.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "to"
   (Lam "data"
@@ -81,7 +77,7 @@ noncomputable def Send.impl [GooseExts] [GoGlobalContext] : val :=
 /-- Recv waits for a message sent to this node, and returns its sender's address
     and its data.
 
-    go: netext.go:34:6 -/
+    go: netext.go:37:6 -/
 noncomputable def Recv.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)

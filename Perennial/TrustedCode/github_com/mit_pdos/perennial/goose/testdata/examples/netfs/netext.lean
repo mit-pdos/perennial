@@ -10,12 +10,16 @@ and strings around them, are translated. A Go string is a value (`#s`), as the
 extension's operations take and return, and a Go function returning two
 results returns their pair.
 
-**The Go primitives have no implementation** (they panic): the network is a
-toy, the example extension of the distributed adequacy theorem, and this model
-is its specification (see `Perennial/GooseLang/Ext/Net/Impl.lean`), not the
-model of existing Go code. A program verified against it is verified for any
-network that delivers only messages that were sent, with their senders'
-addresses.
+**The Go primitives have no implementation** (they block forever): the
+network is a toy, the example extension of the distributed adequacy theorem,
+and this model is its specification (see `Perennial/GooseLang/Ext/Net/Impl.lean`),
+not the model of existing Go code. A real implementation would be
+irreducible (sockets: system calls), as `fsext`'s `os` calls are. A program
+verified against the model is verified for any network that delivers only
+messages that were sent, with their senders' addresses. Against the stubs
+themselves the model is only less defined than Go in the harmless sense: a
+Go run blocks a goroutine at its first `send` or `recv`, which is a run of
+the model in which that goroutine is never scheduled again.
 -/
 module
 
