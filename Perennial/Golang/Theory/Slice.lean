@@ -834,15 +834,11 @@ theorem wp_slice_make3 {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped
   wp_if_destruct
   · exfalso; word
   wp_if_destruct
-  · -- cap = 0 case: no allocation, need nil slice
-    -- TODO: model should return slice.nil when cap=0; currently
-    -- wp_ArbitraryInt gives arbitrary ptr with no pointsto
-    wp_apply wp_ArbitraryInt as %x _
+  · -- cap = 0 case: an arbitrary non-null address with no cells
+    wp_apply wp_GoPrealloc as %p %hnn
     have hlen : len = W64 0 := by word
     subst hlen
     iapply HΦ
-    have hnn : (Loc.mk 1 0 +ₗ sint.Z x) ≠ null := by
-      simp [null, Loc.add]
     isplitl []
     · have : sint.nat (W64 0) = 0 := rfl
       rw [this, List.replicate_zero]

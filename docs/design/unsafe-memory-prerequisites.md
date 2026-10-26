@@ -302,6 +302,23 @@ already get from `math.Float64bits`.
 
 The owner's answer on R1 ("don't think in terms of blocks"); the design is in
 `unsafe-memory.md`, section 2 and R1.
+
+**Done as P9a (2026-10-26, branch `flat-addresses`), with the rest moved to R1.**
+- Done: `Loc` is an integer address (`null = 0`); `Alloc` takes any positive address
+  with no cell; `make` with capacity 0 points at `GoPrealloc`; P7a: an array is
+  allocated element by element at `arrayIndexRef` addresses, with `alloc_struct`'s
+  `AngelicExit` placement check, instead of `AngelicExit` outright.
+- Not done (owner's decision, 2026-10-26: "let's not do P9b and do the bare minimum in
+  R1"): the layout table, concrete `structFieldRef`/`arrayIndexRef`, one-range
+  allocation, and `0 < l` in typed points-tos. Only plain types need concrete
+  addresses (bboltmini views bytes only as plain structs and arrays), so R1 gives
+  `StructFieldRef`/`IndexRef` at a plain type a rule computing `l + offset` from the
+  Go type, and the abstract rules gain `¬ Plain`. Non-plain refs stay abstract, keyed
+  by the Lean type as today, so no generated proof changes for them. Allocation keeps
+  `GoPrealloc` and the per-field check; whole ranges need no reservation, since extra
+  placements only add model executions.
+
+The original plan follows.
 - **Change.**
   - `Loc` becomes an integer address, with `null = 0`.
   - Allocation takes a free range of the type's size, at a positive address

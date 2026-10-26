@@ -1,7 +1,9 @@
 /-
 Heap locations.
 
-A location is a block id `car` plus an offset `off`; `l +ₗ i` moves within a block.
+A location is an integer address; `null` is `0`, and every allocation is at a positive
+address (`IsFresh`). There are no blocks: `l +ₗ i` is integer addition, so an address
+outside every allocation simply has no cell.
 -/
 module
 
@@ -12,23 +14,17 @@ public import Perennial.Std.Word
 namespace Perennial
 
 structure Loc where
-  locCar : Int
-  locOff : Int
+  addr : Int
 deriving DecidableEq, Repr, Inhabited, Hashable
 
 namespace Loc
 
-def null : Loc := ⟨0, 0⟩
+def null : Loc := ⟨0⟩
 
 instance : Inhabited Loc := ⟨null⟩
 
 /-- `l +ₗ off`. -/
-def add (l : Loc) (off : Int) : Loc := ⟨l.locCar, l.locOff + off⟩
-
-/-- The start of `l`'s block. -/
-def addrBase (l : Loc) : Loc := ⟨l.locCar, 0⟩
-/-- The offset of `l` within its block. -/
-def addrOffset (l : Loc) : Int := l.locOff
+def add (l : Loc) (off : Int) : Loc := ⟨l.addr + off⟩
 
 end Loc
 
@@ -56,39 +52,34 @@ theorem loc_add_ne (l : Loc) (i : Int) : 0 < i → l +ₗ i ≠ l := by
 theorem loc_add_inj (l : Loc) {i j : Int} : l +ₗ i = l +ₗ j → i = j := by
   cases l; simp [Loc.add]
 
-theorem addrBase_of_plus (l : Loc) (i : Int) : (l +ₗ i).addrBase = l.addrBase := rfl
+/-- An address above every address in `ls`, and positive. -/
+def freshLoc (ls : List Loc) : Loc :=
+  ⟨1 + ls.foldr (fun k r => max k.addr r) 0⟩
 
-/-- A location whose block is strictly larger than every block in `ls`. -/
-def freshLocs (ls : List Loc) : Loc :=
-  ⟨ls.foldr (fun k r => max (1 + k.locCar) r) 1, 0⟩
-
-theorem freshLocs_car_gt (ls : List Loc) :
-    ∀ l ∈ ls, l.locCar < (freshLocs ls).locCar := by
+theorem freshLoc_gt (ls : List Loc) : ∀ l ∈ ls, l.addr < (freshLoc ls).addr := by
   induction ls with
   | nil => simp
   | cons a ls ih =>
     intro l hl
-    simp only [freshLocs, List.foldr_cons] at *
+    simp only [freshLoc, List.foldr_cons] at *
     rcases List.mem_cons.mp hl with rfl | h
     · omega
     · have := ih l h; omega
 
-theorem freshLocs_pos (ls : List Loc) : 0 < (freshLocs ls).locCar := by
+theorem freshLoc_pos (ls : List Loc) : 0 < (freshLoc ls).addr := by
   induction ls with
-  | nil => simp [freshLocs]
-  | cons a ls ih => simp only [freshLocs, List.foldr_cons] at *; omega
+  | nil => simp [freshLoc]
+  | cons a ls ih => simp only [freshLoc, List.foldr_cons] at *; omega
 
-theorem freshLocs_fresh (ls : List Loc) (i : Int) : freshLocs ls +ₗ i ∉ ls := by
+theorem freshLoc_fresh (ls : List Loc) : freshLoc ls ∉ ls := by
   intro h
-  have := freshLocs_car_gt ls _ h
-  simp [Loc.add] at this
+  have := freshLoc_gt ls _ h
+  omega
 
-theorem freshLocs_non_null (ls : List Loc) (i : Int) : freshLocs ls +ₗ i ≠ null := by
+theorem freshLoc_non_null (ls : List Loc) : freshLoc ls ≠ null := by
   intro h
-  have := freshLocs_pos ls
-  have h' := congrArg Loc.locCar h
-  simp [Loc.add, null] at h'; omega
-
-theorem freshLocs_off_0 (ls : List Loc) : (freshLocs ls).locOff = 0 := rfl
+  have := freshLoc_pos ls
+  rw [h] at this
+  simp [null] at this
 
 end Perennial

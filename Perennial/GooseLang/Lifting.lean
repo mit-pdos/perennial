@@ -1178,11 +1178,11 @@ theorem gmap_singleton_union_eq_insert {K V : Type} [DecidableEq K] (m : GMap K 
   split <;> simp
 
 theorem exists_isFresh (σ : CfgState) : ∃ l, IsFresh σ l := by
-  refine ⟨freshLocs σ.1.heap.domList, fun i => ⟨freshLocs_non_null _ i, ?_⟩, freshLocs_off_0 _⟩
-  cases h : σ.1.heap !! (freshLocs σ.1.heap.domList +ₗ i) with
+  refine ⟨freshLoc σ.1.heap.domList, freshLoc_pos _, ?_⟩
+  cases h : σ.1.heap !! (freshLoc σ.1.heap.domList) with
   | none => rfl
   | some _ =>
-    exact absurd ((GMap.mem_dom_list σ.1.heap _).mpr (by rw [h]; rfl)) (freshLocs_fresh _ i)
+    exact absurd ((GMap.mem_dom_list σ.1.heap _).mpr (by rw [h]; rfl)) (freshLoc_fresh _)
 
 def pointstoVals (l : Loc) (q : DFrac) (vs : List val) : IProp GF :=
   [∗list] j ↦ vj ∈ vs, heapPointsto (l +ₗ (j : Int)) q vj
@@ -1201,8 +1201,8 @@ theorem wp_allocN_seq (v : val) (Hv : v.isPanic = false := by simp) :
   inext
   iintro %κ %e₂ %σ₂ %eₜ %Hstep _
   obtain ⟨l, Hfresh, rfl, rfl, rfl, rfl⟩ := baseStep_Alloc_inv Hstep
-  have Hnone : σ₁.1.heap !! l = none := by simpa using (Hfresh.1 0).2
-  have Hnn : l ≠ null := by simpa using (Hfresh.1 0).1
+  have Hnone : σ₁.1.heap !! l = none := Hfresh.2
+  have Hnn : l ≠ null := fun h => by have := Hfresh.1; rw [h] at this; simp [null] at this
   imod na_heap_alloc tls σ₁.1.heap l v (Reading 0) Hnone rfl $$ Hσ with ⟨Hσ, Hl⟩
   imodintro
   isplitr

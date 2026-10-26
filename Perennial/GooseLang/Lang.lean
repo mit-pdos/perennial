@@ -653,9 +653,10 @@ def stateInitHeap (l : Loc) (v : val) (σ : state) : state :=
 
 def IsWriting {A} (mna : Option (NonAtomic A)) : Prop := ∃ x, mna = some (Writing, x)
 
-/-- `l` is the start of a fresh block in `σg`. -/
+/-- `l` is a positive address with no cell in `σg`: where `Alloc` may put its cell. The choice
+is nondeterministic: a new cell may sit next to an existing one or leave a gap. -/
 def IsFresh (σg : CfgState) (l : Loc) : Prop :=
-  (∀ i : Int, l +ₗ i ≠ null ∧ σg.1.heap !! (l +ₗ i) = none) ∧ l.addrOffset = 0
+  0 < l.addr ∧ σg.1.heap !! l = none
 
 def atomicAddEval (v1 v2 : val) : Option val :=
   match v1, v2 with

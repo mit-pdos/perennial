@@ -429,10 +429,10 @@ theorem wp_GoPrealloc :
   iintro %Φ _ HΦ
   have hstep : is_go_step_pure GoPrealloc #() = _ := go.go_prealloc_step
   iapply wp_GoInstruction' (s := s) (E := E) GoPrealloc #() Φ
-    (fun gs => ⟨Val #(⟨1, 1⟩ : Loc), gs, by
+    (fun gs => ⟨Val #(⟨1⟩ : Loc), gs, by
       refine ⟨?_, rfl⟩
       show is_go_step_pure GoPrealloc #() _
-      rw [hstep]; exact ⟨⟨1, 1⟩, by simp [null], rfl⟩⟩)
+      rw [hstep]; exact ⟨⟨1⟩, by simp [null], rfl⟩⟩)
   inext
   iintro %e' %gs %gs' %Hstep _ Hctx
   obtain ⟨Hp, rfl⟩ := Hstep

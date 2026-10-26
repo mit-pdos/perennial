@@ -29,9 +29,28 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   type_repr_array (ty : go.GoType) (V : Type) (n : Int) [ZeroVal V] [TypeRepr ty V] :
     go.TypeReprUnderlying (go.ArrayType n ty) (GoArray V n)
 
-  -- TODO: implement alloc_array
-  alloc_array (n : Int) (elem : go.GoType) (v : val) :
-    ⟦GoAlloc (go.ArrayType n elem), v⟧ ⤳[internalUnder] AngelicExit #()
+  /-- An array is allocated as a struct is (`alloc_struct`): an arbitrary non-null address
+  `l` (`GoPrealloc`), then each element `j` by its own `GoAlloc`, which must land at the
+  element's address `arrayIndexRef _ j l`; a placement that does not is not an execution of
+  the model (`AngelicExit`). Under gc's layout (`arrayIndexRef _ j l = l +ₗ j·size`) a placement
+  that does always exists, since the elements' addresses are free when gc allocates the array. A length `n` outside `[0, 2^63-1)`, or a value `#v`
+  whose length is not `n` (possible, `GoArray V n` does not enforce it), cannot satisfy
+  `l ↦ v`, so those cases are `AngelicExit`, as in `store_array`. Allocation bounds are not
+  modelled: gc panics in `makeslice` above `maxAlloc` (`docs/KNOWN_LIMITATIONS.md`). -/
+  alloc_array (n : Int) (elem : go.GoType) {V : Type} (v : GoArray V n) :
+    ⟦GoAlloc (go.ArrayType n elem), #v⟧ ⤳[internalUnder]
+    (if ¬(0 ≤ n ∧ n < 2^63-1 ∧ (v.arr.length : Int) = n) then
+      gl(AngelicExit #())
+    else
+      gl(let: "l" := GoPrealloc #() in
+         List.foldl (fun so_far (j : Nat) =>
+             gl(so_far ;;
+               (let: "l_elem" := GoAlloc elem (Index (go.ArrayType n elem) (#v, #(W64 (j : Int)))) in
+                if: "l_elem" =⟨go.PointerType elem⟩
+                    IndexRef (go.ArrayType n elem) ("l", #(W64 (j : Int)))
+                then #() else AngelicExit #())))
+           (#() : Expr) (List.range n.toNat) ;;
+         "l"))
 
   load_array (n : Int) (elem_type : go.GoType) (l : val) :
     ⟦GoLoad (go.ArrayType n elem_type), l⟧ ⤳[internalUnder]
@@ -130,8 +149,8 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
            (high - low) (max - low))
      else Panic "slice bounds out of range")
 
-  /-- A model: `arrayIndexRef t i l` is `l` when `l` is in block 0, and
-  `l +ₗ i·size(t)` otherwise. -/
+  /-- A model: `arrayIndexRef t i l = l` (and gc's `l +ₗ i·size(t)` for every `l > 0` and
+  index of an allocated array). -/
   arrayIndexRef_null_inv (t : Type) (i : Int) (l : Loc) :
     arrayIndexRef t i l = null → l = null
 
