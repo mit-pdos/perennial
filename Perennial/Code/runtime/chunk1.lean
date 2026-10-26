@@ -233,15 +233,15 @@ attribute [instance] debugCallWrapArgs.TypeAssumptions.type_repr
 class debugLogBuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying debugLogBuf.underlying debugLogBuf
   underlying : go.UnderlyingDirectedEq debugLogBuf.ty debugLogBuf.underlying
-  get__0 : ∀ (x : debugLogBuf), go.IsGoStepPureDetTagged under (StructFieldGet debugLogBuf.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : debugLogBuf) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet debugLogBuf.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : debugLogBuf)))
+  «get__#0» : ∀ (x : debugLogBuf), go.IsGoStepPureDetTagged under (StructFieldGet debugLogBuf.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : debugLogBuf) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet debugLogBuf.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : debugLogBuf)))
   get_b : ∀ (x : debugLogBuf), go.IsGoStepPureDetTagged under (StructFieldGet debugLogBuf.underlying go!"b") #x (Val #(x.b'))
   set_b : ∀ (x : debugLogBuf) (y : (GoArray w8 16384)), go.IsGoStepPureDetTagged under (StructFieldSet debugLogBuf.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : debugLogBuf)))
 
 attribute [instance] debugLogBuf.TypeAssumptions.type_repr
   debugLogBuf.TypeAssumptions.underlying
-  debugLogBuf.TypeAssumptions.get__0
-  debugLogBuf.TypeAssumptions.set__0
+  debugLogBuf.TypeAssumptions.«get__#0»
+  debugLogBuf.TypeAssumptions.«set__#0»
   debugLogBuf.TypeAssumptions.get_b
   debugLogBuf.TypeAssumptions.set_b
 
@@ -275,8 +275,8 @@ attribute [instance] debugLogReader.TypeAssumptions.type_repr
 class debugLogWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying debugLogWriter.underlying debugLogWriter
   underlying : go.UnderlyingDirectedEq debugLogWriter.ty debugLogWriter.underlying
-  get__0 : ∀ (x : debugLogWriter), go.IsGoStepPureDetTagged under (StructFieldGet debugLogWriter.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : debugLogWriter) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet debugLogWriter.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : debugLogWriter)))
+  «get__#0» : ∀ (x : debugLogWriter), go.IsGoStepPureDetTagged under (StructFieldGet debugLogWriter.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : debugLogWriter) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet debugLogWriter.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : debugLogWriter)))
   get_write : ∀ (x : debugLogWriter), go.IsGoStepPureDetTagged under (StructFieldGet debugLogWriter.underlying go!"write") #x (Val #(x.write'))
   set_write : ∀ (x : debugLogWriter) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet debugLogWriter.underlying go!"write") (PairV #x #y) (Val #(({ x with write' := y } : debugLogWriter)))
   get_data : ∀ (x : debugLogWriter), go.IsGoStepPureDetTagged under (StructFieldGet debugLogWriter.underlying go!"data") #x (Val #(x.data'))
@@ -292,8 +292,8 @@ class debugLogWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalConte
 
 attribute [instance] debugLogWriter.TypeAssumptions.type_repr
   debugLogWriter.TypeAssumptions.underlying
-  debugLogWriter.TypeAssumptions.get__0
-  debugLogWriter.TypeAssumptions.set__0
+  debugLogWriter.TypeAssumptions.«get__#0»
+  debugLogWriter.TypeAssumptions.«set__#0»
   debugLogWriter.TypeAssumptions.get_write
   debugLogWriter.TypeAssumptions.set_write
   debugLogWriter.TypeAssumptions.get_data
@@ -310,8 +310,8 @@ attribute [instance] debugLogWriter.TypeAssumptions.type_repr
 class dloggerImpl.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying dloggerImpl.underlying dloggerImpl
   underlying : go.UnderlyingDirectedEq dloggerImpl.ty dloggerImpl.underlying
-  get__0 : ∀ (x : dloggerImpl), go.IsGoStepPureDetTagged under (StructFieldGet dloggerImpl.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : dloggerImpl) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet dloggerImpl.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : dloggerImpl)))
+  «get__#0» : ∀ (x : dloggerImpl), go.IsGoStepPureDetTagged under (StructFieldGet dloggerImpl.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : dloggerImpl) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet dloggerImpl.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : dloggerImpl)))
   get_w : ∀ (x : dloggerImpl), go.IsGoStepPureDetTagged under (StructFieldGet dloggerImpl.underlying go!"w") #x (Val #(x.w'))
   set_w : ∀ (x : dloggerImpl) (y : debugLogWriter), go.IsGoStepPureDetTagged under (StructFieldSet dloggerImpl.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : dloggerImpl)))
   get_allLink : ∀ (x : dloggerImpl), go.IsGoStepPureDetTagged under (StructFieldGet dloggerImpl.underlying go!"allLink") #x (Val #(x.allLink'))
@@ -321,8 +321,8 @@ class dloggerImpl.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext]
 
 attribute [instance] dloggerImpl.TypeAssumptions.type_repr
   dloggerImpl.TypeAssumptions.underlying
-  dloggerImpl.TypeAssumptions.get__0
-  dloggerImpl.TypeAssumptions.set__0
+  dloggerImpl.TypeAssumptions.«get__#0»
+  dloggerImpl.TypeAssumptions.«set__#0»
   dloggerImpl.TypeAssumptions.get_w
   dloggerImpl.TypeAssumptions.set_w
   dloggerImpl.TypeAssumptions.get_allLink
@@ -425,15 +425,15 @@ class siginfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   underlying : go.UnderlyingDirectedEq siginfo.ty siginfo.underlying
   get_siginfoFields : ∀ (x : siginfo), go.IsGoStepPureDetTagged under (StructFieldGet siginfo.underlying go!"siginfoFields") #x (Val #(x.siginfoFields'))
   set_siginfoFields : ∀ (x : siginfo) (y : siginfoFields), go.IsGoStepPureDetTagged under (StructFieldSet siginfo.underlying go!"siginfoFields") (PairV #x #y) (Val #(({ x with siginfoFields' := y } : siginfo)))
-  get__1 : ∀ (x : siginfo), go.IsGoStepPureDetTagged under (StructFieldGet siginfo.underlying go!"_1") #x (Val #(x._1'))
-  set__1 : ∀ (x : siginfo) (y : (GoArray w8 104)), go.IsGoStepPureDetTagged under (StructFieldSet siginfo.underlying go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : siginfo)))
+  «get__#1» : ∀ (x : siginfo), go.IsGoStepPureDetTagged under (StructFieldGet siginfo.underlying go!"_#1") #x (Val #(x.«_#1'»))
+  «set__#1» : ∀ (x : siginfo) (y : (GoArray w8 104)), go.IsGoStepPureDetTagged under (StructFieldSet siginfo.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : siginfo)))
 
 attribute [instance] siginfo.TypeAssumptions.type_repr
   siginfo.TypeAssumptions.underlying
   siginfo.TypeAssumptions.get_siginfoFields
   siginfo.TypeAssumptions.set_siginfoFields
-  siginfo.TypeAssumptions.get__1
-  siginfo.TypeAssumptions.set__1
+  siginfo.TypeAssumptions.«get__#1»
+  siginfo.TypeAssumptions.«set__#1»
 
 class itimerspec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying itimerspec.underlying itimerspec
@@ -493,15 +493,15 @@ class sigevent.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
   underlying : go.UnderlyingDirectedEq sigevent.ty sigevent.underlying
   get_sigeventFields : ∀ (x : sigevent), go.IsGoStepPureDetTagged under (StructFieldGet sigevent.underlying go!"sigeventFields") #x (Val #(x.sigeventFields'))
   set_sigeventFields : ∀ (x : sigevent) (y : sigeventFields), go.IsGoStepPureDetTagged under (StructFieldSet sigevent.underlying go!"sigeventFields") (PairV #x #y) (Val #(({ x with sigeventFields' := y } : sigevent)))
-  get__1 : ∀ (x : sigevent), go.IsGoStepPureDetTagged under (StructFieldGet sigevent.underlying go!"_1") #x (Val #(x._1'))
-  set__1 : ∀ (x : sigevent) (y : (GoArray w8 40)), go.IsGoStepPureDetTagged under (StructFieldSet sigevent.underlying go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : sigevent)))
+  «get__#1» : ∀ (x : sigevent), go.IsGoStepPureDetTagged under (StructFieldGet sigevent.underlying go!"_#1") #x (Val #(x.«_#1'»))
+  «set__#1» : ∀ (x : sigevent) (y : (GoArray w8 40)), go.IsGoStepPureDetTagged under (StructFieldSet sigevent.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : sigevent)))
 
 attribute [instance] sigevent.TypeAssumptions.type_repr
   sigevent.TypeAssumptions.underlying
   sigevent.TypeAssumptions.get_sigeventFields
   sigevent.TypeAssumptions.set_sigeventFields
-  sigevent.TypeAssumptions.get__1
-  sigevent.TypeAssumptions.set__1
+  sigevent.TypeAssumptions.«get__#1»
+  sigevent.TypeAssumptions.«set__#1»
 
 class usigset.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying usigset.underlying usigset

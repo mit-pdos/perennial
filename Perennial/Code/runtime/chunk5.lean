@@ -448,15 +448,15 @@ class mPadded.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [Go
   underlying : go.UnderlyingDirectedEq mPadded.ty mPadded.underlying
   get_m : ∀ (x : mPadded), go.IsGoStepPureDetTagged under (StructFieldGet mPadded.underlying go!"m") #x (Val #(x.m'))
   set_m : ∀ (x : mPadded) (y : m), go.IsGoStepPureDetTagged under (StructFieldSet mPadded.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : mPadded)))
-  get__1 : ∀ (x : mPadded), go.IsGoStepPureDetTagged under (StructFieldGet mPadded.underlying go!"_1") #x (Val #(x._1'))
-  set__1 : ∀ (x : mPadded) (y : (GoArray w8 216)), go.IsGoStepPureDetTagged under (StructFieldSet mPadded.underlying go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : mPadded)))
+  «get__#1» : ∀ (x : mPadded), go.IsGoStepPureDetTagged under (StructFieldGet mPadded.underlying go!"_#1") #x (Val #(x.«_#1'»))
+  «set__#1» : ∀ (x : mPadded) (y : (GoArray w8 216)), go.IsGoStepPureDetTagged under (StructFieldSet mPadded.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : mPadded)))
 
 attribute [instance] mPadded.TypeAssumptions.type_repr
   mPadded.TypeAssumptions.underlying
   mPadded.TypeAssumptions.get_m
   mPadded.TypeAssumptions.set_m
-  mPadded.TypeAssumptions.get__1
-  mPadded.TypeAssumptions.set__1
+  mPadded.TypeAssumptions.«get__#1»
+  mPadded.TypeAssumptions.«set__#1»
 
 class mWeakPointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying mWeakPointer.underlying mWeakPointer
@@ -922,8 +922,8 @@ attribute [instance] notInHeapSlice.TypeAssumptions.type_repr
 class stackpoolItem.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying stackpoolItem.underlying stackpoolItem
   underlying : go.UnderlyingDirectedEq stackpoolItem.ty stackpoolItem.underlying
-  get__0 : ∀ (x : stackpoolItem), go.IsGoStepPureDetTagged under (StructFieldGet stackpoolItem.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : stackpoolItem) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet stackpoolItem.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : stackpoolItem)))
+  «get__#0» : ∀ (x : stackpoolItem), go.IsGoStepPureDetTagged under (StructFieldGet stackpoolItem.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : stackpoolItem) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet stackpoolItem.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : stackpoolItem)))
   get_mu : ∀ (x : stackpoolItem), go.IsGoStepPureDetTagged under (StructFieldGet stackpoolItem.underlying go!"mu") #x (Val #(x.mu'))
   set_mu : ∀ (x : stackpoolItem) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet stackpoolItem.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : stackpoolItem)))
   get_span : ∀ (x : stackpoolItem), go.IsGoStepPureDetTagged under (StructFieldGet stackpoolItem.underlying go!"span") #x (Val #(x.span'))
@@ -931,8 +931,8 @@ class stackpoolItem.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContex
 
 attribute [instance] stackpoolItem.TypeAssumptions.type_repr
   stackpoolItem.TypeAssumptions.underlying
-  stackpoolItem.TypeAssumptions.get__0
-  stackpoolItem.TypeAssumptions.set__0
+  stackpoolItem.TypeAssumptions.«get__#0»
+  stackpoolItem.TypeAssumptions.«set__#0»
   stackpoolItem.TypeAssumptions.get_mu
   stackpoolItem.TypeAssumptions.set_mu
   stackpoolItem.TypeAssumptions.get_span

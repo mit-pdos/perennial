@@ -364,6 +364,8 @@ def structFieldType (f : GoString) : List go.field_decl → go.GoType
       if f = f' then t
       else structFieldType f fds
 
+def isBlankField (n : GoString) : Bool := go!"_#".isPrefixOf n
+
 class IntoValUnfold (V : Type) (f : outParam (V → val)) : Prop where
   intoVal_unfold : @intoVal _ _ V = f
 
@@ -497,6 +499,7 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
                          | go.FieldDecl n t | go.EmbeddedField n t => (n, t)
                        match ke with
                        | KeyedElement none (ElementExpression from_ e) =>
+                           if go.isBlankField field_name then v else
                            gl(StructFieldSet (go.StructType fds) field_name
                              (v, Convert from_ field_type e))
                        | _ => Panic "invalid Go code"

@@ -70,9 +70,10 @@ build_changed() {
   python3 etc/meta-lib.py --check || die "etc/meta-lib.py --check failed (run etc/meta-lib.py and commit)"
   [ "$NOBUILD" = 1 ] && { echo "land: build skipped (--no-build)"; return 0; }
   mapfile -t files < <(git diff --name-only origin/lean...HEAD)
-  lean=(); goose=0
+  lean=(); goose=0; code=0
   for f in "${files[@]}"; do
     case "$f" in
+      Perennial/Code/*) code=1;;&
       Perennial/*.lean|Perennial.lean) [ -f "$f" ] && lean+=("$f");;
       goose/*) goose=1;;
     esac
@@ -92,6 +93,13 @@ build_changed() {
   if [ "$goose" = 1 ]; then
     echo "land: goose changed; go test ./goose/..."
     (cd "$ROOT" && go test ./goose/...) || die "goose tests failed"
+  fi
+  # the guard of docs/design/unsafe-memory.md (R4, section 5): no translated
+  # package may contain code the semantics models incorrectly
+  if [ "$goose" = 1 ] || [ "$code" = 1 ]; then
+    echo "land: goose or its translations changed; etc/update-goose-new.py --modelcheck"
+    python3 etc/update-goose-new.py --modelcheck --std-lib --models --goose-examples \
+      || die "modelcheck found code the semantics models incorrectly (docs/design/unsafe-memory.md, R4)"
   fi
 }
 

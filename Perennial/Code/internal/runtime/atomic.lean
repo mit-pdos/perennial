@@ -343,7 +343,7 @@ attribute [instance] align64.TypeAssumptions.type_repr
 structure Int64 [FfiSyntax] where
   mk ::
   noCopy' : noCopy
-  _1' : align64
+  «_#1'» : align64
   value' : w64
 
 noncomputable instance Int64.zero_val [FfiSyntax] : ZeroVal Int64 :=
@@ -351,7 +351,7 @@ noncomputable instance Int64.zero_val [FfiSyntax] : ZeroVal Int64 :=
 
 @[reducible] noncomputable def Int64.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"noCopy" noCopy.ty),
-(go.field_decl.FieldDecl go!"_1" align64.ty),
+(go.field_decl.FieldDecl go!"_#1" align64.ty),
 (go.field_decl.FieldDecl go!"value" go.int64)]
 
 @[irreducible] noncomputable def Int64.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -369,8 +369,8 @@ class Int64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSe
   underlying : go.UnderlyingDirectedEq Int64.ty Int64.underlying
   get_noCopy : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"noCopy") #x (Val #(x.noCopy'))
   set_noCopy : ∀ (x : Int64) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Int64)))
-  get__1 : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"_1") #x (Val #(x._1'))
-  set__1 : ∀ (x : Int64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : Int64)))
+  «get__#1» : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"_#1") #x (Val #(x.«_#1'»))
+  «set__#1» : ∀ (x : Int64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : Int64)))
   get_value : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : Int64) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Int64)))
 
@@ -378,8 +378,8 @@ attribute [instance] Int64.TypeAssumptions.type_repr
   Int64.TypeAssumptions.underlying
   Int64.TypeAssumptions.get_noCopy
   Int64.TypeAssumptions.set_noCopy
-  Int64.TypeAssumptions.get__1
-  Int64.TypeAssumptions.set__1
+  Int64.TypeAssumptions.«get__#1»
+  Int64.TypeAssumptions.«set__#1»
   Int64.TypeAssumptions.get_value
   Int64.TypeAssumptions.set_value
 
@@ -491,7 +491,7 @@ attribute [instance] Uint32.TypeAssumptions.type_repr
 structure Uint64 [FfiSyntax] where
   mk ::
   noCopy' : noCopy
-  _1' : align64
+  «_#1'» : align64
   value' : w64
 
 noncomputable instance Uint64.zero_val [FfiSyntax] : ZeroVal Uint64 :=
@@ -499,7 +499,7 @@ noncomputable instance Uint64.zero_val [FfiSyntax] : ZeroVal Uint64 :=
 
 @[reducible] noncomputable def Uint64.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"noCopy" noCopy.ty),
-(go.field_decl.FieldDecl go!"_1" align64.ty),
+(go.field_decl.FieldDecl go!"_#1" align64.ty),
 (go.field_decl.FieldDecl go!"value" go.uint64)]
 
 @[irreducible] noncomputable def Uint64.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
@@ -517,8 +517,8 @@ class Uint64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoS
   underlying : go.UnderlyingDirectedEq Uint64.ty Uint64.underlying
   get_noCopy : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"noCopy") #x (Val #(x.noCopy'))
   set_noCopy : ∀ (x : Uint64) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"noCopy") (PairV #x #y) (Val #(({ x with noCopy' := y } : Uint64)))
-  get__1 : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"_1") #x (Val #(x._1'))
-  set__1 : ∀ (x : Uint64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_1") (PairV #x #y) (Val #(({ x with _1' := y } : Uint64)))
+  «get__#1» : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"_#1") #x (Val #(x.«_#1'»))
+  «set__#1» : ∀ (x : Uint64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : Uint64)))
   get_value : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : Uint64) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Uint64)))
 
@@ -526,8 +526,8 @@ attribute [instance] Uint64.TypeAssumptions.type_repr
   Uint64.TypeAssumptions.underlying
   Uint64.TypeAssumptions.get_noCopy
   Uint64.TypeAssumptions.set_noCopy
-  Uint64.TypeAssumptions.get__1
-  Uint64.TypeAssumptions.set__1
+  Uint64.TypeAssumptions.«get__#1»
+  Uint64.TypeAssumptions.«set__#1»
   Uint64.TypeAssumptions.get_value
   Uint64.TypeAssumptions.set_value
 

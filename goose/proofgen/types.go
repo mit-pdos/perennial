@@ -44,7 +44,7 @@ func (tr *typesTranslator) translateStructType(spec *ast.TypeSpec, s *types.Stru
 	for i := 0; i < s.NumFields(); i++ {
 		fieldName := s.Field(i).Name()
 		if fieldName == "_" {
-			fieldName = "_" + strconv.Itoa(i)
+			fieldName = "_#" + strconv.Itoa(i)
 		}
 		decl.LeanFields = append(decl.LeanFields, tmpl.LeanField{
 			Name:     fieldName,
@@ -260,7 +260,11 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 
 func leanHypName(s string) string {
 	if glang.LeanQuoteComponent(s) != s {
-		s = s + "'"
+		if glang.LeanQuoteComponent(s+"'") == s+"'" {
+			s = s + "'"
+		} else {
+			s = glang.LeanQuoteComponent(s)
+		}
 	}
 	return glang.LeanRawString(s)
 }

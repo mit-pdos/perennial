@@ -418,6 +418,54 @@ No goose change; no proof used the old float `==`.
 
 **Why.** P8a and P8d of `docs/design/unsafe-memory-prerequisites.md`.
 
+## Case 14 — ACCEPTED: blank struct fields (branch `fix-blank-fields`, not yet on `lean`)
+
+**Symptom.** Unsound (more defined than Go, and wrong answers). Goose named a
+blank field `_` at position `i` `_<i>`, which a Go identifier can spell: the
+model gave `struct{ _ int }` and `struct{ _0 int }` the same type, and
+`struct{ _1 int; _ int }` a Lean record with a duplicate field (as an unnamed
+struct, one address for both fields, so `alloc_struct` reached
+`AngelicExit`). The unkeyed struct-literal rule stored each positional element
+into its field, blank or not, so a blank field could hold a non-zero value,
+and the field-wise `==` and the value-equality map keys compared it; Go's
+`==` and map keys ignore blank fields.
+
+**Witness.** For `type B struct{ x int; _ int }`, `B{1, 2} == B{x: 1}` is true
+in Go, and a map keyed by `B{1, 2}` finds `B{x: 1}`; the model said false and
+missed. `any(struct{ _ int }{}) != any(struct{ _0 int }{})` is true in Go and
+false in the model.
+
+**Taken.**
+* goose: `fieldName` names a blank field `_#<i>`, which no Go identifier can
+  spell (1 line); generated names built from it (the record projection
+  `«_#0'»`, the `get_`/`set_` class fields, proofgen's access instances) were
+  already quoted. proofgen's own copy of the naming changed the same way, and
+  its hypothesis names quote a name that a `'` cannot make an identifier
+  (`"«_#0»"`).
+* Lean: `go.isBlankField (n : GoString) : Bool := go!"_#".isPrefixOf n`, and
+  the unkeyed fold of `composite_literal_struct` skips blank fields
+  (`if go.isBlankField field_name then v else ...`). The element is still
+  evaluated, since goose binds every element first; a blank field always holds
+  its zero value, which makes the existing `==` and map keys right, including
+  keys nested in interfaces.
+* Cost: 1 goose line, 1 helper, 1 refined rule; 3 semantics tests
+  (`testBlankFieldEq`, which also checks the blank element is evaluated,
+  `testBlankFieldMapKey`, `testBlankFieldIdentity`). Churn: the regenerated
+  std translations (`runtime`, `internal/runtime/{atomic,sys}`, `sync`,
+  `sync/atomic`) and 12 proof lines naming `_0'`/`_1'`.
+
+**Not taken.** Skipping blank fields in `go_eq_struct`: map lookup would still
+need a key normalisation.
+
+**Left open.** Go also keeps apart unexported field names from different
+packages (`struct{ a int }{}` from two packages are different types); the
+model has one type. Recorded as an open defect, not part of this fix.
+
+**Why.** The smallest change that makes blank fields an instance of the
+existing field scheme: a name Go cannot collide with, and a literal that never
+writes them. Part of the plans for the unsafe memory design
+(`docs/design/unsafe-memory-prerequisites.md`, P5). The user: "P5: Ok."
+
 ## Case 16 — ACCEPTED: a struct or array load or store through `nil` panics (branch `fix-nil-zero-size-access`, not yet on `lean`)
 
 **Symptom.** Unsound. `load_struct`/`store_struct` with no fields and

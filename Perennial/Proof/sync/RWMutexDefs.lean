@@ -723,9 +723,9 @@ theorem init_RWMutex {E : CoPset} (N : Namespace) (rw : Loc) :
   rw [show (zero_val RWMutex).readerSem' = W32 0 from rfl,
     show (zero_val RWMutex).writerSem' = W32 0 from rfl,
     show (zero_val RWMutex).readerCount' =
-      ({ _0' := zero_val _, v' := W32 0 } : sync.atomic.Int32) from rfl,
+      ({ «_#0'» := zero_val _, v' := W32 0 } : sync.atomic.Int32) from rfl,
     show (zero_val RWMutex).readerWait' =
-      ({ _0' := zero_val _, v' := W32 0 } : sync.atomic.Int32) from rfl]
+      ({ «_#0'» := zero_val _, v' := W32 0 } : sync.atomic.Int32) from rfl]
   imod ownTokAuth_alloc (GF := GF) with ⟨%γread_wait, Hread_wait⟩
   imod ownTokAuth_alloc (GF := GF) with ⟨%γrlock, Hrlock⟩
   imod ownTokAuth_add (Int.toNat actualMaxReaders) γrlock 0 $$ Hrlock with ⟨Hrlock, Htoks⟩
