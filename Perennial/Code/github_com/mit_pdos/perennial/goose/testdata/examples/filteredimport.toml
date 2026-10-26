@@ -1,0 +1,4 @@
+# types and names only, and dep is not imported: the translation cannot name its types
+translate = ["!*"]
+imports = ["!*"]
+translate_types = true

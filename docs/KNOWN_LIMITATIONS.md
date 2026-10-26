@@ -67,6 +67,17 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   `struct{ a int }{}` from its own package, and the model has one type. Refusing such
   types would reject common code (`struct{ mu sync.Mutex; … }`); modelling it means
   qualifying field names everywhere.
+- **A struct type literal with embedded fields has no known method set.** In Go,
+  `struct{ T }` has the methods promoted from `T`:
+  ```go
+  var i any = struct{ msValRecv }{msValRecv{x: 4}}
+  _, ok := i.(msGetter) // Go: true; the model does not decide it
+  ```
+  goose emits method sets only for the named types a package declares
+  (`T.TypeAssumptions.method_set`, `Golang/Defn/MethodSet.lean`), so `methodSet` is
+  unconstrained for such a type and neither outcome is provable. Values of a struct type
+  literal with fields do not step either (they have no `TypeRepr` and no field accessors), so
+  the semantics test `testMethodSetUnnamedStruct` has no proof.
 
 ## `unsafe` and layouts
 

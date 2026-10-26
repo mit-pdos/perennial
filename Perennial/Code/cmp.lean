@@ -171,8 +171,12 @@ abbrev Ordered [GooseExts] : Type := GoInterface
 
 class Ordered.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Ordered.ty Ordered.underlying
+  method_set : go.MethodSetIs Ordered.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Ordered.ty) []
 
 attribute [instance] Ordered.TypeAssumptions.underlying
+  Ordered.TypeAssumptions.method_set
+  Ordered.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Ordered_instance : Ordered.TypeAssumptions

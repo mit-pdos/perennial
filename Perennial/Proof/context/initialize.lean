@@ -33,7 +33,7 @@ theorem context.initialize'.wp_proof
     (wp_sync_init : sync.initialize'.spec (GF := GF) (hG := hG))
     (wp_errors_init : errors.initialize'.spec (GF := GF) (hG := hG)) :
     context.initialize'.spec (GF := GF) (hG := hG) :=
-  fun [hErr : ErrorStringIsError] [hDE : DeadlineExceededIsError] get_is_pkg_init Hinit => by
+  fun get_is_pkg_init Hinit => by
   wp_start as Hown
   iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
   iframe Hown
@@ -95,12 +95,12 @@ theorem context.initialize'.wp_proof
   · iexists _
     iframe HC
     ipureintro
-    exact hErr.is_error
+    exact errorString_is_error
   isplitr
   · iexists _
     iframe HDE
     ipureintro
-    exact hDE.is_error
+    exact deadlineExceededError_is_error
   isplitr
   · iunfold isClosedchanInit
     iexists ch, γ

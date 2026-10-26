@@ -1615,6 +1615,8 @@ class Table.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   set_Index : ∀ (x : Table) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet Table.underlying go!"Index") (PairV #x #y) (Val #(({ x with Index' := y } : Table)))
   get_File : ∀ (x : Table), go.IsGoStepPureDetTagged under (StructFieldGet Table.underlying go!"File") #x (Val #(x.File'))
   set_File : ∀ (x : Table) (y : _root_.Perennial.github_com.goose_lang.primitive.filesys.File), go.IsGoStepPureDetTagged under (StructFieldSet Table.underlying go!"File") (PairV #x #y) (Val #(({ x with File' := y } : Table)))
+  method_set : go.MethodSetIs Table.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Table.ty) []
 
 attribute [instance] Table.TypeAssumptions.type_repr
   Table.TypeAssumptions.underlying
@@ -1622,6 +1624,8 @@ attribute [instance] Table.TypeAssumptions.type_repr
   Table.TypeAssumptions.set_Index
   Table.TypeAssumptions.get_File
   Table.TypeAssumptions.set_File
+  Table.TypeAssumptions.method_set
+  Table.TypeAssumptions.ptr_method_set
 
 structure Entry [GooseExts] where
   mk ::
@@ -1652,6 +1656,8 @@ class Entry.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   set_Key : ∀ (x : Entry) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Entry.underlying go!"Key") (PairV #x #y) (Val #(({ x with Key' := y } : Entry)))
   get_Value : ∀ (x : Entry), go.IsGoStepPureDetTagged under (StructFieldGet Entry.underlying go!"Value") #x (Val #(x.Value'))
   set_Value : ∀ (x : Entry) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Entry.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : Entry)))
+  method_set : go.MethodSetIs Entry.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Entry.ty) []
 
 attribute [instance] Entry.TypeAssumptions.type_repr
   Entry.TypeAssumptions.underlying
@@ -1659,6 +1665,8 @@ attribute [instance] Entry.TypeAssumptions.type_repr
   Entry.TypeAssumptions.set_Key
   Entry.TypeAssumptions.get_Value
   Entry.TypeAssumptions.set_Value
+  Entry.TypeAssumptions.method_set
+  Entry.TypeAssumptions.ptr_method_set
 
 structure lazyFileBuf [GooseExts] where
   mk ::
@@ -1689,6 +1697,8 @@ class lazyFileBuf.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   set_offset : ∀ (x : lazyFileBuf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet lazyFileBuf.underlying go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : lazyFileBuf)))
   get_next : ∀ (x : lazyFileBuf), go.IsGoStepPureDetTagged under (StructFieldGet lazyFileBuf.underlying go!"next") #x (Val #(x.next'))
   set_next : ∀ (x : lazyFileBuf) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet lazyFileBuf.underlying go!"next") (PairV #x #y) (Val #(({ x with next' := y } : lazyFileBuf)))
+  method_set : go.MethodSetIs lazyFileBuf.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType lazyFileBuf.ty) []
 
 attribute [instance] lazyFileBuf.TypeAssumptions.type_repr
   lazyFileBuf.TypeAssumptions.underlying
@@ -1696,6 +1706,8 @@ attribute [instance] lazyFileBuf.TypeAssumptions.type_repr
   lazyFileBuf.TypeAssumptions.set_offset
   lazyFileBuf.TypeAssumptions.get_next
   lazyFileBuf.TypeAssumptions.set_next
+  lazyFileBuf.TypeAssumptions.method_set
+  lazyFileBuf.TypeAssumptions.ptr_method_set
 
 structure bufFile [GooseExts] where
   mk ::
@@ -1726,6 +1738,8 @@ class bufFile.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   set_file : ∀ (x : bufFile) (y : _root_.Perennial.github_com.goose_lang.primitive.filesys.File), go.IsGoStepPureDetTagged under (StructFieldSet bufFile.underlying go!"file") (PairV #x #y) (Val #(({ x with file' := y } : bufFile)))
   get_buf : ∀ (x : bufFile), go.IsGoStepPureDetTagged under (StructFieldGet bufFile.underlying go!"buf") #x (Val #(x.buf'))
   set_buf : ∀ (x : bufFile) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet bufFile.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : bufFile)))
+  method_set : go.MethodSetIs bufFile.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType bufFile.ty) []
 
 attribute [instance] bufFile.TypeAssumptions.type_repr
   bufFile.TypeAssumptions.underlying
@@ -1733,6 +1747,8 @@ attribute [instance] bufFile.TypeAssumptions.type_repr
   bufFile.TypeAssumptions.set_file
   bufFile.TypeAssumptions.get_buf
   bufFile.TypeAssumptions.set_buf
+  bufFile.TypeAssumptions.method_set
+  bufFile.TypeAssumptions.ptr_method_set
 
 structure tableWriter [GooseExts] where
   mk ::
@@ -1771,6 +1787,8 @@ class tableWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   set_file : ∀ (x : tableWriter) (y : bufFile), go.IsGoStepPureDetTagged under (StructFieldSet tableWriter.underlying go!"file") (PairV #x #y) (Val #(({ x with file' := y } : tableWriter)))
   get_offset : ∀ (x : tableWriter), go.IsGoStepPureDetTagged under (StructFieldGet tableWriter.underlying go!"offset") #x (Val #(x.offset'))
   set_offset : ∀ (x : tableWriter) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet tableWriter.underlying go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : tableWriter)))
+  method_set : go.MethodSetIs tableWriter.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType tableWriter.ty) []
 
 attribute [instance] tableWriter.TypeAssumptions.type_repr
   tableWriter.TypeAssumptions.underlying
@@ -1782,6 +1800,8 @@ attribute [instance] tableWriter.TypeAssumptions.type_repr
   tableWriter.TypeAssumptions.set_file
   tableWriter.TypeAssumptions.get_offset
   tableWriter.TypeAssumptions.set_offset
+  tableWriter.TypeAssumptions.method_set
+  tableWriter.TypeAssumptions.ptr_method_set
 
 structure Database [GooseExts] where
   mk ::
@@ -1832,6 +1852,8 @@ class Database.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   set_tableL : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"tableL") (PairV #x #y) (Val #(({ x with tableL' := y } : Database)))
   get_compactionL : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"compactionL") #x (Val #(x.compactionL'))
   set_compactionL : ∀ (x : Database) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Database.underlying go!"compactionL") (PairV #x #y) (Val #(({ x with compactionL' := y } : Database)))
+  method_set : go.MethodSetIs Database.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Database.ty) []
 
 attribute [instance] Database.TypeAssumptions.type_repr
   Database.TypeAssumptions.underlying
@@ -1849,6 +1871,8 @@ attribute [instance] Database.TypeAssumptions.type_repr
   Database.TypeAssumptions.set_tableL
   Database.TypeAssumptions.get_compactionL
   Database.TypeAssumptions.set_compactionL
+  Database.TypeAssumptions.method_set
+  Database.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Table_instance : Table.TypeAssumptions

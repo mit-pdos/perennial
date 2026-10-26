@@ -326,6 +326,8 @@ class Box.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSema
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Box.ty T) (Box.underlying T)
   get_Value : ∀ (T : go.GoType) (T' : Type) (x : (Box T')), go.IsGoStepPureDetTagged under (StructFieldGet (Box.underlying T) go!"Value") #x (Val #(x.Value'))
   set_Value : ∀ (T : go.GoType) (T' : Type) (x : (Box T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (Box.underlying T) go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : (Box T'))))
+  method_set : ∀ (T : go.GoType), go.MethodSetIs (Box.ty T) [(go!"Get", (some (go.signature.Signature [] false [T])))]
+  ptr_method_set : ∀ (T : go.GoType), go.MethodSetIs (go.GoType.PointerType (Box.ty T)) [(go!"Get", (some (go.signature.Signature [] false [T])))]
   Get_unfold : ∀ (T : go.GoType), MethodUnfold (Box.ty T) go!"Get" (Box.Get.impl T)
   ptr_Get_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Box.ty T)) go!"Get" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (Box.ty T) go!"Get"))) (App (Val (GoInstruction (GoLoad (Box.ty T)))) (Var "$r"))))
@@ -334,6 +336,8 @@ attribute [instance] Box.TypeAssumptions.type_repr
   Box.TypeAssumptions.underlying
   Box.TypeAssumptions.get_Value
   Box.TypeAssumptions.set_Value
+  Box.TypeAssumptions.method_set
+  Box.TypeAssumptions.ptr_method_set
   Box.TypeAssumptions.Get_unfold
   Box.TypeAssumptions.ptr_Get_unfold
 
@@ -374,6 +378,8 @@ class Container.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   set_Z : ∀ (T : go.GoType) (T' : Type) (x : (Container T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (Container.underlying T) go!"Z") (PairV #x #y) (Val #(({ x with Z' := y } : (Container T'))))
   get_W : ∀ (T : go.GoType) (T' : Type) (x : (Container T')), go.IsGoStepPureDetTagged under (StructFieldGet (Container.underlying T) go!"W") #x (Val #(x.W'))
   set_W : ∀ (T : go.GoType) (T' : Type) (x : (Container T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet (Container.underlying T) go!"W") (PairV #x #y) (Val #(({ x with W' := y } : (Container T'))))
+  method_set : ∀ (T : go.GoType), go.MethodSetIs (Container.ty T) []
+  ptr_method_set : ∀ (T : go.GoType), go.MethodSetIs (go.GoType.PointerType (Container.ty T)) []
 
 attribute [instance] Container.TypeAssumptions.type_repr
   Container.TypeAssumptions.underlying
@@ -385,6 +391,8 @@ attribute [instance] Container.TypeAssumptions.type_repr
   Container.TypeAssumptions.set_Z
   Container.TypeAssumptions.get_W
   Container.TypeAssumptions.set_W
+  Container.TypeAssumptions.method_set
+  Container.TypeAssumptions.ptr_method_set
 
 structure UseContainer [GooseExts] where
   mk ::
@@ -411,11 +419,15 @@ class UseContainer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   underlying : go.UnderlyingDirectedEq UseContainer.ty UseContainer.underlying
   get_X : ∀ (x : UseContainer), go.IsGoStepPureDetTagged under (StructFieldGet UseContainer.underlying go!"X") #x (Val #(x.X'))
   set_X : ∀ (x : UseContainer) (y : (Container w64)), go.IsGoStepPureDetTagged under (StructFieldSet UseContainer.underlying go!"X") (PairV #x #y) (Val #(({ x with X' := y } : UseContainer)))
+  method_set : go.MethodSetIs UseContainer.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType UseContainer.ty) []
 
 attribute [instance] UseContainer.TypeAssumptions.type_repr
   UseContainer.TypeAssumptions.underlying
   UseContainer.TypeAssumptions.get_X
   UseContainer.TypeAssumptions.set_X
+  UseContainer.TypeAssumptions.method_set
+  UseContainer.TypeAssumptions.ptr_method_set
 
 structure OnlyIndirect [GooseExts] (T : Type) where
   mk ::
@@ -446,6 +458,8 @@ class OnlyIndirect.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   set_X : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect T')) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet (OnlyIndirect.underlying T) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (OnlyIndirect T'))))
   get_Y : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect T')), go.IsGoStepPureDetTagged under (StructFieldGet (OnlyIndirect.underlying T) go!"Y") #x (Val #(x.Y'))
   set_Y : ∀ (T : go.GoType) (T' : Type) (x : (OnlyIndirect T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (OnlyIndirect.underlying T) go!"Y") (PairV #x #y) (Val #(({ x with Y' := y } : (OnlyIndirect T'))))
+  method_set : ∀ (T : go.GoType), go.MethodSetIs (OnlyIndirect.ty T) []
+  ptr_method_set : ∀ (T : go.GoType), go.MethodSetIs (go.GoType.PointerType (OnlyIndirect.ty T)) []
 
 attribute [instance] OnlyIndirect.TypeAssumptions.type_repr
   OnlyIndirect.TypeAssumptions.underlying
@@ -453,6 +467,8 @@ attribute [instance] OnlyIndirect.TypeAssumptions.type_repr
   OnlyIndirect.TypeAssumptions.set_X
   OnlyIndirect.TypeAssumptions.get_Y
   OnlyIndirect.TypeAssumptions.set_Y
+  OnlyIndirect.TypeAssumptions.method_set
+  OnlyIndirect.TypeAssumptions.ptr_method_set
 
 structure MultiParam [GooseExts] (A B : Type) where
   mk ::
@@ -483,6 +499,8 @@ class MultiParam.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] 
   set_Y : ∀ (A B : go.GoType) (A' B' : Type) (x : (MultiParam A' B')) (y : B'), go.IsGoStepPureDetTagged under (StructFieldSet (MultiParam.underlying A B) go!"Y") (PairV #x #y) (Val #(({ x with Y' := y } : (MultiParam A' B'))))
   get_X : ∀ (A B : go.GoType) (A' B' : Type) (x : (MultiParam A' B')), go.IsGoStepPureDetTagged under (StructFieldGet (MultiParam.underlying A B) go!"X") #x (Val #(x.X'))
   set_X : ∀ (A B : go.GoType) (A' B' : Type) (x : (MultiParam A' B')) (y : A'), go.IsGoStepPureDetTagged under (StructFieldSet (MultiParam.underlying A B) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (MultiParam A' B'))))
+  method_set : ∀ (A B : go.GoType), go.MethodSetIs (MultiParam.ty A B) []
+  ptr_method_set : ∀ (A B : go.GoType), go.MethodSetIs (go.GoType.PointerType (MultiParam.ty A B)) []
 
 attribute [instance] MultiParam.TypeAssumptions.type_repr
   MultiParam.TypeAssumptions.underlying
@@ -490,6 +508,8 @@ attribute [instance] MultiParam.TypeAssumptions.type_repr
   MultiParam.TypeAssumptions.set_Y
   MultiParam.TypeAssumptions.get_X
   MultiParam.TypeAssumptions.set_X
+  MultiParam.TypeAssumptions.method_set
+  MultiParam.TypeAssumptions.ptr_method_set
 
 structure TypeParamCollision [GooseExts] (T C : Type) where
   mk ::
@@ -520,6 +540,8 @@ class TypeParamCollision.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalC
   set_X : ∀ (T C : go.GoType) (T' C' : Type) (x : (TypeParamCollision T' C')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (TypeParamCollision.underlying T C) go!"X") (PairV #x #y) (Val #(({ x with X' := y } : (TypeParamCollision T' C'))))
   get_Y : ∀ (T C : go.GoType) (T' C' : Type) (x : (TypeParamCollision T' C')), go.IsGoStepPureDetTagged under (StructFieldGet (TypeParamCollision.underlying T C) go!"Y") #x (Val #(x.Y'))
   set_Y : ∀ (T C : go.GoType) (T' C' : Type) (x : (TypeParamCollision T' C')) (y : C'), go.IsGoStepPureDetTagged under (StructFieldSet (TypeParamCollision.underlying T C) go!"Y") (PairV #x #y) (Val #(({ x with Y' := y } : (TypeParamCollision T' C'))))
+  method_set : ∀ (T C : go.GoType), go.MethodSetIs (TypeParamCollision.ty T C) []
+  ptr_method_set : ∀ (T C : go.GoType), go.MethodSetIs (go.GoType.PointerType (TypeParamCollision.ty T C)) []
 
 attribute [instance] TypeParamCollision.TypeAssumptions.type_repr
   TypeParamCollision.TypeAssumptions.underlying
@@ -527,6 +549,8 @@ attribute [instance] TypeParamCollision.TypeAssumptions.type_repr
   TypeParamCollision.TypeAssumptions.set_X
   TypeParamCollision.TypeAssumptions.get_Y
   TypeParamCollision.TypeAssumptions.set_Y
+  TypeParamCollision.TypeAssumptions.method_set
+  TypeParamCollision.TypeAssumptions.ptr_method_set
 
 abbrev nonStructGeneric [GooseExts] (T : Type) : Type := GoSlice
 
@@ -535,8 +559,12 @@ abbrev nonStructGeneric [GooseExts] (T : Type) : Type := GoSlice
 
 class nonStructGeneric.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (nonStructGeneric.ty T) (nonStructGeneric.underlying T)
+  method_set : ∀ (T : go.GoType), go.MethodSetIs (nonStructGeneric.ty T) []
+  ptr_method_set : ∀ (T : go.GoType), go.MethodSetIs (go.GoType.PointerType (nonStructGeneric.ty T)) []
 
 attribute [instance] nonStructGeneric.TypeAssumptions.underlying
+  nonStructGeneric.TypeAssumptions.method_set
+  nonStructGeneric.TypeAssumptions.ptr_method_set
 
 structure useNonStructGeneric [GooseExts] (T : Type) where
   mk ::
@@ -563,11 +591,15 @@ class useNonStructGeneric.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocal
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (useNonStructGeneric.ty T) (useNonStructGeneric.underlying T)
   get_x : ∀ (T : go.GoType) (T' : Type) (x : (useNonStructGeneric T')), go.IsGoStepPureDetTagged under (StructFieldGet (useNonStructGeneric.underlying T) go!"x") #x (Val #(x.x'))
   set_x : ∀ (T : go.GoType) (T' : Type) (x : (useNonStructGeneric T')) (y : (nonStructGeneric T')), go.IsGoStepPureDetTagged under (StructFieldSet (useNonStructGeneric.underlying T) go!"x") (PairV #x #y) (Val #(({ x with x' := y } : (useNonStructGeneric T'))))
+  method_set : ∀ (T : go.GoType), go.MethodSetIs (useNonStructGeneric.ty T) []
+  ptr_method_set : ∀ (T : go.GoType), go.MethodSetIs (go.GoType.PointerType (useNonStructGeneric.ty T)) []
 
 attribute [instance] useNonStructGeneric.TypeAssumptions.type_repr
   useNonStructGeneric.TypeAssumptions.underlying
   useNonStructGeneric.TypeAssumptions.get_x
   useNonStructGeneric.TypeAssumptions.set_x
+  useNonStructGeneric.TypeAssumptions.method_set
+  useNonStructGeneric.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Box_instance : Box.TypeAssumptions

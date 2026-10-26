@@ -36,6 +36,7 @@ public import Perennial.Golang.Defn.Interface
 public import Perennial.Golang.Defn.Lock
 public import Perennial.Golang.Defn.Loop
 public import Perennial.Golang.Defn.Map
+public import Perennial.Golang.Defn.MethodSet
 public import Perennial.Golang.Defn.Pkg
 public import Perennial.Golang.Defn.PostLang
 public import Perennial.Golang.Defn.Pre
@@ -72,6 +73,7 @@ public import Perennial.Golang.Theory.SubstEnv
 public import Perennial.Golang.Theory.SubstSimp
 public import Perennial.Golang.Theory.TacticsSimp
 public import Perennial.Golang.Theory.TacticsSimpAttr
+public import Perennial.Golang.Theory.TypeSet
 public import Perennial.GooseLang.BoundedLang
 public import Perennial.GooseLang.Countable
 public import Perennial.GooseLang.CrashToken

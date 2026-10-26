@@ -6,8 +6,8 @@ after initialization), what a package's `isPkgInit` keeps of such a variable (`i
 
 `errors.New.spec` keeps the error's type abstract (`IsPointerError`), which is enough to call
 `Error()` and to compare it with `==`; a client that needs facts about the type (that it
-implements `error`, `context.ErrorStringIsError`; the methods it lacks, which the semantics
-leaves uninterpreted) needs it to be `*errorString`.
+implements `error`, `context.errorString_is_error`, and the methods it lacks, both from its
+method set, by `go_type_set`) needs it to be `*errorString`.
 -/
 module
 

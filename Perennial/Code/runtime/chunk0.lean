@@ -11739,7 +11739,7 @@ noncomputable instance equals_unfold_sockaddr_un [GooseExts] [GoGlobalContext] :
 abbrev Error [GooseExts] : Type := GoInterface
 
 @[reducible] noncomputable def Error.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"RuntimeError" (go.signature.Signature [] false [])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm go.error)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Error" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"RuntimeError" (go.signature.Signature [] false []))])
 
 axiom TypeAssertionError : Type
 axiom TypeAssertionError.zero_val : ZeroVal TypeAssertionError

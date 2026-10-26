@@ -535,6 +535,8 @@ class JoinHandle.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] 
   set_done : ∀ (x : JoinHandle) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet JoinHandle.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : JoinHandle)))
   get_cond : ∀ (x : JoinHandle), go.IsGoStepPureDetTagged under (StructFieldGet JoinHandle.underlying go!"cond") #x (Val #(x.cond'))
   set_cond : ∀ (x : JoinHandle) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet JoinHandle.underlying go!"cond") (PairV #x #y) (Val #(({ x with cond' := y } : JoinHandle)))
+  method_set : go.MethodSetIs JoinHandle.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType JoinHandle.ty) [(go!"Join", (some (go.signature.Signature [] false []))), (go!"github.com/goose-lang/std.finish", (some (go.signature.Signature [] false [])))]
   ptr_Join_unfold : MethodUnfold (go.GoType.PointerType JoinHandle.ty) go!"Join" JoinHandle.Join.impl
   ptr_finish_unfold : MethodUnfold (go.GoType.PointerType JoinHandle.ty) go!"finish" JoinHandle.finish.impl
 
@@ -546,6 +548,8 @@ attribute [instance] JoinHandle.TypeAssumptions.type_repr
   JoinHandle.TypeAssumptions.set_done
   JoinHandle.TypeAssumptions.get_cond
   JoinHandle.TypeAssumptions.set_cond
+  JoinHandle.TypeAssumptions.method_set
+  JoinHandle.TypeAssumptions.ptr_method_set
   JoinHandle.TypeAssumptions.ptr_Join_unfold
   JoinHandle.TypeAssumptions.ptr_finish_unfold
 

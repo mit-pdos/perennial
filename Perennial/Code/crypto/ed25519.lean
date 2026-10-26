@@ -92,8 +92,12 @@ abbrev PublicKey [GooseExts] : Type := GoSlice
 
 class PublicKey.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq PublicKey.ty PublicKey.underlying
+  method_set : go.MethodSetIs PublicKey.ty [(go!"Equal", none)]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType PublicKey.ty) [(go!"Equal", none)]
 
 attribute [instance] PublicKey.TypeAssumptions.underlying
+  PublicKey.TypeAssumptions.method_set
+  PublicKey.TypeAssumptions.ptr_method_set
 
 abbrev PrivateKey [GooseExts] : Type := GoSlice
 
@@ -102,8 +106,12 @@ abbrev PrivateKey [GooseExts] : Type := GoSlice
 
 class PrivateKey.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq PrivateKey.ty PrivateKey.underlying
+  method_set : go.MethodSetIs PrivateKey.ty [(go!"Equal", none), (go!"Public", none), (go!"Seed", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Sign", none)]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType PrivateKey.ty) [(go!"Equal", none), (go!"Public", none), (go!"Seed", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Sign", none)]
 
 attribute [instance] PrivateKey.TypeAssumptions.underlying
+  PrivateKey.TypeAssumptions.method_set
+  PrivateKey.TypeAssumptions.ptr_method_set
 
 axiom Options : Type
 axiom Options.zero_val : ZeroVal Options
@@ -113,10 +121,14 @@ class Options.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying Options.underlying Options
   underlying : go.UnderlyingDirectedEq Options.ty Options.underlying
   isUnderlying : go.IsUnderlying Options.underlying Options.underlying
+  method_set : go.MethodSetIs Options.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Options.ty) [(go!"HashFunc", none)]
 
 attribute [instance] Options.TypeAssumptions.type_repr
   Options.TypeAssumptions.underlying
   Options.TypeAssumptions.isUnderlying
+  Options.TypeAssumptions.method_set
+  Options.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   PublicKey_instance : PublicKey.TypeAssumptions

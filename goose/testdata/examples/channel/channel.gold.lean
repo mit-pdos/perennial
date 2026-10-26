@@ -1892,6 +1892,8 @@ class Cond.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   set_L : ∀ (x : Cond) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"L") (PairV #x #y) (Val #(({ x with L' := y } : Cond)))
   get_waiters : ∀ (x : Cond), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"waiters") #x (Val #(x.waiters'))
   set_waiters : ∀ (x : Cond) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"waiters") (PairV #x #y) (Val #(({ x with waiters' := y } : Cond)))
+  method_set : go.MethodSetIs Cond.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Cond.ty) [(go!"Broadcast", (some (go.signature.Signature [] false []))), (go!"Signal", (some (go.signature.Signature [] false []))), (go!"Wait", (some (go.signature.Signature [] false []))), (go!"WaitFor", (some (go.signature.Signature [_root_.Perennial.time.Duration.ty] false [go.bool]))), (go!"WaitUntil", (some (go.signature.Signature [_root_.Perennial.time.Time.ty] false [go.bool])))]
   ptr_Broadcast_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Broadcast" Cond.Broadcast.impl
   ptr_Signal_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Signal" Cond.Signal.impl
   ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Wait" Cond.Wait.impl
@@ -1904,6 +1906,8 @@ attribute [instance] Cond.TypeAssumptions.type_repr
   Cond.TypeAssumptions.set_L
   Cond.TypeAssumptions.get_waiters
   Cond.TypeAssumptions.set_waiters
+  Cond.TypeAssumptions.method_set
+  Cond.TypeAssumptions.ptr_method_set
   Cond.TypeAssumptions.ptr_Broadcast_unfold
   Cond.TypeAssumptions.ptr_Signal_unfold
   Cond.TypeAssumptions.ptr_Wait_unfold
@@ -1939,6 +1943,8 @@ class Result.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   set_value : ∀ (x : Result) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet Result.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : Result)))
   get_primary_won : ∀ (x : Result), go.IsGoStepPureDetTagged under (StructFieldGet Result.underlying go!"primary_won") #x (Val #(x.primary_won'))
   set_primary_won : ∀ (x : Result) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Result.underlying go!"primary_won") (PairV #x #y) (Val #(({ x with primary_won' := y } : Result)))
+  method_set : go.MethodSetIs Result.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Result.ty) []
 
 attribute [instance] Result.TypeAssumptions.type_repr
   Result.TypeAssumptions.underlying
@@ -1946,6 +1952,8 @@ attribute [instance] Result.TypeAssumptions.type_repr
   Result.TypeAssumptions.set_value
   Result.TypeAssumptions.get_primary_won
   Result.TypeAssumptions.set_primary_won
+  Result.TypeAssumptions.method_set
+  Result.TypeAssumptions.ptr_method_set
 
 structure request [GooseExts] where
   mk ::
@@ -1976,6 +1984,8 @@ class request.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   set_f : ∀ (x : request) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet request.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : request)))
   get_result : ∀ (x : request), go.IsGoStepPureDetTagged under (StructFieldGet request.underlying go!"result") #x (Val #(x.result'))
   set_result : ∀ (x : request) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet request.underlying go!"result") (PairV #x #y) (Val #(({ x with result' := y } : request)))
+  method_set : go.MethodSetIs request.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType request.ty) []
 
 attribute [instance] request.TypeAssumptions.type_repr
   request.TypeAssumptions.underlying
@@ -1983,6 +1993,8 @@ attribute [instance] request.TypeAssumptions.type_repr
   request.TypeAssumptions.set_f
   request.TypeAssumptions.get_result
   request.TypeAssumptions.set_result
+  request.TypeAssumptions.method_set
+  request.TypeAssumptions.ptr_method_set
 
 structure stream [GooseExts] where
   mk ::
@@ -2013,6 +2025,8 @@ class stream.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   set_req : ∀ (x : stream) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet stream.underlying go!"req") (PairV #x #y) (Val #(({ x with req' := y } : stream)))
   get_res : ∀ (x : stream), go.IsGoStepPureDetTagged under (StructFieldGet stream.underlying go!"res") #x (Val #(x.res'))
   set_res : ∀ (x : stream) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet stream.underlying go!"res") (PairV #x #y) (Val #(({ x with res' := y } : stream)))
+  method_set : go.MethodSetIs stream.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stream.ty) []
 
 attribute [instance] stream.TypeAssumptions.type_repr
   stream.TypeAssumptions.underlying
@@ -2020,6 +2034,8 @@ attribute [instance] stream.TypeAssumptions.type_repr
   stream.TypeAssumptions.set_req
   stream.TypeAssumptions.get_res
   stream.TypeAssumptions.set_res
+  stream.TypeAssumptions.method_set
+  stream.TypeAssumptions.ptr_method_set
 
 structure streamold [GooseExts] where
   mk ::
@@ -2054,6 +2070,8 @@ class streamold.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   set_res : ∀ (x : streamold) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"res") (PairV #x #y) (Val #(({ x with res' := y } : streamold)))
   get_f : ∀ (x : streamold), go.IsGoStepPureDetTagged under (StructFieldGet streamold.underlying go!"f") #x (Val #(x.f'))
   set_f : ∀ (x : streamold) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet streamold.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : streamold)))
+  method_set : go.MethodSetIs streamold.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType streamold.ty) []
 
 attribute [instance] streamold.TypeAssumptions.type_repr
   streamold.TypeAssumptions.underlying
@@ -2063,6 +2081,8 @@ attribute [instance] streamold.TypeAssumptions.type_repr
   streamold.TypeAssumptions.set_res
   streamold.TypeAssumptions.get_f
   streamold.TypeAssumptions.set_f
+  streamold.TypeAssumptions.method_set
+  streamold.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Cond_instance : Cond.TypeAssumptions

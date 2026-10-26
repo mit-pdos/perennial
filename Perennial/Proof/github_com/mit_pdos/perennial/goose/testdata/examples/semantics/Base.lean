@@ -6,6 +6,12 @@ Common setup for the goose semantics tests: the package's `isPkgInit` instances,
 `wp_testAllocateDistinct` (`allocator.go`) is not stated (TODO: no map alloc?):
 the map literal `map[uint64]unit{}` steps to a raw `AllocOp` of `map_empty`,
 for which there is no spec. Nothing to state here yet.
+
+Two method-set tests (`method_sets.go`) are not stated either. `testMethodSetAssertPanics`
+recovers a failed type assertion, which steps (by the method sets) to the run-time panic
+`Panic "type assert failed"`, and a run-time panic is stuck in the model. In
+`testMethodSetUnnamedStruct`, a value of a struct type literal with fields does not step, and
+the method set of such a type is unconstrained (`docs/KNOWN_LIMITATIONS.md`, "Struct types").
 -/
 module
 
@@ -66,9 +72,10 @@ end github_com.mit_pdos.perennial.goose.testdata.examples.semantics
 macro "wp_call_auto" : tactic =>
   `(tactic| first | (wp_func_call; wp_call) | (wp_method_call; wp_call) | wp_call)
 
-/-- Repeatedly step calls, pure steps and anonymous allocations (`wp_alloc_anon`). -/
+/-- Repeatedly step calls, pure steps and anonymous allocations (`wp_alloc_anon`), deciding
+type-set memberships (`go_type_set`) as they appear. -/
 macro "steps" : tactic =>
-  `(tactic| repeat (first | wp_call_auto | wp_auto | wp_alloc_anon))
+  `(tactic| repeat (first | wp_call_auto | wp_auto | wp_alloc_anon | go_type_set))
 
 set_option hygiene false in
 /-- Start a `TestFunOk` proof, step through the

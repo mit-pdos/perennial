@@ -1117,10 +1117,14 @@ class abiStep.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying abiStep.underlying abiStep
   underlying : go.UnderlyingDirectedEq abiStep.ty abiStep.underlying
   isUnderlying : go.IsUnderlying abiStep.underlying abiStep.underlying
+  method_set : go.MethodSetIs abiStep.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType abiStep.ty) []
 
 attribute [instance] abiStep.TypeAssumptions.type_repr
   abiStep.TypeAssumptions.underlying
   abiStep.TypeAssumptions.isUnderlying
+  abiStep.TypeAssumptions.method_set
+  abiStep.TypeAssumptions.ptr_method_set
 
 axiom abiStepKind : Type
 axiom abiStepKind.zero_val : ZeroVal abiStepKind
@@ -1130,10 +1134,14 @@ class abiStepKind.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   type_repr : go.TypeReprUnderlying abiStepKind.underlying abiStepKind
   underlying : go.UnderlyingDirectedEq abiStepKind.ty abiStepKind.underlying
   isUnderlying : go.IsUnderlying abiStepKind.underlying abiStepKind.underlying
+  method_set : go.MethodSetIs abiStepKind.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType abiStepKind.ty) []
 
 attribute [instance] abiStepKind.TypeAssumptions.type_repr
   abiStepKind.TypeAssumptions.underlying
   abiStepKind.TypeAssumptions.isUnderlying
+  abiStepKind.TypeAssumptions.method_set
+  abiStepKind.TypeAssumptions.ptr_method_set
 
 axiom abiSeq : Type
 axiom abiSeq.zero_val : ZeroVal abiSeq
@@ -1143,10 +1151,14 @@ class abiSeq.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying abiSeq.underlying abiSeq
   underlying : go.UnderlyingDirectedEq abiSeq.ty abiSeq.underlying
   isUnderlying : go.IsUnderlying abiSeq.underlying abiSeq.underlying
+  method_set : go.MethodSetIs abiSeq.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType abiSeq.ty) [(go!"reflect.addArg", none), (go!"reflect.addRcvr", none), (go!"reflect.assignFloatN", (some (go.signature.Signature [go.uintptr, go.uintptr, go.int] false [go.bool]))), (go!"reflect.assignIntN", (some (go.signature.Signature [go.uintptr, go.uintptr, go.int, go.uint8] false [go.bool]))), (go!"reflect.dump", (some (go.signature.Signature [] false []))), (go!"reflect.regAssign", none), (go!"reflect.stackAssign", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"reflect.stepsForValue", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType abiStep.ty)])))]
 
 attribute [instance] abiSeq.TypeAssumptions.type_repr
   abiSeq.TypeAssumptions.underlying
   abiSeq.TypeAssumptions.isUnderlying
+  abiSeq.TypeAssumptions.method_set
+  abiSeq.TypeAssumptions.ptr_method_set
 
 axiom abiDesc : Type
 axiom abiDesc.zero_val : ZeroVal abiDesc
@@ -1156,10 +1168,14 @@ class abiDesc.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying abiDesc.underlying abiDesc
   underlying : go.UnderlyingDirectedEq abiDesc.ty abiDesc.underlying
   isUnderlying : go.IsUnderlying abiDesc.underlying abiDesc.underlying
+  method_set : go.MethodSetIs abiDesc.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType abiDesc.ty) [(go!"reflect.dump", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] abiDesc.TypeAssumptions.type_repr
   abiDesc.TypeAssumptions.underlying
   abiDesc.TypeAssumptions.isUnderlying
+  abiDesc.TypeAssumptions.method_set
+  abiDesc.TypeAssumptions.ptr_method_set
 
 axiom visit : Type
 axiom visit.zero_val : ZeroVal visit
@@ -1169,10 +1185,14 @@ class visit.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying visit.underlying visit
   underlying : go.UnderlyingDirectedEq visit.ty visit.underlying
   isUnderlying : go.IsUnderlying visit.underlying visit.underlying
+  method_set : go.MethodSetIs visit.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType visit.ty) []
 
 attribute [instance] visit.TypeAssumptions.type_repr
   visit.TypeAssumptions.underlying
   visit.TypeAssumptions.isUnderlying
+  visit.TypeAssumptions.method_set
+  visit.TypeAssumptions.ptr_method_set
 
 axiom makeFuncImpl : Type
 axiom makeFuncImpl.zero_val : ZeroVal makeFuncImpl
@@ -1182,10 +1202,14 @@ class makeFuncImpl.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   type_repr : go.TypeReprUnderlying makeFuncImpl.underlying makeFuncImpl
   underlying : go.UnderlyingDirectedEq makeFuncImpl.ty makeFuncImpl.underlying
   isUnderlying : go.IsUnderlying makeFuncImpl.underlying makeFuncImpl.underlying
+  method_set : go.MethodSetIs makeFuncImpl.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType makeFuncImpl.ty) []
 
 attribute [instance] makeFuncImpl.TypeAssumptions.type_repr
   makeFuncImpl.TypeAssumptions.underlying
   makeFuncImpl.TypeAssumptions.isUnderlying
+  makeFuncImpl.TypeAssumptions.method_set
+  makeFuncImpl.TypeAssumptions.ptr_method_set
 
 axiom methodValue : Type
 axiom methodValue.zero_val : ZeroVal methodValue
@@ -1195,10 +1219,14 @@ class methodValue.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   type_repr : go.TypeReprUnderlying methodValue.underlying methodValue
   underlying : go.UnderlyingDirectedEq methodValue.ty methodValue.underlying
   isUnderlying : go.IsUnderlying methodValue.underlying methodValue.underlying
+  method_set : go.MethodSetIs methodValue.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType methodValue.ty) []
 
 attribute [instance] methodValue.TypeAssumptions.type_repr
   methodValue.TypeAssumptions.underlying
   methodValue.TypeAssumptions.isUnderlying
+  methodValue.TypeAssumptions.method_set
+  methodValue.TypeAssumptions.ptr_method_set
 
 axiom makeFuncCtxt : Type
 axiom makeFuncCtxt.zero_val : ZeroVal makeFuncCtxt
@@ -1208,10 +1236,14 @@ class makeFuncCtxt.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   type_repr : go.TypeReprUnderlying makeFuncCtxt.underlying makeFuncCtxt
   underlying : go.UnderlyingDirectedEq makeFuncCtxt.ty makeFuncCtxt.underlying
   isUnderlying : go.IsUnderlying makeFuncCtxt.underlying makeFuncCtxt.underlying
+  method_set : go.MethodSetIs makeFuncCtxt.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType makeFuncCtxt.ty) []
 
 attribute [instance] makeFuncCtxt.TypeAssumptions.type_repr
   makeFuncCtxt.TypeAssumptions.underlying
   makeFuncCtxt.TypeAssumptions.isUnderlying
+  makeFuncCtxt.TypeAssumptions.method_set
+  makeFuncCtxt.TypeAssumptions.ptr_method_set
 
 axiom MapIter : Type
 axiom MapIter.zero_val : ZeroVal MapIter
@@ -1221,10 +1253,14 @@ class MapIter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying MapIter.underlying MapIter
   underlying : go.UnderlyingDirectedEq MapIter.ty MapIter.underlying
   isUnderlying : go.IsUnderlying MapIter.underlying MapIter.underlying
+  method_set : go.MethodSetIs MapIter.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType MapIter.ty) [(go!"Key", (some (go.signature.Signature [] false [Value.ty]))), (go!"Next", (some (go.signature.Signature [] false [go.bool]))), (go!"Reset", (some (go.signature.Signature [Value.ty] false []))), (go!"Value", (some (go.signature.Signature [] false [Value.ty])))]
 
 attribute [instance] MapIter.TypeAssumptions.type_repr
   MapIter.TypeAssumptions.underlying
   MapIter.TypeAssumptions.isUnderlying
+  MapIter.TypeAssumptions.method_set
+  MapIter.TypeAssumptions.ptr_method_set
 
 axiom Type' : Type
 axiom Type'.zero_val : ZeroVal Type'
@@ -1234,10 +1270,14 @@ class «Type».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying Type'.underlying Type'
   underlying : go.UnderlyingDirectedEq Type'.ty Type'.underlying
   isUnderlying : go.IsUnderlying Type'.underlying Type'.underlying
+  method_set : go.MethodSetIs Type'.ty [(go!"Align", (some (go.signature.Signature [] false [go.int]))), (go!"AssignableTo", (some (go.signature.Signature [Type'.ty] false [go.bool]))), (go!"Bits", (some (go.signature.Signature [] false [go.int]))), (go!"CanSeq", (some (go.signature.Signature [] false [go.bool]))), (go!"CanSeq2", (some (go.signature.Signature [] false [go.bool]))), (go!"ChanDir", (some (go.signature.Signature [] false [ChanDir.ty]))), (go!"Comparable", (some (go.signature.Signature [] false [go.bool]))), (go!"ConvertibleTo", (some (go.signature.Signature [Type'.ty] false [go.bool]))), (go!"Elem", (some (go.signature.Signature [] false [Type'.ty]))), (go!"Field", (some (go.signature.Signature [go.int] false [StructField.ty]))), (go!"FieldAlign", (some (go.signature.Signature [] false [go.int]))), (go!"FieldByIndex", (some (go.signature.Signature [(go.GoType.SliceType go.int)] false [StructField.ty]))), (go!"FieldByName", (some (go.signature.Signature [go.string] false [StructField.ty, go.bool]))), (go!"FieldByNameFunc", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.string] false [go.bool]))] false [StructField.ty, go.bool]))), (go!"Fields", none), (go!"Implements", (some (go.signature.Signature [Type'.ty] false [go.bool]))), (go!"In", (some (go.signature.Signature [go.int] false [Type'.ty]))), (go!"Ins", none), (go!"IsVariadic", (some (go.signature.Signature [] false [go.bool]))), (go!"Key", (some (go.signature.Signature [] false [Type'.ty]))), (go!"Kind", (some (go.signature.Signature [] false [Kind.ty]))), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Method", (some (go.signature.Signature [go.int] false [Method.ty]))), (go!"MethodByName", (some (go.signature.Signature [go.string] false [Method.ty, go.bool]))), (go!"Methods", none), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"NumField", (some (go.signature.Signature [] false [go.int]))), (go!"NumIn", (some (go.signature.Signature [] false [go.int]))), (go!"NumMethod", (some (go.signature.Signature [] false [go.int]))), (go!"NumOut", (some (go.signature.Signature [] false [go.int]))), (go!"Out", (some (go.signature.Signature [go.int] false [Type'.ty]))), (go!"Outs", none), (go!"OverflowComplex", (some (go.signature.Signature [go.complex128] false [go.bool]))), (go!"OverflowFloat", (some (go.signature.Signature [go.float64] false [go.bool]))), (go!"OverflowInt", (some (go.signature.Signature [go.int64] false [go.bool]))), (go!"OverflowUint", (some (go.signature.Signature [go.uint64] false [go.bool]))), (go!"PkgPath", (some (go.signature.Signature [] false [go.string]))), (go!"Size", (some (go.signature.Signature [] false [go.uintptr]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"reflect.common", none), (go!"reflect.uncommon", none)]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Type'.ty) []
 
 attribute [instance] «Type».TypeAssumptions.type_repr
   «Type».TypeAssumptions.underlying
   «Type».TypeAssumptions.isUnderlying
+  «Type».TypeAssumptions.method_set
+  «Type».TypeAssumptions.ptr_method_set
 
 axiom Kind : Type
 axiom Kind.zero_val : ZeroVal Kind
@@ -1247,10 +1287,14 @@ class Kind.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   type_repr : go.TypeReprUnderlying Kind.underlying Kind
   underlying : go.UnderlyingDirectedEq Kind.ty Kind.underlying
   isUnderlying : go.IsUnderlying Kind.underlying Kind.underlying
+  method_set : go.MethodSetIs Kind.ty [(go!"String", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Kind.ty) [(go!"String", (some (go.signature.Signature [] false [go.string])))]
 
 attribute [instance] Kind.TypeAssumptions.type_repr
   Kind.TypeAssumptions.underlying
   Kind.TypeAssumptions.isUnderlying
+  Kind.TypeAssumptions.method_set
+  Kind.TypeAssumptions.ptr_method_set
 
 axiom common : Type
 axiom common.zero_val : ZeroVal common
@@ -1260,10 +1304,14 @@ class common.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying common.underlying common
   underlying : go.UnderlyingDirectedEq common.ty common.underlying
   isUnderlying : go.IsUnderlying common.underlying common.underlying
+  method_set : go.MethodSetIs common.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType common.ty) [(go!"Align", (some (go.signature.Signature [] false [go.int]))), (go!"ArrayType", none), (go!"ChanDir", none), (go!"Common", none), (go!"Elem", none), (go!"ExportedMethods", none), (go!"FieldAlign", (some (go.signature.Signature [] false [go.int]))), (go!"FuncType", none), (go!"GcSlice", (some (go.signature.Signature [go.uintptr, go.uintptr] false [(go.GoType.SliceType go.byte)]))), (go!"HasName", (some (go.signature.Signature [] false [go.bool]))), (go!"InterfaceType", none), (go!"IsDirectIface", (some (go.signature.Signature [] false [go.bool]))), (go!"Key", none), (go!"Kind", none), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"MapType", none), (go!"NumMethod", (some (go.signature.Signature [] false [go.int]))), (go!"Pointers", (some (go.signature.Signature [] false [go.bool]))), (go!"Size", (some (go.signature.Signature [] false [go.uintptr]))), (go!"StructType", none), (go!"Uncommon", none)]
 
 attribute [instance] common.TypeAssumptions.type_repr
   common.TypeAssumptions.underlying
   common.TypeAssumptions.isUnderlying
+  common.TypeAssumptions.method_set
+  common.TypeAssumptions.ptr_method_set
 
 axiom rtype : Type
 axiom rtype.zero_val : ZeroVal rtype
@@ -1273,10 +1321,14 @@ class rtype.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying rtype.underlying rtype
   underlying : go.UnderlyingDirectedEq rtype.ty rtype.underlying
   isUnderlying : go.IsUnderlying rtype.underlying rtype.underlying
+  method_set : go.MethodSetIs rtype.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType rtype.ty) [(go!"Align", (some (go.signature.Signature [] false [go.int]))), (go!"AssignableTo", (some (go.signature.Signature [Type'.ty] false [go.bool]))), (go!"Bits", (some (go.signature.Signature [] false [go.int]))), (go!"CanSeq", (some (go.signature.Signature [] false [go.bool]))), (go!"CanSeq2", (some (go.signature.Signature [] false [go.bool]))), (go!"ChanDir", (some (go.signature.Signature [] false [ChanDir.ty]))), (go!"Comparable", (some (go.signature.Signature [] false [go.bool]))), (go!"ConvertibleTo", (some (go.signature.Signature [Type'.ty] false [go.bool]))), (go!"Elem", (some (go.signature.Signature [] false [Type'.ty]))), (go!"Field", (some (go.signature.Signature [go.int] false [StructField.ty]))), (go!"FieldAlign", (some (go.signature.Signature [] false [go.int]))), (go!"FieldByIndex", (some (go.signature.Signature [(go.GoType.SliceType go.int)] false [StructField.ty]))), (go!"FieldByName", (some (go.signature.Signature [go.string] false [StructField.ty, go.bool]))), (go!"FieldByNameFunc", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.string] false [go.bool]))] false [StructField.ty, go.bool]))), (go!"Fields", none), (go!"Implements", (some (go.signature.Signature [Type'.ty] false [go.bool]))), (go!"In", (some (go.signature.Signature [go.int] false [Type'.ty]))), (go!"Ins", none), (go!"IsVariadic", (some (go.signature.Signature [] false [go.bool]))), (go!"Key", (some (go.signature.Signature [] false [Type'.ty]))), (go!"Kind", (some (go.signature.Signature [] false [Kind.ty]))), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Method", (some (go.signature.Signature [go.int] false [Method.ty]))), (go!"MethodByName", (some (go.signature.Signature [go.string] false [Method.ty, go.bool]))), (go!"Methods", none), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"NumField", (some (go.signature.Signature [] false [go.int]))), (go!"NumIn", (some (go.signature.Signature [] false [go.int]))), (go!"NumMethod", (some (go.signature.Signature [] false [go.int]))), (go!"NumOut", (some (go.signature.Signature [] false [go.int]))), (go!"Out", (some (go.signature.Signature [go.int] false [Type'.ty]))), (go!"Outs", none), (go!"OverflowComplex", (some (go.signature.Signature [go.complex128] false [go.bool]))), (go!"OverflowFloat", (some (go.signature.Signature [go.float64] false [go.bool]))), (go!"OverflowInt", (some (go.signature.Signature [go.int64] false [go.bool]))), (go!"OverflowUint", (some (go.signature.Signature [go.uint64] false [go.bool]))), (go!"PkgPath", (some (go.signature.Signature [] false [go.string]))), (go!"Size", (some (go.signature.Signature [] false [go.uintptr]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"reflect.common", none), (go!"reflect.exportedMethods", none), (go!"reflect.nameOff", none), (go!"reflect.ptrTo", none), (go!"reflect.textOff", none), (go!"reflect.typeOff", none), (go!"reflect.uncommon", none)]
 
 attribute [instance] rtype.TypeAssumptions.type_repr
   rtype.TypeAssumptions.underlying
   rtype.TypeAssumptions.isUnderlying
+  rtype.TypeAssumptions.method_set
+  rtype.TypeAssumptions.ptr_method_set
 
 axiom ChanDir : Type
 axiom ChanDir.zero_val : ZeroVal ChanDir
@@ -1286,10 +1338,14 @@ class ChanDir.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying ChanDir.underlying ChanDir
   underlying : go.UnderlyingDirectedEq ChanDir.ty ChanDir.underlying
   isUnderlying : go.IsUnderlying ChanDir.underlying ChanDir.underlying
+  method_set : go.MethodSetIs ChanDir.ty [(go!"String", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType ChanDir.ty) [(go!"String", (some (go.signature.Signature [] false [go.string])))]
 
 attribute [instance] ChanDir.TypeAssumptions.type_repr
   ChanDir.TypeAssumptions.underlying
   ChanDir.TypeAssumptions.isUnderlying
+  ChanDir.TypeAssumptions.method_set
+  ChanDir.TypeAssumptions.ptr_method_set
 
 axiom interfaceType : Type
 axiom interfaceType.zero_val : ZeroVal interfaceType
@@ -1299,10 +1355,14 @@ class interfaceType.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContex
   type_repr : go.TypeReprUnderlying interfaceType.underlying interfaceType
   underlying : go.UnderlyingDirectedEq interfaceType.ty interfaceType.underlying
   isUnderlying : go.IsUnderlying interfaceType.underlying interfaceType.underlying
+  method_set : go.MethodSetIs interfaceType.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType interfaceType.ty) [(go!"Align", (some (go.signature.Signature [] false [go.int]))), (go!"ArrayType", none), (go!"ChanDir", none), (go!"Common", none), (go!"Elem", none), (go!"ExportedMethods", none), (go!"FieldAlign", (some (go.signature.Signature [] false [go.int]))), (go!"FuncType", none), (go!"GcSlice", (some (go.signature.Signature [go.uintptr, go.uintptr] false [(go.GoType.SliceType go.byte)]))), (go!"HasName", (some (go.signature.Signature [] false [go.bool]))), (go!"IsDirectIface", (some (go.signature.Signature [] false [go.bool]))), (go!"Key", none), (go!"Kind", none), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"MapType", none), (go!"Method", (some (go.signature.Signature [go.int] false [Method.ty]))), (go!"MethodByName", (some (go.signature.Signature [go.string] false [Method.ty, go.bool]))), (go!"NumMethod", (some (go.signature.Signature [] false [go.int]))), (go!"Pointers", (some (go.signature.Signature [] false [go.bool]))), (go!"Size", (some (go.signature.Signature [] false [go.uintptr]))), (go!"StructType", none), (go!"Uncommon", none), (go!"reflect.common", none), (go!"reflect.nameOff", none), (go!"reflect.typeOff", none), (go!"reflect.uncommon", none)]
 
 attribute [instance] interfaceType.TypeAssumptions.type_repr
   interfaceType.TypeAssumptions.underlying
   interfaceType.TypeAssumptions.isUnderlying
+  interfaceType.TypeAssumptions.method_set
+  interfaceType.TypeAssumptions.ptr_method_set
 
 axiom ptrType : Type
 axiom ptrType.zero_val : ZeroVal ptrType
@@ -1312,10 +1372,14 @@ class ptrType.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying ptrType.underlying ptrType
   underlying : go.UnderlyingDirectedEq ptrType.ty ptrType.underlying
   isUnderlying : go.IsUnderlying ptrType.underlying ptrType.underlying
+  method_set : go.MethodSetIs ptrType.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType ptrType.ty) [(go!"Align", (some (go.signature.Signature [] false [go.int]))), (go!"ArrayType", none), (go!"ChanDir", none), (go!"Common", none), (go!"ExportedMethods", none), (go!"FieldAlign", (some (go.signature.Signature [] false [go.int]))), (go!"FuncType", none), (go!"GcSlice", (some (go.signature.Signature [go.uintptr, go.uintptr] false [(go.GoType.SliceType go.byte)]))), (go!"HasName", (some (go.signature.Signature [] false [go.bool]))), (go!"InterfaceType", none), (go!"IsDirectIface", (some (go.signature.Signature [] false [go.bool]))), (go!"Key", none), (go!"Kind", none), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"MapType", none), (go!"NumMethod", (some (go.signature.Signature [] false [go.int]))), (go!"Pointers", (some (go.signature.Signature [] false [go.bool]))), (go!"Size", (some (go.signature.Signature [] false [go.uintptr]))), (go!"StructType", none), (go!"Uncommon", none)]
 
 attribute [instance] ptrType.TypeAssumptions.type_repr
   ptrType.TypeAssumptions.underlying
   ptrType.TypeAssumptions.isUnderlying
+  ptrType.TypeAssumptions.method_set
+  ptrType.TypeAssumptions.ptr_method_set
 
 axiom sliceType : Type
 axiom sliceType.zero_val : ZeroVal sliceType
@@ -1325,10 +1389,14 @@ class sliceType.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying sliceType.underlying sliceType
   underlying : go.UnderlyingDirectedEq sliceType.ty sliceType.underlying
   isUnderlying : go.IsUnderlying sliceType.underlying sliceType.underlying
+  method_set : go.MethodSetIs sliceType.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sliceType.ty) [(go!"Align", (some (go.signature.Signature [] false [go.int]))), (go!"ArrayType", none), (go!"ChanDir", none), (go!"Common", none), (go!"ExportedMethods", none), (go!"FieldAlign", (some (go.signature.Signature [] false [go.int]))), (go!"FuncType", none), (go!"GcSlice", (some (go.signature.Signature [go.uintptr, go.uintptr] false [(go.GoType.SliceType go.byte)]))), (go!"HasName", (some (go.signature.Signature [] false [go.bool]))), (go!"InterfaceType", none), (go!"IsDirectIface", (some (go.signature.Signature [] false [go.bool]))), (go!"Key", none), (go!"Kind", none), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"MapType", none), (go!"NumMethod", (some (go.signature.Signature [] false [go.int]))), (go!"Pointers", (some (go.signature.Signature [] false [go.bool]))), (go!"Size", (some (go.signature.Signature [] false [go.uintptr]))), (go!"StructType", none), (go!"Uncommon", none)]
 
 attribute [instance] sliceType.TypeAssumptions.type_repr
   sliceType.TypeAssumptions.underlying
   sliceType.TypeAssumptions.isUnderlying
+  sliceType.TypeAssumptions.method_set
+  sliceType.TypeAssumptions.ptr_method_set
 
 axiom structType : Type
 axiom structType.zero_val : ZeroVal structType
@@ -1338,10 +1406,14 @@ class structType.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] 
   type_repr : go.TypeReprUnderlying structType.underlying structType
   underlying : go.UnderlyingDirectedEq structType.ty structType.underlying
   isUnderlying : go.IsUnderlying structType.underlying structType.underlying
+  method_set : go.MethodSetIs structType.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType structType.ty) [(go!"Align", (some (go.signature.Signature [] false [go.int]))), (go!"ArrayType", none), (go!"ChanDir", none), (go!"Common", none), (go!"Elem", none), (go!"ExportedMethods", none), (go!"Field", (some (go.signature.Signature [go.int] false [StructField.ty]))), (go!"FieldAlign", (some (go.signature.Signature [] false [go.int]))), (go!"FieldByIndex", (some (go.signature.Signature [(go.GoType.SliceType go.int)] false [StructField.ty]))), (go!"FieldByName", (some (go.signature.Signature [go.string] false [StructField.ty, go.bool]))), (go!"FieldByNameFunc", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.string] false [go.bool]))] false [StructField.ty, go.bool]))), (go!"FuncType", none), (go!"GcSlice", (some (go.signature.Signature [go.uintptr, go.uintptr] false [(go.GoType.SliceType go.byte)]))), (go!"HasName", (some (go.signature.Signature [] false [go.bool]))), (go!"InterfaceType", none), (go!"IsDirectIface", (some (go.signature.Signature [] false [go.bool]))), (go!"Key", none), (go!"Kind", none), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"MapType", none), (go!"NumMethod", (some (go.signature.Signature [] false [go.int]))), (go!"Pointers", (some (go.signature.Signature [] false [go.bool]))), (go!"Size", (some (go.signature.Signature [] false [go.uintptr]))), (go!"Uncommon", none)]
 
 attribute [instance] structType.TypeAssumptions.type_repr
   structType.TypeAssumptions.underlying
   structType.TypeAssumptions.isUnderlying
+  structType.TypeAssumptions.method_set
+  structType.TypeAssumptions.ptr_method_set
 
 axiom Method : Type
 axiom Method.zero_val : ZeroVal Method
@@ -1351,10 +1423,14 @@ class Method.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying Method.underlying Method
   underlying : go.UnderlyingDirectedEq Method.ty Method.underlying
   isUnderlying : go.IsUnderlying Method.underlying Method.underlying
+  method_set : go.MethodSetIs Method.ty [(go!"IsExported", (some (go.signature.Signature [] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Method.ty) [(go!"IsExported", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] Method.TypeAssumptions.type_repr
   Method.TypeAssumptions.underlying
   Method.TypeAssumptions.isUnderlying
+  Method.TypeAssumptions.method_set
+  Method.TypeAssumptions.ptr_method_set
 
 axiom StructField : Type
 axiom StructField.zero_val : ZeroVal StructField
@@ -1364,10 +1440,14 @@ class StructField.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   type_repr : go.TypeReprUnderlying StructField.underlying StructField
   underlying : go.UnderlyingDirectedEq StructField.ty StructField.underlying
   isUnderlying : go.IsUnderlying StructField.underlying StructField.underlying
+  method_set : go.MethodSetIs StructField.ty [(go!"IsExported", (some (go.signature.Signature [] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType StructField.ty) [(go!"IsExported", (some (go.signature.Signature [] false [go.bool])))]
 
 attribute [instance] StructField.TypeAssumptions.type_repr
   StructField.TypeAssumptions.underlying
   StructField.TypeAssumptions.isUnderlying
+  StructField.TypeAssumptions.method_set
+  StructField.TypeAssumptions.ptr_method_set
 
 axiom StructTag : Type
 axiom StructTag.zero_val : ZeroVal StructTag
@@ -1377,10 +1457,14 @@ class StructTag.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying StructTag.underlying StructTag
   underlying : go.UnderlyingDirectedEq StructTag.ty StructTag.underlying
   isUnderlying : go.IsUnderlying StructTag.underlying StructTag.underlying
+  method_set : go.MethodSetIs StructTag.ty [(go!"Get", (some (go.signature.Signature [go.string] false [go.string]))), (go!"Lookup", (some (go.signature.Signature [go.string] false [go.string, go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType StructTag.ty) [(go!"Get", (some (go.signature.Signature [go.string] false [go.string]))), (go!"Lookup", (some (go.signature.Signature [go.string] false [go.string, go.bool])))]
 
 attribute [instance] StructTag.TypeAssumptions.type_repr
   StructTag.TypeAssumptions.underlying
   StructTag.TypeAssumptions.isUnderlying
+  StructTag.TypeAssumptions.method_set
+  StructTag.TypeAssumptions.ptr_method_set
 
 axiom fieldScan : Type
 axiom fieldScan.zero_val : ZeroVal fieldScan
@@ -1390,10 +1474,14 @@ class fieldScan.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying fieldScan.underlying fieldScan
   underlying : go.UnderlyingDirectedEq fieldScan.ty fieldScan.underlying
   isUnderlying : go.IsUnderlying fieldScan.underlying fieldScan.underlying
+  method_set : go.MethodSetIs fieldScan.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType fieldScan.ty) []
 
 attribute [instance] fieldScan.TypeAssumptions.type_repr
   fieldScan.TypeAssumptions.underlying
   fieldScan.TypeAssumptions.isUnderlying
+  fieldScan.TypeAssumptions.method_set
+  fieldScan.TypeAssumptions.ptr_method_set
 
 axiom cacheKey : Type
 axiom cacheKey.zero_val : ZeroVal cacheKey
@@ -1403,10 +1491,14 @@ class cacheKey.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying cacheKey.underlying cacheKey
   underlying : go.UnderlyingDirectedEq cacheKey.ty cacheKey.underlying
   isUnderlying : go.IsUnderlying cacheKey.underlying cacheKey.underlying
+  method_set : go.MethodSetIs cacheKey.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType cacheKey.ty) []
 
 attribute [instance] cacheKey.TypeAssumptions.type_repr
   cacheKey.TypeAssumptions.underlying
   cacheKey.TypeAssumptions.isUnderlying
+  cacheKey.TypeAssumptions.method_set
+  cacheKey.TypeAssumptions.ptr_method_set
 
 axiom structTypeUncommon : Type
 axiom structTypeUncommon.zero_val : ZeroVal structTypeUncommon
@@ -1416,10 +1508,14 @@ class structTypeUncommon.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalC
   type_repr : go.TypeReprUnderlying structTypeUncommon.underlying structTypeUncommon
   underlying : go.UnderlyingDirectedEq structTypeUncommon.ty structTypeUncommon.underlying
   isUnderlying : go.IsUnderlying structTypeUncommon.underlying structTypeUncommon.underlying
+  method_set : go.MethodSetIs structTypeUncommon.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType structTypeUncommon.ty) [(go!"Align", (some (go.signature.Signature [] false [go.int]))), (go!"ArrayType", none), (go!"ChanDir", none), (go!"Common", none), (go!"Elem", none), (go!"ExportedMethods", none), (go!"Field", (some (go.signature.Signature [go.int] false [StructField.ty]))), (go!"FieldAlign", (some (go.signature.Signature [] false [go.int]))), (go!"FieldByIndex", (some (go.signature.Signature [(go.GoType.SliceType go.int)] false [StructField.ty]))), (go!"FieldByName", (some (go.signature.Signature [go.string] false [StructField.ty, go.bool]))), (go!"FieldByNameFunc", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.string] false [go.bool]))] false [StructField.ty, go.bool]))), (go!"FuncType", none), (go!"GcSlice", (some (go.signature.Signature [go.uintptr, go.uintptr] false [(go.GoType.SliceType go.byte)]))), (go!"HasName", (some (go.signature.Signature [] false [go.bool]))), (go!"InterfaceType", none), (go!"IsDirectIface", (some (go.signature.Signature [] false [go.bool]))), (go!"Key", none), (go!"Kind", none), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"MapType", none), (go!"NumMethod", (some (go.signature.Signature [] false [go.int]))), (go!"Pointers", (some (go.signature.Signature [] false [go.bool]))), (go!"Size", (some (go.signature.Signature [] false [go.uintptr]))), (go!"Uncommon", none)]
 
 attribute [instance] structTypeUncommon.TypeAssumptions.type_repr
   structTypeUncommon.TypeAssumptions.underlying
   structTypeUncommon.TypeAssumptions.isUnderlying
+  structTypeUncommon.TypeAssumptions.method_set
+  structTypeUncommon.TypeAssumptions.ptr_method_set
 
 axiom layoutKey : Type
 axiom layoutKey.zero_val : ZeroVal layoutKey
@@ -1429,10 +1525,14 @@ class layoutKey.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying layoutKey.underlying layoutKey
   underlying : go.UnderlyingDirectedEq layoutKey.ty layoutKey.underlying
   isUnderlying : go.IsUnderlying layoutKey.underlying layoutKey.underlying
+  method_set : go.MethodSetIs layoutKey.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType layoutKey.ty) []
 
 attribute [instance] layoutKey.TypeAssumptions.type_repr
   layoutKey.TypeAssumptions.underlying
   layoutKey.TypeAssumptions.isUnderlying
+  layoutKey.TypeAssumptions.method_set
+  layoutKey.TypeAssumptions.ptr_method_set
 
 axiom layoutType : Type
 axiom layoutType.zero_val : ZeroVal layoutType
@@ -1442,10 +1542,14 @@ class layoutType.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] 
   type_repr : go.TypeReprUnderlying layoutType.underlying layoutType
   underlying : go.UnderlyingDirectedEq layoutType.ty layoutType.underlying
   isUnderlying : go.IsUnderlying layoutType.underlying layoutType.underlying
+  method_set : go.MethodSetIs layoutType.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType layoutType.ty) []
 
 attribute [instance] layoutType.TypeAssumptions.type_repr
   layoutType.TypeAssumptions.underlying
   layoutType.TypeAssumptions.isUnderlying
+  layoutType.TypeAssumptions.method_set
+  layoutType.TypeAssumptions.ptr_method_set
 
 axiom bitVector : Type
 axiom bitVector.zero_val : ZeroVal bitVector
@@ -1455,10 +1559,14 @@ class bitVector.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying bitVector.underlying bitVector
   underlying : go.UnderlyingDirectedEq bitVector.ty bitVector.underlying
   isUnderlying : go.IsUnderlying bitVector.underlying bitVector.underlying
+  method_set : go.MethodSetIs bitVector.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType bitVector.ty) [(go!"reflect.append", (some (go.signature.Signature [go.uint8] false [])))]
 
 attribute [instance] bitVector.TypeAssumptions.type_repr
   bitVector.TypeAssumptions.underlying
   bitVector.TypeAssumptions.isUnderlying
+  bitVector.TypeAssumptions.method_set
+  bitVector.TypeAssumptions.ptr_method_set
 
 axiom Value : Type
 axiom Value.zero_val : ZeroVal Value
@@ -1468,10 +1576,14 @@ class Value.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying Value.underlying Value
   underlying : go.UnderlyingDirectedEq Value.ty Value.underlying
   isUnderlying : go.IsUnderlying Value.underlying Value.underlying
+  method_set : go.MethodSetIs Value.ty [(go!"Addr", (some (go.signature.Signature [] false [Value.ty]))), (go!"Bool", (some (go.signature.Signature [] false [go.bool]))), (go!"Bytes", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Call", (some (go.signature.Signature [(go.GoType.SliceType Value.ty)] false [(go.GoType.SliceType Value.ty)]))), (go!"CallSlice", (some (go.signature.Signature [(go.GoType.SliceType Value.ty)] false [(go.GoType.SliceType Value.ty)]))), (go!"CanAddr", (some (go.signature.Signature [] false [go.bool]))), (go!"CanComplex", (some (go.signature.Signature [] false [go.bool]))), (go!"CanConvert", (some (go.signature.Signature [Type'.ty] false [go.bool]))), (go!"CanFloat", (some (go.signature.Signature [] false [go.bool]))), (go!"CanInt", (some (go.signature.Signature [] false [go.bool]))), (go!"CanInterface", (some (go.signature.Signature [] false [go.bool]))), (go!"CanSet", (some (go.signature.Signature [] false [go.bool]))), (go!"CanUint", (some (go.signature.Signature [] false [go.bool]))), (go!"Cap", (some (go.signature.Signature [] false [go.int]))), (go!"Clear", (some (go.signature.Signature [] false []))), (go!"Close", (some (go.signature.Signature [] false []))), (go!"Comparable", (some (go.signature.Signature [] false [go.bool]))), (go!"Complex", (some (go.signature.Signature [] false [go.complex128]))), (go!"Convert", (some (go.signature.Signature [Type'.ty] false [Value.ty]))), (go!"Elem", (some (go.signature.Signature [] false [Value.ty]))), (go!"Equal", (some (go.signature.Signature [Value.ty] false [go.bool]))), (go!"Field", (some (go.signature.Signature [go.int] false [Value.ty]))), (go!"FieldByIndex", (some (go.signature.Signature [(go.GoType.SliceType go.int)] false [Value.ty]))), (go!"FieldByIndexErr", (some (go.signature.Signature [(go.GoType.SliceType go.int)] false [Value.ty, go.error]))), (go!"FieldByName", (some (go.signature.Signature [go.string] false [Value.ty]))), (go!"FieldByNameFunc", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.string] false [go.bool]))] false [Value.ty]))), (go!"Fields", none), (go!"Float", (some (go.signature.Signature [] false [go.float64]))), (go!"Grow", (some (go.signature.Signature [go.int] false []))), (go!"Index", (some (go.signature.Signature [go.int] false [Value.ty]))), (go!"Int", (some (go.signature.Signature [] false [go.int64]))), (go!"Interface", (some (go.signature.Signature [] false [go.any]))), (go!"InterfaceData", (some (go.signature.Signature [] false [(go.GoType.ArrayType 2 go.uintptr)]))), (go!"IsNil", (some (go.signature.Signature [] false [go.bool]))), (go!"IsValid", (some (go.signature.Signature [] false [go.bool]))), (go!"IsZero", (some (go.signature.Signature [] false [go.bool]))), (go!"Kind", (some (go.signature.Signature [] false [Kind.ty]))), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"MapIndex", (some (go.signature.Signature [Value.ty] false [Value.ty]))), (go!"MapKeys", (some (go.signature.Signature [] false [(go.GoType.SliceType Value.ty)]))), (go!"MapRange", (some (go.signature.Signature [] false [(go.GoType.PointerType MapIter.ty)]))), (go!"Method", (some (go.signature.Signature [go.int] false [Value.ty]))), (go!"MethodByName", (some (go.signature.Signature [go.string] false [Value.ty]))), (go!"Methods", none), (go!"NumField", (some (go.signature.Signature [] false [go.int]))), (go!"NumMethod", (some (go.signature.Signature [] false [go.int]))), (go!"OverflowComplex", (some (go.signature.Signature [go.complex128] false [go.bool]))), (go!"OverflowFloat", (some (go.signature.Signature [go.float64] false [go.bool]))), (go!"OverflowInt", (some (go.signature.Signature [go.int64] false [go.bool]))), (go!"OverflowUint", (some (go.signature.Signature [go.uint64] false [go.bool]))), (go!"Pointer", (some (go.signature.Signature [] false [go.uintptr]))), (go!"Recv", (some (go.signature.Signature [] false [Value.ty, go.bool]))), (go!"Send", (some (go.signature.Signature [Value.ty] false []))), (go!"Seq", none), (go!"Seq2", none), (go!"Set", (some (go.signature.Signature [Value.ty] false []))), (go!"SetBool", (some (go.signature.Signature [go.bool] false []))), (go!"SetBytes", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false []))), (go!"SetCap", (some (go.signature.Signature [go.int] false []))), (go!"SetComplex", (some (go.signature.Signature [go.complex128] false []))), (go!"SetFloat", (some (go.signature.Signature [go.float64] false []))), (go!"SetInt", (some (go.signature.Signature [go.int64] false []))), (go!"SetIterKey", (some (go.signature.Signature [(go.GoType.PointerType MapIter.ty)] false []))), (go!"SetIterValue", (some (go.signature.Signature [(go.GoType.PointerType MapIter.ty)] false []))), (go!"SetLen", (some (go.signature.Signature [go.int] false []))), (go!"SetMapIndex", (some (go.signature.Signature [Value.ty, Value.ty] false []))), (go!"SetPointer", (some (go.signature.Signature [«unsafe».Pointer] false []))), (go!"SetString", (some (go.signature.Signature [go.string] false []))), (go!"SetUint", (some (go.signature.Signature [go.uint64] false []))), (go!"SetZero", (some (go.signature.Signature [] false []))), (go!"Slice", (some (go.signature.Signature [go.int, go.int] false [Value.ty]))), (go!"Slice3", (some (go.signature.Signature [go.int, go.int, go.int] false [Value.ty]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"TryRecv", (some (go.signature.Signature [] false [Value.ty, go.bool]))), (go!"TrySend", (some (go.signature.Signature [Value.ty] false [go.bool]))), (go!"Type", (some (go.signature.Signature [] false [Type'.ty]))), (go!"Uint", (some (go.signature.Signature [] false [go.uint64]))), (go!"UnsafeAddr", (some (go.signature.Signature [] false [go.uintptr]))), (go!"UnsafePointer", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"reflect.abiType", none), (go!"reflect.abiTypeSlow", none), (go!"reflect.assignTo", none), (go!"reflect.bytesSlow", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"reflect.call", (some (go.signature.Signature [go.string, (go.GoType.SliceType Value.ty)] false [(go.GoType.SliceType Value.ty)]))), (go!"reflect.capNonSlice", (some (go.signature.Signature [] false [go.int]))), (go!"reflect.extendSlice", (some (go.signature.Signature [go.int] false [Value.ty]))), (go!"reflect.grow", (some (go.signature.Signature [go.int] false []))), (go!"reflect.kind", (some (go.signature.Signature [] false [Kind.ty]))), (go!"reflect.lenNonSlice", (some (go.signature.Signature [] false [go.int]))), (go!"reflect.mustBe", (some (go.signature.Signature [Kind.ty] false []))), (go!"reflect.mustBeAssignable", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeAssignableSlow", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeExported", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeExportedSlow", (some (go.signature.Signature [] false []))), (go!"reflect.panicNotBool", (some (go.signature.Signature [] false []))), (go!"reflect.panicNotMap", (some (go.signature.Signature [] false []))), (go!"reflect.pointer", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"reflect.recv", (some (go.signature.Signature [go.bool] false [Value.ty, go.bool]))), (go!"reflect.ro", (some (go.signature.Signature [] false [flag.ty]))), (go!"reflect.runes", (some (go.signature.Signature [] false [(go.GoType.SliceType go.rune)]))), (go!"reflect.send", (some (go.signature.Signature [Value.ty, go.bool] false [go.bool]))), (go!"reflect.setRunes", (some (go.signature.Signature [(go.GoType.SliceType go.rune)] false []))), (go!"reflect.stringNonString", (some (go.signature.Signature [] false [go.string]))), (go!"reflect.typ", none), (go!"reflect.typeSlow", (some (go.signature.Signature [] false [Type'.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Value.ty) [(go!"Addr", (some (go.signature.Signature [] false [Value.ty]))), (go!"Bool", (some (go.signature.Signature [] false [go.bool]))), (go!"Bytes", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Call", (some (go.signature.Signature [(go.GoType.SliceType Value.ty)] false [(go.GoType.SliceType Value.ty)]))), (go!"CallSlice", (some (go.signature.Signature [(go.GoType.SliceType Value.ty)] false [(go.GoType.SliceType Value.ty)]))), (go!"CanAddr", (some (go.signature.Signature [] false [go.bool]))), (go!"CanComplex", (some (go.signature.Signature [] false [go.bool]))), (go!"CanConvert", (some (go.signature.Signature [Type'.ty] false [go.bool]))), (go!"CanFloat", (some (go.signature.Signature [] false [go.bool]))), (go!"CanInt", (some (go.signature.Signature [] false [go.bool]))), (go!"CanInterface", (some (go.signature.Signature [] false [go.bool]))), (go!"CanSet", (some (go.signature.Signature [] false [go.bool]))), (go!"CanUint", (some (go.signature.Signature [] false [go.bool]))), (go!"Cap", (some (go.signature.Signature [] false [go.int]))), (go!"Clear", (some (go.signature.Signature [] false []))), (go!"Close", (some (go.signature.Signature [] false []))), (go!"Comparable", (some (go.signature.Signature [] false [go.bool]))), (go!"Complex", (some (go.signature.Signature [] false [go.complex128]))), (go!"Convert", (some (go.signature.Signature [Type'.ty] false [Value.ty]))), (go!"Elem", (some (go.signature.Signature [] false [Value.ty]))), (go!"Equal", (some (go.signature.Signature [Value.ty] false [go.bool]))), (go!"Field", (some (go.signature.Signature [go.int] false [Value.ty]))), (go!"FieldByIndex", (some (go.signature.Signature [(go.GoType.SliceType go.int)] false [Value.ty]))), (go!"FieldByIndexErr", (some (go.signature.Signature [(go.GoType.SliceType go.int)] false [Value.ty, go.error]))), (go!"FieldByName", (some (go.signature.Signature [go.string] false [Value.ty]))), (go!"FieldByNameFunc", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.string] false [go.bool]))] false [Value.ty]))), (go!"Fields", none), (go!"Float", (some (go.signature.Signature [] false [go.float64]))), (go!"Grow", (some (go.signature.Signature [go.int] false []))), (go!"Index", (some (go.signature.Signature [go.int] false [Value.ty]))), (go!"Int", (some (go.signature.Signature [] false [go.int64]))), (go!"Interface", (some (go.signature.Signature [] false [go.any]))), (go!"InterfaceData", (some (go.signature.Signature [] false [(go.GoType.ArrayType 2 go.uintptr)]))), (go!"IsNil", (some (go.signature.Signature [] false [go.bool]))), (go!"IsValid", (some (go.signature.Signature [] false [go.bool]))), (go!"IsZero", (some (go.signature.Signature [] false [go.bool]))), (go!"Kind", (some (go.signature.Signature [] false [Kind.ty]))), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"MapIndex", (some (go.signature.Signature [Value.ty] false [Value.ty]))), (go!"MapKeys", (some (go.signature.Signature [] false [(go.GoType.SliceType Value.ty)]))), (go!"MapRange", (some (go.signature.Signature [] false [(go.GoType.PointerType MapIter.ty)]))), (go!"Method", (some (go.signature.Signature [go.int] false [Value.ty]))), (go!"MethodByName", (some (go.signature.Signature [go.string] false [Value.ty]))), (go!"Methods", none), (go!"NumField", (some (go.signature.Signature [] false [go.int]))), (go!"NumMethod", (some (go.signature.Signature [] false [go.int]))), (go!"OverflowComplex", (some (go.signature.Signature [go.complex128] false [go.bool]))), (go!"OverflowFloat", (some (go.signature.Signature [go.float64] false [go.bool]))), (go!"OverflowInt", (some (go.signature.Signature [go.int64] false [go.bool]))), (go!"OverflowUint", (some (go.signature.Signature [go.uint64] false [go.bool]))), (go!"Pointer", (some (go.signature.Signature [] false [go.uintptr]))), (go!"Recv", (some (go.signature.Signature [] false [Value.ty, go.bool]))), (go!"Send", (some (go.signature.Signature [Value.ty] false []))), (go!"Seq", none), (go!"Seq2", none), (go!"Set", (some (go.signature.Signature [Value.ty] false []))), (go!"SetBool", (some (go.signature.Signature [go.bool] false []))), (go!"SetBytes", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false []))), (go!"SetCap", (some (go.signature.Signature [go.int] false []))), (go!"SetComplex", (some (go.signature.Signature [go.complex128] false []))), (go!"SetFloat", (some (go.signature.Signature [go.float64] false []))), (go!"SetInt", (some (go.signature.Signature [go.int64] false []))), (go!"SetIterKey", (some (go.signature.Signature [(go.GoType.PointerType MapIter.ty)] false []))), (go!"SetIterValue", (some (go.signature.Signature [(go.GoType.PointerType MapIter.ty)] false []))), (go!"SetLen", (some (go.signature.Signature [go.int] false []))), (go!"SetMapIndex", (some (go.signature.Signature [Value.ty, Value.ty] false []))), (go!"SetPointer", (some (go.signature.Signature [«unsafe».Pointer] false []))), (go!"SetString", (some (go.signature.Signature [go.string] false []))), (go!"SetUint", (some (go.signature.Signature [go.uint64] false []))), (go!"SetZero", (some (go.signature.Signature [] false []))), (go!"Slice", (some (go.signature.Signature [go.int, go.int] false [Value.ty]))), (go!"Slice3", (some (go.signature.Signature [go.int, go.int, go.int] false [Value.ty]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"TryRecv", (some (go.signature.Signature [] false [Value.ty, go.bool]))), (go!"TrySend", (some (go.signature.Signature [Value.ty] false [go.bool]))), (go!"Type", (some (go.signature.Signature [] false [Type'.ty]))), (go!"Uint", (some (go.signature.Signature [] false [go.uint64]))), (go!"UnsafeAddr", (some (go.signature.Signature [] false [go.uintptr]))), (go!"UnsafePointer", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"reflect.abiType", none), (go!"reflect.abiTypeSlow", none), (go!"reflect.assignTo", none), (go!"reflect.bytesSlow", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"reflect.call", (some (go.signature.Signature [go.string, (go.GoType.SliceType Value.ty)] false [(go.GoType.SliceType Value.ty)]))), (go!"reflect.capNonSlice", (some (go.signature.Signature [] false [go.int]))), (go!"reflect.extendSlice", (some (go.signature.Signature [go.int] false [Value.ty]))), (go!"reflect.grow", (some (go.signature.Signature [go.int] false []))), (go!"reflect.kind", (some (go.signature.Signature [] false [Kind.ty]))), (go!"reflect.lenNonSlice", (some (go.signature.Signature [] false [go.int]))), (go!"reflect.mustBe", (some (go.signature.Signature [Kind.ty] false []))), (go!"reflect.mustBeAssignable", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeAssignableSlow", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeExported", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeExportedSlow", (some (go.signature.Signature [] false []))), (go!"reflect.panicNotBool", (some (go.signature.Signature [] false []))), (go!"reflect.panicNotMap", (some (go.signature.Signature [] false []))), (go!"reflect.pointer", (some (go.signature.Signature [] false [«unsafe».Pointer]))), (go!"reflect.recv", (some (go.signature.Signature [go.bool] false [Value.ty, go.bool]))), (go!"reflect.ro", (some (go.signature.Signature [] false [flag.ty]))), (go!"reflect.runes", (some (go.signature.Signature [] false [(go.GoType.SliceType go.rune)]))), (go!"reflect.send", (some (go.signature.Signature [Value.ty, go.bool] false [go.bool]))), (go!"reflect.setRunes", (some (go.signature.Signature [(go.GoType.SliceType go.rune)] false []))), (go!"reflect.stringNonString", (some (go.signature.Signature [] false [go.string]))), (go!"reflect.typ", none), (go!"reflect.typeSlow", (some (go.signature.Signature [] false [Type'.ty])))]
 
 attribute [instance] Value.TypeAssumptions.type_repr
   Value.TypeAssumptions.underlying
   Value.TypeAssumptions.isUnderlying
+  Value.TypeAssumptions.method_set
+  Value.TypeAssumptions.ptr_method_set
 
 axiom flag : Type
 axiom flag.zero_val : ZeroVal flag
@@ -1481,10 +1593,14 @@ class flag.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   type_repr : go.TypeReprUnderlying flag.underlying flag
   underlying : go.UnderlyingDirectedEq flag.ty flag.underlying
   isUnderlying : go.IsUnderlying flag.underlying flag.underlying
+  method_set : go.MethodSetIs flag.ty [(go!"reflect.kind", (some (go.signature.Signature [] false [Kind.ty]))), (go!"reflect.mustBe", (some (go.signature.Signature [Kind.ty] false []))), (go!"reflect.mustBeAssignable", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeAssignableSlow", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeExported", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeExportedSlow", (some (go.signature.Signature [] false []))), (go!"reflect.panicNotMap", (some (go.signature.Signature [] false []))), (go!"reflect.ro", (some (go.signature.Signature [] false [flag.ty])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType flag.ty) [(go!"reflect.kind", (some (go.signature.Signature [] false [Kind.ty]))), (go!"reflect.mustBe", (some (go.signature.Signature [Kind.ty] false []))), (go!"reflect.mustBeAssignable", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeAssignableSlow", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeExported", (some (go.signature.Signature [] false []))), (go!"reflect.mustBeExportedSlow", (some (go.signature.Signature [] false []))), (go!"reflect.panicNotMap", (some (go.signature.Signature [] false []))), (go!"reflect.ro", (some (go.signature.Signature [] false [flag.ty])))]
 
 attribute [instance] flag.TypeAssumptions.type_repr
   flag.TypeAssumptions.underlying
   flag.TypeAssumptions.isUnderlying
+  flag.TypeAssumptions.method_set
+  flag.TypeAssumptions.ptr_method_set
 
 axiom ValueError : Type
 axiom ValueError.zero_val : ZeroVal ValueError
@@ -1494,10 +1610,14 @@ class ValueError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] 
   type_repr : go.TypeReprUnderlying ValueError.underlying ValueError
   underlying : go.UnderlyingDirectedEq ValueError.ty ValueError.underlying
   isUnderlying : go.IsUnderlying ValueError.underlying ValueError.underlying
+  method_set : go.MethodSetIs ValueError.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType ValueError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
 
 attribute [instance] ValueError.TypeAssumptions.type_repr
   ValueError.TypeAssumptions.underlying
   ValueError.TypeAssumptions.isUnderlying
+  ValueError.TypeAssumptions.method_set
+  ValueError.TypeAssumptions.ptr_method_set
 
 axiom nonEmptyInterface : Type
 axiom nonEmptyInterface.zero_val : ZeroVal nonEmptyInterface
@@ -1507,10 +1627,14 @@ class nonEmptyInterface.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCo
   type_repr : go.TypeReprUnderlying nonEmptyInterface.underlying nonEmptyInterface
   underlying : go.UnderlyingDirectedEq nonEmptyInterface.ty nonEmptyInterface.underlying
   isUnderlying : go.IsUnderlying nonEmptyInterface.underlying nonEmptyInterface.underlying
+  method_set : go.MethodSetIs nonEmptyInterface.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType nonEmptyInterface.ty) []
 
 attribute [instance] nonEmptyInterface.TypeAssumptions.type_repr
   nonEmptyInterface.TypeAssumptions.underlying
   nonEmptyInterface.TypeAssumptions.isUnderlying
+  nonEmptyInterface.TypeAssumptions.method_set
+  nonEmptyInterface.TypeAssumptions.ptr_method_set
 
 axiom StringHeader : Type
 axiom StringHeader.zero_val : ZeroVal StringHeader
@@ -1520,10 +1644,14 @@ class StringHeader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   type_repr : go.TypeReprUnderlying StringHeader.underlying StringHeader
   underlying : go.UnderlyingDirectedEq StringHeader.ty StringHeader.underlying
   isUnderlying : go.IsUnderlying StringHeader.underlying StringHeader.underlying
+  method_set : go.MethodSetIs StringHeader.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType StringHeader.ty) []
 
 attribute [instance] StringHeader.TypeAssumptions.type_repr
   StringHeader.TypeAssumptions.underlying
   StringHeader.TypeAssumptions.isUnderlying
+  StringHeader.TypeAssumptions.method_set
+  StringHeader.TypeAssumptions.ptr_method_set
 
 axiom SliceHeader : Type
 axiom SliceHeader.zero_val : ZeroVal SliceHeader
@@ -1533,10 +1661,14 @@ class SliceHeader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   type_repr : go.TypeReprUnderlying SliceHeader.underlying SliceHeader
   underlying : go.UnderlyingDirectedEq SliceHeader.ty SliceHeader.underlying
   isUnderlying : go.IsUnderlying SliceHeader.underlying SliceHeader.underlying
+  method_set : go.MethodSetIs SliceHeader.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType SliceHeader.ty) []
 
 attribute [instance] SliceHeader.TypeAssumptions.type_repr
   SliceHeader.TypeAssumptions.underlying
   SliceHeader.TypeAssumptions.isUnderlying
+  SliceHeader.TypeAssumptions.method_set
+  SliceHeader.TypeAssumptions.ptr_method_set
 
 axiom runtimeSelect : Type
 axiom runtimeSelect.zero_val : ZeroVal runtimeSelect
@@ -1546,10 +1678,14 @@ class runtimeSelect.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContex
   type_repr : go.TypeReprUnderlying runtimeSelect.underlying runtimeSelect
   underlying : go.UnderlyingDirectedEq runtimeSelect.ty runtimeSelect.underlying
   isUnderlying : go.IsUnderlying runtimeSelect.underlying runtimeSelect.underlying
+  method_set : go.MethodSetIs runtimeSelect.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType runtimeSelect.ty) []
 
 attribute [instance] runtimeSelect.TypeAssumptions.type_repr
   runtimeSelect.TypeAssumptions.underlying
   runtimeSelect.TypeAssumptions.isUnderlying
+  runtimeSelect.TypeAssumptions.method_set
+  runtimeSelect.TypeAssumptions.ptr_method_set
 
 axiom SelectDir : Type
 axiom SelectDir.zero_val : ZeroVal SelectDir
@@ -1559,10 +1695,14 @@ class SelectDir.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying SelectDir.underlying SelectDir
   underlying : go.UnderlyingDirectedEq SelectDir.ty SelectDir.underlying
   isUnderlying : go.IsUnderlying SelectDir.underlying SelectDir.underlying
+  method_set : go.MethodSetIs SelectDir.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType SelectDir.ty) []
 
 attribute [instance] SelectDir.TypeAssumptions.type_repr
   SelectDir.TypeAssumptions.underlying
   SelectDir.TypeAssumptions.isUnderlying
+  SelectDir.TypeAssumptions.method_set
+  SelectDir.TypeAssumptions.ptr_method_set
 
 axiom SelectCase : Type
 axiom SelectCase.zero_val : ZeroVal SelectCase
@@ -1572,10 +1712,14 @@ class SelectCase.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] 
   type_repr : go.TypeReprUnderlying SelectCase.underlying SelectCase
   underlying : go.UnderlyingDirectedEq SelectCase.ty SelectCase.underlying
   isUnderlying : go.IsUnderlying SelectCase.underlying SelectCase.underlying
+  method_set : go.MethodSetIs SelectCase.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType SelectCase.ty) []
 
 attribute [instance] SelectCase.TypeAssumptions.type_repr
   SelectCase.TypeAssumptions.underlying
   SelectCase.TypeAssumptions.isUnderlying
+  SelectCase.TypeAssumptions.method_set
+  SelectCase.TypeAssumptions.ptr_method_set
 
 axiom visibleFieldsWalker : Type
 axiom visibleFieldsWalker.zero_val : ZeroVal visibleFieldsWalker
@@ -1585,10 +1729,14 @@ class visibleFieldsWalker.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocal
   type_repr : go.TypeReprUnderlying visibleFieldsWalker.underlying visibleFieldsWalker
   underlying : go.UnderlyingDirectedEq visibleFieldsWalker.ty visibleFieldsWalker.underlying
   isUnderlying : go.IsUnderlying visibleFieldsWalker.underlying visibleFieldsWalker.underlying
+  method_set : go.MethodSetIs visibleFieldsWalker.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType visibleFieldsWalker.ty) [(go!"reflect.walk", (some (go.signature.Signature [Type'.ty] false [])))]
 
 attribute [instance] visibleFieldsWalker.TypeAssumptions.type_repr
   visibleFieldsWalker.TypeAssumptions.underlying
   visibleFieldsWalker.TypeAssumptions.isUnderlying
+  visibleFieldsWalker.TypeAssumptions.method_set
+  visibleFieldsWalker.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   abiStep_instance : abiStep.TypeAssumptions

@@ -1048,11 +1048,15 @@ abbrev Error [GooseExts] : Type := w64
 
 class Error.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Error.ty Error.underlying
+  method_set : go.MethodSetIs Error.ty [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Error.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string])))]
   Error_unfold : MethodUnfold Error.ty go!"Error" Error.Error.impl
   ptr_Error_unfold : MethodUnfold (go.GoType.PointerType Error.ty) go!"Error" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Error.ty go!"Error"))) (App (Val (GoInstruction (GoLoad Error.ty))) (Var "$r"))))
 
 attribute [instance] Error.TypeAssumptions.underlying
+  Error.TypeAssumptions.method_set
+  Error.TypeAssumptions.ptr_method_set
   Error.TypeAssumptions.Error_unfold
   Error.TypeAssumptions.ptr_Error_unfold
 
@@ -1097,6 +1101,8 @@ class decimal.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   set_neg : ∀ (x : decimal) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"neg") (PairV #x #y) (Val #(({ x with neg' := y } : decimal)))
   get_trunc : ∀ (x : decimal), go.IsGoStepPureDetTagged under (StructFieldGet decimal.underlying go!"trunc") #x (Val #(x.trunc'))
   set_trunc : ∀ (x : decimal) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet decimal.underlying go!"trunc") (PairV #x #y) (Val #(({ x with trunc' := y } : decimal)))
+  method_set : go.MethodSetIs decimal.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType decimal.ty) [(go!"Assign", (some (go.signature.Signature [go.uint64] false []))), (go!"Round", (some (go.signature.Signature [go.int] false []))), (go!"RoundDown", (some (go.signature.Signature [go.int] false []))), (go!"RoundUp", (some (go.signature.Signature [go.int] false []))), (go!"RoundedInteger", (some (go.signature.Signature [] false [go.uint64]))), (go!"Shift", (some (go.signature.Signature [go.int] false []))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"internal/strconv.floatBits", (some (go.signature.Signature [(go.GoType.PointerType floatInfo.ty)] false [go.uint64, go.bool]))), (go!"internal/strconv.set", (some (go.signature.Signature [go.string] false [go.bool])))]
 
 attribute [instance] decimal.TypeAssumptions.type_repr
   decimal.TypeAssumptions.underlying
@@ -1110,6 +1116,8 @@ attribute [instance] decimal.TypeAssumptions.type_repr
   decimal.TypeAssumptions.set_neg
   decimal.TypeAssumptions.get_trunc
   decimal.TypeAssumptions.set_trunc
+  decimal.TypeAssumptions.method_set
+  decimal.TypeAssumptions.ptr_method_set
 
 structure leftCheat [GooseExts] where
   mk ::
@@ -1140,6 +1148,8 @@ class leftCheat.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   set_delta : ∀ (x : leftCheat) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet leftCheat.underlying go!"delta") (PairV #x #y) (Val #(({ x with delta' := y } : leftCheat)))
   get_cutoff : ∀ (x : leftCheat), go.IsGoStepPureDetTagged under (StructFieldGet leftCheat.underlying go!"cutoff") #x (Val #(x.cutoff'))
   set_cutoff : ∀ (x : leftCheat) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet leftCheat.underlying go!"cutoff") (PairV #x #y) (Val #(({ x with cutoff' := y } : leftCheat)))
+  method_set : go.MethodSetIs leftCheat.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType leftCheat.ty) []
 
 attribute [instance] leftCheat.TypeAssumptions.type_repr
   leftCheat.TypeAssumptions.underlying
@@ -1147,6 +1157,8 @@ attribute [instance] leftCheat.TypeAssumptions.type_repr
   leftCheat.TypeAssumptions.set_delta
   leftCheat.TypeAssumptions.get_cutoff
   leftCheat.TypeAssumptions.set_cutoff
+  leftCheat.TypeAssumptions.method_set
+  leftCheat.TypeAssumptions.ptr_method_set
 
 structure floatInfo [GooseExts] where
   mk ::
@@ -1181,6 +1193,8 @@ class floatInfo.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   set_expbits : ∀ (x : floatInfo) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet floatInfo.underlying go!"expbits") (PairV #x #y) (Val #(({ x with expbits' := y } : floatInfo)))
   get_bias : ∀ (x : floatInfo), go.IsGoStepPureDetTagged under (StructFieldGet floatInfo.underlying go!"bias") #x (Val #(x.bias'))
   set_bias : ∀ (x : floatInfo) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet floatInfo.underlying go!"bias") (PairV #x #y) (Val #(({ x with bias' := y } : floatInfo)))
+  method_set : go.MethodSetIs floatInfo.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType floatInfo.ty) []
 
 attribute [instance] floatInfo.TypeAssumptions.type_repr
   floatInfo.TypeAssumptions.underlying
@@ -1190,6 +1204,8 @@ attribute [instance] floatInfo.TypeAssumptions.type_repr
   floatInfo.TypeAssumptions.set_expbits
   floatInfo.TypeAssumptions.get_bias
   floatInfo.TypeAssumptions.set_bias
+  floatInfo.TypeAssumptions.method_set
+  floatInfo.TypeAssumptions.ptr_method_set
 
 structure decimalSlice [GooseExts] where
   mk ::
@@ -1224,6 +1240,8 @@ class decimalSlice.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   set_nd : ∀ (x : decimalSlice) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet decimalSlice.underlying go!"nd") (PairV #x #y) (Val #(({ x with nd' := y } : decimalSlice)))
   get_dp : ∀ (x : decimalSlice), go.IsGoStepPureDetTagged under (StructFieldGet decimalSlice.underlying go!"dp") #x (Val #(x.dp'))
   set_dp : ∀ (x : decimalSlice) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet decimalSlice.underlying go!"dp") (PairV #x #y) (Val #(({ x with dp' := y } : decimalSlice)))
+  method_set : go.MethodSetIs decimalSlice.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType decimalSlice.ty) []
 
 attribute [instance] decimalSlice.TypeAssumptions.type_repr
   decimalSlice.TypeAssumptions.underlying
@@ -1233,6 +1251,8 @@ attribute [instance] decimalSlice.TypeAssumptions.type_repr
   decimalSlice.TypeAssumptions.set_nd
   decimalSlice.TypeAssumptions.get_dp
   decimalSlice.TypeAssumptions.set_dp
+  decimalSlice.TypeAssumptions.method_set
+  decimalSlice.TypeAssumptions.ptr_method_set
 
 structure uint128 [GooseExts] where
   mk ::
@@ -1263,6 +1283,8 @@ class uint128.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   set_Hi : ∀ (x : uint128) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet uint128.underlying go!"Hi") (PairV #x #y) (Val #(({ x with Hi' := y } : uint128)))
   get_Lo : ∀ (x : uint128), go.IsGoStepPureDetTagged under (StructFieldGet uint128.underlying go!"Lo") #x (Val #(x.Lo'))
   set_Lo : ∀ (x : uint128) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet uint128.underlying go!"Lo") (PairV #x #y) (Val #(({ x with Lo' := y } : uint128)))
+  method_set : go.MethodSetIs uint128.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType uint128.ty) []
 
 attribute [instance] uint128.TypeAssumptions.type_repr
   uint128.TypeAssumptions.underlying
@@ -1270,6 +1292,8 @@ attribute [instance] uint128.TypeAssumptions.type_repr
   uint128.TypeAssumptions.set_Hi
   uint128.TypeAssumptions.get_Lo
   uint128.TypeAssumptions.set_Lo
+  uint128.TypeAssumptions.method_set
+  uint128.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Error_instance : Error.TypeAssumptions
