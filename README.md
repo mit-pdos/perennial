@@ -38,7 +38,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   generation's local ghost state `L`, which each generation's proof guarantees
   for the next generation after its crash, from its persistent `crashed` token (exclusive with the `notCrashed` that its state interpretation owns,
   `GooseLang/CrashToken.lean`). There are no crash reasoning principles yet
-  (no `crash_own`).
+  (no `crash_own`). End-to-end example: the Go package
+  `goose/testdata/examples/crashfs`, a boot program on a toy filesystem
+  (`GooseLang/Ext/Fs`, Go side `crashfs/fsffi`) whose `panic` assertions never
+  fire however many times the node crashes (`crash_safety`,
+  `Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/crashfs/Results.lean`).
 * **Bounded layer, time receipts and thread tokens.** The trusted semantics
   `BaseStep` (and its iris-lean language `gooseRealEctxiLang`,
   `GooseLang/Lang.lean`) is the model of Go, but the language instance used by

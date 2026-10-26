@@ -1,0 +1,5 @@
+# The filesystem's Go functions are primitives: trusted models in terms of the
+# filesystem extension (Perennial/TrustedCode/.../crashfs/fsffi.lean).
+translate = ["!*"]
+imports = ["!*"]
+trusted = ["Read", "Write"]

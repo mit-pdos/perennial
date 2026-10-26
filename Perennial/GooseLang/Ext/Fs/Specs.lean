@@ -50,6 +50,10 @@ instance fsPointsto_timeless (hL : FsGS GF) (f : GoString) (q : DFrac) (c : List
     Timeless (fsPointsto hL f q c) := by
   unfold fsPointsto; infer_instance
 
+instance fsPointsto_persistent (hL : FsGS GF) (f : GoString) (c : List w8) :
+    Persistent (fsPointsto hL f .discard c) := by
+  unfold fsPointsto; infer_instance
+
 theorem fs_local_init (hPre : FsGpreS GF) (fs : FsState) :
     ⊢@{IProp GF} |==> ∃ hL : FsGS GF, fsCtx hL fs ∗
       [∗map] f ↦ c ∈ fs, fsPointsto hL f (.own 1) c := by
@@ -89,10 +93,11 @@ variable {s : Stuckness} {E : CoPset}
 
 abbrev gooseFsGS : FsGS GF := extLocalGS fsExt
 
-/- Notations `f fs↦{q} c` and `f fs↦ c`. -/
+/- Notations `f fs↦{q} c`, `f fs↦ c` and `f fs↦□ c`. -/
 namespace fs_ext
 scoped notation:50 f:51 " fs↦{" q "} " c:50 => fsPointsto gooseFsGS f q c
 scoped notation:50 f:51 " fs↦ " c:50 => fsPointsto gooseFsGS f (DFrac.own 1) c
+scoped notation:50 f:51 " fs↦□ " c:50 => fsPointsto gooseFsGS f DFrac.discard c
 end fs_ext
 open fs_ext
 
@@ -159,6 +164,74 @@ theorem wp_FsWrite (f : GoString) (old new : List w8) :
   iapply wp_value'
   iapply HΦ
   iexact Hc
+
+/-- `wp_FsRead` as a logically atomic spec: the file's points-to is needed only
+during the step, so it can come from an invariant. -/
+theorem wp_FsRead_atomic (f : GoString) (Φ : val → IProp GF) :
+    (|={E,∅}=> ∃ (q : DFrac) (c : List w8), f fs↦{q} c ∗ (f fs↦{q} c ={∅,E}=∗ Φ #c))
+    ⊢ WP (ExternalOp (extOp fsExt FsOp.ReadOp) (Val (#f))) @ s; E {{ Φ }} := by
+  iintro HAU
+  iapply wp_extStep FsOp.ReadOp (#f) Φ (by simp)
+  iintro %h %fs %g Hheap Hl Hg
+  imod HAU with ⟨%q, %c, Hc, Hclose⟩
+  icases (fs_local_ctx_eq fs).mp $$ Hl with Hl
+  unfold fsPointsto
+  icases genHeap_lookup (G := (gooseFsGS (L := L)).fsHeapG) $$ Hl Hc with %Heq
+  imodintro
+  isplitr
+  · ipureintro; exact ⟨_, h, fs, g, rfl, f, c, rfl, Heq, rfl, rfl⟩
+  inext
+  iintro %e' %h' %fs' %g' %Hst _
+  obtain ⟨rfl, f', c', Hv, Hc', rfl, rfl⟩ := Hst
+  obtain rfl := go.intoVal_inj Hv
+  change fs' !! f = some c at Heq
+  rw [Heq] at Hc'
+  cases Hc'
+  imod Hclose $$ Hc with HΦ
+  imodintro
+  iframe Hheap Hg
+  isplitl [Hl]
+  · iapply (fs_local_ctx_eq _).mpr; iexact Hl
+  iapply wp_value'
+  iexact HΦ
+
+/-- `wp_FsWrite` as a logically atomic spec. -/
+theorem wp_FsWrite_atomic (f : GoString) (new : List w8) (Φ : val → IProp GF) :
+    (|={E,∅}=> ∃ old : List w8, f fs↦ old ∗ (f fs↦ new ={∅,E}=∗ Φ #()))
+    ⊢ WP (ExternalOp (extOp fsExt FsOp.WriteOp) (Val (PairV (#f) (#new)))) @ s; E {{ Φ }} := by
+  iintro HAU
+  iapply wp_extStep FsOp.WriteOp (PairV (#f) (#new)) Φ (by simp [val.isPanic])
+  iintro %h %fs %g Hheap Hl Hg
+  imod HAU with ⟨%old, Hc, Hclose⟩
+  icases (fs_local_ctx_eq fs).mp $$ Hl with Hl
+  imodintro
+  isplitr
+  · ipureintro; exact ⟨_, h, _, g, rfl, f, new, rfl, rfl, rfl⟩
+  inext
+  iintro %e' %h' %fs' %g' %Hst _
+  obtain ⟨rfl, f', new', Hv, rfl, rfl⟩ := Hst
+  obtain ⟨Hf, Hnew⟩ := val.PairV.inj Hv
+  obtain rfl := go.intoVal_inj Hf
+  obtain rfl := go.intoVal_inj (V := List w8) Hnew
+  unfold fsPointsto
+  imod genHeap_update' (G := (gooseFsGS (L := L)).fsHeapG) (v₂ := new) $$ [Hl Hc]
+    with ⟨Hl, Hc⟩
+  · iframe
+  imod Hclose $$ Hc with HΦ
+  imodintro
+  iframe Hheap Hg
+  isplitl [Hl]
+  · iapply (fs_local_ctx_eq _).mpr; iexact Hl
+  iapply wp_value'
+  iexact HΦ
+
+/-- A file's points-to can be made persistent: the file will not be written
+any more. -/
+theorem fsPointsto_persist (f : GoString) (q : DFrac) (c : List w8) :
+    ⊢@{IProp GF} f fs↦{q} c ==∗ f fs↦□ c := by
+  unfold fsPointsto
+  letI := (gooseFsGS (L := L)).fsHeapG
+  exact pointsTo_persist
 
 end lifting
 
