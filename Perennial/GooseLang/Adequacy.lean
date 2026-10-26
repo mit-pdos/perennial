@@ -2,9 +2,9 @@
 Adequacy for GooseLang (non-crash, "failstop").
 
 Notes:
-* No crash logic: extensions (`ExtInterp`) have no crash obligations. The
-  adequacy theorem is the plain (non-recovery) one, built on iris-lean's
-  `wp_adequacy`.
+* These theorems are about executions without crashes, built on iris-lean's
+  `wp_adequacy`; the crash adequacy theorem is `goose_crash_adequacy`
+  (`CrashAdequacy.lean`).
 * The theorems are generic over the closed list of extensions: they allocate
   each extension's ghost state (`ExtInterp.global_init`/`local_init`) and hand
   the program the start resources of all of them (`extsGlobalStart`,

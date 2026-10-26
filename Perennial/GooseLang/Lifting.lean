@@ -1,9 +1,12 @@
 /-
-Program-logic base for GooseLang, without crash machinery.
+Program-logic base for GooseLang.
 
 Notes:
-* No crash logic: the program logic is iris-lean's `wp` (with its own later
-  credits).
+* The program logic is iris-lean's `wp` (with its own later credits); there is
+  no crash WP. The ghost state is split into the global part (`GooseGlobalGS`)
+  and the per-generation part (`GooseLocalGS`), which a crash replaces
+  (`CrashAdequacy.lean`); the bounded state interpretation owns the
+  generation's `notCrashed` (`CrashToken.lean`).
 * iris-lean's `IrisGS_gen` class is instantiated (`goose_irisGS`) from
   `gooseGlobalGS` and `gooseLocalGS`. `heapGS` bundles the
   two. `heapGS` does *not* contain the `GoGlobalContext` (the language instance

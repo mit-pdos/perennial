@@ -990,7 +990,7 @@ class ThreadGS (GF : BundledGFunctors) where
   threadBound_gt : 1 < threadBound
 ```
 
-`ThreadGS` is a field of `GooseGlobalGS`, hence available from `HeapGS`, and
+`ThreadGS` is a field of the per-generation `GooseLocalGS`, hence available from `HeapGS`, and
 its tokens are ghost state of `GooseGlobalGS`'s `AllG GF` (`gooseAllG`, the
 one `AllG` of every proof under `HeapGS`); as for `N`, a proof that needs `T` to be small states it as a premise
 (`Hbound : threadBound GF ≤ 2 ^ 31`), discharged by the client at adequacy

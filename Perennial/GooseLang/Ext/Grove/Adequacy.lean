@@ -5,7 +5,7 @@ Adequacy for a Grove program.
   (`groveExts`): the theorem instantiates `goose_adequacy` with it. A program
   proved under `HasExt groveExt` for an arbitrary list instantiates its proof
   with these instances.
-* There is no crash obligation.
+* The theorem is fail-stop; Grove has no `ExtCrashInterp`, so no crash adequacy.
 * Only the (fail-stop) single-node theorem `grove_single_node_adequacy` is
   proved. Distributed adequacy theorems would need a distributed-language
   semantics, which is not available.

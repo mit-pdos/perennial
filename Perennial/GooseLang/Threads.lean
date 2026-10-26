@@ -35,7 +35,9 @@ the `n` tokens of `threadToks n` are `n` distinct slots below `T - 1`, whence
 is allocated with all `T - 1` slots and discarded (`thread_init`).
 
 The tokens are ghost state of the one `allG GF`, which `GooseGlobalGS`
-(`Lifting.lean`) carries alongside `ThreadGS`; here it is the ambient `[AllG GF]`.
+(`Lifting.lean`) carries; here it is the ambient `[AllG GF]`. `ThreadGS` is
+per generation (a field of `GooseLocalGS`): a crash kills every thread, and the
+next generation gets new tokens (`goose_crash_step`, `CrashAdequacy.lean`).
 -/
 module
 

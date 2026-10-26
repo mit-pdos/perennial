@@ -2,7 +2,7 @@
 Iris reasoning principles for the Grove extension.
 
 Notes:
-* No crash reasoning (no restart or crash relation, no post-crash points-to).
+* No crash reasoning (no post-crash points-to, no `ExtCrashInterp`).
 * The ghost state uses iris-lean's `genHeapGS` (with `gmap` as the map type)
   and `MonoNatG`. The `groveGS`/`groveNodeGS` fields are not instances (there
   are two `genHeapGS` and possibly two `MonoNatG` in play); definitions pass
