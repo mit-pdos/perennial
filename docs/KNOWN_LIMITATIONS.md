@@ -67,3 +67,29 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   `struct{ a int }{}` from its own package, and the model has one type. Refusing such
   types would reject common code (`struct{ mu sync.Mutex; … }`); modelling it means
   qualifying field names everywhere.
+
+## `unsafe` and layouts
+
+- **`bool` and `sync.Mutex` share element addresses (unsound).** Element and field
+  addresses (`arrayIndexRef V i l`, `structFieldRef V f l`) are keyed by the Lean type
+  `V`, and `sync.Mutex` and `primitive.Mutex` are represented as `Bool`
+  (`Mutex.underlying := go.bool`, `TrustedCode/sync.lean`,
+  `TrustedCode/github_com/goose_lang/primitive.lean`), so a 1-byte `bool` and an 8-byte
+  `Mutex` get the same element addresses. `unsafe.Pointer` conversions are the identity
+  (`convert_unsafe_to_pointer`, `Golang/Defn/Predeclared.lean`), so a view of one as the
+  other reads the wrong cell:
+
+  ```go
+  var mus [2]sync.Mutex
+  mus[1].Lock()
+  return (*[2]bool)(unsafe.Pointer(&mus))[1] // Go: false (byte 1 of mus[0]); the model: true
+  ```
+
+  goose translates this, and the model's only answer is `true`. The reverse view
+  (`[16]bool` read as `[2]sync.Mutex`, then `TryLock`) and a generic struct instantiated
+  at `bool` and at `sync.Mutex` go wrong the same way. Before arrays were allocated
+  (`05ef8d959`), the allocation reached `AngelicExit`, so such a program verified any
+  spec vacuously. Fixes: a Lean representation of the mutexes of their own, so that
+  equal Lean types mean equal gc layouts, or making a conversion between pointers to
+  types of different layouts stuck (R1 and R3 of `docs/design/unsafe-memory.md`).
+  Found 2026-10-26 by a blind trusted-base review of the flat-address change.
