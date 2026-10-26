@@ -120,7 +120,7 @@ theorem maxVal_eq (bs : w64) (h1 : 1 ≤ sint.Z bs) (h2 : sint.Z bs ≤ 64) :
   · rw [h, Nat.mod_self, Nat.add_zero, Nat.mod_eq_of_lt (by decide)]
 
 section out
-variable [ext : FfiSyntax] [go_gctx : GoGlobalContext]
+variable [GooseExts] [go_gctx : GoGlobalContext]
 
 /-- What `ParseUint` returns for the result `r`, the maximum being `maxVal`: the number and a nil
 error; `0` and `ErrSyntax`; `maxVal` and `ErrRange` (each error an `internal/strconv.Error`

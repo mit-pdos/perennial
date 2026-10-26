@@ -43,7 +43,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 /-! ## The `PureWp` class -/
 
 section classes
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 
@@ -105,7 +105,7 @@ end classes
 /-! ## Basic instances -/
 
 section instances
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 
@@ -202,7 +202,7 @@ instance (priority := high) wp_unwind_primitive2L (op : PrimOp2) (p : val) (e2 :
     PureWp (G := G) (L := L) True (Primitive2 op (Val (PanicV p)) e2) (Val (PanicV p)) :=
   pure_exec_pure_wp (pure_unwind (.Primitive2LCtx op e2) p rfl)
 
-instance (priority := high) wp_unwind_externalOp (op : ffi_opcode) (p : val) :
+instance (priority := high) wp_unwind_externalOp (op : ExtsOp exts) (p : val) :
     PureWp (G := G) (L := L) True (ExternalOp op (Val (PanicV p))) (Val (PanicV p)) :=
   pure_exec_pure_wp (pure_unwind (.ExternalOpCtx op) p rfl)
 
@@ -218,7 +218,7 @@ run is substituted, once. (Substituting each `let:` into the rest of the run
 instead costs the size of the rest of the run per `let:`.) -/
 
 section let_env
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 
@@ -248,7 +248,7 @@ end let_env
 /-! ## Lemmas used by the tactics -/
 
 section lemmas
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [ι : IrisGS_gen hlc Expr GF]
 
 theorem tac_wp_bind {Δ : IProp GF} {s : Stuckness} {E : CoPset} {K : List EctxItem} {e' : Expr}
@@ -329,7 +329,7 @@ end lemmas
 /-! ## Expression simplification -/
 
 section simp_lemmas
-variable [ext : FfiSyntax]
+variable [GooseExts]
 
 @[goose_wp_simp] theorem subst'_BAnon (v : val) (e : Expr) : subst' BAnon v e = e := rfl
 @[goose_wp_simp] theorem subst'_BNamed (x : String) (v : val) (e : Expr) :
@@ -351,7 +351,7 @@ simproc [goose_wp_simp] gooseReduceDecide (decide _) := fun e => do
   let_expr Decidable.decide p inst := e | return .continue
   if p.hasMVar then return .continue
   -- free variables are only allowed if they are instances (e.g. the section
-  -- variable `[FfiSyntax]` in a word literal), which evaluation does not need
+  -- variable `[GooseExts]` in a word literal), which evaluation does not need
   if p.hasFVar then
     for fv in (collectFVars {} p).fvarIds do
       unless (← isClass? (← fv.getType)).isSome do return .continue
@@ -402,7 +402,7 @@ theorem list_char_ne_nil_cons {d : Char} {ds : List Char} : ([] : List Char) ≠
 theorem list_char_ne_cons_nil {c : Char} {cs : List Char} : c :: cs ≠ ([] : List Char) := nofun
 
 section subst_pf
-variable [ext : FfiSyntax] {x : String} {v : val}
+variable [GooseExts] {x : String} {v : val}
 
 theorem binder_named_ne_named {y : String} (h : x ≠ y) : BNamed x ≠ BNamed y :=
   fun h' => h (Binder.BNamed.inj h')
@@ -436,7 +436,7 @@ theorem subst_pf_prim1 (op : PrimOp1) {a a' : Expr} (ha : subst x v a = a') :
 theorem subst_pf_prim2 (op : PrimOp2) {a b a' b' : Expr} (ha : subst x v a = a')
     (hb : subst x v b = b') : subst x v (Primitive2 op a b) = Primitive2 op a' b' := by
   simp only [subst, ha, hb]
-theorem subst_pf_extop (op : ffi_opcode) {a a' : Expr} (ha : subst x v a = a') :
+theorem subst_pf_extop (op : ExtsOp exts) {a a' : Expr} (ha : subst x v a = a') :
     subst x v (ExternalOp op a) = ExternalOp op a' := by simp only [subst, ha]
 theorem subst_pf_cmpxchg {a b c a' b' c' : Expr} (ha : subst x v a = a') (hb : subst x v b = b')
     (hc : subst x v c = c') : subst x v (CmpXchg a b c) = CmpXchg a' b' c' := by
@@ -494,10 +494,10 @@ the function at every `let:`. The annotations are removed before the goal is
 returned. -/
 
 /-- `e`, annotated with a set `S` of variables containing its free variables. -/
-@[reducible] def fvClosed [FfiSyntax] (_S : List String) (e : Expr) : Expr := e
+@[reducible] def fvClosed [GooseExts] (_S : List String) (e : Expr) : Expr := e
 
 section closed
-variable [ext : FfiSyntax]
+variable [GooseExts]
 
 /-- `simp` (e.g. `goose_wp_simp` over the whole WP expression) only rewrites the
 annotated term, not the variable set of an annotation. -/
@@ -558,7 +558,7 @@ theorem closed_prim1 (op : PrimOp1) {a : Expr} (ha : ClosedUnder S a) :
     ClosedUnder S (Primitive1 op a) := by intro σ hσ; simp only [substEnv, ha σ hσ]
 theorem closed_prim2 (op : PrimOp2) {a b : Expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
     ClosedUnder S (Primitive2 op a b) := by intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ]
-theorem closed_extop (op : ffi_opcode) {a : Expr} (ha : ClosedUnder S a) :
+theorem closed_extop (op : ExtsOp exts) {a : Expr} (ha : ClosedUnder S a) :
     ClosedUnder S (ExternalOp op a) := by intro σ hσ; simp only [substEnv, ha σ hσ]
 theorem closed_cmpxchg {a b c : Expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b)
     (hc : ClosedUnder S c) : ClosedUnder S (CmpXchg a b c) := by
@@ -764,7 +764,7 @@ structure GooseWpGoal where
   wpHead : Lean.Expr
   /-- The `IrisGS_gen` instance. -/
   ι : Lean.Expr
-  /-- The `FfiSyntax` instance of the expression type. -/
+  /-- The `GooseExts` instance of the expression type. -/
   ext : Lean.Expr
   s : Lean.Expr
   E : Lean.Expr
@@ -1565,22 +1565,22 @@ meta def needsGooseSimp (e : Lean.Expr) (known : Array Lean.Expr := #[]) : MetaM
     return (b, k)
   return (← go e).1
 
-/-- Instance arguments `ext ffi interp sem gctx hlc GF G L` of a `goose_irisGS`
+/-- Instance arguments `exts sem interp gctx hlc GF G L` of a `goose_irisGS`
 instance. -/
 meta def gooseGSArgs (ι : Lean.Expr) : MetaM (Array Lean.Expr) := do
   let ι ← instantiateMVars ι
   let ι ← if ι.isAppOf ``goose_irisGS then pure ι else whnfR ι
-  unless ι.isAppOfArity ``goose_irisGS 9 do
+  unless ι.isAppOfArity ``goose_irisGS 8 do
     throwError "the WP is not over the GooseLang `IrisGS_gen` instance `goose_irisGS`:{indentExpr ι}"
-  -- `goose_irisGS` takes `ext ffi interp hlc GF sem gctx G L`; return them in the
-  -- order of the section variables of this file: `ext ffi interp sem gctx hlc GF G L`
+  -- `goose_irisGS` takes `exts interp hlc GF sem gctx G L`; return them in the
+  -- order of the section variables of this file: `exts sem interp gctx hlc GF G L`
   let a := ι.getAppArgs
-  return #[a[0]!, a[1]!, a[2]!, a[5]!, a[6]!, a[3]!, a[4]!, a[7]!, a[8]!]
+  return #[a[0]!, a[4]!, a[1]!, a[5]!, a[2]!, a[3]!, a[6]!, a[7]!]
 
 /-- The context arguments `hlc`, `GF`, `ι` of the tactic lemmas about the WP of `wp`. -/
 meta def GooseWpGoal.ctxArgs (wp : GooseWpGoal) : MetaM (List (String × Lean.Expr)) := do
   let gs ← gooseGSArgs wp.ι
-  return [("hlc", gs[5]!), ("GF", gs[6]!), ("ι", wp.ι)]
+  return [("hlc", gs[4]!), ("GF", gs[5]!), ("ι", wp.ι)]
 
 /-- `mkAppNamed` with the context arguments of `wp` (`GooseWpGoal.ctxArgs`), so
 that the application can be built without unification (`mkAppNamedDirect?`). -/
@@ -1633,7 +1633,7 @@ directly instead of by typeclass search: unifying the instance with `e1` assigns
 the (possibly large) body `e` to a metavariable, which costs a traversal of `e`
 at every step. Returns the same as `synthPureWp`. -/
 meta def directPureWp (gs : Array Lean.Expr) (e1 : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
-  unless gs.size == 9 do return none
+  unless gs.size == 8 do return none
   let ext := gs[0]!
   let e ← whnfR (← instantiateMVars e1)
   let val (v : Lean.Expr) := mkApp2 (mkConst ``Perennial.Expr.Val) ext v
@@ -1695,7 +1695,7 @@ and `n` a literal: one `PureWp` step to the array value (`pure_wp_array_lit` of
 `go.composite_literal_array`, whose stepping is quadratic in the length.
 Returns the same as `synthPureWp`. -/
 meta def arrayLitPureWp? (gs : Array Lean.Expr) (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr × Lean.Expr)) := do
-  unless gs.size == 9 do return none
+  unless gs.size == 8 do return none
   let e ← whnfR e
   let_expr Perennial.Expr.App _ f a := e | return none
   let some fv ← isGooseVal? f | return none
@@ -2996,8 +2996,8 @@ meta def iWpPureStepTake {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($p
   let heq ← wp.wrapEq e' heq?
   let Kq := wp.quoteK st.K
   let gs ← gooseGSArgs wp.ι
-  if !lc && gs.size == 9 then
-    -- built directly (`tac_wp_pure_wp'` takes the 9 section variables of `gs` first)
+  if !lc && gs.size == 8 then
+    -- built directly (`tac_wp_pure_wp'` takes the 8 section variables of `gs` first)
     let k := fun (h : Lean.Expr) => pure <| mkAppN (mkConst ``tac_wp_pure_wp')
       (gs ++ #[st.φ, st.e1, st.e2, wp.wrap e', st.inst, Kq, ehyps, ehyps', wp.s, wp.E, wp.Φ,
         hφ, hlater, heq, h])
@@ -3648,7 +3648,7 @@ open Lean Elab Tactic Meta Qq Iris.ProofMode in
       mvar.assign (← iWpBindCore g.e wp K e' (addBIGoal g.hyps ·))
 
 section call_lemmas
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 

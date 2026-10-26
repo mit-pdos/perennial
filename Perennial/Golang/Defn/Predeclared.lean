@@ -29,11 +29,11 @@ public import Perennial.Golang.Defn.PostLang
 namespace Perennial
 
 namespace error
-abbrev _root_.Perennial.GoError [FfiSyntax] : Type := GoInterface
+abbrev _root_.Perennial.GoError [GooseExts] : Type := GoInterface
 end error
 
 section helpers
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 def min.impl (t : go.GoType) (n : Nat) : val :=
   match n with
@@ -54,7 +54,7 @@ end helpers
 namespace «unsafe»
 def Pointer : go.GoType := go.Named go!"unsafe.Pointer" []
 
-class Semantics [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] : Prop where
+class Semantics [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] : Prop where
   go_zero_val_Pointer : go.TypeReprUnderlying Pointer Loc
   go_eq_Pointer : go.IsStrictlyComparable Pointer Loc
   underlying_pointer : unsafe.Pointer ↓u unsafe.Pointer
@@ -71,7 +71,7 @@ export Semantics (go_zero_val_Pointer go_eq_Pointer underlying_pointer convert_u
 end «unsafe»
 
 namespace any
-abbrev _root_.Perennial.GoAny [FfiSyntax] : Type := GoInterface
+abbrev _root_.Perennial.GoAny [GooseExts] : Type := GoInterface
 end any
 
 namespace go
@@ -142,7 +142,7 @@ abbrev untypedRune : go.GoType := untypedInt
 def prophId : go.GoType := go.Named go!"proph id" []
 
 section defs
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext]
 
 /-- The integer types. A `class` so that `[IsInteger t]` premises are found by
 typeclass search. -/

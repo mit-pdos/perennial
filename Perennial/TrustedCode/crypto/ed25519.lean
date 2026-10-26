@@ -14,7 +14,7 @@ namespace Perennial
 
 namespace crypto.ed25519
 section code
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- The initializer of `cryptocustomrand` (`crypto/ed25519/ed25519.go`):
 

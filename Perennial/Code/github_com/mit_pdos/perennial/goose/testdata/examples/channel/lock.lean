@@ -21,18 +21,18 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock
 
-noncomputable def Lock.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Lock.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/lock.Lock" [])
 
 attribute [irreducible] Lock.ty
 
-noncomputable def NewLock [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewLock [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/lock.NewLock"
 
 /-- NewLock returns a new Lock backed by a buffered channel of size 1.
 
     go: lock.go:15:6 -/
-noncomputable def NewLock.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewLock.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -40,7 +40,7 @@ noncomputable def NewLock.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral Lock.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"ch")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])) (Var "$v0")))]))))))
 
 /-- go: lock.go:21:15 -/
-noncomputable def Lock.Lock.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Lock.Lock.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -57,7 +57,7 @@ noncomputable def Lock.Lock.impl [FfiSyntax] [GoGlobalContext] : val :=
     This will block if the lock is not currently held.
 
     go: lock.go:27:15 -/
-noncomputable def Lock.Unlock.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Lock.Unlock.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -72,7 +72,7 @@ noncomputable def Lock.Unlock.impl [FfiSyntax] [GoGlobalContext] : val :=
     Returns true on success, false if already held.
 
     go: lock.go:33:15 -/
-noncomputable def Lock.TryLock.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Lock.TryLock.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -87,7 +87,7 @@ noncomputable def Lock.TryLock.impl [FfiSyntax] [GoGlobalContext] : val :=
     Returns true if acquired, false if timed out.
 
     go: lock.go:44:15 -/
-noncomputable def Lock.LockWithTimeout.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Lock.LockWithTimeout.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "l"
   (Lam "d"
   (App (Val exceptionDo)
@@ -106,34 +106,34 @@ noncomputable def Lock.LockWithTimeout.impl [FfiSyntax] [GoGlobalContext] : val 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock where
   pkgImportedPkgs := [pkg_id.time]
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (App (Val _root_.Perennial.time.initialize') (Val #())))))))
 
-structure Lock [FfiSyntax] where
+structure Lock [GooseExts] where
   mk ::
   ch' : GoChan
 
-noncomputable instance Lock.zero_val [FfiSyntax] : ZeroVal Lock :=
+noncomputable instance Lock.zero_val [GooseExts] : ZeroVal Lock :=
   ⟨Lock.mk zeroValDef⟩
 
-@[reducible] noncomputable def Lock.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Lock.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"ch" (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType [])))]
 
-@[irreducible] noncomputable def Lock.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Lock.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Lock.fieldsUnsealed
 
-noncomputable instance equals_unfold_Lock [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Lock [GooseExts] [GoGlobalContext] :
     EqualsUnfold Lock.fields Lock.fieldsUnsealed :=
   ⟨by unfold Lock.fields; rfl⟩
 
-@[reducible] noncomputable def Lock.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Lock.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Lock.fields)
 
-class Lock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Lock.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Lock.underlying Lock
   underlying : go.UnderlyingDirectedEq Lock.ty Lock.underlying
   get_ch : ∀ (x : Lock), go.IsGoStepPureDetTagged under (StructFieldGet Lock.underlying go!"ch") #x (Val #(x.ch'))
@@ -164,7 +164,7 @@ attribute [instance] Lock.TypeAssumptions.type_repr
   Lock.TypeAssumptions.ptr_TryLock_unfold
   Lock.TypeAssumptions.ptr_Unlock_unfold
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Lock_instance : Lock.TypeAssumptions
   NewLock_unfold : FuncUnfold NewLock [] NewLock.impl
   import_time_Assumption : _root_.Perennial.time.Assumptions

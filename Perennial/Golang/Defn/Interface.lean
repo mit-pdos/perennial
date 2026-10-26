@@ -12,7 +12,7 @@ namespace Perennial
 
 namespace go
 section defs
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
 
 def isInterfaceType (t : go.GoType) : Bool :=
   match t with | go.InterfaceType _ => true | _ => false

@@ -21,7 +21,7 @@ open github_com.goose_lang.primitive (isMutex isMutex_unseal isMutexDef ownMutex
   ownMutexDef Mutex.wp_Lock Mutex.wp_Unlock)
 
 section atomic_specs
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics] [sem : go.ChanSemantics]

@@ -78,7 +78,7 @@ theorem natValue_one_word (ws : List w64) (hne : ws ≠ []) (hn : natNormalized 
     simp only [natValue] at h hpos; omega
 
 section wps
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]

@@ -4,7 +4,7 @@ the lemma about `RandomUint64.impl`, and the predicates `isMutex`/`ownMutex` of 
 
 The proofs live in the package namespace `github_com.goose_lang.primitive`,
 so that e.g. `primitive.wp_initialize'` and `sync.wp_initialize'` do not clash.
-`primitive/disk` is not translated: there is no disk FFI for now.
+`primitive/disk` is not translated: there is no disk extension for now.
 
 This package lies below the channel theory (`Perennial.Golang.Theory.Chan.AuSpec.ChanInit`
 imports it), so none of its files may import `Perennial.Golang.Theory.Chan*`.
@@ -27,7 +27,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 namespace github_com.goose_lang.primitive
 
 section wps
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem_fn : GoSemanticsFunctions] [sem : go.PreSemantics]

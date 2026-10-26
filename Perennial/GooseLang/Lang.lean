@@ -1,12 +1,15 @@
 /-
 GooseLang.
 
-GooseLang is an adaptation of HeapLang with extensions to model Go, including
-a customizable FFI (foreign-function interface) for new primitive operations.
+GooseLang is an adaptation of HeapLang with extensions to model Go. Its primitive
+operations can be extended (a disk, a network, ...): a program runs against a
+closed list of extensions (`GooseExts`, see `Perennial/GooseLang/Ext.lean`).
 
-* There is no crash semantics (`ffi_crash_step`, `goose_crash`).
-* The base step is an inductive relation (`base_step`), and FFI steps (`FfiSemantics.ffi_step`) are a
-  plain relation.
+* There is no crash semantics (`goose_crash`).
+* The base step is an inductive relation (`base_step`). An extension's step
+  (`ExtSemantics.step`) is a plain relation, which sees and changes only the
+  heap and the extension's own state; `extStep` dispatches an `ExternalOp` to
+  the extension of its operation.
 * Panics: a panic outcome is a value, `PanicV p`, which unwinds every evaluation
   frame but that of `Catch e h k` (`Unwinds`); the head step relation `HeadStep`
   is the unwinding together with `base_step` on the redexes that do not unwind.
@@ -25,6 +28,7 @@ public import Iris.ProgramLogic.EctxiLanguage
 public import Iris.ProgramLogic.Language
 public import Perennial.Std.GMap
 public import Perennial.Std.Countable
+public import Perennial.GooseLang.Ext
 public import Perennial.GooseLang.Locations
 public import Perennial.Golang.Defn.PreLang
 
@@ -47,27 +51,6 @@ deriving DecidableEq, Inhabited, Repr
 export Binder (BAnon BNamed)
 
 instance : Coe String Binder := ⟨BNamed⟩
-
-class FfiSyntax where
-  ffi_opcode : Type
-  [ffi_opcode_eq_dec : DecidableEq ffi_opcode]
-  [ffi_opcode_countable : Pos.Countable ffi_opcode]
-  ffi_val : Type
-  [ffi_val_eq_dec : DecidableEq ffi_val]
-  [ffi_val_countable : Pos.Countable ffi_val]
-
-attribute [instance] FfiSyntax.ffi_opcode_eq_dec FfiSyntax.ffi_val_eq_dec
-  FfiSyntax.ffi_opcode_countable FfiSyntax.ffi_val_countable
-export FfiSyntax (ffi_opcode ffi_val)
-
-class FfiModel where
-  ffi_state : Type
-  ffi_global_state : Type
-  [ffi_state_inhabited : Inhabited ffi_state]
-  [ffi_global_state_inhabited : Inhabited ffi_global_state]
-
-attribute [instance] FfiModel.ffi_state_inhabited FfiModel.ffi_global_state_inhabited
-export FfiModel (ffi_state ffi_global_state)
 
 namespace slice
 structure _root_.Perennial.GoSlice where
@@ -188,7 +171,7 @@ inductive GoInstruction where
 noncomputable instance : DecidableEq GoInstruction := fun a b => Classical.propDecidable (a = b)
 
 section goose_syntax
-variable [ext : FfiSyntax]
+variable [GooseExts]
 
 mutual
 inductive Expr where
@@ -211,8 +194,8 @@ inductive Expr where
   | Primitive2 (op : PrimOp2) (e1 e2 : Expr)
   /-- Compare-exchange -/
   | CmpXchg (e0 e1 e2 : Expr)
-  /-- External FFI operation -/
-  | ExternalOp (op : ffi_opcode) (e : Expr)
+  /-- An operation of an extension (`GooseExts`) -/
+  | ExternalOp (op : ExtsOp exts) (e : Expr)
   -- Prophecy
   | NewProph
   | ResolveProph (e1 e2 : Expr)
@@ -229,8 +212,8 @@ inductive val where
   | PairV (v1 v2 : val)
   | InjLV (v : val)
   | InjRV (v : val)
-  /-- Pointers to opaque types that FFI operations may return. -/
-  | ExtV (ev : ffi_val)
+  /-- Opaque values that the operations of extensions may return. -/
+  | ExtV (ev : ExtsVal exts)
   -- Go stuff
   | GoInstruction (o : GoInstruction)
   | ArrayV (vs : List val)
@@ -313,7 +296,7 @@ export GoInstruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad GoS
   SelectStmt InternalStringLen)
 
 section derived
-variable [ext : FfiSyntax]
+variable [GooseExts]
 
 instance : Coe val Expr := ⟨Val⟩
 instance : Coe String Expr := ⟨Var⟩
@@ -351,21 +334,21 @@ def Read : val :=
 end derived
 
 namespace func
-structure _root_.Perennial.GoFunc [FfiSyntax] where
+structure _root_.Perennial.GoFunc [GooseExts] where
   f : Binder
   x : Binder
   e : Expr
 
-def nil [FfiSyntax] : GoFunc := ⟨BAnon, BAnon, Val (LitV LitPoison)⟩
+def nil [GooseExts] : GoFunc := ⟨BAnon, BAnon, Val (LitV LitPoison)⟩
 
-instance [FfiSyntax] : Inhabited GoFunc := ⟨nil⟩
-abbrev mk [FfiSyntax] (f x : Binder) (e : Expr) : GoFunc := ⟨f, x, e⟩
+instance [GooseExts] : Inhabited GoFunc := ⟨nil⟩
+abbrev mk [GooseExts] (f x : Binder) (e : Expr) : GoFunc := ⟨f, x, e⟩
 end func
 
 /-- `GoGlobalContext` contains the `intoVal` function. This allows for the Go
 semantics to state constraints on `intoVal` (e.g. injectivity for certain
 types). -/
-class GoGlobalContext [FfiSyntax] where
+class GoGlobalContext [GooseExts] where
   intoVal : {V : Type} → V → val
   intoVal_inj_loc : Function.Injective (intoVal (V := Loc))
   intoVal_inj_bool : Function.Injective (intoVal (V := Bool))
@@ -380,21 +363,21 @@ export GoGlobalContext (intoVal)
 /-- `# x` is `intoVal x`. -/
 scoped prefix:max "#" => intoVal
 
-theorem isPanic_ite [FfiSyntax] {c : Prop} [Decidable c] {a b : val} (ha : a.isPanic = false)
+theorem isPanic_ite [GooseExts] {c : Prop} [Decidable c] {a b : val} (ha : a.isPanic = false)
     (hb : b.isPanic = false) : (if c then a else b).isPanic = false := by
   split <;> assumption
 
-@[simp] theorem isPanic_intoVal [FfiSyntax] [GoGlobalContext] {V : Type} (x : V) :
+@[simp] theorem isPanic_intoVal [GooseExts] [GoGlobalContext] {V : Type} (x : V) :
     (#x : val).isPanic = false :=
   GoGlobalContext.intoVal_not_panic x
 
-@[simp] theorem intoVal_ne_PanicV [FfiSyntax] [GoGlobalContext] {V : Type} (x : V) (p : val) :
+@[simp] theorem intoVal_ne_PanicV [GooseExts] [GoGlobalContext] {V : Type} (x : V) (p : val) :
     (#x : val) ≠ PanicV p := by
   intro h; have := isPanic_intoVal x; rw [h] at this; cases this
 
 /-- `GoLocalContext` contains several low-level Go functions for typed memory
 access, map updates, etc. -/
-class GoLocalContext [FfiSyntax] where
+class GoLocalContext [GooseExts] where
   is_go_step_pure : GoInstruction → val → Expr → Prop
 
 export GoLocalContext (is_go_step_pure)
@@ -406,18 +389,18 @@ end chan
 
 namespace interface
 
-structure _root_.Perennial.GoInterfaceOk [FfiSyntax] where
+structure _root_.Perennial.GoInterfaceOk [GooseExts] where
   ty : go.GoType
   v : val
 
-inductive _root_.Perennial.GoInterface [FfiSyntax] where
+inductive _root_.Perennial.GoInterface [GooseExts] where
   | ok (i : GoInterfaceOk)
   | nil
 
 export GoInterface (ok nil)
 
-abbrev mkOk [FfiSyntax] (ty : go.GoType) (v : val) : GoInterface := .ok ⟨ty, v⟩
-abbrev mk [FfiSyntax] (ty : go.GoType) (v : val) : GoInterfaceOk := ⟨ty, v⟩
+abbrev mkOk [GooseExts] (ty : go.GoType) (v : val) : GoInterface := .ok ⟨ty, v⟩
+abbrev mk [GooseExts] (ty : go.GoType) (v : val) : GoInterfaceOk := ⟨ty, v⟩
 
 end interface
 
@@ -449,7 +432,7 @@ export ZeroVal (zeroValDef)
 abbrev zero_val (V : Type) [ZeroVal V] : V := ZeroVal.zeroValDef
 
 section zero_val_instances
-variable [FfiSyntax]
+variable [GooseExts]
 instance : ZeroVal Loc := ⟨null⟩
 instance : ZeroVal w64 := ⟨0⟩
 instance : ZeroVal w32 := ⟨0⟩
@@ -467,7 +450,7 @@ instance : ZeroVal proph_id := ⟨1⟩
 end zero_val_instances
 
 section state
-variable [FfiSyntax] [FfiModel]
+variable [GooseExts]
 
 structure GoState where
   goLctx : GoLocalContext
@@ -479,15 +462,17 @@ instance : Inhabited GoState := ⟨⟨default, ∅⟩⟩
 structure state where
   heap : GMap Loc (NonAtomic val)
   goState : GoState
-  world : ffi_state
+  /-- the local states of the extensions -/
+  world : ExtsLocalState exts
 
 structure GlobalState where
-  globalWorld : ffi_global_state
+  /-- the global states of the extensions -/
+  globalWorld : ExtsGlobalState exts
   usedProphId : GSet proph_id
   /-- The number of live threads: the main thread (counted for the whole
   execution) and the forked threads that have not reached their `ThreadExit`.
   `ForkS` increments it and `ThreadExitS` decrements it; no other step changes
-  it (`FfiSemantics.ffi_step_threads` for the FFI). A configuration whose only
+  it (an extension's step cannot, `extStep_threads`). A configuration whose only
   thread is the main thread has `threads = 1`. The bounded semantics
   (`BoundedLang.lean`) and the adequacy theorems bound it: see "thread tokens"
   in `Threads.lean`. -/
@@ -504,7 +489,7 @@ abbrev Observation := proph_id × val
 
 end state
 
-def IsGoStep [FfiSyntax] [GoGlobalContext] [GoLocalContext]
+def IsGoStep [GooseExts] [GoGlobalContext] [GoLocalContext]
     (op : GoInstruction) (arg : val) (e' : Expr) (s s' : GMap GoString Bool) : Prop :=
   match op with
   | PackageInitCheck p => arg = #() ∧ e' = Val #((s !! p).getD false) ∧ s' = s
@@ -512,19 +497,54 @@ def IsGoStep [FfiSyntax] [GoGlobalContext] [GoLocalContext]
   | PackageInitFinish p => arg = #() ∧ e' = Val #() ∧ s' = <[p := true]> s
   | _ => GoLocalContext.is_go_step_pure op arg e' ∧ s = s'
 
-/-- FFI semantics: `ffi_step op v σg e' σg'` says that the external operation
-`op` applied to `v` in state `σg` can produce `e'` and state `σg'`. -/
-class FfiSemantics (ext : FfiSyntax) (ffi : FfiModel) where
-  ffi_step : ffi_opcode → val → CfgState → Expr → CfgState → Prop
-  /-- An FFI step does not change the thread count. -/
-  ffi_step_threads : ∀ {op v σg e' σg'}, ffi_step op v σg e' σg' → σg'.2.threads = σg.2.threads
+/-- The semantics of the extension `E`, for any list of extensions containing
+it: `step o v h s g e' h' s' g'` says that the operation `o` of `E` applied to
+`v`, with heap `h` and `E`'s local and global states `s` and `g`, can produce
+`e'`, heap `h'` and states `s'` and `g'`. A step changes nothing else (not the
+other extensions' states, nor the thread count). The step is generic over the
+list of extensions; it uses `ElemExt E` only to build `E`'s own operations and
+values in `e'` (`extOp`, `extVal`), so it does not depend on the rest of the list. -/
+class ExtSemantics (E : GooseExt) where
+  step : ∀ [GooseExts] [ElemExt E] [GoGlobalContext], E.Op → val →
+    GMap Loc (NonAtomic val) → E.LocalState → E.GlobalState →
+    Expr → GMap Loc (NonAtomic val) → E.LocalState → E.GlobalState → Prop
 
-export FfiSemantics (ffi_step ffi_step_threads)
+/-- The semantics of the extensions of the program: one `ExtSemantics` for each. -/
+class GooseSemantics [GooseExts] where
+  sems : ExtTuple ExtSemantics exts
+
+section ext_step
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
+
+/-- A step of the operation `o` of the extension at position `m`: its semantics
+on the heap and its own state. -/
+def extStepAt {E : GooseExt} (m : ExtIn E exts) (o : E.Op) (v : val) (σg : CfgState)
+    (e' : Expr) (σg' : CfgState) : Prop :=
+  ∃ h' s' g', @ExtSemantics.step E (m.get GooseSemantics.sems) _ ⟨m⟩ _ o v
+      σg.1.heap (m.get σg.1.world) (m.get σg.2.globalWorld) e' h' s' g' ∧
+    σg' = ({ σg.1 with heap := h', world := m.set σg.1.world s' },
+      { σg.2 with globalWorld := m.set σg.2.globalWorld g' })
+
+/-- A step of an extension's operation: the step of the extension it belongs to. -/
+def extStep (o : ExtsOp exts) (v : val) (σg : CfgState) (e' : Expr) (σg' : CfgState) : Prop :=
+  extStepAt (ExtsOp.decode exts o).2.1 (ExtsOp.decode exts o).2.2 v σg e' σg'
+
+theorem extStep_injOp {E : GooseExt} (m : ExtIn E exts) (o : E.Op) (v : val) (σg : CfgState)
+    (e' : Expr) (σg' : CfgState) :
+    extStep (m.injOp o) v σg e' σg' ↔ extStepAt m o v σg e' σg' := by
+  unfold extStep; rw [ExtsOp.decode_injOp]
+
+/-- An extension's step does not change the thread count. -/
+theorem extStep_threads {o : ExtsOp exts} {v : val} {σg : CfgState} {e' : Expr}
+    {σg' : CfgState} (h : extStep o v σg e' σg') : σg'.2.threads = σg.2.threads := by
+  obtain ⟨_, _, _, _, rfl⟩ := h; rfl
+
+end ext_step
 
 /-! ## Evaluation contexts and substitution -/
 
 section lang
-variable [ext : FfiSyntax]
+variable [GooseExts]
 
 def toVal : Expr → Option val
   | Val v => some v
@@ -549,7 +569,7 @@ inductive EctxItem where
   | Primitive1Ctx (op : PrimOp1)
   | Primitive2LCtx (op : PrimOp2) (e2 : Expr)
   | Primitive2RCtx (op : PrimOp2) (v1 : val) (h1 : v1.isPanic = false)
-  | ExternalOpCtx (op : ffi_opcode)
+  | ExternalOpCtx (op : ExtsOp exts)
   | CmpXchgLCtx (e1 e2 : Expr)
   | CmpXchgMCtx (v1 : val) (e2 : Expr) (h1 : v1.isPanic = false)
   | CmpXchgRCtx (v1 v2 : val) (h1 : v1.isPanic = false) (h2 : v2.isPanic = false)
@@ -645,7 +665,7 @@ end lang
 /-! ## The base step relation -/
 
 section step
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
 
 def stateInitHeap (l : Loc) (v : val) (σ : state) : state :=
   { σ with heap := {[l := Free v]} ∪ σ.heap }
@@ -720,7 +740,7 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
       atomicAddEval v0 v = some v' →
       BaseStep (AtomicAdd (Val #l) (Val v)) σg [] (Val v') (setHeap (<[l := Free v']> ·) σg) []
   | ExternalOpS op v e' σg σg' :
-      ffi_step op v σg e' σg' →
+      extStep op v σg e' σg' →
       BaseStep (ExternalOp op (Val v)) σg [] e' σg' []
   | GoInstructionS op arg e' s' σg :
       @IsGoStep _ _ σg.1.goState.goLctx op arg e' σg.1.goState.packageState s' →
@@ -832,7 +852,7 @@ end step
 /-! ## The iris-lean language instance -/
 
 section language
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
 
 instance goose_toVal : ToVal Expr val where
   toVal := toVal

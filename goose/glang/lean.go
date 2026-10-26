@@ -1181,7 +1181,7 @@ func (d StructType) Lean(m LeanMode) string {
 // runs GooseLang code, and compiling these definitions (which `noncomputable
 // section` alone does not prevent) was the bulk of elaboration time for large
 // packages.
-const leanDeclParams = "[FfiSyntax] [GoGlobalContext]"
+const leanDeclParams = "[GooseExts] [GoGlobalContext]"
 
 func leanTypeParams(names []TermIdent) string {
 	if len(names) == 0 {
@@ -1284,11 +1284,17 @@ func (f File) Write(w io.Writer) {
 	fmt.Fprint(w, f.Footer)
 }
 
-// LeanFfiPrelude is the name of the prelude module of an FFI ("grove" has
-// GrovePrelude: Perennial.GrovePrelude for code, Perennial.Proof.GrovePrelude
-// for proofs).
-func LeanFfiPrelude(ffi string) string {
-	return upperCamel(ffi + "_prelude")
+// LeanExtPrelude is the name of the prelude module of a GooseLang extension
+// ("grove" has GrovePrelude: Perennial.GrovePrelude for code,
+// Perennial.Proof.GrovePrelude for proofs).
+func LeanExtPrelude(ext string) string {
+	return upperCamel(ext + "_prelude")
+}
+
+// LeanExt is the Lean name of a GooseLang extension ("grove" is groveExt).
+func LeanExt(ext string) string {
+	s := upperCamel(ext + "_ext")
+	return strings.ToLower(s[:1]) + s[1:]
 }
 
 func upperCamel(s string) string {

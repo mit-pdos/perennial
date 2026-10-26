@@ -70,7 +70,7 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic
 
 section lemma
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 
@@ -94,7 +94,7 @@ theorem wp_join_gen (Q : val → IProp GF) {s : Stuckness} {E : CoPset} {e : Exp
 end lemma
 
 section done
-variable [ext : FfiSyntax] {GF : BundledGFunctors}
+variable [GooseExts] {GF : BundledGFunctors}
 
 /-- Closing a case of `wp_join`: the value is the join value. -/
 theorem wp_join_done_intro (R : IProp GF) (v : val) : R ⊢ ⌜v = v⌝ ∗ R := by
@@ -103,7 +103,7 @@ theorem wp_join_done_intro (R : IProp GF) (v : val) : R ⊢ ⌜v = v⌝ ∗ R :=
   · ipureintro; rfl
   · iexact HR
 
-omit ext in
+omit [GooseExts] in
 /-- Closing a case of `wp_join` after `wp_auto` simplified `⌜v = v⌝` to `True`. -/
 theorem wp_join_done_true (R : IProp GF) : R ⊢ iprop(True ∗ R) := by
   iintro HR
@@ -257,7 +257,7 @@ open Lean Elab Tactic Meta in
 /-! ## Examples -/
 
 section examples
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]

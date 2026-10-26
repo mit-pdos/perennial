@@ -20,21 +20,21 @@ end pkg_id
 
 namespace cmp
 
-noncomputable def Ordered.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Ordered.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"cmp.Ordered" [])
 
 attribute [irreducible] Ordered.ty
 
-noncomputable def Less [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Less [GooseExts] [GoGlobalContext] : GoString :=
   go!"cmp.Less"
 
-noncomputable def Compare [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Compare [GooseExts] [GoGlobalContext] : GoString :=
   go!"cmp.Compare"
 
-noncomputable def isNaN [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isNaN [GooseExts] [GoGlobalContext] : GoString :=
   go!"cmp.isNaN"
 
-noncomputable def Or [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Or [GooseExts] [GoGlobalContext] : GoString :=
   go!"cmp.Or"
 
 /-- Less reports whether x is less than y.
@@ -42,7 +42,7 @@ noncomputable def Or [FfiSyntax] [GoGlobalContext] : GoString :=
     and -0.0 is not less than (is equal to) 0.0.
 
     go: cmp.go:28:6 -/
-noncomputable def Less.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Less.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -63,7 +63,7 @@ noncomputable def Less.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val 
     a NaN is considered equal to a NaN, and -0.0 is equal to 0.0.
 
     go: cmp.go:40:6 -/
-noncomputable def Compare.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Compare.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -118,7 +118,7 @@ noncomputable def Compare.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : v
     This will always return false if T is not floating-point.
 
     go: cmp.go:63:6 -/
-noncomputable def isNaN.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def isNaN.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc T))) (Var "x"))
@@ -129,7 +129,7 @@ noncomputable def isNaN.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val
     If no argument is non-zero, it returns the zero value.
 
     go: cmp.go:69:6 -/
-noncomputable def Or.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Or.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "vals"
   (App (Val exceptionDo)
   (Let "vals" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType T)))) (Var "vals"))
@@ -157,24 +157,24 @@ noncomputable def Or.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
 noncomputable instance info' : PkgInfo pkg_id.cmp where
   pkgImportedPkgs := []
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.cmp)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))))
 
-abbrev Ordered [FfiSyntax] : Type := GoInterface
+abbrev Ordered [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def Ordered.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Ordered.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTermUnderlying go.int), (go.type_term.TypeTermUnderlying go.int8), (go.type_term.TypeTermUnderlying go.int16), (go.type_term.TypeTermUnderlying go.int32), (go.type_term.TypeTermUnderlying go.int64), (go.type_term.TypeTermUnderlying go.uint), (go.type_term.TypeTermUnderlying go.uint8), (go.type_term.TypeTermUnderlying go.uint16), (go.type_term.TypeTermUnderlying go.uint32), (go.type_term.TypeTermUnderlying go.uint64), (go.type_term.TypeTermUnderlying go.uintptr), (go.type_term.TypeTermUnderlying go.float32), (go.type_term.TypeTermUnderlying go.float64), (go.type_term.TypeTermUnderlying go.string)])])
 
-class Ordered.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Ordered.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Ordered.ty Ordered.underlying
 
 attribute [instance] Ordered.TypeAssumptions.underlying
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Ordered_instance : Ordered.TypeAssumptions
   Less_unfold : ∀ (T : go.GoType), FuncUnfold Less [T] (Less.impl T)
   Compare_unfold : ∀ (T : go.GoType), FuncUnfold Compare [T] (Compare.impl T)

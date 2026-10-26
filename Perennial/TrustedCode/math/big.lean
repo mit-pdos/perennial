@@ -14,7 +14,7 @@ namespace Perennial
 
 namespace math.big
 section code
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- The initializer of `hasADX` (`math/big/arith_amd64.go`):
 

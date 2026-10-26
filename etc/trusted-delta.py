@@ -31,8 +31,8 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), 
 
 # --------------------------------------------------------------- tiers
 TIER0 = [
-    ("semantics", r"^Perennial/GooseLang/(Lang|BoundedLang|Adequacy|Threads|Receipts|Locations)\.lean$"),
-    ("semantics", r"^Perennial/GooseLang/Ffi/"),
+    ("semantics", r"^Perennial/GooseLang/(Lang|BoundedLang|Adequacy|Threads|Receipts|Locations|Ext)\.lean$"),
+    ("semantics", r"^Perennial/GooseLang/Ext/"),
     ("semantics", r"^Perennial/Golang/Defn/"),
     ("semantics", r"^Perennial/GrovePrelude\.lean$"),
     ("translator", r"^goose/.*\.go$"),
@@ -77,7 +77,7 @@ SIGNALS = [
     ("adequacy", r"\bgoose_(adequacy|invariance|init)\w*\b|GooseGpreS|receiptBound|threadBound", "an adequacy theorem or its parameters"),
     ("trusted-impl", r"\.impl\w*\s*(\[.*\])?\s*:\s*val\b|\.implWith\b", "a hand-written model of Go code"),
     ("trusted-list", r"^\s*trusted\s*=|^\s*\"!|^\s*translate\s*=|trust_proofgen|^\s*axiomatize\s*=", "goose configuration: what is trusted/translated/axiomatized"),
-    ("ffi", r"\bFfiSemantics\b|ffi_step|ffi_val|ffi_opcode", "an FFI semantics"),
+    ("extension", r"\bExtSemantics\b|\bGooseSemantics\b|\bextStep\w*|\bGooseExt\b", "an extension's semantics (new primitive operations)"),
     ("set_option", r"^\s*set_option\b", "an option change (linters off, max heartbeats, ...)"),
     ("verbatim", r"VerbatimExpr|Verbatim", "goose emits Lean text verbatim"),
 ]

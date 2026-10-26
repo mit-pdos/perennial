@@ -11,7 +11,7 @@ namespace Perennial
 
 namespace lock
 section code
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 def trylock : val :=
   λ: "m", Snd (CmpXchg "m" #false #true)

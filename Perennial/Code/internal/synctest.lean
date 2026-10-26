@@ -21,104 +21,104 @@ end pkg_id
 
 namespace internal.synctest
 
-noncomputable def Association.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Association.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"internal/synctest.Association" [])
 
 attribute [irreducible] Association.ty
 
-noncomputable def Bubble.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Bubble.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"internal/synctest.Bubble" [])
 
 attribute [irreducible] Bubble.ty
 
-axiom Unbubbled [FfiSyntax] [GoGlobalContext] : val
+axiom Unbubbled [GooseExts] [GoGlobalContext] : val
 
-axiom CurrentBubble [FfiSyntax] [GoGlobalContext] : val
+axiom CurrentBubble [GooseExts] [GoGlobalContext] : val
 
-axiom OtherBubble [FfiSyntax] [GoGlobalContext] : val
+axiom OtherBubble [GooseExts] [GoGlobalContext] : val
 
-noncomputable def Run [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Run [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/synctest.Run"
 
-noncomputable def Wait [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Wait [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/synctest.Wait"
 
-noncomputable def IsInBubble [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def IsInBubble [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/synctest.IsInBubble"
 
-noncomputable def Associate [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Associate [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/synctest.Associate"
 
-noncomputable def associate [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def associate [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/synctest.associate"
 
-noncomputable def Disassociate [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Disassociate [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/synctest.Disassociate"
 
-noncomputable def disassociate [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def disassociate [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/synctest.disassociate"
 
-noncomputable def IsAssociated [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def IsAssociated [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/synctest.IsAssociated"
 
-noncomputable def isAssociated [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isAssociated [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/synctest.isAssociated"
 
-noncomputable def acquire [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def acquire [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/synctest.acquire"
 
-noncomputable def release [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def release [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/synctest.release"
 
-noncomputable def inBubble [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def inBubble [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/synctest.inBubble"
 
-noncomputable def Acquire [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Acquire [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/synctest.Acquire"
 
 noncomputable instance info' : PkgInfo pkg_id.internal.synctest where
   pkgImportedPkgs := []
 
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.internal.synctest)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))))
 
-abbrev Association [FfiSyntax] : Type := w64
+abbrev Association [GooseExts] : Type := w64
 
-@[reducible] noncomputable def Association.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Association.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int
 
-class Association.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Association.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Association.ty Association.underlying
 
 attribute [instance] Association.TypeAssumptions.underlying
 
-structure Bubble [FfiSyntax] where
+structure Bubble [GooseExts] where
   mk ::
   b' : GoInterface
 
-noncomputable instance Bubble.zero_val [FfiSyntax] : ZeroVal Bubble :=
+noncomputable instance Bubble.zero_val [GooseExts] : ZeroVal Bubble :=
   ⟨Bubble.mk zeroValDef⟩
 
-@[reducible] noncomputable def Bubble.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Bubble.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"b" go.any)]
 
-@[irreducible] noncomputable def Bubble.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Bubble.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Bubble.fieldsUnsealed
 
-noncomputable instance equals_unfold_Bubble [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Bubble [GooseExts] [GoGlobalContext] :
     EqualsUnfold Bubble.fields Bubble.fieldsUnsealed :=
   ⟨by unfold Bubble.fields; rfl⟩
 
-@[reducible] noncomputable def Bubble.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Bubble.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Bubble.fields)
 
-class Bubble.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Bubble.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Bubble.underlying Bubble
   underlying : go.UnderlyingDirectedEq Bubble.ty Bubble.underlying
   get_b : ∀ (x : Bubble), go.IsGoStepPureDetTagged under (StructFieldGet Bubble.underlying go!"b") #x (Val #(x.b'))
@@ -129,7 +129,7 @@ attribute [instance] Bubble.TypeAssumptions.type_repr
   Bubble.TypeAssumptions.get_b
   Bubble.TypeAssumptions.set_b
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Association_instance : Association.TypeAssumptions
   Bubble_instance : Bubble.TypeAssumptions
   Run_unfold : FuncUnfold Run [] Run.impl

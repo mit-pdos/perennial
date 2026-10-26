@@ -33,7 +33,7 @@ public import Perennial.Golang.Defn.Predeclared
 namespace Perennial
 
 section defn
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 def executeValDef : val := glv((#"execute", #()))
 @[irreducible] def executeVal : val := executeValDef

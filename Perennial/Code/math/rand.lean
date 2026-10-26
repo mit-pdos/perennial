@@ -21,184 +21,184 @@ end pkg_id
 
 namespace math.rand
 
-noncomputable def Source.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Source.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/rand.Source" [])
 
 attribute [irreducible] Source.ty
 
-noncomputable def Source64.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Source64.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/rand.Source64" [])
 
 attribute [irreducible] Source64.ty
 
-noncomputable def Rand.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Rand.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/rand.Rand" [])
 
 attribute [irreducible] Rand.ty
 
-noncomputable def runtimeSource.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def runtimeSource.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/rand.runtimeSource" [])
 
 attribute [irreducible] runtimeSource.ty
 
-noncomputable def lockedSource.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def lockedSource.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/rand.lockedSource" [])
 
 attribute [irreducible] lockedSource.ty
 
-noncomputable def rngSource.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def rngSource.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/rand.rngSource" [])
 
 attribute [irreducible] rngSource.ty
 
-noncomputable def Zipf.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Zipf.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"math/rand.Zipf" [])
 
 attribute [irreducible] Zipf.ty
 
-axiom re [FfiSyntax] [GoGlobalContext] : val
+axiom re [GooseExts] [GoGlobalContext] : val
 
-axiom rn [FfiSyntax] [GoGlobalContext] : val
+axiom rn [GooseExts] [GoGlobalContext] : val
 
-axiom rngLen [FfiSyntax] [GoGlobalContext] : val
+axiom rngLen [GooseExts] [GoGlobalContext] : val
 
-axiom rngTap [FfiSyntax] [GoGlobalContext] : val
+axiom rngTap [GooseExts] [GoGlobalContext] : val
 
-axiom rngMax [FfiSyntax] [GoGlobalContext] : val
+axiom rngMax [GooseExts] [GoGlobalContext] : val
 
-axiom rngMask [FfiSyntax] [GoGlobalContext] : val
+axiom rngMask [GooseExts] [GoGlobalContext] : val
 
-axiom int32max [FfiSyntax] [GoGlobalContext] : val
+axiom int32max [GooseExts] [GoGlobalContext] : val
 
-noncomputable def ke [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ke [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.ke"
 
-axiom ke.init [FfiSyntax] [GoGlobalContext] : val
+axiom ke.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def we [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def we [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.we"
 
-axiom we.init [FfiSyntax] [GoGlobalContext] : val
+axiom we.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def fe [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def fe [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.fe"
 
-axiom fe.init [FfiSyntax] [GoGlobalContext] : val
+axiom fe.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def kn [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def kn [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.kn"
 
-axiom kn.init [FfiSyntax] [GoGlobalContext] : val
+axiom kn.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def wn [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def wn [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.wn"
 
-axiom wn.init [FfiSyntax] [GoGlobalContext] : val
+axiom wn.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def fn [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def fn [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.fn"
 
-axiom fn.init [FfiSyntax] [GoGlobalContext] : val
+axiom fn.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def globalRandGenerator [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def globalRandGenerator [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.globalRandGenerator"
 
-noncomputable def randautoseed [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def randautoseed [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.randautoseed"
 
-axiom randautoseed.init [FfiSyntax] [GoGlobalContext] : val
+axiom randautoseed.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def randseednop [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def randseednop [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.randseednop"
 
-axiom randseednop.init [FfiSyntax] [GoGlobalContext] : val
+axiom randseednop.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def rngCooked [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def rngCooked [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.rngCooked"
 
-axiom rngCooked.init [FfiSyntax] [GoGlobalContext] : val
+axiom rngCooked.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def absInt32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def absInt32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.absInt32"
 
-noncomputable def NewSource [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewSource [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.NewSource"
 
-noncomputable def newSource [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def newSource [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.newSource"
 
-noncomputable def New [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def New [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.New"
 
-noncomputable def read [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def read [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.read"
 
-noncomputable def globalRand [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def globalRand [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.globalRand"
 
-noncomputable def runtime_rand [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def runtime_rand [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.runtime_rand"
 
-noncomputable def Seed [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Seed [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.Seed"
 
-noncomputable def Int63 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Int63 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.Int63"
 
-noncomputable def Uint32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Uint32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.Uint32"
 
-noncomputable def Uint64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Uint64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.Uint64"
 
-noncomputable def Int31 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Int31 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.Int31"
 
-noncomputable def Int' [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Int' [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.Int"
 
-noncomputable def Int63n [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Int63n [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.Int63n"
 
-noncomputable def Int31n [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Int31n [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.Int31n"
 
-noncomputable def Intn [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Intn [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.Intn"
 
-noncomputable def Float64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Float64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.Float64"
 
-noncomputable def Float32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Float32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.Float32"
 
-noncomputable def Perm [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Perm [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.Perm"
 
-noncomputable def Shuffle [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Shuffle [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.Shuffle"
 
-noncomputable def Read [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Read [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.Read"
 
-noncomputable def NormFloat64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NormFloat64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.NormFloat64"
 
-noncomputable def ExpFloat64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ExpFloat64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.ExpFloat64"
 
-noncomputable def seedrand [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def seedrand [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.seedrand"
 
-noncomputable def NewZipf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewZipf [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/rand.NewZipf"
 
 noncomputable instance info' : PkgInfo pkg_id.math.rand where
   pkgImportedPkgs := [pkg_id.sync]
 
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.math.rand)) (Lam BAnon
   (App (Val exceptionDo)
@@ -232,53 +232,53 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))))
 
-abbrev Source [FfiSyntax] : Type := GoInterface
+abbrev Source [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def Source.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Source.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Int63" (go.signature.Signature [] false [go.int64])), (go.InterfaceElem.MethodElem go!"Seed" (go.signature.Signature [go.int64] false []))])
 
-class Source.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Source.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Source.ty Source.underlying
 
 attribute [instance] Source.TypeAssumptions.underlying
 
-abbrev Source64 [FfiSyntax] : Type := GoInterface
+abbrev Source64 [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def Source64.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Source64.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Uint64" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Source.ty)])])
 
-class Source64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Source64.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Source64.ty Source64.underlying
 
 attribute [instance] Source64.TypeAssumptions.underlying
 
-structure Rand [FfiSyntax] where
+structure Rand [GooseExts] where
   mk ::
   src' : Source
   s64' : Source64
   readVal' : w64
   readPos' : w8
 
-noncomputable instance Rand.zero_val [FfiSyntax] : ZeroVal Rand :=
+noncomputable instance Rand.zero_val [GooseExts] : ZeroVal Rand :=
   ⟨Rand.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Rand.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Rand.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"src" Source.ty),
 (go.field_decl.FieldDecl go!"s64" Source64.ty),
 (go.field_decl.FieldDecl go!"readVal" go.int64),
 (go.field_decl.FieldDecl go!"readPos" go.int8)]
 
-@[irreducible] noncomputable def Rand.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Rand.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Rand.fieldsUnsealed
 
-noncomputable instance equals_unfold_Rand [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Rand [GooseExts] [GoGlobalContext] :
     EqualsUnfold Rand.fields Rand.fieldsUnsealed :=
   ⟨by unfold Rand.fields; rfl⟩
 
-@[reducible] noncomputable def Rand.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Rand.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Rand.fields)
 
-class Rand.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Rand.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Rand.underlying Rand
   underlying : go.UnderlyingDirectedEq Rand.ty Rand.underlying
   get_src : ∀ (x : Rand), go.IsGoStepPureDetTagged under (StructFieldGet Rand.underlying go!"src") #x (Val #(x.src'))
@@ -301,27 +301,27 @@ attribute [instance] Rand.TypeAssumptions.type_repr
   Rand.TypeAssumptions.get_readPos
   Rand.TypeAssumptions.set_readPos
 
-structure runtimeSource [FfiSyntax] where
+structure runtimeSource [GooseExts] where
   mk ::
   mu' : _root_.Perennial.sync.Mutex
 
-noncomputable instance runtimeSource.zero_val [FfiSyntax] : ZeroVal runtimeSource :=
+noncomputable instance runtimeSource.zero_val [GooseExts] : ZeroVal runtimeSource :=
   ⟨runtimeSource.mk zeroValDef⟩
 
-@[reducible] noncomputable def runtimeSource.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def runtimeSource.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex.ty)]
 
-@[irreducible] noncomputable def runtimeSource.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def runtimeSource.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   runtimeSource.fieldsUnsealed
 
-noncomputable instance equals_unfold_runtimeSource [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_runtimeSource [GooseExts] [GoGlobalContext] :
     EqualsUnfold runtimeSource.fields runtimeSource.fieldsUnsealed :=
   ⟨by unfold runtimeSource.fields; rfl⟩
 
-@[reducible] noncomputable def runtimeSource.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def runtimeSource.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType runtimeSource.fields)
 
-class runtimeSource.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class runtimeSource.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying runtimeSource.underlying runtimeSource
   underlying : go.UnderlyingDirectedEq runtimeSource.ty runtimeSource.underlying
   get_mu : ∀ (x : runtimeSource), go.IsGoStepPureDetTagged under (StructFieldGet runtimeSource.underlying go!"mu") #x (Val #(x.mu'))
@@ -332,29 +332,29 @@ attribute [instance] runtimeSource.TypeAssumptions.type_repr
   runtimeSource.TypeAssumptions.get_mu
   runtimeSource.TypeAssumptions.set_mu
 
-structure lockedSource [FfiSyntax] where
+structure lockedSource [GooseExts] where
   mk ::
   lk' : _root_.Perennial.sync.Mutex
   s' : Loc
 
-noncomputable instance lockedSource.zero_val [FfiSyntax] : ZeroVal lockedSource :=
+noncomputable instance lockedSource.zero_val [GooseExts] : ZeroVal lockedSource :=
   ⟨lockedSource.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def lockedSource.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def lockedSource.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"lk" _root_.Perennial.sync.Mutex.ty),
 (go.field_decl.FieldDecl go!"s" (go.GoType.PointerType rngSource.ty))]
 
-@[irreducible] noncomputable def lockedSource.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def lockedSource.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   lockedSource.fieldsUnsealed
 
-noncomputable instance equals_unfold_lockedSource [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_lockedSource [GooseExts] [GoGlobalContext] :
     EqualsUnfold lockedSource.fields lockedSource.fieldsUnsealed :=
   ⟨by unfold lockedSource.fields; rfl⟩
 
-@[reducible] noncomputable def lockedSource.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def lockedSource.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType lockedSource.fields)
 
-class lockedSource.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class lockedSource.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying lockedSource.underlying lockedSource
   underlying : go.UnderlyingDirectedEq lockedSource.ty lockedSource.underlying
   get_lk : ∀ (x : lockedSource), go.IsGoStepPureDetTagged under (StructFieldGet lockedSource.underlying go!"lk") #x (Val #(x.lk'))
@@ -369,31 +369,31 @@ attribute [instance] lockedSource.TypeAssumptions.type_repr
   lockedSource.TypeAssumptions.get_s
   lockedSource.TypeAssumptions.set_s
 
-structure rngSource [FfiSyntax] where
+structure rngSource [GooseExts] where
   mk ::
   tap' : w64
   feed' : w64
   vec' : (GoArray w64 607)
 
-noncomputable instance rngSource.zero_val [FfiSyntax] : ZeroVal rngSource :=
+noncomputable instance rngSource.zero_val [GooseExts] : ZeroVal rngSource :=
   ⟨rngSource.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def rngSource.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def rngSource.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"tap" go.int),
 (go.field_decl.FieldDecl go!"feed" go.int),
 (go.field_decl.FieldDecl go!"vec" (go.GoType.ArrayType 607 go.int64))]
 
-@[irreducible] noncomputable def rngSource.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def rngSource.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   rngSource.fieldsUnsealed
 
-noncomputable instance equals_unfold_rngSource [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_rngSource [GooseExts] [GoGlobalContext] :
     EqualsUnfold rngSource.fields rngSource.fieldsUnsealed :=
   ⟨by unfold rngSource.fields; rfl⟩
 
-@[reducible] noncomputable def rngSource.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def rngSource.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType rngSource.fields)
 
-class rngSource.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class rngSource.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying rngSource.underlying rngSource
   underlying : go.UnderlyingDirectedEq rngSource.ty rngSource.underlying
   get_tap : ∀ (x : rngSource), go.IsGoStepPureDetTagged under (StructFieldGet rngSource.underlying go!"tap") #x (Val #(x.tap'))
@@ -412,7 +412,7 @@ attribute [instance] rngSource.TypeAssumptions.type_repr
   rngSource.TypeAssumptions.get_vec
   rngSource.TypeAssumptions.set_vec
 
-structure Zipf [FfiSyntax] where
+structure Zipf [GooseExts] where
   mk ::
   r' : Loc
   imax' : w64
@@ -424,10 +424,10 @@ structure Zipf [FfiSyntax] where
   hxm' : w64
   hx0minusHxm' : w64
 
-noncomputable instance Zipf.zero_val [FfiSyntax] : ZeroVal Zipf :=
+noncomputable instance Zipf.zero_val [GooseExts] : ZeroVal Zipf :=
   ⟨Zipf.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Zipf.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Zipf.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"r" (go.GoType.PointerType Rand.ty)),
 (go.field_decl.FieldDecl go!"imax" go.float64),
 (go.field_decl.FieldDecl go!"v" go.float64),
@@ -438,17 +438,17 @@ noncomputable instance Zipf.zero_val [FfiSyntax] : ZeroVal Zipf :=
 (go.field_decl.FieldDecl go!"hxm" go.float64),
 (go.field_decl.FieldDecl go!"hx0minusHxm" go.float64)]
 
-@[irreducible] noncomputable def Zipf.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Zipf.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Zipf.fieldsUnsealed
 
-noncomputable instance equals_unfold_Zipf [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Zipf [GooseExts] [GoGlobalContext] :
     EqualsUnfold Zipf.fields Zipf.fieldsUnsealed :=
   ⟨by unfold Zipf.fields; rfl⟩
 
-@[reducible] noncomputable def Zipf.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Zipf.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Zipf.fields)
 
-class Zipf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Zipf.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Zipf.underlying Zipf
   underlying : go.UnderlyingDirectedEq Zipf.ty Zipf.underlying
   get_r : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"r") #x (Val #(x.r'))
@@ -491,7 +491,7 @@ attribute [instance] Zipf.TypeAssumptions.type_repr
   Zipf.TypeAssumptions.get_hx0minusHxm
   Zipf.TypeAssumptions.set_hx0minusHxm
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Source_instance : Source.TypeAssumptions
   Source64_instance : Source64.TypeAssumptions
   Rand_instance : Rand.TypeAssumptions

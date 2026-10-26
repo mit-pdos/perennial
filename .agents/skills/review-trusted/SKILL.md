@@ -19,7 +19,7 @@ Tiers (what the helper script reports):
 
 | tier | what | files |
 |---|---|---|
-| 0 | **semantics** (the model of Go) | `Perennial/GooseLang/{Lang,BoundedLang,Adequacy,Threads,Receipts,Locations}.lean`, `GooseLang/Ffi/**`, `Perennial/Golang/Defn/**`, `{Grove,Disk}Prelude.lean` |
+| 0 | **semantics** (the model of Go) | `Perennial/GooseLang/{Lang,BoundedLang,Adequacy,Threads,Receipts,Locations,Ext}.lean`, `GooseLang/Ext/**`, `Perennial/Golang/Defn/**`, `GrovePrelude.lean` |
 | 0 | **translator** | `goose/**` (`*.go`), gold files `goose/testdata/**/*.gold.lean`, Go models `goose/model/**` |
 | 0 | **trusted models** | `Perennial/TrustedCode/**` |
 | 0 | **goose configuration** | `Perennial/Code/**/*.toml` (`trusted`, `translate`, `!p`, `trust_proofgen`) |
@@ -267,7 +267,7 @@ rune is a divergence to document.
 
 **R5. A semantics change may only add Go behaviours or refine stuck ones.**
 For a new or changed rule in `Golang/Defn`, `GooseLang/Lang.lean`,
-`BoundedLang.lean` or an FFI: name the Go spec sentence it implements; check
+`BoundedLang.lean` or an extension (`GooseLang/Ext`): name the Go spec sentence it implements; check
 the rule is *at least* as nondeterministic as Go (a deterministic choice
 where Go leaves things unspecified, such as map iteration order or an
 uninterpreted conversion, must be justified in the docstring); check it

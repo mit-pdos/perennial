@@ -13,7 +13,7 @@ namespace Perennial
 
 namespace math
 section code
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- The initializer of `useFMA` (`math/exp_amd64.go`):
 

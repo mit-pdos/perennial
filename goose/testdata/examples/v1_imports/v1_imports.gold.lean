@@ -22,11 +22,11 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports
 
-noncomputable def AddBoth [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AddBoth [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/v1_imports.AddBoth"
 
 /-- go: c.go:8:6 -/
-noncomputable def AddBoth.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def AddBoth.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
@@ -38,7 +38,7 @@ noncomputable def AddBoth.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports where
   pkgImportedPkgs := [pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.a.v1, pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.b.v1]
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports)) (Lam BAnon
   (App (Val exceptionDo)
@@ -48,7 +48,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.b.v1.initialize') (Val #()))))))))
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   AddBoth_unfold : FuncUnfold AddBoth [] AddBoth.impl
   import_a_v1_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.a.v1.Assumptions
   import_b_v1_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.b.v1.Assumptions

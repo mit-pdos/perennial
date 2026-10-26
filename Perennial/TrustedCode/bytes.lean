@@ -13,7 +13,7 @@ namespace Perennial
 
 namespace bytes
 section code
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- `bytes.Compare(a, b)`: `-1`, `0` or `+1` as `a` is lexicographically less than, equal
 to or greater than `b` (a nil slice is the empty one). Go implements it in

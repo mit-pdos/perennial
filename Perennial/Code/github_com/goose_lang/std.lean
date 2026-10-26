@@ -25,51 +25,51 @@ end pkg_id
 
 namespace github_com.goose_lang.std
 
-noncomputable def JoinHandle.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def JoinHandle.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/goose-lang/std.JoinHandle" [])
 
 attribute [irreducible] JoinHandle.ty
 
-noncomputable def Assert [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Assert [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.Assert"
 
-noncomputable def SumNoOverflow [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SumNoOverflow [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.SumNoOverflow"
 
-noncomputable def SumAssumeNoOverflow [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SumAssumeNoOverflow [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.SumAssumeNoOverflow"
 
-noncomputable def SignedSumAssumeNoOverflow [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SignedSumAssumeNoOverflow [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.SignedSumAssumeNoOverflow"
 
-noncomputable def BytesEqual [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def BytesEqual [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.BytesEqual"
 
-noncomputable def BytesClone [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def BytesClone [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.BytesClone"
 
-noncomputable def SliceSplit [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SliceSplit [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.SliceSplit"
 
-noncomputable def newJoinHandle [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def newJoinHandle [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.newJoinHandle"
 
-noncomputable def Spawn [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Spawn [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.Spawn"
 
-noncomputable def Multipar [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Multipar [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.Multipar"
 
-noncomputable def Skip [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Skip [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.Skip"
 
-noncomputable def WaitTimeout [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def WaitTimeout [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/goose-lang/std.WaitTimeout"
 
 /-- Assert(b) panics if b doesn't hold
 
     go: goose_std.go:13:6 -/
-noncomputable def Assert.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Assert.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "b"))
@@ -86,7 +86,7 @@ noncomputable def Assert.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Returns true if x + y does not overflow
 
     go: goose_std.go:20:6 -/
-noncomputable def SumNoOverflow.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def SumNoOverflow.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -102,7 +102,7 @@ noncomputable def SumNoOverflow.impl [FfiSyntax] [GoGlobalContext] : val :=
     *Use with care* - if the assumption is violated this function will panic.
 
     go: goose_std.go:27:6 -/
-noncomputable def SumAssumeNoOverflow.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def SumAssumeNoOverflow.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -114,7 +114,7 @@ noncomputable def SumAssumeNoOverflow.impl [FfiSyntax] [GoGlobalContext] : val :
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.std.std_core.SumAssumeNoOverflow []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: goose_std.go:31:6 -/
-noncomputable def SignedSumAssumeNoOverflow.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def SignedSumAssumeNoOverflow.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -130,7 +130,7 @@ noncomputable def SignedSumAssumeNoOverflow.impl [FfiSyntax] [GoGlobalContext] :
 /-- BytesEqual returns if the two byte slices are equal.
 
     go: goose_std.go:37:6 -/
-noncomputable def BytesEqual.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def BytesEqual.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -185,7 +185,7 @@ noncomputable def BytesEqual.impl [FfiSyntax] [GoGlobalContext] : val :=
     [reference]: https://pkg.go.dev/bytes#Clone
 
     go: goose_std.go:58:6 -/
-noncomputable def BytesClone.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def BytesClone.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
@@ -206,7 +206,7 @@ noncomputable def BytesClone.impl [FfiSyntax] [GoGlobalContext] : val :=
     no longer safe to append to the first slice.
 
     go: goose_std.go:69:6 -/
-noncomputable def SliceSplit.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def SliceSplit.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "xs"
   (Lam "n"
   (App (Val exceptionDo)
@@ -218,7 +218,7 @@ noncomputable def SliceSplit.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) 
   (App (Val (GoInstruction (Slice (go.GoType.SliceType T)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType T)]))) (Val #())) (App (Val (GoInstruction (GoLoad (go.GoType.SliceType T)))) (Var "xs")))))))))))))
 
 /-- go: goose_std.go:84:6 -/
-noncomputable def newJoinHandle.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def newJoinHandle.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex.ty))) (Val #())))
@@ -239,7 +239,7 @@ noncomputable def newJoinHandle.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Pair (Var "mu") (Var "$r0")))))))))
 
 /-- go: goose_std.go:94:22 -/
-noncomputable def JoinHandle.finish.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def JoinHandle.finish.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "h"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -269,7 +269,7 @@ noncomputable def JoinHandle.finish.impl [FfiSyntax] [GoGlobalContext] : val :=
     result value.
 
     go: goose_std.go:108:6 -/
-noncomputable def Spawn.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Spawn.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f"))
@@ -296,7 +296,7 @@ noncomputable def Spawn.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType JoinHandle.ty)))) (Pair (Var "h") (Var "$r0"))))))))))
 
 /-- go: goose_std.go:117:22 -/
-noncomputable def JoinHandle.Join.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def JoinHandle.Join.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "h"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -333,7 +333,7 @@ noncomputable def JoinHandle.Join.impl [FfiSyntax] [GoGlobalContext] : val :=
     and condition variables since these are modeled in Goose
 
     go: goose_std.go:136:6 -/
-noncomputable def Multipar.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Multipar.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "num"
   (Lam "op"
   (App (Val exceptionDo)
@@ -419,7 +419,7 @@ noncomputable def Multipar.impl [FfiSyntax] [GoGlobalContext] : val :=
     application to a value.
 
     go: goose_std.go:167:6 -/
-noncomputable def Skip.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Skip.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
@@ -432,7 +432,7 @@ noncomputable def Skip.impl [FfiSyntax] [GoGlobalContext] : val :=
     ourselves.
 
     go: goose_std.go:174:6 -/
-noncomputable def WaitTimeout.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WaitTimeout.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "cond"
   (Lam "timeoutMs"
   (App (Val exceptionDo)
@@ -483,7 +483,7 @@ noncomputable def WaitTimeout.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.github_com.goose_lang.std where
   pkgImportedPkgs := [pkg_id.math, pkg_id.sync, pkg_id.time, pkg_id.github_com.goose_lang.primitive, pkg_id.github_com.goose_lang.std.std_core]
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.goose_lang.std)) (Lam BAnon
   (App (Val exceptionDo)
@@ -502,31 +502,31 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.std.std_core.initialize') (Val #()))))))))
 
-structure JoinHandle [FfiSyntax] where
+structure JoinHandle [GooseExts] where
   mk ::
   mu' : Loc
   done' : Bool
   cond' : Loc
 
-noncomputable instance JoinHandle.zero_val [FfiSyntax] : ZeroVal JoinHandle :=
+noncomputable instance JoinHandle.zero_val [GooseExts] : ZeroVal JoinHandle :=
   ⟨JoinHandle.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def JoinHandle.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def JoinHandle.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)),
 (go.field_decl.FieldDecl go!"done" go.bool),
 (go.field_decl.FieldDecl go!"cond" (go.GoType.PointerType _root_.Perennial.sync.Cond.ty))]
 
-@[irreducible] noncomputable def JoinHandle.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def JoinHandle.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   JoinHandle.fieldsUnsealed
 
-noncomputable instance equals_unfold_JoinHandle [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_JoinHandle [GooseExts] [GoGlobalContext] :
     EqualsUnfold JoinHandle.fields JoinHandle.fieldsUnsealed :=
   ⟨by unfold JoinHandle.fields; rfl⟩
 
-@[reducible] noncomputable def JoinHandle.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def JoinHandle.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType JoinHandle.fields)
 
-class JoinHandle.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class JoinHandle.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying JoinHandle.underlying JoinHandle
   underlying : go.UnderlyingDirectedEq JoinHandle.ty JoinHandle.underlying
   get_mu : ∀ (x : JoinHandle), go.IsGoStepPureDetTagged under (StructFieldGet JoinHandle.underlying go!"mu") #x (Val #(x.mu'))
@@ -549,7 +549,7 @@ attribute [instance] JoinHandle.TypeAssumptions.type_repr
   JoinHandle.TypeAssumptions.ptr_Join_unfold
   JoinHandle.TypeAssumptions.ptr_finish_unfold
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   JoinHandle_instance : JoinHandle.TypeAssumptions
   Assert_unfold : FuncUnfold Assert [] Assert.impl
   SumNoOverflow_unfold : FuncUnfold SumNoOverflow [] SumNoOverflow.impl

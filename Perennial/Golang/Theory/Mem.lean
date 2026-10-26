@@ -21,7 +21,7 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
 section goose_lang
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
@@ -116,7 +116,7 @@ instance access_trivial {PROP : Type _} [BI PROP] (P P' : PROP) : Access P P' P 
 /-! ## Tactic lemmas -/
 
 section tac_lemmas
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
@@ -193,7 +193,7 @@ theorem tac_wp_alloc {V : Type} {t : go.GoType} [ZeroVal V] [tpt : TypedPointsto
 end tac_lemmas
 
 section func_lit
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] [go.PreSemantics]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] [go.PreSemantics]
 
 /-- A function literal value is the Go function value `#(func.mk f x e)` (used
 by `wp_store` to store function literals). -/
@@ -276,7 +276,7 @@ meta def iWpLoadStepV {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop
       let some (_, l) ← isIntoVal? lv | throwError "no"
       return (i.getArg! 1, l))
     | throwIPMError "could not find a load `![t] #l`"
-  let GF := (← gooseGSArgs wp.ι)[6]!
+  let GF := (← gooseGSArgs wp.ι)[5]!
   for (_, ivar, p, P) in ← hypsListFor hyps l do
     let saved ← saveState
     let (A, V, inst, v, dq) ← mkTypedPointstoMVars GF l none none none
@@ -321,7 +321,7 @@ meta def iWpStoreStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop
       let some (W, w) ← isIntoVal? wv | throwError "no"
       return (i.getArg! 1, l, W, w))
     | throwIPMError "could not find a store `GoStore t (#l, #w)`"
-  let GF := (← gooseGSArgs wp.ι)[6]!
+  let GF := (← gooseGSArgs wp.ι)[5]!
   -- (instantiated: an assigned instance metavariable in the context would make every
   -- later `instantiateMVars` of the context traverse it)
   let own1 ← instantiateMVars (← mkAppM ``DFrac.own
@@ -426,7 +426,7 @@ meta def iWpAllocStep {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($prop
     | some ns, _ => ns
     | none, some x => (Name.mkSimple (x ++ "_ptr"), Name.mkSimple x)
     | none, none => (`l, `Hl)
-  let GF := (← gooseGSArgs wp.ι)[6]!
+  let GF := (← gooseGSArgs wp.ι)[5]!
   -- (instantiated: an assigned instance metavariable in the context would make every
   -- later `instantiateMVars` of the context traverse it)
   let own1 ← instantiateMVars (← mkAppM ``DFrac.own
@@ -529,7 +529,7 @@ elab "wp_alloc_anon" : tactic =>
     mvar.assign (← iWpAllocStep g.hyps wp false (some (l, H)) fun hyps' wp' => iWpFinish hyps' wp')
 
 section access_struct
-variable [FfiSyntax] {GF : BundledGFunctors} {V : Type} [TypedPointsto (GF := GF) V]
+variable [GooseExts] {GF : BundledGFunctors} {V : Type} [TypedPointsto (GF := GF) V]
 open ProofMode
 
 /-- Focusing on a conjunct of a right-nested `∗`-chain: here. -/

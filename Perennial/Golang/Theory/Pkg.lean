@@ -30,11 +30,11 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
 noncomputable section init_defns
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 
-def IsInit [FfiModel] (σ : state) : Prop :=
+def IsInit (σ : state) : Prop :=
   σ.goState.packageState = ∅
 
 /-- Permission to run `package.init`. `get_is_pkg_init` maps every package to
@@ -256,7 +256,7 @@ macro "iPkgInit" : tactic => `(tactic| first
      repeat (isplitr; · solve_pkg_init)))
 
 section package_init
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]

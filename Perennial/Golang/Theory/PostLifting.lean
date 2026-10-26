@@ -37,7 +37,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 `go.PreSemantics`.) -/
 
 section instances
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
@@ -55,7 +55,7 @@ end instances
 /-! ## Underlying-type instances -/
 
 section underlying_instances
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
 
 instance (priority := 100) underlying_eq (t : go.GoType) : t ≤u t := ⟨rfl⟩
 
@@ -73,14 +73,14 @@ end underlying_instances
 /-- `go.go_zero_val_step` with the `ZeroVal V` instance determined by the
 `TypeRepr t V` instance (with the binder `[ZeroVal V]` first, typeclass search
 gets stuck on `ZeroVal ?V`). -/
-instance (priority := high) go_zero_val_step' [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+instance (priority := high) go_zero_val_step' [GooseExts] [GoLocalContext] [GoGlobalContext]
     [GoSemanticsFunctions] [go.CoreSemantics] {V : Type} {zv : ZeroVal V} {t : go.GoType}
     [TypeRepr t V] : ⟦GoZeroVal t, #()⟧ ⤳ #(zero_val V) :=
   go.go_zero_val_step
 
 /-- `go.structFieldRef_step` with the `ZeroVal V` instance determined by
 `TypeRepr t V` (see `go_zero_val_step'`). -/
-instance (priority := high) structFieldRef_step' [FfiSyntax] [GoLocalContext]
+instance (priority := high) structFieldRef_step' [GooseExts] [GoLocalContext]
     [GoGlobalContext] [GoSemanticsFunctions] [go.CoreSemantics] (t : go.GoType) (f : GoString)
     (l : Loc) {V : Type} {zv : ZeroVal V} [TypeRepr t V] :
     ⟦StructFieldRef t f, #l⟧ ⤳[under] #(structFieldRef V f l) :=
@@ -294,7 +294,7 @@ end agree_lemmas
 /-! ## `IntoValTyped` -/
 
 section into_val_defs
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 
@@ -350,7 +350,7 @@ end into_val_defs
 /-! ## WPs for basic Go instructions -/
 
 section go_wps
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
@@ -517,7 +517,7 @@ theorem wp_PackageInitFinish (pkg : GoString) (σ : GMap GoString Bool) :
 end go_wps
 
 section go_wps2
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
@@ -547,7 +547,7 @@ end go_wps2
 /-! ## Helper lemmas for establishing `IntoValTyped` -/
 
 section mem_lemmas
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable {s : Stuckness} {E : CoPset}
@@ -584,7 +584,7 @@ end mem_lemmas
 /-! ## Typed points-to instances for primitive types -/
 
 noncomputable section typed_pointsto_instances
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
@@ -649,13 +649,13 @@ end typed_pointsto_instances
 
 /-- Internal Go steps (`⤳[internal]`) as untagged steps. Used as a local
 instance to prove `IntoValTyped` instances. -/
-theorem go.tagged_internal_inst [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+theorem go.tagged_internal_inst [GooseExts] [GoLocalContext] [GoGlobalContext]
     {instr : GoInstruction} {args : val} {e : Expr} [h : ⟦instr, args⟧ ⤳[internal] e] :
     ⟦instr, args⟧ ⤳ e :=
   h.isGoStep_det_internal
 
 section into_val_typed_instances
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
@@ -753,7 +753,7 @@ macro "iStructNamedPrefix " H:ident pref:str : tactic =>
     try simp only [TypedPointsto.typedPointstoDef]
     iNamedPrefix $H:ident $pref))
 
-theorem typedPointsto_not_null_dup [FfiSyntax] {GF : BundledGFunctors} {V : Type}
+theorem typedPointsto_not_null_dup [GooseExts] {GF : BundledGFunctors} {V : Type}
     [TypedPointsto (GF := GF) V] (l : Loc) (v : V) (dq : DFrac) :
     typedPointsto (GF := GF) l v dq ⊢ typedPointsto l v dq ∗ ⌜l ≠ null⌝ := by
   rw [typedPointsto_unseal]; unfold typedPointstoWrap

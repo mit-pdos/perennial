@@ -14,7 +14,7 @@ namespace Perennial
 
 namespace runtime
 section code
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 def Gosched.impl : val :=
   λ: <>,

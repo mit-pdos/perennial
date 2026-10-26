@@ -56,7 +56,7 @@ theorem goStringLt_not_nil (k : GoString) : ¬ GoStringLt k [] := by intro h; ca
 end go
 
 section proof
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics] [go.StringSemantics]

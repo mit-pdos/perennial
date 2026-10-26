@@ -20,14 +20,14 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.mutualrec
 
-noncomputable def A [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def A [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/mutualrec.A"
 
-noncomputable def B [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def B [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/mutualrec.B"
 
 /-- go: mutualrec.go:3:6 -/
-noncomputable def A.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def A.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -37,7 +37,7 @@ noncomputable def A.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve B []))) (Val #())) (Val #()))))))
 
 /-- go: mutualrec.go:7:6 -/
-noncomputable def B.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def B.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -49,14 +49,14 @@ noncomputable def B.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.mutualrec where
   pkgImportedPkgs := []
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.mutualrec)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))))
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   A_unfold : FuncUnfold A [] A.impl
   B_unfold : FuncUnfold B [] B.impl
 

@@ -16,7 +16,7 @@ noncomputable section
 
 namespace runtime
 
-class spanSetBlock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class spanSetBlock.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying spanSetBlock.underlying spanSetBlock
   underlying : go.UnderlyingDirectedEq spanSetBlock.ty spanSetBlock.underlying
   get_spanSetBlockHeader2 : ∀ (x : spanSetBlock), go.IsGoStepPureDetTagged under (StructFieldGet spanSetBlock.underlying go!"spanSetBlockHeader2") #x (Val #(x.spanSetBlockHeader2'))
@@ -31,7 +31,7 @@ attribute [instance] spanSetBlock.TypeAssumptions.type_repr
   spanSetBlock.TypeAssumptions.get_spans
   spanSetBlock.TypeAssumptions.set_spans
 
-class spanSetSpinePointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class spanSetSpinePointer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying spanSetSpinePointer.underlying spanSetSpinePointer
   underlying : go.UnderlyingDirectedEq spanSetSpinePointer.ty spanSetSpinePointer.underlying
   get_p : ∀ (x : spanSetSpinePointer), go.IsGoStepPureDetTagged under (StructFieldGet spanSetSpinePointer.underlying go!"p") #x (Val #(x.p'))
@@ -42,7 +42,7 @@ attribute [instance] spanSetSpinePointer.TypeAssumptions.type_repr
   spanSetSpinePointer.TypeAssumptions.get_p
   spanSetSpinePointer.TypeAssumptions.set_p
 
-class spanSetBlockAlloc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class spanSetBlockAlloc.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying spanSetBlockAlloc.underlying spanSetBlockAlloc
   underlying : go.UnderlyingDirectedEq spanSetBlockAlloc.ty spanSetBlockAlloc.underlying
   get_stack : ∀ (x : spanSetBlockAlloc), go.IsGoStepPureDetTagged under (StructFieldGet spanSetBlockAlloc.underlying go!"stack") #x (Val #(x.stack'))
@@ -53,12 +53,12 @@ attribute [instance] spanSetBlockAlloc.TypeAssumptions.type_repr
   spanSetBlockAlloc.TypeAssumptions.get_stack
   spanSetBlockAlloc.TypeAssumptions.set_stack
 
-class headTailIndex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class headTailIndex.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq headTailIndex.ty headTailIndex.underlying
 
 attribute [instance] headTailIndex.TypeAssumptions.underlying
 
-class consistentHeapStats.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class consistentHeapStats.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying consistentHeapStats.underlying consistentHeapStats
   underlying : go.UnderlyingDirectedEq consistentHeapStats.ty consistentHeapStats.underlying
   get_stats : ∀ (x : consistentHeapStats), go.IsGoStepPureDetTagged under (StructFieldGet consistentHeapStats.underlying go!"stats") #x (Val #(x.stats'))
@@ -77,12 +77,12 @@ attribute [instance] consistentHeapStats.TypeAssumptions.type_repr
   consistentHeapStats.TypeAssumptions.get_noPLock
   consistentHeapStats.TypeAssumptions.set_noPLock
 
-class sysMemStat.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class sysMemStat.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq sysMemStat.ty sysMemStat.underlying
 
 attribute [instance] sysMemStat.TypeAssumptions.underlying
 
-class mstats.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class mstats.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying mstats.underlying mstats
   underlying : go.UnderlyingDirectedEq mstats.ty mstats.underlying
   get_heapStats : ∀ (x : mstats), go.IsGoStepPureDetTagged under (StructFieldGet mstats.underlying go!"heapStats") #x (Val #(x.heapStats'))
@@ -161,7 +161,7 @@ attribute [instance] mstats.TypeAssumptions.type_repr
   mstats.TypeAssumptions.get_enablegc
   mstats.TypeAssumptions.set_enablegc
 
-class MemStats.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class MemStats.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying MemStats.underlying MemStats
   underlying : go.UnderlyingDirectedEq MemStats.ty MemStats.underlying
   isUnderlying : go.IsUnderlying MemStats.underlying MemStats.underlying
@@ -170,7 +170,7 @@ attribute [instance] MemStats.TypeAssumptions.type_repr
   MemStats.TypeAssumptions.underlying
   MemStats.TypeAssumptions.isUnderlying
 
-class wbBuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class wbBuf.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying wbBuf.underlying wbBuf
   underlying : go.UnderlyingDirectedEq wbBuf.ty wbBuf.underlying
   get_next : ∀ (x : wbBuf), go.IsGoStepPureDetTagged under (StructFieldGet wbBuf.underlying go!"next") #x (Val #(x.next'))
@@ -189,7 +189,7 @@ attribute [instance] wbBuf.TypeAssumptions.type_repr
   wbBuf.TypeAssumptions.get_buf
   wbBuf.TypeAssumptions.set_buf
 
-class timer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class timer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying timer.underlying timer
   underlying : go.UnderlyingDirectedEq timer.ty timer.underlying
   get_mu : ∀ (x : timer), go.IsGoStepPureDetTagged under (StructFieldGet timer.underlying go!"mu") #x (Val #(x.mu'))
@@ -256,7 +256,7 @@ attribute [instance] timer.TypeAssumptions.type_repr
   timer.TypeAssumptions.get_isSending
   timer.TypeAssumptions.set_isSending
 
-class pollDesc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class pollDesc.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying pollDesc.underlying pollDesc
   underlying : go.UnderlyingDirectedEq pollDesc.ty pollDesc.underlying
   «get__#0» : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"_#0") #x (Val #(x.«_#0'»))
@@ -339,12 +339,12 @@ attribute [instance] pollDesc.TypeAssumptions.type_repr
   pollDesc.TypeAssumptions.get_self
   pollDesc.TypeAssumptions.set_self
 
-class pollInfo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class pollInfo.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq pollInfo.ty pollInfo.underlying
 
 attribute [instance] pollInfo.TypeAssumptions.underlying
 
-class pollCache.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class pollCache.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying pollCache.underlying pollCache
   underlying : go.UnderlyingDirectedEq pollCache.ty pollCache.underlying
   get_lock : ∀ (x : pollCache), go.IsGoStepPureDetTagged under (StructFieldGet pollCache.underlying go!"lock") #x (Val #(x.lock'))
@@ -359,14 +359,14 @@ attribute [instance] pollCache.TypeAssumptions.type_repr
   pollCache.TypeAssumptions.get_first
   pollCache.TypeAssumptions.set_first
 
-class winlibcall.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class winlibcall.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying winlibcall.underlying winlibcall
   underlying : go.UnderlyingDirectedEq winlibcall.ty winlibcall.underlying
 
 attribute [instance] winlibcall.TypeAssumptions.type_repr
   winlibcall.TypeAssumptions.underlying
 
-class note.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class note.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying note.underlying note
   underlying : go.UnderlyingDirectedEq note.ty note.underlying
   get_key : ∀ (x : note), go.IsGoStepPureDetTagged under (StructFieldGet note.underlying go!"key") #x (Val #(x.key'))
@@ -377,7 +377,7 @@ attribute [instance] note.TypeAssumptions.type_repr
   note.TypeAssumptions.get_key
   note.TypeAssumptions.set_key
 
-class mOS.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class mOS.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying mOS.underlying mOS
   underlying : go.UnderlyingDirectedEq mOS.ty mOS.underlying
   get_profileTimer : ∀ (x : mOS), go.IsGoStepPureDetTagged under (StructFieldGet mOS.underlying go!"profileTimer") #x (Val #(x.profileTimer'))
@@ -404,7 +404,7 @@ attribute [instance] mOS.TypeAssumptions.type_repr
   mOS.TypeAssumptions.get_waitsema
   mOS.TypeAssumptions.set_waitsema
 
-class perThreadSyscallArgs.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class perThreadSyscallArgs.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying perThreadSyscallArgs.underlying perThreadSyscallArgs
   underlying : go.UnderlyingDirectedEq perThreadSyscallArgs.ty perThreadSyscallArgs.underlying
   get_trap : ∀ (x : perThreadSyscallArgs), go.IsGoStepPureDetTagged under (StructFieldGet perThreadSyscallArgs.underlying go!"trap") #x (Val #(x.trap'))
@@ -447,17 +447,17 @@ attribute [instance] perThreadSyscallArgs.TypeAssumptions.type_repr
   perThreadSyscallArgs.TypeAssumptions.get_r2
   perThreadSyscallArgs.TypeAssumptions.set_r2
 
-class sigset.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class sigset.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq sigset.ty sigset.underlying
 
 attribute [instance] sigset.TypeAssumptions.underlying
 
-class throwType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class throwType.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq throwType.ty throwType.underlying
 
 attribute [instance] throwType.TypeAssumptions.underlying
 
-class PanicNilError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class PanicNilError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying PanicNilError.underlying PanicNilError
   underlying : go.UnderlyingDirectedEq PanicNilError.ty PanicNilError.underlying
   «get__#0» : ∀ (x : PanicNilError), go.IsGoStepPureDetTagged under (StructFieldGet PanicNilError.underlying go!"_#0") #x (Val #(x.«_#0'»))
@@ -468,7 +468,7 @@ attribute [instance] PanicNilError.TypeAssumptions.type_repr
   PanicNilError.TypeAssumptions.«get__#0»
   PanicNilError.TypeAssumptions.«set__#0»
 
-class Pinner.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Pinner.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Pinner.underlying Pinner
   underlying : go.UnderlyingDirectedEq Pinner.ty Pinner.underlying
   get_pinner : ∀ (x : Pinner), go.IsGoStepPureDetTagged under (StructFieldGet Pinner.underlying go!"pinner") #x (Val #(x.pinner'))
@@ -479,7 +479,7 @@ attribute [instance] Pinner.TypeAssumptions.type_repr
   Pinner.TypeAssumptions.get_pinner
   Pinner.TypeAssumptions.set_pinner
 
-class pinner.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class pinner.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying pinner.underlying pinner
   underlying : go.UnderlyingDirectedEq pinner.ty pinner.underlying
   get_refs : ∀ (x : pinner), go.IsGoStepPureDetTagged under (StructFieldGet pinner.underlying go!"refs") #x (Val #(x.refs'))
@@ -494,7 +494,7 @@ attribute [instance] pinner.TypeAssumptions.type_repr
   pinner.TypeAssumptions.get_refStore
   pinner.TypeAssumptions.set_refStore
 
-class pinState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class pinState.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying pinState.underlying pinState
   underlying : go.UnderlyingDirectedEq pinState.ty pinState.underlying
   get_bytep : ∀ (x : pinState), go.IsGoStepPureDetTagged under (StructFieldGet pinState.underlying go!"bytep") #x (Val #(x.bytep'))
@@ -513,12 +513,12 @@ attribute [instance] pinState.TypeAssumptions.type_repr
   pinState.TypeAssumptions.get_mask
   pinState.TypeAssumptions.set_mask
 
-class pinnerBits.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class pinnerBits.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq pinnerBits.ty pinnerBits.underlying
 
 attribute [instance] pinnerBits.TypeAssumptions.underlying
 
-class ptabEntry.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ptabEntry.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ptabEntry.underlying ptabEntry
   underlying : go.UnderlyingDirectedEq ptabEntry.ty ptabEntry.underlying
   isUnderlying : go.IsUnderlying ptabEntry.underlying ptabEntry.underlying
@@ -527,7 +527,7 @@ attribute [instance] ptabEntry.TypeAssumptions.type_repr
   ptabEntry.TypeAssumptions.underlying
   ptabEntry.TypeAssumptions.isUnderlying
 
-class suspendGState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class suspendGState.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying suspendGState.underlying suspendGState
   underlying : go.UnderlyingDirectedEq suspendGState.ty suspendGState.underlying
   get_g : ∀ (x : suspendGState), go.IsGoStepPureDetTagged under (StructFieldGet suspendGState.underlying go!"g") #x (Val #(x.g'))
@@ -546,7 +546,7 @@ attribute [instance] suspendGState.TypeAssumptions.type_repr
   suspendGState.TypeAssumptions.get_stopped
   suspendGState.TypeAssumptions.set_stopped
 
-class xRegs.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class xRegs.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying xRegs.underlying xRegs
   underlying : go.UnderlyingDirectedEq xRegs.ty xRegs.underlying
   get_Z0 : ∀ (x : xRegs), go.IsGoStepPureDetTagged under (StructFieldGet xRegs.underlying go!"Z0") #x (Val #(x.Z0'))
@@ -713,7 +713,7 @@ attribute [instance] xRegs.TypeAssumptions.type_repr
   xRegs.TypeAssumptions.get_K7
   xRegs.TypeAssumptions.set_K7
 
-class xRegState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class xRegState.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying xRegState.underlying xRegState
   underlying : go.UnderlyingDirectedEq xRegState.ty xRegState.underlying
   «get__#0» : ∀ (x : xRegState), go.IsGoStepPureDetTagged under (StructFieldGet xRegState.underlying go!"_#0") #x (Val #(x.«_#0'»))
@@ -728,7 +728,7 @@ attribute [instance] xRegState.TypeAssumptions.type_repr
   xRegState.TypeAssumptions.get_regs
   xRegState.TypeAssumptions.set_regs
 
-class xRegPerG.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class xRegPerG.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying xRegPerG.underlying xRegPerG
   underlying : go.UnderlyingDirectedEq xRegPerG.ty xRegPerG.underlying
   get_state : ∀ (x : xRegPerG), go.IsGoStepPureDetTagged under (StructFieldGet xRegPerG.underlying go!"state") #x (Val #(x.state'))
@@ -739,7 +739,7 @@ attribute [instance] xRegPerG.TypeAssumptions.type_repr
   xRegPerG.TypeAssumptions.get_state
   xRegPerG.TypeAssumptions.set_state
 
-class xRegPerP.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class xRegPerP.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying xRegPerP.underlying xRegPerP
   underlying : go.UnderlyingDirectedEq xRegPerP.ty xRegPerP.underlying
   get_scratch : ∀ (x : xRegPerP), go.IsGoStepPureDetTagged under (StructFieldGet xRegPerP.underlying go!"scratch") #x (Val #(x.scratch'))
@@ -754,22 +754,22 @@ attribute [instance] xRegPerP.TypeAssumptions.type_repr
   xRegPerP.TypeAssumptions.get_cache
   xRegPerP.TypeAssumptions.set_cache
 
-class hex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class hex.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq hex.ty hex.underlying
 
 attribute [instance] hex.TypeAssumptions.underlying
 
-class quoted.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class quoted.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq quoted.ty quoted.underlying
 
 attribute [instance] quoted.TypeAssumptions.underlying
 
-class stwReason.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class stwReason.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq stwReason.ty stwReason.underlying
 
 attribute [instance] stwReason.TypeAssumptions.underlying
 
-class worldStop.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class worldStop.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying worldStop.underlying worldStop
   underlying : go.UnderlyingDirectedEq worldStop.ty worldStop.underlying
   get_reason : ∀ (x : worldStop), go.IsGoStepPureDetTagged under (StructFieldGet worldStop.underlying go!"reason") #x (Val #(x.reason'))
@@ -792,7 +792,7 @@ attribute [instance] worldStop.TypeAssumptions.type_repr
   worldStop.TypeAssumptions.get_stoppingCPUTime
   worldStop.TypeAssumptions.set_stoppingCPUTime
 
-class cgothreadstart.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class cgothreadstart.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying cgothreadstart.underlying cgothreadstart
   underlying : go.UnderlyingDirectedEq cgothreadstart.ty cgothreadstart.underlying
   get_g : ∀ (x : cgothreadstart), go.IsGoStepPureDetTagged under (StructFieldGet cgothreadstart.underlying go!"g") #x (Val #(x.g'))
@@ -811,7 +811,7 @@ attribute [instance] cgothreadstart.TypeAssumptions.type_repr
   cgothreadstart.TypeAssumptions.get_fn
   cgothreadstart.TypeAssumptions.set_fn
 
-class sysmontick.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class sysmontick.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying sysmontick.underlying sysmontick
   underlying : go.UnderlyingDirectedEq sysmontick.ty sysmontick.underlying
   get_schedtick : ∀ (x : sysmontick), go.IsGoStepPureDetTagged under (StructFieldGet sysmontick.underlying go!"schedtick") #x (Val #(x.schedtick'))
@@ -834,7 +834,7 @@ attribute [instance] sysmontick.TypeAssumptions.type_repr
   sysmontick.TypeAssumptions.get_syscallwhen
   sysmontick.TypeAssumptions.set_syscallwhen
 
-class syscallingThread.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class syscallingThread.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying syscallingThread.underlying syscallingThread
   underlying : go.UnderlyingDirectedEq syscallingThread.ty syscallingThread.underlying
   get_gp : ∀ (x : syscallingThread), go.IsGoStepPureDetTagged under (StructFieldGet syscallingThread.underlying go!"gp") #x (Val #(x.gp'))
@@ -857,7 +857,7 @@ attribute [instance] syscallingThread.TypeAssumptions.type_repr
   syscallingThread.TypeAssumptions.get_status
   syscallingThread.TypeAssumptions.set_status
 
-class updateMaxProcsGState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class updateMaxProcsGState.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying updateMaxProcsGState.underlying updateMaxProcsGState
   underlying : go.UnderlyingDirectedEq updateMaxProcsGState.ty updateMaxProcsGState.underlying
   get_lock : ∀ (x : updateMaxProcsGState), go.IsGoStepPureDetTagged under (StructFieldGet updateMaxProcsGState.underlying go!"lock") #x (Val #(x.lock'))
@@ -880,12 +880,12 @@ attribute [instance] updateMaxProcsGState.TypeAssumptions.type_repr
   updateMaxProcsGState.TypeAssumptions.get_procs
   updateMaxProcsGState.TypeAssumptions.set_procs
 
-class pMask.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class pMask.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq pMask.ty pMask.underlying
 
 attribute [instance] pMask.TypeAssumptions.underlying
 
-class gQueue.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class gQueue.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying gQueue.underlying gQueue
   underlying : go.UnderlyingDirectedEq gQueue.ty gQueue.underlying
   get_head : ∀ (x : gQueue), go.IsGoStepPureDetTagged under (StructFieldGet gQueue.underlying go!"head") #x (Val #(x.head'))
@@ -904,7 +904,7 @@ attribute [instance] gQueue.TypeAssumptions.type_repr
   gQueue.TypeAssumptions.get_size
   gQueue.TypeAssumptions.set_size
 
-class randomOrder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class randomOrder.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying randomOrder.underlying randomOrder
   underlying : go.UnderlyingDirectedEq randomOrder.ty randomOrder.underlying
   get_count : ∀ (x : randomOrder), go.IsGoStepPureDetTagged under (StructFieldGet randomOrder.underlying go!"count") #x (Val #(x.count'))
@@ -919,7 +919,7 @@ attribute [instance] randomOrder.TypeAssumptions.type_repr
   randomOrder.TypeAssumptions.get_coprimes
   randomOrder.TypeAssumptions.set_coprimes
 
-class randomEnum.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class randomEnum.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying randomEnum.underlying randomEnum
   underlying : go.UnderlyingDirectedEq randomEnum.ty randomEnum.underlying
   get_i : ∀ (x : randomEnum), go.IsGoStepPureDetTagged under (StructFieldGet randomEnum.underlying go!"i") #x (Val #(x.i'))
@@ -942,7 +942,7 @@ attribute [instance] randomEnum.TypeAssumptions.type_repr
   randomEnum.TypeAssumptions.get_inc
   randomEnum.TypeAssumptions.set_inc
 
-class initTask.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class initTask.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying initTask.underlying initTask
   underlying : go.UnderlyingDirectedEq initTask.ty initTask.underlying
   get_state : ∀ (x : initTask), go.IsGoStepPureDetTagged under (StructFieldGet initTask.underlying go!"state") #x (Val #(x.state'))
@@ -957,7 +957,7 @@ attribute [instance] initTask.TypeAssumptions.type_repr
   initTask.TypeAssumptions.get_nfns
   initTask.TypeAssumptions.set_nfns
 
-class tracestat.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class tracestat.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying tracestat.underlying tracestat
   underlying : go.UnderlyingDirectedEq tracestat.ty tracestat.underlying
   get_active : ∀ (x : tracestat), go.IsGoStepPureDetTagged under (StructFieldGet tracestat.underlying go!"active") #x (Val #(x.active'))
@@ -980,17 +980,17 @@ attribute [instance] tracestat.TypeAssumptions.type_repr
   tracestat.TypeAssumptions.get_bytes
   tracestat.TypeAssumptions.set_bytes
 
-class profAtomic.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class profAtomic.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq profAtomic.ty profAtomic.underlying
 
 attribute [instance] profAtomic.TypeAssumptions.underlying
 
-class profIndex.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class profIndex.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq profIndex.ty profIndex.underlying
 
 attribute [instance] profIndex.TypeAssumptions.underlying
 
-class profBuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class profBuf.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying profBuf.underlying profBuf
   underlying : go.UnderlyingDirectedEq profBuf.ty profBuf.underlying
   get_r : ∀ (x : profBuf), go.IsGoStepPureDetTagged under (StructFieldGet profBuf.underlying go!"r") #x (Val #(x.r'))
@@ -1041,12 +1041,12 @@ attribute [instance] profBuf.TypeAssumptions.type_repr
   profBuf.TypeAssumptions.get_wait
   profBuf.TypeAssumptions.set_wait
 
-class profBufReadMode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class profBufReadMode.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq profBufReadMode.ty profBufReadMode.underlying
 
 attribute [instance] profBufReadMode.TypeAssumptions.underlying
 
-class ticksType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ticksType.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ticksType.underlying ticksType
   underlying : go.UnderlyingDirectedEq ticksType.ty ticksType.underlying
   get_lock : ∀ (x : ticksType), go.IsGoStepPureDetTagged under (StructFieldGet ticksType.underlying go!"lock") #x (Val #(x.lock'))
@@ -1069,7 +1069,7 @@ attribute [instance] ticksType.TypeAssumptions.type_repr
   ticksType.TypeAssumptions.get_val
   ticksType.TypeAssumptions.set_val
 
-class godebugInc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class godebugInc.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying godebugInc.underlying godebugInc
   underlying : go.UnderlyingDirectedEq godebugInc.ty godebugInc.underlying
   get_name : ∀ (x : godebugInc), go.IsGoStepPureDetTagged under (StructFieldGet godebugInc.underlying go!"name") #x (Val #(x.name'))
@@ -1084,7 +1084,7 @@ attribute [instance] godebugInc.TypeAssumptions.type_repr
   godebugInc.TypeAssumptions.get_inc
   godebugInc.TypeAssumptions.set_inc
 
-class dbgVar.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class dbgVar.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying dbgVar.underlying dbgVar
   underlying : go.UnderlyingDirectedEq dbgVar.ty dbgVar.underlying
   get_name : ∀ (x : dbgVar), go.IsGoStepPureDetTagged under (StructFieldGet dbgVar.underlying go!"name") #x (Val #(x.name'))
@@ -1107,7 +1107,7 @@ attribute [instance] dbgVar.TypeAssumptions.type_repr
   dbgVar.TypeAssumptions.get_def
   dbgVar.TypeAssumptions.set_def
 
-class funcval.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class funcval.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying funcval.underlying funcval
   underlying : go.UnderlyingDirectedEq funcval.ty funcval.underlying
   get_fn : ∀ (x : funcval), go.IsGoStepPureDetTagged under (StructFieldGet funcval.underlying go!"fn") #x (Val #(x.fn'))
@@ -1118,7 +1118,7 @@ attribute [instance] funcval.TypeAssumptions.type_repr
   funcval.TypeAssumptions.get_fn
   funcval.TypeAssumptions.set_fn
 
-class iface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class iface.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying iface.underlying iface
   underlying : go.UnderlyingDirectedEq iface.ty iface.underlying
   isUnderlying : go.IsUnderlying iface.underlying iface.underlying
@@ -1127,7 +1127,7 @@ attribute [instance] iface.TypeAssumptions.type_repr
   iface.TypeAssumptions.underlying
   iface.TypeAssumptions.isUnderlying
 
-class eface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class eface.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying eface.underlying eface
   underlying : go.UnderlyingDirectedEq eface.ty eface.underlying
   isUnderlying : go.IsUnderlying eface.underlying eface.underlying
@@ -1136,12 +1136,12 @@ attribute [instance] eface.TypeAssumptions.type_repr
   eface.TypeAssumptions.underlying
   eface.TypeAssumptions.isUnderlying
 
-class puintptr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class puintptr.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq puintptr.ty puintptr.underlying
 
 attribute [instance] puintptr.TypeAssumptions.underlying
 
-class gobuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class gobuf.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying gobuf.underlying gobuf
   underlying : go.UnderlyingDirectedEq gobuf.ty gobuf.underlying
   get_sp : ∀ (x : gobuf), go.IsGoStepPureDetTagged under (StructFieldGet gobuf.underlying go!"sp") #x (Val #(x.sp'))
@@ -1172,7 +1172,7 @@ attribute [instance] gobuf.TypeAssumptions.type_repr
   gobuf.TypeAssumptions.get_bp
   gobuf.TypeAssumptions.set_bp
 
-class maybeTraceablePtr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class maybeTraceablePtr.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying maybeTraceablePtr.underlying maybeTraceablePtr
   underlying : go.UnderlyingDirectedEq maybeTraceablePtr.ty maybeTraceablePtr.underlying
   get_vp : ∀ (x : maybeTraceablePtr), go.IsGoStepPureDetTagged under (StructFieldGet maybeTraceablePtr.underlying go!"vp") #x (Val #(x.vp'))

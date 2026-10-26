@@ -21,54 +21,54 @@ end pkg_id
 
 namespace errors
 
-noncomputable def errorString.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def errorString.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"errors.errorString" [])
 
 attribute [irreducible] errorString.ty
 
-noncomputable def joinError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def joinError.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"errors.joinError" [])
 
 attribute [irreducible] joinError.ty
 
-noncomputable def ErrUnsupported [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ErrUnsupported [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.ErrUnsupported"
 
-noncomputable def errorType [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def errorType [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.errorType"
 
-noncomputable def New [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def New [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.New"
 
-noncomputable def Join [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Join [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.Join"
 
-noncomputable def Unwrap [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Unwrap [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.Unwrap"
 
-noncomputable def Is [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Is [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.Is"
 
-noncomputable def is' [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def is' [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.is"
 
-noncomputable def As [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def As [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.As"
 
-noncomputable def as' [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def as' [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.as"
 
-noncomputable def AsType [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AsType [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.AsType"
 
-noncomputable def asType [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def asType [GooseExts] [GoGlobalContext] : GoString :=
   go!"errors.asType"
 
 /-- New returns an error that formats as the given text.
     Each call to New returns a distinct error value even if the text is identical.
 
     go: errors.go:64:6 -/
-noncomputable def New.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def New.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "text"
   (App (Val exceptionDo)
   (Let "text" (App (Val (GoInstruction (GoAlloc go.string))) (Var "text"))
@@ -77,7 +77,7 @@ noncomputable def New.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral errorString.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0")))])))))))))
 
 /-- go: errors.go:73:23 -/
-noncomputable def errorString.Error.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def errorString.Error.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -93,7 +93,7 @@ noncomputable def errorString.Error.impl [FfiSyntax] [GoGlobalContext] : val :=
     In particular Unwrap does not unwrap errors returned by [Join].
 
     go: wrap.go:17:6 -/
-noncomputable def Unwrap.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Unwrap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "err"
   (App (Val exceptionDo)
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
@@ -120,7 +120,7 @@ noncomputable def Unwrap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])))) (Pair (Var "u") (Var "$r0")))))))))))))))
 
 /-- go: wrap.go:54:6 -/
-noncomputable def is.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def is.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "err"
   (Lam "target"
   (Lam "targetComparable"
@@ -218,7 +218,7 @@ noncomputable def is.impl [FfiSyntax] [GoGlobalContext] : val :=
     method is responsible for setting target.
 
     go: wrap.go:167:6 -/
-noncomputable def AsType.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def AsType.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "err"
   (App (Val exceptionDo)
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
@@ -239,7 +239,7 @@ noncomputable def AsType.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : va
   (Val #())))))))
 
 /-- go: wrap.go:176:6 -/
-noncomputable def asType.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : val :=
+noncomputable def asType.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "err"
   (Lam "ppe"
   (App (Val exceptionDo)
@@ -365,9 +365,9 @@ noncomputable def asType.impl [FfiSyntax] [GoGlobalContext] (E : go.GoType) : va
 noncomputable instance info' : PkgInfo pkg_id.errors where
   pkgImportedPkgs := []
 
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.errors)) (Lam BAnon
   (App (Val exceptionDo)
@@ -382,27 +382,27 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrUnsupported go.error)) (Val #()))))))))
 
-structure errorString [FfiSyntax] where
+structure errorString [GooseExts] where
   mk ::
   s' : GoString
 
-noncomputable instance errorString.zero_val [FfiSyntax] : ZeroVal errorString :=
+noncomputable instance errorString.zero_val [GooseExts] : ZeroVal errorString :=
   ⟨errorString.mk zeroValDef⟩
 
-@[reducible] noncomputable def errorString.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def errorString.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"s" go.string)]
 
-@[irreducible] noncomputable def errorString.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def errorString.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   errorString.fieldsUnsealed
 
-noncomputable instance equals_unfold_errorString [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_errorString [GooseExts] [GoGlobalContext] :
     EqualsUnfold errorString.fields errorString.fieldsUnsealed :=
   ⟨by unfold errorString.fields; rfl⟩
 
-@[reducible] noncomputable def errorString.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def errorString.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType errorString.fields)
 
-class errorString.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class errorString.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying errorString.underlying errorString
   underlying : go.UnderlyingDirectedEq errorString.ty errorString.underlying
   get_s : ∀ (x : errorString), go.IsGoStepPureDetTagged under (StructFieldGet errorString.underlying go!"s") #x (Val #(x.s'))
@@ -415,27 +415,27 @@ attribute [instance] errorString.TypeAssumptions.type_repr
   errorString.TypeAssumptions.set_s
   errorString.TypeAssumptions.ptr_Error_unfold
 
-structure joinError [FfiSyntax] where
+structure joinError [GooseExts] where
   mk ::
   errs' : GoSlice
 
-noncomputable instance joinError.zero_val [FfiSyntax] : ZeroVal joinError :=
+noncomputable instance joinError.zero_val [GooseExts] : ZeroVal joinError :=
   ⟨joinError.mk zeroValDef⟩
 
-@[reducible] noncomputable def joinError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def joinError.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"errs" (go.GoType.SliceType go.error))]
 
-@[irreducible] noncomputable def joinError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def joinError.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   joinError.fieldsUnsealed
 
-noncomputable instance equals_unfold_joinError [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_joinError [GooseExts] [GoGlobalContext] :
     EqualsUnfold joinError.fields joinError.fieldsUnsealed :=
   ⟨by unfold joinError.fields; rfl⟩
 
-@[reducible] noncomputable def joinError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def joinError.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType joinError.fields)
 
-class joinError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class joinError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying joinError.underlying joinError
   underlying : go.UnderlyingDirectedEq joinError.ty joinError.underlying
   get_errs : ∀ (x : joinError), go.IsGoStepPureDetTagged under (StructFieldGet joinError.underlying go!"errs") #x (Val #(x.errs'))
@@ -446,7 +446,7 @@ attribute [instance] joinError.TypeAssumptions.type_repr
   joinError.TypeAssumptions.get_errs
   joinError.TypeAssumptions.set_errs
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   errorString_instance : errorString.TypeAssumptions
   joinError_instance : joinError.TypeAssumptions
   New_unfold : FuncUnfold New [] New.impl

@@ -24,14 +24,14 @@ namespace github_com.mit_pdos.perennial.goose.testdata.examples.«import»
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.«import» where
   pkgImportedPkgs := [pkg_id.sync.atomic]
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.«import»)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (App (Val _root_.Perennial.sync.atomic.initialize') (Val #())))))))
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
 
 attribute [instance] Assumptions.import_atomic_Assumption

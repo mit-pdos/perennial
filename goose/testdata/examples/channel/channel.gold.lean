@@ -23,161 +23,161 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel
 
-noncomputable def Cond.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Cond.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Cond" [])
 
 attribute [irreducible] Cond.ty
 
-noncomputable def Result.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Result.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Result" [])
 
 attribute [irreducible] Result.ty
 
-noncomputable def request.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def request.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.request" [])
 
 attribute [irreducible] request.ty
 
-noncomputable def stream.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def stream.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.stream" [])
 
 attribute [irreducible] stream.ty
 
-noncomputable def streamold.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def streamold.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.streamold" [])
 
 attribute [irreducible] streamold.ty
 
-noncomputable def DSPExample [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def DSPExample [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.DSPExample"
 
-noncomputable def NewCond [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewCond [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.NewCond"
 
-noncomputable def sys_hello_world [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def sys_hello_world [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.sys_hello_world"
 
-noncomputable def HelloWorldAsync [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def HelloWorldAsync [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.HelloWorldAsync"
 
-noncomputable def HelloWorldSync [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def HelloWorldSync [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.HelloWorldSync"
 
-noncomputable def HelloWorldCancellable [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def HelloWorldCancellable [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.HelloWorldCancellable"
 
-noncomputable def HelloWorldWithTimeout [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def HelloWorldWithTimeout [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.HelloWorldWithTimeout"
 
-noncomputable def simple_join [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def simple_join [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.simple_join"
 
-noncomputable def simple_multi_join [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def simple_multi_join [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.simple_multi_join"
 
-noncomputable def exchangePointer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def exchangePointer [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.exchangePointer"
 
-noncomputable def BroadcastExample [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def BroadcastExample [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.BroadcastExample"
 
-noncomputable def fibonacci [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def fibonacci [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.fibonacci"
 
-noncomputable def fib_consumer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def fib_consumer [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.fib_consumer"
 
-noncomputable def Web [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Web [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Web"
 
-noncomputable def Image [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Image [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Image"
 
-noncomputable def Video [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Video [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Video"
 
-noncomputable def Google [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Google [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Google"
 
-noncomputable def GetPrimary [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def GetPrimary [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.GetPrimary"
 
-noncomputable def GetSecondary [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def GetSecondary [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.GetSecondary"
 
-noncomputable def CancellableHedgedRequest [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CancellableHedgedRequest [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.CancellableHedgedRequest"
 
-noncomputable def mkRequest [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mkRequest [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.mkRequest"
 
-noncomputable def ho_worker [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ho_worker [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.ho_worker"
 
-noncomputable def HigherOrderExample [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def HigherOrderExample [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.HigherOrderExample"
 
-noncomputable def load [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def load [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.load"
 
-noncomputable def process [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def process [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.process"
 
-noncomputable def client [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def client [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.client"
 
-noncomputable def server [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def server [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.server"
 
-noncomputable def LeakyBufferPipeline [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LeakyBufferPipeline [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.LeakyBufferPipeline"
 
-noncomputable def mkStream [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mkStream [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.mkStream"
 
-noncomputable def Async [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Async [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Async"
 
-noncomputable def Serve [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Serve [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Serve"
 
-noncomputable def appWrld [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def appWrld [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.appWrld"
 
-noncomputable def Client [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Client [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Client"
 
-noncomputable def MapServer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def MapServer [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.MapServer"
 
-noncomputable def ClientOld [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ClientOld [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.ClientOld"
 
-noncomputable def Muxer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Muxer [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.Muxer"
 
-noncomputable def makeGreeting [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def makeGreeting [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.makeGreeting"
 
-noncomputable def CancellableMapServer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CancellableMapServer [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.CancellableMapServer"
 
-noncomputable def CancellableMuxer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CancellableMuxer [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.CancellableMuxer"
 
-noncomputable def select_nb_not_ready [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def select_nb_not_ready [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.select_nb_not_ready"
 
-noncomputable def select_nb_guaranteed_ready [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def select_nb_guaranteed_ready [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.select_nb_guaranteed_ready"
 
-noncomputable def select_nb_full_buffer_not_ready [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def select_nb_full_buffer_not_ready [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel.select_nb_full_buffer_not_ready"
 
 /-- prog3 from Actris 2.0 intro: https://arxiv.org/pdf/2010.15030
 
     go: actris_example.go:4:6 -/
-noncomputable def DSPExample.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DSPExample.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.ChannelType go.ChanDir.sendrecv go.any)]))) (Val #())) (Val #()))
@@ -229,7 +229,7 @@ noncomputable def DSPExample.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv go.any)))) (Pair (Var "c") (Var "$r0")))))))))))
 
 /-- go: cv_unverified.go:14:6 -/
-noncomputable def NewCond.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewCond.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "L"
   (App (Val exceptionDo)
   (Let "L" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.ty))) (Var "L"))
@@ -240,7 +240,7 @@ noncomputable def NewCond.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Wait blocks until signaled. Caller must hold c.L; will hold c.L on return.
 
     go: cv_unverified.go:19:16 -/
-noncomputable def Cond.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Cond.Wait.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -272,7 +272,7 @@ noncomputable def Cond.Wait.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Signal wakes one waiter (FIFO). Caller must hold c.L.
 
     go: cv_unverified.go:29:16 -/
-noncomputable def Cond.Signal.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Cond.Signal.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -312,7 +312,7 @@ noncomputable def Cond.Signal.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Broadcast wakes all waiters. Caller must hold c.L.
 
     go: cv_unverified.go:40:16 -/
-noncomputable def Cond.Broadcast.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Cond.Broadcast.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -340,7 +340,7 @@ noncomputable def Cond.Broadcast.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "ch") (Var "$value"))))))))))))))))
 
 /-- go: cv_unverified.go:47:16 -/
-noncomputable def Cond.WaitFor.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Cond.WaitFor.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "d"
   (App (Val exceptionDo)
@@ -446,7 +446,7 @@ noncomputable def Cond.WaitFor.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: cv_unverified.go:92:16 -/
-noncomputable def Cond.WaitUntil.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Cond.WaitUntil.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "deadline"
   (App (Val exceptionDo)
@@ -460,14 +460,14 @@ noncomputable def Cond.WaitUntil.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Fake syscall for demonstration.
 
     go: examples.go:8:6 -/
-noncomputable def sys_hello_world.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def sys_hello_world.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (Val #(go!"Hello, World!")))))
 
 /-- go: examples.go:12:6 -/
-noncomputable def HelloWorldAsync.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def HelloWorldAsync.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.ChannelType go.ChanDir.sendrecv go.string)]))) (Val #())) (Val #(W64 1)))
@@ -492,7 +492,7 @@ noncomputable def HelloWorldAsync.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Pair (Var "ch") (Var "$r0")))))))))
 
 /-- go: examples.go:20:6 -/
-noncomputable def HelloWorldSync.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def HelloWorldSync.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -501,7 +501,7 @@ noncomputable def HelloWorldSync.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Simulates the error/done channel components of Context
 
     go: examples.go:25:6 -/
-noncomputable def HelloWorldCancellable.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def HelloWorldCancellable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "done"
   (Lam "err"
   (App (Val exceptionDo)
@@ -529,7 +529,7 @@ noncomputable def HelloWorldCancellable.impl [FfiSyntax] [GoGlobalContext] : val
 /-- Uses cancellation as a timeout mechanism.
 
     go: examples.go:36:6 -/
-noncomputable def HelloWorldWithTimeout.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def HelloWorldWithTimeout.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Val #()))
@@ -568,7 +568,7 @@ noncomputable def HelloWorldWithTimeout.impl [FfiSyntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "done") (Var "$r0")))))))))
 
 /-- go: examples.go:50:6 -/
-noncomputable def simple_join.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def simple_join.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Val #(W64 1)))
@@ -601,7 +601,7 @@ noncomputable def simple_join.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "ch") (Var "$r0")))))))))
 
 /-- go: examples.go:63:6 -/
-noncomputable def simple_multi_join.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def simple_multi_join.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))]))) (Val #())) (Val #(W64 2)))
@@ -655,7 +655,7 @@ noncomputable def simple_multi_join.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "ch") (Var "$r0")))))))))
 
 /-- go: examples.go:81:6 -/
-noncomputable def exchangePointer.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def exchangePointer.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -715,7 +715,7 @@ noncomputable def exchangePointer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (Var "$r0"))))))))))
 
 /-- go: examples.go:101:6 -/
-noncomputable def BroadcastExample.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def BroadcastExample.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -814,7 +814,7 @@ noncomputable def BroadcastExample.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- https://go.dev/tour/concurrency/4
 
     go: fibonacci.go:4:6 -/
-noncomputable def fibonacci.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def fibonacci.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "c"
   (App (Val exceptionDo)
@@ -861,7 +861,7 @@ noncomputable def fibonacci.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (Var "$r0")))))))))))))))
 
 /-- go: fibonacci.go:13:6 -/
-noncomputable def fib_consumer.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def fib_consumer.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.ChannelType go.ChanDir.sendrecv go.int)]))) (Val #())) (Val #(W64 10)))
@@ -900,7 +900,7 @@ noncomputable def fib_consumer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv go.int)))) (Pair (Var "c") (Var "$r0")))))))))
 
 /-- go: google_search.go:3:6 -/
-noncomputable def Web.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Web.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exceptionDo)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -908,7 +908,7 @@ noncomputable def Web.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "query")) (Val #(go!".html"))))))))
 
 /-- go: google_search.go:7:6 -/
-noncomputable def Image.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Image.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exceptionDo)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -916,7 +916,7 @@ noncomputable def Image.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "query")) (Val #(go!".png"))))))))
 
 /-- go: google_search.go:11:6 -/
-noncomputable def Video.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Video.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exceptionDo)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -926,7 +926,7 @@ noncomputable def Video.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- https://go.dev/talks/2012/concurrency.slide#46
 
     go: google_search.go:16:6 -/
-noncomputable def Google.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Google.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exceptionDo)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -1010,7 +1010,7 @@ noncomputable def Google.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Toy functions that resemble search query servers.
 
     go: hedged.go:13:6 -/
-noncomputable def GetPrimary.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def GetPrimary.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exceptionDo)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -1018,7 +1018,7 @@ noncomputable def GetPrimary.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "query")) (Val #(go!"_primary.html"))))))))
 
 /-- go: hedged.go:17:6 -/
-noncomputable def GetSecondary.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def GetSecondary.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "query"
   (App (Val exceptionDo)
   (Let "query" (App (Val (GoInstruction (GoAlloc go.string))) (Var "query"))
@@ -1035,7 +1035,7 @@ noncomputable def GetSecondary.impl [FfiSyntax] [GoGlobalContext] : val :=
     https://www.barroso.org/publications/TheTailAtScale.pdf page 7 for discussion on hedging.
 
     go: hedged.go:29:6 -/
-noncomputable def CancellableHedgedRequest.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def CancellableHedgedRequest.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "query"
   (Lam "threshold"
   (Lam "errStr"
@@ -1121,7 +1121,7 @@ noncomputable def CancellableHedgedRequest.impl [FfiSyntax] [GoGlobalContext] : 
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv Result.ty)))) (Pair (Var "c") (Var "$r0"))))))))))))))))
 
 /-- go: higher_order.go:8:6 -/
-noncomputable def mkRequest.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def mkRequest.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false [go.string]))))) (Var "f"))
@@ -1131,7 +1131,7 @@ noncomputable def mkRequest.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral request.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"f")) (ElementExpression (go.GoType.FunctionType (go.signature.Signature [] false [go.string])) (Var "$v0"))), (KeyedElement (some (KeyField go!"result")) (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv go.string) (Var "$v1")))]))))))))
 
 /-- go: higher_order.go:12:6 -/
-noncomputable def ho_worker.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ho_worker.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv request.ty)))) (Var "c"))
@@ -1151,7 +1151,7 @@ noncomputable def ho_worker.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore request.ty))) (Pair (Var "r") (Var "$key")))))))))))))
 
 /-- go: higher_order.go:18:6 -/
-noncomputable def HigherOrderExample.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def HigherOrderExample.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.ChannelType go.ChanDir.sendrecv request.ty)]))) (Val #())) (Val #()))
@@ -1227,7 +1227,7 @@ noncomputable def HigherOrderExample.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- load writes the next letter into the buffer.
 
     go: leaky_buffer_unverified.go:9:6 -/
-noncomputable def load.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def load.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "letter"
   (App (Val exceptionDo)
@@ -1243,7 +1243,7 @@ noncomputable def load.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- process consumes the buffer and appends it to the output.
 
     go: leaky_buffer_unverified.go:14:6 -/
-noncomputable def process.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def process.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "output"
   (App (Val exceptionDo)
@@ -1257,7 +1257,7 @@ noncomputable def process.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.strings.ToUpper []))) (Val #())) (Var "$a0"))))))))))))))
 
 /-- go: leaky_buffer_unverified.go:18:6 -/
-noncomputable def client.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def client.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "input"
   (Lam "freeList"
   (Lam "serverChan"
@@ -1307,7 +1307,7 @@ noncomputable def client.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "letter") (Var "$value")))))))))))))))))))
 
 /-- go: leaky_buffer_unverified.go:39:6 -/
-noncomputable def server.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def server.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "output"
   (Lam "freeList"
   (Lam "serverChan"
@@ -1360,7 +1360,7 @@ noncomputable def server.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #())))))))))))))
 
 /-- go: leaky_buffer_unverified.go:61:6 -/
-noncomputable def LeakyBufferPipeline.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LeakyBufferPipeline.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1424,7 +1424,7 @@ noncomputable def LeakyBufferPipeline.impl [FfiSyntax] [GoGlobalContext] : val :
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.SliceType go.byte))))) (Pair (Var "freeList") (Var "$r0"))))))))))
 
 /-- go: muxer.go:14:6 -/
-noncomputable def mkStream.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def mkStream.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [go.string] false [go.string]))))) (Var "f"))
@@ -1435,7 +1435,7 @@ noncomputable def mkStream.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral streamold.ty))) (LiteralValue [(KeyedElement none (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv go.string) (Var "$v0"))), (KeyedElement none (ElementExpression (go.GoType.ChannelType go.ChanDir.sendrecv go.string) (Var "$v1"))), (KeyedElement none (ElementExpression (go.GoType.FunctionType (go.signature.Signature [go.string] false [go.string])) (Var "$v2")))])))))))))
 
 /-- go: muxer.go:18:6 -/
-noncomputable def Async.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Async.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false [go.string]))))) (Var "f"))
@@ -1461,7 +1461,7 @@ noncomputable def Async.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv go.string)))) (Pair (Var "ch") (Var "$r0"))))))))))
 
 /-- go: muxer.go:26:6 -/
-noncomputable def Serve.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Serve.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [go.string] false [go.string]))))) (Var "f"))
@@ -1494,7 +1494,7 @@ noncomputable def Serve.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore stream.ty))) (Pair (Var "s") (Var "$r0"))))))))))
 
 /-- go: muxer.go:39:6 -/
-noncomputable def appWrld.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def appWrld.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
@@ -1502,7 +1502,7 @@ noncomputable def appWrld.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "s")) (Val #(go!", World!"))))))))
 
 /-- go: muxer.go:43:6 -/
-noncomputable def Client.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Client.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (FuncResolve appWrld []))) (Val #()))
@@ -1520,7 +1520,7 @@ noncomputable def Client.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore stream.ty))) (Pair (Var "hw") (Var "$r0")))))))))
 
 /-- go: muxer.go:49:6 -/
-noncomputable def MapServer.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def MapServer.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc streamold.ty))) (Var "s"))
@@ -1543,7 +1543,7 @@ noncomputable def MapServer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #())))))))
 
 /-- go: muxer.go:56:6 -/
-noncomputable def ClientOld.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ClientOld.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "$r0" (Let "$a0" (Lam "s"
@@ -1592,7 +1592,7 @@ noncomputable def ClientOld.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore streamold.ty))) (Pair (Var "comma") (Var "$r0")))))))))
 
 /-- go: muxer.go:71:6 -/
-noncomputable def Muxer.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Muxer.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv streamold.ty)))) (Var "c"))
@@ -1613,7 +1613,7 @@ noncomputable def Muxer.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore streamold.ty))) (Pair (Var "s") (Var "$key")))))))))))))
 
 /-- go: muxer.go:77:6 -/
-noncomputable def makeGreeting.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def makeGreeting.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.ChannelType go.ChanDir.sendrecv streamold.ty)]))) (Val #())) (Val #(W64 2)))
@@ -1671,7 +1671,7 @@ noncomputable def makeGreeting.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv streamold.ty)))) (Pair (Var "mux") (Var "$r0")))))))))
 
 /-- go: muxer_unverified.go:3:6 -/
-noncomputable def CancellableMapServer.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def CancellableMapServer.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "done"
   (App (Val exceptionDo)
@@ -1718,7 +1718,7 @@ noncomputable def CancellableMapServer.impl [FfiSyntax] [GoGlobalContext] : val 
 /-- 4. CancellableMuxer - muxer with cancellation
 
     go: muxer_unverified.go:18:6 -/
-noncomputable def CancellableMuxer.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def CancellableMuxer.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "done"
   (Lam "errMsg"
@@ -1765,7 +1765,7 @@ noncomputable def CancellableMuxer.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Example with 2 nonblocking ops that should not match.
 
     go: select_tricky_examples.go:4:6 -/
-noncomputable def select_nb_not_ready.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def select_nb_not_ready.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1799,7 +1799,7 @@ noncomputable def select_nb_not_ready.impl [FfiSyntax] [GoGlobalContext] : val :
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Pair (Var "ch") (Var "$r0"))))))))))
 
 /-- go: select_tricky_examples.go:21:6 -/
-noncomputable def select_nb_guaranteed_ready.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def select_nb_guaranteed_ready.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1824,7 +1824,7 @@ noncomputable def select_nb_guaranteed_ready.impl [FfiSyntax] [GoGlobalContext] 
 /-- Non-blocking send cannot send on a full buffer
 
     go: select_tricky_examples.go:34:6 -/
-noncomputable def select_nb_full_buffer_not_ready.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def select_nb_full_buffer_not_ready.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1850,7 +1850,7 @@ noncomputable def select_nb_full_buffer_not_ready.impl [FfiSyntax] [GoGlobalCont
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel where
   pkgImportedPkgs := [pkg_id.time, pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock, pkg_id.strings]
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel)) (Lam BAnon
   (App (Val exceptionDo)
@@ -1863,29 +1863,29 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.strings.initialize') (Val #()))))))))
 
-structure Cond [FfiSyntax] where
+structure Cond [GooseExts] where
   mk ::
   L' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock
   waiters' : GoSlice
 
-noncomputable instance Cond.zero_val [FfiSyntax] : ZeroVal Cond :=
+noncomputable instance Cond.zero_val [GooseExts] : ZeroVal Cond :=
   ⟨Cond.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Cond.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Cond.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"L" _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.ty),
 (go.field_decl.FieldDecl go!"waiters" (go.GoType.SliceType (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))]
 
-@[irreducible] noncomputable def Cond.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Cond.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Cond.fieldsUnsealed
 
-noncomputable instance equals_unfold_Cond [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Cond [GooseExts] [GoGlobalContext] :
     EqualsUnfold Cond.fields Cond.fieldsUnsealed :=
   ⟨by unfold Cond.fields; rfl⟩
 
-@[reducible] noncomputable def Cond.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Cond.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Cond.fields)
 
-class Cond.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Cond.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Cond.underlying Cond
   underlying : go.UnderlyingDirectedEq Cond.ty Cond.underlying
   get_L : ∀ (x : Cond), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"L") #x (Val #(x.L'))
@@ -1910,29 +1910,29 @@ attribute [instance] Cond.TypeAssumptions.type_repr
   Cond.TypeAssumptions.ptr_WaitFor_unfold
   Cond.TypeAssumptions.ptr_WaitUntil_unfold
 
-structure Result [FfiSyntax] where
+structure Result [GooseExts] where
   mk ::
   value' : GoString
   primary_won' : Bool
 
-noncomputable instance Result.zero_val [FfiSyntax] : ZeroVal Result :=
+noncomputable instance Result.zero_val [GooseExts] : ZeroVal Result :=
   ⟨Result.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Result.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Result.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"value" go.string),
 (go.field_decl.FieldDecl go!"primary_won" go.bool)]
 
-@[irreducible] noncomputable def Result.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Result.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Result.fieldsUnsealed
 
-noncomputable instance equals_unfold_Result [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Result [GooseExts] [GoGlobalContext] :
     EqualsUnfold Result.fields Result.fieldsUnsealed :=
   ⟨by unfold Result.fields; rfl⟩
 
-@[reducible] noncomputable def Result.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Result.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Result.fields)
 
-class Result.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Result.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Result.underlying Result
   underlying : go.UnderlyingDirectedEq Result.ty Result.underlying
   get_value : ∀ (x : Result), go.IsGoStepPureDetTagged under (StructFieldGet Result.underlying go!"value") #x (Val #(x.value'))
@@ -1947,29 +1947,29 @@ attribute [instance] Result.TypeAssumptions.type_repr
   Result.TypeAssumptions.get_primary_won
   Result.TypeAssumptions.set_primary_won
 
-structure request [FfiSyntax] where
+structure request [GooseExts] where
   mk ::
   f' : GoFunc
   result' : GoChan
 
-noncomputable instance request.zero_val [FfiSyntax] : ZeroVal request :=
+noncomputable instance request.zero_val [GooseExts] : ZeroVal request :=
   ⟨request.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def request.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def request.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"f" (go.GoType.FunctionType (go.signature.Signature [] false [go.string]))),
 (go.field_decl.FieldDecl go!"result" (go.GoType.ChannelType go.ChanDir.sendrecv go.string))]
 
-@[irreducible] noncomputable def request.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def request.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   request.fieldsUnsealed
 
-noncomputable instance equals_unfold_request [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_request [GooseExts] [GoGlobalContext] :
     EqualsUnfold request.fields request.fieldsUnsealed :=
   ⟨by unfold request.fields; rfl⟩
 
-@[reducible] noncomputable def request.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def request.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType request.fields)
 
-class request.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class request.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying request.underlying request
   underlying : go.UnderlyingDirectedEq request.ty request.underlying
   get_f : ∀ (x : request), go.IsGoStepPureDetTagged under (StructFieldGet request.underlying go!"f") #x (Val #(x.f'))
@@ -1984,29 +1984,29 @@ attribute [instance] request.TypeAssumptions.type_repr
   request.TypeAssumptions.get_result
   request.TypeAssumptions.set_result
 
-structure stream [FfiSyntax] where
+structure stream [GooseExts] where
   mk ::
   req' : GoChan
   res' : GoChan
 
-noncomputable instance stream.zero_val [FfiSyntax] : ZeroVal stream :=
+noncomputable instance stream.zero_val [GooseExts] : ZeroVal stream :=
   ⟨stream.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def stream.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def stream.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"req" (go.GoType.ChannelType go.ChanDir.sendrecv go.string)),
 (go.field_decl.FieldDecl go!"res" (go.GoType.ChannelType go.ChanDir.sendrecv go.string))]
 
-@[irreducible] noncomputable def stream.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def stream.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   stream.fieldsUnsealed
 
-noncomputable instance equals_unfold_stream [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_stream [GooseExts] [GoGlobalContext] :
     EqualsUnfold stream.fields stream.fieldsUnsealed :=
   ⟨by unfold stream.fields; rfl⟩
 
-@[reducible] noncomputable def stream.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def stream.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType stream.fields)
 
-class stream.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class stream.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying stream.underlying stream
   underlying : go.UnderlyingDirectedEq stream.ty stream.underlying
   get_req : ∀ (x : stream), go.IsGoStepPureDetTagged under (StructFieldGet stream.underlying go!"req") #x (Val #(x.req'))
@@ -2021,31 +2021,31 @@ attribute [instance] stream.TypeAssumptions.type_repr
   stream.TypeAssumptions.get_res
   stream.TypeAssumptions.set_res
 
-structure streamold [FfiSyntax] where
+structure streamold [GooseExts] where
   mk ::
   req' : GoChan
   res' : GoChan
   f' : GoFunc
 
-noncomputable instance streamold.zero_val [FfiSyntax] : ZeroVal streamold :=
+noncomputable instance streamold.zero_val [GooseExts] : ZeroVal streamold :=
   ⟨streamold.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def streamold.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def streamold.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"req" (go.GoType.ChannelType go.ChanDir.sendrecv go.string)),
 (go.field_decl.FieldDecl go!"res" (go.GoType.ChannelType go.ChanDir.sendrecv go.string)),
 (go.field_decl.FieldDecl go!"f" (go.GoType.FunctionType (go.signature.Signature [go.string] false [go.string])))]
 
-@[irreducible] noncomputable def streamold.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def streamold.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   streamold.fieldsUnsealed
 
-noncomputable instance equals_unfold_streamold [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_streamold [GooseExts] [GoGlobalContext] :
     EqualsUnfold streamold.fields streamold.fieldsUnsealed :=
   ⟨by unfold streamold.fields; rfl⟩
 
-@[reducible] noncomputable def streamold.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def streamold.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType streamold.fields)
 
-class streamold.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class streamold.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying streamold.underlying streamold
   underlying : go.UnderlyingDirectedEq streamold.ty streamold.underlying
   get_req : ∀ (x : streamold), go.IsGoStepPureDetTagged under (StructFieldGet streamold.underlying go!"req") #x (Val #(x.req'))
@@ -2064,7 +2064,7 @@ attribute [instance] streamold.TypeAssumptions.type_repr
   streamold.TypeAssumptions.get_f
   streamold.TypeAssumptions.set_f
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Cond_instance : Cond.TypeAssumptions
   Result_instance : Result.TypeAssumptions
   request_instance : request.TypeAssumptions

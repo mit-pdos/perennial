@@ -20,23 +20,23 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.interfacerecursion
 
-noncomputable def A.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def A.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/interfacerecursion.A" [])
 
 attribute [irreducible] A.ty
 
-noncomputable def B.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def B.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/interfacerecursion.B" [])
 
 attribute [irreducible] B.ty
 
-noncomputable def c.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def c.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/interfacerecursion.c" [])
 
 attribute [irreducible] c.ty
 
 /-- go: x.go:14:13 -/
-noncomputable def c.Foo.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def c.Foo.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -53,7 +53,7 @@ noncomputable def c.Foo.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore B.ty))) (Pair (Var "y") (Var "$r0"))))))))))))
 
 /-- go: x.go:19:13 -/
-noncomputable def c.Bar.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def c.Bar.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -72,53 +72,53 @@ noncomputable def c.Bar.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.interfacerecursion where
   pkgImportedPkgs := []
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.interfacerecursion)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))))
 
-abbrev A [FfiSyntax] : Type := GoInterface
+abbrev A [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def A.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def A.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Foo" (go.signature.Signature [] false []))])
 
-class A.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class A.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq A.ty A.underlying
 
 attribute [instance] A.TypeAssumptions.underlying
 
-abbrev B [FfiSyntax] : Type := GoInterface
+abbrev B [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def B.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def B.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Bar" (go.signature.Signature [] false []))])
 
-class B.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class B.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq B.ty B.underlying
 
 attribute [instance] B.TypeAssumptions.underlying
 
-structure c [FfiSyntax] where
+structure c [GooseExts] where
   mk ::
 
-noncomputable instance c.zero_val [FfiSyntax] : ZeroVal c :=
+noncomputable instance c.zero_val [GooseExts] : ZeroVal c :=
   ⟨c.mk⟩
 
-@[reducible] noncomputable def c.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def c.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] noncomputable def c.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def c.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   c.fieldsUnsealed
 
-noncomputable instance equals_unfold_c [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_c [GooseExts] [GoGlobalContext] :
     EqualsUnfold c.fields c.fieldsUnsealed :=
   ⟨by unfold c.fields; rfl⟩
 
-@[reducible] noncomputable def c.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def c.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType c.fields)
 
-class c.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class c.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying c.underlying c
   underlying : go.UnderlyingDirectedEq c.ty c.underlying
   ptr_Bar_unfold : MethodUnfold (go.GoType.PointerType c.ty) go!"Bar" c.Bar.impl
@@ -129,7 +129,7 @@ attribute [instance] c.TypeAssumptions.type_repr
   c.TypeAssumptions.ptr_Bar_unfold
   c.TypeAssumptions.ptr_Foo_unfold
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   A_instance : A.TypeAssumptions
   B_instance : B.TypeAssumptions
   c_instance : c.TypeAssumptions

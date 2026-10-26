@@ -20,1071 +20,1071 @@ end pkg_id
 
 namespace reflect
 
-noncomputable def abiStep.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def abiStep.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.abiStep" [])
 
 attribute [irreducible] abiStep.ty
 
-noncomputable def abiStepKind.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def abiStepKind.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.abiStepKind" [])
 
 attribute [irreducible] abiStepKind.ty
 
-noncomputable def abiSeq.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def abiSeq.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.abiSeq" [])
 
 attribute [irreducible] abiSeq.ty
 
-noncomputable def abiDesc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def abiDesc.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.abiDesc" [])
 
 attribute [irreducible] abiDesc.ty
 
-noncomputable def visit.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def visit.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.visit" [])
 
 attribute [irreducible] visit.ty
 
-noncomputable def makeFuncImpl.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def makeFuncImpl.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.makeFuncImpl" [])
 
 attribute [irreducible] makeFuncImpl.ty
 
-noncomputable def methodValue.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def methodValue.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.methodValue" [])
 
 attribute [irreducible] methodValue.ty
 
-noncomputable def makeFuncCtxt.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def makeFuncCtxt.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.makeFuncCtxt" [])
 
 attribute [irreducible] makeFuncCtxt.ty
 
-noncomputable def MapIter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def MapIter.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.MapIter" [])
 
 attribute [irreducible] MapIter.ty
 
-noncomputable def Type'.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Type'.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.Type" [])
 
 attribute [irreducible] Type'.ty
 
-noncomputable def Kind.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Kind.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.Kind" [])
 
 attribute [irreducible] Kind.ty
 
-noncomputable def common.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def common.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.common" [])
 
 attribute [irreducible] common.ty
 
-noncomputable def rtype.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def rtype.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.rtype" [])
 
 attribute [irreducible] rtype.ty
 
-noncomputable def ChanDir.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ChanDir.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.ChanDir" [])
 
 attribute [irreducible] ChanDir.ty
 
-noncomputable def interfaceType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def interfaceType.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.interfaceType" [])
 
 attribute [irreducible] interfaceType.ty
 
-noncomputable def ptrType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ptrType.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.ptrType" [])
 
 attribute [irreducible] ptrType.ty
 
-noncomputable def sliceType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def sliceType.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.sliceType" [])
 
 attribute [irreducible] sliceType.ty
 
-noncomputable def structType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def structType.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.structType" [])
 
 attribute [irreducible] structType.ty
 
-noncomputable def Method.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Method.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.Method" [])
 
 attribute [irreducible] Method.ty
 
-noncomputable def StructField.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def StructField.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.StructField" [])
 
 attribute [irreducible] StructField.ty
 
-noncomputable def StructTag.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def StructTag.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.StructTag" [])
 
 attribute [irreducible] StructTag.ty
 
-noncomputable def fieldScan.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def fieldScan.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.fieldScan" [])
 
 attribute [irreducible] fieldScan.ty
 
-noncomputable def cacheKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def cacheKey.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.cacheKey" [])
 
 attribute [irreducible] cacheKey.ty
 
-noncomputable def structTypeUncommon.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def structTypeUncommon.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.structTypeUncommon" [])
 
 attribute [irreducible] structTypeUncommon.ty
 
-noncomputable def layoutKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def layoutKey.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.layoutKey" [])
 
 attribute [irreducible] layoutKey.ty
 
-noncomputable def layoutType.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def layoutType.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.layoutType" [])
 
 attribute [irreducible] layoutType.ty
 
-noncomputable def bitVector.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def bitVector.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.bitVector" [])
 
 attribute [irreducible] bitVector.ty
 
-noncomputable def Value.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Value.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.Value" [])
 
 attribute [irreducible] Value.ty
 
-noncomputable def flag.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def flag.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.flag" [])
 
 attribute [irreducible] flag.ty
 
-noncomputable def ValueError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ValueError.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.ValueError" [])
 
 attribute [irreducible] ValueError.ty
 
-noncomputable def nonEmptyInterface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def nonEmptyInterface.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.nonEmptyInterface" [])
 
 attribute [irreducible] nonEmptyInterface.ty
 
-noncomputable def StringHeader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def StringHeader.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.StringHeader" [])
 
 attribute [irreducible] StringHeader.ty
 
-noncomputable def SliceHeader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def SliceHeader.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.SliceHeader" [])
 
 attribute [irreducible] SliceHeader.ty
 
-noncomputable def runtimeSelect.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def runtimeSelect.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.runtimeSelect" [])
 
 attribute [irreducible] runtimeSelect.ty
 
-noncomputable def SelectDir.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def SelectDir.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.SelectDir" [])
 
 attribute [irreducible] SelectDir.ty
 
-noncomputable def SelectCase.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def SelectCase.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.SelectCase" [])
 
 attribute [irreducible] SelectCase.ty
 
-noncomputable def visibleFieldsWalker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def visibleFieldsWalker.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"reflect.visibleFieldsWalker" [])
 
 attribute [irreducible] visibleFieldsWalker.ty
 
-axiom abiStep.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom abiStep.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom abiStepKind.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom abiStepKind.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom abiSeq.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom abiSeq.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom abiDesc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom abiDesc.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom visit.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom visit.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom makeFuncImpl.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom makeFuncImpl.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom methodValue.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom methodValue.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom makeFuncCtxt.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom makeFuncCtxt.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom MapIter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom MapIter.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom Type'.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Type'.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom Kind.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Kind.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom uncommonType [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom uncommonType [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom common.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom common.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom rtype.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom rtype.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom aNameOff [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom aNameOff [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom aTypeOff [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom aTypeOff [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom aTextOff [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom aTextOff [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom ChanDir.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom ChanDir.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom arrayType [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom arrayType [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom chanType [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom chanType [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom funcType [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom funcType [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom interfaceType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom interfaceType.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom ptrType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom ptrType.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom sliceType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom sliceType.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom structField [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom structField [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom structType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom structType.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom Method.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Method.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom StructField.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom StructField.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom StructTag.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom StructTag.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom fieldScan.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom fieldScan.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom cacheKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom cacheKey.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom structTypeUncommon.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom structTypeUncommon.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom layoutKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom layoutKey.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom layoutType.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom layoutType.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom bitVector.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom bitVector.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom Value.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Value.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom flag.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom flag.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom ValueError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom ValueError.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom nonEmptyInterface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom nonEmptyInterface.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom StringHeader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom StringHeader.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom SliceHeader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom SliceHeader.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom runtimeSelect.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom runtimeSelect.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom SelectDir.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom SelectDir.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom SelectCase.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom SelectCase.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom visibleFieldsWalker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom visibleFieldsWalker.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom abiStepBad [FfiSyntax] [GoGlobalContext] : val
+axiom abiStepBad [GooseExts] [GoGlobalContext] : val
 
-axiom abiStepStack [FfiSyntax] [GoGlobalContext] : val
+axiom abiStepStack [GooseExts] [GoGlobalContext] : val
 
-axiom abiStepIntReg [FfiSyntax] [GoGlobalContext] : val
+axiom abiStepIntReg [GooseExts] [GoGlobalContext] : val
 
-axiom abiStepPointer [FfiSyntax] [GoGlobalContext] : val
+axiom abiStepPointer [GooseExts] [GoGlobalContext] : val
 
-axiom abiStepFloatReg [FfiSyntax] [GoGlobalContext] : val
+axiom abiStepFloatReg [GooseExts] [GoGlobalContext] : val
 
-axiom Invalid [FfiSyntax] [GoGlobalContext] : val
+axiom Invalid [GooseExts] [GoGlobalContext] : val
 
-axiom Bool' [FfiSyntax] [GoGlobalContext] : val
+axiom Bool' [GooseExts] [GoGlobalContext] : val
 
-axiom Int' [FfiSyntax] [GoGlobalContext] : val
+axiom Int' [GooseExts] [GoGlobalContext] : val
 
-axiom Int8 [FfiSyntax] [GoGlobalContext] : val
+axiom Int8 [GooseExts] [GoGlobalContext] : val
 
-axiom Int16 [FfiSyntax] [GoGlobalContext] : val
+axiom Int16 [GooseExts] [GoGlobalContext] : val
 
-axiom Int32 [FfiSyntax] [GoGlobalContext] : val
+axiom Int32 [GooseExts] [GoGlobalContext] : val
 
-axiom Int64 [FfiSyntax] [GoGlobalContext] : val
+axiom Int64 [GooseExts] [GoGlobalContext] : val
 
-axiom Uint [FfiSyntax] [GoGlobalContext] : val
+axiom Uint [GooseExts] [GoGlobalContext] : val
 
-axiom Uint8 [FfiSyntax] [GoGlobalContext] : val
+axiom Uint8 [GooseExts] [GoGlobalContext] : val
 
-axiom Uint16 [FfiSyntax] [GoGlobalContext] : val
+axiom Uint16 [GooseExts] [GoGlobalContext] : val
 
-axiom Uint32 [FfiSyntax] [GoGlobalContext] : val
+axiom Uint32 [GooseExts] [GoGlobalContext] : val
 
-axiom Uint64 [FfiSyntax] [GoGlobalContext] : val
+axiom Uint64 [GooseExts] [GoGlobalContext] : val
 
-axiom Uintptr [FfiSyntax] [GoGlobalContext] : val
+axiom Uintptr [GooseExts] [GoGlobalContext] : val
 
-axiom Float32 [FfiSyntax] [GoGlobalContext] : val
+axiom Float32 [GooseExts] [GoGlobalContext] : val
 
-axiom Float64 [FfiSyntax] [GoGlobalContext] : val
+axiom Float64 [GooseExts] [GoGlobalContext] : val
 
-axiom Complex64 [FfiSyntax] [GoGlobalContext] : val
+axiom Complex64 [GooseExts] [GoGlobalContext] : val
 
-axiom Complex128 [FfiSyntax] [GoGlobalContext] : val
+axiom Complex128 [GooseExts] [GoGlobalContext] : val
 
-axiom Array [FfiSyntax] [GoGlobalContext] : val
+axiom Array [GooseExts] [GoGlobalContext] : val
 
-axiom Chan [FfiSyntax] [GoGlobalContext] : val
+axiom Chan [GooseExts] [GoGlobalContext] : val
 
-axiom Func [FfiSyntax] [GoGlobalContext] : val
+axiom Func [GooseExts] [GoGlobalContext] : val
 
-axiom Interface [FfiSyntax] [GoGlobalContext] : val
+axiom Interface [GooseExts] [GoGlobalContext] : val
 
-axiom Map [FfiSyntax] [GoGlobalContext] : val
+axiom Map [GooseExts] [GoGlobalContext] : val
 
-axiom Pointer [FfiSyntax] [GoGlobalContext] : val
+axiom Pointer [GooseExts] [GoGlobalContext] : val
 
-axiom Slice' [FfiSyntax] [GoGlobalContext] : val
+axiom Slice' [GooseExts] [GoGlobalContext] : val
 
-axiom String [FfiSyntax] [GoGlobalContext] : val
+axiom String [GooseExts] [GoGlobalContext] : val
 
-axiom Struct [FfiSyntax] [GoGlobalContext] : val
+axiom Struct [GooseExts] [GoGlobalContext] : val
 
-axiom UnsafePointer [FfiSyntax] [GoGlobalContext] : val
+axiom UnsafePointer [GooseExts] [GoGlobalContext] : val
 
-axiom Ptr [FfiSyntax] [GoGlobalContext] : val
+axiom Ptr [GooseExts] [GoGlobalContext] : val
 
-axiom RecvDir [FfiSyntax] [GoGlobalContext] : val
+axiom RecvDir [GooseExts] [GoGlobalContext] : val
 
-axiom SendDir [FfiSyntax] [GoGlobalContext] : val
+axiom SendDir [GooseExts] [GoGlobalContext] : val
 
-axiom BothDir [FfiSyntax] [GoGlobalContext] : val
+axiom BothDir [GooseExts] [GoGlobalContext] : val
 
-axiom flagKindWidth [FfiSyntax] [GoGlobalContext] : val
+axiom flagKindWidth [GooseExts] [GoGlobalContext] : val
 
-axiom flagKindMask [FfiSyntax] [GoGlobalContext] : val
+axiom flagKindMask [GooseExts] [GoGlobalContext] : val
 
-axiom flagStickyRO [FfiSyntax] [GoGlobalContext] : val
+axiom flagStickyRO [GooseExts] [GoGlobalContext] : val
 
-axiom flagEmbedRO [FfiSyntax] [GoGlobalContext] : val
+axiom flagEmbedRO [GooseExts] [GoGlobalContext] : val
 
-axiom flagIndir [FfiSyntax] [GoGlobalContext] : val
+axiom flagIndir [GooseExts] [GoGlobalContext] : val
 
-axiom flagAddr [FfiSyntax] [GoGlobalContext] : val
+axiom flagAddr [GooseExts] [GoGlobalContext] : val
 
-axiom flagMethod [FfiSyntax] [GoGlobalContext] : val
+axiom flagMethod [GooseExts] [GoGlobalContext] : val
 
-axiom flagMethodShift [FfiSyntax] [GoGlobalContext] : val
+axiom flagMethodShift [GooseExts] [GoGlobalContext] : val
 
-axiom flagRO [FfiSyntax] [GoGlobalContext] : val
+axiom flagRO [GooseExts] [GoGlobalContext] : val
 
-axiom debugReflectCall [FfiSyntax] [GoGlobalContext] : val
+axiom debugReflectCall [GooseExts] [GoGlobalContext] : val
 
-axiom SelectSend [FfiSyntax] [GoGlobalContext] : val
+axiom SelectSend [GooseExts] [GoGlobalContext] : val
 
-axiom SelectRecv [FfiSyntax] [GoGlobalContext] : val
+axiom SelectRecv [GooseExts] [GoGlobalContext] : val
 
-axiom SelectDefault [FfiSyntax] [GoGlobalContext] : val
+axiom SelectDefault [GooseExts] [GoGlobalContext] : val
 
-noncomputable def intArgRegs [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def intArgRegs [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.intArgRegs"
 
-axiom intArgRegs.init [FfiSyntax] [GoGlobalContext] : val
+axiom intArgRegs.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def floatArgRegs [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def floatArgRegs [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.floatArgRegs"
 
-axiom floatArgRegs.init [FfiSyntax] [GoGlobalContext] : val
+axiom floatArgRegs.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def floatRegSize [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def floatRegSize [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.floatRegSize"
 
-axiom floatRegSize.init [FfiSyntax] [GoGlobalContext] : val
+axiom floatRegSize.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def stringType [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def stringType [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.stringType"
 
-axiom stringType.init [FfiSyntax] [GoGlobalContext] : val
+axiom stringType.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def kindNames [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def kindNames [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.kindNames"
 
-axiom kindNames.init [FfiSyntax] [GoGlobalContext] : val
+axiom kindNames.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def ptrMap [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ptrMap [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.ptrMap"
 
-noncomputable def lookupCache [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def lookupCache [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.lookupCache"
 
-noncomputable def funcLookupCache [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def funcLookupCache [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.funcLookupCache"
 
-noncomputable def funcTypes [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def funcTypes [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.funcTypes"
 
-noncomputable def funcTypesMutex [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def funcTypesMutex [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.funcTypesMutex"
 
-noncomputable def structLookupCache [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def structLookupCache [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.structLookupCache"
 
-noncomputable def layoutCache [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def layoutCache [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.layoutCache"
 
-noncomputable def bytesType [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def bytesType [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.bytesType"
 
-axiom bytesType.init [FfiSyntax] [GoGlobalContext] : val
+axiom bytesType.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def callGC [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def callGC [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.callGC"
 
-noncomputable def uint8Type [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def uint8Type [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.uint8Type"
 
-axiom uint8Type.init [FfiSyntax] [GoGlobalContext] : val
+axiom uint8Type.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def zeroVal [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def zeroVal [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.zeroVal"
 
-noncomputable def dummy [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def dummy [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.dummy"
 
-noncomputable def dumpPtrBitMap [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def dumpPtrBitMap [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.dumpPtrBitMap"
 
-noncomputable def newAbiDesc [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def newAbiDesc [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.newAbiDesc"
 
-noncomputable def intFromReg [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def intFromReg [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.intFromReg"
 
-noncomputable def intToReg [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def intToReg [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.intToReg"
 
-noncomputable def floatFromReg [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def floatFromReg [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.floatFromReg"
 
-noncomputable def floatToReg [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def floatToReg [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.floatToReg"
 
-noncomputable def unusedIfaceIndir [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def unusedIfaceIndir [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.unusedIfaceIndir"
 
-noncomputable def badlinkname_rtype_Align [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_Align [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_Align"
 
-noncomputable def badlinkname_rtype_AssignableTo [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_AssignableTo [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_AssignableTo"
 
-noncomputable def badlinkname_rtype_Bits [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_Bits [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_Bits"
 
-noncomputable def badlinkname_rtype_ChanDir [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_ChanDir [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_ChanDir"
 
-noncomputable def badlinkname_rtype_Comparable [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_Comparable [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_Comparable"
 
-noncomputable def badlinkname_rtype_ConvertibleTo [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_ConvertibleTo [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_ConvertibleTo"
 
-noncomputable def badlinkname_rtype_Elem [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_Elem [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_Elem"
 
-noncomputable def badlinkname_rtype_Field [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_Field [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_Field"
 
-noncomputable def badlinkname_rtype_FieldAlign [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_FieldAlign [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_FieldAlign"
 
-noncomputable def badlinkname_rtype_FieldByIndex [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_FieldByIndex [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_FieldByIndex"
 
-noncomputable def badlinkname_rtype_FieldByName [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_FieldByName [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_FieldByName"
 
-noncomputable def badlinkname_rtype_FieldByNameFunc [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_FieldByNameFunc [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_FieldByNameFunc"
 
-noncomputable def badlinkname_rtype_Implements [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_Implements [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_Implements"
 
-noncomputable def badlinkname_rtype_In [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_In [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_In"
 
-noncomputable def badlinkname_rtype_IsVariadic [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_IsVariadic [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_IsVariadic"
 
-noncomputable def badlinkname_rtype_Key [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_Key [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_Key"
 
-noncomputable def badlinkname_rtype_Kind [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_Kind [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_Kind"
 
-noncomputable def badlinkname_rtype_Len [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_Len [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_Len"
 
-noncomputable def badlinkname_rtype_Method [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_Method [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_Method"
 
-noncomputable def badlinkname_rtype_MethodByName [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_MethodByName [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_MethodByName"
 
-noncomputable def badlinkname_rtype_Name [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_Name [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_Name"
 
-noncomputable def badlinkname_rtype_NumField [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_NumField [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_NumField"
 
-noncomputable def badlinkname_rtype_NumIn [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_NumIn [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_NumIn"
 
-noncomputable def badlinkname_rtype_NumMethod [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_NumMethod [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_NumMethod"
 
-noncomputable def badlinkname_rtype_NumOut [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_NumOut [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_NumOut"
 
-noncomputable def badlinkname_rtype_Out [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_Out [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_Out"
 
-noncomputable def badlinkname_rtype_PkgPath [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_PkgPath [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_PkgPath"
 
-noncomputable def badlinkname_rtype_Size [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_Size [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_Size"
 
-noncomputable def badlinkname_rtype_String [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_String [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_String"
 
-noncomputable def badlinkname_rtype_ptrTo [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_rtype_ptrTo [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_rtype_ptrTo"
 
-noncomputable def badlinkname_Value_pointer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def badlinkname_Value_pointer [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.badlinkname_Value_pointer"
 
-noncomputable def deepValueEqual [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def deepValueEqual [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.deepValueEqual"
 
-noncomputable def DeepEqual [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def DeepEqual [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.DeepEqual"
 
-noncomputable def archFloat32FromReg [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archFloat32FromReg [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.archFloat32FromReg"
 
-noncomputable def archFloat32ToReg [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archFloat32ToReg [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.archFloat32ToReg"
 
-noncomputable def rangeNum [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def rangeNum [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.rangeNum"
 
-noncomputable def MakeFunc [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def MakeFunc [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.MakeFunc"
 
-noncomputable def makeFuncStub [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def makeFuncStub [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.makeFuncStub"
 
-noncomputable def makeMethodValue [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def makeMethodValue [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.makeMethodValue"
 
-noncomputable def methodValueCallCodePtr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def methodValueCallCodePtr [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.methodValueCallCodePtr"
 
-noncomputable def methodValueCall [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def methodValueCall [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.methodValueCall"
 
-noncomputable def moveMakeFuncArgPtrs [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def moveMakeFuncArgPtrs [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.moveMakeFuncArgPtrs"
 
-noncomputable def MapOf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def MapOf [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.MapOf"
 
-noncomputable def groupAndSlotOf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def groupAndSlotOf [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.groupAndSlotOf"
 
-noncomputable def mapIterStart [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mapIterStart [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.mapIterStart"
 
-noncomputable def mapIterNext [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mapIterNext [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.mapIterNext"
 
-noncomputable def Swapper [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Swapper [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.Swapper"
 
-noncomputable def nameOffFor [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def nameOffFor [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.nameOffFor"
 
-noncomputable def typeOffFor [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def typeOffFor [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.typeOffFor"
 
-noncomputable def pkgPath [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def pkgPath [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.pkgPath"
 
-noncomputable def newName [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def newName [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.newName"
 
-noncomputable def resolveNameOff [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def resolveNameOff [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.resolveNameOff"
 
-noncomputable def resolveTypeOff [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def resolveTypeOff [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.resolveTypeOff"
 
-noncomputable def resolveTextOff [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def resolveTextOff [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.resolveTextOff"
 
-noncomputable def addReflectOff [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def addReflectOff [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.addReflectOff"
 
-noncomputable def resolveReflectName [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def resolveReflectName [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.resolveReflectName"
 
-noncomputable def resolveReflectType [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def resolveReflectType [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.resolveReflectType"
 
-noncomputable def resolveReflectText [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def resolveReflectText [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.resolveReflectText"
 
-noncomputable def textOffFor [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def textOffFor [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.textOffFor"
 
-noncomputable def pkgPathFor [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def pkgPathFor [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.pkgPathFor"
 
-noncomputable def nameFor [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def nameFor [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.nameFor"
 
-noncomputable def toRType [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def toRType [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.toRType"
 
-noncomputable def elem [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def elem [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.elem"
 
-noncomputable def canRangeFunc [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def canRangeFunc [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.canRangeFunc"
 
-noncomputable def canRangeFunc2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def canRangeFunc2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.canRangeFunc2"
 
-noncomputable def add [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def add [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.add"
 
-noncomputable def getStaticuint64s [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def getStaticuint64s [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.getStaticuint64s"
 
-noncomputable def TypeOf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def TypeOf [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.TypeOf"
 
-noncomputable def TypeFor [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def TypeFor [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.TypeFor"
 
-noncomputable def rtypeOf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def rtypeOf [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.rtypeOf"
 
-noncomputable def PtrTo [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def PtrTo [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.PtrTo"
 
-noncomputable def PointerTo [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def PointerTo [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.PointerTo"
 
-noncomputable def ptrTo [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ptrTo [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.ptrTo"
 
-noncomputable def fnv1 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def fnv1 [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.fnv1"
 
-noncomputable def implements [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def implements [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.implements"
 
-noncomputable def specialChannelAssignability [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def specialChannelAssignability [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.specialChannelAssignability"
 
-noncomputable def directlyAssignable [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def directlyAssignable [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.directlyAssignable"
 
-noncomputable def haveIdenticalType [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def haveIdenticalType [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.haveIdenticalType"
 
-noncomputable def haveIdenticalUnderlyingType [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def haveIdenticalUnderlyingType [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.haveIdenticalUnderlyingType"
 
-noncomputable def typelinks [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def typelinks [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.typelinks"
 
-noncomputable def rtypeOff [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def rtypeOff [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.rtypeOff"
 
-noncomputable def typesByString [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def typesByString [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.typesByString"
 
-noncomputable def ChanOf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ChanOf [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.ChanOf"
 
-noncomputable def initFuncTypes [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def initFuncTypes [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.initFuncTypes"
 
-noncomputable def FuncOf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def FuncOf [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.FuncOf"
 
-noncomputable def stringFor [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def stringFor [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.stringFor"
 
-noncomputable def funcStr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def funcStr [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.funcStr"
 
-noncomputable def isReflexive [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isReflexive [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.isReflexive"
 
-noncomputable def needKeyUpdate [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def needKeyUpdate [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.needKeyUpdate"
 
-noncomputable def hashMightPanic [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def hashMightPanic [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.hashMightPanic"
 
-noncomputable def emitGCMask [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def emitGCMask [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.emitGCMask"
 
-noncomputable def SliceOf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SliceOf [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.SliceOf"
 
-noncomputable def isLetter [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isLetter [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.isLetter"
 
-noncomputable def isValidFieldName [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isValidFieldName [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.isValidFieldName"
 
-noncomputable def isRegularMemory [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isRegularMemory [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.isRegularMemory"
 
-noncomputable def isPaddedField [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isPaddedField [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.isPaddedField"
 
-noncomputable def StructOf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def StructOf [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.StructOf"
 
-noncomputable def embeddedIfaceMethStub [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def embeddedIfaceMethStub [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.embeddedIfaceMethStub"
 
-noncomputable def runtimeStructField [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def runtimeStructField [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.runtimeStructField"
 
-noncomputable def typeptrdata [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def typeptrdata [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.typeptrdata"
 
-noncomputable def ArrayOf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ArrayOf [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.ArrayOf"
 
-noncomputable def appendVarint [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def appendVarint [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.appendVarint"
 
-noncomputable def toType [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def toType [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.toType"
 
-noncomputable def funcLayout [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def funcLayout [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.funcLayout"
 
-noncomputable def addTypeBits [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def addTypeBits [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.addTypeBits"
 
-noncomputable def packEface [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def packEface [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.packEface"
 
-noncomputable def packEfaceData [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def packEfaceData [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.packEfaceData"
 
-noncomputable def unpackEface [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def unpackEface [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.unpackEface"
 
-noncomputable def valueMethodName [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def valueMethodName [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.valueMethodName"
 
-noncomputable def callReflect [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def callReflect [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.callReflect"
 
-noncomputable def methodReceiver [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def methodReceiver [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.methodReceiver"
 
-noncomputable def storeRcvr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def storeRcvr [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.storeRcvr"
 
-noncomputable def align [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def align [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.align"
 
-noncomputable def callMethod [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def callMethod [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.callMethod"
 
-noncomputable def funcName [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def funcName [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.funcName"
 
-noncomputable def valueInterface [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def valueInterface [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.valueInterface"
 
-noncomputable def TypeAssert' [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def TypeAssert' [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.TypeAssert"
 
-noncomputable def packIfaceValueIntoEmptyIface [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def packIfaceValueIntoEmptyIface [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.packIfaceValueIntoEmptyIface"
 
-noncomputable def isZero [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isZero [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.isZero"
 
-noncomputable def copyVal [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def copyVal [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.copyVal"
 
-noncomputable def overflowFloat32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def overflowFloat32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.overflowFloat32"
 
-noncomputable def typesMustMatch [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def typesMustMatch [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.typesMustMatch"
 
-noncomputable def arrayAt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def arrayAt [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.arrayAt"
 
-noncomputable def Append [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Append [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.Append"
 
-noncomputable def AppendSlice [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AppendSlice [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.AppendSlice"
 
-noncomputable def Copy [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Copy [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.Copy"
 
-noncomputable def rselect [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def rselect [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.rselect"
 
-noncomputable def Select [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Select [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.Select"
 
-noncomputable def unsafe_New [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def unsafe_New [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.unsafe_New"
 
-noncomputable def unsafe_NewArray [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def unsafe_NewArray [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.unsafe_NewArray"
 
-noncomputable def MakeSlice [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def MakeSlice [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.MakeSlice"
 
-noncomputable def SliceAt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SliceAt [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.SliceAt"
 
-noncomputable def MakeChan [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def MakeChan [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.MakeChan"
 
-noncomputable def MakeMap [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def MakeMap [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.MakeMap"
 
-noncomputable def MakeMapWithSize [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def MakeMapWithSize [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.MakeMapWithSize"
 
-noncomputable def Indirect [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Indirect [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.Indirect"
 
-noncomputable def ValueOf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ValueOf [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.ValueOf"
 
-noncomputable def Zero [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Zero [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.Zero"
 
-noncomputable def New [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def New [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.New"
 
-noncomputable def NewAt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewAt [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.NewAt"
 
-noncomputable def convertOp [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def convertOp [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.convertOp"
 
-noncomputable def makeInt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def makeInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.makeInt"
 
-noncomputable def makeFloat [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def makeFloat [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.makeFloat"
 
-noncomputable def makeFloat32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def makeFloat32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.makeFloat32"
 
-noncomputable def makeComplex [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def makeComplex [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.makeComplex"
 
-noncomputable def makeString [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def makeString [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.makeString"
 
-noncomputable def makeBytes [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def makeBytes [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.makeBytes"
 
-noncomputable def makeRunes [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def makeRunes [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.makeRunes"
 
-noncomputable def cvtInt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtInt"
 
-noncomputable def cvtUint [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtUint [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtUint"
 
-noncomputable def cvtFloatInt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtFloatInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtFloatInt"
 
-noncomputable def cvtFloatUint [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtFloatUint [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtFloatUint"
 
-noncomputable def cvtIntFloat [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtIntFloat [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtIntFloat"
 
-noncomputable def cvtUintFloat [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtUintFloat [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtUintFloat"
 
-noncomputable def cvtFloat [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtFloat [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtFloat"
 
-noncomputable def cvtComplex [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtComplex [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtComplex"
 
-noncomputable def cvtIntString [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtIntString [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtIntString"
 
-noncomputable def cvtUintString [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtUintString [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtUintString"
 
-noncomputable def cvtBytesString [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtBytesString [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtBytesString"
 
-noncomputable def cvtStringBytes [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtStringBytes [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtStringBytes"
 
-noncomputable def cvtRunesString [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtRunesString [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtRunesString"
 
-noncomputable def cvtStringRunes [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtStringRunes [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtStringRunes"
 
-noncomputable def cvtSliceArrayPtr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtSliceArrayPtr [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtSliceArrayPtr"
 
-noncomputable def cvtSliceArray [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtSliceArray [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtSliceArray"
 
-noncomputable def cvtDirect [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtDirect [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtDirect"
 
-noncomputable def cvtT2I [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtT2I [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtT2I"
 
-noncomputable def cvtI2I [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cvtI2I [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.cvtI2I"
 
-noncomputable def chancap [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def chancap [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.chancap"
 
-noncomputable def chanclose [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def chanclose [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.chanclose"
 
-noncomputable def chanlen [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def chanlen [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.chanlen"
 
-noncomputable def chanrecv [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def chanrecv [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.chanrecv"
 
-noncomputable def chansend0 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def chansend0 [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.chansend0"
 
-noncomputable def chansend [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def chansend [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.chansend"
 
-noncomputable def makechan [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def makechan [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.makechan"
 
-noncomputable def makemap [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def makemap [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.makemap"
 
-noncomputable def mapaccess [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mapaccess [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.mapaccess"
 
-noncomputable def mapaccess_faststr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mapaccess_faststr [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.mapaccess_faststr"
 
-noncomputable def mapassign0 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mapassign0 [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.mapassign0"
 
-noncomputable def mapassign [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mapassign [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.mapassign"
 
-noncomputable def mapassign_faststr0 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mapassign_faststr0 [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.mapassign_faststr0"
 
-noncomputable def mapassign_faststr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mapassign_faststr [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.mapassign_faststr"
 
-noncomputable def mapdelete [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mapdelete [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.mapdelete"
 
-noncomputable def mapdelete_faststr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mapdelete_faststr [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.mapdelete_faststr"
 
-noncomputable def maplen [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def maplen [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.maplen"
 
-noncomputable def mapclear [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mapclear [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.mapclear"
 
-noncomputable def call [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def call [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.call"
 
-noncomputable def ifaceE2I [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ifaceE2I [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.ifaceE2I"
 
-noncomputable def memmove [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def memmove [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.memmove"
 
-noncomputable def typedmemmove [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def typedmemmove [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.typedmemmove"
 
-noncomputable def typedmemclr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def typedmemclr [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.typedmemclr"
 
-noncomputable def typedmemclrpartial [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def typedmemclrpartial [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.typedmemclrpartial"
 
-noncomputable def typedslicecopy [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def typedslicecopy [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.typedslicecopy"
 
-noncomputable def typedarrayclear [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def typedarrayclear [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.typedarrayclear"
 
-noncomputable def typehash [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def typehash [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.typehash"
 
-noncomputable def verifyNotInHeapPtr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def verifyNotInHeapPtr [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.verifyNotInHeapPtr"
 
-noncomputable def growslice [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def growslice [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.growslice"
 
-noncomputable def unsafeslice [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def unsafeslice [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.unsafeslice"
 
-noncomputable def escapes [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def escapes [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.escapes"
 
-noncomputable def contentEscapes [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def contentEscapes [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.contentEscapes"
 
-noncomputable def VisibleFields [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def VisibleFields [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.VisibleFields"
 
 noncomputable instance info' : PkgInfo pkg_id.reflect where
   pkgImportedPkgs := []
 
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.reflect)) (Lam BAnon
   (App (Val exceptionDo)
@@ -1113,7 +1113,7 @@ axiom abiStep : Type
 axiom abiStep.zero_val : ZeroVal abiStep
 attribute [instance] abiStep.zero_val
 
-class abiStep.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class abiStep.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying abiStep.underlying abiStep
   underlying : go.UnderlyingDirectedEq abiStep.ty abiStep.underlying
   isUnderlying : go.IsUnderlying abiStep.underlying abiStep.underlying
@@ -1126,7 +1126,7 @@ axiom abiStepKind : Type
 axiom abiStepKind.zero_val : ZeroVal abiStepKind
 attribute [instance] abiStepKind.zero_val
 
-class abiStepKind.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class abiStepKind.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying abiStepKind.underlying abiStepKind
   underlying : go.UnderlyingDirectedEq abiStepKind.ty abiStepKind.underlying
   isUnderlying : go.IsUnderlying abiStepKind.underlying abiStepKind.underlying
@@ -1139,7 +1139,7 @@ axiom abiSeq : Type
 axiom abiSeq.zero_val : ZeroVal abiSeq
 attribute [instance] abiSeq.zero_val
 
-class abiSeq.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class abiSeq.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying abiSeq.underlying abiSeq
   underlying : go.UnderlyingDirectedEq abiSeq.ty abiSeq.underlying
   isUnderlying : go.IsUnderlying abiSeq.underlying abiSeq.underlying
@@ -1152,7 +1152,7 @@ axiom abiDesc : Type
 axiom abiDesc.zero_val : ZeroVal abiDesc
 attribute [instance] abiDesc.zero_val
 
-class abiDesc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class abiDesc.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying abiDesc.underlying abiDesc
   underlying : go.UnderlyingDirectedEq abiDesc.ty abiDesc.underlying
   isUnderlying : go.IsUnderlying abiDesc.underlying abiDesc.underlying
@@ -1165,7 +1165,7 @@ axiom visit : Type
 axiom visit.zero_val : ZeroVal visit
 attribute [instance] visit.zero_val
 
-class visit.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class visit.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying visit.underlying visit
   underlying : go.UnderlyingDirectedEq visit.ty visit.underlying
   isUnderlying : go.IsUnderlying visit.underlying visit.underlying
@@ -1178,7 +1178,7 @@ axiom makeFuncImpl : Type
 axiom makeFuncImpl.zero_val : ZeroVal makeFuncImpl
 attribute [instance] makeFuncImpl.zero_val
 
-class makeFuncImpl.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class makeFuncImpl.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying makeFuncImpl.underlying makeFuncImpl
   underlying : go.UnderlyingDirectedEq makeFuncImpl.ty makeFuncImpl.underlying
   isUnderlying : go.IsUnderlying makeFuncImpl.underlying makeFuncImpl.underlying
@@ -1191,7 +1191,7 @@ axiom methodValue : Type
 axiom methodValue.zero_val : ZeroVal methodValue
 attribute [instance] methodValue.zero_val
 
-class methodValue.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class methodValue.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying methodValue.underlying methodValue
   underlying : go.UnderlyingDirectedEq methodValue.ty methodValue.underlying
   isUnderlying : go.IsUnderlying methodValue.underlying methodValue.underlying
@@ -1204,7 +1204,7 @@ axiom makeFuncCtxt : Type
 axiom makeFuncCtxt.zero_val : ZeroVal makeFuncCtxt
 attribute [instance] makeFuncCtxt.zero_val
 
-class makeFuncCtxt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class makeFuncCtxt.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying makeFuncCtxt.underlying makeFuncCtxt
   underlying : go.UnderlyingDirectedEq makeFuncCtxt.ty makeFuncCtxt.underlying
   isUnderlying : go.IsUnderlying makeFuncCtxt.underlying makeFuncCtxt.underlying
@@ -1217,7 +1217,7 @@ axiom MapIter : Type
 axiom MapIter.zero_val : ZeroVal MapIter
 attribute [instance] MapIter.zero_val
 
-class MapIter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class MapIter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying MapIter.underlying MapIter
   underlying : go.UnderlyingDirectedEq MapIter.ty MapIter.underlying
   isUnderlying : go.IsUnderlying MapIter.underlying MapIter.underlying
@@ -1230,7 +1230,7 @@ axiom Type' : Type
 axiom Type'.zero_val : ZeroVal Type'
 attribute [instance] Type'.zero_val
 
-class «Type».TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class «Type».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Type'.underlying Type'
   underlying : go.UnderlyingDirectedEq Type'.ty Type'.underlying
   isUnderlying : go.IsUnderlying Type'.underlying Type'.underlying
@@ -1243,7 +1243,7 @@ axiom Kind : Type
 axiom Kind.zero_val : ZeroVal Kind
 attribute [instance] Kind.zero_val
 
-class Kind.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Kind.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Kind.underlying Kind
   underlying : go.UnderlyingDirectedEq Kind.ty Kind.underlying
   isUnderlying : go.IsUnderlying Kind.underlying Kind.underlying
@@ -1256,7 +1256,7 @@ axiom common : Type
 axiom common.zero_val : ZeroVal common
 attribute [instance] common.zero_val
 
-class common.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class common.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying common.underlying common
   underlying : go.UnderlyingDirectedEq common.ty common.underlying
   isUnderlying : go.IsUnderlying common.underlying common.underlying
@@ -1269,7 +1269,7 @@ axiom rtype : Type
 axiom rtype.zero_val : ZeroVal rtype
 attribute [instance] rtype.zero_val
 
-class rtype.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class rtype.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying rtype.underlying rtype
   underlying : go.UnderlyingDirectedEq rtype.ty rtype.underlying
   isUnderlying : go.IsUnderlying rtype.underlying rtype.underlying
@@ -1282,7 +1282,7 @@ axiom ChanDir : Type
 axiom ChanDir.zero_val : ZeroVal ChanDir
 attribute [instance] ChanDir.zero_val
 
-class ChanDir.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ChanDir.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ChanDir.underlying ChanDir
   underlying : go.UnderlyingDirectedEq ChanDir.ty ChanDir.underlying
   isUnderlying : go.IsUnderlying ChanDir.underlying ChanDir.underlying
@@ -1295,7 +1295,7 @@ axiom interfaceType : Type
 axiom interfaceType.zero_val : ZeroVal interfaceType
 attribute [instance] interfaceType.zero_val
 
-class interfaceType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class interfaceType.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying interfaceType.underlying interfaceType
   underlying : go.UnderlyingDirectedEq interfaceType.ty interfaceType.underlying
   isUnderlying : go.IsUnderlying interfaceType.underlying interfaceType.underlying
@@ -1308,7 +1308,7 @@ axiom ptrType : Type
 axiom ptrType.zero_val : ZeroVal ptrType
 attribute [instance] ptrType.zero_val
 
-class ptrType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ptrType.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ptrType.underlying ptrType
   underlying : go.UnderlyingDirectedEq ptrType.ty ptrType.underlying
   isUnderlying : go.IsUnderlying ptrType.underlying ptrType.underlying
@@ -1321,7 +1321,7 @@ axiom sliceType : Type
 axiom sliceType.zero_val : ZeroVal sliceType
 attribute [instance] sliceType.zero_val
 
-class sliceType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class sliceType.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying sliceType.underlying sliceType
   underlying : go.UnderlyingDirectedEq sliceType.ty sliceType.underlying
   isUnderlying : go.IsUnderlying sliceType.underlying sliceType.underlying
@@ -1334,7 +1334,7 @@ axiom structType : Type
 axiom structType.zero_val : ZeroVal structType
 attribute [instance] structType.zero_val
 
-class structType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class structType.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying structType.underlying structType
   underlying : go.UnderlyingDirectedEq structType.ty structType.underlying
   isUnderlying : go.IsUnderlying structType.underlying structType.underlying
@@ -1347,7 +1347,7 @@ axiom Method : Type
 axiom Method.zero_val : ZeroVal Method
 attribute [instance] Method.zero_val
 
-class Method.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Method.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Method.underlying Method
   underlying : go.UnderlyingDirectedEq Method.ty Method.underlying
   isUnderlying : go.IsUnderlying Method.underlying Method.underlying
@@ -1360,7 +1360,7 @@ axiom StructField : Type
 axiom StructField.zero_val : ZeroVal StructField
 attribute [instance] StructField.zero_val
 
-class StructField.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class StructField.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying StructField.underlying StructField
   underlying : go.UnderlyingDirectedEq StructField.ty StructField.underlying
   isUnderlying : go.IsUnderlying StructField.underlying StructField.underlying
@@ -1373,7 +1373,7 @@ axiom StructTag : Type
 axiom StructTag.zero_val : ZeroVal StructTag
 attribute [instance] StructTag.zero_val
 
-class StructTag.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class StructTag.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying StructTag.underlying StructTag
   underlying : go.UnderlyingDirectedEq StructTag.ty StructTag.underlying
   isUnderlying : go.IsUnderlying StructTag.underlying StructTag.underlying
@@ -1386,7 +1386,7 @@ axiom fieldScan : Type
 axiom fieldScan.zero_val : ZeroVal fieldScan
 attribute [instance] fieldScan.zero_val
 
-class fieldScan.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class fieldScan.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying fieldScan.underlying fieldScan
   underlying : go.UnderlyingDirectedEq fieldScan.ty fieldScan.underlying
   isUnderlying : go.IsUnderlying fieldScan.underlying fieldScan.underlying
@@ -1399,7 +1399,7 @@ axiom cacheKey : Type
 axiom cacheKey.zero_val : ZeroVal cacheKey
 attribute [instance] cacheKey.zero_val
 
-class cacheKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class cacheKey.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying cacheKey.underlying cacheKey
   underlying : go.UnderlyingDirectedEq cacheKey.ty cacheKey.underlying
   isUnderlying : go.IsUnderlying cacheKey.underlying cacheKey.underlying
@@ -1412,7 +1412,7 @@ axiom structTypeUncommon : Type
 axiom structTypeUncommon.zero_val : ZeroVal structTypeUncommon
 attribute [instance] structTypeUncommon.zero_val
 
-class structTypeUncommon.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class structTypeUncommon.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying structTypeUncommon.underlying structTypeUncommon
   underlying : go.UnderlyingDirectedEq structTypeUncommon.ty structTypeUncommon.underlying
   isUnderlying : go.IsUnderlying structTypeUncommon.underlying structTypeUncommon.underlying
@@ -1425,7 +1425,7 @@ axiom layoutKey : Type
 axiom layoutKey.zero_val : ZeroVal layoutKey
 attribute [instance] layoutKey.zero_val
 
-class layoutKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class layoutKey.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying layoutKey.underlying layoutKey
   underlying : go.UnderlyingDirectedEq layoutKey.ty layoutKey.underlying
   isUnderlying : go.IsUnderlying layoutKey.underlying layoutKey.underlying
@@ -1438,7 +1438,7 @@ axiom layoutType : Type
 axiom layoutType.zero_val : ZeroVal layoutType
 attribute [instance] layoutType.zero_val
 
-class layoutType.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class layoutType.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying layoutType.underlying layoutType
   underlying : go.UnderlyingDirectedEq layoutType.ty layoutType.underlying
   isUnderlying : go.IsUnderlying layoutType.underlying layoutType.underlying
@@ -1451,7 +1451,7 @@ axiom bitVector : Type
 axiom bitVector.zero_val : ZeroVal bitVector
 attribute [instance] bitVector.zero_val
 
-class bitVector.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class bitVector.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying bitVector.underlying bitVector
   underlying : go.UnderlyingDirectedEq bitVector.ty bitVector.underlying
   isUnderlying : go.IsUnderlying bitVector.underlying bitVector.underlying
@@ -1464,7 +1464,7 @@ axiom Value : Type
 axiom Value.zero_val : ZeroVal Value
 attribute [instance] Value.zero_val
 
-class Value.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Value.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Value.underlying Value
   underlying : go.UnderlyingDirectedEq Value.ty Value.underlying
   isUnderlying : go.IsUnderlying Value.underlying Value.underlying
@@ -1477,7 +1477,7 @@ axiom flag : Type
 axiom flag.zero_val : ZeroVal flag
 attribute [instance] flag.zero_val
 
-class flag.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class flag.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying flag.underlying flag
   underlying : go.UnderlyingDirectedEq flag.ty flag.underlying
   isUnderlying : go.IsUnderlying flag.underlying flag.underlying
@@ -1490,7 +1490,7 @@ axiom ValueError : Type
 axiom ValueError.zero_val : ZeroVal ValueError
 attribute [instance] ValueError.zero_val
 
-class ValueError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ValueError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ValueError.underlying ValueError
   underlying : go.UnderlyingDirectedEq ValueError.ty ValueError.underlying
   isUnderlying : go.IsUnderlying ValueError.underlying ValueError.underlying
@@ -1503,7 +1503,7 @@ axiom nonEmptyInterface : Type
 axiom nonEmptyInterface.zero_val : ZeroVal nonEmptyInterface
 attribute [instance] nonEmptyInterface.zero_val
 
-class nonEmptyInterface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class nonEmptyInterface.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying nonEmptyInterface.underlying nonEmptyInterface
   underlying : go.UnderlyingDirectedEq nonEmptyInterface.ty nonEmptyInterface.underlying
   isUnderlying : go.IsUnderlying nonEmptyInterface.underlying nonEmptyInterface.underlying
@@ -1516,7 +1516,7 @@ axiom StringHeader : Type
 axiom StringHeader.zero_val : ZeroVal StringHeader
 attribute [instance] StringHeader.zero_val
 
-class StringHeader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class StringHeader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying StringHeader.underlying StringHeader
   underlying : go.UnderlyingDirectedEq StringHeader.ty StringHeader.underlying
   isUnderlying : go.IsUnderlying StringHeader.underlying StringHeader.underlying
@@ -1529,7 +1529,7 @@ axiom SliceHeader : Type
 axiom SliceHeader.zero_val : ZeroVal SliceHeader
 attribute [instance] SliceHeader.zero_val
 
-class SliceHeader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class SliceHeader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying SliceHeader.underlying SliceHeader
   underlying : go.UnderlyingDirectedEq SliceHeader.ty SliceHeader.underlying
   isUnderlying : go.IsUnderlying SliceHeader.underlying SliceHeader.underlying
@@ -1542,7 +1542,7 @@ axiom runtimeSelect : Type
 axiom runtimeSelect.zero_val : ZeroVal runtimeSelect
 attribute [instance] runtimeSelect.zero_val
 
-class runtimeSelect.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class runtimeSelect.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying runtimeSelect.underlying runtimeSelect
   underlying : go.UnderlyingDirectedEq runtimeSelect.ty runtimeSelect.underlying
   isUnderlying : go.IsUnderlying runtimeSelect.underlying runtimeSelect.underlying
@@ -1555,7 +1555,7 @@ axiom SelectDir : Type
 axiom SelectDir.zero_val : ZeroVal SelectDir
 attribute [instance] SelectDir.zero_val
 
-class SelectDir.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class SelectDir.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying SelectDir.underlying SelectDir
   underlying : go.UnderlyingDirectedEq SelectDir.ty SelectDir.underlying
   isUnderlying : go.IsUnderlying SelectDir.underlying SelectDir.underlying
@@ -1568,7 +1568,7 @@ axiom SelectCase : Type
 axiom SelectCase.zero_val : ZeroVal SelectCase
 attribute [instance] SelectCase.zero_val
 
-class SelectCase.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class SelectCase.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying SelectCase.underlying SelectCase
   underlying : go.UnderlyingDirectedEq SelectCase.ty SelectCase.underlying
   isUnderlying : go.IsUnderlying SelectCase.underlying SelectCase.underlying
@@ -1581,7 +1581,7 @@ axiom visibleFieldsWalker : Type
 axiom visibleFieldsWalker.zero_val : ZeroVal visibleFieldsWalker
 attribute [instance] visibleFieldsWalker.zero_val
 
-class visibleFieldsWalker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class visibleFieldsWalker.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying visibleFieldsWalker.underlying visibleFieldsWalker
   underlying : go.UnderlyingDirectedEq visibleFieldsWalker.ty visibleFieldsWalker.underlying
   isUnderlying : go.IsUnderlying visibleFieldsWalker.underlying visibleFieldsWalker.underlying
@@ -1590,7 +1590,7 @@ attribute [instance] visibleFieldsWalker.TypeAssumptions.type_repr
   visibleFieldsWalker.TypeAssumptions.underlying
   visibleFieldsWalker.TypeAssumptions.isUnderlying
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   abiStep_instance : abiStep.TypeAssumptions
   abiStepKind_instance : abiStepKind.TypeAssumptions
   abiSeq_instance : abiSeq.TypeAssumptions

@@ -20,11 +20,11 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.b.v1
 
-noncomputable def Add [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Add [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/v1_imports/b/v1.Add"
 
 /-- go: v1.go:3:6 -/
-noncomputable def Add.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Add.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
@@ -34,14 +34,14 @@ noncomputable def Add.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.b.v1 where
   pkgImportedPkgs := []
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.v1_imports.b.v1)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))))
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Add_unfold : FuncUnfold Add [] Add.impl
 
 attribute [instance] Assumptions.Add_unfold

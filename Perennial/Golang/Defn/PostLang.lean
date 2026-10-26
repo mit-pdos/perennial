@@ -86,7 +86,7 @@ export FloatOps (float64Neg float64Add float64Sub float64Mul float64Div float64L
   float32Neg float32Add float32Sub float32Mul float32Div float32Leb float32Eq float64ToFloat32
   int64ToFloat64 uint64ToFloat64 int32ToFloat64 uint32ToFloat64)
 
-class GoSemanticsFunctions [FfiSyntax] where
+class GoSemanticsFunctions [GooseExts] where
   underlying : go.GoType → go.GoType
   globalAddr : GoString → Loc
   functions : GoString → List go.GoType → GoFunc
@@ -119,7 +119,7 @@ export GoSemanticsFunctions (underlying globalAddr functions methods methodSet s
   arrayIndexRef mapEmpty mapLookup mapInsert mapDelete is_map_domain is_map_pure mapDefault)
 
 /-- The class form of `GoSemanticsFunctions.TypeRepr` (`V` is an output). -/
-class TypeRepr [FfiSyntax] [GoSemanticsFunctions] (t : go.GoType) (V : outParam Type) [ZeroVal V] :
+class TypeRepr [GooseExts] [GoSemanticsFunctions] (t : go.GoType) (V : outParam Type) [ZeroVal V] :
     Prop where
   type_repr : GoSemanticsFunctions.TypeRepr t V
 
@@ -127,7 +127,7 @@ class TypeRepr [FfiSyntax] [GoSemanticsFunctions] (t : go.GoType) (V : outParam 
 scoped notation:max ptr ".[" t ", " field "]" => structFieldRef t field ptr
 
 section unfolding_defs
-variable [FfiSyntax] [GoSemanticsFunctions] [GoGlobalContext]
+variable [GooseExts] [GoSemanticsFunctions] [GoGlobalContext]
 
 class FuncUnfold (f : GoString) (type_args : List go.GoType) (f_impl : outParam val) : Prop where
   func_unfold : #(functions f type_args) = f_impl
@@ -149,7 +149,7 @@ export Tag (under underT internal internalUnder)
 
 namespace go
 section defs
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext]
 
 def GlobalAllocDef (v : GoString) (t : go.GoType) : val :=
   λ: <>,
@@ -262,7 +262,7 @@ macro_rules
 
 namespace go
 section defs
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext]
 
 theorem tagged_steps (t : Tag) :
     ∀ instr args e, ⟦instr, args⟧ ⤳[t] e → ⟦instr, args⟧ ⤳ e := by
@@ -302,7 +302,7 @@ scoped infix:50 " ↓u " => go.IsUnderlying
 
 namespace go
 section defs
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext]
 
 class TypeReprUnderlying [GoSemanticsFunctions] (u : go.GoType) (V : outParam Type) [ZeroVal V] :
     Prop where

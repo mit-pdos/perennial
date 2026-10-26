@@ -11,7 +11,7 @@ public import Perennial.Golang.Defn.Exception
 namespace Perennial
 
 section goose_lang
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 def breakValDef : val := glv((#"break", #()))
 @[irreducible] def breakVal : val := breakValDef

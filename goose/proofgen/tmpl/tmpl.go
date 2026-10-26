@@ -14,9 +14,8 @@ import (
 // PackageProof is the data that is passed to the top-level
 // package_proof.lean.tmpl template.
 type PackageProof struct {
-	FfiPrelude    string
 	Name          string
-	Ffi           string
+	Exts          []Ext // the extensions the package uses
 	Bootstrap     bool
 	ImportPath    string // import path (corresponding to Go PkgPath)
 	Root          string // prefix of the package's Lean modules (glang.LeanRootPrefix)
@@ -26,6 +25,12 @@ type PackageProof struct {
 	Types         []TypeDecl
 	// Lean modules to import in addition (chunks of the package's proofs)
 	ExtraImports []string
+}
+
+// Ext is a GooseLang extension that a package uses.
+type Ext struct {
+	Prelude string // its prelude module (glang.LeanExtPrelude)
+	Name    string // its Lean name (glang.LeanExt)
 }
 
 type TypeDecl struct {

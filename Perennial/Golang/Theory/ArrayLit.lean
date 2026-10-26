@@ -17,7 +17,7 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
 
 /-- The keyed element of an array literal element that is the value `#x` of type `t`. -/
-def arrayLitKE [FfiSyntax] [GoGlobalContext] (t : go.GoType) {V : Type} (x : V) : keyed_element :=
+def arrayLitKE [GooseExts] [GoGlobalContext] (t : go.GoType) {V : Type} (x : V) : keyed_element :=
   KeyedElement none (ElementExpression t (Val #x))
 
 /-- Set `acc` at indices `i, i+1, ...` to `xs`, as the steps of an array literal do. -/
@@ -47,7 +47,7 @@ theorem arrayLitSets_eq {V : Type} (z : V) :
     simp
 
 section array_lit
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]

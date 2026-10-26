@@ -22,215 +22,215 @@ end pkg_id
 
 namespace sort
 
-noncomputable def Interface.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Interface.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.Interface" [])
 
 attribute [irreducible] Interface.ty
 
-noncomputable def sortedHint.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def sortedHint.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.sortedHint" [])
 
 attribute [irreducible] sortedHint.ty
 
-noncomputable def xorshift.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def xorshift.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.xorshift" [])
 
 attribute [irreducible] xorshift.ty
 
-noncomputable def lessSwap.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def lessSwap.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.lessSwap" [])
 
 attribute [irreducible] lessSwap.ty
 
-noncomputable def reverse.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def reverse.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.reverse" [])
 
 attribute [irreducible] reverse.ty
 
-noncomputable def IntSlice.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def IntSlice.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.IntSlice" [])
 
 attribute [irreducible] IntSlice.ty
 
-noncomputable def Float64Slice.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Float64Slice.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.Float64Slice" [])
 
 attribute [irreducible] Float64Slice.ty
 
-noncomputable def StringSlice.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def StringSlice.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sort.StringSlice" [])
 
 attribute [irreducible] StringSlice.ty
 
-@[reducible] noncomputable def unknownHint [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def unknownHint [GooseExts] [GoGlobalContext] : val :=
   #(W64 0)
 
-@[reducible] noncomputable def increasingHint [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def increasingHint [GooseExts] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] noncomputable def decreasingHint [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def decreasingHint [GooseExts] [GoGlobalContext] : val :=
   #(W64 2)
 
-noncomputable def Search [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Search [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.Search"
 
-noncomputable def Find [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Find [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.Find"
 
-noncomputable def SearchInts [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SearchInts [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.SearchInts"
 
-noncomputable def SearchFloat64s [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SearchFloat64s [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.SearchFloat64s"
 
-noncomputable def SearchStrings [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SearchStrings [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.SearchStrings"
 
-noncomputable def Slice' [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Slice' [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.Slice"
 
-noncomputable def SliceStable [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SliceStable [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.SliceStable"
 
-noncomputable def SliceIsSorted [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SliceIsSorted [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.SliceIsSorted"
 
-noncomputable def «Sort» [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def «Sort» [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.Sort"
 
-noncomputable def nextPowerOfTwo [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def nextPowerOfTwo [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.nextPowerOfTwo"
 
-noncomputable def Reverse [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Reverse [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.Reverse"
 
-noncomputable def IsSorted [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def IsSorted [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.IsSorted"
 
-noncomputable def isNaN [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isNaN [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.isNaN"
 
-noncomputable def Ints [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Ints [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.Ints"
 
-noncomputable def Float64s [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Float64s [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.Float64s"
 
-noncomputable def Strings [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Strings [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.Strings"
 
-noncomputable def IntsAreSorted [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def IntsAreSorted [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.IntsAreSorted"
 
-noncomputable def Float64sAreSorted [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Float64sAreSorted [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.Float64sAreSorted"
 
-noncomputable def StringsAreSorted [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def StringsAreSorted [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.StringsAreSorted"
 
-noncomputable def Stable [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Stable [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.Stable"
 
-noncomputable def insertionSort_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def insertionSort_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.insertionSort_func"
 
-noncomputable def siftDown_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def siftDown_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.siftDown_func"
 
-noncomputable def heapSort_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def heapSort_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.heapSort_func"
 
-noncomputable def pdqsort_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def pdqsort_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.pdqsort_func"
 
-noncomputable def partition_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def partition_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.partition_func"
 
-noncomputable def partitionEqual_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def partitionEqual_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.partitionEqual_func"
 
-noncomputable def partialInsertionSort_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def partialInsertionSort_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.partialInsertionSort_func"
 
-noncomputable def breakPatterns_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def breakPatterns_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.breakPatterns_func"
 
-noncomputable def choosePivot_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def choosePivot_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.choosePivot_func"
 
-noncomputable def order2_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def order2_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.order2_func"
 
-noncomputable def median_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def median_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.median_func"
 
-noncomputable def medianAdjacent_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def medianAdjacent_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.medianAdjacent_func"
 
-noncomputable def reverseRange_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def reverseRange_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.reverseRange_func"
 
-noncomputable def swapRange_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def swapRange_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.swapRange_func"
 
-noncomputable def stable_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def stable_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.stable_func"
 
-noncomputable def symMerge_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def symMerge_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.symMerge_func"
 
-noncomputable def rotate_func [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def rotate_func [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.rotate_func"
 
-noncomputable def insertionSort [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def insertionSort [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.insertionSort"
 
-noncomputable def siftDown [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def siftDown [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.siftDown"
 
-noncomputable def heapSort [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def heapSort [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.heapSort"
 
-noncomputable def pdqsort [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def pdqsort [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.pdqsort"
 
-noncomputable def partition [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def partition [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.partition"
 
-noncomputable def partitionEqual [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def partitionEqual [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.partitionEqual"
 
-noncomputable def partialInsertionSort [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def partialInsertionSort [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.partialInsertionSort"
 
-noncomputable def breakPatterns [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def breakPatterns [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.breakPatterns"
 
-noncomputable def choosePivot [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def choosePivot [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.choosePivot"
 
-noncomputable def order2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def order2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.order2"
 
-noncomputable def median [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def median [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.median"
 
-noncomputable def medianAdjacent [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def medianAdjacent [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.medianAdjacent"
 
-noncomputable def reverseRange [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def reverseRange [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.reverseRange"
 
-noncomputable def swapRange [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def swapRange [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.swapRange"
 
-noncomputable def stable [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def stable [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.stable"
 
-noncomputable def symMerge [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def symMerge [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.symMerge"
 
-noncomputable def rotate [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def rotate [GooseExts] [GoGlobalContext] : GoString :=
   go!"sort.rotate"
 
 /-- Search uses binary search to find and return the smallest index i
@@ -284,7 +284,7 @@ noncomputable def rotate [FfiSyntax] [GoGlobalContext] : GoString :=
     	}
 
     go: search.go:58:6 -/
-noncomputable def Search.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Search.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "f"
   (App (Val exceptionDo)
@@ -347,7 +347,7 @@ noncomputable def Search.impl [FfiSyntax] [GoGlobalContext] : val :=
     	}
 
     go: search.go:99:6 -/
-noncomputable def Find.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Find.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "n"
   (Lam "cmp"
   (App (Val exceptionDo)
@@ -392,7 +392,7 @@ noncomputable def Find.impl [FfiSyntax] [GoGlobalContext] : val :=
     The slice must be sorted in ascending order.
 
     go: search.go:123:6 -/
-noncomputable def SearchInts.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def SearchInts.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "x"
   (App (Val exceptionDo)
@@ -414,7 +414,7 @@ noncomputable def SearchInts.impl [FfiSyntax] [GoGlobalContext] : val :=
     The slice must be sorted in ascending order.
 
     go: search.go:139:6 -/
-noncomputable def SearchStrings.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def SearchStrings.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "a"
   (Lam "x"
   (App (Val exceptionDo)
@@ -438,7 +438,7 @@ noncomputable def SearchStrings.impl [FfiSyntax] [GoGlobalContext] : val :=
     ergonomic and runs faster.
 
     go: sort.go:50:6 -/
-noncomputable def «Sort».impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def «Sort».impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (App (Val exceptionDo)
   (Let "data" (App (Val (GoInstruction (GoAlloc Interface.ty))) (Var "data"))
@@ -470,7 +470,7 @@ noncomputable def «Sort».impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))))
 
 /-- go: sort.go:70:20 -/
-noncomputable def xorshift.Next.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def xorshift.Next.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -488,7 +488,7 @@ noncomputable def xorshift.Next.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r")) (App (Val (GoInstruction (GoOp GoXor xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (GoOp GoShiftl xorshift.ty))) (Pair (App (Val (GoInstruction (GoLoad xorshift.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType xorshift.ty)))) (Var "r"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(13 : Int)))))))))))))))
 
 /-- go: sort.go:77:6 -/
-noncomputable def nextPowerOfTwo.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def nextPowerOfTwo.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "length"
   (App (Val exceptionDo)
   (Let "length" (App (Val (GoInstruction (GoAlloc go.int))) (Var "length"))
@@ -504,7 +504,7 @@ noncomputable def nextPowerOfTwo.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Less returns the opposite of the embedded implementation's Less method.
 
     go: sort.go:97:18 -/
-noncomputable def reverse.Less.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def reverse.Less.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "r"
   (Lam "i"
   (Lam "j"
@@ -520,7 +520,7 @@ noncomputable def reverse.Less.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Reverse returns the reverse order for data.
 
     go: sort.go:102:6 -/
-noncomputable def Reverse.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Reverse.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (App (Val exceptionDo)
   (Let "data" (App (Val (GoInstruction (GoAlloc Interface.ty))) (Var "data"))
@@ -534,7 +534,7 @@ noncomputable def Reverse.impl [FfiSyntax] [GoGlobalContext] : val :=
     ergonomic and runs faster.
 
     go: sort.go:110:6 -/
-noncomputable def IsSorted.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def IsSorted.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (App (Val exceptionDo)
   (Let "data" (App (Val (GoInstruction (GoAlloc Interface.ty))) (Var "data"))
@@ -569,7 +569,7 @@ noncomputable def IsSorted.impl [FfiSyntax] [GoGlobalContext] : val :=
     Note: as of Go 1.22, this function simply calls [slices.Sort].
 
     go: sort.go:181:6 -/
-noncomputable def Strings.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Strings.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "x"))
@@ -590,7 +590,7 @@ noncomputable def Strings.impl [FfiSyntax] [GoGlobalContext] : val :=
     ergonomic and runs faster.
 
     go: sort.go:233:6 -/
-noncomputable def Stable.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Stable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (App (Val exceptionDo)
   (Let "data" (App (Val (GoInstruction (GoAlloc Interface.ty))) (Var "data"))
@@ -605,7 +605,7 @@ noncomputable def Stable.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- insertionSort sorts data[a:b] using insertion sort.
 
     go: zsortinterface.go:10:6 -/
-noncomputable def insertionSort.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def insertionSort.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -647,7 +647,7 @@ noncomputable def insertionSort.impl [FfiSyntax] [GoGlobalContext] : val :=
     first is an offset into the array where the root of the heap lies.
 
     go: zsortinterface.go:20:6 -/
-noncomputable def siftDown.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def siftDown.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "lo"
   (Lam "hi"
@@ -705,7 +705,7 @@ noncomputable def siftDown.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "root") (Var "$r0")))))))))))))))))
 
 /-- go: zsortinterface.go:38:6 -/
-noncomputable def heapSort.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def heapSort.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -778,7 +778,7 @@ noncomputable def heapSort.impl [FfiSyntax] [GoGlobalContext] : val :=
     limit is the number of allowed bad (very unbalanced) pivots before falling back to heapsort.
 
     go: zsortinterface.go:61:6 -/
-noncomputable def pdqsort.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def pdqsort.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -984,7 +984,7 @@ noncomputable def pdqsort.impl [FfiSyntax] [GoGlobalContext] : val :=
     On return, data[newpivot] = p
 
     go: zsortinterface.go:135:6 -/
-noncomputable def partition.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def partition.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1101,7 +1101,7 @@ noncomputable def partition.impl [FfiSyntax] [GoGlobalContext] : val :=
     It assumed that data[a:b] does not contain elements smaller than the data[pivot].
 
     go: zsortinterface.go:173:6 -/
-noncomputable def partitionEqual.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def partitionEqual.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1171,7 +1171,7 @@ noncomputable def partitionEqual.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- partialInsertionSort partially sorts a slice, returns true if the slice is sorted at the end.
 
     go: zsortinterface.go:195:6 -/
-noncomputable def partialInsertionSort.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def partialInsertionSort.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1279,7 +1279,7 @@ noncomputable def partialInsertionSort.impl [FfiSyntax] [GoGlobalContext] : val 
     that might cause imbalanced partitions in quicksort.
 
     go: zsortinterface.go:240:6 -/
-noncomputable def breakPatterns.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def breakPatterns.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1342,7 +1342,7 @@ noncomputable def breakPatterns.impl [FfiSyntax] [GoGlobalContext] : val :=
     [shortestNinther,∞): uses the Tukey ninther method.
 
     go: zsortinterface.go:261:6 -/
-noncomputable def choosePivot.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def choosePivot.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1424,7 +1424,7 @@ noncomputable def choosePivot.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- order2 returns x,y where data[x] <= data[y], where x,y=a,b or x,y=b,a.
 
     go: zsortinterface.go:298:6 -/
-noncomputable def order2.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def order2.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1451,7 +1451,7 @@ noncomputable def order2.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- median returns x where data[x] is the median of data[a],data[b],data[c], where x is a, b, or c.
 
     go: zsortinterface.go:307:6 -/
-noncomputable def median.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def median.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1514,7 +1514,7 @@ noncomputable def median.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- medianAdjacent finds the median of data[a - 1], data[a], data[a + 1] and stores the index into a.
 
     go: zsortinterface.go:315:6 -/
-noncomputable def medianAdjacent.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def medianAdjacent.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "a"
   (Lam "swaps"
@@ -1531,7 +1531,7 @@ noncomputable def medianAdjacent.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (App (App (App (App (Val (GoInstruction (FuncResolve median []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))))))))))
 
 /-- go: zsortinterface.go:319:6 -/
-noncomputable def reverseRange.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def reverseRange.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1568,7 +1568,7 @@ noncomputable def reverseRange.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))))))
 
 /-- go: zsortinterface.go:329:6 -/
-noncomputable def swapRange.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def swapRange.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "a"
   (Lam "b"
@@ -1597,7 +1597,7 @@ noncomputable def swapRange.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0")))))))))))))))))
 
 /-- go: zsortinterface.go:335:6 -/
-noncomputable def stable.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def stable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "n"
   (App (Val exceptionDo)
@@ -1713,7 +1713,7 @@ noncomputable def stable.impl [FfiSyntax] [GoGlobalContext] : val :=
     which improves performance.
 
     go: zsortinterface.go:378:6 -/
-noncomputable def symMerge.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def symMerge.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "a"
   (Lam "m"
@@ -1919,7 +1919,7 @@ noncomputable def symMerge.impl [FfiSyntax] [GoGlobalContext] : val :=
     and it assumes non-degenerate arguments: a < m && m < b.
 
     go: zsortinterface.go:464:6 -/
-noncomputable def rotate.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def rotate.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "a"
   (Lam "m"
@@ -1976,9 +1976,9 @@ noncomputable def rotate.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.sort where
   pkgImportedPkgs := [pkg_id.math.bits, pkg_id.slices]
 
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.sort)) (Lam BAnon
   (App (Val exceptionDo)
@@ -1988,61 +1988,61 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.slices.initialize') (Val #()))))))))
 
-abbrev Interface [FfiSyntax] : Type := GoInterface
+abbrev Interface [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def Interface.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Interface.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Len" (go.signature.Signature [] false [go.int])), (go.InterfaceElem.MethodElem go!"Less" (go.signature.Signature [go.int, go.int] false [go.bool])), (go.InterfaceElem.MethodElem go!"Swap" (go.signature.Signature [go.int, go.int] false []))])
 
-class Interface.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Interface.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Interface.ty Interface.underlying
 
 attribute [instance] Interface.TypeAssumptions.underlying
 
-abbrev sortedHint [FfiSyntax] : Type := w64
+abbrev sortedHint [GooseExts] : Type := w64
 
-@[reducible] noncomputable def sortedHint.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def sortedHint.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int
 
-class sortedHint.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class sortedHint.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq sortedHint.ty sortedHint.underlying
 
 attribute [instance] sortedHint.TypeAssumptions.underlying
 
-abbrev xorshift [FfiSyntax] : Type := w64
+abbrev xorshift [GooseExts] : Type := w64
 
-@[reducible] noncomputable def xorshift.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def xorshift.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class xorshift.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class xorshift.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq xorshift.ty xorshift.underlying
   ptr_Next_unfold : MethodUnfold (go.GoType.PointerType xorshift.ty) go!"Next" xorshift.Next.impl
 
 attribute [instance] xorshift.TypeAssumptions.underlying
   xorshift.TypeAssumptions.ptr_Next_unfold
 
-structure lessSwap [FfiSyntax] where
+structure lessSwap [GooseExts] where
   mk ::
   Less' : GoFunc
   Swap' : GoFunc
 
-noncomputable instance lessSwap.zero_val [FfiSyntax] : ZeroVal lessSwap :=
+noncomputable instance lessSwap.zero_val [GooseExts] : ZeroVal lessSwap :=
   ⟨lessSwap.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def lessSwap.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def lessSwap.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Less" (go.GoType.FunctionType (go.signature.Signature [go.int, go.int] false [go.bool]))),
 (go.field_decl.FieldDecl go!"Swap" (go.GoType.FunctionType (go.signature.Signature [go.int, go.int] false [])))]
 
-@[irreducible] noncomputable def lessSwap.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def lessSwap.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   lessSwap.fieldsUnsealed
 
-noncomputable instance equals_unfold_lessSwap [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_lessSwap [GooseExts] [GoGlobalContext] :
     EqualsUnfold lessSwap.fields lessSwap.fieldsUnsealed :=
   ⟨by unfold lessSwap.fields; rfl⟩
 
-@[reducible] noncomputable def lessSwap.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def lessSwap.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType lessSwap.fields)
 
-class lessSwap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class lessSwap.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying lessSwap.underlying lessSwap
   underlying : go.UnderlyingDirectedEq lessSwap.ty lessSwap.underlying
   get_Less : ∀ (x : lessSwap), go.IsGoStepPureDetTagged under (StructFieldGet lessSwap.underlying go!"Less") #x (Val #(x.Less'))
@@ -2057,27 +2057,27 @@ attribute [instance] lessSwap.TypeAssumptions.type_repr
   lessSwap.TypeAssumptions.get_Swap
   lessSwap.TypeAssumptions.set_Swap
 
-structure reverse [FfiSyntax] where
+structure reverse [GooseExts] where
   mk ::
   Interface' : Interface
 
-noncomputable instance reverse.zero_val [FfiSyntax] : ZeroVal reverse :=
+noncomputable instance reverse.zero_val [GooseExts] : ZeroVal reverse :=
   ⟨reverse.mk zeroValDef⟩
 
-@[reducible] noncomputable def reverse.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def reverse.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Interface" Interface.ty)]
 
-@[irreducible] noncomputable def reverse.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def reverse.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   reverse.fieldsUnsealed
 
-noncomputable instance equals_unfold_reverse [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_reverse [GooseExts] [GoGlobalContext] :
     EqualsUnfold reverse.fields reverse.fieldsUnsealed :=
   ⟨by unfold reverse.fields; rfl⟩
 
-@[reducible] noncomputable def reverse.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def reverse.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType reverse.fields)
 
-class reverse.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class reverse.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying reverse.underlying reverse
   underlying : go.UnderlyingDirectedEq reverse.ty reverse.underlying
   get_Interface : ∀ (x : reverse), go.IsGoStepPureDetTagged under (StructFieldGet reverse.underlying go!"Interface") #x (Val #(x.Interface'))
@@ -2105,37 +2105,37 @@ attribute [instance] reverse.TypeAssumptions.type_repr
   reverse.TypeAssumptions.ptr_Less_unfold
   reverse.TypeAssumptions.ptr_Swap_unfold
 
-abbrev IntSlice [FfiSyntax] : Type := GoSlice
+abbrev IntSlice [GooseExts] : Type := GoSlice
 
-@[reducible] noncomputable def IntSlice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def IntSlice.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.int)
 
-class IntSlice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class IntSlice.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq IntSlice.ty IntSlice.underlying
 
 attribute [instance] IntSlice.TypeAssumptions.underlying
 
-abbrev Float64Slice [FfiSyntax] : Type := GoSlice
+abbrev Float64Slice [GooseExts] : Type := GoSlice
 
-@[reducible] noncomputable def Float64Slice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Float64Slice.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.float64)
 
-class Float64Slice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Float64Slice.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Float64Slice.ty Float64Slice.underlying
 
 attribute [instance] Float64Slice.TypeAssumptions.underlying
 
-abbrev StringSlice [FfiSyntax] : Type := GoSlice
+abbrev StringSlice [GooseExts] : Type := GoSlice
 
-@[reducible] noncomputable def StringSlice.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def StringSlice.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.string)
 
-class StringSlice.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class StringSlice.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq StringSlice.ty StringSlice.underlying
 
 attribute [instance] StringSlice.TypeAssumptions.underlying
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Interface_instance : Interface.TypeAssumptions
   sortedHint_instance : sortedHint.TypeAssumptions
   xorshift_instance : xorshift.TypeAssumptions

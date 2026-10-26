@@ -17,7 +17,7 @@ noncomputable section
 
 namespace chan
 section defns
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 open github_com.mit_pdos.perennial.goose.model in
 def receive (elem_type : go.GoType) : val :=
@@ -85,7 +85,7 @@ end chan
 
 namespace go
 section defs
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext]
 open github_com.mit_pdos.perennial.goose.model
 
 class ChanSemantics [GoSemanticsFunctions] : Prop where

@@ -150,7 +150,7 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
 | `Perennial/Std`              | general libraries (gmap, words, lists, bytes)               |
 | `Perennial/Algebra`          | cameras and ghost-state algebra                             |
 | `Perennial/GooseLang`        | GooseLang: semantics, lifting, bounded-step layer, receipts |
-| `Perennial/GooseLang/Ffi`    | the grove FFI                                               |
+| `Perennial/GooseLang/Ext`    | GooseLang extensions (new primitives): grove                |
 | `Perennial/Golang/Defn`      | the Go model                                                |
 | `Perennial/Golang/Theory`    | its program logic and spec lemmas                           |
 | `Perennial/Ghost`            | ghost-state libraries                                       |
@@ -191,7 +191,7 @@ models, trust lists, `assume`s); the `review-trusted` skill
   offset.
 * Equality on GooseLang syntax and `go.GoType` is decided classically
   (`noncomputable instance`).
-* `FfiSyntax` requires `Pos.Countable` of `ffi_opcode`/`ffi_val`, and
+* An extension (`GooseExt`) requires `Pos.Countable` of its `Op`/`Val`, and
   `Loc`, `GoSlice`, `val`, `Expr`, `GoFunc`, `GoInterface`, `go.GoType`, ... are
   `Pos.Countable` (`Perennial/GooseLang/Countable.lean`, via an injection into
   `GenTree`), so ghost state can store values containing code.

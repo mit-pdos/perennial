@@ -24,186 +24,186 @@ end pkg_id
 
 namespace strconv
 
-noncomputable def NumError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def NumError.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strconv.NumError" [])
 
 attribute [irreducible] NumError.ty
 
-axiom IntSize [FfiSyntax] [GoGlobalContext] : val
+axiom IntSize [GooseExts] [GoGlobalContext] : val
 
-axiom lowerhex [FfiSyntax] [GoGlobalContext] : val
+axiom lowerhex [GooseExts] [GoGlobalContext] : val
 
-axiom upperhex [FfiSyntax] [GoGlobalContext] : val
+axiom upperhex [GooseExts] [GoGlobalContext] : val
 
-noncomputable def isPrint16 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isPrint16 [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.isPrint16"
 
-noncomputable def isNotPrint16 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isNotPrint16 [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.isNotPrint16"
 
-noncomputable def isPrint32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isPrint32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.isPrint32"
 
-noncomputable def isNotPrint32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isNotPrint32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.isNotPrint32"
 
-noncomputable def isGraphic [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isGraphic [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.isGraphic"
 
-noncomputable def ErrRange [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ErrRange [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.ErrRange"
 
-noncomputable def ErrSyntax [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ErrSyntax [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.ErrSyntax"
 
-noncomputable def index [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def index [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.index"
 
-noncomputable def ParseBool [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ParseBool [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.ParseBool"
 
-noncomputable def FormatBool [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def FormatBool [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.FormatBool"
 
-noncomputable def AppendBool [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AppendBool [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.AppendBool"
 
-noncomputable def ParseComplex [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ParseComplex [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.ParseComplex"
 
-noncomputable def ParseFloat [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ParseFloat [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.ParseFloat"
 
-noncomputable def ParseUint [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ParseUint [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.ParseUint"
 
-noncomputable def ParseInt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ParseInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.ParseInt"
 
-noncomputable def Atoi [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Atoi [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.Atoi"
 
-noncomputable def FormatComplex [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def FormatComplex [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.FormatComplex"
 
-noncomputable def FormatFloat [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def FormatFloat [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.FormatFloat"
 
-noncomputable def AppendFloat [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AppendFloat [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.AppendFloat"
 
-noncomputable def FormatUint [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def FormatUint [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.FormatUint"
 
-noncomputable def FormatInt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def FormatInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.FormatInt"
 
-noncomputable def Itoa [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Itoa [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.Itoa"
 
-noncomputable def AppendInt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AppendInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.AppendInt"
 
-noncomputable def AppendUint [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AppendUint [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.AppendUint"
 
-noncomputable def toError [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def toError [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.toError"
 
-noncomputable def syntaxError [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def syntaxError [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.syntaxError"
 
-noncomputable def rangeError [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def rangeError [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.rangeError"
 
-noncomputable def baseError [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def baseError [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.baseError"
 
-noncomputable def bitSizeError [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def bitSizeError [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.bitSizeError"
 
-noncomputable def contains [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def contains [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.contains"
 
-noncomputable def quoteWith [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def quoteWith [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.quoteWith"
 
-noncomputable def quoteRuneWith [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def quoteRuneWith [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.quoteRuneWith"
 
-noncomputable def appendQuotedWith [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def appendQuotedWith [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.appendQuotedWith"
 
-noncomputable def appendQuotedRuneWith [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def appendQuotedRuneWith [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.appendQuotedRuneWith"
 
-noncomputable def appendEscapedRune [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def appendEscapedRune [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.appendEscapedRune"
 
-noncomputable def Quote [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Quote [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.Quote"
 
-noncomputable def AppendQuote [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AppendQuote [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.AppendQuote"
 
-noncomputable def QuoteToASCII [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def QuoteToASCII [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.QuoteToASCII"
 
-noncomputable def AppendQuoteToASCII [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AppendQuoteToASCII [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.AppendQuoteToASCII"
 
-noncomputable def QuoteToGraphic [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def QuoteToGraphic [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.QuoteToGraphic"
 
-noncomputable def AppendQuoteToGraphic [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AppendQuoteToGraphic [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.AppendQuoteToGraphic"
 
-noncomputable def QuoteRune [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def QuoteRune [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.QuoteRune"
 
-noncomputable def AppendQuoteRune [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AppendQuoteRune [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.AppendQuoteRune"
 
-noncomputable def QuoteRuneToASCII [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def QuoteRuneToASCII [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.QuoteRuneToASCII"
 
-noncomputable def AppendQuoteRuneToASCII [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AppendQuoteRuneToASCII [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.AppendQuoteRuneToASCII"
 
-noncomputable def QuoteRuneToGraphic [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def QuoteRuneToGraphic [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.QuoteRuneToGraphic"
 
-noncomputable def AppendQuoteRuneToGraphic [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AppendQuoteRuneToGraphic [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.AppendQuoteRuneToGraphic"
 
-noncomputable def CanBackquote [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CanBackquote [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.CanBackquote"
 
-noncomputable def unhex [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def unhex [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.unhex"
 
-noncomputable def UnquoteChar [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def UnquoteChar [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.UnquoteChar"
 
-noncomputable def QuotedPrefix [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def QuotedPrefix [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.QuotedPrefix"
 
-noncomputable def Unquote [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Unquote [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.Unquote"
 
-noncomputable def unquote [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def unquote [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.unquote"
 
-noncomputable def bsearch [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def bsearch [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.bsearch"
 
-noncomputable def IsPrint [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def IsPrint [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.IsPrint"
 
-noncomputable def IsGraphic [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def IsGraphic [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.IsGraphic"
 
-noncomputable def isInGraphicList [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isInGraphicList [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.isInGraphicList"
 
 /-- ParseUint is like [ParseInt] but for unsigned numbers.
@@ -211,7 +211,7 @@ noncomputable def isInGraphicList [FfiSyntax] [GoGlobalContext] : GoString :=
     A sign prefix is not permitted.
 
     go: number.go:104:6 -/
-noncomputable def ParseUint.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ParseUint.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "base"
   (Lam "bitSize"
@@ -252,7 +252,7 @@ noncomputable def ParseUint.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- toError converts from internal/strconv.Error to the error guaranteed by this package's APIs.
 
     go: number.go:231:6 -/
-noncomputable def toError.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def toError.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "fn"
   (Lam "s"
   (Lam "base"
@@ -294,7 +294,7 @@ noncomputable def toError.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #())))))))))))))))))))
 
 /-- go: number.go:262:20 -/
-noncomputable def NumError.Unwrap.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NumError.Unwrap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -303,7 +303,7 @@ noncomputable def NumError.Unwrap.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (StructFieldRef NumError.ty go!"Err"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType NumError.ty)))) (Var "e")))))))))
 
 /-- go: number.go:272:6 -/
-noncomputable def syntaxError.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def syntaxError.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "fn"
   (Lam "str"
   (App (Val exceptionDo)
@@ -317,7 +317,7 @@ noncomputable def syntaxError.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral NumError.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0"))), (KeyedElement none (ElementExpression go.string (Var "$v1"))), (KeyedElement none (ElementExpression go.error (Var "$v2")))]))))))))))))
 
 /-- go: number.go:276:6 -/
-noncomputable def rangeError.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def rangeError.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "fn"
   (Lam "str"
   (App (Val exceptionDo)
@@ -331,7 +331,7 @@ noncomputable def rangeError.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral NumError.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0"))), (KeyedElement none (ElementExpression go.string (Var "$v1"))), (KeyedElement none (ElementExpression go.error (Var "$v2")))]))))))))))))
 
 /-- go: number.go:280:6 -/
-noncomputable def baseError.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def baseError.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "fn"
   (Lam "str"
   (Lam "base"
@@ -349,7 +349,7 @@ noncomputable def baseError.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral NumError.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0"))), (KeyedElement none (ElementExpression go.string (Var "$v1"))), (KeyedElement none (ElementExpression go.error (Var "$v2")))]))))))))))))))
 
 /-- go: number.go:284:6 -/
-noncomputable def bitSizeError.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def bitSizeError.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "fn"
   (Lam "str"
   (Lam "bitSize"
@@ -369,9 +369,9 @@ noncomputable def bitSizeError.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.strconv where
   pkgImportedPkgs := [pkg_id.errors, pkg_id.internal.strconv, pkg_id.internal.stringslite]
 
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.strconv)) (Lam BAnon
   (App (Val exceptionDo)
@@ -415,31 +415,31 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrSyntax go.error)) (Val #()))))))))
 
-structure NumError [FfiSyntax] where
+structure NumError [GooseExts] where
   mk ::
   Func' : GoString
   Num' : GoString
   Err' : GoError
 
-noncomputable instance NumError.zero_val [FfiSyntax] : ZeroVal NumError :=
+noncomputable instance NumError.zero_val [GooseExts] : ZeroVal NumError :=
   ⟨NumError.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def NumError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def NumError.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Func" go.string),
 (go.field_decl.FieldDecl go!"Num" go.string),
 (go.field_decl.FieldDecl go!"Err" go.error)]
 
-@[irreducible] noncomputable def NumError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def NumError.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   NumError.fieldsUnsealed
 
-noncomputable instance equals_unfold_NumError [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_NumError [GooseExts] [GoGlobalContext] :
     EqualsUnfold NumError.fields NumError.fieldsUnsealed :=
   ⟨by unfold NumError.fields; rfl⟩
 
-@[reducible] noncomputable def NumError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def NumError.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType NumError.fields)
 
-class NumError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class NumError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying NumError.underlying NumError
   underlying : go.UnderlyingDirectedEq NumError.ty NumError.underlying
   get_Func : ∀ (x : NumError), go.IsGoStepPureDetTagged under (StructFieldGet NumError.underlying go!"Func") #x (Val #(x.Func'))
@@ -460,7 +460,7 @@ attribute [instance] NumError.TypeAssumptions.type_repr
   NumError.TypeAssumptions.set_Err
   NumError.TypeAssumptions.ptr_Unwrap_unfold
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   NumError_instance : NumError.TypeAssumptions
   ParseUint_unfold : FuncUnfold ParseUint [] ParseUint.impl
   toError_unfold : FuncUnfold toError [] toError.impl

@@ -24,36 +24,36 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.logging2
 
-noncomputable def Log.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Log.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.Log" [])
 
 attribute [irreducible] Log.ty
 
-noncomputable def Txn.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Txn.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.Txn" [])
 
 attribute [irreducible] Txn.ty
 
-@[reducible] noncomputable def LOGCOMMIT [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def LOGCOMMIT [GooseExts] [GoGlobalContext] : val :=
   #(W64 0)
 
-@[reducible] noncomputable def LOGSTART [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def LOGSTART [GooseExts] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] noncomputable def LOGMAXBLK [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def LOGMAXBLK [GooseExts] [GoGlobalContext] : val :=
   #(W64 510)
 
-@[reducible] noncomputable def LOGEND [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def LOGEND [GooseExts] [GoGlobalContext] : val :=
   #(W64 511)
 
-noncomputable def Init [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Init [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.Init"
 
-noncomputable def Begin [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Begin [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/logging2.Begin"
 
 /-- go: logging2.go:26:16 -/
-noncomputable def Log.writeHdr.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.writeHdr.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "len"
   (App (Val exceptionDo)
@@ -78,7 +78,7 @@ noncomputable def Log.writeHdr.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "hdr") (Var "$r0")))))))))))))
 
 /-- go: logging2.go:32:6 -/
-noncomputable def Init.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Init.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "logSz"
   (App (Val exceptionDo)
   (Let "logSz" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "logSz"))
@@ -102,7 +102,7 @@ noncomputable def Init.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore Log.ty))) (Pair (Var "log") (Var "$r0"))))))))))
 
 /-- go: logging2.go:46:16 -/
-noncomputable def Log.readHdr.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.readHdr.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -123,7 +123,7 @@ noncomputable def Log.readHdr.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Pair (Var "hdr") (Var "$r0")))))))))))
 
 /-- go: logging2.go:52:16 -/
-noncomputable def Log.readBlocks.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.readBlocks.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "len"
   (App (Val exceptionDo)
@@ -161,7 +161,7 @@ noncomputable def Log.readBlocks.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty)))) (Pair (Var "blks") (Var "$r0"))))))))))))
 
 /-- go: logging2.go:61:16 -/
-noncomputable def Log.Read.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.Read.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -187,7 +187,7 @@ noncomputable def Log.Read.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Log.ty go!"logLock"))) (Var "log")))) (Val #()))))))))
 
 /-- go: logging2.go:69:16 -/
-noncomputable def Log.memWrite.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.memWrite.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "l"
   (App (Val exceptionDo)
@@ -220,7 +220,7 @@ noncomputable def Log.memWrite.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "n") (Var "$r0")))))))))))))
 
 /-- go: logging2.go:76:16 -/
-noncomputable def Log.memAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.memAppend.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "l"
   (App (Val exceptionDo)
@@ -267,7 +267,7 @@ noncomputable def Log.memAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- XXX just an atomic read?
 
     go: logging2.go:91:16 -/
-noncomputable def Log.readLogTxnNxt.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.readLogTxnNxt.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -287,7 +287,7 @@ noncomputable def Log.readLogTxnNxt.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Log.ty go!"memLock"))) (Var "log")))) (Val #()))))))))
 
 /-- go: logging2.go:98:16 -/
-noncomputable def Log.diskAppendWait.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.diskAppendWait.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "txn"
   (App (Val exceptionDo)
@@ -313,7 +313,7 @@ noncomputable def Log.diskAppendWait.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: logging2.go:108:16 -/
-noncomputable def Log.Append.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.Append.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "l"
   (App (Val exceptionDo)
@@ -344,7 +344,7 @@ noncomputable def Log.Append.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0")))))))))))))))))
 
 /-- go: logging2.go:116:16 -/
-noncomputable def Log.writeBlocks.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.writeBlocks.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam "l"
   (Lam "pos"
@@ -382,7 +382,7 @@ noncomputable def Log.writeBlocks.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "n") (Var "$r0")))))))))))))))
 
 /-- go: logging2.go:124:16 -/
-noncomputable def Log.diskAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.diskAppend.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -442,7 +442,7 @@ noncomputable def Log.diskAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Log.ty go!"logLock"))) (Var "log")))) (Val #())))))))))
 
 /-- go: logging2.go:143:16 -/
-noncomputable def Log.Logger.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Log.Logger.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "log"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -460,7 +460,7 @@ noncomputable def Log.Logger.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- XXX wait if cannot reserve space in log
 
     go: txn.go:13:6 -/
-noncomputable def Begin.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Begin.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "log"
   (App (Val exceptionDo)
   (Let "log" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Log.ty)))) (Var "log"))
@@ -475,7 +475,7 @@ noncomputable def Begin.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore Txn.ty))) (Pair (Var "txn") (Var "$r0"))))))))))
 
 /-- go: txn.go:21:16 -/
-noncomputable def Txn.Write.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Txn.Write.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "txn"
   (Lam "addr"
   (Lam "blk"
@@ -522,7 +522,7 @@ noncomputable def Txn.Write.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ret") (Var "$r0"))))))))))))))
 
 /-- go: txn.go:38:16 -/
-noncomputable def Txn.Read.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Txn.Read.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "txn"
   (Lam "addr"
   (App (Val exceptionDo)
@@ -549,7 +549,7 @@ noncomputable def Txn.Read.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))) (Pair (Var "v") (Var "$r0")))))))))))))))))
 
 /-- go: txn.go:47:16 -/
-noncomputable def Txn.Commit.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Txn.Commit.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "txn"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -589,7 +589,7 @@ noncomputable def Txn.Commit.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.logging2 where
   pkgImportedPkgs := [pkg_id.encoding.binary, pkg_id.github_com.goose_lang.primitive.disk, pkg_id.sync]
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.logging2)) (Lam BAnon
   (App (Val exceptionDo)
@@ -602,7 +602,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #()))))))))
 
-structure Log [FfiSyntax] where
+structure Log [GooseExts] where
   mk ::
   logLock' : Loc
   memLock' : Loc
@@ -612,10 +612,10 @@ structure Log [FfiSyntax] where
   memTxnNxt' : Loc
   logTxnNxt' : Loc
 
-noncomputable instance Log.zero_val [FfiSyntax] : ZeroVal Log :=
+noncomputable instance Log.zero_val [GooseExts] : ZeroVal Log :=
   ⟨Log.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Log.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Log.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"logLock" (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)),
 (go.field_decl.FieldDecl go!"memLock" (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)),
 (go.field_decl.FieldDecl go!"logSz" go.uint64),
@@ -624,17 +624,17 @@ noncomputable instance Log.zero_val [FfiSyntax] : ZeroVal Log :=
 (go.field_decl.FieldDecl go!"memTxnNxt" (go.GoType.PointerType go.uint64)),
 (go.field_decl.FieldDecl go!"logTxnNxt" (go.GoType.PointerType go.uint64))]
 
-@[irreducible] noncomputable def Log.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Log.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Log.fieldsUnsealed
 
-noncomputable instance equals_unfold_Log [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Log [GooseExts] [GoGlobalContext] :
     EqualsUnfold Log.fields Log.fieldsUnsealed :=
   ⟨by unfold Log.fields; rfl⟩
 
-@[reducible] noncomputable def Log.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Log.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Log.fields)
 
-class Log.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Log.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Log.underlying Log
   underlying : go.UnderlyingDirectedEq Log.ty Log.underlying
   get_logLock : ∀ (x : Log), go.IsGoStepPureDetTagged under (StructFieldGet Log.underlying go!"logLock") #x (Val #(x.logLock'))
@@ -729,29 +729,29 @@ attribute [instance] Log.TypeAssumptions.type_repr
   Log.TypeAssumptions.ptr_writeBlocks_unfold
   Log.TypeAssumptions.ptr_writeHdr_unfold
 
-structure Txn [FfiSyntax] where
+structure Txn [GooseExts] where
   mk ::
   log' : Loc
   blks' : GoMap
 
-noncomputable instance Txn.zero_val [FfiSyntax] : ZeroVal Txn :=
+noncomputable instance Txn.zero_val [GooseExts] : ZeroVal Txn :=
   ⟨Txn.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Txn.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Txn.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"log" (go.GoType.PointerType Log.ty)),
 (go.field_decl.FieldDecl go!"blks" (go.GoType.MapType go.uint64 _root_.Perennial.github_com.goose_lang.primitive.disk.Block.ty))]
 
-@[irreducible] noncomputable def Txn.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Txn.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Txn.fieldsUnsealed
 
-noncomputable instance equals_unfold_Txn [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Txn [GooseExts] [GoGlobalContext] :
     EqualsUnfold Txn.fields Txn.fieldsUnsealed :=
   ⟨by unfold Txn.fields; rfl⟩
 
-@[reducible] noncomputable def Txn.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Txn.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Txn.fields)
 
-class Txn.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Txn.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Txn.underlying Txn
   underlying : go.UnderlyingDirectedEq Txn.ty Txn.underlying
   get_log : ∀ (x : Txn), go.IsGoStepPureDetTagged under (StructFieldGet Txn.underlying go!"log") #x (Val #(x.log'))

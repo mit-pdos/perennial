@@ -19,7 +19,7 @@ namespace Perennial
 namespace sync
 
 section code
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 @[reducible] def Mutex.underlying : go.GoType := go.bool
 

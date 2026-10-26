@@ -15,7 +15,7 @@ namespace Perennial
 
 namespace fmt
 section code
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- `Errorf(format, a...)`: returns an error whose `Error()` is the formatted string. The model
 does not format: it ignores the arguments `a` and returns `errors.New(format)`, an

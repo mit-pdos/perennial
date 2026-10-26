@@ -14,7 +14,7 @@ namespace Perennial
 
 namespace errors
 section code
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- `Is(err, target)`. Go's `Is` is
 

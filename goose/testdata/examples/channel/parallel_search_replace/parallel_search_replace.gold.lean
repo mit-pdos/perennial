@@ -21,14 +21,14 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace
 
-noncomputable def worker [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def worker [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/parallel_search_replace.worker"
 
-noncomputable def SearchReplace [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SearchReplace [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/parallel_search_replace.SearchReplace"
 
 /-- go: parallel_search_replace.go:13:6 -/
-noncomputable def worker.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def worker.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam "wg"
   (Lam "x"
@@ -89,7 +89,7 @@ noncomputable def worker.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "s") (Var "$r0"))))))))))))))))))))))
 
 /-- go: parallel_search_replace.go:24:6 -/
-noncomputable def SearchReplace.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def SearchReplace.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "x"
   (Lam "y"
@@ -191,14 +191,14 @@ noncomputable def SearchReplace.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace where
   pkgImportedPkgs := [pkg_id.sync]
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (App (Val _root_.Perennial.sync.initialize') (Val #())))))))
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   worker_unfold : FuncUnfold worker [] worker.impl
   SearchReplace_unfold : FuncUnfold SearchReplace [] SearchReplace.impl
   import_sync_Assumption : _root_.Perennial.sync.Assumptions

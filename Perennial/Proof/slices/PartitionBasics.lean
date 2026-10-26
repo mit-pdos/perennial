@@ -137,7 +137,7 @@ theorem W64_2 : W64 2 = (2 : w64) := by decide
 theorem W64_3 : W64 3 = (3 : w64) := by decide
 
 section bool_lemmas
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] [go.PreSemantics]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] [go.PreSemantics]
 
 theorem dec_val_true {P : Prop} [Decidable P] (h : (#(decide P) : val) = #true) : P := by
   by_cases hp : P
@@ -363,7 +363,7 @@ theorem peq_conclude [StrictWeakOrder R] (xs1 : List E) (a b i : Nat) (xp : E)
 end pure
 
 section proof
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
@@ -536,7 +536,7 @@ theorem wp_part_loop2 (data : GoSlice) (a b : w64) (xp : E) (xs : List E)
     exact ⟨ij_bound, Hpart, Hpivot, HPerm1, Houtside1, fun _ => HBr1 rfl,
       fun _ => Or.inl (by omega)⟩
 
-omit [StrictWeakOrder R] ext ffi [FfiInterp ffi] [FfiSemantics ext ffi] go_gctx [ZeroVal E] in
+omit [StrictWeakOrder R] [GooseExts] [GooseSemantics] [GooseInterp] go_gctx [ZeroVal E] in
 /-- The pure part of `part_finish`. -/
 theorem part_finish_pure [StrictWeakOrder R] (xs xs1 : List E) (a b i_val j_val : w64) (xp xj : E)
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ ↑xs.length ∧ xs.length ≤ 2 ^ 62)
@@ -558,7 +558,7 @@ theorem part_finish_pure [StrictWeakOrder R] (xs xs1 : List E) (a b i_val j_val 
   · exact outsideSame_trans _ _ _ _ _ Houtside1
       (outsideSame_swap _ _ _ _ _ _ _ (by word) (by word))
 
-omit [StrictWeakOrder R] ext ffi [FfiInterp ffi] [FfiSemantics ext ffi] go_gctx [ZeroVal E] in
+omit [StrictWeakOrder R] [GooseExts] [GooseSemantics] [GooseInterp] go_gctx [ZeroVal E] in
 /-- The pure part of `part_swap`. -/
 theorem part_swap_pure [StrictWeakOrder R] (xs xs1 : List E) (a b i_val j_val : w64) (xp xi xj : E)
     (Hab_bound : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ ↑xs.length ∧ xs.length ≤ 2 ^ 62)
@@ -606,7 +606,7 @@ theorem part_swap_pure [StrictWeakOrder R] (xs xs1 : List E) (a b i_val j_val : 
   · exact outsideSame_trans _ _ _ _ _ Houtside1
       (outsideSame_swap _ _ _ _ _ _ _ (by word) (by word))
 
-omit ext ffi [FfiInterp ffi] [FfiSemantics ext ffi] go_gctx in
+omit [GooseExts] [GooseSemantics] [GooseInterp] go_gctx in
 /-- The three sample positions `a + d * k` of `choosePivotCmpFunc` do not overflow. -/
 theorem part_choosePivot_idx (a b d : w64) (n : Nat)
     (Hab : 0 ≤ sint.Z a ∧ sint.Z a < sint.Z b ∧ sint.Z b ≤ n ∧ n ≤ 2 ^ 62)

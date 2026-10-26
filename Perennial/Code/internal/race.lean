@@ -20,64 +20,64 @@ end pkg_id
 
 namespace internal.race
 
-@[reducible] noncomputable def Enabled [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Enabled [GooseExts] [GoGlobalContext] : val :=
   #false
 
-noncomputable def Acquire [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Acquire [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/race.Acquire"
 
-noncomputable def Release [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Release [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/race.Release"
 
-noncomputable def ReleaseMerge [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReleaseMerge [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/race.ReleaseMerge"
 
-noncomputable def Disable [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Disable [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/race.Disable"
 
-noncomputable def Enable [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Enable [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/race.Enable"
 
-noncomputable def Read [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Read [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/race.Read"
 
-noncomputable def ReadPC [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadPC [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/race.ReadPC"
 
-noncomputable def ReadObjectPC [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadObjectPC [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/race.ReadObjectPC"
 
-noncomputable def Write [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Write [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/race.Write"
 
-noncomputable def WritePC [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def WritePC [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/race.WritePC"
 
-noncomputable def WriteObjectPC [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def WriteObjectPC [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/race.WriteObjectPC"
 
-noncomputable def ReadRange [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadRange [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/race.ReadRange"
 
-noncomputable def WriteRange [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def WriteRange [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/race.WriteRange"
 
-noncomputable def Errors [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Errors [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/race.Errors"
 
 noncomputable instance info' : PkgInfo pkg_id.internal.race where
   pkgImportedPkgs := []
 
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.internal.race)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))))
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
 
 end internal.race
 

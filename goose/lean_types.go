@@ -116,7 +116,7 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 			if typeBinders != "" {
 				sep = " "
 			}
-			fmt.Fprintf(w, "structure %s [FfiSyntax]%s%s where\n  mk ::\n", ns, sep, typeBinders)
+			fmt.Fprintf(w, "structure %s [GooseExts]%s%s where\n  mk ::\n", ns, sep, typeBinders)
 			for i := range t.NumFields() {
 				f := t.Field(i)
 				ft := ctx.toLeanType(spec, f.Type())
@@ -129,7 +129,7 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 					zvBinders += " [ZeroVal " + glang.LeanIdent(p) + "]"
 				}
 			}
-			fmt.Fprintf(w, "\nnoncomputable instance %s.zero_val [FfiSyntax]%s : ZeroVal %s :=\n  ⟨%s.mk", ns, zvBinders, tApplied, ns)
+			fmt.Fprintf(w, "\nnoncomputable instance %s.zero_val [GooseExts]%s : ZeroVal %s :=\n  ⟨%s.mk", ns, zvBinders, tApplied, ns)
 			for range t.NumFields() {
 				fmt.Fprint(w, " zeroValDef")
 			}
@@ -139,7 +139,7 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 			if typeBinders != "" {
 				sep = " "
 			}
-			fmt.Fprintf(w, "abbrev %s [FfiSyntax]%s%s : Type := %s", ns, sep, typeBinders, ctx.toLeanType(spec, t))
+			fmt.Fprintf(w, "abbrev %s [GooseExts]%s%s : Type := %s", ns, sep, typeBinders, ctx.toLeanType(spec, t))
 		}
 	}
 	return w.String()
@@ -157,11 +157,11 @@ func (ctx *Ctx) leanFdsDecl(spec *ast.TypeSpec, ty glang.StructType) string {
 	fds := glang.LeanEncodedName(name + "'fds")
 	fdsU := glang.LeanEncodedName(name + "'fds_unsealed")
 	w := new(strings.Builder)
-	fmt.Fprintf(w, "@[reducible] noncomputable def %s [FfiSyntax] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n", fdsU, binders,
+	fmt.Fprintf(w, "@[reducible] noncomputable def %s [GooseExts] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n", fdsU, binders,
 		ty.LeanFields())
-	fmt.Fprintf(w, "\n@[irreducible] noncomputable def %s [FfiSyntax] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n",
+	fmt.Fprintf(w, "\n@[irreducible] noncomputable def %s [GooseExts] [GoGlobalContext]%s : List go.field_decl :=\n  %s\n",
 		fds, binders, leanApplied(fdsU, params))
-	fmt.Fprintf(w, "\nnoncomputable instance %s [FfiSyntax] [GoGlobalContext]%s :\n    EqualsUnfold %s %s :=\n  ⟨by unfold %s; rfl⟩",
+	fmt.Fprintf(w, "\nnoncomputable instance %s [GooseExts] [GoGlobalContext]%s :\n    EqualsUnfold %s %s :=\n  ⟨by unfold %s; rfl⟩",
 		glang.LeanQuoteComponent("equals_unfold_"+name), binders, leanApplied(fds, params),
 		leanApplied(fdsU, params), fds)
 	return w.String()
@@ -359,7 +359,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 	}
 
 	return typeAssumptionsDecl{
-		VerbatimDecl: glang.VerbatimDecl{Content: leanClass(glang.LeanEncodedName(typeName+"_Assumptions"), " [FfiSyntax] "+leanClassParams, fields)},
+		VerbatimDecl: glang.VerbatimDecl{Content: leanClass(glang.LeanEncodedName(typeName+"_Assumptions"), " [GooseExts] "+leanClassParams, fields)},
 		fields:       len(fields),
 	}
 }
@@ -466,11 +466,11 @@ func (ctx *Ctx) leanPackagePropClass(typeSpecs []*ast.TypeSpec) string {
 		fields = append(fields, leanClassField{name: ctx.importAssumptionName(pkg),
 			ty: glang.LeanQuote(ctx.pkgRef(pkg) + ".Assumptions")})
 	}
-	params := " " + leanClassParams
-	if !ctx.hasFfi {
-		params = " [FfiSyntax]" + params
+	params := " [GooseExts]"
+	for _, ext := range ctx.exts {
+		params += " [ElemExt " + glang.LeanExt(ext) + "]"
 	}
-	return leanClass("Assumptions", params, fields)
+	return leanClass("Assumptions", params+" "+leanClassParams, fields)
 }
 
 func (ctx *Ctx) leanInfoInstance() string {

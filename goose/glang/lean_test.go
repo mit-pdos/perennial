@@ -22,6 +22,8 @@ func TestLeanIdent(t *testing.T) {
 	assert.Equal("«end»", LeanIdent("end"))
 }
 
-func TestLeanFfiPrelude(t *testing.T) {
-	assert.Equal(t, "GrovePrelude", LeanFfiPrelude("grove"))
+func TestLeanExt(t *testing.T) {
+	assert.Equal(t, "GrovePrelude", LeanExtPrelude("grove"))
+	assert.Equal(t, "groveExt", LeanExt("grove"))
+	assert.Equal(t, "asyncDiskExt", LeanExt("async_disk"))
 }

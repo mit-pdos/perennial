@@ -13,7 +13,7 @@ namespace Perennial
 
 namespace log
 section code
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 def Printf.impl : val :=
   λ: "format" "vs", #()

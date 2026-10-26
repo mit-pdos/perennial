@@ -32,7 +32,7 @@ namespace Perennial
 
 namespace map
 section defs
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext]
 
 def lookup2 (key_type elem_type : go.GoType) : val :=
   λ: "m" "k",
@@ -72,7 +72,7 @@ end map
 
 namespace go
 section defs
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext]
 
 class MapSemantics [GoSemanticsFunctions] : Prop where
   internal_map_lookup_step_pure (m k : val) :
