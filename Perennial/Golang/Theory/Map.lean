@@ -46,14 +46,14 @@ class MapKeys (K : Type) where
 instance (priority := low) mapKeys_all (K : Type) : MapKeys K := ⟨fun _ => True⟩
 
 /-- Interface keys: `nil`, or a pointer. -/
-instance mapKeys_interface [FfiSyntax] [GoGlobalContext] : MapKeys GoInterface :=
+instance mapKeys_interface [GooseExts] [GoGlobalContext] : MapKeys GoInterface :=
   ⟨fun i => i = interface.nil ∨ ∃ (t : go.GoType) (l : Loc), i = interface.mkOk (go.PointerType t) #l⟩
 
 /-! ## Maps as lists of entries -/
 
 namespace map
 section pure
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 variable {K V : Type} [DecidableEq K]
 
 /-- The id of the entry of key `k` (`freshId` of a key no entry has). -/
