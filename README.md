@@ -34,9 +34,9 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   (`RealCrashNsteps`, `GooseLang/CrashLang.lean`) of a boot program, which
   runs at the start and after every crash: each generation is proved with the
   standard WP, under the shared global ghost state and its own local ghost
-  state (`GooseLocalGS`), from one premise for every boot (`bootStart`), and a
-  *crash frame* `Ψ` set aside by each generation's proof crosses the crash,
-  with the crashed generation's persistent `crashed` token (exclusive with the `notCrashed` that its state interpretation owns,
+  state (`GooseLocalGS`), from a client-chosen precondition `P L` of the
+  generation's local ghost state `L`, which each generation's proof guarantees
+  for the next generation after its crash, from its persistent `crashed` token (exclusive with the `notCrashed` that its state interpretation owns,
   `GooseLang/CrashToken.lean`). There are no crash reasoning principles yet
   (no `crash_own`).
 * **Bounded layer, time receipts and thread tokens.** The trusted semantics
