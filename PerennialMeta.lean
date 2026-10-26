@@ -76,6 +76,8 @@ public import Perennial.GooseLang.BoundedLang
 public import Perennial.GooseLang.Countable
 public import Perennial.GooseLang.CrashToken
 public import Perennial.GooseLang.Ext
+public import Perennial.GooseLang.Ext.Fs.Impl
+public import Perennial.GooseLang.Ext.Fs.Specs
 public import Perennial.GooseLang.Ext.GenHeap
 public import Perennial.GooseLang.Ext.Grove.Impl
 public import Perennial.GooseLang.Ext.Grove.Specs
