@@ -56,7 +56,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   supports *thread tokens* (`GooseLang/Threads.lean`): `threadToks n`, one per
   live thread, with `threadToks T ⊢ False` for the bound `T = threadBound GF`,
   so that a counter backed by one token per pending goroutine (a
-  `sync.WaitGroup`'s) is below `T`. For this the trusted semantics counts the
+  `sync.WaitGroup`'s) is below `T`, and that a stock of `T - 1` copies of a
+  resource lent to threads for their thread tokens never runs out
+  (`Proof/ThreadPool.lean`; e.g. an `RWMutex`'s reader tokens,
+  `Proof/sync/RWMutexThreads.lean`). For this the trusted semantics counts the
   live threads (`state.threads`): `Fork e` spawns `e ;; ThreadExit` and
   increments it, and the no-op `ThreadExit` decrements it.
   The bounds are *unspecified parameters*, not constants: they are fields of
