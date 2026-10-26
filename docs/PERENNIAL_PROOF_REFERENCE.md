@@ -189,11 +189,11 @@ after it:
   ⊢
   WP
     (exceptionDo
-      (let: "s" := (GoAlloc S.PointerType) #s in
-        let: "two" := (GoAlloc TwoInts) #two in
-          (exceptionSeq (Lam BAnon (return: #())))
-            (Let (BNamed "$r0") (![TwoInts] "two")
-              (do: (StructFieldRef S [98#8]) ![S.PointerType] "s" <-[TwoInts] "$r0"))))
+        (let: "s" := (GoAlloc S.PointerType) #s in
+          let: "two" := (GoAlloc TwoInts) #two in
+            Let (BNamed "$r0") (![TwoInts] "two")
+              (do: (StructFieldRef S [98#8]) ![S.PointerType] "s" <-[TwoInts] "$r0")) ;;
+      #())
     {{ Φ }}
 ```
 
@@ -439,7 +439,8 @@ Hi : 0 ≤ sint.Z i ∧ sint.Z i ≤ sint.Z s.len
     WP (... loop body ...)
       {{ forPostcondition Stuckness.NotStuck ⊤ (λ: <>, do: #i_ptr <-[go.int] ...)
             iprop("HΦ" ∷ ... ∗ "Hs" ∷ s ↦* vs ∗ "xs" ∷ xs_ptr ↦ s ∗ "HI" ∷ ∃ i, ...)
-            fun v => WP (exceptionDo (v ;;; return: ![go.uint64] #sum_ptr)) {{ Φ }} }}
+            fun v => WP (exceptionDo (v ;;; let: "$r0" := ![go.uint64] #sum_ptr in
+              do: #«$res0_ptr» <-[go.uint64] "$r0" ;;; return: #()) ;; ![go.uint64] #«$res0_ptr») {{ Φ }} }}
   else ...
 ```
 
@@ -680,6 +681,29 @@ theorem wp_simpleSpawn' [sync.Assumptions] :
   wp_end
 ````
 
+### Results
+
+Goose translates every function the same way with respect to its results, as
+the Go spec describes them: each result is a variable, allocated before the
+body runs (a named result under its name, another as `$res0`, `$res1`, ...;
+`$resI` is bound to result `I`'s variable in either case); a `return e1, e2`
+evaluates `e1`, `e2`, assigns them to the result variables and ends the body
+with `return: #()` (a bare `return` is `return: #()`); and the function's value
+is read from the result variables after the wrapper (`exception_do`,
+`with_defer:` or `with_defer_recover:`) returns, so after the deferred functions
+have run:
+
+```
+let: "$res0" := GoAlloc go.int (GoZeroVal go.int #()) in
+(exception_do (... let: "$r0" := e in do: "$res0" <-[go.int] "$r0" ;;; return: #())) ;;
+![go.int] "$res0"
+```
+
+So a deferred function that assigns a named result changes what the function
+returns, as in Go. In a proof, `wp_auto` allocates the result variables
+(`r_ptr ↦ ...`, or `«$res0_ptr» ↦ ...`), runs the stores of the `return`, and
+loads them at the end.
+
 ### Panics
 
 A panic outcome is a value, `PanicV p` (`GooseLang/Lang.lean`): `panic(p)` steps
@@ -694,7 +718,8 @@ A function with `defer`s runs its body under a `Catch` (`with_defer:`): the
 deferred chain runs on both outcomes and a panic is raised again; if a deferred
 function literal calls `recover()`, Goose emits `with_defer_recover:`, whose
 `$panic` cell the handler sets and `recover()` (`recoverPanic`) reads and
-clears, and the function then returns its named results
+clears, and the function then returns normally, with the values of its result
+variables (see "Results" below)
 (`Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/semantics/recoverNamed.lean` and its neighbours):
 
 ```lean

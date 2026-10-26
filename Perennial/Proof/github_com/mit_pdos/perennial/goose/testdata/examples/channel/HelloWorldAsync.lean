@@ -34,6 +34,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.HelloWorld
     github_com.mit_pdos.perennial.goose.testdata.examples.channel.HelloWorldAsync.spec
       (GF := GF) (hG := hG) := by
   wp_start
+  wp_auto
   wp_apply chan.wp_make2 (V := GoString) $$ [] as %ch %γ ⟨#Hch, -, Hoc⟩
   · ipureintro; decide
   imod start_bag (fun (v : GoString) => iprop(⌜v = go!"Hello, World!"⌝)) _ ch γ trivial $$ Hch Hoc

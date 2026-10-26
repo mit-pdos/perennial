@@ -30,6 +30,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.sys_hello_
     github_com.mit_pdos.perennial.goose.testdata.examples.channel.sys_hello_world.spec
       (GF := GF) (hG := hG) := by
   wp_start
+  wp_auto
   wp_end
 
 end proof

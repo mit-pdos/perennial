@@ -211,11 +211,17 @@ noncomputable def runtime_procUnpin [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def Bool.Load.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bool'.ty)))) (Var "x"))
+  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
+  (App (App (Val (GoInstruction (FuncResolve LoadUint32 []))) (Val #())) (Var "$a0"))) (Val #(W32 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
-  (App (App (Val (GoInstruction (FuncResolve LoadUint32 []))) (Val #())) (Var "$a0"))) (Val #(W32 0))))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
 
 /-- Store atomically stores val into x.
 
@@ -223,17 +229,15 @@ noncomputable def Bool.Load.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Bool.Store.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bool'.ty)))) (Var "x"))
   (Let "val" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "val"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
   (Let "$a1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "val"))
   (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
-  (App (App (App (Val (GoInstruction (FuncResolve StoreUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve StoreUint32 []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
+  (Val #()))))
 
 /-- Swap atomically stores new into x and returns the previous value.
 
@@ -241,15 +245,21 @@ noncomputable def Bool.Store.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Bool.Swap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
-  (App (Val exceptionDo)
   (Let "old" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res0" (Var "old")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bool'.ty)))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "new"))
-  (App (Val doReturn)
-  (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
+  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
   (Let "$a1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "new"))
   (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
-  (App (App (App (Val (GoInstruction (FuncResolve SwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W32 0))))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve SwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W32 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))))
 
 /-- CompareAndSwap executes the compare-and-swap operation for the boolean value x.
 
@@ -258,34 +268,50 @@ noncomputable def Bool.CompareAndSwap.impl [GooseExts] [GoGlobalContext] : val :
   (LamV "x"
   (Lam "old"
   (Lam "new"
-  (App (Val exceptionDo)
   (Let "swapped" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res0" (Var "swapped")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Bool'.ty)))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "new"))
   (Let "old" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "old"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Bool'.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Bool'.ty)))) (Var "x")))
   (Let "$a1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "old"))
   (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
   (Let "$a2" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "new"))
   (App (App (Val (GoInstruction (FuncResolve b32 []))) (Val #())) (Var "$a0")))
-  (App (App (App (App (Val (GoInstruction (FuncResolve CompareAndSwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))))))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve CompareAndSwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))))
 
 /-- b32 returns a uint32 0 or 1 representing b.
 
     go: type.go:33:6 -/
 noncomputable def b32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "b"))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W32 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val #(W32 0)))))
-  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "b"))
-  (App (Val doReturn)
-  (Val #(W32 1)))
+  (Val #()))))
   (App (Val doExecute)
-  (Val #())))))))
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "b"))
+  (Let "$r0" (Val #(W32 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad go.uint32))) (Var "$res0")))))
 
 /-- Load atomically loads and returns the value stored in x.
 
@@ -293,11 +319,17 @@ noncomputable def b32.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Pointer.Load.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType T)))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Pointer.ty T))))) (Var "x"))
+  (Let "$r0" (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType T)))) (Let "$a0" (App (Val (GoInstruction (StructFieldRef (Pointer.ty T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Pointer.ty T))))) (Var "x")))
+  (App (App (Val (GoInstruction (FuncResolve LoadPointer []))) (Val #())) (Var "$a0"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType T)))) (Let "$a0" (App (Val (GoInstruction (StructFieldRef (Pointer.ty T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Pointer.ty T))))) (Var "x")))
-  (App (App (Val (GoInstruction (FuncResolve LoadPointer []))) (Val #())) (Var "$a0")))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType T)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType T)))) (Var "$res0"))))))
 
 /-- Store atomically stores val into x.
 
@@ -305,16 +337,14 @@ noncomputable def Pointer.Load.impl [GooseExts] [GoGlobalContext] (T : go.GoType
 noncomputable def Pointer.Store.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam "val"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Pointer.ty T))))) (Var "x"))
   (Let "val" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (Var "val"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (StructFieldRef (Pointer.ty T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Pointer.ty T))))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (Convert (go.GoType.PointerType T) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType T)))) (Var "val")))
-  (App (App (App (Val (GoInstruction (FuncResolve StorePointer []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve StorePointer []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
+  (Val #()))))
 
 /-- Swap atomically stores new into x and returns the previous value.
 
@@ -322,14 +352,20 @@ noncomputable def Pointer.Store.impl [GooseExts] [GoGlobalContext] (T : go.GoTyp
 noncomputable def Pointer.Swap.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam "new"
-  (App (Val exceptionDo)
   (Let "old" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType T)))) (Val #())))
+  (Let "$res0" (Var "old")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Pointer.ty T))))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (Var "new"))
-  (App (Val doReturn)
-  (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType T)))) (Let "$a0" (App (Val (GoInstruction (StructFieldRef (Pointer.ty T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Pointer.ty T))))) (Var "x")))
+  (Let "$r0" (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType T)))) (Let "$a0" (App (Val (GoInstruction (StructFieldRef (Pointer.ty T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Pointer.ty T))))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (Convert (go.GoType.PointerType T) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType T)))) (Var "new")))
-  (App (App (App (Val (GoInstruction (FuncResolve SwapPointer []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve SwapPointer []))) (Val #())) (Var "$a0")) (Var "$a1")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType T)))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType T)))) (Var "$res0")))))))
 
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
@@ -338,16 +374,22 @@ noncomputable def Pointer.CompareAndSwap.impl [GooseExts] [GoGlobalContext] (T :
   (LamV "x"
   (Lam "old"
   (Lam "new"
-  (App (Val exceptionDo)
   (Let "swapped" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res0" (Var "swapped")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (Pointer.ty T))))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (Var "new"))
   (Let "old" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (Var "old"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef (Pointer.ty T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Pointer.ty T))))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef (Pointer.ty T) go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (Pointer.ty T))))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (Convert (go.GoType.PointerType T) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType T)))) (Var "old")))
   (Let "$a2" (App (Val (GoInstruction (Convert (go.GoType.PointerType T) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType T)))) (Var "new")))
-  (App (App (App (App (Val (GoInstruction (FuncResolve CompareAndSwapPointer []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))))))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve CompareAndSwapPointer []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))))
 
 /-- Load atomically loads and returns the value stored in x.
 
@@ -355,11 +397,17 @@ noncomputable def Pointer.CompareAndSwap.impl [GooseExts] [GoGlobalContext] (T :
 noncomputable def Int32.Load.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Int32.ty)))) (Var "x"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int32.ty)))) (Var "x")))
+  (App (App (Val (GoInstruction (FuncResolve LoadInt32 []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int32.ty)))) (Var "x")))
-  (App (App (Val (GoInstruction (FuncResolve LoadInt32 []))) (Val #())) (Var "$a0"))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.int32))) (Var "$res0"))))))
 
 /-- Store atomically stores val into x.
 
@@ -367,16 +415,14 @@ noncomputable def Int32.Load.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Int32.Store.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Int32.ty)))) (Var "x"))
   (Let "val" (App (Val (GoInstruction (GoAlloc go.int32))) (Var "val"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int32.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int32))) (Var "val"))
-  (App (App (App (Val (GoInstruction (FuncResolve StoreInt32 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve StoreInt32 []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
+  (Val #()))))
 
 /-- Swap atomically stores new into x and returns the previous value.
 
@@ -384,14 +430,20 @@ noncomputable def Int32.Store.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Int32.Swap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
-  (App (Val exceptionDo)
   (Let "old" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (Let "$res0" (Var "old")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Int32.ty)))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.int32))) (Var "new"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int32.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int32.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int32))) (Var "new"))
-  (App (App (App (Val (GoInstruction (FuncResolve SwapInt32 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve SwapInt32 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.int32))) (Var "$res0")))))))
 
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
@@ -400,16 +452,22 @@ noncomputable def Int32.CompareAndSwap.impl [GooseExts] [GoGlobalContext] : val 
   (LamV "x"
   (Lam "old"
   (Lam "new"
-  (App (Val exceptionDo)
   (Let "swapped" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res0" (Var "swapped")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Int32.ty)))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.int32))) (Var "new"))
   (Let "old" (App (Val (GoInstruction (GoAlloc go.int32))) (Var "old"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int32.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int32.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int32))) (Var "old"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int32))) (Var "new"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve CompareAndSwapInt32 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))))))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve CompareAndSwapInt32 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))))
 
 /-- Add atomically adds delta to x and returns the new value.
 
@@ -417,14 +475,20 @@ noncomputable def Int32.CompareAndSwap.impl [GooseExts] [GoGlobalContext] : val 
 noncomputable def Int32.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "delta"
-  (App (Val exceptionDo)
   (Let "new" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (Let "$res0" (Var "new")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Int32.ty)))) (Var "x"))
   (Let "delta" (App (Val (GoInstruction (GoAlloc go.int32))) (Var "delta"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int32.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int32.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int32))) (Var "delta"))
-  (App (App (App (Val (GoInstruction (FuncResolve AddInt32 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve AddInt32 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.int32))) (Var "$res0")))))))
 
 /-- And atomically performs a bitwise AND operation on x using the bitmask
     provided as mask and returns the old value.
@@ -433,14 +497,20 @@ noncomputable def Int32.Add.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Int32.And.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
-  (App (Val exceptionDo)
   (Let "old" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (Let "$res0" (Var "old")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Int32.ty)))) (Var "x"))
   (Let "mask" (App (Val (GoInstruction (GoAlloc go.int32))) (Var "mask"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int32.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int32.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int32))) (Var "mask"))
-  (App (App (App (Val (GoInstruction (FuncResolve AndInt32 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve AndInt32 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.int32))) (Var "$res0")))))))
 
 /-- Or atomically performs a bitwise OR operation on x using the bitmask
     provided as mask and returns the old value.
@@ -449,14 +519,20 @@ noncomputable def Int32.And.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Int32.Or.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
-  (App (Val exceptionDo)
   (Let "old" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (Let "$res0" (Var "old")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Int32.ty)))) (Var "x"))
   (Let "mask" (App (Val (GoInstruction (GoAlloc go.int32))) (Var "mask"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int32.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int32.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int32))) (Var "mask"))
-  (App (App (App (Val (GoInstruction (FuncResolve OrInt32 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve OrInt32 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.int32))) (Var "$res0")))))))
 
 /-- Load atomically loads and returns the value stored in x.
 
@@ -464,11 +540,17 @@ noncomputable def Int32.Or.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Int64.Load.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Int64.ty)))) (Var "x"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int64.ty)))) (Var "x")))
+  (App (App (Val (GoInstruction (FuncResolve LoadInt64 []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int64.ty)))) (Var "x")))
-  (App (App (Val (GoInstruction (FuncResolve LoadInt64 []))) (Val #())) (Var "$a0"))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0"))))))
 
 /-- Store atomically stores val into x.
 
@@ -476,16 +558,14 @@ noncomputable def Int64.Load.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Int64.Store.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Int64.ty)))) (Var "x"))
   (Let "val" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "val"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int64.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int64))) (Var "val"))
-  (App (App (App (Val (GoInstruction (FuncResolve StoreInt64 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve StoreInt64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
+  (Val #()))))
 
 /-- Swap atomically stores new into x and returns the previous value.
 
@@ -493,14 +573,20 @@ noncomputable def Int64.Store.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Int64.Swap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
-  (App (Val exceptionDo)
   (Let "old" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Let "$res0" (Var "old")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Int64.ty)))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "new"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int64.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int64.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int64))) (Var "new"))
-  (App (App (App (Val (GoInstruction (FuncResolve SwapInt64 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve SwapInt64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0")))))))
 
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
@@ -509,16 +595,22 @@ noncomputable def Int64.CompareAndSwap.impl [GooseExts] [GoGlobalContext] : val 
   (LamV "x"
   (Lam "old"
   (Lam "new"
-  (App (Val exceptionDo)
   (Let "swapped" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res0" (Var "swapped")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Int64.ty)))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "new"))
   (Let "old" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "old"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int64.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int64.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int64))) (Var "old"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int64))) (Var "new"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve CompareAndSwapInt64 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))))))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve CompareAndSwapInt64 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))))
 
 /-- Add atomically adds delta to x and returns the new value.
 
@@ -526,14 +618,20 @@ noncomputable def Int64.CompareAndSwap.impl [GooseExts] [GoGlobalContext] : val 
 noncomputable def Int64.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "delta"
-  (App (Val exceptionDo)
   (Let "new" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Let "$res0" (Var "new")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Int64.ty)))) (Var "x"))
   (Let "delta" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "delta"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int64.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int64.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int64))) (Var "delta"))
-  (App (App (App (Val (GoInstruction (FuncResolve AddInt64 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve AddInt64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0")))))))
 
 /-- And atomically performs a bitwise AND operation on x using the bitmask
     provided as mask and returns the old value.
@@ -542,14 +640,20 @@ noncomputable def Int64.Add.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Int64.And.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
-  (App (Val exceptionDo)
   (Let "old" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Let "$res0" (Var "old")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Int64.ty)))) (Var "x"))
   (Let "mask" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "mask"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int64.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int64.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int64))) (Var "mask"))
-  (App (App (App (Val (GoInstruction (FuncResolve AndInt64 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve AndInt64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0")))))))
 
 /-- Or atomically performs a bitwise OR operation on x using the bitmask
     provided as mask and returns the old value.
@@ -558,14 +662,20 @@ noncomputable def Int64.And.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Int64.Or.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
-  (App (Val exceptionDo)
   (Let "old" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Let "$res0" (Var "old")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Int64.ty)))) (Var "x"))
   (Let "mask" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "mask"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int64.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Int64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Int64.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int64))) (Var "mask"))
-  (App (App (App (Val (GoInstruction (FuncResolve OrInt64 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve OrInt64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0")))))))
 
 /-- Load atomically loads and returns the value stored in x.
 
@@ -573,11 +683,17 @@ noncomputable def Int64.Or.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Uint32.Load.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Uint32.ty)))) (Var "x"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint32.ty)))) (Var "x")))
+  (App (App (Val (GoInstruction (FuncResolve LoadUint32 []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint32.ty)))) (Var "x")))
-  (App (App (Val (GoInstruction (FuncResolve LoadUint32 []))) (Val #())) (Var "$a0"))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.uint32))) (Var "$res0"))))))
 
 /-- Store atomically stores val into x.
 
@@ -585,16 +701,14 @@ noncomputable def Uint32.Load.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Uint32.Store.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Uint32.ty)))) (Var "x"))
   (Let "val" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "val"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint32.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "val"))
-  (App (App (App (Val (GoInstruction (FuncResolve StoreUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve StoreUint32 []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
+  (Val #()))))
 
 /-- Swap atomically stores new into x and returns the previous value.
 
@@ -602,14 +716,20 @@ noncomputable def Uint32.Store.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Uint32.Swap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
-  (App (Val exceptionDo)
   (Let "old" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (Let "$res0" (Var "old")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Uint32.ty)))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "new"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint32.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint32.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "new"))
-  (App (App (App (Val (GoInstruction (FuncResolve SwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve SwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.uint32))) (Var "$res0")))))))
 
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
@@ -618,16 +738,22 @@ noncomputable def Uint32.CompareAndSwap.impl [GooseExts] [GoGlobalContext] : val
   (LamV "x"
   (Lam "old"
   (Lam "new"
-  (App (Val exceptionDo)
   (Let "swapped" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res0" (Var "swapped")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Uint32.ty)))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "new"))
   (Let "old" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "old"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint32.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint32.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "old"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "new"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve CompareAndSwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))))))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve CompareAndSwapUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))))
 
 /-- Add atomically adds delta to x and returns the new value.
 
@@ -635,14 +761,20 @@ noncomputable def Uint32.CompareAndSwap.impl [GooseExts] [GoGlobalContext] : val
 noncomputable def Uint32.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "delta"
-  (App (Val exceptionDo)
   (Let "new" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (Let "$res0" (Var "new")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Uint32.ty)))) (Var "x"))
   (Let "delta" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "delta"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint32.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint32.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "delta"))
-  (App (App (App (Val (GoInstruction (FuncResolve AddUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve AddUint32 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.uint32))) (Var "$res0")))))))
 
 /-- And atomically performs a bitwise AND operation on x using the bitmask
     provided as mask and returns the old value.
@@ -651,14 +783,20 @@ noncomputable def Uint32.Add.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Uint32.And.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
-  (App (Val exceptionDo)
   (Let "old" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (Let "$res0" (Var "old")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Uint32.ty)))) (Var "x"))
   (Let "mask" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "mask"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint32.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint32.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "mask"))
-  (App (App (App (Val (GoInstruction (FuncResolve AndUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve AndUint32 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.uint32))) (Var "$res0")))))))
 
 /-- Or atomically performs a bitwise OR operation on x using the bitmask
     provided as mask and returns the old value.
@@ -667,14 +805,20 @@ noncomputable def Uint32.And.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Uint32.Or.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
-  (App (Val exceptionDo)
   (Let "old" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (Let "$res0" (Var "old")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Uint32.ty)))) (Var "x"))
   (Let "mask" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "mask"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint32.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint32.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint32.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint32))) (Var "mask"))
-  (App (App (App (Val (GoInstruction (FuncResolve OrUint32 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve OrUint32 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.uint32))) (Var "$res0")))))))
 
 /-- Load atomically loads and returns the value stored in x.
 
@@ -682,11 +826,17 @@ noncomputable def Uint32.Or.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Uint64.Load.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Uint64.ty)))) (Var "x"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint64.ty)))) (Var "x")))
+  (App (App (Val (GoInstruction (FuncResolve LoadUint64 []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint64.ty)))) (Var "x")))
-  (App (App (Val (GoInstruction (FuncResolve LoadUint64 []))) (Val #())) (Var "$a0"))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0"))))))
 
 /-- Store atomically stores val into x.
 
@@ -694,16 +844,14 @@ noncomputable def Uint64.Load.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Uint64.Store.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Uint64.ty)))) (Var "x"))
   (Let "val" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "val"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint64.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "val"))
-  (App (App (App (Val (GoInstruction (FuncResolve StoreUint64 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve StoreUint64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
+  (Val #()))))
 
 /-- Swap atomically stores new into x and returns the previous value.
 
@@ -711,14 +859,20 @@ noncomputable def Uint64.Store.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Uint64.Swap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
-  (App (Val exceptionDo)
   (Let "old" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res0" (Var "old")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Uint64.ty)))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "new"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint64.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint64.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "new"))
-  (App (App (App (Val (GoInstruction (FuncResolve SwapUint64 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve SwapUint64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")))))))
 
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
@@ -727,16 +881,22 @@ noncomputable def Uint64.CompareAndSwap.impl [GooseExts] [GoGlobalContext] : val
   (LamV "x"
   (Lam "old"
   (Lam "new"
-  (App (Val exceptionDo)
   (Let "swapped" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res0" (Var "swapped")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Uint64.ty)))) (Var "x"))
   (Let "new" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "new"))
   (Let "old" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "old"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint64.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint64.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "old"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "new"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve CompareAndSwapUint64 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))))))))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve CompareAndSwapUint64 []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))))
 
 /-- Add atomically adds delta to x and returns the new value.
 
@@ -744,14 +904,20 @@ noncomputable def Uint64.CompareAndSwap.impl [GooseExts] [GoGlobalContext] : val
 noncomputable def Uint64.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "delta"
-  (App (Val exceptionDo)
   (Let "new" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res0" (Var "new")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Uint64.ty)))) (Var "x"))
   (Let "delta" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "delta"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint64.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint64.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "delta"))
-  (App (App (App (Val (GoInstruction (FuncResolve AddUint64 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve AddUint64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")))))))
 
 /-- And atomically performs a bitwise AND operation on x using the bitmask
     provided as mask and returns the old value.
@@ -760,14 +926,20 @@ noncomputable def Uint64.Add.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Uint64.And.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
-  (App (Val exceptionDo)
   (Let "old" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res0" (Var "old")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Uint64.ty)))) (Var "x"))
   (Let "mask" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "mask"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint64.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint64.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "mask"))
-  (App (App (App (Val (GoInstruction (FuncResolve AndUint64 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve AndUint64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")))))))
 
 /-- Or atomically performs a bitwise OR operation on x using the bitmask
     provided as mask and returns the old value.
@@ -776,14 +948,20 @@ noncomputable def Uint64.And.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Uint64.Or.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
-  (App (Val exceptionDo)
   (Let "old" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res0" (Var "old")
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Uint64.ty)))) (Var "x"))
   (Let "mask" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "mask"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint64.ty)))) (Var "x")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (StructFieldRef Uint64.ty go!"v"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Uint64.ty)))) (Var "x")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "mask"))
-  (App (App (App (Val (GoInstruction (FuncResolve OrUint64 []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve OrUint64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")))))))
 
 noncomputable instance info' : PkgInfo pkg_id.sync.atomic where
   pkgImportedPkgs := []

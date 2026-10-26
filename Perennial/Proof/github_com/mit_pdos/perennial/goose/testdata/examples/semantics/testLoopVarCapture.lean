@@ -31,11 +31,14 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testLoop
       "Hp" ∷ p ↦ j ∗
       "f" ∷ f_ptr ↦ fv ∗
       "HΦ" ∷ Φ #true ∗
+      "«$res0»" ∷ «$res0_ptr» ↦ zero_val Bool ∗
       "%Hj" ∷ ⌜uint.Z j ≤ 3⌝ ∗
       "Hf" ∷ (⌜uint.Z j ≤ 1 ∧ fv = zero_val GoFunc⌝ ∨
         ∃ q : Loc, q ↦ W64 1 ∗
-          ⌜1 < uint.Z j ∧ fv = func.mk BAnon BAnon gl(exceptionDo (return: ![go.uint64] #q))⌝)
-      : IProp GF) $$ [«$iter_i» i f HΦ]
+          ⌜1 < uint.Z j ∧ fv = func.mk BAnon BAnon gl(let: "$res0" := (GoAlloc go.uint64) ((GoZeroVal go.uint64) #()) in
+            exceptionDo (let: "$r0" := ![go.uint64] #q in do: "$res0" <-[go.uint64] "$r0" ;;; return: #()) ;;
+            ![go.uint64] "$res0")⌝)
+      : IProp GF) $$ [«$iter_i» i f HΦ «$res0»]
   · iexists _, _, _
     iframe
     isplitr

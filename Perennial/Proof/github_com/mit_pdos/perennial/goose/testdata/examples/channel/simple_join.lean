@@ -30,6 +30,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.simple_joi
     github_com.mit_pdos.perennial.goose.testdata.examples.channel.simple_join.spec
       (GF := GF) (hG := hG) := by
   wp_start
+  wp_auto
   wp_apply chan.wp_make2 (V := Unit) $$ [] as %ch %γ ⟨#Hch, -, Hoc⟩
   · ipureintro; decide
   imod start_future (V := Unit) ch γ _ (.inr rfl) $$ Hch Hoc

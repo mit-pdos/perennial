@@ -70,20 +70,32 @@ noncomputable def asType [GooseExts] [GoGlobalContext] : GoString :=
     go: errors.go:64:6 -/
 noncomputable def New.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "text"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "text" (App (Val (GoInstruction (GoAlloc go.string))) (Var "text"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType errorString.ty) go.error))) (App (Val (GoInstruction (GoAlloc errorString.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.string))) (Var "text"))
+  (App (Val (GoInstruction (CompositeLiteral errorString.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0")))])))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (Convert (go.GoType.PointerType errorString.ty) go.error))) (App (Val (GoInstruction (GoAlloc errorString.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.string))) (Var "text"))
-  (App (Val (GoInstruction (CompositeLiteral errorString.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0")))])))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0")))))
 
 /-- go: errors.go:73:23 -/
 noncomputable def errorString.Error.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "e" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType errorString.ty)))) (Var "e"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef errorString.ty go!"s"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType errorString.ty)))) (Var "e"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef errorString.ty go!"s"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType errorString.ty)))) (Var "e")))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
 
 /-- Unwrap returns the result of calling the Unwrap method on err, if err's
     type contains an Unwrap method returning error.
@@ -95,7 +107,8 @@ noncomputable def errorString.Error.impl [GooseExts] [GoGlobalContext] : val :=
     go: wrap.go:17:6 -/
 noncomputable def Unwrap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "err"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
   (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])))) (App (Val (GoInstruction (GoLoad go.error))) (Var "err")))
   (Let "$ret0" (Fst (Var "__p"))
@@ -107,24 +120,34 @@ noncomputable def Unwrap.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))]) go!"Unwrap"))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])))) (Var "u"))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))]) go!"Unwrap"))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])))) (Var "u"))) (Val #())))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))))
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil)))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])))) (Pair (Var "u") (Var "$r0")))))))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])))) (Pair (Var "u") (Var "$r0"))))))))))))))
+  (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0")))))
 
 /-- go: wrap.go:54:6 -/
 noncomputable def is.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "err"
   (Lam "target"
   (Lam "targetComparable"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "targetComparable" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "targetComparable"))
   (Let "target" (App (Val (GoInstruction (GoAlloc go.error))) (Var "target"))
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
@@ -141,8 +164,12 @@ noncomputable def is.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))]) go!"Unwrap"))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error]))])))) (Var "x"))) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil)))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val #false))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
@@ -153,8 +180,12 @@ noncomputable def is.impl [GooseExts] [GoGlobalContext] : val :=
   (If (Var "$ok")
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [(go.GoType.SliceType go.error)]))])))) (Var "$x"))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val #false))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
   (Let "$range" (App (App (Val (GoInstruction (MethodResolve (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [(go.GoType.SliceType go.error)]))]) go!"Unwrap"))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [(go.GoType.SliceType go.error)]))])))) (Var "x"))) (Val #()))
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
   (App (App (Val (slice.forRange go.error)) (Var "$range"))
@@ -166,16 +197,24 @@ noncomputable def is.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.error))) (Var "target"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.bool))) (Var "targetComparable"))
   (App (App (App (App (Val (GoInstruction (FuncResolve is' []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val #true))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
   (Var "$key")))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$value"))))))))))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val #false)))))))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))))))))))))
   (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Is" (go.signature.Signature [go.error] false [go.bool]))])))) (App (Val (GoInstruction (GoLoad go.error))) (Var "err")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
@@ -187,8 +226,12 @@ noncomputable def is.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.error))) (Var "target"))
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Is" (go.signature.Signature [go.error] false [go.bool]))]) go!"Is"))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Is" (go.signature.Signature [go.error] false [go.bool]))])))) (Var "x"))) (Var "$a0"))) (Val #false))
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val #true))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
@@ -196,12 +239,17 @@ noncomputable def is.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Is" (go.signature.Signature [go.error] false [go.bool]))])))) (Pair (Var "x") (Var "$r0")))))))))))))))
   (If (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "targetComparable")) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (GoLoad go.error))) (Var "target")))) (Val #false))
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val #true))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
   (App (Val doExecute)
   (Val #()))))))
   (Lam BAnon
-  (Val #()))))))))))
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))))
 
 /-- AsType finds the first error in err's tree that matches the type E, and
     if one is found, returns that error value and true. Otherwise, it
@@ -220,7 +268,9 @@ noncomputable def is.impl [GooseExts] [GoGlobalContext] : val :=
     go: wrap.go:167:6 -/
 noncomputable def AsType.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "err"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc E))) (App (Val (GoInstruction (GoZeroVal E))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "pe" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType E)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType E)))) (Val #())))
@@ -229,22 +279,39 @@ noncomputable def AsType.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : va
   (App (App (App (Val (GoInstruction (FuncResolve asType [E]))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (Var "$ret0") (Var "$ret1")))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$res0") (Var "$r0")))))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil)))))
   (Let "zero" (App (Val (GoInstruction (GoAlloc E))) (App (Val (GoInstruction (GoZeroVal E))) (Val #())))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (Var "zero"))
+  (Let "$r1" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (GoLoad E))) (Var "zero")) (Val #false))))
+  (Val #()))))
   (App (Val doExecute)
-  (Val #())))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (Pair (App (Val (GoInstruction (GoLoad E))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1")))))))
 
 /-- go: wrap.go:176:6 -/
 noncomputable def asType.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : val :=
   (LamV "err"
   (Lam "ppe"
-  (App (Val exceptionDo)
-  (Let BAnon (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Let BAnon (App (Val (GoInstruction (GoAlloc E))) (App (Val (GoInstruction (GoZeroVal E))) (Val #())))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc E))) (App (Val (GoInstruction (GoZeroVal E))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "ppe" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.PointerType E))))) (Var "ppe"))
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
   (App (App (App (Val doFor) (Lam BAnon
@@ -261,7 +328,7 @@ noncomputable def asType.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : va
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil)))))
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (GoZeroVal E))) (Val #())) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #()))))
+  (Val #()))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
@@ -273,7 +340,7 @@ noncomputable def asType.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : va
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [(go.GoType.SliceType go.error)]))])))) (Var "$x"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (GoZeroVal E))) (Val #())) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #()))))))
+  (Val #()))))
   (Let "$range" (App (App (Val (GoInstruction (MethodResolve (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [(go.GoType.SliceType go.error)]))]) go!"Unwrap"))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [(go.GoType.SliceType go.error)]))])))) (Var "x"))) (Val #()))
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
   (App (App (Val (slice.forRange go.error)) (Var "$range"))
@@ -294,8 +361,16 @@ noncomputable def asType.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : va
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (Var "x"))
+  (Let "$r1" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (GoLoad E))) (Var "x")) (Val #true)))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
@@ -311,7 +386,7 @@ noncomputable def asType.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : va
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$value"))))))))))))
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (GoZeroVal E))) (Val #())) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))))))))))))))
+  (Val #())))))))))))))
   (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"As" (go.signature.Signature [go.any] false [go.bool]))])))) (App (Val (GoInstruction (GoLoad go.error))) (Var "err")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
@@ -325,8 +400,16 @@ noncomputable def asType.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : va
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType E) go.any))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType E)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.PointerType E))))) (Var "ppe"))))
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"As" (go.signature.Signature [go.any] false [go.bool]))]) go!"As"))) (App (Val (GoInstruction (GoLoad (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"As" (go.signature.Signature [go.any] false [go.bool]))])))) (Var "x"))) (Var "$a0")))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType E)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.PointerType E))))) (Var "ppe"))))
+  (Let "$r1" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (GoLoad E))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType E)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.PointerType E))))) (Var "ppe")))) (Val #true)))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val doExecute)
   (Val #())))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType E)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType E)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.PointerType E))))) (Var "ppe"))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType E)))) (Val UntypedNil)))))
@@ -351,8 +434,16 @@ noncomputable def asType.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : va
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad E))) (Var "e"))
+  (Let "$r1" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (GoLoad E))) (Var "e")) (Val #true)))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore E))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
@@ -360,7 +451,8 @@ noncomputable def asType.impl [GooseExts] [GoGlobalContext] (E : go.GoType) : va
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore E))) (Pair (Var "e") (Var "$r0")))))))))))))))
   (Lam BAnon
-  (Val #()))))))))))
+  (Val #()))))))
+  (Pair (App (Val (GoInstruction (GoLoad E))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1"))))))))
 
 noncomputable instance info' : PkgInfo pkg_id.errors where
   pkgImportedPkgs := []

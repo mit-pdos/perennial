@@ -34,9 +34,12 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.eliminatio
     github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.NewEliminationStack.spec
       (GF := GF) (hG := hG) := fun N => by
   wp_start
+  wp_auto
   wp_apply wp_NewLockedStack as %base %γbase ⟨#Hbase, Hls⟩
+  iapply wp_fupd
   wp_apply chan.wp_make1 (V := GoString) as %ch %γch ⟨#Hch, -, Hc⟩
-  wp_alloc s as Hs
+  irename «$r0» => Hs
+  generalize «$r0_ptr» = s at *
   ipersist Hs
   imod ghostVar_alloc ([] : List GoString) with ⟨%γspec, Hspec⟩
   icases ghostVar_split γspec ([] : List GoString) (1 : Qp).half (1 : Qp).half $$ [Hspec]
@@ -60,7 +63,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.eliminatio
     isplitl [Hsa]
     · iexact Hsa
     · iexact Hra
-  wp_auto
+  imodintro
   iapply HΦ $$ %s %γ
   unfold isEliminationStack ownEliminationStack
   iframe

@@ -26,10 +26,11 @@ def wrapDefer : val :=
 `with_defer_recover:`): `body` also receives the cell `$panic` (an `any`, `nil`
 when not panicking), which the handler sets to the panic's value before running
 the deferred chain and which a `recover()` reads and clears. If the chain
-cleared it, the function returns `results #()`, its (named) results; otherwise
-the panic continues with the cell's value. -/
+cleared it, the function returns normally (with `#()`: Goose's translation then
+returns the values of the function's result variables); otherwise the panic
+continues with the cell's value. -/
 def wrapDeferRecover : val :=
-  λ: "results" "body",
+  λ: "body",
     let: "$defer" := GoAlloc deferType (GoZeroVal deferType #()) in
     "$defer" <-[deferType] #(func.mk BAnon BAnon #()) ;;
     let: "$panic" := GoAlloc go.any (GoZeroVal go.any #()) in
@@ -38,7 +39,7 @@ def wrapDeferRecover : val :=
         "$panic" <-[go.any] "$p" ;;
         (![deferType] "$defer") #() ;;
         let: "$p'" := ![go.any] "$panic" in
-        if: "$p'" =⟨go.any⟩ #interface.nil then "results" #() else Raise "$p'")
+        if: "$p'" =⟨go.any⟩ #interface.nil then #() else Raise "$p'")
       (λ: "$func_ret", (![deferType] "$defer") #() ;; "$func_ret")
 
 /-- `recover()` in a deferred function literal: read and clear the `$panic` cell
@@ -55,14 +56,14 @@ end defn
 scoped syntax:16 "with_defer: " term:17 : term
 /-- `with_defer': e` is `wrapDefer (λ: "$defer", e)` with a value lambda. -/
 scoped syntax:16 "with_defer': " term:17 : term
-/-- `with_defer_recover: r; e` is `wrapDeferRecover (λ: <>, r) (λ: "$defer" "$panic", e)`. -/
-scoped syntax:16 "with_defer_recover: " term:17 "; " term:17 : term
+/-- `with_defer_recover: e` is `wrapDeferRecover (λ: "$defer" "$panic", e)`. -/
+scoped syntax:16 "with_defer_recover: " term:17 : term
 
 macro_rules
   | `(with_defer: $e) => `(App (Val wrapDefer) (Rec BAnon (BNamed "$defer") gl($e)))
   | `(with_defer': $e) => `(App (Val wrapDefer) (Val (RecV BAnon (BNamed "$defer") gl($e))))
-  | `(with_defer_recover: $r; $e) =>
-    `(App (App (Val wrapDeferRecover) (Rec BAnon BAnon gl($r)))
+  | `(with_defer_recover: $e) =>
+    `(App (Val wrapDeferRecover)
       (Rec BAnon (BNamed "$defer") (Rec BAnon (BNamed "$panic") gl($e))))
 
 end Perennial

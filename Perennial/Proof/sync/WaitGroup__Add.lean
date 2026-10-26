@@ -40,9 +40,7 @@ theorem sync.WaitGroup.Add.wp_proof
     sync.WaitGroup.Add.spec (GF := GF) (hG := hG) := by
   intro wg delta γ N
   wp_start as #His
-  iapply wp_with_defer
-  iintro %defer Hdefer
-  wp_auto
+  wp_apply wp_with_defer as %defer Hdefer
   wp_apply wp_IsInBubble
   wp_apply_core wp_Uint64_Add $$ [] [-]
   · iPkgInit

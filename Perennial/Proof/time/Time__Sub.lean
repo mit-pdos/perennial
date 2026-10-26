@@ -49,7 +49,7 @@ theorem time.Time.Sub.wp_proof
     wp_if_destruct
     · wp_end
     · wp_apply Time.wp_ptr_Before_of wp_Time_Before $$ [$t] as %b' t
-      wp_if_destruct <;> wp_end
+      wp_if_destruct <;> (try simp only [time.minDuration, time.maxDuration]) <;> wp_auto <;> wp_end
   · wp_apply wp_subMono as %d -
     wp_end
 

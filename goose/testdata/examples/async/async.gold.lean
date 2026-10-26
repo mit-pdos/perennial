@@ -31,19 +31,17 @@ noncomputable def UseDisk [GooseExts] [GoGlobalContext] : GoString :=
 /-- go: async.go:6:6 -/
 noncomputable def TakesDisk.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "d"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.async_disk.Disk.ty))) (Var "d"))
-  (App (Val doReturn)
-  (Val #())))))
+  (App (Val doExecute)
+  (Val #()))))
+  (Val #())))
 
 /-- go: async.go:8:6 -/
 noncomputable def UseDisk.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "d"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.async_disk.Disk.ty))) (Var "d"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 4096)))
   (Let "v" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -55,7 +53,8 @@ noncomputable def UseDisk.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "v"))
   (App (App (App (Val (GoInstruction (MethodResolve _root_.Perennial.github_com.goose_lang.primitive.disk.Disk.ty go!"Write"))) (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.async_disk.Disk.ty))) (Var "d"))) (Var "$a0")) (Var "$a1"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "v") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "v") (Var "$r0")))))))))
+  (Val #())))
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.async where
   pkgImportedPkgs := [pkg_id.github_com.goose_lang.primitive.async_disk]

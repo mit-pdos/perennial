@@ -50,10 +50,7 @@ theorem wp_parentCancelCtx_self_of
     {{ RET (PairV #p #true); True }} := by
   have wp_done_Load_known := wp_done_Load_known_of wp_VLoad
   wp_start as ⟨#Hp, #Hd, #Hcch⟩
-  wp_alloc par as Hpar
-  wp_pures
-  wp_load
-  wp_pures
+  wp_auto
   wp_apply wp_cancelCtx_Done p _ _ $$ [$Hp] as %ch' %γch' ⟨#Hd', -⟩
   ihave #Hdd' := isContextDone_doneGn _ _ _ $$ Hd'
   ihave %heq := dghostVar_agree _ _ _ _ _ $$ Hd Hdd'

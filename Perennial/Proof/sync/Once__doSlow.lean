@@ -37,9 +37,7 @@ theorem sync.Once.doSlow.wp_proof
   wp_start as ⟨#HO, #Hf⟩
   simp only [isOnce_unseal, isOnceDef]
   iNamed HO
-  iapply wp_with_defer
-  iintro %defer Hdefer
-  wp_auto_lc 2
+  wp_apply (lc := 2) wp_with_defer as %defer Hdefer
   wp_apply wp_Mutex_Lock $$ [$Hm] with ⟨Hlocked, Hlk⟩
   unfold OnceLockInv
   icases Hlk with ⟨%done, done2, HPQ⟩

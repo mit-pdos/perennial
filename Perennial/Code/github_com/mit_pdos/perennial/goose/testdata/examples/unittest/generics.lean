@@ -103,11 +103,17 @@ noncomputable def useAnyPointer [GooseExts] [GoGlobalContext] : GoString :=
 /-- go: constraints.go:3:6 -/
 noncomputable def UnderlyingSlice.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "s"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc T))) (Var "s"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [T]))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "s"))
-  (App (App (Val (GoInstruction (FuncResolve go.len [T]))) (Val #())) (Var "$a0")))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
 /-- Clone copies a generic slice.
 
@@ -116,77 +122,116 @@ noncomputable def UnderlyingSlice.impl [GooseExts] [GoGlobalContext] (T : go.GoT
     go: constraints.go:10:6 -/
 noncomputable def Clone.impl [GooseExts] [GoGlobalContext] (S E : go.GoType) : val :=
   (LamV "s"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc S))) (App (Val (GoInstruction (GoZeroVal S))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc S))) (Var "s"))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (CompositeLiteral S))) (LiteralValue []))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (CompositeLiteral S))) (LiteralValue []))
   (Let "$a1" (App (Val (GoInstruction (GoLoad S))) (Var "s"))
-  (App (App (App (Val (GoInstruction (FuncResolve go.append [S]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [S]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore S))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad S))) (Var "$res0")))))
 
 /-- BoxGet is a function getter (rather than a method)
 
     go: generics.go:13:6 -/
 noncomputable def BoxGet.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "b"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (Box.ty T)))) (Var "b"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (Box.ty T) go!"Value"))) (Var "b")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (Box.ty T) go!"Value"))) (Var "b")))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad T))) (Var "$res0")))))
 
 /-- go: generics.go:17:6 -/
 noncomputable def BoxGet2.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (Box.ty go.uint64)))) (Var "b"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef (Box.ty go.uint64) go!"Value"))) (Var "b")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef (Box.ty go.uint64) go!"Value"))) (Var "b")))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")))))
 
 /-- go: generics.go:21:17 -/
 noncomputable def Box.Get.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "b"
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (Box.ty T)))) (Var "b"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (Box.ty T) go!"Value"))) (Var "b")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef (Box.ty T) go!"Value"))) (Var "b"))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad T))) (Var "$res0"))))))
 
 /-- go: generics.go:25:6 -/
 noncomputable def makeGenericBox.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "value"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (Box.ty T)))) (App (Val (GoInstruction (GoZeroVal (Box.ty T)))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "value" (App (Val (GoInstruction (GoAlloc T))) (Var "value"))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad T))) (Var "value"))
+  (App (Val (GoInstruction (CompositeLiteral (Box.ty T)))) (LiteralValue [(KeyedElement (some (KeyField go!"Value")) (ElementExpression T (Var "$v0")))])))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Let "$v0" (App (Val (GoInstruction (GoLoad T))) (Var "value"))
-  (App (Val (GoInstruction (CompositeLiteral (Box.ty T)))) (LiteralValue [(KeyedElement (some (KeyField go!"Value")) (ElementExpression T (Var "$v0")))])))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (Box.ty T)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (Box.ty T)))) (Var "$res0")))))
 
 /-- go: generics.go:29:6 -/
 noncomputable def makeBox.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (Box.ty go.uint64)))) (App (Val (GoInstruction (GoZeroVal (Box.ty go.uint64)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Let "$v0" (Val #(W64 42))
+  (App (Val (GoInstruction (CompositeLiteral (Box.ty go.uint64)))) (LiteralValue [(KeyedElement (some (KeyField go!"Value")) (ElementExpression go.uint64 (Var "$v0")))])))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Let "$v0" (Val #(W64 42))
-  (App (Val (GoInstruction (CompositeLiteral (Box.ty go.uint64)))) (LiteralValue [(KeyedElement (some (KeyField go!"Value")) (ElementExpression go.uint64 (Var "$v0")))]))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (Box.ty go.uint64)))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad (Box.ty go.uint64)))) (Var "$res0")))))
 
 /-- go: generics.go:34:6 -/
 noncomputable def useBoxGet.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "$r0" (Let "$a0" (Val #(W64 42))
   (App (App (Val (GoInstruction (FuncResolve makeGenericBox [go.uint64]))) (Val #())) (Var "$a0")))
   (Let "x" (App (Val (GoInstruction (GoAlloc (Box.ty go.uint64)))) (App (Val (GoInstruction (GoZeroVal (Box.ty go.uint64)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Box.ty go.uint64)) go!"Get"))) (Var "x")) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType (Box.ty go.uint64)) go!"Get"))) (Var "x")) (Val #())))))
+  (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (Box.ty go.uint64)))) (Pair (Var "x") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (Box.ty go.uint64)))) (Pair (Var "x") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")))))
 
 /-- go: generics.go:47:6 -/
 noncomputable def useContainer.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
+  (Seq (App (Val exceptionDo)
   (Let "$r0" (Let "$v0" (Val #(W64 1))
   (Let "$v1" (Let "$k0" (Val #(W64 1))
   (Let "$v1" (Val #(W64 2))
@@ -212,15 +257,13 @@ noncomputable def useContainer.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef (Container.ty go.uint64) go!"X"))) (Var "container")) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (Container.ty go.uint64)))) (Pair (Var "container") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (Container.ty go.uint64)))) (Pair (Var "container") (Var "$r0"))))))))
+  (Val #())))
 
 /-- go: generics.go:80:6 -/
 noncomputable def useMultiParam.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
+  (Seq (App (Val exceptionDo)
   (Let "$r0" (Let "$v0" (Val #true)
   (Let "$v1" (Val #(W64 1))
   (App (Val (GoInstruction (CompositeLiteral (MultiParam.ty go.uint64 go.bool)))) (LiteralValue [(KeyedElement (some (KeyField go!"Y")) (ElementExpression go.bool (Var "$v0"))), (KeyedElement (some (KeyField go!"X")) (ElementExpression go.uint64 (Var "$v1")))]))))
@@ -230,16 +273,14 @@ noncomputable def useMultiParam.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef (MultiParam.ty go.uint64 go.bool) go!"X"))) (Var "mp")) (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (MultiParam.ty go.uint64 go.bool)))) (Pair (Var "mp") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (MultiParam.ty go.uint64 go.bool)))) (Pair (Var "mp") (Var "$r0"))))))))
+  (Val #())))
 
 /-- go: generics.go:85:6 -/
 noncomputable def swapMultiParam.impl [GooseExts] [GoGlobalContext] (A : go.GoType) : val :=
   (LamV "p"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (MultiParam.ty A A))))) (Var "p"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (Let "$r0" (App (Val (GoInstruction (GoLoad A))) (App (Val (GoInstruction (StructFieldRef (MultiParam.ty A A) go!"X"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (MultiParam.ty A A))))) (Var "p"))))
   (Let "temp" (App (Val (GoInstruction (GoAlloc A))) (App (Val (GoInstruction (GoZeroVal A))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -251,45 +292,48 @@ noncomputable def swapMultiParam.impl [GooseExts] [GoGlobalContext] (A : go.GoTy
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore A))) (Pair (App (Val (GoInstruction (StructFieldRef (MultiParam.ty A A) go!"X"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (MultiParam.ty A A))))) (Var "p"))) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore A))) (Pair (Var "temp") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore A))) (Pair (Var "temp") (Var "$r0")))))))))
+  (Val #())))
 
 /-- go: generics.go:91:6 -/
 noncomputable def multiParamFunc.impl [GooseExts] [GoGlobalContext] (A B : go.GoType) : val :=
   (LamV "x"
   (Lam "b"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType B)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType B)))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc B))) (Var "b"))
   (Let "x" (App (Val (GoInstruction (GoAlloc A))) (Var "x"))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad B))) (Var "b"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType B)))) (LiteralValue [(KeyedElement none (ElementExpression B (Var "$v0")))])))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Let "$v0" (App (Val (GoInstruction (GoLoad B))) (Var "b"))
-  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType B)))) (LiteralValue [(KeyedElement none (ElementExpression B (Var "$v0")))])))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType B)))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType B)))) (Var "$res0"))))))
 
 /-- go: generics.go:95:6 -/
 noncomputable def useMultiParamFunc.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
+  (Seq (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
   (Let "$a0" (Val #(W64 1))
   (Let "$a1" (Val #true)
-  (App (App (App (Val (GoInstruction (FuncResolve multiParamFunc [go.uint64, go.bool]))) (Val #())) (Var "$a0")) (Var "$a1")))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve multiParamFunc [go.uint64, go.bool]))) (Val #())) (Var "$a0")) (Var "$a1")))))))
+  (Val #())))
 
 /-- go: generics.go:101:6 -/
 noncomputable def useAnyPointer.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (Val doExecute)
   (Let "$a0" (Var "x")
-  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers.AnyPointer [go.uint64]))) (Val #())) (Var "$a0"))))))))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers.AnyPointer [go.uint64]))) (Val #())) (Var "$a0"))))))
+  (Val #())))
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics where
   pkgImportedPkgs := [pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers]

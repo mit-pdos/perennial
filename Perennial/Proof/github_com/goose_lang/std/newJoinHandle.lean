@@ -31,18 +31,22 @@ theorem github_com.goose_lang.std.newJoinHandle.wp_proof
     github_com.goose_lang.std.newJoinHandle.spec (GF := GF) (hG := hG) := fun P => by
   wp_start
   wp_auto
+  irename «$r0» => Hmu
+  generalize «$r0_ptr» = mu_l at *
+  iapply wp_fupd
   wp_apply wp_NewCond as %cond_l #Hcond
-  wp_alloc jh_l as Hjh
+  irename «$r0» => Hjh
+  generalize «$r0_ptr» = jh_l at *
   iStructNamed Hjh
   ipersist mu
   ipersist cond
-  imod sync.init_Mutex (jhInv jh_l P) ⊤ «$r0_ptr» $$ «$r0» [done] with #Hlock
+  imod sync.init_Mutex (jhInv jh_l P) ⊤ mu_l $$ Hmu [done] with #Hlock
   · inext; iexists false; iframe; unfold jhP; simp only [Bool.false_eq_true, ↓reduceIte]
     itrivial
-  wp_auto
+  imodintro
   iapply HΦ
   unfold isJoinHandle
-  iexists «$r0_ptr», cond_l
+  iexists mu_l, cond_l
   iframe #
 
 end proof

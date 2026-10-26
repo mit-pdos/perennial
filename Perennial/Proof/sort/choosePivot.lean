@@ -62,16 +62,16 @@ theorem sort.choosePivot.wp_proof
       · iframe; iframe #; ipureintro; omega
       have : sint.Z a ≤ sint.Z r ∧ sint.Z r < sint.Z b := by
         rcases Hr with h | h | h <;> subst h <;> omega
-      wp_if_destruct <;> (try wp_if_destruct) <;> ((try simp only [increasingHint, decreasingHint, unknownHint]); iapply HΦ; iframe; ipureintro; exact this)
+      wp_if_destruct <;> (try wp_if_destruct) <;> ((try simp only [increasingHint, decreasingHint, unknownHint]); wp_auto; iapply HΦ; iframe; ipureintro; exact this)
     · wp_apply wp_median x own R (a + d * 1) (a + d * 2) (a + d * 3) swaps_ptr
         xs _ $$ [Hxs swaps] with %r %sw4 ⟨Hxs, %Hr, swaps⟩
       · iframe; iframe #; ipureintro; rw [Hi, Hj, Hk]; omega
       have : sint.Z a ≤ sint.Z r ∧ sint.Z r < sint.Z b := by
         rcases Hr with h | h | h <;> subst h <;> omega
-      wp_if_destruct <;> (try wp_if_destruct) <;> ((try simp only [increasingHint, decreasingHint, unknownHint]); iapply HΦ; iframe; ipureintro; exact this)
+      wp_if_destruct <;> (try wp_if_destruct) <;> ((try simp only [increasingHint, decreasingHint, unknownHint]); wp_auto; iapply HΦ; iframe; ipureintro; exact this)
   · have : sint.Z a ≤ sint.Z (a + d * 2) ∧ sint.Z (a + d * 2) < sint.Z b := by
       rw [Hj]; omega
-    (try wp_if_destruct) <;> (try wp_if_destruct) <;> ((try simp only [increasingHint, decreasingHint, unknownHint]); iapply HΦ; iframe; ipureintro; exact this)
+    (try wp_if_destruct) <;> (try wp_if_destruct) <;> ((try simp only [increasingHint, decreasingHint, unknownHint]); wp_auto; iapply HΦ; iframe; ipureintro; exact this)
 
 end proof
 

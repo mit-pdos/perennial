@@ -30,8 +30,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFall
       "i" ∷ i_ptr ↦ i ∗
       "n" ∷ n_ptr ↦ n ∗
       "HΦ" ∷ Φ #true ∗
+      "«$res0»" ∷ «$res0_ptr» ↦ zero_val Bool ∗
       "%Hi" ∷ ⌜(i = W64 0 ∧ n = W64 0) ∨ (i = W64 1 ∧ n = W64 101) ∨
-        (i = W64 2 ∧ n = W64 211)⌝ : IProp GF) $$ [i n HΦ]
+        (i = W64 2 ∧ n = W64 211)⌝ : IProp GF) $$ [i n HΦ «$res0»]
   · iexists _, _
     iframe
     ipureintro; left; exact ⟨rfl, rfl⟩

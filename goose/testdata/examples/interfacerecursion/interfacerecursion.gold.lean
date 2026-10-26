@@ -39,35 +39,31 @@ attribute [irreducible] c.ty
 noncomputable def c.Foo.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType c.ty)))) (Var "c"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType c.ty) B.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType c.ty)))) (Var "c")))
   (Let "y" (App (Val (GoInstruction (GoAlloc B.ty))) (App (Val (GoInstruction (GoZeroVal B.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve B.ty go!"Bar"))) (App (Val (GoInstruction (GoLoad B.ty))) (Var "y"))) (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore B.ty))) (Pair (Var "y") (Var "$r0"))))))))))))
+  (App (Val (GoInstruction (GoStore B.ty))) (Pair (Var "y") (Var "$r0")))))))))
+  (Val #()))))
 
 /-- go: x.go:19:13 -/
 noncomputable def c.Bar.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "c"
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType c.ty)))) (Var "c"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType c.ty) A.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType c.ty)))) (Var "c")))
   (Let "y" (App (Val (GoInstruction (GoAlloc A.ty))) (App (Val (GoInstruction (GoZeroVal A.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve A.ty go!"Foo"))) (App (Val (GoInstruction (GoLoad A.ty))) (Var "y"))) (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore A.ty))) (Pair (Var "y") (Var "$r0"))))))))))))
+  (App (Val (GoInstruction (GoStore A.ty))) (Pair (Var "y") (Var "$r0")))))))))
+  (Val #()))))
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.interfacerecursion where
   pkgImportedPkgs := []

@@ -31,6 +31,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCatc
   iintro HΦ
   wp_func_call
   wp_call
+  wp_auto
   wp_apply wp_catchTwoDeep
   iexact HΦ
 

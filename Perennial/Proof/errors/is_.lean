@@ -40,8 +40,9 @@ theorem errors.is.wp_proof :
   -- the comparison `targetComparable && err == target`, joined
   wp_bind (If _ _ _)
   iapply wp_wand (Φ := fun v => iprop(⌜v = executeVal⌝ ∗ ⌜c = true → e ≠ target⌝ ∗
-      "target" ∷ target_ptr ↦ target ∗ "err" ∷ err_ptr ↦ e ∗ "targetComparable" ∷ targetComparable_ptr ↦ c ∨
-      ⌜v = returnVal #true ∧ c = true ∧ e = target⌝)) $$ [target err targetComparable]
+      "target" ∷ target_ptr ↦ target ∗ "err" ∷ err_ptr ↦ e ∗ "targetComparable" ∷ targetComparable_ptr ↦ c ∗
+      "«$res0»" ∷ «$res0_ptr» ↦ zero_val Bool ∨
+      ⌜v = returnVal #() ∧ c = true ∧ e = target⌝ ∗ «$res0_ptr» ↦ true)) $$ [target err targetComparable «$res0»]
   · cases c
     · wp_auto
       ileft
@@ -67,6 +68,7 @@ theorem errors.is.wp_proof :
         wp_if_destruct
         · subst Hif
           iright
+          iframe
           ipureintro
           refine ⟨trivial, trivial, ?_⟩
           rw [hii ii hty (by rw [hl', hl])]
@@ -86,7 +88,7 @@ theorem errors.is.wp_proof :
         refine ⟨rfl, fun _ h => hty ?_⟩
         cases h; rfl
   iintro %v Hv
-  icases Hv with (⟨%Hv, %Hne, target, err, targetComparable⟩ | %Hret)
+  icases Hv with (⟨%Hv, %Hne, target, err, targetComparable, «$res0»⟩ | ⟨%Hret, «$res0»⟩)
   rotate_left
   · obtain ⟨rfl, rfl, rfl⟩ := Hret
     wp_auto
@@ -119,8 +121,10 @@ theorem errors.is.wp_proof :
     -- the `Is` method, joined before the `Unwrap` switch
     wp_join (Q := fun v => iprop(
         (⌜v = executeVal⌝ ∗ "err" ∷ err_ptr ↦ (interface.ok ii : GoError) ∗
-          "target" ∷ target_ptr ↦ target ∗ "targetComparable" ∷ targetComparable_ptr ↦ c) ∨
-        ⌜v = returnVal #true ∧ M ii⌝)) at next with [err target targetComparable]
+          "target" ∷ target_ptr ↦ target ∗ "targetComparable" ∷ targetComparable_ptr ↦ c ∗
+          "«$res0»" ∷ «$res0_ptr» ↦ zero_val Bool) ∨
+        ⌜v = returnVal #() ∧ M ii⌝ ∗ «$res0_ptr» ↦ true)) at next
+      with [err target targetComparable «$res0»]
     cases hIs : go.typeSetContains ii.ty
       (go.InterfaceType [go.MethodElem go!"Is" (go.Signature [go.error] false [go.bool])])
     case' true =>
@@ -132,7 +136,7 @@ theorem errors.is.wp_proof :
       cases b
       case true =>
         wp_auto
-        iright; ipureintro; exact ⟨rfl, Hb rfl⟩
+        iright; iframe; ipureintro; exact ⟨rfl, Hb rfl⟩
       wp_auto
       ileft; iframe; ipureintro; rfl
     case' false =>
@@ -140,7 +144,7 @@ theorem errors.is.wp_proof :
       wp_auto
       ileft; iframe; ipureintro; rfl
     iintro HQ
-    icases HQ with (⟨%Hv, err, target, targetComparable⟩ | %Hret)
+    icases HQ with (⟨%Hv, err, target, targetComparable, «$res0»⟩ | ⟨%Hret, «$res0»⟩)
     rotate_left
     · obtain ⟨rfl, hM⟩ := Hret
       wp_auto

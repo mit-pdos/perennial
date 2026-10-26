@@ -26,7 +26,8 @@ variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.se
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testRangeArrayLit.wp_proof :
     github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testRangeArrayLit.spec (GF := GF) (hG := hG) := by
   semantics_auto
-  rename_i k_ptr
+  rename_i res_ptr k_ptr
+  irename : res_ptr ↦ (zero_val Bool) => Hres
   irename i => Hj
   irename : k_ptr ↦ (zero_val w64) => Hk
   ihave HI : (∃ j s xv kv : w64,
@@ -35,8 +36,10 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testRang
       "x" ∷ x_ptr ↦ xv ∗
       "Hk" ∷ k_ptr ↦ kv ∗
       "HΦ" ∷ Φ #true ∗
+      "Hres" ∷ res_ptr ↦ zero_val Bool ∗
+      "«$res0»" ∷ «$res0_ptr» ↦ zero_val w64 ∗
       "%Hj" ∷ ⌜(j = W64 0 ∧ s = W64 0) ∨ (j = W64 1 ∧ s = W64 1) ∨
-        (j = W64 2 ∧ s = W64 4) ∨ (j = W64 3 ∧ s = W64 9)⌝ : IProp GF) $$ [Hj sum x Hk HΦ]
+        (j = W64 2 ∧ s = W64 4) ∨ (j = W64 3 ∧ s = W64 9)⌝ : IProp GF) $$ [Hj sum x Hk HΦ Hres «$res0»]
   · iexists _, _, _, _
     iframe
     ipureintro; left; exact ⟨rfl, rfl⟩

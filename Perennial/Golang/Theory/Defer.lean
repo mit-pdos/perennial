@@ -40,11 +40,11 @@ theorem wp_with_defer (e : Expr) (Φ : val → IProp GF) :
   wp_pures
   iapply Hwp $$ Hdefer
 
-/-- `with_defer_recover: r; e`: as `with_defer:`, with the `$panic` cell (`nil`)
+/-- `with_defer_recover: e`: as `with_defer:`, with the `$panic` cell (`nil`)
 that the handler sets to the panic's value before running the deferred chain, and
 that a `recover()` (`wp_recoverPanic`) reads and clears; if the chain cleared it,
-the function returns `r`, its results. -/
-theorem wp_with_defer_recover (r e : Expr) (Φ : val → IProp GF) :
+the function returns `#()` (and Goose's translation then its result variables). -/
+theorem wp_with_defer_recover (e : Expr) (Φ : val → IProp GF) :
     iprop(∀ defer : Loc, ∀ pnc : Loc, defer ↦ func.mk BAnon BAnon #() -∗
       pnc ↦ (interface.nil : GoInterface) -∗
       WP (Catch (exceptionDo (subst "$panic" #pnc (subst "$defer" #defer e)))
@@ -52,9 +52,9 @@ theorem wp_with_defer_recover (r e : Expr) (Φ : val → IProp GF) :
               #pnc <-[go.any] "$p" ;;
               (![deferType] #defer) #() ;;
               let: "$p'" := ![go.any] #pnc in
-              if: "$p'" =⟨go.any⟩ #interface.nil then (λ: <>, r : val) #() else Raise "$p'")
+              if: "$p'" =⟨go.any⟩ #interface.nil then #() else Raise "$p'")
             gl(λ: "$func_ret", (![deferType] #defer) #() ;; "$func_ret")) {{ Φ }})
-    ⊢ WP (App (App (Val wrapDeferRecover) (Val (RecV BAnon BAnon r)))
+    ⊢ WP (App (Val wrapDeferRecover)
         (Val (RecV BAnon (BNamed "$defer") (Rec BAnon (BNamed "$panic") e)))) {{ Φ }} := by
   iintro Hwp
   wp_call

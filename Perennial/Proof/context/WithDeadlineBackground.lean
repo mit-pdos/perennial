@@ -92,9 +92,8 @@ theorem wp_WithDeadlineCause_Background_of
   icases Hi with ⟨_, _, ⟨%canceled, #Hcanceled, %hcanceled⟩, ⟨%dexc, #Hdexc, %hdexc⟩, _⟩
   ihave #HDeadline := deadlineSpec_background (GF := GF)
   iunfold deadlineSpec at HDeadline
-  iapply wp_with_defer
-  iintro %defer Hdefer
   wp_auto
+  wp_apply wp_with_defer as %defer Hdefer
   wp_apply HDeadline
   dsimp only [Option.getD]
   (try wp_auto)
@@ -115,7 +114,6 @@ theorem wp_WithDeadlineCause_Background_of
     · simp only [↓reduceIte]
       iexists backgroundCtxVal; iframe #
       unfold isParentCtx; ileft; ipureintro; rfl
-    simp only [recv_eq_func_mk]
     iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.timerCtx.ty) #«$r0_ptr») %γ
     isplitl []
     · imodintro
@@ -150,7 +148,6 @@ theorem wp_WithDeadlineCause_Background_of
       wp_apply wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod Htm0]
       · inext; unfold cancelCtxLockInv; iexists children, cause0, od, closed; iframe
         unfold timerR; iexists tm; iframe; iright; iexact Htm
-      simp only [recv_eq_func_mk]
       iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.timerCtx.ty) #«$r0_ptr») %γ
       isplitl []
       · imodintro
@@ -169,7 +166,6 @@ theorem wp_WithDeadlineCause_Background_of
       wp_apply wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod Htm0 Htm0r]
       · inext; unfold cancelCtxLockInv; iexists children, cause0, od, closed; iframe
         unfold timerR; iexists tm0; iframe
-      simp only [recv_eq_func_mk]
       iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.timerCtx.ty) #«$r0_ptr») %γ
       isplitl []
       · imodintro

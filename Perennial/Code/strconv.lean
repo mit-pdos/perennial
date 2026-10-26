@@ -215,7 +215,9 @@ noncomputable def ParseUint.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "base"
   (Lam "bitSize"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "bitSize" (App (Val (GoInstruction (GoAlloc go.int))) (Var "bitSize"))
   (Let "base" (App (Val (GoInstruction (GoAlloc go.int))) (Var "base"))
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
@@ -232,22 +234,39 @@ noncomputable def ParseUint.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
+  (Let "$r1" (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
-  (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Let "$a0" (Val #(go!"ParseUint"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
+  (Let "$r1" (Let "$a0" (Val #(go!"ParseUint"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "base"))
   (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "bitSize"))
   (Let "$a4" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve toError []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve toError []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0")))))))))))))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1")))))))))
 
 /-- toError converts from internal/strconv.Error to the error guaranteed by this package's APIs.
 
@@ -258,113 +277,165 @@ noncomputable def toError.impl [GooseExts] [GoGlobalContext] : val :=
   (Lam "base"
   (Lam "bitSize"
   (Lam "err"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (Var "err"))
   (Let "bitSize" (App (Val (GoInstruction (GoAlloc go.int))) (Var "bitSize"))
   (Let "base" (App (Val (GoInstruction (GoAlloc go.int))) (Var "base"))
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
   (Let "fn" (App (Val (GoInstruction (GoAlloc go.string))) (Var "fn"))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad go.error))) (Var "err")))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))))
   (Let "$sw" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
   (If (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert _root_.Perennial.internal.strconv.Error.ty go.error))) (Val _root_.Perennial.internal.strconv.ErrSyntax))))
-  (App (Val doReturn)
-  (App (Val (GoInstruction (Convert (go.GoType.PointerType NumError.ty) go.error))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "fn"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType NumError.ty) go.error))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "fn"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
-  (App (App (App (Val (GoInstruction (FuncResolve syntaxError []))) (Val #())) (Var "$a0")) (Var "$a1"))))))
+  (App (App (App (Val (GoInstruction (FuncResolve syntaxError []))) (Val #())) (Var "$a0")) (Var "$a1")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))
   (If (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert _root_.Perennial.internal.strconv.Error.ty go.error))) (Val _root_.Perennial.internal.strconv.ErrRange))))
-  (App (Val doReturn)
-  (App (Val (GoInstruction (Convert (go.GoType.PointerType NumError.ty) go.error))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "fn"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType NumError.ty) go.error))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "fn"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
-  (App (App (App (Val (GoInstruction (FuncResolve rangeError []))) (Val #())) (Var "$a0")) (Var "$a1"))))))
-  (If (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert _root_.Perennial.internal.strconv.Error.ty go.error))) (Val _root_.Perennial.internal.strconv.ErrBase))))
+  (App (App (App (Val (GoInstruction (FuncResolve rangeError []))) (Val #())) (Var "$a0")) (Var "$a1")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (Convert (go.GoType.PointerType NumError.ty) go.error))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "fn"))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert _root_.Perennial.internal.strconv.Error.ty go.error))) (Val _root_.Perennial.internal.strconv.ErrBase))))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType NumError.ty) go.error))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "fn"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "base"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve baseError []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))
-  (If (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert _root_.Perennial.internal.strconv.Error.ty go.error))) (Val _root_.Perennial.internal.strconv.ErrBitSize))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve baseError []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (Convert (go.GoType.PointerType NumError.ty) go.error))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "fn"))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (Var "$sw") (App (Val (GoInstruction (Convert _root_.Perennial.internal.strconv.Error.ty go.error))) (Val _root_.Perennial.internal.strconv.ErrBitSize))))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType NumError.ty) go.error))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "fn"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
   (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "bitSize"))
-  (App (App (App (App (Val (GoInstruction (FuncResolve bitSizeError []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))))
+  (App (App (App (App (Val (GoInstruction (FuncResolve bitSizeError []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
   (App (Val doExecute)
-  (Val #())))))))))))))))))))
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))))))))))
+  (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0")))))))))
 
 /-- go: number.go:262:20 -/
 noncomputable def NumError.Unwrap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "e"
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "e" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType NumError.ty)))) (Var "e"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (StructFieldRef NumError.ty go!"Err"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType NumError.ty)))) (Var "e"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (StructFieldRef NumError.ty go!"Err"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType NumError.ty)))) (Var "e")))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0"))))))
 
 /-- go: number.go:272:6 -/
 noncomputable def syntaxError.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "fn"
   (Lam "str"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType NumError.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType NumError.ty)))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "str" (App (Val (GoInstruction (GoAlloc go.string))) (Var "str"))
   (Let "fn" (App (Val (GoInstruction (GoAlloc go.string))) (Var "fn"))
-  (App (Val doReturn)
-  (App (Val (GoInstruction (GoAlloc NumError.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.string))) (Var "fn"))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc NumError.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.string))) (Var "fn"))
   (Let "$v1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "str"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.stringslite.Clone []))) (Val #())) (Var "$a0")))
   (Let "$v2" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr ErrSyntax))) (Val #())))
-  (App (Val (GoInstruction (CompositeLiteral NumError.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0"))), (KeyedElement none (ElementExpression go.string (Var "$v1"))), (KeyedElement none (ElementExpression go.error (Var "$v2")))]))))))))))))
+  (App (Val (GoInstruction (CompositeLiteral NumError.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0"))), (KeyedElement none (ElementExpression go.string (Var "$v1"))), (KeyedElement none (ElementExpression go.error (Var "$v2")))]))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType NumError.ty)))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType NumError.ty)))) (Var "$res0"))))))
 
 /-- go: number.go:276:6 -/
 noncomputable def rangeError.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "fn"
   (Lam "str"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType NumError.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType NumError.ty)))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "str" (App (Val (GoInstruction (GoAlloc go.string))) (Var "str"))
   (Let "fn" (App (Val (GoInstruction (GoAlloc go.string))) (Var "fn"))
-  (App (Val doReturn)
-  (App (Val (GoInstruction (GoAlloc NumError.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.string))) (Var "fn"))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc NumError.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.string))) (Var "fn"))
   (Let "$v1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "str"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.stringslite.Clone []))) (Val #())) (Var "$a0")))
   (Let "$v2" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr ErrRange))) (Val #())))
-  (App (Val (GoInstruction (CompositeLiteral NumError.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0"))), (KeyedElement none (ElementExpression go.string (Var "$v1"))), (KeyedElement none (ElementExpression go.error (Var "$v2")))]))))))))))))
+  (App (Val (GoInstruction (CompositeLiteral NumError.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0"))), (KeyedElement none (ElementExpression go.string (Var "$v1"))), (KeyedElement none (ElementExpression go.error (Var "$v2")))]))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType NumError.ty)))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType NumError.ty)))) (Var "$res0"))))))
 
 /-- go: number.go:280:6 -/
 noncomputable def baseError.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "fn"
   (Lam "str"
   (Lam "base"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType NumError.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType NumError.ty)))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "base" (App (Val (GoInstruction (GoAlloc go.int))) (Var "base"))
   (Let "str" (App (Val (GoInstruction (GoAlloc go.string))) (Var "str"))
   (Let "fn" (App (Val (GoInstruction (GoAlloc go.string))) (Var "fn"))
-  (App (Val doReturn)
-  (App (Val (GoInstruction (GoAlloc NumError.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.string))) (Var "fn"))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc NumError.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.string))) (Var "fn"))
   (Let "$v1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "str"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.stringslite.Clone []))) (Val #())) (Var "$a0")))
   (Let "$v2" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (Val #(go!"invalid base ")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "base"))
   (App (App (Val (GoInstruction (FuncResolve Itoa []))) (Val #())) (Var "$a0")))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (Val (GoInstruction (CompositeLiteral NumError.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0"))), (KeyedElement none (ElementExpression go.string (Var "$v1"))), (KeyedElement none (ElementExpression go.error (Var "$v2")))]))))))))))))))
+  (App (Val (GoInstruction (CompositeLiteral NumError.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0"))), (KeyedElement none (ElementExpression go.string (Var "$v1"))), (KeyedElement none (ElementExpression go.error (Var "$v2")))]))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType NumError.ty)))) (Pair (Var "$res0") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType NumError.ty)))) (Var "$res0")))))))
 
 /-- go: number.go:284:6 -/
 noncomputable def bitSizeError.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "fn"
   (Lam "str"
   (Lam "bitSize"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType NumError.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType NumError.ty)))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "bitSize" (App (Val (GoInstruction (GoAlloc go.int))) (Var "bitSize"))
   (Let "str" (App (Val (GoInstruction (GoAlloc go.string))) (Var "str"))
   (Let "fn" (App (Val (GoInstruction (GoAlloc go.string))) (Var "fn"))
-  (App (Val doReturn)
-  (App (Val (GoInstruction (GoAlloc NumError.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.string))) (Var "fn"))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc NumError.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad go.string))) (Var "fn"))
   (Let "$v1" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "str"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.stringslite.Clone []))) (Val #())) (Var "$a0")))
   (Let "$v2" (Let "$a0" (App (Val (GoInstruction (GoOp GoPlus go.string))) (Pair (Val #(go!"invalid bit size ")) (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "bitSize"))
   (App (App (Val (GoInstruction (FuncResolve Itoa []))) (Val #())) (Var "$a0")))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
-  (App (Val (GoInstruction (CompositeLiteral NumError.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0"))), (KeyedElement none (ElementExpression go.string (Var "$v1"))), (KeyedElement none (ElementExpression go.error (Var "$v2")))]))))))))))))))
+  (App (Val (GoInstruction (CompositeLiteral NumError.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.string (Var "$v0"))), (KeyedElement none (ElementExpression go.string (Var "$v1"))), (KeyedElement none (ElementExpression go.error (Var "$v2")))]))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType NumError.ty)))) (Pair (Var "$res0") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType NumError.ty)))) (Var "$res0")))))))
 
 noncomputable instance info' : PkgInfo pkg_id.strconv where
   pkgImportedPkgs := [pkg_id.errors, pkg_id.internal.strconv, pkg_id.internal.stringslite]

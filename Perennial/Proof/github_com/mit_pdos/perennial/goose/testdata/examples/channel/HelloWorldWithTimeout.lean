@@ -36,7 +36,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.HelloWorld
     github_com.mit_pdos.perennial.goose.testdata.examples.channel.HelloWorldWithTimeout.spec
       (GF := GF) (hG := hG) := by
   wp_start
-  wp_pures
+  wp_auto
   wp_apply chan.wp_make1 (V := Unit) as %ch %γ ⟨#Hchan, -, Hoc⟩
   imod alloc_broadcast_chan (E := ⊤) iprop(errMsg_ptr ↦□ go!"operation timed out") γ ch
     $$ Hchan Hoc with Hown

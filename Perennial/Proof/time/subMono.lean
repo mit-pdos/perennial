@@ -26,7 +26,8 @@ theorem time.subMono.wp_proof :
   wp_start
   wp_auto
   repeat' wp_if_destruct
-  all_goals wp_end
+  all_goals (try simp only [time.minDuration, time.maxDuration])
+  all_goals ((try wp_auto); wp_end)
 
 end proof
 

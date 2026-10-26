@@ -26,6 +26,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.
     github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.makeBox.spec
       (GF := GF) (hG := hG) := by
   wp_start
+  wp_auto
   wp_end
 
 end proof

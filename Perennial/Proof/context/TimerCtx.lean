@@ -109,10 +109,7 @@ theorem wp_parentCancelCtx_timer_of
   have wp_timerCtx_Done := wp_timerCtx_Done_of wp_cancelCtx_Done
   have wp_timerCtx_Value := wp_timerCtx_Value_of wp_cancelCtx_Value
   wp_start as ⟨#Hp, #Hd, #Hcch⟩
-  wp_alloc par as Hpar
-  wp_pures
-  wp_load
-  wp_pures
+  wp_auto
   wp_apply wp_timerCtx_Done c _ _ $$ [$Hp] as %ch' %γch' ⟨#Hd', -⟩
   ihave #Hdd' := isContextDone_doneGn _ _ _ $$ Hd'
   ihave %heq := dghostVar_agree _ _ _ _ _ $$ Hd Hdd'

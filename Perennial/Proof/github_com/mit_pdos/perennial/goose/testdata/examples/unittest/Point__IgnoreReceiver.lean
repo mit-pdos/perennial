@@ -28,6 +28,7 @@ local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.exam
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.IgnoreReceiver.wp_proof :
     github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Point.IgnoreReceiver.spec (GF := GF) (hG := hG) := fun p => by
   wp_start
+  wp_auto
   wp_end
 
 end proof

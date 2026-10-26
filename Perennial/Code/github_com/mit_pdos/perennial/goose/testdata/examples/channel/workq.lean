@@ -40,13 +40,10 @@ noncomputable def Worker.run.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "neighbor"
   (Lam "sh"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "w" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Worker.ty)))) (Var "w"))
   (Let "sh" (App (Val (GoInstruction (GoAlloc shared.ty))) (Var "sh"))
   (Let "neighbor" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Worker.ty)))) (Var "neighbor"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (App (App (Val doFor) (Lam BAnon
   (Val #true))) (Lam BAnon
   (Let "$ch0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (StructFieldRef shared.ty go!"done"))) (Var "sh")))
@@ -119,20 +116,18 @@ noncomputable def Worker.run.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.PointerType go.string))))) (Pair (Var "reply") (Var "$r0")))))))))])))))))
   (Lam BAnon
-  (Val #())))))))))))
+  (Val #())))))))
+  (Val #())))))
 
 /-- go: w.go:62:18 -/
 noncomputable def Worker.process.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "doc"
   (Lam "sh"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "w" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Worker.ty)))) (Var "w"))
   (Let "sh" (App (Val (GoInstruction (GoAlloc shared.ty))) (Var "sh"))
   (Let "doc" (App (Val (GoInstruction (GoAlloc go.string))) (Var "doc"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (Let "$a0" (App (Val (GoInstruction (Convert go.untypedInt go.int64))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64.ty) go!"Add"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64.ty)))) (App (Val (GoInstruction (StructFieldRef shared.ty go!"remaining"))) (Var "sh")))) (Var "$a0"))) (Val #(W64 0)))))
@@ -145,12 +140,14 @@ noncomputable def Worker.process.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$a0" (App (Val (GoInstruction (Convert go.int go.int64))) (Let "$a0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "doc"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.strings.Fields []))) (Val #())) (Var "$a0")))
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0"))))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64.ty) go!"Add"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64.ty)))) (App (Val (GoInstruction (StructFieldRef shared.ty go!"total"))) (Var "sh")))) (Var "$a0")))))))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64.ty) go!"Add"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64.ty)))) (App (Val (GoInstruction (StructFieldRef shared.ty go!"total"))) (Var "sh")))) (Var "$a0")))))))))
+  (Val #())))))
 
 /-- go: w.go:69:6 -/
 noncomputable def wordCount.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "docs"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "docs" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "docs"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (let numWorkers := #(2 : Int);
@@ -168,8 +165,12 @@ noncomputable def wordCount.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64.ty) go!"Load"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64.ty)))) (App (Val (GoInstruction (StructFieldRef shared.ty go!"total"))) (Var "sh")))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64.ty) go!"Load"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.atomic.Int64.ty)))) (App (Val (GoInstruction (StructFieldRef shared.ty go!"total"))) (Var "sh")))) (Val #())))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (Fst (App (Val (chan.receive (go.GoType.StructType []))) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (App (Val (GoInstruction (StructFieldRef shared.ty go!"done"))) (Var "sh")))))))))
   (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (Var "workers"))
@@ -234,10 +235,15 @@ noncomputable def wordCount.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType (go.GoType.PointerType Worker.ty))))) (Pair (Var "workers") (Var "$r0"))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "docs"))
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (Let "$r0" (Val #(W64 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val #(W64 0)))
+  (Val #()))))
   (App (Val doExecute)
-  (Val #())))))))
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0")))))
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.workq where
   pkgImportedPkgs := [pkg_id.strings, pkg_id.sync.atomic]

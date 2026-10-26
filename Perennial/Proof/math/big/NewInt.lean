@@ -33,8 +33,8 @@ theorem math.big.NewInt.wp_proof :
     · ipureintro; rfl
     iintro %sl ⟨Hsl, -⟩
     wp_auto
-    wp_alloc p as Hp
-    wp_auto
+    irename «$r0» => Hp
+    generalize «$r0_ptr» = p at *
     iapply HΦ
     unfold ownInt
     iexists _, [-v]
@@ -49,8 +49,8 @@ theorem math.big.NewInt.wp_proof :
       have : v = W64 0 := by rw [show v = - -v by simp, h]; rfl
       subst this; simp at *
   · wp_if_destruct
-    · wp_alloc p as Hp
-      wp_auto
+    · irename «$r0» => Hp
+      generalize «$r0_ptr» = p at *
       iapply HΦ
       unfold ownInt
       iexists _, []
@@ -64,8 +64,8 @@ theorem math.big.NewInt.wp_proof :
     · ipureintro; rfl
     iintro %sl ⟨Hsl, -⟩
     wp_auto
-    wp_alloc p as Hp
-    wp_auto
+    irename «$r0» => Hp
+    generalize «$r0_ptr» = p at *
     iapply HΦ
     unfold ownInt
     iexists _, [v]

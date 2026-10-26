@@ -26,15 +26,16 @@ theorem sync.NewCond.wp_proof :
     sync.NewCond.spec (GF := GF) (hG := hG) := by
   intro m
   wp_start as _
+  iapply wp_fupd
   wp_auto
-  wp_pures
-  wp_alloc c as Hc
+  irename «$r0» => Hc
+  generalize «$r0_ptr» = c at *
   iStructNamed Hc
   ipersist L
   ipersist notify
   imod inv_alloc copyCheckerN ⊤ (copyCheckerInv _) $$ [checker] with #Hchecker
   · inext; ileft; iexact checker
-  wp_pures
+  imodintro
   iapply HΦ
   rw [isCond_unseal]; unfold isCondDef
   rw [isCopyChecker_unseal]; unfold isCopyCheckerDef

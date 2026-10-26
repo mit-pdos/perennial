@@ -37,27 +37,45 @@ noncomputable def nestedMapLiteral [GooseExts] [GoGlobalContext] : GoString :=
 /-- go: mapliteral.go:3:6 -/
 noncomputable def f.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val #(W64 1)))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")))))
 
 /-- go: mapliteral.go:11:6 -/
 noncomputable def mapliteral.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
-  (App (Val doReturn)
-  (Let "$k0" (Val #(W64 1))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 go.uint64)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Let "$k0" (Val #(W64 1))
   (Let "$v1" (Val #(W64 2))
-  (App (Val (GoInstruction (CompositeLiteral (go.GoType.MapType go.uint64 go.uint64)))) (LiteralValue [(KeyedElement (some (KeyExpression go.uint64 (Var "$k0"))) (ElementExpression go.uint64 (Var "$v1")))])))))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.MapType go.uint64 go.uint64)))) (LiteralValue [(KeyedElement (some (KeyExpression go.uint64 (Var "$k0"))) (ElementExpression go.uint64 (Var "$v1")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 go.uint64)))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "$res0")))))
 
 /-- go: mapliteral.go:15:6 -/
 noncomputable def nestedMapLiteral.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
-  (App (Val doReturn)
-  (Let "$k0" (Val #(W64 1))
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 Nested.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 Nested.ty)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Let "$k0" (Val #(W64 1))
   (Let "$v1" (App (App (Val (GoInstruction (FuncResolve f []))) (Val #())) (Val #()))
-  (App (Val (GoInstruction (CompositeLiteral (go.GoType.MapType go.uint64 Nested.ty)))) (LiteralValue [(KeyedElement (some (KeyExpression go.uint64 (Var "$k0"))) (ElementLiteralValue [(KeyedElement (some (KeyField go!"X")) (ElementExpression go.uint64 (Var "$v1")))]))])))))))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.MapType go.uint64 Nested.ty)))) (LiteralValue [(KeyedElement (some (KeyExpression go.uint64 (Var "$k0"))) (ElementLiteralValue [(KeyedElement (some (KeyField go!"X")) (ElementExpression go.uint64 (Var "$v1")))]))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 Nested.ty)))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 Nested.ty)))) (Var "$res0")))))
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.mapliteral where
   pkgImportedPkgs := []

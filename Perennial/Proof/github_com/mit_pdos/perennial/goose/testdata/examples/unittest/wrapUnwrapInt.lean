@@ -30,10 +30,12 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wrapUnwra
     (wp_typeAssertInt : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typeAssertInt.spec (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.unittest.wrapUnwrapInt.spec (GF := GF) (hG := hG) := by
   wp_start
+  wp_auto
   wp_apply wp_typeAssertInt
   · ipureintro; rfl
   -- the continuation was not introduced since `v` was still a metavariable
   iintro _
+  wp_auto
   wp_end
 
 end proof

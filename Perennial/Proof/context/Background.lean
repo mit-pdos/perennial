@@ -25,6 +25,7 @@ variable [package_sem : context.Assumptions]
 theorem context.Background.wp_proof :
     context.Background.spec (GF := GF) (hG := hG) := by
   wp_start
+  wp_auto
   iapply HΦ
   itrivial
 

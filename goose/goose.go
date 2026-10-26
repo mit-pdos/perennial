@@ -73,8 +73,7 @@ type Ctx struct {
 
 	// XXX: this is so we can determine the expected return type when handling a
 	// `returnStmt` so the appropriate conversion is inserted
-	curFuncType   *types.Signature
-	defaultReturn glang.Expr // this handles
+	curFuncType *types.Signature
 
 	// Should be set to true when encountering a defer statement in the body of
 	// a function to communicate to its top-level funcDecl that it should
@@ -1087,10 +1086,6 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 	defer func(b bool) {
 		ctx.usesDefer = b
 	}(ctx.usesDefer)
-	defer func(defaultReturn glang.Expr) {
-		ctx.defaultReturn = defaultReturn
-	}(ctx.defaultReturn)
-
 	ctx.usesDefer = false
 	defer func(b, ok bool) {
 		ctx.usesRecover = b
@@ -1100,26 +1095,6 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 	ctx.recoverOK = ctx.nextFuncLitDeferred
 	ctx.nextFuncLitDeferred = false
 
-	// Assemble the `defaultReturn` expr so the body's `return` statements can use it.
-	var defaultRetExpr glang.TupleExpr
-	if e.Type.Results == nil || len(e.Type.Results.List) == 0 {
-		defaultRetExpr = append(defaultRetExpr, glang.Tt)
-	} else {
-		for _, r := range e.Type.Results.List {
-			if r.Names == nil {
-
-			} else {
-				for _, name := range r.Names {
-					defaultRetExpr = append(defaultRetExpr,
-						ctx.namedResultValue(name, r.Type))
-				}
-			}
-		}
-	}
-	ctx.defaultReturn = glang.ReturnExpr{
-		Value: defaultRetExpr,
-	}
-
 	defer func(oldFuncType *types.Signature) {
 		ctx.curFuncType = oldFuncType
 	}(ctx.curFuncType)
@@ -1127,12 +1102,7 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 	ctx.curFuncType = ctx.typeOf(e.Type).(*types.Signature)
 	var argTypes []glang.Expr
 	fl.Args, argTypes = ctx.paramList(e.Type.Params)
-	var cont glang.Expr = nil
-	if e.Type.Results == nil {
-		// explicitly return #() at end of void functions
-		cont = glang.ReturnExpr{Value: glang.Tt}
-	}
-	fl.Body = ctx.blockStmt(e.Body, cont)
+	fl.Body = ctx.blockStmt(e.Body, nil)
 
 	// Create heap-allocated variables for all of the function parameters
 	for i, arg := range fl.Args {
@@ -1147,7 +1117,7 @@ func (ctx *Ctx) funcLit(e *ast.FuncLit) glang.FuncLit {
 			}
 		}
 	}
-	fl.Body = ctx.wrapFuncBody(fl.Body, e.Type.Results)
+	fl.Body = ctx.wrapFuncBody(fl.Body, e.Type)
 
 	return fl
 }
@@ -2004,69 +1974,57 @@ func (ctx *Ctx) callsRecoverDirectly(body *ast.BlockStmt) bool {
 	return found
 }
 
-// wrapFuncBody wraps the body of a function (with its parameters' allocations)
-// with the allocations of its named results and with `with_defer:` (if it
-// defers), `with_defer_recover:` (if a deferred function literal calls
-// recover()) or `exception_do`. For `with_defer_recover:` the named results are
-// allocated outside, so that the results expression (what a bare `return`
-// returns, or the zero values of unnamed results) can read them.
-func (ctx *Ctx) wrapFuncBody(body glang.Expr, results *ast.FieldList) glang.Expr {
-	allocResults := func(body glang.Expr) glang.Expr {
-		if results != nil {
-			for _, r := range results.List {
-				t := ctx.glangType(r.Type, ctx.typeOf(r.Type))
-				for _, name := range r.Names {
-					body = glang.LetExpr{
-						Names: []string{name.Name},
-						ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), t,
-							glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt)),
-						Cont: body,
-					}
-				}
-			}
-		}
-		return body
-	}
-	if ctx.usesRecover {
-		var res glang.TupleExpr
-		if results != nil {
-			for _, r := range results.List {
-				if r.Names == nil {
-					t := ctx.glangType(r.Type, ctx.typeOf(r.Type))
-					res = append(res, glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt))
-				}
-				for _, name := range r.Names {
-					res = append(res, ctx.namedResultValue(name, r.Type))
-				}
-			}
-		}
-		if len(res) == 0 {
-			res = glang.TupleExpr{glang.Tt}
-		}
-		return allocResults(glang.NewCallExpr(glang.VerbatimExpr("with_defer_recover:"), res, body))
-	}
-	body = allocResults(body)
-	if ctx.usesDefer {
-		return glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), body)
-	}
-	return glang.NewCallExpr(glang.VerbatimExpr("exception_do"), body)
+// resultCell is the variable holding the function's result i: as in Go, a
+// return statement assigns the results, and the function returns their values
+// once its deferred functions have run (wrapFuncBody).
+func resultCell(i int) glang.IdentExpr {
+	return glang.IdentExpr(fmt.Sprintf("$res%d", i))
 }
 
-// namedResultValue is the value of the named result `name` (of type `ty`) on a
-// bare `return`: the contents of its local variable, or the zero value for a
-// blank result `_`, which has no variable (the binding of `_` is anonymous, and
-// there may be several of them).
-func (ctx *Ctx) namedResultValue(name *ast.Ident, ty ast.Expr) glang.Expr {
-	t := ctx.glangType(ty, ctx.typeOf(ty))
-	if name.Name == "_" {
-		return glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt)
+// wrapFuncBody wraps the body of a function (with its parameters' allocations)
+// with `with_defer:` (if it defers), `with_defer_recover:` (if a deferred
+// function literal calls recover()) or `exception_do`, and then returns the
+// values of the result variables (`#()` if there are none), which are
+// allocated around it: a named result under its name, another one as `$resI`,
+// and `$resI` is bound to result I's variable in either case.
+func (ctx *Ctx) wrapFuncBody(body glang.Expr, ft *ast.FuncType) glang.Expr {
+	res := ctx.curFuncType.Results()
+	switch {
+	case ctx.usesRecover:
+		body = glang.NewCallExpr(glang.VerbatimExpr("with_defer_recover:"), body)
+	case ctx.usesDefer:
+		body = glang.NewCallExpr(glang.VerbatimExpr("with_defer:"), body)
+	default:
+		body = glang.NewCallExpr(glang.VerbatimExpr("exception_do"), body)
 	}
-	return glang.DerefExpr{X: glang.IdentExpr(name.Name), Ty: t}
+	var vals glang.TupleExpr
+	for i := range res.Len() {
+		vals = append(vals, glang.DerefExpr{X: resultCell(i), Ty: ctx.glangType(ft, res.At(i).Type())})
+	}
+	if len(vals) == 0 {
+		vals = glang.TupleExpr{glang.Tt}
+	}
+	body = glang.LetExpr{ValExpr: body, Cont: vals}
+	for i := res.Len() - 1; i >= 0; i-- {
+		t := ctx.glangType(ft, res.At(i).Type())
+		name := string(resultCell(i))
+		if n := res.At(i).Name(); n != "" && n != "_" {
+			name = n
+			body = glang.LetExpr{Names: []string{string(resultCell(i))}, ValExpr: glang.IdentExpr(n), Cont: body}
+		}
+		body = glang.LetExpr{
+			Names: []string{name},
+			ValExpr: glang.NewCallExpr(glang.VerbatimExpr("GoAlloc"), t,
+				glang.NewCallExpr(glang.VerbatimExpr("GoZeroVal"), t, glang.Tt)),
+			Cont: body,
+		}
+	}
+	return body
 }
 
 func (ctx *Ctx) returnStmt(s *ast.ReturnStmt, cont glang.Expr) glang.Expr {
 	if len(s.Results) == 0 {
-		return ctx.defaultReturn
+		return glang.ReturnExpr{Value: glang.Tt}
 	}
 
 	exprs := make([]glang.Expr, 0, len(s.Results))
@@ -2123,10 +2081,15 @@ func (ctx *Ctx) returnStmt(s *ast.ReturnStmt, cont glang.Expr) glang.Expr {
 		for i, e := range unconvertedReturnValues {
 			exprs = append(exprs, ctx.handleImplicitConversion(e.n, e.t, expectedReturnTypes[i], e.e))
 		}
-		if len(exprs) == 0 { // return #()
-			exprs = []glang.Expr{glang.Tt}
+		// evaluate all the results, then assign them to the result variables
+		retExpr = glang.ReturnExpr{Value: glang.Tt}
+		for i := len(exprs) - 1; i >= 0; i-- {
+			retExpr = glang.NewDoSeq(glang.StoreStmt{Dst: resultCell(i),
+				Ty: ctx.glangType(s, expectedReturnTypes[i]), X: glang.IdentExpr(fmt.Sprintf("$r%d", i))}, retExpr)
 		}
-		retExpr = glang.ReturnExpr{Value: glang.TupleExpr(exprs)}
+		for i := len(exprs) - 1; i >= 0; i-- {
+			retExpr = glang.LetExpr{Names: []string{fmt.Sprintf("$r%d", i)}, ValExpr: exprs[i], Cont: retExpr}
+		}
 	}()
 
 	return glang.SeqExpr{Expr: retExpr, Cont: cont}
@@ -2633,32 +2596,7 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		ctx.unsupported(d, "external function")
 	}
 
-	// Assemble the `defaultReturn` expr so the body's `return` statements can use it.
-	var defaultRetExpr glang.TupleExpr
-	if d.Type.Results == nil || len(d.Type.Results.List) == 0 {
-		defaultRetExpr = append(defaultRetExpr, glang.Tt)
-	} else {
-		for _, r := range d.Type.Results.List {
-			if r.Names == nil {
-
-			} else {
-				for _, name := range r.Names {
-					defaultRetExpr = append(defaultRetExpr,
-						ctx.namedResultValue(name, r.Type))
-				}
-			}
-		}
-	}
-	ctx.defaultReturn = glang.ReturnExpr{
-		Value: defaultRetExpr,
-	}
-
-	var cont glang.Expr = nil
-	if d.Type.Results == nil {
-		// explicitly return #() at end of void functions
-		cont = glang.ReturnExpr{Value: glang.Tt}
-	}
-	body := ctx.blockStmt(d.Body, cont)
+	body := ctx.blockStmt(d.Body, nil)
 
 	fd.Body = body
 	var argTypes []glang.Expr
@@ -2676,7 +2614,7 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 		}
 	}
 	maybeAddReceiver()
-	fd.Body = ctx.wrapFuncBody(fd.Body, d.Type.Results)
+	fd.Body = ctx.wrapFuncBody(fd.Body, d.Type)
 
 	ctx.out.funcImplDecls = append(ctx.out.funcImplDecls, fd)
 }

@@ -33,14 +33,11 @@ noncomputable def worker.impl [GooseExts] [GoGlobalContext] : val :=
   (Lam "wg"
   (Lam "x"
   (Lam "y"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.int))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (Var "x"))
   (Let "wg" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.WaitGroup.ty)))) (Var "wg"))
   (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.SliceType go.int))))) (Var "c"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (Let "__p" (App (Val (chan.receive (go.GoType.SliceType go.int))) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.SliceType go.int))))) (Var "c")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
@@ -86,20 +83,18 @@ noncomputable def worker.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "s") (Var "$r0"))))))))))))))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "s") (Var "$r0")))))))))))))))))
+  (Val #()))))))
 
 /-- go: parallel_search_replace.go:24:6 -/
 noncomputable def SearchReplace.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "x"
   (Lam "y"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "y" (App (Val (GoInstruction (GoAlloc go.int))) (Var "y"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (Var "x"))
   (Let "s" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.int)))) (Var "s"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 8))
   (Let "workers" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -186,7 +181,8 @@ noncomputable def SearchReplace.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (Val #()))
   (App (Val doExecute)
-  (Val #()))))))))))))
+  (Val #()))))))))
+  (Val #())))))
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.parallel_search_replace where
   pkgImportedPkgs := [pkg_id.sync]

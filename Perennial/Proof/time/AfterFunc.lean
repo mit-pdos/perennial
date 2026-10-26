@@ -51,7 +51,7 @@ theorem time.AfterFunc.wp_proof
     wp_auto
     itrivial
   inext
-  wp_pures
+  wp_auto
   iapply HΦ
   unfold isFuncTimer
   iexact initTimer

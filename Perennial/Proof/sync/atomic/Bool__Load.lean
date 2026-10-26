@@ -29,7 +29,7 @@ theorem sync.atomic.Bool.Load.wp_proof
   intro u dq
   wp_start as _
   wp_auto
-  wp_apply_core wp_LoadUint32 $$ [] [HΦ]
+  wp_apply_core wp_LoadUint32 $$ [] [HΦ «$res0»]
   · iPkgInit
   imod HΦ with ⟨%v, Hown, HΦ⟩
   imodintro; inext
@@ -39,7 +39,7 @@ theorem sync.atomic.Bool.Load.wp_proof
   iexists (b32w v)
   iframe v
   iintro Hv
-  imod HΦ $$ [-] with HΦ
+  imod HΦ $$ [- «$res0»] with HΦ
   · iapply typedPointsto_combine _ _ _ Hnn
     simp only [TypedPointsto.typedPointstoDef]
     iframe

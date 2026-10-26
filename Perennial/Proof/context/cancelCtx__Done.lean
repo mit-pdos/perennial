@@ -39,9 +39,8 @@ theorem context.cancelCtx.Done.wp_proof
   ihave #Hc' := Hc
   iunfold isCancelCtxOf at Hc'
   iNamed Hc'
-  iapply wp_with_defer
-  iintro %defer Hdefer
   wp_auto
+  wp_apply wp_with_defer as %defer Hdefer
   wp_apply wp_done_Load $$ [$Hc] as %od Hod
   cases od with
   | some ch =>

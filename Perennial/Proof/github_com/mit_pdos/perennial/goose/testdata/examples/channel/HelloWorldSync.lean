@@ -34,6 +34,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.HelloWorld
     github_com.mit_pdos.perennial.goose.testdata.examples.channel.HelloWorldSync.spec
       (GF := GF) (hG := hG) := by
   wp_start
+  wp_auto
   wp_apply wp_HelloWorldAsync as %ch %γ ⟨#Hch, #Hbag⟩
   wp_apply wp_bag_receive γ ch _ $$ Hbag as %v %Hv
   subst Hv

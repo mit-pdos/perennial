@@ -30,9 +30,12 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.eliminatio
     github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack.NewLockedStack.spec
       (GF := GF) (hG := hG) := by
   wp_start
+  wp_auto
+  iapply wp_fupd
   wp_apply wp_slice_make2 (V := GoString) (t := go.string) (W64 0) as %stack_sl ⟨Hsl, Hcap⟩
   · ipureintro; decide
-  wp_alloc s as Hs
+  irename «$r0» => Hs
+  generalize «$r0_ptr» = s at *
   iStructNamed Hs
   imod ghostVar_alloc ([] : List GoString) with ⟨%γ, Hγ⟩
   icases ghostVar_split γ ([] : List GoString) (1 : Qp).half (1 : Qp).half $$ [Hγ] with ⟨Hauth, Hfrag⟩
@@ -45,7 +48,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.eliminatio
     $$ [mu] [stack Hsl Hcap Hauth] with #Hmu
   · iexact mu
   · inext; iexists stack_sl, []; rw [List.reverse_nil]; iframe
-  wp_auto
+  imodintro
   iapply HΦ
   unfold isLockedStack ownLockedStack
   iframe # ∗

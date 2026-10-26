@@ -45,11 +45,11 @@ theorem wp_NewChannel (cap : w64) :
   simp only [channel.idle, channel.buffered]
   wp_auto
   wp_if_destruct
-  · wp_apply wp_slice_make2 (V := V) $$ [] as %sl ⟨Hsl, Hslcap⟩
+  · iapply wp_fupd
+    wp_apply wp_slice_make2 (V := V) $$ [] as %sl ⟨Hsl, Hslcap⟩
     · ipureintro; decide
-    iapply wp_fupd
-    wp_alloc ch as Hch
-    wp_auto
+    irename «$r0» => Hch
+    generalize «$r0_ptr» = ch at *
     ihave %Hnot_null := typedPointsto_not_null _ _ _ $$ Hch
     iStructNamed Hch
     imod ghostVar_alloc (ChanState.Buffered ([] : List V)) with ⟨%state_gname, Hstate⟩
@@ -99,11 +99,11 @@ theorem wp_NewChannel (cap : w64) :
       constructor <;> word
   · have hcap : cap = W64 0 := by word
     subst hcap
+    iapply wp_fupd
     wp_apply wp_slice_make2 (V := V) $$ [] as %sl ⟨Hsl, Hslcap⟩
     · ipureintro; decide
-    iapply wp_fupd
-    wp_alloc ch as Hch
-    wp_auto
+    irename «$r0» => Hch
+    generalize «$r0_ptr» = ch at *
     ihave %Hnot_null := typedPointsto_not_null _ _ _ $$ Hch
     iStructNamed Hch
     imod ghostVar_alloc (ChanState.Idle (V := V)) with ⟨%state_gname, Hstate⟩
@@ -170,11 +170,11 @@ theorem wp_NewChannel_unbuffered_ne (l : Loc) (x : w64) :
   wp_auto
   simp only [channel.idle, channel.buffered]
   wp_auto
+  iapply wp_fupd
   wp_apply wp_slice_make2 (V := V) $$ [] as %sl ⟨Hsl, Hslcap⟩
   · ipureintro; decide
-  iapply wp_fupd
-  wp_alloc ch as Hch
-  wp_auto
+  irename «$r0» => Hch
+  generalize «$r0_ptr» = ch at *
   ihave %Hnot_null := typedPointsto_not_null _ _ _ $$ Hch
   iStructNamed Hch
   by_cases hcl : ch = l

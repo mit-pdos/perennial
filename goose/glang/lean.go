@@ -796,12 +796,11 @@ func (h leanHead) render(args []Expr, m LeanMode) string {
 		return eLetLike("App", []string{eVal("wrapDefer")},
 			eLam([]string{"$defer"}, args[0].Lean(LeanExpr)))
 	case headWithDeferRecover:
-		if len(args) != 2 {
-			panic("with_defer_recover: expects two arguments")
+		if len(args) != 1 {
+			panic("with_defer_recover: expects one argument")
 		}
-		return eLetLike("App", []string{lapp("App", eVal("wrapDeferRecover"),
-			eLam(nil, args[0].Lean(LeanExpr)))},
-			eLam([]string{"$defer", "$panic"}, args[1].Lean(LeanExpr)))
+		return eLetLike("App", []string{eVal("wrapDeferRecover")},
+			eLam([]string{"$defer", "$panic"}, args[0].Lean(LeanExpr)))
 	case headTermCtor, headExprCtor:
 		var as []string
 		for i, a := range args {

@@ -159,20 +159,19 @@ noncomputable def Close [GooseExts] [GoGlobalContext] : GoString :=
 /-- go: simpledb.go:20:6 -/
 noncomputable def UseMarshal.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
+  (Seq (App (Val exceptionDo)
   (App (Val doExecute)
   (Let "$a0" (Val #(W64 0))
-  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.tchajed.marshal.NewEnc []))) (Val #())) (Var "$a0")))))))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.tchajed.marshal.NewEnc []))) (Val #())) (Var "$a0")))))
+  (Val #())))
 
 /-- CreateTable creates a new, empty table.
 
     go: simpledb.go:32:6 -/
 noncomputable def CreateTable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Table.ty))) (App (Val (GoInstruction (GoZeroVal Table.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc go.string))) (Var "p"))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 go.uint64)]))) (Val #())) (Val #()))
   (Let "index" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 go.uint64)))) (Val #())))
@@ -193,10 +192,14 @@ noncomputable def CreateTable.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.filesys.Open []))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (Let "f2" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "index"))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "index"))
   (Let "$v1" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Var "f2"))
-  (App (Val (GoInstruction (CompositeLiteral Table.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Index")) (ElementExpression (go.GoType.MapType go.uint64 go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"File")) (ElementExpression _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty (Var "$v1")))])))))))
+  (App (Val (GoInstruction (CompositeLiteral Table.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Index")) (ElementExpression (go.GoType.MapType go.uint64 go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"File")) (ElementExpression _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty (Var "$v1")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Table.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Pair (Var "f2") (Var "$r0")))))))))
   (App (Val doExecute)
@@ -207,7 +210,8 @@ noncomputable def CreateTable.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Pair (Var "f") (Var "$r0")))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 go.uint64)))) (Pair (Var "index") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 go.uint64)))) (Pair (Var "index") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad Table.ty))) (Var "$res0")))))
 
 /-- DecodeUInt64 is a Decoder(uint64)
 
@@ -219,30 +223,51 @@ noncomputable def CreateTable.impl [GooseExts] [GoGlobalContext] : val :=
     go: simpledb.go:52:6 -/
 noncomputable def DecodeUInt64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.encoding.binary.littleEndian.ty) go!"Uint64"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")))
   (Let "n" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n"))
+  (Let "$r1" (Val #(W64 8))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "n")) (Val #(W64 8))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "n") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (Val #(W64 8)))))
+  (Let "$r0" (Val #(W64 0))
+  (Let "$r1" (Val #(W64 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (Val #(W64 0)) (Val #(W64 0))))
+  (Val #()))))
   (App (Val doExecute)
-  (Val #())))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res1")))))))
 
 /-- DecodeEntry is a Decoder(Entry)
 
     go: simpledb.go:61:6 -/
 noncomputable def DecodeEntry.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Entry.ty))) (App (Val (GoInstruction (GoZeroVal Entry.ty))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "data"))
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "data"))
   (App (App (Val (GoInstruction (FuncResolve DecodeUInt64 []))) (Val #())) (Var "$a0")))
@@ -272,25 +297,49 @@ noncomputable def DecodeEntry.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "l1")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "l2"))))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "l1")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "l2")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "valueLen")))))))
   (Let "value" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Pair (Let "$v0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "key"))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "key"))
   (Let "$v1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "value"))
-  (App (Val (GoInstruction (CompositeLiteral Entry.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Key")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"Value")) (ElementExpression (go.GoType.SliceType go.byte) (Var "$v1")))])))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "l1")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "l2")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "valueLen"))))))))
+  (App (Val (GoInstruction (CompositeLiteral Entry.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Key")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"Value")) (ElementExpression (go.GoType.SliceType go.byte) (Var "$v1")))]))))
+  (Let "$r1" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "l1")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "l2")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "valueLen"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Entry.ty))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "value") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "data"))
   (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")))) (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "l1")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "l2")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "valueLen")))))))
-  (App (Val doReturn)
-  (Pair (Let "$v0" (Val #(W64 0))
+  (Let "$r0" (Let "$v0" (Val #(W64 0))
   (Let "$v1" (Val UntypedNil)
-  (App (Val (GoInstruction (CompositeLiteral Entry.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Key")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"Value")) (ElementExpression go.untypedNil (Var "$v1")))])))) (Val #(W64 0))))
+  (App (Val (GoInstruction (CompositeLiteral Entry.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Key")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"Value")) (ElementExpression go.untypedNil (Var "$v1")))]))))
+  (Let "$r1" (Val #(W64 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Entry.ty))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "l2")) (Val #(W64 0)))))
-  (App (Val doReturn)
-  (Pair (Let "$v0" (Val #(W64 0))
+  (Let "$r0" (Let "$v0" (Val #(W64 0))
   (Let "$v1" (Val UntypedNil)
-  (App (Val (GoInstruction (CompositeLiteral Entry.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Key")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"Value")) (ElementExpression go.untypedNil (Var "$v1")))])))) (Val #(W64 0))))
+  (App (Val (GoInstruction (CompositeLiteral Entry.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Key")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"Value")) (ElementExpression go.untypedNil (Var "$v1")))]))))
+  (Let "$r1" (Val #(W64 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Entry.ty))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
@@ -298,16 +347,25 @@ noncomputable def DecodeEntry.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "valueLen") (Var "$r0"))))))))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "l1")) (Val #(W64 0)))))
-  (App (Val doReturn)
-  (Pair (Let "$v0" (Val #(W64 0))
+  (Let "$r0" (Let "$v0" (Val #(W64 0))
   (Let "$v1" (Val UntypedNil)
-  (App (Val (GoInstruction (CompositeLiteral Entry.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Key")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"Value")) (ElementExpression go.untypedNil (Var "$v1")))])))) (Val #(W64 0))))
+  (App (Val (GoInstruction (CompositeLiteral Entry.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Key")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"Value")) (ElementExpression go.untypedNil (Var "$v1")))]))))
+  (Let "$r1" (Val #(W64 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Entry.ty))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "l1") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "key") (Var "$r0")))))))))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "key") (Var "$r0"))))))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad Entry.ty))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res1")))))))
 
 /-- readTableIndex parses a complete table on disk into a key->offset index
 
@@ -315,12 +373,9 @@ noncomputable def DecodeEntry.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def readTableIndex.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam "index"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "index" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (Var "index"))
   (Let "f" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Var "f"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (Let "$r0" (Let "$v0" (Val #(W64 0))
   (Let "$v1" (Val UntypedNil)
   (App (Val (GoInstruction (CompositeLiteral lazyFileBuf.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"offset")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"next")) (ElementExpression go.untypedNil (Var "$v1")))]))))
@@ -384,14 +439,16 @@ noncomputable def readTableIndex.impl [GooseExts] [GoGlobalContext] : val :=
   (Lam BAnon
   (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore lazyFileBuf.ty))) (Pair (Var "buf") (Var "$r0")))))))))))))
+  (App (Val (GoInstruction (GoStore lazyFileBuf.ty))) (Pair (Var "buf") (Var "$r0"))))))))))
+  (Val #()))))
 
 /-- RecoverTable restores a table from disk on startup.
 
     go: simpledb.go:111:6 -/
 noncomputable def RecoverTable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Table.ty))) (App (Val (GoInstruction (GoZeroVal Table.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc go.string))) (Var "p"))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 go.uint64)]))) (Val #())) (Val #()))
   (Let "index" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 go.uint64)))) (Val #())))
@@ -402,10 +459,14 @@ noncomputable def RecoverTable.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "f" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "index"))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "index"))
   (Let "$v1" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Var "f"))
-  (App (Val (GoInstruction (CompositeLiteral Table.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Index")) (ElementExpression (go.GoType.MapType go.uint64 go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"File")) (ElementExpression _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty (Var "$v1")))])))))))
+  (App (Val (GoInstruction (CompositeLiteral Table.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Index")) (ElementExpression (go.GoType.MapType go.uint64 go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"File")) (ElementExpression _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty (Var "$v1")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Table.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Var "f"))
   (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "index"))
@@ -413,27 +474,27 @@ noncomputable def RecoverTable.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Pair (Var "f") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 go.uint64)))) (Pair (Var "index") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 go.uint64)))) (Pair (Var "index") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad Table.ty))) (Var "$res0")))))
 
 /-- CloseTable frees up the fd held by a table.
 
     go: simpledb.go:119:6 -/
 noncomputable def CloseTable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc Table.ty))) (Var "t"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (App (Val (GoInstruction (StructFieldRef Table.ty go!"File"))) (Var "t")))
-  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.filesys.Close []))) (Val #())) (Var "$a0"))))))))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.filesys.Close []))) (Val #())) (Var "$a0"))))))
+  (Val #())))
 
 /-- go: simpledb.go:123:6 -/
 noncomputable def readValue.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam "off"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "off" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "off"))
   (Let "f" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Var "f"))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Var "f"))
@@ -455,9 +516,13 @@ noncomputable def readValue.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "haveBytes" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "buf"))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "totalBytes")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "buf"))
-  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "totalBytes"))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "$res0") (Var "$r0"))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "haveBytes")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "totalBytes")))))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Var "f"))
   (Let "$a1" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "off")) (Val #(W64 512))))
@@ -470,8 +535,12 @@ noncomputable def readValue.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (Let "newBuf" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "newBuf"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "newBuf")))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "newBuf") (Var "$r0")))))))))
   (App (Val doExecute)
@@ -485,13 +554,16 @@ noncomputable def readValue.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "totalBytes") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "startBuf") (Var "$r0"))))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "startBuf") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "$res0"))))))
 
 /-- go: simpledb.go:137:6 -/
 noncomputable def tableRead.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "k"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "k" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "k"))
   (Let "t" (App (Val (GoInstruction (GoAlloc Table.ty))) (Var "t"))
   (Let "__p" (App (App (Val (map.lookup2 go.uint64 go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (StructFieldRef Table.ty go!"Index"))) (Var "t")))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "k")))
@@ -509,43 +581,63 @@ noncomputable def tableRead.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve readValue []))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (Let "$r1" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p")) (Val #true)))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "p") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.byte)))) (Val UntypedNil))
+  (Let "$r1" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.byte)))) (Val UntypedNil)) (Val #false)))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "off") (Var "$r0")))))))))))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "off") (Var "$r0")))))))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1"))))))))
 
 /-- go: simpledb.go:151:6 -/
 noncomputable def newBuf.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc bufFile.ty))) (App (Val (GoInstruction (GoZeroVal bufFile.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Var "f"))
   (Let "$r0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (Let "buf" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.SliceType go.byte))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (go.GoType.SliceType go.byte))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Let "$v0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Var "f"))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Var "f"))
   (Let "$v1" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.SliceType go.byte))))) (Var "buf"))
-  (App (Val (GoInstruction (CompositeLiteral bufFile.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"file")) (ElementExpression _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty (Var "$v0"))), (KeyedElement (some (KeyField go!"buf")) (ElementExpression (go.GoType.PointerType (go.GoType.SliceType go.byte)) (Var "$v1")))])))))))
+  (App (Val (GoInstruction (CompositeLiteral bufFile.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"file")) (ElementExpression _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty (Var "$v0"))), (KeyedElement (some (KeyField go!"buf")) (ElementExpression (go.GoType.PointerType (go.GoType.SliceType go.byte)) (Var "$v1")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.SliceType go.byte))))) (Pair (Var "buf") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore bufFile.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.SliceType go.byte))))) (Pair (Var "buf") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad bufFile.ty))) (Var "$res0")))))
 
 /-- go: simpledb.go:159:6 -/
 noncomputable def bufFlush.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc bufFile.ty))) (Var "f"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.SliceType go.byte))))) (App (Val (GoInstruction (StructFieldRef bufFile.ty go!"buf"))) (Var "f"))))
   (Let "buf" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -565,18 +657,16 @@ noncomputable def bufFlush.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "buf") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "buf") (Var "$r0")))))))))
+  (Val #())))
 
 /-- go: simpledb.go:168:6 -/
 noncomputable def bufAppend.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam "p"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
   (Let "f" (App (Val (GoInstruction (GoAlloc bufFile.ty))) (Var "f"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.SliceType go.byte))))) (App (Val (GoInstruction (StructFieldRef bufFile.ty go!"buf"))) (Var "f"))))
   (Let "buf" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -591,28 +681,28 @@ noncomputable def bufAppend.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "buf2") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "buf") (Var "$r0")))))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "buf") (Var "$r0"))))))))))
+  (Val #()))))
 
 /-- go: simpledb.go:174:6 -/
 noncomputable def bufClose.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc bufFile.ty))) (Var "f"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (App (Val (GoInstruction (StructFieldRef bufFile.ty go!"file"))) (Var "f")))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.filesys.Close []))) (Val #())) (Var "$a0"))))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad bufFile.ty))) (Var "f"))
-  (App (App (Val (GoInstruction (FuncResolve bufFlush []))) (Val #())) (Var "$a0")))))))))
+  (App (App (Val (GoInstruction (FuncResolve bufFlush []))) (Val #())) (Var "$a0")))))))
+  (Val #())))
 
 /-- go: simpledb.go:186:6 -/
 noncomputable def newTableWriter.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc tableWriter.ty))) (App (Val (GoInstruction (GoZeroVal tableWriter.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc go.string))) (Var "p"))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 go.uint64)]))) (Val #())) (Val #()))
   (Let "index" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 go.uint64)))) (Val #())))
@@ -634,12 +724,16 @@ noncomputable def newTableWriter.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$r0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
   (Let "off" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint64)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "index"))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "index"))
   (Let "$v1" (App (Val (GoInstruction (GoLoad go.string))) (Var "p"))
   (Let "$v2" (App (Val (GoInstruction (GoLoad bufFile.ty))) (Var "buf"))
   (Let "$v3" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "off"))
-  (App (Val (GoInstruction (CompositeLiteral tableWriter.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"index")) (ElementExpression (go.GoType.MapType go.uint64 go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"name")) (ElementExpression go.string (Var "$v1"))), (KeyedElement (some (KeyField go!"file")) (ElementExpression bufFile.ty (Var "$v2"))), (KeyedElement (some (KeyField go!"offset")) (ElementExpression (go.GoType.PointerType go.uint64) (Var "$v3")))])))))))))
+  (App (Val (GoInstruction (CompositeLiteral tableWriter.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"index")) (ElementExpression (go.GoType.MapType go.uint64 go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"name")) (ElementExpression go.string (Var "$v1"))), (KeyedElement (some (KeyField go!"file")) (ElementExpression bufFile.ty (Var "$v2"))), (KeyedElement (some (KeyField go!"offset")) (ElementExpression (go.GoType.PointerType go.uint64) (Var "$v3")))]))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore tableWriter.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "off") (Var "$r0")))))))))
   (App (Val doExecute)
@@ -649,18 +743,16 @@ noncomputable def newTableWriter.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Pair (Var "f") (Var "$r0")))))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 go.uint64)))) (Pair (Var "index") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 go.uint64)))) (Pair (Var "index") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad tableWriter.ty))) (Var "$res0")))))
 
 /-- go: simpledb.go:199:6 -/
 noncomputable def tableWriterAppend.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "p"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
   (Let "w" (App (Val (GoInstruction (GoAlloc tableWriter.ty))) (Var "w"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (StructFieldRef tableWriter.ty go!"offset"))) (Var "w"))))
   (Let "off" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -674,12 +766,14 @@ noncomputable def tableWriterAppend.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad bufFile.ty))) (App (Val (GoInstruction (StructFieldRef tableWriter.ty go!"file"))) (Var "w")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
-  (App (App (App (Val (GoInstruction (FuncResolve bufAppend []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))))
+  (App (App (App (Val (GoInstruction (FuncResolve bufAppend []))) (Val #())) (Var "$a0")) (Var "$a1")))))))))
+  (Val #()))))
 
 /-- go: simpledb.go:205:6 -/
 noncomputable def tableWriterClose.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "w"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Table.ty))) (App (Val (GoInstruction (GoZeroVal Table.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "w" (App (Val (GoInstruction (GoAlloc tableWriter.ty))) (Var "w"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"db"))
@@ -687,15 +781,20 @@ noncomputable def tableWriterClose.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.filesys.Open []))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (Let "f" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (StructFieldRef tableWriter.ty go!"index"))) (Var "w")))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (StructFieldRef tableWriter.ty go!"index"))) (Var "w")))
   (Let "$v1" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Var "f"))
-  (App (Val (GoInstruction (CompositeLiteral Table.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Index")) (ElementExpression (go.GoType.MapType go.uint64 go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"File")) (ElementExpression _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty (Var "$v1")))])))))))
+  (App (Val (GoInstruction (CompositeLiteral Table.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Index")) (ElementExpression (go.GoType.MapType go.uint64 go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"File")) (ElementExpression _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty (Var "$v1")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Table.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Pair (Var "f") (Var "$r0")))))))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad bufFile.ty))) (App (Val (GoInstruction (StructFieldRef tableWriter.ty go!"file"))) (Var "w")))
-  (App (App (Val (GoInstruction (FuncResolve bufClose []))) (Val #())) (Var "$a0"))))))))
+  (App (App (Val (GoInstruction (FuncResolve bufClose []))) (Val #())) (Var "$a0")))))))
+  (App (Val (GoInstruction (GoLoad Table.ty))) (Var "$res0")))))
 
 /-- EncodeUInt64 is an Encoder(uint64)
 
@@ -703,7 +802,8 @@ noncomputable def tableWriterClose.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def EncodeUInt64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "p"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 8)))
@@ -715,8 +815,12 @@ noncomputable def EncodeUInt64.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (Let "p2" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p2"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p2")))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "p2") (Var "$r0")))))))))
   (App (Val doExecute)
@@ -724,7 +828,8 @@ noncomputable def EncodeUInt64.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
   (App (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.encoding.binary.littleEndian.ty) go!"PutUint64"))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.encoding.binary.LittleEndian))) (Val #()))) (Var "$a0")) (Var "$a1"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "tmp") (Var "$r0"))))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "tmp") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "$res0"))))))
 
 /-- EncodeSlice is an Encoder([]byte)
 
@@ -732,7 +837,8 @@ noncomputable def EncodeUInt64.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def EncodeSlice.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "p"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
   (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "data"))
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert go.int go.uint64))) (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "data"))
@@ -746,25 +852,27 @@ noncomputable def EncodeSlice.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
   (Let "p3" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p3"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p3")))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "p3") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "p2") (Var "$r0"))))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "p2") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "$res0"))))))
 
 /-- go: simpledb.go:229:6 -/
 noncomputable def tablePut.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "k"
   (Lam "v"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "v" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "v"))
   (Let "k" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "k"))
   (Let "w" (App (Val (GoInstruction (GoAlloc tableWriter.ty))) (Var "w"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 0)))
   (Let "tmp" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -797,12 +905,14 @@ noncomputable def tablePut.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "tmp2") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "tmp") (Var "$r0")))))))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "tmp") (Var "$r0")))))))))))
+  (Val #())))))
 
 /-- go: simpledb.go:256:6 -/
 noncomputable def makeValueBuffer.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))]))) (Val #())) (Val #()))
   (Let "buf" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -811,21 +921,27 @@ noncomputable def makeValueBuffer.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (Var "buf"))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Var "bufPtr"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Var "bufPtr")))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Var "bufPtr")) (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Pair (Var "bufPtr") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (Pair (Var "buf") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (Pair (Var "buf") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Var "$res0")))))
 
 /-- NewDb initializes a new database on top of an empty filesys.
 
     go: simpledb.go:264:6 -/
 noncomputable def NewDb.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Database.ty))) (App (Val (GoInstruction (GoZeroVal Database.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve makeValueBuffer []))) (Val #())) (Val #()))
   (Let "wbuf" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -858,15 +974,19 @@ noncomputable def NewDb.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex.ty))) (Val #())))
   (Let "compactionL" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Var "wbuf"))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Var "wbuf"))
   (Let "$v1" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Var "rbuf"))
   (Let "$v2" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "bufferL"))
   (Let "$v3" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Table.ty)))) (Var "tableRef"))
   (Let "$v4" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.string)))) (Var "tableNameRef"))
   (Let "$v5" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "tableL"))
   (Let "$v6" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "compactionL"))
-  (App (Val (GoInstruction (CompositeLiteral Database.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"wbuffer")) (ElementExpression (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))) (Var "$v0"))), (KeyedElement (some (KeyField go!"rbuffer")) (ElementExpression (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))) (Var "$v1"))), (KeyedElement (some (KeyField go!"bufferL")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) (Var "$v2"))), (KeyedElement (some (KeyField go!"table")) (ElementExpression (go.GoType.PointerType Table.ty) (Var "$v3"))), (KeyedElement (some (KeyField go!"tableName")) (ElementExpression (go.GoType.PointerType go.string) (Var "$v4"))), (KeyedElement (some (KeyField go!"tableL")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) (Var "$v5"))), (KeyedElement (some (KeyField go!"compactionL")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) (Var "$v6")))]))))))))))))
+  (App (Val (GoInstruction (CompositeLiteral Database.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"wbuffer")) (ElementExpression (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))) (Var "$v0"))), (KeyedElement (some (KeyField go!"rbuffer")) (ElementExpression (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))) (Var "$v1"))), (KeyedElement (some (KeyField go!"bufferL")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) (Var "$v2"))), (KeyedElement (some (KeyField go!"table")) (ElementExpression (go.GoType.PointerType Table.ty) (Var "$v3"))), (KeyedElement (some (KeyField go!"tableName")) (ElementExpression (go.GoType.PointerType go.string) (Var "$v4"))), (KeyedElement (some (KeyField go!"tableL")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) (Var "$v5"))), (KeyedElement (some (KeyField go!"compactionL")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) (Var "$v6")))])))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Database.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Pair (Var "compactionL") (Var "$r0")))))))))
   (App (Val doExecute)
@@ -888,7 +1008,8 @@ noncomputable def NewDb.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Pair (Var "rbuf") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Pair (Var "wbuf") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Pair (Var "wbuf") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad Database.ty))) (Var "$res0")))))
 
 /-- Read gets a key from the database.
 
@@ -901,7 +1022,9 @@ noncomputable def NewDb.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Read.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "db"
   (Lam "k"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "k" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "k"))
   (Let "db" (App (Val (GoInstruction (GoAlloc Database.ty))) (Var "db"))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -946,8 +1069,16 @@ noncomputable def Read.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "v3"))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "v3")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"bufferL"))) (Var "db")))) (Val #()))))))
   (App (Val doExecute)
@@ -962,8 +1093,16 @@ noncomputable def Read.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"tableL"))) (Var "db")))) (Val #()))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "v2"))
+  (Let "$r1" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "v2")) (Val #true)))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"bufferL"))) (Var "db")))) (Val #()))))
   (App (Val doExecute)
@@ -976,8 +1115,16 @@ noncomputable def Read.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (Pair (Var "rbuf") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "v"))
+  (Let "$r1" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "v")) (Val #true)))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"bufferL"))) (Var "db")))) (Val #()))))
   (App (Val doExecute)
@@ -989,7 +1136,8 @@ noncomputable def Read.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (Pair (Var "buf") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"bufferL"))) (Var "db")))) (Val #())))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"bufferL"))) (Var "db")))) (Val #())))))))
+  (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1"))))))))
 
 /-- Write sets a key to a new value.
 
@@ -1003,13 +1151,10 @@ noncomputable def Write.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "db"
   (Lam "k"
   (Lam "v"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "v" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "v"))
   (Let "k" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "k"))
   (Let "db" (App (Val (GoInstruction (GoAlloc Database.ty))) (Var "db"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"wbuffer"))) (Var "db"))))
   (Let "buf" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (Val #())))
@@ -1023,38 +1168,50 @@ noncomputable def Write.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (Pair (Var "buf") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"bufferL"))) (Var "db")))) (Val #()))))))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"bufferL"))) (Var "db")))) (Val #()))))))))
+  (Val #())))))
 
 /-- go: simpledb.go:333:6 -/
 noncomputable def freshTable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc go.string))) (Var "p"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (Var "p"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad go.string))) (Var "p")))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "p")) (Val #(go!"table.1")))))
+  (Let "$r0" (Val #(go!"table.0"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val #(go!"table.0")))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))
   (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "p")) (Val #(go!"table.0")))))
+  (Let "$r0" (Val #(go!"table.1"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val #(go!"table.1")))
+  (Val #()))))
   (App (Val doExecute)
-  (Val #())))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
 
 /-- go: simpledb.go:345:6 -/
 noncomputable def tablePutBuffer.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "buf"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "buf" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (Var "buf"))
   (Let "w" (App (Val (GoInstruction (GoAlloc tableWriter.ty))) (Var "w"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (Var "buf"))
   (Let "v" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
   (Let "k" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
@@ -1071,7 +1228,8 @@ noncomputable def tablePutBuffer.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "k") (Var "$key")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "v") (Var "$value")))))))))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "v") (Var "$value"))))))))))))))
+  (Val #()))))
 
 /-- add all of table t to the table w being created; skip any keys in the (read)
     buffer b since those writes overwrite old ones
@@ -1081,13 +1239,10 @@ noncomputable def tablePutOldTable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "t"
   (Lam "b"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (Var "b"))
   (Let "t" (App (Val (GoInstruction (GoAlloc Table.ty))) (Var "t"))
   (Let "w" (App (Val (GoInstruction (GoAlloc tableWriter.ty))) (Var "w"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (Let "$r0" (Let "$v0" (Val #(W64 0))
   (Let "$v1" (Val UntypedNil)
   (App (Val (GoInstruction (CompositeLiteral lazyFileBuf.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"offset")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"next")) (ElementExpression go.untypedNil (Var "$v1")))]))))
@@ -1168,7 +1323,8 @@ noncomputable def tablePutOldTable.impl [GooseExts] [GoGlobalContext] : val :=
   (Lam BAnon
   (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore lazyFileBuf.ty))) (Pair (Var "buf") (Var "$r0")))))))))))))))
+  (App (Val (GoInstruction (GoStore lazyFileBuf.ty))) (Pair (Var "buf") (Var "$r0")))))))))))
+  (Val #())))))
 
 /-- Build a new shadow table that incorporates the current table and a
     (write) buffer wbuf.
@@ -1181,7 +1337,9 @@ noncomputable def tablePutOldTable.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def constructNewTable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "db"
   (Lam "wbuf"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Table.ty))) (App (Val (GoInstruction (GoZeroVal Table.ty))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc Table.ty))) (App (Val (GoInstruction (GoZeroVal Table.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "wbuf" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (Var "wbuf"))
   (Let "db" (App (Val (GoInstruction (GoAlloc Database.ty))) (Var "db"))
   (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.string)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"tableName"))) (Var "db"))))
@@ -1204,8 +1362,16 @@ noncomputable def constructNewTable.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve tableWriterClose []))) (Val #())) (Var "$a0")))
   (Let "newTable" (App (Val (GoInstruction (GoAlloc Table.ty))) (App (Val (GoInstruction (GoZeroVal Table.ty))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad Table.ty))) (Var "oldTable"))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad Table.ty))) (Var "newTable"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Pair (App (Val (GoInstruction (GoLoad Table.ty))) (Var "oldTable")) (App (Val (GoInstruction (GoLoad Table.ty))) (Var "newTable"))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Table.ty))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Table.ty))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Table.ty))) (Pair (Var "newTable") (Var "$r0")))))))))
   (App (Val doExecute)
@@ -1224,7 +1390,8 @@ noncomputable def constructNewTable.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "name") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "oldName") (Var "$r0"))))))))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "oldName") (Var "$r0"))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad Table.ty))) (Var "$res0")) (App (Val (GoInstruction (GoLoad Table.ty))) (Var "$res1"))))))))
 
 /-- Compact persists in-memory writes to a new table.
 
@@ -1234,11 +1401,8 @@ noncomputable def constructNewTable.impl [GooseExts] [GoGlobalContext] : val :=
     go: simpledb.go:405:6 -/
 noncomputable def Compact.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "db"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "db" (App (Val (GoInstruction (GoAlloc Database.ty))) (Var "db"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"wbuffer"))) (Var "db"))))
@@ -1327,12 +1491,14 @@ noncomputable def Compact.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"bufferL"))) (Var "db")))) (Val #()))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"compactionL"))) (Var "db")))) (Val #()))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"compactionL"))) (Var "db")))) (Val #()))))))
+  (Val #())))
 
 /-- go: simpledb.go:450:6 -/
 noncomputable def recoverManifest.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "$r0" (Let "$a0" (Val #(go!"db"))
   (Let "$a1" (Val #(go!"manifest"))
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.filesys.Open []))) (Val #())) (Var "$a0")) (Var "$a1"))))
@@ -1348,8 +1514,12 @@ noncomputable def recoverManifest.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "tableName" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (Var "tableName"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad go.string))) (Var "tableName")))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Var "f"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.filesys.Close []))) (Val #())) (Var "$a0")))))))
@@ -1358,7 +1528,8 @@ noncomputable def recoverManifest.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "manifestData") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Pair (Var "f") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Pair (Var "f") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
 
 /-- delete 'name' if it isn't tableName or "manifest"
 
@@ -1366,12 +1537,9 @@ noncomputable def recoverManifest.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def deleteOtherFile.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "name"
   (Lam "tableName"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "tableName" (App (Val (GoInstruction (GoAlloc go.string))) (Var "tableName"))
   (Let "name" (App (Val (GoInstruction (GoAlloc go.string))) (Var "name"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
@@ -1387,16 +1555,14 @@ noncomputable def deleteOtherFile.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doReturn)
   (Val #()))
   (App (Val doExecute)
-  (Val #()))))))))))
+  (Val #())))))))
+  (Val #()))))
 
 /-- go: simpledb.go:474:6 -/
 noncomputable def deleteOtherFiles.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "tableName"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "tableName" (App (Val (GoInstruction (GoAlloc go.string))) (Var "tableName"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (Let "$r0" (Let "$a0" (Val #(go!"db"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.filesys.List' []))) (Val #())) (Var "$a0")))
   (Let "files" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.string)))) (Val #())))
@@ -1437,14 +1603,16 @@ noncomputable def deleteOtherFiles.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "nfiles") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (Var "files") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (Var "files") (Var "$r0")))))))))
+  (Val #())))
 
 /-- Recover restores a previously created database after a crash or shutdown.
 
     go: simpledb.go:489:6 -/
 noncomputable def Recover.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Database.ty))) (App (Val (GoInstruction (GoZeroVal Database.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve recoverManifest []))) (Val #())) (Val #()))
   (Let "tableName" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1478,15 +1646,19 @@ noncomputable def Recover.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$r0" (App (Val (GoInstruction (GoAlloc _root_.Perennial.sync.Mutex.ty))) (App (Val (GoInstruction (GoZeroVal _root_.Perennial.sync.Mutex.ty))) (Val #())))
   (Let "compactionL" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Var "wbuffer"))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Var "wbuffer"))
   (Let "$v1" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))))) (Var "rbuffer"))
   (Let "$v2" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "bufferL"))
   (Let "$v3" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Table.ty)))) (Var "tableRef"))
   (Let "$v4" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.string)))) (Var "tableNameRef"))
   (Let "$v5" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "tableL"))
   (Let "$v6" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Var "compactionL"))
-  (App (Val (GoInstruction (CompositeLiteral Database.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"wbuffer")) (ElementExpression (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))) (Var "$v0"))), (KeyedElement (some (KeyField go!"rbuffer")) (ElementExpression (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))) (Var "$v1"))), (KeyedElement (some (KeyField go!"bufferL")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) (Var "$v2"))), (KeyedElement (some (KeyField go!"table")) (ElementExpression (go.GoType.PointerType Table.ty) (Var "$v3"))), (KeyedElement (some (KeyField go!"tableName")) (ElementExpression (go.GoType.PointerType go.string) (Var "$v4"))), (KeyedElement (some (KeyField go!"tableL")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) (Var "$v5"))), (KeyedElement (some (KeyField go!"compactionL")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) (Var "$v6")))]))))))))))))
+  (App (Val (GoInstruction (CompositeLiteral Database.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"wbuffer")) (ElementExpression (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))) (Var "$v0"))), (KeyedElement (some (KeyField go!"rbuffer")) (ElementExpression (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))) (Var "$v1"))), (KeyedElement (some (KeyField go!"bufferL")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) (Var "$v2"))), (KeyedElement (some (KeyField go!"table")) (ElementExpression (go.GoType.PointerType Table.ty) (Var "$v3"))), (KeyedElement (some (KeyField go!"tableName")) (ElementExpression (go.GoType.PointerType go.string) (Var "$v4"))), (KeyedElement (some (KeyField go!"tableL")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) (Var "$v5"))), (KeyedElement (some (KeyField go!"compactionL")) (ElementExpression (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) (Var "$v6")))])))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Database.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (Pair (Var "compactionL") (Var "$r0")))))))))
   (App (Val doExecute)
@@ -1511,7 +1683,8 @@ noncomputable def Recover.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Table.ty))) (Pair (Var "table") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "tableName") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "tableName") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad Database.ty))) (Var "$res0")))))
 
 /-- Shutdown immediately closes the database.
 
@@ -1521,11 +1694,8 @@ noncomputable def Recover.impl [GooseExts] [GoGlobalContext] : val :=
     go: simpledb.go:520:6 -/
 noncomputable def Shutdown.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "db"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "db" (App (Val (GoInstruction (GoAlloc Database.ty))) (Var "db"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad Table.ty))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Table.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"table"))) (Var "db"))))
@@ -1545,7 +1715,8 @@ noncomputable def Shutdown.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"compactionL"))) (Var "db")))) (Val #()))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"bufferL"))) (Var "db")))) (Val #()))))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"bufferL"))) (Var "db")))) (Val #()))))))
+  (Val #())))
 
 /-- Close closes an open database cleanly, flushing any in-memory writes.
 
@@ -1554,18 +1725,16 @@ noncomputable def Shutdown.impl [GooseExts] [GoGlobalContext] : val :=
     go: simpledb.go:534:6 -/
 noncomputable def Close.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "db"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "db" (App (Val (GoInstruction (GoAlloc Database.ty))) (Var "db"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad Database.ty))) (Var "db"))
   (App (App (Val (GoInstruction (FuncResolve Shutdown []))) (Val #())) (Var "$a0"))))))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (GoLoad Database.ty))) (Var "db"))
-  (App (App (Val (GoInstruction (FuncResolve Compact []))) (Val #())) (Var "$a0")))))))))
+  (App (App (Val (GoInstruction (FuncResolve Compact []))) (Val #())) (Var "$a0")))))))
+  (Val #())))
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.simpledb where
   pkgImportedPkgs := [pkg_id.encoding.binary, pkg_id.sync, pkg_id.github_com.goose_lang.primitive.filesys, pkg_id.github_com.tchajed.marshal]

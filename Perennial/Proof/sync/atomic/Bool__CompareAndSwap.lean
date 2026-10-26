@@ -33,7 +33,7 @@ theorem sync.atomic.Bool.CompareAndSwap.wp_proof
   wp_auto
   wp_apply wp_b32
   wp_apply wp_b32
-  wp_apply_core wp_CompareAndSwapUint32 $$ [] [HΦ]
+  wp_apply_core wp_CompareAndSwapUint32 $$ [] [HΦ swapped]
   · iPkgInit
   imod HΦ with H
   imodintro; inext
@@ -47,7 +47,7 @@ theorem sync.atomic.Bool.CompareAndSwap.wp_proof
   isplitr
   · ipureintro; simp only [hiff]; exact Hdq
   iintro Hv
-  imod HΦ $$ [-] with HΦ
+  imod HΦ $$ [- swapped] with HΦ
   · iapply typedPointsto_combine _ _ _ Hnn
     simp only [TypedPointsto.typedPointstoDef]
     iframe

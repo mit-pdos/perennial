@@ -32,9 +32,6 @@ theorem errors.asType.wp_proof :
   iNamed H
   wp_alloc r1 as Hr1
   wp_auto
-  wp_alloc r2 as Hr2
-  wp_auto
-  iclear Hr1 Hr2
   ihave HI : (∃ (e : GoError) (pe' : Loc),
       "err" ∷ err_ptr ↦ e ∗ "%HSe" ∷ ⌜S e⌝ ∗ "Hppe" ∷ ppe ↦ pe' ∗
       "Hpe" ∷ (⌜pe' = Loc.null⌝ ∨ ∃ v : T', pe' ↦ v) :
@@ -51,6 +48,7 @@ theorem errors.asType.wp_proof :
     wp_auto
     wp_for_post
     iapply HΦ
+    iclear Hr1 «$res1»
     iframe
   | ok ii =>
     ihave Hnode := Htree $$ %ii %HSe
@@ -71,15 +69,18 @@ theorem errors.asType.wp_proof :
       wp_auto
       wp_for_post
       iapply HΦ
+      iclear Hr1 «$res1»
       iframe
     wp_store; wp_pures; wp_store; wp_pures; wp_load; wp_pures
     -- the `As` statement, joined before the `Unwrap` switch: it either returns
     -- or falls through with an updated `*ppe`
     wp_join (Q := fun v => iprop(
         (⌜v = executeVal⌝ ∗ ∃ q : Loc, "ppe" ∷ ppe_ptr ↦ ppe ∗ "err" ∷ err_ptr ↦ interface.ok ii ∗
-          "Hppe" ∷ ppe ↦ q ∗ "Hpe" ∷ (⌜q = Loc.null⌝ ∨ ∃ v : T', q ↦ v)) ∨
-        (∃ (e : T') (q : Loc), ⌜v = returnVal (PairV #e #true)⌝ ∗ ppe ↦ q ∗
-          (⌜q = Loc.null⌝ ∨ ∃ v : T', q ↦ v)))) at next with [ppe err Hppe Hpe]
+          "Hppe" ∷ ppe ↦ q ∗ "Hpe" ∷ (⌜q = Loc.null⌝ ∨ ∃ v : T', q ↦ v) ∗
+          "Hr1" ∷ r1 ↦ zero_val T' ∗ "«$res1»" ∷ «$res1_ptr» ↦ zero_val Bool) ∨
+        (∃ (e : T') (q : Loc), ⌜v = returnVal #()⌝ ∗ ppe ↦ q ∗
+          (⌜q = Loc.null⌝ ∨ ∃ v : T', q ↦ v) ∗ r1 ↦ e ∗ «$res1_ptr» ↦ true))) at next
+      with [ppe err Hppe Hpe Hr1 «$res1»]
     wp_auto
     have hu : underlying (go.InterfaceType [go.MethodElem go!"As" (go.Signature [go.any] false [go.bool])]) =
         go.InterfaceType [go.MethodElem go!"As" (go.Signature [go.any] false [go.bool])] :=
@@ -100,7 +101,7 @@ theorem errors.asType.wp_proof :
         cases b
         case true =>
           wp_auto
-          iright; iexists _, _; iframe; ipureintro; rfl
+          iright; iexists _, «$r0_ptr»; iframe; ipureintro; rfl
         wp_auto
         ihave Hpe : (⌜«$r0_ptr» = Loc.null⌝ ∨ ∃ v : T', «$r0_ptr» ↦ v : IProp GF) $$ [Hv]
         · iright; iexists _; iexact Hv
@@ -114,7 +115,7 @@ theorem errors.asType.wp_proof :
         cases b
         case true =>
           wp_auto
-          iright; iexists _, _; iframe; ipureintro; rfl
+          iright; iexists _, pe'; iframe; ipureintro; rfl
         wp_auto
         ihave Hpe : (⌜pe' = Loc.null⌝ ∨ ∃ v : T', pe' ↦ v : IProp GF) $$ [Hv]
         · iright; iexists _; iexact Hv
@@ -124,12 +125,13 @@ theorem errors.asType.wp_proof :
       wp_auto
       ileft; iframe; ipureintro; rfl
     iintro HQ
-    icases HQ with (⟨%Hv, %pe', ppe, err, Hppe, Hpe⟩ | ⟨%e0, %q, %Hv, Hppe, Hpe⟩)
+    icases HQ with (⟨%Hv, %pe', ppe, err, Hppe, Hpe, Hr1, «$res1»⟩ | ⟨%e0, %q, %Hv, Hppe, Hpe, Hr1, «$res1»⟩)
     rotate_left
     · subst Hv
       wp_auto
       wp_for_post
       iapply HΦ
+      iclear Hr1 «$res1»
       iframe
     subst Hv
     wp_auto
@@ -154,6 +156,7 @@ theorem errors.asType.wp_proof :
         wp_auto
         wp_for_post
         iapply HΦ
+        iclear Hr1 «$res1»
         iframe
       | ok ii' =>
         wp_auto
@@ -213,6 +216,7 @@ theorem errors.asType.wp_proof :
               wp_for_post
               wp_for_post
               iapply HΦ
+              iclear Hr1 «$res1»
               iframe
             case false =>
               wp_auto
@@ -223,12 +227,14 @@ theorem errors.asType.wp_proof :
               ipureintro; word
         · wp_for_post
           iapply HΦ
+          iclear Hr1 «$res1»
           iframe
       case false =>
         simp only [Bool.false_eq_true, ↓reduceIte]
         wp_auto
         wp_for_post
         iapply HΦ
+        iclear Hr1 «$res1»
         iframe
 
 end proof

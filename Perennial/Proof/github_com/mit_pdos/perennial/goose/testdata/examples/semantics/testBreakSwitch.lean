@@ -30,7 +30,8 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBrea
       "i" ∷ i_ptr ↦ i ∗
       "n" ∷ n_ptr ↦ n ∗
       "HΦ" ∷ Φ #true ∗
-      "%Hi" ∷ ⌜n = i ∧ uint.Z i ≤ 3⌝ : IProp GF) $$ [i n HΦ]
+      "«$res0»" ∷ «$res0_ptr» ↦ zero_val Bool ∗
+      "%Hi" ∷ ⌜n = i ∧ uint.Z i ≤ 3⌝ : IProp GF) $$ [i n HΦ «$res0»]
   · iexists _, _
     iframe
     ipureintro; exact ⟨rfl, by decide⟩

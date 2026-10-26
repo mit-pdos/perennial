@@ -317,9 +317,15 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$v0" (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType pp.ty) go.any))) (App (Val (GoInstruction (GoAlloc pp.ty))) (App (Val (GoInstruction (GoZeroVal pp.ty))) (Val #()))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (Convert (go.GoType.PointerType pp.ty) go.any))) (App (Val (GoInstruction (GoAlloc pp.ty))) (App (Val (GoInstruction (GoZeroVal pp.ty))) (Val #())))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.any))) (Var "$res0")))))
   (App (Val (GoInstruction (CompositeLiteral _root_.Perennial.sync.Pool.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"New")) (ElementExpression (go.GoType.FunctionType (go.signature.Signature [] false [go.any])) (Var "$v0")))])))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$v0" (Val #(W16 9))
@@ -345,9 +351,15 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType (go.GoType.ArrayType 2 go.uint16))))) (LiteralValue [(KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint16 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint16 (Var "$v1")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint16 (Var "$v2"))), (KeyedElement none (ElementExpression go.uint16 (Var "$v3")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint16 (Var "$v4"))), (KeyedElement none (ElementExpression go.uint16 (Var "$v5")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint16 (Var "$v6"))), (KeyedElement none (ElementExpression go.uint16 (Var "$v7")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint16 (Var "$v8"))), (KeyedElement none (ElementExpression go.uint16 (Var "$v9")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint16 (Var "$v10"))), (KeyedElement none (ElementExpression go.uint16 (Var "$v11")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint16 (Var "$v12"))), (KeyedElement none (ElementExpression go.uint16 (Var "$v13")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint16 (Var "$v14"))), (KeyedElement none (ElementExpression go.uint16 (Var "$v15")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint16 (Var "$v16"))), (KeyedElement none (ElementExpression go.uint16 (Var "$v17")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint16 (Var "$v18"))), (KeyedElement none (ElementExpression go.uint16 (Var "$v19")))]))]))))))))))))))))))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$v0" (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType ss.ty) go.any))) (App (Val (GoInstruction (GoAlloc ss.ty))) (App (Val (GoInstruction (GoZeroVal ss.ty))) (Val #()))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (Convert (go.GoType.PointerType ss.ty) go.any))) (App (Val (GoInstruction (GoAlloc ss.ty))) (App (Val (GoInstruction (GoZeroVal ss.ty))) (Val #())))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.any))) (Var "$res0")))))
   (App (Val (GoInstruction (CompositeLiteral _root_.Perennial.sync.Pool.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"New")) (ElementExpression (go.GoType.FunctionType (go.signature.Signature [] false [go.any])) (Var "$v0")))])))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"syntax error scanning complex number"))

@@ -34,6 +34,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.
     github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useBoxGet.spec
       (GF := GF) (hG := hG) := by
   wp_start
+  wp_auto
   wp_apply wp_makeGenericBox
   wp_apply wp_Box_Get $$ [$]
   wp_end

@@ -26,10 +26,11 @@ noncomputable def AnyPointer [GooseExts] [GoGlobalContext] : GoString :=
 /-- go: helpers.go:3:6 -/
 noncomputable def AnyPointer.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType T)))) (Var "x"))
-  (App (Val doReturn)
-  (Val #())))))
+  (App (Val doExecute)
+  (Val #()))))
+  (Val #())))
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.helpers where
   pkgImportedPkgs := []

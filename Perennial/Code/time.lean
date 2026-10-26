@@ -775,15 +775,20 @@ noncomputable def initLocal [GooseExts] [GoGlobalContext] : GoString :=
     go: sleep.go:52:6 -/
 noncomputable def when.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "d"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc Duration.ty))) (Var "d"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (App (Val (GoInstruction (FuncResolve runtimeNano []))) (Val #())) (Val #())) (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d"))))
   (Let "t" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int64))) (Var "t"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad go.int64))) (Var "t")))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "t")) (Val #(W64 0)))))
   (Let "$r0" (Val #(W64 9223372036854775807))
   (App (Val doExecute)
@@ -793,10 +798,15 @@ noncomputable def when.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "t") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoLe Duration.ty))) (Pair (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")) (Val #(W64 0)))))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve runtimeNano []))) (Val #())) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (App (Val (GoInstruction (FuncResolve runtimeNano []))) (Val #())) (Val #())))
+  (Val #()))))
   (App (Val doExecute)
-  (Val #())))))))
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0")))))
 
 /-- AfterFunc waits for the duration to elapse and then calls f
     in its own goroutine. It returns a [Timer] that can
@@ -807,34 +817,38 @@ noncomputable def when.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def AfterFunc.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "d"
   (Lam "f"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Timer.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Timer.ty)))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f"))
   (Let "d" (App (Val (GoInstruction (GoAlloc Duration.ty))) (Var "d"))
-  (App (Val doReturn)
-  (Let "$a0" (Let "$a0" (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d"))
+  (Let "$r0" (Let "$a0" (Let "$a0" (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d"))
   (App (App (Val (GoInstruction (FuncResolve when []))) (Val #())) (Var "$a0")))
   (Let "$a1" (Val #(W64 0))
   (Let "$a2" (App (Val (GoInstruction (FuncResolve goFunc []))) (Val #()))
   (Let "$a3" (App (Val (GoInstruction (Convert (go.GoType.FunctionType (go.signature.Signature [] false [])) go.any))) (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f")))
   (Let "$a4" (App (Val (GoInstruction (Convert go.untypedNil «unsafe».Pointer))) (Val UntypedNil))
-  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve newTimer []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))))))))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve newTimer []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Timer.ty)))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Timer.ty)))) (Var "$res0"))))))
 
 /-- go: sleep.go:214:6 -/
 noncomputable def goFunc.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "arg"
   (Lam "seq"
   (Lam "delta"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "delta" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "delta"))
   (Let "seq" (App (Val (GoInstruction (GoAlloc go.uintptr))) (Var "seq"))
   (Let "arg" (App (Val (GoInstruction (GoAlloc go.any))) (Var "arg"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (Let "$go" (App (Val (GoInstruction (TypeAssert (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (GoLoad go.any))) (Var "arg")))
   (App (Val doExecute)
   (Fork
-  (App (Var "$go") (Val #())))))))))))))
+  (App (Var "$go") (Val #())))))))))
+  (Val #())))))
 
 /-- nsec returns the time's nanoseconds.
 
@@ -842,10 +856,16 @@ noncomputable def goFunc.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Time.nsec.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Time.ty)))) (Var "t"))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.uint64 go.int32))) (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val nsecMask)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (Convert go.uint64 go.int32))) (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val nsecMask))))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.int32))) (Var "$res0"))))))
 
 /-- sec returns the time's seconds since Jan 1 year 1.
 
@@ -853,16 +873,26 @@ noncomputable def Time.nsec.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Time.sec.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Time.ty)))) (Var "t"))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))))
-  (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (Val wallToInternal) (App (Val (GoInstruction (Convert go.uint64 go.int64))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(31 : Int)))))))))
+  (Val #()))))
   (App (Val doExecute)
-  (Val #()))))))))
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (Val wallToInternal) (App (Val (GoInstruction (Convert go.uint64 go.int64))) (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(1 : Int))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(31 : Int))))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0"))))))
 
 /-- unixSec returns the time's seconds since Jan 1 1970 (Unix time).
 
@@ -870,10 +900,16 @@ noncomputable def Time.sec.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Time.unixSec.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Time.ty)))) (Var "t"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"sec"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t"))) (Val #())) (Val internalToUnix)))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"sec"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t"))) (Val #())) (Val internalToUnix))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0"))))))
 
 /-- addSec adds d seconds to the time.
 
@@ -881,12 +917,9 @@ noncomputable def Time.unixSec.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Time.addSec.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "d"
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Time.ty)))) (Var "t"))
   (Let "d" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "d"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (App (Val (GoInstruction (GoLoad go.int64))) (Var "d"))))
   (Let "sum" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
@@ -928,7 +961,8 @@ noncomputable def Time.addSec.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "sec") (Var "$r0")))))))
   (App (Val doExecute)
-  (Val #()))))))))))
+  (Val #())))))))
+  (Val #()))))
 
 /-- stripMono strips the monotonic clock reading in t.
 
@@ -936,11 +970,8 @@ noncomputable def Time.addSec.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Time.stripMono.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Seq (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Time.ty)))) (Var "t"))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t")))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))))
   (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"sec"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t"))) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -949,7 +980,8 @@ noncomputable def Time.stripMono.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Time.ty)))) (Var "t"))) (Var "$r0"))))))
   (App (Val doExecute)
-  (Val #()))))))))
+  (Val #())))))
+  (Val #()))))
 
 /-- After reports whether the time instant t is after u.
 
@@ -957,7 +989,8 @@ noncomputable def Time.stripMono.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Time.After.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "u"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "t"))
   (Let "u" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "u"))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -967,17 +1000,26 @@ noncomputable def Time.After.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"sec"))) (Var "u")) (Val #()))
   (Let "us" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoGt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "ts")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "us")))) (Val #true) (If (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "ts")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "us")))) (App (Val (GoInstruction (GoOp GoGt go.int32))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "t")) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "u")) (Val #())))) (Val #false)))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (If (App (Val (GoInstruction (GoOp GoGt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "ts")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "us")))) (Val #true) (If (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "ts")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "us")))) (App (Val (GoInstruction (GoOp GoGt go.int32))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "t")) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "u")) (Val #())))) (Val #false))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "us") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "ts") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "u"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoGt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "u")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoGt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "u"))))))
+  (Val #()))))
   (App (Val doExecute)
-  (Val #())))))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
 
 /-- Before reports whether the time instant t is before u.
 
@@ -985,7 +1027,8 @@ noncomputable def Time.After.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Time.Before.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "u"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "t"))
   (Let "u" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "u"))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -995,17 +1038,26 @@ noncomputable def Time.Before.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"sec"))) (Var "u")) (Val #()))
   (Let "us" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoLt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "ts")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "us")))) (Val #true) (If (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "ts")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "us")))) (App (Val (GoInstruction (GoOp GoLt go.int32))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "t")) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "u")) (Val #())))) (Val #false)))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (If (App (Val (GoInstruction (GoOp GoLt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "ts")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "us")))) (Val #true) (If (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "ts")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "us")))) (App (Val (GoInstruction (GoOp GoLt go.int32))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "t")) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "u")) (Val #())))) (Val #false))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "us") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "ts") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "u"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoLt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "u")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoLt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "u"))))))
+  (Val #()))))
   (App (Val doExecute)
-  (Val #())))))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
 
 /-- Equal reports whether t and u represent the same time instant.
     Two times can be equal even if they are in different locations.
@@ -1017,17 +1069,27 @@ noncomputable def Time.Before.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Time.Equal.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "u"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "t"))
   (Let "u" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "u"))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"sec"))) (Var "t")) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"sec"))) (Var "u")) (Val #())))) (App (Val (GoInstruction (GoOp GoEquals go.int32))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "t")) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "u")) (Val #())))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (If (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"sec"))) (Var "t")) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"sec"))) (Var "u")) (Val #())))) (App (Val (GoInstruction (GoOp GoEquals go.int32))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "t")) (Val #())) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "u")) (Val #())))) (Val #false)))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "u"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))))
-  (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "u"))))))
+  (Val #()))))
   (App (Val doExecute)
-  (Val #())))))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "u"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "u")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
 
 /-- Add returns the time t+d.
 
@@ -1035,7 +1097,8 @@ noncomputable def Time.Equal.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Time.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "d"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Time.ty))) (App (Val (GoInstruction (GoZeroVal Time.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "t"))
   (Let "d" (App (Val (GoInstruction (GoAlloc Duration.ty))) (Var "d"))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoDiv Duration.ty))) (Pair (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")) (Val #(W64 1000000000))))
@@ -1049,8 +1112,12 @@ noncomputable def Time.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad Time.ty))) (Var "t"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad Time.ty))) (Var "t")))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Time.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t"))) (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d"))))
   (Let "te" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
@@ -1087,7 +1154,8 @@ noncomputable def Time.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "nsec") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "dsec") (Var "$r0"))))))))))))
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "dsec") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$res0"))))))
 
 /-- Sub returns the duration t-u. If the result exceeds the maximum (or minimum)
     value that can be stored in a [Duration], the maximum (or minimum) duration
@@ -1098,7 +1166,8 @@ noncomputable def Time.Add.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Time.Sub.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "u"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Duration.ty))) (App (Val (GoInstruction (GoZeroVal Duration.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "t"))
   (Let "u" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "u"))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1109,29 +1178,47 @@ noncomputable def Time.Sub.impl [GooseExts] [GoGlobalContext] : val :=
   (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (Let "$a0" (App (Val (GoInstruction (GoLoad Time.ty))) (Var "t"))
   (App (App (Val (GoInstruction (MethodResolve Time.ty go!"Equal"))) (Let "$a0" (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d"))
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"Add"))) (Var "u")) (Var "$a0")))) (Var "$a0")))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "$res0") (Var "$r0"))))))
   (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (Let "$a0" (App (Val (GoInstruction (GoLoad Time.ty))) (Var "u"))
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"Before"))) (Var "t")) (Var "$a0")))))
+  (Let "$r0" (Val minDuration)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val minDuration))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "$res0") (Var "$r0"))))))
+  (Let "$r0" (Val maxDuration)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val maxDuration)))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "$res0") (Var "$r0")))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "d") (Var "$r0")))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t"))) (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "u"))))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t")))
   (Let "$a1" (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "u")))
-  (App (App (App (Val (GoInstruction (FuncResolve subMono []))) (Val #())) (Var "$a0")) (Var "$a1")))))
+  (App (App (App (Val (GoInstruction (FuncResolve subMono []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
   (App (Val doExecute)
-  (Val #())))))))))
+  (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$res0"))))))
 
 /-- go: time.go:1214:6 -/
 noncomputable def subMono.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "u"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Duration.ty))) (App (Val (GoInstruction (GoZeroVal Duration.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "u" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "u"))
   (Let "t" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "t"))
   (Let "$r0" (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "t")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "u"))))
@@ -1139,20 +1226,33 @@ noncomputable def subMono.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoGt Duration.ty))) (Pair (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoLt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "t")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "u")))) (Val #false)))
+  (Let "$r0" (Val minDuration)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val minDuration))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "$res0") (Var "$r0"))))))
   (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt Duration.ty))) (Pair (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoGt go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "t")) (App (Val (GoInstruction (GoLoad go.int64))) (Var "u")))) (Val #false)))
+  (Let "$r0" (Val maxDuration)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val maxDuration))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "$res0") (Var "$r0"))))))
   (App (Val doExecute)
   (Val #()))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "d") (Var "$r0"))))))))))))
+  (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "d") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$res0"))))))
 
 /-- Since returns the time elapsed since t.
     It is shorthand for time.Now().Sub(t).
@@ -1160,19 +1260,29 @@ noncomputable def subMono.impl [GooseExts] [GoGlobalContext] : val :=
     go: time.go:1227:6 -/
 noncomputable def Since.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Duration.ty))) (App (Val (GoInstruction (GoZeroVal Duration.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "t"))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad Time.ty))) (Var "t"))
+  (App (App (Val (GoInstruction (MethodResolve Time.ty go!"Sub"))) (App (App (Val (GoInstruction (FuncResolve Now []))) (Val #())) (Val #()))) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad Time.ty))) (Var "t"))
-  (App (App (Val (GoInstruction (MethodResolve Time.ty go!"Sub"))) (App (App (Val (GoInstruction (FuncResolve Now []))) (Val #())) (Val #()))) (Var "$a0"))))))
-  (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve runtimeIsBubbled []))) (Val #())) (Val #()))) (Val #false))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (App (Val (GoInstruction (FuncResolve runtimeNano []))) (Val #())) (Val #())) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (GlobalVarAddr startNano))) (Val #())))))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t")))
-  (App (App (App (Val (GoInstruction (FuncResolve subMono []))) (Val #())) (Var "$a0")) (Var "$a1")))))
+  (Val #()))))
   (App (Val doExecute)
-  (Val #())))))))
+  (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve runtimeIsBubbled []))) (Val #())) (Val #()))) (Val #false))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (App (Val (GoInstruction (FuncResolve runtimeNano []))) (Val #())) (Val #())) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (GlobalVarAddr startNano))) (Val #())))))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t")))
+  (App (App (App (Val (GoInstruction (FuncResolve subMono []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$res0")))))
 
 /-- Until returns the duration until t.
     It is shorthand for t.Sub(time.Now()).
@@ -1180,19 +1290,29 @@ noncomputable def Since.impl [GooseExts] [GoGlobalContext] : val :=
     go: time.go:1237:6 -/
 noncomputable def Until.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Duration.ty))) (App (Val (GoInstruction (GoZeroVal Duration.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "t"))
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (App (Val (GoInstruction (FuncResolve Now []))) (Val #())) (Val #()))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"Sub"))) (Var "t")) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Let "$a0" (App (App (Val (GoInstruction (FuncResolve Now []))) (Val #())) (Val #()))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"Sub"))) (Var "t")) (Var "$a0"))))))
-  (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve runtimeIsBubbled []))) (Val #())) (Val #()))) (Val #false))
-  (App (Val doReturn)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t")))
-  (Let "$a1" (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (App (Val (GoInstruction (FuncResolve runtimeNano []))) (Val #())) (Val #())) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (GlobalVarAddr startNano))) (Val #())))))
-  (App (App (App (Val (GoInstruction (FuncResolve subMono []))) (Val #())) (Var "$a0")) (Var "$a1")))))
+  (Val #()))))
   (App (Val doExecute)
-  (Val #())))))))
+  (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"wall"))) (Var "t"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)))) (Val #(W64 0))))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve runtimeIsBubbled []))) (Val #())) (Val #()))) (Val #false))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"ext"))) (Var "t")))
+  (Let "$a1" (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (App (Val (GoInstruction (FuncResolve runtimeNano []))) (Val #())) (Val #())) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (GlobalVarAddr startNano))) (Val #())))))
+  (App (App (App (Val (GoInstruction (FuncResolve subMono []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$res0")))))
 
 /-- UnixNano returns t as a Unix time, the number of nanoseconds elapsed
     since January 1, 1970 UTC. The result is undefined if the Unix time
@@ -1205,10 +1325,16 @@ noncomputable def Until.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable def Time.UnixNano.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "t"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.int64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"unixSec"))) (Var "t")) (Val #())) (Val #(W64 1000000000)))) (App (Val (GoInstruction (Convert go.int32 go.int64))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "t")) (Val #())))))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (Val (GoInstruction (GoOp GoMul go.int64))) (Pair (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"unixSec"))) (Var "t")) (Val #())) (Val #(W64 1000000000)))) (App (Val (GoInstruction (Convert go.int32 go.int64))) (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Time.ty) go!"nsec"))) (Var "t")) (Val #()))))))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0"))))))
 
 noncomputable instance info' : PkgInfo pkg_id.time where
   pkgImportedPkgs := [pkg_id.errors]

@@ -29,22 +29,18 @@ noncomputable def B [GooseExts] [GoGlobalContext] : GoString :=
 /-- go: mutualrec.go:3:6 -/
 noncomputable def A.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
+  (Seq (App (Val exceptionDo)
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (FuncResolve B []))) (Val #())) (Val #()))))))
+  (App (App (Val (GoInstruction (FuncResolve B []))) (Val #())) (Val #()))))
+  (Val #())))
 
 /-- go: mutualrec.go:7:6 -/
 noncomputable def B.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
+  (Seq (App (Val exceptionDo)
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (FuncResolve A []))) (Val #())) (Val #()))))))
+  (App (App (Val (GoInstruction (FuncResolve A []))) (Val #())) (Val #()))))
+  (Val #())))
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.mutualrec where
   pkgImportedPkgs := []

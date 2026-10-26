@@ -32,8 +32,8 @@ theorem strconv.rangeError.wp_proof
   icases HErrRange with ⟨%x, #Hx, -⟩
   wp_auto
   wp_apply wp_Clone
-  wp_alloc l as Hl
-  wp_auto
+  irename «$r0» => Hl
+  generalize «$r0_ptr» = l at *
   iapply HΦ
   iunfold strconv.numErrorOf
   iexists l, _

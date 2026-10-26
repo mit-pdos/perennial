@@ -27,13 +27,11 @@ noncomputable def f [GooseExts] [GoGlobalContext] : GoString :=
 /-- go: g.go:7:6 -/
 noncomputable def f.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
+  (Seq (App (Val exceptionDo)
   (Let "$r0" (Val #(W64 11))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.GlobalX))) (Val #())) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.GlobalX))) (Val #())) (Var "$r0"))))))
+  (Val #())))
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals where
   pkgImportedPkgs := [pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest]

@@ -34,6 +34,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_sessi
     github_com.mit_pdos.perennial.goose.testdata.examples.channel.etcd_session.newSession.spec
       (GF := GF) (hG := hG) := by
   wp_start
+  wp_auto
   wp_apply wp_RandomUint64 as %x _
   wp_if_destruct
   · wp_apply wp_New as %_ _

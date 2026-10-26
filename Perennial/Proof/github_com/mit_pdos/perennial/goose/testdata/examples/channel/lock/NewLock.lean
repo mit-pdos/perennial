@@ -30,6 +30,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.NewLo
     github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.NewLock.spec
       (GF := GF) (hG := hG) := fun R => by
   wp_start as HR
+  wp_auto
   iapply wp_fupd
   wp_apply chan.wp_make2 (V := Unit) $$ [] as %ch %γch ⟨#Hchan, %Hcap, Hoc⟩
   · ipureintro; decide

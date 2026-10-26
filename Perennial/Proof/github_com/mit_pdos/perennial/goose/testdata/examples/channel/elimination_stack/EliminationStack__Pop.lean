@@ -182,7 +182,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.eliminatio
     inext
     iintro %t -
     wp_auto
-    wp_apply wp_LockedStack_Pop γ.lsGn st.base' $$ [] [HΦ]
+    wp_apply wp_LockedStack_Pop γ.lsGn st.base' $$ [] [HΦ «$res0» «$res1»]
     · iframe #
     iinv Hinv with ⟨%stack, %exstate, >Hls, >Hauth, >exchanger, Hexchanger⟩ Hclose
     imod fupd_mask_subseteq (mask_diff_ndot N "inv") with Hmask
