@@ -48,6 +48,20 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   `p.z` with `p` nil and `z` of zero size loads a value where Go panics. The fix makes
   every pure step through a field address need `l ≠ null`, so it touches many proofs.
 
+- **Calling a nil function does not panic (unsound).** A nil function value is
+  `func.nil`, a lambda whose body is `Poison` (`GooseLang/Lang.lean`), and goose
+  translates a call of a function value to a plain application. So the call returns
+  `Poison` where Go panics, and a call whose result is discarded continues:
+
+  ```go
+  var f func()
+  f() // Go: panic "invalid memory address or nil pointer dereference"; the model continues
+  for range (func(func() bool))(nil) {} // the same: the loop ends with no iterations
+  ```
+
+  Fix: make the application of `func.nil` stuck (a nil check in the translation of a
+  call of a function value, or a stuck body for `func.nil`).
+
 ## Allocation
 
 - **No limit on allocation size (unsound).** gc refuses an allocation above `maxAlloc`

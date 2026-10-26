@@ -410,6 +410,18 @@ switch or `select` ends that statement: Goose wraps such a statement in
 `catchBreak`, which `wp_auto` steps through (`break:` becomes `do:`; the
 `pure_catch_break_*` instances in `Theory/Loop.lean`).
 
+A range over a function, `for k, v := range f`, is `func.forRange n f body`
+(`Golang/Defn/Loop.lean`), where `n` is the number of parameters of the yield
+function and `body` is the loop body as a function of the iteration values. It
+calls `f` with a yield function, each call of which runs `body` once and returns
+`true` unless the body ended with `break` or `return`. A cell tracks whether the
+yield function may be called: a call after it returned `false`, after the loop
+or from the body, and `f` returning while the body runs, are undefined behavior
+(Go panics). A `return` in the body assigns the function's result variables
+(see "Results") and ends the loop; the function returns once `f` returns, with
+the values the result variables have then, as in Go. Unfold it with
+`func.forRange_unseal`.
+
 Each iteration of a loop has its own iteration variables. Goose shares one
 variable among the iterations unless that is observable, that is, unless the
 loop captures the variable in a function literal or takes its address (`&x`,

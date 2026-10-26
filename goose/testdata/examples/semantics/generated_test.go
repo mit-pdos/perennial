@@ -499,6 +499,70 @@ func (suite *GoTestSuite) TestLinearize() {
 	suite.Equal(true, testLinearize())
 }
 
+func (suite *GoTestSuite) TestRangeFuncSum() {
+	suite.Equal(true, testRangeFuncSum())
+}
+
+func (suite *GoTestSuite) TestRangeFuncPairs() {
+	suite.Equal(true, testRangeFuncPairs())
+}
+
+func (suite *GoTestSuite) TestRangeFuncNoValues() {
+	suite.Equal(true, testRangeFuncNoValues())
+}
+
+func (suite *GoTestSuite) TestRangeFuncBreakContinue() {
+	suite.Equal(true, testRangeFuncBreakContinue())
+}
+
+func (suite *GoTestSuite) TestRangeFuncBreakInSwitch() {
+	suite.Equal(true, testRangeFuncBreakInSwitch())
+}
+
+func (suite *GoTestSuite) TestRangeFuncReturn() {
+	suite.Equal(true, testRangeFuncReturn())
+}
+
+func (suite *GoTestSuite) TestRangeFuncNestedReturn() {
+	suite.Equal(true, testRangeFuncNestedReturn())
+}
+
+func (suite *GoTestSuite) TestRangeFuncNamedResult() {
+	suite.Equal(true, testRangeFuncNamedResult())
+}
+
+func (suite *GoTestSuite) TestRangeFuncAssign() {
+	suite.Equal(true, testRangeFuncAssign())
+}
+
+func (suite *GoTestSuite) TestRangeFuncLoopVars() {
+	suite.Equal(true, testRangeFuncLoopVars())
+}
+
+func (suite *GoTestSuite) TestRangeFuncDefer() {
+	suite.Equal(true, testRangeFuncDefer())
+}
+
+func (suite *GoTestSuite) TestRangeFuncPanic() {
+	suite.Equal(true, testRangeFuncPanic())
+}
+
+func (suite *GoTestSuite) TestRangeFuncIterSeq() {
+	suite.Equal(true, testRangeFuncIterSeq())
+}
+
+func (suite *GoTestSuite) TestRangeFuncShadowedBlankResults() {
+	suite.Equal(true, testRangeFuncShadowedBlankResults())
+}
+
+func (suite *GoTestSuite) TestRangeFuncUnnamedResultRecover() {
+	suite.Equal(true, testRangeFuncUnnamedResultRecover())
+}
+
+func (suite *GoTestSuite) TestRangeFuncUnnamedResults() {
+	suite.Equal(true, testRangeFuncUnnamedResults())
+}
+
 func (suite *GoTestSuite) TestRecoverNamed() {
 	suite.Equal(true, testRecoverNamed())
 }

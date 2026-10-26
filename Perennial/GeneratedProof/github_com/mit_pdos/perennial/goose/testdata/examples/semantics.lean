@@ -3,6 +3,7 @@ module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.GeneratedProof.github_com.goose_lang.primitive
+public import Perennial.GeneratedProof.iter
 public import Perennial.GeneratedProof.sync
 public import Perennial.GeneratedProof.«unsafe»
 public import Perennial.Golang.Theory

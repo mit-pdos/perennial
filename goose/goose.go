@@ -1407,7 +1407,13 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 	// Each iteration has its own iteration variables. A variable the loop
 	// declares is allocated in the body if the body captures it or takes its
 	// address (loopVarEscapes), and otherwise once, before the loop.
+	recoverOK := ctx.recoverOK
+	if _, ok := ctx.typeOf(s.X).Underlying().(*types.Signature); ok {
+		// recover() in the body of a range over a function returns nil in Go
+		ctx.recoverOK = false
+	}
 	body := ctx.blockStmt(s.Body, nil)
+	ctx.recoverOK = recoverOK
 	var shared []*ast.Ident
 	for _, kv := range []struct {
 		x ast.Expr
@@ -1454,6 +1460,14 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 			Ty:    ctx.glangType(s.X, sliceElem(ctx.typeOf(s.X))),
 			Body:  body,
 		}
+	case *types.Signature:
+		// `for k, v := range f`: the body runs in each call of the yield
+		// function that f receives, which has at most two parameters
+		e = glang.ForRangeFuncExpr{
+			Arity: t.Params().At(0).Type().Underlying().(*types.Signature).Params().Len(),
+			Func:  glang.IdentExpr("$range"),
+			Body:  body,
+		}
 	case *types.Chan:
 		e = glang.ForRangeChanExpr{
 			Chan: glang.IdentExpr("$range"),
@@ -1486,7 +1500,7 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 		// counted in a cell `$range_i` of that type: the three-clause loop
 		// `for $range_i := 0; $range_i < $range; $range_i++`.
 		if isPtr || t.Info()&types.IsInteger == 0 {
-			ctx.unsupported(s, "range over %v (only integers, maps, slices, channels and arrays are supported)", t)
+			ctx.unsupported(s, "range over %v (only integers, functions, maps, slices, channels and arrays are supported)", t)
 			return nil
 		}
 		nT := ctx.typeOf(s.X)
@@ -1528,7 +1542,7 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 				ValExpr: ctx.handleImplicitConversion(s.X, ctx.typeOf(s.X), nT, ctx.expr(s.X)), Cont: e}
 		}
 	default:
-		ctx.unsupported(s, "range over %v (only integers, maps, slices, channels and arrays are supported)", t)
+		ctx.unsupported(s, "range over %v (only integers, functions, maps, slices, channels and arrays are supported)", t)
 		return nil
 	}
 

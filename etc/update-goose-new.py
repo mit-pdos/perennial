@@ -266,6 +266,7 @@ def main():
             "crypto/rand",
             "errors",
             "io",
+            "iter",
             "math",
             "math/big",
             "math/rand",

@@ -367,6 +367,14 @@ type ForRangeChanExpr struct {
 	Body Expr
 }
 
+// ForRangeFuncExpr is a range loop over a function Func whose yield function
+// has Arity parameters (at most 2).
+type ForRangeFuncExpr struct {
+	Arity int
+	Func  Expr
+	Body  Expr
+}
+
 // ForRangeMapExpr is a call to the map iteration helper.
 type ForRangeMapExpr struct {
 	KeyType, ElemType Expr
