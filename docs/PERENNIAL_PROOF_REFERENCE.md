@@ -1105,8 +1105,8 @@ on the proof:
 
 Each extension provides `ExtCrashInterp` (how its ghost state survives a
 crash); the filesystem keeps its ghost state (`crashStart old new := ⌜new = old⌝`).
-`goose_crash_adequacy_recovery` allows a recovery procedure other than the
-boot program. As for `goose_adequacy`, the bounds are no restriction for a
+There is no separate recovery procedure: a crash restarts the boot program.
+As for `goose_adequacy`, the bounds are no restriction for a
 client: an execution of `n` steps from one thread has fewer than `n + 2` live
 threads (`RealCrashThreadsBelow.of_single`), and `fsGF` (with `fsGpreS`)
 provides the ghost state of a filesystem program, so the example's

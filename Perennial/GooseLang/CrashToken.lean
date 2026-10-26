@@ -6,8 +6,8 @@ start to the first crash). Each generation has its own ghost name (`CrashGS`,
 part of the per-generation `GooseLocalGS`): the state interpretation owns
 `notCrashed` for as long as the generation runs, and the crash adequacy theorem
 (`goose_crash_adequacy`, `CrashAdequacy.lean`) turns it into the persistent
-`crashed` when the generation crashes, and hands that to the recovery
-procedure. The two are exclusive, so `crashed` of a generation is evidence that
+`crashed` when the generation crashes, and hands that to the restarted boot
+program's proof. The two are exclusive, so `crashed` of a generation is evidence that
 it has crashed: a step of one of its threads, which owns the state
 interpretation and with it `notCrashed`, can rule it out.
 -/

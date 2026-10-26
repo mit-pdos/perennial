@@ -3,9 +3,10 @@ Crash adequacy for GooseLang: the adequacy of the standard (iris-lean) WP for
 executions with crashes (`RealCrashNsteps`, `CrashLang.lean`).
 
 Notes:
-* An execution with crashes is a sequence of *generations*: the program `e`
-  runs until the node crashes, then the recovery procedure `r` runs from the
-  crashed state (`Crash`, `Lang.lean`) until the next crash, and so on. Each
+* An execution with crashes is a sequence of *generations*: the boot program
+  `e` runs until the node crashes, then `e` runs again from the crashed state
+  (`Crash`, `Lang.lean`) until the next crash, and so on; there is no separate
+  recovery procedure. Each
   generation is a run of the standard WP; there is no crash WP. All the
   generations are one Iris proof: they share the global ghost state
   (`GooseGlobalGS`: invariants, the prophecy map, the extensions' global ghost
@@ -21,7 +22,7 @@ Notes:
   (`ExtCrashInterp.local_crash`), allocates the new generation's local ghost
   state, and turns the old generation's `notCrashed` (owned by the state
   interpretation, `CrashToken.lean`) into its persistent `crashed`.
-* `goose_crash_adequacy` is for a single boot program `e`, which runs at the
+* `goose_crash_adequacy` is for the boot program `e`, which runs at the
   start and after every crash. The client picks its precondition `P L`, a
   predicate of the generation's local ghost state `L`: the first generation
   establishes it from the start resources (`Hstart`), and the proof of every
@@ -29,10 +30,7 @@ Notes:
   after `L` crashes, for whatever local ghost state `L'` the next generation
   gets, from `L`'s `crashed`, the extensions' `crashStart L L'` resources and
   `L'`'s package state of a restarted program (none initialized). That
-  guarantee is the generation's crash frame. `goose_crash_adequacy_recovery`,
-  from which it follows, allows a recovery procedure `r` other than `e`, with
-  an arbitrary crash frame `Ψ` and separate premises for the first boot
-  (`Hwp`) and the others (`Hrec`).
+  guarantee is the generation's crash frame.
 * Every extension of the program must say how its ghost state survives a crash
   (`ExtCrashInterp`, collected in `GooseCrashInterp`).
 * Time receipts bound the steps of all generations together (the step fuel
@@ -61,7 +59,7 @@ attribute [local instance] GSet.lawfulSet
 /-- How the ghost state of the extension `E` survives a crash: the
 interpretation of the old local state gives way to that of the crashed state
 (by `E`'s `ExtSemantics.crash`), under a new local ghost state, with the
-resources `crashStart old new`, relating the two, for the recovery procedure. A
+resources `crashStart old new`, relating the two, for the restarted boot program. A
 durable state may keep its ghost state (`crashStart old new := ⌜new = old⌝`),
 so that the old generation's resources describe the new state. -/
 class ExtCrashInterp (E : GooseExt) [S : ExtSemantics E] [I : ExtInterp E] where
@@ -118,7 +116,7 @@ class GooseCrashInterp [GooseExts] [GooseSemantics] [GooseInterp] where
 section exts
 variable [GooseExts] [GooseSemantics] [GooseInterp] [GooseCrashInterp] {GF : BundledGFunctors}
 
-/-- The extensions' resources for the recovery procedure, relating the local
+/-- The extensions' resources for the restarted boot program, relating the local
 ghost state `L` of the crashed generation and `L'` of the new one. -/
 abbrev extsCrashStart (L L' : GooseLocalGS GF) : IProp GF :=
   Exts.crashStart exts GooseSemantics.sems GooseInterp.interps GooseCrashInterp.crashInterps
@@ -218,31 +216,32 @@ theorem goose_wptp_preservation [G : GooseGlobalGS .hasLC GF] [L : GooseLocalGS 
 
 /-- Executions with crashes, in the ghost state: from the state interpretation,
 the credits and the WPs of the thread pool (the main thread's postcondition
-`Φ`) of a generation `L`, and its crash frame `Ψ L`, the configuration reached
+`φ`) of a generation `L`, and its crash frame `Ψ L`, the configuration reached
 by `n` steps with crashes has the state interpretation and the WPs of a
-generation `L'` (the main thread's postcondition `Φ` if there was no crash, the
-recovery's `φr` otherwise). The recovery premise `Hrec` is `goose_crash_adequacy`'s
-for the fixed global ghost state `G`. -/
+generation `L'`. The boot premise `Hboot` is `goose_crash_adequacy`'s for the
+fixed global ghost state `G`: after a crash, the boot program `e` runs again
+with the same postcondition. -/
 theorem goose_crash_preservation [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF]
-    (r : Expr) (T : Nat) (lctx : GoLocalContext) (φr : val → Prop)
+    (e : Expr) (T : Nat) (lctx : GoLocalContext) (φ : val → Prop)
     (Ψ : GooseLocalGS GF → IProp GF)
-    (Hrec : ∀ (L L' : GooseLocalGS GF),
+    (Hboot : ∀ (L L' : GooseLocalGS GF),
       @ThreadGS.threadBound GF L'.goose_threadGS = T →
       L'.goose_go_local_context = lctx →
       ⊢ Ψ L -∗ crashed (hC := L.goose_crashGS) -∗ extsCrashStart L L' -∗
         ownGoState (hG := L'.goose_go_stateGS) ∅ -∗ threadTok (hT := L'.goose_threadGS) ={⊤}=∗
-        WP r @ Stuckness.NotStuck; ⊤ {{ v, ⌜φr v⌝ }} ∗ Ψ L')
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }} ∗ Ψ L')
     {n : Nat} {ρ ρ' : List Expr × BcfgState} {κs : List Observation} {b : Bool}
-    (H : BoundedCrashNsteps r T n ρ κs ρ' b) :
-    ∀ (L : GooseLocalGS GF) (κs' : List Observation) (Φ : val → IProp GF) (k : Nat),
+    (H : BoundedCrashNsteps e T n ρ κs ρ' b) :
+    ∀ (L : GooseLocalGS GF) (κs' : List Observation) (k : Nat),
       @ThreadGS.threadBound GF L.goose_threadGS = T → L.goose_go_local_context = lctx →
-      ⊢ gooseBstateInterp ρ.2 (κs ++ κs') -∗ £ n -∗ gooseWptp ρ.1 (Φ :: forkPosts k) -∗ Ψ L
+      ⊢ gooseBstateInterp ρ.2 (κs ++ κs') -∗ £ n -∗
+        gooseWptp ρ.1 ((fun v => iprop(⌜φ v⌝)) :: forkPosts k) -∗ Ψ L
         ={⊤,∅}=∗ |={∅}▷=>^[n] |={∅,⊤}=> ∃ (L' : GooseLocalGS GF) (k' : Nat),
           gooseBstateInterp (L := L') ρ'.2 κs' ∗
-          gooseWptp (L := L') ρ'.1 ((bif b then fun v => iprop(⌜φr v⌝) else Φ) :: forkPosts k') := by
+          gooseWptp (L := L') ρ'.1 ((fun v => iprop(⌜φ v⌝)) :: forkPosts k') := by
   induction H with
   | done H =>
-    intro L κs' Φ k _ _
+    intro L κs' k _ _
     iintro Hσ Hcred Hwp _
     imod goose_wptp_preservation H κs' _ $$ Hσ Hcred Hwp with H
     imodintro
@@ -252,10 +251,10 @@ theorem goose_crash_preservation [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasL
     imodintro
     iexists L, k + nt'
     iframe Hσ
-    simp only [forkPosts, List.cons_append, List.replicate_append_replicate, Bool.cond_false]
+    simp only [forkPosts, List.cons_append, List.replicate_append_replicate]
     iexact Hwp
   | @crash n m ρ κs t σ g f σ' κs₂ ρ' b H₁ hc _ ih =>
-    intro L κs' Φ k HT Hlctx
+    intro L κs' k HT Hlctx
     have hT : 1 < T := HT ▸ L.goose_threadGS.threadBound_gt
     iintro Hσ Hcred Hwp HΨ
     rw [List.append_assoc]
@@ -269,21 +268,13 @@ theorem goose_crash_preservation [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasL
     imod H with ⟨%nt', Hσ, -⟩
     imod goose_crash_step (L := L) T hT hc g f (κs₂ ++ κs') $$ Hσ
       with ⟨%L', %HL'lctx, %HL'T, Hσ, Hcr, Hcs, Hgs, Htok⟩
-    imod Hrec L L' HL'T (by rw [HL'lctx, Hlctx]) $$ HΨ Hcr Hcs Hgs Htok with ⟨Hwp, HΨ⟩
-    imod ih L' κs' (fun v => iprop(⌜φr v⌝)) 0 HL'T (by rw [HL'lctx, Hlctx]) $$ Hσ Hcred₂
-      [Hwp] HΨ with H
+    imod Hboot L L' HL'T (by rw [HL'lctx, Hlctx]) $$ HΨ Hcr Hcs Hgs Htok with ⟨Hwp, HΨ⟩
+    imod ih L' κs' 0 HL'T (by rw [HL'lctx, Hlctx]) $$ Hσ Hcred₂ [Hwp] HΨ with H
     · simp only [forkPosts, List.replicate_zero]
       iapply BigSepL2.bigSepL2_singleton.2
       iexact Hwp
     imodintro
-    iapply step_fupdN_wand $$ H
-    iintro H
-    imod H with ⟨%L'', %k', Hσ, Hwp⟩
-    imodintro
-    iexists L'', k'
-    iframe Hσ
-    simp only [Bool.cond_self, Bool.cond_true]
-    iexact Hwp
+    iexact H
 
 omit [GooseSemantics] [GoGlobalContext] [GooseCrashInterp] in
 /-- Every thread of `l` that is a value satisfies `P`, from their postconditions. -/
@@ -317,34 +308,32 @@ theorem bigSepL_toVal_pure (l : List Expr) (P : val → Prop) :
 /-- Crash adequacy of the bounded language: under the hypotheses of
 `goose_crash_adequacy`, in every execution with crashes of the bounded
 semantics started with step fuel `N - 1` and thread fuel `T - 2`, the main
-thread's final value satisfies `φ` (no crash) or `φr` (crashed), every thread is
-a value or can step, and no thread is a panic. -/
+thread's final value satisfies `φ`, every thread is a value or can step, and no
+thread is a panic. -/
 theorem goose_crash_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < N) (hT : 1 < T)
-    (e r : Expr) (σ : state) (g : GlobalState) (φ φr : val → Prop)
-    (hφ : ∀ p, ¬ φ (PanicV p)) (hφr : ∀ p, ¬ φr (PanicV p))
+    (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
     (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
-    (Ψ : HeapGS .hasLC GF → IProp GF)
-    (Hwp : ∀ [hG : HeapGS .hasLC GF],
+    (P : ∀ [GooseGlobalGS .hasLC GF], GooseLocalGS GF → IProp GF)
+    (Hstart : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
       ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
         extsLocalStart (GF := GF) σ.world -∗
-        ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
-        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }} ∗ Ψ hG)
-    (Hrec : ∀ (hG : HeapGS .hasLC GF) [hG' : HeapGS .hasLC GF],
-      hG'.goose_globalGS = hG.goose_globalGS →
+        ownGoState σ.goState.packageState ={⊤}=∗ P hG.goose_localGS)
+    (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
-      hG'.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ Ψ hG -∗ crashed (hC := hG.goose_localGS.goose_crashGS) -∗
-        extsCrashStart hG.goose_localGS hG'.goose_localGS -∗
-        ownGoState ∅ -∗ threadTok ={⊤}=∗
-        WP r @ Stuckness.NotStuck; ⊤ {{ v, ⌜φr v⌝ }} ∗ Ψ hG')
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ P hG.goose_localGS -∗ threadTok ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }} ∗
+        ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
+          extsCrashStart hG.goose_localGS L' -∗
+          ownGoState (hG := L'.goose_go_stateGS) ∅ ={⊤}=∗ P L')
     {n : Nat} {κs : List Observation} {t2 : List Expr} {σ2 : BcfgState} {b : Bool}
-    (Hsteps : BoundedCrashNsteps r T n ([e], (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState)) κs
+    (Hsteps : BoundedCrashNsteps e T n ([e], (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState)) κs
       (t2, σ2) b) :
-    (∀ v t2', t2 = Val v :: t2' → (bif b then φr else φ) v) ∧
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧
       (∀ e2, e2 ∈ t2 → PrimStep.NotStuck (e2, σ2)) ∧
       (∀ v, Val v ∈ t2 → v.isPanic = false) := by
   apply pure_soundness (PROP := IProp GF)
@@ -353,6 +342,11 @@ theorem goose_crash_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < 
   refine Entails.trans ?_ (laterN_mono _ except0_into_later)
   apply fupd_finally_soundness .hasLC n ⊤
   iintro %Hinv Hf
+  -- the crash frame of a generation is its guarantee that `P` holds after its crash
+  let Ψ : HeapGS .hasLC GF → IProp GF := fun hG =>
+    iprop(∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
+      extsCrashStart hG.goose_localGS L' -∗
+      ownGoState (hG := L'.goose_go_stateGS) ∅ ={⊤}=∗ @P hG.goose_globalGS L')
   imod goose_init (Hinv := Hinv) N T hN hT σ g κs Hinitg Hinit
     (fun (hG : HeapGS .hasLC GF) => iprop(
       ⌜receiptBound GF = N ∧ threadBound GF = T ∧
@@ -361,7 +355,8 @@ theorem goose_crash_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < 
     (@fun hG HinvEq HN HT Hlctx => by
       subst HinvEq
       iintro Hg Hl Hgs Htok
-      imod Hwp (hG := hG) HN HT Hlctx $$ Hg Hl Hgs Htok with ⟨Hwp, HΨ⟩
+      imod Hstart (hG := hG) HN HT Hlctx $$ Hg Hl Hgs with HP
+      imod Hwp (hG := hG) HN HT Hlctx $$ HP Htok with ⟨Hwp, HΨ⟩
       imodintro
       iframe
       ipureintro; exact ⟨HN, HT, Hlctx⟩)
@@ -369,15 +364,18 @@ theorem goose_crash_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < 
   obtain ⟨⟨Ginv, Gall, Gproph, Gext, Grcpt⟩, L⟩ := hG
   cases HinvEq
   let G : GooseGlobalGS .hasLC GF := ⟨Ginv, Gall, Gproph, Gext, Grcpt⟩
-  have Hrec' : ∀ (L L' : GooseLocalGS GF),
+  have Hboot : ∀ (L L' : GooseLocalGS GF),
       @ThreadGS.threadBound GF L'.goose_threadGS = T →
       L'.goose_go_local_context = σ.goState.goLctx →
       ⊢ Ψ ⟨G, L⟩ -∗ crashed (hC := L.goose_crashGS) -∗ extsCrashStart L L' -∗
         ownGoState (hG := L'.goose_go_stateGS) ∅ -∗ threadTok (hT := L'.goose_threadGS) ={⊤}=∗
-        WP r @ Stuckness.NotStuck; ⊤ {{ v, ⌜φr v⌝ }} ∗ Ψ ⟨G, L'⟩ :=
-    fun L L' HT' Hlctx' => Hrec (hG' := ⟨G, L'⟩) ⟨G, L⟩ rfl HN HT' Hlctx'
-  have Hpres := goose_crash_preservation (G := G) r T σ.goState.goLctx φr (fun L => Ψ ⟨G, L⟩)
-    Hrec' Hsteps L [] (fun v => iprop(⌜φ v⌝)) 0 HT Hlctx
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }} ∗ Ψ ⟨G, L'⟩ := by
+    intro L L' HT' Hlctx'
+    iintro HΨ Hcr Hcs Hgs Htok
+    imod HΨ $$ %L' Hcr Hcs Hgs with HP
+    iapply Hwp (hG := ⟨G, L'⟩) HN HT' Hlctx' $$ HP Htok
+  have Hpres := goose_crash_preservation (G := G) e T σ.goState.goLctx φ (fun L => Ψ ⟨G, L⟩)
+    Hboot Hsteps L [] 0 HT Hlctx
   rw [List.append_nil] at Hpres
   imod Hpres $$ Hσ Hf [Hwp] HΨ with H
   · simp only [gooseWptp, forkPosts, List.replicate_zero]
@@ -402,95 +400,28 @@ theorem goose_crash_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < 
   subst Hlen
   icases BigSepL2.bigSepL2_replicate_right $$ Ht2' with Ht2'
   icases bigSepL_toVal_pure t2' (fun v => v.isPanic = false) $$ Ht2' with %Hforks
-  suffices Hm : (toVal e0).elim iprop(True)
-      (bif b then fun v => iprop(⌜φr v⌝) else fun v => iprop(⌜φ v⌝)) ⊢@{IProp GF}
-      ⌜∀ v, e0 = Val v → (bif b then φr else φ) v⌝ by
+  suffices Hm : (toVal e0).elim iprop(True) (fun v => iprop(⌜φ v⌝)) ⊢@{IProp GF}
+      ⌜∀ v, e0 = Val v → φ v⌝ by
     icases Hm $$ He0 with %Hm
     ipureintro
     refine ⟨fun v t2'' h => ?_, Hns, fun v hv => ?_⟩
     · cases h; exact Hm v rfl
     · rcases List.mem_cons.1 hv with h | h
       · have := Hm v h.symm
-        cases b <;> cases v <;> first | rfl | exact absurd this (hφ _) | exact absurd this (hφr _)
+        cases v <;> first | rfl | exact absurd this (hφ _)
       · exact Hforks v h
-  cases e0 <;> cases b <;> simp only [toVal, Option.elim, Bool.cond_true, Bool.cond_false] <;>
+  cases e0 <;> simp only [toVal, Option.elim] <;>
     first
     | (iintro %H; ipureintro; rintro v ⟨⟩; exact H)
     | (iintro _; ipureintro; rintro v ⟨⟩)
 
-/-- Crash adequacy of GooseLang, for the real semantics, with a recovery
-procedure `r` that may differ from the program `e` (for a single boot program,
-see `goose_crash_adequacy`): for any bounds `N` and `T`, if
-
-* `Hwp`: the WP of the program `e` is proved, for receipt bound `N` and thread
-  bound `T`, as for `goose_adequacy`, together with the crash frame `Ψ` of the
-  first generation;
-* `Hrec`: for a generation `hG` that crashed and the next one `hG'` (the same
-  global ghost state, a new local one, with the same bounds), the WP of the
-  recovery procedure `r` is proved from the crash frame of `hG`, the evidence
-  `crashed` that `hG` has crashed, the extensions' `crashStart` resources, the
-  package state of a restarted program (no package initialized) and the new
-  main thread's token, together with the crash frame of `hG'`;
-
-with postconditions that exclude panics (`hφ`, `hφr`), then in every real
-execution with crashes of `e` with recovery `r` (`RealCrashNsteps`) of fewer
-than `N` steps in all, from a configuration with the main thread only, along
-which fewer than `T` threads are live (`RealCrashThreadsBelow`):
-* if the main thread has terminated with `v`, then `φ v` if there was no
-  crash, `φr v` if there was;
-* every thread is a value or can take a step;
-* no thread has an unrecovered panic. -/
-theorem goose_crash_adequacy_recovery [hPre : GooseGpreS GF] (N T : Nat)
-    (e r : Expr) (σ : state) (g : GlobalState) (φ φr : val → Prop)
-    (hφ : ∀ p, ¬ φ (PanicV p)) (hφr : ∀ p, ¬ φr (PanicV p))
-    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
-    (Ψ : HeapGS .hasLC GF → IProp GF)
-    (Hwp : ∀ [hG : HeapGS .hasLC GF],
-      receiptBound GF = N →
-      threadBound GF = T →
-      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
-        extsLocalStart (GF := GF) σ.world -∗
-        ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
-        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }} ∗ Ψ hG)
-    (Hrec : ∀ (hG : HeapGS .hasLC GF) [hG' : HeapGS .hasLC GF],
-      hG'.goose_globalGS = hG.goose_globalGS →
-      receiptBound GF = N →
-      threadBound GF = T →
-      hG'.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ Ψ hG -∗ crashed (hC := hG.goose_localGS.goose_crashGS) -∗
-        extsCrashStart hG.goose_localGS hG'.goose_localGS -∗
-        ownGoState ∅ -∗ threadTok ={⊤}=∗
-        WP r @ Stuckness.NotStuck; ⊤ {{ v, ⌜φr v⌝ }} ∗ Ψ hG')
-    (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState) (b : Bool)
-    (Hsteps : RealCrashNsteps r n ([e], ((σ, g) : CfgState)) κs (t2, σ2) b)
-    (Hbound : n < N) (Hthreads : σ.threads = 1)
-    (Hlive : RealCrashThreadsBelow r T n ([e], ((σ, g) : CfgState))) :
-    (∀ v t2', t2 = Val v :: t2' → if b then φr v else φ v) ∧
-      (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
-      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) := by
-  have hT : 1 < T := by have := Hlive.start; simp only at this; omega
-  obtain ⟨c, t, Hb⟩ := bounded_crash_nsteps_of_real Hsteps (N - 1) (by omega) T (T - 2) Hlive
-    (by simp only; omega)
-  have H := goose_crash_adequacy_blang N T (by omega) hT e r σ g φ φr hφ hφr Hinitg Hinit Ψ
-    Hwp Hrec Hb
-  refine ⟨fun v t2' h => ?_, fun e2 he2 => realNotStuck_of_bounded (H.2.1 e2 he2), ?_⟩
-  · have := H.1 v t2' h; cases b <;> exact this
-  intro e2 He2 Hu
-  obtain ⟨p, Hp⟩ := unrecoveredPanic_steps Hu
-  obtain ⟨t₁, t₂, rfl⟩ := List.append_of_mem He2
-  obtain ⟨m, κs', Hm⟩ := (Language.erasedStep_nSteps _ _).mp (Hp [] t₁ t₂ (σ2, ⟨c, t⟩))
-  have := (goose_crash_adequacy_blang N T (by omega) hT e r σ g φ φr hφ hφr Hinitg Hinit Ψ
-    Hwp Hrec (Hb.append Hm)).2.2 (PanicV p) (by simp)
-  simp [val.isPanic] at this
-
-/-- Crash adequacy of GooseLang for a single boot program `e`, which runs at the
-start and again after every crash, for the real semantics. The client picks a
+/-- Crash adequacy of GooseLang for a boot program `e`, which runs at the start
+and again after every crash, for the real semantics. The client picks a
 precondition `P L` of `e`, over the local ghost state `L` of a generation (and
 the global ghost state, which every generation shares); for any bounds `N` and
 `T`, if
 
-* `Hinit`: `P` holds of the first generation, from the extensions' start
+* `Hstart`: `P` holds of the first generation, from the extensions' start
   resources and the initial package state;
 * `Hwp`: in any generation `hG` (receipt bound `N`, thread bound `T`), the WP
   of `e` is proved from `P` of its local ghost state and the main thread's token,
@@ -500,9 +431,9 @@ the global ghost state, which every generation shares); for any bounds `N` and
   state of a restarted program (no package initialized);
 
 with a postcondition `φ` that excludes panics, then in every real execution
-with crashes of `e` (`RealCrashNsteps e`) of fewer than `N` steps in all, from
-a configuration with the main thread only, along which fewer than `T` threads
-are live (`RealCrashThreadsBelow`):
+with crashes of `e` (`RealCrashNsteps e`, from `[e]`) of fewer than `N` steps
+in all, from a configuration with the main thread only, along which fewer than
+`T` threads are live (`RealCrashThreadsBelow`):
 * if the main thread has terminated with `v`, then `φ v`;
 * every thread is a value or can take a step;
 * no thread has an unrecovered panic. -/
@@ -533,24 +464,18 @@ theorem goose_crash_adequacy [hPre : GooseGpreS GF] (N T : Nat)
     (∀ v t2', t2 = Val v :: t2' → φ v) ∧
       (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
       (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) := by
-  -- the crash frame of a generation is its guarantee that `P` holds after its crash
-  have H := goose_crash_adequacy_recovery N T e e σ g φ φ hφ hφ Hinitg Hinit
-    (fun hG => iprop(∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
-      extsCrashStart hG.goose_localGS L' -∗
-      ownGoState (hG := L'.goose_go_stateGS) ∅ ={⊤}=∗ @P hG.goose_globalGS L'))
-    ?_ ?_ n κs t2 σ2 b Hsteps Hbound Hthreads Hlive
-  · exact ⟨fun v t2' h => by have := H.1 v t2' h; cases b <;> exact this, H.2⟩
-  · intro hG HN HT Hlctx
-    iintro Hg Hl Hgs Htok
-    imod Hstart HN HT Hlctx $$ Hg Hl Hgs with HP
-    iapply Hwp HN HT Hlctx $$ HP Htok
-  · intro hG hG' HG HN HT Hlctx
-    obtain ⟨G, L⟩ := hG
-    obtain ⟨G', L'⟩ := hG'
-    cases HG
-    iintro HΨ Hcr Hcs Hgs Htok
-    imod HΨ $$ %L' Hcr Hcs Hgs with HP
-    iapply Hwp (hG := ⟨G, L'⟩) HN HT Hlctx $$ HP Htok
+  have hT : 1 < T := by have := Hlive.start; simp only at this; omega
+  obtain ⟨c, t, Hb⟩ := bounded_crash_nsteps_of_real Hsteps (N - 1) (by omega) T (T - 2) Hlive
+    (by simp only; omega)
+  have H := goose_crash_adequacy_blang N T (by omega) hT e σ g φ hφ Hinitg Hinit P Hstart Hwp Hb
+  refine ⟨H.1, fun e2 he2 => realNotStuck_of_bounded (H.2.1 e2 he2), ?_⟩
+  intro e2 He2 Hu
+  obtain ⟨p, Hp⟩ := unrecoveredPanic_steps Hu
+  obtain ⟨t₁, t₂, rfl⟩ := List.append_of_mem He2
+  obtain ⟨m, κs', Hm⟩ := (Language.erasedStep_nSteps _ _).mp (Hp [] t₁ t₂ (σ2, ⟨c, t⟩))
+  have := (goose_crash_adequacy_blang N T (by omega) hT e σ g φ hφ Hinitg Hinit P Hstart Hwp
+    (Hb.append Hm)).2.2 (PanicV p) (by simp)
+  simp [val.isPanic] at this
 
 end crash
 

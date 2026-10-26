@@ -552,8 +552,8 @@ end ext_step
 
 /-! ## Crashes
 
-A crash of the node kills every thread and restarts it with a new program (the
-recovery procedure, `RealCrashNsteps` in `CrashLang.lean`). `Crash σ σ'` relates
+A crash of the node kills every thread and restarts it with its boot program
+(the program it started with, `RealCrashNsteps` in `CrashLang.lean`). `Crash σ σ'` relates
 the local state before the crash to the one the restart begins with:
 
 * the heap of `σ'` is unrelated to that of `σ` (memory is volatile): any heap;
