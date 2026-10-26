@@ -842,12 +842,12 @@ theorem baseStep_ArbitraryInt_inv (h : BaseStep ArbitraryInt σ κ e' σ' efs) :
   cases h; exact ⟨_, rfl, rfl, rfl, rfl⟩
 
 theorem baseStep_Fork_inv {e : Expr} (h : BaseStep (Fork e) σ κ e' σ' efs) :
-    κ = [] ∧ e' = Val #() ∧ σ' = (σ.1, { σ.2 with threads := σ.2.threads + 1 }) ∧
+    κ = [] ∧ e' = Val #() ∧ σ' = ({ σ.1 with threads := σ.1.threads + 1 }, σ.2) ∧
       efs = [Seq e ThreadExit] := by
   cases h; exact ⟨rfl, rfl, rfl, rfl⟩
 
 theorem baseStep_ThreadExit_inv (h : BaseStep ThreadExit σ κ e' σ' efs) :
-    κ = [] ∧ e' = Val #() ∧ σ' = (σ.1, { σ.2 with threads := σ.2.threads - 1 }) ∧ efs = [] := by
+    κ = [] ∧ e' = Val #() ∧ σ' = ({ σ.1 with threads := σ.1.threads - 1 }, σ.2) ∧ efs = [] := by
   cases h; exact ⟨rfl, rfl, rfl, rfl⟩
 
 theorem baseStep_Alloc_inv {v : val} (h : BaseStep (Alloc (Val v)) σ κ e' σ' efs) :

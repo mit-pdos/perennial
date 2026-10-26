@@ -922,7 +922,7 @@ theorem goose_adequacy [hPre : GooseGpreS GF] (N T : Nat)
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
     (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)
     (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
-    (Hbound : n < N) (Hthreads : g.threads = 1)
+    (Hbound : n < N) (Hthreads : σ.threads = 1)
     (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
     (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
       (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2)
@@ -963,7 +963,7 @@ counter of pending goroutines (a `sync.WaitGroup`'s) never reaches `2^31`
 (given the premise `T ≤ 2^31`): a thread token witnesses a live thread, and
 `T` of them are contradictory. The device is that of time receipts, with
 `Fork` in the role of the counted step and thread *exits* returning the fuel.
-Files: `Perennial/GooseLang/Lang.lean` (`GlobalState.threads`, `ThreadExit`),
+Files: `Perennial/GooseLang/Lang.lean` (`state.threads`, `ThreadExit`),
 `Perennial/GooseLang/BoundedLang.lean` (thread fuel),
 `Perennial/GooseLang/Threads.lean` (ghost state and laws),
 `Perennial/GooseLang/Lifting.lean` (`wp_fork_tok`, `wp_ThreadExit`),
@@ -972,7 +972,7 @@ Files: `Perennial/GooseLang/Lang.lean` (`GlobalState.threads`, `ThreadExit`),
 threads that cannot overflow).
 
 **The thread count in the semantics.** The real state counts the live threads:
-`GlobalState.threads` is the main thread (counted for the whole execution)
+`state.threads` is the main thread (counted for the whole execution)
 plus the forked threads that have not exited. `Fork e` spawns the thread
 `e ;; ThreadExit` and increments it; `ThreadExit`, a no-op that is the last
 step of every forked thread, decrements it; no other step changes it
@@ -1062,7 +1062,7 @@ instead of a bound on the `Add`s, and a slot's token lendable to another
 thread-token-backed structure (`lend_acc`, `unlend_acc`) under a client's
 lending law.
 
-**Adequacy: picking `T`.** `goose_adequacy N T` (above) assumes `g.threads = 1`
+**Adequacy: picking `T`.** `goose_adequacy N T` (above) assumes `σ.threads = 1`
 of the initial configuration and `RealThreadsBelow T n ([e], (σ, g))`: every
 configuration reachable in at most `n` real steps has `threads < T`. The WP
 premise may assume `threadBound GF = T` and receives `threadTok`. A client

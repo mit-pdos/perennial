@@ -83,7 +83,7 @@ theorem fs_crash_adequacy [GoGlobalContext] {GF : BundledGFunctors}
         WP r @ Stuckness.NotStuck; ⊤ {{ v, ⌜φr v⌝ }} ∗ Ψ hG')
     (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState) (b : Bool)
     (Hsteps : RealCrashNsteps r n ([e], ((σ, g) : CfgState)) κs (t2, σ2) b)
-    (Hbound : n < N) (Hthreads : g.threads = 1)
+    (Hbound : n < N) (Hthreads : σ.threads = 1)
     (Hlive : RealCrashThreadsBelow r T n ([e], ((σ, g) : CfgState))) :
     (∀ v t2', t2 = Val v :: t2' → if b then φr v else φ v) ∧
       (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧

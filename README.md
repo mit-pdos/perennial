@@ -52,7 +52,7 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   live thread, with `threadToks T ⊢ False` for the bound `T = threadBound GF`,
   so that a counter backed by one token per pending goroutine (a
   `sync.WaitGroup`'s) is below `T`. For this the trusted semantics counts the
-  live threads (`GlobalState.threads`): `Fork e` spawns `e ;; ThreadExit` and
+  live threads (`state.threads`): `Fork e` spawns `e ;; ThreadExit` and
   increments it, and the no-op `ThreadExit` decrements it.
   The bounds are *unspecified parameters*, not constants: they are fields of
   the ghost state `ReceiptGS GF`/`ThreadGS GF` (parts of `GooseGlobalGS` and

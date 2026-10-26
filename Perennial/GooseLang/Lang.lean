@@ -85,7 +85,7 @@ inductive PrimOp0 where
   /-- non-deterministically pick an integer -/
   | ArbitraryIntOp
   /-- the end of a forked thread: `Fork e` spawns `e ;; ThreadExit`, and this step
-  decrements the thread count of the global state (see `GlobalState.threads`) -/
+  decrements the thread count of the local state (see `state.threads`) -/
   | ThreadExitOp
 deriving DecidableEq
 
@@ -309,7 +309,7 @@ abbrev Panic (s : String) : Expr := Primitive0 (.PanicOp s)
 abbrev Raise (e : Expr) : Expr := Primitive1 .RaiseOp e
 abbrev ArbitraryInt : Expr := Primitive0 .ArbitraryIntOp
 /-- The last step of a forked thread (`ForkS` spawns `Seq e ThreadExit`): a no-op
-that decrements the thread count `GlobalState.threads`. -/
+that decrements the thread count `state.threads`. -/
 abbrev ThreadExit : Expr := Primitive0 .ThreadExitOp
 abbrev Alloc (e : Expr) : Expr := Primitive1 .AllocOp e
 abbrev PrepareWrite (e : Expr) : Expr := Primitive1 .PrepareWriteOp e
@@ -461,16 +461,12 @@ structure GoState where
 instance : Inhabited GoLocalContext := ⟨⟨fun _ _ _ => False⟩⟩
 instance : Inhabited GoState := ⟨⟨default, ∅⟩⟩
 
+/-- The state of a node (a machine): everything specific to it. -/
 structure state where
   heap : GMap Loc (NonAtomic val)
   goState : GoState
   /-- the local states of the extensions -/
   world : ExtsLocalState exts
-
-structure GlobalState where
-  /-- the global states of the extensions -/
-  globalWorld : ExtsGlobalState exts
-  usedProphId : GSet proph_id
   /-- The number of live threads: the main thread (counted for the whole
   execution) and the forked threads that have not reached their `ThreadExit`.
   `ForkS` increments it and `ThreadExitS` decrements it; no other step changes
@@ -480,8 +476,14 @@ structure GlobalState where
   in `Threads.lean`. -/
   threads : Nat
 
-instance : Inhabited state := ⟨⟨∅, default, default⟩⟩
-instance : Inhabited GlobalState := ⟨⟨default, ∅, 1⟩⟩
+/-- The state shared by all nodes, not specific to any of them. -/
+structure GlobalState where
+  /-- the global states of the extensions -/
+  globalWorld : ExtsGlobalState exts
+  usedProphId : GSet proph_id
+
+instance : Inhabited state := ⟨⟨∅, default, default, 1⟩⟩
+instance : Inhabited GlobalState := ⟨⟨default, ∅⟩⟩
 
 /-- The state of the iris-lean language: the local and the global state. -/
 abbrev CfgState := state × GlobalState
@@ -543,7 +545,7 @@ theorem extStep_injOp {E : GooseExt} (m : ExtIn E exts) (o : E.Op) (v : val) (σ
 
 /-- An extension's step does not change the thread count. -/
 theorem extStep_threads {o : ExtsOp exts} {v : val} {σg : CfgState} {e' : Expr}
-    {σg' : CfgState} (h : extStep o v σg e' σg') : σg'.2.threads = σg.2.threads := by
+    {σg' : CfgState} (h : extStep o v σg e' σg') : σg'.1.threads = σg.1.threads := by
   obtain ⟨_, _, _, _, rfl⟩ := h; rfl
 
 end ext_step
@@ -557,10 +559,10 @@ the local state before the crash to the one the restart begins with:
 * the heap of `σ'` is unrelated to that of `σ` (memory is volatile): any heap;
 * the Go runtime restarts: the local context `goLctx` (the semantics of the Go
   instructions) is the same, and no package is initialized;
-* each extension's local state crashes by the extension's `ExtSemantics.crash`.
+* each extension's local state crashes by the extension's `ExtSemantics.crash`;
+* the only thread is the restarted main thread.
 
-A crash does not change the global state except the thread count, which is the
-restarted main thread's: `GlobalState.crash`. -/
+A crash does not change the global state. -/
 
 /-- The crash relations of the extensions of `l`, componentwise. -/
 def ExtsCrash : (l : List GooseExt) → ExtTuple ExtSemantics l → ExtsLocalState l →
@@ -573,10 +575,7 @@ structure Crash [GooseExts] [GooseSemantics] (σ σ' : state) : Prop where
   goLctx : σ'.goState.goLctx = σ.goState.goLctx
   packageState : σ'.goState.packageState = ∅
   world : ExtsCrash exts GooseSemantics.sems σ.world σ'.world
-
-/-- The global state after a crash: unchanged, but for the thread count, which
-is that of the restarted main thread. -/
-def GlobalState.crash [GooseExts] (g : GlobalState) : GlobalState := { g with threads := 1 }
+  threads : σ'.threads = 1
 
 /-! ## Evaluation contexts and substitution -/
 
@@ -740,11 +739,11 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
   | SndS v1 v2 σg : BaseStep (Snd (Val (PairV v1 v2))) σg [] (Val v2) σg []
   /-- `Fork e` spawns the thread `e ;; ThreadExit` and counts it. -/
   | ForkS e σg :
-      BaseStep (Fork e) σg [] (Val #()) (σg.1, { σg.2 with threads := σg.2.threads + 1 })
+      BaseStep (Fork e) σg [] (Val #()) ({ σg.1 with threads := σg.1.threads + 1 }, σg.2)
         [Seq e ThreadExit]
   /-- The end of a forked thread: a no-op that uncounts the thread. -/
   | ThreadExitS σg :
-      BaseStep ThreadExit σg [] (Val #()) (σg.1, { σg.2 with threads := σg.2.threads - 1 }) []
+      BaseStep ThreadExit σg [] (Val #()) ({ σg.1 with threads := σg.1.threads - 1 }, σg.2) []
   | ArbitraryIntS (x : w64) σg : BaseStep ArbitraryInt σg [] (Val #x) σg []
   | AllocS v l σg :
       IsFresh σg l →

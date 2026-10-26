@@ -16,10 +16,10 @@ step of the bounded language (`BoundedBaseStep`) is, by the kind of the redex
   step, step fuel `s` (`tick`); with step fuel `0` and (really) reducible: a
   *stutter* (expression and state unchanged, no observations, no forks);
 * for `Fork e`, with thread fuel `t + 1`: the real fork (it spawns
-  `e ;; ThreadExit` and increments `GlobalState.threads`), thread fuel `t`;
+  `e ;; ThreadExit` and increments `state.threads`), thread fuel `t`;
   with thread fuel `0`: a stutter (`forkStutter`);
 * for `ThreadExit` (the last step of a forked thread), with thread fuel `t`:
-  the real step (it decrements `GlobalState.threads`), thread fuel `t + 1`.
+  the real step (it decrements `state.threads`), thread fuel `t + 1`.
 
 **Time receipts.** The bound `N` of time receipts is not a parameter of the
 language: it is the initial step fuel plus one. The adequacy theorems
@@ -41,7 +41,7 @@ interpretation owns the thread fuel as `t` thread tokens (`threadFuel t`); a
 token, at most `T - 1` tokens exist, so `T` thread tokens are contradictory
 (`threadBound_elim`): a counter that is backed by one token per live thread,
 such as a `WaitGroup`'s, is below `T`. Along a real execution whose thread
-count `GlobalState.threads` stays below `T` (the hypothesis `RealThreadsBelow`
+count `state.threads` stays below `T` (the hypothesis `RealThreadsBelow`
 of `goose_adequacy`), the thread fuel is at least `T - 1 - threads`
 (`bounded_step_of_real`), so every real `Fork` is a bounded `fork`, not a
 stutter.
@@ -241,13 +241,13 @@ inductive UnrecoveredPanic : Expr → Prop
 
 /-- The thread bound as a hypothesis on real executions: every configuration
 reachable from `ρ` in at most `n` real steps has fewer than `T` live threads
-(`GlobalState.threads`: the main thread and the forked threads that have not
+(`state.threads`: the main thread and the forked threads that have not
 reached their `ThreadExit`). -/
 def RealThreadsBelow (T n : Nat) (ρ : List Expr × CfgState) : Prop :=
-  ∀ k κs ρ', k ≤ n → RealNsteps k ρ κs ρ' → ρ'.2.2.threads < T
+  ∀ k κs ρ', k ≤ n → RealNsteps k ρ κs ρ' → ρ'.2.1.threads < T
 
 theorem RealThreadsBelow.start {T n : Nat} {ρ : List Expr × CfgState}
-    (h : RealThreadsBelow T n ρ) : ρ.2.2.threads < T :=
+    (h : RealThreadsBelow T n ρ) : ρ.2.1.threads < T :=
   h 0 [] ρ (Nat.zero_le _) (@Language.NSteps.refl _ _ _ _ gooseRealLang ρ)
 
 theorem RealThreadsBelow.step {T n : Nat} {ρ ρ' : List Expr × CfgState} {κ : List Observation}
@@ -260,7 +260,7 @@ theorem RealThreadsBelow.step {T n : Nat} {ρ ρ' : List Expr × CfgState} {κ :
 /-- A head step that is neither a fork nor an exit does not change the thread count. -/
 theorem baseStep_threads {e : Expr} {σ : CfgState} {κ : List Observation} {e' : Expr}
     {σ' : CfgState} {efs : List Expr} (h : HeadStep e σ κ e' σ' efs)
-    (hf : redexKind e ≠ .fork) (hx : redexKind e ≠ .exit) : σ'.2.threads = σ.2.threads := by
+    (hf : redexKind e ≠ .fork) (hx : redexKind e ≠ .exit) : σ'.1.threads = σ.1.threads := by
   cases h with
   | unwind => rfl
   | base _ h =>
@@ -276,8 +276,8 @@ is also a step of the bounded semantics, which leaves at least `s - 1` step
 fuel and thread fuel `t'` with `T - 1 ≤ t' + threads'`. -/
 theorem bounded_step_of_real {ρ₁ ρ₂ : List Expr × CfgState} {κ : List Observation}
     (s t T : Nat) (h : @Language.Step _ _ _ _ gooseRealLang ρ₁ κ ρ₂) (hs : 0 < s)
-    (ht : T - 1 ≤ t + ρ₁.2.2.threads) (h₂ : ρ₂.2.2.threads < T) :
-    ∃ s' t', s ≤ s' + 1 ∧ T - 1 ≤ t' + ρ₂.2.2.threads ∧
+    (ht : T - 1 ≤ t + ρ₁.2.1.threads) (h₂ : ρ₂.2.1.threads < T) :
+    ∃ s' t', s ≤ s' + 1 ∧ T - 1 ≤ t' + ρ₂.2.1.threads ∧
       Language.Step (ρ₁.1, ((ρ₁.2, ⟨s, t⟩) : BcfgState)) κ (ρ₂.1, (ρ₂.2, ⟨s', t'⟩)) := by
   obtain ⟨H, t₁, t₂⟩ := h
   rename_i e σ e' σ' eₜ
@@ -319,14 +319,14 @@ is also an execution of the bounded semantics started with any step fuel
 `s ≥ n` and any thread fuel `t ≥ T - 1 - threads`. -/
 theorem bounded_nsteps_of_real {n : Nat} {ρ₁ ρ₂ : List Expr × CfgState} {κs : List Observation}
     (h : RealNsteps n ρ₁ κs ρ₂) (s : Nat) (hs : n ≤ s) (T t : Nat)
-    (hT : RealThreadsBelow T n ρ₁) (ht : T - 1 ≤ t + ρ₁.2.2.threads) :
+    (hT : RealThreadsBelow T n ρ₁) (ht : T - 1 ≤ t + ρ₁.2.1.threads) :
     ∃ s' t', Language.NSteps n (ρ₁.1, ((ρ₁.2, ⟨s, t⟩) : BcfgState)) κs (ρ₂.1, (ρ₂.2, ⟨s', t'⟩)) := by
   unfold RealNsteps at h
   induction h generalizing s t with
   | refl ρ => exact ⟨s, t, .refl _⟩
   | cons hstep hrest ih =>
     rename_i n ρ₁ ρ₂ ρ₃ obs obs'
-    have h₂ : ρ₂.2.2.threads < T := (hT.step hstep).start
+    have h₂ : ρ₂.2.1.threads < T := (hT.step hstep).start
     obtain ⟨s₁, t₁, hs₁, ht₁, hstep'⟩ := bounded_step_of_real s t T hstep (by omega) ht h₂
     obtain ⟨s', t', hsteps'⟩ := ih s₁ (by omega) t₁ (hT.step hstep) ht₁
     exact ⟨s', t', .cons hstep' hsteps'⟩

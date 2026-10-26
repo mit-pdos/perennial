@@ -33,23 +33,23 @@ variable [GooseExts] [GooseSemantics] [GoGlobalContext]
 `ρ` to `ρ'`, with recovery procedure `r`; `b` says whether it crashed. Each
 generation takes real steps (`RealNsteps`); a crash, which is not a step,
 replaces the thread pool by `[r]`, the local state `σ` by any `σ'` with
-`Crash σ σ'`, and the global state `g` by `g.crash`. -/
+`Crash σ σ'`, and keeps the global state. -/
 inductive RealCrashNsteps (r : Expr) :
     Nat → List Expr × CfgState → List Observation → List Expr × CfgState → Bool → Prop
   | done {n ρ κs ρ'} : RealNsteps n ρ κs ρ' → RealCrashNsteps r n ρ κs ρ' false
   | crash {n m ρ κs t σ g σ' κs' ρ' b} :
       RealNsteps n ρ κs (t, (σ, g)) → Crash σ σ' →
-      RealCrashNsteps r m ([r], (σ', g.crash)) κs' ρ' b →
+      RealCrashNsteps r m ([r], (σ', g)) κs' ρ' b →
       RealCrashNsteps r (n + m) ρ (κs ++ κs') ρ' true
 
 /-- The thread bound as a hypothesis on executions with crashes: every
 configuration reachable from `ρ` in at most `n` steps, with crashes, has fewer
 than `T` live threads. -/
 def RealCrashThreadsBelow (r : Expr) (T n : Nat) (ρ : List Expr × CfgState) : Prop :=
-  ∀ k κs ρ' b, k ≤ n → RealCrashNsteps r k ρ κs ρ' b → ρ'.2.2.threads < T
+  ∀ k κs ρ' b, k ≤ n → RealCrashNsteps r k ρ κs ρ' b → ρ'.2.1.threads < T
 
 theorem RealCrashThreadsBelow.start {r : Expr} {T n : Nat} {ρ : List Expr × CfgState}
-    (h : RealCrashThreadsBelow r T n ρ) : ρ.2.2.threads < T :=
+    (h : RealCrashThreadsBelow r T n ρ) : ρ.2.1.threads < T :=
   h 0 [] ρ false (Nat.zero_le _) (.done (@Language.NSteps.refl _ _ _ _ gooseRealLang ρ))
 
 end real
@@ -67,7 +67,7 @@ inductive BoundedCrashNsteps (r : Expr) (T : Nat) :
   | done {n ρ κs ρ'} : Language.NSteps n ρ κs ρ' → BoundedCrashNsteps r T n ρ κs ρ' false
   | crash {n m ρ κs t σ g f σ' κs' ρ' b} :
       Language.NSteps n ρ κs (t, (((σ, g), f) : BcfgState)) → Crash σ σ' →
-      BoundedCrashNsteps r T m ([r], (((σ', g.crash), ⟨f.steps, T - 2⟩) : BcfgState)) κs' ρ' b →
+      BoundedCrashNsteps r T m ([r], (((σ', g), ⟨f.steps, T - 2⟩) : BcfgState)) κs' ρ' b →
       BoundedCrashNsteps r T (n + m) ρ (κs ++ κs') ρ' true
 
 theorem nsteps_append {n m : Nat} {ρ ρ' ρ'' : List Expr × BcfgState} {κs κs' : List Observation}
@@ -88,7 +88,7 @@ theorem BoundedCrashNsteps.append {r : Expr} {T n m : Nat} {ρ ρ' ρ'' : List E
 /-- `bounded_nsteps_of_real`, with the step fuel that is left. -/
 theorem bounded_nsteps_of_real_fuel {n : Nat} {ρ₁ ρ₂ : List Expr × CfgState}
     {κs : List Observation} (h : RealNsteps n ρ₁ κs ρ₂) (s : Nat) (hs : n ≤ s) (T t : Nat)
-    (hT : RealThreadsBelow T n ρ₁) (ht : T - 1 ≤ t + ρ₁.2.2.threads) :
+    (hT : RealThreadsBelow T n ρ₁) (ht : T - 1 ≤ t + ρ₁.2.1.threads) :
     ∃ s' t', s ≤ s' + n ∧
       Language.NSteps n (ρ₁.1, ((ρ₁.2, ⟨s, t⟩) : BcfgState)) κs (ρ₂.1, (ρ₂.2, ⟨s', t'⟩)) := by
   unfold RealNsteps at h
@@ -96,7 +96,7 @@ theorem bounded_nsteps_of_real_fuel {n : Nat} {ρ₁ ρ₂ : List Expr × CfgSta
   | refl ρ => exact ⟨s, t, by omega, .refl _⟩
   | cons hstep hrest ih =>
     rename_i n ρ₁ ρ₂ ρ₃ obs obs'
-    have h₂ : ρ₂.2.2.threads < T := (hT.step hstep).start
+    have h₂ : ρ₂.2.1.threads < T := (hT.step hstep).start
     obtain ⟨s₁, t₁, hs₁, ht₁, hstep'⟩ := bounded_step_of_real s t T hstep (by omega) ht h₂
     obtain ⟨s', t', hs', hsteps'⟩ := ih s₁ (by omega) t₁ (hT.step hstep) ht₁
     exact ⟨s', t', by omega, .cons hstep' hsteps'⟩
@@ -107,7 +107,7 @@ started with any step fuel `s ≥ n` and any thread fuel `t ≥ T - 1 - threads`
 theorem bounded_crash_nsteps_of_real {r : Expr} {n : Nat} {ρ ρ' : List Expr × CfgState}
     {κs : List Observation} {b : Bool} (h : RealCrashNsteps r n ρ κs ρ' b) (s : Nat)
     (hs : n ≤ s) (T t : Nat) (hT : RealCrashThreadsBelow r T n ρ)
-    (ht : T - 1 ≤ t + ρ.2.2.threads) :
+    (ht : T - 1 ≤ t + ρ.2.1.threads) :
     ∃ s' t', BoundedCrashNsteps r T n (ρ.1, ((ρ.2, ⟨s, t⟩) : BcfgState)) κs
       (ρ'.1, (ρ'.2, ⟨s', t'⟩)) b := by
   induction h generalizing s t with
@@ -118,10 +118,10 @@ theorem bounded_crash_nsteps_of_real {r : Expr} {n : Nat} {ρ ρ' : List Expr ×
   | @crash n m ρ κs t₀ σ g σ' κs' ρ' b h₁ hc _ ih =>
     obtain ⟨s₁, t₁, hs₁, h₁'⟩ := bounded_nsteps_of_real_fuel h₁ s (by omega) T t
       (fun k κs ρ' hk hk' => hT k κs ρ' false (by omega) (.done hk')) ht
-    have hT' : RealCrashThreadsBelow r T m ([r], (σ', g.crash)) := fun k κs'' ρ'' b' hk hk' =>
+    have hT' : RealCrashThreadsBelow r T m ([r], (σ', g)) := fun k κs'' ρ'' b' hk hk' =>
       hT (n + k) (κs ++ κs'') ρ'' true (by omega) (.crash h₁ hc hk')
-    have h1T : 1 < T := hT'.start
-    obtain ⟨s', t', h₂'⟩ := ih s₁ (by omega) (T - 2) hT' (by simp [GlobalState.crash]; omega)
+    have h1T : 1 < T := hc.threads ▸ hT'.start
+    obtain ⟨s', t', h₂'⟩ := ih s₁ (by omega) (T - 2) hT' (by simp only [hc.threads]; omega)
     exact ⟨s', t', .crash (f := ⟨s₁, t₁⟩) h₁' hc h₂'⟩
 
 end bounded

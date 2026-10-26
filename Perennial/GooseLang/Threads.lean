@@ -8,7 +8,7 @@ Thread tokens: the ghost-state side of the thread bound of the bounded semantics
 The bound `T = threadBound GF` is not fixed: it is chosen when the ghost state
 is allocated by the adequacy theorem (`goose_adequacy N T`, `Adequacy.lean`),
 where it is also the bound on the number of live threads
-(`GlobalState.threads`) of the real executions the theorem is about. The laws
+(`state.threads`) of the real executions the theorem is about. The laws
 are stated for this abstract bound; a proof that needs it to be small takes a
 premise such as `threadBound GF ≤ 2 ^ 31`.
 
@@ -57,7 +57,7 @@ open Iris Iris.BI
 /-- Ghost state for thread tokens. `threadBound` is the bound `T` on the number
 of live threads (`threadToks T ⊢ False`): an unspecified number above `1` (the
 main thread is live), fixed when the ghost state is allocated at adequacy time
-(`goose_adequacy`), where it also bounds `GlobalState.threads` along the
+(`goose_adequacy`), where it also bounds `state.threads` along the
 executions the theorem is about. A proof that needs `T` to be small enough takes
 it as a premise (e.g. `threadBound GF ≤ 2 ^ 31`). The names are those of ghost
 state of the ambient `[AllG GF]`; before allocation (`thread_init`) nothing but

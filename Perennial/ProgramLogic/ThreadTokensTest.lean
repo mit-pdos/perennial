@@ -143,7 +143,7 @@ example [GooseGpreS GF] (N : Nat) (e : Expr) (σ : state) (g : GlobalState) (φ 
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
     (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)
     (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2)) (Hn : n < N)
-    (Hthreads : g.threads = 1)
+    (Hthreads : σ.threads = 1)
     (Hlive : RealThreadsBelow (2 ^ 31) n ([e], ((σ, g) : CfgState))) :
     (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
       (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) :=

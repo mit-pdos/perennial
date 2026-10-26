@@ -29,8 +29,8 @@ Notes:
   `Hwp`, which moreover receives the main thread's token `threadTok`), the
   bounded semantics starts with thread fuel `T - 2` (the other `T - 1` tokens
   less the main thread's), and the real theorems are about executions whose
-  thread count `GlobalState.threads` stays below `T` (`RealThreadsBelow`),
-  started from a configuration with the main thread only (`g.threads = 1`).
+  thread count `state.threads` stays below `T` (`RealThreadsBelow`),
+  started from a configuration with the main thread only (`σ.threads = 1`).
   For `T ≤ 1` they are vacuous. See `Threads.lean`.
 * Panics. A thread's final value may be a panic `PanicV p`: the main thread's is
   constrained by the client's `φ`, which `goose_adequacy` requires to exclude
@@ -266,7 +266,7 @@ receipt bound `N` and thread bound `T` (`Hwp` may assume `receiptBound GF = N`
 and `threadBound GF = T`, and receives the main thread's token) with a
 postcondition `φ` that excludes panics (`hφ`), then in every real execution of
 `e` of fewer than `N` steps, from a configuration with the main thread only
-(`g.threads = 1`), along which fewer than `T` threads are live
+(`σ.threads = 1`), along which fewer than `T` threads are live
 (`RealThreadsBelow T n`: every configuration reachable in at most `n` steps has
 `threads < T`):
 * if the main thread has terminated with `v` then `φ v`;
@@ -287,7 +287,7 @@ theorem goose_adequacy [hPre : GooseGpreS GF] (N T : Nat)
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
     (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)
     (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
-    (Hbound : n < N) (Hthreads : g.threads = 1)
+    (Hbound : n < N) (Hthreads : σ.threads = 1)
     (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
     (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
       (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) := by
@@ -362,7 +362,7 @@ theorem goose_invariance [hPre : GooseGpreS GF] (N T : Nat)
         (∀ g', extsGlobalCtx (GF := GF) g' ={⊤,∅}=∗ ⌜φinv g'⌝))
     {n : Nat} {κs : List Observation} {t2 : List Expr} {σ2 : CfgState}
     (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
-    (Hbound : n < N) (Hthreads : g.threads = 1)
+    (Hbound : n < N) (Hthreads : σ.threads = 1)
     (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
     φinv σ2.2.globalWorld := by
   have hT : 1 < T := by have := Hlive.start; simp only at this; omega

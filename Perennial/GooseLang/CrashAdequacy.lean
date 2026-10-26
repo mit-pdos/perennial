@@ -137,7 +137,7 @@ theorem goose_crash_step [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF]
     gooseBstateInterp (((σ, g), f) : BcfgState) κs ⊢ |==> ∃ L' : GooseLocalGS GF,
       ⌜L'.goose_go_local_context = L.goose_go_local_context⌝ ∗
       ⌜@ThreadGS.threadBound GF L'.goose_threadGS = T⌝ ∗
-      gooseBstateInterp (L := L') (((σ', g.crash), ⟨f.steps, T - 2⟩) : BcfgState) κs ∗
+      gooseBstateInterp (L := L') (((σ', g), ⟨f.steps, T - 2⟩) : BcfgState) κs ∗
       crashed (hC := L.goose_crashGS) ∗ extsCrashStart L L' ∗
       ownGoState (hG := L'.goose_go_stateGS) ∅ ∗ threadTok (hT := L'.goose_threadGS) := by
   unfold gooseBstateInterp gooseStateInterp
@@ -161,7 +161,6 @@ theorem goose_crash_step [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF]
   · ipureintro; rfl
   rw [hc.packageState]
   unfold threadFuel
-  dsimp only [GlobalState.crash]
   iframe
   isplitl []
   · ipureintro; rw [hc.goLctx, Hlctx]
@@ -457,7 +456,7 @@ theorem goose_crash_adequacy [hPre : GooseGpreS GF] (N T : Nat)
         WP r @ Stuckness.NotStuck; ⊤ {{ v, ⌜φr v⌝ }} ∗ Ψ hG')
     (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState) (b : Bool)
     (Hsteps : RealCrashNsteps r n ([e], ((σ, g) : CfgState)) κs (t2, σ2) b)
-    (Hbound : n < N) (Hthreads : g.threads = 1)
+    (Hbound : n < N) (Hthreads : σ.threads = 1)
     (Hlive : RealCrashThreadsBelow r T n ([e], ((σ, g) : CfgState))) :
     (∀ v t2', t2 = Val v :: t2' → if b then φr v else φ v) ∧
       (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
