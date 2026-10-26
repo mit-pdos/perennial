@@ -4,8 +4,10 @@ The extensions of a networked program with a filesystem: the closed list
 state `fsNetGF` for it.
 
 A distributed program over these extensions is closed off by the distributed
-adequacy theorem `goose_dist_adequacy` (`DistAdequacy.lean`) with these
-instances; `fsNetGF` has a slot for each camera that `GooseGpreS` needs, so that
+adequacy theorems `goose_dist_adequacy` and `goose_dist_crash_adequacy`
+(`DistAdequacy.lean`) with these instances; a crash keeps the ghost state of
+both extensions (the files are durable, the address is kept,
+`net_crash_interp`); `fsNetGF` has a slot for each camera that `GooseGpreS` needs, so that
 a client's theorem need not assume any. The start resources of `[fsExt, netExt]`
 are the network's points-to (`fsNet_globalStart`) and, for a node, its files'
 points-to and its address (`fsNet_localStart`).
@@ -13,7 +15,7 @@ points-to and its address (`fsNet_localStart`).
 module
 
 public import Perennial.GooseLang.DistAdequacy
-public import Perennial.GooseLang.Ext.Fs.Specs
+public import Perennial.GooseLang.Ext.Fs.Adequacy
 public import Perennial.GooseLang.Ext.Net.Specs
 
 @[expose] public section
@@ -23,6 +25,18 @@ noncomputable section
 namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std ProofMode
+
+/-- The network's local ghost state (the node's address) survives a crash: the
+address is kept. -/
+instance net_crash_interp : ExtCrashInterp netExt where
+  crashStart hL hL' := iprop(⌜hL' = hL⌝)
+  local_crash _ _ hL σ σ' h := by
+    obtain rfl := (show σ' = σ from h)
+    iintro H
+    imodintro
+    iexists hL
+    iframe H
+    ipureintro; rfl
 
 /-- The extensions of a networked program with a filesystem. -/
 @[reducible] def fsNetExts : GooseExts := ⟨[fsExt, netExt]⟩
@@ -34,6 +48,11 @@ attribute [local instance] fsNetExts
 @[reducible] def fsNetExtsInterp : GooseInterp := ⟨(fs_interp, net_interp, ⟨⟩)⟩
 
 attribute [local instance] fsNetExtsSemantics fsNetExtsInterp
+
+@[reducible] def fsNetExtsCrashInterp : GooseCrashInterp :=
+  ⟨(fs_crash_interp, net_crash_interp, ⟨⟩)⟩
+
+attribute [local instance] fsNetExtsCrashInterp
 
 @[reducible] def fsNetExts_hasFs : HasExt fsExt where
   mem := .here
@@ -90,6 +109,14 @@ theorem fsNet_localStart [L : GooseLocalGS GF] (σ : ExtsLocalState exts) :
     extsLocalStart (GF := GF) σ ⊢
       ([∗map] f ↦ c ∈ extLocal fsExt σ, fsPointsto (extLocalGS fsExt) f (.own 1) c) ∗
       ⌜(extLocalGS netExt (L := L) : NetNodeGS GF).addr = extLocal netExt σ⌝ :=
+  sep_mono_right sep_elim_left
+
+/-- The crash resources of `[fsExt, netExt]`: the new generation keeps the old
+one's files' and address's ghost state. -/
+theorem fsNet_crashStart (L L' : GooseLocalGS GF) :
+    extsCrashStart (GF := GF) L L' ⊢
+      ⌜extLocalGS fsExt (L := L') = extLocalGS fsExt (L := L)⌝ ∗
+      ⌜extLocalGS netExt (L := L') = extLocalGS netExt (L := L)⌝ :=
   sep_mono_right sep_elim_left
 
 end start

@@ -20,12 +20,13 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.netfs.Assumptions]
 
-/-- `NodeB()` at `"b"`, which owns its file `"out"`: under the protocol, it
-does not panic (the write is kept). -/
+/-- `NodeB()` at `"b"`, at every boot: under the protocol and the invariant of
+its files, it sends only `c0`. -/
 abbrev github_com.mit_pdos.perennial.goose.testdata.examples.netfs.NodeB.spec : Prop :=
-  ∀ (c0 old : GoString), netAddr (GF := GF) = go!"b" →
+  ∀ (c0 : GoString) (γ : GName), netAddr (GF := GF) = go!"b" →
     {{ isPkgInit (PROP := IProp GF) pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.netfs ∗
-        inv netN (netInv (gooseNetGS (GF := GF)) c0) ∗ go!"out" fs↦ old }}
+        inv netN (netInv (gooseNetGS (GF := GF)) c0) ∗
+        inv outN (bInv (gooseFsGS (GF := GF)) c0 γ) }}
       (App (Val (@! NodeB)) (Val #()))
     {{ RET #(); True }}
 

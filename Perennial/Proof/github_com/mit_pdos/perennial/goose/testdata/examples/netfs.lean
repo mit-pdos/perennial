@@ -1,8 +1,8 @@
 /-
 The proofs of `github.com/mit-pdos/perennial/goose/testdata/examples/netfs`, an
-end-to-end example of a distributed program: the shared definitions and the
-protocol (`Base`), the linked results (`Link`) and the distributed adequacy of
-the three-node system (`Results`).
+end-to-end example of a crash-safe distributed program: the shared definitions
+and the protocols (`Base`), the linked results (`Link`) and the distributed
+crash safety of the three-node system (`Results`).
 -/
 module
 

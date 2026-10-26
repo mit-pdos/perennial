@@ -34,16 +34,16 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.netfs.NodeA.wp_pro
     (FuncUnfold.func_unfold (f := github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Read) (type_args := [])) ▸ wp_Read name
   have wp_Send' := fun to sl data dq =>
     (FuncUnfold.func_unfold (f := github_com.mit_pdos.perennial.goose.testdata.examples.netfs.netext.Send) (type_args := [])) ▸ wp_Send to sl data dq
-  wp_start as ⟨#Hinv, Hin⟩
+  wp_start as ⟨#Hinv, #Hin⟩
   try wp_auto
   -- read the file
   wp_func_call
   wp_apply_core wp_Read' go!"in"
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hmask
-  iexists (DFrac.own 1), c0
+  iexists DFrac.discard, c0
   iframe Hin
-  iintro Hin
+  iintro _
   imod Hmask
   imodintro
   try wp_auto

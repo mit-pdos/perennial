@@ -1116,7 +1116,8 @@ provides the ghost state of a filesystem program, so the example's
 
 Files: `Perennial/GooseLang/DistLang.lean` (`DistCfg`, `DistStep`,
 `DistNsteps`, `distInit`, `DistThreadsBelow`), `GooseLang/DistAdequacy.lean`
-(`goose_dist_adequacy`, `nodeWp`), `GooseLang/Ext/Net` (the toy network
+(`goose_dist_adequacy`, `nodeWp`; with crashes `goose_dist_crash_adequacy`,
+`nodeStart`), `GooseLang/Ext/Net` (the toy network
 `netExt`), `GooseLang/Ext/Net/Adequacy.lean` (the closed list `[fsExt, netExt]`,
 `fsNetGF`), and the example
 `Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/netfs/`.
@@ -1145,8 +1146,25 @@ for its specs; to use specs that assume a fixed `GoLocalContext`, destructure
 `L` and substitute its Go context (the example's `Results.lean`). The
 conclusion is, for every node, that of `goose_adequacy`. Time receipts count
 the steps of all nodes together; thread tokens are per node. With
-`DistThreadsBelow.of_single` and `fsNetGF`, the example's `netfs_safety`
-mentions no bound and no ghost state.
+`DistThreadsBelow.of_single` and `fsNetGF`, a client's theorem mentions no
+bound and no ghost state.
+
+With crashes: `DistCrashNsteps boots` adds a crash step, which replaces node
+`i`'s thread pool by `[boots[i]]` and its local state by a `Crash`ed one, and
+keeps the global state. The boot programs are the nodes' programs
+(`es.map Prod.fst`): a node has a single boot program, run at the start and
+after every crash. `goose_dist_crash_adequacy N T es g φ ... P Hstart Hwp` is
+`goose_crash_adequacy` per node: `P : ∀ [GooseGlobalGS .hasLC GF], Nat →
+GooseLocalGS GF → IProp GF` is the precondition of node `i`'s boot program in
+a generation `L`; `Hstart` is the global setup followed by every node's first
+`P i` (`nodeStart`, from the node's start resources); `Hwp` is, for every
+generation of every node, the WP of its boot program from `P i` and the main
+thread's token, together with `P i L'` of the next generation, from `crashed`,
+`extsCrashStart` and the empty package state. What `P i L'` needs from the old
+generation must be persistent (invariants, discarded points-to) or come back
+through `extsCrashStart` (`fsNet_crashStart`: a crash keeps the files' and the
+address's ghost state). The bounds are as without crashes
+(`DistCrashThreadsBelow.of_single`); a crash counts as a step.
 
 The network (`netExt`): a node's local state is its address; the network maps
 each address to the set of messages sent to it, each with its sender's address.

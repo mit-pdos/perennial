@@ -51,11 +51,19 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   executions: each node's program is proved with the standard WP, under the
   shared global ghost state and its own local ghost state (`nodeWp`), after a
   global setup that may allocate the invariants the nodes share. There is no
-  distributed program logic and no crash. End-to-end example: the Go package
+  distributed program logic. With crashes (`DistCrashNsteps`), a node crashes
+  at any time and restarts from a crashed local state with its boot program,
+  the one program it has (no separate recovery procedure);
+  `goose_dist_crash_adequacy` combines this with crash adequacy: each
+  generation of each node is proved with the standard WP from a client-chosen
+  precondition `P i L`, which it guarantees for the node's next generation, as
+  in `goose_crash_adequacy`. End-to-end example: the Go package
   `goose/testdata/examples/netfs`, three nodes on a toy network
   (`GooseLang/Ext/Net`, Go side `netfs/netext`, whose primitives are stubs: the
-  extension is a specification of a network) and the toy filesystem, whose
-  `panic` assertions never fire (`netfs_safety`,
+  extension is a specification of a network) and the toy filesystem, where a
+  node's reply after a reboot depends on the durability and order of its
+  earlier writes, and whose `panic` assertions never fire however often the
+  nodes crash (`netfs_crash_safety`,
   `Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/netfs/Results.lean`).
 * **Bounded layer, time receipts and thread tokens.** The trusted semantics
   `BaseStep` (and its iris-lean language `gooseRealEctxiLang`,
