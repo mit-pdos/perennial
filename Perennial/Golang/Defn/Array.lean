@@ -33,13 +33,15 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   `l` (`GoPrealloc`), then each element `j` by its own `GoAlloc`, which must land at the
   element's address `arrayIndexRef _ j l`; a placement that does not is not an execution of
   the model (`AngelicExit`). Under gc's layout (`arrayIndexRef _ j l = l +ₗ j·size`) a placement
-  that does always exists, since the elements' addresses are free when gc allocates the array. A length `n` outside `[0, 2^63-1)`, or a value `#v`
-  whose length is not `n` (possible, `GoArray V n` does not enforce it), cannot satisfy
-  `l ↦ v`, so those cases are `AngelicExit`, as in `store_array`. Allocation bounds are not
+  that does always exists, since the elements' addresses are free when gc allocates the array.
+  A length `n` outside `[0, 2^63)` is not a Go array type (an array length is a non-negative
+  `int`; `[1<<63 - 1]struct{}` is valid), and a value `#v` whose length is not `n` (possible,
+  `GoArray V n` does not enforce it) is not a Go value of the type, so those cases are
+  `AngelicExit`, as in `load_array` and `store_array`. Allocation bounds are not
   modelled: gc panics in `makeslice` above `maxAlloc` (`docs/KNOWN_LIMITATIONS.md`). -/
   alloc_array (n : Int) (elem : go.GoType) {V : Type} (v : GoArray V n) :
     ⟦GoAlloc (go.ArrayType n elem), #v⟧ ⤳[internalUnder]
-    (if ¬(0 ≤ n ∧ n < 2^63-1 ∧ (v.arr.length : Int) = n) then
+    (if ¬(0 ≤ n ∧ n < 2^63 ∧ (v.arr.length : Int) = n) then
       gl(AngelicExit #())
     else
       gl(let: "l" := GoPrealloc #() in
@@ -55,7 +57,7 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   load_array (n : Int) (elem_type : go.GoType) (l : val) :
     ⟦GoLoad (go.ArrayType n elem_type), l⟧ ⤳[internalUnder]
     (if l = #null then Panic "nil pointer dereference" else
-    if ¬(0 ≤ n ∧ n < 2^63-1) then
+    if ¬(0 ≤ n ∧ n < 2^63) then
       gl(AngelicExit #())
     else
       gl((rec: "recur" "n" :=
@@ -73,7 +75,7 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   store_array (n : Int) (elem_type : go.GoType) (l : val) {V : Type} (v : GoArray V n) :
     ⟦GoStore (go.ArrayType n elem_type), (l, #v)⟧ ⤳[internalUnder]
     (if l = #null then Panic "nil pointer dereference" else
-    if ¬(0 ≤ n ∧ n < 2^63-1 ∧ (v.arr.length : Int) = n) then
+    if ¬(0 ≤ n ∧ n < 2^63 ∧ (v.arr.length : Int) = n) then
       gl(AngelicExit #())
     else
     List.foldl (fun str_so_far j =>
