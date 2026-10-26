@@ -1070,6 +1070,48 @@ that assumed `threadBound GF ≤ 2 ^ 31` takes `T = 2 ^ 31`
 (`ThreadTokensTest.lean`); as for `N`, there is nothing to gain from a smaller
 `T`.
 
+### Crashes
+
+Files: `Perennial/GooseLang/Lang.lean` (`Crash`, `ExtSemantics.crash`),
+`GooseLang/CrashLang.lean` (`RealCrashNsteps`), `GooseLang/CrashAdequacy.lean`
+(`goose_crash_adequacy`), `GooseLang/Ext/Fs/Adequacy.lean` (`fs_crash_adequacy`),
+and the example `Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/crashfs/`.
+
+A crash kills every thread of the node and restarts it with a boot program;
+`Crash σ σ'` gives the restart's local state: any heap, the same Go context,
+no package initialized, one thread, and each extension's local state crashed
+by its `ExtSemantics.crash`. The global state is kept. There is no crash WP:
+each generation (the run between two crashes) is proved with the standard WP,
+under the shared `GooseGlobalGS` and its own `GooseLocalGS` (heap, package
+state, extensions' local ghost state, thread tokens, and the crash token:
+the state interpretation owns `notCrashed`, which the adequacy proof turns
+into the persistent `crashed` at the crash).
+
+`goose_crash_adequacy N T e σ g φ ... P Hstart Hwp` is about executions with
+crashes of the boot program `e` (`RealCrashNsteps e`) of fewer than `N`
+steps in all along which fewer than `T` threads are live
+(`RealCrashThreadsBelow e T`), from a state with one thread. Its hypotheses
+on the proof:
+
+* `P : ∀ [GooseGlobalGS .hasLC GF], GooseLocalGS GF → IProp GF`, the boot
+  program's precondition, over a generation's local ghost state;
+* `Hstart`: `P` of the first generation, from the extensions' start resources
+  and the initial package state;
+* `Hwp`: in every generation, the WP of `e` from `P` and the main thread's
+  token, together with `P L'` of whatever next local ghost state `L'` the
+  crash allocates, from the generation's `crashed`, the extensions'
+  `crashStart` resources and `L'`'s empty package state. Since a thread's
+  resources are lost at a crash, what `P L'` needs must live in invariants.
+
+Each extension provides `ExtCrashInterp` (how its ghost state survives a
+crash); the filesystem keeps its ghost state (`crashStart old new := ⌜new = old⌝`).
+`goose_crash_adequacy_recovery` allows a recovery procedure other than the
+boot program. As for `goose_adequacy`, the bounds are no restriction for a
+client: an execution of `n` steps from one thread has fewer than `n + 2` live
+threads (`RealCrashThreadsBelow.of_single`), and `fsGF` (with `fsGpreS`)
+provides the ghost state of a filesystem program, so the example's
+`crash_safety` mentions neither.
+
 ### Package initialization
 
 ```lean
