@@ -22,11 +22,17 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi
 
+noncomputable def mu [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/crashfs/fsffi.mu"
+
 noncomputable def Read [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/crashfs/fsffi.Read"
 
 noncomputable def Write [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/crashfs/fsffi.Write"
+
+noncomputable def tryWrite [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/crashfs/fsffi.tryWrite"
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi where
   pkgImportedPkgs := []

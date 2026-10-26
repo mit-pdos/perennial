@@ -5,11 +5,15 @@ A node's durable filesystem: a map from file names to contents, with
 whole-file operations.
 
 * `ReadOp f` returns the entire contents of the file `f`. Reading a file that
-  does not exist is stuck (the model is less defined than Go, whose read
-  returns an error).
+  does not exist is stuck.
 * `WriteOp (f, data)` replaces the entire contents of the file `f` by `data`,
   creating it if it does not exist. The write is atomic and durable: once it
-  returns, a crash keeps it, and a crash never exposes a partial write.
+  is visible (to a read), a crash keeps it, and a crash never exposes a
+  partial write.
+* Neither operation fails. The Go side (`crashfs/fsffi`, whose
+  `TrustedCode` model states what is trusted about it) retries a failed
+  operation instead of reporting it, and serializes the operations, so that a
+  write is durable before any read sees it.
 * Crashes (`ExtSemantics.crash`): the files survive unchanged.
 * Neither operation changes the heap; file names and contents are passed and
   returned as Go values (`#f`, `#data`).

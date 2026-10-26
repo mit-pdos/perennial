@@ -2,49 +2,75 @@
 // side of GooseLang's filesystem extension (Perennial/GooseLang/Ext/Fs). Its
 // functions are trusted: Perennial models them with the extension's operations
 // (Perennial/TrustedCode/.../crashfs/fsffi.lean) instead of translating them.
+//
+// The model makes each operation one atomic step that cannot fail, and a
+// written file durable. The implementation provides that:
+//   - mu serializes the operations, so that no Read sees a Write's contents
+//     before they are durable;
+//   - a write goes to a fresh temporary file in the same directory, which is
+//     synced, renamed over the file, and the directory synced;
+//   - an operation that fails (an I/O error, a missing file) is retried
+//     forever instead of panicking, so the program never sees a failure (it
+//     may not return, which the model, as a safety model, allows).
 package fsffi
 
-import "os"
+import (
+	"os"
+	"path/filepath"
+	"sync"
+)
 
-// Read returns the entire contents of the file name. It panics if the file
-// cannot be read (the model is stuck if the file does not exist).
+var mu sync.Mutex
+
+// Read returns the entire contents of the file name.
 func Read(name string) string {
-	b, err := os.ReadFile(name)
-	if err != nil {
-		panic(err)
+	mu.Lock()
+	defer mu.Unlock()
+	for {
+		b, err := os.ReadFile(name)
+		if err == nil {
+			return string(b)
+		}
 	}
-	return string(b)
 }
 
 // Write replaces the entire contents of the file name by data, creating it if
-// needed, atomically and durably: a crash leaves either the old or the new
-// contents, and the new ones once Write returns. It panics on an I/O error.
+// needed, atomically and durably.
 func Write(name string, data string) {
-	tmp := name + ".tmp"
-	f, err := os.Create(tmp)
+	mu.Lock()
+	defer mu.Unlock()
+	for !tryWrite(name, data) {
+	}
+}
+
+// tryWrite makes one attempt at Write. It changes nothing a Read can see
+// unless the rename succeeds, and then the file holds data.
+func tryWrite(name string, data string) bool {
+	dir := filepath.Dir(name)
+	f, err := os.CreateTemp(dir, ".fsffi-*")
 	if err != nil {
-		panic(err)
+		return false
 	}
-	if _, err := f.WriteString(data); err != nil {
-		panic(err)
+	tmp := f.Name()
+	_, err = f.WriteString(data)
+	if err == nil {
+		err = f.Sync()
 	}
-	if err := f.Sync(); err != nil {
-		panic(err)
+	if err2 := f.Close(); err == nil {
+		err = err2
 	}
-	if err := f.Close(); err != nil {
-		panic(err)
+	if err == nil {
+		err = os.Rename(tmp, name)
 	}
-	if err := os.Rename(tmp, name); err != nil {
-		panic(err)
-	}
-	dir, err := os.Open(".")
 	if err != nil {
-		panic(err)
+		os.Remove(tmp)
+		return false
 	}
-	if err := dir.Sync(); err != nil {
-		panic(err)
+	d, err := os.Open(dir)
+	if err != nil {
+		return false
 	}
-	if err := dir.Close(); err != nil {
-		panic(err)
-	}
+	err = d.Sync()
+	d.Close()
+	return err == nil
 }
