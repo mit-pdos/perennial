@@ -3,7 +3,8 @@ The Grove extension of GooseLang, for distributed Perennial [Trusted definitions
 
 Consists only of a network, per-node file storage, and clocks.
 
-* Crashes (`ExtSemantics.crash`): a node's files survive, its TSC may be anything.
+* Crashes (`ExtSemantics.crash`): a node's state may be anything afterwards
+  (`grove_ffi` does not make its writes durable).
 * The step (`GroveStep`, the `ExtSemantics` of `groveExt`) is a relation:
   either the operation stutters (state unchanged, `e' = ExternalOp op v`) or it
   takes an `IsGroveStep`. It does not change the heap.
@@ -186,10 +187,14 @@ def GroveStep (op : GroveOp) (v : val) (h : GMap Loc (NonAtomic val)) (σ : Grov
 
 end grove
 
-/-- On a crash, the node's files survive; its TSC may be anything. -/
+/-- On a crash, the node's state may be anything: `grove_ffi.FileWrite` renames
+its temporary file over the file without syncing the directory, so a crash may
+undo a write that returned, and `FileAppend` ignores the result of its write,
+so a crash may leave part of it; the TSC restarts. (Nothing proves crash
+safety for Grove yet: there is no `ExtCrashInterp` for it.) -/
 instance grove_semantics : ExtSemantics groveExt where
   step := GroveStep
-  crash σ σ' := σ'.groveNodeFiles = σ.groveNodeFiles
+  crash _ _ := True
 
 
 end Perennial
