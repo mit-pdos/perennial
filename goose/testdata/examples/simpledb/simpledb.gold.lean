@@ -24,140 +24,140 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.simpledb
 
-noncomputable def Table.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Table.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.Table" [])
 
 attribute [irreducible] Table.ty
 
-noncomputable def Entry.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Entry.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.Entry" [])
 
 attribute [irreducible] Entry.ty
 
-noncomputable def lazyFileBuf.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def lazyFileBuf.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.lazyFileBuf" [])
 
 attribute [irreducible] lazyFileBuf.ty
 
-noncomputable def bufFile.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def bufFile.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.bufFile" [])
 
 attribute [irreducible] bufFile.ty
 
-noncomputable def tableWriter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def tableWriter.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.tableWriter" [])
 
 attribute [irreducible] tableWriter.ty
 
-noncomputable def Database.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Database.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.Database" [])
 
 attribute [irreducible] Database.ty
 
-noncomputable def UseMarshal [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def UseMarshal [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.UseMarshal"
 
-noncomputable def CreateTable [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CreateTable [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.CreateTable"
 
-noncomputable def DecodeUInt64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def DecodeUInt64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.DecodeUInt64"
 
-noncomputable def DecodeEntry [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def DecodeEntry [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.DecodeEntry"
 
-noncomputable def readTableIndex [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def readTableIndex [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.readTableIndex"
 
-noncomputable def RecoverTable [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def RecoverTable [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.RecoverTable"
 
-noncomputable def CloseTable [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CloseTable [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.CloseTable"
 
-noncomputable def readValue [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def readValue [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.readValue"
 
-noncomputable def tableRead [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tableRead [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.tableRead"
 
-noncomputable def newBuf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def newBuf [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.newBuf"
 
-noncomputable def bufFlush [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def bufFlush [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.bufFlush"
 
-noncomputable def bufAppend [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def bufAppend [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.bufAppend"
 
-noncomputable def bufClose [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def bufClose [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.bufClose"
 
-noncomputable def newTableWriter [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def newTableWriter [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.newTableWriter"
 
-noncomputable def tableWriterAppend [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tableWriterAppend [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.tableWriterAppend"
 
-noncomputable def tableWriterClose [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tableWriterClose [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.tableWriterClose"
 
-noncomputable def EncodeUInt64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def EncodeUInt64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.EncodeUInt64"
 
-noncomputable def EncodeSlice [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def EncodeSlice [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.EncodeSlice"
 
-noncomputable def tablePut [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tablePut [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.tablePut"
 
-noncomputable def makeValueBuffer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def makeValueBuffer [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.makeValueBuffer"
 
-noncomputable def NewDb [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewDb [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.NewDb"
 
-noncomputable def Read [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Read [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.Read"
 
-noncomputable def Write [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Write [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.Write"
 
-noncomputable def freshTable [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def freshTable [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.freshTable"
 
-noncomputable def tablePutBuffer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tablePutBuffer [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.tablePutBuffer"
 
-noncomputable def tablePutOldTable [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tablePutOldTable [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.tablePutOldTable"
 
-noncomputable def constructNewTable [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def constructNewTable [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.constructNewTable"
 
-noncomputable def Compact [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Compact [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.Compact"
 
-noncomputable def recoverManifest [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def recoverManifest [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.recoverManifest"
 
-noncomputable def deleteOtherFile [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def deleteOtherFile [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.deleteOtherFile"
 
-noncomputable def deleteOtherFiles [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def deleteOtherFiles [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.deleteOtherFiles"
 
-noncomputable def Recover [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Recover [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.Recover"
 
-noncomputable def Shutdown [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Shutdown [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.Shutdown"
 
-noncomputable def Close [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Close [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/simpledb.Close"
 
 /-- go: simpledb.go:20:6 -/
-noncomputable def UseMarshal.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def UseMarshal.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -170,7 +170,7 @@ noncomputable def UseMarshal.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- CreateTable creates a new, empty table.
 
     go: simpledb.go:32:6 -/
-noncomputable def CreateTable.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def CreateTable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc go.string))) (Var "p"))
@@ -217,7 +217,7 @@ noncomputable def CreateTable.impl [FfiSyntax] [GoGlobalContext] : val :=
     then decoding failed, and the value of type T should be ignored.
 
     go: simpledb.go:52:6 -/
-noncomputable def DecodeUInt64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DecodeUInt64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
@@ -240,7 +240,7 @@ noncomputable def DecodeUInt64.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- DecodeEntry is a Decoder(Entry)
 
     go: simpledb.go:61:6 -/
-noncomputable def DecodeEntry.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def DecodeEntry.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (App (Val exceptionDo)
   (Let "data" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "data"))
@@ -312,7 +312,7 @@ noncomputable def DecodeEntry.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- readTableIndex parses a complete table on disk into a key->offset index
 
     go: simpledb.go:86:6 -/
-noncomputable def readTableIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def readTableIndex.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam "index"
   (App (Val exceptionDo)
@@ -389,7 +389,7 @@ noncomputable def readTableIndex.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- RecoverTable restores a table from disk on startup.
 
     go: simpledb.go:111:6 -/
-noncomputable def RecoverTable.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RecoverTable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc go.string))) (Var "p"))
@@ -418,7 +418,7 @@ noncomputable def RecoverTable.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- CloseTable frees up the fd held by a table.
 
     go: simpledb.go:119:6 -/
-noncomputable def CloseTable.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def CloseTable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc Table.ty))) (Var "t"))
@@ -430,7 +430,7 @@ noncomputable def CloseTable.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.filesys.Close []))) (Val #())) (Var "$a0"))))))))
 
 /-- go: simpledb.go:123:6 -/
-noncomputable def readValue.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def readValue.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam "off"
   (App (Val exceptionDo)
@@ -488,7 +488,7 @@ noncomputable def readValue.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "startBuf") (Var "$r0"))))))))))))
 
 /-- go: simpledb.go:137:6 -/
-noncomputable def tableRead.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def tableRead.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "k"
   (App (Val exceptionDo)
@@ -524,7 +524,7 @@ noncomputable def tableRead.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "off") (Var "$r0")))))))))))))))))
 
 /-- go: simpledb.go:151:6 -/
-noncomputable def newBuf.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def newBuf.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty))) (Var "f"))
@@ -539,7 +539,7 @@ noncomputable def newBuf.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.SliceType go.byte))))) (Pair (Var "buf") (Var "$r0"))))))))))
 
 /-- go: simpledb.go:159:6 -/
-noncomputable def bufFlush.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def bufFlush.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc bufFile.ty))) (Var "f"))
@@ -568,7 +568,7 @@ noncomputable def bufFlush.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "buf") (Var "$r0")))))))))))
 
 /-- go: simpledb.go:168:6 -/
-noncomputable def bufAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def bufAppend.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (Lam "p"
   (App (Val exceptionDo)
@@ -594,7 +594,7 @@ noncomputable def bufAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "buf") (Var "$r0")))))))))))))
 
 /-- go: simpledb.go:174:6 -/
-noncomputable def bufClose.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def bufClose.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "f"
   (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc bufFile.ty))) (Var "f"))
@@ -610,7 +610,7 @@ noncomputable def bufClose.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve bufFlush []))) (Val #())) (Var "$a0")))))))))
 
 /-- go: simpledb.go:186:6 -/
-noncomputable def newTableWriter.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def newTableWriter.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc go.string))) (Var "p"))
@@ -652,7 +652,7 @@ noncomputable def newTableWriter.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 go.uint64)))) (Pair (Var "index") (Var "$r0"))))))))))
 
 /-- go: simpledb.go:199:6 -/
-noncomputable def tableWriterAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def tableWriterAppend.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "p"
   (App (Val exceptionDo)
@@ -677,7 +677,7 @@ noncomputable def tableWriterAppend.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve bufAppend []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))))
 
 /-- go: simpledb.go:205:6 -/
-noncomputable def tableWriterClose.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def tableWriterClose.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "w"
   (App (Val exceptionDo)
   (Let "w" (App (Val (GoInstruction (GoAlloc tableWriter.ty))) (Var "w"))
@@ -700,7 +700,7 @@ noncomputable def tableWriterClose.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- EncodeUInt64 is an Encoder(uint64)
 
     go: simpledb.go:215:6 -/
-noncomputable def EncodeUInt64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def EncodeUInt64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "p"
   (App (Val exceptionDo)
@@ -729,7 +729,7 @@ noncomputable def EncodeUInt64.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- EncodeSlice is an Encoder([]byte)
 
     go: simpledb.go:223:6 -/
-noncomputable def EncodeSlice.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def EncodeSlice.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "data"
   (Lam "p"
   (App (Val exceptionDo)
@@ -754,7 +754,7 @@ noncomputable def EncodeSlice.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "p2") (Var "$r0"))))))))))))
 
 /-- go: simpledb.go:229:6 -/
-noncomputable def tablePut.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def tablePut.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "k"
   (Lam "v"
@@ -800,7 +800,7 @@ noncomputable def tablePut.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "tmp") (Var "$r0")))))))))))))))
 
 /-- go: simpledb.go:256:6 -/
-noncomputable def makeValueBuffer.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def makeValueBuffer.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte))]))) (Val #())) (Val #()))
@@ -823,7 +823,7 @@ noncomputable def makeValueBuffer.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- NewDb initializes a new database on top of an empty filesys.
 
     go: simpledb.go:264:6 -/
-noncomputable def NewDb.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewDb.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve makeValueBuffer []))) (Val #())) (Val #()))
@@ -898,7 +898,7 @@ noncomputable def NewDb.impl [FfiSyntax] [GoGlobalContext] : val :=
     Reflects any completed in-memory writes.
 
     go: simpledb.go:293:6 -/
-noncomputable def Read.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Read.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "db"
   (Lam "k"
   (App (Val exceptionDo)
@@ -999,7 +999,7 @@ noncomputable def Read.impl [FfiSyntax] [GoGlobalContext] : val :=
     The new value is buffered in memory. To persist it, call db.Compact().
 
     go: simpledb.go:326:6 -/
-noncomputable def Write.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Write.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "db"
   (Lam "k"
   (Lam "v"
@@ -1026,7 +1026,7 @@ noncomputable def Write.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"bufferL"))) (Var "db")))) (Val #()))))))))))))
 
 /-- go: simpledb.go:333:6 -/
-noncomputable def freshTable.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def freshTable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "p"
   (App (Val exceptionDo)
   (Let "p" (App (Val (GoInstruction (GoAlloc go.string))) (Var "p"))
@@ -1046,7 +1046,7 @@ noncomputable def freshTable.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #())))))))
 
 /-- go: simpledb.go:345:6 -/
-noncomputable def tablePutBuffer.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def tablePutBuffer.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "buf"
   (App (Val exceptionDo)
@@ -1077,7 +1077,7 @@ noncomputable def tablePutBuffer.impl [FfiSyntax] [GoGlobalContext] : val :=
     buffer b since those writes overwrite old ones
 
     go: simpledb.go:353:6 -/
-noncomputable def tablePutOldTable.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def tablePutOldTable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "w"
   (Lam "t"
   (Lam "b"
@@ -1178,7 +1178,7 @@ noncomputable def tablePutOldTable.impl [FfiSyntax] [GoGlobalContext] : val :=
     Returns the old table and new table.
 
     go: simpledb.go:388:6 -/
-noncomputable def constructNewTable.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def constructNewTable.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "db"
   (Lam "wbuf"
   (App (Val exceptionDo)
@@ -1232,7 +1232,7 @@ noncomputable def constructNewTable.impl [FfiSyntax] [GoGlobalContext] : val :=
     writes with existing writes.
 
     go: simpledb.go:405:6 -/
-noncomputable def Compact.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Compact.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "db"
   (App (Val exceptionDo)
   (Let "db" (App (Val (GoInstruction (GoAlloc Database.ty))) (Var "db"))
@@ -1330,7 +1330,7 @@ noncomputable def Compact.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)))) (App (Val (GoInstruction (StructFieldRef Database.ty go!"compactionL"))) (Var "db")))) (Val #()))))))))
 
 /-- go: simpledb.go:450:6 -/
-noncomputable def recoverManifest.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def recoverManifest.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "$r0" (Let "$a0" (Val #(go!"db"))
@@ -1363,7 +1363,7 @@ noncomputable def recoverManifest.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- delete 'name' if it isn't tableName or "manifest"
 
     go: simpledb.go:464:6 -/
-noncomputable def deleteOtherFile.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def deleteOtherFile.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "name"
   (Lam "tableName"
   (App (Val exceptionDo)
@@ -1390,7 +1390,7 @@ noncomputable def deleteOtherFile.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #()))))))))))
 
 /-- go: simpledb.go:474:6 -/
-noncomputable def deleteOtherFiles.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def deleteOtherFiles.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "tableName"
   (App (Val exceptionDo)
   (Let "tableName" (App (Val (GoInstruction (GoAlloc go.string))) (Var "tableName"))
@@ -1442,7 +1442,7 @@ noncomputable def deleteOtherFiles.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Recover restores a previously created database after a crash or shutdown.
 
     go: simpledb.go:489:6 -/
-noncomputable def Recover.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Recover.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve recoverManifest []))) (Val #())) (Val #()))
@@ -1519,7 +1519,7 @@ noncomputable def Recover.impl [FfiSyntax] [GoGlobalContext] : val :=
     cleanly closing any open files.
 
     go: simpledb.go:520:6 -/
-noncomputable def Shutdown.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Shutdown.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "db"
   (App (Val exceptionDo)
   (Let "db" (App (Val (GoInstruction (GoAlloc Database.ty))) (Var "db"))
@@ -1552,7 +1552,7 @@ noncomputable def Shutdown.impl [FfiSyntax] [GoGlobalContext] : val :=
     db should not be used afterward
 
     go: simpledb.go:534:6 -/
-noncomputable def Close.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Close.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "db"
   (App (Val exceptionDo)
   (Let "db" (App (Val (GoInstruction (GoAlloc Database.ty))) (Var "db"))
@@ -1570,7 +1570,7 @@ noncomputable def Close.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.simpledb where
   pkgImportedPkgs := [pkg_id.encoding.binary, pkg_id.sync, pkg_id.github_com.goose_lang.primitive.filesys, pkg_id.github_com.tchajed.marshal]
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.simpledb)) (Lam BAnon
   (App (Val exceptionDo)
@@ -1586,29 +1586,29 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.tchajed.marshal.initialize') (Val #()))))))))
 
-structure Table [FfiSyntax] where
+structure Table [GooseExts] where
   mk ::
   Index' : GoMap
   File' : _root_.Perennial.github_com.goose_lang.primitive.filesys.File
 
-noncomputable instance Table.zero_val [FfiSyntax] : ZeroVal Table :=
+noncomputable instance Table.zero_val [GooseExts] : ZeroVal Table :=
   ⟨Table.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Table.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Table.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Index" (go.GoType.MapType go.uint64 go.uint64)),
 (go.field_decl.FieldDecl go!"File" _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty)]
 
-@[irreducible] noncomputable def Table.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Table.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Table.fieldsUnsealed
 
-noncomputable instance equals_unfold_Table [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Table [GooseExts] [GoGlobalContext] :
     EqualsUnfold Table.fields Table.fieldsUnsealed :=
   ⟨by unfold Table.fields; rfl⟩
 
-@[reducible] noncomputable def Table.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Table.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Table.fields)
 
-class Table.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Table.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Table.underlying Table
   underlying : go.UnderlyingDirectedEq Table.ty Table.underlying
   get_Index : ∀ (x : Table), go.IsGoStepPureDetTagged under (StructFieldGet Table.underlying go!"Index") #x (Val #(x.Index'))
@@ -1623,29 +1623,29 @@ attribute [instance] Table.TypeAssumptions.type_repr
   Table.TypeAssumptions.get_File
   Table.TypeAssumptions.set_File
 
-structure Entry [FfiSyntax] where
+structure Entry [GooseExts] where
   mk ::
   Key' : w64
   Value' : GoSlice
 
-noncomputable instance Entry.zero_val [FfiSyntax] : ZeroVal Entry :=
+noncomputable instance Entry.zero_val [GooseExts] : ZeroVal Entry :=
   ⟨Entry.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Entry.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Entry.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Key" go.uint64),
 (go.field_decl.FieldDecl go!"Value" (go.GoType.SliceType go.byte))]
 
-@[irreducible] noncomputable def Entry.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Entry.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Entry.fieldsUnsealed
 
-noncomputable instance equals_unfold_Entry [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Entry [GooseExts] [GoGlobalContext] :
     EqualsUnfold Entry.fields Entry.fieldsUnsealed :=
   ⟨by unfold Entry.fields; rfl⟩
 
-@[reducible] noncomputable def Entry.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Entry.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Entry.fields)
 
-class Entry.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Entry.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Entry.underlying Entry
   underlying : go.UnderlyingDirectedEq Entry.ty Entry.underlying
   get_Key : ∀ (x : Entry), go.IsGoStepPureDetTagged under (StructFieldGet Entry.underlying go!"Key") #x (Val #(x.Key'))
@@ -1660,29 +1660,29 @@ attribute [instance] Entry.TypeAssumptions.type_repr
   Entry.TypeAssumptions.get_Value
   Entry.TypeAssumptions.set_Value
 
-structure lazyFileBuf [FfiSyntax] where
+structure lazyFileBuf [GooseExts] where
   mk ::
   offset' : w64
   next' : GoSlice
 
-noncomputable instance lazyFileBuf.zero_val [FfiSyntax] : ZeroVal lazyFileBuf :=
+noncomputable instance lazyFileBuf.zero_val [GooseExts] : ZeroVal lazyFileBuf :=
   ⟨lazyFileBuf.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def lazyFileBuf.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def lazyFileBuf.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"offset" go.uint64),
 (go.field_decl.FieldDecl go!"next" (go.GoType.SliceType go.byte))]
 
-@[irreducible] noncomputable def lazyFileBuf.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def lazyFileBuf.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   lazyFileBuf.fieldsUnsealed
 
-noncomputable instance equals_unfold_lazyFileBuf [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_lazyFileBuf [GooseExts] [GoGlobalContext] :
     EqualsUnfold lazyFileBuf.fields lazyFileBuf.fieldsUnsealed :=
   ⟨by unfold lazyFileBuf.fields; rfl⟩
 
-@[reducible] noncomputable def lazyFileBuf.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def lazyFileBuf.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType lazyFileBuf.fields)
 
-class lazyFileBuf.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class lazyFileBuf.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying lazyFileBuf.underlying lazyFileBuf
   underlying : go.UnderlyingDirectedEq lazyFileBuf.ty lazyFileBuf.underlying
   get_offset : ∀ (x : lazyFileBuf), go.IsGoStepPureDetTagged under (StructFieldGet lazyFileBuf.underlying go!"offset") #x (Val #(x.offset'))
@@ -1697,29 +1697,29 @@ attribute [instance] lazyFileBuf.TypeAssumptions.type_repr
   lazyFileBuf.TypeAssumptions.get_next
   lazyFileBuf.TypeAssumptions.set_next
 
-structure bufFile [FfiSyntax] where
+structure bufFile [GooseExts] where
   mk ::
   file' : _root_.Perennial.github_com.goose_lang.primitive.filesys.File
   buf' : Loc
 
-noncomputable instance bufFile.zero_val [FfiSyntax] : ZeroVal bufFile :=
+noncomputable instance bufFile.zero_val [GooseExts] : ZeroVal bufFile :=
   ⟨bufFile.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def bufFile.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def bufFile.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"file" _root_.Perennial.github_com.goose_lang.primitive.filesys.File.ty),
 (go.field_decl.FieldDecl go!"buf" (go.GoType.PointerType (go.GoType.SliceType go.byte)))]
 
-@[irreducible] noncomputable def bufFile.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def bufFile.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   bufFile.fieldsUnsealed
 
-noncomputable instance equals_unfold_bufFile [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_bufFile [GooseExts] [GoGlobalContext] :
     EqualsUnfold bufFile.fields bufFile.fieldsUnsealed :=
   ⟨by unfold bufFile.fields; rfl⟩
 
-@[reducible] noncomputable def bufFile.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def bufFile.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType bufFile.fields)
 
-class bufFile.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class bufFile.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying bufFile.underlying bufFile
   underlying : go.UnderlyingDirectedEq bufFile.ty bufFile.underlying
   get_file : ∀ (x : bufFile), go.IsGoStepPureDetTagged under (StructFieldGet bufFile.underlying go!"file") #x (Val #(x.file'))
@@ -1734,33 +1734,33 @@ attribute [instance] bufFile.TypeAssumptions.type_repr
   bufFile.TypeAssumptions.get_buf
   bufFile.TypeAssumptions.set_buf
 
-structure tableWriter [FfiSyntax] where
+structure tableWriter [GooseExts] where
   mk ::
   index' : GoMap
   name' : GoString
   file' : bufFile
   offset' : Loc
 
-noncomputable instance tableWriter.zero_val [FfiSyntax] : ZeroVal tableWriter :=
+noncomputable instance tableWriter.zero_val [GooseExts] : ZeroVal tableWriter :=
   ⟨tableWriter.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def tableWriter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def tableWriter.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"index" (go.GoType.MapType go.uint64 go.uint64)),
 (go.field_decl.FieldDecl go!"name" go.string),
 (go.field_decl.FieldDecl go!"file" bufFile.ty),
 (go.field_decl.FieldDecl go!"offset" (go.GoType.PointerType go.uint64))]
 
-@[irreducible] noncomputable def tableWriter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def tableWriter.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   tableWriter.fieldsUnsealed
 
-noncomputable instance equals_unfold_tableWriter [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_tableWriter [GooseExts] [GoGlobalContext] :
     EqualsUnfold tableWriter.fields tableWriter.fieldsUnsealed :=
   ⟨by unfold tableWriter.fields; rfl⟩
 
-@[reducible] noncomputable def tableWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def tableWriter.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType tableWriter.fields)
 
-class tableWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class tableWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying tableWriter.underlying tableWriter
   underlying : go.UnderlyingDirectedEq tableWriter.ty tableWriter.underlying
   get_index : ∀ (x : tableWriter), go.IsGoStepPureDetTagged under (StructFieldGet tableWriter.underlying go!"index") #x (Val #(x.index'))
@@ -1783,7 +1783,7 @@ attribute [instance] tableWriter.TypeAssumptions.type_repr
   tableWriter.TypeAssumptions.get_offset
   tableWriter.TypeAssumptions.set_offset
 
-structure Database [FfiSyntax] where
+structure Database [GooseExts] where
   mk ::
   wbuffer' : Loc
   rbuffer' : Loc
@@ -1793,10 +1793,10 @@ structure Database [FfiSyntax] where
   tableL' : Loc
   compactionL' : Loc
 
-noncomputable instance Database.zero_val [FfiSyntax] : ZeroVal Database :=
+noncomputable instance Database.zero_val [GooseExts] : ZeroVal Database :=
   ⟨Database.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Database.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Database.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"wbuffer" (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))),
 (go.field_decl.FieldDecl go!"rbuffer" (go.GoType.PointerType (go.GoType.MapType go.uint64 (go.GoType.SliceType go.byte)))),
 (go.field_decl.FieldDecl go!"bufferL" (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)),
@@ -1805,17 +1805,17 @@ noncomputable instance Database.zero_val [FfiSyntax] : ZeroVal Database :=
 (go.field_decl.FieldDecl go!"tableL" (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty)),
 (go.field_decl.FieldDecl go!"compactionL" (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty))]
 
-@[irreducible] noncomputable def Database.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Database.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Database.fieldsUnsealed
 
-noncomputable instance equals_unfold_Database [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Database [GooseExts] [GoGlobalContext] :
     EqualsUnfold Database.fields Database.fieldsUnsealed :=
   ⟨by unfold Database.fields; rfl⟩
 
-@[reducible] noncomputable def Database.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Database.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Database.fields)
 
-class Database.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Database.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Database.underlying Database
   underlying : go.UnderlyingDirectedEq Database.ty Database.underlying
   get_wbuffer : ∀ (x : Database), go.IsGoStepPureDetTagged under (StructFieldGet Database.underlying go!"wbuffer") #x (Val #(x.wbuffer'))
@@ -1850,7 +1850,7 @@ attribute [instance] Database.TypeAssumptions.type_repr
   Database.TypeAssumptions.get_compactionL
   Database.TypeAssumptions.set_compactionL
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Table_instance : Table.TypeAssumptions
   Entry_instance : Entry.TypeAssumptions
   lazyFileBuf_instance : lazyFileBuf.TypeAssumptions

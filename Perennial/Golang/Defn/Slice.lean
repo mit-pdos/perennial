@@ -8,13 +8,13 @@ public import Perennial.Golang.Defn.Predeclared
 
 namespace Perennial
 
-def sliceIndexRef [FfiSyntax] [GoSemanticsFunctions] (elem_type : Type) (i : Int) (s : GoSlice) :
+def sliceIndexRef [GooseExts] [GoSemanticsFunctions] (elem_type : Type) (i : Int) (s : GoSlice) :
     Loc :=
   arrayIndexRef elem_type i s.ptr
 
 namespace slice
 section goose_lang
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
 
 set_option linter.iris.dupNamespace false in
 def slice (sl : GoSlice) (V : Type) (low high : U64) : GoSlice :=
@@ -62,7 +62,7 @@ attribute [irreducible] slice.forRange
 
 namespace go
 section defs
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext]
 
 def arrayLiteralSize (kvs : List keyed_element) : Int :=
   let (last, m) := (List.foldl (fun (cur_index, max_so_far) ke =>

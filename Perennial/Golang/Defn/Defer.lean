@@ -7,7 +7,7 @@ public import Perennial.Golang.Defn.Exception
 namespace Perennial
 
 section defn
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 abbrev deferType : go.GoType := go.FunctionType (go.Signature [] false [])
 

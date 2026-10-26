@@ -140,7 +140,7 @@ do not apply. These are stated for any instance. -/
   by_cases hp : p <;> simp [hp]
 
 section into_val_eq
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- `#a = #b` iff `a = b`, for a Go type with an injective `intoVal` (e.g.
 `decide (#false = #true)` becomes `false`). -/
@@ -202,7 +202,7 @@ dsimproc [goose_wp_simp_extra] gooseIntReduceToNat (Int.toNat _) := Int.reduceTo
 
 attribute [goose_wp_simp_extra] List.set_cons_zero List.set_cons_succ List.set_nil
 
-@[goose_wp_simp_extra] theorem zeroVal_interface_nil [FfiSyntax] [GoLocalContext] :
+@[goose_wp_simp_extra] theorem zeroVal_interface_nil [GooseExts] [GoLocalContext] :
     (zero_val GoInterface) = interface.nil := rfl
 
 

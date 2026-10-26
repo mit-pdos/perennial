@@ -21,86 +21,86 @@ end pkg_id
 
 namespace crypto.ed25519
 
-noncomputable def PublicKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def PublicKey.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"crypto/ed25519.PublicKey" [])
 
 attribute [irreducible] PublicKey.ty
 
-noncomputable def PrivateKey.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def PrivateKey.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"crypto/ed25519.PrivateKey" [])
 
 attribute [irreducible] PrivateKey.ty
 
-noncomputable def Options.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Options.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"crypto/ed25519.Options" [])
 
 attribute [irreducible] Options.ty
 
-axiom Options.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom Options.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom PublicKeySize [FfiSyntax] [GoGlobalContext] : val
+axiom PublicKeySize [GooseExts] [GoGlobalContext] : val
 
-axiom PrivateKeySize [FfiSyntax] [GoGlobalContext] : val
+axiom PrivateKeySize [GooseExts] [GoGlobalContext] : val
 
-axiom SignatureSize [FfiSyntax] [GoGlobalContext] : val
+axiom SignatureSize [GooseExts] [GoGlobalContext] : val
 
-axiom SeedSize [FfiSyntax] [GoGlobalContext] : val
+axiom SeedSize [GooseExts] [GoGlobalContext] : val
 
-noncomputable def privateKeyCache [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def privateKeyCache [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.privateKeyCache"
 
-noncomputable def cryptocustomrand [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cryptocustomrand [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.cryptocustomrand"
 
-noncomputable def GenerateKey [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def GenerateKey [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.GenerateKey"
 
-noncomputable def NewKeyFromSeed [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewKeyFromSeed [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.NewKeyFromSeed"
 
-noncomputable def newKeyFromSeed [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def newKeyFromSeed [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.newKeyFromSeed"
 
-noncomputable def Sign [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Sign [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.Sign"
 
-noncomputable def sign [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def sign [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.sign"
 
-noncomputable def Verify [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Verify [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.Verify"
 
-noncomputable def VerifyWithOptions [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def VerifyWithOptions [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.VerifyWithOptions"
 
 noncomputable instance info' : PkgInfo pkg_id.crypto.ed25519 where
   pkgImportedPkgs := []
 
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.crypto.ed25519)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (App (Val cryptocustomrand.init) (Val #())))))))
 
-abbrev PublicKey [FfiSyntax] : Type := GoSlice
+abbrev PublicKey [GooseExts] : Type := GoSlice
 
-@[reducible] noncomputable def PublicKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def PublicKey.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.byte)
 
-class PublicKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class PublicKey.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq PublicKey.ty PublicKey.underlying
 
 attribute [instance] PublicKey.TypeAssumptions.underlying
 
-abbrev PrivateKey [FfiSyntax] : Type := GoSlice
+abbrev PrivateKey [GooseExts] : Type := GoSlice
 
-@[reducible] noncomputable def PrivateKey.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def PrivateKey.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.byte)
 
-class PrivateKey.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class PrivateKey.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq PrivateKey.ty PrivateKey.underlying
 
 attribute [instance] PrivateKey.TypeAssumptions.underlying
@@ -109,7 +109,7 @@ axiom Options : Type
 axiom Options.zero_val : ZeroVal Options
 attribute [instance] Options.zero_val
 
-class Options.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Options.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Options.underlying Options
   underlying : go.UnderlyingDirectedEq Options.ty Options.underlying
   isUnderlying : go.IsUnderlying Options.underlying Options.underlying
@@ -118,7 +118,7 @@ attribute [instance] Options.TypeAssumptions.type_repr
   Options.TypeAssumptions.underlying
   Options.TypeAssumptions.isUnderlying
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   PublicKey_instance : PublicKey.TypeAssumptions
   PrivateKey_instance : PrivateKey.TypeAssumptions
   Options_instance : Options.TypeAssumptions

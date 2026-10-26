@@ -44,12 +44,12 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
 namespace time
 
-instance Time.countable [FfiSyntax] : Pos.Countable time.Time :=
+instance Time.countable [GooseExts] : Pos.Countable time.Time :=
   .ofInjective (fun t => Pos.Countable.encode (t.wall', t.ext', t.loc'))
     (by rintro ⟨a, b, c⟩ ⟨d, e, f⟩ h; have h := Pos.encode_inj h; simp_all)
 
 section wps
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
@@ -95,7 +95,7 @@ allocates, or a copy of one, is not one. Its meaning is fixed by the axioms that
 opaque newTimerMade {GF : BundledGFunctors} (t : Loc) : IProp GF := iprop(False)
 
 section chan_defs
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]

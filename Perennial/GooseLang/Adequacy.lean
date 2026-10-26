@@ -2,11 +2,14 @@
 Adequacy for GooseLang (non-crash, "failstop").
 
 Notes:
-* No crash logic: `FfiInterpAdequacy` has no crash obligations. The adequacy
-  theorem is the plain (non-recovery) one, built on iris-lean's `wp_adequacy`.
-* `ffiGlobalStart`/`ffiLocalStart` are fields of `FfiInterpAdequacy`, not of
-  `FfiInterp` (`Lifting.lean`).
-* The ghost-state preconditions are the class `GooseGpreS ffi GF`, assumed
+* No crash logic: extensions (`ExtInterp`) have no crash obligations. The
+  adequacy theorem is the plain (non-recovery) one, built on iris-lean's
+  `wp_adequacy`.
+* The theorems are generic over the closed list of extensions: they allocate
+  each extension's ghost state (`ExtInterp.global_init`/`local_init`) and hand
+  the program the start resources of all of them (`extsGlobalStart`,
+  `extsLocalStart`).
+* The ghost-state preconditions are the class `GooseGpreS GF`, assumed
   directly by the adequacy theorems.
 * Later credits are part of iris-lean's `InvGpreS`.
 * Time receipts. The program logic is built for the step-bounded
@@ -53,35 +56,33 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std ProofMode Language.Notation
 
 attribute [local instance] GSet.lawfulSet
 
-/-- What an FFI must provide to obtain an adequacy theorem: how to allocate its
-ghost state for valid initial states. -/
-class FfiInterpAdequacy (ffi : FfiModel) [FFI : FfiInterp ffi] where
-  ffiGpreS : BundledGFunctors → Type
-  ffi_initgP : ffi_global_state → Prop
-  /-- Valid local starting states may depend on whatever the current global
-  state is. -/
-  ffi_initP : ffi_state → ffi_global_state → Prop
-  /-- Resources handed to the program for the initial global FFI state. -/
-  ffiGlobalStart : ∀ {GF : BundledGFunctors}, @ffiGlobalGS ffi FFI GF → ffi_global_state → IProp GF
-  /-- Resources handed to the program for the initial local FFI state. -/
-  ffiLocalStart : ∀ {GF : BundledGFunctors}, @ffiLocalGS ffi FFI GF → ffi_state → IProp GF
-  ffi_global_init : ∀ (GF : BundledGFunctors) (_hPre : ffiGpreS GF) (g : ffi_global_state),
-    ffi_initgP g →
-    ⊢@{IProp GF} |==> ∃ hG : @ffiGlobalGS ffi FFI GF, ffiGlobalCtx hG g ∗ ffiGlobalStart hG g
-  ffi_local_init : ∀ (GF : BundledGFunctors) (_hPre : ffiGpreS GF) (σ : ffi_state)
-    (g : ffi_global_state), ffi_initP σ g →
-    ⊢@{IProp GF} |==> ∃ hL : @ffiLocalGS ffi FFI GF, ffiLocalCtx hL σ ∗ ffiLocalStart hL σ
+section exts
+variable [GooseExts] [GooseInterp] {hlc : HasLC} {GF : BundledGFunctors}
 
-export FfiInterpAdequacy (ffiGpreS ffi_initgP ffi_initP ffiGlobalStart ffiLocalStart
-  ffi_global_init ffi_local_init)
+/-- The initial global states of the extensions are valid. -/
+abbrev extsInitgP (g : ExtsGlobalState exts) : Prop := Exts.initgP exts GooseInterp.interps g
+
+/-- The initial local states of the extensions are valid. -/
+abbrev extsInitP (σ : ExtsLocalState exts) (g : ExtsGlobalState exts) : Prop :=
+  Exts.initP exts GooseInterp.interps σ g
+
+/-- The resources of the extensions' initial global states. -/
+abbrev extsGlobalStart [G : GooseGlobalGS hlc GF] (g : ExtsGlobalState exts) : IProp GF :=
+  Exts.globalStart exts GooseInterp.interps G.gooseExtsGlobalGS g
+
+/-- The resources of the extensions' initial local states. -/
+abbrev extsLocalStart [L : GooseLocalGS GF] (σ : ExtsLocalState exts) : IProp GF :=
+  Exts.localStart exts GooseInterp.interps L.gooseExtsLocalGS σ
+
+end exts
 
 /-- The ghost state needed to instantiate the GooseLang program logic. -/
-class GooseGpreS [ext : FfiSyntax] (ffi : FfiModel) [FfiInterp ffi] [FfiInterpAdequacy ffi]
-    (GF : BundledGFunctors) where
+class GooseGpreS [GooseExts] [GooseInterp] (GF : BundledGFunctors) where
   goose_preG_iris : InvGpreS GF
   goose_preG_heap : NaHeapGpreS Loc val GF
   goose_preG_proph : prophMapPreS proph_id val GF (GMap proph_id)
-  goosePreGFfi : ffiGpreS (ffi := ffi) GF
+  /-- the ghost state of the extensions -/
+  goosePreGExts : Exts.PreG exts GooseInterp.interps GF
   goose_preG_go_state : GoStatePreG GF
   /-- The `allG GF` of the `HeapGS` to be allocated (`GooseGlobalGS.gooseAllG`),
   from which the receipt and thread ghost state are allocated; not an instance,
@@ -92,23 +93,23 @@ attribute [reducible, instance] GooseGpreS.goose_preG_iris GooseGpreS.goose_preG
   GooseGpreS.goose_preG_proph GooseGpreS.goose_preG_go_state
 
 section adequacy
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiInterpAdequacy ffi]
-variable [FfiSemantics ext ffi] [GoGlobalContext]
+variable [GooseExts] [GooseInterp]
+variable [GooseSemantics] [GoGlobalContext]
 variable {GF : BundledGFunctors}
 
 /-- Allocate all of GooseLang's ghost state for an initial configuration, and
 run a WP proof under it. This is the common core of the adequacy theorems. -/
-theorem goose_init [hPre : GooseGpreS ffi GF] [Hinv : InvGS_gen .hasLC GF]
+theorem goose_init [hPre : GooseGpreS GF] [Hinv : InvGS_gen .hasLC GF]
     (N T : Nat) (hN : 0 < N) (hT : 1 < T) (σ : state) (g : GlobalState) (κs : List Observation)
-    (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
     (P : HeapGS .hasLC GF → IProp GF)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       hG.goose_globalGS.gooseInvGS = Hinv →
       receiptBound GF = N →
       threadBound GF = T →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
-        ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
+        extsLocalStart (GF := GF) σ.world -∗
         ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗ P hG) :
     ⊢@{IProp GF} |={⊤}=> ∃ hG : HeapGS .hasLC GF,
       ⌜hG.goose_globalGS.gooseInvGS = Hinv⌝ ∗
@@ -117,8 +118,8 @@ theorem goose_init [hPre : GooseGpreS ffi GF] [Hinv : InvGS_gen .hasLC GF]
     (hG := ⟨hPre.goose_preG_heap.na_heap_preG_inG, default⟩) tls σ.heap with ⟨%hHeap, Hh⟩
   imod ProphMap.init (H := GMap proph_id) (V := val) κs g.usedProphId with ⟨%hProph, Hp⟩
   imod goState_init hPre.goose_preG_go_state σ.goState.packageState with ⟨%γ, Hgs, Hgs'⟩
-  imod ffi_global_init GF hPre.goosePreGFfi g.globalWorld Hinitg with ⟨%hFG, Hgctx, Hgstart⟩
-  imod ffi_local_init GF hPre.goosePreGFfi σ.world g.globalWorld Hinit
+  imod Exts.global_init exts _ hPre.goosePreGExts g.globalWorld Hinitg with ⟨%hFG, Hgctx, Hgstart⟩
+  imod Exts.local_init exts _ hPre.goosePreGExts σ.world g.globalWorld Hinit
     with ⟨%hFL, Hlctx, Hlstart⟩
   letI := hPre.goosePreGAllG
   imod receipt_init N hN with ⟨%γR, %γL, HR⟩
@@ -144,20 +145,20 @@ theorem goose_init [hPre : GooseGpreS ffi GF] [Hinv : InvGS_gen .hasLC GF]
 
 /-- Adequacy of the bounded GooseLang language (the one the program logic is
 built for): a WP proved for `e` under any instantiation of the GooseLang ghost
-state with time-receipt bound `N` and thread bound `T` (given the FFI's start
+state with time-receipt bound `N` and thread bound `T` (given the extensions' start
 resources, the initial package state and the main thread's token) implies that
 `e` does not get stuck and its result satisfies `φ`, in the bounded semantics
 started with step fuel `N - 1` and thread fuel `T - 2`. See `goose_adequacy`
 for the real semantics. -/
-theorem goose_adequacy_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < N) (hT : 1 < T)
+theorem goose_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < N) (hT : 1 < T)
     (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
-    (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
-        ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
+        extsLocalStart (GF := GF) σ.world -∗
         ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }}) :
     adequate Stuckness.NotStuck e (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState) (fun v _ => φ v) := by
@@ -171,7 +172,7 @@ theorem goose_adequacy_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < N)
   iexists (fun σ κs => gooseBstateInterp (G := hG.goose_globalGS) (L := hG.goose_localGS) σ κs)
   iexists (fun v => iprop(⌜val.isPanic v = false⌝))
   iframe Hσ
-  obtain ⟨⟨Ginv, Gproph, Gffi, Grcpt, Gthr⟩, L⟩ := hG
+  obtain ⟨⟨Ginv, Gproph, Gext, Grcpt, Gthr⟩, L⟩ := hG
   cases HinvEq
   iexact Hwp
 
@@ -179,16 +180,16 @@ theorem goose_adequacy_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < N)
 postcondition `φ` excludes panics (`hφ`; the convention for the main thread is
 `φ (PanicV _) = False`), and a forked thread's final value satisfies `forkPost`
 (`goose_irisGS`), which excludes panics (`wp_fork`). -/
-theorem goose_adequacy_nopanic_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < N)
+theorem goose_adequacy_nopanic_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < N)
     (hT : 1 < T) (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
     (hφ : ∀ p, ¬ φ (PanicV p))
-    (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
-        ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
+        extsLocalStart (GF := GF) σ.world -∗
         ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
     {n : Nat} {κs : List Observation} {t2 : List Expr} {σ2 : BcfgState}
@@ -207,7 +208,7 @@ theorem goose_adequacy_nopanic_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN 
   iexists (fun v => iprop(⌜val.isPanic v = false⌝))
   iexists (fun _ _ _ _ => fupd_intro)
   iframe Hσ
-  obtain ⟨⟨Ginv, Gproph, Gffi, Grcpt, Gthr⟩, L⟩ := hG
+  obtain ⟨⟨Ginv, Gproph, Gext, Grcpt, Gthr⟩, L⟩ := hG
   cases HinvEq
   isplitl [Hwp]
   · iapply BigSepL2.bigSepL2_singleton.2
@@ -231,16 +232,16 @@ theorem goose_adequacy_nopanic_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN 
 /-- No thread of the bounded semantics has an unrecovered panic
 (`UnrecoveredPanic`): such a thread would unwind to `PanicV p` without using fuel
 (`unrecoveredPanic_steps`), contradicting `goose_adequacy_nopanic_blang`. -/
-theorem goose_no_unrecovered_panic_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < N)
+theorem goose_no_unrecovered_panic_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < N)
     (hT : 1 < T) (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
     (hφ : ∀ p, ¬ φ (PanicV p))
-    (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
-        ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
+        extsLocalStart (GF := GF) σ.world -∗
         ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
     {n : Nat} {κs : List Observation} {t2 : List Expr} {σ2 : BcfgState}
@@ -271,15 +272,15 @@ postcondition `φ` that excludes panics (`hφ`), then in every real execution of
 * no thread has an unrecovered panic (`UnrecoveredPanic`): no thread has ended
   in a panic `PanicV p`, and none is unwinding one through frames none of which
   is a `Catch`. -/
-theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
+theorem goose_adequacy [hPre : GooseGpreS GF] (N T : Nat)
     (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
-    (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
-        ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
+        extsLocalStart (GF := GF) σ.world -∗
         ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
     (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)
@@ -302,20 +303,20 @@ theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
   · exact goose_no_unrecovered_panic_blang N T (by omega) hT e σ g φ hφ Hinitg Hinit Hwp Hb
 
 /-- Invariance for the bounded language: under the same hypotheses as
-`goose_adequacy`, a state property that follows from the FFI's global
+`goose_adequacy`, a state property that follows from the extensions' global
 interpretation holds in every reachable configuration of the bounded semantics. -/
-theorem goose_invariance_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < N) (hT : 1 < T)
-    (e : Expr) (σ : state) (g : GlobalState) (φinv : ffi_global_state → Prop)
-    (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+theorem goose_invariance_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < N) (hT : 1 < T)
+    (e : Expr) (σ : state) (g : GlobalState) (φinv : ExtsGlobalState exts → Prop)
+    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
-        ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
+        extsLocalStart (GF := GF) σ.world -∗
         ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ _v, True }} ∗
-        (∀ g', ffiGlobalCtx (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g' ={⊤,∅}=∗ ⌜φinv g'⌝))
+        (∀ g', extsGlobalCtx (GF := GF) g' ={⊤,∅}=∗ ⌜φinv g'⌝))
     {t2 : List Expr} {σ2 : BcfgState}
     (Hsteps : ([e], (((σ, g), ⟨N - 1, T - 2⟩) : BcfgState)) -·->ₜₚ* (t2, σ2)) :
     φinv σ2.1.2.globalWorld := by
@@ -324,14 +325,14 @@ theorem goose_invariance_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < 
   intro Hinv κs
   imod goose_init (Hinv := Hinv) N T hN hT σ g κs Hinitg Hinit
     (fun (_ : HeapGS .hasLC GF) => iprop(WP e @ Stuckness.NotStuck; ⊤ {{ _v, True }} ∗
-        (∀ g', ffiGlobalCtx (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g' ={⊤,∅}=∗ ⌜φinv g'⌝)))
+        (∀ g', extsGlobalCtx (GF := GF) g' ={⊤,∅}=∗ ⌜φinv g'⌝)))
     (@fun hG HinvEq HN HT Hlctx => by subst HinvEq; exact Hwp (hG := hG) HN HT Hlctx)
     with ⟨%hG, %HinvEq, Hσ, Hwp, Hφ⟩
   imodintro
   iexists (fun σ κs _ => gooseBstateInterp (G := hG.goose_globalGS) (L := hG.goose_localGS) σ κs)
   iexists (fun v => iprop(⌜val.isPanic v = false⌝))
   iframe Hσ
-  obtain ⟨⟨Ginv, Gproph, Gffi, Grcpt, Gthr⟩, L⟩ := hG
+  obtain ⟨⟨Ginv, Gproph, Gext, Grcpt, Gthr⟩, L⟩ := hG
   cases HinvEq
   isplitl [Hwp]
   · iexact Hwp
@@ -342,21 +343,21 @@ theorem goose_invariance_blang [hPre : GooseGpreS ffi GF] (N T : Nat) (hN : 0 < 
   iapply Hφ $$ Hg
 
 /-- Invariance (real semantics): under the same hypotheses as `goose_adequacy`,
-a state property that follows from the FFI's global interpretation holds in
+a state property that follows from the extensions' global interpretation holds in
 every configuration reachable by a real execution of fewer than `N` steps
 along which fewer than `T` threads are live. -/
-theorem goose_invariance [hPre : GooseGpreS ffi GF] (N T : Nat)
-    (e : Expr) (σ : state) (g : GlobalState) (φinv : ffi_global_state → Prop)
-    (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+theorem goose_invariance [hPre : GooseGpreS GF] (N T : Nat)
+    (e : Expr) (σ : state) (g : GlobalState) (φinv : ExtsGlobalState exts → Prop)
+    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
-        ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
+        extsLocalStart (GF := GF) σ.world -∗
         ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ _v, True }} ∗
-        (∀ g', ffiGlobalCtx (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g' ={⊤,∅}=∗ ⌜φinv g'⌝))
+        (∀ g', extsGlobalCtx (GF := GF) g' ={⊤,∅}=∗ ⌜φinv g'⌝))
     {n : Nat} {κs : List Observation} {t2 : List Expr} {σ2 : CfgState}
     (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
     (Hbound : n < N) (Hthreads : g.threads = 1)

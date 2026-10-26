@@ -17,7 +17,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 namespace math.bits
 
 set_option maxRecDepth 100000 in
-theorem len8tab_eq [ext : FfiSyntax] [go_gctx : GoGlobalContext] : ∃ s : GoString, len8tab = #s ∧ s.length = 256 :=
+theorem len8tab_eq [GooseExts] [go_gctx : GoGlobalContext] : ∃ s : GoString, len8tab = #s ∧ s.length = 256 :=
   ⟨_, rfl, rfl⟩
 
 /-- bit length of a byte -/
@@ -31,7 +31,7 @@ theorem len8tab_lookup {s : GoString} (h : s = (List.range 256).map (fun i => W8
 
 -- (one list comparison instead of 256 lookups)
 set_option maxRecDepth 10000 in
-theorem len8tab_exact [FfiSyntax] [GoGlobalContext] :
+theorem len8tab_exact [GooseExts] [GoGlobalContext] :
     ∃ s : GoString, len8tab = #s ∧ s.length = 256 ∧
       ∀ i < 256, s[i]? = some (W8 (blen8 i)) :=
   ⟨_, rfl, rfl, len8tab_lookup (by decide)⟩

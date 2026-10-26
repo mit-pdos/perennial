@@ -12,7 +12,7 @@ namespace Perennial
 
 namespace go
 section defs
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext]
 
 class ArraySemantics [GoSemanticsFunctions] : Prop where
   array_set_step (V : Type) (n : Int) (vs : GoArray V n) (i : w64) (v : V) :
@@ -188,7 +188,7 @@ the key (and the value) and returns the outcome of the loop body (`do:`,
 
 namespace array
 section goose_lang
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
 
 /-- `for k := range x`, `x` an array (or a pointer to one) of length `n`. -/
 def forRangeIndex (n : Int) : val :=

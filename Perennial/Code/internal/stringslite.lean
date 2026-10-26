@@ -21,49 +21,49 @@ end pkg_id
 
 namespace internal.stringslite
 
-noncomputable def HasPrefix [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def HasPrefix [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/stringslite.HasPrefix"
 
-noncomputable def HasSuffix [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def HasSuffix [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/stringslite.HasSuffix"
 
-noncomputable def IndexByte [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def IndexByte [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/stringslite.IndexByte"
 
-noncomputable def Index' [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Index' [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/stringslite.Index"
 
-noncomputable def Cut [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Cut [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/stringslite.Cut"
 
-noncomputable def CutPrefix [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CutPrefix [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/stringslite.CutPrefix"
 
-noncomputable def CutSuffix [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CutSuffix [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/stringslite.CutSuffix"
 
-noncomputable def TrimPrefix [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def TrimPrefix [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/stringslite.TrimPrefix"
 
-noncomputable def TrimSuffix [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def TrimSuffix [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/stringslite.TrimSuffix"
 
-noncomputable def Clone [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Clone [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/stringslite.Clone"
 
 noncomputable instance info' : PkgInfo pkg_id.internal.stringslite where
   pkgImportedPkgs := []
 
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.internal.stringslite)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))))
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Clone_unfold : FuncUnfold Clone [] Clone.impl
 
 attribute [instance] Assumptions.Clone_unfold

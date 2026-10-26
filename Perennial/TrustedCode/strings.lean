@@ -14,7 +14,7 @@ namespace Perennial
 
 namespace strings
 section code
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- `Join(elems, sep)`: the elements of `elems` separated by `sep`. Go's `Join` sums the
 lengths, panics if the total overflows `int`, and copies into a `strings.Builder` (whose

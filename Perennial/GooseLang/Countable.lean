@@ -377,7 +377,7 @@ instance GoInstruction.countable : Pos.Countable GoInstruction :=
 /-! ## Expressions and values -/
 
 section goose_syntax
-variable [FfiSyntax]
+variable [GooseExts]
 
 set_option hygiene false in
 /-- `inj_cases` for GooseLang syntax. -/

@@ -43,7 +43,7 @@ calls. For a Go package with directory `P` (its path as under `Perennial/Code/`:
   these, from the umbrella.
 * **Statements.** A spec is `∀ binders, {{ P }} e {{ Q }}`, all its binders
   (implicit and instance ones too) in the `∀`; the section variables are only the
-  instance block (`ext`, `ffi`, `go_gctx`, `hlc`, `GF`, `hG`, `sem`, `package_sem`,
+  instance block (`[GooseExts] [GooseSemantics] [GooseInterp]`, `go_gctx`, `hlc`, `GF`, `hG`, `sem`, `package_sem`,
   and instances such as `[StorageModel GF]`). `Link.lean` applies a spec as
   `X.spec (GF := GF) (hG := hG)`.
 * **Callees are hypotheses.** A proof takes the spec of every Go function it calls
@@ -909,15 +909,15 @@ satisfies `φ`, that no thread is stuck, and that no thread has an unrecovered
 panic:
 
 ```
-theorem goose_adequacy [hPre : GooseGpreS ffi GF] (N T : Nat)
+theorem goose_adequacy [hPre : GooseGpreS GF] (N T : Nat)
     (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p))
-    (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       receiptBound GF = N →
       threadBound GF = T →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
-        ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
+        extsLocalStart (GF := GF) σ.world -∗
         ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
     (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)
@@ -976,7 +976,7 @@ threads that cannot overflow).
 plus the forked threads that have not exited. `Fork e` spawns the thread
 `e ;; ThreadExit` and increments it; `ThreadExit`, a no-op that is the last
 step of every forked thread, decrements it; no other step changes it
-(`FfiSemantics.ffi_step_threads` for FFI steps). A configuration with only the
+(an extension's step cannot, `extStep_threads`). A configuration with only the
 main thread has `threads = 1`. This is the only change to the trusted
 semantics; goose-generated code never contains `ThreadExit` itself.
 

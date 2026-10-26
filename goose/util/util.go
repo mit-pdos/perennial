@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"sort"
 	"path/filepath"
 	"strings"
 
@@ -22,7 +23,7 @@ import (
 // return extra files, as a map from names (without extension) to contents,
 // which are written in a directory named after the package file (chunks of
 // a large generated proof, see proofgen.Package).
-type PackageTranslator func(io.Writer, *packages.Package, string, bool, declfilter.DeclFilter) map[string]string
+type PackageTranslator func(io.Writer, *packages.Package, []string, bool, declfilter.DeclFilter) map[string]string
 
 func NewPackageConfig(modDir string, needDeps bool) *packages.Config {
 	mode := packages.NeedName | packages.NeedCompiledGoFiles
@@ -80,41 +81,37 @@ func WriteFileIfChanged(name string, data []byte, perm os.FileMode) error {
 	return os.WriteFile(name, data, perm)
 }
 
-var ffiMapping = map[string]string{
+// extMapping maps the Go packages that are implemented with a GooseLang
+// extension to the extension's short name (see glang.LeanExt).
+var extMapping = map[string]string{
 	"github.com/sanjit-bhat/pav/cryptoffi/ffi":   "crypto",
 	"github.com/mit-pdos/gokv/grove_ffi":         "grove",
 	"github.com/goose-lang/primitive/async_disk": "async_disk",
 }
 
-// GetFfi returns the short string corresponding to the FFI used.
-//
-// Returns an empty string if no FFI is used, and panics if multiple FFIs are
-// found.
-func GetFfi(pkg *packages.Package) string {
-	seenFfis := make(map[string]struct{})
+// GetExts returns the short names of the extensions a package uses, directly
+// or through its imports, sorted.
+func GetExts(pkg *packages.Package) []string {
+	seen := make(map[string]struct{})
 	packages.Visit([]*packages.Package{pkg},
 		func(pkg *packages.Package) bool {
-			// the dependencies of an FFI are not considered as being used; this
-			// allows one FFI to be built on top of another
-			if _, ok := ffiMapping[pkg.PkgPath]; ok {
-				return false
-			}
-			return true
+			// the dependencies of an extension's package are not considered as
+			// being used; this allows one extension to be built on top of another
+			_, ok := extMapping[pkg.PkgPath]
+			return !ok
 		},
 		func(pkg *packages.Package) {
-			if ffi, ok := ffiMapping[pkg.PkgPath]; ok {
-				seenFfis[ffi] = struct{}{}
+			if ext, ok := extMapping[pkg.PkgPath]; ok {
+				seen[ext] = struct{}{}
 			}
 		},
 	)
-
-	if len(seenFfis) > 1 {
-		panic(fmt.Sprintf("multiple ffis used %v", seenFfis))
+	var exts []string
+	for ext := range seen {
+		exts = append(exts, ext)
 	}
-	for ffi := range seenFfis {
-		return ffi
-	}
-	return ""
+	sort.Strings(exts)
+	return exts
 }
 
 // ReadConfig reads the filter config toml file for a package
@@ -154,8 +151,7 @@ func Translate(translatePkg PackageTranslator, pkgPatterns []string, outRootDir 
 		}
 		filter := ExtendFilter(pkg, config, declfilter.New(config))
 
-		ffi := GetFfi(pkg)
-		extra := translatePkg(w, pkg, ffi, config.Bootstrap.Enabled, filter)
+		extra := translatePkg(w, pkg, GetExts(pkg), config.Bootstrap.Enabled, filter)
 
 		filePath := path.Join(outRootDir, glang.GoPathToIdentPath(pkg.PkgPath))
 		outDir := path.Dir(filePath)

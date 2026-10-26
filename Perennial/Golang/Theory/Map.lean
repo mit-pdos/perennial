@@ -46,14 +46,14 @@ class MapKeys (K : Type) where
 instance (priority := low) mapKeys_all (K : Type) : MapKeys K := ⟨fun _ => True⟩
 
 /-- Interface keys: `nil`, or a pointer. -/
-instance mapKeys_interface [FfiSyntax] [GoGlobalContext] : MapKeys GoInterface :=
+instance mapKeys_interface [GooseExts] [GoGlobalContext] : MapKeys GoInterface :=
   ⟨fun i => i = interface.nil ∨ ∃ (t : go.GoType) (l : Loc), i = interface.mkOk (go.PointerType t) #l⟩
 
 /-! ## Maps as lists of entries -/
 
 namespace map
 section pure
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 variable {K V : Type} [DecidableEq K]
 
 /-- The id of the entry of key `k` (`freshId` of a key no entry has). -/
@@ -227,7 +227,7 @@ end pure
 end map
 
 noncomputable section defns
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
@@ -345,7 +345,7 @@ scoped notation:50 mref:50 " ↦$ " m:50 => ownMap mref (DFrac.own 1) m
 scoped notation:50 mref:50 " ↦$□ " m:50 => ownMap mref DFrac.discard m
 
 section lemmas
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
@@ -752,7 +752,7 @@ theorem list_nodup_getElem?_inj {α} (l : List α) (h : l.Nodup) (i j : Nat) (a 
   · exact absurd (ej.trans ei.symm) (hp j i hj hi hgt)
 
 section forRange
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]

@@ -21,11 +21,11 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals
 
-noncomputable def f [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def f [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest/externalglobals.f"
 
 /-- go: g.go:7:6 -/
-noncomputable def f.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def f.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -38,14 +38,14 @@ noncomputable def f.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals where
   pkgImportedPkgs := [pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest]
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.externalglobals)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.initialize') (Val #())))))))
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   f_unfold : FuncUnfold f [] f.impl
   import_unittest_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Assumptions
 

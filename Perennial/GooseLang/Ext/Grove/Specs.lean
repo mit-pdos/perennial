@@ -1,5 +1,5 @@
 /-
-Iris reasoning principles for core Grove FFI.
+Iris reasoning principles for the Grove extension.
 
 Notes:
 * No crash reasoning (no restart or crash relation, no post-crash points-to).
@@ -8,8 +8,9 @@ Notes:
   are two `genHeapGS` and possibly two `MonoNatG` in play); definitions pass
   them explicitly.
 * Updates are plain fancy updates `|={E}=>`.
-* `ffiGlobalStart`/`ffiLocalStart` (and the adequacy instance
-  `grove_interp_adequacy`) live in `Perennial/GooseLang/Ffi/GroveFfi/Adequacy.lean`.
+* The ghost state is the `ExtInterp` instance `grove_interp`, with its start
+  resources and allocation (for adequacy, `Perennial/GooseLang/Ext/Grove/Adequacy.lean`).
+* The specs hold for any program whose extensions include Grove (`HasExt groveExt`).
 -/
 module
 
@@ -17,8 +18,8 @@ public import Iris.BI.Lib.GenHeap
 public import Iris.BI.Lib.MonoNat
 public import Perennial.GooseLang.Lifting
 public import Perennial.GooseLang.Countable
-public import Perennial.GooseLang.Ffi.GroveFfi.Impl
-public import Perennial.GooseLang.Ffi.GenHeap
+public import Perennial.GooseLang.Ext.Grove.Impl
+public import Perennial.GooseLang.Ext.GenHeap
 
 @[expose] public section
 
@@ -56,28 +57,15 @@ def groveTimeAuth (hG : GroveGS GF) (t : Nat) : IProp GF :=
 def groveTscAuth (hL : GroveNodeGS GF) (t : Nat) : IProp GF :=
   @MonoNat.auth_own GF hL.groveGPreS.grovePreGTscG hL.groveTscName (.own 1) (MaxNat.ofNat t)
 
-/-- The GooseLang `FfiInterp` for Grove. -/
-@[reducible] def grove_interp : FfiInterp grove_model where
-  ffiGlobalGS := GroveGS
-  ffiLocalGS := GroveNodeGS
-  ffiLocalCtx hL σ :=
-    iprop(groveTscAuth hL σ.groveNodeTsc.toNat ∗
-      genHeapInterp (G := hL.groveGFilesHeapG) σ.groveNodeFiles)
-  ffiGlobalCtx hG g :=
-    iprop(genHeapInterp (G := hG.groveGNetHeapG) g.groveNet ∗
-      groveTimeAuth hG g.groveGlobalTime.toNat)
+/-- The interpretation of a node's state: its TSC and its files. -/
+def groveLocalCtx (hL : GroveNodeGS GF) (σ : GroveNodeState) : IProp GF :=
+  iprop(groveTscAuth hL σ.groveNodeTsc.toNat ∗
+    genHeapInterp (G := hL.groveGFilesHeapG) σ.groveNodeFiles)
 
-theorem grove_interp_global_ctx_eq (hG : GroveGS GF) (g : GroveGlobalState) :
-    grove_interp.ffiGlobalCtx hG g ⊣⊢
-      iprop(genHeapInterp (G := hG.groveGNetHeapG) g.groveNet ∗
-        @MonoNat.auth_own GF hG.groveGTimeG hG.groveTimeName (.own 1)
-          (MaxNat.ofNat g.groveGlobalTime.toNat)) := .rfl
-
-theorem grove_interp_local_ctx_eq (hL : GroveNodeGS GF) (σ : GroveNodeState) :
-    grove_interp.ffiLocalCtx hL σ ⊣⊢
-      iprop(@MonoNat.auth_own GF hL.groveGPreS.grovePreGTscG hL.groveTscName (.own 1)
-          (MaxNat.ofNat σ.groveNodeTsc.toNat) ∗
-        genHeapInterp (G := hL.groveGFilesHeapG) σ.groveNodeFiles) := .rfl
+/-- The interpretation of the global state: the network and the global time. -/
+def groveGlobalCtx (hG : GroveGS GF) (g : GroveGlobalState) : IProp GF :=
+  iprop(genHeapInterp (G := hG.groveGNetHeapG) g.groveNet ∗
+    groveTimeAuth hG g.groveGlobalTime.toNat)
 
 /-- `c c↦ ms`: the network channel `c` has received the messages `ms`. -/
 def chanPointsto (hG : GroveGS GF) (c : Endpoint) (ms : GSet message) : IProp GF :=
@@ -86,6 +74,54 @@ def chanPointsto (hG : GroveGS GF) (c : Endpoint) (ms : GSet message) : IProp GF
 /-- `f f↦{q} c`: the file `f` has contents `c`. -/
 def filePointsto (hL : GroveNodeGS GF) (f : byte_string) (q : DFrac) (c : List w8) : IProp GF :=
   pointsTo (G := hL.groveGFilesHeapG) f q c
+
+open ProofMode in
+theorem grove_global_init (hPre : GroveGpreS GF) (g : GroveGlobalState) :
+    ⊢@{IProp GF} |==> ∃ hG : GroveGS GF, groveGlobalCtx hG g ∗
+      [∗map] e ↦ ms ∈ g.groveNet, chanPointsto hG e ms := by
+  letI := hPre.grovePreGNetHeapG
+  imod genHeap_init (H := GMap Endpoint) g.groveNet with ⟨%names, H1, H2, -⟩
+  imod @MonoNat.own_alloc GF hPre.grovePreGTscG (MaxNat.ofNat g.groveGlobalTime.toNat)
+    with ⟨%γ, Ht, -⟩
+  imodintro
+  iexists (⟨names, γ, hPre.grovePreGTscG⟩ : GroveGS GF)
+  isplitl [H1 Ht]
+  · unfold groveGlobalCtx groveTimeAuth; iframe
+  · unfold chanPointsto; iexact H2
+
+open ProofMode in
+theorem grove_local_init (hPre : GroveGpreS GF) (σ : GroveNodeState) :
+    ⊢@{IProp GF} |==> ∃ hL : GroveNodeGS GF, groveLocalCtx hL σ ∗
+      [∗map] f ↦ c ∈ σ.groveNodeFiles, filePointsto hL f (.own 1) c := by
+  letI := hPre.grovePreGFilesHeapG
+  imod @MonoNat.own_alloc GF hPre.grovePreGTscG (MaxNat.ofNat σ.groveNodeTsc.toNat)
+    with ⟨%γ, Htsc, -⟩
+  imod genHeap_init (H := GMap byte_string) σ.groveNodeFiles with ⟨%names, H1, H2, -⟩
+  imodintro
+  iexists (⟨hPre, γ, names⟩ : GroveNodeGS GF)
+  isplitl [H1 Htsc]
+  · unfold groveLocalCtx groveTscAuth; iframe
+  · unfold filePointsto; iexact H2
+
+end grove
+
+/-- The ghost state of the Grove extension. The program gets ownership of the
+initial network (`c↦`) and of the node's initial files (`f↦`). -/
+instance grove_interp : ExtInterp groveExt where
+  GlobalGS := GroveGS
+  LocalGS := GroveNodeGS
+  localCtx := groveLocalCtx
+  globalCtx := groveGlobalCtx
+  PreG := GroveGpreS
+  initgP _ := True
+  initP _ _ := True
+  globalStart hG g := iprop([∗map] e ↦ ms ∈ g.groveNet, chanPointsto hG e ms)
+  localStart hL σ := iprop([∗map] f ↦ c ∈ σ.groveNodeFiles, filePointsto hL f (.own 1) c)
+  global_init _ hPre g _ := grove_global_init hPre g
+  local_init _ hPre σ _ _ := grove_local_init hPre σ
+
+section grove
+variable {GF : BundledGFunctors}
 
 instance chanPointsto_timeless (hG : GroveGS GF) (c : Endpoint) (ms : GSet message) :
     Timeless (chanPointsto hG c ms) := by
@@ -98,21 +134,20 @@ instance filePointsto_timeless (hL : GroveNodeGS GF) (f : byte_string) (q : DFra
 end grove
 
 section lifting
-attribute [local instance] grove_op grove_model grove_semantics grove_interp
-variable [GoGlobalContext]
+variable [GooseExts] [GooseSemantics] [GooseInterp] [HasExt groveExt] [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable {s : Stuckness} {E : CoPset}
 
-abbrev gooseGroveGS : GroveGS GF := G.gooseFfiGlobalGS
-abbrev gooseGroveNodeGS : GroveNodeGS GF := L.gooseFfiLocalGS
+abbrev gooseGroveGS : GroveGS GF := extGlobalGS groveExt
+abbrev gooseGroveNodeGS : GroveNodeGS GF := extLocalGS groveExt
 
 /- Notations `c c↦ ms`, `f f↦{q} c` and `f f↦ c`. -/
-namespace grove_ffi
+namespace grove_ext
 scoped notation:50 c:51 " c↦ " ms:50 => chanPointsto gooseGroveGS c ms
 scoped notation:50 f:51 " f↦{" q "} " c:50 => filePointsto gooseGroveNodeGS f q c
 scoped notation:50 f:51 " f↦ " c:50 => filePointsto gooseGroveNodeGS f (DFrac.own 1) c
-end grove_ffi
-open grove_ffi
+end grove_ext
+open grove_ext
 
 def chanMetaToken (c : Endpoint) (E : CoPset) : IProp GF :=
   metaToken (G := (gooseGroveGS (G := G)).groveGNetHeapG) c E
@@ -158,76 +193,60 @@ theorem tscLb_weaken (t1 t2 : Nat) (h : t1 ≤ t2) : ⊢ tscLb (L := L) t2 -∗ 
     ((MaxNat.le_toNat _ _).mpr h)
 
 abbrev connectionSocket (c_l : Endpoint) (c_r : Endpoint) : val :=
-  ExtV (ConnectionSocketV c_l c_r)
+  groveV (ConnectionSocketV c_l c_r)
 abbrev listen_socket (c : Endpoint) : val :=
-  ExtV (ListenSocketV c)
+  groveV (ListenSocketV c)
 abbrev badSocket : val :=
-  ExtV BadSocketV
+  groveV BadSocketV
 
 theorem grove_global_ctx_eq (g : GroveGlobalState) :
-    ffiGlobalCtx G.gooseFfiGlobalGS g ⊣⊢
+    ExtInterp.globalCtx (E := groveExt) (extGlobalGS groveExt) g ⊣⊢
       iprop(genHeapInterp (G := (gooseGroveGS (G := G)).groveGNetHeapG) g.groveNet ∗
         groveTimeAuth (gooseGroveGS (G := G)) g.groveGlobalTime.toNat) := .rfl
 
 theorem grove_local_ctx_eq (σ : GroveNodeState) :
-    ffiLocalCtx L.gooseFfiLocalGS σ ⊣⊢
+    ExtInterp.localCtx (E := groveExt) (extLocalGS groveExt) σ ⊣⊢
       iprop(groveTscAuth (gooseGroveNodeGS (L := L)) σ.groveNodeTsc.toNat ∗
         genHeapInterp (G := (gooseGroveNodeGS (L := L)).groveGFilesHeapG)
           σ.groveNodeFiles) := .rfl
 
 open EctxLanguage
 
-/-- The core lifting lemma for Grove operations. -/
+/-- The core lifting lemma for Grove operations: the stutter steps are handled
+here, by Löb induction. -/
 theorem wp_GroveOp (op : GroveOp) (v : val) (Φ : val → IProp GF) (Hv : v.isPanic = false) :
-    ▷ (∀ σ1 g1 e2 σ2 g2, ⌜IsGroveFfiStep op v e2 σ1 σ2 g1 g2⌝ -∗
-        ffiLocalCtx L.gooseFfiLocalGS σ1 -∗ ffiGlobalCtx G.gooseFfiGlobalGS g1 ={E}=∗
-        ffiLocalCtx L.gooseFfiLocalGS σ2 ∗ ffiGlobalCtx G.gooseFfiGlobalGS g2 ∗
+    ▷ (∀ σ1 g1 e2 σ2 g2, ⌜IsGroveStep op v e2 σ1 σ2 g1 g2⌝ -∗
+        ExtInterp.localCtx (E := groveExt) (extLocalGS groveExt) σ1 -∗
+        ExtInterp.globalCtx (E := groveExt) (extGlobalGS groveExt) g1 ={E}=∗
+        ExtInterp.localCtx (E := groveExt) (extLocalGS groveExt) σ2 ∗
+        ExtInterp.globalCtx (E := groveExt) (extGlobalGS groveExt) g2 ∗
         WP e2 @ s; E {{ Φ }})
-    ⊢ WP (ExternalOp op (Val v)) @ s; E {{ Φ }} := by
+    ⊢ WP (ExternalOp (extOp groveExt op) (Val v)) @ s; E {{ Φ }} := by
   iloeb as IH
   iintro HΦ
-  iapply goose_wp_lift_base_step rfl rfl (by not_unwinds)
-  iintro %σ₁ %ns %obs %obs' %nt Hσ
-  icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+  iapply wp_extStep op v Φ Hv
+  iintro %h %σ1 %g1 Hheap Hl Hg
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hclose
   isplitr
   · ipureintro
-    exact ⟨[], _, _, [], BaseStep.ExternalOpS op v _ σ₁ _
-      ⟨σ₁.1.world, σ₁.2.globalWorld, rfl, .inl ⟨rfl, rfl, rfl⟩⟩⟩
+    exact ⟨_, h, σ1, g1, (show GroveStep op v h σ1 g1 _ h σ1 g1 from ⟨rfl, .inl ⟨rfl, rfl, rfl⟩⟩)⟩
   inext
-  iintro %e₂ %σ₂ %eₜ %Hbs Hcred
-  cases Hbs with
-  | ExternalOpS _ _ _ _ _ Hffi_step =>
-  obtain ⟨s', w', rfl, Hcase⟩ := Hffi_step
+  iintro %e' %h' %σ' %g' %Hst _
+  obtain ⟨rfl, Hcase⟩ := (show GroveStep op v h σ1 g1 e' h' σ' g' from Hst)
   imod Hclose
   rcases Hcase with ⟨rfl, rfl, rfl⟩ | Hgrove
   · imodintro
-    isplitl [Hheap Hffi Hgs Hgffi Hproph]
-    · iapply (goose_stateInterp_eq _ _ _ _).mpr
-      dsimp only [List.nil_append]
-      iframe
-      ipureintro; exact Hlctx
-    isplitl [IH HΦ]
-    · iapply IH
-      inext
-      iexact HΦ
-    iapply BigSepL.bigSepL_nil.2
-    itrivial
-  · imod HΦ $$ %_ %_ %_ %_ %_ %Hgrove Hffi Hgffi with ⟨Hffi, Hgffi, Hwp⟩
+    iframe Hheap Hl Hg
+    iapply IH
+    inext
+    iexact HΦ
+  · imod HΦ $$ %_ %_ %_ %_ %_ %Hgrove Hl Hg with ⟨Hl, Hg, Hwp⟩
     imodintro
-    isplitl [Hheap Hffi Hgs Hgffi Hproph]
-    · iapply (goose_stateInterp_eq _ _ _ _).mpr
-      dsimp only [List.nil_append]
-      iframe
-      ipureintro; exact Hlctx
-    iframe Hwp
-    iapply BigSepL.bigSepL_nil.2
-    itrivial
+    iframe
 
 theorem wp_ListenOp (c : w64) :
-    {{ (True : IProp GF) }} (ExternalOp GroveOp.ListenOp (Val (#c))) @ s; E
+    {{ (True : IProp GF) }} (ExternalOp (extOp groveExt GroveOp.ListenOp) (Val (#c))) @ s; E
     {{ RET listen_socket c; True }} := by
   iintro %Φ _ HΦ
   iapply wp_GroveOp
@@ -243,7 +262,7 @@ theorem wp_ListenOp (c : w64) :
   itrivial
 
 theorem wp_ConnectOp (c_r : Endpoint) :
-    {{ (True : IProp GF) }} (ExternalOp GroveOp.ConnectOp (Val (#c_r))) @ s; E
+    {{ (True : IProp GF) }} (ExternalOp (extOp groveExt GroveOp.ConnectOp) (Val (#c_r))) @ s; E
     {{ (err : Bool) (c_l : Endpoint),
       RET PairV (#err) (if err then badSocket else connectionSocket c_l c_r);
       if err then True else c_l c↦ ∅ }} := by
@@ -259,7 +278,7 @@ theorem wp_ConnectOp (c_r : Endpoint) :
     imodintro
     iframe Hl Hg
     iapply wp_value'
-    rw [show PairV (#true) (ExtV BadSocketV) =
+    rw [show PairV (#true) (groveV BadSocketV) =
       PairV (#true) (if true then badSocket else connectionSocket 0 c_r) from rfl]
     iapply HΦ $$ %true %0
     simp only [↓reduceIte]
@@ -274,7 +293,7 @@ theorem wp_ConnectOp (c_r : Endpoint) :
     isplitl [Hnet Htime]
     · iapply (grove_global_ctx_eq _).mpr; unfold groveTimeAuth; iframe
     iapply wp_value'
-    rw [show PairV (#false) (ExtV (ConnectionSocketV c_l c_r)) =
+    rw [show PairV (#false) (groveV (ConnectionSocketV c_l c_r)) =
       PairV (#false) (if false then badSocket else connectionSocket c_l c_r) from rfl]
     iapply HΦ $$ %false %c_l
     simp only [Bool.false_eq_true, ↓reduceIte]
@@ -282,7 +301,7 @@ theorem wp_ConnectOp (c_r : Endpoint) :
     iexact Hc
 
 theorem wp_AcceptOp (c_l : Endpoint) :
-    {{ (True : IProp GF) }} (ExternalOp GroveOp.AcceptOp (Val (listen_socket c_l))) @ s; E
+    {{ (True : IProp GF) }} (ExternalOp (extOp groveExt GroveOp.AcceptOp) (Val (listen_socket c_l))) @ s; E
     {{ (c_r : Endpoint), RET connectionSocket c_l c_r; True }} := by
   iintro %Φ _ HΦ
   iapply wp_GroveOp
@@ -299,7 +318,7 @@ theorem wp_AcceptOp (c_l : Endpoint) :
 
 theorem wp_SendOp (c_l c_r : Endpoint) (ms : GSet message) (data : List w8) :
     {{ (c_r c↦ ms : IProp GF) }}
-      (ExternalOp GroveOp.SendOp (Val (PairV (connectionSocket c_l c_r) (#data)))) @ s; E
+      (ExternalOp (extOp groveExt GroveOp.SendOp) (Val (PairV (connectionSocket c_l c_r) (#data)))) @ s; E
     {{ (err_early err_late : Bool), RET #(err_early || err_late);
        c_r c↦ (if err_early then ms else ms ∪ {[Message c_l data]}) }} := by
   iintro %Φ Hc HΦ
@@ -330,7 +349,7 @@ theorem wp_SendOp (c_l c_r : Endpoint) (ms : GSet message) (data : List w8) :
 
 theorem wp_RecvOp (c_l c_r : Endpoint) (ms : GSet message) :
     {{ (c_l c↦ ms : IProp GF) }}
-      (ExternalOp GroveOp.RecvOp (Val (connectionSocket c_l c_r))) @ s; E
+      (ExternalOp (extOp groveExt GroveOp.RecvOp) (Val (connectionSocket c_l c_r))) @ s; E
     {{ (err : Bool) (data : List w8), RET PairV (#err) (#data);
         ⌜if err then True else Message c_r data ∈ ms⌝ ∗ c_l c↦ ms }} := by
   iintro %Φ Hc HΦ
@@ -364,7 +383,7 @@ theorem wp_RecvOp (c_l c_r : Endpoint) (ms : GSet message) :
     ipureintro; simpa using Hd
 
 theorem wp_FileReadOp (f : GoString) (q : DFrac) (c : List w8) :
-    {{ (f f↦{q} c : IProp GF) }} (ExternalOp GroveOp.FileReadOp (Val (#f))) @ s; E
+    {{ (f f↦{q} c : IProp GF) }} (ExternalOp (extOp groveExt GroveOp.FileReadOp) (Val (#f))) @ s; E
     {{ RET #c; f f↦{q} c }} := by
   iintro %Φ Hc HΦ
   iapply wp_GroveOp
@@ -389,7 +408,7 @@ theorem wp_FileReadOp (f : GoString) (q : DFrac) (c : List w8) :
   iexact Hc
 
 theorem wp_FileWriteOp (f : GoString) (old new : List w8) :
-    {{ (f f↦ old : IProp GF) }} (ExternalOp GroveOp.FileWriteOp (Val (PairV (#f) (#new)))) @ s; E
+    {{ (f f↦ old : IProp GF) }} (ExternalOp (extOp groveExt GroveOp.FileWriteOp) (Val (PairV (#f) (#new)))) @ s; E
     {{ RET #(); f f↦ new }} := by
   iintro %Φ Hc HΦ
   iapply wp_GroveOp
@@ -412,7 +431,7 @@ theorem wp_FileWriteOp (f : GoString) (old new : List w8) :
   iexact Hc
 
 theorem wp_FileAppendOp (f : GoString) (old new : List w8) :
-    {{ (f f↦ old : IProp GF) }} (ExternalOp GroveOp.FileAppendOp (Val (PairV (#f) (#new)))) @ s; E
+    {{ (f f↦ old : IProp GF) }} (ExternalOp (extOp groveExt GroveOp.FileAppendOp) (Val (PairV (#f) (#new)))) @ s; E
     {{ RET #(); f f↦ (old ++ new) }} := by
   iintro %Φ Hc HΦ
   iapply wp_GroveOp
@@ -440,7 +459,7 @@ theorem wp_FileAppendOp (f : GoString) (old new : List w8) :
   iexact Hc
 
 theorem wp_GetTscOp (prev_time : Nat) :
-    {{ tscLb (L := L) prev_time }} (ExternalOp GroveOp.GetTscOp (Val (#()))) @ s; E
+    {{ tscLb (L := L) prev_time }} (ExternalOp (extOp groveExt GroveOp.GetTscOp) (Val (#()))) @ s; E
     {{ (new_time : w64), RET #new_time;
       ⌜prev_time ≤ new_time.toNat⌝ ∗ tscLb new_time.toNat }} := by
   iintro %Φ Hlb HΦ
@@ -469,7 +488,7 @@ theorem wp_GetTscOp (prev_time : Nat) :
 theorem wp_GetTimeRangeOp (Φ : val → IProp GF) :
     ⊢ (∀ (l h t : w64), ⌜t.toNat ≤ h.toNat⌝ -∗ ⌜l.toNat ≤ t.toNat⌝ -∗
         ownTime (G := G) t ={E}=∗ ownTime t ∗ Φ (PairV (#l) (#h))) -∗
-      WP (ExternalOp GroveOp.GetTimeRangeOp (Val (#()))) @ s; E {{ Φ }} := by
+      WP (ExternalOp (extOp groveExt GroveOp.GetTimeRangeOp) (Val (#()))) @ s; E {{ Φ }} := by
   unfold ownTime groveTimeAuth
   iintro HΦ
   iapply wp_GroveOp
@@ -492,31 +511,14 @@ theorem wp_GetTimeRangeOp (Φ : val → IProp GF) :
 theorem wp_time_acc (e : Expr) (Φ : val → IProp GF) (h : toVal e = none) :
     ⊢ (∀ t, ownTime (G := G) t ={E}=∗ ownTime t ∗ WP e @ s; E {{ Φ }}) -∗
       WP e @ s; E {{ Φ }} := by
-  have h' : ToVal.toVal (Val := val) e = none := h
-  unfold ownTime
   iintro Hacc
-  iapply wp_unfold.2
-  unfold wp.pre
-  rw [h']
-  dsimp only
-  iintro %σ₁ %ns %obs %obs' %nt Hσ
-  rcases σ₁ with ⟨σ₁, c⟩
-  icases (goose_bstateInterp_eq σ₁ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc⟩
-  icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
-  icases (grove_global_ctx_eq _).mp $$ Hgffi with ⟨Hnet, Htime⟩
-  imod Hacc $$ %σ₁.2.globalWorld.groveGlobalTime Htime with ⟨Htime, Hwp⟩
-  ihave Hwp := wp_unfold.1 $$ Hwp
-  unfold wp.pre
-  rw [h']
-  dsimp only
-  iapply Hwp $$ %(σ₁, c) %ns %obs %obs' %nt
-  iapply (goose_bstateInterp_eq σ₁ c _ _ _).2
-  iframe Hc
-  iapply (goose_stateInterp_eq _ _ _ _).mpr
-  iframe
-  isplitr
-  · ipureintro; exact Hlctx
+  iapply wp_ext_acc (X := groveExt) e Φ h
+  iintro %σ %g Hl Hg
+  icases (grove_global_ctx_eq g).mp $$ Hg with ⟨Hnet, Htime⟩
+  unfold ownTime
+  imod Hacc $$ %g.groveGlobalTime Htime with ⟨Htime, Hwp⟩
+  imodintro
+  iframe Hl Hwp
   iapply (grove_global_ctx_eq _).mpr
   iframe
 

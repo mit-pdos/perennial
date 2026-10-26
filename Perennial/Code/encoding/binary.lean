@@ -25,134 +25,134 @@ end pkg_id
 
 namespace encoding.binary
 
-noncomputable def ByteOrder.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ByteOrder.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"encoding/binary.ByteOrder" [])
 
 attribute [irreducible] ByteOrder.ty
 
-noncomputable def AppendByteOrder.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def AppendByteOrder.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"encoding/binary.AppendByteOrder" [])
 
 attribute [irreducible] AppendByteOrder.ty
 
-noncomputable def littleEndian.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def littleEndian.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"encoding/binary.littleEndian" [])
 
 attribute [irreducible] littleEndian.ty
 
-noncomputable def bigEndian.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def bigEndian.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"encoding/binary.bigEndian" [])
 
 attribute [irreducible] bigEndian.ty
 
-noncomputable def coder.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def coder.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"encoding/binary.coder" [])
 
 attribute [irreducible] coder.ty
 
-noncomputable def decoder.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def decoder.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"encoding/binary.decoder" [])
 
 attribute [irreducible] decoder.ty
 
-noncomputable def encoder.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def encoder.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"encoding/binary.encoder" [])
 
 attribute [irreducible] encoder.ty
 
-noncomputable def nativeEndian.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def nativeEndian.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"encoding/binary.nativeEndian" [])
 
 attribute [irreducible] nativeEndian.ty
 
-axiom MaxVarintLen16 [FfiSyntax] [GoGlobalContext] : val
+axiom MaxVarintLen16 [GooseExts] [GoGlobalContext] : val
 
-axiom MaxVarintLen32 [FfiSyntax] [GoGlobalContext] : val
+axiom MaxVarintLen32 [GooseExts] [GoGlobalContext] : val
 
-axiom MaxVarintLen64 [FfiSyntax] [GoGlobalContext] : val
+axiom MaxVarintLen64 [GooseExts] [GoGlobalContext] : val
 
-noncomputable def errBufferTooSmall [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def errBufferTooSmall [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.errBufferTooSmall"
 
-noncomputable def LittleEndian [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LittleEndian [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.LittleEndian"
 
-noncomputable def BigEndian [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def BigEndian [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.BigEndian"
 
-noncomputable def structSize [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def structSize [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.structSize"
 
-noncomputable def NativeEndian [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NativeEndian [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.NativeEndian"
 
-noncomputable def errOverflow [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def errOverflow [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.errOverflow"
 
-noncomputable def Read [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Read [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.Read"
 
-noncomputable def Decode [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Decode [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.Decode"
 
-noncomputable def decodeFast [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def decodeFast [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.decodeFast"
 
-noncomputable def Write [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Write [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.Write"
 
-noncomputable def Encode [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Encode [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.Encode"
 
-noncomputable def Append [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Append [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.Append"
 
-noncomputable def encodeFast [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def encodeFast [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.encodeFast"
 
-noncomputable def Size [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Size [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.Size"
 
-noncomputable def dataSize [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def dataSize [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.dataSize"
 
-noncomputable def sizeof [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def sizeof [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.sizeof"
 
-noncomputable def intDataSize [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def intDataSize [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.intDataSize"
 
-noncomputable def ensure [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ensure [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.ensure"
 
-noncomputable def AppendUvarint [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AppendUvarint [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.AppendUvarint"
 
-noncomputable def PutUvarint [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def PutUvarint [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.PutUvarint"
 
-noncomputable def Uvarint [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Uvarint [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.Uvarint"
 
-noncomputable def AppendVarint [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AppendVarint [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.AppendVarint"
 
-noncomputable def PutVarint [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def PutVarint [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.PutVarint"
 
-noncomputable def Varint [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Varint [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.Varint"
 
-noncomputable def ReadUvarint [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadUvarint [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.ReadUvarint"
 
-noncomputable def ReadVarint [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadVarint [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.ReadVarint"
 
 /-- Uint16 returns the uint16 representation of b[0:2].
 
     go: binary.go:69:21 -/
-noncomputable def littleEndian.Uint16.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def littleEndian.Uint16.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (App (Val exceptionDo)
@@ -167,7 +167,7 @@ noncomputable def littleEndian.Uint16.impl [FfiSyntax] [GoGlobalContext] : val :
 /-- PutUint16 stores v into b[0:2].
 
     go: binary.go:75:21 -/
-noncomputable def littleEndian.PutUint16.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def littleEndian.PutUint16.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -192,7 +192,7 @@ noncomputable def littleEndian.PutUint16.impl [FfiSyntax] [GoGlobalContext] : va
 /-- AppendUint16 appends the bytes of v to b and returns the appended slice.
 
     go: binary.go:82:21 -/
-noncomputable def littleEndian.AppendUint16.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def littleEndian.AppendUint16.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -209,7 +209,7 @@ noncomputable def littleEndian.AppendUint16.impl [FfiSyntax] [GoGlobalContext] :
 /-- Uint32 returns the uint32 representation of b[0:4].
 
     go: binary.go:90:21 -/
-noncomputable def littleEndian.Uint32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def littleEndian.Uint32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (App (Val exceptionDo)
@@ -224,7 +224,7 @@ noncomputable def littleEndian.Uint32.impl [FfiSyntax] [GoGlobalContext] : val :
 /-- PutUint32 stores v into b[0:4].
 
     go: binary.go:96:21 -/
-noncomputable def littleEndian.PutUint32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def littleEndian.PutUint32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -257,7 +257,7 @@ noncomputable def littleEndian.PutUint32.impl [FfiSyntax] [GoGlobalContext] : va
 /-- AppendUint32 appends the bytes of v to b and returns the appended slice.
 
     go: binary.go:105:21 -/
-noncomputable def littleEndian.AppendUint32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def littleEndian.AppendUint32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -276,7 +276,7 @@ noncomputable def littleEndian.AppendUint32.impl [FfiSyntax] [GoGlobalContext] :
 /-- Uint64 returns the uint64 representation of b[0:8].
 
     go: binary.go:115:21 -/
-noncomputable def littleEndian.Uint64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def littleEndian.Uint64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (App (Val exceptionDo)
@@ -291,7 +291,7 @@ noncomputable def littleEndian.Uint64.impl [FfiSyntax] [GoGlobalContext] : val :
 /-- PutUint64 stores v into b[0:8].
 
     go: binary.go:122:21 -/
-noncomputable def littleEndian.PutUint64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def littleEndian.PutUint64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -340,7 +340,7 @@ noncomputable def littleEndian.PutUint64.impl [FfiSyntax] [GoGlobalContext] : va
 /-- AppendUint64 appends the bytes of v to b and returns the appended slice.
 
     go: binary.go:135:21 -/
-noncomputable def littleEndian.AppendUint64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def littleEndian.AppendUint64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -361,7 +361,7 @@ noncomputable def littleEndian.AppendUint64.impl [FfiSyntax] [GoGlobalContext] :
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- go: binary.go:148:21 -/
-noncomputable def littleEndian.String.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def littleEndian.String.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -369,7 +369,7 @@ noncomputable def littleEndian.String.impl [FfiSyntax] [GoGlobalContext] : val :
   (Val #(go!"LittleEndian"))))))
 
 /-- go: binary.go:150:21 -/
-noncomputable def littleEndian.GoString.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def littleEndian.GoString.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -379,7 +379,7 @@ noncomputable def littleEndian.GoString.impl [FfiSyntax] [GoGlobalContext] : val
 /-- Uint16 returns the uint16 representation of b[0:2].
 
     go: binary.go:155:18 -/
-noncomputable def bigEndian.Uint16.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def bigEndian.Uint16.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (App (Val exceptionDo)
@@ -394,7 +394,7 @@ noncomputable def bigEndian.Uint16.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- PutUint16 stores v into b[0:2].
 
     go: binary.go:161:18 -/
-noncomputable def bigEndian.PutUint16.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def bigEndian.PutUint16.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -419,7 +419,7 @@ noncomputable def bigEndian.PutUint16.impl [FfiSyntax] [GoGlobalContext] : val :
 /-- AppendUint16 appends the bytes of v to b and returns the appended slice.
 
     go: binary.go:168:18 -/
-noncomputable def bigEndian.AppendUint16.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def bigEndian.AppendUint16.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -436,7 +436,7 @@ noncomputable def bigEndian.AppendUint16.impl [FfiSyntax] [GoGlobalContext] : va
 /-- Uint32 returns the uint32 representation of b[0:4].
 
     go: binary.go:176:18 -/
-noncomputable def bigEndian.Uint32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def bigEndian.Uint32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (App (Val exceptionDo)
@@ -451,7 +451,7 @@ noncomputable def bigEndian.Uint32.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- PutUint32 stores v into b[0:4].
 
     go: binary.go:182:18 -/
-noncomputable def bigEndian.PutUint32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def bigEndian.PutUint32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -484,7 +484,7 @@ noncomputable def bigEndian.PutUint32.impl [FfiSyntax] [GoGlobalContext] : val :
 /-- AppendUint32 appends the bytes of v to b and returns the appended slice.
 
     go: binary.go:191:18 -/
-noncomputable def bigEndian.AppendUint32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def bigEndian.AppendUint32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -503,7 +503,7 @@ noncomputable def bigEndian.AppendUint32.impl [FfiSyntax] [GoGlobalContext] : va
 /-- Uint64 returns the uint64 representation of b[0:8].
 
     go: binary.go:201:18 -/
-noncomputable def bigEndian.Uint64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def bigEndian.Uint64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (App (Val exceptionDo)
@@ -518,7 +518,7 @@ noncomputable def bigEndian.Uint64.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- PutUint64 stores v into b[0:8].
 
     go: binary.go:208:18 -/
-noncomputable def bigEndian.PutUint64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def bigEndian.PutUint64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -567,7 +567,7 @@ noncomputable def bigEndian.PutUint64.impl [FfiSyntax] [GoGlobalContext] : val :
 /-- AppendUint64 appends the bytes of v to b and returns the appended slice.
 
     go: binary.go:221:18 -/
-noncomputable def bigEndian.AppendUint64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def bigEndian.AppendUint64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam "b"
   (Lam "v"
@@ -588,7 +588,7 @@ noncomputable def bigEndian.AppendUint64.impl [FfiSyntax] [GoGlobalContext] : va
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- go: binary.go:234:18 -/
-noncomputable def bigEndian.String.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def bigEndian.String.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -596,7 +596,7 @@ noncomputable def bigEndian.String.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #(go!"BigEndian"))))))
 
 /-- go: binary.go:236:18 -/
-noncomputable def bigEndian.GoString.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def bigEndian.GoString.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
   (App (Val exceptionDo)
@@ -606,9 +606,9 @@ noncomputable def bigEndian.GoString.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.encoding.binary where
   pkgImportedPkgs := [pkg_id.errors, pkg_id.io, pkg_id.math, pkg_id.slices, pkg_id.sync]
 
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.encoding.binary)) (Lam BAnon
   (App (Val exceptionDo)
@@ -649,46 +649,46 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc errOverflow go.error)) (Val #()))))))))
 
-abbrev ByteOrder [FfiSyntax] : Type := GoInterface
+abbrev ByteOrder [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def ByteOrder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def ByteOrder.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"PutUint16" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false [])), (go.InterfaceElem.MethodElem go!"PutUint32" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false [])), (go.InterfaceElem.MethodElem go!"PutUint64" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false [])), (go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Uint16" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint16])), (go.InterfaceElem.MethodElem go!"Uint32" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint32])), (go.InterfaceElem.MethodElem go!"Uint64" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.uint64]))])
 
-class ByteOrder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ByteOrder.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ByteOrder.ty ByteOrder.underlying
 
 attribute [instance] ByteOrder.TypeAssumptions.underlying
 
-abbrev AppendByteOrder [FfiSyntax] : Type := GoInterface
+abbrev AppendByteOrder [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def AppendByteOrder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def AppendByteOrder.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"AppendUint16" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint16] false [(go.GoType.SliceType go.byte)])), (go.InterfaceElem.MethodElem go!"AppendUint32" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint32] false [(go.GoType.SliceType go.byte)])), (go.InterfaceElem.MethodElem go!"AppendUint64" (go.signature.Signature [(go.GoType.SliceType go.byte), go.uint64] false [(go.GoType.SliceType go.byte)])), (go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])
 
-class AppendByteOrder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class AppendByteOrder.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq AppendByteOrder.ty AppendByteOrder.underlying
 
 attribute [instance] AppendByteOrder.TypeAssumptions.underlying
 
-structure littleEndian [FfiSyntax] where
+structure littleEndian [GooseExts] where
   mk ::
 
-noncomputable instance littleEndian.zero_val [FfiSyntax] : ZeroVal littleEndian :=
+noncomputable instance littleEndian.zero_val [GooseExts] : ZeroVal littleEndian :=
   ⟨littleEndian.mk⟩
 
-@[reducible] noncomputable def littleEndian.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def littleEndian.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] noncomputable def littleEndian.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def littleEndian.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   littleEndian.fieldsUnsealed
 
-noncomputable instance equals_unfold_littleEndian [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_littleEndian [GooseExts] [GoGlobalContext] :
     EqualsUnfold littleEndian.fields littleEndian.fieldsUnsealed :=
   ⟨by unfold littleEndian.fields; rfl⟩
 
-@[reducible] noncomputable def littleEndian.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def littleEndian.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType littleEndian.fields)
 
-class littleEndian.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class littleEndian.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying littleEndian.underlying littleEndian
   underlying : go.UnderlyingDirectedEq littleEndian.ty littleEndian.underlying
   AppendUint16_unfold : MethodUnfold littleEndian.ty go!"AppendUint16" littleEndian.AppendUint16.impl
@@ -750,26 +750,26 @@ attribute [instance] littleEndian.TypeAssumptions.type_repr
   littleEndian.TypeAssumptions.ptr_Uint32_unfold
   littleEndian.TypeAssumptions.ptr_Uint64_unfold
 
-structure bigEndian [FfiSyntax] where
+structure bigEndian [GooseExts] where
   mk ::
 
-noncomputable instance bigEndian.zero_val [FfiSyntax] : ZeroVal bigEndian :=
+noncomputable instance bigEndian.zero_val [GooseExts] : ZeroVal bigEndian :=
   ⟨bigEndian.mk⟩
 
-@[reducible] noncomputable def bigEndian.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def bigEndian.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] noncomputable def bigEndian.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def bigEndian.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   bigEndian.fieldsUnsealed
 
-noncomputable instance equals_unfold_bigEndian [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_bigEndian [GooseExts] [GoGlobalContext] :
     EqualsUnfold bigEndian.fields bigEndian.fieldsUnsealed :=
   ⟨by unfold bigEndian.fields; rfl⟩
 
-@[reducible] noncomputable def bigEndian.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def bigEndian.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType bigEndian.fields)
 
-class bigEndian.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class bigEndian.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying bigEndian.underlying bigEndian
   underlying : go.UnderlyingDirectedEq bigEndian.ty bigEndian.underlying
   AppendUint16_unfold : MethodUnfold bigEndian.ty go!"AppendUint16" bigEndian.AppendUint16.impl
@@ -831,31 +831,31 @@ attribute [instance] bigEndian.TypeAssumptions.type_repr
   bigEndian.TypeAssumptions.ptr_Uint32_unfold
   bigEndian.TypeAssumptions.ptr_Uint64_unfold
 
-structure coder [FfiSyntax] where
+structure coder [GooseExts] where
   mk ::
   order' : ByteOrder
   buf' : GoSlice
   offset' : w64
 
-noncomputable instance coder.zero_val [FfiSyntax] : ZeroVal coder :=
+noncomputable instance coder.zero_val [GooseExts] : ZeroVal coder :=
   ⟨coder.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def coder.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def coder.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"order" ByteOrder.ty),
 (go.field_decl.FieldDecl go!"buf" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"offset" go.int)]
 
-@[irreducible] noncomputable def coder.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def coder.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   coder.fieldsUnsealed
 
-noncomputable instance equals_unfold_coder [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_coder [GooseExts] [GoGlobalContext] :
     EqualsUnfold coder.fields coder.fieldsUnsealed :=
   ⟨by unfold coder.fields; rfl⟩
 
-@[reducible] noncomputable def coder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def coder.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType coder.fields)
 
-class coder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class coder.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying coder.underlying coder
   underlying : go.UnderlyingDirectedEq coder.ty coder.underlying
   get_order : ∀ (x : coder), go.IsGoStepPureDetTagged under (StructFieldGet coder.underlying go!"order") #x (Val #(x.order'))
@@ -874,47 +874,47 @@ attribute [instance] coder.TypeAssumptions.type_repr
   coder.TypeAssumptions.get_offset
   coder.TypeAssumptions.set_offset
 
-abbrev decoder [FfiSyntax] : Type := coder
+abbrev decoder [GooseExts] : Type := coder
 
-@[reducible] noncomputable def decoder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def decoder.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   coder.ty
 
-class decoder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class decoder.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq decoder.ty decoder.underlying
 
 attribute [instance] decoder.TypeAssumptions.underlying
 
-abbrev encoder [FfiSyntax] : Type := coder
+abbrev encoder [GooseExts] : Type := coder
 
-@[reducible] noncomputable def encoder.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def encoder.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   coder.ty
 
-class encoder.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class encoder.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq encoder.ty encoder.underlying
 
 attribute [instance] encoder.TypeAssumptions.underlying
 
-structure nativeEndian [FfiSyntax] where
+structure nativeEndian [GooseExts] where
   mk ::
   littleEndian' : littleEndian
 
-noncomputable instance nativeEndian.zero_val [FfiSyntax] : ZeroVal nativeEndian :=
+noncomputable instance nativeEndian.zero_val [GooseExts] : ZeroVal nativeEndian :=
   ⟨nativeEndian.mk zeroValDef⟩
 
-@[reducible] noncomputable def nativeEndian.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def nativeEndian.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"littleEndian" littleEndian.ty)]
 
-@[irreducible] noncomputable def nativeEndian.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def nativeEndian.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   nativeEndian.fieldsUnsealed
 
-noncomputable instance equals_unfold_nativeEndian [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_nativeEndian [GooseExts] [GoGlobalContext] :
     EqualsUnfold nativeEndian.fields nativeEndian.fieldsUnsealed :=
   ⟨by unfold nativeEndian.fields; rfl⟩
 
-@[reducible] noncomputable def nativeEndian.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def nativeEndian.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType nativeEndian.fields)
 
-class nativeEndian.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class nativeEndian.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying nativeEndian.underlying nativeEndian
   underlying : go.UnderlyingDirectedEq nativeEndian.ty nativeEndian.underlying
   get_littleEndian : ∀ (x : nativeEndian), go.IsGoStepPureDetTagged under (StructFieldGet nativeEndian.underlying go!"littleEndian") #x (Val #(x.littleEndian'))
@@ -925,7 +925,7 @@ attribute [instance] nativeEndian.TypeAssumptions.type_repr
   nativeEndian.TypeAssumptions.get_littleEndian
   nativeEndian.TypeAssumptions.set_littleEndian
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ByteOrder_instance : ByteOrder.TypeAssumptions
   AppendByteOrder_instance : AppendByteOrder.TypeAssumptions
   littleEndian_instance : littleEndian.TypeAssumptions

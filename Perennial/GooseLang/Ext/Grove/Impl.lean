@@ -1,12 +1,12 @@
 /-
-FFI module for distributed Perennial (Grove) [Trusted definitions!].
+The Grove extension of GooseLang, for distributed Perennial [Trusted definitions!].
 
 Consists only of a network, per-node file storage, and clocks.
 
-* No crash semantics (`ffi_crash_step`).
-* `ffi_step` is a relation (see `Perennial/GooseLang/Lang.lean`): either the
-  operation stutters (state unchanged, `e' = ExternalOp op v`) or it takes an
-  `IsGroveFfiStep`.
+* No crash semantics.
+* The step (`GroveStep`, the `ExtSemantics` of `groveExt`) is a relation:
+  either the operation stutters (state unchanged, `e' = ExternalOp op v`) or it
+  takes an `IsGroveStep`. It does not change the heap.
 -/
 module
 
@@ -66,10 +66,6 @@ instance : Pos.Countable GroveVal where
     | _ => none
   decode_encode v := by cases v <;> simp [Pos.Countable.decode_encode]
 
-@[reducible] def grove_op : FfiSyntax where
-  ffi_opcode := GroveOp
-  ffi_val := GroveVal
-
 structure message where
   Message ::
   msgSender : Endpoint
@@ -95,15 +91,18 @@ structure GroveNodeState where
 instance groveNodeState_inhabited : Inhabited GroveNodeState :=
   ⟨{ groveNodeTsc := 0, groveNodeFiles := ∅ }⟩
 
-@[reducible] def grove_model : FfiModel where
-  ffi_state := GroveNodeState
-  ffi_global_state := GroveGlobalState
+/-- The Grove extension: network, files and clocks. -/
+@[reducible] def groveExt : GooseExt where
+  Op := GroveOp
+  Val := GroveVal
+  LocalState := GroveNodeState
+  GlobalState := GroveGlobalState
 
 section grove
-/- these are local instances on purpose, so that importing this files doesn't
-suddenly cause all FFI parameters to be inferred as the grove model -/
-attribute [local instance] grove_op grove_model
-variable [GoGlobalContext]
+variable [GooseExts] [ElemExt groveExt] [GoGlobalContext]
+
+/-- A Grove value (a socket). -/
+abbrev groveV (v : GroveVal) : val := ExtV (extVal groveExt v)
 
 def IsFreshChan (fg : GroveGlobalState) (c : Option Endpoint) : Prop :=
   match c with
@@ -112,26 +111,26 @@ def IsFreshChan (fg : GroveGlobalState) (c : Option Endpoint) : Prop :=
 
 theorem gen_isFreshChan (σg : GroveGlobalState) : IsFreshChan σg none := trivial
 
-def IsGroveFfiStep (op : GroveOp) (v : val) (e' : Expr)
+def IsGroveStep (op : GroveOp) (v : val) (e' : Expr)
     (σ σ' : GroveNodeState) (g g' : GroveGlobalState) : Prop :=
   match op with
   | .ListenOp =>
-      σ = σ' ∧ g = g' ∧ (∀ c : Endpoint, v = #c → e' = Val (ExtV (ListenSocketV c)))
+      σ = σ' ∧ g = g' ∧ (∀ c : Endpoint, v = #c → e' = Val (groveV (ListenSocketV c)))
   | .ConnectOp =>
       ∀ c_r : Endpoint, v = #c_r →
         σ = σ' ∧
         ∃ c_l, IsFreshChan g c_l ∧
           match c_l with
-          | none => g = g' ∧ e' = Val (PairV (#true) (ExtV BadSocketV))
+          | none => g = g' ∧ e' = Val (PairV (#true) (groveV BadSocketV))
           | some c_l => g' = { g with groveNet := <[c_l := ∅]> g.groveNet } ∧
-              e' = Val (PairV (#false) (ExtV (ConnectionSocketV c_l c_r)))
+              e' = Val (PairV (#false) (groveV (ConnectionSocketV c_l c_r)))
   | .AcceptOp =>
-      σ = σ' ∧ g = g' ∧ (∀ c_l, v = ExtV (ListenSocketV c_l) →
-        ∃ c_r, g = g' ∧ e' = Val (ExtV (ConnectionSocketV c_l c_r)))
+      σ = σ' ∧ g = g' ∧ (∀ c_l, v = groveV (ListenSocketV c_l) →
+        ∃ c_r, g = g' ∧ e' = Val (groveV (ConnectionSocketV c_l c_r)))
   | .SendOp =>
       σ = σ' ∧
       (∀ (data : List w8) c_l c_r,
-        v = PairV (ExtV (ConnectionSocketV c_l c_r)) (#data) →
+        v = PairV (groveV (ConnectionSocketV c_l c_r)) (#data) →
         match g.groveNet !! c_r with
         | some ms => ∃ b : Bool,
             g' = { g with groveNet := <[c_r := ms ∪ {[Message c_l data]}]> g.groveNet } ∧
@@ -139,7 +138,7 @@ def IsGroveFfiStep (op : GroveOp) (v : val) (e' : Expr)
         | none => e' = Panic "invalid")
   | .RecvOp =>
       σ = σ' ∧ g = g' ∧
-      (∀ c_l c_r, v = ExtV (ConnectionSocketV c_l c_r) →
+      (∀ c_l c_r, v = groveV (ConnectionSocketV c_l c_r) →
         ∃ err : Bool,
           match g.groveNet !! c_l with
           | some ms =>
@@ -177,18 +176,18 @@ def IsGroveFfiStep (op : GroveOp) (v : val) (e' : Expr)
         g' = { g with groveGlobalTime := new_time } ∧
         e' = Val (PairV (#low) (#high))
 
-/-- The Grove FFI step relation: the operation either stutters or takes an
-`IsGroveFfiStep`; only the FFI parts of the state change. -/
-def GroveFfiStep (op : GroveOp) (v : val) (σg : CfgState) (e' : Expr) (σg' : CfgState) :
-    Prop :=
-  ∃ s' w', σg' = ({ σg.1 with world := s' }, { σg.2 with globalWorld := w' }) ∧
-    ((s' = σg.1.world ∧ w' = σg.2.globalWorld ∧ e' = ExternalOp op (Val v)) ∨
-      IsGroveFfiStep op v e' σg.1.world s' σg.2.globalWorld w')
-
-@[reducible] def grove_semantics : FfiSemantics grove_op grove_model where
-  ffi_step := GroveFfiStep
-  ffi_step_threads h := by obtain ⟨_, _, rfl, _⟩ := h; rfl
+/-- The Grove step relation: the operation either stutters or takes an
+`IsGroveStep`; the heap does not change. -/
+def GroveStep (op : GroveOp) (v : val) (h : GMap Loc (NonAtomic val)) (σ : GroveNodeState)
+    (g : GroveGlobalState) (e' : Expr) (h' : GMap Loc (NonAtomic val)) (σ' : GroveNodeState)
+    (g' : GroveGlobalState) : Prop :=
+  h' = h ∧ ((σ' = σ ∧ g' = g ∧ e' = ExternalOp (extOp groveExt op) (Val v)) ∨
+    IsGroveStep op v e' σ σ' g g')
 
 end grove
+
+instance grove_semantics : ExtSemantics groveExt where
+  step := GroveStep
+
 
 end Perennial

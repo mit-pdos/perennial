@@ -22,27 +22,27 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack
 
-noncomputable def LockedStack.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def LockedStack.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/elimination_stack.LockedStack" [])
 
 attribute [irreducible] LockedStack.ty
 
-noncomputable def EliminationStack.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def EliminationStack.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/elimination_stack.EliminationStack" [])
 
 attribute [irreducible] EliminationStack.ty
 
-@[reducible] noncomputable def timeout [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def timeout [GooseExts] [GoGlobalContext] : val :=
   #(W64 10000)
 
-noncomputable def NewLockedStack [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewLockedStack [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/elimination_stack.NewLockedStack"
 
-noncomputable def NewEliminationStack [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewEliminationStack [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/channel/elimination_stack.NewEliminationStack"
 
 /-- go: elimination_stack.go:14:6 -/
-noncomputable def NewLockedStack.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewLockedStack.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -50,7 +50,7 @@ noncomputable def NewLockedStack.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral LockedStack.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"stack")) (ElementExpression (go.GoType.SliceType go.string) (Var "$v0")))])))))))
 
 /-- go: elimination_stack.go:18:23 -/
-noncomputable def LockedStack.Push.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LockedStack.Push.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "value"
   (App (Val exceptionDo)
@@ -73,7 +73,7 @@ noncomputable def LockedStack.Push.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef LockedStack.ty go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType LockedStack.ty)))) (Var "s")))) (Val #()))))))))))
 
 /-- go: elimination_stack.go:24:23 -/
-noncomputable def LockedStack.Pop.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LockedStack.Pop.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -117,7 +117,7 @@ noncomputable def LockedStack.Pop.impl [FfiSyntax] [GoGlobalContext] : val :=
     using a fresh LockedStack and a small default timeout.
 
     go: elimination_stack.go:47:6 -/
-noncomputable def NewEliminationStack.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def NewEliminationStack.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -128,7 +128,7 @@ noncomputable def NewEliminationStack.impl [FfiSyntax] [GoGlobalContext] : val :
 /-- Push first tries one-shot elimination; on timeout, falls back to the locked stack.
 
     go: elimination_stack.go:55:28 -/
-noncomputable def EliminationStack.Push.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def EliminationStack.Push.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam "value"
   (App (Val exceptionDo)
@@ -154,7 +154,7 @@ noncomputable def EliminationStack.Push.impl [FfiSyntax] [GoGlobalContext] : val
 /-- Pop first tries one-shot elimination; on timeout, falls back to the locked stack.
 
     go: elimination_stack.go:67:28 -/
-noncomputable def EliminationStack.Pop.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def EliminationStack.Pop.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -183,7 +183,7 @@ noncomputable def EliminationStack.Pop.impl [FfiSyntax] [GoGlobalContext] : val 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack where
   pkgImportedPkgs := [pkg_id.sync, pkg_id.time]
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.channel.elimination_stack)) (Lam BAnon
   (App (Val exceptionDo)
@@ -193,29 +193,29 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.time.initialize') (Val #()))))))))
 
-structure LockedStack [FfiSyntax] where
+structure LockedStack [GooseExts] where
   mk ::
   mu' : _root_.Perennial.sync.Mutex
   stack' : GoSlice
 
-noncomputable instance LockedStack.zero_val [FfiSyntax] : ZeroVal LockedStack :=
+noncomputable instance LockedStack.zero_val [GooseExts] : ZeroVal LockedStack :=
   ⟨LockedStack.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def LockedStack.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def LockedStack.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex.ty),
 (go.field_decl.FieldDecl go!"stack" (go.GoType.SliceType go.string))]
 
-@[irreducible] noncomputable def LockedStack.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def LockedStack.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   LockedStack.fieldsUnsealed
 
-noncomputable instance equals_unfold_LockedStack [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_LockedStack [GooseExts] [GoGlobalContext] :
     EqualsUnfold LockedStack.fields LockedStack.fieldsUnsealed :=
   ⟨by unfold LockedStack.fields; rfl⟩
 
-@[reducible] noncomputable def LockedStack.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def LockedStack.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType LockedStack.fields)
 
-class LockedStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class LockedStack.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying LockedStack.underlying LockedStack
   underlying : go.UnderlyingDirectedEq LockedStack.ty LockedStack.underlying
   get_mu : ∀ (x : LockedStack), go.IsGoStepPureDetTagged under (StructFieldGet LockedStack.underlying go!"mu") #x (Val #(x.mu'))
@@ -234,29 +234,29 @@ attribute [instance] LockedStack.TypeAssumptions.type_repr
   LockedStack.TypeAssumptions.ptr_Pop_unfold
   LockedStack.TypeAssumptions.ptr_Push_unfold
 
-structure EliminationStack [FfiSyntax] where
+structure EliminationStack [GooseExts] where
   mk ::
   base' : Loc
   exchanger' : GoChan
 
-noncomputable instance EliminationStack.zero_val [FfiSyntax] : ZeroVal EliminationStack :=
+noncomputable instance EliminationStack.zero_val [GooseExts] : ZeroVal EliminationStack :=
   ⟨EliminationStack.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def EliminationStack.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def EliminationStack.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"base" (go.GoType.PointerType LockedStack.ty)),
 (go.field_decl.FieldDecl go!"exchanger" (go.GoType.ChannelType go.ChanDir.sendrecv go.string))]
 
-@[irreducible] noncomputable def EliminationStack.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def EliminationStack.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   EliminationStack.fieldsUnsealed
 
-noncomputable instance equals_unfold_EliminationStack [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_EliminationStack [GooseExts] [GoGlobalContext] :
     EqualsUnfold EliminationStack.fields EliminationStack.fieldsUnsealed :=
   ⟨by unfold EliminationStack.fields; rfl⟩
 
-@[reducible] noncomputable def EliminationStack.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def EliminationStack.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType EliminationStack.fields)
 
-class EliminationStack.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class EliminationStack.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying EliminationStack.underlying EliminationStack
   underlying : go.UnderlyingDirectedEq EliminationStack.ty EliminationStack.underlying
   get_base : ∀ (x : EliminationStack), go.IsGoStepPureDetTagged under (StructFieldGet EliminationStack.underlying go!"base") #x (Val #(x.base'))
@@ -275,7 +275,7 @@ attribute [instance] EliminationStack.TypeAssumptions.type_repr
   EliminationStack.TypeAssumptions.ptr_Pop_unfold
   EliminationStack.TypeAssumptions.ptr_Push_unfold
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   LockedStack_instance : LockedStack.TypeAssumptions
   EliminationStack_instance : EliminationStack.TypeAssumptions
   NewLockedStack_unfold : FuncUnfold NewLockedStack [] NewLockedStack.impl

@@ -22,749 +22,749 @@ end pkg_id
 
 namespace time
 
-noncomputable def ParseError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ParseError.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.ParseError" [])
 
 attribute [irreducible] ParseError.ty
 
-noncomputable def parseDurationError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def parseDurationError.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.parseDurationError" [])
 
 attribute [irreducible] parseDurationError.ty
 
-noncomputable def Timer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Timer.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.Timer" [])
 
 attribute [irreducible] Timer.ty
 
-noncomputable def Ticker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Ticker.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.Ticker" [])
 
 attribute [irreducible] Ticker.ty
 
-noncomputable def Time.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Time.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.Time" [])
 
 attribute [irreducible] Time.ty
 
-noncomputable def Month.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Month.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.Month" [])
 
 attribute [irreducible] Month.ty
 
-noncomputable def Weekday.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Weekday.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.Weekday" [])
 
 attribute [irreducible] Weekday.ty
 
-noncomputable def absSeconds.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def absSeconds.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.absSeconds" [])
 
 attribute [irreducible] absSeconds.ty
 
-noncomputable def absDays.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def absDays.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.absDays" [])
 
 attribute [irreducible] absDays.ty
 
-noncomputable def absCentury.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def absCentury.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.absCentury" [])
 
 attribute [irreducible] absCentury.ty
 
-noncomputable def absCyear.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def absCyear.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.absCyear" [])
 
 attribute [irreducible] absCyear.ty
 
-noncomputable def absYday.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def absYday.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.absYday" [])
 
 attribute [irreducible] absYday.ty
 
-noncomputable def absMonth.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def absMonth.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.absMonth" [])
 
 attribute [irreducible] absMonth.ty
 
-noncomputable def absLeap.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def absLeap.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.absLeap" [])
 
 attribute [irreducible] absLeap.ty
 
-noncomputable def absJanFeb.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def absJanFeb.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.absJanFeb" [])
 
 attribute [irreducible] absJanFeb.ty
 
-noncomputable def Duration.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Duration.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.Duration" [])
 
 attribute [irreducible] Duration.ty
 
-noncomputable def Location.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Location.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.Location" [])
 
 attribute [irreducible] Location.ty
 
-noncomputable def zone.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def zone.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.zone" [])
 
 attribute [irreducible] zone.ty
 
-noncomputable def zoneTrans.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def zoneTrans.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.zoneTrans" [])
 
 attribute [irreducible] zoneTrans.ty
 
-noncomputable def ruleKind.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ruleKind.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.ruleKind" [])
 
 attribute [irreducible] ruleKind.ty
 
-noncomputable def rule.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def rule.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.rule" [])
 
 attribute [irreducible] rule.ty
 
-noncomputable def fileSizeError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def fileSizeError.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.fileSizeError" [])
 
 attribute [irreducible] fileSizeError.ty
 
-noncomputable def dataIO.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def dataIO.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"time.dataIO" [])
 
 attribute [irreducible] dataIO.ty
 
-axiom Layout [FfiSyntax] [GoGlobalContext] : val
+axiom Layout [GooseExts] [GoGlobalContext] : val
 
-axiom ANSIC [FfiSyntax] [GoGlobalContext] : val
+axiom ANSIC [GooseExts] [GoGlobalContext] : val
 
-axiom UnixDate [FfiSyntax] [GoGlobalContext] : val
+axiom UnixDate [GooseExts] [GoGlobalContext] : val
 
-axiom RubyDate [FfiSyntax] [GoGlobalContext] : val
+axiom RubyDate [GooseExts] [GoGlobalContext] : val
 
-axiom RFC822 [FfiSyntax] [GoGlobalContext] : val
+axiom RFC822 [GooseExts] [GoGlobalContext] : val
 
-axiom RFC822Z [FfiSyntax] [GoGlobalContext] : val
+axiom RFC822Z [GooseExts] [GoGlobalContext] : val
 
-axiom RFC850 [FfiSyntax] [GoGlobalContext] : val
+axiom RFC850 [GooseExts] [GoGlobalContext] : val
 
-axiom RFC1123 [FfiSyntax] [GoGlobalContext] : val
+axiom RFC1123 [GooseExts] [GoGlobalContext] : val
 
-axiom RFC1123Z [FfiSyntax] [GoGlobalContext] : val
+axiom RFC1123Z [GooseExts] [GoGlobalContext] : val
 
-axiom RFC3339 [FfiSyntax] [GoGlobalContext] : val
+axiom RFC3339 [GooseExts] [GoGlobalContext] : val
 
-axiom RFC3339Nano [FfiSyntax] [GoGlobalContext] : val
+axiom RFC3339Nano [GooseExts] [GoGlobalContext] : val
 
-axiom Kitchen [FfiSyntax] [GoGlobalContext] : val
+axiom Kitchen [GooseExts] [GoGlobalContext] : val
 
-axiom Stamp [FfiSyntax] [GoGlobalContext] : val
+axiom Stamp [GooseExts] [GoGlobalContext] : val
 
-axiom StampMilli [FfiSyntax] [GoGlobalContext] : val
+axiom StampMilli [GooseExts] [GoGlobalContext] : val
 
-axiom StampMicro [FfiSyntax] [GoGlobalContext] : val
+axiom StampMicro [GooseExts] [GoGlobalContext] : val
 
-axiom StampNano [FfiSyntax] [GoGlobalContext] : val
+axiom StampNano [GooseExts] [GoGlobalContext] : val
 
-axiom DateTime [FfiSyntax] [GoGlobalContext] : val
+axiom DateTime [GooseExts] [GoGlobalContext] : val
 
-axiom DateOnly [FfiSyntax] [GoGlobalContext] : val
+axiom DateOnly [GooseExts] [GoGlobalContext] : val
 
-axiom TimeOnly [FfiSyntax] [GoGlobalContext] : val
+axiom TimeOnly [GooseExts] [GoGlobalContext] : val
 
-axiom stdLongMonth [FfiSyntax] [GoGlobalContext] : val
+axiom stdLongMonth [GooseExts] [GoGlobalContext] : val
 
-axiom stdMonth [FfiSyntax] [GoGlobalContext] : val
+axiom stdMonth [GooseExts] [GoGlobalContext] : val
 
-axiom stdNumMonth [FfiSyntax] [GoGlobalContext] : val
+axiom stdNumMonth [GooseExts] [GoGlobalContext] : val
 
 /-- "01" -/
-@[reducible] noncomputable def stdZeroMonth [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def stdZeroMonth [GooseExts] [GoGlobalContext] : val :=
   #(260 : Int)
 
-axiom stdLongWeekDay [FfiSyntax] [GoGlobalContext] : val
+axiom stdLongWeekDay [GooseExts] [GoGlobalContext] : val
 
-axiom stdWeekDay [FfiSyntax] [GoGlobalContext] : val
+axiom stdWeekDay [GooseExts] [GoGlobalContext] : val
 
-axiom stdDay [FfiSyntax] [GoGlobalContext] : val
+axiom stdDay [GooseExts] [GoGlobalContext] : val
 
-axiom stdUnderDay [FfiSyntax] [GoGlobalContext] : val
+axiom stdUnderDay [GooseExts] [GoGlobalContext] : val
 
 /-- "02" -/
-@[reducible] noncomputable def stdZeroDay [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def stdZeroDay [GooseExts] [GoGlobalContext] : val :=
   #(265 : Int)
 
-axiom stdUnderYearDay [FfiSyntax] [GoGlobalContext] : val
+axiom stdUnderYearDay [GooseExts] [GoGlobalContext] : val
 
-axiom stdZeroYearDay [FfiSyntax] [GoGlobalContext] : val
+axiom stdZeroYearDay [GooseExts] [GoGlobalContext] : val
 
-axiom stdHour [FfiSyntax] [GoGlobalContext] : val
+axiom stdHour [GooseExts] [GoGlobalContext] : val
 
-axiom stdHour12 [FfiSyntax] [GoGlobalContext] : val
+axiom stdHour12 [GooseExts] [GoGlobalContext] : val
 
 /-- "03" -/
-@[reducible] noncomputable def stdZeroHour12 [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def stdZeroHour12 [GooseExts] [GoGlobalContext] : val :=
   #(1038 : Int)
 
-axiom stdMinute [FfiSyntax] [GoGlobalContext] : val
+axiom stdMinute [GooseExts] [GoGlobalContext] : val
 
 /-- "04" -/
-@[reducible] noncomputable def stdZeroMinute [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def stdZeroMinute [GooseExts] [GoGlobalContext] : val :=
   #(1040 : Int)
 
-axiom stdSecond [FfiSyntax] [GoGlobalContext] : val
+axiom stdSecond [GooseExts] [GoGlobalContext] : val
 
 /-- "05" -/
-@[reducible] noncomputable def stdZeroSecond [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def stdZeroSecond [GooseExts] [GoGlobalContext] : val :=
   #(1042 : Int)
 
-axiom stdLongYear [FfiSyntax] [GoGlobalContext] : val
+axiom stdLongYear [GooseExts] [GoGlobalContext] : val
 
 /-- "06" -/
-@[reducible] noncomputable def stdYear [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def stdYear [GooseExts] [GoGlobalContext] : val :=
   #(276 : Int)
 
-axiom stdPM [FfiSyntax] [GoGlobalContext] : val
+axiom stdPM [GooseExts] [GoGlobalContext] : val
 
-axiom stdpm [FfiSyntax] [GoGlobalContext] : val
+axiom stdpm [GooseExts] [GoGlobalContext] : val
 
-axiom stdTZ [FfiSyntax] [GoGlobalContext] : val
+axiom stdTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdISO8601TZ [FfiSyntax] [GoGlobalContext] : val
+axiom stdISO8601TZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdISO8601SecondsTZ [FfiSyntax] [GoGlobalContext] : val
+axiom stdISO8601SecondsTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdISO8601ShortTZ [FfiSyntax] [GoGlobalContext] : val
+axiom stdISO8601ShortTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdISO8601ColonTZ [FfiSyntax] [GoGlobalContext] : val
+axiom stdISO8601ColonTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdISO8601ColonSecondsTZ [FfiSyntax] [GoGlobalContext] : val
+axiom stdISO8601ColonSecondsTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdNumTZ [FfiSyntax] [GoGlobalContext] : val
+axiom stdNumTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdNumSecondsTz [FfiSyntax] [GoGlobalContext] : val
+axiom stdNumSecondsTz [GooseExts] [GoGlobalContext] : val
 
-axiom stdNumShortTZ [FfiSyntax] [GoGlobalContext] : val
+axiom stdNumShortTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdNumColonTZ [FfiSyntax] [GoGlobalContext] : val
+axiom stdNumColonTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdNumColonSecondsTZ [FfiSyntax] [GoGlobalContext] : val
+axiom stdNumColonSecondsTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdFracSecond0 [FfiSyntax] [GoGlobalContext] : val
+axiom stdFracSecond0 [GooseExts] [GoGlobalContext] : val
 
-axiom stdFracSecond9 [FfiSyntax] [GoGlobalContext] : val
+axiom stdFracSecond9 [GooseExts] [GoGlobalContext] : val
 
-axiom stdNeedDate [FfiSyntax] [GoGlobalContext] : val
+axiom stdNeedDate [GooseExts] [GoGlobalContext] : val
 
-axiom stdNeedYday [FfiSyntax] [GoGlobalContext] : val
+axiom stdNeedYday [GooseExts] [GoGlobalContext] : val
 
-axiom stdNeedClock [FfiSyntax] [GoGlobalContext] : val
+axiom stdNeedClock [GooseExts] [GoGlobalContext] : val
 
-axiom stdArgShift [FfiSyntax] [GoGlobalContext] : val
+axiom stdArgShift [GooseExts] [GoGlobalContext] : val
 
-axiom stdSeparatorShift [FfiSyntax] [GoGlobalContext] : val
+axiom stdSeparatorShift [GooseExts] [GoGlobalContext] : val
 
-axiom stdMask [FfiSyntax] [GoGlobalContext] : val
+axiom stdMask [GooseExts] [GoGlobalContext] : val
 
-axiom lowerhex [FfiSyntax] [GoGlobalContext] : val
+axiom lowerhex [GooseExts] [GoGlobalContext] : val
 
-axiom runeSelf [FfiSyntax] [GoGlobalContext] : val
+axiom runeSelf [GooseExts] [GoGlobalContext] : val
 
-axiom runeError [FfiSyntax] [GoGlobalContext] : val
+axiom runeError [GooseExts] [GoGlobalContext] : val
 
-@[reducible] noncomputable def hasMonotonic [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def hasMonotonic [GooseExts] [GoGlobalContext] : val :=
   #(9223372036854775808 : Int)
 
-axiom maxWall [FfiSyntax] [GoGlobalContext] : val
+axiom maxWall [GooseExts] [GoGlobalContext] : val
 
-axiom minWall [FfiSyntax] [GoGlobalContext] : val
+axiom minWall [GooseExts] [GoGlobalContext] : val
 
-@[reducible] noncomputable def nsecMask [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def nsecMask [GooseExts] [GoGlobalContext] : val :=
   #(1073741823 : Int)
 
-@[reducible] noncomputable def nsecShift [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def nsecShift [GooseExts] [GoGlobalContext] : val :=
   #(30 : Int)
 
-axiom January [FfiSyntax] [GoGlobalContext] : val
+axiom January [GooseExts] [GoGlobalContext] : val
 
-axiom February [FfiSyntax] [GoGlobalContext] : val
+axiom February [GooseExts] [GoGlobalContext] : val
 
-axiom March [FfiSyntax] [GoGlobalContext] : val
+axiom March [GooseExts] [GoGlobalContext] : val
 
-axiom April [FfiSyntax] [GoGlobalContext] : val
+axiom April [GooseExts] [GoGlobalContext] : val
 
-axiom May [FfiSyntax] [GoGlobalContext] : val
+axiom May [GooseExts] [GoGlobalContext] : val
 
-axiom June [FfiSyntax] [GoGlobalContext] : val
+axiom June [GooseExts] [GoGlobalContext] : val
 
-axiom July [FfiSyntax] [GoGlobalContext] : val
+axiom July [GooseExts] [GoGlobalContext] : val
 
-axiom August [FfiSyntax] [GoGlobalContext] : val
+axiom August [GooseExts] [GoGlobalContext] : val
 
-axiom September [FfiSyntax] [GoGlobalContext] : val
+axiom September [GooseExts] [GoGlobalContext] : val
 
-axiom October [FfiSyntax] [GoGlobalContext] : val
+axiom October [GooseExts] [GoGlobalContext] : val
 
-axiom November [FfiSyntax] [GoGlobalContext] : val
+axiom November [GooseExts] [GoGlobalContext] : val
 
-axiom December [FfiSyntax] [GoGlobalContext] : val
+axiom December [GooseExts] [GoGlobalContext] : val
 
-axiom Sunday [FfiSyntax] [GoGlobalContext] : val
+axiom Sunday [GooseExts] [GoGlobalContext] : val
 
-axiom Monday [FfiSyntax] [GoGlobalContext] : val
+axiom Monday [GooseExts] [GoGlobalContext] : val
 
-axiom Tuesday [FfiSyntax] [GoGlobalContext] : val
+axiom Tuesday [GooseExts] [GoGlobalContext] : val
 
-axiom Wednesday [FfiSyntax] [GoGlobalContext] : val
+axiom Wednesday [GooseExts] [GoGlobalContext] : val
 
-axiom Thursday [FfiSyntax] [GoGlobalContext] : val
+axiom Thursday [GooseExts] [GoGlobalContext] : val
 
-axiom Friday [FfiSyntax] [GoGlobalContext] : val
+axiom Friday [GooseExts] [GoGlobalContext] : val
 
-axiom Saturday [FfiSyntax] [GoGlobalContext] : val
+axiom Saturday [GooseExts] [GoGlobalContext] : val
 
-axiom secondsPerMinute [FfiSyntax] [GoGlobalContext] : val
+axiom secondsPerMinute [GooseExts] [GoGlobalContext] : val
 
-axiom secondsPerHour [FfiSyntax] [GoGlobalContext] : val
+axiom secondsPerHour [GooseExts] [GoGlobalContext] : val
 
-axiom secondsPerDay [FfiSyntax] [GoGlobalContext] : val
+axiom secondsPerDay [GooseExts] [GoGlobalContext] : val
 
-axiom secondsPerWeek [FfiSyntax] [GoGlobalContext] : val
+axiom secondsPerWeek [GooseExts] [GoGlobalContext] : val
 
-axiom daysPer400Years [FfiSyntax] [GoGlobalContext] : val
+axiom daysPer400Years [GooseExts] [GoGlobalContext] : val
 
-axiom marchThruDecember [FfiSyntax] [GoGlobalContext] : val
+axiom marchThruDecember [GooseExts] [GoGlobalContext] : val
 
-axiom absoluteYears [FfiSyntax] [GoGlobalContext] : val
+axiom absoluteYears [GooseExts] [GoGlobalContext] : val
 
-axiom internalYear [FfiSyntax] [GoGlobalContext] : val
+axiom internalYear [GooseExts] [GoGlobalContext] : val
 
-axiom absoluteToInternal [FfiSyntax] [GoGlobalContext] : val
+axiom absoluteToInternal [GooseExts] [GoGlobalContext] : val
 
-axiom internalToAbsolute [FfiSyntax] [GoGlobalContext] : val
+axiom internalToAbsolute [GooseExts] [GoGlobalContext] : val
 
-axiom unixToInternal [FfiSyntax] [GoGlobalContext] : val
+axiom unixToInternal [GooseExts] [GoGlobalContext] : val
 
-@[reducible] noncomputable def internalToUnix [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def internalToUnix [GooseExts] [GoGlobalContext] : val :=
   #(W64 (-62135596800))
 
-axiom absoluteToUnix [FfiSyntax] [GoGlobalContext] : val
+axiom absoluteToUnix [GooseExts] [GoGlobalContext] : val
 
-axiom unixToAbsolute [FfiSyntax] [GoGlobalContext] : val
+axiom unixToAbsolute [GooseExts] [GoGlobalContext] : val
 
-@[reducible] noncomputable def wallToInternal [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def wallToInternal [GooseExts] [GoGlobalContext] : val :=
   #(W64 59453308800)
 
-@[reducible] noncomputable def minDuration [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def minDuration [GooseExts] [GoGlobalContext] : val :=
   #(W64 (-9223372036854775808))
 
-@[reducible] noncomputable def maxDuration [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def maxDuration [GooseExts] [GoGlobalContext] : val :=
   #(W64 9223372036854775807)
 
-@[reducible] noncomputable def Nanosecond [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Nanosecond [GooseExts] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] noncomputable def Microsecond [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Microsecond [GooseExts] [GoGlobalContext] : val :=
   #(W64 1000)
 
-@[reducible] noncomputable def Millisecond [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Millisecond [GooseExts] [GoGlobalContext] : val :=
   #(W64 1000000)
 
-@[reducible] noncomputable def Second [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Second [GooseExts] [GoGlobalContext] : val :=
   #(W64 1000000000)
 
-@[reducible] noncomputable def Minute [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Minute [GooseExts] [GoGlobalContext] : val :=
   #(W64 60000000000)
 
-@[reducible] noncomputable def Hour [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def Hour [GooseExts] [GoGlobalContext] : val :=
   #(W64 3600000000000)
 
-axiom timeBinaryVersionV1 [FfiSyntax] [GoGlobalContext] : val
+axiom timeBinaryVersionV1 [GooseExts] [GoGlobalContext] : val
 
-axiom timeBinaryVersionV2 [FfiSyntax] [GoGlobalContext] : val
+axiom timeBinaryVersionV2 [GooseExts] [GoGlobalContext] : val
 
-axiom alpha [FfiSyntax] [GoGlobalContext] : val
+axiom alpha [GooseExts] [GoGlobalContext] : val
 
-axiom omega [FfiSyntax] [GoGlobalContext] : val
+axiom omega [GooseExts] [GoGlobalContext] : val
 
-axiom ruleJulian [FfiSyntax] [GoGlobalContext] : val
+axiom ruleJulian [GooseExts] [GoGlobalContext] : val
 
-axiom ruleDOY [FfiSyntax] [GoGlobalContext] : val
+axiom ruleDOY [GooseExts] [GoGlobalContext] : val
 
-axiom ruleMonthWeekDay [FfiSyntax] [GoGlobalContext] : val
+axiom ruleMonthWeekDay [GooseExts] [GoGlobalContext] : val
 
-axiom maxFileSize [FfiSyntax] [GoGlobalContext] : val
+axiom maxFileSize [GooseExts] [GoGlobalContext] : val
 
-axiom seekStart [FfiSyntax] [GoGlobalContext] : val
+axiom seekStart [GooseExts] [GoGlobalContext] : val
 
-axiom seekCurrent [FfiSyntax] [GoGlobalContext] : val
+axiom seekCurrent [GooseExts] [GoGlobalContext] : val
 
-axiom seekEnd [FfiSyntax] [GoGlobalContext] : val
+axiom seekEnd [GooseExts] [GoGlobalContext] : val
 
-noncomputable def std0x [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def std0x [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.std0x"
 
-noncomputable def longDayNames [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def longDayNames [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.longDayNames"
 
-noncomputable def shortDayNames [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def shortDayNames [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.shortDayNames"
 
-noncomputable def shortMonthNames [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def shortMonthNames [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.shortMonthNames"
 
-noncomputable def longMonthNames [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def longMonthNames [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.longMonthNames"
 
-noncomputable def errAtoi [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def errAtoi [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.errAtoi"
 
-noncomputable def errBad [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def errBad [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.errBad"
 
-noncomputable def errLeadingInt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def errLeadingInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.errLeadingInt"
 
-noncomputable def unitMap [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def unitMap [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.unitMap"
 
-noncomputable def asynctimerchan [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def asynctimerchan [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.asynctimerchan"
 
-noncomputable def startNano [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def startNano [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.startNano"
 
-noncomputable def UTC [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def UTC [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.UTC"
 
-noncomputable def utcLoc [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def utcLoc [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.utcLoc"
 
-noncomputable def Local [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Local [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.Local"
 
-noncomputable def localLoc [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def localLoc [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.localLoc"
 
-noncomputable def localOnce [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def localOnce [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.localOnce"
 
-noncomputable def unnamedFixedZones [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def unnamedFixedZones [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.unnamedFixedZones"
 
-noncomputable def unnamedFixedZonesOnce [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def unnamedFixedZonesOnce [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.unnamedFixedZonesOnce"
 
-noncomputable def errLocation [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def errLocation [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.errLocation"
 
-noncomputable def zoneinfo [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def zoneinfo [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.zoneinfo"
 
-noncomputable def zoneinfoOnce [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def zoneinfoOnce [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.zoneinfoOnce"
 
-noncomputable def loadFromEmbeddedTZData [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def loadFromEmbeddedTZData [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.loadFromEmbeddedTZData"
 
-noncomputable def errBadData [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def errBadData [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.errBadData"
 
-noncomputable def loadTzinfoFromTzdata [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def loadTzinfoFromTzdata [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.loadTzinfoFromTzdata"
 
-noncomputable def platformZoneSources [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def platformZoneSources [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.platformZoneSources"
 
-noncomputable def startsWithLowerCase [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def startsWithLowerCase [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.startsWithLowerCase"
 
-noncomputable def nextStdChunk [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def nextStdChunk [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.nextStdChunk"
 
-noncomputable def match' [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def match' [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.match"
 
-noncomputable def lookup' [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def lookup' [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.lookup"
 
-noncomputable def appendInt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def appendInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.appendInt"
 
-noncomputable def atoi [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def atoi [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.atoi"
 
-noncomputable def stdFracSecond [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def stdFracSecond [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.stdFracSecond"
 
-noncomputable def digitsLen [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def digitsLen [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.digitsLen"
 
-noncomputable def separator [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def separator [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.separator"
 
-noncomputable def appendNano [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def appendNano [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.appendNano"
 
-noncomputable def newParseError [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def newParseError [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.newParseError"
 
-noncomputable def quote [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def quote [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.quote"
 
-noncomputable def isDigit [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isDigit [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.isDigit"
 
-noncomputable def getnum [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def getnum [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.getnum"
 
-noncomputable def getnum3 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def getnum3 [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.getnum3"
 
-noncomputable def cutspace [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cutspace [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.cutspace"
 
-noncomputable def skip [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def skip [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.skip"
 
-noncomputable def Parse [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Parse [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.Parse"
 
-noncomputable def ParseInLocation [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ParseInLocation [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.ParseInLocation"
 
-noncomputable def parse [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def parse [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.parse"
 
-noncomputable def parseTimeZone [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def parseTimeZone [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.parseTimeZone"
 
-noncomputable def parseGMT [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def parseGMT [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.parseGMT"
 
-noncomputable def parseSignedOffset [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def parseSignedOffset [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.parseSignedOffset"
 
-noncomputable def commaOrPeriod [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def commaOrPeriod [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.commaOrPeriod"
 
-noncomputable def parseNanoseconds [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def parseNanoseconds [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.parseNanoseconds"
 
-noncomputable def leadingInt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def leadingInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.leadingInt"
 
-noncomputable def leadingFraction [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def leadingFraction [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.leadingFraction"
 
-noncomputable def ParseDuration [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ParseDuration [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.ParseDuration"
 
-noncomputable def parseRFC3339 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def parseRFC3339 [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.parseRFC3339"
 
-noncomputable def parseStrictRFC3339 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def parseStrictRFC3339 [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.parseStrictRFC3339"
 
-noncomputable def Sleep [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Sleep [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.Sleep"
 
-noncomputable def syncTimer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def syncTimer [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.syncTimer"
 
-noncomputable def when [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def when [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.when"
 
-noncomputable def newTimer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def newTimer [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.newTimer"
 
-noncomputable def stopTimer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def stopTimer [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.stopTimer"
 
-noncomputable def resetTimer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def resetTimer [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.resetTimer"
 
-noncomputable def NewTimer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewTimer [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.NewTimer"
 
-noncomputable def sendTime [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def sendTime [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.sendTime"
 
-noncomputable def After [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def After [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.After"
 
-noncomputable def AfterFunc [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AfterFunc [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.AfterFunc"
 
-noncomputable def goFunc [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def goFunc [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.goFunc"
 
-noncomputable def interrupt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def interrupt [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.interrupt"
 
-noncomputable def «open» [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def «open» [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.open"
 
-noncomputable def read [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def read [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.read"
 
-noncomputable def closefd [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def closefd [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.closefd"
 
-noncomputable def preadn [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def preadn [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.preadn"
 
-noncomputable def NewTicker [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewTicker [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.NewTicker"
 
-noncomputable def Tick [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Tick [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.Tick"
 
-noncomputable def dateToAbsDays [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def dateToAbsDays [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.dateToAbsDays"
 
-noncomputable def fmtFrac [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def fmtFrac [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.fmtFrac"
 
-noncomputable def fmtInt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def fmtInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.fmtInt"
 
-noncomputable def lessThanHalf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def lessThanHalf [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.lessThanHalf"
 
-noncomputable def subMono [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def subMono [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.subMono"
 
-noncomputable def Since [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Since [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.Since"
 
-noncomputable def Until [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Until [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.Until"
 
-noncomputable def daysBefore [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def daysBefore [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.daysBefore"
 
-noncomputable def daysIn [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def daysIn [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.daysIn"
 
-noncomputable def now [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def now [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.now"
 
-noncomputable def runtimeNow [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def runtimeNow [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.runtimeNow"
 
-noncomputable def runtimeNano [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def runtimeNano [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.runtimeNano"
 
-noncomputable def runtimeIsBubbled [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def runtimeIsBubbled [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.runtimeIsBubbled"
 
-noncomputable def Now [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Now [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.Now"
 
-noncomputable def unixTime [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def unixTime [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.unixTime"
 
-noncomputable def Unix [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Unix [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.Unix"
 
-noncomputable def UnixMilli [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def UnixMilli [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.UnixMilli"
 
-noncomputable def UnixMicro [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def UnixMicro [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.UnixMicro"
 
-noncomputable def isLeap [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isLeap [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.isLeap"
 
-noncomputable def norm [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def norm [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.norm"
 
-noncomputable def Date [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Date [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.Date"
 
-noncomputable def div [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def div [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.div"
 
-noncomputable def legacyTimeTimeAbs [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def legacyTimeTimeAbs [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.legacyTimeTimeAbs"
 
-noncomputable def legacyAbsClock [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def legacyAbsClock [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.legacyAbsClock"
 
-noncomputable def legacyAbsDate [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def legacyAbsDate [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.legacyAbsDate"
 
-noncomputable def FixedZone [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def FixedZone [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.FixedZone"
 
-noncomputable def fixedZone [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def fixedZone [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.fixedZone"
 
-noncomputable def tzset [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tzset [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.tzset"
 
-noncomputable def tzsetName [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tzsetName [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.tzsetName"
 
-noncomputable def tzsetOffset [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tzsetOffset [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.tzsetOffset"
 
-noncomputable def tzsetRule [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tzsetRule [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.tzsetRule"
 
-noncomputable def tzsetNum [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tzsetNum [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.tzsetNum"
 
-noncomputable def tzruleTime [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tzruleTime [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.tzruleTime"
 
-noncomputable def LoadLocation [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LoadLocation [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.LoadLocation"
 
-noncomputable def containsDotDot [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def containsDotDot [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.containsDotDot"
 
-noncomputable def gorootZoneSource [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def gorootZoneSource [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.gorootZoneSource"
 
-noncomputable def registerLoadFromEmbeddedTZData [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def registerLoadFromEmbeddedTZData [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.registerLoadFromEmbeddedTZData"
 
-noncomputable def byteString [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def byteString [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.byteString"
 
-noncomputable def LoadLocationFromTZData [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LoadLocationFromTZData [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.LoadLocationFromTZData"
 
-noncomputable def findZone [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def findZone [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.findZone"
 
-noncomputable def loadTzinfoFromDirOrZip [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def loadTzinfoFromDirOrZip [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.loadTzinfoFromDirOrZip"
 
-noncomputable def get4 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def get4 [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.get4"
 
-noncomputable def get2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def get2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.get2"
 
-noncomputable def loadTzinfoFromZip [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def loadTzinfoFromZip [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.loadTzinfoFromZip"
 
-noncomputable def loadTzinfo [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def loadTzinfo [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.loadTzinfo"
 
-noncomputable def loadLocation [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def loadLocation [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.loadLocation"
 
-noncomputable def readFile [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def readFile [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.readFile"
 
-noncomputable def initLocal [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def initLocal [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.initLocal"
 
 /-- when is a helper function for setting the 'when' field of a runtimeTimer.
@@ -773,7 +773,7 @@ noncomputable def initLocal [FfiSyntax] [GoGlobalContext] : GoString :=
     zero because of an overflow, MaxInt64 is returned.
 
     go: sleep.go:52:6 -/
-noncomputable def when.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def when.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "d"
   (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc Duration.ty))) (Var "d"))
@@ -804,7 +804,7 @@ noncomputable def when.impl [FfiSyntax] [GoGlobalContext] : val :=
     The returned Timer's C field is not used and will be nil.
 
     go: sleep.go:210:6 -/
-noncomputable def AfterFunc.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def AfterFunc.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "d"
   (Lam "f"
   (App (Val exceptionDo)
@@ -820,7 +820,7 @@ noncomputable def AfterFunc.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (App (App (App (App (Val (GoInstruction (FuncResolve newTimer []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))))))))
 
 /-- go: sleep.go:214:6 -/
-noncomputable def goFunc.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def goFunc.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "arg"
   (Lam "seq"
   (Lam "delta"
@@ -839,7 +839,7 @@ noncomputable def goFunc.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- nsec returns the time's nanoseconds.
 
     go: time.go:176:16 -/
-noncomputable def Time.nsec.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Time.nsec.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -850,7 +850,7 @@ noncomputable def Time.nsec.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- sec returns the time's seconds since Jan 1 year 1.
 
     go: time.go:181:16 -/
-noncomputable def Time.sec.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Time.sec.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -867,7 +867,7 @@ noncomputable def Time.sec.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- unixSec returns the time's seconds since Jan 1 1970 (Unix time).
 
     go: time.go:189:16 -/
-noncomputable def Time.unixSec.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Time.unixSec.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -878,7 +878,7 @@ noncomputable def Time.unixSec.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- addSec adds d seconds to the time.
 
     go: time.go:192:16 -/
-noncomputable def Time.addSec.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Time.addSec.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "d"
   (App (Val exceptionDo)
@@ -933,7 +933,7 @@ noncomputable def Time.addSec.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- stripMono strips the monotonic clock reading in t.
 
     go: time.go:226:16 -/
-noncomputable def Time.stripMono.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Time.stripMono.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -954,7 +954,7 @@ noncomputable def Time.stripMono.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- After reports whether the time instant t is after u.
 
     go: time.go:271:15 -/
-noncomputable def Time.After.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Time.After.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "u"
   (App (Val exceptionDo)
@@ -982,7 +982,7 @@ noncomputable def Time.After.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Before reports whether the time instant t is before u.
 
     go: time.go:281:15 -/
-noncomputable def Time.Before.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Time.Before.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "u"
   (App (Val exceptionDo)
@@ -1014,7 +1014,7 @@ noncomputable def Time.Before.impl [FfiSyntax] [GoGlobalContext] : val :=
     Time values; most code should use Equal instead.
 
     go: time.go:316:15 -/
-noncomputable def Time.Equal.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Time.Equal.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "u"
   (App (Val exceptionDo)
@@ -1032,7 +1032,7 @@ noncomputable def Time.Equal.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Add returns the time t+d.
 
     go: time.go:1170:15 -/
-noncomputable def Time.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Time.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "d"
   (App (Val exceptionDo)
@@ -1095,7 +1095,7 @@ noncomputable def Time.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
     To compute t-d for a duration d, use t.Add(-d).
 
     go: time.go:1198:15 -/
-noncomputable def Time.Sub.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Time.Sub.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "u"
   (App (Val exceptionDo)
@@ -1128,7 +1128,7 @@ noncomputable def Time.Sub.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #())))))))))
 
 /-- go: time.go:1214:6 -/
-noncomputable def subMono.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def subMono.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam "u"
   (App (Val exceptionDo)
@@ -1158,7 +1158,7 @@ noncomputable def subMono.impl [FfiSyntax] [GoGlobalContext] : val :=
     It is shorthand for time.Now().Sub(t).
 
     go: time.go:1227:6 -/
-noncomputable def Since.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Since.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "t"))
@@ -1178,7 +1178,7 @@ noncomputable def Since.impl [FfiSyntax] [GoGlobalContext] : val :=
     It is shorthand for t.Sub(time.Now()).
 
     go: time.go:1237:6 -/
-noncomputable def Until.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Until.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (App (Val exceptionDo)
   (Let "t" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "t"))
@@ -1202,7 +1202,7 @@ noncomputable def Until.impl [FfiSyntax] [GoGlobalContext] : val :=
     location associated with t.
 
     go: time.go:1460:15 -/
-noncomputable def Time.UnixNano.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Time.UnixNano.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "t"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -1213,9 +1213,9 @@ noncomputable def Time.UnixNano.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.time where
   pkgImportedPkgs := [pkg_id.errors]
 
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.time)) (Lam BAnon
   (App (Val exceptionDo)
@@ -1410,7 +1410,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc platformZoneSources (go.GoType.SliceType go.string))) (Val #()))))))))
 
-structure ParseError [FfiSyntax] where
+structure ParseError [GooseExts] where
   mk ::
   Layout' : GoString
   Value' : GoString
@@ -1418,27 +1418,27 @@ structure ParseError [FfiSyntax] where
   ValueElem' : GoString
   Message' : GoString
 
-noncomputable instance ParseError.zero_val [FfiSyntax] : ZeroVal ParseError :=
+noncomputable instance ParseError.zero_val [GooseExts] : ZeroVal ParseError :=
   ⟨ParseError.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def ParseError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def ParseError.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Layout" go.string),
 (go.field_decl.FieldDecl go!"Value" go.string),
 (go.field_decl.FieldDecl go!"LayoutElem" go.string),
 (go.field_decl.FieldDecl go!"ValueElem" go.string),
 (go.field_decl.FieldDecl go!"Message" go.string)]
 
-@[irreducible] noncomputable def ParseError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def ParseError.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   ParseError.fieldsUnsealed
 
-noncomputable instance equals_unfold_ParseError [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_ParseError [GooseExts] [GoGlobalContext] :
     EqualsUnfold ParseError.fields ParseError.fieldsUnsealed :=
   ⟨by unfold ParseError.fields; rfl⟩
 
-@[reducible] noncomputable def ParseError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def ParseError.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType ParseError.fields)
 
-class ParseError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ParseError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ParseError.underlying ParseError
   underlying : go.UnderlyingDirectedEq ParseError.ty ParseError.underlying
   get_Layout : ∀ (x : ParseError), go.IsGoStepPureDetTagged under (StructFieldGet ParseError.underlying go!"Layout") #x (Val #(x.Layout'))
@@ -1465,29 +1465,29 @@ attribute [instance] ParseError.TypeAssumptions.type_repr
   ParseError.TypeAssumptions.get_Message
   ParseError.TypeAssumptions.set_Message
 
-structure parseDurationError [FfiSyntax] where
+structure parseDurationError [GooseExts] where
   mk ::
   message' : GoString
   value' : GoString
 
-noncomputable instance parseDurationError.zero_val [FfiSyntax] : ZeroVal parseDurationError :=
+noncomputable instance parseDurationError.zero_val [GooseExts] : ZeroVal parseDurationError :=
   ⟨parseDurationError.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def parseDurationError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def parseDurationError.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"message" go.string),
 (go.field_decl.FieldDecl go!"value" go.string)]
 
-@[irreducible] noncomputable def parseDurationError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def parseDurationError.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   parseDurationError.fieldsUnsealed
 
-noncomputable instance equals_unfold_parseDurationError [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_parseDurationError [GooseExts] [GoGlobalContext] :
     EqualsUnfold parseDurationError.fields parseDurationError.fieldsUnsealed :=
   ⟨by unfold parseDurationError.fields; rfl⟩
 
-@[reducible] noncomputable def parseDurationError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def parseDurationError.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType parseDurationError.fields)
 
-class parseDurationError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class parseDurationError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying parseDurationError.underlying parseDurationError
   underlying : go.UnderlyingDirectedEq parseDurationError.ty parseDurationError.underlying
   get_message : ∀ (x : parseDurationError), go.IsGoStepPureDetTagged under (StructFieldGet parseDurationError.underlying go!"message") #x (Val #(x.message'))
@@ -1502,29 +1502,29 @@ attribute [instance] parseDurationError.TypeAssumptions.type_repr
   parseDurationError.TypeAssumptions.get_value
   parseDurationError.TypeAssumptions.set_value
 
-structure Timer [FfiSyntax] where
+structure Timer [GooseExts] where
   mk ::
   C' : GoChan
   initTimer' : Bool
 
-noncomputable instance Timer.zero_val [FfiSyntax] : ZeroVal Timer :=
+noncomputable instance Timer.zero_val [GooseExts] : ZeroVal Timer :=
   ⟨Timer.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Timer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Timer.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"C" (go.GoType.ChannelType go.ChanDir.recvonly Time.ty)),
 (go.field_decl.FieldDecl go!"initTimer" go.bool)]
 
-@[irreducible] noncomputable def Timer.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Timer.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Timer.fieldsUnsealed
 
-noncomputable instance equals_unfold_Timer [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Timer [GooseExts] [GoGlobalContext] :
     EqualsUnfold Timer.fields Timer.fieldsUnsealed :=
   ⟨by unfold Timer.fields; rfl⟩
 
-@[reducible] noncomputable def Timer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Timer.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Timer.fields)
 
-class Timer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Timer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Timer.underlying Timer
   underlying : go.UnderlyingDirectedEq Timer.ty Timer.underlying
   get_C : ∀ (x : Timer), go.IsGoStepPureDetTagged under (StructFieldGet Timer.underlying go!"C") #x (Val #(x.C'))
@@ -1539,29 +1539,29 @@ attribute [instance] Timer.TypeAssumptions.type_repr
   Timer.TypeAssumptions.get_initTimer
   Timer.TypeAssumptions.set_initTimer
 
-structure Ticker [FfiSyntax] where
+structure Ticker [GooseExts] where
   mk ::
   C' : GoChan
   initTicker' : Bool
 
-noncomputable instance Ticker.zero_val [FfiSyntax] : ZeroVal Ticker :=
+noncomputable instance Ticker.zero_val [GooseExts] : ZeroVal Ticker :=
   ⟨Ticker.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Ticker.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Ticker.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"C" (go.GoType.ChannelType go.ChanDir.recvonly Time.ty)),
 (go.field_decl.FieldDecl go!"initTicker" go.bool)]
 
-@[irreducible] noncomputable def Ticker.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Ticker.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Ticker.fieldsUnsealed
 
-noncomputable instance equals_unfold_Ticker [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Ticker [GooseExts] [GoGlobalContext] :
     EqualsUnfold Ticker.fields Ticker.fieldsUnsealed :=
   ⟨by unfold Ticker.fields; rfl⟩
 
-@[reducible] noncomputable def Ticker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Ticker.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Ticker.fields)
 
-class Ticker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Ticker.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Ticker.underlying Ticker
   underlying : go.UnderlyingDirectedEq Ticker.ty Ticker.underlying
   get_C : ∀ (x : Ticker), go.IsGoStepPureDetTagged under (StructFieldGet Ticker.underlying go!"C") #x (Val #(x.C'))
@@ -1580,31 +1580,31 @@ attribute [instance] Ticker.TypeAssumptions.type_repr
   Ticker.TypeAssumptions.ptr_Reset_unfold
   Ticker.TypeAssumptions.ptr_Stop_unfold
 
-structure Time [FfiSyntax] where
+structure Time [GooseExts] where
   mk ::
   wall' : w64
   ext' : w64
   loc' : Loc
 
-noncomputable instance Time.zero_val [FfiSyntax] : ZeroVal Time :=
+noncomputable instance Time.zero_val [GooseExts] : ZeroVal Time :=
   ⟨Time.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Time.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Time.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"wall" go.uint64),
 (go.field_decl.FieldDecl go!"ext" go.int64),
 (go.field_decl.FieldDecl go!"loc" (go.GoType.PointerType Location.ty))]
 
-@[irreducible] noncomputable def Time.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Time.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Time.fieldsUnsealed
 
-noncomputable instance equals_unfold_Time [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Time [GooseExts] [GoGlobalContext] :
     EqualsUnfold Time.fields Time.fieldsUnsealed :=
   ⟨by unfold Time.fields; rfl⟩
 
-@[reducible] noncomputable def Time.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Time.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Time.fields)
 
-class Time.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Time.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Time.underlying Time
   underlying : go.UnderlyingDirectedEq Time.ty Time.underlying
   get_wall : ∀ (x : Time), go.IsGoStepPureDetTagged under (StructFieldGet Time.underlying go!"wall") #x (Val #(x.wall'))
@@ -1663,117 +1663,117 @@ attribute [instance] Time.TypeAssumptions.type_repr
   Time.TypeAssumptions.ptr_stripMono_unfold
   Time.TypeAssumptions.ptr_unixSec_unfold
 
-abbrev Month [FfiSyntax] : Type := w64
+abbrev Month [GooseExts] : Type := w64
 
-@[reducible] noncomputable def Month.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Month.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int
 
-class Month.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Month.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Month.ty Month.underlying
 
 attribute [instance] Month.TypeAssumptions.underlying
 
-abbrev Weekday [FfiSyntax] : Type := w64
+abbrev Weekday [GooseExts] : Type := w64
 
-@[reducible] noncomputable def Weekday.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Weekday.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int
 
-class Weekday.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Weekday.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Weekday.ty Weekday.underlying
 
 attribute [instance] Weekday.TypeAssumptions.underlying
 
-abbrev absSeconds [FfiSyntax] : Type := w64
+abbrev absSeconds [GooseExts] : Type := w64
 
-@[reducible] noncomputable def absSeconds.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def absSeconds.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class absSeconds.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class absSeconds.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq absSeconds.ty absSeconds.underlying
 
 attribute [instance] absSeconds.TypeAssumptions.underlying
 
-abbrev absDays [FfiSyntax] : Type := w64
+abbrev absDays [GooseExts] : Type := w64
 
-@[reducible] noncomputable def absDays.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def absDays.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class absDays.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class absDays.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq absDays.ty absDays.underlying
 
 attribute [instance] absDays.TypeAssumptions.underlying
 
-abbrev absCentury [FfiSyntax] : Type := w64
+abbrev absCentury [GooseExts] : Type := w64
 
-@[reducible] noncomputable def absCentury.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def absCentury.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class absCentury.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class absCentury.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq absCentury.ty absCentury.underlying
 
 attribute [instance] absCentury.TypeAssumptions.underlying
 
-abbrev absCyear [FfiSyntax] : Type := w64
+abbrev absCyear [GooseExts] : Type := w64
 
-@[reducible] noncomputable def absCyear.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def absCyear.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int
 
-class absCyear.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class absCyear.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq absCyear.ty absCyear.underlying
 
 attribute [instance] absCyear.TypeAssumptions.underlying
 
-abbrev absYday [FfiSyntax] : Type := w64
+abbrev absYday [GooseExts] : Type := w64
 
-@[reducible] noncomputable def absYday.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def absYday.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int
 
-class absYday.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class absYday.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq absYday.ty absYday.underlying
 
 attribute [instance] absYday.TypeAssumptions.underlying
 
-abbrev absMonth [FfiSyntax] : Type := w64
+abbrev absMonth [GooseExts] : Type := w64
 
-@[reducible] noncomputable def absMonth.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def absMonth.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int
 
-class absMonth.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class absMonth.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq absMonth.ty absMonth.underlying
 
 attribute [instance] absMonth.TypeAssumptions.underlying
 
-abbrev absLeap [FfiSyntax] : Type := w64
+abbrev absLeap [GooseExts] : Type := w64
 
-@[reducible] noncomputable def absLeap.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def absLeap.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int
 
-class absLeap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class absLeap.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq absLeap.ty absLeap.underlying
 
 attribute [instance] absLeap.TypeAssumptions.underlying
 
-abbrev absJanFeb [FfiSyntax] : Type := w64
+abbrev absJanFeb [GooseExts] : Type := w64
 
-@[reducible] noncomputable def absJanFeb.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def absJanFeb.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int
 
-class absJanFeb.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class absJanFeb.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq absJanFeb.ty absJanFeb.underlying
 
 attribute [instance] absJanFeb.TypeAssumptions.underlying
 
-abbrev Duration [FfiSyntax] : Type := w64
+abbrev Duration [GooseExts] : Type := w64
 
-@[reducible] noncomputable def Duration.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Duration.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int64
 
-class Duration.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Duration.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Duration.ty Duration.underlying
 
 attribute [instance] Duration.TypeAssumptions.underlying
 
-structure Location [FfiSyntax] where
+structure Location [GooseExts] where
   mk ::
   name' : GoString
   zone' : GoSlice
@@ -1783,10 +1783,10 @@ structure Location [FfiSyntax] where
   cacheEnd' : w64
   cacheZone' : Loc
 
-noncomputable instance Location.zero_val [FfiSyntax] : ZeroVal Location :=
+noncomputable instance Location.zero_val [GooseExts] : ZeroVal Location :=
   ⟨Location.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Location.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Location.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"name" go.string),
 (go.field_decl.FieldDecl go!"zone" (go.GoType.SliceType zone.ty)),
 (go.field_decl.FieldDecl go!"tx" (go.GoType.SliceType zoneTrans.ty)),
@@ -1795,17 +1795,17 @@ noncomputable instance Location.zero_val [FfiSyntax] : ZeroVal Location :=
 (go.field_decl.FieldDecl go!"cacheEnd" go.int64),
 (go.field_decl.FieldDecl go!"cacheZone" (go.GoType.PointerType zone.ty))]
 
-@[irreducible] noncomputable def Location.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Location.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Location.fieldsUnsealed
 
-noncomputable instance equals_unfold_Location [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Location [GooseExts] [GoGlobalContext] :
     EqualsUnfold Location.fields Location.fieldsUnsealed :=
   ⟨by unfold Location.fields; rfl⟩
 
-@[reducible] noncomputable def Location.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Location.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Location.fields)
 
-class Location.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Location.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Location.underlying Location
   underlying : go.UnderlyingDirectedEq Location.ty Location.underlying
   get_name : ∀ (x : Location), go.IsGoStepPureDetTagged under (StructFieldGet Location.underlying go!"name") #x (Val #(x.name'))
@@ -1840,31 +1840,31 @@ attribute [instance] Location.TypeAssumptions.type_repr
   Location.TypeAssumptions.get_cacheZone
   Location.TypeAssumptions.set_cacheZone
 
-structure zone [FfiSyntax] where
+structure zone [GooseExts] where
   mk ::
   name' : GoString
   offset' : w64
   isDST' : Bool
 
-noncomputable instance zone.zero_val [FfiSyntax] : ZeroVal zone :=
+noncomputable instance zone.zero_val [GooseExts] : ZeroVal zone :=
   ⟨zone.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def zone.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def zone.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"name" go.string),
 (go.field_decl.FieldDecl go!"offset" go.int),
 (go.field_decl.FieldDecl go!"isDST" go.bool)]
 
-@[irreducible] noncomputable def zone.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def zone.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   zone.fieldsUnsealed
 
-noncomputable instance equals_unfold_zone [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_zone [GooseExts] [GoGlobalContext] :
     EqualsUnfold zone.fields zone.fieldsUnsealed :=
   ⟨by unfold zone.fields; rfl⟩
 
-@[reducible] noncomputable def zone.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def zone.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType zone.fields)
 
-class zone.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class zone.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying zone.underlying zone
   underlying : go.UnderlyingDirectedEq zone.ty zone.underlying
   get_name : ∀ (x : zone), go.IsGoStepPureDetTagged under (StructFieldGet zone.underlying go!"name") #x (Val #(x.name'))
@@ -1883,33 +1883,33 @@ attribute [instance] zone.TypeAssumptions.type_repr
   zone.TypeAssumptions.get_isDST
   zone.TypeAssumptions.set_isDST
 
-structure zoneTrans [FfiSyntax] where
+structure zoneTrans [GooseExts] where
   mk ::
   when' : w64
   index' : w8
   isstd' : Bool
   isutc' : Bool
 
-noncomputable instance zoneTrans.zero_val [FfiSyntax] : ZeroVal zoneTrans :=
+noncomputable instance zoneTrans.zero_val [GooseExts] : ZeroVal zoneTrans :=
   ⟨zoneTrans.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def zoneTrans.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def zoneTrans.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"when" go.int64),
 (go.field_decl.FieldDecl go!"index" go.uint8),
 (go.field_decl.FieldDecl go!"isstd" go.bool),
 (go.field_decl.FieldDecl go!"isutc" go.bool)]
 
-@[irreducible] noncomputable def zoneTrans.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def zoneTrans.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   zoneTrans.fieldsUnsealed
 
-noncomputable instance equals_unfold_zoneTrans [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_zoneTrans [GooseExts] [GoGlobalContext] :
     EqualsUnfold zoneTrans.fields zoneTrans.fieldsUnsealed :=
   ⟨by unfold zoneTrans.fields; rfl⟩
 
-@[reducible] noncomputable def zoneTrans.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def zoneTrans.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType zoneTrans.fields)
 
-class zoneTrans.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class zoneTrans.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying zoneTrans.underlying zoneTrans
   underlying : go.UnderlyingDirectedEq zoneTrans.ty zoneTrans.underlying
   get_when : ∀ (x : zoneTrans), go.IsGoStepPureDetTagged under (StructFieldGet zoneTrans.underlying go!"when") #x (Val #(x.when'))
@@ -1932,17 +1932,17 @@ attribute [instance] zoneTrans.TypeAssumptions.type_repr
   zoneTrans.TypeAssumptions.get_isutc
   zoneTrans.TypeAssumptions.set_isutc
 
-abbrev ruleKind [FfiSyntax] : Type := w64
+abbrev ruleKind [GooseExts] : Type := w64
 
-@[reducible] noncomputable def ruleKind.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def ruleKind.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int
 
-class ruleKind.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ruleKind.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ruleKind.ty ruleKind.underlying
 
 attribute [instance] ruleKind.TypeAssumptions.underlying
 
-structure rule [FfiSyntax] where
+structure rule [GooseExts] where
   mk ::
   kind' : ruleKind
   day' : w64
@@ -1950,27 +1950,27 @@ structure rule [FfiSyntax] where
   mon' : w64
   time' : w64
 
-noncomputable instance rule.zero_val [FfiSyntax] : ZeroVal rule :=
+noncomputable instance rule.zero_val [GooseExts] : ZeroVal rule :=
   ⟨rule.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def rule.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def rule.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"kind" ruleKind.ty),
 (go.field_decl.FieldDecl go!"day" go.int),
 (go.field_decl.FieldDecl go!"week" go.int),
 (go.field_decl.FieldDecl go!"mon" go.int),
 (go.field_decl.FieldDecl go!"time" go.int)]
 
-@[irreducible] noncomputable def rule.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def rule.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   rule.fieldsUnsealed
 
-noncomputable instance equals_unfold_rule [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_rule [GooseExts] [GoGlobalContext] :
     EqualsUnfold rule.fields rule.fieldsUnsealed :=
   ⟨by unfold rule.fields; rfl⟩
 
-@[reducible] noncomputable def rule.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def rule.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType rule.fields)
 
-class rule.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class rule.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying rule.underlying rule
   underlying : go.UnderlyingDirectedEq rule.ty rule.underlying
   get_kind : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"kind") #x (Val #(x.kind'))
@@ -1997,39 +1997,39 @@ attribute [instance] rule.TypeAssumptions.type_repr
   rule.TypeAssumptions.get_time
   rule.TypeAssumptions.set_time
 
-abbrev fileSizeError [FfiSyntax] : Type := GoString
+abbrev fileSizeError [GooseExts] : Type := GoString
 
-@[reducible] noncomputable def fileSizeError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def fileSizeError.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.string
 
-class fileSizeError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class fileSizeError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq fileSizeError.ty fileSizeError.underlying
 
 attribute [instance] fileSizeError.TypeAssumptions.underlying
 
-structure dataIO [FfiSyntax] where
+structure dataIO [GooseExts] where
   mk ::
   p' : GoSlice
   error' : Bool
 
-noncomputable instance dataIO.zero_val [FfiSyntax] : ZeroVal dataIO :=
+noncomputable instance dataIO.zero_val [GooseExts] : ZeroVal dataIO :=
   ⟨dataIO.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def dataIO.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def dataIO.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"p" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"error" go.bool)]
 
-@[irreducible] noncomputable def dataIO.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def dataIO.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   dataIO.fieldsUnsealed
 
-noncomputable instance equals_unfold_dataIO [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_dataIO [GooseExts] [GoGlobalContext] :
     EqualsUnfold dataIO.fields dataIO.fieldsUnsealed :=
   ⟨by unfold dataIO.fields; rfl⟩
 
-@[reducible] noncomputable def dataIO.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def dataIO.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType dataIO.fields)
 
-class dataIO.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class dataIO.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying dataIO.underlying dataIO
   underlying : go.UnderlyingDirectedEq dataIO.ty dataIO.underlying
   get_p : ∀ (x : dataIO), go.IsGoStepPureDetTagged under (StructFieldGet dataIO.underlying go!"p") #x (Val #(x.p'))
@@ -2044,7 +2044,7 @@ attribute [instance] dataIO.TypeAssumptions.type_repr
   dataIO.TypeAssumptions.get_error
   dataIO.TypeAssumptions.set_error
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   ParseError_instance : ParseError.TypeAssumptions
   parseDurationError_instance : parseDurationError.TypeAssumptions
   Timer_instance : Timer.TypeAssumptions

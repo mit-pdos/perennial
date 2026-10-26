@@ -23,32 +23,32 @@ end pkg_id
 
 namespace crypto.rand
 
-axiom base32alphabet [FfiSyntax] [GoGlobalContext] : val
+axiom base32alphabet [GooseExts] [GoGlobalContext] : val
 
-noncomputable def Reader [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Reader [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/rand.Reader"
 
-noncomputable def fatal [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def fatal [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/rand.fatal"
 
-noncomputable def Read [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Read [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/rand.Read"
 
-noncomputable def Text [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Text [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/rand.Text"
 
-noncomputable def Prime [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Prime [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/rand.Prime"
 
-noncomputable def Int' [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Int' [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/rand.Int"
 
 noncomputable instance info' : PkgInfo pkg_id.crypto.rand where
   pkgImportedPkgs := [pkg_id.io, pkg_id.math.big]
 
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.crypto.rand)) (Lam BAnon
   (App (Val exceptionDo)
@@ -61,7 +61,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.math.big.initialize') (Val #()))))))))
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Int_unfold : FuncUnfold Int' [] Int.impl
   import_io_Assumption : _root_.Perennial.io.Assumptions
   import_big_Assumption : _root_.Perennial.math.big.Assumptions

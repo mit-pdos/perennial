@@ -19,7 +19,7 @@ namespace Perennial
 
 namespace github_com.goose_lang.primitive
 section code
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- `Assume c` goes into an endless loop if `c` does not hold. So proofs can
 assume that it holds. -/

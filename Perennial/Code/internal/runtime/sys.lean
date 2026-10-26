@@ -20,119 +20,119 @@ end pkg_id
 
 namespace internal.runtime.sys
 
-noncomputable def nih.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def nih.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"internal/runtime/sys.nih" [])
 
 attribute [irreducible] nih.ty
 
-noncomputable def NotInHeap.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def NotInHeap.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"internal/runtime/sys.NotInHeap" [])
 
 attribute [irreducible] NotInHeap.ty
 
-axiom StackGuardMultiplier [FfiSyntax] [GoGlobalContext] : val
+axiom StackGuardMultiplier [GooseExts] [GoGlobalContext] : val
 
-axiom DefaultPhysPageSize [FfiSyntax] [GoGlobalContext] : val
+axiom DefaultPhysPageSize [GooseExts] [GoGlobalContext] : val
 
-axiom PCQuantum [FfiSyntax] [GoGlobalContext] : val
+axiom PCQuantum [GooseExts] [GoGlobalContext] : val
 
-axiom Int64Align [FfiSyntax] [GoGlobalContext] : val
+axiom Int64Align [GooseExts] [GoGlobalContext] : val
 
-axiom MinFrameSize [FfiSyntax] [GoGlobalContext] : val
+axiom MinFrameSize [GooseExts] [GoGlobalContext] : val
 
-axiom StackAlign [FfiSyntax] [GoGlobalContext] : val
+axiom StackAlign [GooseExts] [GoGlobalContext] : val
 
-axiom isRace [FfiSyntax] [GoGlobalContext] : val
+axiom isRace [GooseExts] [GoGlobalContext] : val
 
-axiom deBruijn32 [FfiSyntax] [GoGlobalContext] : val
+axiom deBruijn32 [GooseExts] [GoGlobalContext] : val
 
-axiom deBruijn64 [FfiSyntax] [GoGlobalContext] : val
+axiom deBruijn64 [GooseExts] [GoGlobalContext] : val
 
-axiom ntz8tab [FfiSyntax] [GoGlobalContext] : val
+axiom ntz8tab [GooseExts] [GoGlobalContext] : val
 
-axiom len8tab [FfiSyntax] [GoGlobalContext] : val
+axiom len8tab [GooseExts] [GoGlobalContext] : val
 
-axiom m0 [FfiSyntax] [GoGlobalContext] : val
+axiom m0 [GooseExts] [GoGlobalContext] : val
 
-axiom m1 [FfiSyntax] [GoGlobalContext] : val
+axiom m1 [GooseExts] [GoGlobalContext] : val
 
-axiom m2 [FfiSyntax] [GoGlobalContext] : val
+axiom m2 [GooseExts] [GoGlobalContext] : val
 
-noncomputable def deBruijn32tab [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def deBruijn32tab [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.deBruijn32tab"
 
-axiom deBruijn32tab.init [FfiSyntax] [GoGlobalContext] : val
+axiom deBruijn32tab.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def deBruijn64tab [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def deBruijn64tab [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.deBruijn64tab"
 
-axiom deBruijn64tab.init [FfiSyntax] [GoGlobalContext] : val
+axiom deBruijn64tab.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def DITSupported [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def DITSupported [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.DITSupported"
 
-axiom DITSupported.init [FfiSyntax] [GoGlobalContext] : val
+axiom DITSupported.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def TrailingZeros32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def TrailingZeros32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.TrailingZeros32"
 
-noncomputable def TrailingZeros64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def TrailingZeros64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.TrailingZeros64"
 
-noncomputable def TrailingZeros8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def TrailingZeros8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.TrailingZeros8"
 
-noncomputable def Len64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Len64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.Len64"
 
-noncomputable def OnesCount64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def OnesCount64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.OnesCount64"
 
-noncomputable def LeadingZeros64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LeadingZeros64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.LeadingZeros64"
 
-noncomputable def LeadingZeros8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LeadingZeros8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.LeadingZeros8"
 
-noncomputable def Len8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Len8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.Len8"
 
-noncomputable def Bswap64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Bswap64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.Bswap64"
 
-noncomputable def Bswap32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Bswap32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.Bswap32"
 
-noncomputable def Prefetch [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Prefetch [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.Prefetch"
 
-noncomputable def PrefetchStreamed [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def PrefetchStreamed [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.PrefetchStreamed"
 
-noncomputable def GetCallerPC [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def GetCallerPC [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.GetCallerPC"
 
-noncomputable def GetCallerSP [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def GetCallerSP [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.GetCallerSP"
 
-noncomputable def GetClosurePtr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def GetClosurePtr [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.GetClosurePtr"
 
-noncomputable def EnableDIT [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def EnableDIT [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.EnableDIT"
 
-noncomputable def DITEnabled [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def DITEnabled [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.DITEnabled"
 
-noncomputable def DisableDIT [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def DisableDIT [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.DisableDIT"
 
 noncomputable instance info' : PkgInfo pkg_id.internal.runtime.sys where
   pkgImportedPkgs := []
 
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.internal.runtime.sys)) (Lam BAnon
   (App (Val exceptionDo)
@@ -145,53 +145,53 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val deBruijn32tab.init) (Val #()))))))))
 
-structure nih [FfiSyntax] where
+structure nih [GooseExts] where
   mk ::
 
-noncomputable instance nih.zero_val [FfiSyntax] : ZeroVal nih :=
+noncomputable instance nih.zero_val [GooseExts] : ZeroVal nih :=
   ⟨nih.mk⟩
 
-@[reducible] noncomputable def nih.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def nih.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] noncomputable def nih.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def nih.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   nih.fieldsUnsealed
 
-noncomputable instance equals_unfold_nih [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_nih [GooseExts] [GoGlobalContext] :
     EqualsUnfold nih.fields nih.fieldsUnsealed :=
   ⟨by unfold nih.fields; rfl⟩
 
-@[reducible] noncomputable def nih.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def nih.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType nih.fields)
 
-class nih.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class nih.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying nih.underlying nih
   underlying : go.UnderlyingDirectedEq nih.ty nih.underlying
 
 attribute [instance] nih.TypeAssumptions.type_repr
   nih.TypeAssumptions.underlying
 
-structure NotInHeap [FfiSyntax] where
+structure NotInHeap [GooseExts] where
   mk ::
   «_#0'» : nih
 
-noncomputable instance NotInHeap.zero_val [FfiSyntax] : ZeroVal NotInHeap :=
+noncomputable instance NotInHeap.zero_val [GooseExts] : ZeroVal NotInHeap :=
   ⟨NotInHeap.mk zeroValDef⟩
 
-@[reducible] noncomputable def NotInHeap.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def NotInHeap.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_#0" nih.ty)]
 
-@[irreducible] noncomputable def NotInHeap.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def NotInHeap.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   NotInHeap.fieldsUnsealed
 
-noncomputable instance equals_unfold_NotInHeap [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_NotInHeap [GooseExts] [GoGlobalContext] :
     EqualsUnfold NotInHeap.fields NotInHeap.fieldsUnsealed :=
   ⟨by unfold NotInHeap.fields; rfl⟩
 
-@[reducible] noncomputable def NotInHeap.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def NotInHeap.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType NotInHeap.fields)
 
-class NotInHeap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class NotInHeap.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying NotInHeap.underlying NotInHeap
   underlying : go.UnderlyingDirectedEq NotInHeap.ty NotInHeap.underlying
   «get__#0» : ∀ (x : NotInHeap), go.IsGoStepPureDetTagged under (StructFieldGet NotInHeap.underlying go!"_#0") #x (Val #(x.«_#0'»))
@@ -202,7 +202,7 @@ attribute [instance] NotInHeap.TypeAssumptions.type_repr
   NotInHeap.TypeAssumptions.«get__#0»
   NotInHeap.TypeAssumptions.«set__#0»
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   nih_instance : nih.TypeAssumptions
   NotInHeap_instance : NotInHeap.TypeAssumptions
 

@@ -25,11 +25,11 @@ interface type, or it implements `error` (it is in the type set of `error`: its 
 `errors: *target must be interface or implement error` (when `err` is not `nil`). Method sets
 are uninterpreted in the semantics (`methodSet`), so the second disjunct is, for a concrete
 type, an assumption about the semantics (a class such as `context.ErrorStringIsError`). -/
-def AsTarget [FfiSyntax] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType) : Prop :=
+def AsTarget [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType) : Prop :=
   (∃ elems, underlying T = go.InterfaceType elems) ∨ go.typeSetContains T go.error = true
 
 section wps
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
@@ -107,7 +107,7 @@ def asTypeNode (S : GoError → Prop) (T' : Type) [ZeroVal T'] [TypedPointsto (G
           s ↦*{dq} es ∗ ⌜∀ e ∈ es, S e⌝ }})
       else iprop(True)))
 
-omit ffi [FfiInterp ffi] [FfiSemantics ext ffi] in
+omit [GooseSemantics] [GooseInterp] in
 theorem asTypeTyped_val [GoSemanticsFunctions] {T' : Type} [ZeroVal T'] {T : go.GoType}
     {ii : GoInterfaceOk} (h : AsTypeTyped T' T ii) :
     ∃ x : T', (if go.isInterfaceType (underlying T) = true then
@@ -141,10 +141,10 @@ instance isErrorTree_persistent (S : GoError → Prop) (T' : Type) [ZeroVal T']
 every hypothesis mentioning `▷` at every symbolic execution step. -/
 def asTypeHide (P : IProp GF) : IProp GF := P
 
-omit ffi [FfiInterp ffi] [FfiSemantics ext ffi] go_gctx hG sem package_sem in
+omit [GooseSemantics] [GooseInterp] go_gctx hG sem package_sem in
 theorem asTypeHide_intro {P Q : IProp GF} : (□ asTypeHide P -∗ Q) ⊢ (□ P -∗ Q) := .rfl
 
-omit ffi [FfiInterp ffi] [FfiSemantics ext ffi] go_gctx hG sem package_sem in
+omit [GooseSemantics] [GooseInterp] go_gctx hG sem package_sem in
 theorem asTypeHide_elim {P Q : IProp GF} : (□ P -∗ Q) ⊢ (□ asTypeHide P -∗ Q) := .rfl
 
 /-- A leaf of an error tree: an error without an `As(any) bool` or `Unwrap` method (an
@@ -185,7 +185,7 @@ trusted model (`TrustedCode/errors.lean`): Go's `Is` with its one reflection cal
 /-- A pointer error: a non-nil error whose dynamic type is a pointer type `*T` and whose value
 is a pointer, such as `errors.New`'s `*errorString` (`wp_New_ptr`). Go's `==` on two such errors
 is the equality of their types and pointers, Lean's equality of the interface values. -/
-def IsPointerError [FfiSyntax] [GoGlobalContext] (ii : GoInterfaceOk) : Prop :=
+def IsPointerError [GooseExts] [GoGlobalContext] (ii : GoInterfaceOk) : Prop :=
   ∃ (T : go.GoType) (l : Loc), ii.ty = go.PointerType T ∧ ii.v = #l
 
 /-- The specs `Is(err, target)` needs of one error `ii` of the tree `S`:
@@ -233,7 +233,7 @@ theorem errorIsTree_leaf (ii : GoInterfaceOk) (M : GoInterfaceOk → Prop) (targ
 /-- The errors of the tree `S` whose dynamic type is that of `target` hold a pointer, as
 `target` does for a pointer error: Go's typing, which the model (with no typing of interface
 values) does not have. What Go's `err == target` needs to compare two such errors. -/
-def TreeTyped [FfiSyntax] [GoGlobalContext] (S : GoError → Prop) (target : GoError) : Prop :=
+def TreeTyped [GooseExts] [GoGlobalContext] (S : GoError → Prop) (target : GoError) : Prop :=
   ∀ ii tii, S (interface.ok ii) → target = interface.ok tii → ii.ty = tii.ty →
     ∃ l : Loc, ii.v = #l
 

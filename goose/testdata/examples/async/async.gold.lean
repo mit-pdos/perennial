@@ -22,14 +22,14 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.async
 
-noncomputable def TakesDisk [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def TakesDisk [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/async.TakesDisk"
 
-noncomputable def UseDisk [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def UseDisk [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/async.UseDisk"
 
 /-- go: async.go:6:6 -/
-noncomputable def TakesDisk.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def TakesDisk.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "d"
   (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.async_disk.Disk.ty))) (Var "d"))
@@ -37,7 +37,7 @@ noncomputable def TakesDisk.impl [FfiSyntax] [GoGlobalContext] : val :=
   (Val #())))))
 
 /-- go: async.go:8:6 -/
-noncomputable def UseDisk.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def UseDisk.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "d"
   (App (Val exceptionDo)
   (Let "d" (App (Val (GoInstruction (GoAlloc _root_.Perennial.github_com.goose_lang.primitive.async_disk.Disk.ty))) (Var "d"))
@@ -60,14 +60,14 @@ noncomputable def UseDisk.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.async where
   pkgImportedPkgs := [pkg_id.github_com.goose_lang.primitive.async_disk]
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.async)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.async_disk.initialize') (Val #())))))))
 
-class Assumptions [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [ElemExt asyncDiskExt] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   TakesDisk_unfold : FuncUnfold TakesDisk [] TakesDisk.impl
   UseDisk_unfold : FuncUnfold UseDisk [] UseDisk.impl
   import_async_disk_Assumption : _root_.Perennial.github_com.goose_lang.primitive.async_disk.Assumptions

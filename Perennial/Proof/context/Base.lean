@@ -153,7 +153,7 @@ structure ContextNames where
 /-! Context logical descriptor. -/
 /-- The Done channel is not part of the descriptor: `Done_gn : ContextNames` holds the ghost
 names through which the Done channel is determined later (see the file header). -/
-structure ContextDesc [FfiSyntax] (PROP : Type) where
+structure ContextDesc [GooseExts] (PROP : Type) where
   mk ::
   Values : GMap GoInterface GoInterface
   Deadline : Option time.Time
@@ -161,7 +161,7 @@ structure ContextDesc [FfiSyntax] (PROP : Type) where
   PDone : PROP
 
 section init
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
@@ -223,16 +223,16 @@ end init
 
 /-- `*errors.errorString` is in the type set of `error` (it has the method `Error() string`):
 a fact about the method sets, which the semantics leaves uninterpreted. -/
-class ErrorStringIsError [FfiSyntax] [GoGlobalContext] [GoSemanticsFunctions] : Prop where
+class ErrorStringIsError [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] : Prop where
   is_error : go.typeSetContains (go.GoType.PointerType errors.errorString.ty) go.error = true
 
 /-- `context.deadlineExceededError` is in the type set of `error` (it has the method
 `Error() string`): a fact about the method sets, which the semantics leaves uninterpreted. -/
-class DeadlineExceededIsError [FfiSyntax] [GoGlobalContext] [GoSemanticsFunctions] : Prop where
+class DeadlineExceededIsError [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] : Prop where
   is_error : go.typeSetContains context.deadlineExceededError.ty go.error = true
 
 section wps
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]

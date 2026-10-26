@@ -22,87 +22,87 @@ end pkg_id
 
 namespace github_com.tchajed.marshal
 
-noncomputable def Enc.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Enc.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/tchajed/marshal.Enc" [])
 
 attribute [irreducible] Enc.ty
 
-noncomputable def Dec.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Dec.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/tchajed/marshal.Dec" [])
 
 attribute [irreducible] Dec.ty
 
-noncomputable def NewEncFromSlice [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewEncFromSlice [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.NewEncFromSlice"
 
-noncomputable def NewEnc [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewEnc [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.NewEnc"
 
-noncomputable def bool2byte [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def bool2byte [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.bool2byte"
 
-noncomputable def NewDec [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewDec [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.NewDec"
 
-noncomputable def compute_new_cap [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def compute_new_cap [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.compute_new_cap"
 
-noncomputable def reserve [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def reserve [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.reserve"
 
-noncomputable def ReadInt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.ReadInt"
 
-noncomputable def ReadInt32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadInt32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.ReadInt32"
 
-noncomputable def ReadInts [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadInts [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.ReadInts"
 
-noncomputable def ReadBytes [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadBytes [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.ReadBytes"
 
-noncomputable def ReadBytesCopy [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadBytesCopy [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.ReadBytesCopy"
 
-noncomputable def ReadBool [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadBool [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.ReadBool"
 
-noncomputable def ReadLenPrefixedBytes [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadLenPrefixedBytes [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.ReadLenPrefixedBytes"
 
-noncomputable def WriteInt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def WriteInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.WriteInt"
 
-noncomputable def WriteInt32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def WriteInt32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.WriteInt32"
 
-noncomputable def WriteBytes [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def WriteBytes [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.WriteBytes"
 
-noncomputable def WriteInts [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def WriteInts [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.WriteInts"
 
-noncomputable def WriteBool [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def WriteBool [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.WriteBool"
 
-noncomputable def WriteLenPrefixedBytes [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def WriteLenPrefixedBytes [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.WriteLenPrefixedBytes"
 
-noncomputable def ReadSlice [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadSlice [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.ReadSlice"
 
-noncomputable def ReadSliceLenPrefix [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadSliceLenPrefix [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.ReadSliceLenPrefix"
 
-noncomputable def WriteSlice [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def WriteSlice [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.WriteSlice"
 
-noncomputable def WriteSliceLenPrefix [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def WriteSliceLenPrefix [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/tchajed/marshal.WriteSliceLenPrefix"
 
 /-- go: stateless.go:8:6 -/
-noncomputable def compute_new_cap.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def compute_new_cap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "old_cap"
   (Lam "min_cap"
   (App (Val exceptionDo)
@@ -127,7 +127,7 @@ noncomputable def compute_new_cap.impl [FfiSyntax] [GoGlobalContext] : val :=
     Runtime-check against overflow.
 
     go: stateless.go:19:6 -/
-noncomputable def reserve.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def reserve.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "additional"
   (App (Val exceptionDo)
@@ -168,7 +168,7 @@ noncomputable def reserve.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "min_cap") (Var "$r0"))))))))))))
 
 /-- go: stateless.go:40:6 -/
-noncomputable def ReadInt.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReadInt.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
@@ -183,7 +183,7 @@ noncomputable def ReadInt.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "i") (Var "$r0"))))))))))
 
 /-- go: stateless.go:45:6 -/
-noncomputable def ReadInt32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReadInt32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
@@ -200,7 +200,7 @@ noncomputable def ReadInt32.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- ReadBytes reads `l` bytes from b and returns (bs, rest)
 
     go: stateless.go:62:6 -/
-noncomputable def ReadBytes.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReadBytes.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "l"
   (App (Val exceptionDo)
@@ -219,7 +219,7 @@ noncomputable def ReadBytes.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Like ReadBytes, but avoids keeping the source slice [b] alive.
 
     go: stateless.go:68:6 -/
-noncomputable def ReadBytesCopy.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReadBytesCopy.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "l"
   (App (Val exceptionDo)
@@ -241,7 +241,7 @@ noncomputable def ReadBytesCopy.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "s") (Var "$r0"))))))))))))
 
 /-- go: stateless.go:74:6 -/
-noncomputable def ReadBool.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReadBool.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
@@ -255,7 +255,7 @@ noncomputable def ReadBool.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "x") (Var "$r0"))))))))))
 
 /-- go: stateless.go:79:6 -/
-noncomputable def ReadLenPrefixedBytes.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReadLenPrefixedBytes.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "b"))
@@ -294,7 +294,7 @@ noncomputable def ReadLenPrefixedBytes.impl [FfiSyntax] [GoGlobalContext] : val 
 /-- WriteInt appends i in little-endian format to b, returning the new slice.
 
     go: stateless.go:88:6 -/
-noncomputable def WriteInt.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WriteInt.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "i"
   (App (Val exceptionDo)
@@ -331,7 +331,7 @@ noncomputable def WriteInt.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- WriteInt32 appends 32-bit integer i in little-endian format to b, returning the new slice.
 
     go: stateless.go:98:6 -/
-noncomputable def WriteInt32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WriteInt32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "i"
   (App (Val exceptionDo)
@@ -368,7 +368,7 @@ noncomputable def WriteInt32.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Append data to b, returning the new slice.
 
     go: stateless.go:107:6 -/
-noncomputable def WriteBytes.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WriteBytes.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "data"
   (App (Val exceptionDo)
@@ -380,7 +380,7 @@ noncomputable def WriteBytes.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))))
 
 /-- go: stateless.go:119:6 -/
-noncomputable def WriteBool.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WriteBool.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "x"
   (App (Val exceptionDo)
@@ -399,7 +399,7 @@ noncomputable def WriteBool.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))))))))))
 
 /-- go: stateless.go:127:6 -/
-noncomputable def WriteLenPrefixedBytes.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def WriteLenPrefixedBytes.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (Lam "bs"
   (App (Val exceptionDo)
@@ -419,7 +419,7 @@ noncomputable def WriteLenPrefixedBytes.impl [FfiSyntax] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b2") (Var "$r0"))))))))))))
 
 /-- go: stateless_slice.go:3:6 -/
-noncomputable def ReadSlice.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def ReadSlice.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "b"
   (Lam "count"
   (Lam "readOne"
@@ -476,7 +476,7 @@ noncomputable def ReadSlice.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b2") (Var "$r0"))))))))))))))
 
 /-- go: stateless_slice.go:14:6 -/
-noncomputable def ReadSliceLenPrefix.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def ReadSliceLenPrefix.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "b"
   (Lam "readOne"
   (App (Val exceptionDo)
@@ -506,7 +506,7 @@ noncomputable def ReadSliceLenPrefix.impl [FfiSyntax] [GoGlobalContext] (T : go.
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "count") (Var "$r0")))))))))))))))))
 
 /-- go: stateless_slice.go:19:6 -/
-noncomputable def WriteSlice.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def WriteSlice.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "b"
   (Lam "xs"
   (Lam "writeOne"
@@ -540,7 +540,7 @@ noncomputable def WriteSlice.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) 
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b2") (Var "$r0"))))))))))))))
 
 /-- go: stateless_slice.go:27:6 -/
-noncomputable def WriteSliceLenPrefix.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def WriteSliceLenPrefix.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "b"
   (Lam "xs"
   (Lam "writeOne"
@@ -570,9 +570,9 @@ noncomputable def WriteSliceLenPrefix.impl [FfiSyntax] [GoGlobalContext] (T : go
 noncomputable instance info' : PkgInfo pkg_id.github_com.tchajed.marshal where
   pkgImportedPkgs := [pkg_id.encoding.binary, pkg_id.github_com.goose_lang.std]
 
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.tchajed.marshal)) (Lam BAnon
   (App (Val exceptionDo)
@@ -582,29 +582,29 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.std.initialize') (Val #()))))))))
 
-structure Enc [FfiSyntax] where
+structure Enc [GooseExts] where
   mk ::
   b' : GoSlice
   off' : Loc
 
-noncomputable instance Enc.zero_val [FfiSyntax] : ZeroVal Enc :=
+noncomputable instance Enc.zero_val [GooseExts] : ZeroVal Enc :=
   ⟨Enc.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Enc.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Enc.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"b" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"off" (go.GoType.PointerType go.uint64))]
 
-@[irreducible] noncomputable def Enc.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Enc.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Enc.fieldsUnsealed
 
-noncomputable instance equals_unfold_Enc [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Enc [GooseExts] [GoGlobalContext] :
     EqualsUnfold Enc.fields Enc.fieldsUnsealed :=
   ⟨by unfold Enc.fields; rfl⟩
 
-@[reducible] noncomputable def Enc.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Enc.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Enc.fields)
 
-class Enc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Enc.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Enc.underlying Enc
   underlying : go.UnderlyingDirectedEq Enc.ty Enc.underlying
   get_b : ∀ (x : Enc), go.IsGoStepPureDetTagged under (StructFieldGet Enc.underlying go!"b") #x (Val #(x.b'))
@@ -619,29 +619,29 @@ attribute [instance] Enc.TypeAssumptions.type_repr
   Enc.TypeAssumptions.get_off
   Enc.TypeAssumptions.set_off
 
-structure Dec [FfiSyntax] where
+structure Dec [GooseExts] where
   mk ::
   b' : GoSlice
   off' : Loc
 
-noncomputable instance Dec.zero_val [FfiSyntax] : ZeroVal Dec :=
+noncomputable instance Dec.zero_val [GooseExts] : ZeroVal Dec :=
   ⟨Dec.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Dec.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Dec.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"b" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"off" (go.GoType.PointerType go.uint64))]
 
-@[irreducible] noncomputable def Dec.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Dec.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Dec.fieldsUnsealed
 
-noncomputable instance equals_unfold_Dec [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Dec [GooseExts] [GoGlobalContext] :
     EqualsUnfold Dec.fields Dec.fieldsUnsealed :=
   ⟨by unfold Dec.fields; rfl⟩
 
-@[reducible] noncomputable def Dec.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Dec.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Dec.fields)
 
-class Dec.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Dec.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Dec.underlying Dec
   underlying : go.UnderlyingDirectedEq Dec.ty Dec.underlying
   get_b : ∀ (x : Dec), go.IsGoStepPureDetTagged under (StructFieldGet Dec.underlying go!"b") #x (Val #(x.b'))
@@ -656,7 +656,7 @@ attribute [instance] Dec.TypeAssumptions.type_repr
   Dec.TypeAssumptions.get_off
   Dec.TypeAssumptions.set_off
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Enc_instance : Enc.TypeAssumptions
   Dec_instance : Dec.TypeAssumptions
   compute_new_cap_unfold : FuncUnfold compute_new_cap [] compute_new_cap.impl

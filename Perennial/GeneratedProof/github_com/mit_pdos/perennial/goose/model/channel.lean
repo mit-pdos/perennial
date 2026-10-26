@@ -20,7 +20,7 @@ namespace github_com.mit_pdos.perennial.goose.model.channel
 namespace Channel
 section def_
 
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
 variable [package_sem' : github_com.mit_pdos.perennial.goose.model.channel.Assumptions]

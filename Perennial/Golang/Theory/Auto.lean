@@ -277,7 +277,7 @@ macro "is_pkg_init_finish" : tactic => `(tactic| (
 /-! ## `if:` with an angelic `else` branch -/
 
 section if_angelic
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
@@ -858,7 +858,7 @@ end if_angelic_tac
 /-! ## Boolean cleanup -/
 
 section bool_lemmas
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
   [go.PreSemantics]
 
 theorem true_neq_false : (#true : val) ≠ #false := fun h =>
@@ -1016,7 +1016,7 @@ struct only these descriptions (built from the field list and the
 checked. If this fails, the struct code is executed symbolically (`wp_auto`). -/
 
 section struct_generic
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
@@ -1754,7 +1754,7 @@ macro "solve_into_val_typed_struct" : tactic =>
 instance equals_unfold_nil (A : Type) : EqualsUnfold (@List.nil A) (@List.nil A) := ⟨rfl⟩
 
 section intoVal_typed_unit
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]

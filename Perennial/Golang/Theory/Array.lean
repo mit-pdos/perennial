@@ -19,7 +19,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std BigSepL
 
 /-- `go.index_ref_array` with the `ZeroVal V` instance determined by
 `TypeRepr elem_type V` (see `go_zero_val_step'`). -/
-instance (priority := high) index_ref_array' [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+instance (priority := high) index_ref_array' [GooseExts] [GoLocalContext] [GoGlobalContext]
     [GoSemanticsFunctions] [go.PreSemantics] (n : Int) (elem_type : go.GoType) (i : w64) (l : Loc)
     {V : Type} {zv : ZeroVal V} [TypeRepr elem_type V] :
     ⟦IndexRef (go.ArrayType n elem_type), (#l, #i)⟧ ⤳[under]
@@ -27,7 +27,7 @@ instance (priority := high) index_ref_array' [FfiSyntax] [GoLocalContext] [GoGlo
        else Panic "index out of range") :=
   go.index_ref_array n elem_type i l
 
-instance (priority := high) slice_array_step' [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+instance (priority := high) slice_array_step' [GooseExts] [GoLocalContext] [GoGlobalContext]
     [GoSemanticsFunctions] [go.PreSemantics] (n : Int) (elem_type : go.GoType) (p : Loc)
     (low high : w64) {V : Type} {zv : ZeroVal V} [TypeRepr elem_type V] :
     ⟦Slice (go.ArrayType n elem_type), (#p, #low, #high)⟧ ⤳
@@ -37,7 +37,7 @@ instance (priority := high) slice_array_step' [FfiSyntax] [GoLocalContext] [GoGl
   go.slice_array_step n elem_type p low high
 
 section lemmas
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
@@ -195,7 +195,7 @@ theorem array_split (k : w64) (l : Loc) (dq : DFrac) (n : Int) (a : GoArray V n)
 end lemmas
 
 section intoVal
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
@@ -515,7 +515,7 @@ end intoVal
 /-! ## `len` and `cap` of an array -/
 
 section lenCap
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
@@ -563,7 +563,7 @@ them to their `for:` loop, which proofs then reason about with `wp_for`, as for
 `slice.forRange`. -/
 
 section forRange
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]

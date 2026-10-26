@@ -47,7 +47,7 @@ namespace Perennial
 
 namespace map
 section defs
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext]
 
 /-- An entry id `PairV key (idV n)`: `idV n` is an unbounded counter. Ids are internal to the map
 instructions: Go code never sees one. -/
@@ -149,7 +149,7 @@ end map
 
 namespace go
 section defs
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext]
 
 class MapSemantics [GoSemanticsFunctions] : Prop where
   internal_map_lookup_step (key_type : go.GoType) (dv : val) (es : List map.Entry) (k : val) :

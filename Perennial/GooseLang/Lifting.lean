@@ -27,9 +27,13 @@ Notes:
   `wp_GoInstruction_receipt`, which handles the stutter by Löb induction and
   hands out a time receipt; `Fork` (`wp_fork_tok`, likewise by Löb induction)
   hands out a thread token and `ThreadExit` (`wp_ThreadExit`) takes one back.
-* The state interpretation consists of a local part (`naHeapCtx`,
-  `ffiLocalCtx`, `ownGoStateCtx`, `goLctx` equality) plus the global part
-  (`ffiGlobalCtx`, iris-lean's prophecy map `prophMapInterp`).
+* The state interpretation consists of a local part (`naHeapCtx`, the
+  extensions' `Exts.localCtx`, `ownGoStateCtx`, `goLctx` equality) plus the
+  global part (`Exts.globalCtx`, iris-lean's prophecy map `prophMapInterp`).
+* Each extension (`Ext.lean`) has its ghost state (`ExtInterp`); `HasExt E`
+  says that the program's extensions include `E` with its semantics and ghost
+  state, and `wp_extStep` lifts a step of `E`'s operations to a WP, with
+  access to the heap and `E`'s state only.
 * `Alloc` allocates a single cell, so `wp_allocN_seq` gives `pointstoVals l
   (.own 1) [v]`.
 -/
@@ -109,7 +113,7 @@ attribute [local instance] GSet.lawfulSet
 /-! ## The heap points-to -/
 
 section definitions
-variable [ext : FfiSyntax] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
+variable [GooseExts] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
 
 /-- A non-null location with a non-atomic points-to. -/
 def heapPointsto (l : Loc) (dq : DFrac) (v : val) : IProp GF :=
@@ -127,7 +131,7 @@ end goose_heap
 open goose_heap
 
 section heapPointsto
-variable [ext : FfiSyntax] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
+variable [GooseExts] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
 open ProofMode
 
 instance heapPointsto_persistent (l : Loc) (v : val) :
@@ -291,22 +295,201 @@ theorem goState_init (hT : GoStatePreG GF) (package_inited : GMap GoString Bool)
 
 end go_state_definitions
 
-/-! ## FFI interpretation and GooseLang ghost state -/
+/-! ## The ghost state of extensions -/
 
-/-- An FFI layer's ghost state: `ffiLocalGS`/`ffiGlobalGS` bundle the CMRAs and
-ghost names it uses, and `ffiLocalCtx`/`ffiGlobalCtx` interpret its states.
-(The start resources `ffiGlobalStart`/`ffiLocalStart` are in
-`FfiInterpAdequacy`; there is no crash machinery.) -/
-class FfiInterp (ffi : FfiModel) where
-  ffiLocalGS : BundledGFunctors → Type
-  ffiGlobalGS : BundledGFunctors → Type
-  ffiGlobalCtx : ∀ {GF : BundledGFunctors}, ffiGlobalGS GF → ffi_global_state → IProp GF
-  ffiLocalCtx : ∀ {GF : BundledGFunctors}, ffiLocalGS GF → ffi_state → IProp GF
+/-- The ghost state of the extension `E`: `LocalGS`/`GlobalGS` bundle the CMRAs
+and ghost names it uses, and `localCtx`/`globalCtx` interpret its states in the
+state interpretation. For adequacy, it says how to allocate them (from `PreG`)
+for initial states satisfying `initP`/`initgP`, handing the program the start
+resources `localStart`/`globalStart`. -/
+class ExtInterp (E : GooseExt) where
+  LocalGS : BundledGFunctors → Type
+  GlobalGS : BundledGFunctors → Type
+  localCtx : ∀ {GF : BundledGFunctors}, LocalGS GF → E.LocalState → IProp GF
+  globalCtx : ∀ {GF : BundledGFunctors}, GlobalGS GF → E.GlobalState → IProp GF
+  /-- The ghost state that the adequacy theorem must provide (in `GooseGpreS`). -/
+  PreG : BundledGFunctors → Type
+  initgP : E.GlobalState → Prop
+  /-- Valid local starting states may depend on the global state. -/
+  initP : E.LocalState → E.GlobalState → Prop
+  /-- Resources handed to the program for the initial global state. -/
+  globalStart : ∀ {GF : BundledGFunctors}, GlobalGS GF → E.GlobalState → IProp GF
+  /-- Resources handed to the program for the initial local state. -/
+  localStart : ∀ {GF : BundledGFunctors}, LocalGS GF → E.LocalState → IProp GF
+  global_init : ∀ (GF : BundledGFunctors) (_hPre : PreG GF) (g : E.GlobalState), initgP g →
+    ⊢@{IProp GF} |==> ∃ hG : GlobalGS GF, globalCtx hG g ∗ globalStart hG g
+  local_init : ∀ (GF : BundledGFunctors) (_hPre : PreG GF) (σ : E.LocalState)
+    (g : E.GlobalState), initP σ g →
+    ⊢@{IProp GF} |==> ∃ hL : LocalGS GF, localCtx hL σ ∗ localStart hL σ
 
-export FfiInterp (ffiLocalGS ffiGlobalGS ffiGlobalCtx ffiLocalCtx)
+/-- The ghost state of the extensions of the program: one `ExtInterp` for each. -/
+class GooseInterp [GooseExts] where
+  interps : ExtTuple ExtInterp exts
+
+/-! ### The ghost state of a list of extensions
+
+The ghost state of a list `l` of extensions with ghost states `Is`: the products
+of their ghost states, the separating conjunctions of their interpretations and
+start resources, the conjunctions of their initial-state conditions. -/
+
+namespace Exts
+variable {GF : BundledGFunctors}
+
+def LocalGS : (l : List GooseExt) → ExtTuple ExtInterp l → BundledGFunctors → Type
+  | [], _, _ => PUnit
+  | _ :: l, Is, GF => Is.1.LocalGS GF × LocalGS l Is.2 GF
+
+def GlobalGS : (l : List GooseExt) → ExtTuple ExtInterp l → BundledGFunctors → Type
+  | [], _, _ => PUnit
+  | _ :: l, Is, GF => Is.1.GlobalGS GF × GlobalGS l Is.2 GF
+
+def PreG : (l : List GooseExt) → ExtTuple ExtInterp l → BundledGFunctors → Type
+  | [], _, _ => PUnit
+  | _ :: l, Is, GF => Is.1.PreG GF × PreG l Is.2 GF
+
+def localCtx : (l : List GooseExt) → (Is : ExtTuple ExtInterp l) → LocalGS l Is GF →
+    ExtsLocalState l → IProp GF
+  | [], _, _, _ => iprop(emp)
+  | _ :: l, Is, gs, w => iprop(Is.1.localCtx gs.1 w.1 ∗ localCtx l Is.2 gs.2 w.2)
+
+def globalCtx : (l : List GooseExt) → (Is : ExtTuple ExtInterp l) → GlobalGS l Is GF →
+    ExtsGlobalState l → IProp GF
+  | [], _, _, _ => iprop(emp)
+  | _ :: l, Is, gs, w => iprop(Is.1.globalCtx gs.1 w.1 ∗ globalCtx l Is.2 gs.2 w.2)
+
+def localStart : (l : List GooseExt) → (Is : ExtTuple ExtInterp l) → LocalGS l Is GF →
+    ExtsLocalState l → IProp GF
+  | [], _, _, _ => iprop(emp)
+  | _ :: l, Is, gs, w => iprop(Is.1.localStart gs.1 w.1 ∗ localStart l Is.2 gs.2 w.2)
+
+def globalStart : (l : List GooseExt) → (Is : ExtTuple ExtInterp l) → GlobalGS l Is GF →
+    ExtsGlobalState l → IProp GF
+  | [], _, _, _ => iprop(emp)
+  | _ :: l, Is, gs, w => iprop(Is.1.globalStart gs.1 w.1 ∗ globalStart l Is.2 gs.2 w.2)
+
+def initgP : (l : List GooseExt) → ExtTuple ExtInterp l → ExtsGlobalState l → Prop
+  | [], _, _ => True
+  | _ :: l, Is, g => Is.1.initgP g.1 ∧ initgP l Is.2 g.2
+
+def initP : (l : List GooseExt) → ExtTuple ExtInterp l → ExtsLocalState l →
+    ExtsGlobalState l → Prop
+  | [], _, _, _ => True
+  | _ :: l, Is, σ, g => Is.1.initP σ.1 g.1 ∧ initP l Is.2 σ.2 g.2
+
+open ProofMode in
+theorem global_init : (l : List GooseExt) → (Is : ExtTuple ExtInterp l) →
+    (hPre : PreG l Is GF) → (g : ExtsGlobalState l) → initgP l Is g →
+    ⊢@{IProp GF} |==> ∃ hG : GlobalGS l Is GF, globalCtx l Is hG g ∗ globalStart l Is hG g
+  | [], _, _, _, _ => by
+    iapply bupd_intro; iexists PUnit.unit; dsimp only [globalCtx, globalStart]
+    isplitl [] <;> iempintro
+  | _ :: l, Is, hPre, g, ⟨h1, h2⟩ => by
+    imod Is.1.global_init GF hPre.1 g.1 h1 with ⟨%hG1, Hc1, Hs1⟩
+    imod global_init l Is.2 hPre.2 g.2 h2 with ⟨%hG2, Hc2, Hs2⟩
+    imodintro
+    iexists ((hG1, hG2) : GlobalGS (_ :: l) Is GF)
+    dsimp only [globalCtx, globalStart]
+    isplitl [Hc1 Hc2]
+    · isplitl [Hc1] <;> iassumption
+    · isplitl [Hs1] <;> iassumption
+
+open ProofMode in
+theorem local_init : (l : List GooseExt) → (Is : ExtTuple ExtInterp l) →
+    (hPre : PreG l Is GF) → (σ : ExtsLocalState l) → (g : ExtsGlobalState l) →
+    initP l Is σ g →
+    ⊢@{IProp GF} |==> ∃ hL : LocalGS l Is GF, localCtx l Is hL σ ∗ localStart l Is hL σ
+  | [], _, _, _, _, _ => by
+    iapply bupd_intro; iexists PUnit.unit; dsimp only [localCtx, localStart]
+    isplitl [] <;> iempintro
+  | _ :: l, Is, hPre, σ, g, ⟨h1, h2⟩ => by
+    imod Is.1.local_init GF hPre.1 σ.1 g.1 h1 with ⟨%hL1, Hc1, Hs1⟩
+    imod local_init l Is.2 hPre.2 σ.2 g.2 h2 with ⟨%hL2, Hc2, Hs2⟩
+    imodintro
+    iexists ((hL1, hL2) : LocalGS (_ :: l) Is GF)
+    dsimp only [localCtx, localStart]
+    isplitl [Hc1 Hc2]
+    · isplitl [Hc1] <;> iassumption
+    · isplitl [Hs1] <;> iassumption
+
+end Exts
+
+namespace ExtIn
+variable {E : GooseExt} {GF : BundledGFunctors}
+
+/-- The local ghost state of the extension at position `m`. -/
+def localGS : {l : List GooseExt} → (m : ExtIn E l) → {Is : ExtTuple ExtInterp l} →
+    Exts.LocalGS l Is GF → (m.get Is).LocalGS GF
+  | _ :: _, .here, _, gs => gs.1
+  | _ :: _, .there m, _, gs => m.localGS gs.2
+
+/-- The global ghost state of the extension at position `m`. -/
+def globalGS : {l : List GooseExt} → (m : ExtIn E l) → {Is : ExtTuple ExtInterp l} →
+    Exts.GlobalGS l Is GF → (m.get Is).GlobalGS GF
+  | _ :: _, .here, _, gs => gs.1
+  | _ :: _, .there m, _, gs => m.globalGS gs.2
+
+open ProofMode in
+/-- Take out the interpretation of the local state of the extension at position
+`m`, to put back that of a new state. -/
+theorem localCtx_acc {l : List GooseExt} (m : ExtIn E l) (Is : ExtTuple ExtInterp l)
+    (gs : Exts.LocalGS l Is GF) (w : ExtsLocalState l) :
+    Exts.localCtx l Is gs w ⊢ (m.get Is).localCtx (m.localGS gs) (m.get w) ∗
+      ∀ x, (m.get Is).localCtx (m.localGS gs) x -∗ Exts.localCtx l Is gs (m.set w x) := by
+  induction m with
+  | here =>
+    show iprop(Is.1.localCtx gs.1 w.1 ∗ Exts.localCtx _ Is.2 gs.2 w.2) ⊢ Is.1.localCtx gs.1 w.1 ∗
+      ∀ x, Is.1.localCtx gs.1 x -∗ iprop(Is.1.localCtx gs.1 x ∗ Exts.localCtx _ Is.2 gs.2 w.2)
+    iintro ⟨H, Hr⟩
+    isplitl [H]
+    · iexact H
+    iintro %x Hx
+    isplitl [Hx] <;> iassumption
+  | there m ih =>
+    show iprop(Is.1.localCtx gs.1 w.1 ∗ Exts.localCtx _ Is.2 gs.2 w.2) ⊢ (m.get Is.2).localCtx (m.localGS gs.2) (m.get w.2) ∗
+      ∀ x, (m.get Is.2).localCtx (m.localGS gs.2) x -∗
+        iprop(Is.1.localCtx gs.1 w.1 ∗ Exts.localCtx _ Is.2 gs.2 (m.set w.2 x))
+    iintro ⟨Hh, Hr⟩
+    icases ih Is.2 gs.2 w.2 $$ Hr with ⟨H, Hclose⟩
+    isplitl [H]
+    · iexact H
+    iintro %x Hx
+    isplitl [Hh]
+    · iexact Hh
+    iapply Hclose $$ Hx
+
+open ProofMode in
+/-- Take out the interpretation of the global state of the extension at position
+`m`, to put back that of a new state. -/
+theorem globalCtx_acc {l : List GooseExt} (m : ExtIn E l) (Is : ExtTuple ExtInterp l)
+    (gs : Exts.GlobalGS l Is GF) (w : ExtsGlobalState l) :
+    Exts.globalCtx l Is gs w ⊢ (m.get Is).globalCtx (m.globalGS gs) (m.get w) ∗
+      ∀ x, (m.get Is).globalCtx (m.globalGS gs) x -∗ Exts.globalCtx l Is gs (m.set w x) := by
+  induction m with
+  | here =>
+    show iprop(Is.1.globalCtx gs.1 w.1 ∗ Exts.globalCtx _ Is.2 gs.2 w.2) ⊢ Is.1.globalCtx gs.1 w.1 ∗
+      ∀ x, Is.1.globalCtx gs.1 x -∗ iprop(Is.1.globalCtx gs.1 x ∗ Exts.globalCtx _ Is.2 gs.2 w.2)
+    iintro ⟨H, Hr⟩
+    isplitl [H]
+    · iexact H
+    iintro %x Hx
+    isplitl [Hx] <;> iassumption
+  | there m ih =>
+    show iprop(Is.1.globalCtx gs.1 w.1 ∗ Exts.globalCtx _ Is.2 gs.2 w.2) ⊢ (m.get Is.2).globalCtx (m.globalGS gs.2) (m.get w.2) ∗
+      ∀ x, (m.get Is.2).globalCtx (m.globalGS gs.2) x -∗
+        iprop(Is.1.globalCtx gs.1 w.1 ∗ Exts.globalCtx _ Is.2 gs.2 (m.set w.2 x))
+    iintro ⟨Hh, Hr⟩
+    icases ih Is.2 gs.2 w.2 $$ Hr with ⟨H, Hclose⟩
+    isplitl [H]
+    · iexact H
+    iintro %x Hx
+    isplitl [Hh]
+    · iexact Hh
+    iapply Hclose $$ Hx
+
+end ExtIn
 
 section goose_lang
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi]
+variable [GooseExts] [GooseInterp]
 
 /-- Global ghost state for GooseLang. -/
 class GooseGlobalGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
@@ -317,7 +500,8 @@ class GooseGlobalGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
   `[AllG GF]` (`Ghost/All.lean`) -/
   gooseAllG : AllG GF
   goose_prophGS : prophMapGS proph_id val GF (GMap proph_id)
-  gooseFfiGlobalGS : @ffiGlobalGS ffi _ GF
+  /-- the global ghost state of the extensions -/
+  gooseExtsGlobalGS : Exts.GlobalGS exts GooseInterp.interps GF
   /-- Time receipts, tied to the step fuel of the bounded semantics;
   carries the time-receipt bound `receiptBound GF` -/
   goose_receiptGS : ReceiptGS GF
@@ -327,7 +511,8 @@ class GooseGlobalGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
 
 /-- Per-generation ("local") ghost state. -/
 class GooseLocalGS (GF : BundledGFunctors) where
-  gooseFfiLocalGS : @ffiLocalGS ffi _ GF
+  /-- the local ghost state of the extensions -/
+  gooseExtsLocalGS : Exts.LocalGS exts GooseInterp.interps GF
   goose_go_local_context : GoLocalContext
   goose_na_heapGS : NaHeapGS Loc val GF
   goose_go_stateGS : GoStateGS GF
@@ -344,8 +529,18 @@ class HeapGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
 
 attribute [reducible, instance] HeapGS.goose_globalGS HeapGS.goose_localGS
 
-export GooseGlobalGS (gooseInvGS gooseFfiGlobalGS)
-export GooseLocalGS (gooseFfiLocalGS goose_go_local_context)
+export GooseGlobalGS (gooseInvGS gooseExtsGlobalGS)
+export GooseLocalGS (gooseExtsLocalGS goose_go_local_context)
+
+variable {hlc : HasLC} {GF : BundledGFunctors} in
+/-- The interpretation of the local states of the extensions. -/
+abbrev extsLocalCtx [L : GooseLocalGS GF] (w : ExtsLocalState exts) : IProp GF :=
+  Exts.localCtx exts GooseInterp.interps L.gooseExtsLocalGS w
+
+variable {hlc : HasLC} {GF : BundledGFunctors} in
+/-- The interpretation of the global states of the extensions. -/
+abbrev extsGlobalCtx [G : GooseGlobalGS hlc GF] (w : ExtsGlobalState exts) : IProp GF :=
+  Exts.globalCtx exts GooseInterp.interps G.gooseExtsGlobalGS w
 
 /-- The lock state of a `naMode`. -/
 def tls : NaMode → LockState
@@ -358,14 +553,14 @@ def tls : NaMode → LockState
 variable {hlc : HasLC} {GF : BundledGFunctors}
 
 /-- The GooseLang state interpretation: the per-generation part together with
-the global part (FFI global state and prophecy map). -/
+the global part (global state of the extensions and prophecy map). -/
 def gooseStateInterp [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
     (σ : CfgState) (κs : List Observation) : IProp GF :=
   iprop(naHeapCtx tls σ.1.heap ∗
-    ffiLocalCtx L.gooseFfiLocalGS σ.1.world ∗
+    extsLocalCtx σ.1.world ∗
     ownGoStateCtx σ.1.goState.packageState ∗
     ⌜σ.1.goState.goLctx = L.goose_go_local_context⌝ ∗
-    ffiGlobalCtx G.gooseFfiGlobalGS σ.2.globalWorld ∗
+    extsGlobalCtx σ.2.globalWorld ∗
     prophMapInterp κs σ.2.usedProphId)
 
 /-- The state interpretation of the bounded language: `gooseStateInterp` of
@@ -379,7 +574,7 @@ instance goose_stateInterp [GooseGlobalGS hlc GF] [GooseLocalGS GF] :
     StateInterp BcfgState Observation GF where
   stateInterp σ _ κs _ := gooseBstateInterp σ κs
 
-variable [FfiSemantics ext ffi] [GoGlobalContext]
+variable [GooseSemantics] [GoGlobalContext]
 
 instance goose_irisGS [G : GooseGlobalGS hlc GF] [GooseLocalGS GF] : IrisGS_gen hlc Expr GF where
   invGS := G.gooseInvGS
@@ -391,10 +586,76 @@ instance goose_irisGS [G : GooseGlobalGS hlc GF] [GooseLocalGS GF] : IrisGS_gen 
 
 end goose_lang
 
+/-! ## Membership of an extension, with its semantics and ghost state -/
+
+/-- The extensions of the program include `E`, with its semantics `S` and its
+ghost state `I` (iris's `ElemG`, for the semantics and the ghost state as well):
+the assumption of code and proofs about `E`. -/
+class HasExt [GooseExts] [GooseSemantics] [GooseInterp] (E : GooseExt) [S : ExtSemantics E]
+    [I : ExtInterp E] extends ElemExt E where
+  sem_eq : mem.get GooseSemantics.sems = S
+  interp_eq : mem.get GooseInterp.interps = I
+
+section has_ext
+variable [GooseExts] [GooseSemantics] [GooseInterp] {X : GooseExt} [ExtSemantics X]
+  [I : ExtInterp X] [hX : HasExt X] {hlc : HasLC} {GF : BundledGFunctors}
+
+/-- The local ghost state of the extension `X`. -/
+def extLocalGS (X : GooseExt) [ExtSemantics X] [I : ExtInterp X] [hX : HasExt X]
+    [L : GooseLocalGS GF] : I.LocalGS GF :=
+  cast (congrArg (fun J : ExtInterp X => J.LocalGS GF) hX.interp_eq) (hX.mem.localGS L.gooseExtsLocalGS)
+
+/-- The global ghost state of the extension `X`. -/
+def extGlobalGS (X : GooseExt) [ExtSemantics X] [I : ExtInterp X] [hX : HasExt X]
+    [G : GooseGlobalGS hlc GF] : I.GlobalGS GF :=
+  cast (congrArg (fun J : ExtInterp X => J.GlobalGS GF) hX.interp_eq) (hX.mem.globalGS G.gooseExtsGlobalGS)
+
+theorem ExtInterp.localCtx_cast {J K : ExtInterp X} (h : J = K) (x : J.LocalGS GF)
+    (σ : X.LocalState) :
+    J.localCtx x σ = K.localCtx (cast (congrArg (fun J : ExtInterp X => J.LocalGS GF) h) x) σ := by
+  subst h; rfl
+
+theorem ExtInterp.globalCtx_cast {J K : ExtInterp X} (h : J = K) (x : J.GlobalGS GF)
+    (g : X.GlobalState) :
+    J.globalCtx x g = K.globalCtx (cast (congrArg (fun J : ExtInterp X => J.GlobalGS GF) h) x) g := by
+  subst h; rfl
+
+open ProofMode in
+/-- Take out the interpretation of `X`'s local state, to put back that of a new state. -/
+theorem HasExt.localCtx_acc [L : GooseLocalGS GF] (w : ExtsLocalState exts) :
+    Exts.localCtx exts GooseInterp.interps L.gooseExtsLocalGS w ⊢
+      I.localCtx (extLocalGS X) (hX.mem.get w) ∗
+      ∀ x, I.localCtx (extLocalGS X) x -∗
+        Exts.localCtx exts GooseInterp.interps L.gooseExtsLocalGS (hX.mem.set w x) := by
+  have H := hX.mem.localCtx_acc GooseInterp.interps L.gooseExtsLocalGS w
+  simp only [ExtInterp.localCtx_cast hX.interp_eq] at H
+  exact H
+
+open ProofMode in
+/-- Take out the interpretation of `X`'s global state, to put back that of a new state. -/
+theorem HasExt.globalCtx_acc [G : GooseGlobalGS hlc GF] (w : ExtsGlobalState exts) :
+    Exts.globalCtx exts GooseInterp.interps G.gooseExtsGlobalGS w ⊢
+      I.globalCtx (extGlobalGS X) (hX.mem.get w) ∗
+      ∀ x, I.globalCtx (extGlobalGS X) x -∗
+        Exts.globalCtx exts GooseInterp.interps G.gooseExtsGlobalGS (hX.mem.set w x) := by
+  have H := hX.mem.globalCtx_acc GooseInterp.interps G.gooseExtsGlobalGS w
+  simp only [ExtInterp.globalCtx_cast hX.interp_eq] at H
+  exact H
+
+/-- The step of `X`'s operations in the program is `X`'s step. -/
+theorem HasExt.step_iff [GoGlobalContext] (o : X.Op) (v : val) (h : GMap Loc (NonAtomic val))
+    (σ : X.LocalState) (g : X.GlobalState) (e' : Expr) (h' : GMap Loc (NonAtomic val))
+    (σ' : X.LocalState) (g' : X.GlobalState) :
+    @ExtSemantics.step X (hX.mem.get GooseSemantics.sems) _ ⟨hX.mem⟩ _ o v h σ g e' h' σ' g' ↔
+      ExtSemantics.step o v h σ g e' h' σ' g' := by
+  rw [hX.sem_eq]
+
+end has_ext
+
 /-! ## Atomicity -/
 
 section atomic
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
 
 open EctxLanguage in
 /-- Atomicity from the real base step (an unwinding step ends in a value too).
@@ -465,7 +726,7 @@ iris-lean provides `PureExec` and `wp_pure_step_later`/`wp_pure_step_fupd`.
 `pureExec_of_base_step` builds a one-step `PureExec` from the base step relation. -/
 
 section pure
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
 
 open EctxLanguage in
 /-- A one-step `PureExec` from the real base step relation (for a plain
@@ -564,7 +825,7 @@ end pure
 /-! ## Inversion lemmas for `base_step` -/
 
 section inversion
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
 variable {σ σ' : CfgState} {κ : List Observation} {e' : Expr} {efs : List Expr}
 
 theorem baseStep_ArbitraryInt_inv (h : BaseStep ArbitraryInt σ κ e' σ' efs) :
@@ -656,7 +917,7 @@ end inversion
 /-! ## Lifting lemmas -/
 
 section lifting
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable {s : Stuckness} {E : CoPset}
@@ -676,10 +937,10 @@ def gooseCfgInterp (σ : CfgState) (_ns : Nat) (κs : List Observation) (_nt : N
 theorem goose_stateInterp_eq (σ : CfgState) (ns : Nat) (κs : List Observation) (nt : Nat) :
     gooseCfgInterp (GF := GF) σ ns κs nt ⊣⊢
       iprop(naHeapCtx tls σ.1.heap ∗
-        ffiLocalCtx L.gooseFfiLocalGS σ.1.world ∗
+        extsLocalCtx σ.1.world ∗
         ownGoStateCtx σ.1.goState.packageState ∗
         ⌜σ.1.goState.goLctx = L.goose_go_local_context⌝ ∗
-        ffiGlobalCtx G.gooseFfiGlobalGS σ.2.globalWorld ∗
+        extsGlobalCtx σ.2.globalWorld ∗
         prophMapInterp κs σ.2.usedProphId) := .rfl
 
 theorem goose_bstateInterp_eq (σ : CfgState) (c : Fuel) (ns : Nat) (κs : List Observation)
@@ -799,7 +1060,7 @@ theorem wp_lift_atomic_heap_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVa
   iapply goose_wp_lift_atomic_base_step_no_fork h hnc hnu
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+    ⟨Hheap, Hext, Hgs, %Hlctx, Hgext, Hproph⟩
   imod H $$ %σ₁ Hheap with ⟨%Hred, H⟩
   imodintro
   isplitr
@@ -813,6 +1074,87 @@ theorem wp_lift_atomic_heap_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVa
   iframe HΦ
   iapply (goose_stateInterp_eq _ (ns + 1) obs' nt).mpr
   dsimp only [setHeap, List.nil_append]
+  iframe
+  ipureintro; exact Hlctx
+
+/-- The lifting lemma for an operation `o` of the extension `X`: a step of `X`
+with access to the heap and to `X`'s state. -/
+theorem wp_extStep {X : GooseExt} [ExtSemantics X] [I : ExtInterp X] [hX : HasExt X]
+    (o : X.Op) (v : val) (Φ : val → IProp GF) (hv : v.isPanic = false) :
+    (∀ h σ g, naHeapCtx tls h -∗ I.localCtx (extLocalGS X) σ -∗
+      I.globalCtx (extGlobalGS X) g ={E,∅}=∗
+      ⌜∃ e' h' σ' g', ExtSemantics.step o v h σ g e' h' σ' g'⌝ ∗
+      ▷ ∀ e' h' σ' g', ⌜ExtSemantics.step o v h σ g e' h' σ' g'⌝ -∗ £ 1 ={∅,E}=∗
+        naHeapCtx tls h' ∗ I.localCtx (extLocalGS X) σ' ∗ I.globalCtx (extGlobalGS X) g' ∗
+        WP e' @ s; E {{ Φ }})
+    ⊢ WP (ExternalOp (extOp X o) (Val v)) @ s; E {{ Φ }} := by
+  iintro H
+  iapply goose_wp_lift_base_step rfl rfl (by not_unwinds)
+  iintro %σ₁ %ns %obs %obs' %nt Hσ
+  icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
+    ⟨Hheap, Hext, Hgs, %Hlctx, Hgext, Hproph⟩
+  icases HasExt.localCtx_acc (X := X) _ $$ Hext with ⟨Hl, Hlclose⟩
+  icases HasExt.globalCtx_acc (X := X) _ $$ Hgext with ⟨Hg, Hgclose⟩
+  imod H $$ %σ₁.1.heap %(hX.mem.get σ₁.1.world) %(hX.mem.get σ₁.2.globalWorld) Hheap Hl Hg
+    with ⟨%Hred, H⟩
+  imodintro
+  isplitr
+  · ipureintro
+    obtain ⟨e', h', σ', g', Hst⟩ := Hred
+    exact ⟨[], e', _, [], BaseStep.ExternalOpS _ _ _ σ₁ _
+      ((extStep_injOp _ _ _ _ _ _).2 ⟨h', σ', g', (HasExt.step_iff ..).2 Hst, rfl⟩)⟩
+  inext
+  iintro %e₂ %σ₂ %eₜ %Hbs Hcred
+  cases Hbs with
+  | ExternalOpS _ _ _ _ _ Hst =>
+  obtain ⟨h', σ', g', Hst', rfl⟩ := (extStep_injOp _ _ _ _ _ _).1 Hst
+  imod H $$ %e₂ %h' %σ' %g' %((HasExt.step_iff ..).1 Hst') Hcred with ⟨Hheap, Hl, Hg, Hwp⟩
+  imodintro
+  isplitl [Hheap Hl Hg Hlclose Hgclose Hgs Hproph]
+  · iapply (goose_stateInterp_eq _ _ _ _).mpr
+    dsimp only [List.nil_append]
+    iframe Hheap Hgs Hproph
+    isplitl [Hl Hlclose]
+    · iapply Hlclose $$ Hl
+    isplitr
+    · ipureintro; exact Hlctx
+    iapply Hgclose $$ Hg
+  iframe Hwp
+  iapply BigSepL.bigSepL_nil.2
+  itrivial
+
+/-- Access to the interpretation of the extension `X`'s state before any step
+of a non-value `e`. -/
+theorem wp_ext_acc {X : GooseExt} [ExtSemantics X] [I : ExtInterp X] [hX : HasExt X]
+    (e : Expr) (Φ : val → IProp GF) (h : toVal e = none) :
+    (∀ σ g, I.localCtx (extLocalGS X) σ -∗ I.globalCtx (extGlobalGS X) g ={E}=∗
+      I.localCtx (extLocalGS X) σ ∗ I.globalCtx (extGlobalGS X) g ∗ WP e @ s; E {{ Φ }})
+    ⊢ WP e @ s; E {{ Φ }} := by
+  have h' : ToVal.toVal (Val := val) e = none := h
+  iintro Hacc
+  iapply wp_unfold.2
+  unfold wp.pre
+  rw [h']
+  dsimp only
+  iintro %σ₁ %ns %obs %obs' %nt Hσ
+  rcases σ₁ with ⟨σ₁, c⟩
+  icases (goose_bstateInterp_eq σ₁ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc⟩
+  icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
+    ⟨Hheap, Hext, Hgs, %Hlctx, Hgext, Hproph⟩
+  icases HasExt.localCtx_acc (X := X) _ $$ Hext with ⟨Hl, Hlclose⟩
+  icases HasExt.globalCtx_acc (X := X) _ $$ Hgext with ⟨Hg, Hgclose⟩
+  imod Hacc $$ %(hX.mem.get σ₁.1.world) %(hX.mem.get σ₁.2.globalWorld) Hl Hg with ⟨Hl, Hg, Hwp⟩
+  ihave Hwp := wp_unfold.1 $$ Hwp
+  unfold wp.pre
+  rw [h']
+  dsimp only
+  iapply Hwp $$ %(σ₁, c) %ns %obs %obs' %nt
+  iapply (goose_bstateInterp_eq σ₁ c _ _ _).2
+  iframe Hc
+  iapply (goose_stateInterp_eq _ _ _ _).mpr
+  ihave Hl := Hlclose $$ Hl
+  ihave Hg := Hgclose $$ Hg
+  rw [ExtIn.set_get, ExtIn.set_get]
   iframe
   ipureintro; exact Hlctx
 
@@ -1253,7 +1595,7 @@ theorem wp_ThreadExit (Φ : val → IProp GF) :
   rcases σ₁ with ⟨σ, ⟨c, t⟩⟩
   icases (goose_bstateInterp_eq σ ⟨c, t⟩ ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
   icases (goose_stateInterp_eq σ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+    ⟨Hheap, Hext, Hgs, %Hlctx, Hgext, Hproph⟩
   imodintro
   isplitr
   · ipureintro; exact ⟨[], _, _, _, .exit (.base not_unwinds_ThreadExit (BaseStep.ThreadExitS σ))⟩
@@ -1267,9 +1609,9 @@ theorem wp_ThreadExit (Φ : val → IProp GF) :
     obtain ⟨rfl, rfl, rfl, rfl⟩ :=
       baseStep_ThreadExit_inv (baseStep_of_headStep not_unwinds_ThreadExit Hb)
     imodintro
-    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht Htok]
+    isplitl [Hheap Hext Hgs Hgext Hproph Hc Ht Htok]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
-      isplitl [Hheap Hffi Hgs Hgffi Hproph]
+      isplitl [Hheap Hext Hgs Hgext Hproph]
       · iapply (goose_stateInterp_eq _ _ _ _).mpr
         dsimp only [List.nil_append]
         iframe
@@ -1327,7 +1669,7 @@ theorem wp_fork_tok_upd (e : Expr) (Φ : val → IProp GF) :
   rcases σ₁ with ⟨σ, ⟨c, t⟩⟩
   icases (goose_bstateInterp_eq σ ⟨c, t⟩ ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
   icases (goose_stateInterp_eq σ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+    ⟨Hheap, Hext, Hgs, %Hlctx, Hgext, Hproph⟩
   have Hred : BaseStep.Reducible (Fork e, ((σ, ⟨c, t⟩) : BcfgState)) := by
     cases t with
     | zero => exact ⟨[], _, _, [], .forkStutter⟩
@@ -1353,7 +1695,7 @@ theorem wp_fork_tok_upd (e : Expr) (Φ : val → IProp GF) :
     imod Hclose
     imod H $$ Htok Hcred with ⟨He, HΦ⟩
     imodintro
-    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht]
+    isplitl [Hheap Hext Hgs Hgext Hproph Hc Ht]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
       iframe Hc Ht
       iapply (goose_stateInterp_eq _ _ _ _).mpr
@@ -1368,7 +1710,7 @@ theorem wp_fork_tok_upd (e : Expr) (Φ : val → IProp GF) :
   | forkStutter =>
     imod Hclose
     imodintro
-    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht]
+    isplitl [Hheap Hext Hgs Hgext Hproph Hc Ht]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
       iframe Hc Ht
       iapply (goose_stateInterp_eq _ _ _ _).mpr
@@ -1459,7 +1801,7 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
   rcases σ₁ with ⟨σ₁, ⟨c, t⟩⟩
   icases (goose_bstateInterp_eq σ₁ ⟨c, t⟩ ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+    ⟨Hheap, Hext, Hgs, %Hlctx, Hgext, Hproph⟩
   obtain ⟨e', s', h⟩ := Hok σ₁.1.goState.packageState
   have Hreal := HeadStep.base (not_unwinds_GoInstruction Harg)
     (BaseStep.GoInstructionS op arg e' s' σ₁ (Hlctx ▸ h))
@@ -1489,7 +1831,7 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
     · iframe Hc; iexact Hm
     imod HΦ $$ %e₂' %_ %s' %Hgo Hcred Hr Hm' Hgs with ⟨Hgs, Hwp⟩
     imodintro
-    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht]
+    isplitl [Hheap Hext Hgs Hgext Hproph Hc Ht]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
       iframe Hc Ht
       iapply (goose_stateInterp_eq _ _ _ _).mpr
@@ -1502,7 +1844,7 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
   | stutter _ _ =>
     imod Hclose
     imodintro
-    isplitl [Hheap Hffi Hgs Hgffi Hproph Hc Ht]
+    isplitl [Hheap Hext Hgs Hgext Hproph Hc Ht]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
       iframe Hc Ht
       iapply (goose_stateInterp_eq _ _ _ _).mpr
@@ -1570,7 +1912,7 @@ theorem wp_new_proph :
   iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+    ⟨Hheap, Hext, Hgs, %Hlctx, Hgext, Hproph⟩
   imodintro
   isplitr
   · ipureintro
@@ -1584,7 +1926,7 @@ theorem wp_new_proph :
   imodintro
   isplitr
   · ipureintro; trivial
-  isplitl [Hheap Hffi Hgs Hgffi Hproph]
+  isplitl [Hheap Hext Hgs Hgext Hproph]
   · iapply (goose_stateInterp_eq _ _ _ _).mpr
     dsimp only
     iframe
@@ -1602,7 +1944,7 @@ theorem wp_resolve_proph (p : proph_id) (pvs : List val) (v : val)
   iapply goose_wp_lift_atomic_base_step_no_fork rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
-    ⟨Hheap, Hffi, Hgs, %Hlctx, Hgffi, Hproph⟩
+    ⟨Hheap, Hext, Hgs, %Hlctx, Hgext, Hproph⟩
   imodintro
   isplitr
   · ipureintro; exact ⟨_, _, _, [], BaseStep.ResolveProphS p v σ₁⟩
@@ -1617,7 +1959,7 @@ theorem wp_resolve_proph (p : proph_id) (pvs : List val) (v : val)
   imodintro
   isplitr
   · ipureintro; trivial
-  isplitl [Hheap Hffi Hgs Hgffi Hproph]
+  isplitl [Hheap Hext Hgs Hgext Hproph]
   · iapply (goose_stateInterp_eq _ _ _ _).mpr
     iframe
     ipureintro; exact Hlctx
@@ -1640,7 +1982,7 @@ splits on the outcome of the expression under a `Catch`. A spec
 `isPanic_intoVal`), so it excludes panics. -/
 
 section panic
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable {s : Stuckness} {E : CoPset}

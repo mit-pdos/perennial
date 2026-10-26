@@ -68,8 +68,8 @@ type Ctx struct {
 	pkgIdent string
 	errorReporter
 
-	// the package uses an FFI (and so has no FfiSyntax parameter)
-	hasFfi bool
+	// the extensions the package uses (util.GetExts)
+	exts []string
 
 	// XXX: this is so we can determine the expected return type when handling a
 	// `returnStmt` so the appropriate conversion is inserted
@@ -116,7 +116,7 @@ func NewPkgCtx(pkg *packages.Package, filter declfilter.DeclFilter) Ctx {
 	return Ctx{
 		info:              pkg.TypesInfo,
 		pkgPath:           pkg.PkgPath,
-		hasFfi:            util.GetFfi(pkg) != "",
+		exts:              util.GetExts(pkg),
 		pkgIdent:          glang.LeanPkgId(pkg.PkgPath),
 		errorReporter:     newErrorReporter(pkg.Fset),
 		importNames:       make(map[string]*types.PkgName),

@@ -32,7 +32,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel
 
 section proof
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : channel.Assumptions]
@@ -46,7 +46,7 @@ instance get_isPkgInit_wf_inst :
 
 end proof
 
-instance Result.countable [FfiSyntax] : Pos.Countable Result :=
+instance Result.countable [GooseExts] : Pos.Countable Result :=
   .ofInjective (fun r => Pos.Countable.encode (r.value', r.primary_won'))
     (by rintro ⟨a, b⟩ ⟨c, d⟩ h; have h := Pos.encode_inj h; simp_all)
 

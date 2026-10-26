@@ -47,7 +47,7 @@ end laws
 /-! ## A counter of live threads that cannot overflow -/
 
 section counter
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics] [package_sem : sync.atomic.Assumptions]
@@ -128,17 +128,17 @@ safety for executions along which fewer than `2 ^ 31` threads are live (and of
 fewer than `N` steps, for the time-receipt bound `N` of its choice). -/
 
 section adequacy
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiInterpAdequacy ffi]
-variable [FfiSemantics ext ffi] [GoGlobalContext] {GF : BundledGFunctors}
+variable [GooseExts] [GooseInterp]
+variable [GooseSemantics] [GoGlobalContext] {GF : BundledGFunctors}
 
-example [GooseGpreS ffi GF] (N : Nat) (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
+example [GooseGpreS GF] (N : Nat) (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
     (hφ : ∀ p, ¬ φ (PanicV p))
-    (Hinitg : ffi_initgP g.globalWorld) (Hinit : ffi_initP σ.world g.globalWorld)
+    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
     (Hwp : ∀ [hG : HeapGS .hasLC GF],
       threadBound GF ≤ 2 ^ 31 →
       hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
-      ⊢ ffiGlobalStart (gooseFfiGlobalGS (ffi := ffi) (GF := GF)) g.globalWorld -∗
-        ffiLocalStart (gooseFfiLocalGS (ffi := ffi) (GF := GF)) σ.world -∗
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
+        extsLocalStart (GF := GF) σ.world -∗
         ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
         WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
     (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)

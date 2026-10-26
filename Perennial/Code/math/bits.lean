@@ -22,212 +22,212 @@ end pkg_id
 namespace math.bits
 
 /-- 32 or 64 -/
-@[reducible] noncomputable def uintSize [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def uintSize [GooseExts] [GoGlobalContext] : val :=
   #(64 : Int)
 
-@[reducible] noncomputable def UintSize [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def UintSize [GooseExts] [GoGlobalContext] : val :=
   #(64 : Int)
 
-@[reducible] noncomputable def deBruijn32 [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def deBruijn32 [GooseExts] [GoGlobalContext] : val :=
   #(125613361 : Int)
 
-@[reducible] noncomputable def deBruijn64 [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def deBruijn64 [GooseExts] [GoGlobalContext] : val :=
   #(285870213051353865 : Int)
 
 /-- 01010101 ... -/
-@[reducible] noncomputable def m0 [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def m0 [GooseExts] [GoGlobalContext] : val :=
   #(6148914691236517205 : Int)
 
 /-- 00110011 ... -/
-@[reducible] noncomputable def m1 [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def m1 [GooseExts] [GoGlobalContext] : val :=
   #(3689348814741910323 : Int)
 
 /-- 00001111 ... -/
-@[reducible] noncomputable def m2 [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def m2 [GooseExts] [GoGlobalContext] : val :=
   #(1085102592571150095 : Int)
 
 /-- etc. -/
-@[reducible] noncomputable def m3 [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def m3 [GooseExts] [GoGlobalContext] : val :=
   #(71777214294589695 : Int)
 
-@[reducible] noncomputable def m4 [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def m4 [GooseExts] [GoGlobalContext] : val :=
   #(281470681808895 : Int)
 
-@[reducible] noncomputable def ntz8tab [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ntz8tab [GooseExts] [GoGlobalContext] : val :=
   #(go!"\x08\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x04\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x05\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x04\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x06\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x04\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x05\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x04\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x07\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x04\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x05\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x04\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x06\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x04\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x05\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00\x04\x00\x01\x00\x02\x00\x01\x00\x03\x00\x01\x00\x02\x00\x01\x00")
 
-@[reducible] noncomputable def pop8tab [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def pop8tab [GooseExts] [GoGlobalContext] : val :=
   #(go!"\x00\x01\x01\x02\x01\x02\x02\x03\x01\x02\x02\x03\x02\x03\x03\x04\x01\x02\x02\x03\x02\x03\x03\x04\x02\x03\x03\x04\x03\x04\x04\x05\x01\x02\x02\x03\x02\x03\x03\x04\x02\x03\x03\x04\x03\x04\x04\x05\x02\x03\x03\x04\x03\x04\x04\x05\x03\x04\x04\x05\x04\x05\x05\x06\x01\x02\x02\x03\x02\x03\x03\x04\x02\x03\x03\x04\x03\x04\x04\x05\x02\x03\x03\x04\x03\x04\x04\x05\x03\x04\x04\x05\x04\x05\x05\x06\x02\x03\x03\x04\x03\x04\x04\x05\x03\x04\x04\x05\x04\x05\x05\x06\x03\x04\x04\x05\x04\x05\x05\x06\x04\x05\x05\x06\x05\x06\x06\x07\x01\x02\x02\x03\x02\x03\x03\x04\x02\x03\x03\x04\x03\x04\x04\x05\x02\x03\x03\x04\x03\x04\x04\x05\x03\x04\x04\x05\x04\x05\x05\x06\x02\x03\x03\x04\x03\x04\x04\x05\x03\x04\x04\x05\x04\x05\x05\x06\x03\x04\x04\x05\x04\x05\x05\x06\x04\x05\x05\x06\x05\x06\x06\x07\x02\x03\x03\x04\x03\x04\x04\x05\x03\x04\x04\x05\x04\x05\x05\x06\x03\x04\x04\x05\x04\x05\x05\x06\x04\x05\x05\x06\x05\x06\x06\x07\x03\x04\x04\x05\x04\x05\x05\x06\x04\x05\x05\x06\x05\x06\x06\x07\x04\x05\x05\x06\x05\x06\x06\x07\x05\x06\x06\x07\x06\x07\x07\x08")
 
-@[reducible] noncomputable def rev8tab [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def rev8tab [GooseExts] [GoGlobalContext] : val :=
   #([W8 0, W8 128, W8 64, W8 192, W8 32, W8 160, W8 96, W8 224, W8 16, W8 144, W8 80, W8 208, W8 48, W8 176, W8 112, W8 240, W8 8, W8 136, W8 72, W8 200, W8 40, W8 168, W8 104, W8 232, W8 24, W8 152, W8 88, W8 216, W8 56, W8 184, W8 120, W8 248, W8 4, W8 132, W8 68, W8 196, W8 36, W8 164, W8 100, W8 228, W8 20, W8 148, W8 84, W8 212, W8 52, W8 180, W8 116, W8 244, W8 12, W8 140, W8 76, W8 204, W8 44, W8 172, W8 108, W8 236, W8 28, W8 156, W8 92, W8 220, W8 60, W8 188, W8 124, W8 252, W8 2, W8 130, W8 66, W8 194, W8 34, W8 162, W8 98, W8 226, W8 18, W8 146, W8 82, W8 210, W8 50, W8 178, W8 114, W8 242, W8 10, W8 138, W8 74, W8 202, W8 42, W8 170, W8 106, W8 234, W8 26, W8 154, W8 90, W8 218, W8 58, W8 186, W8 122, W8 250, W8 6, W8 134, W8 70, W8 198, W8 38, W8 166, W8 102, W8 230, W8 22, W8 150, W8 86, W8 214, W8 54, W8 182, W8 118, W8 246, W8 14, W8 142, W8 78, W8 206, W8 46, W8 174, W8 110, W8 238, W8 30, W8 158, W8 94, W8 222, W8 62, W8 190, W8 126, W8 254, W8 1, W8 129, W8 65, W8 193, W8 33, W8 161, W8 97, W8 225, W8 17, W8 145, W8 81, W8 209, W8 49, W8 177, W8 113, W8 241, W8 9, W8 137, W8 73, W8 201, W8 41, W8 169, W8 105, W8 233, W8 25, W8 153, W8 89, W8 217, W8 57, W8 185, W8 121, W8 249, W8 5, W8 133, W8 69, W8 197, W8 37, W8 165, W8 101, W8 229, W8 21, W8 149, W8 85, W8 213, W8 53, W8 181, W8 117, W8 245, W8 13, W8 141, W8 77, W8 205, W8 45, W8 173, W8 109, W8 237, W8 29, W8 157, W8 93, W8 221, W8 61, W8 189, W8 125, W8 253, W8 3, W8 131, W8 67, W8 195, W8 35, W8 163, W8 99, W8 227, W8 19, W8 147, W8 83, W8 211, W8 51, W8 179, W8 115, W8 243, W8 11, W8 139, W8 75, W8 203, W8 43, W8 171, W8 107, W8 235, W8 27, W8 155, W8 91, W8 219, W8 59, W8 187, W8 123, W8 251, W8 7, W8 135, W8 71, W8 199, W8 39, W8 167, W8 103, W8 231, W8 23, W8 151, W8 87, W8 215, W8 55, W8 183, W8 119, W8 247, W8 15, W8 143, W8 79, W8 207, W8 47, W8 175, W8 111, W8 239, W8 31, W8 159, W8 95, W8 223, W8 63, W8 191, W8 127, W8 255] : GoString)
 
-@[reducible] noncomputable def len8tab [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def len8tab [GooseExts] [GoGlobalContext] : val :=
   #(go!"\x00\x01\x02\x02\x03\x03\x03\x03\x04\x04\x04\x04\x04\x04\x04\x04\x05\x05\x05\x05\x05\x05\x05\x05\x05\x05\x05\x05\x05\x05\x05\x05\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x06\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08")
 
-noncomputable def deBruijn32tab [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def deBruijn32tab [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.deBruijn32tab"
 
-noncomputable def deBruijn64tab [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def deBruijn64tab [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.deBruijn64tab"
 
-noncomputable def overflowError [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def overflowError [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.overflowError"
 
-noncomputable def divideError [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def divideError [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.divideError"
 
-noncomputable def LeadingZeros [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LeadingZeros [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.LeadingZeros"
 
-noncomputable def LeadingZeros8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LeadingZeros8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.LeadingZeros8"
 
-noncomputable def LeadingZeros16 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LeadingZeros16 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.LeadingZeros16"
 
-noncomputable def LeadingZeros32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LeadingZeros32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.LeadingZeros32"
 
-noncomputable def LeadingZeros64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LeadingZeros64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.LeadingZeros64"
 
-noncomputable def TrailingZeros [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def TrailingZeros [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.TrailingZeros"
 
-noncomputable def TrailingZeros8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def TrailingZeros8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.TrailingZeros8"
 
-noncomputable def TrailingZeros16 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def TrailingZeros16 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.TrailingZeros16"
 
-noncomputable def TrailingZeros32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def TrailingZeros32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.TrailingZeros32"
 
-noncomputable def TrailingZeros64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def TrailingZeros64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.TrailingZeros64"
 
-noncomputable def OnesCount [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def OnesCount [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.OnesCount"
 
-noncomputable def OnesCount8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def OnesCount8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.OnesCount8"
 
-noncomputable def OnesCount16 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def OnesCount16 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.OnesCount16"
 
-noncomputable def OnesCount32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def OnesCount32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.OnesCount32"
 
-noncomputable def OnesCount64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def OnesCount64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.OnesCount64"
 
-noncomputable def RotateLeft [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def RotateLeft [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.RotateLeft"
 
-noncomputable def RotateLeft8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def RotateLeft8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.RotateLeft8"
 
-noncomputable def RotateLeft16 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def RotateLeft16 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.RotateLeft16"
 
-noncomputable def RotateLeft32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def RotateLeft32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.RotateLeft32"
 
-noncomputable def RotateLeft64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def RotateLeft64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.RotateLeft64"
 
-noncomputable def Reverse [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Reverse [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Reverse"
 
-noncomputable def Reverse8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Reverse8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Reverse8"
 
-noncomputable def Reverse16 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Reverse16 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Reverse16"
 
-noncomputable def Reverse32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Reverse32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Reverse32"
 
-noncomputable def Reverse64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Reverse64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Reverse64"
 
-noncomputable def ReverseBytes [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReverseBytes [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.ReverseBytes"
 
-noncomputable def ReverseBytes16 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReverseBytes16 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.ReverseBytes16"
 
-noncomputable def ReverseBytes32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReverseBytes32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.ReverseBytes32"
 
-noncomputable def ReverseBytes64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReverseBytes64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.ReverseBytes64"
 
-noncomputable def Len [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Len [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Len"
 
-noncomputable def Len8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Len8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Len8"
 
-noncomputable def Len16 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Len16 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Len16"
 
-noncomputable def Len32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Len32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Len32"
 
-noncomputable def Len64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Len64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Len64"
 
-noncomputable def Add [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Add [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Add"
 
-noncomputable def Add32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Add32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Add32"
 
-noncomputable def Add64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Add64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Add64"
 
-noncomputable def Sub [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Sub [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Sub"
 
-noncomputable def Sub32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Sub32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Sub32"
 
-noncomputable def Sub64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Sub64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Sub64"
 
-noncomputable def Mul [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Mul [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Mul"
 
-noncomputable def Mul32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Mul32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Mul32"
 
-noncomputable def Mul64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Mul64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Mul64"
 
-noncomputable def Div [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Div [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Div"
 
-noncomputable def Div32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Div32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Div32"
 
-noncomputable def Div64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Div64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Div64"
 
-noncomputable def Rem [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Rem [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Rem"
 
-noncomputable def Rem32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Rem32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Rem32"
 
-noncomputable def Rem64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Rem64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/bits.Rem64"
 
 /-- LeadingZeros returns the number of leading zero bits in x; the result is [UintSize] for x == 0.
 
     go: bits.go:25:6 -/
-noncomputable def LeadingZeros.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LeadingZeros.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
@@ -238,7 +238,7 @@ noncomputable def LeadingZeros.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- LeadingZeros8 returns the number of leading zero bits in x; the result is 8 for x == 0.
 
     go: bits.go:28:6 -/
-noncomputable def LeadingZeros8.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LeadingZeros8.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
@@ -249,7 +249,7 @@ noncomputable def LeadingZeros8.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- LeadingZeros16 returns the number of leading zero bits in x; the result is 16 for x == 0.
 
     go: bits.go:31:6 -/
-noncomputable def LeadingZeros16.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LeadingZeros16.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
@@ -260,7 +260,7 @@ noncomputable def LeadingZeros16.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- LeadingZeros32 returns the number of leading zero bits in x; the result is 32 for x == 0.
 
     go: bits.go:34:6 -/
-noncomputable def LeadingZeros32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LeadingZeros32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
@@ -271,7 +271,7 @@ noncomputable def LeadingZeros32.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- LeadingZeros64 returns the number of leading zero bits in x; the result is 64 for x == 0.
 
     go: bits.go:37:6 -/
-noncomputable def LeadingZeros64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def LeadingZeros64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
@@ -282,7 +282,7 @@ noncomputable def LeadingZeros64.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- TrailingZeros returns the number of trailing zero bits in x; the result is [UintSize] for x == 0.
 
     go: bits.go:59:6 -/
-noncomputable def TrailingZeros.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def TrailingZeros.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
@@ -300,7 +300,7 @@ noncomputable def TrailingZeros.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- TrailingZeros8 returns the number of trailing zero bits in x; the result is 8 for x == 0.
 
     go: bits.go:67:6 -/
-noncomputable def TrailingZeros8.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def TrailingZeros8.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
@@ -310,7 +310,7 @@ noncomputable def TrailingZeros8.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- TrailingZeros16 returns the number of trailing zero bits in x; the result is 16 for x == 0.
 
     go: bits.go:72:6 -/
-noncomputable def TrailingZeros16.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def TrailingZeros16.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
@@ -326,7 +326,7 @@ noncomputable def TrailingZeros16.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- TrailingZeros32 returns the number of trailing zero bits in x; the result is 32 for x == 0.
 
     go: bits.go:81:6 -/
-noncomputable def TrailingZeros32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def TrailingZeros32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
@@ -342,7 +342,7 @@ noncomputable def TrailingZeros32.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- TrailingZeros64 returns the number of trailing zero bits in x; the result is 64 for x == 0.
 
     go: bits.go:90:6 -/
-noncomputable def TrailingZeros64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def TrailingZeros64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
@@ -358,7 +358,7 @@ noncomputable def TrailingZeros64.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- OnesCount returns the number of one bits ("population count") in x.
 
     go: bits.go:117:6 -/
-noncomputable def OnesCount.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def OnesCount.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
@@ -376,7 +376,7 @@ noncomputable def OnesCount.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- OnesCount8 returns the number of one bits ("population count") in x.
 
     go: bits.go:125:6 -/
-noncomputable def OnesCount8.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def OnesCount8.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
@@ -386,7 +386,7 @@ noncomputable def OnesCount8.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- OnesCount16 returns the number of one bits ("population count") in x.
 
     go: bits.go:130:6 -/
-noncomputable def OnesCount16.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def OnesCount16.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
@@ -396,7 +396,7 @@ noncomputable def OnesCount16.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- OnesCount32 returns the number of one bits ("population count") in x.
 
     go: bits.go:135:6 -/
-noncomputable def OnesCount32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def OnesCount32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
@@ -406,7 +406,7 @@ noncomputable def OnesCount32.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- OnesCount64 returns the number of one bits ("population count") in x.
 
     go: bits.go:140:6 -/
-noncomputable def OnesCount64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def OnesCount64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
@@ -441,7 +441,7 @@ noncomputable def OnesCount64.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:176:6 -/
-noncomputable def RotateLeft.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RotateLeft.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "k"
   (App (Val exceptionDo)
@@ -466,7 +466,7 @@ noncomputable def RotateLeft.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:187:6 -/
-noncomputable def RotateLeft8.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RotateLeft8.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "k"
   (App (Val exceptionDo)
@@ -487,7 +487,7 @@ noncomputable def RotateLeft8.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:197:6 -/
-noncomputable def RotateLeft16.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RotateLeft16.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "k"
   (App (Val exceptionDo)
@@ -508,7 +508,7 @@ noncomputable def RotateLeft16.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:207:6 -/
-noncomputable def RotateLeft32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RotateLeft32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "k"
   (App (Val exceptionDo)
@@ -529,7 +529,7 @@ noncomputable def RotateLeft32.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:217:6 -/
-noncomputable def RotateLeft64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def RotateLeft64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "k"
   (App (Val exceptionDo)
@@ -547,7 +547,7 @@ noncomputable def RotateLeft64.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Reverse returns the value of x with its bits in reversed order.
 
     go: bits.go:226:6 -/
-noncomputable def Reverse.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Reverse.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
@@ -565,7 +565,7 @@ noncomputable def Reverse.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Reverse8 returns the value of x with its bits in reversed order.
 
     go: bits.go:234:6 -/
-noncomputable def Reverse8.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Reverse8.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
@@ -575,7 +575,7 @@ noncomputable def Reverse8.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Reverse16 returns the value of x with its bits in reversed order.
 
     go: bits.go:239:6 -/
-noncomputable def Reverse16.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Reverse16.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
@@ -585,7 +585,7 @@ noncomputable def Reverse16.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Reverse32 returns the value of x with its bits in reversed order.
 
     go: bits.go:244:6 -/
-noncomputable def Reverse32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Reverse32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
@@ -609,7 +609,7 @@ noncomputable def Reverse32.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Reverse64 returns the value of x with its bits in reversed order.
 
     go: bits.go:253:6 -/
-noncomputable def Reverse64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Reverse64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
@@ -635,7 +635,7 @@ noncomputable def Reverse64.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:266:6 -/
-noncomputable def ReverseBytes.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReverseBytes.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
@@ -655,7 +655,7 @@ noncomputable def ReverseBytes.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:276:6 -/
-noncomputable def ReverseBytes16.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReverseBytes16.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (Var "x"))
@@ -667,7 +667,7 @@ noncomputable def ReverseBytes16.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:283:6 -/
-noncomputable def ReverseBytes32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReverseBytes32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint32))) (Var "x"))
@@ -684,7 +684,7 @@ noncomputable def ReverseBytes32.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:292:6 -/
-noncomputable def ReverseBytes64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ReverseBytes64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
@@ -703,7 +703,7 @@ noncomputable def ReverseBytes64.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Len returns the minimum number of bits required to represent x; the result is 0 for x == 0.
 
     go: bits.go:302:6 -/
-noncomputable def Len.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Len.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint))) (Var "x"))
@@ -721,7 +721,7 @@ noncomputable def Len.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Len8 returns the minimum number of bits required to represent x; the result is 0 for x == 0.
 
     go: bits.go:310:6 -/
-noncomputable def Len8.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Len8.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "x" (App (Val (GoInstruction (GoAlloc go.uint8))) (Var "x"))
@@ -731,7 +731,7 @@ noncomputable def Len8.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Len16 returns the minimum number of bits required to represent x; the result is 0 for x == 0.
 
     go: bits.go:315:6 -/
-noncomputable def Len16.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Len16.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -752,7 +752,7 @@ noncomputable def Len16.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Len32 returns the minimum number of bits required to represent x; the result is 0 for x == 0.
 
     go: bits.go:324:6 -/
-noncomputable def Len32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Len32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -782,7 +782,7 @@ noncomputable def Len32.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Len64 returns the minimum number of bits required to represent x; the result is 0 for x == 0.
 
     go: bits.go:337:6 -/
-noncomputable def Len64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Len64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (App (Val exceptionDo)
   (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
@@ -825,7 +825,7 @@ noncomputable def Len64.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:360:6 -/
-noncomputable def Add.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Add.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "carry"
@@ -883,7 +883,7 @@ noncomputable def Add.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:374:6 -/
-noncomputable def Add32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Add32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "carry"
@@ -916,7 +916,7 @@ noncomputable def Add32.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:386:6 -/
-noncomputable def Add64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Add64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "carry"
@@ -944,7 +944,7 @@ noncomputable def Add64.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:402:6 -/
-noncomputable def Sub.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Sub.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "borrow"
@@ -1002,7 +1002,7 @@ noncomputable def Sub.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:416:6 -/
-noncomputable def Sub32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Sub32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "borrow"
@@ -1030,7 +1030,7 @@ noncomputable def Sub32.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:431:6 -/
-noncomputable def Sub64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Sub64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (Lam "borrow"
@@ -1058,7 +1058,7 @@ noncomputable def Sub64.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:445:6 -/
-noncomputable def Mul.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Mul.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -1112,7 +1112,7 @@ noncomputable def Mul.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:459:6 -/
-noncomputable def Mul32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Mul32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -1143,7 +1143,7 @@ noncomputable def Mul32.impl [FfiSyntax] [GoGlobalContext] : val :=
     This function's execution time does not depend on the inputs.
 
     go: bits.go:470:6 -/
-noncomputable def Mul64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Mul64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
   (App (Val exceptionDo)
@@ -1212,7 +1212,7 @@ noncomputable def Mul64.impl [FfiSyntax] [GoGlobalContext] : val :=
     Div panics for y == 0 (division by zero) or y <= hi (quotient overflow).
 
     go: bits.go:492:6 -/
-noncomputable def Div.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Div.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
@@ -1269,7 +1269,7 @@ noncomputable def Div.impl [FfiSyntax] [GoGlobalContext] : val :=
     Div32 panics for y == 0 (division by zero) or y <= hi (quotient overflow).
 
     go: bits.go:505:6 -/
-noncomputable def Div32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Div32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
@@ -1308,7 +1308,7 @@ noncomputable def Div32.impl [FfiSyntax] [GoGlobalContext] : val :=
     Div64 panics for y == 0 (division by zero) or y <= hi (quotient overflow).
 
     go: bits.go:518:6 -/
-noncomputable def Div64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Div64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
@@ -1441,7 +1441,7 @@ noncomputable def Div64.impl [FfiSyntax] [GoGlobalContext] : val :=
     quotient overflow.
 
     go: bits.go:573:6 -/
-noncomputable def Rem.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Rem.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
@@ -1469,7 +1469,7 @@ noncomputable def Rem.impl [FfiSyntax] [GoGlobalContext] : val :=
     on a quotient overflow.
 
     go: bits.go:583:6 -/
-noncomputable def Rem32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Rem32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
@@ -1485,7 +1485,7 @@ noncomputable def Rem32.impl [FfiSyntax] [GoGlobalContext] : val :=
     on a quotient overflow.
 
     go: bits.go:590:6 -/
-noncomputable def Rem64.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Rem64.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "hi"
   (Lam "lo"
   (Lam "y"
@@ -1514,7 +1514,7 @@ noncomputable def Rem64.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.math.bits where
   pkgImportedPkgs := [pkg_id.«unsafe»]
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.math.bits)) (Lam BAnon
   (App (Val exceptionDo)
@@ -1637,7 +1637,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc divideError go.error)) (Val #()))))))))
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   LeadingZeros_unfold : FuncUnfold LeadingZeros [] LeadingZeros.impl
   LeadingZeros8_unfold : FuncUnfold LeadingZeros8 [] LeadingZeros8.impl
   LeadingZeros16_unfold : FuncUnfold LeadingZeros16 [] LeadingZeros16.impl

@@ -27,10 +27,10 @@ is translated (in `append_log.gold.lean`) to a type descriptor, a Lean
 structure for its values and its underlying struct type:
 
 ```lean
-def Log.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+def Log.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/append_log.Log" [])
 
-structure Log [FfiSyntax] where
+structure Log [GooseExts] where
   mk ::
   m' : Loc
   sz' : w64

@@ -22,14 +22,14 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.model.strings
 
-noncomputable def StringToByteSlice [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def StringToByteSlice [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/strings.StringToByteSlice"
 
-noncomputable def ByteSliceToString [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ByteSliceToString [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/strings.ByteSliceToString"
 
 /-- go: convert.go:3:6 -/
-noncomputable def StringToByteSlice.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def StringToByteSlice.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "s"
   (App (Val exceptionDo)
   (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
@@ -60,7 +60,7 @@ noncomputable def StringToByteSlice.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "a") (Var "$r0"))))))))))
 
 /-- go: convert.go:12:6 -/
-noncomputable def ByteSliceToString.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def ByteSliceToString.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "a"
   (App (Val exceptionDo)
   (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
@@ -86,14 +86,14 @@ noncomputable def ByteSliceToString.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.model.strings where
   pkgImportedPkgs := []
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.model.strings)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))))
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   StringToByteSlice_unfold : FuncUnfold StringToByteSlice [] StringToByteSlice.impl
   ByteSliceToString_unfold : FuncUnfold ByteSliceToString [] ByteSliceToString.impl
 

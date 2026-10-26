@@ -14,7 +14,7 @@ namespace Perennial
 open Iris Iris.BI
 
 section code
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- `func addOne(x uint64) uint64 { return x + 1 }` -/
 def addOne : val :=
@@ -53,7 +53,7 @@ def countTo : val :=
 end code
 
 section proofs
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
@@ -344,7 +344,7 @@ example (Φ : val → IProp GF) (t : go.GoType) (v : val) :
 end proofs
 
 section consts
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 /-- A package constant, as goose generates it. -/
 def testConst : val := #(W64 3)
 /-- An implementation constant, as `wp_func_call`/`wp_method_call` produce. -/
@@ -352,7 +352,7 @@ def testFn.impl : val := LamV "x" (Var "x")
 end consts
 
 section proofs2
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
@@ -375,30 +375,30 @@ example (Φ : val → IProp GF) :
 
 end proofs2
 
-/-! ### A struct, in the shape goose generates (`[ext] [ffi]` instance binders,
+/-! ### A struct, in the shape goose generates (`[GooseExts]` instance binders,
 `heapGS hlc GF`, named field conjuncts, and `@[reducible]`
 `fieldsUnsealed`/`underlying` definitions). -/
 
 noncomputable section
 namespace testpkg
 
-def pt.ty [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.Named go!"testpkg.pt" [])
+def pt.ty [GooseExts] [GoGlobalContext] : go.GoType := (go.GoType.Named go!"testpkg.pt" [])
 attribute [irreducible] pt.ty
 
-structure pt [FfiSyntax] where
+structure pt [GooseExts] where
   mk ::
   x' : w64
   y' : w64
-instance pt.zero_val [FfiSyntax] : ZeroVal pt := ⟨pt.mk zeroValDef zeroValDef⟩
+instance pt.zero_val [GooseExts] : ZeroVal pt := ⟨pt.mk zeroValDef zeroValDef⟩
 
-@[reducible] def pt.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def pt.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"x" go.uint64), (go.field_decl.FieldDecl go!"y" go.uint64)]
-@[irreducible] def pt.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl := pt.fieldsUnsealed
-instance equals_unfold_pt [FfiSyntax] [GoGlobalContext] : EqualsUnfold pt.fields pt.fieldsUnsealed :=
+@[irreducible] def pt.fields [GooseExts] [GoGlobalContext] : List go.field_decl := pt.fieldsUnsealed
+instance equals_unfold_pt [GooseExts] [GoGlobalContext] : EqualsUnfold pt.fields pt.fieldsUnsealed :=
   ⟨by unfold pt.fields; rfl⟩
-@[reducible] def pt.underlying [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.StructType pt.fields)
+@[reducible] def pt.underlying [GooseExts] [GoGlobalContext] : go.GoType := (go.GoType.StructType pt.fields)
 
-class pt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class pt.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying pt.underlying pt
   underlying : go.UnderlyingDirectedEq pt.ty pt.underlying
   get_x : ∀ (x : pt), go.IsGoStepPureDetTagged under (StructFieldGet pt.underlying go!"x") #x (Val #(x.x'))
@@ -409,7 +409,7 @@ attribute [instance] pt.TypeAssumptions.type_repr pt.TypeAssumptions.underlying 
   pt.TypeAssumptions.set_x pt.TypeAssumptions.get_y pt.TypeAssumptions.set_y
 
 section def_
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : pt.TypeAssumptions]
@@ -480,22 +480,22 @@ end
 noncomputable section
 namespace testpkg
 
-def ub.ty [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.Named go!"testpkg.ub" [])
+def ub.ty [GooseExts] [GoGlobalContext] : go.GoType := (go.GoType.Named go!"testpkg.ub" [])
 attribute [irreducible] ub.ty
 
-structure ub [FfiSyntax] where
+structure ub [GooseExts] where
   mk ::
   p' : w64
-instance ub.zero_val [FfiSyntax] : ZeroVal ub := ⟨ub.mk zeroValDef⟩
+instance ub.zero_val [GooseExts] : ZeroVal ub := ⟨ub.mk zeroValDef⟩
 
-@[reducible] def ub.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] def ub.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"p" go.uintptr)]
-@[irreducible] def ub.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl := ub.fieldsUnsealed
-instance equals_unfold_ub [FfiSyntax] [GoGlobalContext] : EqualsUnfold ub.fields ub.fieldsUnsealed :=
+@[irreducible] def ub.fields [GooseExts] [GoGlobalContext] : List go.field_decl := ub.fieldsUnsealed
+instance equals_unfold_ub [GooseExts] [GoGlobalContext] : EqualsUnfold ub.fields ub.fieldsUnsealed :=
   ⟨by unfold ub.fields; rfl⟩
-@[reducible] def ub.underlying [FfiSyntax] [GoGlobalContext] : go.GoType := (go.GoType.StructType ub.fields)
+@[reducible] def ub.underlying [GooseExts] [GoGlobalContext] : go.GoType := (go.GoType.StructType ub.fields)
 
-class ub.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ub.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying ub.underlying ub
   underlying : go.UnderlyingDirectedEq ub.ty ub.underlying
   get_p : ∀ (x : ub), go.IsGoStepPureDetTagged under (StructFieldGet ub.underlying go!"p") #x (Val #(x.p'))
@@ -504,7 +504,7 @@ attribute [instance] ub.TypeAssumptions.type_repr ub.TypeAssumptions.underlying
   ub.TypeAssumptions.get_p ub.TypeAssumptions.set_p
 
 section def_
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : ub.TypeAssumptions]
@@ -551,7 +551,7 @@ end
 
 /-! ### `uintptr` (see `go.UintptrSemantics`): a 64-bit unsigned integer -/
 section uintptr_tests
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
@@ -610,7 +610,7 @@ end uintptr_tests
 /-! Integer operations against Go's semantics: one pinned case per kind of
 operation where signed and unsigned (or sign and zero extension) differ. -/
 section int_op_tests
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]

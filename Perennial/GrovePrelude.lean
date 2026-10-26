@@ -1,15 +1,8 @@
 /-
-Makes the Grove FFI the global FFI, for code
-that uses `github.com/mit-pdos/gokv/grove_ffi`.
+The prelude for code that uses the Grove extension
+(`github.com/mit-pdos/gokv/grove_ffi`): its definition, `groveExt`. The code
+assumes `[ElemExt groveExt]`.
 -/
 module
 
-public import Perennial.GooseLang.Ffi.GroveFfi.Impl
-
-@[expose] public section
-
-namespace Perennial
-
-attribute [instance] grove_op grove_model
-
-end Perennial
+public import Perennial.GooseLang.Ext.Grove.Impl

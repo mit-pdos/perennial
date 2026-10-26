@@ -22,7 +22,7 @@ noncomputable section
 
 namespace runtime
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   userArena_instance : userArena.TypeAssumptions
   liveUserArenaChunk_instance : liveUserArenaChunk.TypeAssumptions
   writeUserArenaHeapBits_instance : writeUserArenaHeapBits.TypeAssumptions

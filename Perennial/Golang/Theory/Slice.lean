@@ -24,7 +24,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode BigSepL
 /-! ## Definitions -/
 
 noncomputable section defns
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
@@ -79,7 +79,7 @@ scoped notation:50 s:50 " ↦*□ " vs:50 => ownSlice s vs DFrac.discard
 /-! ## Pure lemmas about `slice.slice` -/
 
 section pure
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] [go.PreSemantics]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] [go.PreSemantics]
 variable {V : Type}
 
 theorem slice_to_full_slice (s : GoSlice) (low high : w64) :
@@ -109,7 +109,7 @@ end pure
 /-! ## Lemmas -/
 
 section lemmas
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
@@ -404,7 +404,7 @@ theorem slice_mk_eq_nil (p : Loc) (l c : w64) :
   simp [slice.nil, slice.mk]
 
 section lemmas2
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
@@ -745,7 +745,7 @@ end lemmas2
 
 (see `go_zero_val_step'`) -/
 
-instance (priority := high) index_ref_slice' [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+instance (priority := high) index_ref_slice' [GooseExts] [GoLocalContext] [GoGlobalContext]
     [GoSemanticsFunctions] [go.PreSemantics] (elem_type : go.GoType) (i : w64) (s : GoSlice)
     {V : Type} {zv : ZeroVal V} [TypeRepr elem_type V] :
     ⟦IndexRef (go.SliceType elem_type), (#s, #i)⟧ ⤳[under]
@@ -754,7 +754,7 @@ instance (priority := high) index_ref_slice' [FfiSyntax] [GoLocalContext] [GoGlo
      else Panic "slice index out of bounds") :=
   go.index_ref_slice elem_type i s
 
-instance (priority := high) slice_slice_step_pure' [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+instance (priority := high) slice_slice_step_pure' [GooseExts] [GoLocalContext] [GoGlobalContext]
     [GoSemanticsFunctions] [go.PreSemantics] (elem_type : go.GoType) (s : GoSlice) (low high : w64)
     {V : Type} {zv : ZeroVal V} [TypeRepr elem_type V] :
     ⟦Slice (go.SliceType elem_type), (#s, #low, #high)⟧ ⤳[under]
@@ -763,7 +763,7 @@ instance (priority := high) slice_slice_step_pure' [FfiSyntax] [GoLocalContext] 
      else Panic "slice bounds out of range") :=
   go.slice_slice_step_pure elem_type s low high
 
-instance (priority := high) fullSlice_slice_step_pure' [FfiSyntax] [GoLocalContext]
+instance (priority := high) fullSlice_slice_step_pure' [GooseExts] [GoLocalContext]
     [GoGlobalContext] [GoSemanticsFunctions] [go.PreSemantics] (elem_type : go.GoType) (s : GoSlice)
     (low high max : w64) {V : Type} {zv : ZeroVal V} [TypeRepr elem_type V] :
     ⟦FullSlice (go.SliceType elem_type), (#s, #low, #high, #max)⟧ ⤳[under]
@@ -776,7 +776,7 @@ instance (priority := high) fullSlice_slice_step_pure' [FfiSyntax] [GoLocalConte
 /-! ## WPs -/
 
 section pure_wps
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
@@ -814,7 +814,7 @@ instance pure_wp_slice_for_range (sl : GoSlice) (body : val) (t : go.GoType) :
 end pure_wps
 
 section wps
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]

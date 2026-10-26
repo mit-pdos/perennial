@@ -14,7 +14,7 @@ noncomputable section
 
 namespace time
 section code
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- The runtime's `newTimer(when, period, f, arg, cp)` (a `go:linkname`): a new `*Timer` with
 `initTimer` set (and no channel; `NewTimer` sets `C` itself), whose runtime timer calls

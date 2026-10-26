@@ -78,7 +78,7 @@ open Lean Elab Term Meta
 /-! ## Coercions used by GooseLang code -/
 
 section coercions
-variable [FfiSyntax]
+variable [GooseExts]
 
 /-- A `GoInstruction` is a value. -/
 instance : Coe GoInstruction val := ⟨GoInstruction⟩

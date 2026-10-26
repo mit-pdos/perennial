@@ -38,7 +38,7 @@ instance goStringLe_dec : DecidableRel GoStringLe :=
   fun x y => inferInstanceAs (Decidable (x = y ∨ GoStringLt x y))
 
 section defs
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext]
 open github_com.mit_pdos.perennial.goose.model
 
 class StringSemantics [GoSemanticsFunctions] : Prop where

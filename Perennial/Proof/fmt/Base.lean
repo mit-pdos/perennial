@@ -253,13 +253,13 @@ example : parseIntVerb go!"05v" = none := by decide
 example : parseIntVerb go!"5d" = none := by decide
 
 /-- One of Go's ten (predeclared) integer types, which the model of `Sprintf` formats. -/
-def IsIntType [FfiSyntax] (t : go.GoType) : Prop :=
+def IsIntType [GooseExts] (t : go.GoType) : Prop :=
   t = go.int ∨ t = go.int64 ∨ t = go.int32 ∨ t = go.int16 ∨ t = go.int8 ∨
   t = go.uint ∨ t = go.uint64 ∨ t = go.uint32 ∨ t = go.uint16 ∨ t = go.uint8
 
 /-- `IntArgValue ii z`: the interface `ii` holds the integer `z`, of one of Go's integer types
 (signed for `int`, ..., `int8`, unsigned for `uint`, ..., `uint8`). -/
-inductive IntArgValue [FfiSyntax] [GoGlobalContext] : GoInterfaceOk → Int → Prop
+inductive IntArgValue [GooseExts] [GoGlobalContext] : GoInterfaceOk → Int → Prop
   | int (n : w64) : IntArgValue (interface.mk go.int #n) (sint.Z n)
   | int64 (n : w64) : IntArgValue (interface.mk go.int64 #n) (sint.Z n)
   | int32 (n : w32) : IntArgValue (interface.mk go.int32 #n) (sint.Z n)
@@ -271,66 +271,66 @@ inductive IntArgValue [FfiSyntax] [GoGlobalContext] : GoInterfaceOk → Int → 
   | uint16 (n : w16) : IntArgValue (interface.mk go.uint16 #n) (uint.Z n)
   | uint8 (n : w8) : IntArgValue (interface.mk go.uint8 #n) (uint.Z n)
 
-theorem IntArgValue.cast [FfiSyntax] [GoGlobalContext] {ii : GoInterfaceOk} {z z' : Int}
+theorem IntArgValue.cast [GooseExts] [GoGlobalContext] {ii : GoInterfaceOk} {z z' : Int}
     (h : IntArgValue ii z) (e : z = z') : IntArgValue ii z' := e ▸ h
 
 /-! Inversions of `IntArgValue`: the value of an interface of an integer type. -/
 
-theorem IntArgValue.of_int [FfiSyntax] [GoGlobalContext] {v : val} {z : Int}
+theorem IntArgValue.of_int [GooseExts] [GoGlobalContext] {v : val} {z : Int}
     (h : IntArgValue (interface.mk go.int v) z) : ∃ n : w64, v = #n ∧ z = sint.Z n := by
   generalize hii : interface.mk go.int v = ii at h
   cases h <;> simp only [GoInterfaceOk.mk.injEq] at hii <;> obtain ⟨hty, rfl⟩ := hii <;>
     first | exact ⟨_, rfl, rfl⟩ | (exfalso; simp [go.int, go.int32, go.int16, go.int8, go.uint, go.uint64, go.uint32, go.uint16, go.uint8] at hty)
 
-theorem IntArgValue.of_int64 [FfiSyntax] [GoGlobalContext] {v : val} {z : Int}
+theorem IntArgValue.of_int64 [GooseExts] [GoGlobalContext] {v : val} {z : Int}
     (h : IntArgValue (interface.mk go.int64 v) z) : ∃ n : w64, v = #n ∧ z = sint.Z n := by
   generalize hii : interface.mk go.int64 v = ii at h
   cases h <;> simp only [GoInterfaceOk.mk.injEq] at hii <;> obtain ⟨hty, rfl⟩ := hii <;>
     first | exact ⟨_, rfl, rfl⟩ | (exfalso; simp [go.int64, go.int32, go.int16, go.int8, go.uint, go.uint64, go.uint32, go.uint16, go.uint8] at hty)
 
-theorem IntArgValue.of_int32 [FfiSyntax] [GoGlobalContext] {v : val} {z : Int}
+theorem IntArgValue.of_int32 [GooseExts] [GoGlobalContext] {v : val} {z : Int}
     (h : IntArgValue (interface.mk go.int32 v) z) : ∃ n : w32, v = #n ∧ z = sint.Z n := by
   generalize hii : interface.mk go.int32 v = ii at h
   cases h <;> simp only [GoInterfaceOk.mk.injEq] at hii <;> obtain ⟨hty, rfl⟩ := hii <;>
     first | exact ⟨_, rfl, rfl⟩ | (exfalso; simp [go.int, go.int64, go.int32, go.int16, go.int8, go.uint, go.uint64, go.uint32, go.uint16, go.uint8] at hty)
 
-theorem IntArgValue.of_int16 [FfiSyntax] [GoGlobalContext] {v : val} {z : Int}
+theorem IntArgValue.of_int16 [GooseExts] [GoGlobalContext] {v : val} {z : Int}
     (h : IntArgValue (interface.mk go.int16 v) z) : ∃ n : w16, v = #n ∧ z = sint.Z n := by
   generalize hii : interface.mk go.int16 v = ii at h
   cases h <;> simp only [GoInterfaceOk.mk.injEq] at hii <;> obtain ⟨hty, rfl⟩ := hii <;>
     first | exact ⟨_, rfl, rfl⟩ | (exfalso; simp [go.int, go.int64, go.int32, go.int16, go.int8, go.uint, go.uint64, go.uint32, go.uint16, go.uint8] at hty)
 
-theorem IntArgValue.of_int8 [FfiSyntax] [GoGlobalContext] {v : val} {z : Int}
+theorem IntArgValue.of_int8 [GooseExts] [GoGlobalContext] {v : val} {z : Int}
     (h : IntArgValue (interface.mk go.int8 v) z) : ∃ n : w8, v = #n ∧ z = sint.Z n := by
   generalize hii : interface.mk go.int8 v = ii at h
   cases h <;> simp only [GoInterfaceOk.mk.injEq] at hii <;> obtain ⟨hty, rfl⟩ := hii <;>
     first | exact ⟨_, rfl, rfl⟩ | (exfalso; simp [go.int, go.int64, go.int32, go.int16, go.int8, go.uint, go.uint64, go.uint32, go.uint16, go.uint8] at hty)
 
-theorem IntArgValue.of_uint [FfiSyntax] [GoGlobalContext] {v : val} {z : Int}
+theorem IntArgValue.of_uint [GooseExts] [GoGlobalContext] {v : val} {z : Int}
     (h : IntArgValue (interface.mk go.uint v) z) : ∃ n : w64, v = #n ∧ z = uint.Z n := by
   generalize hii : interface.mk go.uint v = ii at h
   cases h <;> simp only [GoInterfaceOk.mk.injEq] at hii <;> obtain ⟨hty, rfl⟩ := hii <;>
     first | exact ⟨_, rfl, rfl⟩ | (exfalso; simp [go.int, go.int64, go.int32, go.int16, go.int8, go.uint, go.uint32, go.uint16, go.uint8] at hty)
 
-theorem IntArgValue.of_uint64 [FfiSyntax] [GoGlobalContext] {v : val} {z : Int}
+theorem IntArgValue.of_uint64 [GooseExts] [GoGlobalContext] {v : val} {z : Int}
     (h : IntArgValue (interface.mk go.uint64 v) z) : ∃ n : w64, v = #n ∧ z = uint.Z n := by
   generalize hii : interface.mk go.uint64 v = ii at h
   cases h <;> simp only [GoInterfaceOk.mk.injEq] at hii <;> obtain ⟨hty, rfl⟩ := hii <;>
     first | exact ⟨_, rfl, rfl⟩ | (exfalso; simp [go.int, go.int64, go.int32, go.int16, go.int8, go.uint64, go.uint32, go.uint16, go.uint8] at hty)
 
-theorem IntArgValue.of_uint32 [FfiSyntax] [GoGlobalContext] {v : val} {z : Int}
+theorem IntArgValue.of_uint32 [GooseExts] [GoGlobalContext] {v : val} {z : Int}
     (h : IntArgValue (interface.mk go.uint32 v) z) : ∃ n : w32, v = #n ∧ z = uint.Z n := by
   generalize hii : interface.mk go.uint32 v = ii at h
   cases h <;> simp only [GoInterfaceOk.mk.injEq] at hii <;> obtain ⟨hty, rfl⟩ := hii <;>
     first | exact ⟨_, rfl, rfl⟩ | (exfalso; simp [go.int, go.int64, go.int32, go.int16, go.int8, go.uint, go.uint64, go.uint32, go.uint16, go.uint8] at hty)
 
-theorem IntArgValue.of_uint16 [FfiSyntax] [GoGlobalContext] {v : val} {z : Int}
+theorem IntArgValue.of_uint16 [GooseExts] [GoGlobalContext] {v : val} {z : Int}
     (h : IntArgValue (interface.mk go.uint16 v) z) : ∃ n : w16, v = #n ∧ z = uint.Z n := by
   generalize hii : interface.mk go.uint16 v = ii at h
   cases h <;> simp only [GoInterfaceOk.mk.injEq] at hii <;> obtain ⟨hty, rfl⟩ := hii <;>
     first | exact ⟨_, rfl, rfl⟩ | (exfalso; simp [go.int, go.int64, go.int32, go.int16, go.int8, go.uint, go.uint64, go.uint32, go.uint16, go.uint8] at hty)
 
-theorem IntArgValue.of_uint8 [FfiSyntax] [GoGlobalContext] {v : val} {z : Int}
+theorem IntArgValue.of_uint8 [GooseExts] [GoGlobalContext] {v : val} {z : Int}
     (h : IntArgValue (interface.mk go.uint8 v) z) : ∃ n : w8, v = #n ∧ z = uint.Z n := by
   generalize hii : interface.mk go.uint8 v = ii at h
   cases h <;> simp only [GoInterfaceOk.mk.injEq] at hii <;> obtain ⟨hty, rfl⟩ := hii <;>
@@ -339,7 +339,7 @@ theorem IntArgValue.of_uint8 [FfiSyntax] [GoGlobalContext] {v : val} {z : Int}
 /-- At `%` followed by `f`, with arguments `args` left: whether the model formats the directive
 (`%%`, `%s` of an interface holding a `string`, or an integer directive, `parseIntVerb`, of an
 interface holding an integer); at any other directive the rest of the output is arbitrary. -/
-def SimpleDirective [FfiSyntax] : GoString → List GoInterface → Prop
+def SimpleDirective [GooseExts] : GoString → List GoInterface → Prop
   | c :: f, args =>
       c = W8 37 ∨ (c = W8 115 ∧ ∃ ii rest, args = interface.ok ii :: rest ∧ ii.ty = go.string) ∨
       ((parseIntVerb (c :: f)).isSome ∧ ∃ ii rest, args = interface.ok ii :: rest ∧ IsIntType ii.ty)
@@ -350,7 +350,7 @@ as the model of `Sprintf` formats it. Bytes other than `%` are copied, `%%` give
 an interface holding a `string` next gives that string, `%d`, `%v` and `%0Nd` with an interface
 holding an integer next give its (zero-padded) decimal; at any other directive, and after the
 format if arguments remain unused, the rest of the output is arbitrary. -/
-inductive SprintfOut [FfiSyntax] [GoGlobalContext] :
+inductive SprintfOut [GooseExts] [GoGlobalContext] :
     GoString → List GoInterface → GoString → Prop
   /-- The end of the format, every argument used: nothing more. -/
   | done : SprintfOut [] [] []
@@ -379,7 +379,7 @@ inductive SprintfOut [FfiSyntax] [GoGlobalContext] :
 
 /-- The arguments' dynamic types tell the truth about `string`s: an argument whose dynamic type
 is `string` holds a string. (Go's typing guarantees it; a `GoInterface` does not.) -/
-def StringArgsWf [FfiSyntax] [GoGlobalContext] (args : List GoInterface) : Prop :=
+def StringArgsWf [GooseExts] [GoGlobalContext] (args : List GoInterface) : Prop :=
   ∀ ii, interface.ok ii ∈ args → ii.ty = go.string → ∃ x : GoString, ii.v = #x
 
 /-- One of Go's predeclared basic types (`string`, `bool`, the integer, floating-point and
@@ -388,7 +388,7 @@ complex types). These have no methods, so Go's formatting of such an argument ca
 `Printf`, which never call an argument's methods, are faithful only for such arguments. (A
 named type, even one whose underlying type is basic, is not a predeclared type: `go.int` is
 `go.Named "int" []`.) -/
-def IsBasicType [FfiSyntax] (t : go.GoType) : Prop :=
+def IsBasicType [GooseExts] (t : go.GoType) : Prop :=
   t = go.string ∨ t = go.bool ∨ IsIntType t ∨ t = go.uintptr ∨ t = go.float32 ∨
   t = go.float64 ∨ t = go.complex64 ∨ t = go.complex128
 
@@ -396,17 +396,17 @@ def IsBasicType [FfiSyntax] (t : go.GoType) : Prop :=
 `Sprintf` formats: a `string` holds a string, an integer type an integer of its size (Go's
 typing guarantees it; a `GoInterface` does not); and the type is a predeclared basic type
 (`IsBasicType`), so that Go calls no method of the argument while formatting it. -/
-def ArgWf [FfiSyntax] [GoGlobalContext] (ii : GoInterfaceOk) : Prop :=
+def ArgWf [GooseExts] [GoGlobalContext] (ii : GoInterfaceOk) : Prop :=
   (ii.ty = go.string → ∃ x : GoString, ii.v = #x) ∧ (IsIntType ii.ty → ∃ z, IntArgValue ii z) ∧
   IsBasicType ii.ty
 
 /-- Every argument is `nil` or well-formed (`ArgWf`): what `wp_Sprintf`, `wp_Errorf` and
 `wp_Printf` need of the arguments. -/
-def ArgsWf [FfiSyntax] [GoGlobalContext] (args : List GoInterface) : Prop :=
+def ArgsWf [GooseExts] [GoGlobalContext] (args : List GoInterface) : Prop :=
   ∀ ii, interface.ok ii ∈ args → ArgWf ii
 
 section prefix_lemmas
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 theorem StringArgsWf.nil : StringArgsWf ([] : List GoInterface) := by
   intro ii h; simp at h
@@ -686,7 +686,7 @@ example : decimalPad 2 12345 = go!"12345" := by
 end prefix_lemmas
 
 section wps
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]

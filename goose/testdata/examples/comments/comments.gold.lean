@@ -20,48 +20,48 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.comments
 
-noncomputable def Foo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Foo.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/comments.Foo" [])
 
 attribute [irreducible] Foo.ty
 
-@[reducible] noncomputable def ONE [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def ONE [GooseExts] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] noncomputable def TWO [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def TWO [GooseExts] [GoGlobalContext] : val :=
   #(W64 2)
 
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.comments where
   pkgImportedPkgs := []
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.comments)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))))
 
-structure Foo [FfiSyntax] where
+structure Foo [GooseExts] where
   mk ::
   a' : Bool
 
-noncomputable instance Foo.zero_val [FfiSyntax] : ZeroVal Foo :=
+noncomputable instance Foo.zero_val [GooseExts] : ZeroVal Foo :=
   ⟨Foo.mk zeroValDef⟩
 
-@[reducible] noncomputable def Foo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Foo.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"a" go.bool)]
 
-@[irreducible] noncomputable def Foo.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Foo.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Foo.fieldsUnsealed
 
-noncomputable instance equals_unfold_Foo [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Foo [GooseExts] [GoGlobalContext] :
     EqualsUnfold Foo.fields Foo.fieldsUnsealed :=
   ⟨by unfold Foo.fields; rfl⟩
 
-@[reducible] noncomputable def Foo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Foo.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Foo.fields)
 
-class Foo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Foo.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Foo.underlying Foo
   underlying : go.UnderlyingDirectedEq Foo.ty Foo.underlying
   get_a : ∀ (x : Foo), go.IsGoStepPureDetTagged under (StructFieldGet Foo.underlying go!"a") #x (Val #(x.a'))
@@ -72,7 +72,7 @@ attribute [instance] Foo.TypeAssumptions.type_repr
   Foo.TypeAssumptions.get_a
   Foo.TypeAssumptions.set_a
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Foo_instance : Foo.TypeAssumptions
 
 attribute [instance] Assumptions.Foo_instance

@@ -22,277 +22,277 @@ end pkg_id
 
 namespace io
 
-noncomputable def Reader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Reader.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.Reader" [])
 
 attribute [irreducible] Reader.ty
 
-noncomputable def Writer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Writer.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.Writer" [])
 
 attribute [irreducible] Writer.ty
 
-noncomputable def Closer.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Closer.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.Closer" [])
 
 attribute [irreducible] Closer.ty
 
-noncomputable def Seeker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Seeker.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.Seeker" [])
 
 attribute [irreducible] Seeker.ty
 
-noncomputable def ReadWriter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ReadWriter.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.ReadWriter" [])
 
 attribute [irreducible] ReadWriter.ty
 
-noncomputable def ReadCloser.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ReadCloser.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.ReadCloser" [])
 
 attribute [irreducible] ReadCloser.ty
 
-noncomputable def WriteCloser.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def WriteCloser.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.WriteCloser" [])
 
 attribute [irreducible] WriteCloser.ty
 
-noncomputable def ReadWriteCloser.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ReadWriteCloser.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.ReadWriteCloser" [])
 
 attribute [irreducible] ReadWriteCloser.ty
 
-noncomputable def ReadSeeker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ReadSeeker.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.ReadSeeker" [])
 
 attribute [irreducible] ReadSeeker.ty
 
-noncomputable def ReadSeekCloser.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ReadSeekCloser.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.ReadSeekCloser" [])
 
 attribute [irreducible] ReadSeekCloser.ty
 
-noncomputable def WriteSeeker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def WriteSeeker.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.WriteSeeker" [])
 
 attribute [irreducible] WriteSeeker.ty
 
-noncomputable def ReadWriteSeeker.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ReadWriteSeeker.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.ReadWriteSeeker" [])
 
 attribute [irreducible] ReadWriteSeeker.ty
 
-noncomputable def ReaderFrom.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ReaderFrom.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.ReaderFrom" [])
 
 attribute [irreducible] ReaderFrom.ty
 
-noncomputable def WriterTo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def WriterTo.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.WriterTo" [])
 
 attribute [irreducible] WriterTo.ty
 
-noncomputable def ReaderAt.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ReaderAt.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.ReaderAt" [])
 
 attribute [irreducible] ReaderAt.ty
 
-noncomputable def WriterAt.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def WriterAt.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.WriterAt" [])
 
 attribute [irreducible] WriterAt.ty
 
-noncomputable def ByteReader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ByteReader.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.ByteReader" [])
 
 attribute [irreducible] ByteReader.ty
 
-noncomputable def ByteScanner.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ByteScanner.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.ByteScanner" [])
 
 attribute [irreducible] ByteScanner.ty
 
-noncomputable def ByteWriter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def ByteWriter.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.ByteWriter" [])
 
 attribute [irreducible] ByteWriter.ty
 
-noncomputable def RuneReader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def RuneReader.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.RuneReader" [])
 
 attribute [irreducible] RuneReader.ty
 
-noncomputable def RuneScanner.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def RuneScanner.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.RuneScanner" [])
 
 attribute [irreducible] RuneScanner.ty
 
-noncomputable def StringWriter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def StringWriter.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.StringWriter" [])
 
 attribute [irreducible] StringWriter.ty
 
-noncomputable def LimitedReader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def LimitedReader.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.LimitedReader" [])
 
 attribute [irreducible] LimitedReader.ty
 
-noncomputable def SectionReader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def SectionReader.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.SectionReader" [])
 
 attribute [irreducible] SectionReader.ty
 
-noncomputable def OffsetWriter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def OffsetWriter.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.OffsetWriter" [])
 
 attribute [irreducible] OffsetWriter.ty
 
-noncomputable def teeReader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def teeReader.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.teeReader" [])
 
 attribute [irreducible] teeReader.ty
 
-noncomputable def discard.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def discard.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.discard" [])
 
 attribute [irreducible] discard.ty
 
-noncomputable def nopCloser.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def nopCloser.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.nopCloser" [])
 
 attribute [irreducible] nopCloser.ty
 
-noncomputable def nopCloserWriterTo.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def nopCloserWriterTo.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.nopCloserWriterTo" [])
 
 attribute [irreducible] nopCloserWriterTo.ty
 
-noncomputable def eofReader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def eofReader.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.eofReader" [])
 
 attribute [irreducible] eofReader.ty
 
-noncomputable def multiReader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def multiReader.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.multiReader" [])
 
 attribute [irreducible] multiReader.ty
 
-noncomputable def multiWriter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def multiWriter.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.multiWriter" [])
 
 attribute [irreducible] multiWriter.ty
 
-noncomputable def onceError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def onceError.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.onceError" [])
 
 attribute [irreducible] onceError.ty
 
-noncomputable def pipe.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def pipe.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.pipe" [])
 
 attribute [irreducible] pipe.ty
 
-noncomputable def PipeReader.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def PipeReader.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.PipeReader" [])
 
 attribute [irreducible] PipeReader.ty
 
-noncomputable def PipeWriter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def PipeWriter.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"io.PipeWriter" [])
 
 attribute [irreducible] PipeWriter.ty
 
-axiom SeekStart [FfiSyntax] [GoGlobalContext] : val
+axiom SeekStart [GooseExts] [GoGlobalContext] : val
 
-axiom SeekCurrent [FfiSyntax] [GoGlobalContext] : val
+axiom SeekCurrent [GooseExts] [GoGlobalContext] : val
 
-axiom SeekEnd [FfiSyntax] [GoGlobalContext] : val
+axiom SeekEnd [GooseExts] [GoGlobalContext] : val
 
-noncomputable def ErrShortWrite [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ErrShortWrite [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.ErrShortWrite"
 
-noncomputable def errInvalidWrite [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def errInvalidWrite [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.errInvalidWrite"
 
-noncomputable def ErrShortBuffer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ErrShortBuffer [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.ErrShortBuffer"
 
-noncomputable def EOF [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def EOF [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.EOF"
 
-noncomputable def ErrUnexpectedEOF [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ErrUnexpectedEOF [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.ErrUnexpectedEOF"
 
-noncomputable def ErrNoProgress [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ErrNoProgress [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.ErrNoProgress"
 
-noncomputable def errWhence [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def errWhence [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.errWhence"
 
-noncomputable def errOffset [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def errOffset [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.errOffset"
 
-noncomputable def Discard [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Discard [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.Discard"
 
-noncomputable def blackHolePool [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def blackHolePool [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.blackHolePool"
 
-noncomputable def ErrClosedPipe [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ErrClosedPipe [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.ErrClosedPipe"
 
-noncomputable def WriteString [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def WriteString [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.WriteString"
 
-noncomputable def ReadAtLeast [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadAtLeast [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.ReadAtLeast"
 
-noncomputable def ReadFull [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadFull [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.ReadFull"
 
-noncomputable def CopyN [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CopyN [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.CopyN"
 
-noncomputable def Copy [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Copy [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.Copy"
 
-noncomputable def CopyBuffer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CopyBuffer [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.CopyBuffer"
 
-noncomputable def copyBuffer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def copyBuffer [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.copyBuffer"
 
-noncomputable def LimitReader [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LimitReader [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.LimitReader"
 
-noncomputable def NewSectionReader [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewSectionReader [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.NewSectionReader"
 
-noncomputable def NewOffsetWriter [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewOffsetWriter [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.NewOffsetWriter"
 
-noncomputable def TeeReader [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def TeeReader [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.TeeReader"
 
-noncomputable def NopCloser [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NopCloser [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.NopCloser"
 
-noncomputable def ReadAll [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ReadAll [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.ReadAll"
 
-noncomputable def MultiReader [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def MultiReader [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.MultiReader"
 
-noncomputable def MultiWriter [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def MultiWriter [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.MultiWriter"
 
-noncomputable def Pipe [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Pipe [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.Pipe"
 
 noncomputable instance info' : PkgInfo pkg_id.io where
   pkgImportedPkgs := [pkg_id.errors, pkg_id.sync]
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.io)) (Lam BAnon
   (App (Val exceptionDo)
@@ -400,249 +400,249 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrClosedPipe go.error)) (Val #()))))))))
 
-abbrev Reader [FfiSyntax] : Type := GoInterface
+abbrev Reader [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def Reader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Reader.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Read" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))])
 
-class Reader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Reader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Reader.ty Reader.underlying
 
 attribute [instance] Reader.TypeAssumptions.underlying
 
-abbrev Writer [FfiSyntax] : Type := GoInterface
+abbrev Writer [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def Writer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Writer.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Write" (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))])
 
-class Writer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Writer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Writer.ty Writer.underlying
 
 attribute [instance] Writer.TypeAssumptions.underlying
 
-abbrev Closer [FfiSyntax] : Type := GoInterface
+abbrev Closer [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def Closer.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Closer.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Close" (go.signature.Signature [] false [go.error]))])
 
-class Closer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Closer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Closer.ty Closer.underlying
 
 attribute [instance] Closer.TypeAssumptions.underlying
 
-abbrev Seeker [FfiSyntax] : Type := GoInterface
+abbrev Seeker [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def Seeker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Seeker.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Seek" (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))])
 
-class Seeker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Seeker.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Seeker.ty Seeker.underlying
 
 attribute [instance] Seeker.TypeAssumptions.underlying
 
-abbrev ReadWriter [FfiSyntax] : Type := GoInterface
+abbrev ReadWriter [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def ReadWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def ReadWriter.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer.ty)])])
 
-class ReadWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ReadWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ReadWriter.ty ReadWriter.underlying
 
 attribute [instance] ReadWriter.TypeAssumptions.underlying
 
-abbrev ReadCloser [FfiSyntax] : Type := GoInterface
+abbrev ReadCloser [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def ReadCloser.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def ReadCloser.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Closer.ty)])])
 
-class ReadCloser.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ReadCloser.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ReadCloser.ty ReadCloser.underlying
 
 attribute [instance] ReadCloser.TypeAssumptions.underlying
 
-abbrev WriteCloser [FfiSyntax] : Type := GoInterface
+abbrev WriteCloser [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def WriteCloser.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def WriteCloser.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Closer.ty)])])
 
-class WriteCloser.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class WriteCloser.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq WriteCloser.ty WriteCloser.underlying
 
 attribute [instance] WriteCloser.TypeAssumptions.underlying
 
-abbrev ReadWriteCloser [FfiSyntax] : Type := GoInterface
+abbrev ReadWriteCloser [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def ReadWriteCloser.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def ReadWriteCloser.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Closer.ty)])])
 
-class ReadWriteCloser.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ReadWriteCloser.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ReadWriteCloser.ty ReadWriteCloser.underlying
 
 attribute [instance] ReadWriteCloser.TypeAssumptions.underlying
 
-abbrev ReadSeeker [FfiSyntax] : Type := GoInterface
+abbrev ReadSeeker [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def ReadSeeker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def ReadSeeker.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Seeker.ty)])])
 
-class ReadSeeker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ReadSeeker.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ReadSeeker.ty ReadSeeker.underlying
 
 attribute [instance] ReadSeeker.TypeAssumptions.underlying
 
-abbrev ReadSeekCloser [FfiSyntax] : Type := GoInterface
+abbrev ReadSeekCloser [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def ReadSeekCloser.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def ReadSeekCloser.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Seeker.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Closer.ty)])])
 
-class ReadSeekCloser.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ReadSeekCloser.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ReadSeekCloser.ty ReadSeekCloser.underlying
 
 attribute [instance] ReadSeekCloser.TypeAssumptions.underlying
 
-abbrev WriteSeeker [FfiSyntax] : Type := GoInterface
+abbrev WriteSeeker [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def WriteSeeker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def WriteSeeker.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Seeker.ty)])])
 
-class WriteSeeker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class WriteSeeker.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq WriteSeeker.ty WriteSeeker.underlying
 
 attribute [instance] WriteSeeker.TypeAssumptions.underlying
 
-abbrev ReadWriteSeeker [FfiSyntax] : Type := GoInterface
+abbrev ReadWriteSeeker [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def ReadWriteSeeker.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def ReadWriteSeeker.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Reader.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Writer.ty)]), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Seeker.ty)])])
 
-class ReadWriteSeeker.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ReadWriteSeeker.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ReadWriteSeeker.ty ReadWriteSeeker.underlying
 
 attribute [instance] ReadWriteSeeker.TypeAssumptions.underlying
 
-abbrev ReaderFrom [FfiSyntax] : Type := GoInterface
+abbrev ReaderFrom [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def ReaderFrom.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def ReaderFrom.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ReadFrom" (go.signature.Signature [Reader.ty] false [go.int64, go.error]))])
 
-class ReaderFrom.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ReaderFrom.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ReaderFrom.ty ReaderFrom.underlying
 
 attribute [instance] ReaderFrom.TypeAssumptions.underlying
 
-abbrev WriterTo [FfiSyntax] : Type := GoInterface
+abbrev WriterTo [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def WriterTo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def WriterTo.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"WriteTo" (go.signature.Signature [Writer.ty] false [go.int64, go.error]))])
 
-class WriterTo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class WriterTo.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq WriterTo.ty WriterTo.underlying
 
 attribute [instance] WriterTo.TypeAssumptions.underlying
 
-abbrev ReaderAt [FfiSyntax] : Type := GoInterface
+abbrev ReaderAt [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def ReaderAt.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def ReaderAt.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ReadAt" (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))])
 
-class ReaderAt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ReaderAt.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ReaderAt.ty ReaderAt.underlying
 
 attribute [instance] ReaderAt.TypeAssumptions.underlying
 
-abbrev WriterAt [FfiSyntax] : Type := GoInterface
+abbrev WriterAt [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def WriterAt.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def WriterAt.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"WriteAt" (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))])
 
-class WriterAt.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class WriterAt.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq WriterAt.ty WriterAt.underlying
 
 attribute [instance] WriterAt.TypeAssumptions.underlying
 
-abbrev ByteReader [FfiSyntax] : Type := GoInterface
+abbrev ByteReader [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def ByteReader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def ByteReader.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ReadByte" (go.signature.Signature [] false [go.byte, go.error]))])
 
-class ByteReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ByteReader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ByteReader.ty ByteReader.underlying
 
 attribute [instance] ByteReader.TypeAssumptions.underlying
 
-abbrev ByteScanner [FfiSyntax] : Type := GoInterface
+abbrev ByteScanner [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def ByteScanner.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def ByteScanner.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"UnreadByte" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm ByteReader.ty)])])
 
-class ByteScanner.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ByteScanner.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ByteScanner.ty ByteScanner.underlying
 
 attribute [instance] ByteScanner.TypeAssumptions.underlying
 
-abbrev ByteWriter [FfiSyntax] : Type := GoInterface
+abbrev ByteWriter [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def ByteWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def ByteWriter.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"WriteByte" (go.signature.Signature [go.byte] false [go.error]))])
 
-class ByteWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class ByteWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq ByteWriter.ty ByteWriter.underlying
 
 attribute [instance] ByteWriter.TypeAssumptions.underlying
 
-abbrev RuneReader [FfiSyntax] : Type := GoInterface
+abbrev RuneReader [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def RuneReader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def RuneReader.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ReadRune" (go.signature.Signature [] false [go.rune, go.int, go.error]))])
 
-class RuneReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class RuneReader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq RuneReader.ty RuneReader.underlying
 
 attribute [instance] RuneReader.TypeAssumptions.underlying
 
-abbrev RuneScanner [FfiSyntax] : Type := GoInterface
+abbrev RuneScanner [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def RuneScanner.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def RuneScanner.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"UnreadRune" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm RuneReader.ty)])])
 
-class RuneScanner.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class RuneScanner.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq RuneScanner.ty RuneScanner.underlying
 
 attribute [instance] RuneScanner.TypeAssumptions.underlying
 
-abbrev StringWriter [FfiSyntax] : Type := GoInterface
+abbrev StringWriter [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def StringWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def StringWriter.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"WriteString" (go.signature.Signature [go.string] false [go.int, go.error]))])
 
-class StringWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class StringWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq StringWriter.ty StringWriter.underlying
 
 attribute [instance] StringWriter.TypeAssumptions.underlying
 
-structure LimitedReader [FfiSyntax] where
+structure LimitedReader [GooseExts] where
   mk ::
   R' : Reader
   N' : w64
 
-noncomputable instance LimitedReader.zero_val [FfiSyntax] : ZeroVal LimitedReader :=
+noncomputable instance LimitedReader.zero_val [GooseExts] : ZeroVal LimitedReader :=
   ⟨LimitedReader.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def LimitedReader.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def LimitedReader.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"R" Reader.ty),
 (go.field_decl.FieldDecl go!"N" go.int64)]
 
-@[irreducible] noncomputable def LimitedReader.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def LimitedReader.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   LimitedReader.fieldsUnsealed
 
-noncomputable instance equals_unfold_LimitedReader [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_LimitedReader [GooseExts] [GoGlobalContext] :
     EqualsUnfold LimitedReader.fields LimitedReader.fieldsUnsealed :=
   ⟨by unfold LimitedReader.fields; rfl⟩
 
-@[reducible] noncomputable def LimitedReader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def LimitedReader.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType LimitedReader.fields)
 
-class LimitedReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class LimitedReader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying LimitedReader.underlying LimitedReader
   underlying : go.UnderlyingDirectedEq LimitedReader.ty LimitedReader.underlying
   get_R : ∀ (x : LimitedReader), go.IsGoStepPureDetTagged under (StructFieldGet LimitedReader.underlying go!"R") #x (Val #(x.R'))
@@ -657,7 +657,7 @@ attribute [instance] LimitedReader.TypeAssumptions.type_repr
   LimitedReader.TypeAssumptions.get_N
   LimitedReader.TypeAssumptions.set_N
 
-structure SectionReader [FfiSyntax] where
+structure SectionReader [GooseExts] where
   mk ::
   r' : ReaderAt
   base' : w64
@@ -665,27 +665,27 @@ structure SectionReader [FfiSyntax] where
   limit' : w64
   n' : w64
 
-noncomputable instance SectionReader.zero_val [FfiSyntax] : ZeroVal SectionReader :=
+noncomputable instance SectionReader.zero_val [GooseExts] : ZeroVal SectionReader :=
   ⟨SectionReader.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def SectionReader.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def SectionReader.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"r" ReaderAt.ty),
 (go.field_decl.FieldDecl go!"base" go.int64),
 (go.field_decl.FieldDecl go!"off" go.int64),
 (go.field_decl.FieldDecl go!"limit" go.int64),
 (go.field_decl.FieldDecl go!"n" go.int64)]
 
-@[irreducible] noncomputable def SectionReader.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def SectionReader.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   SectionReader.fieldsUnsealed
 
-noncomputable instance equals_unfold_SectionReader [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_SectionReader [GooseExts] [GoGlobalContext] :
     EqualsUnfold SectionReader.fields SectionReader.fieldsUnsealed :=
   ⟨by unfold SectionReader.fields; rfl⟩
 
-@[reducible] noncomputable def SectionReader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def SectionReader.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType SectionReader.fields)
 
-class SectionReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class SectionReader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying SectionReader.underlying SectionReader
   underlying : go.UnderlyingDirectedEq SectionReader.ty SectionReader.underlying
   get_r : ∀ (x : SectionReader), go.IsGoStepPureDetTagged under (StructFieldGet SectionReader.underlying go!"r") #x (Val #(x.r'))
@@ -712,31 +712,31 @@ attribute [instance] SectionReader.TypeAssumptions.type_repr
   SectionReader.TypeAssumptions.get_n
   SectionReader.TypeAssumptions.set_n
 
-structure OffsetWriter [FfiSyntax] where
+structure OffsetWriter [GooseExts] where
   mk ::
   w' : WriterAt
   base' : w64
   off' : w64
 
-noncomputable instance OffsetWriter.zero_val [FfiSyntax] : ZeroVal OffsetWriter :=
+noncomputable instance OffsetWriter.zero_val [GooseExts] : ZeroVal OffsetWriter :=
   ⟨OffsetWriter.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def OffsetWriter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def OffsetWriter.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"w" WriterAt.ty),
 (go.field_decl.FieldDecl go!"base" go.int64),
 (go.field_decl.FieldDecl go!"off" go.int64)]
 
-@[irreducible] noncomputable def OffsetWriter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def OffsetWriter.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   OffsetWriter.fieldsUnsealed
 
-noncomputable instance equals_unfold_OffsetWriter [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_OffsetWriter [GooseExts] [GoGlobalContext] :
     EqualsUnfold OffsetWriter.fields OffsetWriter.fieldsUnsealed :=
   ⟨by unfold OffsetWriter.fields; rfl⟩
 
-@[reducible] noncomputable def OffsetWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def OffsetWriter.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType OffsetWriter.fields)
 
-class OffsetWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class OffsetWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying OffsetWriter.underlying OffsetWriter
   underlying : go.UnderlyingDirectedEq OffsetWriter.ty OffsetWriter.underlying
   get_w : ∀ (x : OffsetWriter), go.IsGoStepPureDetTagged under (StructFieldGet OffsetWriter.underlying go!"w") #x (Val #(x.w'))
@@ -755,29 +755,29 @@ attribute [instance] OffsetWriter.TypeAssumptions.type_repr
   OffsetWriter.TypeAssumptions.get_off
   OffsetWriter.TypeAssumptions.set_off
 
-structure teeReader [FfiSyntax] where
+structure teeReader [GooseExts] where
   mk ::
   r' : Reader
   w' : Writer
 
-noncomputable instance teeReader.zero_val [FfiSyntax] : ZeroVal teeReader :=
+noncomputable instance teeReader.zero_val [GooseExts] : ZeroVal teeReader :=
   ⟨teeReader.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def teeReader.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def teeReader.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"r" Reader.ty),
 (go.field_decl.FieldDecl go!"w" Writer.ty)]
 
-@[irreducible] noncomputable def teeReader.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def teeReader.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   teeReader.fieldsUnsealed
 
-noncomputable instance equals_unfold_teeReader [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_teeReader [GooseExts] [GoGlobalContext] :
     EqualsUnfold teeReader.fields teeReader.fieldsUnsealed :=
   ⟨by unfold teeReader.fields; rfl⟩
 
-@[reducible] noncomputable def teeReader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def teeReader.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType teeReader.fields)
 
-class teeReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class teeReader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying teeReader.underlying teeReader
   underlying : go.UnderlyingDirectedEq teeReader.ty teeReader.underlying
   get_r : ∀ (x : teeReader), go.IsGoStepPureDetTagged under (StructFieldGet teeReader.underlying go!"r") #x (Val #(x.r'))
@@ -792,53 +792,53 @@ attribute [instance] teeReader.TypeAssumptions.type_repr
   teeReader.TypeAssumptions.get_w
   teeReader.TypeAssumptions.set_w
 
-structure discard [FfiSyntax] where
+structure discard [GooseExts] where
   mk ::
 
-noncomputable instance discard.zero_val [FfiSyntax] : ZeroVal discard :=
+noncomputable instance discard.zero_val [GooseExts] : ZeroVal discard :=
   ⟨discard.mk⟩
 
-@[reducible] noncomputable def discard.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def discard.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] noncomputable def discard.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def discard.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   discard.fieldsUnsealed
 
-noncomputable instance equals_unfold_discard [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_discard [GooseExts] [GoGlobalContext] :
     EqualsUnfold discard.fields discard.fieldsUnsealed :=
   ⟨by unfold discard.fields; rfl⟩
 
-@[reducible] noncomputable def discard.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def discard.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType discard.fields)
 
-class discard.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class discard.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying discard.underlying discard
   underlying : go.UnderlyingDirectedEq discard.ty discard.underlying
 
 attribute [instance] discard.TypeAssumptions.type_repr
   discard.TypeAssumptions.underlying
 
-structure nopCloser [FfiSyntax] where
+structure nopCloser [GooseExts] where
   mk ::
   Reader' : Reader
 
-noncomputable instance nopCloser.zero_val [FfiSyntax] : ZeroVal nopCloser :=
+noncomputable instance nopCloser.zero_val [GooseExts] : ZeroVal nopCloser :=
   ⟨nopCloser.mk zeroValDef⟩
 
-@[reducible] noncomputable def nopCloser.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def nopCloser.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Reader" Reader.ty)]
 
-@[irreducible] noncomputable def nopCloser.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def nopCloser.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   nopCloser.fieldsUnsealed
 
-noncomputable instance equals_unfold_nopCloser [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_nopCloser [GooseExts] [GoGlobalContext] :
     EqualsUnfold nopCloser.fields nopCloser.fieldsUnsealed :=
   ⟨by unfold nopCloser.fields; rfl⟩
 
-@[reducible] noncomputable def nopCloser.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def nopCloser.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType nopCloser.fields)
 
-class nopCloser.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class nopCloser.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying nopCloser.underlying nopCloser
   underlying : go.UnderlyingDirectedEq nopCloser.ty nopCloser.underlying
   get_Reader : ∀ (x : nopCloser), go.IsGoStepPureDetTagged under (StructFieldGet nopCloser.underlying go!"Reader") #x (Val #(x.Reader'))
@@ -849,27 +849,27 @@ attribute [instance] nopCloser.TypeAssumptions.type_repr
   nopCloser.TypeAssumptions.get_Reader
   nopCloser.TypeAssumptions.set_Reader
 
-structure nopCloserWriterTo [FfiSyntax] where
+structure nopCloserWriterTo [GooseExts] where
   mk ::
   Reader' : Reader
 
-noncomputable instance nopCloserWriterTo.zero_val [FfiSyntax] : ZeroVal nopCloserWriterTo :=
+noncomputable instance nopCloserWriterTo.zero_val [GooseExts] : ZeroVal nopCloserWriterTo :=
   ⟨nopCloserWriterTo.mk zeroValDef⟩
 
-@[reducible] noncomputable def nopCloserWriterTo.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def nopCloserWriterTo.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Reader" Reader.ty)]
 
-@[irreducible] noncomputable def nopCloserWriterTo.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def nopCloserWriterTo.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   nopCloserWriterTo.fieldsUnsealed
 
-noncomputable instance equals_unfold_nopCloserWriterTo [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_nopCloserWriterTo [GooseExts] [GoGlobalContext] :
     EqualsUnfold nopCloserWriterTo.fields nopCloserWriterTo.fieldsUnsealed :=
   ⟨by unfold nopCloserWriterTo.fields; rfl⟩
 
-@[reducible] noncomputable def nopCloserWriterTo.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def nopCloserWriterTo.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType nopCloserWriterTo.fields)
 
-class nopCloserWriterTo.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class nopCloserWriterTo.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying nopCloserWriterTo.underlying nopCloserWriterTo
   underlying : go.UnderlyingDirectedEq nopCloserWriterTo.ty nopCloserWriterTo.underlying
   get_Reader : ∀ (x : nopCloserWriterTo), go.IsGoStepPureDetTagged under (StructFieldGet nopCloserWriterTo.underlying go!"Reader") #x (Val #(x.Reader'))
@@ -880,53 +880,53 @@ attribute [instance] nopCloserWriterTo.TypeAssumptions.type_repr
   nopCloserWriterTo.TypeAssumptions.get_Reader
   nopCloserWriterTo.TypeAssumptions.set_Reader
 
-structure eofReader [FfiSyntax] where
+structure eofReader [GooseExts] where
   mk ::
 
-noncomputable instance eofReader.zero_val [FfiSyntax] : ZeroVal eofReader :=
+noncomputable instance eofReader.zero_val [GooseExts] : ZeroVal eofReader :=
   ⟨eofReader.mk⟩
 
-@[reducible] noncomputable def eofReader.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def eofReader.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] noncomputable def eofReader.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def eofReader.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   eofReader.fieldsUnsealed
 
-noncomputable instance equals_unfold_eofReader [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_eofReader [GooseExts] [GoGlobalContext] :
     EqualsUnfold eofReader.fields eofReader.fieldsUnsealed :=
   ⟨by unfold eofReader.fields; rfl⟩
 
-@[reducible] noncomputable def eofReader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def eofReader.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType eofReader.fields)
 
-class eofReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class eofReader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying eofReader.underlying eofReader
   underlying : go.UnderlyingDirectedEq eofReader.ty eofReader.underlying
 
 attribute [instance] eofReader.TypeAssumptions.type_repr
   eofReader.TypeAssumptions.underlying
 
-structure multiReader [FfiSyntax] where
+structure multiReader [GooseExts] where
   mk ::
   readers' : GoSlice
 
-noncomputable instance multiReader.zero_val [FfiSyntax] : ZeroVal multiReader :=
+noncomputable instance multiReader.zero_val [GooseExts] : ZeroVal multiReader :=
   ⟨multiReader.mk zeroValDef⟩
 
-@[reducible] noncomputable def multiReader.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def multiReader.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"readers" (go.GoType.SliceType Reader.ty))]
 
-@[irreducible] noncomputable def multiReader.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def multiReader.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   multiReader.fieldsUnsealed
 
-noncomputable instance equals_unfold_multiReader [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_multiReader [GooseExts] [GoGlobalContext] :
     EqualsUnfold multiReader.fields multiReader.fieldsUnsealed :=
   ⟨by unfold multiReader.fields; rfl⟩
 
-@[reducible] noncomputable def multiReader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def multiReader.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType multiReader.fields)
 
-class multiReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class multiReader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying multiReader.underlying multiReader
   underlying : go.UnderlyingDirectedEq multiReader.ty multiReader.underlying
   get_readers : ∀ (x : multiReader), go.IsGoStepPureDetTagged under (StructFieldGet multiReader.underlying go!"readers") #x (Val #(x.readers'))
@@ -937,27 +937,27 @@ attribute [instance] multiReader.TypeAssumptions.type_repr
   multiReader.TypeAssumptions.get_readers
   multiReader.TypeAssumptions.set_readers
 
-structure multiWriter [FfiSyntax] where
+structure multiWriter [GooseExts] where
   mk ::
   writers' : GoSlice
 
-noncomputable instance multiWriter.zero_val [FfiSyntax] : ZeroVal multiWriter :=
+noncomputable instance multiWriter.zero_val [GooseExts] : ZeroVal multiWriter :=
   ⟨multiWriter.mk zeroValDef⟩
 
-@[reducible] noncomputable def multiWriter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def multiWriter.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"writers" (go.GoType.SliceType Writer.ty))]
 
-@[irreducible] noncomputable def multiWriter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def multiWriter.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   multiWriter.fieldsUnsealed
 
-noncomputable instance equals_unfold_multiWriter [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_multiWriter [GooseExts] [GoGlobalContext] :
     EqualsUnfold multiWriter.fields multiWriter.fieldsUnsealed :=
   ⟨by unfold multiWriter.fields; rfl⟩
 
-@[reducible] noncomputable def multiWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def multiWriter.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType multiWriter.fields)
 
-class multiWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class multiWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying multiWriter.underlying multiWriter
   underlying : go.UnderlyingDirectedEq multiWriter.ty multiWriter.underlying
   get_writers : ∀ (x : multiWriter), go.IsGoStepPureDetTagged under (StructFieldGet multiWriter.underlying go!"writers") #x (Val #(x.writers'))
@@ -968,29 +968,29 @@ attribute [instance] multiWriter.TypeAssumptions.type_repr
   multiWriter.TypeAssumptions.get_writers
   multiWriter.TypeAssumptions.set_writers
 
-structure onceError [FfiSyntax] where
+structure onceError [GooseExts] where
   mk ::
   Mutex' : _root_.Perennial.sync.Mutex
   err' : GoError
 
-noncomputable instance onceError.zero_val [FfiSyntax] : ZeroVal onceError :=
+noncomputable instance onceError.zero_val [GooseExts] : ZeroVal onceError :=
   ⟨onceError.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def onceError.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def onceError.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"Mutex" _root_.Perennial.sync.Mutex.ty),
 (go.field_decl.FieldDecl go!"err" go.error)]
 
-@[irreducible] noncomputable def onceError.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def onceError.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   onceError.fieldsUnsealed
 
-noncomputable instance equals_unfold_onceError [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_onceError [GooseExts] [GoGlobalContext] :
     EqualsUnfold onceError.fields onceError.fieldsUnsealed :=
   ⟨by unfold onceError.fields; rfl⟩
 
-@[reducible] noncomputable def onceError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def onceError.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType onceError.fields)
 
-class onceError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class onceError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying onceError.underlying onceError
   underlying : go.UnderlyingDirectedEq onceError.ty onceError.underlying
   get_Mutex : ∀ (x : onceError), go.IsGoStepPureDetTagged under (StructFieldGet onceError.underlying go!"Mutex") #x (Val #(x.Mutex'))
@@ -1005,7 +1005,7 @@ attribute [instance] onceError.TypeAssumptions.type_repr
   onceError.TypeAssumptions.get_err
   onceError.TypeAssumptions.set_err
 
-structure pipe [FfiSyntax] where
+structure pipe [GooseExts] where
   mk ::
   wrMu' : _root_.Perennial.sync.Mutex
   wrCh' : GoChan
@@ -1015,10 +1015,10 @@ structure pipe [FfiSyntax] where
   rerr' : onceError
   werr' : onceError
 
-noncomputable instance pipe.zero_val [FfiSyntax] : ZeroVal pipe :=
+noncomputable instance pipe.zero_val [GooseExts] : ZeroVal pipe :=
   ⟨pipe.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def pipe.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def pipe.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"wrMu" _root_.Perennial.sync.Mutex.ty),
 (go.field_decl.FieldDecl go!"wrCh" (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.SliceType go.byte))),
 (go.field_decl.FieldDecl go!"rdCh" (go.GoType.ChannelType go.ChanDir.sendrecv go.int)),
@@ -1027,17 +1027,17 @@ noncomputable instance pipe.zero_val [FfiSyntax] : ZeroVal pipe :=
 (go.field_decl.FieldDecl go!"rerr" onceError.ty),
 (go.field_decl.FieldDecl go!"werr" onceError.ty)]
 
-@[irreducible] noncomputable def pipe.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def pipe.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   pipe.fieldsUnsealed
 
-noncomputable instance equals_unfold_pipe [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_pipe [GooseExts] [GoGlobalContext] :
     EqualsUnfold pipe.fields pipe.fieldsUnsealed :=
   ⟨by unfold pipe.fields; rfl⟩
 
-@[reducible] noncomputable def pipe.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def pipe.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType pipe.fields)
 
-class pipe.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class pipe.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying pipe.underlying pipe
   underlying : go.UnderlyingDirectedEq pipe.ty pipe.underlying
   get_wrMu : ∀ (x : pipe), go.IsGoStepPureDetTagged under (StructFieldGet pipe.underlying go!"wrMu") #x (Val #(x.wrMu'))
@@ -1072,27 +1072,27 @@ attribute [instance] pipe.TypeAssumptions.type_repr
   pipe.TypeAssumptions.get_werr
   pipe.TypeAssumptions.set_werr
 
-structure PipeReader [FfiSyntax] where
+structure PipeReader [GooseExts] where
   mk ::
   pipe' : pipe
 
-noncomputable instance PipeReader.zero_val [FfiSyntax] : ZeroVal PipeReader :=
+noncomputable instance PipeReader.zero_val [GooseExts] : ZeroVal PipeReader :=
   ⟨PipeReader.mk zeroValDef⟩
 
-@[reducible] noncomputable def PipeReader.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def PipeReader.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"pipe" pipe.ty)]
 
-@[irreducible] noncomputable def PipeReader.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def PipeReader.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   PipeReader.fieldsUnsealed
 
-noncomputable instance equals_unfold_PipeReader [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_PipeReader [GooseExts] [GoGlobalContext] :
     EqualsUnfold PipeReader.fields PipeReader.fieldsUnsealed :=
   ⟨by unfold PipeReader.fields; rfl⟩
 
-@[reducible] noncomputable def PipeReader.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def PipeReader.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType PipeReader.fields)
 
-class PipeReader.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class PipeReader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying PipeReader.underlying PipeReader
   underlying : go.UnderlyingDirectedEq PipeReader.ty PipeReader.underlying
   get_pipe : ∀ (x : PipeReader), go.IsGoStepPureDetTagged under (StructFieldGet PipeReader.underlying go!"pipe") #x (Val #(x.pipe'))
@@ -1103,27 +1103,27 @@ attribute [instance] PipeReader.TypeAssumptions.type_repr
   PipeReader.TypeAssumptions.get_pipe
   PipeReader.TypeAssumptions.set_pipe
 
-structure PipeWriter [FfiSyntax] where
+structure PipeWriter [GooseExts] where
   mk ::
   r' : PipeReader
 
-noncomputable instance PipeWriter.zero_val [FfiSyntax] : ZeroVal PipeWriter :=
+noncomputable instance PipeWriter.zero_val [GooseExts] : ZeroVal PipeWriter :=
   ⟨PipeWriter.mk zeroValDef⟩
 
-@[reducible] noncomputable def PipeWriter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def PipeWriter.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"r" PipeReader.ty)]
 
-@[irreducible] noncomputable def PipeWriter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def PipeWriter.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   PipeWriter.fieldsUnsealed
 
-noncomputable instance equals_unfold_PipeWriter [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_PipeWriter [GooseExts] [GoGlobalContext] :
     EqualsUnfold PipeWriter.fields PipeWriter.fieldsUnsealed :=
   ⟨by unfold PipeWriter.fields; rfl⟩
 
-@[reducible] noncomputable def PipeWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def PipeWriter.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType PipeWriter.fields)
 
-class PipeWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class PipeWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying PipeWriter.underlying PipeWriter
   underlying : go.UnderlyingDirectedEq PipeWriter.ty PipeWriter.underlying
   get_r : ∀ (x : PipeWriter), go.IsGoStepPureDetTagged under (StructFieldGet PipeWriter.underlying go!"r") #x (Val #(x.r'))
@@ -1134,7 +1134,7 @@ attribute [instance] PipeWriter.TypeAssumptions.type_repr
   PipeWriter.TypeAssumptions.get_r
   PipeWriter.TypeAssumptions.set_r
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Reader_instance : Reader.TypeAssumptions
   Writer_instance : Writer.TypeAssumptions
   Closer_instance : Closer.TypeAssumptions

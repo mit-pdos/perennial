@@ -21,194 +21,194 @@ end pkg_id
 
 namespace sync.atomic
 
-noncomputable def Bool'.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Bool'.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync/atomic.Bool" [])
 
 attribute [irreducible] Bool'.ty
 
-noncomputable def Pointer.ty [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+noncomputable def Pointer.ty [GooseExts] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.Named go!"sync/atomic.Pointer" [T])
 
 attribute [irreducible] Pointer.ty
 
-noncomputable def Int32.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Int32.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync/atomic.Int32" [])
 
 attribute [irreducible] Int32.ty
 
-noncomputable def Int64.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Int64.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync/atomic.Int64" [])
 
 attribute [irreducible] Int64.ty
 
-noncomputable def Uint32.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Uint32.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync/atomic.Uint32" [])
 
 attribute [irreducible] Uint32.ty
 
-noncomputable def Uint64.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Uint64.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync/atomic.Uint64" [])
 
 attribute [irreducible] Uint64.ty
 
-noncomputable def Uintptr.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Uintptr.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync/atomic.Uintptr" [])
 
 attribute [irreducible] Uintptr.ty
 
-noncomputable def noCopy.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def noCopy.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync/atomic.noCopy" [])
 
 attribute [irreducible] noCopy.ty
 
-noncomputable def align64.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def align64.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync/atomic.align64" [])
 
 attribute [irreducible] align64.ty
 
-noncomputable def Value.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Value.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync/atomic.Value" [])
 
 attribute [irreducible] Value.ty
 
-noncomputable def efaceWords.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def efaceWords.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"sync/atomic.efaceWords" [])
 
 attribute [irreducible] efaceWords.ty
 
-noncomputable def firstStoreInProgress [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def firstStoreInProgress [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.firstStoreInProgress"
 
-noncomputable def SwapInt32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SwapInt32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.SwapInt32"
 
-noncomputable def SwapUint32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SwapUint32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.SwapUint32"
 
-noncomputable def SwapUintptr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SwapUintptr [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.SwapUintptr"
 
-noncomputable def SwapPointer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SwapPointer [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.SwapPointer"
 
-noncomputable def CompareAndSwapInt32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CompareAndSwapInt32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.CompareAndSwapInt32"
 
-noncomputable def CompareAndSwapUint32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CompareAndSwapUint32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.CompareAndSwapUint32"
 
-noncomputable def CompareAndSwapUintptr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CompareAndSwapUintptr [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.CompareAndSwapUintptr"
 
-noncomputable def CompareAndSwapPointer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CompareAndSwapPointer [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.CompareAndSwapPointer"
 
-noncomputable def AddInt32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AddInt32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.AddInt32"
 
-noncomputable def AddUint32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AddUint32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.AddUint32"
 
-noncomputable def AddUintptr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AddUintptr [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.AddUintptr"
 
-noncomputable def AndInt32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AndInt32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.AndInt32"
 
-noncomputable def AndUint32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AndUint32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.AndUint32"
 
-noncomputable def AndUintptr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AndUintptr [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.AndUintptr"
 
-noncomputable def OrInt32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def OrInt32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.OrInt32"
 
-noncomputable def OrUint32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def OrUint32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.OrUint32"
 
-noncomputable def OrUintptr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def OrUintptr [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.OrUintptr"
 
-noncomputable def LoadInt32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LoadInt32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.LoadInt32"
 
-noncomputable def LoadUint32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LoadUint32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.LoadUint32"
 
-noncomputable def LoadUintptr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LoadUintptr [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.LoadUintptr"
 
-noncomputable def LoadPointer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LoadPointer [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.LoadPointer"
 
-noncomputable def StoreInt32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def StoreInt32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.StoreInt32"
 
-noncomputable def StoreUint32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def StoreUint32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.StoreUint32"
 
-noncomputable def StoreUintptr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def StoreUintptr [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.StoreUintptr"
 
-noncomputable def StorePointer [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def StorePointer [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.StorePointer"
 
-noncomputable def SwapInt64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SwapInt64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.SwapInt64"
 
-noncomputable def SwapUint64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def SwapUint64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.SwapUint64"
 
-noncomputable def CompareAndSwapInt64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CompareAndSwapInt64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.CompareAndSwapInt64"
 
-noncomputable def CompareAndSwapUint64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CompareAndSwapUint64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.CompareAndSwapUint64"
 
-noncomputable def AddInt64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AddInt64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.AddInt64"
 
-noncomputable def AddUint64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AddUint64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.AddUint64"
 
-noncomputable def AndInt64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AndInt64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.AndInt64"
 
-noncomputable def AndUint64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AndUint64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.AndUint64"
 
-noncomputable def OrInt64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def OrInt64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.OrInt64"
 
-noncomputable def OrUint64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def OrUint64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.OrUint64"
 
-noncomputable def LoadInt64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LoadInt64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.LoadInt64"
 
-noncomputable def LoadUint64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def LoadUint64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.LoadUint64"
 
-noncomputable def StoreInt64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def StoreInt64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.StoreInt64"
 
-noncomputable def StoreUint64 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def StoreUint64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.StoreUint64"
 
-noncomputable def b32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def b32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.b32"
 
-noncomputable def runtime_procPin [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def runtime_procPin [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.runtime_procPin"
 
-noncomputable def runtime_procUnpin [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def runtime_procUnpin [GooseExts] [GoGlobalContext] : GoString :=
   go!"sync/atomic.runtime_procUnpin"
 
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:19:16 -/
-noncomputable def Bool.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Bool.Load.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -220,7 +220,7 @@ noncomputable def Bool.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Store atomically stores val into x.
 
     go: type.go:22:16 -/
-noncomputable def Bool.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Bool.Store.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exceptionDo)
@@ -238,7 +238,7 @@ noncomputable def Bool.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:25:16 -/
-noncomputable def Bool.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Bool.Swap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exceptionDo)
@@ -254,7 +254,7 @@ noncomputable def Bool.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- CompareAndSwap executes the compare-and-swap operation for the boolean value x.
 
     go: type.go:28:16 -/
-noncomputable def Bool.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Bool.CompareAndSwap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -274,7 +274,7 @@ noncomputable def Bool.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val :
 /-- b32 returns a uint32 0 or 1 representing b.
 
     go: type.go:33:6 -/
-noncomputable def b32.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def b32.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "b"
   (App (Val exceptionDo)
   (Let "b" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "b"))
@@ -290,7 +290,7 @@ noncomputable def b32.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:58:22 -/
-noncomputable def Pointer.Load.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Pointer.Load.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -302,7 +302,7 @@ noncomputable def Pointer.Load.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType
 /-- Store atomically stores val into x.
 
     go: type.go:61:22 -/
-noncomputable def Pointer.Store.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Pointer.Store.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exceptionDo)
@@ -319,7 +319,7 @@ noncomputable def Pointer.Store.impl [FfiSyntax] [GoGlobalContext] (T : go.GoTyp
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:64:22 -/
-noncomputable def Pointer.Swap.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Pointer.Swap.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exceptionDo)
@@ -334,7 +334,7 @@ noncomputable def Pointer.Swap.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
     go: type.go:67:22 -/
-noncomputable def Pointer.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Pointer.CompareAndSwap.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -352,7 +352,7 @@ noncomputable def Pointer.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] (T :
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:80:17 -/
-noncomputable def Int32.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int32.Load.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -364,7 +364,7 @@ noncomputable def Int32.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Store atomically stores val into x.
 
     go: type.go:83:17 -/
-noncomputable def Int32.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int32.Store.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exceptionDo)
@@ -381,7 +381,7 @@ noncomputable def Int32.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:86:17 -/
-noncomputable def Int32.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int32.Swap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exceptionDo)
@@ -396,7 +396,7 @@ noncomputable def Int32.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
     go: type.go:89:17 -/
-noncomputable def Int32.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int32.CompareAndSwap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -414,7 +414,7 @@ noncomputable def Int32.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val 
 /-- Add atomically adds delta to x and returns the new value.
 
     go: type.go:94:17 -/
-noncomputable def Int32.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int32.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "delta"
   (App (Val exceptionDo)
@@ -430,7 +430,7 @@ noncomputable def Int32.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
     provided as mask and returns the old value.
 
     go: type.go:98:17 -/
-noncomputable def Int32.And.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int32.And.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exceptionDo)
@@ -446,7 +446,7 @@ noncomputable def Int32.And.impl [FfiSyntax] [GoGlobalContext] : val :=
     provided as mask and returns the old value.
 
     go: type.go:102:17 -/
-noncomputable def Int32.Or.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int32.Or.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exceptionDo)
@@ -461,7 +461,7 @@ noncomputable def Int32.Or.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:114:17 -/
-noncomputable def Int64.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int64.Load.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -473,7 +473,7 @@ noncomputable def Int64.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Store atomically stores val into x.
 
     go: type.go:117:17 -/
-noncomputable def Int64.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int64.Store.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exceptionDo)
@@ -490,7 +490,7 @@ noncomputable def Int64.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:120:17 -/
-noncomputable def Int64.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int64.Swap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exceptionDo)
@@ -505,7 +505,7 @@ noncomputable def Int64.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
     go: type.go:123:17 -/
-noncomputable def Int64.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int64.CompareAndSwap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -523,7 +523,7 @@ noncomputable def Int64.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val 
 /-- Add atomically adds delta to x and returns the new value.
 
     go: type.go:128:17 -/
-noncomputable def Int64.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int64.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "delta"
   (App (Val exceptionDo)
@@ -539,7 +539,7 @@ noncomputable def Int64.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
     provided as mask and returns the old value.
 
     go: type.go:132:17 -/
-noncomputable def Int64.And.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int64.And.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exceptionDo)
@@ -555,7 +555,7 @@ noncomputable def Int64.And.impl [FfiSyntax] [GoGlobalContext] : val :=
     provided as mask and returns the old value.
 
     go: type.go:136:17 -/
-noncomputable def Int64.Or.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Int64.Or.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exceptionDo)
@@ -570,7 +570,7 @@ noncomputable def Int64.Or.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:147:18 -/
-noncomputable def Uint32.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint32.Load.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -582,7 +582,7 @@ noncomputable def Uint32.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Store atomically stores val into x.
 
     go: type.go:150:18 -/
-noncomputable def Uint32.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint32.Store.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exceptionDo)
@@ -599,7 +599,7 @@ noncomputable def Uint32.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:153:18 -/
-noncomputable def Uint32.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint32.Swap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exceptionDo)
@@ -614,7 +614,7 @@ noncomputable def Uint32.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
     go: type.go:156:18 -/
-noncomputable def Uint32.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint32.CompareAndSwap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -632,7 +632,7 @@ noncomputable def Uint32.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val
 /-- Add atomically adds delta to x and returns the new value.
 
     go: type.go:161:18 -/
-noncomputable def Uint32.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint32.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "delta"
   (App (Val exceptionDo)
@@ -648,7 +648,7 @@ noncomputable def Uint32.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
     provided as mask and returns the old value.
 
     go: type.go:165:18 -/
-noncomputable def Uint32.And.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint32.And.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exceptionDo)
@@ -664,7 +664,7 @@ noncomputable def Uint32.And.impl [FfiSyntax] [GoGlobalContext] : val :=
     provided as mask and returns the old value.
 
     go: type.go:169:18 -/
-noncomputable def Uint32.Or.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint32.Or.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exceptionDo)
@@ -679,7 +679,7 @@ noncomputable def Uint32.Or.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Load atomically loads and returns the value stored in x.
 
     go: type.go:181:18 -/
-noncomputable def Uint64.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint64.Load.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -691,7 +691,7 @@ noncomputable def Uint64.Load.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Store atomically stores val into x.
 
     go: type.go:184:18 -/
-noncomputable def Uint64.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint64.Store.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "val"
   (App (Val exceptionDo)
@@ -708,7 +708,7 @@ noncomputable def Uint64.Store.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- Swap atomically stores new into x and returns the previous value.
 
     go: type.go:187:18 -/
-noncomputable def Uint64.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint64.Swap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "new"
   (App (Val exceptionDo)
@@ -723,7 +723,7 @@ noncomputable def Uint64.Swap.impl [FfiSyntax] [GoGlobalContext] : val :=
 /-- CompareAndSwap executes the compare-and-swap operation for x.
 
     go: type.go:190:18 -/
-noncomputable def Uint64.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint64.CompareAndSwap.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "old"
   (Lam "new"
@@ -741,7 +741,7 @@ noncomputable def Uint64.CompareAndSwap.impl [FfiSyntax] [GoGlobalContext] : val
 /-- Add atomically adds delta to x and returns the new value.
 
     go: type.go:195:18 -/
-noncomputable def Uint64.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint64.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "delta"
   (App (Val exceptionDo)
@@ -757,7 +757,7 @@ noncomputable def Uint64.Add.impl [FfiSyntax] [GoGlobalContext] : val :=
     provided as mask and returns the old value.
 
     go: type.go:199:18 -/
-noncomputable def Uint64.And.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint64.And.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exceptionDo)
@@ -773,7 +773,7 @@ noncomputable def Uint64.And.impl [FfiSyntax] [GoGlobalContext] : val :=
     provided as mask and returns the old value.
 
     go: type.go:203:18 -/
-noncomputable def Uint64.Or.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def Uint64.Or.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "mask"
   (App (Val exceptionDo)
@@ -788,7 +788,7 @@ noncomputable def Uint64.Or.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.sync.atomic where
   pkgImportedPkgs := []
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.sync.atomic)) (Lam BAnon
   (App (Val exceptionDo)
@@ -796,55 +796,55 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #())))))))
 
-structure noCopy [FfiSyntax] where
+structure noCopy [GooseExts] where
   mk ::
 
-noncomputable instance noCopy.zero_val [FfiSyntax] : ZeroVal noCopy :=
+noncomputable instance noCopy.zero_val [GooseExts] : ZeroVal noCopy :=
   ⟨noCopy.mk⟩
 
-@[reducible] noncomputable def noCopy.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def noCopy.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] noncomputable def noCopy.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def noCopy.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   noCopy.fieldsUnsealed
 
-noncomputable instance equals_unfold_noCopy [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_noCopy [GooseExts] [GoGlobalContext] :
     EqualsUnfold noCopy.fields noCopy.fieldsUnsealed :=
   ⟨by unfold noCopy.fields; rfl⟩
 
-@[reducible] noncomputable def noCopy.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def noCopy.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType noCopy.fields)
 
-class noCopy.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class noCopy.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying noCopy.underlying noCopy
   underlying : go.UnderlyingDirectedEq noCopy.ty noCopy.underlying
 
 attribute [instance] noCopy.TypeAssumptions.type_repr
   noCopy.TypeAssumptions.underlying
 
-structure Bool' [FfiSyntax] where
+structure Bool' [GooseExts] where
   mk ::
   «_#0'» : noCopy
   v' : w32
 
-noncomputable instance Bool'.zero_val [FfiSyntax] : ZeroVal Bool' :=
+noncomputable instance Bool'.zero_val [GooseExts] : ZeroVal Bool' :=
   ⟨Bool'.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Bool.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Bool.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_#0" noCopy.ty),
 (go.field_decl.FieldDecl go!"v" go.uint32)]
 
-@[irreducible] noncomputable def Bool.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Bool.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Bool.fieldsUnsealed
 
-noncomputable instance equals_unfold_Bool [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Bool [GooseExts] [GoGlobalContext] :
     EqualsUnfold Bool.fields Bool.fieldsUnsealed :=
   ⟨by unfold Bool.fields; rfl⟩
 
-@[reducible] noncomputable def Bool'.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Bool'.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Bool.fields)
 
-class Bool.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Bool.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Bool'.underlying Bool'
   underlying : go.UnderlyingDirectedEq Bool'.ty Bool'.underlying
   «get__#0» : ∀ (x : Bool'), go.IsGoStepPureDetTagged under (StructFieldGet Bool'.underlying go!"_#0") #x (Val #(x.«_#0'»))
@@ -867,31 +867,31 @@ attribute [instance] Bool.TypeAssumptions.type_repr
   Bool.TypeAssumptions.ptr_Store_unfold
   Bool.TypeAssumptions.ptr_Swap_unfold
 
-structure Pointer [FfiSyntax] (T : Type) where
+structure Pointer [GooseExts] (T : Type) where
   mk ::
   «_#0'» : (GoArray Loc 0)
   «_#1'» : noCopy
   v' : Loc
 
-noncomputable instance Pointer.zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (Pointer T) :=
+noncomputable instance Pointer.zero_val [GooseExts] {T : Type} [ZeroVal T] : ZeroVal (Pointer T) :=
   ⟨Pointer.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Pointer.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[reducible] noncomputable def Pointer.fieldsUnsealed [GooseExts] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_#0" (go.GoType.ArrayType 0 (go.GoType.PointerType T))),
 (go.field_decl.FieldDecl go!"_#1" noCopy.ty),
 (go.field_decl.FieldDecl go!"v" «unsafe».Pointer)]
 
-@[irreducible] noncomputable def Pointer.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[irreducible] noncomputable def Pointer.fields [GooseExts] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   (Pointer.fieldsUnsealed T)
 
-noncomputable instance equals_unfold_Pointer [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
+noncomputable instance equals_unfold_Pointer [GooseExts] [GoGlobalContext] (T : go.GoType) :
     EqualsUnfold (Pointer.fields T) (Pointer.fieldsUnsealed T) :=
   ⟨by unfold Pointer.fields; rfl⟩
 
-@[reducible] noncomputable def Pointer.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+@[reducible] noncomputable def Pointer.underlying [GooseExts] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.StructType (Pointer.fields T))
 
-class Pointer.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Pointer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Pointer.underlying T) (Pointer T')
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Pointer.ty T) (Pointer.underlying T)
   «get__#0» : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"_#0") #x (Val #(x.«_#0'»))
@@ -918,29 +918,29 @@ attribute [instance] Pointer.TypeAssumptions.type_repr
   Pointer.TypeAssumptions.ptr_Store_unfold
   Pointer.TypeAssumptions.ptr_Swap_unfold
 
-structure Int32 [FfiSyntax] where
+structure Int32 [GooseExts] where
   mk ::
   «_#0'» : noCopy
   v' : w32
 
-noncomputable instance Int32.zero_val [FfiSyntax] : ZeroVal Int32 :=
+noncomputable instance Int32.zero_val [GooseExts] : ZeroVal Int32 :=
   ⟨Int32.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Int32.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Int32.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_#0" noCopy.ty),
 (go.field_decl.FieldDecl go!"v" go.int32)]
 
-@[irreducible] noncomputable def Int32.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Int32.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Int32.fieldsUnsealed
 
-noncomputable instance equals_unfold_Int32 [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Int32 [GooseExts] [GoGlobalContext] :
     EqualsUnfold Int32.fields Int32.fieldsUnsealed :=
   ⟨by unfold Int32.fields; rfl⟩
 
-@[reducible] noncomputable def Int32.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Int32.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Int32.fields)
 
-class Int32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Int32.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Int32.underlying Int32
   underlying : go.UnderlyingDirectedEq Int32.ty Int32.underlying
   «get__#0» : ∀ (x : Int32), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"_#0") #x (Val #(x.«_#0'»))
@@ -969,57 +969,57 @@ attribute [instance] Int32.TypeAssumptions.type_repr
   Int32.TypeAssumptions.ptr_Store_unfold
   Int32.TypeAssumptions.ptr_Swap_unfold
 
-structure align64 [FfiSyntax] where
+structure align64 [GooseExts] where
   mk ::
 
-noncomputable instance align64.zero_val [FfiSyntax] : ZeroVal align64 :=
+noncomputable instance align64.zero_val [GooseExts] : ZeroVal align64 :=
   ⟨align64.mk⟩
 
-@[reducible] noncomputable def align64.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def align64.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] noncomputable def align64.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def align64.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   align64.fieldsUnsealed
 
-noncomputable instance equals_unfold_align64 [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_align64 [GooseExts] [GoGlobalContext] :
     EqualsUnfold align64.fields align64.fieldsUnsealed :=
   ⟨by unfold align64.fields; rfl⟩
 
-@[reducible] noncomputable def align64.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def align64.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType align64.fields)
 
-class align64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class align64.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying align64.underlying align64
   underlying : go.UnderlyingDirectedEq align64.ty align64.underlying
 
 attribute [instance] align64.TypeAssumptions.type_repr
   align64.TypeAssumptions.underlying
 
-structure Int64 [FfiSyntax] where
+structure Int64 [GooseExts] where
   mk ::
   «_#0'» : noCopy
   «_#1'» : align64
   v' : w64
 
-noncomputable instance Int64.zero_val [FfiSyntax] : ZeroVal Int64 :=
+noncomputable instance Int64.zero_val [GooseExts] : ZeroVal Int64 :=
   ⟨Int64.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Int64.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Int64.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_#0" noCopy.ty),
 (go.field_decl.FieldDecl go!"_#1" align64.ty),
 (go.field_decl.FieldDecl go!"v" go.int64)]
 
-@[irreducible] noncomputable def Int64.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Int64.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Int64.fieldsUnsealed
 
-noncomputable instance equals_unfold_Int64 [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Int64 [GooseExts] [GoGlobalContext] :
     EqualsUnfold Int64.fields Int64.fieldsUnsealed :=
   ⟨by unfold Int64.fields; rfl⟩
 
-@[reducible] noncomputable def Int64.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Int64.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Int64.fields)
 
-class Int64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Int64.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Int64.underlying Int64
   underlying : go.UnderlyingDirectedEq Int64.ty Int64.underlying
   «get__#0» : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"_#0") #x (Val #(x.«_#0'»))
@@ -1052,29 +1052,29 @@ attribute [instance] Int64.TypeAssumptions.type_repr
   Int64.TypeAssumptions.ptr_Store_unfold
   Int64.TypeAssumptions.ptr_Swap_unfold
 
-structure Uint32 [FfiSyntax] where
+structure Uint32 [GooseExts] where
   mk ::
   «_#0'» : noCopy
   v' : w32
 
-noncomputable instance Uint32.zero_val [FfiSyntax] : ZeroVal Uint32 :=
+noncomputable instance Uint32.zero_val [GooseExts] : ZeroVal Uint32 :=
   ⟨Uint32.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Uint32.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Uint32.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_#0" noCopy.ty),
 (go.field_decl.FieldDecl go!"v" go.uint32)]
 
-@[irreducible] noncomputable def Uint32.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Uint32.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Uint32.fieldsUnsealed
 
-noncomputable instance equals_unfold_Uint32 [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Uint32 [GooseExts] [GoGlobalContext] :
     EqualsUnfold Uint32.fields Uint32.fieldsUnsealed :=
   ⟨by unfold Uint32.fields; rfl⟩
 
-@[reducible] noncomputable def Uint32.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Uint32.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Uint32.fields)
 
-class Uint32.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Uint32.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uint32.underlying Uint32
   underlying : go.UnderlyingDirectedEq Uint32.ty Uint32.underlying
   «get__#0» : ∀ (x : Uint32), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"_#0") #x (Val #(x.«_#0'»))
@@ -1103,31 +1103,31 @@ attribute [instance] Uint32.TypeAssumptions.type_repr
   Uint32.TypeAssumptions.ptr_Store_unfold
   Uint32.TypeAssumptions.ptr_Swap_unfold
 
-structure Uint64 [FfiSyntax] where
+structure Uint64 [GooseExts] where
   mk ::
   «_#0'» : noCopy
   «_#1'» : align64
   v' : w64
 
-noncomputable instance Uint64.zero_val [FfiSyntax] : ZeroVal Uint64 :=
+noncomputable instance Uint64.zero_val [GooseExts] : ZeroVal Uint64 :=
   ⟨Uint64.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Uint64.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Uint64.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_#0" noCopy.ty),
 (go.field_decl.FieldDecl go!"_#1" align64.ty),
 (go.field_decl.FieldDecl go!"v" go.uint64)]
 
-@[irreducible] noncomputable def Uint64.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Uint64.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Uint64.fieldsUnsealed
 
-noncomputable instance equals_unfold_Uint64 [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Uint64 [GooseExts] [GoGlobalContext] :
     EqualsUnfold Uint64.fields Uint64.fieldsUnsealed :=
   ⟨by unfold Uint64.fields; rfl⟩
 
-@[reducible] noncomputable def Uint64.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Uint64.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Uint64.fields)
 
-class Uint64.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Uint64.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uint64.underlying Uint64
   underlying : go.UnderlyingDirectedEq Uint64.ty Uint64.underlying
   «get__#0» : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"_#0") #x (Val #(x.«_#0'»))
@@ -1160,29 +1160,29 @@ attribute [instance] Uint64.TypeAssumptions.type_repr
   Uint64.TypeAssumptions.ptr_Store_unfold
   Uint64.TypeAssumptions.ptr_Swap_unfold
 
-structure Uintptr [FfiSyntax] where
+structure Uintptr [GooseExts] where
   mk ::
   «_#0'» : noCopy
   v' : w64
 
-noncomputable instance Uintptr.zero_val [FfiSyntax] : ZeroVal Uintptr :=
+noncomputable instance Uintptr.zero_val [GooseExts] : ZeroVal Uintptr :=
   ⟨Uintptr.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Uintptr.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Uintptr.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_#0" noCopy.ty),
 (go.field_decl.FieldDecl go!"v" go.uintptr)]
 
-@[irreducible] noncomputable def Uintptr.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Uintptr.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Uintptr.fieldsUnsealed
 
-noncomputable instance equals_unfold_Uintptr [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Uintptr [GooseExts] [GoGlobalContext] :
     EqualsUnfold Uintptr.fields Uintptr.fieldsUnsealed :=
   ⟨by unfold Uintptr.fields; rfl⟩
 
-@[reducible] noncomputable def Uintptr.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Uintptr.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Uintptr.fields)
 
-class Uintptr.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Uintptr.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Uintptr.underlying Uintptr
   underlying : go.UnderlyingDirectedEq Uintptr.ty Uintptr.underlying
   «get__#0» : ∀ (x : Uintptr), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"_#0") #x (Val #(x.«_#0'»))
@@ -1197,27 +1197,27 @@ attribute [instance] Uintptr.TypeAssumptions.type_repr
   Uintptr.TypeAssumptions.get_v
   Uintptr.TypeAssumptions.set_v
 
-structure Value [FfiSyntax] where
+structure Value [GooseExts] where
   mk ::
   v' : GoInterface
 
-noncomputable instance Value.zero_val [FfiSyntax] : ZeroVal Value :=
+noncomputable instance Value.zero_val [GooseExts] : ZeroVal Value :=
   ⟨Value.mk zeroValDef⟩
 
-@[reducible] noncomputable def Value.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Value.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"v" go.any)]
 
-@[irreducible] noncomputable def Value.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Value.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Value.fieldsUnsealed
 
-noncomputable instance equals_unfold_Value [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Value [GooseExts] [GoGlobalContext] :
     EqualsUnfold Value.fields Value.fieldsUnsealed :=
   ⟨by unfold Value.fields; rfl⟩
 
-@[reducible] noncomputable def Value.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Value.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Value.fields)
 
-class Value.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Value.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Value.underlying Value
   underlying : go.UnderlyingDirectedEq Value.ty Value.underlying
   get_v : ∀ (x : Value), go.IsGoStepPureDetTagged under (StructFieldGet Value.underlying go!"v") #x (Val #(x.v'))
@@ -1236,29 +1236,29 @@ attribute [instance] Value.TypeAssumptions.type_repr
   Value.TypeAssumptions.ptr_Store_unfold
   Value.TypeAssumptions.ptr_Swap_unfold
 
-structure efaceWords [FfiSyntax] where
+structure efaceWords [GooseExts] where
   mk ::
   typ' : Loc
   data' : Loc
 
-noncomputable instance efaceWords.zero_val [FfiSyntax] : ZeroVal efaceWords :=
+noncomputable instance efaceWords.zero_val [GooseExts] : ZeroVal efaceWords :=
   ⟨efaceWords.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def efaceWords.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def efaceWords.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"typ" «unsafe».Pointer),
 (go.field_decl.FieldDecl go!"data" «unsafe».Pointer)]
 
-@[irreducible] noncomputable def efaceWords.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def efaceWords.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   efaceWords.fieldsUnsealed
 
-noncomputable instance equals_unfold_efaceWords [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_efaceWords [GooseExts] [GoGlobalContext] :
     EqualsUnfold efaceWords.fields efaceWords.fieldsUnsealed :=
   ⟨by unfold efaceWords.fields; rfl⟩
 
-@[reducible] noncomputable def efaceWords.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def efaceWords.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType efaceWords.fields)
 
-class efaceWords.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class efaceWords.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying efaceWords.underlying efaceWords
   underlying : go.UnderlyingDirectedEq efaceWords.ty efaceWords.underlying
   get_typ : ∀ (x : efaceWords), go.IsGoStepPureDetTagged under (StructFieldGet efaceWords.underlying go!"typ") #x (Val #(x.typ'))
@@ -1273,7 +1273,7 @@ attribute [instance] efaceWords.TypeAssumptions.type_repr
   efaceWords.TypeAssumptions.get_data
   efaceWords.TypeAssumptions.set_data
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Bool_instance : Bool.TypeAssumptions
   Pointer_instance : Pointer.TypeAssumptions
   Int32_instance : Int32.TypeAssumptions

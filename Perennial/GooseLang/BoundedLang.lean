@@ -79,7 +79,7 @@ namespace Perennial
 open Iris.ProgramLogic
 
 section bounded
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
 
 /-- The fuel of the bounded language: `steps`, the number of counted steps that
 may still be taken (time receipts), and `threads`, the number of threads that
@@ -206,7 +206,7 @@ Language`) derive from the trusted `gooseRealEctxiLang`; it is passed
 explicitly since the registered instance is the bounded one. -/
 
 section real
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiSemantics ext ffi] [GoGlobalContext]
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
 
 open Language.Notation EctxLanguage.Notation
 
@@ -267,7 +267,7 @@ theorem baseStep_threads {e : Expr} {σ : CfgState} {κ : List Observation} {e' 
     cases h with
     | ForkS => exact absurd rfl hf
     | ThreadExitS => exact absurd rfl hx
-    | ExternalOpS _ _ _ _ _ h => exact ffi_step_threads h
+    | ExternalOpS _ _ _ _ _ h => exact extStep_threads h
     | _ => rfl
 
 /-- A real thread-pool step from a state with step fuel `s > 0` and thread fuel

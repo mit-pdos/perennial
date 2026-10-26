@@ -1,5 +1,5 @@
 /-
-Small additions to iris-lean's `gen_heap` used by the FFI layers.
+Small additions to iris-lean's `gen_heap` used by the extensions (`GooseLang/Ext`).
 -/
 module
 

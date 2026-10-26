@@ -23,69 +23,69 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.model.channel
 
-noncomputable def offerState.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def offerState.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/model/channel.offerState" [])
 
 attribute [irreducible] offerState.ty
 
-noncomputable def Channel.ty [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+noncomputable def Channel.ty [GooseExts] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/model/channel.Channel" [T])
 
 attribute [irreducible] Channel.ty
 
-noncomputable def SelectDir.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def SelectDir.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/model/channel.SelectDir" [])
 
 attribute [irreducible] SelectDir.ty
 
-@[reducible] noncomputable def buffered [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def buffered [GooseExts] [GoGlobalContext] : val :=
   #(W64 0)
 
-@[reducible] noncomputable def idle [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def idle [GooseExts] [GoGlobalContext] : val :=
   #(W64 1)
 
-@[reducible] noncomputable def sndPending [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def sndPending [GooseExts] [GoGlobalContext] : val :=
   #(W64 2)
 
-@[reducible] noncomputable def rcvPending [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def rcvPending [GooseExts] [GoGlobalContext] : val :=
   #(W64 3)
 
-@[reducible] noncomputable def sndCommit [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def sndCommit [GooseExts] [GoGlobalContext] : val :=
   #(W64 4)
 
-@[reducible] noncomputable def rcvDone [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def rcvDone [GooseExts] [GoGlobalContext] : val :=
   #(W64 5)
 
-@[reducible] noncomputable def closed [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def closed [GooseExts] [GoGlobalContext] : val :=
   #(W64 6)
 
 /-- case ch <- Send -/
-@[reducible] noncomputable def SelectSend [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SelectSend [GooseExts] [GoGlobalContext] : val :=
   #(W64 0)
 
 /-- case <-ch: -/
-@[reducible] noncomputable def SelectRecv [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def SelectRecv [GooseExts] [GoGlobalContext] : val :=
   #(W64 1)
 
-noncomputable def runtimePanic [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def runtimePanic [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.runtimePanic"
 
-noncomputable def NewChannel [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NewChannel [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.NewChannel"
 
-noncomputable def NonBlockingSelect1 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NonBlockingSelect1 [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.NonBlockingSelect1"
 
-noncomputable def BlockingSelect2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def BlockingSelect2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.BlockingSelect2"
 
-noncomputable def NonBlockingSelect2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NonBlockingSelect2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.NonBlockingSelect2"
 
-noncomputable def BlockingSelect3 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def BlockingSelect3 [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.BlockingSelect3"
 
-noncomputable def NonBlockingSelect3 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NonBlockingSelect3 [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/model/channel.NonBlockingSelect3"
 
 /-- runtimePanic stands for a run-time panic of Go's channels (send on or close
@@ -96,7 +96,7 @@ noncomputable def NonBlockingSelect3 [FfiSyntax] [GoGlobalContext] : GoString :=
     value or a channel state Go does not have.
 
     go: channel.go:13:6 -/
-noncomputable def runtimePanic.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def runtimePanic.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -107,7 +107,7 @@ noncomputable def runtimePanic.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.Assert []))) (Val #())) (Var "$a0")))))))
 
 /-- go: channel.go:41:6 -/
-noncomputable def NewChannel.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def NewChannel.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "cap"
   (App (Val exceptionDo)
   (Let "cap" (App (Val (GoInstruction (GoAlloc go.int))) (Var "cap"))
@@ -140,7 +140,7 @@ noncomputable def NewChannel.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) 
     statements simply call this in a for loop until it returns true.
 
     go: channel.go:64:22 -/
-noncomputable def Channel.TrySend.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.TrySend.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "val"
   (Lam "blocking"
@@ -265,7 +265,7 @@ noncomputable def Channel.TrySend.impl [FfiSyntax] [GoGlobalContext] (T : go.GoT
     c <- val
 
     go: channel.go:129:22 -/
-noncomputable def Channel.Send.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.Send.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "v"
   (App (Val exceptionDo)
@@ -300,7 +300,7 @@ noncomputable def Channel.Send.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType
     with another non-blocking send.
 
     go: channel.go:144:22 -/
-noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.TryReceive.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam "blocking"
   (App (Val exceptionDo)
@@ -439,7 +439,7 @@ noncomputable def Channel.TryReceive.impl [FfiSyntax] [GoGlobalContext] (T : go.
   (Val #()))))))))))
 
 /-- go: channel.go:217:22 -/
-noncomputable def Channel.Receive.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.Receive.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -489,7 +489,7 @@ noncomputable def Channel.Receive.impl [FfiSyntax] [GoGlobalContext] (T : go.GoT
     the closer must still obtain the channel's lock
 
     go: channel.go:234:22 -/
-noncomputable def Channel.tryClose.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.tryClose.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -530,7 +530,7 @@ noncomputable def Channel.tryClose.impl [FfiSyntax] [GoGlobalContext] (T : go.Go
     close(c)
 
     go: channel.go:258:22 -/
-noncomputable def Channel.Close.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.Close.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -557,7 +557,7 @@ noncomputable def Channel.Close.impl [FfiSyntax] [GoGlobalContext] (T : go.GoTyp
     v := c<-
 
     go: channel.go:270:22 -/
-noncomputable def Channel.ReceiveDiscardOk.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.ReceiveDiscardOk.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -586,7 +586,7 @@ noncomputable def Channel.ReceiveDiscardOk.impl [FfiSyntax] [GoGlobalContext] (T
     semantics.
 
     go: channel.go:282:22 -/
-noncomputable def Channel.Len.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.Len.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -618,7 +618,7 @@ noncomputable def Channel.Len.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType)
     cap(c)
 
     go: channel.go:296:22 -/
-noncomputable def Channel.Cap.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.Cap.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -635,7 +635,7 @@ noncomputable def Channel.Cap.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType)
 /-- c.Iter() returns an iterator that models a for range loop over the channel.
 
     go: channel.go:304:22 -/
-noncomputable def Channel.Iter.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def Channel.Iter.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "c"
   (Lam BAnon
   (App (Val exceptionDo)
@@ -694,7 +694,7 @@ noncomputable def Channel.Iter.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType
     Returns (selected, received_value, ok)
 
     go: select.go:19:6 -/
-noncomputable def NonBlockingSelect1.impl [FfiSyntax] [GoGlobalContext] (T : go.GoType) : val :=
+noncomputable def NonBlockingSelect1.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
   (LamV "ch"
   (Lam "dir"
   (Lam "value"
@@ -740,7 +740,7 @@ noncomputable def NonBlockingSelect1.impl [FfiSyntax] [GoGlobalContext] (T : go.
     Returns (caseIndex, received_value1, received_value2, ok)
 
     go: select.go:33:6 -/
-noncomputable def BlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 : go.GoType) : val :=
+noncomputable def BlockingSelect2.impl [GooseExts] [GoGlobalContext] (T1 T2 : go.GoType) : val :=
   (LamV "ch1"
   (Lam "dir1"
   (Lam "val1"
@@ -833,7 +833,7 @@ noncomputable def BlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 : go
     caseIndex = 2 means no selection
 
     go: select.go:73:6 -/
-noncomputable def NonBlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 : go.GoType) : val :=
+noncomputable def NonBlockingSelect2.impl [GooseExts] [GoGlobalContext] (T1 T2 : go.GoType) : val :=
   (LamV "ch1"
   (Lam "dir1"
   (Lam "val1"
@@ -989,7 +989,7 @@ noncomputable def NonBlockingSelect2.impl [FfiSyntax] [GoGlobalContext] (T1 T2 :
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "selected") (Var "$r0"))))))))))))))))))))))))))))))))))
 
 /-- go: select.go:135:6 -/
-noncomputable def BlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T3 : go.GoType) : val :=
+noncomputable def BlockingSelect3.impl [GooseExts] [GoGlobalContext] (T1 T2 T3 : go.GoType) : val :=
   (LamV "ch1"
   (Lam "dir1"
   (Lam "val1"
@@ -1129,7 +1129,7 @@ noncomputable def BlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T3 :
     caseIndex = 3 means no selection
 
     go: select.go:189:6 -/
-noncomputable def NonBlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T3 : go.GoType) : val :=
+noncomputable def NonBlockingSelect3.impl [GooseExts] [GoGlobalContext] (T1 T2 T3 : go.GoType) : val :=
   (LamV "ch1"
   (Lam "dir1"
   (Lam "val1"
@@ -1280,24 +1280,24 @@ noncomputable def NonBlockingSelect3.impl [FfiSyntax] [GoGlobalContext] (T1 T2 T
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.model.channel where
   pkgImportedPkgs := [pkg_id.github_com.goose_lang.primitive]
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.model.channel)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.initialize') (Val #())))))))
 
-abbrev offerState [FfiSyntax] : Type := w64
+abbrev offerState [GooseExts] : Type := w64
 
-@[reducible] noncomputable def offerState.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def offerState.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class offerState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class offerState.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq offerState.ty offerState.underlying
 
 attribute [instance] offerState.TypeAssumptions.underlying
 
-structure Channel [FfiSyntax] (T : Type) where
+structure Channel [GooseExts] (T : Type) where
   mk ::
   cap' : w64
   mu' : Loc
@@ -1305,27 +1305,27 @@ structure Channel [FfiSyntax] (T : Type) where
   buffer' : GoSlice
   v' : T
 
-noncomputable instance Channel.zero_val [FfiSyntax] {T : Type} [ZeroVal T] : ZeroVal (Channel T) :=
+noncomputable instance Channel.zero_val [GooseExts] {T : Type} [ZeroVal T] : ZeroVal (Channel T) :=
   ⟨Channel.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Channel.fieldsUnsealed [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[reducible] noncomputable def Channel.fieldsUnsealed [GooseExts] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"cap" go.int),
 (go.field_decl.FieldDecl go!"mu" (go.GoType.PointerType _root_.Perennial.github_com.goose_lang.primitive.Mutex.ty)),
 (go.field_decl.FieldDecl go!"state" offerState.ty),
 (go.field_decl.FieldDecl go!"buffer" (go.GoType.SliceType T)),
 (go.field_decl.FieldDecl go!"v" T)]
 
-@[irreducible] noncomputable def Channel.fields [FfiSyntax] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[irreducible] noncomputable def Channel.fields [GooseExts] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   (Channel.fieldsUnsealed T)
 
-noncomputable instance equals_unfold_Channel [FfiSyntax] [GoGlobalContext] (T : go.GoType) :
+noncomputable instance equals_unfold_Channel [GooseExts] [GoGlobalContext] (T : go.GoType) :
     EqualsUnfold (Channel.fields T) (Channel.fieldsUnsealed T) :=
   ⟨by unfold Channel.fields; rfl⟩
 
-@[reducible] noncomputable def Channel.underlying [FfiSyntax] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+@[reducible] noncomputable def Channel.underlying [GooseExts] [GoGlobalContext] (T : go.GoType) : go.GoType :=
   (go.GoType.StructType (Channel.fields T))
 
-class Channel.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Channel.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (Channel.underlying T) (Channel T')
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (Channel.ty T) (Channel.underlying T)
   get_cap : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"cap") #x (Val #(x.cap'))
@@ -1372,17 +1372,17 @@ attribute [instance] Channel.TypeAssumptions.type_repr
   Channel.TypeAssumptions.ptr_TrySend_unfold
   Channel.TypeAssumptions.ptr_tryClose_unfold
 
-abbrev SelectDir [FfiSyntax] : Type := w64
+abbrev SelectDir [GooseExts] : Type := w64
 
-@[reducible] noncomputable def SelectDir.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def SelectDir.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.uint64
 
-class SelectDir.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class SelectDir.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq SelectDir.ty SelectDir.underlying
 
 attribute [instance] SelectDir.TypeAssumptions.underlying
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   offerState_instance : offerState.TypeAssumptions
   Channel_instance : Channel.TypeAssumptions
   SelectDir_instance : SelectDir.TypeAssumptions

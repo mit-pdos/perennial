@@ -24,12 +24,12 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.channel
 
-instance request_countable [FfiSyntax] : Pos.Countable request :=
+instance request_countable [GooseExts] : Pos.Countable request :=
   countableOfLeftInverse (fun r : request => (r.f', r.result')) (fun p => ⟨p.1, p.2⟩)
     (fun _ => rfl)
 
 section proof
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]

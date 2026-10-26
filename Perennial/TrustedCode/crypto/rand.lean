@@ -17,7 +17,7 @@ noncomputable section
 
 namespace crypto.rand
 section code
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- `Int(rand, max)`: a uniform random value in `[0, max)`, read from `rand`; Go panics if
 `max <= 0`. The model returns an arbitrary value in `[0, max)` (`ArbitraryInt % max`; the

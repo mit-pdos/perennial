@@ -14,7 +14,7 @@ namespace Perennial
 
 namespace internal.stringslite
 section code
-variable [FfiSyntax] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- `Clone(s)`: a copy of `s`. Go's `Clone` returns `""` for an empty `s`, else copies `s` into a
 fresh byte slice and returns it as a string with `unsafe.String(&b[0], len(b))`, which Goose does

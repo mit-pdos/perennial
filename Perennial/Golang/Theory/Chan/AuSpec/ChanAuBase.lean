@@ -139,7 +139,7 @@ def ChanCapValid {V : Type} (s : ChanState V) (cap : Int) : Prop :=
   | _ => cap = 0  -- All other states are unbuffered
 
 section au_defns
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable (γ : ChanNames) (V : Type) [Pos.Countable V]
@@ -322,7 +322,7 @@ def closeAu (Φ : IProp GF) : IProp GF :=
 end au_defns
 
 section defns
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
@@ -469,7 +469,7 @@ theorem isChan_unseal : @isChan = @isChanDef := by funext; with_unfolding_all rf
 end defns
 
 section lemmas
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable (γ : ChanNames) (V : Type) [Pos.Countable V]
@@ -685,7 +685,7 @@ theorem nonblockingRecvAuAlt_wand [ZeroVal V] (Φ1 Φ2 : V → Bool → IProp GF
 end lemmas
 
 section ghost_lemmas
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]
@@ -911,13 +911,13 @@ theorem internal_eq_rewrite_wand {GF : BundledGFunctors} {P Q : IProp GF} :
   iapply H2
   iexact HQ
 
-theorem val_bool_eq [FfiSyntax] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
+theorem val_bool_eq [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions]
     [go.PreSemantics] (b1 b2 : Bool) : ((#b1 : val) = #b2) = (b1 = b2) := by
   rw [go.intoVal_unfold Bool]
   simp
 
 section lc_lemmas
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable (γ : ChanNames) (V : Type) [Pos.Countable V]
@@ -957,7 +957,7 @@ theorem savedOffer_lc_agree (lock1 : Option (OfferLock V)) (parked1 cont1 : IPro
 end lc_lemmas
 
 section lock
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]

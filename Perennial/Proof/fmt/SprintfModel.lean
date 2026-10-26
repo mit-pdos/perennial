@@ -19,7 +19,7 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std
 namespace fmt
 
 section wps
-variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
@@ -605,7 +605,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
       simp only [IsIntType, not_or]
       exact ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10⟩
 
-omit [FfiSemantics ext ffi] in
+omit [GooseSemantics] in
 theorem not_simpleDirective (f : GoString) (x : GoInterface) (args : List GoInterface)
     (h1 : f.head? ≠ some (W8 37))
     (h2 : f.head? ≠ some (W8 115) ∨ ∀ ii, x = interface.ok ii → ii.ty ≠ go.string)
@@ -624,7 +624,7 @@ theorem not_simpleDirective (f : GoString) (x : GoInterface) (args : List GoInte
       · rw [h3] at hp; simp at hp
       · exact h3 ii rfl hty
 
-omit [FfiSemantics ext ffi] in
+omit [GooseSemantics] in
 theorem not_simpleDirective_nil (f : GoString) (h : f.head? ≠ some (W8 37)) :
     ¬ SimpleDirective f [] := by
   cases f with

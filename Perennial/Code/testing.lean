@@ -25,179 +25,179 @@ end pkg_id
 
 namespace testing
 
-noncomputable def durationOrCountFlag.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def durationOrCountFlag.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.durationOrCountFlag" [])
 
 attribute [irreducible] durationOrCountFlag.ty
 
-noncomputable def InternalBenchmark.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def InternalBenchmark.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.InternalBenchmark" [])
 
 attribute [irreducible] InternalBenchmark.ty
 
-noncomputable def B.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def B.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.B" [])
 
 attribute [irreducible] B.ty
 
-noncomputable def BenchmarkResult.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def BenchmarkResult.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.BenchmarkResult" [])
 
 attribute [irreducible] BenchmarkResult.ty
 
-noncomputable def benchState.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def benchState.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.benchState" [])
 
 attribute [irreducible] benchState.ty
 
-noncomputable def PB.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def PB.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.PB" [])
 
 attribute [irreducible] PB.ty
 
-noncomputable def discard.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def discard.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.discard" [])
 
 attribute [irreducible] discard.ty
 
-noncomputable def CoverBlock.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def CoverBlock.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.CoverBlock" [])
 
 attribute [irreducible] CoverBlock.ty
 
-noncomputable def Cover.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Cover.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.Cover" [])
 
 attribute [irreducible] Cover.ty
 
-noncomputable def InternalExample.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def InternalExample.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.InternalExample" [])
 
 attribute [irreducible] InternalExample.ty
 
-noncomputable def InternalFuzzTarget.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def InternalFuzzTarget.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.InternalFuzzTarget" [])
 
 attribute [irreducible] InternalFuzzTarget.ty
 
-noncomputable def F.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def F.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.F" [])
 
 attribute [irreducible] F.ty
 
-noncomputable def fuzzResult.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def fuzzResult.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.fuzzResult" [])
 
 attribute [irreducible] fuzzResult.ty
 
-noncomputable def fuzzCrashError.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def fuzzCrashError.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.fuzzCrashError" [])
 
 attribute [irreducible] fuzzCrashError.ty
 
-noncomputable def fuzzState.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def fuzzState.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.fuzzState" [])
 
 attribute [irreducible] fuzzState.ty
 
-noncomputable def fuzzMode.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def fuzzMode.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.fuzzMode" [])
 
 attribute [irreducible] fuzzMode.ty
 
-noncomputable def matcher.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def matcher.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.matcher" [])
 
 attribute [irreducible] matcher.ty
 
-noncomputable def filterMatch.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def filterMatch.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.filterMatch" [])
 
 attribute [irreducible] filterMatch.ty
 
-noncomputable def simpleMatch.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def simpleMatch.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.simpleMatch" [])
 
 attribute [irreducible] simpleMatch.ty
 
-noncomputable def alternationMatch.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def alternationMatch.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.alternationMatch" [])
 
 attribute [irreducible] alternationMatch.ty
 
-noncomputable def chattyFlag.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def chattyFlag.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.chattyFlag" [])
 
 attribute [irreducible] chattyFlag.ty
 
-noncomputable def chattyPrinter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def chattyPrinter.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.chattyPrinter" [])
 
 attribute [irreducible] chattyPrinter.ty
 
-noncomputable def common.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def common.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.common" [])
 
 attribute [irreducible] common.ty
 
-noncomputable def indenter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def indenter.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.indenter" [])
 
 attribute [irreducible] indenter.ty
 
-noncomputable def TB.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def TB.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.TB" [])
 
 attribute [irreducible] TB.ty
 
-noncomputable def T.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def T.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.T" [])
 
 attribute [irreducible] T.ty
 
-noncomputable def outputWriter.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def outputWriter.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.outputWriter" [])
 
 attribute [irreducible] outputWriter.ty
 
-noncomputable def panicHandling.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def panicHandling.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.panicHandling" [])
 
 attribute [irreducible] panicHandling.ty
 
-noncomputable def InternalTest.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def InternalTest.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.InternalTest" [])
 
 attribute [irreducible] InternalTest.ty
 
-noncomputable def testState.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def testState.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.testState" [])
 
 attribute [irreducible] testState.ty
 
-noncomputable def matchStringOnly.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def matchStringOnly.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.matchStringOnly" [])
 
 attribute [irreducible] matchStringOnly.ty
 
-noncomputable def M.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def M.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.M" [])
 
 attribute [irreducible] M.ty
 
-noncomputable def testDeps.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def testDeps.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.testDeps" [])
 
 attribute [irreducible] testDeps.ty
 
-noncomputable def highPrecisionTime.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def highPrecisionTime.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"testing.highPrecisionTime" [])
 
 attribute [irreducible] highPrecisionTime.ty
 
-axiom B.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom B.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-@[reducible] noncomputable def corpusEntry.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def corpusEntry.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType [(go.field_decl.FieldDecl go!"Parent" go.string),
   (go.field_decl.FieldDecl go!"Path" go.string),
   (go.field_decl.FieldDecl go!"Data" (go.GoType.SliceType go.byte)),
@@ -205,383 +205,383 @@ axiom B.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
   (go.field_decl.FieldDecl go!"Generation" go.int),
   (go.field_decl.FieldDecl go!"IsSeed" go.bool)])
 
-axiom testDeps.underlying [FfiSyntax] [GoGlobalContext] : go.GoType
+axiom testDeps.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom maxBenchPredictIters [FfiSyntax] [GoGlobalContext] : val
+axiom maxBenchPredictIters [GooseExts] [GoGlobalContext] : val
 
-axiom loopPoisonTimer [FfiSyntax] [GoGlobalContext] : val
+axiom loopPoisonTimer [GooseExts] [GoGlobalContext] : val
 
-axiom loopPoisonMask [FfiSyntax] [GoGlobalContext] : val
+axiom loopPoisonMask [GooseExts] [GoGlobalContext] : val
 
-axiom fuzzWorkerExitCode [FfiSyntax] [GoGlobalContext] : val
+axiom fuzzWorkerExitCode [GooseExts] [GoGlobalContext] : val
 
-axiom seedCorpusOnly [FfiSyntax] [GoGlobalContext] : val
+axiom seedCorpusOnly [GooseExts] [GoGlobalContext] : val
 
-axiom fuzzCoordinator [FfiSyntax] [GoGlobalContext] : val
+axiom fuzzCoordinator [GooseExts] [GoGlobalContext] : val
 
-axiom fuzzWorker [FfiSyntax] [GoGlobalContext] : val
+axiom fuzzWorker [GooseExts] [GoGlobalContext] : val
 
-axiom marker [FfiSyntax] [GoGlobalContext] : val
+axiom marker [GooseExts] [GoGlobalContext] : val
 
-axiom maxStackLen [FfiSyntax] [GoGlobalContext] : val
+axiom maxStackLen [GooseExts] [GoGlobalContext] : val
 
-axiom indent [FfiSyntax] [GoGlobalContext] : val
+axiom indent [GooseExts] [GoGlobalContext] : val
 
-axiom normalPanic [FfiSyntax] [GoGlobalContext] : val
+axiom normalPanic [GooseExts] [GoGlobalContext] : val
 
-axiom recoverAndReturnPanic [FfiSyntax] [GoGlobalContext] : val
+axiom recoverAndReturnPanic [GooseExts] [GoGlobalContext] : val
 
-axiom parallelConflict [FfiSyntax] [GoGlobalContext] : val
+axiom parallelConflict [GooseExts] [GoGlobalContext] : val
 
-noncomputable def matchBenchmarks [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def matchBenchmarks [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.matchBenchmarks"
 
-noncomputable def benchmarkMemory [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def benchmarkMemory [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.benchmarkMemory"
 
-noncomputable def benchTime [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def benchTime [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.benchTime"
 
-axiom benchTime.init [FfiSyntax] [GoGlobalContext] : val
+axiom benchTime.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def benchmarkLock [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def benchmarkLock [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.benchmarkLock"
 
-noncomputable def memStats [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def memStats [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.memStats"
 
-noncomputable def labelsOnce [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def labelsOnce [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.labelsOnce"
 
-noncomputable def hideStdoutForTesting [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def hideStdoutForTesting [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.hideStdoutForTesting"
 
-axiom hideStdoutForTesting.init [FfiSyntax] [GoGlobalContext] : val
+axiom hideStdoutForTesting.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def matchFuzz [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def matchFuzz [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.matchFuzz"
 
-noncomputable def fuzzDuration [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def fuzzDuration [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.fuzzDuration"
 
-noncomputable def minimizeDuration [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def minimizeDuration [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.minimizeDuration"
 
-axiom minimizeDuration.init [FfiSyntax] [GoGlobalContext] : val
+axiom minimizeDuration.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def fuzzCacheDir [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def fuzzCacheDir [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.fuzzCacheDir"
 
-noncomputable def isFuzzWorker [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isFuzzWorker [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.isFuzzWorker"
 
-noncomputable def corpusDir [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def corpusDir [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.corpusDir"
 
-axiom corpusDir.init [FfiSyntax] [GoGlobalContext] : val
+axiom corpusDir.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def supportedTypes [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def supportedTypes [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.supportedTypes"
 
-axiom supportedTypes.init [FfiSyntax] [GoGlobalContext] : val
+axiom supportedTypes.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def matchMutex [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def matchMutex [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.matchMutex"
 
-noncomputable def cover [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cover [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.cover"
 
-noncomputable def initRan [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def initRan [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.initRan"
 
-noncomputable def parallelStart [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def parallelStart [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.parallelStart"
 
-noncomputable def parallelStop [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def parallelStop [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.parallelStop"
 
-noncomputable def short [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def short [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.short"
 
-noncomputable def failFast [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def failFast [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.failFast"
 
-noncomputable def outputDir [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def outputDir [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.outputDir"
 
-noncomputable def artifacts [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def artifacts [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.artifacts"
 
-noncomputable def chatty [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def chatty [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.chatty"
 
-noncomputable def count [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def count [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.count"
 
-noncomputable def coverProfile [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def coverProfile [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.coverProfile"
 
-noncomputable def gocoverdir [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def gocoverdir [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.gocoverdir"
 
-noncomputable def matchList [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def matchList [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.matchList"
 
-noncomputable def match' [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def match' [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.match"
 
-noncomputable def skip [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def skip [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.skip"
 
-noncomputable def memProfile [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def memProfile [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.memProfile"
 
-noncomputable def memProfileRate [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def memProfileRate [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.memProfileRate"
 
-noncomputable def cpuProfile [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cpuProfile [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.cpuProfile"
 
-noncomputable def blockProfile [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def blockProfile [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.blockProfile"
 
-noncomputable def blockProfileRate [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def blockProfileRate [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.blockProfileRate"
 
-noncomputable def mutexProfile [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mutexProfile [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.mutexProfile"
 
-noncomputable def mutexProfileFraction [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mutexProfileFraction [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.mutexProfileFraction"
 
-noncomputable def panicOnExit0 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def panicOnExit0 [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.panicOnExit0"
 
-noncomputable def traceFile [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def traceFile [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.traceFile"
 
-noncomputable def timeout [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def timeout [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.timeout"
 
-noncomputable def cpuListStr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cpuListStr [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.cpuListStr"
 
-noncomputable def parallel [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def parallel [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.parallel"
 
-noncomputable def shuffle [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def shuffle [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.shuffle"
 
-noncomputable def testlog [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def testlog [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.testlog"
 
-noncomputable def fullPath [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def fullPath [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.fullPath"
 
-noncomputable def haveExamples [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def haveExamples [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.haveExamples"
 
-noncomputable def cpuList [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cpuList [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.cpuList"
 
-noncomputable def testlogFile [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def testlogFile [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.testlogFile"
 
-noncomputable def artifactDir [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def artifactDir [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.artifactDir"
 
-noncomputable def numFailed [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def numFailed [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.numFailed"
 
-noncomputable def running [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def running [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.running"
 
-noncomputable def testBinary [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def testBinary [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.testBinary"
 
-axiom testBinary.init [FfiSyntax] [GoGlobalContext] : val
+axiom testBinary.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def errNilPanicOrGoexit [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def errNilPanicOrGoexit [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.errNilPanicOrGoexit"
 
-axiom errNilPanicOrGoexit.init [FfiSyntax] [GoGlobalContext] : val
+axiom errNilPanicOrGoexit.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def errMain [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def errMain [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.errMain"
 
-axiom errMain.init [FfiSyntax] [GoGlobalContext] : val
+axiom errMain.init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def testingTesting [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def testingTesting [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.testingTesting"
 
-noncomputable def realStderr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def realStderr [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.realStderr"
 
-noncomputable def AllocsPerRun [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def AllocsPerRun [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.AllocsPerRun"
 
-noncomputable def initBenchmarkFlags [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def initBenchmarkFlags [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.initBenchmarkFlags"
 
-noncomputable def predictN [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def predictN [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.predictN"
 
-noncomputable def prettyPrint [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def prettyPrint [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.prettyPrint"
 
-noncomputable def benchmarkName [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def benchmarkName [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.benchmarkName"
 
-noncomputable def RunBenchmarks [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def RunBenchmarks [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.RunBenchmarks"
 
-noncomputable def runBenchmarks [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def runBenchmarks [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.runBenchmarks"
 
-noncomputable def Benchmark [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Benchmark [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.Benchmark"
 
-noncomputable def RegisterCover [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def RegisterCover [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.RegisterCover"
 
-noncomputable def RunExamples [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def RunExamples [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.RunExamples"
 
-noncomputable def runExamples [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def runExamples [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.runExamples"
 
-noncomputable def initFuzzFlags [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def initFuzzFlags [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.initFuzzFlags"
 
-noncomputable def runFuzzTests [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def runFuzzTests [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.runFuzzTests"
 
-noncomputable def runFuzzing [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def runFuzzing [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.runFuzzing"
 
-noncomputable def fRunner [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def fRunner [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.fRunner"
 
-noncomputable def allMatcher [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def allMatcher [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.allMatcher"
 
-noncomputable def newMatcher [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def newMatcher [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.newMatcher"
 
-noncomputable def splitRegexp [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def splitRegexp [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.splitRegexp"
 
-noncomputable def parseSubtestNumber [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def parseSubtestNumber [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.parseSubtestNumber"
 
-noncomputable def rewrite [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def rewrite [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.rewrite"
 
-noncomputable def isSpace [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isSpace [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.isSpace"
 
-noncomputable def registerCover [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def registerCover [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.registerCover"
 
-noncomputable def coverReport [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def coverReport [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.coverReport"
 
-noncomputable def Coverage [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Coverage [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.Coverage"
 
-noncomputable def runExample [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def runExample [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.runExample"
 
-noncomputable def Init [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Init [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.Init"
 
-noncomputable def newChattyPrinter [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def newChattyPrinter [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.newChattyPrinter"
 
-noncomputable def Short [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Short [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.Short"
 
-noncomputable def Testing [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Testing [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.Testing"
 
-noncomputable def CoverMode [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def CoverMode [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.CoverMode"
 
-noncomputable def Verbose [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Verbose [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.Verbose"
 
-noncomputable def fmtDuration [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def fmtDuration [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.fmtDuration"
 
-noncomputable def hashString [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def hashString [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.hashString"
 
-noncomputable def removeSymbolsExcept [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def removeSymbolsExcept [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.removeSymbolsExcept"
 
-noncomputable def removeAll [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def removeAll [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.removeAll"
 
-noncomputable def callerName [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def callerName [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.callerName"
 
-noncomputable def pcToName [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def pcToName [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.pcToName"
 
-noncomputable def checkParallel [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def checkParallel [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.checkParallel"
 
-noncomputable def tRunner [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tRunner [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.tRunner"
 
-noncomputable def testingSynctestTest [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def testingSynctestTest [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.testingSynctestTest"
 
-noncomputable def newTestState [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def newTestState [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.newTestState"
 
-noncomputable def Main [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Main [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.Main"
 
-noncomputable def MainStart [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def MainStart [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.MainStart"
 
-noncomputable def listTests [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def listTests [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.listTests"
 
-noncomputable def RunTests [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def RunTests [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.RunTests"
 
-noncomputable def runTests [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def runTests [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.runTests"
 
-noncomputable def toOutputDir [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def toOutputDir [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.toOutputDir"
 
-noncomputable def runningList [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def runningList [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.runningList"
 
-noncomputable def parseCpuList [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def parseCpuList [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.parseCpuList"
 
-noncomputable def shouldFailFast [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def shouldFailFast [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.shouldFailFast"
 
-noncomputable def isWindowsRetryable [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isWindowsRetryable [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.isWindowsRetryable"
 
-noncomputable def highPrecisionTimeNow [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def highPrecisionTimeNow [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.highPrecisionTimeNow"
 
-noncomputable def highPrecisionTimeSince [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def highPrecisionTimeSince [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.highPrecisionTimeSince"
 
 noncomputable instance info' : PkgInfo pkg_id.testing where
   pkgImportedPkgs := [pkg_id.context, pkg_id.io, pkg_id.sync, pkg_id.sync.atomic, pkg_id.time]
 
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.testing)) (Lam BAnon
   (App (Val exceptionDo)
@@ -633,31 +633,31 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.time.initialize') (Val #()))))))))
 
-structure durationOrCountFlag [FfiSyntax] where
+structure durationOrCountFlag [GooseExts] where
   mk ::
   d' : _root_.Perennial.time.Duration
   n' : w64
   allowZero' : Bool
 
-noncomputable instance durationOrCountFlag.zero_val [FfiSyntax] : ZeroVal durationOrCountFlag :=
+noncomputable instance durationOrCountFlag.zero_val [GooseExts] : ZeroVal durationOrCountFlag :=
   ⟨durationOrCountFlag.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def durationOrCountFlag.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def durationOrCountFlag.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"d" _root_.Perennial.time.Duration.ty),
 (go.field_decl.FieldDecl go!"n" go.int),
 (go.field_decl.FieldDecl go!"allowZero" go.bool)]
 
-@[irreducible] noncomputable def durationOrCountFlag.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def durationOrCountFlag.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   durationOrCountFlag.fieldsUnsealed
 
-noncomputable instance equals_unfold_durationOrCountFlag [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_durationOrCountFlag [GooseExts] [GoGlobalContext] :
     EqualsUnfold durationOrCountFlag.fields durationOrCountFlag.fieldsUnsealed :=
   ⟨by unfold durationOrCountFlag.fields; rfl⟩
 
-@[reducible] noncomputable def durationOrCountFlag.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def durationOrCountFlag.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType durationOrCountFlag.fields)
 
-class durationOrCountFlag.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class durationOrCountFlag.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying durationOrCountFlag.underlying durationOrCountFlag
   underlying : go.UnderlyingDirectedEq durationOrCountFlag.ty durationOrCountFlag.underlying
   get_d : ∀ (x : durationOrCountFlag), go.IsGoStepPureDetTagged under (StructFieldGet durationOrCountFlag.underlying go!"d") #x (Val #(x.d'))
@@ -676,29 +676,29 @@ attribute [instance] durationOrCountFlag.TypeAssumptions.type_repr
   durationOrCountFlag.TypeAssumptions.get_allowZero
   durationOrCountFlag.TypeAssumptions.set_allowZero
 
-structure InternalBenchmark [FfiSyntax] where
+structure InternalBenchmark [GooseExts] where
   mk ::
   Name' : GoString
   F' : GoFunc
 
-noncomputable instance InternalBenchmark.zero_val [FfiSyntax] : ZeroVal InternalBenchmark :=
+noncomputable instance InternalBenchmark.zero_val [GooseExts] : ZeroVal InternalBenchmark :=
   ⟨InternalBenchmark.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def InternalBenchmark.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def InternalBenchmark.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Name" go.string),
 (go.field_decl.FieldDecl go!"F" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType B.ty)] false [])))]
 
-@[irreducible] noncomputable def InternalBenchmark.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def InternalBenchmark.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   InternalBenchmark.fieldsUnsealed
 
-noncomputable instance equals_unfold_InternalBenchmark [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_InternalBenchmark [GooseExts] [GoGlobalContext] :
     EqualsUnfold InternalBenchmark.fields InternalBenchmark.fieldsUnsealed :=
   ⟨by unfold InternalBenchmark.fields; rfl⟩
 
-@[reducible] noncomputable def InternalBenchmark.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def InternalBenchmark.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType InternalBenchmark.fields)
 
-class InternalBenchmark.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class InternalBenchmark.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying InternalBenchmark.underlying InternalBenchmark
   underlying : go.UnderlyingDirectedEq InternalBenchmark.ty InternalBenchmark.underlying
   get_Name : ∀ (x : InternalBenchmark), go.IsGoStepPureDetTagged under (StructFieldGet InternalBenchmark.underlying go!"Name") #x (Val #(x.Name'))
@@ -717,7 +717,7 @@ axiom B : Type
 axiom B.zero_val : ZeroVal B
 attribute [instance] B.zero_val
 
-class B.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class B.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying B.underlying B
   underlying : go.UnderlyingDirectedEq B.ty B.underlying
   isUnderlying : go.IsUnderlying B.underlying B.underlying
@@ -726,7 +726,7 @@ attribute [instance] B.TypeAssumptions.type_repr
   B.TypeAssumptions.underlying
   B.TypeAssumptions.isUnderlying
 
-structure BenchmarkResult [FfiSyntax] where
+structure BenchmarkResult [GooseExts] where
   mk ::
   N' : w64
   T' : _root_.Perennial.time.Duration
@@ -735,10 +735,10 @@ structure BenchmarkResult [FfiSyntax] where
   MemBytes' : w64
   Extra' : GoMap
 
-noncomputable instance BenchmarkResult.zero_val [FfiSyntax] : ZeroVal BenchmarkResult :=
+noncomputable instance BenchmarkResult.zero_val [GooseExts] : ZeroVal BenchmarkResult :=
   ⟨BenchmarkResult.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def BenchmarkResult.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def BenchmarkResult.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"N" go.int),
 (go.field_decl.FieldDecl go!"T" _root_.Perennial.time.Duration.ty),
 (go.field_decl.FieldDecl go!"Bytes" go.int64),
@@ -746,17 +746,17 @@ noncomputable instance BenchmarkResult.zero_val [FfiSyntax] : ZeroVal BenchmarkR
 (go.field_decl.FieldDecl go!"MemBytes" go.uint64),
 (go.field_decl.FieldDecl go!"Extra" (go.GoType.MapType go.string go.float64))]
 
-@[irreducible] noncomputable def BenchmarkResult.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def BenchmarkResult.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   BenchmarkResult.fieldsUnsealed
 
-noncomputable instance equals_unfold_BenchmarkResult [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_BenchmarkResult [GooseExts] [GoGlobalContext] :
     EqualsUnfold BenchmarkResult.fields BenchmarkResult.fieldsUnsealed :=
   ⟨by unfold BenchmarkResult.fields; rfl⟩
 
-@[reducible] noncomputable def BenchmarkResult.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def BenchmarkResult.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType BenchmarkResult.fields)
 
-class BenchmarkResult.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class BenchmarkResult.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying BenchmarkResult.underlying BenchmarkResult
   underlying : go.UnderlyingDirectedEq BenchmarkResult.ty BenchmarkResult.underlying
   get_N : ∀ (x : BenchmarkResult), go.IsGoStepPureDetTagged under (StructFieldGet BenchmarkResult.underlying go!"N") #x (Val #(x.N'))
@@ -787,31 +787,31 @@ attribute [instance] BenchmarkResult.TypeAssumptions.type_repr
   BenchmarkResult.TypeAssumptions.get_Extra
   BenchmarkResult.TypeAssumptions.set_Extra
 
-structure benchState [FfiSyntax] where
+structure benchState [GooseExts] where
   mk ::
   match' : Loc
   maxLen' : w64
   extLen' : w64
 
-noncomputable instance benchState.zero_val [FfiSyntax] : ZeroVal benchState :=
+noncomputable instance benchState.zero_val [GooseExts] : ZeroVal benchState :=
   ⟨benchState.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def benchState.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def benchState.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"match" (go.GoType.PointerType matcher.ty)),
 (go.field_decl.FieldDecl go!"maxLen" go.int),
 (go.field_decl.FieldDecl go!"extLen" go.int)]
 
-@[irreducible] noncomputable def benchState.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def benchState.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   benchState.fieldsUnsealed
 
-noncomputable instance equals_unfold_benchState [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_benchState [GooseExts] [GoGlobalContext] :
     EqualsUnfold benchState.fields benchState.fieldsUnsealed :=
   ⟨by unfold benchState.fields; rfl⟩
 
-@[reducible] noncomputable def benchState.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def benchState.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType benchState.fields)
 
-class benchState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class benchState.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying benchState.underlying benchState
   underlying : go.UnderlyingDirectedEq benchState.ty benchState.underlying
   get_match : ∀ (x : benchState), go.IsGoStepPureDetTagged under (StructFieldGet benchState.underlying go!"match") #x (Val #(x.match'))
@@ -830,33 +830,33 @@ attribute [instance] benchState.TypeAssumptions.type_repr
   benchState.TypeAssumptions.get_extLen
   benchState.TypeAssumptions.set_extLen
 
-structure PB [FfiSyntax] where
+structure PB [GooseExts] where
   mk ::
   globalN' : Loc
   grain' : w64
   cache' : w64
   bN' : w64
 
-noncomputable instance PB.zero_val [FfiSyntax] : ZeroVal PB :=
+noncomputable instance PB.zero_val [GooseExts] : ZeroVal PB :=
   ⟨PB.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def PB.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def PB.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"globalN" (go.GoType.PointerType _root_.Perennial.sync.atomic.Uint64.ty)),
 (go.field_decl.FieldDecl go!"grain" go.uint64),
 (go.field_decl.FieldDecl go!"cache" go.uint64),
 (go.field_decl.FieldDecl go!"bN" go.uint64)]
 
-@[irreducible] noncomputable def PB.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def PB.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   PB.fieldsUnsealed
 
-noncomputable instance equals_unfold_PB [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_PB [GooseExts] [GoGlobalContext] :
     EqualsUnfold PB.fields PB.fieldsUnsealed :=
   ⟨by unfold PB.fields; rfl⟩
 
-@[reducible] noncomputable def PB.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def PB.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType PB.fields)
 
-class PB.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class PB.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying PB.underlying PB
   underlying : go.UnderlyingDirectedEq PB.ty PB.underlying
   get_globalN : ∀ (x : PB), go.IsGoStepPureDetTagged under (StructFieldGet PB.underlying go!"globalN") #x (Val #(x.globalN'))
@@ -879,33 +879,33 @@ attribute [instance] PB.TypeAssumptions.type_repr
   PB.TypeAssumptions.get_bN
   PB.TypeAssumptions.set_bN
 
-structure discard [FfiSyntax] where
+structure discard [GooseExts] where
   mk ::
 
-noncomputable instance discard.zero_val [FfiSyntax] : ZeroVal discard :=
+noncomputable instance discard.zero_val [GooseExts] : ZeroVal discard :=
   ⟨discard.mk⟩
 
-@[reducible] noncomputable def discard.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def discard.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   []
 
-@[irreducible] noncomputable def discard.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def discard.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   discard.fieldsUnsealed
 
-noncomputable instance equals_unfold_discard [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_discard [GooseExts] [GoGlobalContext] :
     EqualsUnfold discard.fields discard.fieldsUnsealed :=
   ⟨by unfold discard.fields; rfl⟩
 
-@[reducible] noncomputable def discard.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def discard.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType discard.fields)
 
-class discard.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class discard.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying discard.underlying discard
   underlying : go.UnderlyingDirectedEq discard.ty discard.underlying
 
 attribute [instance] discard.TypeAssumptions.type_repr
   discard.TypeAssumptions.underlying
 
-structure CoverBlock [FfiSyntax] where
+structure CoverBlock [GooseExts] where
   mk ::
   Line0' : w32
   Col0' : w16
@@ -913,27 +913,27 @@ structure CoverBlock [FfiSyntax] where
   Col1' : w16
   Stmts' : w16
 
-noncomputable instance CoverBlock.zero_val [FfiSyntax] : ZeroVal CoverBlock :=
+noncomputable instance CoverBlock.zero_val [GooseExts] : ZeroVal CoverBlock :=
   ⟨CoverBlock.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def CoverBlock.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def CoverBlock.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Line0" go.uint32),
 (go.field_decl.FieldDecl go!"Col0" go.uint16),
 (go.field_decl.FieldDecl go!"Line1" go.uint32),
 (go.field_decl.FieldDecl go!"Col1" go.uint16),
 (go.field_decl.FieldDecl go!"Stmts" go.uint16)]
 
-@[irreducible] noncomputable def CoverBlock.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def CoverBlock.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   CoverBlock.fieldsUnsealed
 
-noncomputable instance equals_unfold_CoverBlock [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_CoverBlock [GooseExts] [GoGlobalContext] :
     EqualsUnfold CoverBlock.fields CoverBlock.fieldsUnsealed :=
   ⟨by unfold CoverBlock.fields; rfl⟩
 
-@[reducible] noncomputable def CoverBlock.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def CoverBlock.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType CoverBlock.fields)
 
-class CoverBlock.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class CoverBlock.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying CoverBlock.underlying CoverBlock
   underlying : go.UnderlyingDirectedEq CoverBlock.ty CoverBlock.underlying
   get_Line0 : ∀ (x : CoverBlock), go.IsGoStepPureDetTagged under (StructFieldGet CoverBlock.underlying go!"Line0") #x (Val #(x.Line0'))
@@ -960,33 +960,33 @@ attribute [instance] CoverBlock.TypeAssumptions.type_repr
   CoverBlock.TypeAssumptions.get_Stmts
   CoverBlock.TypeAssumptions.set_Stmts
 
-structure Cover [FfiSyntax] where
+structure Cover [GooseExts] where
   mk ::
   Mode' : GoString
   Counters' : GoMap
   Blocks' : GoMap
   CoveredPackages' : GoString
 
-noncomputable instance Cover.zero_val [FfiSyntax] : ZeroVal Cover :=
+noncomputable instance Cover.zero_val [GooseExts] : ZeroVal Cover :=
   ⟨Cover.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def Cover.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Cover.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Mode" go.string),
 (go.field_decl.FieldDecl go!"Counters" (go.GoType.MapType go.string (go.GoType.SliceType go.uint32))),
 (go.field_decl.FieldDecl go!"Blocks" (go.GoType.MapType go.string (go.GoType.SliceType CoverBlock.ty))),
 (go.field_decl.FieldDecl go!"CoveredPackages" go.string)]
 
-@[irreducible] noncomputable def Cover.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Cover.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Cover.fieldsUnsealed
 
-noncomputable instance equals_unfold_Cover [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Cover [GooseExts] [GoGlobalContext] :
     EqualsUnfold Cover.fields Cover.fieldsUnsealed :=
   ⟨by unfold Cover.fields; rfl⟩
 
-@[reducible] noncomputable def Cover.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Cover.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Cover.fields)
 
-class Cover.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Cover.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Cover.underlying Cover
   underlying : go.UnderlyingDirectedEq Cover.ty Cover.underlying
   get_Mode : ∀ (x : Cover), go.IsGoStepPureDetTagged under (StructFieldGet Cover.underlying go!"Mode") #x (Val #(x.Mode'))
@@ -1009,33 +1009,33 @@ attribute [instance] Cover.TypeAssumptions.type_repr
   Cover.TypeAssumptions.get_CoveredPackages
   Cover.TypeAssumptions.set_CoveredPackages
 
-structure InternalExample [FfiSyntax] where
+structure InternalExample [GooseExts] where
   mk ::
   Name' : GoString
   F' : GoFunc
   Output' : GoString
   Unordered' : Bool
 
-noncomputable instance InternalExample.zero_val [FfiSyntax] : ZeroVal InternalExample :=
+noncomputable instance InternalExample.zero_val [GooseExts] : ZeroVal InternalExample :=
   ⟨InternalExample.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def InternalExample.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def InternalExample.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Name" go.string),
 (go.field_decl.FieldDecl go!"F" (go.GoType.FunctionType (go.signature.Signature [] false []))),
 (go.field_decl.FieldDecl go!"Output" go.string),
 (go.field_decl.FieldDecl go!"Unordered" go.bool)]
 
-@[irreducible] noncomputable def InternalExample.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def InternalExample.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   InternalExample.fieldsUnsealed
 
-noncomputable instance equals_unfold_InternalExample [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_InternalExample [GooseExts] [GoGlobalContext] :
     EqualsUnfold InternalExample.fields InternalExample.fieldsUnsealed :=
   ⟨by unfold InternalExample.fields; rfl⟩
 
-@[reducible] noncomputable def InternalExample.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def InternalExample.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType InternalExample.fields)
 
-class InternalExample.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class InternalExample.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying InternalExample.underlying InternalExample
   underlying : go.UnderlyingDirectedEq InternalExample.ty InternalExample.underlying
   get_Name : ∀ (x : InternalExample), go.IsGoStepPureDetTagged under (StructFieldGet InternalExample.underlying go!"Name") #x (Val #(x.Name'))
@@ -1058,29 +1058,29 @@ attribute [instance] InternalExample.TypeAssumptions.type_repr
   InternalExample.TypeAssumptions.get_Unordered
   InternalExample.TypeAssumptions.set_Unordered
 
-structure InternalFuzzTarget [FfiSyntax] where
+structure InternalFuzzTarget [GooseExts] where
   mk ::
   Name' : GoString
   Fn' : GoFunc
 
-noncomputable instance InternalFuzzTarget.zero_val [FfiSyntax] : ZeroVal InternalFuzzTarget :=
+noncomputable instance InternalFuzzTarget.zero_val [GooseExts] : ZeroVal InternalFuzzTarget :=
   ⟨InternalFuzzTarget.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def InternalFuzzTarget.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def InternalFuzzTarget.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Name" go.string),
 (go.field_decl.FieldDecl go!"Fn" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType F.ty)] false [])))]
 
-@[irreducible] noncomputable def InternalFuzzTarget.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def InternalFuzzTarget.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   InternalFuzzTarget.fieldsUnsealed
 
-noncomputable instance equals_unfold_InternalFuzzTarget [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_InternalFuzzTarget [GooseExts] [GoGlobalContext] :
     EqualsUnfold InternalFuzzTarget.fields InternalFuzzTarget.fieldsUnsealed :=
   ⟨by unfold InternalFuzzTarget.fields; rfl⟩
 
-@[reducible] noncomputable def InternalFuzzTarget.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def InternalFuzzTarget.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType InternalFuzzTarget.fields)
 
-class InternalFuzzTarget.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class InternalFuzzTarget.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying InternalFuzzTarget.underlying InternalFuzzTarget
   underlying : go.UnderlyingDirectedEq InternalFuzzTarget.ty InternalFuzzTarget.underlying
   get_Name : ∀ (x : InternalFuzzTarget), go.IsGoStepPureDetTagged under (StructFieldGet InternalFuzzTarget.underlying go!"Name") #x (Val #(x.Name'))
@@ -1095,27 +1095,27 @@ attribute [instance] InternalFuzzTarget.TypeAssumptions.type_repr
   InternalFuzzTarget.TypeAssumptions.get_Fn
   InternalFuzzTarget.TypeAssumptions.set_Fn
 
-structure highPrecisionTime [FfiSyntax] where
+structure highPrecisionTime [GooseExts] where
   mk ::
   now' : _root_.Perennial.time.Time
 
-noncomputable instance highPrecisionTime.zero_val [FfiSyntax] : ZeroVal highPrecisionTime :=
+noncomputable instance highPrecisionTime.zero_val [GooseExts] : ZeroVal highPrecisionTime :=
   ⟨highPrecisionTime.mk zeroValDef⟩
 
-@[reducible] noncomputable def highPrecisionTime.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def highPrecisionTime.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"now" _root_.Perennial.time.Time.ty)]
 
-@[irreducible] noncomputable def highPrecisionTime.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def highPrecisionTime.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   highPrecisionTime.fieldsUnsealed
 
-noncomputable instance equals_unfold_highPrecisionTime [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_highPrecisionTime [GooseExts] [GoGlobalContext] :
     EqualsUnfold highPrecisionTime.fields highPrecisionTime.fieldsUnsealed :=
   ⟨by unfold highPrecisionTime.fields; rfl⟩
 
-@[reducible] noncomputable def highPrecisionTime.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def highPrecisionTime.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType highPrecisionTime.fields)
 
-class highPrecisionTime.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class highPrecisionTime.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying highPrecisionTime.underlying highPrecisionTime
   underlying : go.UnderlyingDirectedEq highPrecisionTime.ty highPrecisionTime.underlying
   get_now : ∀ (x : highPrecisionTime), go.IsGoStepPureDetTagged under (StructFieldGet highPrecisionTime.underlying go!"now") #x (Val #(x.now'))
@@ -1126,7 +1126,7 @@ attribute [instance] highPrecisionTime.TypeAssumptions.type_repr
   highPrecisionTime.TypeAssumptions.get_now
   highPrecisionTime.TypeAssumptions.set_now
 
-structure common [FfiSyntax] where
+structure common [GooseExts] where
   mk ::
   mu' : _root_.Perennial.sync.RWMutex
   output' : GoSlice
@@ -1173,10 +1173,10 @@ structure common [FfiSyntax] where
   ctx' : _root_.Perennial.context.Context
   cancelCtx' : _root_.Perennial.context.CancelFunc
 
-noncomputable instance common.zero_val [FfiSyntax] : ZeroVal common :=
+noncomputable instance common.zero_val [GooseExts] : ZeroVal common :=
   ⟨common.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def common.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def common.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.RWMutex.ty),
 (go.field_decl.FieldDecl go!"output" (go.GoType.SliceType go.byte)),
 (go.field_decl.FieldDecl go!"w" _root_.Perennial.io.Writer.ty),
@@ -1222,17 +1222,17 @@ noncomputable instance common.zero_val [FfiSyntax] : ZeroVal common :=
 (go.field_decl.FieldDecl go!"ctx" _root_.Perennial.context.Context.ty),
 (go.field_decl.FieldDecl go!"cancelCtx" _root_.Perennial.context.CancelFunc.ty)]
 
-@[irreducible] noncomputable def common.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def common.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   common.fieldsUnsealed
 
-noncomputable instance equals_unfold_common [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_common [GooseExts] [GoGlobalContext] :
     EqualsUnfold common.fields common.fieldsUnsealed :=
   ⟨by unfold common.fields; rfl⟩
 
-@[reducible] noncomputable def common.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def common.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType common.fields)
 
-class common.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class common.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying common.underlying common
   underlying : go.UnderlyingDirectedEq common.ty common.underlying
   get_mu : ∀ (x : common), go.IsGoStepPureDetTagged under (StructFieldGet common.underlying go!"mu") #x (Val #(x.mu'))
@@ -1415,31 +1415,31 @@ attribute [instance] common.TypeAssumptions.type_repr
   common.TypeAssumptions.get_cancelCtx
   common.TypeAssumptions.set_cancelCtx
 
-structure fuzzResult [FfiSyntax] where
+structure fuzzResult [GooseExts] where
   mk ::
   N' : w64
   T' : _root_.Perennial.time.Duration
   Error' : GoError
 
-noncomputable instance fuzzResult.zero_val [FfiSyntax] : ZeroVal fuzzResult :=
+noncomputable instance fuzzResult.zero_val [GooseExts] : ZeroVal fuzzResult :=
   ⟨fuzzResult.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def fuzzResult.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def fuzzResult.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"N" go.int),
 (go.field_decl.FieldDecl go!"T" _root_.Perennial.time.Duration.ty),
 (go.field_decl.FieldDecl go!"Error" go.error)]
 
-@[irreducible] noncomputable def fuzzResult.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def fuzzResult.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   fuzzResult.fieldsUnsealed
 
-noncomputable instance equals_unfold_fuzzResult [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_fuzzResult [GooseExts] [GoGlobalContext] :
     EqualsUnfold fuzzResult.fields fuzzResult.fieldsUnsealed :=
   ⟨by unfold fuzzResult.fields; rfl⟩
 
-@[reducible] noncomputable def fuzzResult.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def fuzzResult.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType fuzzResult.fields)
 
-class fuzzResult.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class fuzzResult.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying fuzzResult.underlying fuzzResult
   underlying : go.UnderlyingDirectedEq fuzzResult.ty fuzzResult.underlying
   get_N : ∀ (x : fuzzResult), go.IsGoStepPureDetTagged under (StructFieldGet fuzzResult.underlying go!"N") #x (Val #(x.N'))
@@ -1458,7 +1458,7 @@ attribute [instance] fuzzResult.TypeAssumptions.type_repr
   fuzzResult.TypeAssumptions.get_Error
   fuzzResult.TypeAssumptions.set_Error
 
-structure F [FfiSyntax] where
+structure F [GooseExts] where
   mk ::
   common' : common
   fstate' : Loc
@@ -1468,10 +1468,10 @@ structure F [FfiSyntax] where
   result' : fuzzResult
   fuzzCalled' : Bool
 
-noncomputable instance F.zero_val [FfiSyntax] : ZeroVal F :=
+noncomputable instance F.zero_val [GooseExts] : ZeroVal F :=
   ⟨F.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def F.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def F.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"common" common.ty),
 (go.field_decl.FieldDecl go!"fstate" (go.GoType.PointerType fuzzState.ty)),
 (go.field_decl.FieldDecl go!"tstate" (go.GoType.PointerType testState.ty)),
@@ -1480,17 +1480,17 @@ noncomputable instance F.zero_val [FfiSyntax] : ZeroVal F :=
 (go.field_decl.FieldDecl go!"result" fuzzResult.ty),
 (go.field_decl.FieldDecl go!"fuzzCalled" go.bool)]
 
-@[irreducible] noncomputable def F.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def F.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   F.fieldsUnsealed
 
-noncomputable instance equals_unfold_F [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_F [GooseExts] [GoGlobalContext] :
     EqualsUnfold F.fields F.fieldsUnsealed :=
   ⟨by unfold F.fields; rfl⟩
 
-@[reducible] noncomputable def F.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def F.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType F.fields)
 
-class F.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class F.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying F.underlying F
   underlying : go.UnderlyingDirectedEq F.ty F.underlying
   get_common : ∀ (x : F), go.IsGoStepPureDetTagged under (StructFieldGet F.underlying go!"common") #x (Val #(x.common'))
@@ -1525,12 +1525,12 @@ attribute [instance] F.TypeAssumptions.type_repr
   F.TypeAssumptions.get_fuzzCalled
   F.TypeAssumptions.set_fuzzCalled
 
-abbrev fuzzCrashError [FfiSyntax] : Type := GoInterface
+abbrev fuzzCrashError [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def fuzzCrashError.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def fuzzCrashError.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"CrashPath" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Unwrap" (go.signature.Signature [] false [go.error])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm go.error)])])
 
-class fuzzCrashError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class fuzzCrashError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq fuzzCrashError.ty fuzzCrashError.underlying
 
 attribute [instance] fuzzCrashError.TypeAssumptions.underlying
@@ -1539,7 +1539,7 @@ axiom testDeps : Type
 axiom testDeps.zero_val : ZeroVal testDeps
 attribute [instance] testDeps.zero_val
 
-class testDeps.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class testDeps.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying testDeps.underlying testDeps
   underlying : go.UnderlyingDirectedEq testDeps.ty testDeps.underlying
   isUnderlying : go.IsUnderlying testDeps.underlying testDeps.underlying
@@ -1548,39 +1548,39 @@ attribute [instance] testDeps.TypeAssumptions.type_repr
   testDeps.TypeAssumptions.underlying
   testDeps.TypeAssumptions.isUnderlying
 
-abbrev fuzzMode [FfiSyntax] : Type := w8
+abbrev fuzzMode [GooseExts] : Type := w8
 
-@[reducible] noncomputable def fuzzMode.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def fuzzMode.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.uint8
 
-class fuzzMode.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class fuzzMode.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq fuzzMode.ty fuzzMode.underlying
 
 attribute [instance] fuzzMode.TypeAssumptions.underlying
 
-structure fuzzState [FfiSyntax] where
+structure fuzzState [GooseExts] where
   mk ::
   deps' : testDeps
   mode' : fuzzMode
 
-noncomputable instance fuzzState.zero_val [FfiSyntax] : ZeroVal fuzzState :=
+noncomputable instance fuzzState.zero_val [GooseExts] : ZeroVal fuzzState :=
   ⟨fuzzState.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def fuzzState.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def fuzzState.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"deps" testDeps.ty),
 (go.field_decl.FieldDecl go!"mode" fuzzMode.ty)]
 
-@[irreducible] noncomputable def fuzzState.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def fuzzState.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   fuzzState.fieldsUnsealed
 
-noncomputable instance equals_unfold_fuzzState [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_fuzzState [GooseExts] [GoGlobalContext] :
     EqualsUnfold fuzzState.fields fuzzState.fieldsUnsealed :=
   ⟨by unfold fuzzState.fields; rfl⟩
 
-@[reducible] noncomputable def fuzzState.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def fuzzState.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType fuzzState.fields)
 
-class fuzzState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class fuzzState.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying fuzzState.underlying fuzzState
   underlying : go.UnderlyingDirectedEq fuzzState.ty fuzzState.underlying
   get_deps : ∀ (x : fuzzState), go.IsGoStepPureDetTagged under (StructFieldGet fuzzState.underlying go!"deps") #x (Val #(x.deps'))
@@ -1595,17 +1595,17 @@ attribute [instance] fuzzState.TypeAssumptions.type_repr
   fuzzState.TypeAssumptions.get_mode
   fuzzState.TypeAssumptions.set_mode
 
-abbrev filterMatch [FfiSyntax] : Type := GoInterface
+abbrev filterMatch [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def filterMatch.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def filterMatch.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"matches" (go.signature.Signature [(go.GoType.SliceType go.string), (go.GoType.FunctionType (go.signature.Signature [go.string, go.string] false [go.bool, go.error]))] false [go.bool, go.bool])), (go.InterfaceElem.MethodElem go!"verify" (go.signature.Signature [go.string, (go.GoType.FunctionType (go.signature.Signature [go.string, go.string] false [go.bool, go.error]))] false [go.error]))])
 
-class filterMatch.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class filterMatch.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq filterMatch.ty filterMatch.underlying
 
 attribute [instance] filterMatch.TypeAssumptions.underlying
 
-structure matcher [FfiSyntax] where
+structure matcher [GooseExts] where
   mk ::
   filter' : filterMatch
   skip' : filterMatch
@@ -1613,27 +1613,27 @@ structure matcher [FfiSyntax] where
   mu' : _root_.Perennial.sync.Mutex
   subNames' : GoMap
 
-noncomputable instance matcher.zero_val [FfiSyntax] : ZeroVal matcher :=
+noncomputable instance matcher.zero_val [GooseExts] : ZeroVal matcher :=
   ⟨matcher.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def matcher.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def matcher.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"filter" filterMatch.ty),
 (go.field_decl.FieldDecl go!"skip" filterMatch.ty),
 (go.field_decl.FieldDecl go!"matchFunc" (go.GoType.FunctionType (go.signature.Signature [go.string, go.string] false [go.bool, go.error]))),
 (go.field_decl.FieldDecl go!"mu" _root_.Perennial.sync.Mutex.ty),
 (go.field_decl.FieldDecl go!"subNames" (go.GoType.MapType go.string go.int32))]
 
-@[irreducible] noncomputable def matcher.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def matcher.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   matcher.fieldsUnsealed
 
-noncomputable instance equals_unfold_matcher [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_matcher [GooseExts] [GoGlobalContext] :
     EqualsUnfold matcher.fields matcher.fieldsUnsealed :=
   ⟨by unfold matcher.fields; rfl⟩
 
-@[reducible] noncomputable def matcher.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def matcher.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType matcher.fields)
 
-class matcher.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class matcher.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying matcher.underlying matcher
   underlying : go.UnderlyingDirectedEq matcher.ty matcher.underlying
   get_filter : ∀ (x : matcher), go.IsGoStepPureDetTagged under (StructFieldGet matcher.underlying go!"filter") #x (Val #(x.filter'))
@@ -1660,49 +1660,49 @@ attribute [instance] matcher.TypeAssumptions.type_repr
   matcher.TypeAssumptions.get_subNames
   matcher.TypeAssumptions.set_subNames
 
-abbrev simpleMatch [FfiSyntax] : Type := GoSlice
+abbrev simpleMatch [GooseExts] : Type := GoSlice
 
-@[reducible] noncomputable def simpleMatch.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def simpleMatch.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType go.string)
 
-class simpleMatch.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class simpleMatch.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq simpleMatch.ty simpleMatch.underlying
 
 attribute [instance] simpleMatch.TypeAssumptions.underlying
 
-abbrev alternationMatch [FfiSyntax] : Type := GoSlice
+abbrev alternationMatch [GooseExts] : Type := GoSlice
 
-@[reducible] noncomputable def alternationMatch.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def alternationMatch.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.SliceType filterMatch.ty)
 
-class alternationMatch.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class alternationMatch.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq alternationMatch.ty alternationMatch.underlying
 
 attribute [instance] alternationMatch.TypeAssumptions.underlying
 
-structure chattyFlag [FfiSyntax] where
+structure chattyFlag [GooseExts] where
   mk ::
   on' : Bool
   json' : Bool
 
-noncomputable instance chattyFlag.zero_val [FfiSyntax] : ZeroVal chattyFlag :=
+noncomputable instance chattyFlag.zero_val [GooseExts] : ZeroVal chattyFlag :=
   ⟨chattyFlag.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def chattyFlag.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def chattyFlag.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"on" go.bool),
 (go.field_decl.FieldDecl go!"json" go.bool)]
 
-@[irreducible] noncomputable def chattyFlag.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def chattyFlag.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   chattyFlag.fieldsUnsealed
 
-noncomputable instance equals_unfold_chattyFlag [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_chattyFlag [GooseExts] [GoGlobalContext] :
     EqualsUnfold chattyFlag.fields chattyFlag.fieldsUnsealed :=
   ⟨by unfold chattyFlag.fields; rfl⟩
 
-@[reducible] noncomputable def chattyFlag.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def chattyFlag.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType chattyFlag.fields)
 
-class chattyFlag.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class chattyFlag.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying chattyFlag.underlying chattyFlag
   underlying : go.UnderlyingDirectedEq chattyFlag.ty chattyFlag.underlying
   get_on : ∀ (x : chattyFlag), go.IsGoStepPureDetTagged under (StructFieldGet chattyFlag.underlying go!"on") #x (Val #(x.on'))
@@ -1717,33 +1717,33 @@ attribute [instance] chattyFlag.TypeAssumptions.type_repr
   chattyFlag.TypeAssumptions.get_json
   chattyFlag.TypeAssumptions.set_json
 
-structure chattyPrinter [FfiSyntax] where
+structure chattyPrinter [GooseExts] where
   mk ::
   w' : _root_.Perennial.io.Writer
   lastNameMu' : _root_.Perennial.sync.Mutex
   lastName' : GoString
   json' : Bool
 
-noncomputable instance chattyPrinter.zero_val [FfiSyntax] : ZeroVal chattyPrinter :=
+noncomputable instance chattyPrinter.zero_val [GooseExts] : ZeroVal chattyPrinter :=
   ⟨chattyPrinter.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def chattyPrinter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def chattyPrinter.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"w" _root_.Perennial.io.Writer.ty),
 (go.field_decl.FieldDecl go!"lastNameMu" _root_.Perennial.sync.Mutex.ty),
 (go.field_decl.FieldDecl go!"lastName" go.string),
 (go.field_decl.FieldDecl go!"json" go.bool)]
 
-@[irreducible] noncomputable def chattyPrinter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def chattyPrinter.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   chattyPrinter.fieldsUnsealed
 
-noncomputable instance equals_unfold_chattyPrinter [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_chattyPrinter [GooseExts] [GoGlobalContext] :
     EqualsUnfold chattyPrinter.fields chattyPrinter.fieldsUnsealed :=
   ⟨by unfold chattyPrinter.fields; rfl⟩
 
-@[reducible] noncomputable def chattyPrinter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def chattyPrinter.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType chattyPrinter.fields)
 
-class chattyPrinter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class chattyPrinter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying chattyPrinter.underlying chattyPrinter
   underlying : go.UnderlyingDirectedEq chattyPrinter.ty chattyPrinter.underlying
   get_w : ∀ (x : chattyPrinter), go.IsGoStepPureDetTagged under (StructFieldGet chattyPrinter.underlying go!"w") #x (Val #(x.w'))
@@ -1766,27 +1766,27 @@ attribute [instance] chattyPrinter.TypeAssumptions.type_repr
   chattyPrinter.TypeAssumptions.get_json
   chattyPrinter.TypeAssumptions.set_json
 
-structure indenter [FfiSyntax] where
+structure indenter [GooseExts] where
   mk ::
   c' : Loc
 
-noncomputable instance indenter.zero_val [FfiSyntax] : ZeroVal indenter :=
+noncomputable instance indenter.zero_val [GooseExts] : ZeroVal indenter :=
   ⟨indenter.mk zeroValDef⟩
 
-@[reducible] noncomputable def indenter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def indenter.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"c" (go.GoType.PointerType common.ty))]
 
-@[irreducible] noncomputable def indenter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def indenter.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   indenter.fieldsUnsealed
 
-noncomputable instance equals_unfold_indenter [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_indenter [GooseExts] [GoGlobalContext] :
     EqualsUnfold indenter.fields indenter.fieldsUnsealed :=
   ⟨by unfold indenter.fields; rfl⟩
 
-@[reducible] noncomputable def indenter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def indenter.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType indenter.fields)
 
-class indenter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class indenter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying indenter.underlying indenter
   underlying : go.UnderlyingDirectedEq indenter.ty indenter.underlying
   get_c : ∀ (x : indenter), go.IsGoStepPureDetTagged under (StructFieldGet indenter.underlying go!"c") #x (Val #(x.c'))
@@ -1797,41 +1797,41 @@ attribute [instance] indenter.TypeAssumptions.type_repr
   indenter.TypeAssumptions.get_c
   indenter.TypeAssumptions.set_c
 
-abbrev TB [FfiSyntax] : Type := GoInterface
+abbrev TB [GooseExts] : Type := GoInterface
 
-@[reducible] noncomputable def TB.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def TB.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"ArtifactDir" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Attr" (go.signature.Signature [go.string, go.string] false [])), (go.InterfaceElem.MethodElem go!"Chdir" (go.signature.Signature [go.string] false [])), (go.InterfaceElem.MethodElem go!"Cleanup" (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [] false []))] false [])), (go.InterfaceElem.MethodElem go!"Context" (go.signature.Signature [] false [_root_.Perennial.context.Context.ty])), (go.InterfaceElem.MethodElem go!"Error" (go.signature.Signature [(go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Errorf" (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Fail" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"FailNow" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Failed" (go.signature.Signature [] false [go.bool])), (go.InterfaceElem.MethodElem go!"Fatal" (go.signature.Signature [(go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Fatalf" (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Helper" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Log" (go.signature.Signature [(go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Logf" (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Name" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"Output" (go.signature.Signature [] false [_root_.Perennial.io.Writer.ty])), (go.InterfaceElem.MethodElem go!"Setenv" (go.signature.Signature [go.string, go.string] false [])), (go.InterfaceElem.MethodElem go!"Skip" (go.signature.Signature [(go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"SkipNow" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Skipf" (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true [])), (go.InterfaceElem.MethodElem go!"Skipped" (go.signature.Signature [] false [go.bool])), (go.InterfaceElem.MethodElem go!"TempDir" (go.signature.Signature [] false [go.string])), (go.InterfaceElem.MethodElem go!"private" (go.signature.Signature [] false []))])
 
-class TB.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class TB.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq TB.ty TB.underlying
 
 attribute [instance] TB.TypeAssumptions.underlying
 
-structure T [FfiSyntax] where
+structure T [GooseExts] where
   mk ::
   common' : common
   denyParallel' : Bool
   tstate' : Loc
 
-noncomputable instance T.zero_val [FfiSyntax] : ZeroVal T :=
+noncomputable instance T.zero_val [GooseExts] : ZeroVal T :=
   ⟨T.mk zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def T.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def T.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.EmbeddedField go!"common" common.ty),
 (go.field_decl.FieldDecl go!"denyParallel" go.bool),
 (go.field_decl.FieldDecl go!"tstate" (go.GoType.PointerType testState.ty))]
 
-@[irreducible] noncomputable def T.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def T.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   T.fieldsUnsealed
 
-noncomputable instance equals_unfold_T [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_T [GooseExts] [GoGlobalContext] :
     EqualsUnfold T.fields T.fieldsUnsealed :=
   ⟨by unfold T.fields; rfl⟩
 
-@[reducible] noncomputable def T.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def T.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType T.fields)
 
-class T.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class T.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying T.underlying T
   underlying : go.UnderlyingDirectedEq T.ty T.underlying
   get_common : ∀ (x : T), go.IsGoStepPureDetTagged under (StructFieldGet T.underlying go!"common") #x (Val #(x.common'))
@@ -1850,29 +1850,29 @@ attribute [instance] T.TypeAssumptions.type_repr
   T.TypeAssumptions.get_tstate
   T.TypeAssumptions.set_tstate
 
-structure outputWriter [FfiSyntax] where
+structure outputWriter [GooseExts] where
   mk ::
   c' : Loc
   partial' : GoSlice
 
-noncomputable instance outputWriter.zero_val [FfiSyntax] : ZeroVal outputWriter :=
+noncomputable instance outputWriter.zero_val [GooseExts] : ZeroVal outputWriter :=
   ⟨outputWriter.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def outputWriter.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def outputWriter.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"c" (go.GoType.PointerType common.ty)),
 (go.field_decl.FieldDecl go!"partial" (go.GoType.SliceType go.byte))]
 
-@[irreducible] noncomputable def outputWriter.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def outputWriter.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   outputWriter.fieldsUnsealed
 
-noncomputable instance equals_unfold_outputWriter [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_outputWriter [GooseExts] [GoGlobalContext] :
     EqualsUnfold outputWriter.fields outputWriter.fieldsUnsealed :=
   ⟨by unfold outputWriter.fields; rfl⟩
 
-@[reducible] noncomputable def outputWriter.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def outputWriter.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType outputWriter.fields)
 
-class outputWriter.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class outputWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying outputWriter.underlying outputWriter
   underlying : go.UnderlyingDirectedEq outputWriter.ty outputWriter.underlying
   get_c : ∀ (x : outputWriter), go.IsGoStepPureDetTagged under (StructFieldGet outputWriter.underlying go!"c") #x (Val #(x.c'))
@@ -1887,39 +1887,39 @@ attribute [instance] outputWriter.TypeAssumptions.type_repr
   outputWriter.TypeAssumptions.get_partial
   outputWriter.TypeAssumptions.set_partial
 
-abbrev panicHandling [FfiSyntax] : Type := w64
+abbrev panicHandling [GooseExts] : Type := w64
 
-@[reducible] noncomputable def panicHandling.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def panicHandling.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int
 
-class panicHandling.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class panicHandling.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq panicHandling.ty panicHandling.underlying
 
 attribute [instance] panicHandling.TypeAssumptions.underlying
 
-structure InternalTest [FfiSyntax] where
+structure InternalTest [GooseExts] where
   mk ::
   Name' : GoString
   F' : GoFunc
 
-noncomputable instance InternalTest.zero_val [FfiSyntax] : ZeroVal InternalTest :=
+noncomputable instance InternalTest.zero_val [GooseExts] : ZeroVal InternalTest :=
   ⟨InternalTest.mk zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def InternalTest.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def InternalTest.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"Name" go.string),
 (go.field_decl.FieldDecl go!"F" (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType T.ty)] false [])))]
 
-@[irreducible] noncomputable def InternalTest.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def InternalTest.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   InternalTest.fieldsUnsealed
 
-noncomputable instance equals_unfold_InternalTest [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_InternalTest [GooseExts] [GoGlobalContext] :
     EqualsUnfold InternalTest.fields InternalTest.fieldsUnsealed :=
   ⟨by unfold InternalTest.fields; rfl⟩
 
-@[reducible] noncomputable def InternalTest.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def InternalTest.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType InternalTest.fields)
 
-class InternalTest.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class InternalTest.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying InternalTest.underlying InternalTest
   underlying : go.UnderlyingDirectedEq InternalTest.ty InternalTest.underlying
   get_Name : ∀ (x : InternalTest), go.IsGoStepPureDetTagged under (StructFieldGet InternalTest.underlying go!"Name") #x (Val #(x.Name'))
@@ -1934,7 +1934,7 @@ attribute [instance] InternalTest.TypeAssumptions.type_repr
   InternalTest.TypeAssumptions.get_F
   InternalTest.TypeAssumptions.set_F
 
-structure testState [FfiSyntax] where
+structure testState [GooseExts] where
   mk ::
   match' : Loc
   deadline' : _root_.Perennial.time.Time
@@ -1945,10 +1945,10 @@ structure testState [FfiSyntax] where
   numWaiting' : w64
   maxParallel' : w64
 
-noncomputable instance testState.zero_val [FfiSyntax] : ZeroVal testState :=
+noncomputable instance testState.zero_val [GooseExts] : ZeroVal testState :=
   ⟨testState.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def testState.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def testState.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"match" (go.GoType.PointerType matcher.ty)),
 (go.field_decl.FieldDecl go!"deadline" _root_.Perennial.time.Time.ty),
 (go.field_decl.FieldDecl go!"isFuzzing" go.bool),
@@ -1958,17 +1958,17 @@ noncomputable instance testState.zero_val [FfiSyntax] : ZeroVal testState :=
 (go.field_decl.FieldDecl go!"numWaiting" go.int),
 (go.field_decl.FieldDecl go!"maxParallel" go.int)]
 
-@[irreducible] noncomputable def testState.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def testState.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   testState.fieldsUnsealed
 
-noncomputable instance equals_unfold_testState [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_testState [GooseExts] [GoGlobalContext] :
     EqualsUnfold testState.fields testState.fieldsUnsealed :=
   ⟨by unfold testState.fields; rfl⟩
 
-@[reducible] noncomputable def testState.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def testState.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType testState.fields)
 
-class testState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class testState.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying testState.underlying testState
   underlying : go.UnderlyingDirectedEq testState.ty testState.underlying
   get_match : ∀ (x : testState), go.IsGoStepPureDetTagged under (StructFieldGet testState.underlying go!"match") #x (Val #(x.match'))
@@ -2007,17 +2007,17 @@ attribute [instance] testState.TypeAssumptions.type_repr
   testState.TypeAssumptions.get_maxParallel
   testState.TypeAssumptions.set_maxParallel
 
-abbrev matchStringOnly [FfiSyntax] : Type := GoFunc
+abbrev matchStringOnly [GooseExts] : Type := GoFunc
 
-@[reducible] noncomputable def matchStringOnly.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def matchStringOnly.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [go.string, go.string] false [go.bool, go.error]))
 
-class matchStringOnly.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class matchStringOnly.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq matchStringOnly.ty matchStringOnly.underlying
 
 attribute [instance] matchStringOnly.TypeAssumptions.underlying
 
-structure M [FfiSyntax] where
+structure M [GooseExts] where
   mk ::
   deps' : testDeps
   tests' : GoSlice
@@ -2029,10 +2029,10 @@ structure M [FfiSyntax] where
   numRun' : w64
   exitCode' : w64
 
-noncomputable instance M.zero_val [FfiSyntax] : ZeroVal M :=
+noncomputable instance M.zero_val [GooseExts] : ZeroVal M :=
   ⟨M.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-@[reducible] noncomputable def M.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def M.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"deps" testDeps.ty),
 (go.field_decl.FieldDecl go!"tests" (go.GoType.SliceType InternalTest.ty)),
 (go.field_decl.FieldDecl go!"benchmarks" (go.GoType.SliceType InternalBenchmark.ty)),
@@ -2043,17 +2043,17 @@ noncomputable instance M.zero_val [FfiSyntax] : ZeroVal M :=
 (go.field_decl.FieldDecl go!"numRun" go.int),
 (go.field_decl.FieldDecl go!"exitCode" go.int)]
 
-@[irreducible] noncomputable def M.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def M.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   M.fieldsUnsealed
 
-noncomputable instance equals_unfold_M [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_M [GooseExts] [GoGlobalContext] :
     EqualsUnfold M.fields M.fieldsUnsealed :=
   ⟨by unfold M.fields; rfl⟩
 
-@[reducible] noncomputable def M.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def M.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType M.fields)
 
-class M.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class M.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying M.underlying M
   underlying : go.UnderlyingDirectedEq M.ty M.underlying
   get_deps : ∀ (x : M), go.IsGoStepPureDetTagged under (StructFieldGet M.underlying go!"deps") #x (Val #(x.deps'))
@@ -2096,7 +2096,7 @@ attribute [instance] M.TypeAssumptions.type_repr
   M.TypeAssumptions.get_exitCode
   M.TypeAssumptions.set_exitCode
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   durationOrCountFlag_instance : durationOrCountFlag.TypeAssumptions
   InternalBenchmark_instance : InternalBenchmark.TypeAssumptions
   B_instance : B.TypeAssumptions

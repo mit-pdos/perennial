@@ -20,29 +20,29 @@ end pkg_id
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.mapliteral
 
-noncomputable def Nested.ty [FfiSyntax] [GoGlobalContext] : go.GoType :=
+noncomputable def Nested.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/mapliteral.Nested" [])
 
 attribute [irreducible] Nested.ty
 
-noncomputable def f [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def f [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/mapliteral.f"
 
-noncomputable def mapliteral [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mapliteral [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/mapliteral.mapliteral"
 
-noncomputable def nestedMapLiteral [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def nestedMapLiteral [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/mapliteral.nestedMapLiteral"
 
 /-- go: mapliteral.go:3:6 -/
-noncomputable def f.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def f.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
   (Val #(W64 1)))))
 
 /-- go: mapliteral.go:11:6 -/
-noncomputable def mapliteral.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def mapliteral.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -51,7 +51,7 @@ noncomputable def mapliteral.impl [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (CompositeLiteral (go.GoType.MapType go.uint64 go.uint64)))) (LiteralValue [(KeyedElement (some (KeyExpression go.uint64 (Var "$k0"))) (ElementExpression go.uint64 (Var "$v1")))])))))))
 
 /-- go: mapliteral.go:15:6 -/
-noncomputable def nestedMapLiteral.impl [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def nestedMapLiteral.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val exceptionDo)
   (App (Val doReturn)
@@ -62,34 +62,34 @@ noncomputable def nestedMapLiteral.impl [FfiSyntax] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.mapliteral where
   pkgImportedPkgs := []
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.mapliteral)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
   (Val #()))))))
 
-structure Nested [FfiSyntax] where
+structure Nested [GooseExts] where
   mk ::
   X' : w64
 
-noncomputable instance Nested.zero_val [FfiSyntax] : ZeroVal Nested :=
+noncomputable instance Nested.zero_val [GooseExts] : ZeroVal Nested :=
   ⟨Nested.mk zeroValDef⟩
 
-@[reducible] noncomputable def Nested.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def Nested.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"X" go.uint64)]
 
-@[irreducible] noncomputable def Nested.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
+@[irreducible] noncomputable def Nested.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   Nested.fieldsUnsealed
 
-noncomputable instance equals_unfold_Nested [FfiSyntax] [GoGlobalContext] :
+noncomputable instance equals_unfold_Nested [GooseExts] [GoGlobalContext] :
     EqualsUnfold Nested.fields Nested.fieldsUnsealed :=
   ⟨by unfold Nested.fields; rfl⟩
 
-@[reducible] noncomputable def Nested.underlying [FfiSyntax] [GoGlobalContext] : go.GoType :=
+@[reducible] noncomputable def Nested.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType Nested.fields)
 
-class Nested.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Nested.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Nested.underlying Nested
   underlying : go.UnderlyingDirectedEq Nested.ty Nested.underlying
   get_X : ∀ (x : Nested), go.IsGoStepPureDetTagged under (StructFieldGet Nested.underlying go!"X") #x (Val #(x.X'))
@@ -100,7 +100,7 @@ attribute [instance] Nested.TypeAssumptions.type_repr
   Nested.TypeAssumptions.get_X
   Nested.TypeAssumptions.set_X
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Nested_instance : Nested.TypeAssumptions
   f_unfold : FuncUnfold f [] f.impl
   mapliteral_unfold : FuncUnfold mapliteral [] mapliteral.impl

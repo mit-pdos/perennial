@@ -18,7 +18,7 @@ export PkgInfo (pkgImportedPkgs)
 
 namespace package
 section defns
-variable [FfiSyntax] [GoLocalContext] [GoGlobalContext]
+variable [GooseExts] [GoLocalContext] [GoGlobalContext]
 
 def initDef (pkg_name : GoString) : val :=
   λ: "init",

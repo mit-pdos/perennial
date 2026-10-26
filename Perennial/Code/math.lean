@@ -21,1008 +21,1008 @@ end pkg_id
 
 namespace math
 
-axiom uvnan [FfiSyntax] [GoGlobalContext] : val
+axiom uvnan [GooseExts] [GoGlobalContext] : val
 
-axiom uvinf [FfiSyntax] [GoGlobalContext] : val
+axiom uvinf [GooseExts] [GoGlobalContext] : val
 
-axiom uvneginf [FfiSyntax] [GoGlobalContext] : val
+axiom uvneginf [GooseExts] [GoGlobalContext] : val
 
-axiom uvone [FfiSyntax] [GoGlobalContext] : val
+axiom uvone [GooseExts] [GoGlobalContext] : val
 
-axiom mask [FfiSyntax] [GoGlobalContext] : val
+axiom mask [GooseExts] [GoGlobalContext] : val
 
-axiom shift [FfiSyntax] [GoGlobalContext] : val
+axiom shift [GooseExts] [GoGlobalContext] : val
 
-axiom bias [FfiSyntax] [GoGlobalContext] : val
+axiom bias [GooseExts] [GoGlobalContext] : val
 
-axiom signMask [FfiSyntax] [GoGlobalContext] : val
+axiom signMask [GooseExts] [GoGlobalContext] : val
 
-axiom fracMask [FfiSyntax] [GoGlobalContext] : val
+axiom fracMask [GooseExts] [GoGlobalContext] : val
 
-axiom E [FfiSyntax] [GoGlobalContext] : val
+axiom E [GooseExts] [GoGlobalContext] : val
 
-axiom Pi [FfiSyntax] [GoGlobalContext] : val
+axiom Pi [GooseExts] [GoGlobalContext] : val
 
-axiom Phi [FfiSyntax] [GoGlobalContext] : val
+axiom Phi [GooseExts] [GoGlobalContext] : val
 
-axiom Sqrt2 [FfiSyntax] [GoGlobalContext] : val
+axiom Sqrt2 [GooseExts] [GoGlobalContext] : val
 
-axiom SqrtE [FfiSyntax] [GoGlobalContext] : val
+axiom SqrtE [GooseExts] [GoGlobalContext] : val
 
-axiom SqrtPi [FfiSyntax] [GoGlobalContext] : val
+axiom SqrtPi [GooseExts] [GoGlobalContext] : val
 
-axiom SqrtPhi [FfiSyntax] [GoGlobalContext] : val
+axiom SqrtPhi [GooseExts] [GoGlobalContext] : val
 
-axiom Ln2 [FfiSyntax] [GoGlobalContext] : val
+axiom Ln2 [GooseExts] [GoGlobalContext] : val
 
-axiom Log2E [FfiSyntax] [GoGlobalContext] : val
+axiom Log2E [GooseExts] [GoGlobalContext] : val
 
-axiom Ln10 [FfiSyntax] [GoGlobalContext] : val
+axiom Ln10 [GooseExts] [GoGlobalContext] : val
 
-axiom Log10E [FfiSyntax] [GoGlobalContext] : val
+axiom Log10E [GooseExts] [GoGlobalContext] : val
 
-axiom MaxFloat32 [FfiSyntax] [GoGlobalContext] : val
+axiom MaxFloat32 [GooseExts] [GoGlobalContext] : val
 
-axiom SmallestNonzeroFloat32 [FfiSyntax] [GoGlobalContext] : val
+axiom SmallestNonzeroFloat32 [GooseExts] [GoGlobalContext] : val
 
-axiom MaxFloat64 [FfiSyntax] [GoGlobalContext] : val
+axiom MaxFloat64 [GooseExts] [GoGlobalContext] : val
 
-axiom SmallestNonzeroFloat64 [FfiSyntax] [GoGlobalContext] : val
+axiom SmallestNonzeroFloat64 [GooseExts] [GoGlobalContext] : val
 
-axiom intSize [FfiSyntax] [GoGlobalContext] : val
+axiom intSize [GooseExts] [GoGlobalContext] : val
 
 /-- MaxInt32 or MaxInt64 depending on intSize. -/
-@[reducible] noncomputable def MaxInt [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MaxInt [GooseExts] [GoGlobalContext] : val :=
   #(9223372036854775807 : Int)
 
 /-- MinInt32 or MinInt64 depending on intSize. -/
-@[reducible] noncomputable def MinInt [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MinInt [GooseExts] [GoGlobalContext] : val :=
   #(-9223372036854775808 : Int)
 
-axiom MaxInt8 [FfiSyntax] [GoGlobalContext] : val
+axiom MaxInt8 [GooseExts] [GoGlobalContext] : val
 
-axiom MinInt8 [FfiSyntax] [GoGlobalContext] : val
+axiom MinInt8 [GooseExts] [GoGlobalContext] : val
 
-axiom MaxInt16 [FfiSyntax] [GoGlobalContext] : val
+axiom MaxInt16 [GooseExts] [GoGlobalContext] : val
 
-axiom MinInt16 [FfiSyntax] [GoGlobalContext] : val
+axiom MinInt16 [GooseExts] [GoGlobalContext] : val
 
-axiom MaxInt32 [FfiSyntax] [GoGlobalContext] : val
+axiom MaxInt32 [GooseExts] [GoGlobalContext] : val
 
-axiom MinInt32 [FfiSyntax] [GoGlobalContext] : val
+axiom MinInt32 [GooseExts] [GoGlobalContext] : val
 
 /-- 9223372036854775807 -/
-@[reducible] noncomputable def MaxInt64 [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MaxInt64 [GooseExts] [GoGlobalContext] : val :=
   #(9223372036854775807 : Int)
 
-axiom MinInt64 [FfiSyntax] [GoGlobalContext] : val
+axiom MinInt64 [GooseExts] [GoGlobalContext] : val
 
-axiom MaxUint [FfiSyntax] [GoGlobalContext] : val
+axiom MaxUint [GooseExts] [GoGlobalContext] : val
 
-axiom MaxUint8 [FfiSyntax] [GoGlobalContext] : val
+axiom MaxUint8 [GooseExts] [GoGlobalContext] : val
 
-axiom MaxUint16 [FfiSyntax] [GoGlobalContext] : val
+axiom MaxUint16 [GooseExts] [GoGlobalContext] : val
 
-axiom MaxUint32 [FfiSyntax] [GoGlobalContext] : val
+axiom MaxUint32 [GooseExts] [GoGlobalContext] : val
 
 /-- 18446744073709551615 -/
-@[reducible] noncomputable def MaxUint64 [FfiSyntax] [GoGlobalContext] : val :=
+@[reducible] noncomputable def MaxUint64 [GooseExts] [GoGlobalContext] : val :=
   #(18446744073709551615 : Int)
 
-axiom haveArchMax [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchMax [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchMin [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchMin [GooseExts] [GoGlobalContext] : val
 
-axiom erx [FfiSyntax] [GoGlobalContext] : val
+axiom erx [GooseExts] [GoGlobalContext] : val
 
-axiom efx [FfiSyntax] [GoGlobalContext] : val
+axiom efx [GooseExts] [GoGlobalContext] : val
 
-axiom efx8 [FfiSyntax] [GoGlobalContext] : val
+axiom efx8 [GooseExts] [GoGlobalContext] : val
 
-axiom pp0 [FfiSyntax] [GoGlobalContext] : val
+axiom pp0 [GooseExts] [GoGlobalContext] : val
 
-axiom pp1 [FfiSyntax] [GoGlobalContext] : val
+axiom pp1 [GooseExts] [GoGlobalContext] : val
 
-axiom pp2 [FfiSyntax] [GoGlobalContext] : val
+axiom pp2 [GooseExts] [GoGlobalContext] : val
 
-axiom pp3 [FfiSyntax] [GoGlobalContext] : val
+axiom pp3 [GooseExts] [GoGlobalContext] : val
 
-axiom pp4 [FfiSyntax] [GoGlobalContext] : val
+axiom pp4 [GooseExts] [GoGlobalContext] : val
 
-axiom qq1 [FfiSyntax] [GoGlobalContext] : val
+axiom qq1 [GooseExts] [GoGlobalContext] : val
 
-axiom qq2 [FfiSyntax] [GoGlobalContext] : val
+axiom qq2 [GooseExts] [GoGlobalContext] : val
 
-axiom qq3 [FfiSyntax] [GoGlobalContext] : val
+axiom qq3 [GooseExts] [GoGlobalContext] : val
 
-axiom qq4 [FfiSyntax] [GoGlobalContext] : val
+axiom qq4 [GooseExts] [GoGlobalContext] : val
 
-axiom qq5 [FfiSyntax] [GoGlobalContext] : val
+axiom qq5 [GooseExts] [GoGlobalContext] : val
 
-axiom pa0 [FfiSyntax] [GoGlobalContext] : val
+axiom pa0 [GooseExts] [GoGlobalContext] : val
 
-axiom pa1 [FfiSyntax] [GoGlobalContext] : val
+axiom pa1 [GooseExts] [GoGlobalContext] : val
 
-axiom pa2 [FfiSyntax] [GoGlobalContext] : val
+axiom pa2 [GooseExts] [GoGlobalContext] : val
 
-axiom pa3 [FfiSyntax] [GoGlobalContext] : val
+axiom pa3 [GooseExts] [GoGlobalContext] : val
 
-axiom pa4 [FfiSyntax] [GoGlobalContext] : val
+axiom pa4 [GooseExts] [GoGlobalContext] : val
 
-axiom pa5 [FfiSyntax] [GoGlobalContext] : val
+axiom pa5 [GooseExts] [GoGlobalContext] : val
 
-axiom pa6 [FfiSyntax] [GoGlobalContext] : val
+axiom pa6 [GooseExts] [GoGlobalContext] : val
 
-axiom qa1 [FfiSyntax] [GoGlobalContext] : val
+axiom qa1 [GooseExts] [GoGlobalContext] : val
 
-axiom qa2 [FfiSyntax] [GoGlobalContext] : val
+axiom qa2 [GooseExts] [GoGlobalContext] : val
 
-axiom qa3 [FfiSyntax] [GoGlobalContext] : val
+axiom qa3 [GooseExts] [GoGlobalContext] : val
 
-axiom qa4 [FfiSyntax] [GoGlobalContext] : val
+axiom qa4 [GooseExts] [GoGlobalContext] : val
 
-axiom qa5 [FfiSyntax] [GoGlobalContext] : val
+axiom qa5 [GooseExts] [GoGlobalContext] : val
 
-axiom qa6 [FfiSyntax] [GoGlobalContext] : val
+axiom qa6 [GooseExts] [GoGlobalContext] : val
 
-axiom ra0 [FfiSyntax] [GoGlobalContext] : val
+axiom ra0 [GooseExts] [GoGlobalContext] : val
 
-axiom ra1 [FfiSyntax] [GoGlobalContext] : val
+axiom ra1 [GooseExts] [GoGlobalContext] : val
 
-axiom ra2 [FfiSyntax] [GoGlobalContext] : val
+axiom ra2 [GooseExts] [GoGlobalContext] : val
 
-axiom ra3 [FfiSyntax] [GoGlobalContext] : val
+axiom ra3 [GooseExts] [GoGlobalContext] : val
 
-axiom ra4 [FfiSyntax] [GoGlobalContext] : val
+axiom ra4 [GooseExts] [GoGlobalContext] : val
 
-axiom ra5 [FfiSyntax] [GoGlobalContext] : val
+axiom ra5 [GooseExts] [GoGlobalContext] : val
 
-axiom ra6 [FfiSyntax] [GoGlobalContext] : val
+axiom ra6 [GooseExts] [GoGlobalContext] : val
 
-axiom ra7 [FfiSyntax] [GoGlobalContext] : val
+axiom ra7 [GooseExts] [GoGlobalContext] : val
 
-axiom sa1 [FfiSyntax] [GoGlobalContext] : val
+axiom sa1 [GooseExts] [GoGlobalContext] : val
 
-axiom sa2 [FfiSyntax] [GoGlobalContext] : val
+axiom sa2 [GooseExts] [GoGlobalContext] : val
 
-axiom sa3 [FfiSyntax] [GoGlobalContext] : val
+axiom sa3 [GooseExts] [GoGlobalContext] : val
 
-axiom sa4 [FfiSyntax] [GoGlobalContext] : val
+axiom sa4 [GooseExts] [GoGlobalContext] : val
 
-axiom sa5 [FfiSyntax] [GoGlobalContext] : val
+axiom sa5 [GooseExts] [GoGlobalContext] : val
 
-axiom sa6 [FfiSyntax] [GoGlobalContext] : val
+axiom sa6 [GooseExts] [GoGlobalContext] : val
 
-axiom sa7 [FfiSyntax] [GoGlobalContext] : val
+axiom sa7 [GooseExts] [GoGlobalContext] : val
 
-axiom sa8 [FfiSyntax] [GoGlobalContext] : val
+axiom sa8 [GooseExts] [GoGlobalContext] : val
 
-axiom rb0 [FfiSyntax] [GoGlobalContext] : val
+axiom rb0 [GooseExts] [GoGlobalContext] : val
 
-axiom rb1 [FfiSyntax] [GoGlobalContext] : val
+axiom rb1 [GooseExts] [GoGlobalContext] : val
 
-axiom rb2 [FfiSyntax] [GoGlobalContext] : val
+axiom rb2 [GooseExts] [GoGlobalContext] : val
 
-axiom rb3 [FfiSyntax] [GoGlobalContext] : val
+axiom rb3 [GooseExts] [GoGlobalContext] : val
 
-axiom rb4 [FfiSyntax] [GoGlobalContext] : val
+axiom rb4 [GooseExts] [GoGlobalContext] : val
 
-axiom rb5 [FfiSyntax] [GoGlobalContext] : val
+axiom rb5 [GooseExts] [GoGlobalContext] : val
 
-axiom rb6 [FfiSyntax] [GoGlobalContext] : val
+axiom rb6 [GooseExts] [GoGlobalContext] : val
 
-axiom sb1 [FfiSyntax] [GoGlobalContext] : val
+axiom sb1 [GooseExts] [GoGlobalContext] : val
 
-axiom sb2 [FfiSyntax] [GoGlobalContext] : val
+axiom sb2 [GooseExts] [GoGlobalContext] : val
 
-axiom sb3 [FfiSyntax] [GoGlobalContext] : val
+axiom sb3 [GooseExts] [GoGlobalContext] : val
 
-axiom sb4 [FfiSyntax] [GoGlobalContext] : val
+axiom sb4 [GooseExts] [GoGlobalContext] : val
 
-axiom sb5 [FfiSyntax] [GoGlobalContext] : val
+axiom sb5 [GooseExts] [GoGlobalContext] : val
 
-axiom sb6 [FfiSyntax] [GoGlobalContext] : val
+axiom sb6 [GooseExts] [GoGlobalContext] : val
 
-axiom sb7 [FfiSyntax] [GoGlobalContext] : val
+axiom sb7 [GooseExts] [GoGlobalContext] : val
 
-axiom a0 [FfiSyntax] [GoGlobalContext] : val
+axiom a0 [GooseExts] [GoGlobalContext] : val
 
-axiom a1 [FfiSyntax] [GoGlobalContext] : val
+axiom a1 [GooseExts] [GoGlobalContext] : val
 
-axiom a2 [FfiSyntax] [GoGlobalContext] : val
+axiom a2 [GooseExts] [GoGlobalContext] : val
 
-axiom a3 [FfiSyntax] [GoGlobalContext] : val
+axiom a3 [GooseExts] [GoGlobalContext] : val
 
-axiom a4 [FfiSyntax] [GoGlobalContext] : val
+axiom a4 [GooseExts] [GoGlobalContext] : val
 
-axiom a5 [FfiSyntax] [GoGlobalContext] : val
+axiom a5 [GooseExts] [GoGlobalContext] : val
 
-axiom a6 [FfiSyntax] [GoGlobalContext] : val
+axiom a6 [GooseExts] [GoGlobalContext] : val
 
-axiom a7 [FfiSyntax] [GoGlobalContext] : val
+axiom a7 [GooseExts] [GoGlobalContext] : val
 
-axiom b0 [FfiSyntax] [GoGlobalContext] : val
+axiom b0 [GooseExts] [GoGlobalContext] : val
 
-axiom b1 [FfiSyntax] [GoGlobalContext] : val
+axiom b1 [GooseExts] [GoGlobalContext] : val
 
-axiom b2 [FfiSyntax] [GoGlobalContext] : val
+axiom b2 [GooseExts] [GoGlobalContext] : val
 
-axiom b3 [FfiSyntax] [GoGlobalContext] : val
+axiom b3 [GooseExts] [GoGlobalContext] : val
 
-axiom b4 [FfiSyntax] [GoGlobalContext] : val
+axiom b4 [GooseExts] [GoGlobalContext] : val
 
-axiom b5 [FfiSyntax] [GoGlobalContext] : val
+axiom b5 [GooseExts] [GoGlobalContext] : val
 
-axiom b6 [FfiSyntax] [GoGlobalContext] : val
+axiom b6 [GooseExts] [GoGlobalContext] : val
 
-axiom b7 [FfiSyntax] [GoGlobalContext] : val
+axiom b7 [GooseExts] [GoGlobalContext] : val
 
-axiom c0 [FfiSyntax] [GoGlobalContext] : val
+axiom c0 [GooseExts] [GoGlobalContext] : val
 
-axiom c1 [FfiSyntax] [GoGlobalContext] : val
+axiom c1 [GooseExts] [GoGlobalContext] : val
 
-axiom c2 [FfiSyntax] [GoGlobalContext] : val
+axiom c2 [GooseExts] [GoGlobalContext] : val
 
-axiom c3 [FfiSyntax] [GoGlobalContext] : val
+axiom c3 [GooseExts] [GoGlobalContext] : val
 
-axiom c4 [FfiSyntax] [GoGlobalContext] : val
+axiom c4 [GooseExts] [GoGlobalContext] : val
 
-axiom c5 [FfiSyntax] [GoGlobalContext] : val
+axiom c5 [GooseExts] [GoGlobalContext] : val
 
-axiom c6 [FfiSyntax] [GoGlobalContext] : val
+axiom c6 [GooseExts] [GoGlobalContext] : val
 
-axiom c7 [FfiSyntax] [GoGlobalContext] : val
+axiom c7 [GooseExts] [GoGlobalContext] : val
 
-axiom d0 [FfiSyntax] [GoGlobalContext] : val
+axiom d0 [GooseExts] [GoGlobalContext] : val
 
-axiom d1 [FfiSyntax] [GoGlobalContext] : val
+axiom d1 [GooseExts] [GoGlobalContext] : val
 
-axiom d2 [FfiSyntax] [GoGlobalContext] : val
+axiom d2 [GooseExts] [GoGlobalContext] : val
 
-axiom d3 [FfiSyntax] [GoGlobalContext] : val
+axiom d3 [GooseExts] [GoGlobalContext] : val
 
-axiom d4 [FfiSyntax] [GoGlobalContext] : val
+axiom d4 [GooseExts] [GoGlobalContext] : val
 
-axiom d5 [FfiSyntax] [GoGlobalContext] : val
+axiom d5 [GooseExts] [GoGlobalContext] : val
 
-axiom d6 [FfiSyntax] [GoGlobalContext] : val
+axiom d6 [GooseExts] [GoGlobalContext] : val
 
-axiom d7 [FfiSyntax] [GoGlobalContext] : val
+axiom d7 [GooseExts] [GoGlobalContext] : val
 
-axiom e0 [FfiSyntax] [GoGlobalContext] : val
+axiom e0 [GooseExts] [GoGlobalContext] : val
 
-axiom e1 [FfiSyntax] [GoGlobalContext] : val
+axiom e1 [GooseExts] [GoGlobalContext] : val
 
-axiom e2 [FfiSyntax] [GoGlobalContext] : val
+axiom e2 [GooseExts] [GoGlobalContext] : val
 
-axiom e3 [FfiSyntax] [GoGlobalContext] : val
+axiom e3 [GooseExts] [GoGlobalContext] : val
 
-axiom e4 [FfiSyntax] [GoGlobalContext] : val
+axiom e4 [GooseExts] [GoGlobalContext] : val
 
-axiom e5 [FfiSyntax] [GoGlobalContext] : val
+axiom e5 [GooseExts] [GoGlobalContext] : val
 
-axiom e6 [FfiSyntax] [GoGlobalContext] : val
+axiom e6 [GooseExts] [GoGlobalContext] : val
 
-axiom e7 [FfiSyntax] [GoGlobalContext] : val
+axiom e7 [GooseExts] [GoGlobalContext] : val
 
-axiom f0 [FfiSyntax] [GoGlobalContext] : val
+axiom f0 [GooseExts] [GoGlobalContext] : val
 
-axiom f1 [FfiSyntax] [GoGlobalContext] : val
+axiom f1 [GooseExts] [GoGlobalContext] : val
 
-axiom f2 [FfiSyntax] [GoGlobalContext] : val
+axiom f2 [GooseExts] [GoGlobalContext] : val
 
-axiom f3 [FfiSyntax] [GoGlobalContext] : val
+axiom f3 [GooseExts] [GoGlobalContext] : val
 
-axiom f4 [FfiSyntax] [GoGlobalContext] : val
+axiom f4 [GooseExts] [GoGlobalContext] : val
 
-axiom f5 [FfiSyntax] [GoGlobalContext] : val
+axiom f5 [GooseExts] [GoGlobalContext] : val
 
-axiom f6 [FfiSyntax] [GoGlobalContext] : val
+axiom f6 [GooseExts] [GoGlobalContext] : val
 
-axiom f7 [FfiSyntax] [GoGlobalContext] : val
+axiom f7 [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchExp2 [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchExp2 [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchExp [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchExp [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchFloor [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchFloor [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchCeil [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchCeil [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchTrunc [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchTrunc [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchHypot [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchHypot [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchLog [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchLog [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchAcos [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchAcos [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchAcosh [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchAcosh [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchAsin [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchAsin [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchAsinh [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchAsinh [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchAtan [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchAtan [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchAtan2 [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchAtan2 [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchAtanh [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchAtanh [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchCbrt [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchCbrt [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchCos [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchCos [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchCosh [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchCosh [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchErf [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchErf [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchErfc [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchErfc [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchExpm1 [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchExpm1 [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchFrexp [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchFrexp [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchLdexp [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchLdexp [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchLog10 [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchLog10 [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchLog2 [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchLog2 [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchLog1p [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchLog1p [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchMod [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchMod [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchPow [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchPow [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchRemainder [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchRemainder [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchSin [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchSin [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchSinh [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchSinh [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchTan [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchTan [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchTanh [FfiSyntax] [GoGlobalContext] : val
+axiom haveArchTanh [GooseExts] [GoGlobalContext] : val
 
-axiom reduceThreshold [FfiSyntax] [GoGlobalContext] : val
+axiom reduceThreshold [GooseExts] [GoGlobalContext] : val
 
-noncomputable def useFMA [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def useFMA [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.useFMA"
 
-noncomputable def _gamP [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def _gamP [GooseExts] [GoGlobalContext] : GoString :=
   go!"math._gamP"
 
-noncomputable def _gamQ [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def _gamQ [GooseExts] [GoGlobalContext] : GoString :=
   go!"math._gamQ"
 
-noncomputable def _gamS [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def _gamS [GooseExts] [GoGlobalContext] : GoString :=
   go!"math._gamS"
 
-noncomputable def p0R8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def p0R8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.p0R8"
 
-noncomputable def p0S8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def p0S8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.p0S8"
 
-noncomputable def p0R5 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def p0R5 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.p0R5"
 
-noncomputable def p0S5 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def p0S5 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.p0S5"
 
-noncomputable def p0R3 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def p0R3 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.p0R3"
 
-noncomputable def p0S3 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def p0S3 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.p0S3"
 
-noncomputable def p0R2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def p0R2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.p0R2"
 
-noncomputable def p0S2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def p0S2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.p0S2"
 
-noncomputable def q0R8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def q0R8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.q0R8"
 
-noncomputable def q0S8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def q0S8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.q0S8"
 
-noncomputable def q0R5 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def q0R5 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.q0R5"
 
-noncomputable def q0S5 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def q0S5 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.q0S5"
 
-noncomputable def q0R3 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def q0R3 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.q0R3"
 
-noncomputable def q0S3 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def q0S3 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.q0S3"
 
-noncomputable def q0R2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def q0R2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.q0R2"
 
-noncomputable def q0S2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def q0S2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.q0S2"
 
-noncomputable def p1R8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def p1R8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.p1R8"
 
-noncomputable def p1S8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def p1S8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.p1S8"
 
-noncomputable def p1R5 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def p1R5 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.p1R5"
 
-noncomputable def p1S5 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def p1S5 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.p1S5"
 
-noncomputable def p1R3 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def p1R3 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.p1R3"
 
-noncomputable def p1S3 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def p1S3 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.p1S3"
 
-noncomputable def p1R2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def p1R2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.p1R2"
 
-noncomputable def p1S2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def p1S2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.p1S2"
 
-noncomputable def q1R8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def q1R8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.q1R8"
 
-noncomputable def q1S8 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def q1S8 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.q1S8"
 
-noncomputable def q1R5 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def q1R5 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.q1R5"
 
-noncomputable def q1S5 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def q1S5 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.q1S5"
 
-noncomputable def q1R3 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def q1R3 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.q1R3"
 
-noncomputable def q1S3 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def q1S3 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.q1S3"
 
-noncomputable def q1R2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def q1R2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.q1R2"
 
-noncomputable def q1S2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def q1S2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.q1S2"
 
-noncomputable def _lgamA [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def _lgamA [GooseExts] [GoGlobalContext] : GoString :=
   go!"math._lgamA"
 
-noncomputable def _lgamR [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def _lgamR [GooseExts] [GoGlobalContext] : GoString :=
   go!"math._lgamR"
 
-noncomputable def _lgamS [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def _lgamS [GooseExts] [GoGlobalContext] : GoString :=
   go!"math._lgamS"
 
-noncomputable def _lgamT [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def _lgamT [GooseExts] [GoGlobalContext] : GoString :=
   go!"math._lgamT"
 
-noncomputable def _lgamU [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def _lgamU [GooseExts] [GoGlobalContext] : GoString :=
   go!"math._lgamU"
 
-noncomputable def _lgamV [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def _lgamV [GooseExts] [GoGlobalContext] : GoString :=
   go!"math._lgamV"
 
-noncomputable def _lgamW [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def _lgamW [GooseExts] [GoGlobalContext] : GoString :=
   go!"math._lgamW"
 
-noncomputable def pow10tab [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def pow10tab [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.pow10tab"
 
-noncomputable def pow10postab32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def pow10postab32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.pow10postab32"
 
-noncomputable def pow10negtab32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def pow10negtab32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.pow10negtab32"
 
-noncomputable def _sin [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def _sin [GooseExts] [GoGlobalContext] : GoString :=
   go!"math._sin"
 
-noncomputable def _cos [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def _cos [GooseExts] [GoGlobalContext] : GoString :=
   go!"math._cos"
 
-noncomputable def _tanP [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def _tanP [GooseExts] [GoGlobalContext] : GoString :=
   go!"math._tanP"
 
-noncomputable def _tanQ [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def _tanQ [GooseExts] [GoGlobalContext] : GoString :=
   go!"math._tanQ"
 
-noncomputable def tanhP [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tanhP [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.tanhP"
 
-noncomputable def tanhQ [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tanhQ [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.tanhQ"
 
-noncomputable def mPi4 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mPi4 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.mPi4"
 
-noncomputable def Abs [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Abs [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Abs"
 
-noncomputable def Acosh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Acosh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Acosh"
 
-noncomputable def acosh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def acosh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.acosh"
 
-noncomputable def Asin [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Asin [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Asin"
 
-noncomputable def asin [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def asin [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.asin"
 
-noncomputable def Acos [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Acos [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Acos"
 
-noncomputable def acos [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def acos [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.acos"
 
-noncomputable def Asinh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Asinh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Asinh"
 
-noncomputable def asinh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def asinh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.asinh"
 
-noncomputable def xatan [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def xatan [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.xatan"
 
-noncomputable def satan [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def satan [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.satan"
 
-noncomputable def Atan [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Atan [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Atan"
 
-noncomputable def atan [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def atan [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.atan"
 
-noncomputable def Atan2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Atan2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Atan2"
 
-noncomputable def atan2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def atan2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.atan2"
 
-noncomputable def Atanh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Atanh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Atanh"
 
-noncomputable def atanh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def atanh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.atanh"
 
-noncomputable def Inf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Inf [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Inf"
 
-noncomputable def NaN [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def NaN [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.NaN"
 
-noncomputable def IsNaN [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def IsNaN [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.IsNaN"
 
-noncomputable def IsInf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def IsInf [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.IsInf"
 
-noncomputable def normalize [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def normalize [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.normalize"
 
-noncomputable def Cbrt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Cbrt [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Cbrt"
 
-noncomputable def cbrt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cbrt [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.cbrt"
 
-noncomputable def Copysign [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Copysign [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Copysign"
 
-noncomputable def Dim [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Dim [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Dim"
 
-noncomputable def Max [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Max [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Max"
 
-noncomputable def max [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def max [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.max"
 
-noncomputable def Min [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Min [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Min"
 
-noncomputable def min [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def min [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.min"
 
-noncomputable def archMax [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archMax [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archMax"
 
-noncomputable def archMin [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archMin [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archMin"
 
-noncomputable def Erf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Erf [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Erf"
 
-noncomputable def erf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def erf [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.erf"
 
-noncomputable def Erfc [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Erfc [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Erfc"
 
-noncomputable def erfc [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def erfc [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.erfc"
 
-noncomputable def Erfinv [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Erfinv [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Erfinv"
 
-noncomputable def Erfcinv [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Erfcinv [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Erfcinv"
 
-noncomputable def Exp [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Exp [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Exp"
 
-noncomputable def exp [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def exp [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.exp"
 
-noncomputable def Exp2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Exp2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Exp2"
 
-noncomputable def exp2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def exp2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.exp2"
 
-noncomputable def expmulti [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def expmulti [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.expmulti"
 
-noncomputable def archExp2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archExp2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archExp2"
 
-noncomputable def archExp [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archExp [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archExp"
 
-noncomputable def Expm1 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Expm1 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Expm1"
 
-noncomputable def expm1 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def expm1 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.expm1"
 
-noncomputable def Floor [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Floor [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Floor"
 
-noncomputable def floor [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def floor [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.floor"
 
-noncomputable def Ceil [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Ceil [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Ceil"
 
-noncomputable def ceil [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ceil [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.ceil"
 
-noncomputable def Trunc [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Trunc [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Trunc"
 
-noncomputable def trunc [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def trunc [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.trunc"
 
-noncomputable def Round [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Round [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Round"
 
-noncomputable def RoundToEven [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def RoundToEven [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.RoundToEven"
 
-noncomputable def archFloor [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archFloor [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archFloor"
 
-noncomputable def archCeil [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archCeil [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archCeil"
 
-noncomputable def archTrunc [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archTrunc [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archTrunc"
 
-noncomputable def zero [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def zero [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.zero"
 
-noncomputable def nonzero [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def nonzero [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.nonzero"
 
-noncomputable def shl [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def shl [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.shl"
 
-noncomputable def shr [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def shr [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.shr"
 
-noncomputable def shrcompress [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def shrcompress [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.shrcompress"
 
-noncomputable def lz [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def lz [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.lz"
 
-noncomputable def split [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def split [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.split"
 
-noncomputable def FMA [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def FMA [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.FMA"
 
-noncomputable def Frexp [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Frexp [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Frexp"
 
-noncomputable def frexp [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def frexp [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.frexp"
 
-noncomputable def stirling [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def stirling [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.stirling"
 
-noncomputable def Gamma [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Gamma [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Gamma"
 
-noncomputable def isNegInt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isNegInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.isNegInt"
 
-noncomputable def Hypot [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Hypot [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Hypot"
 
-noncomputable def hypot [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def hypot [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.hypot"
 
-noncomputable def archHypot [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archHypot [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archHypot"
 
-noncomputable def J0 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def J0 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.J0"
 
-noncomputable def Y0 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Y0 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Y0"
 
-noncomputable def pzero [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def pzero [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.pzero"
 
-noncomputable def qzero [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def qzero [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.qzero"
 
-noncomputable def J1 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def J1 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.J1"
 
-noncomputable def Y1 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Y1 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Y1"
 
-noncomputable def pone [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def pone [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.pone"
 
-noncomputable def qone [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def qone [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.qone"
 
-noncomputable def Jn [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Jn [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Jn"
 
-noncomputable def Yn [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Yn [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Yn"
 
-noncomputable def Ldexp [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Ldexp [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Ldexp"
 
-noncomputable def ldexp [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ldexp [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.ldexp"
 
-noncomputable def Lgamma [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Lgamma [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Lgamma"
 
-noncomputable def sinPi [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def sinPi [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.sinPi"
 
-noncomputable def Log [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Log [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Log"
 
-noncomputable def log [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def log [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.log"
 
-noncomputable def Log10 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Log10 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Log10"
 
-noncomputable def log10 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def log10 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.log10"
 
-noncomputable def Log2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Log2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Log2"
 
-noncomputable def log2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def log2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.log2"
 
-noncomputable def Log1p [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Log1p [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Log1p"
 
-noncomputable def log1p [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def log1p [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.log1p"
 
-noncomputable def archLog [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archLog [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archLog"
 
-noncomputable def Logb [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Logb [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Logb"
 
-noncomputable def Ilogb [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Ilogb [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Ilogb"
 
-noncomputable def ilogb [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def ilogb [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.ilogb"
 
-noncomputable def Mod [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Mod [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Mod"
 
-noncomputable def mod' [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def mod' [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.mod"
 
-noncomputable def Modf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Modf [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Modf"
 
-noncomputable def Nextafter32 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Nextafter32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Nextafter32"
 
-noncomputable def Nextafter [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Nextafter [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Nextafter"
 
-noncomputable def isOddInt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def isOddInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.isOddInt"
 
-noncomputable def Pow [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Pow [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Pow"
 
-noncomputable def pow [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def pow [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.pow"
 
-noncomputable def Pow10 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Pow10 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Pow10"
 
-noncomputable def Remainder [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Remainder [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Remainder"
 
-noncomputable def remainder [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def remainder [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.remainder"
 
-noncomputable def Signbit [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Signbit [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Signbit"
 
-noncomputable def Cos [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Cos [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Cos"
 
-noncomputable def cos [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cos [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.cos"
 
-noncomputable def Sin [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Sin [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Sin"
 
-noncomputable def sin [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def sin [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.sin"
 
-noncomputable def Sincos [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Sincos [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Sincos"
 
-noncomputable def Sinh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Sinh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Sinh"
 
-noncomputable def sinh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def sinh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.sinh"
 
-noncomputable def Cosh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Cosh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Cosh"
 
-noncomputable def cosh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def cosh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.cosh"
 
-noncomputable def Sqrt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Sqrt [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Sqrt"
 
-noncomputable def sqrt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def sqrt [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.sqrt"
 
-noncomputable def archAcos [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archAcos [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archAcos"
 
-noncomputable def archAcosh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archAcosh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archAcosh"
 
-noncomputable def archAsin [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archAsin [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archAsin"
 
-noncomputable def archAsinh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archAsinh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archAsinh"
 
-noncomputable def archAtan [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archAtan [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archAtan"
 
-noncomputable def archAtan2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archAtan2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archAtan2"
 
-noncomputable def archAtanh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archAtanh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archAtanh"
 
-noncomputable def archCbrt [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archCbrt [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archCbrt"
 
-noncomputable def archCos [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archCos [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archCos"
 
-noncomputable def archCosh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archCosh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archCosh"
 
-noncomputable def archErf [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archErf [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archErf"
 
-noncomputable def archErfc [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archErfc [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archErfc"
 
-noncomputable def archExpm1 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archExpm1 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archExpm1"
 
-noncomputable def archFrexp [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archFrexp [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archFrexp"
 
-noncomputable def archLdexp [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archLdexp [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archLdexp"
 
-noncomputable def archLog10 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archLog10 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archLog10"
 
-noncomputable def archLog2 [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archLog2 [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archLog2"
 
-noncomputable def archLog1p [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archLog1p [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archLog1p"
 
-noncomputable def archMod [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archMod [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archMod"
 
-noncomputable def archPow [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archPow [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archPow"
 
-noncomputable def archRemainder [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archRemainder [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archRemainder"
 
-noncomputable def archSin [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archSin [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archSin"
 
-noncomputable def archSinh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archSinh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archSinh"
 
-noncomputable def archTan [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archTan [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archTan"
 
-noncomputable def archTanh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def archTanh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.archTanh"
 
-noncomputable def Tan [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Tan [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Tan"
 
-noncomputable def tan [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tan [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.tan"
 
-noncomputable def Tanh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Tanh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Tanh"
 
-noncomputable def tanh [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def tanh [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.tanh"
 
-noncomputable def trigReduce [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def trigReduce [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.trigReduce"
 
-noncomputable def Float32bits [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Float32bits [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Float32bits"
 
-noncomputable def Float32frombits [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Float32frombits [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Float32frombits"
 
-noncomputable def Float64bits [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Float64bits [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Float64bits"
 
-noncomputable def Float64frombits [FfiSyntax] [GoGlobalContext] : GoString :=
+noncomputable def Float64frombits [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.Float64frombits"
 
 noncomputable instance info' : PkgInfo pkg_id.math where
   pkgImportedPkgs := []
 
-axiom «_».init [FfiSyntax] [GoGlobalContext] : val
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
-noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
+noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.math)) (Lam BAnon
   (App (Val exceptionDo)
@@ -1756,7 +1756,7 @@ noncomputable def initialize' [FfiSyntax] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc mPi4 (go.GoType.ArrayType 20 go.uint64))) (Val #()))))))))
 
-class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
 
 end math
 
