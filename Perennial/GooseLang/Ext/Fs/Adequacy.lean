@@ -55,6 +55,31 @@ attribute [local instance] fsExtsCrashInterp
 
 attribute [local instance] fsExts_hasFs
 
+/-- Ghost state for a filesystem program: one slot for each camera that
+`GooseGpreS` needs for `[fsExt]`, so that a client's adequacy theorem need not
+assume any. -/
+noncomputable def fsGF : BundledGFunctors := fun
+  | 0 => ⟨AllURF, inferInstance⟩
+  | 1 => ⟨InvMapF, inferInstance⟩
+  | 2 => ⟨constOF CoPsetDisjL, inferInstance⟩
+  | 3 => ⟨constOF (DisjointLeibnizSet PosSet), inferInstance⟩
+  | 4 => ⟨Auth.AuthURF (constOF Credit), inferInstance⟩
+  | 5 => ⟨constOF (NaHeapUR Loc val), inferInstance⟩
+  | 6 => ⟨constOF (HeapView proph_id (Agree (DiscreteO (List val))) (GMap proph_id)), inferInstance⟩
+  | 7 => ⟨constOF (HeapView GoString (Agree (DiscreteO (List w8))) (GMap GoString)), inferInstance⟩
+  | 8 => ⟨constOF (HeapView GoString (Agree (DiscreteO GName)) (GMap GoString)), inferInstance⟩
+  | 9 => ⟨constOF MetaUR, inferInstance⟩
+  | 10 => ⟨GhostVarF (GMap GoString Bool), inferInstance⟩
+  | _ => ⟨constOF Unit, inferInstance⟩
+
+noncomputable instance fsGpreS : GooseGpreS fsGF where
+  goose_preG_iris := ⟨⟨⟨1, rfl⟩, ⟨2, rfl⟩, ⟨3, rfl⟩⟩, ⟨⟨4, rfl⟩⟩⟩
+  goose_preG_heap := ⟨⟨5, rfl⟩⟩
+  goose_preG_proph := ⟨⟨⟨6, rfl⟩⟩⟩
+  goosePreGExts := (⟨⟨⟨7, rfl⟩⟩, ⟨⟨8, rfl⟩⟩, ⟨9, rfl⟩⟩, PUnit.unit)
+  goose_preG_go_state := ⟨@GhostVarG.mk _ _ ⟨10, rfl⟩⟩
+  goosePreGAllG := allGOfSlot 0 rfl
+
 open fs_ext in
 /-- Crash adequacy for a filesystem boot program `e` (`goose_crash_adequacy`
 for `[fsExt]`): the precondition `P` holds of the first generation, from the

@@ -8,8 +8,9 @@ invariant of the file `"f"` (`fileInv`, under `L`'s file ghost state) and the pa
 state of a fresh program. The first generation establishes it from the initial
 file `"f"` (empty); after a crash, the files' ghost state is the crashed
 generation's (`fs_crash_adequacy`), so the same invariant holds of the next
-generation. The conclusion: in every execution with crashes, no thread is stuck
-and none has an unrecovered panic, so `Main`'s assertions (`panic`s) never fire.
+generation. The conclusion, `crash_safety`, mentions no ghost state and no
+bounds: in every execution with crashes, no thread is stuck and none has an
+unrecovered panic, so `Main`'s assertions (`panic`s) never fire.
 -/
 module
 
@@ -56,14 +57,10 @@ def getIsPkgInit [HeapGS .hasLC GF] (p : GoString) : IProp GF :=
       pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsffi
   else iprop(True)
 
-/-- Crash safety of the boot program: for any receipt and thread bounds `N` and
-`T`, in every real execution with crashes of `boot` of fewer than `N` steps,
-from a state whose Go context satisfies the Go semantics and the package's
-assumptions, with no package initialized, the main thread only, and the file
-`"f"` empty (other files may exist), along which fewer than `T` threads are live, the boot program's
-result is `#()`, no thread is stuck and no thread has an unrecovered panic: the
-assertions of `Main` hold, however many times the node crashes. -/
-theorem crash_safety [lctx : GoLocalContext] [sem : go.Semantics] [package_sem : Assumptions]
+/-- `crash_safety` for executions of fewer than `N` steps along which fewer than
+`T` threads are live, under any ghost state `GF` with `GooseGpreS GF`:
+`fs_crash_adequacy` for the boot program. -/
+theorem crash_safety_bounded [lctx : GoLocalContext] [sem : go.Semantics] [package_sem : Assumptions]
     [hPre : GooseGpreS GF] (N T : Nat) (σ : state) (g : GlobalState)
     (Hlctx : σ.goState.goLctx = lctx) (Hpkgs : σ.goState.packageState = ∅)
     (Hfile : extLocal fsExt σ.world !! go!"f" = some go!"")
@@ -133,6 +130,27 @@ theorem crash_safety [lctx : GoLocalContext] [sem : go.Semantics] [package_sem :
       iexists γ
       rw [Hfs]
       iexact Hinv
+
+/-- Crash safety of the boot program: in every execution with crashes of `boot`
+(`RealCrashNsteps`, the real semantics), from a state whose Go context
+satisfies the Go semantics and the package's assumptions, with no package
+initialized, the main thread only, and the file `"f"` empty (other files may
+exist), the boot program's result is `#()`, no thread is stuck and no thread
+has an unrecovered panic: the assertions of `Main` hold, however many times the
+node crashes. (`crash_safety_bounded` with the ghost state `fsGF`, the step
+bound `n + 1` and the thread bound `n + 2`, which an execution of `n` steps
+from one thread respects, `RealCrashThreadsBelow.of_single`.) -/
+theorem crash_safety [lctx : GoLocalContext] [sem : go.Semantics] [package_sem : Assumptions]
+    (σ : state) (g : GlobalState)
+    (Hlctx : σ.goState.goLctx = lctx) (Hpkgs : σ.goState.packageState = ∅)
+    (Hfile : extLocal fsExt σ.world !! go!"f" = some go!"") (Hthreads : σ.threads = 1)
+    (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState) (b : Bool)
+    (Hsteps : RealCrashNsteps boot n ([boot], ((σ, g) : CfgState)) κs (t2, σ2) b) :
+    (∀ v t2', t2 = Val v :: t2' → v = #()) ∧
+      (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
+      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) :=
+  crash_safety_bounded (GF := fsGF) (n + 1) (n + 2) σ g Hlctx Hpkgs Hfile n κs t2 σ2 b Hsteps
+    (by omega) Hthreads (RealCrashThreadsBelow.of_single Hthreads)
 
 end adequacy
 

@@ -52,6 +52,47 @@ theorem RealCrashThreadsBelow.start {r : Expr} {T n : Nat} {ρ : List Expr × Cf
     (h : RealCrashThreadsBelow r T n ρ) : ρ.2.1.threads < T :=
   h 0 [] ρ false (Nat.zero_le _) (.done (@Language.NSteps.refl _ _ _ _ gooseRealLang ρ))
 
+/-! The thread count grows by at most one per step (a `Fork`), and a crash
+resets it to one: an execution of `n` steps from a single thread has fewer than
+`n + 2` live threads, so the thread bound of the adequacy theorems is no
+restriction for it (`RealCrashThreadsBelow.of_single`). -/
+
+theorem real_step_threads {ρ₁ ρ₂ : List Expr × CfgState} {κ : List Observation}
+    (h : @Language.Step _ _ _ _ gooseRealLang ρ₁ κ ρ₂) :
+    ρ₂.2.1.threads ≤ ρ₁.2.1.threads + 1 := by
+  obtain ⟨H, t₁, t₂⟩ := h
+  obtain ⟨hb⟩ := H
+  cases hb with
+  | unwind => simp
+  | base _ h =>
+    cases h with
+    | ForkS => simp
+    | ThreadExitS => simp; omega
+    | ExternalOpS _ _ _ _ _ h => have := extStep_threads h; simp only at this ⊢; omega
+    | _ => simp [stateInitHeap, setHeap]
+
+theorem real_nsteps_threads {n : Nat} {ρ₁ ρ₂ : List Expr × CfgState} {κs : List Observation}
+    (h : RealNsteps n ρ₁ κs ρ₂) : ρ₂.2.1.threads ≤ ρ₁.2.1.threads + n := by
+  unfold RealNsteps at h
+  induction h with
+  | refl => simp
+  | cons hs _ ih => have := real_step_threads hs; omega
+
+theorem real_crash_nsteps_threads {r : Expr} {n : Nat} {ρ₁ ρ₂ : List Expr × CfgState}
+    {κs : List Observation} {b : Bool} (h : RealCrashNsteps r n ρ₁ κs ρ₂ b) :
+    ρ₂.2.1.threads ≤ max ρ₁.2.1.threads 1 + n := by
+  induction h with
+  | done h => have := real_nsteps_threads h; omega
+  | crash h₁ hc _ ih => have := hc.threads; simp only at ih; omega
+
+/-- Every execution with crashes of at most `n` steps from a single thread has
+fewer than `n + 2` live threads. -/
+theorem RealCrashThreadsBelow.of_single {r : Expr} {n : Nat} {ρ : List Expr × CfgState}
+    (h1 : ρ.2.1.threads = 1) : RealCrashThreadsBelow r (n + 2) n ρ := by
+  intro k κs ρ' b hk h
+  have := real_crash_nsteps_threads h
+  omega
+
 end real
 
 /-! ## The bounded semantics with crashes, and the simulation -/
