@@ -1,0 +1,5 @@
+# The network's primitives are trusted models in terms of the network extension
+# (Perennial/TrustedCode/.../netfs/netext.lean); Send and Recv, which convert
+# between []byte and the primitives' strings, are translated.
+translate = ["Send", "Recv"]
+trusted = ["send", "recv"]
