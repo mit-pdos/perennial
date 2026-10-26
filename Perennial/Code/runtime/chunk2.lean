@@ -137,7 +137,7 @@ class itabTableType.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContex
   underlying : go.UnderlyingDirectedEq itabTableType.ty itabTableType.underlying
   isUnderlying : go.IsUnderlying itabTableType.underlying itabTableType.underlying
   method_set : go.MethodSetIs itabTableType.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType itabTableType.ty) [(go!"runtime.add", none), (go!"runtime.find", none)]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType itabTableType.ty) [(go!"runtime.add", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.Named go!"internal/abi.ITab" []))] false []))), (go!"runtime.find", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.Named go!"internal/abi.InterfaceType" [])), (go.GoType.PointerType (go.GoType.Named go!"internal/abi.Type" []))] false [(go.GoType.PointerType (go.GoType.Named go!"internal/abi.ITab" []))])))]
 
 attribute [instance] itabTableType.TypeAssumptions.type_repr
   itabTableType.TypeAssumptions.underlying

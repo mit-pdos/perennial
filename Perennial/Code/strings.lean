@@ -431,7 +431,7 @@ class Reader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   get_prevRune : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"prevRune") #x (Val #(x.prevRune'))
   set_prevRune : ∀ (x : Reader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"prevRune") (PairV #x #y) (Val #(({ x with prevRune' := y } : Reader)))
   method_set : go.MethodSetIs Reader.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Reader.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"ReadByte", (some (go.signature.Signature [] false [go.byte, go.error]))), (go!"ReadRune", (some (go.signature.Signature [] false [go.rune, go.int, go.error]))), (go!"Reset", (some (go.signature.Signature [go.string] false []))), (go!"Seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"Size", (some (go.signature.Signature [] false [go.int64]))), (go!"UnreadByte", (some (go.signature.Signature [] false [go.error]))), (go!"UnreadRune", (some (go.signature.Signature [] false [go.error]))), (go!"WriteTo", none)]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Reader.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"ReadByte", (some (go.signature.Signature [] false [go.byte, go.error]))), (go!"ReadRune", (some (go.signature.Signature [] false [go.rune, go.int, go.error]))), (go!"Reset", (some (go.signature.Signature [go.string] false []))), (go!"Seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"Size", (some (go.signature.Signature [] false [go.int64]))), (go!"UnreadByte", (some (go.signature.Signature [] false [go.error]))), (go!"UnreadRune", (some (go.signature.Signature [] false [go.error]))), (go!"WriteTo", (some (go.signature.Signature [(go.GoType.Named go!"io.Writer" [])] false [go.int64, go.error])))]
 
 attribute [instance] Reader.TypeAssumptions.type_repr
   Reader.TypeAssumptions.underlying
@@ -453,7 +453,7 @@ class Replacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   underlying : go.UnderlyingDirectedEq Replacer.ty Replacer.underlying
   isUnderlying : go.IsUnderlying Replacer.underlying Replacer.underlying
   method_set : go.MethodSetIs Replacer.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Replacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", none), (go!"strings.build", (some (go.signature.Signature [] false [replacer.ty]))), (go!"strings.buildOnce", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Replacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [(go.GoType.Named go!"io.Writer" []), go.string] false [go.int, go.error]))), (go!"strings.build", (some (go.signature.Signature [] false [replacer.ty]))), (go!"strings.buildOnce", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] Replacer.TypeAssumptions.type_repr
   Replacer.TypeAssumptions.underlying
@@ -469,7 +469,7 @@ class replacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying replacer.underlying replacer
   underlying : go.UnderlyingDirectedEq replacer.ty replacer.underlying
   isUnderlying : go.IsUnderlying replacer.underlying replacer.underlying
-  method_set : go.MethodSetIs replacer.ty [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", none)]
+  method_set : go.MethodSetIs replacer.ty [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [(go.GoType.Named go!"io.Writer" []), go.string] false [go.int, go.error])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType replacer.ty) []
 
 attribute [instance] replacer.TypeAssumptions.type_repr
@@ -571,7 +571,7 @@ class genericReplacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCont
   get_mapping : ∀ (x : genericReplacer), go.IsGoStepPureDetTagged under (StructFieldGet genericReplacer.underlying go!"mapping") #x (Val #(x.mapping'))
   set_mapping : ∀ (x : genericReplacer) (y : (GoArray w8 256)), go.IsGoStepPureDetTagged under (StructFieldSet genericReplacer.underlying go!"mapping") (PairV #x #y) (Val #(({ x with mapping' := y } : genericReplacer)))
   method_set : go.MethodSetIs genericReplacer.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType genericReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", none), (go!"strings.lookup", (some (go.signature.Signature [go.string, go.bool] false [go.string, go.int, go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType genericReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [(go.GoType.Named go!"io.Writer" []), go.string] false [go.int, go.error]))), (go!"strings.lookup", (some (go.signature.Signature [go.string, go.bool] false [go.string, go.int, go.bool])))]
 
 attribute [instance] genericReplacer.TypeAssumptions.type_repr
   genericReplacer.TypeAssumptions.underlying
@@ -645,7 +645,7 @@ class singleStringReplacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLoca
   get_value : ∀ (x : singleStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet singleStringReplacer.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : singleStringReplacer) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet singleStringReplacer.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : singleStringReplacer)))
   method_set : go.MethodSetIs singleStringReplacer.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType singleStringReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", none)]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType singleStringReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [(go.GoType.Named go!"io.Writer" []), go.string] false [go.int, go.error])))]
 
 attribute [instance] singleStringReplacer.TypeAssumptions.type_repr
   singleStringReplacer.TypeAssumptions.underlying
@@ -664,7 +664,7 @@ abbrev byteReplacer [GooseExts] : Type := (GoArray w8 256)
 class byteReplacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq byteReplacer.ty byteReplacer.underlying
   method_set : go.MethodSetIs byteReplacer.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType byteReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", none)]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType byteReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [(go.GoType.Named go!"io.Writer" []), go.string] false [go.int, go.error])))]
 
 attribute [instance] byteReplacer.TypeAssumptions.underlying
   byteReplacer.TypeAssumptions.method_set
@@ -700,7 +700,7 @@ class byteStringReplacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalC
   get_toReplace : ∀ (x : byteStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet byteStringReplacer.underlying go!"toReplace") #x (Val #(x.toReplace'))
   set_toReplace : ∀ (x : byteStringReplacer) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet byteStringReplacer.underlying go!"toReplace") (PairV #x #y) (Val #(({ x with toReplace' := y } : byteStringReplacer)))
   method_set : go.MethodSetIs byteStringReplacer.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType byteStringReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", none)]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType byteStringReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [(go.GoType.Named go!"io.Writer" []), go.string] false [go.int, go.error])))]
 
 attribute [instance] byteStringReplacer.TypeAssumptions.type_repr
   byteStringReplacer.TypeAssumptions.underlying

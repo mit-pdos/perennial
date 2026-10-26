@@ -92,8 +92,8 @@ abbrev PublicKey [GooseExts] : Type := GoSlice
 
 class PublicKey.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq PublicKey.ty PublicKey.underlying
-  method_set : go.MethodSetIs PublicKey.ty [(go!"Equal", none)]
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType PublicKey.ty) [(go!"Equal", none)]
+  method_set : go.MethodSetIs PublicKey.ty [(go!"Equal", (some (go.signature.Signature [(go.GoType.Named go!"crypto.PublicKey" [])] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType PublicKey.ty) [(go!"Equal", (some (go.signature.Signature [(go.GoType.Named go!"crypto.PublicKey" [])] false [go.bool])))]
 
 attribute [instance] PublicKey.TypeAssumptions.underlying
   PublicKey.TypeAssumptions.method_set
@@ -106,8 +106,8 @@ abbrev PrivateKey [GooseExts] : Type := GoSlice
 
 class PrivateKey.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq PrivateKey.ty PrivateKey.underlying
-  method_set : go.MethodSetIs PrivateKey.ty [(go!"Equal", none), (go!"Public", none), (go!"Seed", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Sign", none)]
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType PrivateKey.ty) [(go!"Equal", none), (go!"Public", none), (go!"Seed", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Sign", none)]
+  method_set : go.MethodSetIs PrivateKey.ty [(go!"Equal", (some (go.signature.Signature [(go.GoType.Named go!"crypto.PrivateKey" [])] false [go.bool]))), (go!"Public", (some (go.signature.Signature [] false [(go.GoType.Named go!"crypto.PublicKey" [])]))), (go!"Seed", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Sign", (some (go.signature.Signature [(go.GoType.Named go!"io.Reader" []), (go.GoType.SliceType go.byte), (go.GoType.Named go!"crypto.SignerOpts" [])] false [(go.GoType.SliceType go.byte), go.error])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType PrivateKey.ty) [(go!"Equal", (some (go.signature.Signature [(go.GoType.Named go!"crypto.PrivateKey" [])] false [go.bool]))), (go!"Public", (some (go.signature.Signature [] false [(go.GoType.Named go!"crypto.PublicKey" [])]))), (go!"Seed", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Sign", (some (go.signature.Signature [(go.GoType.Named go!"io.Reader" []), (go.GoType.SliceType go.byte), (go.GoType.Named go!"crypto.SignerOpts" [])] false [(go.GoType.SliceType go.byte), go.error])))]
 
 attribute [instance] PrivateKey.TypeAssumptions.underlying
   PrivateKey.TypeAssumptions.method_set
@@ -122,7 +122,7 @@ class Options.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   underlying : go.UnderlyingDirectedEq Options.ty Options.underlying
   isUnderlying : go.IsUnderlying Options.underlying Options.underlying
   method_set : go.MethodSetIs Options.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Options.ty) [(go!"HashFunc", none)]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Options.ty) [(go!"HashFunc", (some (go.signature.Signature [] false [(go.GoType.Named go!"crypto.Hash" [])])))]
 
 attribute [instance] Options.TypeAssumptions.type_repr
   Options.TypeAssumptions.underlying

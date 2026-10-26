@@ -96,7 +96,10 @@ type Ctx struct {
 	namedTypeSpecs []*ast.TypeSpec
 	localTypes     map[string]bool // names of the types declared in functions
 
-	importNames        map[string]*types.PkgName
+	importNames map[string]*types.PkgName
+	// spellOut: glangType writes the types this translation cannot name
+	// (typeNameable) as what they denote (nameableSignature)
+	spellOut           bool
 	importNamesOrdered []*types.PkgName
 	// Full Go import path -> Assumptions class field name. For colliding
 	// package names, imports ending in "a/v1" and "b/v1" become

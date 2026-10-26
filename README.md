@@ -198,12 +198,14 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   another. goose writes an interface type as all its methods (go/types' method set of the
   interface, embedded interfaces included), so that `typeSetContains` needs no recursion
   through embedded named interfaces; embedded constraint elements (unions, `comparable`) stay
-  as type terms, and so does an embedded interface with a method whose signature the
-  translation cannot name (a type of a package it does not import): that method is not
-  written, and the membership of an interface type term is unspecified
-  (`interfaceTermContains`), so the model does not decide it. Nothing is claimed beyond what is known: a method whose signature mentions a
-  type of a package the translation does not import is an entry without a signature
-  (`(id, none)`: it exists), and the method set of any other type (a struct type literal with
+  as type terms. A type a signature mentions that the translation cannot name (a named type
+  of a package it does not import, an alias it does not translate) is written as what it
+  denotes (`go.Named "<path>.<Name>" args`, the aliased type), so that an interface type has
+  the same term, up to unfolding descriptors and aliases, in every package that writes it: Go's
+  type identity, which `=` on `go.GoType` must agree with wherever interface types are compared
+  (in signatures, as element types). Nothing is claimed beyond what is known: a method whose
+  signature has a type goose does not support is an entry without a signature (`(id, none)`:
+  it exists), and the method set of any other type (a struct type literal with
   embedded fields, a type declared in a function, a type of an untranslated package) is
   unconstrained. Two limits of the model's type identity (`=` on `go.GoType`) apply here as
   to type assertions: struct tags are not part of `go.StructType`, and the unexported field

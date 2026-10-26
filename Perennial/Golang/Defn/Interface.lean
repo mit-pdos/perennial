@@ -24,10 +24,7 @@ def isUntypedNil (t : go.GoType) : Bool :=
 /-- Based on: https://go.dev/ref/spec#General_interfaces -/
 noncomputable def typeSetTermContains (t : go.GoType) (e : go.type_term) : Bool :=
   match e with
-  | go.TypeTerm t' =>
-    -- an embedded interface goose could not write as its methods: unspecified (an interface
-    -- term's type set is the interface's, not `{t'}`)
-    if isInterfaceType (underlying t') then interfaceTermContains t t' else decide (t = t')
+  | go.TypeTerm t' => decide (t = t')
   | go.TypeTermUnderlying t' => decide (underlying t = t')
 
 noncomputable def typeSetElemContains (t : go.GoType) (e : go.InterfaceElem) : Bool :=
@@ -40,10 +37,8 @@ noncomputable def typeSetElemsContains (t : go.GoType) (elems : List go.Interfac
 
 /-- Equals `true` iff t is in the type set of t'. goose writes an interface type as the list of
 all its methods (`go.MethodElem`, named by their ids, those of embedded interfaces included),
-followed by its other embedded elements (unions, constraints such as `comparable`, which only
-occur in type constraints, and an embedded interface whose methods goose could not write, a
-type term whose membership is unspecified, `interfaceTermContains`); a method element is
-decided by `methodSet` (`MethodSet.lean`). -/
+followed by its other embedded elements (unions, constraints such as `comparable`), which only
+occur in type constraints; a method element is decided by `methodSet` (`MethodSet.lean`). -/
 noncomputable def typeSetContains (t t' : go.GoType) : Bool :=
   match (underlying t') with
   | go.InterfaceType elems => typeSetElemsContains t elems

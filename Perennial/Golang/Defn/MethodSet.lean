@@ -38,9 +38,8 @@ namespace Perennial
 namespace go
 
 /-- The entry for the method id `m` in a list of method-set entries, if any. An entry
-is a method's id and its signature, or `none` for a signature goose could not write in
-the package's translation (one that mentions a type of a package the translation does
-not import, which an untranslated method may). -/
+is a method's id and its signature, or `none` for a signature with a type goose does not
+support (which a method that is not translated may have). -/
 def methodSetLookup : List (GoString × Option go.signature) → GoString → Option (Option go.signature)
   | [], _ => none
   | (k, s) :: ms, m => if k = m then some s else methodSetLookup ms m

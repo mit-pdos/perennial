@@ -84,8 +84,8 @@ class T.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemant
   underlying : go.UnderlyingDirectedEq T.ty T.underlying
   get_n : ∀ (x : T), go.IsGoStepPureDetTagged under (StructFieldGet T.underlying go!"n") #x (Val #(x.n'))
   set_n : ∀ (x : T) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet T.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : T)))
-  method_set : go.MethodSetIs T.ty [(go!"Use", none)]
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType T.ty) [(go!"Get", (some (go.signature.Signature [] false [go.uint64]))), (go!"Use", none)]
+  method_set : go.MethodSetIs T.ty [(go!"Use", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport/dep.X" []))] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType T.ty) [(go!"Get", (some (go.signature.Signature [] false [go.uint64]))), (go!"Use", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport/dep.X" []))] false [])))]
 
 attribute [instance] T.TypeAssumptions.type_repr
   T.TypeAssumptions.underlying
@@ -102,7 +102,7 @@ class withDep.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying withDep.underlying withDep
   underlying : go.UnderlyingDirectedEq withDep.ty withDep.underlying
   isUnderlying : go.IsUnderlying withDep.underlying withDep.underlying
-  method_set : go.MethodSetIs withDep.ty [(go!"Get", (some (go.signature.Signature [] false [go.uint64]))), (go!"Use", none)]
+  method_set : go.MethodSetIs withDep.ty [(go!"Get", (some (go.signature.Signature [] false [go.uint64]))), (go!"Use", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport/dep.X" []))] false [])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType withDep.ty) []
 
 attribute [instance] withDep.TypeAssumptions.type_repr
@@ -114,11 +114,11 @@ attribute [instance] withDep.TypeAssumptions.type_repr
 abbrev Getter [GooseExts] : Type := GoInterface
 
 @[reducible] noncomputable def Getter.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Close" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Get" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm withDep.ty)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Close" (go.signature.Signature [] false [])), (go.InterfaceElem.MethodElem go!"Get" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.MethodElem go!"Use" (go.signature.Signature [(go.GoType.PointerType (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport/dep.X" []))] false []))])
 
 class Getter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Getter.ty Getter.underlying
-  method_set : go.MethodSetIs Getter.ty [(go!"Close", (some (go.signature.Signature [] false []))), (go!"Get", (some (go.signature.Signature [] false [go.uint64]))), (go!"Use", none)]
+  method_set : go.MethodSetIs Getter.ty [(go!"Close", (some (go.signature.Signature [] false []))), (go!"Get", (some (go.signature.Signature [] false [go.uint64]))), (go!"Use", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport/dep.X" []))] false [])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Getter.ty) []
 
 attribute [instance] Getter.TypeAssumptions.underlying

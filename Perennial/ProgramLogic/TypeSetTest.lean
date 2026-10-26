@@ -114,11 +114,14 @@ section filteredimport
 open github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport
 variable [github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.Assumptions]
 
-/-- `Getter` embeds `withDep`, whose method `Use` mentions a type of a package the translation
-does not import: goose writes `Getter` as `Close`, `Get` and the type term `withDep`, whose
-membership is unspecified (`interfaceTermContains`). A type lacking a written method is still
-known not to implement it. -/
+/-- `Getter` embeds `withDep`, whose method `Use` mentions `dep.X`, of a package the
+translation does not import: goose writes it as `go.Named "<dep>.X" []`. `T` lacks `Close`. -/
 example : go.typeSetContains T.ty Getter.ty = false := by
+  go_type_set
+
+/-- `*T` has `Get` and `Use(*dep.X)`, the latter's signature written out the same way in
+`T`'s method set and in `withDep`. -/
+example : go.typeSetContains (go.GoType.PointerType T.ty) withDep.ty = true := by
   go_type_set
 
 /-- `PlainCloser` embeds `plain`, all of whose methods are written. -/

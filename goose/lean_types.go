@@ -372,7 +372,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 }
 
 // leanMethodSet is a method set as `go.MethodSetIs` takes it: a list of entries
-// `(id, some sig)`, or `(id, none)` for a signature that cannot be written here
+// `(id, some sig)`, or `(id, none)` for a signature goose does not support
 // (methodSigLean), in the order of types.MethodSet (by id).
 func (ctx *Ctx) leanMethodSet(n locatable, mset *types.MethodSet) string {
 	var entries []string
@@ -387,15 +387,10 @@ func (ctx *Ctx) leanMethodSet(n locatable, mset *types.MethodSet) string {
 	return "[" + strings.Join(entries, ", ") + "]"
 }
 
-// methodSigLean is the signature of a method of a method set as a Lean term, if
-// it can be written in this package's translation: every named type it mentions
-// is predeclared, of this package or of a package the translation imports (a
-// method that is not translated may mention others), and goose supports its
-// types.
+// methodSigLean is the signature of a method of a method set as a Lean term
+// (nameableSignature: a method that is not translated may mention types this
+// translation cannot name), if goose supports its types.
 func (ctx *Ctx) methodSigLean(n locatable, sig *types.Signature) (s string, ok bool) {
-	if !ctx.typeNameable(sig, map[types.Type]bool{}) {
-		return "", false
-	}
 	defer func() {
 		if r := recover(); r != nil {
 			if _, isGooseErr := r.(gooseError); !isGooseErr {
@@ -404,7 +399,7 @@ func (ctx *Ctx) methodSigLean(n locatable, sig *types.Signature) (s string, ok b
 			s, ok = "", false
 		}
 	}()
-	return glang.LeanTermOf(ctx.signature(n, sig)), true
+	return glang.LeanTermOf(ctx.nameableSignature(n, sig)), true
 }
 
 // typeNameable reports whether every named type t mentions is predeclared, of

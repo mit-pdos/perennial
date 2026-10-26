@@ -630,12 +630,10 @@ It also works with a named interface type of a user package (`Fooer.ty`: its
 `UnderlyingDirectedEq` gives the interface's methods) and generic types (`Box.ty go.int`);
 `Perennial/ProgramLogic/TypeSetTest.lean` has examples. What it cannot decide is left in
 the goal: the method set of a type literal with embedded fields, of a type of a package
-that is not translated, or an entry whose signature goose could not write (a method that is
-not translated may mention a type of a package the translation does not import:
-`("Equal", none)`); then the entry still says that the method exists. Likewise an
-interface embedding one with such a method is written with that interface as a type term,
-whose membership is unspecified (`interfaceTermContains`): only non-membership, through a
-missing method that is written, is provable.
+that is not translated, or an entry whose signature has a type goose does not support (a
+method that is not translated may: `("Equal", none)`); then the entry still says that the
+method exists. A type that the translation cannot name (of a package it does not import) is
+written out in signatures as its descriptor's definition, `go.Named "<path>.<Name>" []`.
 
 ---
 
