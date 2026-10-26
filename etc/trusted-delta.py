@@ -31,7 +31,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), 
 
 # --------------------------------------------------------------- tiers
 TIER0 = [
-    ("semantics", r"^Perennial/GooseLang/(Lang|BoundedLang|Adequacy|Threads|Receipts|Locations|Ext|CrashLang|CrashAdequacy)\.lean$"),
+    ("semantics", r"^Perennial/GooseLang/(Lang|BoundedLang|Adequacy|Threads|Receipts|Locations|Ext|CrashLang|CrashAdequacy|DistLang|DistAdequacy)\.lean$"),
     ("semantics", r"^Perennial/GooseLang/Ext/"),
     ("semantics", r"^Perennial/Golang/Defn/"),
     ("semantics", r"^Perennial/GrovePrelude\.lean$"),
