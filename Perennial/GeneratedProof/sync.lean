@@ -272,7 +272,7 @@ variable [package_sem' : sync.Assumptions]
 noncomputable instance Once_typed_pointsto :
     TypedPointsto (GF := GF) sync.Once where
   typedPointstoDef l v dq := iprop(
-    "_0" ∷ typedPointsto (structFieldRef sync.Once go!"_0" l) v._0' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef sync.Once go!"_#0" l) v.«_#0'» dq ∗
     "done" ∷ typedPointsto (structFieldRef sync.Once go!"done" l) v.done' dq ∗
     "m" ∷ typedPointsto (structFieldRef sync.Once go!"m" l) v.m' dq ∗
     "_" ∷ True)
@@ -284,19 +284,19 @@ noncomputable instance Once_into_val_typed :
     IntoValTypedUnderlying (GF := GF) sync.Once sync.Once.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance Once_access_load__0 (l : Loc) (v : sync.Once) (dq : DFrac) :
+noncomputable instance «Once_access_load__#0» (l : Loc) (v : sync.Once) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.Once go!"_0" l) v._0' dq)
-      (typedPointsto (structFieldRef sync.Once go!"_0" l) v._0' dq)
+      (typedPointsto (structFieldRef sync.Once go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef sync.Once go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Once_access_store__0 (l : Loc) (v : sync.Once) (_0' : sync.noCopy) :
+noncomputable instance «Once_access_store__#0» (l : Loc) (v : sync.Once) («_#0'» : sync.noCopy) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.Once go!"_0" l) v._0' (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.Once go!"_0" l) _0' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with _0' := _0' } : sync.Once) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef sync.Once go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef sync.Once go!"_#0" l) «_#0'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : sync.Once) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

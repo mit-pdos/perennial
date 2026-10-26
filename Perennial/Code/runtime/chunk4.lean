@@ -259,8 +259,8 @@ attribute [instance] timer.TypeAssumptions.type_repr
 class pollDesc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying pollDesc.underlying pollDesc
   underlying : go.UnderlyingDirectedEq pollDesc.ty pollDesc.underlying
-  get__0 : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : pollDesc) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : pollDesc)))
+  «get__#0» : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : pollDesc) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : pollDesc)))
   get_link : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"link") #x (Val #(x.link'))
   set_link : ∀ (x : pollDesc) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"link") (PairV #x #y) (Val #(({ x with link' := y } : pollDesc)))
   get_fd : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"fd") #x (Val #(x.fd'))
@@ -300,8 +300,8 @@ class pollDesc.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] pollDesc.TypeAssumptions.type_repr
   pollDesc.TypeAssumptions.underlying
-  pollDesc.TypeAssumptions.get__0
-  pollDesc.TypeAssumptions.set__0
+  pollDesc.TypeAssumptions.«get__#0»
+  pollDesc.TypeAssumptions.«set__#0»
   pollDesc.TypeAssumptions.get_link
   pollDesc.TypeAssumptions.set_link
   pollDesc.TypeAssumptions.get_fd
@@ -460,13 +460,13 @@ attribute [instance] throwType.TypeAssumptions.underlying
 class PanicNilError.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying PanicNilError.underlying PanicNilError
   underlying : go.UnderlyingDirectedEq PanicNilError.ty PanicNilError.underlying
-  get__0 : ∀ (x : PanicNilError), go.IsGoStepPureDetTagged under (StructFieldGet PanicNilError.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : PanicNilError) (y : (GoArray Loc 0)), go.IsGoStepPureDetTagged under (StructFieldSet PanicNilError.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : PanicNilError)))
+  «get__#0» : ∀ (x : PanicNilError), go.IsGoStepPureDetTagged under (StructFieldGet PanicNilError.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : PanicNilError) (y : (GoArray Loc 0)), go.IsGoStepPureDetTagged under (StructFieldSet PanicNilError.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : PanicNilError)))
 
 attribute [instance] PanicNilError.TypeAssumptions.type_repr
   PanicNilError.TypeAssumptions.underlying
-  PanicNilError.TypeAssumptions.get__0
-  PanicNilError.TypeAssumptions.set__0
+  PanicNilError.TypeAssumptions.«get__#0»
+  PanicNilError.TypeAssumptions.«set__#0»
 
 class Pinner.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Pinner.underlying Pinner
@@ -716,15 +716,15 @@ attribute [instance] xRegs.TypeAssumptions.type_repr
 class xRegState.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying xRegState.underlying xRegState
   underlying : go.UnderlyingDirectedEq xRegState.ty xRegState.underlying
-  get__0 : ∀ (x : xRegState), go.IsGoStepPureDetTagged under (StructFieldGet xRegState.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : xRegState) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet xRegState.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : xRegState)))
+  «get__#0» : ∀ (x : xRegState), go.IsGoStepPureDetTagged under (StructFieldGet xRegState.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : xRegState) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet xRegState.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : xRegState)))
   get_regs : ∀ (x : xRegState), go.IsGoStepPureDetTagged under (StructFieldGet xRegState.underlying go!"regs") #x (Val #(x.regs'))
   set_regs : ∀ (x : xRegState) (y : xRegs), go.IsGoStepPureDetTagged under (StructFieldSet xRegState.underlying go!"regs") (PairV #x #y) (Val #(({ x with regs' := y } : xRegState)))
 
 attribute [instance] xRegState.TypeAssumptions.type_repr
   xRegState.TypeAssumptions.underlying
-  xRegState.TypeAssumptions.get__0
-  xRegState.TypeAssumptions.set__0
+  xRegState.TypeAssumptions.«get__#0»
+  xRegState.TypeAssumptions.«set__#0»
   xRegState.TypeAssumptions.get_regs
   xRegState.TypeAssumptions.set_regs
 

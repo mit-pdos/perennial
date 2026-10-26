@@ -1437,7 +1437,7 @@ attribute [instance] Mutex.TypeAssumptions.type_repr
 
 structure Once [FfiSyntax] where
   mk ::
-  _0' : noCopy
+  «_#0'» : noCopy
   done' : _root_.Perennial.sync.atomic.Bool'
   m' : Mutex
 
@@ -1445,7 +1445,7 @@ noncomputable instance Once.zero_val [FfiSyntax] : ZeroVal Once :=
   ⟨Once.mk zeroValDef zeroValDef zeroValDef⟩
 
 @[reducible] noncomputable def Once.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" noCopy.ty),
+  [(go.field_decl.FieldDecl go!"_#0" noCopy.ty),
 (go.field_decl.FieldDecl go!"done" _root_.Perennial.sync.atomic.Bool'.ty),
 (go.field_decl.FieldDecl go!"m" Mutex.ty)]
 
@@ -1462,8 +1462,8 @@ noncomputable instance equals_unfold_Once [FfiSyntax] [GoGlobalContext] :
 class Once.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Once.underlying Once
   underlying : go.UnderlyingDirectedEq Once.ty Once.underlying
-  get__0 : ∀ (x : Once), go.IsGoStepPureDetTagged under (StructFieldGet Once.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : Once) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Once.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : Once)))
+  «get__#0» : ∀ (x : Once), go.IsGoStepPureDetTagged under (StructFieldGet Once.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : Once) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Once.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Once)))
   get_done : ∀ (x : Once), go.IsGoStepPureDetTagged under (StructFieldGet Once.underlying go!"done") #x (Val #(x.done'))
   set_done : ∀ (x : Once) (y : _root_.Perennial.sync.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet Once.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : Once)))
   get_m : ∀ (x : Once), go.IsGoStepPureDetTagged under (StructFieldGet Once.underlying go!"m") #x (Val #(x.m'))
@@ -1473,8 +1473,8 @@ class Once.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSem
 
 attribute [instance] Once.TypeAssumptions.type_repr
   Once.TypeAssumptions.underlying
-  Once.TypeAssumptions.get__0
-  Once.TypeAssumptions.set__0
+  Once.TypeAssumptions.«get__#0»
+  Once.TypeAssumptions.«set__#0»
   Once.TypeAssumptions.get_done
   Once.TypeAssumptions.set_done
   Once.TypeAssumptions.get_m

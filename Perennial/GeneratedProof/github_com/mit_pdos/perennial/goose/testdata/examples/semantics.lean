@@ -139,6 +139,63 @@ noncomputable instance pair_access_store_b (l : Loc) (v : github_com.mit_pdos.pe
 end def_
 end pair
 
+namespace blankFieldStruct
+section def_
+
+variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
+
+noncomputable instance blankFieldStruct_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct where
+  typedPointstoDef l v dq := iprop(
+    "x" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct go!"x" l) v.x' dq ∗
+    "«_#1»" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct go!"_#1" l) v.«_#1'» dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance blankFieldStruct_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance blankFieldStruct_access_load_x (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct go!"x" l) v.x' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct go!"x" l) v.x' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance blankFieldStruct_access_store_x (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct) (x' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct go!"x" l) v.x' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct go!"x" l) x' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with x' := x' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «blankFieldStruct_access_load__#1» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct go!"_#1" l) v.«_#1'» dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct go!"_#1" l) v.«_#1'» dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «blankFieldStruct_access_store__#1» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct) («_#1'» : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct go!"_#1" l) v.«_#1'» (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct go!"_#1" l) «_#1'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#1'» := «_#1'» } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.blankFieldStruct) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end blankFieldStruct
+
 namespace evalCounter
 section def_
 

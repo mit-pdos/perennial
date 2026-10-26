@@ -50,7 +50,7 @@ variable [package_sem' : internal.runtime.sys.Assumptions]
 noncomputable instance NotInHeap_typed_pointsto :
     TypedPointsto (GF := GF) internal.runtime.sys.NotInHeap where
   typedPointstoDef l v dq := iprop(
-    "_0" ∷ typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_0" l) v._0' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_#0" l) v.«_#0'» dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
@@ -60,19 +60,19 @@ noncomputable instance NotInHeap_into_val_typed :
     IntoValTypedUnderlying (GF := GF) internal.runtime.sys.NotInHeap internal.runtime.sys.NotInHeap.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance NotInHeap_access_load__0 (l : Loc) (v : internal.runtime.sys.NotInHeap) (dq : DFrac) :
+noncomputable instance «NotInHeap_access_load__#0» (l : Loc) (v : internal.runtime.sys.NotInHeap) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_0" l) v._0' dq)
-      (typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_0" l) v._0' dq)
+      (typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance NotInHeap_access_store__0 (l : Loc) (v : internal.runtime.sys.NotInHeap) (_0' : internal.runtime.sys.nih) :
+noncomputable instance «NotInHeap_access_store__#0» (l : Loc) (v : internal.runtime.sys.NotInHeap) («_#0'» : internal.runtime.sys.nih) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_0" l) v._0' (DFrac.own 1))
-      (typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_0" l) _0' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with _0' := _0' } : internal.runtime.sys.NotInHeap) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_#0" l) «_#0'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : internal.runtime.sys.NotInHeap) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

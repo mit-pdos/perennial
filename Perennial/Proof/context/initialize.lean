@@ -56,7 +56,7 @@ theorem context.initialize'.wp_proof
   ihave Hgo : sync.atomic.ownInt32 (globalAddr goroutines) (DFrac.own 1) (W32 0) $$ [Hgo]
   · rw [sync.atomic.ownInt32_unseal]
     unfold sync.atomic.ownInt32Def
-    rw [show ({ _0' := zero_val _, v' := W32 0 } : sync.atomic.Int32) =
+    rw [show ({ «_#0'» := zero_val _, v' := W32 0 } : sync.atomic.Int32) =
       zero_val sync.atomic.Int32 from rfl]
     iexact Hgo
   imod inv_alloc nroot ⊤ iprop(∃ g, sync.atomic.ownInt32 (globalAddr context.goroutines)

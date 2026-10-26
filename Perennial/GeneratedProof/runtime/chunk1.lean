@@ -482,7 +482,7 @@ variable [package_sem' : runtime.Assumptions]
 noncomputable instance debugLogBuf_typed_pointsto :
     TypedPointsto (GF := GF) runtime.debugLogBuf where
   typedPointstoDef l v dq := iprop(
-    "_0" ∷ typedPointsto (structFieldRef runtime.debugLogBuf go!"_0" l) v._0' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef runtime.debugLogBuf go!"_#0" l) v.«_#0'» dq ∗
     "b" ∷ typedPointsto (structFieldRef runtime.debugLogBuf go!"b" l) v.b' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
@@ -493,19 +493,19 @@ noncomputable instance debugLogBuf_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.debugLogBuf runtime.debugLogBuf.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance debugLogBuf_access_load__0 (l : Loc) (v : runtime.debugLogBuf) (dq : DFrac) :
+noncomputable instance «debugLogBuf_access_load__#0» (l : Loc) (v : runtime.debugLogBuf) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.debugLogBuf go!"_0" l) v._0' dq)
-      (typedPointsto (structFieldRef runtime.debugLogBuf go!"_0" l) v._0' dq)
+      (typedPointsto (structFieldRef runtime.debugLogBuf go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef runtime.debugLogBuf go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance debugLogBuf_access_store__0 (l : Loc) (v : runtime.debugLogBuf) (_0' : internal.runtime.sys.NotInHeap) :
+noncomputable instance «debugLogBuf_access_store__#0» (l : Loc) (v : runtime.debugLogBuf) («_#0'» : internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.debugLogBuf go!"_0" l) v._0' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.debugLogBuf go!"_0" l) _0' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with _0' := _0' } : runtime.debugLogBuf) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.debugLogBuf go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.debugLogBuf go!"_#0" l) «_#0'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : runtime.debugLogBuf) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

@@ -340,7 +340,7 @@ variable [package_sem' : runtime.Assumptions]
 noncomputable instance traceBuf_typed_pointsto :
     TypedPointsto (GF := GF) runtime.traceBuf where
   typedPointstoDef l v dq := iprop(
-    "_0" ∷ typedPointsto (structFieldRef runtime.traceBuf go!"_0" l) v._0' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef runtime.traceBuf go!"_#0" l) v.«_#0'» dq ∗
     "traceBufHeader" ∷ typedPointsto (structFieldRef runtime.traceBuf go!"traceBufHeader" l) v.traceBufHeader' dq ∗
     "arr" ∷ typedPointsto (structFieldRef runtime.traceBuf go!"arr" l) v.arr' dq ∗
     "_" ∷ True)
@@ -352,19 +352,19 @@ noncomputable instance traceBuf_into_val_typed :
     IntoValTypedUnderlying (GF := GF) runtime.traceBuf runtime.traceBuf.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance traceBuf_access_load__0 (l : Loc) (v : runtime.traceBuf) (dq : DFrac) :
+noncomputable instance «traceBuf_access_load__#0» (l : Loc) (v : runtime.traceBuf) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceBuf go!"_0" l) v._0' dq)
-      (typedPointsto (structFieldRef runtime.traceBuf go!"_0" l) v._0' dq)
+      (typedPointsto (structFieldRef runtime.traceBuf go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef runtime.traceBuf go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceBuf_access_store__0 (l : Loc) (v : runtime.traceBuf) (_0' : internal.runtime.sys.NotInHeap) :
+noncomputable instance «traceBuf_access_store__#0» (l : Loc) (v : runtime.traceBuf) («_#0'» : internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceBuf go!"_0" l) v._0' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.traceBuf go!"_0" l) _0' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with _0' := _0' } : runtime.traceBuf) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.traceBuf go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.traceBuf go!"_#0" l) «_#0'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : runtime.traceBuf) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 

@@ -173,13 +173,13 @@ attribute [instance] nih.TypeAssumptions.type_repr
 
 structure NotInHeap [FfiSyntax] where
   mk ::
-  _0' : nih
+  «_#0'» : nih
 
 noncomputable instance NotInHeap.zero_val [FfiSyntax] : ZeroVal NotInHeap :=
   ⟨NotInHeap.mk zeroValDef⟩
 
 @[reducible] noncomputable def NotInHeap.fieldsUnsealed [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" nih.ty)]
+  [(go.field_decl.FieldDecl go!"_#0" nih.ty)]
 
 @[irreducible] noncomputable def NotInHeap.fields [FfiSyntax] [GoGlobalContext] : List go.field_decl :=
   NotInHeap.fieldsUnsealed
@@ -194,13 +194,13 @@ noncomputable instance equals_unfold_NotInHeap [FfiSyntax] [GoGlobalContext] :
 class NotInHeap.TypeAssumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying NotInHeap.underlying NotInHeap
   underlying : go.UnderlyingDirectedEq NotInHeap.ty NotInHeap.underlying
-  get__0 : ∀ (x : NotInHeap), go.IsGoStepPureDetTagged under (StructFieldGet NotInHeap.underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : NotInHeap) (y : nih), go.IsGoStepPureDetTagged under (StructFieldSet NotInHeap.underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : NotInHeap)))
+  «get__#0» : ∀ (x : NotInHeap), go.IsGoStepPureDetTagged under (StructFieldGet NotInHeap.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : NotInHeap) (y : nih), go.IsGoStepPureDetTagged under (StructFieldSet NotInHeap.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : NotInHeap)))
 
 attribute [instance] NotInHeap.TypeAssumptions.type_repr
   NotInHeap.TypeAssumptions.underlying
-  NotInHeap.TypeAssumptions.get__0
-  NotInHeap.TypeAssumptions.set__0
+  NotInHeap.TypeAssumptions.«get__#0»
+  NotInHeap.TypeAssumptions.«set__#0»
 
 class Assumptions [FfiSyntax] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   nih_instance : nih.TypeAssumptions
