@@ -50,6 +50,7 @@ public import Perennial.GooseLang.Lang
 public import Perennial.GooseLang.BoundedLang
 public import Perennial.GooseLang.Receipts
 public import Perennial.GooseLang.Threads
+public import Perennial.GooseLang.CrashToken
 
 @[expose] public section
 
@@ -503,24 +504,29 @@ class GooseGlobalGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
   /-- the global ghost state of the extensions -/
   gooseExtsGlobalGS : Exts.GlobalGS exts GooseInterp.interps GF
   /-- Time receipts, tied to the step fuel of the bounded semantics;
-  carries the time-receipt bound `receiptBound GF` -/
+  carries the time-receipt bound `receiptBound GF`. Global: the step bound
+  counts the steps of all generations. -/
   goose_receiptGS : ReceiptGS GF
-  /-- Thread tokens, tied to the thread fuel of the bounded semantics;
-  carries the thread bound `threadBound GF` -/
-  goose_threadGS : ThreadGS GF
 
-/-- Per-generation ("local") ghost state. -/
+/-- Per-generation ("local") ghost state: a crash (`CrashAdequacy.lean`)
+replaces it by a new one. -/
 class GooseLocalGS (GF : BundledGFunctors) where
   /-- the local ghost state of the extensions -/
   gooseExtsLocalGS : Exts.LocalGS exts GooseInterp.interps GF
   goose_go_local_context : GoLocalContext
   goose_na_heapGS : NaHeapGS Loc val GF
   goose_go_stateGS : GoStateGS GF
+  /-- Thread tokens, tied to the thread fuel of the bounded semantics;
+  carries the thread bound `threadBound GF`. Per generation: a crash kills
+  every thread. -/
+  goose_threadGS : ThreadGS GF
+  /-- The generation's crash token (`notCrashed`, `crashed`) -/
+  goose_crashGS : CrashGS GF
 
 attribute [reducible, instance] GooseGlobalGS.gooseAllG GooseGlobalGS.goose_prophGS
-  GooseGlobalGS.goose_receiptGS GooseGlobalGS.goose_threadGS
+  GooseGlobalGS.goose_receiptGS GooseLocalGS.goose_threadGS
   GooseLocalGS.goose_go_local_context
-  GooseLocalGS.goose_na_heapGS GooseLocalGS.goose_go_stateGS
+  GooseLocalGS.goose_na_heapGS GooseLocalGS.goose_go_stateGS GooseLocalGS.goose_crashGS
 
 /-- Bundles the global and local ghost state (not including `GoGlobalContext`). -/
 class HeapGS (hlc : outParam HasLC) (GF : BundledGFunctors) where
@@ -564,11 +570,11 @@ def gooseStateInterp [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
     prophMapInterp κs σ.2.usedProphId)
 
 /-- The state interpretation of the bounded language: `gooseStateInterp` of
-the real configuration, the authoritative receipt counter for the step fuel and
-the thread tokens of the thread fuel. -/
+the real configuration, the authoritative receipt counter for the step fuel,
+the thread tokens of the thread fuel and the generation's `notCrashed`. -/
 def gooseBstateInterp [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
     (σ : BcfgState) (κs : List Observation) : IProp GF :=
-  iprop(gooseStateInterp σ.1 κs ∗ receiptFuel σ.2.steps ∗ threadFuel σ.2.threads)
+  iprop(gooseStateInterp σ.1 κs ∗ receiptFuel σ.2.steps ∗ threadFuel σ.2.threads ∗ notCrashed)
 
 instance goose_stateInterp [GooseGlobalGS hlc GF] [GooseLocalGS GF] :
     StateInterp BcfgState Observation GF where
@@ -946,7 +952,8 @@ theorem goose_stateInterp_eq (σ : CfgState) (ns : Nat) (κs : List Observation)
 theorem goose_bstateInterp_eq (σ : CfgState) (c : Fuel) (ns : Nat) (κs : List Observation)
     (nt : Nat) :
     stateInterp (GF := GF) ((σ, c) : BcfgState) ns κs nt ⊣⊢
-      iprop(gooseCfgInterp σ ns κs nt ∗ receiptFuel c.steps ∗ threadFuel c.threads) := .rfl
+      iprop(gooseCfgInterp σ ns κs nt ∗ receiptFuel c.steps ∗ threadFuel c.threads ∗
+        notCrashed) := .rfl
 
 theorem goose_baseReducible_of {e : Expr} {σ : CfgState} {c : Fuel} (hnc : redexKind e = .plain)
     (hnu : ∀ p, ¬ Unwinds e p) (h : GooseBaseReducible e σ) :
@@ -977,7 +984,7 @@ theorem goose_wp_lift_base_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal
   iapply wp_lift_base_step h
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   rcases σ₁ with ⟨σ, c⟩
-  icases (goose_bstateInterp_eq σ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
+  icases (goose_bstateInterp_eq σ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht, Hnc⟩
   imod H $$ %σ %ns %obs %obs' %nt Hσ with ⟨%Hred, H⟩
   imodintro
   isplitr
@@ -1006,7 +1013,7 @@ theorem goose_wp_lift_atomic_base_step {e₁ : Expr} {Φ : val → IProp GF} (h 
   iapply wp_lift_atomic_base_step h
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   rcases σ₁ with ⟨σ, c⟩
-  icases (goose_bstateInterp_eq σ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
+  icases (goose_bstateInterp_eq σ c ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht, Hnc⟩
   imod H $$ %σ %ns %obs %obs' %nt Hσ with ⟨%Hred, H⟩
   imodintro
   isplitr
@@ -1593,7 +1600,7 @@ theorem wp_ThreadExit (Φ : val → IProp GF) :
   iapply wp_lift_atomic_base_step rfl
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   rcases σ₁ with ⟨σ, ⟨c, t⟩⟩
-  icases (goose_bstateInterp_eq σ ⟨c, t⟩ ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
+  icases (goose_bstateInterp_eq σ ⟨c, t⟩ ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht, Hnc⟩
   icases (goose_stateInterp_eq σ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hext, Hgs, %Hlctx, Hgext, Hproph⟩
   imodintro
@@ -1609,14 +1616,14 @@ theorem wp_ThreadExit (Φ : val → IProp GF) :
     obtain ⟨rfl, rfl, rfl, rfl⟩ :=
       baseStep_ThreadExit_inv (baseStep_of_headStep not_unwinds_ThreadExit Hb)
     imodintro
-    isplitl [Hheap Hext Hgs Hgext Hproph Hc Ht Htok]
+    isplitl [Hheap Hext Hgs Hgext Hproph Hc Ht Hnc Htok]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
       isplitl [Hheap Hext Hgs Hgext Hproph]
       · iapply (goose_stateInterp_eq _ _ _ _).mpr
         dsimp only [List.nil_append]
         iframe
         ipureintro; exact Hlctx
-      · iframe Hc
+      · iframe Hc Hnc
         iapply (threadFuel_exit (GF := GF) t)
         iframe
     isplitl [HΦ]
@@ -1667,7 +1674,7 @@ theorem wp_fork_tok_upd (e : Expr) (Φ : val → IProp GF) :
   iapply wp_lift_step rfl
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   rcases σ₁ with ⟨σ, ⟨c, t⟩⟩
-  icases (goose_bstateInterp_eq σ ⟨c, t⟩ ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
+  icases (goose_bstateInterp_eq σ ⟨c, t⟩ ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht, Hnc⟩
   icases (goose_stateInterp_eq σ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hext, Hgs, %Hlctx, Hgext, Hproph⟩
   have Hred : BaseStep.Reducible (Fork e, ((σ, ⟨c, t⟩) : BcfgState)) := by
@@ -1695,9 +1702,9 @@ theorem wp_fork_tok_upd (e : Expr) (Φ : val → IProp GF) :
     imod Hclose
     imod H $$ Htok Hcred with ⟨He, HΦ⟩
     imodintro
-    isplitl [Hheap Hext Hgs Hgext Hproph Hc Ht]
+    isplitl [Hheap Hext Hgs Hgext Hproph Hc Ht Hnc]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
-      iframe Hc Ht
+      iframe Hc Ht Hnc
       iapply (goose_stateInterp_eq _ _ _ _).mpr
       dsimp only [List.nil_append]
       iframe
@@ -1710,9 +1717,9 @@ theorem wp_fork_tok_upd (e : Expr) (Φ : val → IProp GF) :
   | forkStutter =>
     imod Hclose
     imodintro
-    isplitl [Hheap Hext Hgs Hgext Hproph Hc Ht]
+    isplitl [Hheap Hext Hgs Hgext Hproph Hc Ht Hnc]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
-      iframe Hc Ht
+      iframe Hc Ht Hnc
       iapply (goose_stateInterp_eq _ _ _ _).mpr
       dsimp only [List.nil_append]
       iframe
@@ -1799,7 +1806,7 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
   iapply wp_lift_step (EctxLanguage.fill_not_val K _ rfl)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
   rcases σ₁ with ⟨σ₁, ⟨c, t⟩⟩
-  icases (goose_bstateInterp_eq σ₁ ⟨c, t⟩ ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht⟩
+  icases (goose_bstateInterp_eq σ₁ ⟨c, t⟩ ns (obs ++ obs') nt).1 $$ Hσ with ⟨Hσ, Hc, Ht, Hnc⟩
   icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
     ⟨Hheap, Hext, Hgs, %Hlctx, Hgext, Hproph⟩
   obtain ⟨e', s', h⟩ := Hok σ₁.1.goState.packageState
@@ -1831,9 +1838,9 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
     · iframe Hc; iexact Hm
     imod HΦ $$ %e₂' %_ %s' %Hgo Hcred Hr Hm' Hgs with ⟨Hgs, Hwp⟩
     imodintro
-    isplitl [Hheap Hext Hgs Hgext Hproph Hc Ht]
+    isplitl [Hheap Hext Hgs Hgext Hproph Hc Ht Hnc]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
-      iframe Hc Ht
+      iframe Hc Ht Hnc
       iapply (goose_stateInterp_eq _ _ _ _).mpr
       dsimp only [List.nil_append]
       iframe
@@ -1844,9 +1851,9 @@ theorem wp_GoInstruction_preceipt (K : List EctxItem) (op : GoInstruction) (arg 
   | stutter _ _ =>
     imod Hclose
     imodintro
-    isplitl [Hheap Hext Hgs Hgext Hproph Hc Ht]
+    isplitl [Hheap Hext Hgs Hgext Hproph Hc Ht Hnc]
     · iapply (goose_bstateInterp_eq _ _ _ _ _).2
-      iframe Hc Ht
+      iframe Hc Ht Hnc
       iapply (goose_stateInterp_eq _ _ _ _).mpr
       dsimp only [List.nil_append]
       iframe

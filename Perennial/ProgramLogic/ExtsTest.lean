@@ -52,6 +52,7 @@ end step
 
 instance tick_semantics : ExtSemantics tickExt where
   step := TickStep
+  crash _ _ := True
 
 instance tick_interp : ExtInterp tickExt where
   LocalGS _ := Unit

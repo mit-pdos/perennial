@@ -99,6 +99,7 @@ globs = [
   "Perennial.Golang.Theory.TacticsSimpAttr",
   "Perennial.GooseLang.BoundedLang",
   "Perennial.GooseLang.Countable",
+  "Perennial.GooseLang.CrashToken",
   "Perennial.GooseLang.Ext",
   "Perennial.GooseLang.Ext.GenHeap",
   "Perennial.GooseLang.Ext.Grove.Impl",

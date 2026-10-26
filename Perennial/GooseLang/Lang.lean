@@ -5,7 +5,8 @@ GooseLang is an adaptation of HeapLang with extensions to model Go. Its primitiv
 operations can be extended (a disk, a network, ...): a program runs against a
 closed list of extensions (`GooseExts`, see `Perennial/GooseLang/Ext.lean`).
 
-* There is no crash semantics (`goose_crash`).
+* Crashes: `Crash σ σ'` relates the local state before a crash and restart to
+  the one the restart begins with (section "Crashes").
 * The base step is an inductive relation (`base_step`). An extension's step
   (`ExtSemantics.step`) is a plain relation, which sees and changes only the
   heap and the extension's own state; `extStep` dispatches an `ExternalOp` to
@@ -504,11 +505,16 @@ it: `step o v h s g e' h' s' g'` says that the operation `o` of `E` applied to
 `e'`, heap `h'` and states `s'` and `g'`. A step changes nothing else (not the
 other extensions' states, nor the thread count). The step is generic over the
 list of extensions; it uses `ElemExt E` only to build `E`'s own operations and
-values in `e'` (`extOp`, `extVal`), so it does not depend on the rest of the list. -/
+values in `e'` (`extOp`, `extVal`), so it does not depend on the rest of the list.
+
+`crash s s'` says that a crash and restart of the node can turn `E`'s local
+state `s` into `s'` (a durable disk keeps its contents, a volatile one may be
+arbitrary); a crash does not change the global state. -/
 class ExtSemantics (E : GooseExt) where
   step : ∀ [GooseExts] [ElemExt E] [GoGlobalContext], E.Op → val →
     GMap Loc (NonAtomic val) → E.LocalState → E.GlobalState →
     Expr → GMap Loc (NonAtomic val) → E.LocalState → E.GlobalState → Prop
+  crash : E.LocalState → E.LocalState → Prop
 
 /-- The semantics of the extensions of the program: one `ExtSemantics` for each. -/
 class GooseSemantics [GooseExts] where
@@ -541,6 +547,36 @@ theorem extStep_threads {o : ExtsOp exts} {v : val} {σg : CfgState} {e' : Expr}
   obtain ⟨_, _, _, _, rfl⟩ := h; rfl
 
 end ext_step
+
+/-! ## Crashes
+
+A crash of the node kills every thread and restarts it with a new program (the
+recovery procedure, `RealCrashNsteps` in `CrashLang.lean`). `Crash σ σ'` relates
+the local state before the crash to the one the restart begins with:
+
+* the heap of `σ'` is unrelated to that of `σ` (memory is volatile): any heap;
+* the Go runtime restarts: the local context `goLctx` (the semantics of the Go
+  instructions) is the same, and no package is initialized;
+* each extension's local state crashes by the extension's `ExtSemantics.crash`.
+
+A crash does not change the global state except the thread count, which is the
+restarted main thread's: `GlobalState.crash`. -/
+
+/-- The crash relations of the extensions of `l`, componentwise. -/
+def ExtsCrash : (l : List GooseExt) → ExtTuple ExtSemantics l → ExtsLocalState l →
+    ExtsLocalState l → Prop
+  | [], _, _, _ => True
+  | _ :: l, Ss, w, w' => Ss.1.crash w.1 w'.1 ∧ ExtsCrash l Ss.2 w.2 w'.2
+
+/-- A crash turns the local state `σ` into `σ'` (see above); `σ'.heap` is arbitrary. -/
+structure Crash [GooseExts] [GooseSemantics] (σ σ' : state) : Prop where
+  goLctx : σ'.goState.goLctx = σ.goState.goLctx
+  packageState : σ'.goState.packageState = ∅
+  world : ExtsCrash exts GooseSemantics.sems σ.world σ'.world
+
+/-- The global state after a crash: unchanged, but for the thread count, which
+is that of the restarted main thread. -/
+def GlobalState.crash [GooseExts] (g : GlobalState) : GlobalState := { g with threads := 1 }
 
 /-! ## Evaluation contexts and substitution -/
 

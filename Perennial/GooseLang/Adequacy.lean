@@ -124,10 +124,12 @@ theorem goose_init [hPre : GooseGpreS GF] [Hinv : InvGS_gen .hasLC GF]
   letI := hPre.goosePreGAllG
   imod receipt_init N hN with ⟨%γR, %γL, HR⟩
   imod thread_init T hT with ⟨%γT, HT⟩
+  imod crashToken_init with ⟨%γC, HC⟩
   let G : GooseGlobalGS .hasLC GF :=
-    ⟨Hinv, hPre.goosePreGAllG, hProph, hFG, ⟨γR, γL, N, hN⟩, ⟨γT, T, hT⟩⟩
+    ⟨Hinv, hPre.goosePreGAllG, hProph, hFG, ⟨γR, γL, N, hN⟩⟩
   let L : GooseLocalGS GF :=
-    ⟨hFL, σ.goState.goLctx, hHeap, goStateGSUpdatePre GF hPre.goose_preG_go_state γ⟩
+    ⟨hFL, σ.goState.goLctx, hHeap, goStateGSUpdatePre GF hPre.goose_preG_go_state γ,
+      ⟨γT, T, hT⟩, ⟨γC⟩⟩
   let hG : HeapGS .hasLC GF := ⟨G, L⟩
   -- the main thread's token and the thread fuel
   have Hsplit := (threadToks_add (hT := ⟨γT, T, hT⟩) (T - 2) 1).1
@@ -172,7 +174,7 @@ theorem goose_adequacy_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < N) (hT
   iexists (fun σ κs => gooseBstateInterp (G := hG.goose_globalGS) (L := hG.goose_localGS) σ κs)
   iexists (fun v => iprop(⌜val.isPanic v = false⌝))
   iframe Hσ
-  obtain ⟨⟨Ginv, Gproph, Gext, Grcpt, Gthr⟩, L⟩ := hG
+  obtain ⟨⟨Ginv, Gproph, Gext, Grcpt⟩, L⟩ := hG
   cases HinvEq
   iexact Hwp
 
@@ -208,7 +210,7 @@ theorem goose_adequacy_nopanic_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 
   iexists (fun v => iprop(⌜val.isPanic v = false⌝))
   iexists (fun _ _ _ _ => fupd_intro)
   iframe Hσ
-  obtain ⟨⟨Ginv, Gproph, Gext, Grcpt, Gthr⟩, L⟩ := hG
+  obtain ⟨⟨Ginv, Gproph, Gext, Grcpt⟩, L⟩ := hG
   cases HinvEq
   isplitl [Hwp]
   · iapply BigSepL2.bigSepL2_singleton.2
@@ -332,14 +334,14 @@ theorem goose_invariance_blang [hPre : GooseGpreS GF] (N T : Nat) (hN : 0 < N) (
   iexists (fun σ κs _ => gooseBstateInterp (G := hG.goose_globalGS) (L := hG.goose_localGS) σ κs)
   iexists (fun v => iprop(⌜val.isPanic v = false⌝))
   iframe Hσ
-  obtain ⟨⟨Ginv, Gproph, Gext, Grcpt, Gthr⟩, L⟩ := hG
+  obtain ⟨⟨Ginv, Gproph, Gext, Grcpt⟩, L⟩ := hG
   cases HinvEq
   isplitl [Hwp]
   · iexact Hwp
   iintro Hσ2
   iexists ∅
   unfold gooseBstateInterp gooseStateInterp
-  icases Hσ2 with ⟨⟨-, -, -, -, Hg, -⟩, -⟩
+  icases Hσ2 with ⟨⟨-, -, -, -, Hg, -⟩, -, -, -⟩
   iapply Hφ $$ Hg
 
 /-- Invariance (real semantics): under the same hypotheses as `goose_adequacy`,
