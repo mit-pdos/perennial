@@ -103,20 +103,12 @@ class GoSemanticsFunctions [FfiSyntax] where
 
   arrayIndexRef (elem_type : Type) (i : Int) (l : Loc) : Loc
 
-  mapEmpty : val → val
-  mapLookup : val → val → Bool × val
-  mapInsert : val → val → val → val
-  mapDelete : val → val → val
-  is_map_domain : val → List val → Prop
-
-  is_map_pure (v : val) (m : val → Bool × val) : Prop
-  mapDefault : val → val
   [float_ops : FloatOps]
 
 attribute [instance] GoSemanticsFunctions.float_ops
 
 export GoSemanticsFunctions (underlying globalAddr functions methods methodSet structFieldRef
-  arrayIndexRef mapEmpty mapLookup mapInsert mapDelete is_map_domain is_map_pure mapDefault)
+  arrayIndexRef)
 
 /-- The class form of `GoSemanticsFunctions.TypeRepr` (`V` is an output). -/
 class TypeRepr [FfiSyntax] [GoSemanticsFunctions] (t : go.GoType) (V : outParam Type) [ZeroVal V] :

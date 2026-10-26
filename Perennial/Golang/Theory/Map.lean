@@ -5,6 +5,13 @@ clear, `for range`).
 
 Notes:
 * Maps are `Perennial.gmap K V`, which only needs `DecidableEq K`.
+* The map instructions compare keys with Go's `==` (see `Perennial/Golang/Defn/Map.lean`), so
+  the specs need, of the key `k` an operation is given, that `k == k'` returns
+  `decide (k = k')` for every `k' : K` (`SafeMapKey`): an `==` that is equality of values, at
+  `k`. Every strictly comparable key type has it (`safeMapKey_of_go_eq`); a float `NaN` key, or
+  an interface key holding one, does not.
+* `ownMap` represents `m` by its entries in some order (`map.lookupL`), each with the id
+  `(k, 0)` (`map.toE`).
 * In `wp_map_for_range`, the fact that `keys` lists the domain of `m` is stated
   as `∀ k, k ∈ keys ↔ (m !! k).isSome`.
 * `map.forRange` does not hold the map across the body, so a body may write the
@@ -29,43 +36,298 @@ namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
+/-- The keys a map points-to of key type `K` may hold. All of `K` (`mapKeys_all`), but for
+interfaces (`mapKeys_interface`): the model does not type an interface's dynamic value, so `==`
+between two interfaces is known only for some forms. A proof that needs other interface keys can
+give its own instance. -/
+class MapKeys (K : Type) where
+  keyOk : K → Prop
+
+instance (priority := low) mapKeys_all (K : Type) : MapKeys K := ⟨fun _ => True⟩
+
+/-- Interface keys: `nil`, or a pointer. -/
+instance mapKeys_interface [FfiSyntax] [GoGlobalContext] : MapKeys GoInterface :=
+  ⟨fun i => i = interface.nil ∨ ∃ (t : go.GoType) (l : Loc), i = interface.mkOk (go.PointerType t) #l⟩
+
+/-! ## Maps as lists of entries -/
+
+namespace map
+section pure
+variable [FfiSyntax] [GoGlobalContext]
+variable {K V : Type} [DecidableEq K]
+
+/-- The id of the entry of key `k` (`freshId` of a key no entry has). -/
+def keyId (k : K) : val := PairV #k (idV 0)
+
+/-- The entry `k ↦ v`. -/
+def toE (p : K × V) : Entry := ⟨keyId p.1, #p.1, #p.2⟩
+
+def lookupL (k : K) : List (K × V) → Option V
+  | [] => none
+  | p :: ps => if k = p.1 then some p.2 else lookupL k ps
+
+def insertL (k : K) (v : V) : List (K × V) → List (K × V)
+  | [] => [(k, v)]
+  | p :: ps => if k = p.1 then (k, v) :: ps else p :: insertL k v ps
+
+def deleteL (k : K) : List (K × V) → List (K × V)
+  | [] => []
+  | p :: ps => if k = p.1 then ps else p :: deleteL k ps
+
+theorem lookupL_eq_none_iff (k : K) (ps : List (K × V)) :
+    lookupL k ps = none ↔ k ∉ ps.map Prod.fst := by
+  induction ps with
+  | nil => simp [lookupL]
+  | cons p ps ih =>
+    by_cases h : k = p.1 <;> simp [lookupL, h, ih]
+
+theorem lookupL_insertL (k k' : K) (v : V) (ps : List (K × V)) :
+    lookupL k' (insertL k v ps) = if k' = k then some v else lookupL k' ps := by
+  induction ps with
+  | nil => simp [lookupL, insertL]
+  | cons p ps ih =>
+    obtain ⟨pk, pv⟩ := p
+    by_cases h : k = pk
+    · subst h; by_cases h' : k' = k <;> simp [lookupL, insertL, h']
+    · by_cases h' : k' = pk
+      · subst h'; simp [lookupL, insertL, h, Ne.symm h]
+      · simp [lookupL, insertL, h, h', ih]
+
+theorem mem_keys_insertL (k k' : K) (v : V) (ps : List (K × V)) :
+    k' ∈ (insertL k v ps).map Prod.fst ↔ k' = k ∨ k' ∈ ps.map Prod.fst := by
+  induction ps with
+  | nil => simp [insertL]
+  | cons p ps ih =>
+    by_cases h : k = p.1
+    · subst h; simp [insertL]
+    · simp only [insertL, h, ite_false, List.map_cons, List.mem_cons, ih]
+      exact or_left_comm
+
+theorem nodup_insertL (k : K) (v : V) (ps : List (K × V)) (h : (ps.map Prod.fst).Nodup) :
+    ((insertL k v ps).map Prod.fst).Nodup := by
+  induction ps with
+  | nil => simp [insertL]
+  | cons p ps ih =>
+    rw [List.map_cons, List.nodup_cons] at h
+    by_cases hk : k = p.1
+    · subst hk; simpa [insertL] using h
+    · simp only [insertL, hk, ite_false, List.map_cons, List.nodup_cons, mem_keys_insertL]
+      refine ⟨?_, ih h.2⟩
+      rintro (h' | h')
+      · exact hk h'.symm
+      · exact h.1 h'
+
+theorem keyOk_insertL [MapKeys K] (k : K) (v : V) (ps : List (K × V))
+    (h : ∀ p ∈ ps, MapKeys.keyOk p.1) (hk : MapKeys.keyOk k) :
+    ∀ p ∈ insertL k v ps, MapKeys.keyOk p.1 := by
+  induction ps with
+  | nil => simpa [insertL] using hk
+  | cons p ps ih =>
+    by_cases hp : k = p.1
+    · simp only [insertL, hp, ite_true, List.mem_cons]
+      rintro q (rfl | hq)
+      · rw [← hp]; exact hk
+      · exact h q (List.mem_cons_of_mem _ hq)
+    · simp only [insertL, hp, ite_false, List.mem_cons]
+      rintro q (rfl | hq)
+      · exact h q (List.mem_cons_self ..)
+      · exact ih (fun q hq => h q (List.mem_cons_of_mem _ hq)) q hq
+
+theorem deleteL_sublist (k : K) (ps : List (K × V)) : (deleteL k ps).Sublist ps := by
+  induction ps with
+  | nil => simp [deleteL]
+  | cons p ps ih =>
+    by_cases h : k = p.1
+    · simp only [deleteL, h, ite_true]; exact List.sublist_cons_self _ _
+    · simp only [deleteL, h, ite_false]; exact ih.cons₂ _
+
+theorem nodup_deleteL (k : K) (ps : List (K × V)) (h : (ps.map Prod.fst).Nodup) :
+    ((deleteL k ps).map Prod.fst).Nodup :=
+  h.sublist ((deleteL_sublist k ps).map _)
+
+theorem lookupL_deleteL (k k' : K) (ps : List (K × V)) (hnd : (ps.map Prod.fst).Nodup) :
+    lookupL k' (deleteL k ps) = if k' = k then none else lookupL k' ps := by
+  induction ps with
+  | nil => simp [lookupL, deleteL]
+  | cons p ps ih =>
+    rw [List.map_cons, List.nodup_cons] at hnd
+    obtain ⟨pk, pv⟩ := p
+    by_cases h : k = pk
+    · subst h
+      by_cases h' : k' = k
+      · subst h'; simp only [deleteL, ite_true]; exact (lookupL_eq_none_iff _ _).2 hnd.1
+      · simp [deleteL, lookupL, h']
+    · by_cases h' : k' = pk
+      · subst h'; simp [lookupL, deleteL, h, Ne.symm h]
+      · simp [lookupL, deleteL, h, h', ih hnd.2]
+
+variable [go.IntoValInj K]
+
+theorem keyId_inj : Function.Injective (keyId (K := K)) := by
+  intro a b h
+  simp only [keyId, val.PairV.injEq] at h
+  exact go.intoVal_inj h.1
+
+theorem freshId_keyId (k : K) (ps : List (K × V)) (h : k ∉ ps.map Prod.fst) :
+    freshId #k (ps.map toE) = keyId k := by
+  have hfree : decide (PairV #k (idV 0) ∉ (ps.map toE).map (·.id)) = true := by
+    simp only [decide_eq_true_eq, List.map_map, List.mem_map, Function.comp_def, toE, not_exists,
+      not_and]
+    intro p hp heq
+    exact h (List.mem_map.2 ⟨p, hp, keyId_inj heq⟩)
+  simp only [freshId, List.range_succ_eq_map, List.find?_cons, hfree, Option.getD_some]
+  rfl
+
+theorem lookupIdVal_keyId (dv : val) (k : K) (ps : List (K × V)) :
+    lookupIdVal dv (ps.map toE) (keyId k) =
+      (match lookupL k ps with
+       | some v => PairV (PairV #k #v) #true
+       | none => PairV (PairV #() dv) #false) := by
+  induction ps with
+  | nil => simp [lookupIdVal, lookupL]
+  | cons p ps ih =>
+    by_cases h : k = p.1
+    · subst h; simp [lookupIdVal, lookupL, toE]
+    · have h' : ¬ keyId p.1 = keyId k := fun e => h (keyId_inj e).symm
+      simp only [lookupIdVal, List.map_cons, List.find?_cons, toE, h', decide_false] at ih ⊢
+      simp only [lookupL, h, ite_false]
+      exact ih
+
+omit [DecidableEq K] in
+theorem toE_inj [go.IntoValInj V] : Function.Injective (toE (K := K) (V := V)) := by
+  intro a b h
+  simp only [toE, Entry.mk.injEq] at h
+  exact Prod.ext (go.intoVal_inj h.2.1) (go.intoVal_inj h.2.2)
+
+theorem entryV_inj : Function.Injective entryV := by
+  intro a b h
+  cases a; cases b
+  simp only [entryV, val.PairV.injEq] at h
+  obtain ⟨h1, h2, h3⟩ := h
+  subst h1 h2 h3; rfl
+
+theorem list_map_inj {α β : Type} (f : α → β) (hf : Function.Injective f) :
+    Function.Injective (List.map f) := by
+  intro l1 l2 h
+  induction l1 generalizing l2 with
+  | nil => cases l2 <;> simp_all
+  | cons a l1 ih =>
+    cases l2 with
+    | nil => simp at h
+    | cons b l2 =>
+      simp only [List.map_cons, List.cons.injEq] at h
+      rw [hf h.1, ih h.2]
+
+theorem mapV_inj (dv dv' : val) (es es' : List Entry) (h : mapV dv es = mapV dv' es') :
+    es = es' := by
+  simp only [mapV, val.PairV.injEq, val.ArrayV.injEq] at h
+  exact list_map_inj _ entryV_inj h.2
+
+end pure
+end map
+
 noncomputable section defns
 variable [ext : FfiSyntax] [ffi : FfiModel] [FfiInterp ffi] [FfiSemantics ext ffi]
 variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 
-/-- `k` is a safe map key at `key_type`: comparing it with itself does not
-panic (see the comment in `Perennial/Golang/Defn/Map.lean`). -/
-class SafeMapKey {K : Type} (key_type : go.GoType) (k : K) : Prop where
-  wp_go_eq_safe_map_key : ∀ (s : Stuckness) (E : CoPset) (Φ : val → IProp GF),
-    (∀ b : Bool, Φ #b) ⊢
-      WP (App (Val (GoInstruction (GoOp GoEquals key_type))) (Val (PairV #k #k))) @ s; E {{ Φ }}
+/-- `k` is a safe map key at `key_type` (see the comment in `Perennial/Golang/Defn/Map.lean`): a
+key a map may hold (`MapKeys.keyOk`), and comparing it with any such key `k'` does not panic and
+is equality of values. A float `NaN` is not one (`NaN != NaN`). -/
+class SafeMapKey {K : Type} [DecidableEq K] [keys : MapKeys K] (key_type : go.GoType) (k : K) :
+    Prop where
+  key_ok : MapKeys.keyOk k
+  wp_go_eq_map_key : ∀ (k' : K), MapKeys.keyOk k' → ∀ (s : Stuckness) (E : CoPset)
+    (Φ : val → IProp GF), Φ #(decide (k = k')) ⊢
+      WP (App (Val (GoInstruction (GoOp GoEquals key_type))) (Val (PairV #k #k'))) @ s; E {{ Φ }}
 
-export SafeMapKey (wp_go_eq_safe_map_key)
+export SafeMapKey (key_ok wp_go_eq_map_key)
 
-instance safe_map_key_is_go_eq {K : Type} (key_type : go.GoType) (k : K) (b : Bool)
-    [h : ⟦GoOp GoEquals key_type, (#k, #k)⟧ ⤳ #b] : SafeMapKey (GF := GF) key_type k where
-  wp_go_eq_safe_map_key s E Φ := by
+/-- A key type whose `==` is equality of values: every key is safe. -/
+instance safeMapKey_of_go_eq {K : Type} [DecidableEq K] (key_type : go.GoType) (k : K)
+    [h : ∀ k' : K, ⟦GoOp GoEquals key_type, (#k, #k')⟧ ⤳ #(decide (k = k'))] :
+    SafeMapKey (GF := GF) (keys := mapKeys_all K) key_type k where
+  key_ok := trivial
+  wp_go_eq_map_key k' _ s E Φ := by
     iintro HΦ
     wp_pures
     iapply HΦ
 
+theorem interface_mkOk_inj (t t' : go.GoType) (v v' : val) :
+    interface.mkOk t v = interface.mkOk t' v' ↔ t = t' ∧ v = v' := by
+  simp [interface.mkOk]
+
+/-- An interface key holding a pointer, at any interface key type. -/
+instance safeMapKey_interface_pointer (key_type : go.GoType) {elems : List go.InterfaceElem}
+    [key_type ↓u go.InterfaceType elems] (t : go.GoType) (l : Loc) :
+    SafeMapKey (GF := GF) key_type (interface.mkOk (go.PointerType t) #l) where
+  key_ok := Or.inr ⟨t, l, rfl⟩
+  wp_go_eq_map_key k' hk' s E Φ := by
+    rcases hk' with rfl | ⟨t', l', rfl⟩
+    · have h : decide (interface.mkOk (go.PointerType t) #l = (interface.nil : GoInterface)) =
+          false := by simp [interface.mkOk]
+      rw [h]
+      iintro HΦ
+      wp_auto
+      iapply HΦ
+    · by_cases ht : t = t'
+      · subst ht
+        have h : decide (interface.mkOk (go.PointerType t) #l =
+            interface.mkOk (go.PointerType t) #l') = decide (l = l') := by
+          simp only [interface_mkOk_inj, _root_.true_and]
+          by_cases hl : l = l'
+          · subst hl; simp
+          · have : ¬ (#l : val) = #l' := fun e => hl (GoGlobalContext.intoVal_inj_loc e)
+            simp [hl, this]
+        rw [h]
+        iintro HΦ
+        wp_auto
+        iapply HΦ
+      · have h : decide (interface.mkOk (go.PointerType t) #l =
+            interface.mkOk (go.PointerType t') #l') = false := by
+          simp [interface_mkOk_inj, ht]
+        have ht' : ¬ go.PointerType t = go.PointerType t' := by simpa using ht
+        rw [h]
+        iintro HΦ
+        wp_pures
+        rw [if_neg ht']
+        wp_auto
+        iapply HΦ
+
+/-- The nil interface as a key, at any interface key type. -/
+instance safeMapKey_interface_nil (key_type : go.GoType) {elems : List go.InterfaceElem}
+    [key_type ↓u go.InterfaceType elems] :
+    SafeMapKey (GF := GF) key_type (interface.nil : GoInterface) where
+  key_ok := Or.inl rfl
+  wp_go_eq_map_key k' hk' s E Φ := by
+    rcases hk' with rfl | ⟨t', l', rfl⟩
+    · rw [show decide ((interface.nil : GoInterface) = interface.nil) = true by simp]
+      iintro HΦ
+      wp_auto
+      iapply HΦ
+    · rw [show decide ((interface.nil : GoInterface) = interface.mkOk (go.PointerType t') #l') =
+        false by simp [interface.mkOk]]
+      iintro HΦ
+      wp_auto
+      iapply HΦ
+
 -- TODO: reading from nil map. Want to say that an owned map is not nil, which
 -- requires knowing that wp_ref gives non-null pointers.
 
-variable {K V : Type} [ZeroVal K] [DecidableEq K] [ZeroVal V] [go.IntoValInj K]
+variable {K V : Type} [ZeroVal K] [DecidableEq K] [MapKeys K] [ZeroVal V] [go.IntoValInj K]
+
+/-- `mv` is the map `m` with the entries `ps`. -/
+def map.Repr (m : GMap K V) (mv : val) (ps : List (K × V)) : Prop :=
+  mv = map.mapV #(zero_val V) (ps.map map.toE) ∧ (ps.map Prod.fst).Nodup ∧
+    (∀ p ∈ ps, MapKeys.keyOk p.1) ∧
+    ∀ k, m !! k = map.lookupL k ps
 
 /-- The map points-to. -/
 def ownMapDef (mptr : Loc) (dq : DFrac) (m : GMap K V) : IProp GF :=
-  iprop(∃ (mv : val) (mp : val → Bool × val),
+  iprop(∃ (mv : val) (ps : List (K × V)),
     "Hown" ∷ heapPointsto mptr dq mv ∗
-    "%His_map" ∷ ⌜is_map_pure mv mp⌝ ∗
-    "%Hagree" ∷ ⌜∀ k : K, mp #k = (match m !! k with
-                                   | none => (false, #(zero_val V))
-                                   | some v => (true, #v))⌝ ∗
-    "%Hdom" ∷ ⌜∀ kv, (mp kv).1 = true → ∃ k : K, kv = #k⌝ ∗
-    "%Hdefault" ∷ ⌜mapDefault mv = #(zero_val V)⌝)
+    "%Hrepr" ∷ ⌜map.Repr m mv ps⌝)
 
 @[irreducible] def ownMap (mptr : Loc) (dq : DFrac) (m : GMap K V) : IProp GF :=
   ownMapDef mptr dq m
@@ -88,11 +350,130 @@ variable [GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 variable {s : Stuckness} {E : CoPset}
-variable {K V : Type} [ZeroVal K] [DecidableEq K] [ZeroVal V] [go.IntoValInj K]
+variable {K V : Type} [ZeroVal K] [DecidableEq K] [MapKeys K] [ZeroVal V] [go.IntoValInj K]
+
+theorem map.mapV_not_panic (dv : val) (es : List map.Entry) : (map.mapV dv es).isPanic = false := by
+  simp [map.mapV]
+
+/-- The lookup instruction's comparisons, on the entries of `ps`. -/
+theorem wp_lookupExpr (key_type : go.GoType) (k : K) [Hk : SafeMapKey (GF := GF) key_type k]
+    (ps : List (K × V)) (hps : ∀ p ∈ ps, MapKeys.keyOk p.1) (Φ : val → IProp GF) :
+    Φ (match map.lookupL k ps with
+       | some v => PairV #v #true
+       | none => PairV #(zero_val V) #false) ⊢
+    WP (map.lookupExpr key_type #k #(zero_val V) (ps.map map.toE)) @ s; E {{ Φ }} := by
+  induction ps with
+  | nil =>
+    iintro HΦ
+    simp only [List.map_nil, map.lookupExpr, map.lookupL]
+    wp_pures
+    iapply HΦ
+  | cons p ps ih =>
+    iintro HΦ
+    simp only [List.map_cons, map.lookupExpr, map.keyEq, map.toE]
+    wp_pures
+    wp_bind (App (Val (GoInstruction (GoOp GoEquals key_type))) (Val (PairV #k #p.1)))
+    iapply (Hk.wp_go_eq_map_key p.1 (hps p (List.mem_cons_self ..)))
+    by_cases h : k = p.1
+    · simp only [h, _root_.decide_true, map.lookupL, ite_true]
+      wp_pures
+      iapply HΦ
+    · simp only [h, _root_.decide_false, map.lookupL, ite_false]
+      wp_pures
+      iapply ih (fun q hq => hps q (List.mem_cons_of_mem _ hq)) $$ HΦ
+
+/-- The insert instruction's comparisons, on the entries of `pre ++ ps` (`pre` checked). The new
+entry's id is `id`, the key's own id if it is new. -/
+theorem wp_insertExpr (key_type : go.GoType) (k : K) [Hk : SafeMapKey (GF := GF) key_type k]
+    (v : V) (dv id : val) (pre ps : List (K × V))
+    (hid : k ∉ ps.map Prod.fst → id = map.keyId k) (hps : ∀ p ∈ ps, MapKeys.keyOk p.1) (Φ : val → IProp GF) :
+    Φ (map.mapV dv ((pre ++ map.insertL k v ps).map map.toE)) ⊢
+    WP (map.insertExpr key_type #k #v dv id (pre.map map.toE) (ps.map map.toE)) @ s; E
+      {{ Φ }} := by
+  induction ps generalizing pre with
+  | nil =>
+    iintro HΦ
+    rw [hid (by simp)]
+    simp only [List.map_nil, map.insertExpr, map.insertL, List.map_append, List.map_cons, map.toE]
+    wp_pures
+    iapply HΦ
+  | cons p ps ih =>
+    iintro HΦ
+    simp only [List.map_cons, map.insertExpr, map.keyEq]
+    wp_pures
+    wp_bind (App (Val (GoInstruction (GoOp GoEquals key_type))) (Val (PairV #k #p.1)))
+    iapply (Hk.wp_go_eq_map_key p.1 (hps p (List.mem_cons_self ..)))
+    by_cases h : k = p.1
+    · subst h
+      simp only [decide_true, map.insertL, ite_true, List.map_append, List.map_cons, map.toE]
+      wp_pures
+      iapply HΦ
+    · simp only [h, _root_.decide_false, map.insertL, ite_false]
+      wp_pures
+      have hid' : k ∉ ps.map Prod.fst → id = map.keyId k := fun hn =>
+        hid (by simp only [List.map_cons, List.mem_cons, not_or]; exact ⟨h, hn⟩)
+      have hpre : pre.map map.toE ++ [map.toE p] = (pre ++ [p]).map map.toE := by simp
+      rw [hpre]
+      iapply ih (pre ++ [p]) hid' (fun q hq => hps q (List.mem_cons_of_mem _ hq))
+      simp only [List.append_assoc, List.cons_append, List.nil_append]
+      iexact HΦ
+
+/-- The delete instruction's comparisons, on the entries of `pre ++ ps` (`pre` checked). -/
+theorem wp_deleteExpr (key_type : go.GoType) (k : K) [Hk : SafeMapKey (GF := GF) key_type k]
+    (dv : val) (pre ps : List (K × V)) (hps : ∀ p ∈ ps, MapKeys.keyOk p.1) (Φ : val → IProp GF) :
+    Φ (map.mapV dv ((pre ++ map.deleteL k ps).map map.toE)) ⊢
+    WP (map.deleteExpr key_type #k dv (pre.map map.toE) (ps.map map.toE)) @ s; E {{ Φ }} := by
+  induction ps generalizing pre with
+  | nil =>
+    iintro HΦ
+    simp only [List.map_nil, map.deleteExpr, map.deleteL, List.append_nil]
+    wp_pures
+    iapply HΦ
+  | cons p ps ih =>
+    iintro HΦ
+    simp only [List.map_cons, map.deleteExpr, map.keyEq]
+    wp_pures
+    wp_bind (App (Val (GoInstruction (GoOp GoEquals key_type))) (Val (PairV #k #p.1)))
+    iapply (Hk.wp_go_eq_map_key p.1 (hps p (List.mem_cons_self ..)))
+    by_cases h : k = p.1
+    · subst h
+      simp only [decide_true, map.deleteL, ite_true, List.map_append]
+      wp_pures
+      iapply HΦ
+    · simp only [h, _root_.decide_false, map.deleteL, ite_false]
+      wp_pures
+      have hpre : pre.map map.toE ++ [map.toE p] = (pre ++ [p]).map map.toE := by simp
+      rw [hpre]
+      iapply ih (pre ++ [p]) (fun q hq => hps q (List.mem_cons_of_mem _ hq))
+      simp only [List.append_assoc, List.cons_append, List.nil_append]
+      iexact HΦ
 
 instance ownMap_timeless (mptr : Loc) (dq : DFrac) (m : GMap K V) :
     Timeless (ownMap (GF := GF) mptr dq m) := by
   rw [ownMap_unseal]; unfold ownMapDef; simp only [named]; infer_instance
+
+theorem map.Repr_insert (m : GMap K V) (ps : List (K × V)) (k : K) (v : V)
+    (Hnd : (ps.map Prod.fst).Nodup) (Hok : ∀ p ∈ ps, MapKeys.keyOk p.1)
+    (Hagree : ∀ k, m !! k = map.lookupL k ps) (hk : MapKeys.keyOk k) :
+    map.Repr (<[k := v]> m) (map.mapV #(zero_val V) ((map.insertL k v ps).map map.toE))
+      (map.insertL k v ps) := by
+  refine ⟨rfl, map.nodup_insertL k v ps Hnd, map.keyOk_insertL k v ps Hok hk, fun k' => ?_⟩
+  rw [map.lookupL_insertL]
+  by_cases h : k' = k
+  · subst h; simp [GMap.lookup_insert]
+  · simp only [h, ite_false, GMap.lookup_insert_ne _ _ (Ne.symm h)]; exact Hagree k'
+
+theorem map.Repr_delete (m : GMap K V) (ps : List (K × V)) (k : K)
+    (Hnd : (ps.map Prod.fst).Nodup) (Hok : ∀ p ∈ ps, MapKeys.keyOk p.1)
+    (Hagree : ∀ k, m !! k = map.lookupL k ps) :
+    map.Repr (GMap.delete k m) (map.mapV #(zero_val V) ((map.deleteL k ps).map map.toE))
+      (map.deleteL k ps) := by
+  refine ⟨rfl, map.nodup_deleteL k ps Hnd,
+    fun p hp => Hok p ((map.deleteL_sublist k ps).subset hp), fun k' => ?_⟩
+  rw [map.lookupL_deleteL k k' ps Hnd]
+  by_cases h : k' = k
+  · subst h; simp [GMap.lookup_delete]
+  · simp only [h, ite_false, GMap.lookup_delete_ne _ (Ne.symm h)]; exact Hagree k'
 
 theorem wp_mapInsert (key_type : go.GoType) (l : Loc) (m : GMap K V) (k : K) (v : V)
     [Hsafe : SafeMapKey (GF := GF) key_type k] :
@@ -102,31 +483,26 @@ theorem wp_mapInsert (key_type : go.GoType) (l : Loc) (m : GMap K V) (k : K) (v 
   rw [ownMap_unseal]
   iintro %Φ Hm HΦ
   iNamed Hm
-  have Hmv := go.is_map_pure_not_panic _ _ His_map
+  obtain ⟨rfl, Hnd, Hok, Hagree⟩ := Hrepr
   wp_call
-  wp_apply (wp_go_eq_safe_map_key (GF := GF) (key_type := key_type) (k := k)) with %_
-  wp_apply (_internal_wp_untyped_read _ _ _ (go.is_map_pure_not_panic _ _ His_map)) $$ Hown
-    with Hown
-  wp_apply (_internal_wp_untyped_store _ _ _ (go.is_map_pure_not_panic _ _
-    (go.is_map_pure_map_insert _ _ _ _ His_map))) $$ Hown with Hown
+  wp_apply (wp_go_eq_map_key (GF := GF) (key_type := key_type) (k := k) k Hsafe.key_ok)
+  wp_apply (_internal_wp_untyped_read _ _ _ (map.mapV_not_panic _ _)) $$ Hown with Hown
+  wp_pures
+  have hid : k ∉ ps.map Prod.fst → map.freshId #k (ps.map map.toE) = map.keyId k :=
+    map.freshId_keyId k ps
+  have Hins := wp_insertExpr (GF := GF) (s := s) (E := E) key_type k v #(zero_val V) _ [] ps hid Hok
+  simp only [List.map_nil, List.nil_append] at Hins
+  wp_bind (map.insertExpr key_type #k #v #(zero_val V) (map.freshId #k (ps.map map.toE)) []
+    (ps.map map.toE))
+  iapply Hins
+  wp_apply (_internal_wp_untyped_store _ _ _ (map.mapV_not_panic _ _)) $$ Hown with Hown
   iapply HΦ
   unfold ownMapDef
   simp only [named]
-  iexists (mapInsert mv #k #v), (fun k' => if k' = #k then (true, #v) else mp k')
+  iexists _, (map.insertL k v ps)
   iframe Hown
   ipureintro
-  refine ⟨go.is_map_pure_map_insert _ _ _ _ His_map, ?_, ?_, ?_⟩
-  · intro k'
-    by_cases h : k' = k
-    · subst h; simp
-    · have h' : (#k' : val) ≠ #k := fun e => h (go.intoVal_inj e)
-      simp only [h', ite_false, GMap.lookup_insert_ne _ _ (Ne.symm h)]
-      exact Hagree k'
-  · intro kv
-    by_cases h : kv = #k
-    · intro _; exact ⟨k, h⟩
-    · simp only [h, ite_false]; exact Hdom kv
-  · rw [go.mapDefault_map_insert]; exact Hdefault
+  exact map.Repr_insert m ps k v Hnd Hok Hagree Hsafe.key_ok
 
 theorem wp_mapDelete (l : Loc) (m : GMap K V) (k : K) (key_type elem_type : go.GoType)
     [Hsafe : SafeMapKey (GF := GF) key_type k] :
@@ -136,30 +512,22 @@ theorem wp_mapDelete (l : Loc) (m : GMap K V) (k : K) (key_type elem_type : go.G
   wp_start as Hm
   rw [ownMap_unseal]
   iNamed Hm
-  have Hmv := go.is_map_pure_not_panic _ _ His_map
-  wp_apply (wp_go_eq_safe_map_key (GF := GF) (key_type := key_type) (k := k)) with %_
-  wp_apply (_internal_wp_untyped_read _ _ _ (go.is_map_pure_not_panic _ _ His_map)) $$ Hown
-    with Hown
-  wp_apply (_internal_wp_untyped_store _ _ _ (go.is_map_pure_not_panic _ _
-    (go.is_map_pure_map_delete _ _ _ His_map))) $$ Hown with Hown
+  obtain ⟨rfl, Hnd, Hok, Hagree⟩ := Hrepr
+  wp_apply (wp_go_eq_map_key (GF := GF) (key_type := key_type) (k := k) k Hsafe.key_ok)
+  wp_apply (_internal_wp_untyped_read _ _ _ (map.mapV_not_panic _ _)) $$ Hown with Hown
+  wp_pures
+  have Hdel := wp_deleteExpr (GF := GF) (s := s) (E := E) key_type k #(zero_val V) [] ps Hok
+  simp only [List.map_nil, List.nil_append] at Hdel
+  wp_bind (map.deleteExpr key_type #k #(zero_val V) [] (ps.map map.toE))
+  iapply Hdel
+  wp_apply (_internal_wp_untyped_store _ _ _ (map.mapV_not_panic _ _)) $$ Hown with Hown
   iapply HΦ
   unfold ownMapDef
   simp only [named]
-  iexists (mapDelete mv #k), (fun k' => if k' = #k then (false, mapDefault mv) else mp k')
+  iexists _, (map.deleteL k ps)
   iframe Hown
   ipureintro
-  refine ⟨go.is_map_pure_map_delete _ _ _ His_map, ?_, ?_, ?_⟩
-  · intro k'
-    by_cases h : k' = k
-    · subst h; simp [Hdefault]
-    · have h' : (#k' : val) ≠ #k := fun e => h (go.intoVal_inj e)
-      simp only [h', ite_false, GMap.lookup_delete_ne _ (Ne.symm h)]
-      exact Hagree k'
-  · intro kv
-    by_cases h : kv = #k
-    · simp [h]
-    · simp only [h, ite_false]; exact Hdom kv
-  · rw [go.mapDefault_map_delete]; exact Hdefault
+  exact map.Repr_delete m ps k Hnd Hok Hagree
 
 theorem wp_map_lookup2 (key_type elem_type : go.GoType) (mref : Loc) (m : GMap K V) (k : K)
     (dq : DFrac) [Hsafe : SafeMapKey (GF := GF) key_type k] :
@@ -169,27 +537,26 @@ theorem wp_map_lookup2 (key_type elem_type : go.GoType) (mref : Loc) (m : GMap K
   rw [ownMap_unseal]
   iintro %Φ Hm HΦ
   iNamed Hm
-  have Hmv := go.is_map_pure_not_panic _ _ His_map
   ihave %Hnn := heapPointsto_non_null _ _ _ $$ Hown
+  obtain ⟨rfl, Hnd, Hok, Hagree⟩ := Hrepr
   wp_call
-  wp_apply (wp_go_eq_safe_map_key (GF := GF) (key_type := key_type) (k := k)) with %_
+  wp_apply (wp_go_eq_map_key (GF := GF) (key_type := key_type) (k := k) k Hsafe.key_ok)
   rw [decide_eq_false (show ¬ mref = map.nil from Hnn)]
   wp_pures
-  wp_apply (_internal_wp_untyped_read _ _ _ (go.is_map_pure_not_panic _ _ His_map)) $$ Hown
-    with Hown
-  rw [go.mapLookup_pure #k mv mp His_map, Hagree k]
+  wp_apply (_internal_wp_untyped_read _ _ _ (map.mapV_not_panic _ _)) $$ Hown with Hown
+  wp_pures
+  iapply wp_lookupExpr key_type k ps Hok
+  rw [← Hagree k]
   cases hk : m !! k <;>
   · simp only [Option.getD_none, Option.getD_some, Option.isSome_none, Option.isSome_some,
-      decide_true, decide_false, Bool.false_eq_true]
-    wp_pures
+      _root_.decide_true, _root_.decide_false, Bool.false_eq_true]
     iapply HΦ
     unfold ownMapDef
     simp only [named]
-    iexists mv
-    iexists mp
+    iexists _, ps
     iframe Hown
     ipureintro
-    exact ⟨His_map, Hagree, Hdom, Hdefault⟩
+    exact ⟨rfl, Hnd, Hok, Hagree⟩
 
 instance pure_wp_map_nil_lookup2 (key_type elem_type : go.GoType) (k : K)
     [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V elem_type]
@@ -200,7 +567,7 @@ instance pure_wp_map_nil_lookup2 (key_type elem_type : go.GoType) (k : K)
   pure_wp_val True _ (PairV #(zero_val V) #false) fun s E Φ _ => by
     iintro HΦ
     wp_call_lc Hlc
-    wp_apply (wp_go_eq_safe_map_key (GF := GF) (key_type := key_type) (k := k)) with %_
+    wp_apply (wp_go_eq_map_key (GF := GF) (key_type := key_type) (k := k) k Hsafe.key_ok)
     iapply HΦ $$ Hlc
 
 theorem wp_map_lookup1 (key_type elem_type : go.GoType) (mref : Loc) (m : GMap K V) (k : K)
@@ -232,17 +599,13 @@ theorem wp_map_make2 (len : w64) (key_type elem_type : go.GoType)
       (App (Val #(functions go.make2 [go.MapType key_type elem_type])) (Val #len)) @ s; E
     {{ (mref : Loc), RET #mref; mref ↦$ (∅ : GMap K V) }} := by
   wp_start
-  wp_apply (wp_alloc_untyped _ (go.is_map_pure_not_panic _ _ (go.is_map_pure_map_empty _)))
-    with %l Hl
+  wp_apply (wp_alloc_untyped _ (map.mapV_not_panic _ _)) with %l Hl
   iapply HΦ
   rw [ownMap_unseal]; unfold ownMapDef; simp only [named]
-  iexists _
-  iexists (fun _ => (false, #(zero_val V)))
+  iexists _, ([] : List (K × V))
   iframe Hl
   ipureintro
-  refine ⟨go.is_map_pure_map_empty _, ?_, ?_, go.mapDefault_map_empty _⟩
-  · intro k; rfl
-  · intro kv h; simp at h
+  exact ⟨rfl, List.nodup_nil, (fun _ h => nomatch h), fun k => rfl⟩
 
 theorem wp_map_make1 (key_type elem_type : go.GoType) [TypeRepr key_type K]
     [TypedPointsto (GF := GF) V] [IntoValTyped (GF := GF) V elem_type] :
@@ -263,20 +626,17 @@ theorem wp_map_clear (mref : Loc) (m : GMap K V) (key_type elem_type : go.GoType
   rw [ownMap_unseal]
   unfold ownMapDef
   iNamed Hm
-  have Hmv := go.is_map_pure_not_panic _ _ His_map
-  icases Hm' with ⟨%mv', %mp', Hown', %His_map', %Hagree', %Hdom', %Hdefault'⟩
-  have Hmv' := go.is_map_pure_not_panic _ _ His_map'
-  wp_apply (_internal_wp_untyped_read _ _ _ (go.is_map_pure_not_panic _ _ His_map')) $$ Hown'
-    with Hown'
-  wp_apply (_internal_wp_untyped_store _ _ _ (go.is_map_pure_not_panic _ _ His_map')) $$ Hown
-    with Hown
+  obtain ⟨rfl, -, -, -⟩ := Hrepr
+  icases Hm' with ⟨%mv', %ps', Hown', %Hrepr'⟩
+  obtain ⟨rfl, Hnd', Hok', Hagree'⟩ := Hrepr'
+  wp_apply (_internal_wp_untyped_read _ _ _ (map.mapV_not_panic _ _)) $$ Hown' with Hown'
+  wp_apply (_internal_wp_untyped_store _ _ _ (by simp)) $$ Hown with Hown
   iapply HΦ
   simp only [named]
-  iexists mv'
-  iexists mp'
+  iexists _, ps'
   iframe Hown
   ipureintro
-  exact ⟨His_map', Hagree', Hdom', Hdefault'⟩
+  exact ⟨rfl, Hnd', Hok', Hagree'⟩
 
 theorem ownMap_not_nil (mref : Loc) (m : GMap K V) (dq : DFrac) :
     (mref ↦${dq} m : IProp GF) ⊢ ⌜mref ≠ map.nil⌝ := by
@@ -299,11 +659,10 @@ theorem ownMap_persist (mref : Loc) (dq : DFrac) (m : GMap K V) :
   imodintro
   unfold ownMapDef
   simp only [named]
-  iexists mv
-  iexists mp
+  iexists mv, ps
   iframe Hown
   ipureintro
-  exact ⟨His_map, Hagree, Hdom, Hdefault⟩
+  exact Hrepr
 
 instance ownMap_update_into_persistently (mref : Loc) (dq : DFrac) (m : GMap K V) :
     UpdateIntoPersistently (ownMap (GF := GF) mref dq m) (ownMap mref DFrac.discard m) where
@@ -325,19 +684,19 @@ theorem ownMap_fractional (mref : Loc) (m : GMap K V) :
       iNamed H
       icases (hh mv).1 $$ Hown with ⟨H1, H2⟩
       isplitl [H1]
-      · iexists mv, mp; simp only [named]; iframe H1; ipureintro; exact ⟨His_map, Hagree, Hdom, Hdefault⟩
-      · iexists mv, mp; simp only [named]; iframe H2; ipureintro; exact ⟨His_map, Hagree, Hdom, Hdefault⟩
+      · iexists mv, ps; simp only [named]; iframe H1; ipureintro; exact Hrepr
+      · iexists mv, ps; simp only [named]; iframe H2; ipureintro; exact Hrepr
     · iintro ⟨H1, H2⟩
       unfold ownMapDef
-      iNamedSuffix H1 "1"
-      iNamedSuffix H2 "2"
+      icases H1 with ⟨%mv, %ps1, Hown1, %Hrepr1⟩
+      icases H2 with ⟨%mv2, %ps2, Hown2, %Hrepr2⟩
       icombine Hown1 Hown2 gives % ⟨_, Hmv⟩
       subst Hmv
-      iexists mv, mp
+      iexists mv, ps1
       simp only [named]
       isplitl [Hown1 Hown2]
       · iapply (hh mv).2; iframe
-      ipureintro; exact ⟨His_map2, Hagree2, Hdom2, Hdefault2⟩
+      ipureintro; exact Hrepr1
 
 /-- Two shares of a map points-to agree on the map (for values whose Go values are injective). -/
 theorem ownMap_agree [go.IntoValInj V] (mref : Loc) (dq1 dq2 : DFrac) (m1 m2 : GMap K V) :
@@ -345,27 +704,22 @@ theorem ownMap_agree [go.IntoValInj V] (mref : Loc) (dq1 dq2 : DFrac) (m1 m2 : G
   rw [ownMap_unseal]
   iintro ⟨H1, H2⟩
   unfold ownMapDef
-  iNamedSuffix H1 "1"
-  iNamedSuffix H2 "2"
+  icases H1 with ⟨%mv1, %ps1, Hown1, %Hrepr1⟩
+  icases H2 with ⟨%mv2, %ps2, Hown2, %Hrepr2⟩
   icombine Hown1 Hown2 gives % ⟨_, Hmv⟩
   subst Hmv
   ipureintro
+  obtain ⟨Hmv1, -, -, Hagree1⟩ := Hrepr1
+  obtain ⟨Hmv2, -, -, Hagree2⟩ := Hrepr2
+  have hps : ps1 = ps2 :=
+    map.list_map_inj _ map.toE_inj (map.mapV_inj _ _ _ _ (Hmv1.symm.trans Hmv2))
+  subst hps
   apply GMap.ext
   intro k
-  have h1 := Hagree1 k
-  have h2 := Hagree2 k
-  rw [← go.mapLookup_pure _ _ _ His_map1, go.mapLookup_pure _ _ _ His_map2] at h1
-  rw [h1] at h2
   change m1 !! k = m2 !! k
-  cases hk1 : m1 !! k <;> cases hk2 : m2 !! k <;> simp only [hk1, hk2] at h2
-  · rfl
-  · cases h2
-  · cases h2
-  · simp only [Prod.mk.injEq, true_and] at h2
-    rw [go.intoVal_inj h2]
+  rw [Hagree1, Hagree2]
 
 end lemmas
-
 /-! ## `for range` -/
 
 theorem list_exists_map_of_forall {α β : Type} (f : α → β) (l : List β)
@@ -404,31 +758,32 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [preSem : go.PreSemantics]
 variable {s : Stuckness} {E : CoPset}
 
-theorem wp_InternalMapForRange (mv : val) (m : val → Bool × val) (body : val)
+theorem wp_InternalMapForRange (dv : val) (es : List map.Entry) (body : val)
     (key_type elem_type : go.GoType) (Φ : val → IProp GF) :
-    (⌜is_map_pure mv m⌝ : IProp GF) -∗
-    (∀ e', ⌜is_go_step_pure (InternalMapForRange key_type elem_type) (PairV mv body) e'⌝ -∗
-      WP e' @ s; E {{ Φ }}) -∗
-    WP (App (Val (GoInstruction (InternalMapForRange key_type elem_type))) (Val (PairV mv body)))
-      @ s; E {{ Φ }} := by
-  iintro %Hm HΦ
-  have hstep := go.internal_map_domain_literal_step_pure mv m body key_type elem_type Hm
-  iapply wp_GoInstruction' (s := s) (E := E) (InternalMapForRange key_type elem_type) (PairV mv body) Φ
+    (∀ e', ⌜is_go_step_pure (InternalMapForRange key_type elem_type)
+        (PairV (map.mapV dv es) body) e'⌝ -∗ WP e' @ s; E {{ Φ }}) -∗
+    WP (App (Val (GoInstruction (InternalMapForRange key_type elem_type)))
+      (Val (PairV (map.mapV dv es) body))) @ s; E {{ Φ }} := by
+  iintro HΦ
+  have hstep := go.internal_map_for_range_step dv es body key_type elem_type
+  iapply wp_GoInstruction' (s := s) (E := E) (InternalMapForRange key_type elem_type)
+    (PairV (map.mapV dv es) body) Φ
     (fun gs => by
-      obtain ⟨ks, hks⟩ := go.is_map_domain_exists mv m Hm
-      have h : ∃ e, is_go_step_pure (InternalMapForRange key_type elem_type) (PairV mv body) e := by
-        rw [hstep]; exact ⟨_, ks, hks, rfl⟩
+      have h : ∃ e, is_go_step_pure (InternalMapForRange key_type elem_type)
+          (PairV (map.mapV dv es) body) e := by
+        rw [hstep]; exact ⟨_, es.map (·.id), List.Perm.refl _, rfl⟩
       obtain ⟨e, he⟩ := h
       exact ⟨e, gs, he, rfl⟩)
   inext
   iintro %e' %gs %gs' %Hstep _ Hctx
   obtain ⟨Hp, rfl⟩ := Hstep
-  have Hp' : is_go_step_pure (InternalMapForRange key_type elem_type) (PairV mv body) e' := Hp
+  have Hp' : is_go_step_pure (InternalMapForRange key_type elem_type)
+      (PairV (map.mapV dv es) body) e' := Hp
   imodintro
   iframe Hctx
   iapply HΦ $$ %e' %Hp'
 
-variable {K V : Type} [ZeroVal K] [DecidableEq K] [ZeroVal V] [go.IntoValInj K]
+variable {K V : Type} [ZeroVal K] [DecidableEq K] [MapKeys K] [ZeroVal V] [go.IntoValInj K]
 
 /-- The postcondition of a `for range` loop body over a map. FIXME: seal. -/
 def forMapPostcondition (P : IProp GF) (Φ : val → IProp GF) (bv : val) : IProp GF :=
@@ -437,30 +792,47 @@ def forMapPostcondition (P : IProp GF) (Φ : val → IProp GF) (bv : val) : IPro
     (⌜bv = breakVal⌝ ∗ Φ executeVal) ∨
     (∃ v, ⌜bv = returnVal v⌝ ∗ Φ bv))
 
-/-- Reading the map cell: the value read represents the map. -/
+/-- Reading the map cell: the value read is the map's entries `ps`. -/
 theorem wp_ownMap_read (mref : Loc) (dq : DFrac) (m : GMap K V) (Φ : val → IProp GF) :
     (mref ↦${dq} m : IProp GF) -∗
-    (∀ (mv : val) (mp : val → Bool × val),
-      ⌜is_map_pure mv mp ∧
-        (∀ k : K, mp #k = (match m !! k with
-                           | none => (false, #(zero_val V))
-                           | some v => (true, #v))) ∧
-        (∀ kv, (mp kv).1 = true → ∃ k : K, kv = #k)⌝ -∗
-      mref ↦${dq} m -∗ Φ mv) -∗
+    (∀ ps : List (K × V),
+      ⌜(ps.map Prod.fst).Nodup ∧ ∀ k, m !! k = map.lookupL k ps⌝ -∗
+      mref ↦${dq} m -∗ Φ (map.mapV #(zero_val V) (ps.map map.toE))) -∗
     WP (App (Val Read) (Val #mref)) @ s; E {{ Φ }} := by
   iintro Hm HΦ
   rw [ownMap_unseal]
   iNamed Hm
-  have Hmv := go.is_map_pure_not_panic _ _ His_map
-  wp_apply (_internal_wp_untyped_read _ _ _ (go.is_map_pure_not_panic _ _ His_map)) $$ Hown
-    with Hown
-  iapply HΦ $$ %mv %mp %(⟨His_map, Hagree, Hdom⟩)
+  obtain ⟨rfl, Hnd, Hok, Hagree⟩ := Hrepr
+  wp_apply (_internal_wp_untyped_read _ _ _ (map.mapV_not_panic _ _)) $$ Hown with Hown
+  iapply HΦ $$ %ps %(⟨Hnd, Hagree⟩)
   unfold ownMapDef
   simp only [named]
-  iexists mv, mp
+  iexists _, ps
   iframe Hown
   ipureintro
-  exact ⟨His_map, Hagree, Hdom, Hdefault⟩
+  exact ⟨rfl, Hnd, Hok, Hagree⟩
+
+/-- The keys of a map whose entries are `ps`, from a permutation of their ids. -/
+theorem map.keys_of_ids_perm (m : GMap K V) (ps : List (K × V))
+    (Hnd : (ps.map Prod.fst).Nodup) (Hagree : ∀ k, m !! k = map.lookupL k ps) (ids : List val)
+    (hperm : ids.Perm ((ps.map map.toE).map (·.id))) :
+    ∃ keys : List K, ids = keys.map map.keyId ∧
+      (∀ k, k ∈ keys ↔ (m !! k).isSome) ∧ keys.length = GMap.size m ∧ keys.Nodup := by
+  have hids : (ps.map map.toE).map (·.id) = (ps.map Prod.fst).map map.keyId := by
+    simp [List.map_map, Function.comp_def, map.toE]
+  rw [hids] at hperm
+  obtain ⟨keys, rfl⟩ := list_exists_map_of_forall map.keyId ids (fun x hx => by
+    obtain ⟨k, -, rfl⟩ := List.mem_map.1 (hperm.mem_iff.1 hx)
+    exact ⟨k, rfl⟩)
+  have Hmem : ∀ k, k ∈ keys ↔ (m !! k).isSome := by
+    intro k
+    rw [← list_mem_map_inj map.keyId map.keyId_inj, hperm.mem_iff,
+      list_mem_map_inj map.keyId map.keyId_inj, Hagree k]
+    have := map.lookupL_eq_none_iff k ps
+    cases h : map.lookupL k ps <;> simp_all
+  have Hnd' : keys.Nodup :=
+    list_nodup_of_map _ _ (hperm.nodup_iff.2 (List.pairwise_map.2 (Hnd.imp fun h e => h (map.keyId_inj e))))
+  exact ⟨keys, rfl, Hmem, (GMap.size_eq_length m keys Hnd' Hmem).symm, Hnd'⟩
 
 /-- The general `for range` rule. `keys` lists the keys of `m`, the map when the loop starts, in
 iteration order; `P keys i m'` is the loop invariant before the `i`-th key, when the map is `m'`.
@@ -492,48 +864,37 @@ theorem wp_map_for_range_gen (P : List K → Nat → GMap K V → IProp GF) (bod
   wp_pures
   wp_bind (App (Val Read) (Val #mref))
   iapply wp_ownMap_read $$ Hm
-  iintro %mv %mp %Hmv Hm
-  obtain ⟨His_map, Hagree, Hdom⟩ := Hmv
-  have Hmv := go.is_map_pure_not_panic _ _ His_map
+  iintro %ps %Hps Hm
+  obtain ⟨Hnd0, Hagree⟩ := Hps
   wp_pures
   wp_bind (App (Val (GoInstruction (InternalMapForRange key_type elem_type))) _)
-  iapply wp_InternalMapForRange mv mp _ key_type elem_type _ $$ %His_map
+  iapply wp_InternalMapForRange
   iintro %e' %He'
-  rw [go.internal_map_domain_literal_step_pure mv mp _ key_type elem_type His_map] at He'
-  obtain ⟨ks, hks, rfl⟩ := He'
-  obtain ⟨Hnodup, Hks⟩ := go.is_map_domain_pure mv mp ks His_map hks
-  obtain ⟨keys, rfl⟩ := list_exists_map_of_forall (intoVal (V := K)) ks
-    (fun kv hkv => Hdom kv ((Hks kv).2 hkv))
-  have Hmem : ∀ k, k ∈ keys ↔ (m !! k).isSome := by
-    intro k
-    rw [← list_mem_map_inj (intoVal (V := K)) go.intoVal_inj, ← Hks, Hagree k]
-    cases m !! k <;> simp
-  have Hnd : keys.Nodup := list_nodup_of_map _ _ Hnodup
-  have Hsize : keys.length = GMap.size m := (GMap.size_eq_length m keys Hnd Hmem).symm
+  rw [go.internal_map_for_range_step] at He'
+  obtain ⟨ids, hperm, rfl⟩ := He'
+  obtain ⟨keys, rfl, Hmem, Hsize, Hnd⟩ := map.keys_of_ids_perm m ps Hnd0 Hagree ids hperm
   icases HΦ $$ %keys %(⟨Hmem, Hsize, Hnd⟩) with ⟨HP, #Hiter, #Hskip, HΦ⟩
   ihave Hinv : iprop(∃ m' : GMap K V, mref ↦${dq} m' ∗ P keys 0 m') $$ [Hm HP]
   · iexists m
     iframe HP Hm
   obtain ⟨i, hi⟩ : ∃ i : Nat, i = 0 := ⟨0, rfl⟩
   have hile : i ≤ keys.length := by omega
-  rw [show List.map intoVal keys = List.map intoVal (keys.drop i) by rw [hi, List.drop_zero],
+  rw [show List.map map.keyId keys = List.map map.keyId (keys.drop i) by rw [hi, List.drop_zero],
     show P keys 0 = P keys i by rw [hi]]
   clear hi
   iloeb as IH generalizing %i %hile
   by_cases hlt : i < keys.length
   · have hkey : keys[i]? = some keys[i] := List.getElem?_eq_getElem hlt
-    have Hval : (mp #(keys[i])).2.isPanic = false := by
-      rw [Hagree]; cases m !! keys[i] <;> simp
     rw [List.drop_eq_getElem_cons hlt, List.map_cons, List.foldr_cons]
     icases Hinv with ⟨%m', Hm', HP⟩
     wp_auto
     wp_bind (App (Val Read) (Val #mref))
     iapply wp_ownMap_read $$ Hm'
-    iintro %mv' %mp' %Hmv' Hm'
-    obtain ⟨His_map', Hagree', -⟩ := Hmv'
-    have Hmv'' := go.is_map_pure_not_panic _ _ His_map'
+    iintro %ps' %Hps' Hm'
+    obtain ⟨-, Hagree'⟩ := Hps'
     wp_pures
-    rw [go.mapLookup_pure _ mv' mp' His_map', Hagree' keys[i]]
+    rw [show PairV #(keys[i]) (ArrayV (List.replicate 0 (LitV LitUnit))) = map.keyId keys[i]
+      from rfl, map.lookupIdVal_keyId, ← Hagree' keys[i]]
     cases hk : m' !! keys[i] with
     | none =>
       simp only
@@ -740,7 +1101,7 @@ theorem wp_map_for_range_mut (P : Nat → GMap K V → IProp GF) (body : GoFunc)
 
 
 /-- `len(m)` of a map the caller owns, and the model's bound on its size (fewer
-than `2^63` keys: `internal_map_length_step_pure`). `t` is any type whose
+than `2^63` keys: `internal_map_length_step`). `t` is any type whose
 underlying type is a map (`len_map` takes `[t ↓u go.MapType ..]`). The nil map
 is `pure_wp_map_nil_len`. -/
 theorem wp_map_len_lt {t key_type elem_type : go.GoType} [t ↓u go.MapType key_type elem_type]
@@ -752,35 +1113,22 @@ theorem wp_map_len_lt {t key_type elem_type : go.GoType} [t ↓u go.MapType key_
   ihave %Hnn := ownMap_not_nil _ _ _ $$ Hm
   rw [decide_eq_false Hnn]
   wp_pures
-  rw [ownMap_unseal]
-  iNamed Hm
-  have Hmv := go.is_map_pure_not_panic _ _ His_map
-  wp_apply (_internal_wp_untyped_read _ _ _ (go.is_map_pure_not_panic _ _ His_map)) $$ Hown
-    with Hown
-  obtain ⟨ks, hks⟩ := go.is_map_domain_exists mv mp His_map
-  obtain ⟨Hnodup, Hks⟩ := go.is_map_domain_pure mv mp ks His_map hks
-  obtain ⟨keys, rfl⟩ := list_exists_map_of_forall (intoVal (V := K)) ks
-    (fun kv hkv => Hdom kv ((Hks kv).2 hkv))
-  have Hmem : ∀ k, k ∈ keys ↔ (m !! k).isSome := by
-    intro k
-    rw [← list_mem_map_inj (intoVal (V := K)) go.intoVal_inj, ← Hks, Hagree k]
-    cases m !! k <;> simp
-  have Hnd : keys.Nodup := list_nodup_of_map _ _ Hnodup
-  have Hsize : keys.length = GMap.size m := (GMap.size_eq_length m keys Hnd Hmem).symm
-  haveI := go.internal_map_length_step_pure mv _ hks
+  wp_bind (App (Val Read) (Val #mref))
+  iapply wp_ownMap_read $$ Hm
+  iintro %ps %Hps Hm
+  obtain ⟨Hnd, Hagree⟩ := Hps
+  obtain ⟨keys, hkeys, -, Hsize, -⟩ :=
+    map.keys_of_ids_perm m ps Hnd Hagree _ (List.Perm.refl _)
+  have Hlen : (ps.map map.toE).length = GMap.size m := by
+    rw [← Hsize]; simpa using congrArg List.length hkeys
   wp_pures
-  rw [List.length_map, Hsize]
+  rw [Hlen]
   by_cases hb : GMap.size m < 2 ^ 63
   · rw [if_pos hb]
     wp_pures
     iapply HΦ
     isplitl
-    · unfold ownMapDef
-      simp only [named]
-      iexists mv, mp
-      iframe Hown
-      ipureintro
-      exact ⟨His_map, Hagree, Hdom, Hdefault⟩
+    · iexact Hm
     · ipureintro; exact hb
   · rw [if_neg hb]
     iapply wp_assume

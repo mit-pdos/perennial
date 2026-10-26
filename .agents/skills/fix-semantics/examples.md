@@ -444,3 +444,37 @@ already did.
 **Why.** P3 of `docs/design/unsafe-memory-prerequisites.md`; the user: "P3: This
 shouldn't change any proofs that do loading/storing with points-tos, right? ... If
 so, this is ok."
+
+## Case 15 — ACCEPTED: maps compare keys with Go's `==` (branch `maps-by-go-eq`, not yet on `lean`)
+
+**Symptom.** Unsound for float keys. The map instructions were abstract functions
+(`mapLookup`, `mapInsert`, ...) keyed by equality of values, so `NaN` found itself and
+`-0`/`+0` were two keys, unlike gc.
+
+**Witness.** `m := map[float64]int{}; m[math.NaN()] = 1; _, ok := m[math.NaN()]` gives
+`ok == false` in Go and could be `true` in the model.
+
+**Taken.** A map value is its entries (id, key, value) in insertion order, scanned with
+`=⟨key_type⟩`, Go's `==` at the key type: lookup returns the first match, insert
+replaces the first match's key and value or appends, delete removes the first match.
+Floats need nothing new: `==` at a float type is the uninterpreted `float64Eq`/`float32Eq`
+(case 13). `range` reads entries by id (`InternalMapLookupId`), since a `NaN` key does
+not find its own entry. An id is a function of the key and the entries (`(k, n)`, least
+`n` unused), not of history, so the proofs know every id for value-equality keys and the
+`range` specs keep their statements. The abstract map functions leave
+`GoSemanticsFunctions`.
+
+Proofs: `ownMap` is unchanged in its statement and specs; it is represented by entries
+with distinct keys. `SafeMapKey key_type k` now says `k == k'` is `decide (k = k')` for
+every key `k'` the map may hold (`MapKeys.keyOk`: every key, but for `GoInterface`, whose
+payload the model does not type: `nil` or a pointer; a proof may give its own instance).
+
+**Not taken.** Making float map keys stuck by type (`IsMapKey`, branch
+`fix-float-map-keys`): the user asked "What's wrong with supporting floats for map
+operations?" and "We don't need concrete IEEE facts, we already have a floatXXEq
+relation. Could we use that to define lookups and inserts?". A per-map counter for ids:
+the map points-to forgets which id each key has, so `range` specs whose body writes the
+map are unprovable.
+
+**Why.** P8c of `docs/design/unsafe-memory-prerequisites.md`; the user: "Implement this
+map plan."
