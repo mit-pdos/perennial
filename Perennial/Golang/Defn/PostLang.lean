@@ -92,6 +92,9 @@ class GoSemanticsFunctions [GooseExts] where
   functions : GoString → List go.GoType → GoFunc
   methods : go.GoType → GoString → val → GoFunc
 
+  /-- The method set of a type: each method's id (its name, qualified by its package path if
+  it is unexported) and signature. Constrained by `go.MethodSetIs` facts
+  (`Golang/Defn/MethodSet.lean`). -/
   methodSet : go.GoType → GMap GoString go.signature
 
   /-- This uses a Lean `Type` because there are multiple `go.GoType`s that have

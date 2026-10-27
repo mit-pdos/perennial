@@ -8,6 +8,8 @@ public import Perennial.Code.runtime.chunk3
 public import Perennial.Code.runtime.chunk4
 public import Perennial.Code.runtime.chunk5
 public import Perennial.Code.runtime.chunk6
+public import Perennial.Code.runtime.chunk7
+public import Perennial.Code.runtime.chunk8
 
 @[expose] public section
 

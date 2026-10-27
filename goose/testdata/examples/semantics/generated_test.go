@@ -375,6 +375,74 @@ func (suite *GoTestSuite) TestMapSize() {
 	suite.Equal(true, testMapSize())
 }
 
+func (suite *GoTestSuite) TestMethodSetValueReceiver() {
+	suite.Equal(true, testMethodSetValueReceiver())
+}
+
+func (suite *GoTestSuite) TestMethodSetPointerHasValueMethods() {
+	suite.Equal(true, testMethodSetPointerHasValueMethods())
+}
+
+func (suite *GoTestSuite) TestMethodSetValueLacksPointerMethods() {
+	suite.Equal(true, testMethodSetValueLacksPointerMethods())
+}
+
+func (suite *GoTestSuite) TestMethodSetMissingMethod() {
+	suite.Equal(true, testMethodSetMissingMethod())
+}
+
+func (suite *GoTestSuite) TestMethodSetWrongSignature() {
+	suite.Equal(true, testMethodSetWrongSignature())
+}
+
+func (suite *GoTestSuite) TestMethodSetVariadic() {
+	suite.Equal(true, testMethodSetVariadic())
+}
+
+func (suite *GoTestSuite) TestMethodSetBasicType() {
+	suite.Equal(true, testMethodSetBasicType())
+}
+
+func (suite *GoTestSuite) TestMethodSetPromotedFromStruct() {
+	suite.Equal(true, testMethodSetPromotedFromStruct())
+}
+
+func (suite *GoTestSuite) TestMethodSetPromotedFromPointer() {
+	suite.Equal(true, testMethodSetPromotedFromPointer())
+}
+
+func (suite *GoTestSuite) TestMethodSetPromotedFromInterface() {
+	suite.Equal(true, testMethodSetPromotedFromInterface())
+}
+
+func (suite *GoTestSuite) TestMethodSetUnnamedStruct() {
+	suite.Equal(true, testMethodSetUnnamedStruct())
+}
+
+func (suite *GoTestSuite) TestMethodSetEmbeddedInterface() {
+	suite.Equal(true, testMethodSetEmbeddedInterface())
+}
+
+func (suite *GoTestSuite) TestMethodSetInterfaceToInterface() {
+	suite.Equal(true, testMethodSetInterfaceToInterface())
+}
+
+func (suite *GoTestSuite) TestMethodSetGeneric() {
+	suite.Equal(true, testMethodSetGeneric())
+}
+
+func (suite *GoTestSuite) TestMethodSetUnexported() {
+	suite.Equal(true, testMethodSetUnexported())
+}
+
+func (suite *GoTestSuite) TestMethodSetTypeSwitch() {
+	suite.Equal(true, testMethodSetTypeSwitch())
+}
+
+func (suite *GoTestSuite) TestMethodSetAssertPanics() {
+	suite.Equal(true, testMethodSetAssertPanics())
+}
+
 func (suite *GoTestSuite) TestAssignTwo() {
 	suite.Equal(true, testAssignTwo())
 }

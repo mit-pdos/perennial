@@ -160,6 +160,8 @@ class Lock.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   underlying : go.UnderlyingDirectedEq Lock.ty Lock.underlying
   get_ch : ∀ (x : Lock), go.IsGoStepPureDetTagged under (StructFieldGet Lock.underlying go!"ch") #x (Val #(x.ch'))
   set_ch : ∀ (x : Lock) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet Lock.underlying go!"ch") (PairV #x #y) (Val #(({ x with ch' := y } : Lock)))
+  method_set : go.MethodSetIs Lock.ty [(go!"Lock", (some (go.signature.Signature [] false []))), (go!"LockWithTimeout", (some (go.signature.Signature [_root_.Perennial.time.Duration.ty] false [go.bool]))), (go!"TryLock", (some (go.signature.Signature [] false [go.bool]))), (go!"Unlock", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Lock.ty) [(go!"Lock", (some (go.signature.Signature [] false []))), (go!"LockWithTimeout", (some (go.signature.Signature [_root_.Perennial.time.Duration.ty] false [go.bool]))), (go!"TryLock", (some (go.signature.Signature [] false [go.bool]))), (go!"Unlock", (some (go.signature.Signature [] false [])))]
   Lock_unfold : MethodUnfold Lock.ty go!"Lock" Lock.Lock.impl
   LockWithTimeout_unfold : MethodUnfold Lock.ty go!"LockWithTimeout" Lock.LockWithTimeout.impl
   TryLock_unfold : MethodUnfold Lock.ty go!"TryLock" Lock.TryLock.impl
@@ -177,6 +179,8 @@ attribute [instance] Lock.TypeAssumptions.type_repr
   Lock.TypeAssumptions.underlying
   Lock.TypeAssumptions.get_ch
   Lock.TypeAssumptions.set_ch
+  Lock.TypeAssumptions.method_set
+  Lock.TypeAssumptions.ptr_method_set
   Lock.TypeAssumptions.Lock_unfold
   Lock.TypeAssumptions.LockWithTimeout_unfold
   Lock.TypeAssumptions.TryLock_unfold

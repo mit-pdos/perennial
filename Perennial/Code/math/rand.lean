@@ -239,18 +239,26 @@ abbrev Source [GooseExts] : Type := GoInterface
 
 class Source.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Source.ty Source.underlying
+  method_set : go.MethodSetIs Source.ty [(go!"Int63", (some (go.signature.Signature [] false [go.int64]))), (go!"Seed", (some (go.signature.Signature [go.int64] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Source.ty) []
 
 attribute [instance] Source.TypeAssumptions.underlying
+  Source.TypeAssumptions.method_set
+  Source.TypeAssumptions.ptr_method_set
 
 abbrev Source64 [GooseExts] : Type := GoInterface
 
 @[reducible] noncomputable def Source64.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Uint64" (go.signature.Signature [] false [go.uint64])), (go.InterfaceElem.TypeElem [(go.type_term.TypeTerm Source.ty)])])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Int63" (go.signature.Signature [] false [go.int64])), (go.InterfaceElem.MethodElem go!"Seed" (go.signature.Signature [go.int64] false [])), (go.InterfaceElem.MethodElem go!"Uint64" (go.signature.Signature [] false [go.uint64]))])
 
 class Source64.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Source64.ty Source64.underlying
+  method_set : go.MethodSetIs Source64.ty [(go!"Int63", (some (go.signature.Signature [] false [go.int64]))), (go!"Seed", (some (go.signature.Signature [go.int64] false []))), (go!"Uint64", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Source64.ty) []
 
 attribute [instance] Source64.TypeAssumptions.underlying
+  Source64.TypeAssumptions.method_set
+  Source64.TypeAssumptions.ptr_method_set
 
 structure Rand [GooseExts] where
   mk ::
@@ -289,6 +297,8 @@ class Rand.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   set_readVal : ∀ (x : Rand) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"readVal") (PairV #x #y) (Val #(({ x with readVal' := y } : Rand)))
   get_readPos : ∀ (x : Rand), go.IsGoStepPureDetTagged under (StructFieldGet Rand.underlying go!"readPos") #x (Val #(x.readPos'))
   set_readPos : ∀ (x : Rand) (y : w8), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"readPos") (PairV #x #y) (Val #(({ x with readPos' := y } : Rand)))
+  method_set : go.MethodSetIs Rand.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Rand.ty) [(go!"ExpFloat64", (some (go.signature.Signature [] false [go.float64]))), (go!"Float32", (some (go.signature.Signature [] false [go.float32]))), (go!"Float64", (some (go.signature.Signature [] false [go.float64]))), (go!"Int", (some (go.signature.Signature [] false [go.int]))), (go!"Int31", (some (go.signature.Signature [] false [go.int32]))), (go!"Int31n", (some (go.signature.Signature [go.int32] false [go.int32]))), (go!"Int63", (some (go.signature.Signature [] false [go.int64]))), (go!"Int63n", (some (go.signature.Signature [go.int64] false [go.int64]))), (go!"Intn", (some (go.signature.Signature [go.int] false [go.int]))), (go!"NormFloat64", (some (go.signature.Signature [] false [go.float64]))), (go!"Perm", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType go.int)]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"Seed", (some (go.signature.Signature [go.int64] false []))), (go!"Shuffle", (some (go.signature.Signature [go.int, (go.GoType.FunctionType (go.signature.Signature [go.int, go.int] false []))] false []))), (go!"Uint32", (some (go.signature.Signature [] false [go.uint32]))), (go!"Uint64", (some (go.signature.Signature [] false [go.uint64]))), (go!"math/rand.int31n", (some (go.signature.Signature [go.int32] false [go.int32])))]
 
 attribute [instance] Rand.TypeAssumptions.type_repr
   Rand.TypeAssumptions.underlying
@@ -300,6 +310,8 @@ attribute [instance] Rand.TypeAssumptions.type_repr
   Rand.TypeAssumptions.set_readVal
   Rand.TypeAssumptions.get_readPos
   Rand.TypeAssumptions.set_readPos
+  Rand.TypeAssumptions.method_set
+  Rand.TypeAssumptions.ptr_method_set
 
 structure runtimeSource [GooseExts] where
   mk ::
@@ -326,11 +338,15 @@ class runtimeSource.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContex
   underlying : go.UnderlyingDirectedEq runtimeSource.ty runtimeSource.underlying
   get_mu : ∀ (x : runtimeSource), go.IsGoStepPureDetTagged under (StructFieldGet runtimeSource.underlying go!"mu") #x (Val #(x.mu'))
   set_mu : ∀ (x : runtimeSource) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet runtimeSource.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : runtimeSource)))
+  method_set : go.MethodSetIs runtimeSource.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType runtimeSource.ty) [(go!"Int63", (some (go.signature.Signature [] false [go.int64]))), (go!"Seed", (some (go.signature.Signature [go.int64] false []))), (go!"Uint64", (some (go.signature.Signature [] false [go.uint64]))), (go!"math/rand.read", (some (go.signature.Signature [(go.GoType.SliceType go.byte), (go.GoType.PointerType go.int64), (go.GoType.PointerType go.int8)] false [go.int, go.error])))]
 
 attribute [instance] runtimeSource.TypeAssumptions.type_repr
   runtimeSource.TypeAssumptions.underlying
   runtimeSource.TypeAssumptions.get_mu
   runtimeSource.TypeAssumptions.set_mu
+  runtimeSource.TypeAssumptions.method_set
+  runtimeSource.TypeAssumptions.ptr_method_set
 
 structure lockedSource [GooseExts] where
   mk ::
@@ -361,6 +377,8 @@ class lockedSource.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   set_lk : ∀ (x : lockedSource) (y : _root_.Perennial.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet lockedSource.underlying go!"lk") (PairV #x #y) (Val #(({ x with lk' := y } : lockedSource)))
   get_s : ∀ (x : lockedSource), go.IsGoStepPureDetTagged under (StructFieldGet lockedSource.underlying go!"s") #x (Val #(x.s'))
   set_s : ∀ (x : lockedSource) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet lockedSource.underlying go!"s") (PairV #x #y) (Val #(({ x with s' := y } : lockedSource)))
+  method_set : go.MethodSetIs lockedSource.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType lockedSource.ty) [(go!"Int63", (some (go.signature.Signature [] false [go.int64]))), (go!"Seed", (some (go.signature.Signature [go.int64] false []))), (go!"Uint64", (some (go.signature.Signature [] false [go.uint64]))), (go!"math/rand.read", (some (go.signature.Signature [(go.GoType.SliceType go.byte), (go.GoType.PointerType go.int64), (go.GoType.PointerType go.int8)] false [go.int, go.error]))), (go!"math/rand.seed", (some (go.signature.Signature [go.int64] false []))), (go!"math/rand.seedPos", (some (go.signature.Signature [go.int64, (go.GoType.PointerType go.int8)] false [])))]
 
 attribute [instance] lockedSource.TypeAssumptions.type_repr
   lockedSource.TypeAssumptions.underlying
@@ -368,6 +386,8 @@ attribute [instance] lockedSource.TypeAssumptions.type_repr
   lockedSource.TypeAssumptions.set_lk
   lockedSource.TypeAssumptions.get_s
   lockedSource.TypeAssumptions.set_s
+  lockedSource.TypeAssumptions.method_set
+  lockedSource.TypeAssumptions.ptr_method_set
 
 structure rngSource [GooseExts] where
   mk ::
@@ -402,6 +422,8 @@ class rngSource.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   set_feed : ∀ (x : rngSource) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rngSource.underlying go!"feed") (PairV #x #y) (Val #(({ x with feed' := y } : rngSource)))
   get_vec : ∀ (x : rngSource), go.IsGoStepPureDetTagged under (StructFieldGet rngSource.underlying go!"vec") #x (Val #(x.vec'))
   set_vec : ∀ (x : rngSource) (y : (GoArray w64 607)), go.IsGoStepPureDetTagged under (StructFieldSet rngSource.underlying go!"vec") (PairV #x #y) (Val #(({ x with vec' := y } : rngSource)))
+  method_set : go.MethodSetIs rngSource.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType rngSource.ty) [(go!"Int63", (some (go.signature.Signature [] false [go.int64]))), (go!"Seed", (some (go.signature.Signature [go.int64] false []))), (go!"Uint64", (some (go.signature.Signature [] false [go.uint64])))]
 
 attribute [instance] rngSource.TypeAssumptions.type_repr
   rngSource.TypeAssumptions.underlying
@@ -411,6 +433,8 @@ attribute [instance] rngSource.TypeAssumptions.type_repr
   rngSource.TypeAssumptions.set_feed
   rngSource.TypeAssumptions.get_vec
   rngSource.TypeAssumptions.set_vec
+  rngSource.TypeAssumptions.method_set
+  rngSource.TypeAssumptions.ptr_method_set
 
 structure Zipf [GooseExts] where
   mk ::
@@ -469,6 +493,8 @@ class Zipf.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   set_hxm : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"hxm") (PairV #x #y) (Val #(({ x with hxm' := y } : Zipf)))
   get_hx0minusHxm : ∀ (x : Zipf), go.IsGoStepPureDetTagged under (StructFieldGet Zipf.underlying go!"hx0minusHxm") #x (Val #(x.hx0minusHxm'))
   set_hx0minusHxm : ∀ (x : Zipf) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Zipf.underlying go!"hx0minusHxm") (PairV #x #y) (Val #(({ x with hx0minusHxm' := y } : Zipf)))
+  method_set : go.MethodSetIs Zipf.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Zipf.ty) [(go!"Uint64", (some (go.signature.Signature [] false [go.uint64]))), (go!"math/rand.h", (some (go.signature.Signature [go.float64] false [go.float64]))), (go!"math/rand.hinv", (some (go.signature.Signature [go.float64] false [go.float64])))]
 
 attribute [instance] Zipf.TypeAssumptions.type_repr
   Zipf.TypeAssumptions.underlying
@@ -490,6 +516,8 @@ attribute [instance] Zipf.TypeAssumptions.type_repr
   Zipf.TypeAssumptions.set_hxm
   Zipf.TypeAssumptions.get_hx0minusHxm
   Zipf.TypeAssumptions.set_hx0minusHxm
+  Zipf.TypeAssumptions.method_set
+  Zipf.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Source_instance : Source.TypeAssumptions

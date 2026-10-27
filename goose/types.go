@@ -205,17 +205,49 @@ func (ctx *Ctx) signature(n locatable, t *types.Signature) glang.Expr {
 	)
 }
 
+// nameableSignature is t as `signature` writes it, except that, when t mentions
+// a type this translation cannot name (typeNameable), every such type is written
+// as what it denotes: a named type of a package the translation does not import
+// as its descriptor's definition, `go.Named "<path>.<Name>" [args]`, an alias as
+// the type it denotes.
+func (ctx *Ctx) nameableSignature(n locatable, t *types.Signature) glang.Expr {
+	if ctx.spellOut || ctx.typeNameable(t, map[types.Type]bool{}) {
+		return ctx.signature(n, t)
+	}
+	ctx.spellOut = true
+	defer func() { ctx.spellOut = false }()
+	return ctx.signature(n, t)
+}
+
+// interfaceType translates an interface type as the list of its elements: its
+// methods, all of them (those of embedded interfaces too, as go/types computes
+// the interface's method set), ordered by their unique ids, each named by its id
+// (types.Id: an unexported method's name is qualified by its package path, so
+// that `m` of package a and `m` of package b are distinct methods, as in Go),
+// then the embedded elements that are not interfaces made only of methods
+// (whose methods are already in the list): unions, other types, and interfaces
+// with type terms (constraints, as `comparable`). A method whose signature
+// mentions a type this translation cannot name (typeNameable: a type of a
+// package it does not import, an alias it does not translate) is written
+// with those types spelled out (nameableSignature). An interface type thus has the same elements in every
+// package that writes it, up to the definitions of descriptors (`T.ty`) and
+// aliases, as Go's type identity requires of the interface types compared at
+// run time (in a signature, as an element type).
 func (ctx *Ctx) interfaceType(n locatable, t *types.Interface) glang.Expr {
 	var elems glang.ListExpr
-	for i := range t.NumExplicitMethods() {
+	for i := range t.NumMethods() {
+		m := t.Method(i)
 		elems = append(elems,
 			glang.NewCallExpr(glang.TermIdent("go.MethodElem"),
-				glang.StringLiteral{Value: t.ExplicitMethod(i).Name()},
-				ctx.signature(n, t.ExplicitMethod(i).Signature())),
+				glang.StringLiteral{Value: m.Id()},
+				ctx.nameableSignature(n, m.Signature())),
 		)
 	}
 	for i := range t.NumEmbeddeds() {
 		em := t.EmbeddedType(i)
+		if emi, ok := em.Underlying().(*types.Interface); ok && emi.IsMethodSet() {
+			continue
+		}
 		var terms glang.ListExpr
 		if uem, ok := em.(*types.Union); ok {
 			for j := range uem.Len() {
@@ -264,6 +296,14 @@ func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 			}
 			ctx.nope(n, "unexpected built-in type %v", t.Obj())
 		}
+		if pkg := t.Obj().Pkg().Path(); ctx.spellOut && pkg != ctx.pkgPath {
+			if _, ok := ctx.importNames[pkg]; !ok {
+				// its descriptor written out, as `T.ty` is defined (typeDecl)
+				return glang.NewCallExpr(glang.VerbatimExpr("go.Named"),
+					glang.StringLiteral{Value: pkg + "." + t.Obj().Name()},
+					glang.ListExpr(ctx.convertTypeArgsToGlang(n, t.TypeArgs())))
+			}
+		}
 		if t.TypeArgs().Len() != 0 {
 			return glang.CallExpr{
 				MethodName: glang.TypeIdent(ctx.qualifiedName(t.Obj())),
@@ -279,6 +319,10 @@ func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 				return glang.TermIdent("go." + t.Obj().Name())
 			}
 			ctx.nope(n, "unexpected built-in type %v", t.Obj())
+		}
+		if ctx.spellOut && !ctx.typeNameable(t, map[types.Type]bool{}) {
+			// the type it denotes
+			return ctx.glangType(n, types.Unalias(t))
 		}
 		if t.TypeArgs().Len() != 0 {
 			return glang.CallExpr{

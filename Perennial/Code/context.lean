@@ -1852,8 +1852,12 @@ abbrev Context [GooseExts] : Type := GoInterface
 
 class Context.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Context.ty Context.underlying
+  method_set : go.MethodSetIs Context.ty [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool]))), (go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"Err", (some (go.signature.Signature [] false [go.error]))), (go!"Value", (some (go.signature.Signature [go.any] false [go.any])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Context.ty) []
 
 attribute [instance] Context.TypeAssumptions.underlying
+  Context.TypeAssumptions.method_set
+  Context.TypeAssumptions.ptr_method_set
 
 structure deadlineExceededError [GooseExts] where
   mk ::
@@ -1877,6 +1881,8 @@ noncomputable instance equals_unfold_deadlineExceededError [GooseExts] [GoGlobal
 class deadlineExceededError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying deadlineExceededError.underlying deadlineExceededError
   underlying : go.UnderlyingDirectedEq deadlineExceededError.ty deadlineExceededError.underlying
+  method_set : go.MethodSetIs deadlineExceededError.ty [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"Temporary", (some (go.signature.Signature [] false [go.bool]))), (go!"Timeout", (some (go.signature.Signature [] false [go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType deadlineExceededError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"Temporary", (some (go.signature.Signature [] false [go.bool]))), (go!"Timeout", (some (go.signature.Signature [] false [go.bool])))]
   Error_unfold : MethodUnfold deadlineExceededError.ty go!"Error" deadlineExceededError.Error.impl
   Temporary_unfold : MethodUnfold deadlineExceededError.ty go!"Temporary" deadlineExceededError.Temporary.impl
   Timeout_unfold : MethodUnfold deadlineExceededError.ty go!"Timeout" deadlineExceededError.Timeout.impl
@@ -1889,6 +1895,8 @@ class deadlineExceededError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLoc
 
 attribute [instance] deadlineExceededError.TypeAssumptions.type_repr
   deadlineExceededError.TypeAssumptions.underlying
+  deadlineExceededError.TypeAssumptions.method_set
+  deadlineExceededError.TypeAssumptions.ptr_method_set
   deadlineExceededError.TypeAssumptions.Error_unfold
   deadlineExceededError.TypeAssumptions.Temporary_unfold
   deadlineExceededError.TypeAssumptions.Timeout_unfold
@@ -1918,6 +1926,8 @@ noncomputable instance equals_unfold_emptyCtx [GooseExts] [GoGlobalContext] :
 class emptyCtx.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying emptyCtx.underlying emptyCtx
   underlying : go.UnderlyingDirectedEq emptyCtx.ty emptyCtx.underlying
+  method_set : go.MethodSetIs emptyCtx.ty [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool]))), (go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"Err", (some (go.signature.Signature [] false [go.error]))), (go!"Value", (some (go.signature.Signature [go.any] false [go.any])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType emptyCtx.ty) [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool]))), (go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"Err", (some (go.signature.Signature [] false [go.error]))), (go!"Value", (some (go.signature.Signature [go.any] false [go.any])))]
   Deadline_unfold : MethodUnfold emptyCtx.ty go!"Deadline" emptyCtx.Deadline.impl
   Done_unfold : MethodUnfold emptyCtx.ty go!"Done" emptyCtx.Done.impl
   Err_unfold : MethodUnfold emptyCtx.ty go!"Err" emptyCtx.Err.impl
@@ -1933,6 +1943,8 @@ class emptyCtx.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
 
 attribute [instance] emptyCtx.TypeAssumptions.type_repr
   emptyCtx.TypeAssumptions.underlying
+  emptyCtx.TypeAssumptions.method_set
+  emptyCtx.TypeAssumptions.ptr_method_set
   emptyCtx.TypeAssumptions.Deadline_unfold
   emptyCtx.TypeAssumptions.Done_unfold
   emptyCtx.TypeAssumptions.Err_unfold
@@ -1967,6 +1979,8 @@ class backgroundCtx.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContex
   underlying : go.UnderlyingDirectedEq backgroundCtx.ty backgroundCtx.underlying
   get_emptyCtx : ∀ (x : backgroundCtx), go.IsGoStepPureDetTagged under (StructFieldGet backgroundCtx.underlying go!"emptyCtx") #x (Val #(x.emptyCtx'))
   set_emptyCtx : ∀ (x : backgroundCtx) (y : emptyCtx), go.IsGoStepPureDetTagged under (StructFieldSet backgroundCtx.underlying go!"emptyCtx") (PairV #x #y) (Val #(({ x with emptyCtx' := y } : backgroundCtx)))
+  method_set : go.MethodSetIs backgroundCtx.ty [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool]))), (go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"Err", (some (go.signature.Signature [] false [go.error]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Value", (some (go.signature.Signature [go.any] false [go.any])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType backgroundCtx.ty) [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool]))), (go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"Err", (some (go.signature.Signature [] false [go.error]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Value", (some (go.signature.Signature [go.any] false [go.any])))]
   Deadline_unfold : MethodUnfold backgroundCtx.ty go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve emptyCtx.ty go!"Deadline"))) (App (Val (GoInstruction (StructFieldGet backgroundCtx.ty go!"emptyCtx"))) (Var "$r"))))
   Done_unfold : MethodUnfold backgroundCtx.ty go!"Done" (LamV "$r"
@@ -1991,6 +2005,8 @@ attribute [instance] backgroundCtx.TypeAssumptions.type_repr
   backgroundCtx.TypeAssumptions.underlying
   backgroundCtx.TypeAssumptions.get_emptyCtx
   backgroundCtx.TypeAssumptions.set_emptyCtx
+  backgroundCtx.TypeAssumptions.method_set
+  backgroundCtx.TypeAssumptions.ptr_method_set
   backgroundCtx.TypeAssumptions.Deadline_unfold
   backgroundCtx.TypeAssumptions.Done_unfold
   backgroundCtx.TypeAssumptions.Err_unfold
@@ -2027,6 +2043,8 @@ class todoCtx.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   underlying : go.UnderlyingDirectedEq todoCtx.ty todoCtx.underlying
   get_emptyCtx : ∀ (x : todoCtx), go.IsGoStepPureDetTagged under (StructFieldGet todoCtx.underlying go!"emptyCtx") #x (Val #(x.emptyCtx'))
   set_emptyCtx : ∀ (x : todoCtx) (y : emptyCtx), go.IsGoStepPureDetTagged under (StructFieldSet todoCtx.underlying go!"emptyCtx") (PairV #x #y) (Val #(({ x with emptyCtx' := y } : todoCtx)))
+  method_set : go.MethodSetIs todoCtx.ty [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool]))), (go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"Err", (some (go.signature.Signature [] false [go.error]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Value", (some (go.signature.Signature [go.any] false [go.any])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType todoCtx.ty) [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool]))), (go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"Err", (some (go.signature.Signature [] false [go.error]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Value", (some (go.signature.Signature [go.any] false [go.any])))]
   Deadline_unfold : MethodUnfold todoCtx.ty go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve emptyCtx.ty go!"Deadline"))) (App (Val (GoInstruction (StructFieldGet todoCtx.ty go!"emptyCtx"))) (Var "$r"))))
   Done_unfold : MethodUnfold todoCtx.ty go!"Done" (LamV "$r"
@@ -2051,6 +2069,8 @@ attribute [instance] todoCtx.TypeAssumptions.type_repr
   todoCtx.TypeAssumptions.underlying
   todoCtx.TypeAssumptions.get_emptyCtx
   todoCtx.TypeAssumptions.set_emptyCtx
+  todoCtx.TypeAssumptions.method_set
+  todoCtx.TypeAssumptions.ptr_method_set
   todoCtx.TypeAssumptions.Deadline_unfold
   todoCtx.TypeAssumptions.Done_unfold
   todoCtx.TypeAssumptions.Err_unfold
@@ -2069,8 +2089,12 @@ abbrev CancelFunc [GooseExts] : Type := GoFunc
 
 class CancelFunc.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq CancelFunc.ty CancelFunc.underlying
+  method_set : go.MethodSetIs CancelFunc.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType CancelFunc.ty) []
 
 attribute [instance] CancelFunc.TypeAssumptions.underlying
+  CancelFunc.TypeAssumptions.method_set
+  CancelFunc.TypeAssumptions.ptr_method_set
 
 abbrev CancelCauseFunc [GooseExts] : Type := GoFunc
 
@@ -2079,8 +2103,12 @@ abbrev CancelCauseFunc [GooseExts] : Type := GoFunc
 
 class CancelCauseFunc.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq CancelCauseFunc.ty CancelCauseFunc.underlying
+  method_set : go.MethodSetIs CancelCauseFunc.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType CancelCauseFunc.ty) []
 
 attribute [instance] CancelCauseFunc.TypeAssumptions.underlying
+  CancelCauseFunc.TypeAssumptions.method_set
+  CancelCauseFunc.TypeAssumptions.ptr_method_set
 
 abbrev afterFuncer [GooseExts] : Type := GoInterface
 
@@ -2089,8 +2117,12 @@ abbrev afterFuncer [GooseExts] : Type := GoInterface
 
 class afterFuncer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq afterFuncer.ty afterFuncer.underlying
+  method_set : go.MethodSetIs afterFuncer.ty [(go!"AfterFunc", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [] false []))] false [(go.GoType.FunctionType (go.signature.Signature [] false [go.bool]))])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType afterFuncer.ty) []
 
 attribute [instance] afterFuncer.TypeAssumptions.underlying
+  afterFuncer.TypeAssumptions.method_set
+  afterFuncer.TypeAssumptions.ptr_method_set
 
 structure cancelCtx [GooseExts] where
   mk ::
@@ -2137,6 +2169,8 @@ class cancelCtx.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   set_err : ∀ (x : cancelCtx) (y : _root_.Perennial.sync.atomic.Value), go.IsGoStepPureDetTagged under (StructFieldSet cancelCtx.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : cancelCtx)))
   get_cause : ∀ (x : cancelCtx), go.IsGoStepPureDetTagged under (StructFieldGet cancelCtx.underlying go!"cause") #x (Val #(x.cause'))
   set_cause : ∀ (x : cancelCtx) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet cancelCtx.underlying go!"cause") (PairV #x #y) (Val #(({ x with cause' := y } : cancelCtx)))
+  method_set : go.MethodSetIs cancelCtx.ty [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType cancelCtx.ty) [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool]))), (go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"Err", (some (go.signature.Signature [] false [go.error]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Value", (some (go.signature.Signature [go.any] false [go.any]))), (go!"context.cancel", (some (go.signature.Signature [go.bool, go.error, go.error] false []))), (go!"context.propagateCancel", (some (go.signature.Signature [Context.ty, canceler.ty] false [])))]
   Deadline_unfold : MethodUnfold cancelCtx.ty go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context.ty go!"Deadline"))) (App (Val (GoInstruction (StructFieldGet cancelCtx.ty go!"Context"))) (Var "$r"))))
   ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType cancelCtx.ty) go!"Deadline" (LamV "$r"
@@ -2162,6 +2196,8 @@ attribute [instance] cancelCtx.TypeAssumptions.type_repr
   cancelCtx.TypeAssumptions.set_err
   cancelCtx.TypeAssumptions.get_cause
   cancelCtx.TypeAssumptions.set_cause
+  cancelCtx.TypeAssumptions.method_set
+  cancelCtx.TypeAssumptions.ptr_method_set
   cancelCtx.TypeAssumptions.Deadline_unfold
   cancelCtx.TypeAssumptions.ptr_Deadline_unfold
   cancelCtx.TypeAssumptions.ptr_Done_unfold
@@ -2204,6 +2240,8 @@ class afterFuncCtx.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   set_once : ∀ (x : afterFuncCtx) (y : _root_.Perennial.sync.Once), go.IsGoStepPureDetTagged under (StructFieldSet afterFuncCtx.underlying go!"once") (PairV #x #y) (Val #(({ x with once' := y } : afterFuncCtx)))
   get_f : ∀ (x : afterFuncCtx), go.IsGoStepPureDetTagged under (StructFieldGet afterFuncCtx.underlying go!"f") #x (Val #(x.f'))
   set_f : ∀ (x : afterFuncCtx) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet afterFuncCtx.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : afterFuncCtx)))
+  method_set : go.MethodSetIs afterFuncCtx.ty [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType afterFuncCtx.ty) [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool]))), (go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"Err", (some (go.signature.Signature [] false [go.error]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Value", (some (go.signature.Signature [go.any] false [go.any]))), (go!"context.cancel", (some (go.signature.Signature [go.bool, go.error, go.error] false []))), (go!"context.propagateCancel", (some (go.signature.Signature [Context.ty, canceler.ty] false [])))]
   Deadline_unfold : MethodUnfold afterFuncCtx.ty go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve cancelCtx.ty go!"Deadline"))) (App (Val (GoInstruction (StructFieldGet afterFuncCtx.ty go!"cancelCtx"))) (Var "$r"))))
   ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType afterFuncCtx.ty) go!"Deadline" (LamV "$r"
@@ -2228,6 +2266,8 @@ attribute [instance] afterFuncCtx.TypeAssumptions.type_repr
   afterFuncCtx.TypeAssumptions.set_once
   afterFuncCtx.TypeAssumptions.get_f
   afterFuncCtx.TypeAssumptions.set_f
+  afterFuncCtx.TypeAssumptions.method_set
+  afterFuncCtx.TypeAssumptions.ptr_method_set
   afterFuncCtx.TypeAssumptions.Deadline_unfold
   afterFuncCtx.TypeAssumptions.ptr_Deadline_unfold
   afterFuncCtx.TypeAssumptions.ptr_Done_unfold
@@ -2266,6 +2306,8 @@ class stopCtx.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   set_Context : ∀ (x : stopCtx) (y : Context), go.IsGoStepPureDetTagged under (StructFieldSet stopCtx.underlying go!"Context") (PairV #x #y) (Val #(({ x with Context' := y } : stopCtx)))
   get_stop : ∀ (x : stopCtx), go.IsGoStepPureDetTagged under (StructFieldGet stopCtx.underlying go!"stop") #x (Val #(x.stop'))
   set_stop : ∀ (x : stopCtx) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet stopCtx.underlying go!"stop") (PairV #x #y) (Val #(({ x with stop' := y } : stopCtx)))
+  method_set : go.MethodSetIs stopCtx.ty [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool]))), (go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"Err", (some (go.signature.Signature [] false [go.error]))), (go!"Value", (some (go.signature.Signature [go.any] false [go.any])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stopCtx.ty) [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool]))), (go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"Err", (some (go.signature.Signature [] false [go.error]))), (go!"Value", (some (go.signature.Signature [go.any] false [go.any])))]
   Deadline_unfold : MethodUnfold stopCtx.ty go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context.ty go!"Deadline"))) (App (Val (GoInstruction (StructFieldGet stopCtx.ty go!"Context"))) (Var "$r"))))
   Done_unfold : MethodUnfold stopCtx.ty go!"Done" (LamV "$r"
@@ -2289,6 +2331,8 @@ attribute [instance] stopCtx.TypeAssumptions.type_repr
   stopCtx.TypeAssumptions.set_Context
   stopCtx.TypeAssumptions.get_stop
   stopCtx.TypeAssumptions.set_stop
+  stopCtx.TypeAssumptions.method_set
+  stopCtx.TypeAssumptions.ptr_method_set
   stopCtx.TypeAssumptions.Deadline_unfold
   stopCtx.TypeAssumptions.Done_unfold
   stopCtx.TypeAssumptions.Err_unfold
@@ -2301,12 +2345,16 @@ attribute [instance] stopCtx.TypeAssumptions.type_repr
 abbrev canceler [GooseExts] : Type := GoInterface
 
 @[reducible] noncomputable def canceler.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Done" (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))])), (go.InterfaceElem.MethodElem go!"cancel" (go.signature.Signature [go.bool, go.error, go.error] false []))])
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Done" (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))])), (go.InterfaceElem.MethodElem go!"context.cancel" (go.signature.Signature [go.bool, go.error, go.error] false []))])
 
 class canceler.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq canceler.ty canceler.underlying
+  method_set : go.MethodSetIs canceler.ty [(go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"context.cancel", (some (go.signature.Signature [go.bool, go.error, go.error] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType canceler.ty) []
 
 attribute [instance] canceler.TypeAssumptions.underlying
+  canceler.TypeAssumptions.method_set
+  canceler.TypeAssumptions.ptr_method_set
 
 abbrev stringer [GooseExts] : Type := GoInterface
 
@@ -2315,8 +2363,12 @@ abbrev stringer [GooseExts] : Type := GoInterface
 
 class stringer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq stringer.ty stringer.underlying
+  method_set : go.MethodSetIs stringer.ty [(go!"String", (some (go.signature.Signature [] false [go.string])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType stringer.ty) []
 
 attribute [instance] stringer.TypeAssumptions.underlying
+  stringer.TypeAssumptions.method_set
+  stringer.TypeAssumptions.ptr_method_set
 
 structure withoutCancelCtx [GooseExts] where
   mk ::
@@ -2343,6 +2395,8 @@ class withoutCancelCtx.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCon
   underlying : go.UnderlyingDirectedEq withoutCancelCtx.ty withoutCancelCtx.underlying
   get_c : ∀ (x : withoutCancelCtx), go.IsGoStepPureDetTagged under (StructFieldGet withoutCancelCtx.underlying go!"c") #x (Val #(x.c'))
   set_c : ∀ (x : withoutCancelCtx) (y : Context), go.IsGoStepPureDetTagged under (StructFieldSet withoutCancelCtx.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : withoutCancelCtx)))
+  method_set : go.MethodSetIs withoutCancelCtx.ty [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool]))), (go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"Err", (some (go.signature.Signature [] false [go.error]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Value", (some (go.signature.Signature [go.any] false [go.any])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType withoutCancelCtx.ty) [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool]))), (go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"Err", (some (go.signature.Signature [] false [go.error]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Value", (some (go.signature.Signature [go.any] false [go.any])))]
   Deadline_unfold : MethodUnfold withoutCancelCtx.ty go!"Deadline" withoutCancelCtx.Deadline.impl
   Done_unfold : MethodUnfold withoutCancelCtx.ty go!"Done" withoutCancelCtx.Done.impl
   Err_unfold : MethodUnfold withoutCancelCtx.ty go!"Err" withoutCancelCtx.Err.impl
@@ -2363,6 +2417,8 @@ attribute [instance] withoutCancelCtx.TypeAssumptions.type_repr
   withoutCancelCtx.TypeAssumptions.underlying
   withoutCancelCtx.TypeAssumptions.get_c
   withoutCancelCtx.TypeAssumptions.set_c
+  withoutCancelCtx.TypeAssumptions.method_set
+  withoutCancelCtx.TypeAssumptions.ptr_method_set
   withoutCancelCtx.TypeAssumptions.Deadline_unfold
   withoutCancelCtx.TypeAssumptions.Done_unfold
   withoutCancelCtx.TypeAssumptions.Err_unfold
@@ -2407,6 +2463,8 @@ class timerCtx.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   set_timer : ∀ (x : timerCtx) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet timerCtx.underlying go!"timer") (PairV #x #y) (Val #(({ x with timer' := y } : timerCtx)))
   get_deadline : ∀ (x : timerCtx), go.IsGoStepPureDetTagged under (StructFieldGet timerCtx.underlying go!"deadline") #x (Val #(x.deadline'))
   set_deadline : ∀ (x : timerCtx) (y : _root_.Perennial.time.Time), go.IsGoStepPureDetTagged under (StructFieldSet timerCtx.underlying go!"deadline") (PairV #x #y) (Val #(({ x with deadline' := y } : timerCtx)))
+  method_set : go.MethodSetIs timerCtx.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType timerCtx.ty) [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool]))), (go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"Err", (some (go.signature.Signature [] false [go.error]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Value", (some (go.signature.Signature [go.any] false [go.any]))), (go!"context.cancel", (some (go.signature.Signature [go.bool, go.error, go.error] false []))), (go!"context.propagateCancel", (some (go.signature.Signature [Context.ty, canceler.ty] false [])))]
   ptr_Deadline_unfold : MethodUnfold (go.GoType.PointerType timerCtx.ty) go!"Deadline" timerCtx.Deadline.impl
   ptr_Done_unfold : MethodUnfold (go.GoType.PointerType timerCtx.ty) go!"Done" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType cancelCtx.ty) go!"Done"))) (App (Val (GoInstruction (StructFieldRef timerCtx.ty go!"cancelCtx"))) (Var "$r"))))
@@ -2427,6 +2485,8 @@ attribute [instance] timerCtx.TypeAssumptions.type_repr
   timerCtx.TypeAssumptions.set_timer
   timerCtx.TypeAssumptions.get_deadline
   timerCtx.TypeAssumptions.set_deadline
+  timerCtx.TypeAssumptions.method_set
+  timerCtx.TypeAssumptions.ptr_method_set
   timerCtx.TypeAssumptions.ptr_Deadline_unfold
   timerCtx.TypeAssumptions.ptr_Done_unfold
   timerCtx.TypeAssumptions.ptr_Err_unfold
@@ -2468,6 +2528,8 @@ class valueCtx.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   set_key : ∀ (x : valueCtx) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet valueCtx.underlying go!"key") (PairV #x #y) (Val #(({ x with key' := y } : valueCtx)))
   get_val : ∀ (x : valueCtx), go.IsGoStepPureDetTagged under (StructFieldGet valueCtx.underlying go!"val") #x (Val #(x.val'))
   set_val : ∀ (x : valueCtx) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet valueCtx.underlying go!"val") (PairV #x #y) (Val #(({ x with val' := y } : valueCtx)))
+  method_set : go.MethodSetIs valueCtx.ty [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool]))), (go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"Err", (some (go.signature.Signature [] false [go.error])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType valueCtx.ty) [(go!"Deadline", (some (go.signature.Signature [] false [_root_.Perennial.time.Time.ty, go.bool]))), (go!"Done", (some (go.signature.Signature [] false [(go.GoType.ChannelType go.ChanDir.recvonly (go.GoType.StructType []))]))), (go!"Err", (some (go.signature.Signature [] false [go.error]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Value", (some (go.signature.Signature [go.any] false [go.any])))]
   Deadline_unfold : MethodUnfold valueCtx.ty go!"Deadline" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Context.ty go!"Deadline"))) (App (Val (GoInstruction (StructFieldGet valueCtx.ty go!"Context"))) (Var "$r"))))
   Done_unfold : MethodUnfold valueCtx.ty go!"Done" (LamV "$r"
@@ -2491,6 +2553,8 @@ attribute [instance] valueCtx.TypeAssumptions.type_repr
   valueCtx.TypeAssumptions.set_key
   valueCtx.TypeAssumptions.get_val
   valueCtx.TypeAssumptions.set_val
+  valueCtx.TypeAssumptions.method_set
+  valueCtx.TypeAssumptions.ptr_method_set
   valueCtx.TypeAssumptions.Deadline_unfold
   valueCtx.TypeAssumptions.Done_unfold
   valueCtx.TypeAssumptions.Err_unfold

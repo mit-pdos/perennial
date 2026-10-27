@@ -2029,8 +2029,12 @@ abbrev offerState [GooseExts] : Type := w64
 
 class offerState.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq offerState.ty offerState.underlying
+  method_set : go.MethodSetIs offerState.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType offerState.ty) []
 
 attribute [instance] offerState.TypeAssumptions.underlying
+  offerState.TypeAssumptions.method_set
+  offerState.TypeAssumptions.ptr_method_set
 
 structure Channel [GooseExts] (T : Type) where
   mk ::
@@ -2073,6 +2077,8 @@ class Channel.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   set_buffer : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"buffer") (PairV #x #y) (Val #(({ x with buffer' := y } : (Channel T'))))
   get_v : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"v") #x (Val #(x.v'))
   set_v : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"v") (PairV #x #y) (Val #(({ x with v' := y } : (Channel T'))))
+  method_set : ∀ (T : go.GoType), go.MethodSetIs (Channel.ty T) []
+  ptr_method_set : ∀ (T : go.GoType), go.MethodSetIs (go.GoType.PointerType (Channel.ty T)) [(go!"Cap", (some (go.signature.Signature [] false [go.int]))), (go!"Close", (some (go.signature.Signature [] false []))), (go!"Iter", (some (go.signature.Signature [] false [(go.GoType.FunctionType (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [T] false [go.bool]))] false []))]))), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Receive", (some (go.signature.Signature [] false [T, go.bool]))), (go!"ReceiveDiscardOk", (some (go.signature.Signature [] false [T]))), (go!"Send", (some (go.signature.Signature [T] false []))), (go!"TryReceive", (some (go.signature.Signature [go.bool] false [go.bool, T, go.bool]))), (go!"TrySend", (some (go.signature.Signature [T, go.bool] false [go.bool]))), (go!"github.com/mit-pdos/perennial/goose/model/channel.tryClose", (some (go.signature.Signature [] false [go.bool])))]
   ptr_Cap_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel.ty T)) go!"Cap" (Channel.Cap.impl T)
   ptr_Close_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel.ty T)) go!"Close" (Channel.Close.impl T)
   ptr_Iter_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (Channel.ty T)) go!"Iter" (Channel.Iter.impl T)
@@ -2096,6 +2102,8 @@ attribute [instance] Channel.TypeAssumptions.type_repr
   Channel.TypeAssumptions.set_buffer
   Channel.TypeAssumptions.get_v
   Channel.TypeAssumptions.set_v
+  Channel.TypeAssumptions.method_set
+  Channel.TypeAssumptions.ptr_method_set
   Channel.TypeAssumptions.ptr_Cap_unfold
   Channel.TypeAssumptions.ptr_Close_unfold
   Channel.TypeAssumptions.ptr_Iter_unfold
@@ -2114,8 +2122,12 @@ abbrev SelectDir [GooseExts] : Type := w64
 
 class SelectDir.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq SelectDir.ty SelectDir.underlying
+  method_set : go.MethodSetIs SelectDir.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType SelectDir.ty) []
 
 attribute [instance] SelectDir.TypeAssumptions.underlying
+  SelectDir.TypeAssumptions.method_set
+  SelectDir.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   offerState_instance : offerState.TypeAssumptions

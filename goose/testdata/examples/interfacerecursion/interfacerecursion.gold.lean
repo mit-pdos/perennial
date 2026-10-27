@@ -82,8 +82,12 @@ abbrev A [GooseExts] : Type := GoInterface
 
 class A.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq A.ty A.underlying
+  method_set : go.MethodSetIs A.ty [(go!"Foo", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType A.ty) []
 
 attribute [instance] A.TypeAssumptions.underlying
+  A.TypeAssumptions.method_set
+  A.TypeAssumptions.ptr_method_set
 
 abbrev B [GooseExts] : Type := GoInterface
 
@@ -92,8 +96,12 @@ abbrev B [GooseExts] : Type := GoInterface
 
 class B.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq B.ty B.underlying
+  method_set : go.MethodSetIs B.ty [(go!"Bar", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType B.ty) []
 
 attribute [instance] B.TypeAssumptions.underlying
+  B.TypeAssumptions.method_set
+  B.TypeAssumptions.ptr_method_set
 
 structure c [GooseExts] where
   mk ::
@@ -117,11 +125,15 @@ noncomputable instance equals_unfold_c [GooseExts] [GoGlobalContext] :
 class c.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying c.underlying c
   underlying : go.UnderlyingDirectedEq c.ty c.underlying
+  method_set : go.MethodSetIs c.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType c.ty) [(go!"Bar", (some (go.signature.Signature [] false []))), (go!"Foo", (some (go.signature.Signature [] false [])))]
   ptr_Bar_unfold : MethodUnfold (go.GoType.PointerType c.ty) go!"Bar" c.Bar.impl
   ptr_Foo_unfold : MethodUnfold (go.GoType.PointerType c.ty) go!"Foo" c.Foo.impl
 
 attribute [instance] c.TypeAssumptions.type_repr
   c.TypeAssumptions.underlying
+  c.TypeAssumptions.method_set
+  c.TypeAssumptions.ptr_method_set
   c.TypeAssumptions.ptr_Bar_unfold
   c.TypeAssumptions.ptr_Foo_unfold
 

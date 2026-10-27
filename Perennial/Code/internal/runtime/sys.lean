@@ -167,9 +167,13 @@ noncomputable instance equals_unfold_nih [GooseExts] [GoGlobalContext] :
 class nih.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying nih.underlying nih
   underlying : go.UnderlyingDirectedEq nih.ty nih.underlying
+  method_set : go.MethodSetIs nih.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType nih.ty) []
 
 attribute [instance] nih.TypeAssumptions.type_repr
   nih.TypeAssumptions.underlying
+  nih.TypeAssumptions.method_set
+  nih.TypeAssumptions.ptr_method_set
 
 structure NotInHeap [GooseExts] where
   mk ::
@@ -196,11 +200,15 @@ class NotInHeap.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   underlying : go.UnderlyingDirectedEq NotInHeap.ty NotInHeap.underlying
   «get__#0» : ∀ (x : NotInHeap), go.IsGoStepPureDetTagged under (StructFieldGet NotInHeap.underlying go!"_#0") #x (Val #(x.«_#0'»))
   «set__#0» : ∀ (x : NotInHeap) (y : nih), go.IsGoStepPureDetTagged under (StructFieldSet NotInHeap.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : NotInHeap)))
+  method_set : go.MethodSetIs NotInHeap.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType NotInHeap.ty) []
 
 attribute [instance] NotInHeap.TypeAssumptions.type_repr
   NotInHeap.TypeAssumptions.underlying
   NotInHeap.TypeAssumptions.«get__#0»
   NotInHeap.TypeAssumptions.«set__#0»
+  NotInHeap.TypeAssumptions.method_set
+  NotInHeap.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   nih_instance : nih.TypeAssumptions

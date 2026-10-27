@@ -761,6 +761,8 @@ class Enc.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSema
   set_b : ∀ (x : Enc) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Enc.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Enc)))
   get_off : ∀ (x : Enc), go.IsGoStepPureDetTagged under (StructFieldGet Enc.underlying go!"off") #x (Val #(x.off'))
   set_off : ∀ (x : Enc) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Enc.underlying go!"off") (PairV #x #y) (Val #(({ x with off' := y } : Enc)))
+  method_set : go.MethodSetIs Enc.ty [(go!"Finish", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"PutBool", (some (go.signature.Signature [go.bool] false []))), (go!"PutBytes", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false []))), (go!"PutInt", (some (go.signature.Signature [go.uint64] false []))), (go!"PutInt32", (some (go.signature.Signature [go.uint32] false []))), (go!"PutInts", (some (go.signature.Signature [(go.GoType.SliceType go.uint64)] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Enc.ty) [(go!"Finish", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"PutBool", (some (go.signature.Signature [go.bool] false []))), (go!"PutBytes", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false []))), (go!"PutInt", (some (go.signature.Signature [go.uint64] false []))), (go!"PutInt32", (some (go.signature.Signature [go.uint32] false []))), (go!"PutInts", (some (go.signature.Signature [(go.GoType.SliceType go.uint64)] false [])))]
 
 attribute [instance] Enc.TypeAssumptions.type_repr
   Enc.TypeAssumptions.underlying
@@ -768,6 +770,8 @@ attribute [instance] Enc.TypeAssumptions.type_repr
   Enc.TypeAssumptions.set_b
   Enc.TypeAssumptions.get_off
   Enc.TypeAssumptions.set_off
+  Enc.TypeAssumptions.method_set
+  Enc.TypeAssumptions.ptr_method_set
 
 structure Dec [GooseExts] where
   mk ::
@@ -798,6 +802,8 @@ class Dec.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSema
   set_b : ∀ (x : Dec) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Dec.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : Dec)))
   get_off : ∀ (x : Dec), go.IsGoStepPureDetTagged under (StructFieldGet Dec.underlying go!"off") #x (Val #(x.off'))
   set_off : ∀ (x : Dec) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet Dec.underlying go!"off") (PairV #x #y) (Val #(({ x with off' := y } : Dec)))
+  method_set : go.MethodSetIs Dec.ty [(go!"GetBool", (some (go.signature.Signature [] false [go.bool]))), (go!"GetBytes", (some (go.signature.Signature [go.uint64] false [(go.GoType.SliceType go.byte)]))), (go!"GetInt", (some (go.signature.Signature [] false [go.uint64]))), (go!"GetInt32", (some (go.signature.Signature [] false [go.uint32]))), (go!"GetInts", (some (go.signature.Signature [go.uint64] false [(go.GoType.SliceType go.uint64)])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Dec.ty) [(go!"GetBool", (some (go.signature.Signature [] false [go.bool]))), (go!"GetBytes", (some (go.signature.Signature [go.uint64] false [(go.GoType.SliceType go.byte)]))), (go!"GetInt", (some (go.signature.Signature [] false [go.uint64]))), (go!"GetInt32", (some (go.signature.Signature [] false [go.uint32]))), (go!"GetInts", (some (go.signature.Signature [go.uint64] false [(go.GoType.SliceType go.uint64)])))]
 
 attribute [instance] Dec.TypeAssumptions.type_repr
   Dec.TypeAssumptions.underlying
@@ -805,6 +811,8 @@ attribute [instance] Dec.TypeAssumptions.type_repr
   Dec.TypeAssumptions.set_b
   Dec.TypeAssumptions.get_off
   Dec.TypeAssumptions.set_off
+  Dec.TypeAssumptions.method_set
+  Dec.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Enc_instance : Enc.TypeAssumptions

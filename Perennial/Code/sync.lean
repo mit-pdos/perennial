@@ -1273,9 +1273,13 @@ noncomputable instance equals_unfold_noCopy [GooseExts] [GoGlobalContext] :
 class noCopy.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying noCopy.underlying noCopy
   underlying : go.UnderlyingDirectedEq noCopy.ty noCopy.underlying
+  method_set : go.MethodSetIs noCopy.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType noCopy.ty) [(go!"Lock", (some (go.signature.Signature [] false []))), (go!"Unlock", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] noCopy.TypeAssumptions.type_repr
   noCopy.TypeAssumptions.underlying
+  noCopy.TypeAssumptions.method_set
+  noCopy.TypeAssumptions.ptr_method_set
 
 abbrev Locker [GooseExts] : Type := GoInterface
 
@@ -1284,8 +1288,12 @@ abbrev Locker [GooseExts] : Type := GoInterface
 
 class Locker.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq Locker.ty Locker.underlying
+  method_set : go.MethodSetIs Locker.ty [(go!"Lock", (some (go.signature.Signature [] false []))), (go!"Unlock", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Locker.ty) []
 
 attribute [instance] Locker.TypeAssumptions.underlying
+  Locker.TypeAssumptions.method_set
+  Locker.TypeAssumptions.ptr_method_set
 
 structure notifyList [GooseExts] where
   mk ::
@@ -1328,6 +1336,8 @@ class notifyList.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] 
   set_head : ∀ (x : notifyList) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : notifyList)))
   get_tail : ∀ (x : notifyList), go.IsGoStepPureDetTagged under (StructFieldGet notifyList.underlying go!"tail") #x (Val #(x.tail'))
   set_tail : ∀ (x : notifyList) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet notifyList.underlying go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : notifyList)))
+  method_set : go.MethodSetIs notifyList.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType notifyList.ty) []
 
 attribute [instance] notifyList.TypeAssumptions.type_repr
   notifyList.TypeAssumptions.underlying
@@ -1341,12 +1351,18 @@ attribute [instance] notifyList.TypeAssumptions.type_repr
   notifyList.TypeAssumptions.set_head
   notifyList.TypeAssumptions.get_tail
   notifyList.TypeAssumptions.set_tail
+  notifyList.TypeAssumptions.method_set
+  notifyList.TypeAssumptions.ptr_method_set
 
 class copyChecker.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq copyChecker.ty copyChecker.underlying
+  method_set : go.MethodSetIs copyChecker.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType copyChecker.ty) [(go!"sync.check", (some (go.signature.Signature [] false [])))]
   ptr_check_unfold : MethodUnfold (go.GoType.PointerType copyChecker.ty) go!"check" copyChecker.check.impl
 
 attribute [instance] copyChecker.TypeAssumptions.underlying
+  copyChecker.TypeAssumptions.method_set
+  copyChecker.TypeAssumptions.ptr_method_set
   copyChecker.TypeAssumptions.ptr_check_unfold
 
 structure Cond [GooseExts] where
@@ -1386,6 +1402,8 @@ class Cond.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   set_notify : ∀ (x : Cond) (y : notifyList), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"notify") (PairV #x #y) (Val #(({ x with notify' := y } : Cond)))
   get_checker : ∀ (x : Cond), go.IsGoStepPureDetTagged under (StructFieldGet Cond.underlying go!"checker") #x (Val #(x.checker'))
   set_checker : ∀ (x : Cond) (y : copyChecker), go.IsGoStepPureDetTagged under (StructFieldSet Cond.underlying go!"checker") (PairV #x #y) (Val #(({ x with checker' := y } : Cond)))
+  method_set : go.MethodSetIs Cond.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Cond.ty) [(go!"Broadcast", (some (go.signature.Signature [] false []))), (go!"Signal", (some (go.signature.Signature [] false []))), (go!"Wait", (some (go.signature.Signature [] false [])))]
   ptr_Broadcast_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Broadcast" Cond.Broadcast.impl
   ptr_Signal_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Signal" Cond.Signal.impl
   ptr_Wait_unfold : MethodUnfold (go.GoType.PointerType Cond.ty) go!"Wait" Cond.Wait.impl
@@ -1400,6 +1418,8 @@ attribute [instance] Cond.TypeAssumptions.type_repr
   Cond.TypeAssumptions.set_notify
   Cond.TypeAssumptions.get_checker
   Cond.TypeAssumptions.set_checker
+  Cond.TypeAssumptions.method_set
+  Cond.TypeAssumptions.ptr_method_set
   Cond.TypeAssumptions.ptr_Broadcast_unfold
   Cond.TypeAssumptions.ptr_Signal_unfold
   Cond.TypeAssumptions.ptr_Wait_unfold
@@ -1412,20 +1432,28 @@ class Map.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSema
   type_repr : go.TypeReprUnderlying Map.underlying Map
   underlying : go.UnderlyingDirectedEq Map.ty Map.underlying
   isUnderlying : go.IsUnderlying Map.underlying Map.underlying
+  method_set : go.MethodSetIs Map.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Map.ty) [(go!"Clear", (some (go.signature.Signature [] false []))), (go!"CompareAndDelete", (some (go.signature.Signature [go.any, go.any] false [go.bool]))), (go!"CompareAndSwap", (some (go.signature.Signature [go.any, go.any, go.any] false [go.bool]))), (go!"Delete", (some (go.signature.Signature [go.any] false []))), (go!"Load", (some (go.signature.Signature [go.any] false [go.any, go.bool]))), (go!"LoadAndDelete", (some (go.signature.Signature [go.any] false [go.any, go.bool]))), (go!"LoadOrStore", (some (go.signature.Signature [go.any, go.any] false [go.any, go.bool]))), (go!"Range", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.any, go.any] false [go.bool]))] false []))), (go!"Store", (some (go.signature.Signature [go.any, go.any] false []))), (go!"Swap", (some (go.signature.Signature [go.any, go.any] false [go.any, go.bool])))]
 
 attribute [instance] Map.TypeAssumptions.type_repr
   Map.TypeAssumptions.underlying
   Map.TypeAssumptions.isUnderlying
+  Map.TypeAssumptions.method_set
+  Map.TypeAssumptions.ptr_method_set
 
 class Mutex.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Mutex.underlying Mutex
   underlying : go.UnderlyingDirectedEq Mutex.ty Mutex.underlying
+  method_set : go.MethodSetIs Mutex.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Mutex.ty) [(go!"Lock", (some (go.signature.Signature [] false []))), (go!"TryLock", (some (go.signature.Signature [] false [go.bool]))), (go!"Unlock", (some (go.signature.Signature [] false [])))]
   ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Lock" Mutex.Lock.impl
   ptr_TryLock_unfold : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"TryLock" Mutex.TryLock.impl
   ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Unlock" Mutex.Unlock.impl
 
 attribute [instance] Mutex.TypeAssumptions.type_repr
   Mutex.TypeAssumptions.underlying
+  Mutex.TypeAssumptions.method_set
+  Mutex.TypeAssumptions.ptr_method_set
   Mutex.TypeAssumptions.ptr_Lock_unfold
   Mutex.TypeAssumptions.ptr_TryLock_unfold
   Mutex.TypeAssumptions.ptr_Unlock_unfold
@@ -1463,6 +1491,8 @@ class Once.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   set_done : ∀ (x : Once) (y : _root_.Perennial.sync.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet Once.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : Once)))
   get_m : ∀ (x : Once), go.IsGoStepPureDetTagged under (StructFieldGet Once.underlying go!"m") #x (Val #(x.m'))
   set_m : ∀ (x : Once) (y : Mutex), go.IsGoStepPureDetTagged under (StructFieldSet Once.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : Once)))
+  method_set : go.MethodSetIs Once.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Once.ty) [(go!"Do", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [] false []))] false []))), (go!"sync.doSlow", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [] false []))] false [])))]
   ptr_Do_unfold : MethodUnfold (go.GoType.PointerType Once.ty) go!"Do" Once.Do.impl
   ptr_doSlow_unfold : MethodUnfold (go.GoType.PointerType Once.ty) go!"doSlow" Once.doSlow.impl
 
@@ -1474,6 +1504,8 @@ attribute [instance] Once.TypeAssumptions.type_repr
   Once.TypeAssumptions.set_done
   Once.TypeAssumptions.get_m
   Once.TypeAssumptions.set_m
+  Once.TypeAssumptions.method_set
+  Once.TypeAssumptions.ptr_method_set
   Once.TypeAssumptions.ptr_Do_unfold
   Once.TypeAssumptions.ptr_doSlow_unfold
 
@@ -1522,6 +1554,8 @@ class Pool.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   set_victimSize : ∀ (x : Pool) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"victimSize") (PairV #x #y) (Val #(({ x with victimSize' := y } : Pool)))
   get_New : ∀ (x : Pool), go.IsGoStepPureDetTagged under (StructFieldGet Pool.underlying go!"New") #x (Val #(x.New'))
   set_New : ∀ (x : Pool) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"New") (PairV #x #y) (Val #(({ x with New' := y } : Pool)))
+  method_set : go.MethodSetIs Pool.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Pool.ty) [(go!"Get", (some (go.signature.Signature [] false [go.any]))), (go!"Put", (some (go.signature.Signature [go.any] false []))), (go!"sync.getSlow", (some (go.signature.Signature [go.int] false [go.any]))), (go!"sync.pin", (some (go.signature.Signature [] false [(go.GoType.PointerType poolLocal.ty), go.int]))), (go!"sync.pinSlow", (some (go.signature.Signature [] false [(go.GoType.PointerType poolLocal.ty), go.int])))]
 
 attribute [instance] Pool.TypeAssumptions.type_repr
   Pool.TypeAssumptions.underlying
@@ -1537,6 +1571,8 @@ attribute [instance] Pool.TypeAssumptions.type_repr
   Pool.TypeAssumptions.set_victimSize
   Pool.TypeAssumptions.get_New
   Pool.TypeAssumptions.set_New
+  Pool.TypeAssumptions.method_set
+  Pool.TypeAssumptions.ptr_method_set
 
 axiom poolChainElt : Type
 axiom poolChainElt.zero_val : ZeroVal poolChainElt
@@ -1546,10 +1582,14 @@ class poolChainElt.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   type_repr : go.TypeReprUnderlying poolChainElt.underlying poolChainElt
   underlying : go.UnderlyingDirectedEq poolChainElt.ty poolChainElt.underlying
   isUnderlying : go.IsUnderlying poolChainElt.underlying poolChainElt.underlying
+  method_set : go.MethodSetIs poolChainElt.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType poolChainElt.ty) [(go!"sync.pack", (some (go.signature.Signature [go.uint32, go.uint32] false [go.uint64]))), (go!"sync.popHead", (some (go.signature.Signature [] false [go.any, go.bool]))), (go!"sync.popTail", (some (go.signature.Signature [] false [go.any, go.bool]))), (go!"sync.pushHead", (some (go.signature.Signature [go.any] false [go.bool]))), (go!"sync.unpack", (some (go.signature.Signature [go.uint64] false [go.uint32, go.uint32])))]
 
 attribute [instance] poolChainElt.TypeAssumptions.type_repr
   poolChainElt.TypeAssumptions.underlying
   poolChainElt.TypeAssumptions.isUnderlying
+  poolChainElt.TypeAssumptions.method_set
+  poolChainElt.TypeAssumptions.ptr_method_set
 
 structure poolChain [GooseExts] where
   mk ::
@@ -1580,6 +1620,8 @@ class poolChain.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   set_head : ∀ (x : poolChain) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet poolChain.underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : poolChain)))
   get_tail : ∀ (x : poolChain), go.IsGoStepPureDetTagged under (StructFieldGet poolChain.underlying go!"tail") #x (Val #(x.tail'))
   set_tail : ∀ (x : poolChain) (y : (_root_.Perennial.sync.atomic.Pointer poolChainElt)), go.IsGoStepPureDetTagged under (StructFieldSet poolChain.underlying go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : poolChain)))
+  method_set : go.MethodSetIs poolChain.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType poolChain.ty) [(go!"sync.popHead", (some (go.signature.Signature [] false [go.any, go.bool]))), (go!"sync.popTail", (some (go.signature.Signature [] false [go.any, go.bool]))), (go!"sync.pushHead", (some (go.signature.Signature [go.any] false [])))]
 
 attribute [instance] poolChain.TypeAssumptions.type_repr
   poolChain.TypeAssumptions.underlying
@@ -1587,6 +1629,8 @@ attribute [instance] poolChain.TypeAssumptions.type_repr
   poolChain.TypeAssumptions.set_head
   poolChain.TypeAssumptions.get_tail
   poolChain.TypeAssumptions.set_tail
+  poolChain.TypeAssumptions.method_set
+  poolChain.TypeAssumptions.ptr_method_set
 
 structure poolLocalInternal [GooseExts] where
   mk ::
@@ -1617,6 +1661,8 @@ class poolLocalInternal.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCo
   set_private : ∀ (x : poolLocalInternal) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet poolLocalInternal.underlying go!"private") (PairV #x #y) (Val #(({ x with private' := y } : poolLocalInternal)))
   get_shared : ∀ (x : poolLocalInternal), go.IsGoStepPureDetTagged under (StructFieldGet poolLocalInternal.underlying go!"shared") #x (Val #(x.shared'))
   set_shared : ∀ (x : poolLocalInternal) (y : poolChain), go.IsGoStepPureDetTagged under (StructFieldSet poolLocalInternal.underlying go!"shared") (PairV #x #y) (Val #(({ x with shared' := y } : poolLocalInternal)))
+  method_set : go.MethodSetIs poolLocalInternal.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType poolLocalInternal.ty) []
 
 attribute [instance] poolLocalInternal.TypeAssumptions.type_repr
   poolLocalInternal.TypeAssumptions.underlying
@@ -1624,6 +1670,8 @@ attribute [instance] poolLocalInternal.TypeAssumptions.type_repr
   poolLocalInternal.TypeAssumptions.set_private
   poolLocalInternal.TypeAssumptions.get_shared
   poolLocalInternal.TypeAssumptions.set_shared
+  poolLocalInternal.TypeAssumptions.method_set
+  poolLocalInternal.TypeAssumptions.ptr_method_set
 
 structure poolLocal [GooseExts] where
   mk ::
@@ -1654,6 +1702,8 @@ class poolLocal.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   set_poolLocalInternal : ∀ (x : poolLocal) (y : poolLocalInternal), go.IsGoStepPureDetTagged under (StructFieldSet poolLocal.underlying go!"poolLocalInternal") (PairV #x #y) (Val #(({ x with poolLocalInternal' := y } : poolLocal)))
   get_pad : ∀ (x : poolLocal), go.IsGoStepPureDetTagged under (StructFieldGet poolLocal.underlying go!"pad") #x (Val #(x.pad'))
   set_pad : ∀ (x : poolLocal) (y : (GoArray w8 96)), go.IsGoStepPureDetTagged under (StructFieldSet poolLocal.underlying go!"pad") (PairV #x #y) (Val #(({ x with pad' := y } : poolLocal)))
+  method_set : go.MethodSetIs poolLocal.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType poolLocal.ty) []
 
 attribute [instance] poolLocal.TypeAssumptions.type_repr
   poolLocal.TypeAssumptions.underlying
@@ -1661,6 +1711,8 @@ attribute [instance] poolLocal.TypeAssumptions.type_repr
   poolLocal.TypeAssumptions.set_poolLocalInternal
   poolLocal.TypeAssumptions.get_pad
   poolLocal.TypeAssumptions.set_pad
+  poolLocal.TypeAssumptions.method_set
+  poolLocal.TypeAssumptions.ptr_method_set
 
 structure poolDequeue [GooseExts] where
   mk ::
@@ -1691,6 +1743,8 @@ class poolDequeue.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   set_headTail : ∀ (x : poolDequeue) (y : _root_.Perennial.sync.atomic.Uint64), go.IsGoStepPureDetTagged under (StructFieldSet poolDequeue.underlying go!"headTail") (PairV #x #y) (Val #(({ x with headTail' := y } : poolDequeue)))
   get_vals : ∀ (x : poolDequeue), go.IsGoStepPureDetTagged under (StructFieldGet poolDequeue.underlying go!"vals") #x (Val #(x.vals'))
   set_vals : ∀ (x : poolDequeue) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet poolDequeue.underlying go!"vals") (PairV #x #y) (Val #(({ x with vals' := y } : poolDequeue)))
+  method_set : go.MethodSetIs poolDequeue.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType poolDequeue.ty) [(go!"sync.pack", (some (go.signature.Signature [go.uint32, go.uint32] false [go.uint64]))), (go!"sync.popHead", (some (go.signature.Signature [] false [go.any, go.bool]))), (go!"sync.popTail", (some (go.signature.Signature [] false [go.any, go.bool]))), (go!"sync.pushHead", (some (go.signature.Signature [go.any] false [go.bool]))), (go!"sync.unpack", (some (go.signature.Signature [go.uint64] false [go.uint32, go.uint32])))]
 
 attribute [instance] poolDequeue.TypeAssumptions.type_repr
   poolDequeue.TypeAssumptions.underlying
@@ -1698,6 +1752,8 @@ attribute [instance] poolDequeue.TypeAssumptions.type_repr
   poolDequeue.TypeAssumptions.set_headTail
   poolDequeue.TypeAssumptions.get_vals
   poolDequeue.TypeAssumptions.set_vals
+  poolDequeue.TypeAssumptions.method_set
+  poolDequeue.TypeAssumptions.ptr_method_set
 
 structure eface [GooseExts] where
   mk ::
@@ -1728,6 +1784,8 @@ class eface.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   set_typ : ∀ (x : eface) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet eface.underlying go!"typ") (PairV #x #y) (Val #(({ x with typ' := y } : eface)))
   get_val : ∀ (x : eface), go.IsGoStepPureDetTagged under (StructFieldGet eface.underlying go!"val") #x (Val #(x.val'))
   set_val : ∀ (x : eface) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet eface.underlying go!"val") (PairV #x #y) (Val #(({ x with val' := y } : eface)))
+  method_set : go.MethodSetIs eface.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType eface.ty) []
 
 attribute [instance] eface.TypeAssumptions.type_repr
   eface.TypeAssumptions.underlying
@@ -1735,6 +1793,8 @@ attribute [instance] eface.TypeAssumptions.type_repr
   eface.TypeAssumptions.set_typ
   eface.TypeAssumptions.get_val
   eface.TypeAssumptions.set_val
+  eface.TypeAssumptions.method_set
+  eface.TypeAssumptions.ptr_method_set
 
 abbrev dequeueNil [GooseExts] : Type := Loc
 
@@ -1743,8 +1803,12 @@ abbrev dequeueNil [GooseExts] : Type := Loc
 
 class dequeueNil.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq dequeueNil.ty dequeueNil.underlying
+  method_set : go.MethodSetIs dequeueNil.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType dequeueNil.ty) []
 
 attribute [instance] dequeueNil.TypeAssumptions.underlying
+  dequeueNil.TypeAssumptions.method_set
+  dequeueNil.TypeAssumptions.ptr_method_set
 
 structure RWMutex [GooseExts] where
   mk ::
@@ -1787,6 +1851,8 @@ class RWMutex.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   set_readerCount : ∀ (x : RWMutex) (y : _root_.Perennial.sync.atomic.Int32), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"readerCount") (PairV #x #y) (Val #(({ x with readerCount' := y } : RWMutex)))
   get_readerWait : ∀ (x : RWMutex), go.IsGoStepPureDetTagged under (StructFieldGet RWMutex.underlying go!"readerWait") #x (Val #(x.readerWait'))
   set_readerWait : ∀ (x : RWMutex) (y : _root_.Perennial.sync.atomic.Int32), go.IsGoStepPureDetTagged under (StructFieldSet RWMutex.underlying go!"readerWait") (PairV #x #y) (Val #(({ x with readerWait' := y } : RWMutex)))
+  method_set : go.MethodSetIs RWMutex.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType RWMutex.ty) [(go!"Lock", (some (go.signature.Signature [] false []))), (go!"RLock", (some (go.signature.Signature [] false []))), (go!"RLocker", (some (go.signature.Signature [] false [Locker.ty]))), (go!"RUnlock", (some (go.signature.Signature [] false []))), (go!"TryLock", (some (go.signature.Signature [] false [go.bool]))), (go!"TryRLock", (some (go.signature.Signature [] false [go.bool]))), (go!"Unlock", (some (go.signature.Signature [] false []))), (go!"sync.rUnlockSlow", (some (go.signature.Signature [go.int32] false [])))]
   ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType RWMutex.ty) go!"Lock" RWMutex.Lock.impl
   ptr_RLock_unfold : MethodUnfold (go.GoType.PointerType RWMutex.ty) go!"RLock" RWMutex.RLock.impl
   ptr_RLocker_unfold : MethodUnfold (go.GoType.PointerType RWMutex.ty) go!"RLocker" RWMutex.RLocker.impl
@@ -1808,6 +1874,8 @@ attribute [instance] RWMutex.TypeAssumptions.type_repr
   RWMutex.TypeAssumptions.set_readerCount
   RWMutex.TypeAssumptions.get_readerWait
   RWMutex.TypeAssumptions.set_readerWait
+  RWMutex.TypeAssumptions.method_set
+  RWMutex.TypeAssumptions.ptr_method_set
   RWMutex.TypeAssumptions.ptr_Lock_unfold
   RWMutex.TypeAssumptions.ptr_RLock_unfold
   RWMutex.TypeAssumptions.ptr_RLocker_unfold
@@ -1824,10 +1892,14 @@ abbrev rlocker [GooseExts] : Type := RWMutex
 
 class rlocker.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq rlocker.ty rlocker.underlying
+  method_set : go.MethodSetIs rlocker.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType rlocker.ty) [(go!"Lock", (some (go.signature.Signature [] false []))), (go!"Unlock", (some (go.signature.Signature [] false [])))]
   ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType rlocker.ty) go!"Lock" rlocker.Lock.impl
   ptr_Unlock_unfold : MethodUnfold (go.GoType.PointerType rlocker.ty) go!"Unlock" rlocker.Unlock.impl
 
 attribute [instance] rlocker.TypeAssumptions.underlying
+  rlocker.TypeAssumptions.method_set
+  rlocker.TypeAssumptions.ptr_method_set
   rlocker.TypeAssumptions.ptr_Lock_unfold
   rlocker.TypeAssumptions.ptr_Unlock_unfold
 
@@ -1864,6 +1936,8 @@ class WaitGroup.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   set_state : ∀ (x : WaitGroup) (y : _root_.Perennial.sync.atomic.Uint64), go.IsGoStepPureDetTagged under (StructFieldSet WaitGroup.underlying go!"state") (PairV #x #y) (Val #(({ x with state' := y } : WaitGroup)))
   get_sema : ∀ (x : WaitGroup), go.IsGoStepPureDetTagged under (StructFieldGet WaitGroup.underlying go!"sema") #x (Val #(x.sema'))
   set_sema : ∀ (x : WaitGroup) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet WaitGroup.underlying go!"sema") (PairV #x #y) (Val #(({ x with sema' := y } : WaitGroup)))
+  method_set : go.MethodSetIs WaitGroup.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType WaitGroup.ty) [(go!"Add", (some (go.signature.Signature [go.int] false []))), (go!"Done", (some (go.signature.Signature [] false []))), (go!"Go", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [] false []))] false []))), (go!"Wait", (some (go.signature.Signature [] false [])))]
   ptr_Add_unfold : MethodUnfold (go.GoType.PointerType WaitGroup.ty) go!"Add" WaitGroup.Add.impl
   ptr_Done_unfold : MethodUnfold (go.GoType.PointerType WaitGroup.ty) go!"Done" WaitGroup.Done.impl
   ptr_Go_unfold : MethodUnfold (go.GoType.PointerType WaitGroup.ty) go!"Go" WaitGroup.Go.impl
@@ -1877,6 +1951,8 @@ attribute [instance] WaitGroup.TypeAssumptions.type_repr
   WaitGroup.TypeAssumptions.set_state
   WaitGroup.TypeAssumptions.get_sema
   WaitGroup.TypeAssumptions.set_sema
+  WaitGroup.TypeAssumptions.method_set
+  WaitGroup.TypeAssumptions.ptr_method_set
   WaitGroup.TypeAssumptions.ptr_Add_unfold
   WaitGroup.TypeAssumptions.ptr_Done_unfold
   WaitGroup.TypeAssumptions.ptr_Go_unfold

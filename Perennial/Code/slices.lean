@@ -3538,8 +3538,12 @@ abbrev sortedHint [GooseExts] : Type := w64
 
 class sortedHint.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq sortedHint.ty sortedHint.underlying
+  method_set : go.MethodSetIs sortedHint.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sortedHint.ty) []
 
 attribute [instance] sortedHint.TypeAssumptions.underlying
+  sortedHint.TypeAssumptions.method_set
+  sortedHint.TypeAssumptions.ptr_method_set
 
 abbrev xorshift [GooseExts] : Type := w64
 
@@ -3548,9 +3552,13 @@ abbrev xorshift [GooseExts] : Type := w64
 
 class xorshift.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq xorshift.ty xorshift.underlying
+  method_set : go.MethodSetIs xorshift.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType xorshift.ty) [(go!"Next", (some (go.signature.Signature [] false [go.uint64])))]
   ptr_Next_unfold : MethodUnfold (go.GoType.PointerType xorshift.ty) go!"Next" xorshift.Next.impl
 
 attribute [instance] xorshift.TypeAssumptions.underlying
+  xorshift.TypeAssumptions.method_set
+  xorshift.TypeAssumptions.ptr_method_set
   xorshift.TypeAssumptions.ptr_Next_unfold
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

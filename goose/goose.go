@@ -95,7 +95,10 @@ type Ctx struct {
 	namedTypeSpecs []*ast.TypeSpec
 	localTypes     map[string]bool // names of the types declared in functions
 
-	importNames        map[string]*types.PkgName
+	importNames map[string]*types.PkgName
+	// spellOut: glangType writes the types this translation cannot name
+	// (typeNameable) as what they denote (nameableSignature)
+	spellOut           bool
 	importNamesOrdered []*types.PkgName
 	// Full Go import path -> Assumptions class field name. For colliding
 	// package names, imports ending in "a/v1" and "b/v1" become
@@ -2522,11 +2525,18 @@ func (ctx *Ctx) funcDecl(d *ast.FuncDecl) {
 	}
 
 	// A type declared in a translated function is translated as a package-level
-	// type of the same name, which must therefore be unique in the package.
+	// type of the same name, which must therefore be unique in the package. In a
+	// generic function it is a distinct type at each instantiation, which one
+	// descriptor cannot be.
+	sig := ctx.info.Defs[d.Name].Type().(*types.Signature)
+	generic := sig.TypeParams().Len() > 0 || sig.RecvTypeParams().Len() > 0
 	for _, g := range util.TypeDecls(d) {
 		for _, spec := range g.Specs {
 			spec := spec.(*ast.TypeSpec)
 			name := spec.Name.Name
+			if generic {
+				ctx.unsupported(spec, "local type %s in a generic function", name)
+			}
 			if ctx.localTypes[name] || ctx.info.Defs[spec.Name].Pkg().Scope().Lookup(name) != nil {
 				ctx.unsupported(spec, "local type %s: the name is not unique in the package", name)
 			}
