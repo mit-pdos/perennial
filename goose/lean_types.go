@@ -342,7 +342,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 				var fieldType types.Type = types.NewPointer(field.Type())
 				var fieldExpr glang.Expr = glang.NewCallExpr(
 					glang.VerbatimExpr("StructFieldRef"),
-					ctx.glangType(t.Obj(), t),
+					glang.VerbatimExpr(ty),
 					glang.StringLiteral{Value: field.Name()},
 					glang.IdentExpr("$r"),
 				)

@@ -234,6 +234,11 @@ noncomputable def msBox.ty [GooseExts] [GoGlobalContext] (T : go.GoType) : go.Go
 
 attribute [irreducible] msBox.ty
 
+noncomputable def msEmbedGeneric.ty [GooseExts] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.msEmbedGeneric" [T])
+
+attribute [irreducible] msEmbedGeneric.ty
+
 noncomputable def msHidden.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.msHidden" [])
 
@@ -699,6 +704,9 @@ noncomputable def testMethodSetInterfaceToInterface [GooseExts] [GoGlobalContext
 
 noncomputable def testMethodSetGeneric [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMethodSetGeneric"
+
+noncomputable def testMethodSetPromotedGeneric [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMethodSetPromotedGeneric"
 
 noncomputable def testMethodSetUnexported [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMethodSetUnexported"
@@ -6029,7 +6037,72 @@ noncomputable def testMethodSetGeneric.impl [GooseExts] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "i") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- go: method_sets.go:184:17 -/
+/-- go: method_sets.go:188:6 -/
+noncomputable def testMethodSetPromotedGeneric.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc (msEmbedGeneric.ty go.uint64)))) (Let "$v0" (Let "$v0" (Val #(W64 3))
+  (App (Val (GoInstruction (CompositeLiteral msValRecv.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v0")))])))
+  (App (Val (GoInstruction (CompositeLiteral (msEmbedGeneric.ty go.uint64)))) (LiteralValue [(KeyedElement (some (KeyField go!"msGetter")) (ElementExpression msValRecv.ty (Var "$v0")))]))))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (msEmbedGeneric.ty go.uint64))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType (msEmbedGeneric.ty go.uint64))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType (msEmbedGeneric.ty go.uint64)) go.any))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (msEmbedGeneric.ty go.uint64))))) (Var "b")))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 msSetter.ty))) (App (Val (GoInstruction (GoLoad go.any))) (Var "i")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok1" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "s" (App (Val (GoInstruction (GoAlloc msSetter.ty))) (App (Val (GoInstruction (GoZeroVal msSetter.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 msGetter.ty))) (App (Val (GoInstruction (GoLoad go.any))) (Var "i")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok2" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "g" (App (Val (GoInstruction (GoAlloc msGetter.ty))) (App (Val (GoInstruction (GoZeroVal msGetter.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (App (Val (GoInstruction (MethodResolve msGetter.ty go!"Get"))) (App (Val (GoInstruction (GoLoad msGetter.ty))) (Var "g"))) (Val #())) (Val #(W64 3)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef msPtrRecv.ty go!"x"))) (App (Val (GoInstruction (StructFieldRef (msEmbedGeneric.ty go.uint64) go!"msPtrRecv"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (msEmbedGeneric.ty go.uint64))))) (Var "b"))))) (Val #(W64 4)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Let "$a0" (Val #(W64 4))
+  (App (App (Val (GoInstruction (MethodResolve msSetter.ty go!"Set"))) (App (Val (GoInstruction (GoLoad msSetter.ty))) (Var "s"))) (Var "$a0")))))))
+  (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok1"))) (Val #true) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok2"))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok2") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore msGetter.ty))) (Pair (Var "g") (Var "$r0"))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore msSetter.ty))) (Pair (Var "s") (Var "$r0"))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "i") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType (msEmbedGeneric.ty go.uint64))))) (Pair (Var "b") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: method_sets.go:204:17 -/
 noncomputable def msHidden.hidden.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
@@ -6038,7 +6111,7 @@ noncomputable def msHidden.hidden.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))
   (Val #()))))
 
-/-- go: method_sets.go:186:6 -/
+/-- go: method_sets.go:206:6 -/
 noncomputable def testMethodSetUnexported.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -6087,7 +6160,7 @@ noncomputable def testMethodSetUnexported.impl [GooseExts] [GoGlobalContext] : v
 
 /-- A type switch with interface cases checks method sets too.
 
-    go: method_sets.go:195:6 -/
+    go: method_sets.go:215:6 -/
 noncomputable def testMethodSetTypeSwitch.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -6131,7 +6204,7 @@ noncomputable def testMethodSetTypeSwitch.impl [GooseExts] [GoGlobalContext] : v
 
 /-- A failed assertion to an interface panics (the single-result form).
 
-    go: method_sets.go:207:6 -/
+    go: method_sets.go:227:6 -/
 noncomputable def testMethodSetAssertPanics.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -11327,6 +11400,62 @@ attribute [instance] msBox.TypeAssumptions.type_repr
   msBox.TypeAssumptions.Get_unfold
   msBox.TypeAssumptions.ptr_Get_unfold
 
+structure msEmbedGeneric [GooseExts] (T : Type) where
+  mk ::
+  msPtrRecv' : msPtrRecv
+  msGetter' : msGetter
+  v' : T
+
+noncomputable instance msEmbedGeneric.zero_val [GooseExts] {T : Type} [ZeroVal T] : ZeroVal (msEmbedGeneric T) :=
+  ⟨msEmbedGeneric.mk zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def msEmbedGeneric.fieldsUnsealed [GooseExts] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+  [(go.field_decl.EmbeddedField go!"msPtrRecv" msPtrRecv.ty),
+(go.field_decl.EmbeddedField go!"msGetter" msGetter.ty),
+(go.field_decl.FieldDecl go!"v" T)]
+
+@[irreducible] noncomputable def msEmbedGeneric.fields [GooseExts] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+  (msEmbedGeneric.fieldsUnsealed T)
+
+noncomputable instance equals_unfold_msEmbedGeneric [GooseExts] [GoGlobalContext] (T : go.GoType) :
+    EqualsUnfold (msEmbedGeneric.fields T) (msEmbedGeneric.fieldsUnsealed T) :=
+  ⟨by unfold msEmbedGeneric.fields; rfl⟩
+
+@[reducible] noncomputable def msEmbedGeneric.underlying [GooseExts] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType (msEmbedGeneric.fields T))
+
+class msEmbedGeneric.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (msEmbedGeneric.underlying T) (msEmbedGeneric T')
+  underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (msEmbedGeneric.ty T) (msEmbedGeneric.underlying T)
+  get_msPtrRecv : ∀ (T : go.GoType) (T' : Type) (x : (msEmbedGeneric T')), go.IsGoStepPureDetTagged under (StructFieldGet (msEmbedGeneric.underlying T) go!"msPtrRecv") #x (Val #(x.msPtrRecv'))
+  set_msPtrRecv : ∀ (T : go.GoType) (T' : Type) (x : (msEmbedGeneric T')) (y : msPtrRecv), go.IsGoStepPureDetTagged under (StructFieldSet (msEmbedGeneric.underlying T) go!"msPtrRecv") (PairV #x #y) (Val #(({ x with msPtrRecv' := y } : (msEmbedGeneric T'))))
+  get_msGetter : ∀ (T : go.GoType) (T' : Type) (x : (msEmbedGeneric T')), go.IsGoStepPureDetTagged under (StructFieldGet (msEmbedGeneric.underlying T) go!"msGetter") #x (Val #(x.msGetter'))
+  set_msGetter : ∀ (T : go.GoType) (T' : Type) (x : (msEmbedGeneric T')) (y : msGetter), go.IsGoStepPureDetTagged under (StructFieldSet (msEmbedGeneric.underlying T) go!"msGetter") (PairV #x #y) (Val #(({ x with msGetter' := y } : (msEmbedGeneric T'))))
+  get_v : ∀ (T : go.GoType) (T' : Type) (x : (msEmbedGeneric T')), go.IsGoStepPureDetTagged under (StructFieldGet (msEmbedGeneric.underlying T) go!"v") #x (Val #(x.v'))
+  set_v : ∀ (T : go.GoType) (T' : Type) (x : (msEmbedGeneric T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (msEmbedGeneric.underlying T) go!"v") (PairV #x #y) (Val #(({ x with v' := y } : (msEmbedGeneric T'))))
+  method_set : ∀ (T : go.GoType), go.MethodSetIs (msEmbedGeneric.ty T) [(go!"Get", (some (go.signature.Signature [] false [go.uint64])))]
+  ptr_method_set : ∀ (T : go.GoType), go.MethodSetIs (go.GoType.PointerType (msEmbedGeneric.ty T)) [(go!"Get", (some (go.signature.Signature [] false [go.uint64]))), (go!"Set", (some (go.signature.Signature [go.uint64] false [])))]
+  Get_unfold : ∀ (T : go.GoType), MethodUnfold (msEmbedGeneric.ty T) go!"Get" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve msGetter.ty go!"Get"))) (App (Val (GoInstruction (StructFieldGet (msEmbedGeneric.ty T) go!"msGetter"))) (Var "$r"))))
+  ptr_Get_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (msEmbedGeneric.ty T)) go!"Get" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve msGetter.ty go!"Get"))) (App (Val (GoInstruction (GoLoad msGetter.ty))) (App (Val (GoInstruction (StructFieldRef (msEmbedGeneric.ty T) go!"msGetter"))) (Var "$r")))))
+  ptr_Set_unfold : ∀ (T : go.GoType), MethodUnfold (go.GoType.PointerType (msEmbedGeneric.ty T)) go!"Set" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve (go.GoType.PointerType msPtrRecv.ty) go!"Set"))) (App (Val (GoInstruction (StructFieldRef (msEmbedGeneric.ty T) go!"msPtrRecv"))) (Var "$r"))))
+
+attribute [instance] msEmbedGeneric.TypeAssumptions.type_repr
+  msEmbedGeneric.TypeAssumptions.underlying
+  msEmbedGeneric.TypeAssumptions.get_msPtrRecv
+  msEmbedGeneric.TypeAssumptions.set_msPtrRecv
+  msEmbedGeneric.TypeAssumptions.get_msGetter
+  msEmbedGeneric.TypeAssumptions.set_msGetter
+  msEmbedGeneric.TypeAssumptions.get_v
+  msEmbedGeneric.TypeAssumptions.set_v
+  msEmbedGeneric.TypeAssumptions.method_set
+  msEmbedGeneric.TypeAssumptions.ptr_method_set
+  msEmbedGeneric.TypeAssumptions.Get_unfold
+  msEmbedGeneric.TypeAssumptions.ptr_Get_unfold
+  msEmbedGeneric.TypeAssumptions.ptr_Set_unfold
+
 structure msHidden [GooseExts] where
   mk ::
 
@@ -11867,6 +11996,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   msGetSetter_instance : msGetSetter.TypeAssumptions
   msBoth_instance : msBoth.TypeAssumptions
   msBox_instance : msBox.TypeAssumptions
+  msEmbedGeneric_instance : msEmbedGeneric.TypeAssumptions
   msHidden_instance : msHidden.TypeAssumptions
   BoolTest_instance : BoolTest.TypeAssumptions
   ArrayEditor_instance : ArrayEditor.TypeAssumptions
@@ -12009,6 +12139,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testMethodSetEmbeddedInterface_unfold : FuncUnfold testMethodSetEmbeddedInterface [] testMethodSetEmbeddedInterface.impl
   testMethodSetInterfaceToInterface_unfold : FuncUnfold testMethodSetInterfaceToInterface [] testMethodSetInterfaceToInterface.impl
   testMethodSetGeneric_unfold : FuncUnfold testMethodSetGeneric [] testMethodSetGeneric.impl
+  testMethodSetPromotedGeneric_unfold : FuncUnfold testMethodSetPromotedGeneric [] testMethodSetPromotedGeneric.impl
   testMethodSetUnexported_unfold : FuncUnfold testMethodSetUnexported [] testMethodSetUnexported.impl
   testMethodSetTypeSwitch_unfold : FuncUnfold testMethodSetTypeSwitch [] testMethodSetTypeSwitch.impl
   testMethodSetAssertPanics_unfold : FuncUnfold testMethodSetAssertPanics [] testMethodSetAssertPanics.impl
@@ -12182,6 +12313,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.msGetSetter_instance
   Assumptions.msBoth_instance
   Assumptions.msBox_instance
+  Assumptions.msEmbedGeneric_instance
   Assumptions.msHidden_instance
   Assumptions.BoolTest_instance
   Assumptions.ArrayEditor_instance
@@ -12324,6 +12456,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testMethodSetEmbeddedInterface_unfold
   Assumptions.testMethodSetInterfaceToInterface_unfold
   Assumptions.testMethodSetGeneric_unfold
+  Assumptions.testMethodSetPromotedGeneric_unfold
   Assumptions.testMethodSetUnexported_unfold
   Assumptions.testMethodSetTypeSwitch_unfold
   Assumptions.testMethodSetAssertPanics_unfold
