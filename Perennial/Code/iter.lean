@@ -73,8 +73,12 @@ abbrev Seq' [GooseExts] (V : Type) : Type := GoFunc
 
 class Seq.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : ∀ (V : go.GoType), go.UnderlyingDirectedEq (Seq'.ty V) (Seq'.underlying V)
+  method_set : ∀ (V : go.GoType), go.MethodSetIs (Seq'.ty V) []
+  ptr_method_set : ∀ (V : go.GoType), go.MethodSetIs (go.GoType.PointerType (Seq'.ty V)) []
 
 attribute [instance] Seq.TypeAssumptions.underlying
+  Seq.TypeAssumptions.method_set
+  Seq.TypeAssumptions.ptr_method_set
 
 abbrev Seq2 [GooseExts] (K V : Type) : Type := GoFunc
 
@@ -83,8 +87,12 @@ abbrev Seq2 [GooseExts] (K V : Type) : Type := GoFunc
 
 class Seq2.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : ∀ (K V : go.GoType), go.UnderlyingDirectedEq (Seq2.ty K V) (Seq2.underlying K V)
+  method_set : ∀ (K V : go.GoType), go.MethodSetIs (Seq2.ty K V) []
+  ptr_method_set : ∀ (K V : go.GoType), go.MethodSetIs (go.GoType.PointerType (Seq2.ty K V)) []
 
 attribute [instance] Seq2.TypeAssumptions.underlying
+  Seq2.TypeAssumptions.method_set
+  Seq2.TypeAssumptions.ptr_method_set
 
 structure coro [GooseExts] where
   mk ::
@@ -108,9 +116,13 @@ noncomputable instance equals_unfold_coro [GooseExts] [GoGlobalContext] :
 class coro.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying coro.underlying coro
   underlying : go.UnderlyingDirectedEq coro.ty coro.underlying
+  method_set : go.MethodSetIs coro.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType coro.ty) []
 
 attribute [instance] coro.TypeAssumptions.type_repr
   coro.TypeAssumptions.underlying
+  coro.TypeAssumptions.method_set
+  coro.TypeAssumptions.ptr_method_set
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Seq_instance : Seq.TypeAssumptions

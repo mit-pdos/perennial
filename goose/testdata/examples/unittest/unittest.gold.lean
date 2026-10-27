@@ -3918,30 +3918,49 @@ noncomputable def mapLookupConversion.impl [GooseExts] [GoGlobalContext] : val :
 noncomputable def msLeft.Name.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(go!"left"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val #(go!"left"))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
 
 /-- go: method_sets.go:19:16 -/
 noncomputable def msLeft.tag.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val #(W64 1))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0"))))))
 
 /-- go: method_sets.go:23:16 -/
 noncomputable def msRight.Name.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(go!"right"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (Val #(go!"right"))))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
 
 /-- go: method_sets.go:43:6 -/
 noncomputable def msUse.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
-  (App (Val exceptionDo)
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
   (Let "$r0" (App (Val (GoInstruction (Convert msPtrEmbed.ty go.any))) (App (Val (GoInstruction (CompositeLiteral msPtrEmbed.ty))) (LiteralValue [])))
   (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -3953,14 +3972,19 @@ noncomputable def msUse.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
-  (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")))))
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
   (App (Val doExecute)
   (Var "$r0")))))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "x") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "x") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: multiple.go:3:6 -/
 noncomputable def returnTwo.impl [GooseExts] [GoGlobalContext] : val :=
