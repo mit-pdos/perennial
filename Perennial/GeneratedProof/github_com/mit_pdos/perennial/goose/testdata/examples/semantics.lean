@@ -1151,6 +1151,63 @@ noncomputable instance msEmbedGeneric_access_store_v {T' : Type} [TypedPointsto 
 end def_
 end msEmbedGeneric
 
+namespace msEmbedGenericPtr
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
+
+noncomputable instance msEmbedGenericPtr_typed_pointsto {T' : Type} [TypedPointsto (GF := GF) T'] :
+    TypedPointsto (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T') where
+  typedPointstoDef l v dq := iprop(
+    "msPtrRecv" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T') go!"msPtrRecv" l) v.msPtrRecv' dq ∗
+    "v" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T') go!"v" l) v.v' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance msEmbedGenericPtr_into_val_typed (T : go.GoType) {T' : Type} [ZeroVal T'] [TypedPointsto (GF := GF) T'] [IntoValTyped (GF := GF) T' T] :
+    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T') (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr.underlying T) := by
+  solve_into_val_typed_struct
+
+noncomputable instance msEmbedGenericPtr_access_load_msPtrRecv {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T')) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T') go!"msPtrRecv" l) v.msPtrRecv' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T') go!"msPtrRecv" l) v.msPtrRecv' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance msEmbedGenericPtr_access_store_msPtrRecv {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T')) (msPtrRecv' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T') go!"msPtrRecv" l) v.msPtrRecv' (DFrac.own 1))
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T') go!"msPtrRecv" l) msPtrRecv' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with msPtrRecv' := msPtrRecv' } : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T')) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance msEmbedGenericPtr_access_load_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T')) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T') go!"v" l) v.v' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T') go!"v" l) v.v' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance msEmbedGenericPtr_access_store_v {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T')) (v' : T') :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T') go!"v" l) v.v' (DFrac.own 1))
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T') go!"v" l) v' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with v' := v' } : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGenericPtr T')) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end msEmbedGenericPtr
+
 namespace msHidden
 section def_
 

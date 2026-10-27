@@ -197,6 +197,23 @@ func testMethodSetPromotedGeneric() bool {
 	return g.Get() == 3 && b.msPtrRecv.x == 4
 }
 
+// Embedding *S in an instantiated generic type promotes *S's methods to it.
+type msEmbedGenericPtr[T any] struct {
+	*msPtrRecv
+	v T
+}
+
+func testMethodSetPromotedGenericPointer() bool {
+	p := &msPtrRecv{}
+	var i any = &msEmbedGenericPtr[uint64]{msPtrRecv: p}
+	s, ok := i.(msSetter)
+	if !ok {
+		return false
+	}
+	s.Set(5)
+	return p.x == 5
+}
+
 // Unexported methods are in the method set (as the generated gRPC code's
 // `interface{ testEmbeddedByValue() }`).
 type msHidden struct{}

@@ -435,6 +435,10 @@ func (suite *GoTestSuite) TestMethodSetPromotedGeneric() {
 	suite.Equal(true, testMethodSetPromotedGeneric())
 }
 
+func (suite *GoTestSuite) TestMethodSetPromotedGenericPointer() {
+	suite.Equal(true, testMethodSetPromotedGenericPointer())
+}
+
 func (suite *GoTestSuite) TestMethodSetUnexported() {
 	suite.Equal(true, testMethodSetUnexported())
 }
