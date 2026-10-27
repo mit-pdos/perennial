@@ -575,10 +575,11 @@ type msEmbedGeneric[T any] struct {
 ```
 
 **Taken.** One line in `lean_types.go`: the struct of the pointer case's
-`StructFieldRef` is `glang.VerbatimExpr(ty)`, as in the value case. Plus one semantics
-test (`testMethodSetPromotedGeneric`), regenerated gold files and the semantics
-example's translation. Cost: 1 changed goose line, 0 new branches, 0 semantics rules,
-0 negative tests. Non-generic structs print the same (`ty` is the type's name); the
+`StructFieldRef` is `glang.VerbatimExpr(ty)`, as in the value case. Plus two semantics
+tests (`testMethodSetPromotedGeneric`: an embedded struct and interface;
+`testMethodSetPromotedGenericPointer`, added in review: an embedded pointer),
+regenerated gold files and the semantics example's translation. Cost: 1 changed goose
+line, 0 new branches, 0 semantics rules, 0 negative tests. Non-generic structs print the same (`ty` is the type's name); the
 standard library's translations are unchanged (regenerating them with the unfixed and
 the fixed goose under one toolchain differs only in the semantics example).
 
