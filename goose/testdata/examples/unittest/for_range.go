@@ -14,3 +14,11 @@ func forRangeOldVars(x []string) {
 		fmt.Print(y)
 	}
 }
+
+func forRangeString(s string) (n int, sum rune) {
+	for i, r := range s {
+		n = i
+		sum += r
+	}
+	return
+}

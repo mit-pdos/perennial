@@ -99,4 +99,24 @@ export StringSemantics (internal_string_len_step string_len_unfold string_index 
 end defs
 end go
 
+namespace string
+section goose_lang
+variable [GooseExts] [GoGlobalContext]
+open github_com.mit_pdos.perennial.goose.model
+
+def forRange : val :=
+  λ: "s" "body",
+  let: "i" := GoAlloc go.int #(W64 0) in
+  for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (FuncResolve go.len [go.string]) #() "s") ;
+                      (λ: <>, #()) :=
+    (λ: <>, let: "k" := ![go.int] "i" in
+       let: ("r", "next") := (@! strings.DecodeRune) "s" "k" in
+       "i" <-[go.int] "next" ;;
+       "body" "k" "r")
+
+end goose_lang
+end string
+
+attribute [irreducible] string.forRange
+
 end Perennial

@@ -631,6 +631,50 @@ func (suite *GoTestSuite) TestRangeFuncUnnamedResults() {
 	suite.Equal(true, testRangeFuncUnnamedResults())
 }
 
+func (suite *GoTestSuite) TestRangeStringASCII() {
+	suite.Equal(true, testRangeStringASCII())
+}
+
+func (suite *GoTestSuite) TestRangeStringMultibyte() {
+	suite.Equal(true, testRangeStringMultibyte())
+}
+
+func (suite *GoTestSuite) TestRangeStringInvalid() {
+	suite.Equal(true, testRangeStringInvalid())
+}
+
+func (suite *GoTestSuite) TestRangeStringKeysOnly() {
+	suite.Equal(true, testRangeStringKeysOnly())
+}
+
+func (suite *GoTestSuite) TestRangeStringValuesOnly() {
+	suite.Equal(true, testRangeStringValuesOnly())
+}
+
+func (suite *GoTestSuite) TestRangeStringBreakContinue() {
+	suite.Equal(true, testRangeStringBreakContinue())
+}
+
+func (suite *GoTestSuite) TestRangeStringReturn() {
+	suite.Equal(true, testRangeStringReturn())
+}
+
+func (suite *GoTestSuite) TestRangeStringEmpty() {
+	suite.Equal(true, testRangeStringEmpty())
+}
+
+func (suite *GoTestSuite) TestRangeStringNamed() {
+	suite.Equal(true, testRangeStringNamed())
+}
+
+func (suite *GoTestSuite) TestRangeStringAssign() {
+	suite.Equal(true, testRangeStringAssign())
+}
+
+func (suite *GoTestSuite) TestRangeStringEvalOnce() {
+	suite.Equal(true, testRangeStringEvalOnce())
+}
+
 func (suite *GoTestSuite) TestRecoverNamed() {
 	suite.Equal(true, testRecoverNamed())
 }

@@ -1497,13 +1497,17 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 		}
 		e = arr
 	case *types.Basic:
+		if !isPtr && t.Info()&types.IsString != 0 {
+			e = glang.ForRangeStringExpr{String: glang.IdentExpr("$range"), Body: body}
+			break
+		}
 		// `for i := range n` (Go 1.22): `n`, of an integer type (an untyped
 		// constant counts as an `int`), is evaluated once (`$range`), and the
 		// iterations bind `$key` to `0`, `1`, ..., `n - 1` (none if `n <= 0`),
 		// counted in a cell `$range_i` of that type: the three-clause loop
 		// `for $range_i := 0; $range_i < $range; $range_i++`.
 		if isPtr || t.Info()&types.IsInteger == 0 {
-			ctx.unsupported(s, "range over %v (only integers, functions, maps, slices, channels and arrays are supported)", t)
+			ctx.unsupported(s, "range over %v (only integers, strings, functions, maps, slices, channels and arrays are supported)", t)
 			return nil
 		}
 		nT := ctx.typeOf(s.X)
@@ -1545,7 +1549,7 @@ func (ctx *Ctx) rangeStmt(s *ast.RangeStmt) glang.Expr {
 				ValExpr: ctx.handleImplicitConversion(s.X, ctx.typeOf(s.X), nT, ctx.expr(s.X)), Cont: e}
 		}
 	default:
-		ctx.unsupported(s, "range over %v (only integers, functions, maps, slices, channels and arrays are supported)", t)
+		ctx.unsupported(s, "range over %v (only integers, strings, functions, maps, slices, channels and arrays are supported)", t)
 		return nil
 	}
 

@@ -1086,6 +1086,11 @@ func (e ForRangeArrayExpr) Lean(m LeanMode) string {
 		eLam([]string{"$key", "$value"}, e.Body.Lean(LeanExpr)))
 }
 
+func (e ForRangeStringExpr) Lean(m LeanMode) string {
+	return eLetLike("App", []string{lapp("App", eVal("string.forRange"), e.String.Lean(LeanExpr))},
+		eLam([]string{"$key", "$value"}, e.Body.Lean(LeanExpr)))
+}
+
 func (e ForRangeChanExpr) Lean(m LeanMode) string {
 	return eLetLike("App", []string{
 		lapp("App", eVal(lapp("chan.forRange", e.Elem.Lean(LeanTerm))), e.Chan.Lean(LeanExpr))},

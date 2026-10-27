@@ -410,6 +410,12 @@ switch or `select` ends that statement: Goose wraps such a statement in
 `catchBreak`, which `wp_auto` steps through (`break:` becomes `do:`; the
 `pure_catch_break_*` instances in `Theory/Loop.lean`).
 
+A range over a string is `string.forRange s body` (`Golang/Defn/String.lean`): a
+`for:` loop over a byte index whose iteration decodes the rune at the index with
+the Go model `strings.DecodeRune` (Go's `runtime.decoderune`: `U+FFFD` and one
+byte for invalid UTF-8), moves the index past it, then runs `body` with the
+start index and the rune. There are no proof rules for it yet.
+
 A range over a function, `for k, v := range f`, is `func.forRange n f body`
 (`Golang/Defn/Loop.lean`), where `n` is the number of parameters of the yield
 function and `body` is the loop body as a function of the iteration values. It

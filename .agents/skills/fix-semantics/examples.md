@@ -550,3 +550,40 @@ allocation ranges: unneeded, since extra placements only add model executions.
 
 **Why.** P9 and P7a of `docs/design/unsafe-memory-prerequisites.md`; the owner: "Do P9
 now here."
+
+## Case 18 — ACCEPTED: range over a string (branch `worktree-range-string`)
+
+**Symptom.** Incomplete. Goose refused `for i, r := range s` on a string (Case 10
+left strings out).
+
+**Witness.** `n := 0; for range "héllo" { n++ }` is refused; Go gives `n == 5`.
+
+**Taken.** The per-kind helper scheme of `slice.forRange`/`chan.forRange`, with the
+decoding in a Go model, as gc does it (`walk/range.go` lowers the loop to a byte-index
+loop calling `runtime.decoderune` for a non-ASCII byte):
+* Go model `strings.DecodeRune(s, k) (r, next)` in `goose/model/strings/decode.go`:
+  `runtime.decoderune` with the loop's single-byte test folded in (U+FFFD and
+  `k + 1` for invalid UTF-8); its Go test checks it against Go's own `range` on
+  every string of up to 3 bytes, the 4-byte sequences around the continuation
+  bytes, and a fuzzer;
+* `string.forRange` in `Golang/Defn/String.lean`: a `for:` loop over a byte index
+  cell whose iteration decodes, advances the index, then runs `body k r` (the
+  index moves before the body, so `continue` needs no post statement);
+* goose: a string branch in `rangeStmt`'s `*types.Basic` case and a
+  `ForRangeStringExpr` node.
+
+Cost: 1 goose branch, 1 glang node, 1 GooseLang helper, 0 semantics rules, 0
+negative tests, about 45 lines of trusted Go model. Semantics tests in
+`range_string.go` (ASCII, multibyte, invalid bytes, key-only, value-only, no
+variables, `break`/`continue`/`return`, empty, named string type, assignment form,
+range expression evaluated once).
+
+**Not taken.** A UTF-8 decoder in Lean behind a semantics rule (not testable
+against Go); goose expanding the loop itself (a large goose branch outside the
+per-kind scheme); translating `unicode/utf8` (Go's `range` does not use it).
+
+**Left out.** A `~string` type parameter (refused, as for every kind); proof rules
+for `string.forRange` and a spec of `DecodeRune` (no proof needs them yet);
+`[]rune(s)` and `string(r)`, which could reuse `DecodeRune`.
+
+**Why.** The owner signed off the plan as proposed: "Implement this."

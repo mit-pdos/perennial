@@ -576,6 +576,9 @@ noncomputable def forRangeNoBinding [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def forRangeOldVars [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.forRangeOldVars"
 
+noncomputable def forRangeString [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.forRangeString"
+
 noncomputable def maybeConvert [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.maybeConvert"
 
@@ -2532,6 +2535,38 @@ noncomputable def forRangeOldVars.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "y") (Var "$r0")))))))))
   (Val #())))
+
+/-- go: for_range.go:18:6 -/
+noncomputable def forRangeString.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$res0" (Var "n")
+  (Let "sum" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "$res1" (Var "sum")
+  (Seq (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "sum") (App (Val (GoInstruction (GoOp GoPlus go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "sum")) (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$value"))))))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.rune))) (Var "$res1")))))))))
 
 /-- go: generic_conversion.go:3:6 -/
 noncomputable def maybeConvert.impl [GooseExts] [GoGlobalContext] (A : go.GoType) : val :=
@@ -7382,6 +7417,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   compareFloatInt_unfold : FuncUnfold compareFloatInt [] compareFloatInt.impl
   forRangeNoBinding_unfold : FuncUnfold forRangeNoBinding [] forRangeNoBinding.impl
   forRangeOldVars_unfold : FuncUnfold forRangeOldVars [] forRangeOldVars.impl
+  forRangeString_unfold : FuncUnfold forRangeString [] forRangeString.impl
   maybeConvert_unfold : ∀ (A : go.GoType), FuncUnfold maybeConvert [A] (maybeConvert.impl A)
   maybeConvertToInterface_unfold : ∀ (A : go.GoType), FuncUnfold maybeConvertToInterface [A] (maybeConvertToInterface.impl A)
   maybeConvertToString_unfold : ∀ (A : go.GoType), FuncUnfold maybeConvertToString [A] (maybeConvertToString.impl A)
@@ -7638,6 +7674,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.compareFloatInt_unfold
   Assumptions.forRangeNoBinding_unfold
   Assumptions.forRangeOldVars_unfold
+  Assumptions.forRangeString_unfold
   Assumptions.maybeConvert_unfold
   Assumptions.maybeConvertToInterface_unfold
   Assumptions.maybeConvertToString_unfold

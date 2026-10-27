@@ -239,6 +239,11 @@ noncomputable def msHidden.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] msHidden.ty
 
+noncomputable def rangeStr.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.rangeStr" [])
+
+attribute [irreducible] rangeStr.ty
+
 noncomputable def BoolTest.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.BoolTest" [])
 
@@ -918,6 +923,42 @@ noncomputable def testRangeFuncUnnamedResultRecover [GooseExts] [GoGlobalContext
 
 noncomputable def testRangeFuncUnnamedResults [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeFuncUnnamedResults"
+
+noncomputable def testRangeStringASCII [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeStringASCII"
+
+noncomputable def testRangeStringMultibyte [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeStringMultibyte"
+
+noncomputable def testRangeStringInvalid [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeStringInvalid"
+
+noncomputable def testRangeStringKeysOnly [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeStringKeysOnly"
+
+noncomputable def testRangeStringValuesOnly [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeStringValuesOnly"
+
+noncomputable def testRangeStringBreakContinue [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeStringBreakContinue"
+
+noncomputable def rangeStringFind [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.rangeStringFind"
+
+noncomputable def testRangeStringReturn [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeStringReturn"
+
+noncomputable def testRangeStringEmpty [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeStringEmpty"
+
+noncomputable def testRangeStringNamed [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeStringNamed"
+
+noncomputable def testRangeStringAssign [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeStringAssign"
+
+noncomputable def testRangeStringEvalOnce [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeStringEvalOnce"
 
 noncomputable def recoverNamed [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.recoverNamed"
@@ -8221,6 +8262,460 @@ noncomputable def testRangeFuncUnnamedResults.impl [GooseExts] [GoGlobalContext]
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "a") (Var "$r0")))))))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
+/-- tests
+
+    go: range_string.go:6:6 -/
+noncomputable def testRangeStringASCII.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "keys" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "sum" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "keys")) (Val #(W64 3)))) (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "sum")) (App (Val (GoInstruction (GoOp GoPlus go.untypedRune))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.untypedRune))) (Pair (Val #(97 : Int)) (Val #(98 : Int)))) (Val #(99 : Int)))))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (Val #(go!"abc"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "sum") (App (Val (GoInstruction (GoOp GoPlus go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "sum")) (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "keys") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "keys")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$value")))))))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: range_string.go:16:6 -/
+noncomputable def testRangeStringMultibyte.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(go!"aé世😀b"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "keys" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 5 go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 5 go.int)))) (Val #())))
+  (Let "runes" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 5 go.rune)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 5 go.rune)))) (Val #())))
+  (Let "$r0" (Val #(W64 0))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 5)))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.ArrayType 5 go.int)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 5 go.int)))) (Var "keys")) (Let "$v0" (Val #(W64 0))
+  (Let "$v1" (Val #(W64 1))
+  (Let "$v2" (Val #(W64 3))
+  (Let "$v3" (Val #(W64 6))
+  (Let "$v4" (Val #(W64 10))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 5 go.int)))) (LiteralValue [(KeyedElement none (ElementExpression go.int (Var "$v0"))), (KeyedElement none (ElementExpression go.int (Var "$v1"))), (KeyedElement none (ElementExpression go.int (Var "$v2"))), (KeyedElement none (ElementExpression go.int (Var "$v3"))), (KeyedElement none (ElementExpression go.int (Var "$v4")))]))))))))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.ArrayType 5 go.rune)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 5 go.rune)))) (Var "runes")) (Let "$v0" (Val #(W32 97))
+  (Let "$v1" (Val #(W32 233))
+  (Let "$v2" (Val #(W32 19990))
+  (Let "$v3" (Val #(W32 128512))
+  (Let "$v4" (Val #(W32 98))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 5 go.rune)))) (LiteralValue [(KeyedElement none (ElementExpression go.rune (Var "$v0"))), (KeyedElement none (ElementExpression go.rune (Var "$v1"))), (KeyedElement none (ElementExpression go.rune (Var "$v2"))), (KeyedElement none (ElementExpression go.rune (Var "$v3"))), (KeyedElement none (ElementExpression go.rune (Var "$v4")))]))))))))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.rune))) (Var "r"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1)))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 5 go.rune)))) (Pair (Var "runes") (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 5 go.int)))) (Pair (Var "keys") (App (Val (GoInstruction (GoLoad go.int))) (Var "n")))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$value"))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: range_string.go:32:6 -/
+noncomputable def testRangeStringInvalid.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #([W8 128, W8 255, W8 228, W8 184, W8 237, W8 160, W8 128, W8 192, W8 175] : GoString))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "keys" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.int)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.int)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "keys"))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val (slice.forRange go.int)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.int)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "keys")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key")))))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "keys"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.int)]))) (Val #())) (Var "$a0"))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0")))))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.int)))) (Var "keys"))
+  (Let "$a1" (Let "$sl0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.int)))) (LiteralValue [(KeyedElement none (ElementExpression go.int (Var "$sl0")))])))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.int)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.int)))) (Pair (Var "keys") (Var "$r0")))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (Val #(W32 65533))))))
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$value")))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: range_string.go:54:6 -/
+noncomputable def testRangeStringKeysOnly.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "keys" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "keys")) (Val #(W64 4)))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 3)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (Val #(go!"aé世"))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1)))))))))))))))
+  (Let "$range" (Val #(go!"aé世"))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "keys") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "keys")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key")))))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: range_string.go:66:6 -/
+noncomputable def testRangeStringValuesOnly.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "sum" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "sum")) (App (Val (GoInstruction (GoOp GoPlus go.untypedRune))) (Pair (Val #(233 : Int)) (Val #(19990 : Int))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (Val #(go!"é世"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "sum") (App (Val (GoInstruction (GoOp GoPlus go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "sum")) (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")))))))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$value")))))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: range_string.go:74:6 -/
+noncomputable def testRangeStringBreakContinue.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "sum" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "sum")) (App (Val (GoInstruction (GoOp GoPlus go.untypedRune))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.untypedRune))) (Pair (Val #(97 : Int)) (Val #(99 : Int)))) (Val #(100 : Int))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (Val #(go!"abcdef"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "sum") (App (Val (GoInstruction (GoOp GoPlus go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "sum")) (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (Val #(W32 101)))))
+  (App (Val doBreak) (Val #()))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (Val #(W32 98)))))
+  (App (Val doContinue) (Val #()))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$value")))))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: range_string.go:88:6 -/
+noncomputable def rangeStringFind.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.rune))) (Var "x"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (GoLoad go.rune))) (Var "x")))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$value")))))))))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
+/-- go: range_string.go:97:6 -/
+noncomputable def testRangeStringReturn.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (Val #(go!"aé世"))
+  (Let "$a1" (Val #(W32 19990))
+  (App (App (App (Val (GoInstruction (FuncResolve rangeStringFind []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W64 3)))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (Val #(go!"abc"))
+  (Let "$a1" (Val #(W32 122))
+  (App (App (App (Val (GoInstruction (FuncResolve rangeStringFind []))) (Val #())) (Var "$a0")) (Var "$a1")))) (App (Val (GoInstruction (Convert go.untypedInt go.int))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(1 : Int)))))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: range_string.go:101:6 -/
+noncomputable def testRangeStringEmpty.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (Val #(go!""))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: range_string.go:108:6 -/
+noncomputable def testRangeStringNamed.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(go!"a世"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc rangeStr.ty))) (App (Val (GoInstruction (GoZeroVal rangeStr.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "keys" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "keys")) (Val #(W64 1))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad rangeStr.ty))) (Var "s"))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "keys") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "keys")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key"))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore rangeStr.ty))) (Pair (Var "s") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: range_string.go:117:6 -/
+noncomputable def testRangeStringAssign.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 2)))) (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (Val #(W32 19990)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (Val #(go!"ab世"))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doExecute)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$value")))))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: range_string.go:125:6 -/
+noncomputable def testRangeStringEvalOnce.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(W64 0))
+  (Let "calls" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(go!"abc"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "calls") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "calls")) (Val #(W64 1)))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
+  (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false [go.string]))))) (App (Val (GoInstruction (GoZeroVal (go.GoType.FunctionType (go.signature.Signature [] false [go.string]))))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 0))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "calls")) (Val #(W64 1)))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 3)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [go.string]))))) (Var "f")) (Val #()))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [go.string]))))) (Pair (Var "f") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "calls") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
 /-- recoverNamed panics; the deferred function recovers and sets the named result.
 
     go: recover.go:4:6 -/
@@ -11362,6 +11857,20 @@ attribute [instance] msHidden.TypeAssumptions.type_repr
   msHidden.TypeAssumptions.hidden_unfold
   msHidden.TypeAssumptions.ptr_hidden_unfold
 
+abbrev rangeStr [GooseExts] : Type := GoString
+
+@[reducible] noncomputable def rangeStr.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  go.string
+
+class rangeStr.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq rangeStr.ty rangeStr.underlying
+  method_set : go.MethodSetIs rangeStr.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType rangeStr.ty) []
+
+attribute [instance] rangeStr.TypeAssumptions.underlying
+  rangeStr.TypeAssumptions.method_set
+  rangeStr.TypeAssumptions.ptr_method_set
+
 structure BoolTest [GooseExts] where
   mk ::
   t' : Bool
@@ -11868,6 +12377,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   msBoth_instance : msBoth.TypeAssumptions
   msBox_instance : msBox.TypeAssumptions
   msHidden_instance : msHidden.TypeAssumptions
+  rangeStr_instance : rangeStr.TypeAssumptions
   BoolTest_instance : BoolTest.TypeAssumptions
   ArrayEditor_instance : ArrayEditor.TypeAssumptions
   appendNamedSlice_instance : appendNamedSlice.TypeAssumptions
@@ -12082,6 +12592,18 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testRangeFuncShadowedBlankResults_unfold : FuncUnfold testRangeFuncShadowedBlankResults [] testRangeFuncShadowedBlankResults.impl
   testRangeFuncUnnamedResultRecover_unfold : FuncUnfold testRangeFuncUnnamedResultRecover [] testRangeFuncUnnamedResultRecover.impl
   testRangeFuncUnnamedResults_unfold : FuncUnfold testRangeFuncUnnamedResults [] testRangeFuncUnnamedResults.impl
+  testRangeStringASCII_unfold : FuncUnfold testRangeStringASCII [] testRangeStringASCII.impl
+  testRangeStringMultibyte_unfold : FuncUnfold testRangeStringMultibyte [] testRangeStringMultibyte.impl
+  testRangeStringInvalid_unfold : FuncUnfold testRangeStringInvalid [] testRangeStringInvalid.impl
+  testRangeStringKeysOnly_unfold : FuncUnfold testRangeStringKeysOnly [] testRangeStringKeysOnly.impl
+  testRangeStringValuesOnly_unfold : FuncUnfold testRangeStringValuesOnly [] testRangeStringValuesOnly.impl
+  testRangeStringBreakContinue_unfold : FuncUnfold testRangeStringBreakContinue [] testRangeStringBreakContinue.impl
+  rangeStringFind_unfold : FuncUnfold rangeStringFind [] rangeStringFind.impl
+  testRangeStringReturn_unfold : FuncUnfold testRangeStringReturn [] testRangeStringReturn.impl
+  testRangeStringEmpty_unfold : FuncUnfold testRangeStringEmpty [] testRangeStringEmpty.impl
+  testRangeStringNamed_unfold : FuncUnfold testRangeStringNamed [] testRangeStringNamed.impl
+  testRangeStringAssign_unfold : FuncUnfold testRangeStringAssign [] testRangeStringAssign.impl
+  testRangeStringEvalOnce_unfold : FuncUnfold testRangeStringEvalOnce [] testRangeStringEvalOnce.impl
   recoverNamed_unfold : FuncUnfold recoverNamed [] recoverNamed.impl
   panicInLoop_unfold : FuncUnfold panicInLoop [] panicInLoop.impl
   panicTwoDeep_unfold : FuncUnfold panicTwoDeep [] panicTwoDeep.impl
@@ -12183,6 +12705,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.msBoth_instance
   Assumptions.msBox_instance
   Assumptions.msHidden_instance
+  Assumptions.rangeStr_instance
   Assumptions.BoolTest_instance
   Assumptions.ArrayEditor_instance
   Assumptions.appendNamedSlice_instance
@@ -12397,6 +12920,18 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testRangeFuncShadowedBlankResults_unfold
   Assumptions.testRangeFuncUnnamedResultRecover_unfold
   Assumptions.testRangeFuncUnnamedResults_unfold
+  Assumptions.testRangeStringASCII_unfold
+  Assumptions.testRangeStringMultibyte_unfold
+  Assumptions.testRangeStringInvalid_unfold
+  Assumptions.testRangeStringKeysOnly_unfold
+  Assumptions.testRangeStringValuesOnly_unfold
+  Assumptions.testRangeStringBreakContinue_unfold
+  Assumptions.rangeStringFind_unfold
+  Assumptions.testRangeStringReturn_unfold
+  Assumptions.testRangeStringEmpty_unfold
+  Assumptions.testRangeStringNamed_unfold
+  Assumptions.testRangeStringAssign_unfold
+  Assumptions.testRangeStringEvalOnce_unfold
   Assumptions.recoverNamed_unfold
   Assumptions.panicInLoop_unfold
   Assumptions.panicTwoDeep_unfold

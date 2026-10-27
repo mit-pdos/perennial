@@ -361,6 +361,12 @@ type ForRangeArrayExpr struct {
 	Body  Expr
 }
 
+// ForRangeStringExpr is a range loop over the runes of a string.
+type ForRangeStringExpr struct {
+	String Expr
+	Body   Expr
+}
+
 type ForRangeChanExpr struct {
 	Chan Expr
 	Elem Expr
