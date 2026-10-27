@@ -196,8 +196,8 @@ inductive Expr where
   | Primitive2 (op : PrimOp2) (e1 e2 : Expr)
   /-- Compare-exchange -/
   | CmpXchg (e0 e1 e2 : Expr)
-  /-- An operation of an extension, by the extension's name and its encoding (`extOp`) -/
-  | ExternalOp (op : ExtCodeIn) (e : Expr)
+  /-- The operation named `op` of the extension named `ext` -/
+  | ExternalOp (ext op : String) (e : Expr)
   -- Prophecy
   | NewProph
   | ResolveProph (e1 e2 : Expr)
@@ -508,13 +508,14 @@ it: `step o v h s g e' h' s' g'` says that the operation `o` of `E` applied to
 `e'`, heap `h'` and states `s'` and `g'`. A step changes nothing else (not the
 other extensions' states, nor the thread count). The step is generic over the
 list of extensions, and does not depend on it: `E`'s own operations and values in
-`e'` are named by `E`'s name (`extOp`, `extVal`).
+`e'` are named by `E`'s name (`ExternalOp E.name op`, `extVal`). An operation name the
+extension does not define has no step.
 
 `crash s s'` says that a crash and restart of the node can turn `E`'s local
 state `s` into `s'` (a durable disk keeps its contents, a volatile one may be
 arbitrary); a crash does not change the global state. -/
 class ExtSemantics (E : GooseExt) where
-  step : ∀ [GooseExts] [GoGlobalContext], E.Op → val →
+  step : ∀ [GooseExts] [GoGlobalContext], String → val →
     GMap Loc (NonAtomic val) → E.LocalState → E.GlobalState →
     Expr → GMap Loc (NonAtomic val) → E.LocalState → E.GlobalState → Prop
   crash : E.LocalState → E.LocalState → Prop
@@ -528,37 +529,33 @@ variable [GooseExts] [GooseSemantics] [GoGlobalContext]
 
 /-- A step of the operation `o` of the extension at position `m`: its semantics
 on the heap and its own state. -/
-def extStepAt {E : GooseExt} (m : ExtIn E exts) (o : E.Op) (v : val) (σg : CfgState)
+def extStepAt {E : GooseExt} (m : ExtIn E exts) (o : String) (v : val) (σg : CfgState)
     (e' : Expr) (σg' : CfgState) : Prop :=
   ∃ h' s' g', @ExtSemantics.step E (m.get GooseSemantics.sems) _ _ o v
       σg.1.heap (m.get σg.1.world) (m.get σg.2.globalWorld) e' h' s' g' ∧
     σg' = ({ σg.1 with heap := h', world := m.set σg.1.world s' },
       { σg.2 with globalWorld := m.set σg.2.globalWorld g' })
 
-/-- A step of an extension's operation: the step of the first extension of the program
-named by it, of the operation its code decodes to. An operation of no extension of the
-program, or whose code is not one of an operation of the extension, has no step. -/
-def extStep (o : ExtCode) (v : val) (σg : CfgState) (e' : Expr) (σg' : CfgState) : Prop :=
-  ∃ (E : GooseExt) (h : extNamed exts o.ext = some E) (op : E.Op),
-    Pos.Countable.decode o.code = some op ∧ extStepAt (ExtIn.ofNamed h) op v σg e' σg'
+/-- A step of the operation `op` of the extension named `ext`: the step of the first extension
+of the program of that name. An operation of no extension of the program has no step. -/
+def extStep (ext op : String) (v : val) (σg : CfgState) (e' : Expr) (σg' : CfgState) : Prop :=
+  ∃ (E : GooseExt) (h : extNamed exts ext = some E), extStepAt (ExtIn.ofNamed h) op v σg e' σg'
 
-theorem extStep_extOp {E : GooseExt} [hE : ElemExt E] (o : E.Op) (v : val) (σg : CfgState)
+theorem extStep_named {E : GooseExt} [hE : ElemExt E] (op : String) (v : val) (σg : CfgState)
     (e' : Expr) (σg' : CfgState) :
-    extStep (extOp E o) v σg e' σg' ↔ extStepAt hE.mem o v σg e' σg' := by
+    extStep E.name op v σg e' σg' ↔ extStepAt hE.mem op v σg e' σg' := by
   constructor
-  · rintro ⟨E', h, op, hdec, hst⟩
+  · rintro ⟨E', h, hst⟩
     have hE' : E' = E := Option.some.inj (h.symm.trans hE.registered)
     subst hE'
-    rw [Pos.Countable.decode_encode] at hdec
-    cases hdec
     exact hst
   · intro hst
-    exact ⟨E, hE.registered, o, Pos.Countable.decode_encode o, hst⟩
+    exact ⟨E, hE.registered, hst⟩
 
 /-- An extension's step does not change the thread count. -/
-theorem extStep_threads {o : ExtCode} {v : val} {σg : CfgState} {e' : Expr}
-    {σg' : CfgState} (h : extStep o v σg e' σg') : σg'.1.threads = σg.1.threads := by
-  obtain ⟨_, _, _, _, _, _, _, _, rfl⟩ := h; rfl
+theorem extStep_threads {ext op : String} {v : val} {σg : CfgState} {e' : Expr}
+    {σg' : CfgState} (h : extStep ext op v σg e' σg') : σg'.1.threads = σg.1.threads := by
+  obtain ⟨_, _, _, _, _, _, rfl⟩ := h; rfl
 
 end ext_step
 
@@ -617,7 +614,7 @@ inductive EctxItem where
   | Primitive1Ctx (op : PrimOp1)
   | Primitive2LCtx (op : PrimOp2) (e2 : Expr)
   | Primitive2RCtx (op : PrimOp2) (v1 : val) (h1 : v1.isPanic = false)
-  | ExternalOpCtx (op : ExtCodeIn)
+  | ExternalOpCtx (ext op : String)
   | CmpXchgLCtx (e1 e2 : Expr)
   | CmpXchgMCtx (v1 : val) (e2 : Expr) (h1 : v1.isPanic = false)
   | CmpXchgRCtx (v1 v2 : val) (h1 : v1.isPanic = false) (h2 : v2.isPanic = false)
@@ -638,7 +635,7 @@ def fillItem (Ki : EctxItem) (e : Expr) : Expr :=
   | Primitive1Ctx op => Primitive1 op e
   | Primitive2LCtx op e2 => Primitive2 op e e2
   | Primitive2RCtx op v1 _ => Primitive2 op (Val v1) e
-  | ExternalOpCtx op => ExternalOp op e
+  | ExternalOpCtx ext op => ExternalOp ext op e
   | CmpXchgLCtx e1 e2 => CmpXchg e e1 e2
   | CmpXchgMCtx v0 e2 _ => CmpXchg (Val v0) e e2
   | CmpXchgRCtx v0 v1 _ _ => CmpXchg (Val v0) (Val v1) e
@@ -665,7 +662,7 @@ def subst (x : String) (v : val) : Expr → Expr
   | Primitive0 op => Primitive0 op
   | Primitive1 op e => Primitive1 op (subst x v e)
   | Primitive2 op e1 e2 => Primitive2 op (subst x v e1) (subst x v e2)
-  | ExternalOp op e => ExternalOp op (subst x v e)
+  | ExternalOp ext op e => ExternalOp ext op (subst x v e)
   | CmpXchg e0 e1 e2 => CmpXchg (subst x v e0) (subst x v e1) (subst x v e2)
   | NewProph => NewProph
   | ResolveProph e1 e2 => ResolveProph (subst x v e1) (subst x v e2)
@@ -788,9 +785,9 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
       σg.1.heap !! l = some (Reading 0, v0) →
       atomicAddEval v0 v = some v' →
       BaseStep (AtomicAdd (Val #l) (Val v)) σg [] (Val v') (setHeap (<[l := Free v']> ·) σg) []
-  | ExternalOpS op v e' σg σg' :
-      extStep op v σg e' σg' →
-      BaseStep (ExternalOp op (Val v)) σg [] e' σg' []
+  | ExternalOpS ext op v e' σg σg' :
+      extStep ext op v σg e' σg' →
+      BaseStep (ExternalOp ext op (Val v)) σg [] e' σg' []
   | GoInstructionS op arg e' s' σg :
       @IsGoStep _ _ σg.1.goState.goLctx op arg e' σg.1.goState.packageState s' →
       BaseStep (App (Val (GoInstruction op)) (Val arg)) σg [] e'

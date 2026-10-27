@@ -267,7 +267,7 @@ theorem baseStep_threads {e : Expr} {σ : CfgState} {κ : List Observation} {e' 
     cases h with
     | ForkS => exact absurd rfl hf
     | ThreadExitS => exact absurd rfl hx
-    | ExternalOpS _ _ _ _ _ h => exact extStep_threads h
+    | ExternalOpS _ _ _ _ _ _ h => exact extStep_threads h
     | _ => rfl
 
 /-- A real thread-pool step from a state with step fuel `s > 0` and thread fuel

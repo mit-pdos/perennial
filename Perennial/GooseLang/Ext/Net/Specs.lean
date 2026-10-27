@@ -118,9 +118,9 @@ messages of `to`. -/
 theorem wp_NetSend_atomic (to : GoString) (data : List w8) (Φ : val → IProp GF) :
     (|={E,∅}=> ∃ ms : GSet NetMsg, to n↦ ms ∗
       (to n↦ (ms ∪ {[⟨netAddr (L := L), data⟩]}) ={∅,E}=∗ Φ #()))
-    ⊢ WP (ExternalOp (extOp netExt NetOp.SendOp) (Val (PairV (#to) (#data)))) @ s; E {{ Φ }} := by
+    ⊢ WP (ExternalOp netExt.name "Send" (Val (PairV (#to) (#data)))) @ s; E {{ Φ }} := by
   iintro HAU
-  iapply wp_extStep NetOp.SendOp (PairV (#to) (#data)) Φ (by simp [val.isPanic])
+  iapply wp_extStep "Send" (PairV (#to) (#data)) Φ (by simp [val.isPanic])
   iintro %h %me %n Hheap Hl Hg
   imod HAU with ⟨%ms, Hc, Hclose⟩
   icases (net_local_ctx_eq me).mp $$ Hl with %Hme
@@ -159,10 +159,10 @@ theorem wp_NetRecv_atomic (Φ : val → IProp GF) :
     (|={E,∅}=> ∃ (q : DFrac) (ms : GSet NetMsg), netAddr (L := L) n↦{q} ms ∗
       ∀ m, ⌜m ∈ ms⌝ -∗ netAddr (L := L) n↦{q} ms ={∅,E}=∗
         Φ (PairV (#m.sender) (#m.data)))
-    ⊢ WP (ExternalOp (extOp netExt NetOp.RecvOp) (Val (#()))) @ s; E {{ Φ }} := by
+    ⊢ WP (ExternalOp netExt.name "Recv" (Val (#()))) @ s; E {{ Φ }} := by
   iloeb as IH
   iintro HAU
-  iapply wp_extStep NetOp.RecvOp (#()) Φ (by simp)
+  iapply wp_extStep "Recv" (#()) Φ (by simp)
   iintro %h %me %n Hheap Hl Hg
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hclose

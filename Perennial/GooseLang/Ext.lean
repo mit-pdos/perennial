@@ -5,18 +5,20 @@ An extension adds primitive operations to GooseLang, with state of their own: a
 durable disk, a network, clocks. Extensions compose: a program runs against a
 closed list of extensions, in the style of iris's `BundledGFunctors`.
 
-* `GooseExt` is one extension: its name, the types of its operations (`Op`), of
-  the opaque values its operations return (`Val`), and of its per-node
-  (`LocalState`) and shared (`GlobalState`) state.
-* The syntax names an extension's operations and values by the extension's
-  name and their encoding (`ExtCode`; `extOp E o`, `extVal E v`), so that code
+* `GooseExt` is one extension: its name, the type of the opaque values its
+  operations return (`Val`), and the types of its per-node (`LocalState`) and
+  shared (`GlobalState`) state. Its operations are named by strings
+  (`ExternalOp ext op e`: the extension's name and the operation's).
+* The syntax names an extension's operations by strings and its values by the
+  extension's name and their encoding (`ExtCode`, `extVal E v`), so that code
   and values do not depend on the list of extensions: the model of a Go
-  function implemented with an extension needs nothing but the extension.
+  function implemented with an extension needs nothing but the extension's
+  name.
 * `GooseExts` is the closed list `exts` of extensions that a program runs
   against. Its states are the products of the extensions' states
   (`state.world`, `GlobalState.globalWorld`). An `ExternalOp` steps with the
-  first extension of the list of its name (`extNamed`), decoding its operation
-  as one of that extension's.
+  first extension of the list of its name (`extNamed`), by that extension's
+  step of the operation's name.
 * `ElemExt E` is the proposition that `E` is the extension of the list named
   `E.name` (as iris's `ElemG`): proofs about one extension assume only that, and
   the list is fixed when a program is closed off by an adequacy theorem, where
@@ -43,20 +45,17 @@ structure GooseExt where
   /-- The name, by convention the path of the Go package it implements: the
   syntax names the extension's operations and values by it. -/
   name : String
-  /-- The primitive operations (`ExternalOp`). -/
-  Op : Type
   /-- The opaque values the operations return (`ExtV`), e.g. sockets. -/
   Val : Type
   /-- The per-node state, e.g. a disk. -/
   LocalState : Type
   /-- The state shared between nodes, e.g. the network. -/
   GlobalState : Type
-  [op_countable : Pos.Countable Op]
   [val_countable : Pos.Countable Val]
   [localState_inhabited : Inhabited LocalState]
   [globalState_inhabited : Inhabited GlobalState]
 
-attribute [instance] GooseExt.op_countable GooseExt.val_countable
+attribute [instance] GooseExt.val_countable
   GooseExt.localState_inhabited GooseExt.globalState_inhabited
 
 /-- A position of the extension `E` in the list `l`. -/
@@ -118,10 +117,10 @@ instance countableEmpty : Pos.Countable Empty where
   decode _ := none
   decode_encode e := e.elim
 
-/-! ## Operations and values: named and encoded -/
+/-! ## Opaque values: named and encoded -/
 
-/-- An operation or opaque value of an extension, in the syntax: the extension's name and
-the encoding of the operation or value (`extOp`, `extVal`). -/
+/-- An opaque value of an extension, in the syntax: the extension's name and the encoding of
+the value (`extVal`). -/
 structure ExtCode where
   ext : String
   code : Pos
@@ -132,16 +131,10 @@ noncomputable instance ExtCode.countable : Pos.Countable ExtCode :=
     have h' : (a.ext, a.code) = (b.ext, b.code) := Pos.encode_inj h
     cases a; cases b; cases h'; rfl)
 
-/-- The operation `o` of the extension `E`. -/
-abbrev extOp (E : GooseExt) (o : E.Op) : ExtCode := ⟨E.name, Pos.Countable.encode o⟩
-
 /-- The value `v` of the extension `E`. -/
 abbrev extVal (E : GooseExt) (v : E.Val) : ExtCode := ⟨E.name, Pos.Countable.encode v⟩
 
 theorem extVal_inj {E : GooseExt} {v v' : E.Val} (h : extVal E v = extVal E v') : v = v' :=
-  Pos.encode_inj (ExtCode.mk.inj h).2
-
-theorem extOp_inj {E : GooseExt} {o o' : E.Op} (h : extOp E o = extOp E o') : o = o' :=
   Pos.encode_inj (ExtCode.mk.inj h).2
 
 /-! ## Extensions by name -/
@@ -169,9 +162,10 @@ class GooseExts where
 
 export GooseExts (exts)
 
-/-- `ExtCode` as the syntax holds it. The syntax (`Expr`, `val`, the evaluation contexts)
-keeps the list of extensions as a parameter, although it no longer depends on it, so that its
-signature, and the terms the proof mode builds over it, are those of a syntax that did. -/
+/-- `ExtCode` as the syntax holds it (`ExtV`). The syntax (`Expr`, `val`, the evaluation
+contexts) keeps the list of extensions as a parameter, although it no longer depends on it, so
+that its signature, and the terms the proof mode builds over it, are those of a syntax that
+did. -/
 abbrev ExtCodeIn [GooseExts] : Type := ExtCode
 
 /-- `E` is the extension of the list named `E.name` (as iris's `ElemG`). -/

@@ -69,7 +69,7 @@ theorem real_step_threads {ρ₁ ρ₂ : List Expr × CfgState} {κ : List Obser
     cases h with
     | ForkS => simp
     | ThreadExitS => simp; omega
-    | ExternalOpS _ _ _ _ _ h => have := extStep_threads h; simp only at this ⊢; omega
+    | ExternalOpS _ _ _ _ _ _ h => have := extStep_threads h; simp only at this ⊢; omega
     | _ => simp [stateInitHeap, setHeap]
 
 theorem real_nsteps_threads {n : Nat} {ρ₁ ρ₂ : List Expr × CfgState} {κs : List Observation}

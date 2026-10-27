@@ -59,7 +59,7 @@ def substEnv (σ : String → Option val) : Expr → Expr
   | Primitive0 op => Primitive0 op
   | Primitive1 op e => Primitive1 op (substEnv σ e)
   | Primitive2 op e1 e2 => Primitive2 op (substEnv σ e1) (substEnv σ e2)
-  | ExternalOp op e => ExternalOp op (substEnv σ e)
+  | ExternalOp ext op e => ExternalOp ext op (substEnv σ e)
   | CmpXchg e0 e1 e2 => CmpXchg (substEnv σ e0) (substEnv σ e1) (substEnv σ e2)
   | NewProph => NewProph
   | ResolveProph e1 e2 => ResolveProph (substEnv σ e1) (substEnv σ e2)
@@ -164,7 +164,7 @@ theorem subst_substEnv (x : String) (v : val) (σ : String → Option val) :
   | Primitive0 _ => by simp only [substEnv, subst]
   | Primitive1 _ a => by simp only [substEnv, subst, subst_substEnv x v σ a]
   | Primitive2 _ a b => by simp only [substEnv, subst, subst_substEnv x v σ a, subst_substEnv x v σ b]
-  | ExternalOp _ a => by simp only [substEnv, subst, subst_substEnv x v σ a]
+  | ExternalOp _ _ a => by simp only [substEnv, subst, subst_substEnv x v σ a]
   | CmpXchg a b c => by
     simp only [substEnv, subst, subst_substEnv x v σ a, subst_substEnv x v σ b, subst_substEnv x v σ c]
   | NewProph => by simp only [substEnv, subst]
@@ -239,7 +239,7 @@ theorem substEnv_nil : ∀ e : Expr, substEnv envNil e = e
   | Primitive0 _ => by simp only [substEnv]
   | Primitive1 _ a => by simp only [substEnv, substEnv_nil a]
   | Primitive2 _ a b => by simp only [substEnv, substEnv_nil a, substEnv_nil b]
-  | ExternalOp _ a => by simp only [substEnv, substEnv_nil a]
+  | ExternalOp _ _ a => by simp only [substEnv, substEnv_nil a]
   | CmpXchg a b c => by simp only [substEnv, substEnv_nil a, substEnv_nil b, substEnv_nil c]
   | NewProph => by simp only [substEnv]
   | ResolveProph a b => by simp only [substEnv, substEnv_nil a, substEnv_nil b]
@@ -345,8 +345,8 @@ theorem substEnv_pf_prim1 (op : PrimOp1) {a a' : Expr} (ha : substEnv σ a = a')
 theorem substEnv_pf_prim2 (op : PrimOp2) {a b a' b' : Expr} (ha : substEnv σ a = a')
     (hb : substEnv σ b = b') : substEnv σ (Primitive2 op a b) = Primitive2 op a' b' := by
   simp only [substEnv, ha, hb]
-theorem substEnv_pf_extop (op : ExtCode) {a a' : Expr} (ha : substEnv σ a = a') :
-    substEnv σ (ExternalOp op a) = ExternalOp op a' := by simp only [substEnv, ha]
+theorem substEnv_pf_extop (ext op : String) {a a' : Expr} (ha : substEnv σ a = a') :
+    substEnv σ (ExternalOp ext op a) = ExternalOp ext op a' := by simp only [substEnv, ha]
 theorem substEnv_pf_cmpxchg {a b c a' b' c' : Expr} (ha : substEnv σ a = a') (hb : substEnv σ b = b')
     (hc : substEnv σ c = c') : substEnv σ (CmpXchg a b c) = CmpXchg a' b' c' := by
   simp only [substEnv, ha, hb, hc]

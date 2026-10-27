@@ -1,7 +1,7 @@
 /-
 Trusted Go model of `github.com/mit-pdos/perennial/goose/testdata/examples/netfs/netext`
 (namespace of the generated package), in terms of the network extension of
-`Perennial.GooseLang.Ext.Net.Impl` (`netExt` and its operations `NetOp.*`),
+`Perennial.GooseLang.Ext.Net.Impl` (`netExt` and its operations, `ExternalOp netExt.name "Send"`, ...),
 for any program whose extensions include it.
 
 The Go functions modelled here are the primitives `send(to, data string)` and
@@ -38,11 +38,11 @@ variable [GooseExts] [GoGlobalContext]
 
 /-- Type: func(string, string) -/
 def send.impl : val :=
-  λ: "to" "data", ExternalOp (extOp netExt NetOp.SendOp) ("to", "data")
+  λ: "to" "data", ExternalOp netExt.name "Send" ("to", "data")
 
 /-- Type: func() (string, string) -/
 def recv.impl : val :=
-  λ: <>, ExternalOp (extOp netExt NetOp.RecvOp) #()
+  λ: <>, ExternalOp netExt.name "Recv" #()
 
 end net
 end github_com.mit_pdos.perennial.goose.testdata.examples.netfs.netext

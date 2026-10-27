@@ -1,7 +1,7 @@
 /-
 Trusted Go model of `github.com/mit-pdos/perennial/goose/testdata/examples/crashfs/fsext`
 (namespace of the generated package), in terms of the filesystem extension of
-`Perennial.GooseLang.Ext.Fs.Impl` (`fsExt` and its operations `FsOp.*`), for any
+`Perennial.GooseLang.Ext.Fs.Impl` (`fsExt` and its operations, `ExternalOp fsExt.name "Read"`, ...), for any
 program whose extensions include it.
 
 The Go functions are primitives: `Read(name string) string` and
@@ -42,11 +42,11 @@ variable [GooseExts] [GoGlobalContext]
 
 /-- Type: func(string) string -/
 def Read.impl : val :=
-  λ: "name", ExternalOp (extOp fsExt FsOp.ReadOp) "name"
+  λ: "name", ExternalOp fsExt.name "Read" "name"
 
 /-- Type: func(string, string) -/
 def Write.impl : val :=
-  λ: "name" "data", ExternalOp (extOp fsExt FsOp.WriteOp) ("name", "data")
+  λ: "name" "data", ExternalOp fsExt.name "Write" ("name", "data")
 
 end fs
 end github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext
