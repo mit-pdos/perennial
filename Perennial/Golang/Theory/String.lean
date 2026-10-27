@@ -97,6 +97,39 @@ def forRangePostcondition (P : IProp GF) (Φ : val → IProp GF) (bv : val) : IP
     (∃ v, ⌜bv = returnVal v⌝ ∗ Φ bv) ∨
     (∃ p, ⌜bv = PanicV p⌝ ∗ Φ bv))
 
+theorem forRangePostcondition_do (P : IProp GF) (Φ : val → IProp GF) :
+    P ⊢ forRangePostcondition P Φ executeVal := by
+  iintro HP
+  unfold forRangePostcondition
+  iright; ileft
+  iframe HP
+  ipureintro; rfl
+
+theorem forRangePostcondition_continue (P : IProp GF) (Φ : val → IProp GF) :
+    P ⊢ forRangePostcondition P Φ continueVal := by
+  iintro HP
+  unfold forRangePostcondition
+  ileft
+  iframe HP
+  ipureintro; rfl
+
+theorem forRangePostcondition_break (P : IProp GF) (Φ : val → IProp GF) :
+    Φ executeVal ⊢ forRangePostcondition P Φ breakVal := by
+  iintro H
+  unfold forRangePostcondition
+  iright; iright; ileft
+  iframe H
+  ipureintro; rfl
+
+theorem forRangePostcondition_return (P : IProp GF) (Φ : val → IProp GF) (v : val) :
+    Φ (returnVal v) ⊢ forRangePostcondition P Φ (returnVal v) := by
+  iintro H
+  unfold forRangePostcondition
+  iright; iright; iright; ileft
+  iexists v
+  iframe H
+  ipureintro; rfl
+
 set_option maxRecDepth 20000 in
 open github_com.mit_pdos.perennial.goose.model.strings in
 /-- A range loop over the string `str`: `P i` is the invariant before the `i`-th

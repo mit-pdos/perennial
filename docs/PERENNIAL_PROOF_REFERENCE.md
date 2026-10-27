@@ -414,7 +414,16 @@ A range over a string is `string.forRange s body` (`Golang/Defn/String.lean`): a
 `for:` loop over a byte index whose iteration decodes the rune at the index with
 the Go model `strings.DecodeRune` (Go's `runtime.decoderune`: `U+FFFD` and one
 byte for invalid UTF-8), moves the index past it, then runs `body` with the
-start index and the rune. There are no proof rules for it yet.
+start index and the rune. Its iterations are `go.runes s : List (Nat × w32)`
+(index and rune, from `go.decodeRune`, which computes the words Go's decoder
+does; `wp_auto` evaluates it on literals). Prove it with `wp_string_for_range s
+body P` (`Golang/Theory/String.lean`), an invariant `P i` over the iterations
+done: the body runs at `(go.runes s)[i] = (k, r)` from `P i` and ends in
+`forRangePostcondition (P (i + 1)) Φ` (`forRangePostcondition_do`, `_continue`,
+`_break`, `_return`), and the loop ends with `P (go.runes s).length`. Apply it
+with `wp_apply`, which turns the body literal into a `GoFunc`; the body's
+proof steps into it with `wp_auto`. Example: `countRune` in the semantics
+tests (`range_string.go`).
 
 A range over a function, `for k, v := range f`, is `func.forRange n f body`
 (`Golang/Defn/Loop.lean`), where `n` is the number of parameters of the yield

@@ -13,6 +13,7 @@ for each proved function `F`. By Go source file:
 * `nil.go`: comparisons with `nil`.
 * `panic.go`: `panic`.
 * `precedence.go`: operator precedence.
+* `range_string.go`: a range loop over a string (`countRune`, by `wp_string_for_range`).
 * `recover.go`: `panic` and `recover`: a panic recovered by a deferred function
   literal that sets a named result (`recoverNamed`), a panic raised two calls down
   inside a loop that reaches a recovering `defer` (`catchTwoDeep`), and a panic that
