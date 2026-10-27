@@ -551,7 +551,44 @@ allocation ranges: unneeded, since extra placements only add model executions.
 **Why.** P9 and P7a of `docs/design/unsafe-memory-prerequisites.md`; the owner: "Do P9
 now here."
 
-## Case 18 — ACCEPTED: range over a string (branch `worktree-range-string`)
+## Case 18 — ACCEPTED: a promoted pointer method of a generic struct names the instantiated struct (branch `goose-generic-promoted-ptr`, not yet on `lean`)
+
+**Symptom.** Translation wrong (incomplete: the output does not elaborate). For a generic
+struct with an embedded field, the pointer receiver's `MethodUnfold` of a promoted method
+built the embedded field's reference as `StructFieldRef <S>.ty`, the generic type
+unapplied (`ctx.glangType(t.Obj(), t)` of the origin), so the lemma was ill-typed; the
+value receiver's `StructFieldGet` already used `ty`, the type applied to its parameters.
+Found by etcd-grove's translation of client-go's workqueue (`delayingType[T]`,
+`rateLimitingType[T]`, `TypedBucketRateLimiter[T]`), whose promoted methods had to be
+excluded.
+
+**Witness.**
+
+```go
+type msEmbedGeneric[T any] struct {
+	msPtrRecv // (*msPtrRecv).Set
+	msGetter  // interface { Get() uint64 }
+	v T
+}
+// b := &msEmbedGeneric[uint64]{msGetter: msValRecv{x: 3}}; b.Set(4) through
+// msSetter, b.Get() through msGetter: Go returns true
+```
+
+**Taken.** One line in `lean_types.go`: the struct of the pointer case's
+`StructFieldRef` is `glang.VerbatimExpr(ty)`, as in the value case. Plus two semantics
+tests (`testMethodSetPromotedGeneric`: an embedded struct and interface;
+`testMethodSetPromotedGenericPointer`, added in review: an embedded pointer),
+regenerated gold files and the semantics example's translation. Cost: 1 changed goose
+line, 0 new branches, 0 semantics rules, 0 negative tests. Non-generic structs print the same (`ty` is the type's name); the
+standard library's translations are unchanged (regenerating them with the unfixed and
+the fixed goose under one toolchain differs only in the semantics example).
+
+**Why it is the right shape.** Like Case 2: the scheme refers to the value already
+computed (`ty`, which the unfold's own header and the value case use) instead of
+re-deriving it; nothing depends on what the field is. Signed off by the user as
+proposed ("I sign off on it").
+
+## Case 19 — ACCEPTED: range over a string (branch `worktree-range-string`)
 
 **Symptom.** Incomplete. Goose refused `for i, r := range s` on a string (Case 10
 left strings out).

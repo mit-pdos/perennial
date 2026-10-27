@@ -177,6 +177,43 @@ func testMethodSetGeneric() bool {
 	return ok1 && !ok2
 }
 
+// Methods promoted to an instantiated generic type's pointer type from its
+// embedded fields (a struct with a pointer method, and an interface).
+type msEmbedGeneric[T any] struct {
+	msPtrRecv
+	msGetter
+	v T
+}
+
+func testMethodSetPromotedGeneric() bool {
+	b := &msEmbedGeneric[uint64]{msGetter: msValRecv{x: 3}}
+	var i any = b
+	s, ok1 := i.(msSetter)
+	g, ok2 := i.(msGetter)
+	if !ok1 || !ok2 {
+		return false
+	}
+	s.Set(4)
+	return g.Get() == 3 && b.msPtrRecv.x == 4
+}
+
+// Embedding *S in an instantiated generic type promotes *S's methods to it.
+type msEmbedGenericPtr[T any] struct {
+	*msPtrRecv
+	v T
+}
+
+func testMethodSetPromotedGenericPointer() bool {
+	p := &msPtrRecv{}
+	var i any = &msEmbedGenericPtr[uint64]{msPtrRecv: p}
+	s, ok := i.(msSetter)
+	if !ok {
+		return false
+	}
+	s.Set(5)
+	return p.x == 5
+}
+
 // Unexported methods are in the method set (as the generated gRPC code's
 // `interface{ testEmbeddedByValue() }`).
 type msHidden struct{}
