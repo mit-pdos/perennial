@@ -683,6 +683,10 @@ func (suite *GoTestSuite) TestRangeStringEvalOnce() {
 	suite.Equal(true, testRangeStringEvalOnce())
 }
 
+func (suite *GoTestSuite) TestRangeStringCount() {
+	suite.Equal(true, testRangeStringCount())
+}
+
 func (suite *GoTestSuite) TestRecoverNamed() {
 	suite.Equal(true, testRecoverNamed())
 }

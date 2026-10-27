@@ -117,8 +117,10 @@ public import Perennial.Proof.github_com.goose_lang.primitive.initialize
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.strings
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.strings.Base
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.strings.ByteSliceToString
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.strings.DecodeRune
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.strings.Link
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.strings.StringToByteSlice
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.strings.decoderune_
 public import Perennial.Spec.github_com.goose_lang.primitive.Assume
 public import Perennial.Spec.github_com.goose_lang.primitive.Mutex__Lock
 public import Perennial.Spec.github_com.goose_lang.primitive.Mutex__Unlock
@@ -128,7 +130,9 @@ public import Perennial.Spec.github_com.goose_lang.primitive.ProphId__ResolveU64
 public import Perennial.Spec.github_com.goose_lang.primitive.RandomUint64
 public import Perennial.Spec.github_com.goose_lang.primitive.initialize
 public import Perennial.Spec.github_com.mit_pdos.perennial.goose.model.strings.ByteSliceToString
+public import Perennial.Spec.github_com.mit_pdos.perennial.goose.model.strings.DecodeRune
 public import Perennial.Spec.github_com.mit_pdos.perennial.goose.model.strings.StringToByteSlice
+public import Perennial.Spec.github_com.mit_pdos.perennial.goose.model.strings.decoderune_
 public import Perennial.Std.All
 public import Perennial.Std.Attrs
 public import Perennial.Std.ByteExplode

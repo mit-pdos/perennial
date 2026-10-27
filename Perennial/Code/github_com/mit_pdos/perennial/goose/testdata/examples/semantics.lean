@@ -976,6 +976,12 @@ noncomputable def testRangeStringAssign [GooseExts] [GoGlobalContext] : GoString
 noncomputable def testRangeStringEvalOnce [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeStringEvalOnce"
 
+noncomputable def countRune [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.countRune"
+
+noncomputable def testRangeStringCount [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeStringCount"
+
 noncomputable def recoverNamed [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.recoverNamed"
 
@@ -8848,6 +8854,63 @@ noncomputable def testRangeStringEvalOnce.impl [GooseExts] [GoGlobalContext] : v
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "calls") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
+/-- countRune returns the number of runes of s that are x.
+
+    go: range_string.go:139:6 -/
+noncomputable def countRune.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.rune))) (Var "x"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (Let "$r0" (Val #(W64 0))
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "r" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (App (App (Val string.forRange) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (App (Val (GoInstruction (GoLoad go.rune))) (Var "x")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 1)))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (Var "$key")))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (Var "$value")))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
+
+/-- go: range_string.go:149:6 -/
+noncomputable def testRangeStringCount.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (Val #(go!"aé世é"))
+  (Let "$a1" (Val #(W32 233))
+  (App (App (App (Val (GoInstruction (FuncResolve countRune []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W64 2)))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (Val #([W8 255, W8 97, W8 228, W8 184] : GoString))
+  (Let "$a1" (Val #(W32 65533))
+  (App (App (App (Val (GoInstruction (FuncResolve countRune []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W64 3)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
 /-- recoverNamed panics; the deferred function recovers and sets the named result.
 
     go: recover.go:4:6 -/
@@ -12843,6 +12906,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testRangeStringNamed_unfold : FuncUnfold testRangeStringNamed [] testRangeStringNamed.impl
   testRangeStringAssign_unfold : FuncUnfold testRangeStringAssign [] testRangeStringAssign.impl
   testRangeStringEvalOnce_unfold : FuncUnfold testRangeStringEvalOnce [] testRangeStringEvalOnce.impl
+  countRune_unfold : FuncUnfold countRune [] countRune.impl
+  testRangeStringCount_unfold : FuncUnfold testRangeStringCount [] testRangeStringCount.impl
   recoverNamed_unfold : FuncUnfold recoverNamed [] recoverNamed.impl
   panicInLoop_unfold : FuncUnfold panicInLoop [] panicInLoop.impl
   panicTwoDeep_unfold : FuncUnfold panicTwoDeep [] panicTwoDeep.impl
@@ -13175,6 +13240,8 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testRangeStringNamed_unfold
   Assumptions.testRangeStringAssign_unfold
   Assumptions.testRangeStringEvalOnce_unfold
+  Assumptions.countRune_unfold
+  Assumptions.testRangeStringCount_unfold
   Assumptions.recoverNamed_unfold
   Assumptions.panicInLoop_unfold
   Assumptions.panicTwoDeep_unfold

@@ -134,3 +134,18 @@ func testRangeStringEvalOnce() bool {
 	}
 	return calls == 1 && n == 3
 }
+
+// countRune returns the number of runes of s that are x.
+func countRune(s string, x rune) int {
+	n := 0
+	for _, r := range s {
+		if r == x {
+			n++
+		}
+	}
+	return n
+}
+
+func testRangeStringCount() bool {
+	return countRune("aé世é", 'é') == 2 && countRune("\xffa\xe4\xb8", '�') == 3
+}

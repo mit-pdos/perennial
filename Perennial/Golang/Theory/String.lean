@@ -87,6 +87,104 @@ theorem wp_bytes_to_string (sl : GoSlice) (str : GoString) (dq : DFrac)
   wp_apply wp_ByteSliceToString sl str dq $$ Hsl with Hsl
   iapply HΦ $$ Hsl
 
+/-- The postcondition of the body of a range loop: after the body ends normally or with
+`continue`, the loop goes on with `P`; after `break`, `return` or a panic, the loop
+ends with that outcome (`Φ executeVal` for `break`). -/
+def forRangePostcondition (P : IProp GF) (Φ : val → IProp GF) (bv : val) : IProp GF :=
+  iprop((⌜bv = continueVal⌝ ∗ P) ∨
+    (⌜bv = executeVal⌝ ∗ P) ∨
+    (⌜bv = breakVal⌝ ∗ Φ executeVal) ∨
+    (∃ v, ⌜bv = returnVal v⌝ ∗ Φ bv) ∨
+    (∃ p, ⌜bv = PanicV p⌝ ∗ Φ bv))
+
+set_option maxRecDepth 20000 in
+open github_com.mit_pdos.perennial.goose.model.strings in
+/-- A range loop over the string `str`: `P i` is the invariant before the `i`-th
+iteration, which runs the body with the rune at byte index `k` and its value `r`,
+`(go.runes str)[i] = (k, r)`. -/
+theorem wp_string_for_range (str : GoString) (body : GoFunc) (P : Nat → IProp GF)
+    (Φ : val → IProp GF) :
+    P 0 -∗
+    □ (∀ (i k : Nat) (r : w32), ⌜(go.runes str)[i]? = some (k, r)⌝ -∗ P i -∗
+        WP (App (App (Val #body) (Val #(W64 k))) (Val #r)) @ s; E
+          {{ forRangePostcondition (P (i + 1)) Φ }}) -∗
+    (P (go.runes str).length -∗ Φ executeVal) -∗
+    WP (App (App (Val string.forRange) (Val #str)) (Val #body)) @ s; E {{ Φ }} := by
+  iintro HP #Hiter HΦ
+  unfold string.forRange
+  wp_call
+  wp_auto
+  ihave Hinv : (∃ (j n : Nat),
+      "i" ∷ i_ptr ↦ W64 n ∗
+      "HP" ∷ P j ∗
+      "HΦ" ∷ (P (go.runes str).length -∗ Φ executeVal) ∗
+      "%Hn" ∷ ⌜(go.runes str).drop j = go.runesFrom str (str.length - n) n ∧ n ≤ str.length ∧
+        j ≤ (go.runes str).length⌝ :
+      IProp GF) $$ [i HP HΦ]
+  · iexists 0, 0
+    iframe
+    ipureintro
+    exact ⟨rfl, Nat.zero_le _, Nat.zero_le _⟩
+  wp_for Hinv
+  wp_apply wp_string_len with %Hlen
+  by_cases hn : n < str.length
+  · have hc : sint.Z (W64 (n : Int)) < sint.Z (W64 (str.length : Int)) := by word
+    simp only [decide_eq_true hc, decide_true, ↓reduceIte]
+    wp_call
+    wp_auto
+    have hsn : sint.nat (W64 (n : Int)) = n := by word
+    have h0 : 0 ≤ sint.Z (W64 (n : Int)) := by word
+    have h1 : sint.nat (W64 (n : Int)) < str.length := by rw [hsn]; exact hn
+    wp_apply wp_DecodeRune str (W64 n) h0 h1
+    rw [hsn]
+    have hcons := go.runesFrom_cons str n hn
+    have hj : (go.runes str)[j]? = some (n, (go.decodeRune str n).1) := by
+      have h := congrArg (·[0]?) Hn.1
+      simp only [hcons, List.getElem?_drop] at h
+      simpa using h
+    iapply wp_wand $$ (Hiter $$ %j %n %_ %hj HP)
+    iintro %bv Hpost
+    have hnext := go.decodeRune_snd str n hn
+    have hlt : j < (go.runes str).length := (List.getElem?_eq_some_iff.1 hj).1
+    have hdrop : (go.runes str).drop (j + 1) =
+        go.runesFrom str (str.length - (go.decodeRune str n).2) (go.decodeRune str n).2 := by
+      have h := congrArg List.tail Hn.1
+      simpa [hcons, List.tail_drop] using h
+    unfold forRangePostcondition
+    icases Hpost with (⟨%hbv, HP⟩ | ⟨%hbv, HP⟩ | ⟨%hbv, HΦ'⟩ | ⟨%v, %hbv, HΦ'⟩ | ⟨%p, %hbv, HΦ'⟩)
+    · subst hbv
+      iapply wp_for_post_continue
+      wp_call
+      iexists (j + 1), (go.decodeRune str n).2
+      iframe
+      ipureintro
+      exact ⟨hdrop, hnext.2, by omega⟩
+    · subst hbv
+      iapply wp_for_post_do
+      wp_call
+      iexists (j + 1), (go.decodeRune str n).2
+      iframe
+      ipureintro
+      exact ⟨hdrop, hnext.2, by omega⟩
+    · subst hbv
+      iapply wp_for_post_break
+      iexact HΦ'
+    · subst hbv
+      iapply wp_for_post_return
+      iexact HΦ'
+    · subst hbv
+      iapply wp_for_post_panic
+      iexact HΦ'
+  · have hc : ¬ sint.Z (W64 (n : Int)) < sint.Z (W64 (str.length : Int)) := by word
+    simp only [decide_eq_false hc, decide_eq_false false_neq_true, Bool.false_eq_true,
+      ↓reduceIte, _root_.decide_true]
+    have hend : (go.runes str).drop j = [] := by
+      rw [Hn.1]; exact go.runesFrom_end str n (by omega)
+    have hjl : j = (go.runes str).length := by
+      have := List.drop_eq_nil_iff.1 hend; omega
+    subst hjl
+    iapply HΦ $$ HP
+
 end proof
 
 end Perennial
