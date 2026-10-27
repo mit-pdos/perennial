@@ -104,13 +104,13 @@ section goose_lang
 variable [GooseExts] [GoGlobalContext]
 open github_com.mit_pdos.perennial.goose.model
 
-def forRange : val :=
+noncomputable def forRange : val :=
   λ: "s" "body",
   let: "i" := GoAlloc go.int #(W64 0) in
   for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (FuncResolve go.len [go.string]) #() "s") ;
                       (λ: <>, #()) :=
     (λ: <>, let: "k" := ![go.int] "i" in
-       let: ("r", "next") := (@! strings.DecodeRune) "s" "k" in
+       let: ("r", "next") := FuncResolve strings.DecodeRune [] #() "s" "k" in
        "i" <-[go.int] "next" ;;
        "body" "k" "r")
 
