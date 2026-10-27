@@ -12,7 +12,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-func Package(w io.Writer, pkg *packages.Package, exts []string, bootstrap bool, filter declfilter.DeclFilter) map[string]string {
+func Package(w io.Writer, pkg *packages.Package, bootstrap bool, filter declfilter.DeclFilter) map[string]string {
 	pf := tmpl.PackageProof{
 		Bootstrap:     bootstrap,
 		Name:          pkgName(pkg),
@@ -20,10 +20,6 @@ func Package(w io.Writer, pkg *packages.Package, exts []string, bootstrap bool, 
 		TrustProofGen: filter.TrustProofGen(),
 		ImportPath:    glang.LeanNamespace(pkg.PkgPath),
 		Root:          glang.LeanRootPrefix(pkg.PkgPath),
-	}
-
-	for _, ext := range exts {
-		pf.Exts = append(pf.Exts, tmpl.Ext{Prelude: glang.LeanExtPrelude(ext), Name: glang.LeanExt(ext)})
 	}
 
 	var imports []string

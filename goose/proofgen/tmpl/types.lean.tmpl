@@ -19,7 +19,7 @@
 namespace {{$t.Name}}
 section def_
 
-variable [GooseExts] [GooseSemantics] [GooseInterp]{{ range $.Exts }} [HasExt {{ .Name }}]{{ end }} [go_gctx : GoGlobalContext]
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 {{ if $.Bootstrap -}}
 variable [sem_fn : GoSemanticsFunctions] [pre_sem : go.PreSemantics]

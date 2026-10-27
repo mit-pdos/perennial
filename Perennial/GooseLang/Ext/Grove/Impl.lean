@@ -94,13 +94,14 @@ instance groveNodeState_inhabited : Inhabited GroveNodeState :=
 
 /-- The Grove extension: network, files and clocks. -/
 @[reducible] def groveExt : GooseExt where
+  name := "github.com/mit-pdos/gokv/grove_ffi"
   Op := GroveOp
   Val := GroveVal
   LocalState := GroveNodeState
   GlobalState := GroveGlobalState
 
 section grove
-variable [GooseExts] [ElemExt groveExt] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- A Grove value (a socket). -/
 abbrev groveV (v : GroveVal) : val := ExtV (extVal groveExt v)

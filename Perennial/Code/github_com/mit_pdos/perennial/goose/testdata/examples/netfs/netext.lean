@@ -3,7 +3,6 @@ module
 
 public import Perennial.Golang.Defn
 public import Perennial.TrustedCode.github_com.mit_pdos.perennial.goose.testdata.examples.netfs.netext
-public import Perennial.NetPrelude
 
 @[expose] public section
 
@@ -97,7 +96,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
 
-class Assumptions [GooseExts] [ElemExt netExt] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   send_unfold : FuncUnfold send [] send.impl
   recv_unfold : FuncUnfold recv [] recv.impl
   Send_unfold : FuncUnfold Send [] Send.impl

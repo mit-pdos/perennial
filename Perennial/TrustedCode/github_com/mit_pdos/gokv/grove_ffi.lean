@@ -18,7 +18,7 @@ namespace Perennial
 namespace github_com.mit_pdos.gokv.grove_ffi
 /-! Grove user-facing operations. -/
 section grove
-variable [GooseExts] [ElemExt groveExt] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 -- These are pointers in Go.
 def Listener.ty : go.GoType := «unsafe».Pointer

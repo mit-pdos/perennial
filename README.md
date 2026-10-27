@@ -265,6 +265,14 @@ models, trust lists, `assume`s); the `review-trusted` skill
   offset.
 * Equality on GooseLang syntax and `go.GoType` is decided classically
   (`noncomputable instance`).
+* An extension (`GooseExt`) has a name (by convention the path of the Go
+  package it implements), and the syntax names its operations and values by
+  that name and their encoding (`ExtCode`: `extOp E o`, `extVal E v`), so that
+  neither the syntax nor goose depends on the program's list of extensions: the
+  trusted model of a Go function implemented with an extension is
+  `ExternalOp (extOp E o) ...`, with no assumption, and `ElemExt E`/`HasExt E`
+  (proofs about `E`) are propositions, proved by computation when a program is
+  closed off. Goose knows nothing of extensions.
 * An extension (`GooseExt`) requires `Pos.Countable` of its `Op`/`Val`, and
   `Loc`, `GoSlice`, `val`, `Expr`, `GoFunc`, `GoInterface`, `go.GoType`, ... are
   `Pos.Countable` (`Perennial/GooseLang/Countable.lean`, via an injection into

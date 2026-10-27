@@ -36,7 +36,7 @@ attribute [local instance] groveExts
 attribute [local instance] groveExtsSemantics groveExtsInterp
 
 @[reducible] def groveExts_hasGrove : HasExt groveExt where
-  mem := .here
+  registered := rfl
   sem_eq := rfl
   interp_eq := rfl
 

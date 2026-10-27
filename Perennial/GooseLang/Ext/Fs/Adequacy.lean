@@ -49,7 +49,7 @@ attribute [local instance] fsExtsSemantics fsExtsInterp
 attribute [local instance] fsExtsCrashInterp
 
 @[reducible] def fsExts_hasFs : HasExt fsExt where
-  mem := .here
+  registered := rfl
   sem_eq := rfl
   interp_eq := rfl
 

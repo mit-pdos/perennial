@@ -38,7 +38,7 @@ namespace Perennial
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext
 section fs
-variable [GooseExts] [ElemExt fsExt] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- Type: func(string) string -/
 def Read.impl : val :=

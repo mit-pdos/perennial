@@ -52,13 +52,14 @@ instance : Inhabited FsState := ⟨∅⟩
 
 /-- The filesystem extension. It has no values of its own and no global state. -/
 @[reducible] def fsExt : GooseExt where
+  name := "github.com/mit-pdos/perennial/goose/testdata/examples/crashfs/fsext"
   Op := FsOp
   Val := Empty
   LocalState := FsState
   GlobalState := Unit
 
 section fs
-variable [GooseExts] [ElemExt fsExt] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- The step relation of the filesystem. -/
 def FsStep (op : FsOp) (v : val) (h : GMap Loc (NonAtomic val)) (fs : FsState) (_g : Unit)

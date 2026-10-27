@@ -1294,19 +1294,6 @@ func (f File) Write(w io.Writer) {
 	fmt.Fprint(w, f.Footer)
 }
 
-// LeanExtPrelude is the name of the prelude module of a GooseLang extension
-// ("grove" has GrovePrelude: Perennial.GrovePrelude for code,
-// Perennial.Proof.GrovePrelude for proofs).
-func LeanExtPrelude(ext string) string {
-	return upperCamel(ext + "_prelude")
-}
-
-// LeanExt is the Lean name of a GooseLang extension ("grove" is groveExt).
-func LeanExt(ext string) string {
-	s := upperCamel(ext + "_ext")
-	return strings.ToLower(s[:1]) + s[1:]
-}
-
 func upperCamel(s string) string {
 	var b strings.Builder
 	up := true

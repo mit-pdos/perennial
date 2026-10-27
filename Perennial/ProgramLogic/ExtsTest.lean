@@ -35,13 +35,14 @@ instance : Pos.Countable TickOp :=
 
 /-- A per-node counter. -/
 @[reducible] def tickExt : GooseExt where
+  name := "tick"
   Op := TickOp
   Val := Empty
   LocalState := Nat
   GlobalState := Unit
 
 section step
-variable [GooseExts] [ElemExt tickExt] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 inductive TickStep : TickOp → val → GMap Loc (NonAtomic val) → Nat → Unit → Expr →
     GMap Loc (NonAtomic val) → Nat → Unit → Prop
@@ -111,12 +112,12 @@ attribute [local instance] groveTickExts
 attribute [local instance] groveTickSemantics groveTickInterp
 
 @[reducible] def groveTick_hasGrove : HasExt groveExt where
-  mem := .here
+  registered := rfl
   sem_eq := rfl
   interp_eq := rfl
 
 @[reducible] def groveTick_hasTick : HasExt tickExt where
-  mem := .there .here
+  registered := rfl
   sem_eq := rfl
   interp_eq := rfl
 
@@ -134,16 +135,18 @@ example : {{ (True : IProp GF) }} (ExternalOp (extOp tickExt .tick) (Val #())) @
 example (t : Nat) : {{ tscLb (L := L) t }} (ExternalOp (extOp groveExt GroveOp.GetTscOp) (Val (#()))) @ s; E
     {{ (t' : w64), RET #t'; ⌜t ≤ t'.toNat⌝ ∗ tscLb t'.toNat }} := wp_GetTscOp t
 
--- the operations of the two extensions are distinct operations of the program
+-- the operations of the two extensions are distinct operations of the program: their
+-- extensions' names differ
 example : extOp groveExt GroveOp.GetTscOp ≠ extOp tickExt TickOp.tick := by
-  intro h; cases h
+  intro h
+  exact absurd (congrArg ExtCode.ext h) (by decide)
 
 -- an operation of one extension cannot change the other's state
 example (σg σg' : CfgState) (v : val) (e' : Expr)
     (h : extStep (extOp tickExt TickOp.tick) v σg e' σg') :
     extGlobal groveExt σg'.2.globalWorld = extGlobal groveExt σg.2.globalWorld ∧
       extLocal groveExt σg'.1.world = extLocal groveExt σg.1.world := by
-  obtain ⟨_, _, _, _, rfl⟩ := (extStep_injOp _ _ _ _ _ _).1 h
+  obtain ⟨_, _, _, _, rfl⟩ := (extStep_extOp _ _ _ _ _).1 h
   exact ⟨rfl, rfl⟩
 
 -- adequacy's conditions on the initial state are those of both extensions

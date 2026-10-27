@@ -345,7 +345,7 @@ theorem substEnv_pf_prim1 (op : PrimOp1) {a a' : Expr} (ha : substEnv σ a = a')
 theorem substEnv_pf_prim2 (op : PrimOp2) {a b a' b' : Expr} (ha : substEnv σ a = a')
     (hb : substEnv σ b = b') : substEnv σ (Primitive2 op a b) = Primitive2 op a' b' := by
   simp only [substEnv, ha, hb]
-theorem substEnv_pf_extop (op : ExtsOp exts) {a a' : Expr} (ha : substEnv σ a = a') :
+theorem substEnv_pf_extop (op : ExtCode) {a a' : Expr} (ha : substEnv σ a = a') :
     substEnv σ (ExternalOp op a) = ExternalOp op a' := by simp only [substEnv, ha]
 theorem substEnv_pf_cmpxchg {a b c a' b' c' : Expr} (ha : substEnv σ a = a') (hb : substEnv σ b = b')
     (hc : substEnv σ c = c') : substEnv σ (CmpXchg a b c) = CmpXchg a' b' c' := by

@@ -202,7 +202,7 @@ instance (priority := high) wp_unwind_primitive2L (op : PrimOp2) (p : val) (e2 :
     PureWp (G := G) (L := L) True (Primitive2 op (Val (PanicV p)) e2) (Val (PanicV p)) :=
   pure_exec_pure_wp (pure_unwind (.Primitive2LCtx op e2) p rfl)
 
-instance (priority := high) wp_unwind_externalOp (op : ExtsOp exts) (p : val) :
+instance (priority := high) wp_unwind_externalOp (op : ExtCode) (p : val) :
     PureWp (G := G) (L := L) True (ExternalOp op (Val (PanicV p))) (Val (PanicV p)) :=
   pure_exec_pure_wp (pure_unwind (.ExternalOpCtx op) p rfl)
 
@@ -436,7 +436,7 @@ theorem subst_pf_prim1 (op : PrimOp1) {a a' : Expr} (ha : subst x v a = a') :
 theorem subst_pf_prim2 (op : PrimOp2) {a b a' b' : Expr} (ha : subst x v a = a')
     (hb : subst x v b = b') : subst x v (Primitive2 op a b) = Primitive2 op a' b' := by
   simp only [subst, ha, hb]
-theorem subst_pf_extop (op : ExtsOp exts) {a a' : Expr} (ha : subst x v a = a') :
+theorem subst_pf_extop (op : ExtCode) {a a' : Expr} (ha : subst x v a = a') :
     subst x v (ExternalOp op a) = ExternalOp op a' := by simp only [subst, ha]
 theorem subst_pf_cmpxchg {a b c a' b' c' : Expr} (ha : subst x v a = a') (hb : subst x v b = b')
     (hc : subst x v c = c') : subst x v (CmpXchg a b c) = CmpXchg a' b' c' := by
@@ -558,7 +558,7 @@ theorem closed_prim1 (op : PrimOp1) {a : Expr} (ha : ClosedUnder S a) :
     ClosedUnder S (Primitive1 op a) := by intro σ hσ; simp only [substEnv, ha σ hσ]
 theorem closed_prim2 (op : PrimOp2) {a b : Expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
     ClosedUnder S (Primitive2 op a b) := by intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ]
-theorem closed_extop (op : ExtsOp exts) {a : Expr} (ha : ClosedUnder S a) :
+theorem closed_extop (op : ExtCode) {a : Expr} (ha : ClosedUnder S a) :
     ClosedUnder S (ExternalOp op a) := by intro σ hσ; simp only [substEnv, ha σ hσ]
 theorem closed_cmpxchg {a b c : Expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b)
     (hc : ClosedUnder S c) : ClosedUnder S (CmpXchg a b c) := by

@@ -61,13 +61,14 @@ def NetState.msgs (n : NetState) (a : GoString) : GSet NetMsg := (n !! a).getD â
 /-- The network extension. Its local state is the node's address. It has no
 values of its own. -/
 @[reducible] def netExt : GooseExt where
+  name := "github.com/mit-pdos/perennial/goose/testdata/examples/netfs/netext"
   Op := NetOp
   Val := Empty
   LocalState := GoString
   GlobalState := NetState
 
 section net
-variable [GooseExts] [ElemExt netExt] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- The step relation of the network, for the node with address `me`. -/
 def NetStep (op : NetOp) (v : val) (h : GMap Loc (NonAtomic val)) (me : GoString)

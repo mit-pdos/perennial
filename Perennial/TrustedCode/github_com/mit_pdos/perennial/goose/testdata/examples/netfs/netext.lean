@@ -34,7 +34,7 @@ namespace Perennial
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.netfs.netext
 section net
-variable [GooseExts] [ElemExt netExt] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- Type: func(string, string) -/
 def send.impl : val :=
