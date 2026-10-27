@@ -599,10 +599,12 @@ left strings out).
 decoding in a Go model, as gc does it (`walk/range.go` lowers the loop to a byte-index
 loop calling `runtime.decoderune` for a non-ASCII byte):
 * Go model `strings.DecodeRune(s, k) (r, next)` in `goose/model/strings/decode.go`:
-  `runtime.decoderune` with the loop's single-byte test folded in (U+FFFD and
-  `k + 1` for invalid UTF-8); its Go test checks it against Go's own `range` on
-  every string of up to 3 bytes, the 4-byte sequences around the continuation
-  bytes, and a fuzzer;
+  the loop's single-byte test, then Go 1.26's `runtime.decoderune`, copied
+  verbatim (its translation is identical to goose's translation of the real
+  runtime function; U+FFFD and `k + 1` for invalid UTF-8). The semantics cannot
+  call the runtime's own translation, which imports the semantics. The Go test
+  checks `DecodeRune` against Go's own `range` on every string of up to 3 bytes,
+  the 4-byte sequences around the continuation bytes, and a fuzzer;
 * `string.forRange` in `Golang/Defn/String.lean`: a `for:` loop over a byte index
   cell whose iteration decodes, advances the index, then runs `body k r` (the
   index moves before the body, so `continue` needs no post statement);
@@ -610,7 +612,8 @@ loop calling `runtime.decoderune` for a non-ASCII byte):
   `ForRangeStringExpr` node.
 
 Cost: 1 goose branch, 1 glang node, 1 GooseLang helper, 0 semantics rules, 0
-negative tests, about 45 lines of trusted Go model. Semantics tests in
+negative tests, a 6-line trusted Go wrapper around a verbatim copy of runtime
+code. Semantics tests in
 `range_string.go` (ASCII, multibyte, invalid bytes, key-only, value-only, no
 variables, `break`/`continue`/`return`, empty, named string type, assignment form,
 range expression evaluated once).
