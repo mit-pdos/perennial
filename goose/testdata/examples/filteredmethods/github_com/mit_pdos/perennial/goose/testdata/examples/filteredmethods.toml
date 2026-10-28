@@ -1,0 +1,2 @@
+translate = ["*", "!box.Get", "!box.Set", "!counter.Inc"]
+trusted = ["box.Get", "counter.Inc"]

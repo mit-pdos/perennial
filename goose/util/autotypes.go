@@ -151,11 +151,11 @@ var typesLogMu sync.Mutex
 func FuncName(f *types.Func) string {
 	maybeTypeName := ""
 	if recv := f.Type().(*types.Signature).Recv(); recv != nil {
-		recvType := recv.Type()
+		recvType := types.Unalias(recv.Type())
 		if ptrType, ok := recvType.(*types.Pointer); ok {
-			recvType = ptrType.Elem()
+			recvType = types.Unalias(ptrType.Elem())
 		}
-		maybeTypeName = types.TypeString(recvType, func(_ *types.Package) string { return "" }) + "."
+		maybeTypeName = recvType.(*types.Named).Obj().Name() + "."
 	}
 	return maybeTypeName + f.Name()
 }

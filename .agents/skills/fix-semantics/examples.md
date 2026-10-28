@@ -728,3 +728,29 @@ range over a fresh array.
 **Why.** Reuses the base walker the same-base exemption already trusts, so the
 new rule covers every fresh allocation uniformly instead of one expression. The
 user: "Implement and land it."
+
+## Case 23 — ACCEPTED: a method's filter name is `T.m`, without type parameters (branch `worktree-funcname-generic-recv`)
+
+**Symptom.** Translation wrong. The body of a method was filtered by
+`util.FuncName`, which spelled the receiver with `types.TypeString`
+(`queue[T].Pop`), and the method set by `typeName + "." + methodName`
+(`queue.Pop`). With `!queue[T].Pop` no `queue.Pop.impl` was emitted but the
+method set still wrote `ptr_Pop_unfold … (queue.Pop.impl T)`, an unknown
+constant; with `!queue.Pop` the body was translated anyway. An alias receiver
+(`type A = T; func (*A) m()`) had the same mismatch (`A.m` against `T.m`).
+
+**Witness.** `type box[T any] struct{ v T }; func (b *box[T]) Set(v T)` with
+`translate = ["*", "!box.Set"]`.
+
+**Taken.** `FuncName` unaliases the receiver (and its pointee) and names it
+by `Named.Obj().Name()`, as its doc comment (`T.m`) and `funcDecl` already did.
+Cost: 0 new goose branches, 0 semantics rules, same line count. Gold example
+`filteredmethods` (a trusted and an axiomatized method of a generic type, a
+trusted method declared through an alias). No checked-in `.toml` used the
+bracketed spelling; Perennial/Code regenerates unchanged.
+
+**Left out.** Nothing: every other filter lookup names a plain type or value.
+
+**Why.** One filter name per declaration, read the same way by every consumer
+(as Case 7). The user confirmed that `f[T]` is not part of a name, for
+functions (already `f`) or methods, and: "Implement and land it."
