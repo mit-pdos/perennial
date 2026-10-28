@@ -163,6 +163,10 @@ func (suite *GoTestSuite) TestDeferFuncLit() {
 	suite.Equal(true, testDeferFuncLit())
 }
 
+func (suite *GoTestSuite) TestDeferVariadic() {
+	suite.Equal(true, testDeferVariadic())
+}
+
 func (suite *GoTestSuite) TestSliceOperandOnce() {
 	suite.Equal(true, testSliceOperandOnce())
 }
@@ -841,6 +845,18 @@ func (suite *GoTestSuite) TestDefinedStrTypesEqual() {
 
 func (suite *GoTestSuite) TestListTypesEqual() {
 	suite.Equal(true, testListTypesEqual())
+}
+
+func (suite *GoTestSuite) TestVariadicCall() {
+	suite.Equal(true, testVariadicCall())
+}
+
+func (suite *GoTestSuite) TestVariadicSliceAliases() {
+	suite.Equal(true, testVariadicSliceAliases())
+}
+
+func (suite *GoTestSuite) TestGoVariadic() {
+	suite.Equal(true, testGoVariadic())
 }
 
 func (suite *GoTestSuite) TestPointerAssignment() {

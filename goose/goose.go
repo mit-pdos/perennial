@@ -322,6 +322,15 @@ func (ctx *Ctx) callExprPrelude(call *ast.CallExpr, cont glang.Expr) (expr glang
 	return
 }
 
+// The names callExprPrelude binds the arguments to, one per parameter.
+func (ctx *Ctx) callArgs(call *ast.CallExpr) []glang.Expr {
+	var args []glang.Expr
+	for i := range ctx.getNumParams(call.Fun) {
+		args = append(args, glang.IdentExpr(fmt.Sprintf("$a%d", i)))
+	}
+	return args
+}
+
 func (ctx *Ctx) appendWithEllipsis(call *ast.CallExpr) bool {
 	id, ok := ast.Unparen(call.Fun).(*ast.Ident)
 	return ok && ctx.info.Types[call.Fun].IsBuiltin() && id.Name == "append" &&
@@ -418,11 +427,7 @@ func (ctx *Ctx) callExpr(s *ast.CallExpr) glang.Expr {
 	} else if e, ok := ctx.maybeHandleSpecialBuiltin(s); ok {
 		return e
 	} else {
-		var args []glang.Expr
-		for i := range ctx.getNumParams(s.Fun) {
-			args = append(args, glang.IdentExpr(fmt.Sprintf("$a%d", i)))
-		}
-		return ctx.callExprPrelude(s, glang.NewCallExpr(ctx.expr(s.Fun), args...))
+		return ctx.callExprPrelude(s, glang.NewCallExpr(ctx.expr(s.Fun), ctx.callArgs(s)...))
 	}
 }
 
@@ -1956,13 +1961,9 @@ func breaksOut(body *ast.BlockStmt) bool {
 }
 
 func (ctx *Ctx) goStmt(e *ast.GoStmt, cont glang.Expr) glang.Expr {
-	args := make([]glang.Expr, 0, len(e.Call.Args))
-	for i := range len(e.Call.Args) {
-		args = append(args, glang.IdentExpr(fmt.Sprintf("$a%d", i)))
-	}
 	var expr glang.Expr = glang.NewDoSeq(glang.SpawnExpr{Body: glang.NewCallExpr(
 		glang.IdentExpr("$go"),
-		args...,
+		ctx.callArgs(e.Call)...,
 	)}, cont)
 
 	expr = glang.LetExpr{
@@ -2118,13 +2119,8 @@ func (ctx *Ctx) returnStmt(s *ast.ReturnStmt, cont glang.Expr) glang.Expr {
 
 func (ctx *Ctx) deferStmt(s *ast.DeferStmt, cont glang.Expr) (expr glang.Expr) {
 	ctx.usesDefer = true
-	args := make([]glang.Expr, 0, len(s.Call.Args))
-	for i := range len(s.Call.Args) {
-		args = append(args, glang.IdentExpr(fmt.Sprintf("$a%d", i)))
-	}
-
 	expr = glang.LetExpr{
-		ValExpr: glang.NewCallExpr(glang.IdentExpr("$f"), args...),
+		ValExpr: glang.NewCallExpr(glang.IdentExpr("$f"), ctx.callArgs(s.Call)...),
 		Cont:    glang.NewCallExpr(glang.IdentExpr("$oldf"), glang.Tt),
 	}
 
