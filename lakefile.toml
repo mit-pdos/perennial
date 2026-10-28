@@ -63,6 +63,7 @@ globs = [
   "Perennial.Golang.Defn.Map",
   "Perennial.Golang.Defn.MethodSet",
   "Perennial.Golang.Defn.Pkg",
+  "Perennial.Golang.Defn.Plain",
   "Perennial.Golang.Defn.PostLang",
   "Perennial.Golang.Defn.Pre",
   "Perennial.Golang.Defn.PreLang",

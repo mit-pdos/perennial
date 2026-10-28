@@ -7,6 +7,7 @@ public import Perennial.Golang.Defn.Array
 public import Perennial.Golang.Defn.Slice
 public import Perennial.Golang.Defn.Map
 public import Perennial.Golang.Defn.Predeclared
+public import Perennial.Golang.Defn.Plain
 public import Perennial.Golang.Defn.Defer
 public import Perennial.Golang.Defn.Interface
 
@@ -28,10 +29,11 @@ class PreSemantics [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFu
   [map_sem : go.MapSemantics]
   [slice_sem : go.SliceSemantics]
   [predeclared_sem : go.PredeclaredSemantics]
+  [plain_sem : go.PlainSemantics]
 
 attribute [instance] PreSemantics.core_sem PreSemantics.interface_sem PreSemantics.array_sem
-  PreSemantics.map_sem PreSemantics.slice_sem PreSemantics.predeclared_sem
-export PreSemantics (interface_sem array_sem map_sem slice_sem predeclared_sem)
+  PreSemantics.map_sem PreSemantics.slice_sem PreSemantics.predeclared_sem PreSemantics.plain_sem
+export PreSemantics (interface_sem array_sem map_sem slice_sem predeclared_sem plain_sem)
 
 end go
 
