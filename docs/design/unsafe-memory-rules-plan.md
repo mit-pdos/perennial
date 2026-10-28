@@ -20,8 +20,9 @@
    - allocation keeps `GoPrealloc` and the per-field placement check of
      `alloc_struct` and `alloc_array`.
 2. **Alignment comes from allocation** (owner, 2026-10-28: "This check for
-   integer allocations seems good"). R1's allocation of a plain scalar of
-   size `w` takes `AngelicExit` unless `w ∣ l`.
+   integer allocations seems good"; floats included, "Go ahead"). R1's
+   allocation of a plain scalar of size `w`, integer or float, takes
+   `AngelicExit` unless `w ∣ l`.
    - Every integer cell is allocated through this rule: a struct field or
      array element through the per-field and per-element `GoAlloc`, and a
      package variable through `GlobalAlloc`. So an integer field of a
@@ -143,9 +144,26 @@ page's bytes. There are two ways.
   field types. The review must check this, since the last axiom of this
   kind proved `False` (P1).
 
-**Recommendation: (B).** It is one axiom per function instead of seven
-refined rules. It leaves proofs about non-plain types alone, and costs
-about half of (A)'s proof churn.
+**(C) (B)'s axiom, only at positive addresses.**
+- `[TypeRepr t V] → go.Plain t → 0 < l → 0 ≤ i →
+  arrayIndexRef V i l = l + i·plainSize t`, and
+  `[TypeRepr t V] → go.Plain t → 0 < l → structFieldRef V f l = l + plainOffset t f`.
+- Consistent with all three existing axioms, which stay. Witness, for a
+  plain element of size `s`: `arrayIndexRef V i l` moves `l` by `i·s`
+  places along the non-zero integers in order, skipping `0`, and fixes `0`.
+  For `0 < l` and `0 ≤ i` that is `l + i·s`. It is a bijection on the
+  non-zero addresses, so `_null_inv` holds, and so do `_add` and `_0`. (B)'s
+  form fails exactly where `l ≤ 0` or `i < 0`, which no allocated object
+  needs.
+- The rules, the slice points-to and the typed points-tos do not change.
+- A proof gets `0 < l` from a byte cell at `l`. That needs a new
+  state-interpretation fact, "every heap cell is at a positive address",
+  kept by `AllocS` (`IsFresh`), with an empty initial heap. It is untrusted.
+- The same consistency obligation as (B) on `V`.
+
+**Recommendation: (C).** It is one axiom per function, as in (B), but no
+existing axiom or points-to changes. The cost is one state-interpretation
+invariant.
 
 ## R5: integer atomics on bytes
 
@@ -169,7 +187,7 @@ about half of (A)'s proof churn.
 
 1. R1 and R2 for scalars, with the alignment check. Every proof keeps
    working through the unchanged `wp_load`/`wp_store`.
-2. R1's concrete plain addresses, (A) or (B).
+2. R1's concrete plain addresses, (A), (B) or (C).
 3. R5.
 4. Then R3, under its own plan.
 
@@ -177,7 +195,4 @@ Each step is a branch, with `/review-trusted` and an `examples.md` case.
 
 ## Questions for the owner
 
-1. (A) or (B) for concrete plain addresses? (Recommendation: B.)
-2. Does the alignment check cover floats as well as integers? It is the
-   same rule for every plain scalar, and gc aligns floats the same way.
-   (Recommendation: yes, it adds no lines.)
+1. (A), (B) or (C) for concrete plain addresses? (Recommendation: C.)
