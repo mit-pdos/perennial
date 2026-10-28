@@ -128,6 +128,14 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   stuck unless the address is a multiple of the width. `bool`, `string`,
   pointers and the other non-plain values stay one opaque cell
   (`docs/design/unsafe-memory.md`, R1, R2 and R5).
+* **Plain types have gc's layout.** A plain type (`go.PlainLayout`,
+  `Perennial/Golang/Defn/Plain.lean`: integers and floats, arrays of at least
+  one plain element, non-empty structs of plain non-blank fields with no
+  padding, and named types of these) has gc's size and field offsets, and at a
+  positive address its element and field addresses are concrete
+  (`go.PlainSemantics`): `arrayIndexRef V i l = l + i·size` and
+  `structFieldRef V f l = l + offset`. Other addresses stay abstract. Every
+  allocation, and every heap points-to, is at a positive address.
 * **Model assumptions (overflow).** Where Go panics on an overflow that a real
   program cannot reach (it would run out of memory first), the model assumes the
   overflow does not happen, with `assume` (`Golang/Defn/Assume.lean`: an
