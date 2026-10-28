@@ -597,13 +597,26 @@ end goose_lang
 
 /-! ## Membership of an extension, with its semantics and ghost state -/
 
-/-- The extensions of the program include `E`, with its semantics `S` and its
+/-- The extension of the program named `E.name` is `E`, with its semantics `S` and its
 ghost state `I` (iris's `ElemG`, for the semantics and the ghost state as well):
-the assumption of code and proofs about `E`. -/
+the assumption of proofs about `E`. A proposition: closing off a program proves it by
+computation on its list of extensions. -/
 class HasExt [GooseExts] [GooseSemantics] [GooseInterp] (E : GooseExt) [S : ExtSemantics E]
-    [I : ExtInterp E] extends ElemExt E where
-  sem_eq : mem.get GooseSemantics.sems = S
-  interp_eq : mem.get GooseInterp.interps = I
+    [I : ExtInterp E] : Prop extends ElemExt E where
+  sem_eq : (ExtIn.ofNamed registered).get GooseSemantics.sems = S
+  interp_eq : (ExtIn.ofNamed registered).get GooseInterp.interps = I
+
+/-- The position of `E` in the program's list of extensions. -/
+abbrev HasExt.mem [GooseExts] [GooseSemantics] [GooseInterp] {E : GooseExt} [ExtSemantics E]
+    [ExtInterp E] (h : HasExt E) : ExtIn E exts := h.toElemExt.mem
+
+theorem HasExt.sem_eq' [GooseExts] [GooseSemantics] [GooseInterp] {E : GooseExt}
+    [S : ExtSemantics E] [ExtInterp E] (h : HasExt E) : h.mem.get GooseSemantics.sems = S :=
+  h.sem_eq
+
+theorem HasExt.interp_eq' [GooseExts] [GooseSemantics] [GooseInterp] {E : GooseExt}
+    [ExtSemantics E] [I : ExtInterp E] (h : HasExt E) : h.mem.get GooseInterp.interps = I :=
+  h.interp_eq
 
 section has_ext
 variable [GooseExts] [GooseSemantics] [GooseInterp] {X : GooseExt} [ExtSemantics X]
@@ -612,12 +625,12 @@ variable [GooseExts] [GooseSemantics] [GooseInterp] {X : GooseExt} [ExtSemantics
 /-- The local ghost state of the extension `X`. -/
 def extLocalGS (X : GooseExt) [ExtSemantics X] [I : ExtInterp X] [hX : HasExt X]
     [L : GooseLocalGS GF] : I.LocalGS GF :=
-  cast (congrArg (fun J : ExtInterp X => J.LocalGS GF) hX.interp_eq) (hX.mem.localGS L.gooseExtsLocalGS)
+  cast (congrArg (fun J : ExtInterp X => J.LocalGS GF) hX.interp_eq') (hX.mem.localGS L.gooseExtsLocalGS)
 
 /-- The global ghost state of the extension `X`. -/
 def extGlobalGS (X : GooseExt) [ExtSemantics X] [I : ExtInterp X] [hX : HasExt X]
     [G : GooseGlobalGS hlc GF] : I.GlobalGS GF :=
-  cast (congrArg (fun J : ExtInterp X => J.GlobalGS GF) hX.interp_eq) (hX.mem.globalGS G.gooseExtsGlobalGS)
+  cast (congrArg (fun J : ExtInterp X => J.GlobalGS GF) hX.interp_eq') (hX.mem.globalGS G.gooseExtsGlobalGS)
 
 theorem ExtInterp.localCtx_cast {J K : ExtInterp X} (h : J = K) (x : J.LocalGS GF)
     (σ : X.LocalState) :
@@ -637,7 +650,7 @@ theorem HasExt.localCtx_acc [L : GooseLocalGS GF] (w : ExtsLocalState exts) :
       ∀ x, I.localCtx (extLocalGS X) x -∗
         Exts.localCtx exts GooseInterp.interps L.gooseExtsLocalGS (hX.mem.set w x) := by
   have H := hX.mem.localCtx_acc GooseInterp.interps L.gooseExtsLocalGS w
-  simp only [ExtInterp.localCtx_cast hX.interp_eq] at H
+  simp only [ExtInterp.localCtx_cast hX.interp_eq'] at H
   exact H
 
 open ProofMode in
@@ -648,16 +661,16 @@ theorem HasExt.globalCtx_acc [G : GooseGlobalGS hlc GF] (w : ExtsGlobalState ext
       ∀ x, I.globalCtx (extGlobalGS X) x -∗
         Exts.globalCtx exts GooseInterp.interps G.gooseExtsGlobalGS (hX.mem.set w x) := by
   have H := hX.mem.globalCtx_acc GooseInterp.interps G.gooseExtsGlobalGS w
-  simp only [ExtInterp.globalCtx_cast hX.interp_eq] at H
+  simp only [ExtInterp.globalCtx_cast hX.interp_eq'] at H
   exact H
 
 /-- The step of `X`'s operations in the program is `X`'s step. -/
-theorem HasExt.step_iff [GoGlobalContext] (o : X.Op) (v : val) (h : GMap Loc (NonAtomic val))
+theorem HasExt.step_iff [GoGlobalContext] (o : String) (v : val) (h : GMap Loc (NonAtomic val))
     (σ : X.LocalState) (g : X.GlobalState) (e' : Expr) (h' : GMap Loc (NonAtomic val))
     (σ' : X.LocalState) (g' : X.GlobalState) :
-    @ExtSemantics.step X (hX.mem.get GooseSemantics.sems) _ ⟨hX.mem⟩ _ o v h σ g e' h' σ' g' ↔
+    @ExtSemantics.step X (hX.mem.get GooseSemantics.sems) _ _ o v h σ g e' h' σ' g' ↔
       ExtSemantics.step o v h σ g e' h' σ' g' := by
-  rw [hX.sem_eq]
+  rw [hX.sem_eq']
 
 end has_ext
 
@@ -1090,14 +1103,14 @@ theorem wp_lift_atomic_heap_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVa
 /-- The lifting lemma for an operation `o` of the extension `X`: a step of `X`
 with access to the heap and to `X`'s state. -/
 theorem wp_extStep {X : GooseExt} [ExtSemantics X] [I : ExtInterp X] [hX : HasExt X]
-    (o : X.Op) (v : val) (Φ : val → IProp GF) (hv : v.isPanic = false) :
+    (o : String) (v : val) (Φ : val → IProp GF) (hv : v.isPanic = false) :
     (∀ h σ g, naHeapCtx tls h -∗ I.localCtx (extLocalGS X) σ -∗
       I.globalCtx (extGlobalGS X) g ={E,∅}=∗
       ⌜∃ e' h' σ' g', ExtSemantics.step o v h σ g e' h' σ' g'⌝ ∗
       ▷ ∀ e' h' σ' g', ⌜ExtSemantics.step o v h σ g e' h' σ' g'⌝ -∗ £ 1 ={∅,E}=∗
         naHeapCtx tls h' ∗ I.localCtx (extLocalGS X) σ' ∗ I.globalCtx (extGlobalGS X) g' ∗
         WP e' @ s; E {{ Φ }})
-    ⊢ WP (ExternalOp (extOp X o) (Val v)) @ s; E {{ Φ }} := by
+    ⊢ WP (ExternalOp X.name o (Val v)) @ s; E {{ Φ }} := by
   iintro H
   iapply goose_wp_lift_base_step rfl rfl (by not_unwinds)
   iintro %σ₁ %ns %obs %obs' %nt Hσ
@@ -1111,13 +1124,13 @@ theorem wp_extStep {X : GooseExt} [ExtSemantics X] [I : ExtInterp X] [hX : HasEx
   isplitr
   · ipureintro
     obtain ⟨e', h', σ', g', Hst⟩ := Hred
-    exact ⟨[], e', _, [], BaseStep.ExternalOpS _ _ _ σ₁ _
-      ((extStep_injOp _ _ _ _ _ _).2 ⟨h', σ', g', (HasExt.step_iff ..).2 Hst, rfl⟩)⟩
+    exact ⟨[], e', _, [], BaseStep.ExternalOpS _ _ _ _ σ₁ _
+      ((extStep_named _ _ _ _ _).2 ⟨h', σ', g', (HasExt.step_iff ..).2 Hst, rfl⟩)⟩
   inext
   iintro %e₂ %σ₂ %eₜ %Hbs Hcred
   cases Hbs with
-  | ExternalOpS _ _ _ _ _ Hst =>
-  obtain ⟨h', σ', g', Hst', rfl⟩ := (extStep_injOp _ _ _ _ _ _).1 Hst
+  | ExternalOpS _ _ _ _ _ _ Hst =>
+  obtain ⟨h', σ', g', Hst', rfl⟩ := (extStep_named _ _ _ _ _).1 Hst
   imod H $$ %e₂ %h' %σ' %g' %((HasExt.step_iff ..).1 Hst') Hcred with ⟨Hheap, Hl, Hg, Hwp⟩
   imodintro
   isplitl [Hheap Hl Hg Hlclose Hgclose Hgs Hproph]

@@ -409,7 +409,7 @@ def Expr.toTree : Expr → GenTree
   | .Primitive1 op e => node 10 [of op, e.toTree]
   | .Primitive2 op e1 e2 => node 11 [of op, e1.toTree, e2.toTree]
   | .CmpXchg e0 e1 e2 => node 12 [e0.toTree, e1.toTree, e2.toTree]
-  | .ExternalOp op e => node 13 [of op, e.toTree]
+  | .ExternalOp ext op e => node 13 [of ext, of op, e.toTree]
   | .NewProph => node 14 []
   | .ResolveProph e1 e2 => node 15 [e1.toTree, e2.toTree]
   | .LiteralValue l => node 16 [kesToTree l]
@@ -484,7 +484,7 @@ theorem Expr.toTree_inj : ∀ {a b : Expr}, a.toTree = b.toTree → a = b
     inj_ex b; exact ⟨h.1, Expr.toTree_inj h.2.1, Expr.toTree_inj h.2.2⟩
   | .CmpXchg .., b, h => by
     inj_ex b; exact ⟨Expr.toTree_inj h.1, Expr.toTree_inj h.2.1, Expr.toTree_inj h.2.2⟩
-  | .ExternalOp .., b, h => by inj_ex b; exact ⟨h.1, Expr.toTree_inj h.2⟩
+  | .ExternalOp .., b, h => by inj_ex b; exact ⟨h.1, h.2.1, Expr.toTree_inj h.2.2⟩
   | .NewProph, b, h => by inj_ex b
   | .ResolveProph .., b, h => by inj_ex b; exact ⟨Expr.toTree_inj h.1, Expr.toTree_inj h.2⟩
   | .LiteralValue _, b, h => by inj_ex b; exact kesToTree_inj h

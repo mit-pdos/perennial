@@ -597,11 +597,7 @@ func (ctx *Ctx) leanPackagePropClass(typeSpecs []*ast.TypeSpec) string {
 		fields = append(fields, leanClassField{name: ctx.importAssumptionName(pkg),
 			ty: glang.LeanQuote(ctx.pkgRef(pkg) + ".Assumptions")})
 	}
-	params := " [GooseExts]"
-	for _, ext := range ctx.exts {
-		params += " [ElemExt " + glang.LeanExt(ext) + "]"
-	}
-	return leanClass("Assumptions", params+" "+leanClassParams, fields)
+	return leanClass("Assumptions", " [GooseExts] "+leanClassParams, fields)
 }
 
 func (ctx *Ctx) leanInfoInstance() string {

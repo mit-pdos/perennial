@@ -106,10 +106,10 @@ theorem fs_local_ctx_eq (fs : FsState) :
       genHeapInterp (G := (gooseFsGS (L := L)).fsHeapG) fs := .rfl
 
 theorem wp_FsRead (f : GoString) (q : DFrac) (c : List w8) :
-    {{ (f fs↦{q} c : IProp GF) }} (ExternalOp (extOp fsExt FsOp.ReadOp) (Val (#f))) @ s; E
+    {{ (f fs↦{q} c : IProp GF) }} (ExternalOp fsExt.name "Read" (Val (#f))) @ s; E
     {{ RET #c; f fs↦{q} c }} := by
   iintro %Φ Hc HΦ
-  iapply wp_extStep FsOp.ReadOp (#f) Φ (by simp)
+  iapply wp_extStep "Read" (#f) Φ (by simp)
   iintro %h %fs %g Hheap Hl Hg
   icases (fs_local_ctx_eq fs).mp $$ Hl with Hl
   unfold fsPointsto
@@ -136,10 +136,10 @@ theorem wp_FsRead (f : GoString) (q : DFrac) (c : List w8) :
 
 theorem wp_FsWrite (f : GoString) (old new : List w8) :
     {{ (f fs↦ old : IProp GF) }}
-      (ExternalOp (extOp fsExt FsOp.WriteOp) (Val (PairV (#f) (#new)))) @ s; E
+      (ExternalOp fsExt.name "Write" (Val (PairV (#f) (#new)))) @ s; E
     {{ RET #(); f fs↦ new }} := by
   iintro %Φ Hc HΦ
-  iapply wp_extStep FsOp.WriteOp (PairV (#f) (#new)) Φ (by simp [val.isPanic])
+  iapply wp_extStep "Write" (PairV (#f) (#new)) Φ (by simp [val.isPanic])
   iintro %h %fs %g Hheap Hl Hg
   icases (fs_local_ctx_eq fs).mp $$ Hl with Hl
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
@@ -169,9 +169,9 @@ theorem wp_FsWrite (f : GoString) (old new : List w8) :
 during the step, so it can come from an invariant. -/
 theorem wp_FsRead_atomic (f : GoString) (Φ : val → IProp GF) :
     (|={E,∅}=> ∃ (q : DFrac) (c : List w8), f fs↦{q} c ∗ (f fs↦{q} c ={∅,E}=∗ Φ #c))
-    ⊢ WP (ExternalOp (extOp fsExt FsOp.ReadOp) (Val (#f))) @ s; E {{ Φ }} := by
+    ⊢ WP (ExternalOp fsExt.name "Read" (Val (#f))) @ s; E {{ Φ }} := by
   iintro HAU
-  iapply wp_extStep FsOp.ReadOp (#f) Φ (by simp)
+  iapply wp_extStep "Read" (#f) Φ (by simp)
   iintro %h %fs %g Hheap Hl Hg
   imod HAU with ⟨%q, %c, Hc, Hclose⟩
   icases (fs_local_ctx_eq fs).mp $$ Hl with Hl
@@ -198,9 +198,9 @@ theorem wp_FsRead_atomic (f : GoString) (Φ : val → IProp GF) :
 /-- `wp_FsWrite` as a logically atomic spec. -/
 theorem wp_FsWrite_atomic (f : GoString) (new : List w8) (Φ : val → IProp GF) :
     (|={E,∅}=> ∃ old : List w8, f fs↦ old ∗ (f fs↦ new ={∅,E}=∗ Φ #()))
-    ⊢ WP (ExternalOp (extOp fsExt FsOp.WriteOp) (Val (PairV (#f) (#new)))) @ s; E {{ Φ }} := by
+    ⊢ WP (ExternalOp fsExt.name "Write" (Val (PairV (#f) (#new)))) @ s; E {{ Φ }} := by
   iintro HAU
-  iapply wp_extStep FsOp.WriteOp (PairV (#f) (#new)) Φ (by simp [val.isPanic])
+  iapply wp_extStep "Write" (PairV (#f) (#new)) Φ (by simp [val.isPanic])
   iintro %h %fs %g Hheap Hl Hg
   imod HAU with ⟨%old, Hc, Hclose⟩
   icases (fs_local_ctx_eq fs).mp $$ Hl with Hl

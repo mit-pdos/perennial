@@ -33,16 +33,6 @@ public import Perennial.GooseLang.Lang
 
 namespace Perennial
 
-inductive NetOp where
-  | SendOp | RecvOp
-deriving DecidableEq, Inhabited
-
-instance : Pos.Countable NetOp where
-  encode o := Pos.Countable.encode (match o with | .SendOp => (0 : Nat) | .RecvOp => 1)
-  decode p := match (Pos.Countable.decode p : Option Nat) with
-    | some 0 => some .SendOp | some 1 => some .RecvOp | _ => none
-  decode_encode o := by cases o <;> simp [Pos.Countable.decode_encode]
-
 /-- A message: its sender's address and its data. -/
 structure NetMsg where
   sender : GoString
@@ -61,26 +51,27 @@ def NetState.msgs (n : NetState) (a : GoString) : GSet NetMsg := (n !! a).getD �
 /-- The network extension. Its local state is the node's address. It has no
 values of its own. -/
 @[reducible] def netExt : GooseExt where
-  Op := NetOp
+  name := "github.com/mit-pdos/perennial/goose/testdata/examples/netfs/netext"
   Val := Empty
   LocalState := GoString
   GlobalState := NetState
 
 section net
-variable [GooseExts] [ElemExt netExt] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- The step relation of the network, for the node with address `me`. -/
-def NetStep (op : NetOp) (v : val) (h : GMap Loc (NonAtomic val)) (me : GoString)
+def NetStep (op : String) (v : val) (h : GMap Loc (NonAtomic val)) (me : GoString)
     (n : NetState) (e' : Expr) (h' : GMap Loc (NonAtomic val)) (me' : GoString)
     (n' : NetState) : Prop :=
   h' = h ∧ me' = me ∧
   match op with
-  | .SendOp => ∃ (to : GoString) (data : List w8),
+  | "Send" => ∃ (to : GoString) (data : List w8),
       v = PairV (#to) (#data) ∧ e' = Val (#()) ∧
       n' = <[to := n.msgs to ∪ {[⟨me, data⟩]}]> n
-  | .RecvOp => v = #() ∧ n' = n ∧
-      (e' = ExternalOp (extOp netExt NetOp.RecvOp) (Val v) ∨
+  | "Recv" => v = #() ∧ n' = n ∧
+      (e' = ExternalOp netExt.name "Recv" (Val v) ∨
         ∃ m, m ∈ n.msgs me ∧ e' = Val (PairV (#m.sender) (#m.data)))
+  | _ => False
 
 end net
 

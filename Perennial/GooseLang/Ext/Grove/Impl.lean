@@ -6,7 +6,8 @@ Consists only of a network, per-node file storage, and clocks.
 * Crashes (`ExtSemantics.crash`): a node's state may be anything afterwards
   (`grove_ffi` does not make its writes durable).
 * The step (`GroveStep`, the `ExtSemantics` of `groveExt`) is a relation:
-  either the operation stutters (state unchanged, `e' = ExternalOp op v`) or it
+  either one of Grove's operations (`groveOps`) stutters (state unchanged,
+  `e' = ExternalOp groveExt.name op v`) or it
   takes an `IsGroveStep`. It does not change the heap.
 -/
 module
@@ -18,16 +19,6 @@ public import Perennial.GooseLang.Lang
 namespace Perennial
 
 /-! ## The Grove extension to GooseLang: primitive operations -/
-
-inductive GroveOp where
-  -- Network ops
-  | ListenOp | ConnectOp | AcceptOp | SendOp | RecvOp
-  -- File ops
-  | FileReadOp | FileWriteOp | FileAppendOp
-  -- Time ops
-  | GetTscOp
-  | GetTimeRangeOp
-deriving DecidableEq, Inhabited
 
 /-- `endpoint` corresponds to a host-IP-pair -/
 abbrev Endpoint := w64
@@ -42,18 +33,6 @@ inductive GroveVal where
 deriving DecidableEq
 
 export GroveVal (ListenSocketV ConnectionSocketV BadSocketV)
-
-instance : Pos.Countable GroveOp where
-  encode o := Pos.Countable.encode (match o with
-      | .ListenOp => (0 : Nat) | .ConnectOp => 1 | .AcceptOp => 2 | .SendOp => 3 | .RecvOp => 4
-      | .FileReadOp => 5 | .FileWriteOp => 6 | .FileAppendOp => 7 | .GetTscOp => 8
-      | .GetTimeRangeOp => 9)
-  decode p := match (Pos.Countable.decode p : Option Nat) with
-    | some 0 => some .ListenOp | some 1 => some .ConnectOp | some 2 => some .AcceptOp
-    | some 3 => some .SendOp | some 4 => some .RecvOp | some 5 => some .FileReadOp
-    | some 6 => some .FileWriteOp | some 7 => some .FileAppendOp | some 8 => some .GetTscOp
-    | some 9 => some .GetTimeRangeOp | _ => none
-  decode_encode o := by cases o <;> simp [Pos.Countable.decode_encode]
 
 instance : Pos.Countable GroveVal where
   encode v := Pos.Countable.encode (match v with
@@ -94,13 +73,13 @@ instance groveNodeState_inhabited : Inhabited GroveNodeState :=
 
 /-- The Grove extension: network, files and clocks. -/
 @[reducible] def groveExt : GooseExt where
-  Op := GroveOp
+  name := "github.com/mit-pdos/gokv/grove_ffi"
   Val := GroveVal
   LocalState := GroveNodeState
   GlobalState := GroveGlobalState
 
 section grove
-variable [GooseExts] [ElemExt groveExt] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
 /-- A Grove value (a socket). -/
 abbrev groveV (v : GroveVal) : val := ExtV (extVal groveExt v)
@@ -112,12 +91,12 @@ def IsFreshChan (fg : GroveGlobalState) (c : Option Endpoint) : Prop :=
 
 theorem gen_isFreshChan (σg : GroveGlobalState) : IsFreshChan σg none := trivial
 
-def IsGroveStep (op : GroveOp) (v : val) (e' : Expr)
+def IsGroveStep (op : String) (v : val) (e' : Expr)
     (σ σ' : GroveNodeState) (g g' : GroveGlobalState) : Prop :=
   match op with
-  | .ListenOp =>
+  | "Listen" =>
       σ = σ' ∧ g = g' ∧ (∀ c : Endpoint, v = #c → e' = Val (groveV (ListenSocketV c)))
-  | .ConnectOp =>
+  | "Connect" =>
       ∀ c_r : Endpoint, v = #c_r →
         σ = σ' ∧
         ∃ c_l, IsFreshChan g c_l ∧
@@ -125,10 +104,10 @@ def IsGroveStep (op : GroveOp) (v : val) (e' : Expr)
           | none => g = g' ∧ e' = Val (PairV (#true) (groveV BadSocketV))
           | some c_l => g' = { g with groveNet := <[c_l := ∅]> g.groveNet } ∧
               e' = Val (PairV (#false) (groveV (ConnectionSocketV c_l c_r)))
-  | .AcceptOp =>
+  | "Accept" =>
       σ = σ' ∧ g = g' ∧ (∀ c_l, v = groveV (ListenSocketV c_l) →
         ∃ c_r, g = g' ∧ e' = Val (groveV (ConnectionSocketV c_l c_r)))
-  | .SendOp =>
+  | "Send" =>
       σ = σ' ∧
       (∀ (data : List w8) c_l c_r,
         v = PairV (groveV (ConnectionSocketV c_l c_r)) (#data) →
@@ -137,7 +116,7 @@ def IsGroveStep (op : GroveOp) (v : val) (e' : Expr)
             g' = { g with groveNet := <[c_r := ms ∪ {[Message c_l data]}]> g.groveNet } ∧
             e' = Val (#b)
         | none => e' = Panic "invalid")
-  | .RecvOp =>
+  | "Receive" =>
       σ = σ' ∧ g = g' ∧
       (∀ c_l c_r, v = groveV (ConnectionSocketV c_l c_r) →
         ∃ err : Bool,
@@ -146,17 +125,17 @@ def IsGroveStep (op : GroveOp) (v : val) (e' : Expr)
               if err then e' = Val (PairV (#true) (#([] : List w8)))
               else ∃ d, Message c_r d ∈ ms ∧ e' = Val (PairV (#false) (#d))
           | none => e' = Panic "invalid")
-  | .FileReadOp =>
+  | "FileRead" =>
       σ = σ' ∧ g = g' ∧
       (∀ name : GoString, v = #name →
         match σ.groveNodeFiles !! name with
         | some data => e' = Val (#data)
         | none => e' = Panic "invalid")
-  | .FileWriteOp =>
+  | "FileWrite" =>
       g = g' ∧
       (∀ (name : GoString) (data : List w8), v = PairV (#name) (#data) →
         e' = Val (#()) ∧ σ' = { σ with groveNodeFiles := <[name := data]> σ.groveNodeFiles })
-  | .FileAppendOp =>
+  | "FileAppend" =>
       g = g' ∧
       (∀ (name : GoString) (data : List w8), v = PairV (#name) (#data) →
         match σ.groveNodeFiles !! name with
@@ -164,25 +143,32 @@ def IsGroveStep (op : GroveOp) (v : val) (e' : Expr)
             σ' = { σ with groveNodeFiles := <[name := old ++ data]> σ.groveNodeFiles } ∧
             e' = Val (#())
         | none => e' = Panic "invalid")
-  | .GetTscOp =>
+  | "GetTSC" =>
       g = g' ∧
       ∃ new_time : w64,
         σ.groveNodeTsc.toNat ≤ new_time.toNat ∧
         σ' = { σ with groveNodeTsc := new_time } ∧ e' = Val (#new_time)
-  | .GetTimeRangeOp =>
+  | "GetTimeRange" =>
       σ = σ' ∧
       ∃ new_time low high : w64,
         g.groveGlobalTime.toNat ≤ new_time.toNat ∧
         low.toNat ≤ new_time.toNat ∧ new_time.toNat ≤ high.toNat ∧
         g' = { g with groveGlobalTime := new_time } ∧
         e' = Val (PairV (#low) (#high))
+  | _ => False
 
-/-- The Grove step relation: the operation either stutters or takes an
-`IsGroveStep`; the heap does not change. -/
-def GroveStep (op : GroveOp) (v : val) (h : GMap Loc (NonAtomic val)) (σ : GroveNodeState)
+/-- The names of Grove's operations (`IsGroveStep`'s cases). -/
+def groveOps : List String :=
+  ["Listen", "Connect", "Accept", "Send", "Receive", "FileRead", "FileWrite", "FileAppend",
+    "GetTSC", "GetTimeRange"]
+
+/-- The Grove step relation: one of Grove's operations either stutters or takes an
+`IsGroveStep`; the heap does not change. Any other operation name has no step (it does not
+stutter: a model calling an operation Grove does not have is stuck, not looping). -/
+def GroveStep (op : String) (v : val) (h : GMap Loc (NonAtomic val)) (σ : GroveNodeState)
     (g : GroveGlobalState) (e' : Expr) (h' : GMap Loc (NonAtomic val)) (σ' : GroveNodeState)
     (g' : GroveGlobalState) : Prop :=
-  h' = h ∧ ((σ' = σ ∧ g' = g ∧ e' = ExternalOp (extOp groveExt op) (Val v)) ∨
+  h' = h ∧ ((op ∈ groveOps ∧ σ' = σ ∧ g' = g ∧ e' = ExternalOp groveExt.name op (Val v)) ∨
     IsGroveStep op v e' σ σ' g g')
 
 end grove

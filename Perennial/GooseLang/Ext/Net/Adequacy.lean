@@ -55,12 +55,12 @@ attribute [local instance] fsNetExtsSemantics fsNetExtsInterp
 attribute [local instance] fsNetExtsCrashInterp
 
 @[reducible] def fsNetExts_hasFs : HasExt fsExt where
-  mem := .here
+  registered := rfl
   sem_eq := rfl
   interp_eq := rfl
 
 @[reducible] def fsNetExts_hasNet : HasExt netExt where
-  mem := .there .here
+  registered := rfl
   sem_eq := rfl
   interp_eq := rfl
 

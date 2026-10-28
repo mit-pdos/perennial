@@ -21,9 +21,3 @@ func TestLeanIdent(t *testing.T) {
 	assert.Equal("go.GoType.Named", LeanIdent("go.Named"))
 	assert.Equal("«end»", LeanIdent("end"))
 }
-
-func TestLeanExt(t *testing.T) {
-	assert.Equal(t, "GrovePrelude", LeanExtPrelude("grove"))
-	assert.Equal(t, "groveExt", LeanExt("grove"))
-	assert.Equal(t, "asyncDiskExt", LeanExt("async_disk"))
-}

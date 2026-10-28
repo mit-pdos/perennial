@@ -128,8 +128,12 @@ func TestGroveFFI(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(content), "public import Perennial.GrovePrelude") {
-		t.Error("use_grove.lean should import Perennial.GrovePrelude")
+	// goose knows nothing of extensions: the package of one (grove_ffi) is
+	// translated as any other, its trusted models naming the extension
+	for _, s := range []string{"GrovePrelude", "ElemExt"} {
+		if strings.Contains(string(content), s) {
+			t.Errorf("use_grove.lean should not mention %s", s)
+		}
 	}
 }
 

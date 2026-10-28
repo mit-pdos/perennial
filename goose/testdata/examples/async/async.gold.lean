@@ -3,7 +3,6 @@ module
 
 public import Perennial.Code.github_com.goose_lang.primitive.async_disk
 public import Perennial.Golang.Defn
-public import Perennial.AsyncDiskPrelude
 
 @[expose] public section
 
@@ -66,7 +65,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.goose_lang.primitive.async_disk.initialize') (Val #())))))))
 
-class Assumptions [GooseExts] [ElemExt asyncDiskExt] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   TakesDisk_unfold : FuncUnfold TakesDisk [] TakesDisk.impl
   UseDisk_unfold : FuncUnfold UseDisk [] UseDisk.impl
   import_async_disk_Assumption : _root_.Perennial.github_com.goose_lang.primitive.async_disk.Assumptions

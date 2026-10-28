@@ -202,9 +202,9 @@ instance (priority := high) wp_unwind_primitive2L (op : PrimOp2) (p : val) (e2 :
     PureWp (G := G) (L := L) True (Primitive2 op (Val (PanicV p)) e2) (Val (PanicV p)) :=
   pure_exec_pure_wp (pure_unwind (.Primitive2LCtx op e2) p rfl)
 
-instance (priority := high) wp_unwind_externalOp (op : ExtsOp exts) (p : val) :
-    PureWp (G := G) (L := L) True (ExternalOp op (Val (PanicV p))) (Val (PanicV p)) :=
-  pure_exec_pure_wp (pure_unwind (.ExternalOpCtx op) p rfl)
+instance (priority := high) wp_unwind_externalOp (ext op : String) (p : val) :
+    PureWp (G := G) (L := L) True (ExternalOp ext op (Val (PanicV p))) (Val (PanicV p)) :=
+  pure_exec_pure_wp (pure_unwind (.ExternalOpCtx ext op) p rfl)
 
 end instances
 
@@ -436,8 +436,8 @@ theorem subst_pf_prim1 (op : PrimOp1) {a a' : Expr} (ha : subst x v a = a') :
 theorem subst_pf_prim2 (op : PrimOp2) {a b a' b' : Expr} (ha : subst x v a = a')
     (hb : subst x v b = b') : subst x v (Primitive2 op a b) = Primitive2 op a' b' := by
   simp only [subst, ha, hb]
-theorem subst_pf_extop (op : ExtsOp exts) {a a' : Expr} (ha : subst x v a = a') :
-    subst x v (ExternalOp op a) = ExternalOp op a' := by simp only [subst, ha]
+theorem subst_pf_extop (ext op : String) {a a' : Expr} (ha : subst x v a = a') :
+    subst x v (ExternalOp ext op a) = ExternalOp ext op a' := by simp only [subst, ha]
 theorem subst_pf_cmpxchg {a b c a' b' c' : Expr} (ha : subst x v a = a') (hb : subst x v b = b')
     (hc : subst x v c = c') : subst x v (CmpXchg a b c) = CmpXchg a' b' c' := by
   simp only [subst, ha, hb, hc]
@@ -558,8 +558,8 @@ theorem closed_prim1 (op : PrimOp1) {a : Expr} (ha : ClosedUnder S a) :
     ClosedUnder S (Primitive1 op a) := by intro σ hσ; simp only [substEnv, ha σ hσ]
 theorem closed_prim2 (op : PrimOp2) {a b : Expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b) :
     ClosedUnder S (Primitive2 op a b) := by intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ]
-theorem closed_extop (op : ExtsOp exts) {a : Expr} (ha : ClosedUnder S a) :
-    ClosedUnder S (ExternalOp op a) := by intro σ hσ; simp only [substEnv, ha σ hσ]
+theorem closed_extop (ext op : String) {a : Expr} (ha : ClosedUnder S a) :
+    ClosedUnder S (ExternalOp ext op a) := by intro σ hσ; simp only [substEnv, ha σ hσ]
 theorem closed_cmpxchg {a b c : Expr} (ha : ClosedUnder S a) (hb : ClosedUnder S b)
     (hc : ClosedUnder S c) : ClosedUnder S (CmpXchg a b c) := by
   intro σ hσ; simp only [substEnv, ha σ hσ, hb σ hσ, hc σ hσ]
@@ -981,7 +981,7 @@ meta def extractEctxItem (e : Lean.Expr) : MetaM (Option (Lean.Expr × Lean.Expr
       let some hv ← notPanicProof? v | return none
       return some (mk ``EctxItem.Primitive2RCtx ext #[op, v, hv], e2)
     else return some (mk ``EctxItem.Primitive2LCtx ext #[op, e2], e1)
-  | Perennial.Expr.ExternalOp ext op e => return some (mk ``EctxItem.ExternalOpCtx ext #[op], e)
+  | Perennial.Expr.ExternalOp ext xn op e => return some (mk ``EctxItem.ExternalOpCtx ext #[xn, op], e)
   | Perennial.Expr.CmpXchg ext e0 e1 e2 =>
     match ← isVal e0, ← isVal e1 with
     | some v0, some v1 =>
@@ -1018,7 +1018,7 @@ meta def fillItemExpr (Ki e : Lean.Expr) : MetaM Lean.Expr := do
   | some ``EctxItem.Primitive1Ctx => return mk ``Perennial.Expr.Primitive1 #[a[1]!, e]
   | some ``EctxItem.Primitive2LCtx => return mk ``Perennial.Expr.Primitive2 #[a[1]!, e, a[2]!]
   | some ``EctxItem.Primitive2RCtx => return mk ``Perennial.Expr.Primitive2 #[a[1]!, val a[2]!, e]
-  | some ``EctxItem.ExternalOpCtx => return mk ``Perennial.Expr.ExternalOp #[a[1]!, e]
+  | some ``EctxItem.ExternalOpCtx => return mk ``Perennial.Expr.ExternalOp #[a[1]!, a[2]!, e]
   | some ``EctxItem.CmpXchgLCtx => return mk ``Perennial.Expr.CmpXchg #[e, a[1]!, a[2]!]
   | some ``EctxItem.CmpXchgMCtx => return mk ``Perennial.Expr.CmpXchg #[val a[1]!, e, a[2]!]
   | some ``EctxItem.CmpXchgRCtx => return mk ``Perennial.Expr.CmpXchg #[val a[1]!, val a[2]!, e]
@@ -2015,8 +2015,8 @@ meta partial def substMeta (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (e 
     return mk ``Perennial.Expr.Primitive1 #[op, ← rec' a]
   | some ``Perennial.Expr.Primitive2, #[_, op, a, b] =>
     return mk ``Perennial.Expr.Primitive2 #[op, ← rec' a, ← rec' b]
-  | some ``Perennial.Expr.ExternalOp, #[_, op, a] =>
-    return mk ``Perennial.Expr.ExternalOp #[op, ← rec' a]
+  | some ``Perennial.Expr.ExternalOp, #[_, xn, op, a] =>
+    return mk ``Perennial.Expr.ExternalOp #[xn, op, ← rec' a]
   | some ``Perennial.Expr.CmpXchg, #[_, a, b, c] =>
     return mk ``Perennial.Expr.CmpXchg #[← rec' a, ← rec' b, ← rec' c]
   | some ``Perennial.Expr.NewProph, _ => return e
@@ -2180,7 +2180,7 @@ meta partial def fvOf (e : Lean.Expr) : MetaM (Option (List String)) := do
     | some ``Perennial.Expr.Primitive0 => pure (some [])
     | some ``Perennial.Expr.Primitive1 => all [args[2]!]
     | some ``Perennial.Expr.Primitive2 => all [args[2]!, args[3]!]
-    | some ``Perennial.Expr.ExternalOp => all [args[2]!]
+    | some ``Perennial.Expr.ExternalOp => all [args[3]!]
     | some ``Perennial.Expr.CmpXchg => all [args[1]!, args[2]!, args[3]!]
     | some ``Perennial.Expr.NewProph => pure (some [])
     | some ``Perennial.Expr.ResolveProph => all [args[1]!, args[2]!]
@@ -2283,7 +2283,7 @@ meta partial def closedPf (ext : Lean.Expr) (S : List String) (Se : Lean.Expr) (
       | some ha, some hb => pure (some (lem ``closed_prim2 #[args[1]!, args[2]!, args[3]!, ha, hb]))
       | _, _ => pure none
     | some ``Perennial.Expr.ExternalOp =>
-      return (← rec' args[2]!).map (lem ``closed_extop #[args[1]!, args[2]!, ·])
+      return (← rec' args[3]!).map (lem ``closed_extop #[args[1]!, args[2]!, args[3]!, ·])
     | some ``Perennial.Expr.CmpXchg =>
       match ← rec' args[1]!, ← rec' args[2]!, ← rec' args[3]! with
       | some ha, some hb, some hc =>
@@ -2418,9 +2418,9 @@ meta partial def substPf (ext : Lean.Expr) (x : String) (xe v : Lean.Expr) (dirt
   | some ``Perennial.Expr.Primitive2, #[_, op, a, b] =>
     let (a', pa) ← rec' a; let (b', pb) ← rec' b
     return (mk ``Perennial.Expr.Primitive2 #[op, a', b'], lem ``subst_pf_prim2 #[op, a, b, a', b', pa, pb])
-  | some ``Perennial.Expr.ExternalOp, #[_, op, a] =>
+  | some ``Perennial.Expr.ExternalOp, #[_, xn, op, a] =>
     let (a', pa) ← rec' a
-    return (mk ``Perennial.Expr.ExternalOp #[op, a'], lem ``subst_pf_extop #[op, a, a', pa])
+    return (mk ``Perennial.Expr.ExternalOp #[xn, op, a'], lem ``subst_pf_extop #[xn, op, a, a', pa])
   | some ``Perennial.Expr.CmpXchg, #[_, a, b, c] =>
     let (a', pa) ← rec' a; let (b', pb) ← rec' b; let (c', pc) ← rec' c
     return (mk ``Perennial.Expr.CmpXchg #[a', b', c'], lem ``subst_pf_cmpxchg #[a, b, c, a', b', c', pa, pb, pc])
@@ -2641,9 +2641,9 @@ meta partial def substEnvPf (ext : Lean.Expr) (lcache : IO.Ref (Std.HashMap (Lea
     let some (b', pb) ← rec' b | return none
     return some (mk ``Perennial.Expr.Primitive2 #[op, a', b'],
       lem ``substEnv_pf_prim2 #[op, a, b, a', b', pa, pb])
-  | some ``Perennial.Expr.ExternalOp, #[_, op, a] =>
+  | some ``Perennial.Expr.ExternalOp, #[_, xn, op, a] =>
     let some (a', pa) ← rec' a | return none
-    return some (mk ``Perennial.Expr.ExternalOp #[op, a'], lem ``substEnv_pf_extop #[op, a, a', pa])
+    return some (mk ``Perennial.Expr.ExternalOp #[xn, op, a'], lem ``substEnv_pf_extop #[xn, op, a, a', pa])
   | some ``Perennial.Expr.CmpXchg, #[_, a, b, c] =>
     let some (a', pa) ← rec' a | return none
     let some (b', pb) ← rec' b | return none

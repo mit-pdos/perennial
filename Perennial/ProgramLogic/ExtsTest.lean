@@ -27,26 +27,20 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
 /-! ## A toy extension -/
 
-inductive TickOp where
-  | tick
-
-instance : Pos.Countable TickOp :=
-  .ofInjective (fun _ => Pos.Countable.encode (0 : Nat)) (by intro a b _; cases a; cases b; rfl)
-
 /-- A per-node counter. -/
 @[reducible] def tickExt : GooseExt where
-  Op := TickOp
+  name := "tick"
   Val := Empty
   LocalState := Nat
   GlobalState := Unit
 
 section step
-variable [GooseExts] [ElemExt tickExt] [GoGlobalContext]
+variable [GooseExts] [GoGlobalContext]
 
-inductive TickStep : TickOp → val → GMap Loc (NonAtomic val) → Nat → Unit → Expr →
+inductive TickStep : String → val → GMap Loc (NonAtomic val) → Nat → Unit → Expr →
     GMap Loc (NonAtomic val) → Nat → Unit → Prop
   | tick (h : GMap Loc (NonAtomic val)) (n : Nat) :
-      TickStep .tick #() h n () (Val #(BitVec.ofNat 64 n)) h (n + 1) ()
+      TickStep "tick" #() h n () (Val #(BitVec.ofNat 64 n)) h (n + 1) ()
 
 end step
 
@@ -77,10 +71,10 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : G
 variable {s : Stuckness} {E : CoPset}
 
 theorem wp_tick :
-    {{ (True : IProp GF) }} (ExternalOp (extOp tickExt .tick) (Val #())) @ s; E
+    {{ (True : IProp GF) }} (ExternalOp tickExt.name "tick" (Val #())) @ s; E
     {{ (n : w64), RET #n; True }} := by
   iintro %Φ _ HΦ
-  iapply wp_extStep TickOp.tick #() Φ (by simp)
+  iapply wp_extStep "tick" #() Φ (by simp)
   iintro %h %n %g Hh Hl Hg
   iapply fupd_mask_intro Std.LawfulSet.empty_subset
   iintro Hclose
@@ -111,12 +105,12 @@ attribute [local instance] groveTickExts
 attribute [local instance] groveTickSemantics groveTickInterp
 
 @[reducible] def groveTick_hasGrove : HasExt groveExt where
-  mem := .here
+  registered := rfl
   sem_eq := rfl
   interp_eq := rfl
 
 @[reducible] def groveTick_hasTick : HasExt tickExt where
-  mem := .there .here
+  registered := rfl
   sem_eq := rfl
   interp_eq := rfl
 
@@ -128,22 +122,22 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : G
 variable {s : Stuckness} {E : CoPset}
 
 -- the specs of both extensions apply to the program
-example : {{ (True : IProp GF) }} (ExternalOp (extOp tickExt .tick) (Val #())) @ s; E
+example : {{ (True : IProp GF) }} (ExternalOp tickExt.name "tick" (Val #())) @ s; E
     {{ (n : w64), RET #n; True }} := wp_tick
 
-example (t : Nat) : {{ tscLb (L := L) t }} (ExternalOp (extOp groveExt GroveOp.GetTscOp) (Val (#()))) @ s; E
+example (t : Nat) : {{ tscLb (L := L) t }} (ExternalOp groveExt.name "GetTSC" (Val (#()))) @ s; E
     {{ (t' : w64), RET #t'; ⌜t ≤ t'.toNat⌝ ∗ tscLb t'.toNat }} := wp_GetTscOp t
 
--- the operations of the two extensions are distinct operations of the program
-example : extOp groveExt GroveOp.GetTscOp ≠ extOp tickExt TickOp.tick := by
-  intro h; cases h
+-- the two extensions have distinct names, so their operations are distinct operations of the
+-- program
+example : groveExt.name ≠ tickExt.name := by decide
 
 -- an operation of one extension cannot change the other's state
 example (σg σg' : CfgState) (v : val) (e' : Expr)
-    (h : extStep (extOp tickExt TickOp.tick) v σg e' σg') :
+    (h : extStep tickExt.name "tick" v σg e' σg') :
     extGlobal groveExt σg'.2.globalWorld = extGlobal groveExt σg.2.globalWorld ∧
       extLocal groveExt σg'.1.world = extLocal groveExt σg.1.world := by
-  obtain ⟨_, _, _, _, rfl⟩ := (extStep_injOp _ _ _ _ _ _).1 h
+  obtain ⟨_, _, _, _, rfl⟩ := (extStep_named _ _ _ _ _).1 h
   exact ⟨rfl, rfl⟩
 
 -- adequacy's conditions on the initial state are those of both extensions

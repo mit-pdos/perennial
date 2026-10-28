@@ -4,8 +4,6 @@ module
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.testdata.examples.netfs.netext
 public import Perennial.Golang.Defn
-public import Perennial.FsPrelude
-public import Perennial.NetPrelude
 
 @[expose] public section
 
@@ -164,7 +162,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.netfs.netext.initialize') (Val #()))))))))
 
-class Assumptions [GooseExts] [ElemExt fsExt] [ElemExt netExt] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   recvFrom_unfold : FuncUnfold recvFrom [] recvFrom.impl
   NodeA_unfold : FuncUnfold NodeA [] NodeA.impl
   NodeB_unfold : FuncUnfold NodeB [] NodeB.impl

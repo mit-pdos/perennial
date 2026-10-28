@@ -3,7 +3,6 @@ module
 
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext
 public import Perennial.Golang.Defn
-public import Perennial.FsPrelude
 
 @[expose] public section
 
@@ -66,7 +65,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.initialize') (Val #())))))))
 
-class Assumptions [GooseExts] [ElemExt fsExt] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Main_unfold : FuncUnfold Main [] Main.impl
   import_fsext_Assumption : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.crashfs.fsext.Assumptions
 

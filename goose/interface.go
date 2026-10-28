@@ -119,9 +119,6 @@ func (ctx *Ctx) initFile(pkg *packages.Package, config declfilter.FilterConfig) 
 	if ctx.filter.HasTrusted() {
 		h.WriteString("public import " + glang.LeanModule(glang.LeanRootPrefix(pkg.PkgPath)+"TrustedCode", pkg.PkgPath) + "\n")
 	}
-	for _, ext := range util.GetExts(pkg) {
-		h.WriteString("public import Perennial." + glang.LeanExtPrelude(ext) + "\n")
-	}
 	ns := glang.LeanNamespace(pkg.PkgPath)
 	pkgId := fmt.Sprintf("namespace pkg_id\nnoncomputable def %s : GoString := %s\nend pkg_id\n\n",
 		ns, glang.LeanStringLit(pkg.PkgPath))

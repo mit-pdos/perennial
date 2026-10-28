@@ -5,7 +5,6 @@ public import Perennial.Code.os
 public import Perennial.Code.path.filepath
 public import Perennial.Code.sync
 public import Perennial.Golang.Defn
-public import Perennial.FsPrelude
 
 @[expose] public section
 
@@ -273,7 +272,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc mu _root_.Perennial.sync.Mutex.ty)) (Val #()))))))))
 
-class Assumptions [GooseExts] [ElemExt fsExt] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Read_unfold : FuncUnfold Read [] Read.impl
   Write_unfold : FuncUnfold Write [] Write.impl
   tryWrite_unfold : FuncUnfold tryWrite [] tryWrite.impl
