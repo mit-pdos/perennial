@@ -30,7 +30,7 @@ theorem sync.runtime_Semacquire.wp_proof :
   wp_for
   wp_bind (Primitive1 _ _)
   iinv Hsem with ⟨%v, >Hs, Hv⟩
-  wp_apply_core wp_atomic_load _ _ sema _ v $$ Hs
+  wp_apply_core wp_load_bytes_typed _ _ sema _ v $$ Hs
   iintro Hs
   imodintro
   isplitl [Hs Hv]
@@ -41,7 +41,7 @@ theorem sync.runtime_Semacquire.wp_proof :
     wp_for_post
     iframe
   · -- try to acquire
-    wp_bind (CmpXchg _ _ _)
+    wp_bind (CmpXchgBytes _ _ _)
     iinv Hsem with ⟨%v0, >Hs, >Hv⟩
     by_cases hv : v0 = v
     · subst hv
@@ -49,7 +49,7 @@ theorem sync.runtime_Semacquire.wp_proof :
       icombine Hv Hv2 gives % ⟨_, Heq⟩
       subst Heq
       imod ghostVar_update_halves (v0 - W32 1) γ v0 v0 $$ Hv Hv2 with ⟨Hv, Hv2⟩
-      wp_apply_core wp_cmpxchg_suc sema v0 v0 (v0 - W32 1) _ _ rfl $$ Hs
+      wp_apply_core wp_cmpxchg_bytes_suc_typed sema v0 v0 (v0 - W32 1) _ _ rfl $$ Hs
       iintro Hs
       imod HΦ $$ [] Hv2 with HΦ
       · ipureintro
@@ -63,7 +63,7 @@ theorem sync.runtime_Semacquire.wp_proof :
       wp_auto
       wp_for_post
       iexact HΦ
-    · wp_apply_core wp_cmpxchg_fail sema v0 v _ _ _ _ hv $$ Hs
+    · wp_apply_core wp_cmpxchg_bytes_fail_typed sema v0 v _ _ _ _ hv $$ Hs
       iintro Hs
       imodintro
       isplitl [Hs Hv]
