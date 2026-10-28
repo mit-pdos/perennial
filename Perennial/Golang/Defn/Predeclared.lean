@@ -205,21 +205,20 @@ attribute [instance] IsPlainScalar.isPlainScalar_uint IsPlainScalar.isPlainScala
   IsPlainScalar.isPlainScalar_int64 IsPlainScalar.isPlainScalar_float32
   IsPlainScalar.isPlainScalar_float64
 
-/-- The tuple of the `w` bytes read from `l` on, ending in `#()`. -/
-def readBytes [GooseExts] (l : Loc) : Nat → Expr
+/-- The tuple of the `w` bytes read from `l` on, ending in the unit literal. -/
+def readBytes [GooseExts] [GoGlobalContext] (l : Loc) : Nat → Expr
   | 0 => Val (LitV LitUnit)
-  | w + 1 => Pair (App (Val Read) (Val (LitV (LitLoc l)))) (readBytes (l +ₗ 1) w)
+  | w + 1 => Pair (App (Val Read) (Val #l)) (readBytes (l +ₗ 1) w)
 
-/-- The tuple of the bytes `bs`, ending in `#()`: the value of `readBytes`. -/
-def bytesTuple [GooseExts] : List w8 → val
+/-- The tuple of the bytes `bs`, ending in the unit literal: the value of `readBytes`. -/
+def bytesTuple [GooseExts] [GoGlobalContext] : List w8 → val
   | [] => LitV LitUnit
-  | b :: bs => PairV (LitV (LitByte b)) (bytesTuple bs)
+  | b :: bs => PairV #b (bytesTuple bs)
 
 /-- Stores the bytes `bs` from `l` on, one by one. -/
-def writeBytes [GooseExts] (l : Loc) : List w8 → Expr
-  | [] => Val (LitV LitUnit)
-  | b :: bs => Seq (App (App (Val Store) (Val (LitV (LitLoc l)))) (Val (LitV (LitByte b))))
-      (writeBytes (l +ₗ 1) bs)
+def writeBytes [GooseExts] [GoGlobalContext] (l : Loc) : List w8 → Expr
+  | [] => Val #()
+  | b :: bs => Seq (App (App (Val Store) (Val #l)) (Val #b)) (writeBytes (l +ₗ 1) bs)
 
 class ProphIdSemantics [GoSemanticsFunctions] : Prop where
   underlying_proph_id : go.prophId ↓u go.prophId

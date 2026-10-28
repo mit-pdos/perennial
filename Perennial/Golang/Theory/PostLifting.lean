@@ -22,6 +22,7 @@ module
 public import Perennial.Golang.Theory.ProofMode
 public import Perennial.Golang.Theory.Display
 public import Perennial.Golang.Defn.Pre
+public import Perennial.GooseLang.LiftingBytes
 public import Perennial.Helpers.NamedProps
 public import Perennial.IrisLib.DFractional
 
@@ -613,14 +614,75 @@ theorem typedPointstoDef_heap (V : Type) (hinj : Function.Injective (intoVal (V 
     (l : Loc) (v : V) (dq : DFrac) :
     @typedPointstoDef GF V (heapTypedPointsto V hinj) l v dq = heapPointsto l dq #v := rfl
 
+instance bytesPointsto_dfractional (l : Loc) (bs : List w8) :
+    DFractional (fun dq => bytesPointsto (GF := GF) l dq bs) := by
+  induction bs generalizing l with
+  | nil => unfold bytesPointsto; infer_instance
+  | cons b bs ih =>
+    unfold bytesPointsto
+    haveI := ih (l +ₗ 1)
+    infer_instance
+
+theorem bytesPointsto_agree (l : Loc) (dq1 dq2 : DFrac) (bs1 bs2 : List w8)
+    (hlen : bs1.length = bs2.length) :
+    bytesPointsto (GF := GF) l dq1 bs1 ⊢ bytesPointsto l dq2 bs2 -∗ ⌜bs1 = bs2⌝ := by
+  induction bs1 generalizing l bs2 with
+  | nil => cases bs2 with
+    | nil => iintro _ _; ipureintro; rfl
+    | cons => simp at hlen
+  | cons b bs1 ih => cases bs2 with
+    | nil => simp at hlen
+    | cons b' bs2 =>
+      unfold bytesPointsto
+      iintro ⟨H1, R1⟩ ⟨H2, R2⟩
+      icases heapPointsto_agree l dq1 dq2 _ _ $$ [H1 H2] with %Heq
+      · iframe
+      icases ih (l +ₗ 1) bs2 (by simpa using hlen) $$ R1 R2 with %Hr
+      ipureintro
+      cases Heq; rw [Hr]
+
+theorem bytesPointsto_non_null (l : Loc) (dq : DFrac) (bs : List w8) (h : bs ≠ []) :
+    bytesPointsto (GF := GF) l dq bs ⊢ bytesPointsto l dq bs ∗ ⌜l ≠ null⌝ := by
+  cases bs with
+  | nil => exact absurd rfl h
+  | cons b bs =>
+    unfold bytesPointsto
+    iintro ⟨Hb, Hbs⟩
+    icases heapPointsto_non_null l dq _ $$ Hb with %Hnn
+    iframe Hb Hbs
+    ipureintro; exact Hnn
+
+theorem natBytes_inj (w : Nat) (x y : BitVec (8 * w)) (h : natBytes w x.toNat = natBytes w y.toNat) :
+    x = y := by
+  have := congrArg bytesNat h
+  have hp : (256 : Nat) ^ w = 2 ^ (8 * w) := by rw [Nat.pow_mul]
+  rw [bytesNat_natBytes, bytesNat_natBytes, hp, Nat.mod_eq_of_lt x.isLt,
+    Nat.mod_eq_of_lt y.isLt] at this
+  exact BitVec.eq_of_toNat_eq this
+
+/-- A typed points-to of the integer and float representations: the `w` little-endian bytes of
+the value, at an address `w` divides (gc's alignment of these types). -/
+@[instance_reducible] def bytesTypedPointsto (w : Nat) : TypedPointsto (GF := GF) (BitVec (8 * w)) where
+  typedPointstoDef l v dq := iprop(⌜(w : Int) ∣ l.addr⌝ ∗ bytesPointsto l dq (natBytes w v.toNat))
+  typedPointstoDef_dfractional l v := inferInstance
+  typedPointstoDef_timeless l v dq := inferInstance
+  typedPointsto_agree l dq1 dq2 v1 v2 := by
+    iintro ⟨_, H1⟩ ⟨_, H2⟩
+    icases bytesPointsto_agree l dq1 dq2 _ _ (by simp [natBytes_length]) $$ H1 H2 with %Heq
+    ipureintro; exact natBytes_inj w v1 v2 Heq
+
+theorem typedPointstoDef_bytes (w : Nat) (l : Loc) (v : BitVec (8 * w)) (dq : DFrac) :
+    @typedPointstoDef GF _ (bytesTypedPointsto w) l v dq =
+      iprop(⌜(w : Int) ∣ l.addr⌝ ∗ bytesPointsto l dq (natBytes w v.toNat)) := rfl
+
 instance typedPointsto_loc : TypedPointsto (GF := GF) Loc :=
   heapTypedPointsto Loc go.intoVal_inj
 instance typedPointsto_w64 : TypedPointsto (GF := GF) w64 :=
-  heapTypedPointsto w64 go.intoVal_inj
+  bytesTypedPointsto 8
 instance typedPointsto_w32 : TypedPointsto (GF := GF) w32 :=
-  heapTypedPointsto w32 go.intoVal_inj
+  bytesTypedPointsto 4
 instance typedPointsto_w16 : TypedPointsto (GF := GF) w16 :=
-  heapTypedPointsto w16 go.intoVal_inj
+  bytesTypedPointsto 2
 instance typedPointsto_w8 : TypedPointsto (GF := GF) w8 :=
   heapTypedPointsto w8 go.intoVal_inj
 instance typedPointsto_bool : TypedPointsto (GF := GF) Bool :=

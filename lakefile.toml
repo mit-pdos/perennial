@@ -113,6 +113,7 @@ globs = [
   "Perennial.GooseLang.IPersist",
   "Perennial.GooseLang.Lang",
   "Perennial.GooseLang.Lifting",
+  "Perennial.GooseLang.LiftingBytes",
   "Perennial.GooseLang.Locations",
   "Perennial.GooseLang.Notation",
   "Perennial.GooseLang.Receipts",

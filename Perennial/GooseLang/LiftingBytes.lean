@@ -42,6 +42,13 @@ theorem bytesVal_length {w : Nat} {bs : List w8} {v : val} (h : bytesVal w bs = 
   · assumption
   · cases h
 
+theorem bytesVal_not_panic {w : Nat} {bs : List w8} {v : val} (h : bytesVal w bs = some v) :
+    v.isPanic = false := by
+  unfold bytesVal at h
+  split at h
+  · split at h <;> first | (cases h; rfl) | cases h
+  · cases h
+
 /-- Decoding the bytes of a value gives the value back. -/
 theorem bytesVal_valBytes {w : Nat} {v : val} {bs : List w8} (h : valBytes w v = some bs) :
     bytesVal w bs = some v := by
