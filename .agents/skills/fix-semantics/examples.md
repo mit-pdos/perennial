@@ -788,3 +788,37 @@ at every use, the shape of Case 18's bug.
 **Why.** The user asked whether the first plan gave "the simplest ultimate goose
 implementation"; the revised one removes the origin from the function instead
 of patching its two uses. "Don't do the big refactor. Go ahead and fix."
+
+## Case 25 — ACCEPTED: integers and floats are bytes; integer atomics are byte atomics (branch `worktree-plain-scalar-bytes`)
+
+**Symptom.** Incomplete, for the unsafe memory design (`docs/design/unsafe-memory-rules-plan.md`,
+steps 1 and 3, R1, R2 and R5): an integer was one opaque heap cell, so no byte view of a plain
+struct could be modelled, and integer atomics had no alignment check (a misaligned
+`atomic.LoadUint64` tears in gc).
+
+**Taken.**
+- GooseLang: `AllocBytes w` (`w` fresh cells at an address `w` divides) and the byte atomics
+  `LoadBytes`/`SwapBytes`/`AddBytes`/`CmpXchgBytes` of width `w`, each stuck unless the address
+  is a multiple of `w` and the cells are bytes; `valBytes`/`bytesVal`, little-endian.
+- Go rules: `IsPlainScalar` (the 13 integer and float types with their sizes) replaces their
+  rows of `IsPredeclared`. Allocation is `AllocBytes`; a load reads the `w` cells one by one and
+  decodes them with a new pure instruction `InternalBytesTo w`, which has no rule for a non-byte
+  cell; a store reads and decodes the old bytes first (R2's check against overwriting a
+  non-byte cell), then writes the new ones.
+- TrustedCode: the 20 integer models of `sync/atomic` and the semaphores use the byte atomics.
+- Proofs: the typed points-to of `w16`/`w32`/`w64` is the bytes plus `⌜w ∣ l⌝`, which
+  allocation provides, so no atomic or semaphore spec changed.
+- About 120 trusted lines.
+
+**Not taken.**
+- A table of alignments for every type (`go.TypeAlign`) and an axiom on field addresses: the
+  owner preferred the alignment check at the integer allocation ("This check for integer
+  allocations seems good").
+- `GoPrealloc` with an alignment argument, and then a `GoPreallocAligned` instruction (the
+  owner's suggestion) with byte-by-byte `Alloc` and `AngelicExit` placement checks: replaced
+  by the single primitive `AllocBytes`, fewer lines and no `AngelicExit` (owner: "go ahead").
+- Landing R1/R2 before R5: the one-cell atomics would be stuck on byte cells, breaking every
+  proof through an atomic or a semaphore.
+
+**Why.** The owner signed off the plan with option (C) for concrete plain addresses (a later
+step) and "Go ahead and start implementing the unsafe semantics".

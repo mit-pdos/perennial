@@ -227,6 +227,15 @@ widths.
 
 ### R1: allocation
 
+**As implemented (2026-10-28):** a single primitive `AllocBytes w v` (`Lang.lean`) allocates
+the `w` bytes of `v` at `w` fresh cells from an address `w` divides, in one step. It replaces
+the `GoPreallocAligned` scheme below: fewer trusted lines, no `AngelicExit`, one lifting
+lemma. The rule is `alloc_plain_scalar : ⟦GoAlloc u, v⟧ ⤳[internalUnder] AllocBytes w v`.
+Proof side: the alignment is part of the typed points-to of `w16`/`w32`/`w64` (allocation
+gives it), not a separate fact, so no atomic or semaphore spec changes. A view of an integer
+at an unaligned address is reasoned about with byte points-tos.
+
+
 - **A new instruction, `GoPreallocAligned (align : Nat)`** (owner's
   suggestion, 2026-10-28). The alignment is static, like the type in
   `GoAlloc t`, so it is a parameter of the instruction, and the argument is
