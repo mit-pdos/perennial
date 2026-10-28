@@ -124,9 +124,13 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 
   This is accepted as a known limitation and is not being fixed: a program whose
   correctness depends on the order between such events is outside what a proof covers.
-  A review or a fix of another construct should not report an evaluation-order divergence
-  as a finding; one is worth an entry here only if it is a new kind (not an instance of
-  "goose picks one order").
+  A review or a fix of another construct should not report a divergence from Go's order
+  that goose already has as a finding, nor propose fixing one; one is worth an entry
+  here only if it is a new kind (not an instance of "goose picks one order"). A change
+  that alters the order of an existing translation is still reported: the orders goose
+  implements and tests (an operand evaluated once, Case 2 of
+  `.agents/skills/fix-semantics/examples.md`; `testSelectSendOrder`;
+  `testAssignLhs*First`) must not regress.
 
 ## Allocation
 

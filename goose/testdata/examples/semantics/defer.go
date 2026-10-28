@@ -45,3 +45,15 @@ func testDeferVariadic() bool {
 	}()
 	return *n0 == 100 && *n2 == 109 && *n1 == 108
 }
+
+func deferPairSet(n *uint64, x uint64) {
+	*n = x
+}
+
+func testDeferMultipleReturn() bool {
+	n := new(uint64)
+	func() {
+		defer deferPairSet(deferVariadicPair(n))
+	}()
+	return *n == 7
+}

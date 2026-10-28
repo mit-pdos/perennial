@@ -66,3 +66,13 @@ func testGoVariadic() bool {
 	c := <-ch
 	return a == 0 && b == 203 && c == 107
 }
+
+func goPairSend(ch chan uint64, x uint64) {
+	ch <- x
+}
+
+func testGoMultipleReturn() bool {
+	ch := make(chan uint64)
+	go goPairSend(variadicChanPair(ch))
+	return <-ch == 7
+}

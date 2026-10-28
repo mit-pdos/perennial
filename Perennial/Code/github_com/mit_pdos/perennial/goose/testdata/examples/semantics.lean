@@ -489,6 +489,12 @@ noncomputable def deferVariadicPair [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def testDeferVariadic [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testDeferVariadic"
 
+noncomputable def deferPairSet [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.deferPairSet"
+
+noncomputable def testDeferMultipleReturn [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testDeferMultipleReturn"
+
 noncomputable def testSliceOperandOnce [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSliceOperandOnce"
 
@@ -1172,6 +1178,12 @@ noncomputable def variadicChanPair [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def testGoVariadic [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testGoVariadic"
+
+noncomputable def goPairSend [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.goPairSend"
+
+noncomputable def testGoMultipleReturn [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testGoMultipleReturn"
 
 noncomputable def testPointerAssignment [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testPointerAssignment"
@@ -2966,6 +2978,54 @@ noncomputable def testDeferVariadic.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "n2") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "n0") (Var "$r0"))))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: defer.go:49:6 -/
+noncomputable def deferPairSet.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "n"
+  (Lam "x"
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (Var "n"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "n")) (Var "$r0"))))))))
+  (Val #()))))
+
+/-- go: defer.go:53:6 -/
+noncomputable def testDeferMultipleReturn.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "n" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "n"))) (Val #(W64 7))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Lam BAnon
+  (Seq (App (Val wrapDefer)
+  (Lam "$defer"
+  (App (Val doExecute)
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType go.uint64)))) (Var "n"))
+  (App (App (Val (GoInstruction (FuncResolve deferVariadicPair []))) (Val #())) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$a0" (Var "$ret0")
+  (Let "$a1" (Var "$ret1")
+  (Let "$f" (App (Val (GoInstruction (FuncResolve deferPairSet []))) (Val #()))
+  (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
+  (Lam BAnon
+  (Seq (App (App (Var "$f") (Var "$a0")) (Var "$a1"))
+  (App (Var "$oldf") (Val #()))))))))))))))))
+  (Val #()))) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.uint64)))) (Pair (Var "n") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: evalorder.go:9:23 -/
@@ -11059,6 +11119,48 @@ noncomputable def testGoVariadic.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv go.uint64)))) (Pair (Var "ch") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
+/-- go: variadic.go:70:6 -/
+noncomputable def goPairSend.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "ch"
+  (Lam "x"
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "x"))
+  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv go.uint64)))) (Var "ch"))
+  (App (Val doExecute)
+  (Let "$chan" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.uint64)))) (Var "ch"))
+  (Let "$v" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x"))
+  (App (App (Val (chan.send go.uint64)) (Var "$chan")) (Var "$v"))))))))
+  (Val #()))))
+
+/-- go: variadic.go:74:6 -/
+noncomputable def testGoMultipleReturn.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.ChannelType go.ChanDir.sendrecv go.uint64)]))) (Val #())) (Val #()))
+  (Let "ch" (App (Val (GoInstruction (GoAlloc (go.GoType.ChannelType go.ChanDir.sendrecv go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ChannelType go.ChanDir.sendrecv go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.uint64)))) (Var "ch"))
+  (App (App (Val (GoInstruction (FuncResolve variadicChanPair []))) (Val #())) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$a0" (Var "$ret0")
+  (Let "$a1" (Var "$ret1")
+  (Let "$go" (App (Val (GoInstruction (FuncResolve goPairSend []))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Fst (App (Val (chan.receive go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv go.uint64)))) (Var "ch")))) (Val #(W64 7))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Fork
+  (App (App (Var "$go") (Var "$a0")) (Var "$a1")))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ChannelType go.ChanDir.sendrecv go.uint64)))) (Pair (Var "ch") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
 /-- go: vars.go:3:6 -/
 noncomputable def testPointerAssignment.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -13184,6 +13286,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   deferVariadicCount_unfold : FuncUnfold deferVariadicCount [] deferVariadicCount.impl
   deferVariadicPair_unfold : FuncUnfold deferVariadicPair [] deferVariadicPair.impl
   testDeferVariadic_unfold : FuncUnfold testDeferVariadic [] testDeferVariadic.impl
+  deferPairSet_unfold : FuncUnfold deferPairSet [] deferPairSet.impl
+  testDeferMultipleReturn_unfold : FuncUnfold testDeferMultipleReturn [] testDeferMultipleReturn.impl
   testSliceOperandOnce_unfold : FuncUnfold testSliceOperandOnce [] testSliceOperandOnce.impl
   testAssignLhsIndexFirst_unfold : FuncUnfold testAssignLhsIndexFirst [] testAssignLhsIndexFirst.impl
   testAssignLhsDerefFirst_unfold : FuncUnfold testAssignLhsDerefFirst [] testAssignLhsDerefFirst.impl
@@ -13412,6 +13516,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   variadicSend_unfold : FuncUnfold variadicSend [] variadicSend.impl
   variadicChanPair_unfold : FuncUnfold variadicChanPair [] variadicChanPair.impl
   testGoVariadic_unfold : FuncUnfold testGoVariadic [] testGoVariadic.impl
+  goPairSend_unfold : FuncUnfold goPairSend [] goPairSend.impl
+  testGoMultipleReturn_unfold : FuncUnfold testGoMultipleReturn [] testGoMultipleReturn.impl
   testPointerAssignment_unfold : FuncUnfold testPointerAssignment [] testPointerAssignment.impl
   testAddressOfLocal_unfold : FuncUnfold testAddressOfLocal [] testAddressOfLocal.impl
   testAnonymousAssign_unfold : FuncUnfold testAnonymousAssign [] testAnonymousAssign.impl
@@ -13531,6 +13637,8 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.deferVariadicCount_unfold
   Assumptions.deferVariadicPair_unfold
   Assumptions.testDeferVariadic_unfold
+  Assumptions.deferPairSet_unfold
+  Assumptions.testDeferMultipleReturn_unfold
   Assumptions.testSliceOperandOnce_unfold
   Assumptions.testAssignLhsIndexFirst_unfold
   Assumptions.testAssignLhsDerefFirst_unfold
@@ -13759,6 +13867,8 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.variadicSend_unfold
   Assumptions.variadicChanPair_unfold
   Assumptions.testGoVariadic_unfold
+  Assumptions.goPairSend_unfold
+  Assumptions.testGoMultipleReturn_unfold
   Assumptions.testPointerAssignment_unfold
   Assumptions.testAddressOfLocal_unfold
   Assumptions.testAnonymousAssign_unfold

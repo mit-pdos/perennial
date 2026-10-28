@@ -167,6 +167,10 @@ func (suite *GoTestSuite) TestDeferVariadic() {
 	suite.Equal(true, testDeferVariadic())
 }
 
+func (suite *GoTestSuite) TestDeferMultipleReturn() {
+	suite.Equal(true, testDeferMultipleReturn())
+}
+
 func (suite *GoTestSuite) TestSliceOperandOnce() {
 	suite.Equal(true, testSliceOperandOnce())
 }
@@ -857,6 +861,10 @@ func (suite *GoTestSuite) TestVariadicSliceAliases() {
 
 func (suite *GoTestSuite) TestGoVariadic() {
 	suite.Equal(true, testGoVariadic())
+}
+
+func (suite *GoTestSuite) TestGoMultipleReturn() {
+	suite.Equal(true, testGoMultipleReturn())
 }
 
 func (suite *GoTestSuite) TestPointerAssignment() {

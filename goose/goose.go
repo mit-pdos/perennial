@@ -239,7 +239,7 @@ func (ctx *Ctx) sliceLiteralAux(es []exprWithInfo, expectedType types.Type) glan
 
 // Deals with the arguments, but does not actually invoke the function. That
 // should be done in the continuation. The continuation can assume the arguments
-// are bound to "a0", "$a1", ....
+// are bound to "$a0", "$a1", ....
 func (ctx *Ctx) callExprPrelude(call *ast.CallExpr, cont glang.Expr) (expr glang.Expr) {
 	funcSig, ok := ctx.typeOf(call.Fun).Underlying().(*types.Signature)
 	if !ok {
@@ -321,8 +321,12 @@ func (ctx *Ctx) callExprPrelude(call *ast.CallExpr, cont glang.Expr) (expr glang
 
 // The names callExprPrelude binds the arguments to, one per parameter.
 func (ctx *Ctx) callArgs(call *ast.CallExpr) []glang.Expr {
+	funcSig, ok := ctx.typeOf(call.Fun).Underlying().(*types.Signature)
+	if !ok {
+		ctx.nope(call.Fun, "function should have signature type, got %T", types.Unalias(ctx.typeOf(call.Fun)))
+	}
 	var args []glang.Expr
-	for i := range ctx.getNumParams(call.Fun) {
+	for i := range funcSig.Params().Len() {
 		args = append(args, glang.IdentExpr(fmt.Sprintf("$a%d", i)))
 	}
 	return args
@@ -405,14 +409,6 @@ func (ctx *Ctx) maybeHandleSpecialBuiltin(s *ast.CallExpr) (glang.Expr, bool) {
 	}
 
 	return nil, false
-}
-
-func (ctx *Ctx) getNumParams(e ast.Expr) int {
-	funcSig, ok := ctx.typeOf(e).Underlying().(*types.Signature)
-	if !ok {
-		ctx.nope(e, "function should have signature type, got %T", types.Unalias(ctx.typeOf(e)))
-	}
-	return funcSig.Params().Len()
 }
 
 func (ctx *Ctx) callExpr(s *ast.CallExpr) glang.Expr {

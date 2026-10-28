@@ -102,7 +102,10 @@ Also trusted wherever they appear: `axiom`, `sorry` outside `Perennial/Proof`,
      scratch directory when the answer is not obvious);
    - for a semantics or translator change, find the Go spec sentence it
      implements (`go doc`, the Go language spec) and check the edge cases
-     (zero values, nil, empty, bounds, overflow, evaluation order);
+     (zero values, nil, empty, bounds, overflow, evaluation order; an
+     evaluation order goose already had is a known limitation, see
+     `docs/KNOWN_LIMITATIONS.md`, and only a change to an existing order is
+     a finding);
    - `lake build` the touched modules and `#print axioms` the new theorems
      (look for `sorryAx` and anything beyond `propext`, `Classical.choice`,
      `Quot.sound`). `lake build Perennial` skips some modules: build the
