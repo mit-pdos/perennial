@@ -6,7 +6,8 @@ Consists only of a network, per-node file storage, and clocks.
 * Crashes (`ExtSemantics.crash`): a node's state may be anything afterwards
   (`grove_ffi` does not make its writes durable).
 * The step (`GroveStep`, the `ExtSemantics` of `groveExt`) is a relation:
-  either the operation stutters (state unchanged, `e' = ExternalOp groveExt.name op v`) or it
+  either one of Grove's operations (`groveOps`) stutters (state unchanged,
+  `e' = ExternalOp groveExt.name op v`) or it
   takes an `IsGroveStep`. It does not change the heap.
 -/
 module
@@ -156,12 +157,18 @@ def IsGroveStep (op : String) (v : val) (e' : Expr)
         e' = Val (PairV (#low) (#high))
   | _ => False
 
-/-- The Grove step relation: the operation either stutters or takes an
-`IsGroveStep`; the heap does not change. -/
+/-- The names of Grove's operations (`IsGroveStep`'s cases). -/
+def groveOps : List String :=
+  ["Listen", "Connect", "Accept", "Send", "Receive", "FileRead", "FileWrite", "FileAppend",
+    "GetTSC", "GetTimeRange"]
+
+/-- The Grove step relation: one of Grove's operations either stutters or takes an
+`IsGroveStep`; the heap does not change. Any other operation name has no step (it does not
+stutter: a model calling an operation Grove does not have is stuck, not looping). -/
 def GroveStep (op : String) (v : val) (h : GMap Loc (NonAtomic val)) (σ : GroveNodeState)
     (g : GroveGlobalState) (e' : Expr) (h' : GMap Loc (NonAtomic val)) (σ' : GroveNodeState)
     (g' : GroveGlobalState) : Prop :=
-  h' = h ∧ ((σ' = σ ∧ g' = g ∧ e' = ExternalOp groveExt.name op (Val v)) ∨
+  h' = h ∧ ((op ∈ groveOps ∧ σ' = σ ∧ g' = g ∧ e' = ExternalOp groveExt.name op (Val v)) ∨
     IsGroveStep op v e' σ σ' g g')
 
 end grove

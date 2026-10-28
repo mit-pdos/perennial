@@ -214,7 +214,8 @@ open EctxLanguage
 
 /-- The core lifting lemma for Grove operations: the stutter steps are handled
 here, by Löb induction. -/
-theorem wp_GroveOp (op : String) (v : val) (Φ : val → IProp GF) (Hv : v.isPanic = false) :
+theorem wp_GroveOp (op : String) (v : val) (Φ : val → IProp GF) (Hop : op ∈ groveOps)
+    (Hv : v.isPanic = false) :
     ▷ (∀ σ1 g1 e2 σ2 g2, ⌜IsGroveStep op v e2 σ1 σ2 g1 g2⌝ -∗
         ExtInterp.localCtx (E := groveExt) (extLocalGS groveExt) σ1 -∗
         ExtInterp.globalCtx (E := groveExt) (extGlobalGS groveExt) g1 ={E}=∗
@@ -230,12 +231,12 @@ theorem wp_GroveOp (op : String) (v : val) (Φ : val → IProp GF) (Hv : v.isPan
   iintro Hclose
   isplitr
   · ipureintro
-    exact ⟨_, h, σ1, g1, (show GroveStep op v h σ1 g1 _ h σ1 g1 from ⟨rfl, .inl ⟨rfl, rfl, rfl⟩⟩)⟩
+    exact ⟨_, h, σ1, g1, (show GroveStep op v h σ1 g1 _ h σ1 g1 from ⟨rfl, .inl ⟨Hop, rfl, rfl, rfl⟩⟩)⟩
   inext
   iintro %e' %h' %σ' %g' %Hst _
   obtain ⟨rfl, Hcase⟩ := (show GroveStep op v h σ1 g1 e' h' σ' g' from Hst)
   imod Hclose
-  rcases Hcase with ⟨rfl, rfl, rfl⟩ | Hgrove
+  rcases Hcase with ⟨-, rfl, rfl, rfl⟩ | Hgrove
   · imodintro
     iframe Hheap Hl Hg
     iapply IH
@@ -250,6 +251,7 @@ theorem wp_ListenOp (c : w64) :
     {{ RET listen_socket c; True }} := by
   iintro %Φ _ HΦ
   iapply wp_GroveOp
+  case Hop => decide
   case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
@@ -268,6 +270,7 @@ theorem wp_ConnectOp (c_r : Endpoint) :
       if err then True else c_l c↦ ∅ }} := by
   iintro %Φ _ HΦ
   iapply wp_GroveOp
+  case Hop => decide
   case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
@@ -305,6 +308,7 @@ theorem wp_AcceptOp (c_l : Endpoint) :
     {{ (c_r : Endpoint), RET connectionSocket c_l c_r; True }} := by
   iintro %Φ _ HΦ
   iapply wp_GroveOp
+  case Hop => decide
   case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
@@ -323,6 +327,7 @@ theorem wp_SendOp (c_l c_r : Endpoint) (ms : GSet message) (data : List w8) :
        c_r c↦ (if err_early then ms else ms ∪ {[Message c_l data]}) }} := by
   iintro %Φ Hc HΦ
   iapply wp_GroveOp
+  case Hop => decide
   case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
@@ -354,6 +359,7 @@ theorem wp_RecvOp (c_l c_r : Endpoint) (ms : GSet message) :
         ⌜if err then True else Message c_r data ∈ ms⌝ ∗ c_l c↦ ms }} := by
   iintro %Φ Hc HΦ
   iapply wp_GroveOp
+  case Hop => decide
   case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
@@ -387,6 +393,7 @@ theorem wp_FileReadOp (f : GoString) (q : DFrac) (c : List w8) :
     {{ RET #c; f f↦{q} c }} := by
   iintro %Φ Hc HΦ
   iapply wp_GroveOp
+  case Hop => decide
   case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
@@ -412,6 +419,7 @@ theorem wp_FileWriteOp (f : GoString) (old new : List w8) :
     {{ RET #(); f f↦ new }} := by
   iintro %Φ Hc HΦ
   iapply wp_GroveOp
+  case Hop => decide
   case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
@@ -435,6 +443,7 @@ theorem wp_FileAppendOp (f : GoString) (old new : List w8) :
     {{ RET #(); f f↦ (old ++ new) }} := by
   iintro %Φ Hc HΦ
   iapply wp_GroveOp
+  case Hop => decide
   case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
@@ -464,6 +473,7 @@ theorem wp_GetTscOp (prev_time : Nat) :
       ⌜prev_time ≤ new_time.toNat⌝ ∗ tscLb new_time.toNat }} := by
   iintro %Φ Hlb HΦ
   iapply wp_GroveOp
+  case Hop => decide
   case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
@@ -492,6 +502,7 @@ theorem wp_GetTimeRangeOp (Φ : val → IProp GF) :
   unfold ownTime groveTimeAuth
   iintro HΦ
   iapply wp_GroveOp
+  case Hop => decide
   case Hv => simp [val.isPanic]
   inext
   iintro %σ1 %g1 %e2 %σ2 %g2 %Hstep Hl Hg
