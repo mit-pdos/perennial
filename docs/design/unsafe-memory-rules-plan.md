@@ -226,15 +226,19 @@ widths.
 
 ### R1: allocation
 
-- **`GoPrealloc` takes an alignment.** This is a sibling of
-  `go_prealloc_step` (`PostLang.lean:458`):
+- **A new instruction, `GoPreallocAligned (align : Nat)`** (owner's
+  suggestion, 2026-10-28). The alignment is static, like the type in
+  `GoAlloc t`, so it is a parameter of the instruction, and the argument is
+  `#()`. Its rule sits next to `go_prealloc_step` (`PostLang.lean:458`):
   ```lean
-  go_prealloc_aligned_step (a : w64) : is_go_step_pure GoPrealloc #a =
-    (fun e => ∃ (l : Loc), l ≠ null ∧ (uint.Z a : Int) ∣ l.addr ∧ e = #l)
+  go_prealloc_aligned_step (a : Nat) : is_go_step_pure (GoPreallocAligned a) #() =
+    (fun e => ∃ (l : Loc), l ≠ null ∧ (a : Int) ∣ l.addr ∧ e = #l)
   ```
-  `GoPrealloc #()` is unchanged. The alignment is a restriction on the
-  model's own choice of address, by the argument of decision 2, so no
-  `AngelicExit` is needed for it.
+  `GoPrealloc` and its callers are unchanged. The alignment is a
+  restriction on the model's own choice of address, by the argument of
+  decision 2, so no `AngelicExit` is needed for it. It costs 4 lines more
+  than a second rule for `GoPrealloc` on a numeric argument would, and no
+  argument means two things.
 - **Plain scalars** (`Predeclared.lean`, replacing the integer and float
   cases of `IsPredeclared`). It has the shape of `alloc_struct`: prealloc,
   then each part's allocation, checked against its address.
@@ -245,7 +249,7 @@ widths.
     ⟦GoAlloc u, v⟧ ⤳[internalUnder]
       (match valBytes w v with
        | none => AngelicExit #()
-       | some bs => gl(let: "l" := GoPrealloc #(W64 w) in
+       | some bs => gl(let: "l" := GoPreallocAligned w #() in
            <for k < w: let: "lk" := Alloc #(bs[k]) in
                        if: "lk" =⟨go.PointerType go.uint8⟩ ("l" +⟨go.PointerType go.uint8⟩ #(W64 k))
                        then #() else AngelicExit #()> ;;
@@ -258,7 +262,8 @@ widths.
 ### R2: loads and stores
 
 - **A new pure instruction**, `InternalBytesTo (w : Nat)`: a `GoInstruction`
-  constructor (`Lang.lean`, 2 lines) and its `Countable` code (2 lines). Its
+  constructor (`Lang.lean`, 2 lines) and its `Countable` code (2 lines), as
+  for `GoPreallocAligned`. Its
   only rule:
   ```lean
   bytes_to (w) (bs : List w8) (v : val) (h : bytesVal w bs = some v) :
