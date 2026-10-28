@@ -740,7 +740,9 @@ theorem heapPointsto_non_null_dup (l : Loc) (dq : DFrac) (v : val) :
   unfold heapPointsto
   iintro ⟨%Hl, H⟩
   iframe H
-  isplit <;> ipureintro <;> exact Hl
+  isplit <;> ipureintro
+  · exact Hl
+  · intro h; rw [h] at Hl; simp [null] at Hl
 
 /-- Prove `IntoValTypedUnderlying V t` for a type whose typed points-to is
 `heapPointsto l dq #v` and which is allocated, loaded and stored with the
