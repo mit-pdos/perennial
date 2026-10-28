@@ -627,3 +627,41 @@ for `string.forRange` and a spec of `DecodeRune` (no proof needs them yet);
 `[]rune(s)` and `string(r)`, which could reuse `DecodeRune`.
 
 **Why.** The owner signed off the plan as proposed: "Implement this."
+
+## Case 20 — ACCEPTED: `defer` and `go` pass a call's arguments by parameter (branch `defer-variadic`)
+
+**Symptom.** Translation wrong. `callExprPrelude` binds one `$a<i>` per
+parameter of the callee (a variadic call's trailing arguments packed into one
+slice, nil if there are none; `f(g())` destructured into `g`'s results).
+`callExpr` applied the callee to those names, counted by `getNumParams`, but
+`deferStmt` and `goStmt` counted the arguments written in the source.
+
+**Witness.** With `func f(n *uint64, xs ...uint64)`: `defer f(n)` emitted
+`$f $a0`, a partial application whose body never ran; `defer f(n, 3, 4)`
+emitted `$f $a0 $a1 $a2` with `$a2` unbound; `defer f(g())` passed only `g`'s
+first result (for a non-variadic `f` too). The same for `go`.
+
+**Taken.** `callExpr`'s loop moved into a helper `callArgs(call)`, which all
+three sites use. Cost: 0 new goose branches, 0 semantics rules, 0 negative
+tests, goose −4 lines net. Semantics tests `testDeferVariadic`,
+`testGoVariadic`, and `testVariadicCall` / `testVariadicSliceAliases` for plain
+variadic calls, which had none. No existing translation changed: a
+regeneration with and without the fix differs only in the new tests, and a
+scan of the 61 `defer`/`go` sites in `Perennial/Code` (including std, marshal,
+primitive and go-liveness, whose sources were not checked out) found no
+mismatched call.
+
+**Not taken.** Replacing `len(s.Call.Args)` with `getNumParams` in the two
+broken sites: correct, but keeps three copies of the loop, which is how two of
+them drifted from the third.
+
+**Left out.** Evaluation order: a call evaluates its arguments before the
+function value, where Go orders `getF()(arg())` left to right. The user
+declined to fix it and asked that it stop being flagged ("I don't want to
+worry about it"): it is now an entry in `docs/KNOWN_LIMITATIONS.md`,
+"Evaluation order".
+
+**Why.** Case 2's shape: the call refers to exactly the names the prelude
+bound, and `go` is fixed with `defer` as a sibling (Case 9). The user: "Go
+ahead and make the fix, as long as all the tests pass and the existing
+non-variadic translations are unchanged."
