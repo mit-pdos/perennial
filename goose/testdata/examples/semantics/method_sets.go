@@ -249,3 +249,18 @@ func testMethodSetAssertPanics() (ok bool) {
 	_ = i.(msSetter)
 	return false
 }
+
+// Methods whose receivers rename the type's parameters.
+type msRenamed[A, B any] struct{ b B }
+
+func (r msRenamed[B, A]) Get() A { return r.b }
+
+func (r *msRenamed[X, Y]) Set(v Y) { r.b = v }
+
+func testMethodSetRenamedParams() bool {
+	var i any = msRenamed[uint32, uint64]{b: 7}
+	_, ok1 := i.(msGetter)
+	var j any = msRenamed[uint64, uint32]{b: 7}
+	_, ok2 := j.(msGetter)
+	return ok1 && !ok2
+}

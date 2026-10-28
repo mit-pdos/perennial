@@ -754,3 +754,37 @@ bracketed spelling; Perennial/Code regenerates unchanged.
 **Why.** One filter name per declaration, read the same way by every consumer
 (as Case 7). The user confirmed that `f[T]` is not part of a name, for
 functions (already `f`) or methods, and: "Implement and land it."
+
+## Case 24 — ACCEPTED: a generic type's method set is in its own type parameters (branch `worktree-method-set-receiver-params`)
+
+**Symptom.** Unsound, and incomplete. `method_set` and `ptr_method_set` came from
+`types.NewMethodSet` of the generic origin, whose declared methods go/types gives in
+the names each receiver binds. `type Typed[t comparable]` with
+`func (q *Typed[T]) Add(item T)` wrote `∀ (t : go.GoType), … Signature [T] …`, an
+unbound name that does not elaborate; `type P[A, B any]` with `func (P[B, A]) M(x A)`
+elaborated to `M : Signature [A]` where Go's method is `M(B)`. Promoted methods were
+already substituted. Found by etcd-grove's translation of client-go's workqueue.
+
+**Witness.** `type msRenamed[A, B any] struct{ b B }; func (r msRenamed[B, A]) Get() A`:
+`any(msRenamed[uint32, uint64]{}).(interface{ Get() uint64 })` succeeds in Go.
+
+**Taken.** `namedTypeLeanPropClassDecl` rebinds `t` to the type instantiated with
+its own type parameters (`types.Instantiate`, inside the existing generic branch),
+so every use below (method sets, `Method(i)`, `Underlying()`) is in the
+declaration's names; each method set is computed once for the facts and the
+unfold loops (it was computed twice; hoisting moved those lines, it saved none).
+Cost: 0 new goose branches, 0 semantics rules, 0 negative tests, +6 lines net
+(4 the instantiation, 2 a comment). Semantics test
+`testMethodSetRenamedParams`. Perennial/Code regenerates unchanged except the
+semantics example.
+
+**Not taken.** Instantiating only for the two method-set lines (the first plan):
+it left the function with two types, the origin and the instance, and a choice
+at every use, the shape of Case 18's bug.
+
+**Left out.** Merging the three loops that collect a type's parameter names
+(`namedTypeParams`, `typeDecl`, here): an unrelated refactor.
+
+**Why.** The user asked whether the first plan gave "the simplest ultimate goose
+implementation"; the revised one removes the origin from the function instead
+of patching its two uses. "Don't do the big refactor. Go ahead and fix."

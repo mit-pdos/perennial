@@ -204,11 +204,17 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 	t := ctx.typeOf(spec.Name).(*types.Named)
 	tunder := ctx.typeOf(spec.Type)
 
+	// t applied to its own type parameters: its methods' signatures are in
+	// those parameters, not in the names each receiver gives them
 	var params []string
 	if t.TypeParams() != nil {
+		var targs []types.Type
 		for i := range t.TypeParams().Len() {
 			params = append(params, t.TypeParams().At(i).Obj().Name())
+			targs = append(targs, t.TypeParams().At(i))
 		}
+		inst, _ := types.Instantiate(nil, t, targs, false)
+		t = inst.(*types.Named)
 	}
 	goBinders := leanTypeParamBinders(params, "go.GoType")
 	valBinders := leanTypeParamBinders(primed(params), "Type")
@@ -271,14 +277,15 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 
 	// the method sets of `t` and `*t`, as go/types computes them (the methods
 	// declared with either receiver, and those promoted through embedded fields)
+	goMset := types.NewMethodSet(t)
+	goPtrMset := types.NewMethodSet(types.NewPointer(t))
 	add("method_set", leanForall(goBinders, fmt.Sprintf("go.MethodSetIs %s %s",
-		ty, ctx.leanMethodSet(t.Obj(), types.NewMethodSet(t)))))
+		ty, ctx.leanMethodSet(t.Obj(), goMset))))
 	add("ptr_method_set", leanForall(goBinders, fmt.Sprintf("go.MethodSetIs %s %s",
-		ptrTy, ctx.leanMethodSet(t.Obj(), types.NewMethodSet(types.NewPointer(t))))))
+		ptrTy, ctx.leanMethodSet(t.Obj(), goPtrMset))))
 
 	if !types.IsInterface(t) {
 		// for every method in `t`
-		goMset := types.NewMethodSet(t)
 		for i := range goMset.Len() {
 			selection := goMset.At(i)
 			methodName, index := selection.Obj().Name(), selection.Index()
@@ -311,7 +318,6 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 		}
 
 		// for every method in `*t`
-		goPtrMset := types.NewMethodSet(types.NewPointer(t))
 		for i := range goPtrMset.Len() {
 			selection := goPtrMset.At(i)
 			methodName, index := selection.Obj().Name(), selection.Index()

@@ -467,6 +467,10 @@ func (suite *GoTestSuite) TestMethodSetAssertPanics() {
 	suite.Equal(true, testMethodSetAssertPanics())
 }
 
+func (suite *GoTestSuite) TestMethodSetRenamedParams() {
+	suite.Equal(true, testMethodSetRenamedParams())
+}
+
 func (suite *GoTestSuite) TestAssignTwo() {
 	suite.Equal(true, testAssignTwo())
 }

@@ -1231,6 +1231,46 @@ noncomputable instance msHidden_into_val_typed :
 end def_
 end msHidden
 
+namespace msRenamed
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
+
+noncomputable instance msRenamed_typed_pointsto {A' : Type} [TypedPointsto (GF := GF) A'] {B' : Type} [TypedPointsto (GF := GF) B'] :
+    TypedPointsto (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msRenamed A' B') where
+  typedPointstoDef l v dq := iprop(
+    "b" ∷ typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msRenamed A' B') go!"b" l) v.b' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance msRenamed_into_val_typed (A : go.GoType) {A' : Type} [ZeroVal A'] [TypedPointsto (GF := GF) A'] [IntoValTyped (GF := GF) A' A] (B : go.GoType) {B' : Type} [ZeroVal B'] [TypedPointsto (GF := GF) B'] [IntoValTyped (GF := GF) B' B] :
+    IntoValTypedUnderlying (GF := GF) (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msRenamed A' B') (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msRenamed.underlying A B) := by
+  solve_into_val_typed_struct
+
+noncomputable instance msRenamed_access_load_b {A' : Type} [TypedPointsto (GF := GF) A'] {B' : Type} [TypedPointsto (GF := GF) B'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msRenamed A' B')) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msRenamed A' B') go!"b" l) v.b' dq)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msRenamed A' B') go!"b" l) v.b' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance msRenamed_access_store_b {A' : Type} [TypedPointsto (GF := GF) A'] {B' : Type} [TypedPointsto (GF := GF) B'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msRenamed A' B')) (b' : B') :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msRenamed A' B') go!"b" l) v.b' (DFrac.own 1))
+      (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msRenamed A' B') go!"b" l) b' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with b' := b' } : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msRenamed A' B')) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end msRenamed
+
 namespace BoolTest
 section def_
 
