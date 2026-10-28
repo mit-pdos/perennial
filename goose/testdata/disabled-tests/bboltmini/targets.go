@@ -135,7 +135,8 @@ func testMetaChecksum() bool {
 		return false
 	}
 	cp := &Meta{}
-	*cp = *pm
+	v := *pm
+	*cp = v
 	if !cp.validate() {
 		return false
 	}
@@ -228,21 +229,25 @@ func testStatsConcurrent() bool {
 	return s.GetWriteTime() == 6 && atomic.LoadInt64(&s.PageCount) == 2
 }
 
-// Whole-struct copies between disjoint views of one buffer, and onto itself.
+// Whole-struct copies, through a local, between disjoint views of one buffer
+// and onto the same place.
 func testDisjointStructCopy() bool {
 	buf := make([]byte, 2*int(unsafe.Sizeof(Meta{})))
 	a := (*Meta)(unsafe.Pointer(&buf[0]))
 	b := (*Meta)(unsafe.Pointer(&buf[unsafe.Sizeof(Meta{})]))
 	a.txid = 7
-	*b = *a
+	v := *a
+	*b = v
 	same := (*Meta)(unsafe.Pointer(&buf[0]))
-	*same = *a
+	v = *a
+	*same = v
 	return b.txid == 7 && a.txid == 7
 }
 
-// A buffer reused at shifted offsets, as pagePool reuses page buffers: zeroing
-// it byte by byte clears the tags of the whole-struct views it held.
-func testTagsClearedByByteStores() bool {
+// A buffer reused at shifted offsets, as pagePool reuses page buffers: after
+// a whole-struct load at offset 0 and byte stores, the same type is stored and
+// loaded at offset 8.
+func testBufferReuseShifted() bool {
 	buf := make([]byte, 32)
 	buf[0] = 1
 	old := *(*InBucket)(unsafe.Pointer(&buf[0]))
@@ -254,12 +259,48 @@ func testTagsClearedByByteStores() bool {
 	return old.root == 1 && b.root == 3 && b.sequence == 4 && buf[0] == 0
 }
 
-// Whole loads of one type at overlapping offsets are defined: only a store can
-// complete an overlapping copy, so loads never check tags (design R4).
+// Whole loads of one type at overlapping offsets are defined: a load is a
+// plain read of the bytes (design R2).
 func testOverlappingLoads() bool {
 	buf := make([]byte, 24)
 	buf[8] = 1
 	x := *(*InBucket)(unsafe.Pointer(&buf[0]))
 	y := *(*InBucket)(unsafe.Pointer(&buf[8]))
 	return x.sequence == 1 && y.root == 1
+}
+
+// A float's bits through a uint64 view: floats are plain (design R1), 8 byte
+// cells holding their IEEE bits.
+func testFloatBits() bool {
+	f := 1.0
+	return *(*uint64)(unsafe.Pointer(&f)) == 0x3FF0000000000000
+}
+
+// Atomics of two widths on one word, one after the other. The concurrent case
+// is outside the model (design section 5, A3).
+func testMixedWidthAtomics() bool {
+	var u uint64
+	atomic.AddUint64(&u, 1)
+	atomic.AddUint32((*uint32)(unsafe.Pointer(&u)), 1)
+	return u == 2
+}
+
+// A whole-struct copy between partially overlapping views, through a local.
+// gc 1.26 copies *src into a stack slot first, so the result is memmove's
+// (design section 5, A2), and value semantics gives the same.
+type words struct{ a, b, c, d, e, f, g, h uint64 }
+
+//go:noinline
+func copyWordsViaTemp(dst, src *words) {
+	x := *src
+	*dst = x
+}
+
+func testOverlappingCopyViaTemp() bool {
+	buf := make([]uint64, 16)
+	for i := range buf {
+		buf[i] = uint64(i)
+	}
+	copyWordsViaTemp((*words)(unsafe.Pointer(&buf[1])), (*words)(unsafe.Pointer(&buf[0])))
+	return buf[3] == 2
 }

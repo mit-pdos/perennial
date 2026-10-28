@@ -5,10 +5,11 @@
 // unaligned offsets, and an atomic on a *time.Duration cast to *int64.
 //
 // Each construct is written the way go.etcd.io/bbolt v1.5.0 writes it, with
-// the changes of docs/design/unsafe-memory.md section 5: the helpers use
+// the changes of docs/design/unsafe-memory.md section 6: the helpers use
 // unsafe.Add and unsafe.Slice instead of uintptr arithmetic and a
-// (*[MaxAllocSize]byte) view, and an element's pos is computed from offsets
-// instead of as a pointer difference. The original forms are in package
+// (*[MaxAllocSize]byte) view, an element's pos is computed from offsets
+// instead of as a pointer difference, and whole-struct copies between two
+// memory places go through a local. The original forms are in package
 // stuck, with the other constructs the model must not verify.
 package bboltmini
 
@@ -54,7 +55,7 @@ const (
 )
 
 // unsafeAdd, unsafeIndex and unsafeByteSlice are internal/common/unsafe.go's
-// helpers in the patched forms of the design (section 5): unsafe.Add for
+// helpers in the patched forms of the design (section 6): unsafe.Add for
 // uintptr(base)+offset, and unsafe.Slice for the (*[MaxAllocSize]byte) view.
 func unsafeAdd(base unsafe.Pointer, offset uintptr) unsafe.Pointer {
 	return unsafe.Add(base, offset)

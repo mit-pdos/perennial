@@ -47,10 +47,11 @@ func (m *Meta) validate() bool {
 }
 
 // write is Meta.Write: it sets m's checksum and copies m into the meta page p
-// (m.Copy(p.Meta()) is *dest = *m).
+// (m.Copy(p.Meta()), which the bbolt fork writes as v := *m; *dest = v).
 func (m *Meta) write(p *Page) {
 	p.id = Pgid(m.txid % 2)
 	p.flags = metaPageFlag
 	m.checksum = m.sum64()
-	*p.meta() = *m
+	v := *m
+	*p.meta() = v
 }

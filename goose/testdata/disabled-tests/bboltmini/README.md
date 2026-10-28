@@ -6,19 +6,22 @@ as `go.etcd.io/bbolt` v1.5.0 writes it, except for the patched forms of
 - `unsafeAdd` and `unsafeIndex` use `unsafe.Add`;
 - `unsafeByteSlice` uses `unsafe.Slice` instead of a `(*[MaxAllocSize]byte)`
   view;
-- an element's `pos` is computed from offsets.
+- an element's `pos` is computed from offsets;
+- whole-struct copies between two memory places go through a local.
 
 The semantics and reasoning principles are enough for bbolt when goose
-translates every target below and each one is proved, and none of the
-probes in `stuck/` can be proved.
+translates every target below and each one is proved, none of the probes
+in `stuck/` can be proved, and goose refuses every copy in `rejected/`.
 
 `go test ./goose/testdata/disabled-tests/bboltmini/...` checks that each
-target holds in Go, and what Go answers for each probe that has a fixed
-answer. The targets also pass under `-race`, whose `checkptr` checks every
+target holds in Go, what Go answers for each probe and each rejected copy
+that has a fixed answer, and that goose's guard refuses exactly the copies
+marked `// refused` in `rejected/`. The targets also pass under `-race`, whose `checkptr` checks every
 unsafe conversion for alignment and for staying inside its allocation.
 
 The package is in `disabled-tests` because goose refuses it today: it
-rejects the `unsafe.Add`/`unsafe.Slice` calls and nothing else. It moves to
+rejects the `unsafe.Add`/`unsafe.Slice` calls and nothing else
+(`goose/cmd/modelcheck` reports nothing on it or on `stuck/`). It moves to
 `testdata/examples` once goose translates it.
 
 ## Targets (`targets.go`): each `{{ True }} testX() {{ RET true }}`
@@ -31,13 +34,16 @@ rejects the `unsafe.Add`/`unsafe.Slice` calls and nothing else. It moves to
 | `testPageAtOffset` | I1 (`pageInBuffer`) | R1–R3 | framing: a page at offset 4096 of its buffer owns only its own bytes |
 | `testAliasing` | I3, I4, I6 (`pageBytes`) | R2, R3 | one memory, several views: a value slice, the `unsafe.Slice` element array, an element pointer and the whole buffer, each seeing writes through the others |
 | `testSearch` | I3 (`cursor.nsearch`) | R3 | a points-to for `unsafe.Slice((*T)(p), n)` over plain `T`, and `&elems[i]` pointing into the page |
-| `testMetaChecksum` | I1, I6 | R1–R4 | the byte view of a **Go-allocated** `Meta`; whole-struct copies into and out of a page; FNV-1a is injective in each byte |
+| `testMetaChecksum` | I1, I6 | R1–R4 | the byte view of a **Go-allocated** `Meta`; whole-struct copies, through a local, into and out of a page; FNV-1a is injective in each byte |
 | `testFreelistRoundTrip`, `testFreelistOverflow` | I2, I3 | R3 | `[]Pgid` after the page header, including counts of 0xFFFF and more read as `*(*Pgid)(...)` |
 | `testInlineBucket` | I1, I7 | R2–R4 | a header and a page at an offset that is 8-aligned for some key lengths and not others; `uintptr(p)` is arbitrary, so both branches of the alignment test must verify; a writable open copies |
-| `testStatsConcurrent` | I10 | R1, R5 | atomics on `int64`s that are byte cells, one through `(*int64)(unsafe.Pointer(*time.Duration))`; their alignment premise is discharged from the allocation |
-| `testDisjointStructCopy` | I1 | R4 | whole-struct copies between disjoint views of one buffer, and onto the same location, are not stuck |
-| `testOverlappingLoads` | (I1, mmap readers) | R4 | whole loads of one type at overlapping offsets are defined; only stores check tags |
-| `testTagsClearedByByteStores` | I1 (`pagePool` reuse) | R4 | after a whole-struct load, zeroing the buffer byte by byte clears its tags, so the buffer can hold a view of the same type at a shifted offset |
+| `testStatsConcurrent` | I10 | R1, R5 | atomics on `int64`s that are byte cells, one through `(*int64)(unsafe.Pointer(*time.Duration))`; their alignment premise is discharged from the allocation, which places each integer at a multiple of its size |
+| `testDisjointStructCopy` | I1 | R4 | whole-struct copies through a local, between disjoint views of one buffer and onto the same place |
+| `testOverlappingLoads` | (I1, mmap readers) | R2 | whole loads of one type at overlapping offsets are plain reads of the bytes |
+| `testBufferReuseShifted` | I1 (`pagePool` reuse) | R2 | after a whole-struct load and byte stores, the buffer holds a view of the same type at a shifted offset |
+| `testFloatBits` | — | R1 | floats are plain: a `float64` is 8 byte cells holding its IEEE bits |
+| `testMixedWidthAtomics` | — | R5 | sequential atomics of two widths on one word; the concurrent case is assumption A3 |
+| `testOverlappingCopyViaTemp` | — | R4 | a copy between overlapping views through a local has value semantics, as in gc 1.26 (A2) |
 
 Two targets are scale tests rather than new idioms:
 - `testFreelistOverflow` writes 65536 ids, so its proof must use loop
@@ -55,26 +61,34 @@ stuck on purpose.
 | `testOriginalPos` | true | bbolt's pointer difference: `uintptr(p)` is arbitrary | §6, R3 |
 | `testAddPastEnd` | true | `unsafe.Add` one past the allocation is invalid | R3 |
 | `testSlicePastEnd` | reads another object | an `unsafe.Slice` past the allocation | R3 |
-| `testPastEndAddress` | **false** (the objects are adjacent) | an address past an object compared with the next object's address | R3 (`unsafe.Slice` checks its cells) |
+| `testPastEndAddress` | **false** (the objects are adjacent) | an address past an object compared with the next object's address: `unsafe.Slice` checks its cells, and placement is nondeterministic, so both answers are model behaviours | R3 |
 | `testPointerFromBytes` | true | a pointer read out of bytes | R3 (conversion to non-plain) |
 | `testBytesOverPointer` | true | bytes written over a pointer | R3 (plain view of opaque cells) |
 | `testStringOverPointer` | **false** when `s` escapes, true when local | a string stored over a pointer field | R3 |
 | `testMapPun` | **false** | a map viewed as a map of another key type | R3 |
 | `testInterfacePun` | **false** (`Read` is called) | an `io.Reader` viewed as an `io.Writer` | R3 |
 | `testAtomicPointerIntoBytes` | **false** | `atomic.StorePointer` into an integer's bytes | R3 |
-| `testFloatBits` | true | floats are not plain (deliberately incomplete) | R1 |
 | `testPaddedView` | true | padded structs are not plain (deliberately incomplete) | R1 |
 | `testBlankFieldEq` | **false** | `==` ignores blank fields; structs with blank fields are not plain | R1 |
 | `testZeroSizeDistinct` | **false** (heap), true (stack) | pointers to distinct zero-size objects may be equal | R1 |
-| `testMisalignedAtomic` | depends on address and CPU | an atomic on a 1-aligned `[]byte` | R1, R5 |
-| `testMixedWidthAtomics` | true here (sequential) | atomics of two widths on one word; Intel promises nothing when they are concurrent (deliberately incomplete) | R4 |
+| `testMisalignedAtomic` | depends on address and CPU | an atomic on a `[]byte`, whose address is arbitrary | R1, R5 |
 | `testByteSliceAligned` | true in practice, not promised | a `[]byte` is only 1-aligned | R3 |
 | `testFieldResidue` | **false** | the residue of a plain field of a non-plain struct (offset 12) | R3 |
-| `testOverlappingCopy` | **false** | gc copies a 64-byte struct forward in 16-byte chunks: `0 0 1 1 3 3 5 5 7 9`, not memmove's `0 0 1 2 3 4 5 6 7 9` | R4 |
-| `testOverlappingCopyViaTemp` | true today, not promised | the same copy through a temporary; gc disclaims overlap made with `unsafe` | R4, whatever the syntax |
-| `testArrayFieldOverlapCopy` | **false** | an array field copied between overlapping views uses a `Move`, not `memmove` | R4 (arrays carry tags) |
-| `testOverlappingArrayCopy` | true | safe Go's overlapping `*p = *q` of plain arrays is `memmove`, but the model cannot tell it from the above (deliberately incomplete) | R4 |
 
 Each probe marked **false** found an unsound point in an earlier draft of
-the design. Section 11 of the design records the review rounds. Draft 8 of the
-design drops the tags of R4: section 12, step 6, lists the rows above that change.
+the design. Section 11 of the design records the review rounds.
+
+## Rejected copies (`rejected/`): goose must refuse each
+
+The semantics copies a struct or array by value; gc copies with a `Move`,
+which is wrong when its two sides partially overlap (design R4). goose's
+guard refuses each of these copies, marked `// refused`.
+
+| copy | Go's answer | why goose refuses it |
+|---|---|---|
+| `testOverlappingCopy` | **false** | gc copies a 64-byte struct forward in 16-byte chunks: `0 0 1 1 3 3 5 5 7 9`, not memmove's `0 0 1 2 3 4 5 6 7 9` |
+| `testArrayFieldOverlapCopy` | **false** | an array field copied between overlapping views uses a `Move`, not `memmove` |
+| `testOverlappingArrayCopy` | true | safe Go's overlapping `*p = *q` of plain arrays is `memmove`, but the guard cannot tell it from the above (deliberately incomplete) |
+| `testCopyViaPointerFields` | **false** | `*pr.y = *pr.x`: two pointers loaded from memory can point at overlapping views |
+| `testCopyViaSliceFields` | **false** | `s.b[0] = s.a[0]`, the same through two slices |
+| `testCopyViaNestedSlices` | **false** | `x[1][0] = x[0][0]` with `x` a `[][]T`, the same through nested slices |

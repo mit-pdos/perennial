@@ -1,8 +1,8 @@
 // Package stuck holds the constructs next to bboltmini's that the model must
 // NOT verify: for each test function here, {{ True }} testX() {{ RET true }}
 // must be unprovable. Some return true in Go but use something the model
-// leaves stuck on purpose (bbolt's original uintptr forms, float bits, padded
-// structs); the others return true in the model only if the semantics is
+// leaves stuck on purpose (bbolt's original uintptr forms, padded structs);
+// the others return true in the model only if the semantics is
 // unsound (Go returns false, or either answer).
 package stuck
 
@@ -70,12 +70,6 @@ func testBytesOverPointer() bool {
 	return x == nil
 }
 
-// A float's bits: floats are not plain. True in Go.
-func testFloatBits() bool {
-	f := 1.0
-	return *(*uint64)(unsafe.Pointer(&f)) == 0x3FF0000000000000
-}
-
 // A padded struct is not plain, so it has no byte view. True in Go.
 type padded struct {
 	a uint8
@@ -125,78 +119,6 @@ func testZeroSizeDistinct() bool {
 	p, q := new([0]uint64), new([0]uint64)
 	sinkP, sinkQ = p, q
 	return p != q
-}
-
-// A whole-struct copy between partially overlapping views. gc copies forward
-// in 16-byte chunks: the buffer becomes 0 0 1 1 3 3 5 5 7 9, not memmove's
-// 0 0 1 2 3 4 5 6 7 9, so this is false in Go.
-type meta struct{ a, b, c, d, e, f, g, h uint64 }
-
-//go:noinline
-func copyMeta(dst, src *meta) { *dst = *src }
-
-func testOverlappingCopy() bool {
-	buf := make([]uint64, 16)
-	for i := range buf {
-		buf[i] = uint64(i)
-	}
-	copyMeta((*meta)(unsafe.Pointer(&buf[1])), (*meta)(unsafe.Pointer(&buf[0])))
-	return buf[3] == 2
-}
-
-// The same copy through a temporary. Today gc copies *src into a stack slot
-// first, so the result is memmove's and this is true in Go. But gc promises
-// nothing for overlap made with unsafe ("We don't care about solving 1",
-// ssagen/ssa.go, moveWhichMayOverlap), and only a check it could drop guards
-// its rewrite that fuses the two copies (generic.rules, a Move of a Move). So
-// this must stay unprovable whatever the syntax: the model's tags (design R4)
-// make the second, shifted whole-struct view stuck.
-//
-//go:noinline
-func copyMetaViaTemp(dst, src *meta) {
-	x := *src
-	*dst = x
-}
-
-func testOverlappingCopyViaTemp() bool {
-	buf := make([]uint64, 16)
-	for i := range buf {
-		buf[i] = uint64(i)
-	}
-	copyMetaViaTemp((*meta)(unsafe.Pointer(&buf[1])), (*meta)(unsafe.Pointer(&buf[0])))
-	return buf[3] == 2
-}
-
-// Overlapping plain arrays in safe Go (slice-to-array-pointer conversions):
-// gc copies *p = *q with memmove, so this is true in Go. The model's tags
-// (design R4) cannot tell this copy from p.A = q.A below without looking at
-// syntax, so it is stuck: deliberately incomplete.
-func testOverlappingArrayCopy() bool {
-	s := make([]uint64, 16)
-	for i := range s {
-		s[i] = uint64(i)
-	}
-	*(*[8]uint64)(s[1:9]) = *(*[8]uint64)(s[0:8])
-	return s[3] == 2
-}
-
-// An array field copied between overlapping views: gc uses a Move, not
-// memmove, so buf[4] is 2, not value semantics' 3, and this is false in Go.
-type withArray struct {
-	H uint64
-	A [8]uint64
-}
-
-//go:noinline
-func copyArrayField(dst, src *withArray) { dst.A = src.A }
-
-func testArrayFieldOverlapCopy() bool {
-	buf := make([]uint64, 16)
-	for i := range buf {
-		buf[i] = uint64(i)
-	}
-	copyArrayField((*withArray)(unsafe.Pointer(&buf[1])), (*withArray)(unsafe.Pointer(&buf[0])))
-	return buf[4] == 3
 }
 
 // A string stored over a pointer field. Once s escapes, s.q holds the
@@ -264,15 +186,4 @@ func testBlankFieldEq() bool {
 	x := (*withBlank)(unsafe.Pointer(&buf[0]))
 	y := (*withBlank)(unsafe.Pointer(&buf[8]))
 	return *x != *y
-}
-
-// Atomics of different widths on the same bytes: true in Go when they are
-// sequential, but Intel promises nothing when they are concurrent, and the
-// model's atomic tags (design R4) cannot tell the two apart: deliberately
-// incomplete.
-func testMixedWidthAtomics() bool {
-	var u uint64
-	atomic.AddUint64(&u, 1)
-	atomic.AddUint32((*uint32)(unsafe.Pointer(&u)), 1)
-	return u == 2
 }

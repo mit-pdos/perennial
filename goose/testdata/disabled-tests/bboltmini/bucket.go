@@ -15,7 +15,8 @@ func cloneBytes(v []byte) []byte {
 func writeInlineBucket(b *InBucket, inodes []inode) []byte {
 	value := make([]byte, bucketHeaderSize+pageSize(inodes))
 	bucket := (*InBucket)(unsafe.Pointer(&value[0]))
-	*bucket = *b
+	ib := *b
+	*bucket = ib
 	p := (*Page)(unsafe.Pointer(&value[bucketHeaderSize]))
 	p.flags = leafPageFlag
 	p.count = uint16(len(inodes))
@@ -38,7 +39,8 @@ func openInlineBucket(value []byte, writable bool) (*InBucket, *Page) {
 	var b *InBucket
 	if writable && !unaligned {
 		b = &InBucket{}
-		*b = *(*InBucket)(unsafe.Pointer(&value[0]))
+		ib := *(*InBucket)(unsafe.Pointer(&value[0]))
+		*b = ib
 	} else {
 		b = (*InBucket)(unsafe.Pointer(&value[0]))
 	}

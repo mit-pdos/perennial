@@ -17,9 +17,12 @@ func TestTargets(t *testing.T) {
 		"testInlineBucket":      testInlineBucket,
 		"testStatsConcurrent":   testStatsConcurrent,
 
-		"testDisjointStructCopy":      testDisjointStructCopy,
-		"testTagsClearedByByteStores": testTagsClearedByByteStores,
-		"testOverlappingLoads":        testOverlappingLoads,
+		"testDisjointStructCopy":     testDisjointStructCopy,
+		"testBufferReuseShifted":     testBufferReuseShifted,
+		"testOverlappingLoads":       testOverlappingLoads,
+		"testFloatBits":              testFloatBits,
+		"testMixedWidthAtomics":      testMixedWidthAtomics,
+		"testOverlappingCopyViaTemp": testOverlappingCopyViaTemp,
 	} {
 		if !f() {
 			t.Errorf("%s returned false", name)
