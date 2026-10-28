@@ -83,9 +83,10 @@ cases of `IsPredeclared`. `IsPredeclared` keeps `string`, `bool`,
 ```
 alloc_plain_scalar (u) [IsPlainScalar u w] (v) :
   ⟦GoAlloc u, v⟧ ⤳[internalUnder]
-    let: "l" := GoPrealloc #() in
+    let: "l" := GoPreallocAligned w #() in
     <for k < w: Alloc at "l" + k of byte k of v, AngelicExit unless it lands there> ;;
-    if w ∣ "l" then "l" else AngelicExit #()
+    "l"
+-- exact forms: "Exact rules for steps 1 and 3" below
 load_plain_scalar  : reads the w cells with the existing two-phase read, then decodes;
                      the decoding is stuck unless every cell holds a LitByte
 store_plain_scalar : stuck unless every cell is a byte cell; then writes the w cells
