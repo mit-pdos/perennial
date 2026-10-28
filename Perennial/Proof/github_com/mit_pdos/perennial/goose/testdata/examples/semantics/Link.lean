@@ -48,6 +48,8 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodSetValueReceiver
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodSetVariadic
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodSetWrongSignature
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinGeneric
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinMaxNamed
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinUint64
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testNestedStructUpdates
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testNilDefault
@@ -215,6 +217,12 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testM
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testMethodSetWrongSignature : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodSetWrongSignature.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMethodSetWrongSignature.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testMinGeneric : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinGeneric.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinGeneric.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testMinMaxNamed : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinMaxNamed.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinMaxNamed.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testMinUint64 : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinUint64.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinUint64.wp_proof

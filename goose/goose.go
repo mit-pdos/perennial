@@ -922,14 +922,8 @@ func (ctx *Ctx) builtinIdent(e *ast.Ident) glang.Expr {
 		if sig.Params().Len() == 0 {
 			ctx.nope(e, "min/max with no params")
 		}
-		// figure out the desired type by taking a type join of everything.
-		// XXX: the signature might always be (T, T, T, T, T).
-		var t types.Type = sig.Params().At(0).Type().Underlying()
-		for i := 0; i < sig.Params().Len(); i++ {
-			t = ctx.typeJoin(e, t, sig.Params().At(i).Type())
-		}
+		ty := ctx.glangType(e, sig.Params().At(0).Type())
 		var typeArgs glang.ListExpr
-		ty := ctx.glangType(e, t)
 		for i := 0; i < sig.Params().Len(); i++ {
 			typeArgs = append(typeArgs, ty)
 		}

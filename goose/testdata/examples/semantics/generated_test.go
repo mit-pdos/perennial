@@ -75,6 +75,14 @@ func (suite *GoTestSuite) TestMaxUint64() {
 	suite.Equal(true, testMaxUint64())
 }
 
+func (suite *GoTestSuite) TestMinMaxNamed() {
+	suite.Equal(true, testMinMaxNamed())
+}
+
+func (suite *GoTestSuite) TestMinGeneric() {
+	suite.Equal(true, testMinGeneric())
+}
+
 func (suite *GoTestSuite) TestClosureBasic() {
 	suite.Equal(true, testClosureBasic())
 }

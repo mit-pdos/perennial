@@ -665,3 +665,35 @@ worry about it"): it is now an entry in `docs/KNOWN_LIMITATIONS.md`,
 bound, and `go` is fixed with `defer` as a sibling (Case 9). The user: "Go
 ahead and make the fix, as long as all the tests pass and the existing
 non-variadic translations are unchanged."
+
+## Case 21 — ACCEPTED: `min`/`max` of a named or type-parameter type (branch `minmax-named`)
+
+**Symptom.** Incomplete, and a wrong translation. Goose found `min`/`max`'s
+type by joining the parameter types, starting from the first one's
+*underlying* type. For a named integer type the join of `int64` with
+`time.Duration` failed ("comparison between non-assignable types"); for a type
+parameter the underlying type is its constraint interface, to which `T` is
+assignable, so goose emitted `go.min [<interface>, ...]`, stuck at `<`.
+
+**Witness.** `func f(d, e time.Duration) time.Duration { return min(d, e) }` is
+refused; `func g[T ~int64 | ~uint64](a, b T) T { return min(a, b) }` is stuck.
+
+**Taken.** go/types reports a non-constant `min`/`max` as `func(T, ..., T) T`
+with every argument at the common type (a constant call is already its constant,
+Case 8), so the join is gone: the type is the first parameter's, as reported.
+Cost: goose −6 lines, 0 branches, 0 semantics rules (`min_unfold`/`max_unfold`
+take any type; `<⟨t⟩` lifts to named types by `⤳[under]` and to a type
+parameter at instantiation). Semantics tests `testMinMaxNamed` (with an untyped
+constant) and `testMinGeneric` (at `uint64` and at a named type), both proved by
+`semantics_auto`. No existing translation changed: the std regeneration with the
+unfixed and the fixed goose is identical.
+
+**Why it is the right shape.** Case 18's: use the type go/types already
+computed instead of re-deriving it; the type-parameter case is the same line
+(Case 9), and which type it is is decided in Lean. The user: "Go ahead and then
+land it."
+
+**Left out.** `min.impl`/`max.impl` are `LitPoison` for three or more
+arguments (`max(d, e, 5)` translates but is stuck), and for floats
+`if x < y then x else y` disagrees with Go on `NaN` and signed zeros
+(`min(-0.0, 0.0)` is `-0.0` in Go). Separate items.

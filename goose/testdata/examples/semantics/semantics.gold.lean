@@ -49,6 +49,11 @@ noncomputable def blankFieldStruct.ty [GooseExts] [GoGlobalContext] : go.GoType 
 
 attribute [irreducible] blankFieldStruct.ty
 
+noncomputable def minMaxDur.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.minMaxDur" [])
+
+attribute [irreducible] minMaxDur.ty
+
 noncomputable def evalCounter.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.evalCounter" [])
 
@@ -395,6 +400,15 @@ noncomputable def testMinUint64 [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def testMaxUint64 [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMaxUint64"
+
+noncomputable def testMinMaxNamed [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMinMaxNamed"
+
+noncomputable def minGeneric [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.minGeneric"
+
+noncomputable def testMinGeneric [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMinGeneric"
 
 noncomputable def adder [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.adder"
@@ -1891,6 +1905,70 @@ noncomputable def testMaxUint64.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: builtin.go:15:6 -/
+noncomputable def testMinMaxNamed.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(W64 10))
+  (Let "d" (App (Val (GoInstruction (GoAlloc minMaxDur.ty))) (App (Val (GoInstruction (GoZeroVal minMaxDur.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedInt minMaxDur.ty))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3 : Int))))
+  (Let "e" (App (Val (GoInstruction (GoAlloc minMaxDur.ty))) (App (Val (GoInstruction (GoZeroVal minMaxDur.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (App (Val (GoInstruction (GoOp GoEquals minMaxDur.ty))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad minMaxDur.ty))) (Var "d"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad minMaxDur.ty))) (Var "e"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.min [minMaxDur.ty, minMaxDur.ty]))) (Val #())) (Var "$a0")) (Var "$a1")))) (App (Val (GoInstruction (Convert go.untypedInt minMaxDur.ty))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(3 : Int)))))) (App (Val (GoInstruction (GoOp GoEquals minMaxDur.ty))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad minMaxDur.ty))) (Var "d"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad minMaxDur.ty))) (Var "e"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.max [minMaxDur.ty, minMaxDur.ty]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W64 10)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals minMaxDur.ty))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad minMaxDur.ty))) (Var "e"))
+  (Let "$a1" (Val #(W64 3))
+  (App (App (App (Val (GoInstruction (FuncResolve go.max [minMaxDur.ty, minMaxDur.ty]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W64 3)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore minMaxDur.ty))) (Pair (Var "e") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore minMaxDur.ty))) (Pair (Var "d") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: builtin.go:21:6 -/
+noncomputable def minGeneric.impl [GooseExts] [GoGlobalContext] (T : go.GoType) : val :=
+  (LamV "a"
+  (Lam "b"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc T))) (Var "b"))
+  (Let "a" (App (Val (GoInstruction (GoAlloc T))) (Var "a"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad T))) (Var "a"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad T))) (Var "b"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.min [T, T]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad T))) (Var "$res0"))))))
+
+/-- go: builtin.go:25:6 -/
+noncomputable def testMinGeneric.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (Let "$a0" (Val #(W64 4))
+  (Let "$a1" (Val #(W64 7))
+  (App (App (App (Val (GoInstruction (FuncResolve minGeneric [go.uint64]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W64 4)))) (App (Val (GoInstruction (GoOp GoEquals minMaxDur.ty))) (Pair (Let "$a0" (Val #(W64 5))
+  (Let "$a1" (App (Val (GoInstruction (Convert go.untypedInt minMaxDur.ty))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2 : Int))))
+  (App (App (App (Val (GoInstruction (FuncResolve minGeneric [minMaxDur.ty]))) (Val #())) (Var "$a0")) (Var "$a1")))) (App (Val (GoInstruction (Convert go.untypedInt minMaxDur.ty))) (App (Val (GoInstruction (GoUnOp GoNeg go.untypedInt))) (Val #(2 : Int)))))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: closures.go:6:6 -/
@@ -11415,6 +11493,20 @@ attribute [instance] blankFieldStruct.TypeAssumptions.type_repr
   blankFieldStruct.TypeAssumptions.method_set
   blankFieldStruct.TypeAssumptions.ptr_method_set
 
+abbrev minMaxDur [GooseExts] : Type := w64
+
+@[reducible] noncomputable def minMaxDur.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  go.int64
+
+class minMaxDur.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq minMaxDur.ty minMaxDur.underlying
+  method_set : go.MethodSetIs minMaxDur.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType minMaxDur.ty) []
+
+attribute [instance] minMaxDur.TypeAssumptions.underlying
+  minMaxDur.TypeAssumptions.method_set
+  minMaxDur.TypeAssumptions.ptr_method_set
+
 structure evalCounter [GooseExts] where
   mk ::
   n' : w64
@@ -13180,6 +13272,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   pair_instance : pair.TypeAssumptions
   pairs_instance : pairs.TypeAssumptions
   blankFieldStruct_instance : blankFieldStruct.TypeAssumptions
+  minMaxDur_instance : minMaxDur.TypeAssumptions
   evalCounter_instance : evalCounter.TypeAssumptions
   Editor_instance : Editor.TypeAssumptions
   Pair_instance : Pair.TypeAssumptions
@@ -13255,6 +13348,9 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testExplicitBlockStmt_unfold : FuncUnfold testExplicitBlockStmt [] testExplicitBlockStmt.impl
   testMinUint64_unfold : FuncUnfold testMinUint64 [] testMinUint64.impl
   testMaxUint64_unfold : FuncUnfold testMaxUint64 [] testMaxUint64.impl
+  testMinMaxNamed_unfold : FuncUnfold testMinMaxNamed [] testMinMaxNamed.impl
+  minGeneric_unfold : ∀ (T : go.GoType), FuncUnfold minGeneric [T] (minGeneric.impl T)
+  testMinGeneric_unfold : FuncUnfold testMinGeneric [] testMinGeneric.impl
   adder_unfold : FuncUnfold adder [] adder.impl
   testClosureBasic_unfold : FuncUnfold testClosureBasic [] testClosureBasic.impl
   testCompareAll_unfold : FuncUnfold testCompareAll [] testCompareAll.impl
@@ -13531,6 +13627,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.pair_instance
   Assumptions.pairs_instance
   Assumptions.blankFieldStruct_instance
+  Assumptions.minMaxDur_instance
   Assumptions.evalCounter_instance
   Assumptions.Editor_instance
   Assumptions.Pair_instance
@@ -13606,6 +13703,9 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testExplicitBlockStmt_unfold
   Assumptions.testMinUint64_unfold
   Assumptions.testMaxUint64_unfold
+  Assumptions.testMinMaxNamed_unfold
+  Assumptions.minGeneric_unfold
+  Assumptions.testMinGeneric_unfold
   Assumptions.adder_unfold
   Assumptions.testClosureBasic_unfold
   Assumptions.testCompareAll_unfold
