@@ -99,6 +99,10 @@ inductive PrimOp1 where
   | LoadOp
   /-- allocation (initial value) -/
   | AllocOp
+  /-- allocation of the `w` little-endian bytes of an integer, at an address `w` divides -/
+  | AllocBytesOp (w : Nat)
+  /-- atomic load of `w` bytes at an address `w` divides -/
+  | LoadBytesOp (w : Nat)
   /-- start a panic with the given value (the body of `go.panic`) -/
   | RaiseOp
 deriving DecidableEq
@@ -110,6 +114,13 @@ inductive PrimOp2 where
   | AtomicSwapOp
   /-- pointer, value -/
   | AtomicAddOp
+  /-- the atomic operations on `w` bytes at an address `w` divides: pointer, value; returns
+  the old value -/
+  | SwapBytesOp (w : Nat)
+  /-- pointer, value; returns the new value -/
+  | AddBytesOp (w : Nat)
+  /-- pointer, (old, new); returns (the value read, success) -/
+  | CmpXchgBytesOp (w : Nat)
 deriving DecidableEq
 
 inductive GoOperator where
@@ -169,6 +180,8 @@ inductive GoInstruction where
   | CompositeLiteral (t : go.GoType)
   | SelectStmt
   | InternalStringLen
+  /-- the integer literal of `w` bytes whose little-endian bytes are the argument tuple -/
+  | InternalBytesTo (w : Nat)
 
 noncomputable instance : DecidableEq GoInstruction := fun a b => Classical.propDecidable (a = b)
 
@@ -296,6 +309,7 @@ export GoInstruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad GoS
   InternalSliceLen InternalSliceCap InternalDynamicArrayAlloc InternalMakeSlice IndexRef Index
   Slice FullSlice ArraySet ArrayLength InternalMapCheckKey InternalMapLookup InternalMapInsert
   InternalMapDelete InternalMapLength InternalMapForRange InternalMapMake InternalMapLookupId
+  InternalBytesTo
   CompositeLiteral SelectStmt InternalStringLen)
 
 section derived
@@ -320,6 +334,11 @@ abbrev Load (e : Expr) : Expr := Primitive1 .LoadOp e
 abbrev FinishStore (e1 e2 : Expr) : Expr := Primitive2 .FinishStoreOp e1 e2
 abbrev AtomicSwap (e1 e2 : Expr) : Expr := Primitive2 .AtomicSwapOp e1 e2
 abbrev AtomicAdd (e1 e2 : Expr) : Expr := Primitive2 .AtomicAddOp e1 e2
+abbrev AllocBytes (w : Nat) (e : Expr) : Expr := Primitive1 (.AllocBytesOp w) e
+abbrev LoadBytes (w : Nat) (e : Expr) : Expr := Primitive1 (.LoadBytesOp w) e
+abbrev SwapBytes (w : Nat) (e1 e2 : Expr) : Expr := Primitive2 (.SwapBytesOp w) e1 e2
+abbrev AddBytes (w : Nat) (e1 e2 : Expr) : Expr := Primitive2 (.AddBytesOp w) e1 e2
+abbrev CmpXchgBytes (w : Nat) (e1 e2 : Expr) : Expr := Primitive2 (.CmpXchgBytesOp w) e1 e2
 
 abbrev Lam (x : Binder) (e : Expr) : Expr := Rec BAnon x e
 abbrev Let (x : Binder) (e1 e2 : Expr) : Expr := App (Lam x e2) e1
@@ -730,6 +749,47 @@ def atomicAddEval (v1 v2 : val) : Option val :=
   | LitV (LitByte n1), LitV (LitByte n2) => some #(n1 + n2)
   | _, _ => none
 
+/-- The `w` little-endian bytes of `m`. -/
+def natBytes : Nat → Nat → List w8
+  | 0, _ => []
+  | w + 1, m => BitVec.ofNat 8 m :: natBytes w (m / 256)
+
+/-- The number whose little-endian bytes are `bs`. -/
+def bytesNat : List w8 → Nat
+  | [] => 0
+  | b :: bs => b.toNat + 256 * bytesNat bs
+
+/-- The bytes of an integer literal of `w` bytes, little-endian. -/
+def valBytes : Nat → val → Option (List w8)
+  | 1, LitV (LitByte x) => some (natBytes 1 x.toNat)
+  | 2, LitV (LitInt16 x) => some (natBytes 2 x.toNat)
+  | 4, LitV (LitInt32 x) => some (natBytes 4 x.toNat)
+  | 8, LitV (LitInt x) => some (natBytes 8 x.toNat)
+  | _, _ => none
+
+/-- The integer literal of `w` bytes whose little-endian bytes are `bs`. -/
+def bytesVal (w : Nat) (bs : List w8) : Option val :=
+  if bs.length = w then
+    match w with
+    | 1 => some (LitV (LitByte (BitVec.ofNat 8 (bytesNat bs))))
+    | 2 => some (LitV (LitInt16 (BitVec.ofNat 16 (bytesNat bs))))
+    | 4 => some (LitV (LitInt32 (BitVec.ofNat 32 (bytesNat bs))))
+    | 8 => some (LitV (LitInt (BitVec.ofNat 64 (bytesNat bs))))
+    | _ => none
+  else none
+
+/-- The cells from `l` on hold the bytes `bs`, with no reader unless `readers`. -/
+def BytesAt (σg : CfgState) (l : Loc) : List w8 → Bool → Prop
+  | [], _ => True
+  | b :: bs, readers =>
+    (∃ n, σg.1.heap !! l = some (Reading n, LitV (LitByte b)) ∧ (readers = true ∨ n = 0)) ∧
+    BytesAt σg (l +ₗ 1) bs readers
+
+/-- The heap with the bytes `bs` in the cells from `l` on. -/
+def setBytes (l : Loc) : List w8 → GMap Loc (NonAtomic val) → GMap Loc (NonAtomic val)
+  | [], h => h
+  | b :: bs, h => setBytes (l +ₗ 1) bs (<[l := Free (LitV (LitByte b))]> h)
+
 def setHeap (f : GMap Loc (NonAtomic val) → GMap Loc (NonAtomic val)) (σg : CfgState) :
     CfgState :=
   ({ σg.1 with heap := f σg.1.heap }, σg.2)
@@ -785,6 +845,29 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
       σg.1.heap !! l = some (Reading 0, v0) →
       atomicAddEval v0 v = some v' →
       BaseStep (AtomicAdd (Val #l) (Val v)) σg [] (Val v') (setHeap (<[l := Free v']> ·) σg) []
+  | AllocBytesS (w : Nat) v bs l σg :
+      valBytes w v = some bs → 0 < l.addr → (w : Int) ∣ l.addr →
+      (∀ k < w, σg.1.heap !! (l +ₗ (k : Int)) = none) →
+      BaseStep (AllocBytes w (Val v)) σg [] (Val #l) (setHeap (setBytes l bs) σg) []
+  | LoadBytesS (w : Nat) l bs v σg :
+      (w : Int) ∣ l.addr → BytesAt σg l bs true → bytesVal w bs = some v →
+      BaseStep (LoadBytes w (Val #l)) σg [] (Val v) σg []
+  | SwapBytesS (w : Nat) l bs v0 v bs' σg :
+      (w : Int) ∣ l.addr → BytesAt σg l bs false → bytesVal w bs = some v0 →
+      valBytes w v = some bs' →
+      BaseStep (SwapBytes w (Val #l) (Val v)) σg [] (Val v0) (setHeap (setBytes l bs') σg) []
+  | AddBytesS (w : Nat) l bs v0 v v' bs' σg :
+      (w : Int) ∣ l.addr → BytesAt σg l bs false → bytesVal w bs = some v0 →
+      atomicAddEval v0 v = some v' → valBytes w v' = some bs' →
+      BaseStep (AddBytes w (Val #l) (Val v)) σg [] (Val v') (setHeap (setBytes l bs') σg) []
+  | CmpXchgBytesFailS (w : Nat) l bs vl v1 v2 σg :
+      (w : Int) ∣ l.addr → BytesAt σg l bs true → bytesVal w bs = some vl → vl ≠ v1 →
+      BaseStep (CmpXchgBytes w (Val #l) (Val (PairV v1 v2))) σg [] (Val (PairV vl #false)) σg []
+  | CmpXchgBytesSucS (w : Nat) l bs vl v1 v2 bs' σg :
+      (w : Int) ∣ l.addr → BytesAt σg l bs false → bytesVal w bs = some vl → vl = v1 →
+      valBytes w v2 = some bs' →
+      BaseStep (CmpXchgBytes w (Val #l) (Val (PairV v1 v2))) σg [] (Val (PairV vl #true))
+        (setHeap (setBytes l bs') σg) []
   | ExternalOpS ext op v e' σg σg' :
       extStep ext op v σg e' σg' →
       BaseStep (ExternalOp ext op (Val v)) σg [] e' σg' []

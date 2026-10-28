@@ -75,20 +75,20 @@ func cansemacquire(addr *uint32) bool {
 def runtime_Semacquire.impl : val :=
   λ: "addr", exceptionDo
     (for: (λ: <>, #true) ; (λ: <>, #()) := λ: <>,
-       let: "v" := Load "addr" in
+       let: "v" := LoadBytes 4 "addr" in
        (if: "v" =⟨go.uint32⟩ #(W32 0) then
           continue: #()
         else
           do: #()
        ) ;;;
-       (if: Snd (CmpXchg "addr" "v" ("v" -⟨go.uint32⟩ #(W32 1))) then
+       (if: Snd (CmpXchgBytes 4 "addr" ("v", "v" -⟨go.uint32⟩ #(W32 1))) then
           return: #()
         else
           do: #())
     )
 
 def runtime_Semrelease.impl : val :=
-  λ: "addr" "_handoff" "_skipframes", AtomicAdd "addr" #(W32 1) ;; #()
+  λ: "addr" "_handoff" "_skipframes", AddBytes 4 "addr" #(W32 1) ;; #()
 
 /-- differs from runtime_Semacquire only in the park "reason", used for
 internal concurrency testing -/

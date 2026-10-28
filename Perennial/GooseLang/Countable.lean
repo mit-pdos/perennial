@@ -166,6 +166,8 @@ def PrimOp1.toNat : PrimOp1 → Nat
   | .LoadOp => 3
   | .AllocOp => 4
   | .RaiseOp => 5
+  | .AllocBytesOp w => 6 + 2 * w
+  | .LoadBytesOp w => 7 + 2 * w
 def PrimOp1.fromNat : Nat → PrimOp1
   | 0 => .PrepareWriteOp
   | 1 => .StartReadOp
@@ -173,21 +175,30 @@ def PrimOp1.fromNat : Nat → PrimOp1
   | 3 => .LoadOp
   | 4 => .AllocOp
   | 5 => .RaiseOp
-  | _ => .PrepareWriteOp
+  | n + 6 => if n % 2 = 0 then .AllocBytesOp (n / 2) else .LoadBytesOp (n / 2)
 instance PrimOp1.countable : Pos.Countable PrimOp1 :=
-  countableOfLeftInverse PrimOp1.toNat PrimOp1.fromNat (by intro x; cases x <;> rfl)
+  countableOfLeftInverse PrimOp1.toNat PrimOp1.fromNat (by
+    intro x; cases x <;> simp [PrimOp1.toNat, PrimOp1.fromNat, Nat.add_comm 6, Nat.add_comm 7] <;>
+      omega)
 
 def PrimOp2.toNat : PrimOp2 → Nat
   | .FinishStoreOp => 0
   | .AtomicSwapOp => 1
   | .AtomicAddOp => 2
+  | .SwapBytesOp w => 3 + 3 * w
+  | .AddBytesOp w => 4 + 3 * w
+  | .CmpXchgBytesOp w => 5 + 3 * w
 def PrimOp2.fromNat : Nat → PrimOp2
   | 0 => .FinishStoreOp
   | 1 => .AtomicSwapOp
   | 2 => .AtomicAddOp
-  | _ => .FinishStoreOp
+  | n + 3 =>
+    if n % 3 = 0 then .SwapBytesOp (n / 3) else if n % 3 = 1 then .AddBytesOp (n / 3)
+    else .CmpXchgBytesOp (n / 3)
 instance PrimOp2.countable : Pos.Countable PrimOp2 :=
-  countableOfLeftInverse PrimOp2.toNat PrimOp2.fromNat (by intro x; cases x <;> rfl)
+  countableOfLeftInverse PrimOp2.toNat PrimOp2.fromNat (by
+    intro x; cases x <;> simp [PrimOp2.toNat, PrimOp2.fromNat, Nat.add_comm 3, Nat.add_comm 4,
+      Nat.add_comm 5] <;> omega)
 
 def GoOperator.toNat : GoOperator → Nat
   | .GoEquals => 0
@@ -326,6 +337,7 @@ def GoInstruction.toTree : GoInstruction → GenTree
   | .SelectStmt => node 39 []
   | .InternalStringLen => node 40 []
   | .InternalMapLookupId => node 41 []
+  | .InternalBytesTo x0 => node 42 [of x0]
 def GoInstruction.ofTree : GenTree → GoInstruction
   | node 0 [] => .AngelicExit
   | node 1 [x0, x1] => .Convert (decLeaf x0) (decLeaf x1)
@@ -369,6 +381,7 @@ def GoInstruction.ofTree : GenTree → GoInstruction
   | node 39 [] => .SelectStmt
   | node 40 [] => .InternalStringLen
   | node 41 [] => .InternalMapLookupId
+  | node 42 [x0] => .InternalBytesTo (decLeaf x0)
   | _ => default
 instance GoInstruction.countable : Pos.Countable GoInstruction :=
   countableOfLeftInverse GoInstruction.toTree GoInstruction.ofTree

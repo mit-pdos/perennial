@@ -168,40 +168,58 @@ attribute [instance] IsInteger.isInteger_uint IsInteger.isInteger_uint8 IsIntege
 location. A `class` so that the `[IsPredeclared u]`
 premises below are found by typeclass search. -/
 class inductive IsPredeclared : go.GoType → Prop
-  | isPredeclared_uint : IsPredeclared go.uint
-  | isPredeclared_uint8 : IsPredeclared go.uint8
-  | isPredeclared_uint16 : IsPredeclared go.uint16
-  | isPredeclared_uint32 : IsPredeclared go.uint32
-  | isPredeclared_uint64 : IsPredeclared go.uint64
-  | isPredeclared_uintptr : IsPredeclared go.uintptr
-  | isPredeclared_int : IsPredeclared go.int
-  | isPredeclared_int8 : IsPredeclared go.int8
-  | isPredeclared_int16 : IsPredeclared go.int16
-  | isPredeclared_int32 : IsPredeclared go.int32
-  | isPredeclared_int64 : IsPredeclared go.int64
   | isPredeclared_string : IsPredeclared go.string
   | isPredeclared_bool : IsPredeclared go.bool
   | isPredeclared_Pointer : IsPredeclared unsafe.Pointer
-  | isPredeclared_float32 : IsPredeclared go.float32
-  | isPredeclared_float64 : IsPredeclared go.float64
   -- Treating this like a predeclared too.
   | isPredeclared_proph_id : IsPredeclared go.prophId
 
-attribute [instance] IsPredeclared.isPredeclared_uint IsPredeclared.isPredeclared_uint8
-  IsPredeclared.isPredeclared_uint16 IsPredeclared.isPredeclared_uint32
-  IsPredeclared.isPredeclared_uint64 IsPredeclared.isPredeclared_uintptr
-  IsPredeclared.isPredeclared_int
-  IsPredeclared.isPredeclared_int8 IsPredeclared.isPredeclared_int16
-  IsPredeclared.isPredeclared_int32 IsPredeclared.isPredeclared_int64
-  IsPredeclared.isPredeclared_string IsPredeclared.isPredeclared_bool
-  IsPredeclared.isPredeclared_Pointer IsPredeclared.isPredeclared_float32
-  IsPredeclared.isPredeclared_float64 IsPredeclared.isPredeclared_proph_id
-export IsPredeclared (isPredeclared_uint isPredeclared_uint8 isPredeclared_uint16
-  isPredeclared_uint32 isPredeclared_uint64 isPredeclared_uintptr isPredeclared_int
-  isPredeclared_int8
-  isPredeclared_int16 isPredeclared_int32 isPredeclared_int64 isPredeclared_string
-  isPredeclared_bool isPredeclared_Pointer isPredeclared_float32 isPredeclared_float64
+attribute [instance] IsPredeclared.isPredeclared_string IsPredeclared.isPredeclared_bool
+  IsPredeclared.isPredeclared_Pointer IsPredeclared.isPredeclared_proph_id
+export IsPredeclared (isPredeclared_string isPredeclared_bool isPredeclared_Pointer
   isPredeclared_proph_id)
+
+/-- The integer and float types, with their size in bytes: a value of one of them is that many
+byte cells, little-endian. A `class` so that the `[IsPlainScalar u w]` premises below are found
+by typeclass search. -/
+class inductive IsPlainScalar : go.GoType → outParam Nat → Prop
+  | isPlainScalar_uint : IsPlainScalar go.uint 8
+  | isPlainScalar_uint8 : IsPlainScalar go.uint8 1
+  | isPlainScalar_uint16 : IsPlainScalar go.uint16 2
+  | isPlainScalar_uint32 : IsPlainScalar go.uint32 4
+  | isPlainScalar_uint64 : IsPlainScalar go.uint64 8
+  | isPlainScalar_uintptr : IsPlainScalar go.uintptr 8
+  | isPlainScalar_int : IsPlainScalar go.int 8
+  | isPlainScalar_int8 : IsPlainScalar go.int8 1
+  | isPlainScalar_int16 : IsPlainScalar go.int16 2
+  | isPlainScalar_int32 : IsPlainScalar go.int32 4
+  | isPlainScalar_int64 : IsPlainScalar go.int64 8
+  | isPlainScalar_float32 : IsPlainScalar go.float32 4
+  | isPlainScalar_float64 : IsPlainScalar go.float64 8
+
+attribute [instance] IsPlainScalar.isPlainScalar_uint IsPlainScalar.isPlainScalar_uint8
+  IsPlainScalar.isPlainScalar_uint16 IsPlainScalar.isPlainScalar_uint32
+  IsPlainScalar.isPlainScalar_uint64 IsPlainScalar.isPlainScalar_uintptr
+  IsPlainScalar.isPlainScalar_int IsPlainScalar.isPlainScalar_int8
+  IsPlainScalar.isPlainScalar_int16 IsPlainScalar.isPlainScalar_int32
+  IsPlainScalar.isPlainScalar_int64 IsPlainScalar.isPlainScalar_float32
+  IsPlainScalar.isPlainScalar_float64
+
+/-- The tuple of the `w` bytes read from `l` on, ending in `#()`. -/
+def readBytes [GooseExts] (l : Loc) : Nat → Expr
+  | 0 => Val (LitV LitUnit)
+  | w + 1 => Pair (App (Val Read) (Val (LitV (LitLoc l)))) (readBytes (l +ₗ 1) w)
+
+/-- The tuple of the bytes `bs`, ending in `#()`: the value of `readBytes`. -/
+def bytesTuple [GooseExts] : List w8 → val
+  | [] => LitV LitUnit
+  | b :: bs => PairV (LitV (LitByte b)) (bytesTuple bs)
+
+/-- Stores the bytes `bs` from `l` on, one by one. -/
+def writeBytes [GooseExts] (l : Loc) : List w8 → Expr
+  | [] => Val (LitV LitUnit)
+  | b :: bs => Seq (App (App (Val Store) (Val (LitV (LitLoc l)))) (Val (LitV (LitByte b))))
+      (writeBytes (l +ₗ 1) bs)
 
 class ProphIdSemantics [GoSemanticsFunctions] : Prop where
   underlying_proph_id : go.prophId ↓u go.prophId
@@ -1044,7 +1062,20 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   store_predeclared (u : go.GoType) [H : IsPredeclared u] (l v : val) :
     ⟦GoStore u, (l, v)⟧ ⤳[internalUnder] Store l v
 
+  alloc_plain_scalar (u : go.GoType) (w : Nat) [H : IsPlainScalar u w] (v : val) :
+    ⟦GoAlloc u, v⟧ ⤳[internalUnder] AllocBytes w v
+  load_plain_scalar (u : go.GoType) (w : Nat) [H : IsPlainScalar u w] (l : Loc) :
+    ⟦GoLoad u, #l⟧ ⤳[internalUnder] InternalBytesTo w (go.readBytes l w)
+  store_plain_scalar (u : go.GoType) (w : Nat) [H : IsPlainScalar u w] (l : Loc) (v : val) :
+    ⟦GoStore u, (#l, v)⟧ ⤳[internalUnder]
+      (match valBytes w v with
+       | some bs => gl(InternalBytesTo w (go.readBytes l w) ;; go.writeBytes l bs)
+       | none => AngelicExit #())
+  bytes_to (w : Nat) (bs : List w8) (v : val) (H : bytesVal w bs = some v) :
+    ⟦InternalBytesTo w, go.bytesTuple bs⟧ ⤳ v
+
   predeclared_underlying (t : go.GoType) (H : IsPredeclared t) : underlying t = t
+  plain_scalar_underlying (t : go.GoType) (w : Nat) (H : IsPlainScalar t w) : underlying t = t
 
   len_underlying (t : go.GoType) : functions len [t] = functions len [underlying t]
   cap_underlying (t : go.GoType) : functions cap [t] = functions cap [underlying t]
@@ -1109,7 +1140,9 @@ class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   type_repr_empty_struct : TypeReprUnderlying (go.StructType []) Unit
 
 attribute [instance] PredeclaredSemantics.alloc_predeclared PredeclaredSemantics.load_predeclared
-  PredeclaredSemantics.store_predeclared PredeclaredSemantics.min_unfold
+  PredeclaredSemantics.store_predeclared PredeclaredSemantics.alloc_plain_scalar
+  PredeclaredSemantics.load_plain_scalar PredeclaredSemantics.store_plain_scalar
+  PredeclaredSemantics.min_unfold
   PredeclaredSemantics.max_unfold PredeclaredSemantics.panic_unfold PredeclaredSemantics.unsafe_sem
   PredeclaredSemantics.comparable_bool PredeclaredSemantics.go_eq_bool
   PredeclaredSemantics.underlying_bool PredeclaredSemantics.go_zero_val_bool
@@ -1131,7 +1164,8 @@ attribute [instance] PredeclaredSemantics.alloc_predeclared PredeclaredSemantics
   PredeclaredSemantics.convert_nil_unsafe_pointer
   PredeclaredSemantics.type_repr_empty_struct
 export PredeclaredSemantics (alloc_predeclared load_predeclared store_predeclared
-  predeclared_underlying len_underlying cap_underlying clear_underlying copy_underlying
+  alloc_plain_scalar load_plain_scalar store_plain_scalar bytes_to
+  predeclared_underlying plain_scalar_underlying len_underlying cap_underlying clear_underlying copy_underlying
   delete_underlying make3_underlying make2_underlying make1_underlying min_unfold max_unfold panic_unfold
   unsafe_sem comparable_bool go_eq_bool underlying_bool go_zero_val_bool go_unop_not_bool
   untypedInt_semantics int_semantics int64_semantics int32_semantics int16_semantics

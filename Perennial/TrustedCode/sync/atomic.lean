@@ -21,6 +21,11 @@ the `nil` interface, as in Go:
   `CompareAndSwapPointer` on the data word fails if another store of an equal
   value happened in between); otherwise an atomic compare-and-swap of `v`.
 
+The integer functions (`LoadUint64`, ..., `CompareAndSwapInt32`) are the byte atomics of
+their width (`LoadBytes 8`, ...): each acts on the integer's little-endian bytes in one step,
+and is stuck unless the address is a multiple of the width (gc's alignment of the integer
+types; a misaligned 8-byte atomic tears across a cache line).
+
 `Panic msg` is stuck (`wp_PanicOp`), whereas Go's panics here are ordinary,
 recoverable panics; and a `nil` receiver, where Go panics on the dereference,
 is stuck too (there is no points-to for the field). So the model is less
@@ -42,52 +47,52 @@ section code
 variable [GooseExts] [GoGlobalContext]
 
 def LoadUint64.impl : val :=
-  λ: "addr", Load "addr"
+  λ: "addr", LoadBytes 8 "addr"
 def StoreUint64.impl : val :=
-  λ: "addr" "val", AtomicSwap "addr" "val" ;; #()
+  λ: "addr" "val", SwapBytes 8 "addr" "val" ;; #()
 def SwapUint64.impl : val :=
-  λ: "addr" "val", AtomicSwap "addr" "val"
+  λ: "addr" "val", SwapBytes 8 "addr" "val"
 def AddUint64.impl : val :=
-  λ: "addr" "val", AtomicAdd "addr" "val"
+  λ: "addr" "val", AddBytes 8 "addr" "val"
 def CompareAndSwapUint64.impl : val :=
   λ: "addr" "old" "new",
-    Snd (CmpXchg "addr" "old" "new")
+    Snd (CmpXchgBytes 8 "addr" ("old", "new"))
 
 def LoadInt64.impl : val :=
-  λ: "addr", Load "addr"
+  λ: "addr", LoadBytes 8 "addr"
 def StoreInt64.impl : val :=
-  λ: "addr" "val", AtomicSwap "addr" "val" ;; #()
+  λ: "addr" "val", SwapBytes 8 "addr" "val" ;; #()
 def SwapInt64.impl : val :=
-  λ: "addr" "val", AtomicSwap "addr" "val"
+  λ: "addr" "val", SwapBytes 8 "addr" "val"
 def AddInt64.impl : val :=
-  λ: "addr" "val", AtomicAdd "addr" "val"
+  λ: "addr" "val", AddBytes 8 "addr" "val"
 def CompareAndSwapInt64.impl : val :=
   λ: "addr" "old" "new",
-    Snd (CmpXchg "addr" "old" "new")
+    Snd (CmpXchgBytes 8 "addr" ("old", "new"))
 
 def LoadUint32.impl : val :=
-  λ: "addr", Load "addr"
+  λ: "addr", LoadBytes 4 "addr"
 def StoreUint32.impl : val :=
-  λ: "addr" "val", AtomicSwap "addr" "val" ;; #()
+  λ: "addr" "val", SwapBytes 4 "addr" "val" ;; #()
 def SwapUint32.impl : val :=
-  λ: "addr" "val", AtomicSwap "addr" "val"
+  λ: "addr" "val", SwapBytes 4 "addr" "val"
 def AddUint32.impl : val :=
-  λ: "addr" "val", AtomicAdd "addr" "val"
+  λ: "addr" "val", AddBytes 4 "addr" "val"
 def CompareAndSwapUint32.impl : val :=
   λ: "addr" "old" "new",
-    Snd (CmpXchg "addr" "old" "new")
+    Snd (CmpXchgBytes 4 "addr" ("old", "new"))
 
 def LoadInt32.impl : val :=
-  λ: "addr", Load "addr"
+  λ: "addr", LoadBytes 4 "addr"
 def StoreInt32.impl : val :=
-  λ: "addr" "val", AtomicSwap "addr" "val" ;; #()
+  λ: "addr" "val", SwapBytes 4 "addr" "val" ;; #()
 def SwapInt32.impl : val :=
-  λ: "addr" "val", AtomicSwap "addr" "val"
+  λ: "addr" "val", SwapBytes 4 "addr" "val"
 def AddInt32.impl : val :=
-  λ: "addr" "val", AtomicAdd "addr" "val"
+  λ: "addr" "val", AddBytes 4 "addr" "val"
 def CompareAndSwapInt32.impl : val :=
   λ: "addr" "old" "new",
-    Snd (CmpXchg "addr" "old" "new")
+    Snd (CmpXchgBytes 4 "addr" ("old", "new"))
 
 def LoadPointer.impl : val :=
   λ: "addr", Load "addr"
