@@ -106,6 +106,28 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   nil in `$panic` to mean "not panicking". Found 2026-10-26 by the trusted-base review of
   the uniform results change.
 
+## Evaluation order
+
+- **The model fixes one evaluation order, which is not always Go's (unsound).** Go
+  evaluates the calls, method calls, receives and `&&`/`||` of an expression, assignment
+  or return in lexical left-to-right order, and leaves the order of everything else
+  (variable reads, indexing, pointer loads) relative to them unspecified; gc and
+  `gc -race` can differ. goose translates every construct in one fixed order, so where Go
+  leaves the order open the model has only one of Go's executions, and in some places it
+  contradicts the spec's order. A known instance: a call evaluates its arguments before
+  the function value (`callExprPrelude`, `goose/goose.go`), in a plain call, `defer` and
+  `go`:
+
+  ```go
+  getF()(arg()) // Go: getF is called, then arg; the model: arg, then getF
+  ```
+
+  This is accepted as a known limitation and is not being fixed: a program whose
+  correctness depends on the order between such events is outside what a proof covers.
+  A review or a fix of another construct should not report an evaluation-order divergence
+  as a finding; one is worth an entry here only if it is a new kind (not an instance of
+  "goose picks one order").
+
 ## Allocation
 
 - **No limit on allocation size (unsound).** gc refuses an allocation above `maxAlloc`
