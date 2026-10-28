@@ -192,3 +192,142 @@ is one state-interpretation invariant.
 4. Then R3, under its own plan.
 
 Each step is a branch, with `/review-trusted` and an `examples.md` case.
+
+## Exact rules for steps 1 and 3 (2026-10-28, for sign-off)
+
+Written while starting step 1. Two findings change the order above:
+- **R5 has to land with step 1.** The integer models in
+  `TrustedCode/sync/atomic.lean` and the semaphores apply `Load`,
+  `AtomicSwap`, `AtomicAdd` and `CmpXchg` to the one cell at `addr`. Once an
+  integer is bytes, that cell holds `LitByte`, so every integer atomic is
+  stuck. Stuck is sound, but every proof through an atomic or a semaphore
+  breaks (RWMutex, WaitGroup, Once, context). So steps 1 and 3 are one
+  branch.
+- **`uint8` does not change.** Today it is one cell holding `LitByte`, which
+  is its byte encoding. `[]byte` code and the FFIs that read byte slices
+  (`grove_ffi`) see the same heap as before.
+
+**Shared encoding** (`GooseLang/Lang.lean`, about 12 lines), used by the
+base steps and the Go rules:
+```lean
+/-- The little-endian bytes of a `w`-byte integer literal. -/
+def valBytes : Nat → val → Option (List w8)
+  | 1, LitV (LitByte x)  => some [x]
+  | 2, LitV (LitInt16 x) => some (bytesLE x)       -- x.extractLsb' (8k) 8, k < 2
+  | 4, LitV (LitInt32 x) => some (bytesLE x)
+  | 8, LitV (LitInt x)   => some (bytesLE x)
+  | _, _ => none
+/-- Inverse: `w` bytes as the literal of width `w`. -/
+def bytesVal : Nat → List w8 → Option val      -- none unless the list has length w ∈ {1,2,4,8}
+```
+Signedness and floats need nothing. `int64`, `uint64`, `int`, `uintptr` and
+`float64` all have the representation `LitInt`, and so on for the other
+widths.
+
+### R1: allocation
+
+- **`GoPrealloc` takes an alignment.** This is a sibling of
+  `go_prealloc_step` (`PostLang.lean:458`):
+  ```lean
+  go_prealloc_aligned_step (a : w64) : is_go_step_pure GoPrealloc #a =
+    (fun e => ∃ (l : Loc), l ≠ null ∧ (uint.Z a : Int) ∣ l.addr ∧ e = #l)
+  ```
+  `GoPrealloc #()` is unchanged. The alignment is a restriction on the
+  model's own choice of address, by the argument of decision 2, so no
+  `AngelicExit` is needed for it.
+- **Plain scalars** (`Predeclared.lean`, replacing the integer and float
+  cases of `IsPredeclared`). It has the shape of `alloc_struct`: prealloc,
+  then each part's allocation, checked against its address.
+  ```lean
+  class inductive IsPlainScalar : go.GoType → Nat → Prop
+    -- 13 rows: uint8/int8 1, …, int/uint/uintptr/float64 8
+  alloc_plain_scalar (u) (w) [IsPlainScalar u w] (v : val) :
+    ⟦GoAlloc u, v⟧ ⤳[internalUnder]
+      (match valBytes w v with
+       | none => AngelicExit #()
+       | some bs => gl(let: "l" := GoPrealloc #(W64 w) in
+           <for k < w: let: "lk" := Alloc #(bs[k]) in
+                       if: "lk" =⟨go.PointerType go.uint8⟩ ("l" +⟨go.PointerType go.uint8⟩ #(W64 k))
+                       then #() else AngelicExit #()> ;;
+           "l"))
+  ```
+  The pointer addition is the existing internal `is_go_op_pointer_plus`
+  (`Slice.lean:142`). The `none` case is a value that is not a Go value of
+  the type, as in `store_array`.
+
+### R2: loads and stores
+
+- **A new pure instruction**, `InternalBytesTo (w : Nat)`: a `GoInstruction`
+  constructor (`Lang.lean`, 2 lines) and its `Countable` code (2 lines). Its
+  only rule:
+  ```lean
+  bytes_to (w) (bs : List w8) (v : val) (h : bytesVal w bs = some v) :
+    ⟦InternalBytesTo w, <the tuple #bs[0], …, #bs[w-1]>⟧ ⤳ v
+  ```
+  There is no rule for a tuple holding anything other than bytes, so a load
+  of a non-byte cell is stuck. This is R2's cell check.
+- **Rules:**
+  ```lean
+  load_plain_scalar (u) (w) [IsPlainScalar u w] (l : Loc) :
+    ⟦GoLoad u, #l⟧ ⤳[internalUnder]
+      InternalBytesTo w (Read #l, Read #(l +ₗ 1), …, Read #(l +ₗ (w-1)))
+  store_plain_scalar (u) (w) [IsPlainScalar u w] (l : Loc) (v : val) :
+    ⟦GoStore u, (#l, v)⟧ ⤳[internalUnder]
+      (match valBytes w v with
+       | none => AngelicExit #()
+       | some bs => gl(InternalBytesTo w (Read #l, …) ;;
+                       Store #l #(bs[0]) ;; … ;; Store #(l +ₗ (w-1)) #(bs[w-1])))
+  ```
+  - The store reads and decodes the old bytes first, which is R2's check
+    that it does not overwrite a non-byte cell. The extra reads add no
+    behaviour, since a concurrent store races either way.
+  - At `null`, `Read` finds no cell and is stuck, as `Read` is today.
+- `IsPredeclared` keeps `string`, `bool`, `unsafe.Pointer` and `prophId`.
+  `predeclared_underlying` gains a sibling for `IsPlainScalar`.
+
+### R5: integer atomics (`Lang.lean`)
+
+- **New primitives,** each taking the width `w`:
+  - `PrimOp1`: `LoadBytesOp w`;
+  - `PrimOp2`: `SwapBytesOp w`, `AddBytesOp w`, and `CmpXchgBytesOp w`,
+    whose second operand is the pair `(old, new)`, and which returns
+    `(old value, success)` as `CmpXchg` does.
+
+  They are `Primitive1`/`Primitive2` operations, not new `Expr`
+  constructors, so no evaluation contexts change.
+- **Base steps,** with this premise:
+  ```lean
+  def BytesAt (σ) (l) (w) (bs) (rd : Bool) : Prop
+    -- cell l+k is (Reading n_k, LitByte bs[k]), with n_k = 0 unless rd
+  ```
+  Each step needs `(w : Int) ∣ l.addr`, reads `bytesVal w bs`, and for a
+  write puts the `valBytes` of the new value into the `w` cells in the same
+  step.
+  - `LoadBytesS` and a failed `CmpXchgBytes` take `rd = true`; the others
+    take `rd = false`, as `LoadS`, `CmpXchgFailS` and the other steps do
+    today.
+  - `AddBytesS` uses `atomicAddEval`.
+  - That is 5 steps, about 40 lines in all.
+- **`TrustedCode`:**
+  - the 20 integer models in `sync/atomic.lean` become
+    `LoadBytes 8 "addr"`, …, at width 4 or 8;
+  - the semaphores in `sync.lean` move to width 4;
+  - `LoadPointer`, `atomic.Value`, `Mutex`, `Lock.lean` and `copyChecker`
+    keep the one-cell primitives.
+
+### Proof side
+
+- **Lifting:** a lemma for each new primitive, over `∗_{k<w}` of heap
+  points-tos.
+- **Points-tos:** `TypedPointsto` for `w16`, `w32` and `w64` becomes `w`
+  byte points-tos; `w8` is unchanged. The scalar `IntoValTypedUnderlying`
+  instances are reproved once, generically in `w`, with the alignment fact
+  returned beside the points-to.
+- **Atomic specs:** each takes `⌜w ∣ l⌝`. `ownInt32`, …, `isSema` carry it.
+
+### Trusted lines in all
+
+About 120:
+- `Lang.lean` and `Countable.lean`, about 65;
+- `Defn`, about 40;
+- `TrustedCode`, about 20, all rewrites of existing models.
