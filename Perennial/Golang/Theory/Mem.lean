@@ -73,12 +73,77 @@ macro "solve_atomic_wps" : tactic => `(tactic| (
     inext; iintro Hl
     iapply HΦ; iframe Hl; ipureintro; exact Hnn))
 
-instance atomic_wps_uint64 : AtomicWps (GF := GF) w64 := by solve_atomic_wps
-instance atomic_wps_uint32 : AtomicWps (GF := GF) w32 := by solve_atomic_wps
-instance atomic_wps_uint16 : AtomicWps (GF := GF) w16 := by solve_atomic_wps
 instance atomic_wps_uint8 : AtomicWps (GF := GF) w8 := by solve_atomic_wps
 instance atomic_wps_bool : AtomicWps (GF := GF) Bool := by solve_atomic_wps
 instance atomic_wps_loc : AtomicWps (GF := GF) Loc := by solve_atomic_wps
+
+/-- The byte atomics of width `w` on the typed points-to of an integer of `w` bytes. -/
+class ByteAtomicWps (V : Type) [TypedPointsto (GF := GF) V] [Add V] (w : outParam Nat) :
+    Prop where
+  wp_load_bytes_typed : ∀ (s : Stuckness) (E : CoPset) (l : Loc) (dq : DFrac) (v : V),
+    {{ ▷ (l ↦{dq} v : IProp GF) }} (LoadBytes w (Val #l)) @ s; E {{ RET #v; l ↦{dq} v }}
+  wp_swap_bytes_typed : ∀ (s : Stuckness) (E : CoPset) (l : Loc) (v v' : V),
+    {{ ▷ (l ↦ v : IProp GF) }} (SwapBytes w (Val #l) (Val #v')) @ s; E {{ RET #v; l ↦ v' }}
+  wp_add_bytes_typed : ∀ (s : Stuckness) (E : CoPset) (l : Loc) (v d : V),
+    {{ ▷ (l ↦ v : IProp GF) }} (AddBytes w (Val #l) (Val #d)) @ s; E
+    {{ RET #(v + d); l ↦ (v + d) }}
+  wp_cmpxchg_bytes_fail_typed : ∀ (l : Loc) (v' v1 v2 : V) (dq : DFrac) (s : Stuckness)
+      (E : CoPset), v' ≠ v1 →
+    {{ ▷ (l ↦{dq} v' : IProp GF) }} (CmpXchgBytes w (Val #l) (Val (PairV #v1 #v2))) @ s; E
+    {{ RET (PairV #v' #false); l ↦{dq} v' }}
+  wp_cmpxchg_bytes_suc_typed : ∀ (l : Loc) (v' v1 v2 : V) (s : Stuckness) (E : CoPset),
+    v' = v1 →
+    {{ ▷ (l ↦ v' : IProp GF) }} (CmpXchgBytes w (Val #l) (Val (PairV #v1 #v2))) @ s; E
+    {{ RET (PairV #v' #true); l ↦ v2 }}
+
+export ByteAtomicWps (wp_load_bytes_typed wp_swap_bytes_typed wp_add_bytes_typed
+  wp_cmpxchg_bytes_fail_typed wp_cmpxchg_bytes_suc_typed)
+
+/-- Prove `ByteAtomicWps V w` for an integer type `V` of `w` bytes, whose typed points-to is
+its bytes at an address `w` divides. -/
+macro "solve_byte_atomic_wps" : tactic => `(tactic| (
+  constructor
+  all_goals try simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_w64,
+    typedPointstoDef_w32]
+  · intro s E l dq v
+    iintro %Φ Hl HΦ
+    icases Hl with ⟨⟨>%Hal, Hbs⟩, >%Hnn⟩
+    iapply wp_load_bytes _ l dq _ #v (bytesVal_valBytes (by rw [go.intoVal_unfold]; rfl)) Hal $$ Hbs
+    inext; iintro Hbs
+    iapply HΦ; iframe Hbs; isplit <;> ipureintro <;> assumption
+  · intro s E l v v'
+    iintro %Φ Hl HΦ
+    icases Hl with ⟨⟨>%Hal, Hbs⟩, >%Hnn⟩
+    iapply wp_swap_bytes _ l _ _ #v #v' (bytesVal_valBytes (by rw [go.intoVal_unfold]; rfl))
+      (by rw [go.intoVal_unfold]; rfl) Hal $$ Hbs
+    inext; iintro Hbs
+    iapply HΦ; iframe Hbs; isplit <;> ipureintro <;> assumption
+  · intro s E l v d
+    iintro %Φ Hl HΦ
+    icases Hl with ⟨⟨>%Hal, Hbs⟩, >%Hnn⟩
+    iapply wp_add_bytes _ l _ _ #v #d #(v + d) (bytesVal_valBytes (by rw [go.intoVal_unfold]; rfl))
+      (by simp only [go.intoVal_unfold, atomicAddEval]) (by rw [go.intoVal_unfold]; rfl) Hal $$ Hbs
+    inext; iintro Hbs
+    iapply HΦ; iframe Hbs; isplit <;> ipureintro <;> assumption
+  · intro l v' v1 v2 dq s E Hne
+    iintro %Φ Hl HΦ
+    icases Hl with ⟨⟨>%Hal, Hbs⟩, >%Hnn⟩
+    iapply wp_cmpxchg_bytes_fail _ l dq _ #v' #v1 #v2
+      (bytesVal_valBytes (by rw [go.intoVal_unfold]; rfl)) (fun h => Hne (go.intoVal_inj h)) Hal
+      $$ Hbs
+    inext; iintro Hbs
+    iapply HΦ; iframe Hbs; isplit <;> ipureintro <;> assumption
+  · intro l v' v1 v2 s E Heq
+    iintro %Φ Hl HΦ
+    icases Hl with ⟨⟨>%Hal, Hbs⟩, >%Hnn⟩
+    iapply wp_cmpxchg_bytes_suc _ l _ _ #v' #v1 #v2
+      (bytesVal_valBytes (by rw [go.intoVal_unfold]; rfl)) (congrArg _ Heq)
+      (by rw [go.intoVal_unfold]; rfl) Hal $$ Hbs
+    inext; iintro Hbs
+    iapply HΦ; iframe Hbs; isplit <;> ipureintro <;> assumption))
+
+instance byte_atomic_wps_w64 : ByteAtomicWps (GF := GF) w64 8 := by solve_byte_atomic_wps
+instance byte_atomic_wps_w32 : ByteAtomicWps (GF := GF) w32 4 := by solve_byte_atomic_wps
 
 end goose_lang
 

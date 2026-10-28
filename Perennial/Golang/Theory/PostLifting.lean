@@ -683,6 +683,16 @@ instance typedPointsto_w32 : TypedPointsto (GF := GF) w32 :=
   bytesTypedPointsto 4
 instance typedPointsto_w16 : TypedPointsto (GF := GF) w16 :=
   bytesTypedPointsto 2
+
+theorem typedPointstoDef_w64 (l : Loc) (v : w64) (dq : DFrac) :
+    typedPointstoDef (GF := GF) l v dq =
+      iprop(⌜(8 : Int) ∣ l.addr⌝ ∗ bytesPointsto l dq (natBytes 8 v.toNat)) := rfl
+theorem typedPointstoDef_w32 (l : Loc) (v : w32) (dq : DFrac) :
+    typedPointstoDef (GF := GF) l v dq =
+      iprop(⌜(4 : Int) ∣ l.addr⌝ ∗ bytesPointsto l dq (natBytes 4 v.toNat)) := rfl
+theorem typedPointstoDef_w16 (l : Loc) (v : w16) (dq : DFrac) :
+    typedPointstoDef (GF := GF) l v dq =
+      iprop(⌜(2 : Int) ∣ l.addr⌝ ∗ bytesPointsto l dq (natBytes 2 v.toNat)) := rfl
 instance typedPointsto_w8 : TypedPointsto (GF := GF) w8 :=
   heapTypedPointsto w8 go.intoVal_inj
 instance typedPointsto_bool : TypedPointsto (GF := GF) Bool :=

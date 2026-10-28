@@ -28,16 +28,6 @@ open ProofMode
 @[simp] theorem bytesTuple_isPanic (bs : List w8) : (go.bytesTuple bs).isPanic = false := by
   cases bs <;> rfl
 
-theorem typedPointstoDef_w64 (l : Loc) (v : w64) (dq : DFrac) :
-    typedPointstoDef (GF := GF) l v dq =
-      iprop(⌜(8 : Int) ∣ l.addr⌝ ∗ bytesPointsto l dq (natBytes 8 v.toNat)) := rfl
-theorem typedPointstoDef_w32 (l : Loc) (v : w32) (dq : DFrac) :
-    typedPointstoDef (GF := GF) l v dq =
-      iprop(⌜(4 : Int) ∣ l.addr⌝ ∗ bytesPointsto l dq (natBytes 4 v.toNat)) := rfl
-theorem typedPointstoDef_w16 (l : Loc) (v : w16) (dq : DFrac) :
-    typedPointstoDef (GF := GF) l v dq =
-      iprop(⌜(2 : Int) ∣ l.addr⌝ ∗ bytesPointsto l dq (natBytes 2 v.toNat)) := rfl
-
 theorem wp_readBytes (l : Loc) (dq : DFrac) (bs : List w8) (Φ : val → IProp GF) :
     bytesPointsto (GF := GF) l dq bs -∗ (bytesPointsto l dq bs -∗ Φ (go.bytesTuple bs)) -∗
       WP (go.readBytes l bs.length) @ s; E {{ Φ }} := by
