@@ -146,6 +146,27 @@ var pointerCall = func() *withTwo { return nil }()
 
 func next() int { return 0 }
 
+var freshElem = withTwo{A: *new([8]uint64)}
+
+// A base allocated by the place itself (new, make, a literal) is a fresh
+// object, which no other side can view.
+func freshBases[T any](p *meta, s []meta, d *T, xs []T, n int) {
+	*p = *new(meta)
+	s[0] = *new(meta)
+	*d = *new(T)
+	xs[0] = *new(T)
+	(&node{}).A = *p
+	*p = new([4]meta)[1]
+	[]meta{*p}[0] = s[1]
+	*p = make([]meta, n)[0]
+	for _, (&node{}).A = range s {
+	}
+	// A pointer loaded from a fresh object is not fresh.
+	*[]*meta{p}[0] = s[0] // want
+	*new(*meta) = p
+	**new(*meta) = s[0] // want
+}
+
 func generic[T any](d, s *T, xs, ys []T, ps []pair[T]) {
 	*d = *s       // want
 	xs[0] = ys[1] // want

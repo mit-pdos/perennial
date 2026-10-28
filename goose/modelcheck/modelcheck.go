@@ -12,9 +12,9 @@
 // that its source and destination do not partially overlap and copies forward
 // in chunks; on views that do overlap, which unsafe can make, gc's result
 // differs. The check is syntactic and conservative: it reports every such
-// statement except those whose sides cannot partially overlap for one of two
-// syntactic reasons (one side is a whole variable, or both sides have the
-// same base).
+// statement except those whose sides cannot partially overlap for one of three
+// syntactic reasons (one side is a whole variable, both sides have the same
+// base, or one side's base is a fresh object).
 //
 // goose calls Assign and Range on each statement it translates, and
 // PackageVar on each package-variable initializer, and reports a finding as an
@@ -51,7 +51,7 @@ func Assign(info *types.Info, s *ast.AssignStmt) (n ast.Node, msg string, ok boo
 		if t == nil || !mayBeMoved(t) {
 			continue
 		}
-		if !c.isPlace(lhs) || !c.isSource(rhs) || c.sameBase(lhs, rhs) {
+		if !c.isPlace(lhs) || !c.isSource(rhs) || c.sameBase(lhs, rhs) || c.freshBase(lhs) || c.freshBase(rhs) {
 			continue
 		}
 		return s, report("copy of %s between two memory places (%s = %s)",
@@ -68,7 +68,7 @@ func Range(info *types.Info, s *ast.RangeStmt) (n ast.Node, msg string, ok bool)
 	}
 	c := checker{info}
 	t := info.TypeOf(s.Value)
-	if t == nil || !mayBeMoved(t) || !c.isPlace(s.Value) || !rangesOverMemory(info.TypeOf(s.X)) {
+	if t == nil || !mayBeMoved(t) || !c.isPlace(s.Value) || c.freshBase(s.Value) || !rangesOverMemory(info.TypeOf(s.X)) {
 		return nil, "", false
 	}
 	return s.Value, report("range assignment of %s into a memory place (%s)",
@@ -117,7 +117,7 @@ func PackageVar(info *types.Info, init *types.Initializer) (n ast.Node, msg stri
 				walk(v)
 				continue
 			}
-			if t := info.TypeOf(v); t != nil && mayBeMoved(t) && c.isSource(v) {
+			if t := info.TypeOf(v); t != nil && mayBeMoved(t) && c.isSource(v) && !c.freshBase(v) {
 				found = v
 				return
 			}
@@ -350,6 +350,31 @@ func (c checker) sameBase(lhs, rhs ast.Expr) bool {
 	l, okL := c.base(lhs)
 	r, okR := c.base(rhs)
 	return okL && okR && types.ExprString(l) == types.ExprString(r)
+}
+
+// freshBase reports whether e's base (see sameBase) is an object that e
+// itself allocates: new(...), make(...), a composite literal, or &T{...}. No
+// other expression can view it, so e cannot partially overlap one.
+func (c checker) freshBase(e ast.Expr) bool {
+	b, _ := c.base(e) // the base need not be call-free: it is evaluated once
+	if b == nil {
+		return false
+	}
+	b = ast.Unparen(b)
+	if u, ok := b.(*ast.UnaryExpr); ok && u.Op == token.AND {
+		b = ast.Unparen(u.X)
+	}
+	switch b := b.(type) {
+	case *ast.CompositeLit:
+		return true
+	case *ast.CallExpr:
+		if id, ok := ast.Unparen(b.Fun).(*ast.Ident); ok {
+			if bi, ok := c.info.Uses[id].(*types.Builtin); ok {
+				return bi.Name() == "new" || bi.Name() == "make"
+			}
+		}
+	}
+	return false
 }
 
 // base returns e's base (see sameBase). It reports false if the base or an

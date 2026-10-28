@@ -698,3 +698,33 @@ arguments other than two (`max(d, e, 5)` and `min(d)` translate but are
 stuck), and for floats
 `if x < y then x else y` disagrees with Go on `NaN` and signed zeros
 (`min(-0.0, 0.0)` is `-0.0` in Go). Separate items.
+
+## Case 22 — ACCEPTED: a place with a fresh base is not reported by modelcheck (branch `worktree-modelcheck-fresh-base`)
+
+**Symptom.** Incomplete: goose refused sound code. modelcheck reported every
+struct or array copy between two memory places except a whole variable on
+either side or two sides with the same base, so `*p = *new(T)` and
+`s[0] = *new(T)` (zeroing a slot of a type parameter) were refused.
+
+**Witness.** `func zero[T any](s []T, p *T) { *p = *new(T); s[0] = *new(T) }`.
+
+**Taken.** A third exemption next to `sameBase`: `freshBase` walks a side to
+its base with the existing `base` walker and accepts a base that the side
+itself allocates (`new(...)`, `make(...)`, a composite literal, `&T{...}`), an
+object no other expression can view. Applied at all three sites (`Assign`,
+`Range`, `PackageVar`). Cost: one ~20-line helper and one condition per site,
+0 goose translation branches, 0 semantics rules. Tests in
+`modelcheck/testdata/cases` (`freshBases`, `freshElem`), including pointers
+loaded from a fresh object (`*[]*meta{p}[0] = s[0]`), which stay reported.
+
+**Not taken.** First proposal: making `*new(T)` not a place in `isPlace`. The
+user: "Can do something that's less 'hard-coded'? ... some sort of check that
+walks the entire lhs and rhs expression and OKs expressions that have a good
+base (like &T{})".
+
+**Left out.** `*f()` for an `f` returning a fresh pointer (not syntactic); a
+range over a fresh array.
+
+**Why.** Reuses the base walker the same-base exemption already trusts, so the
+new rule covers every fresh allocation uniformly instead of one expression. The
+user: "Implement and land it."
