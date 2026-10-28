@@ -545,6 +545,16 @@ instance isContext_pers (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) :
     Persistent (isContext c s) := by
   unfold isContext isContextDef; infer_instance
 
+/-- `Done()` returns the context's Done channel (`isContextDone`): the law for calling it without
+destructuring `isContext`. -/
+theorem isContext_Done (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) :
+    isContext c s ⊢
+      {{ True }} (App (Val #(methods c.ty go!"Done" c.v)) (Val #()))
+      {{ (ch : GoChan) (γch : ChanNames), RET #ch; isContextDone s ch γch }} := by
+  unfold isContext isContextDef
+  iintro ⟨-, #HDone, -⟩
+  iexact HDone
+
 /-! Client lemmas for the Done channel (clients use them instead of `ownBroadcastChan`
 lemmas). -/
 
