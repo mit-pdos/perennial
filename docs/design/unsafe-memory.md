@@ -1132,30 +1132,23 @@ tightened by these reviews, and chose plain floats (R1).
   the access is stuck, as for an access past an object (10.9).
 ## 12. The work, from the current `lean`
 
-Status on 2026-10-25. Each step is a branch off the current `lean`.
+Status on 2026-10-28. Each step is a branch off the current `lean`.
 
-1. **The guard** (branch `unsafe-guard`): built, reviewed three times, rule
-   approved. To land.
+1. **The guard** (`goose/modelcheck`): done.
 2. **The bbolt fork** (`upamanyus/bbolt`, branch `goose`, `e353cbe`): done.
-3. **The prerequisites** (`unsafe-memory-prerequisites.md`):
-   - done: P1 (the disk FFI is removed), P6 (`[]byte("")`, merged);
-   - on branches: P4 (`refuse-anon-struct-tags`), P8a and P8d
-     (`fix-floats`), P3 (`fix-nil-zero-size-access`, in progress);
-   - to do: P5 (blank fields), P8c (stuck float map keys, by key type),
-     P9 (flat `Loc`, below), P7a (real array allocation, after P9);
-   - deferred: P2; skipped: P7b, P8b.
-4. **P9, flat `Loc`** (section 2), before R1:
-   - `Loc` is an integer address, and allocation takes a free aligned range
-     of the type's size;
-   - the layout table, and concrete `structFieldRef`/`arrayIndexRef`
-     (`GoPrealloc` and the per-field `AngelicExit` check go away);
-   - typed points-tos carry `0 < l`, which replaces
-     `arrayIndexRef_null_inv`.
-5. **R1, R2, R3 and R5** in `Lang.lean` and `Golang/Defn`, and the trusted
-   atomic models.
-6. **goose:** `unsafe.Add` and `unsafe.Slice`. `bboltmini` moves from
-   `disabled-tests` to `testdata/examples`.
-7. **The acceptance tests,** brought in line with this draft:
+3. **The prerequisites** (`unsafe-memory-prerequisites.md`): done, except P2
+   (deferred) and P7b and P8b (skipped).
+4. **P9, flat `Loc`:** P9a and P7a done. P9b (the layout table for every
+   type, concrete addresses for every type, range allocation) is not done
+   (owner, 2026-10-26: "the bare minimum in R1"), so R1 above is reduced as
+   `unsafe-memory-rules-plan.md` says. Alignment comes from an allocation
+   check on plain scalars, not from a table (owner, 2026-10-28).
+5. **R1, R2 and R5:** planned in `unsafe-memory-rules-plan.md`, for
+   sign-off.
+6. **R3 and goose:** `unsafe.Add` and `unsafe.Slice`, under their own plan.
+   `bboltmini` moves from `disabled-tests` to `testdata/examples`.
+7. **The acceptance tests,** brought in line with this draft (done,
+   2026-10-28):
    - **Copies between places:** `testOverlappingCopy`,
      `testArrayFieldOverlapCopy` and `testOverlappingArrayCopy` move to
      `bboltmini/rejected/`, a package goose must refuse, together with the
