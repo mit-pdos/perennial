@@ -693,7 +693,8 @@ computed instead of re-deriving it; the type-parameter case is the same line
 (Case 9), and which type it is is decided in Lean. The user: "Go ahead and then
 land it."
 
-**Left out.** `min.impl`/`max.impl` are `LitPoison` for three or more
-arguments (`max(d, e, 5)` translates but is stuck), and for floats
+**Left out.** `min.impl`/`max.impl` are `LitPoison` for any number of
+arguments other than two (`max(d, e, 5)` and `min(d)` translate but are
+stuck), and for floats
 `if x < y then x else y` disagrees with Go on `NaN` and signed zeros
 (`min(-0.0, 0.0)` is `-0.0` in Go). Separate items.
