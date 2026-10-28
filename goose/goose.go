@@ -2948,18 +2948,7 @@ func (ctx *Ctx) pkgRef(pkg *types.Package) string {
 	// References are rooted (`_root_.Perennial.<ns>`): a relative reference
 	// `errors.X` from inside namespace `a.errors` would resolve to
 	// `a.errors.X`.
-	path := pkg.Path()
-	if _, ok := ctx.importNames[path]; !ok && path != ctx.pkgPath {
-		// Not imported (filtered out by the config): refer to an imported
-		// package with the same name, if any.
-		for _, n := range ctx.importNamesOrdered {
-			if n.Imported().Name() == pkg.Name() {
-				path = n.Imported().Path()
-				break
-			}
-		}
-	}
-	return "_root_.Perennial." + strings.ReplaceAll(glang.GoPathToIdentPath(path), "/", ".")
+	return "_root_.Perennial." + strings.ReplaceAll(glang.GoPathToIdentPath(pkg.Path()), "/", ".")
 }
 
 func (ctx *Ctx) importAssumptionName(pkg *types.Package) string {
