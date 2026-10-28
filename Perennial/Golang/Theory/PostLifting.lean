@@ -424,16 +424,16 @@ theorem wp_go_step_preceipt (i : GoInstruction) (v : val) (e : Expr)
 
 variable {s : Stuckness} {E : CoPset}
 
-theorem wp_GoPrealloc :
+theorem wp_GoPrealloc_pos :
     {{ (True : IProp GF) }} (App (Val (GoInstruction GoPrealloc)) (Val #())) @ s; E
-    {{ (l : Loc), RET #l; ⌜l ≠ null⌝ }} := by
+    {{ (l : Loc), RET #l; ⌜0 < l.addr⌝ }} := by
   iintro %Φ _ HΦ
   have hstep : is_go_step_pure GoPrealloc #() = _ := go.go_prealloc_step
   iapply wp_GoInstruction' (s := s) (E := E) GoPrealloc #() Φ
     (fun gs => ⟨Val #(⟨1⟩ : Loc), gs, by
       refine ⟨?_, rfl⟩
       show is_go_step_pure GoPrealloc #() _
-      rw [hstep]; exact ⟨⟨1⟩, by simp [null], rfl⟩⟩)
+      rw [hstep]; exact ⟨⟨1⟩, by decide, rfl⟩⟩)
   inext
   iintro %e' %gs %gs' %Hstep _ Hctx
   obtain ⟨Hp, rfl⟩ := Hstep
@@ -445,6 +445,17 @@ theorem wp_GoPrealloc :
   iapply wp_value'
   iapply HΦ
   ipureintro; exact Hl
+
+theorem wp_GoPrealloc :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction GoPrealloc)) (Val #())) @ s; E
+    {{ (l : Loc), RET #l; ⌜l ≠ null⌝ }} := by
+  iintro %Φ _ HΦ
+  iapply wp_GoPrealloc_pos
+  · itrivial
+  inext
+  iintro %l %Hl
+  iapply HΦ
+  ipureintro; intro h; rw [h] at Hl; simp [null] at Hl
 
 theorem wp_AngelicExit (Φ : val → IProp GF) :
     ⊢ WP (App (Val (GoInstruction AngelicExit)) (Val #())) @ s; E {{ Φ }} := by

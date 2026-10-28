@@ -452,10 +452,10 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
 
   /-- The language spec doesn't say anything about the addresses of zero-sized
   allocation. But, in the runtime, these addresses are non-nil, so the
-  semantics assumes it here.
+  semantics assumes it here; like every allocation's, the address is positive (`IsFresh`).
   https://cs.opensource.google/go/go/+/refs/tags/go1.25.5:src/runtime/malloc.go;l=927
   https://cs.opensource.google/go/go/+/refs/tags/go1.25.5:src/runtime/malloc.go;l=1023 -/
-  go_prealloc_step : is_go_step_pure GoPrealloc #() = (fun (e : Expr) => ∃ (l : Loc), l ≠ null ∧ e = #l)
+  go_prealloc_step : is_go_step_pure GoPrealloc #() = (fun (e : Expr) => ∃ (l : Loc), 0 < l.addr ∧ e = #l)
   angelic_exit_step : is_go_step_pure AngelicExit #() = (fun (e : Expr) => e = AngelicExit #())
 
   intoVal_unfold_func : IntoValUnfold GoFunc (fun f => RecV f.f f.x f.e)
