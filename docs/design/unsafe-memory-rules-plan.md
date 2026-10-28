@@ -1,7 +1,7 @@
 # Plan: R1, R2 and R5 of the unsafe memory design
 
-- **Date:** 2026-10-28. **Status:** for sign-off. Nothing here is
-  implemented.
+- **Date:** 2026-10-28. **Status:** signed off 2026-10-28, with (C) for
+  concrete plain addresses. Nothing here is implemented.
 - **Serves:** `docs/design/unsafe-memory.md`, step 5 of section 12.
 - **Checked against:** `lean` at `ad74ee4f6`, with step 7 of section 12
   done (branch `worktree-unsafe-step7-tests`). All the prerequisites of
@@ -161,9 +161,9 @@ page's bytes. There are two ways.
   kept by `AllocS` (`IsFresh`), with an empty initial heap. It is untrusted.
 - The same consistency obligation as (B) on `V`.
 
-**Recommendation: (C).** It is one axiom per function, as in (B), but no
-existing axiom or points-to changes. The cost is one state-interpretation
-invariant.
+**Decided: (C)** (owner, 2026-10-28: "Do (c)"). It is one axiom per
+function, as in (B), but no existing axiom or points-to changes. The cost
+is one state-interpretation invariant.
 
 ## R5: integer atomics on bytes
 
@@ -187,12 +187,8 @@ invariant.
 
 1. R1 and R2 for scalars, with the alignment check. Every proof keeps
    working through the unchanged `wp_load`/`wp_store`.
-2. R1's concrete plain addresses, (A), (B) or (C).
+2. R1's concrete plain addresses, by (C).
 3. R5.
 4. Then R3, under its own plan.
 
 Each step is a branch, with `/review-trusted` and an `examples.md` case.
-
-## Questions for the owner
-
-1. (A), (B) or (C) for concrete plain addresses? (Recommendation: C.)

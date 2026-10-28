@@ -1143,8 +1143,8 @@ Status on 2026-10-28. Each step is a branch off the current `lean`.
    (owner, 2026-10-26: "the bare minimum in R1"), so R1 above is reduced as
    `unsafe-memory-rules-plan.md` says. Alignment comes from an allocation
    check on plain scalars, not from a table (owner, 2026-10-28).
-5. **R1, R2 and R5:** planned in `unsafe-memory-rules-plan.md`, for
-   sign-off.
+5. **R1, R2 and R5:** planned in `unsafe-memory-rules-plan.md`, signed off
+   2026-10-28.
 6. **R3 and goose:** `unsafe.Add` and `unsafe.Slice`, under their own plan.
    `bboltmini` moves from `disabled-tests` to `testdata/examples`.
 7. **The acceptance tests,** brought in line with this draft (done,
