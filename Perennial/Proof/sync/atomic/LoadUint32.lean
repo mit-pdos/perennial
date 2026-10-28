@@ -27,7 +27,7 @@ theorem sync.atomic.LoadUint32.wp_proof :
   intro addr dq
   wp_start as _
   imod HΦ with ⟨%v, >Haddr, HΦ⟩
-  wp_apply_core wp_atomic_load _ _ addr dq v $$ Haddr
+  wp_apply_core wp_load_bytes_typed _ _ addr dq v $$ Haddr
   iintro Haddr
   iapply HΦ $$ Haddr
 

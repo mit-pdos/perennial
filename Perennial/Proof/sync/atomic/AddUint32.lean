@@ -26,15 +26,10 @@ theorem sync.atomic.AddUint32.wp_proof :
     sync.atomic.AddUint32.spec (GF := GF) (hG := hG) := by
   intro addr v
   wp_start as _
-  imod HΦ with ⟨%oldv, Haddr, HΦ⟩
-  simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_heap,
-    TypedPointsto.typedPointstoDef]
-  icases Haddr with > ⟨Haddr, %Hnn⟩
-  wp_apply_core Perennial.wp_atomic_add addr #oldv #v #(oldv + v) (by simp [go.intoVal_unfold, atomicAddEval]) $$ Haddr
+  imod HΦ with ⟨%oldv, >Haddr, HΦ⟩
+  wp_apply_core wp_add_bytes_typed _ _ addr oldv v $$ Haddr
   iintro Haddr
-  iapply HΦ
-  iframe
-  ipureintro; exact Hnn
+  iapply HΦ $$ Haddr
 
 end proof
 

@@ -144,6 +144,36 @@ theorem exists_fresh_aligned (σ : CfgState) (w : Nat) (hw : 0 < w) :
 
 end inversion
 
+/-! ## Atomicity of the byte primitives -/
+
+section atomic
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
+
+local macro "solve_sub_redexes" : tactic =>
+  `(tactic| (intro Ki e' h; cases Ki <;> simp only [fillItem] at h <;> cases h <;> rfl))
+
+instance alloc_bytes_atomic (a : Language.Atomicity) (w : Nat) (v : val) :
+    Language.Atomic a (AllocBytes w (Val v)) :=
+  goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
+
+instance load_bytes_atomic (a : Language.Atomicity) (w : Nat) (v : val) :
+    Language.Atomic a (LoadBytes w (Val v)) :=
+  goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
+
+instance swap_bytes_atomic (a : Language.Atomicity) (w : Nat) (v1 v2 : val) :
+    Language.Atomic a (SwapBytes w (Val v1) (Val v2)) :=
+  goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
+
+instance add_bytes_atomic (a : Language.Atomicity) (w : Nat) (v1 v2 : val) :
+    Language.Atomic a (AddBytes w (Val v1) (Val v2)) :=
+  goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
+
+instance cmpxchg_bytes_atomic (a : Language.Atomicity) (w : Nat) (v1 v2 : val) :
+    Language.Atomic a (CmpXchgBytes w (Val v1) (Val v2)) :=
+  goose_atomic a (fun _ _ _ _ _ h => by cases h <;> rfl) (by solve_sub_redexes)
+
+end atomic
+
 /-! ## Byte points-tos -/
 
 section bytes

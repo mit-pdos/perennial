@@ -27,7 +27,7 @@ theorem sync.atomic.SwapUint32.wp_proof :
   intro addr v
   wp_start as _
   imod HΦ with ⟨%oldv, >Haddr, HΦ⟩
-  wp_apply_core wp_atomic_swap _ _ addr oldv v $$ Haddr
+  wp_apply_core wp_swap_bytes_typed _ _ addr oldv v $$ Haddr
   iintro Haddr
   iapply HΦ $$ Haddr
 
