@@ -118,6 +118,16 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `uintptr` (`go.UintptrSemantics`, `Perennial/Golang/Defn/Predeclared.lean`)
   is an integer type like `uint64`. Pointer/`unsafe.Pointer` to/from `uintptr`
   conversions are not modelled: they are stuck.
+* **Integers and floats are bytes.** A value of an integer or float type of `w`
+  bytes (`go.IsPlainScalar`, `Perennial/Golang/Defn/Predeclared.lean`) is `w`
+  heap cells holding its little-endian bytes, allocated together (`AllocBytes`)
+  at an address `w` divides, as gc aligns them on linux/amd64. Loads and stores
+  go byte by byte, and are stuck on a cell that is not a byte. The integer
+  atomics of `sync/atomic` and the semaphores are byte atomics of their width
+  (`LoadBytes`, `SwapBytes`, `AddBytes`, `CmpXchgBytes`, `GooseLang/Lang.lean`),
+  stuck unless the address is a multiple of the width. `bool`, `string`,
+  pointers and the other non-plain values stay one opaque cell
+  (`docs/design/unsafe-memory.md`, R1, R2 and R5).
 * **Model assumptions (overflow).** Where Go panics on an overflow that a real
   program cannot reach (it would run out of memory first), the model assumes the
   overflow does not happen, with `assume` (`Golang/Defn/Assume.lean`: an

@@ -188,6 +188,19 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   equal Lean types mean equal gc layouts, or making a conversion between pointers to
   types of different layouts stuck (R1 and R3 of `docs/design/unsafe-memory.md`).
   Found 2026-10-26 by a blind trusted-base review of the flat-address change.
+- **Views of integers as non-plain types (unsound).** `convert_unsafe_to_pointer` is the
+  identity for every pointer type, so `unsafe` can view an integer's byte cells (R1, R2) as a
+  pointer, string, bool or other one-cell type:
+  - a load through `(*unsafe.Pointer)(unsafe.Pointer(&u))` yields the `LitByte` of `u`'s
+    first cell as a pointer, so `== nil` can be false where Go says true (before the byte
+    representation it yielded the integer literal, with the same problem);
+  - a store through `(**T)(unsafe.Pointer(&u))` replaces only `u`'s first byte cell with the
+    pointer's one cell, and a byte view of `u` then reads the old bytes 1 to 7, where Go
+    reads the pointer's bytes.
+
+  Views between plain types (`*uint64` as `*uint32`, `*float64` as `*uint64`) give Go's
+  little-endian answer. R3 of `docs/design/unsafe-memory.md` makes the conversion to a
+  non-plain pointer type stuck, which removes this.
 
 ## The step bound of the adequacy theorems
 
