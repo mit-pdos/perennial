@@ -49,6 +49,14 @@ trusted = [
 
   # a runtime linkname with no Go body
   "runtime_registerPoolCleanup",
+
+  # `Pool`'s methods pin the goroutine to its P (`runtime_procPin`, a runtime
+  # linkname with no Go body), index the per-P pools by pointer arithmetic on an
+  # `unsafe.Pointer` (`indexLocal`), and rely on the GC clearing them
+  # (`poolCleanup`). `Get` and `Put` are modeled in TrustedCode/sync.lean with
+  # the Go model goose/model/pool.
+  "Pool.Get",
+  "Pool.Put",
 ]
 
 # translate the definitions of all type declarations goose supports

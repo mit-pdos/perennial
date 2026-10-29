@@ -255,6 +255,7 @@ def main():
     if args.models:
         run_goose(goose_dir, "./model/channel")
         run_goose(goose_dir, "./model/strings")
+        run_goose(goose_dir, "./model/pool")
 
     if args.std_lib:
         run_goose(

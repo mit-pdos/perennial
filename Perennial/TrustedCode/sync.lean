@@ -9,6 +9,7 @@ module
 
 public import Perennial.Golang.Defn.Pre
 public import Perennial.Golang.Defn.Lock
+public import Perennial.Code.github_com.mit_pdos.perennial.goose.model.pool
 
 @[expose] public section
 
@@ -51,10 +52,90 @@ func sync_runtime_registerPoolCleanup(f func()) {
 }
 ```
 
-The GC calls `poolcleanup` at the start of each cycle. The model has no GC, and `Pool` is not
-translated, so no translated code observes the pool state it clears. -/
+The GC calls `poolcleanup` at the start of each cycle. The model has no GC, and `Pool`'s methods
+are not translated (see `Pool.Get.impl`), so no translated code observes the pool state it
+clears. -/
 def runtime_registerPoolCleanup.impl : val :=
   λ: "cleanup", #()
+
+/-- The state of the `sync.Pool` at `p`: a `*pool.Pool` of the Go model
+`github.com/mit-pdos/perennial/goose/model/pool`, kept in `p`'s field `local` (an
+`unsafe.Pointer`; Go keeps its per-P pools there). The zero `Pool` has `local = nil`; the
+first call installs a new, empty model pool with a compare-and-swap, and every call returns
+what `local` holds after it. Not a Go function: a helper of `Pool.Put.impl` and
+`Pool.Get.impl`. -/
+noncomputable def Pool.state : val :=
+  λ: "p",
+    let: "new" := GoAlloc github_com.mit_pdos.perennial.goose.model.pool.Pool.ty
+      (GoZeroVal github_com.mit_pdos.perennial.goose.model.pool.Pool.ty #()) in
+    let: "r" := CmpXchg (StructFieldRef (go.GoType.Named go!"sync.Pool" []) go!"local" "p")
+      #null "new" in
+    if: Snd "r" then "new" else Fst "r"
+
+/-- Model of `Pool.Put` (sync/pool.go):
+```go
+func (p *Pool) Put(x any) {
+	if x == nil {
+		return
+	}
+	if race.Enabled { ... }
+	l, _ := p.pin()
+	if l.private == nil {
+		l.private = x
+	} else {
+		l.shared.pushHead(x)
+	}
+	runtime_procUnpin()
+	...
+}
+```
+The per-P pools (`pin`, `runtime_procPin`, the lock-free `poolChain` of `poolDequeue`s
+reached by pointer arithmetic on `unsafe.Pointer`s, the victim cache cleared by the GC) are
+replaced by the model pool of `Pool.state`, whose `Put` adds `x` or drops it
+(`goose/model/pool`). -/
+noncomputable def Pool.Put.impl : val :=
+  λ: "p" "x",
+    if: "x" =⟨go.any⟩ #GoInterface.nil then #()
+    else
+      (MethodResolve (go.PointerType github_com.mit_pdos.perennial.goose.model.pool.Pool.ty)
+        go!"Put") (Pool.state "p") "x"
+
+/-- Model of `Pool.Get` (sync/pool.go):
+```go
+func (p *Pool) Get() any {
+	if race.Enabled { ... }
+	l, pid := p.pin()
+	x := l.private
+	l.private = nil
+	if x == nil {
+		x, _ = l.shared.popHead()
+		if x == nil {
+			x = p.getSlow(pid)
+		}
+	}
+	runtime_procUnpin()
+	...
+	if x == nil && p.New != nil {
+		x = p.New()
+	}
+	return x
+}
+```
+The search of the per-P pools and the victim cache, up to `runtime_procUnpin()`, is the model
+pool's `Get` (`Pool.state`), which removes and returns an arbitrary element or returns `nil`,
+even when the pool is not empty; the rest is Go's. -/
+noncomputable def Pool.Get.impl : val :=
+  λ: "p" <>,
+    let: "x" := (MethodResolve
+      (go.PointerType github_com.mit_pdos.perennial.goose.model.pool.Pool.ty) go!"Get")
+      (Pool.state "p") #() in
+    if: ("x" =⟨go.any⟩ #GoInterface.nil) &&
+        ((![go.FunctionType (go.signature.Signature [] false [go.any])]
+            (StructFieldRef (go.GoType.Named go!"sync.Pool" []) go!"New" "p"))
+          ≠⟨go.FunctionType (go.signature.Signature [] false [go.any])⟩ #func.nil) then
+      (![go.FunctionType (go.signature.Signature [] false [go.any])]
+        (StructFieldRef (go.GoType.Named go!"sync.Pool" []) go!"New" "p")) #()
+    else "x"
 
 /-
 inspired by runtime/sema.go:272:

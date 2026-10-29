@@ -10,6 +10,7 @@ public import Perennial.Algebra.BigOp.BigSepS
 public import Perennial.Algebra.NaHeap
 public import Perennial.Code.github_com.goose_lang.primitive
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.model.channel
+public import Perennial.Code.github_com.mit_pdos.perennial.goose.model.pool
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.model.strings
 public import Perennial.GeneratedProof.github_com.goose_lang.primitive
 public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.model.channel

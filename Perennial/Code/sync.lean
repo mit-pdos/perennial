@@ -1556,6 +1556,8 @@ class Pool.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   set_New : ∀ (x : Pool) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet Pool.underlying go!"New") (PairV #x #y) (Val #(({ x with New' := y } : Pool)))
   method_set : go.MethodSetIs Pool.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Pool.ty) [(go!"Get", (some (go.signature.Signature [] false [go.any]))), (go!"Put", (some (go.signature.Signature [go.any] false []))), (go!"sync.getSlow", (some (go.signature.Signature [go.int] false [go.any]))), (go!"sync.pin", (some (go.signature.Signature [] false [(go.GoType.PointerType poolLocal.ty), go.int]))), (go!"sync.pinSlow", (some (go.signature.Signature [] false [(go.GoType.PointerType poolLocal.ty), go.int])))]
+  ptr_Get_unfold : MethodUnfold (go.GoType.PointerType Pool.ty) go!"Get" Pool.Get.impl
+  ptr_Put_unfold : MethodUnfold (go.GoType.PointerType Pool.ty) go!"Put" Pool.Put.impl
 
 attribute [instance] Pool.TypeAssumptions.type_repr
   Pool.TypeAssumptions.underlying
@@ -1573,6 +1575,8 @@ attribute [instance] Pool.TypeAssumptions.type_repr
   Pool.TypeAssumptions.set_New
   Pool.TypeAssumptions.method_set
   Pool.TypeAssumptions.ptr_method_set
+  Pool.TypeAssumptions.ptr_Get_unfold
+  Pool.TypeAssumptions.ptr_Put_unfold
 
 axiom poolChainElt : Type
 axiom poolChainElt.zero_val : ZeroVal poolChainElt

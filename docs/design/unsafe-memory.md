@@ -631,9 +631,11 @@ are stuck or vacuous.
   like gc's `zerobase`.
 
 **Packages bbolt needs:**
-- **(bbolt) `sync.Pool`** (`db.go:140, 290-294, 1169`, `tx.go:588`) is neither
-  translated nor modelled, and the real one is stuck under R3. It needs a Go
-  model under `goose/model/sync`: a mutex-protected multiset.
+- **(bbolt) `sync.Pool`** (`db.go:140, 290-294, 1169`, `tx.go:588`): done.
+  The real one is stuck under R3; `Get` and `Put` are modelled
+  (`TrustedCode/sync.lean`) with the Go model `goose/model/pool`, a
+  mutex-protected multiset kept in the pool's field `local`, and proved
+  (`Proof/sync/Pool__Get.lean`, `isPool` in `Proof/sync/PoolDefs.lean`).
   - `Put(nil)` does nothing.
   - `Put(x)` adds `x` or drops it, chosen by `primitive.RandomUint64`.
   - `Get` either removes and returns some element, or returns `p.New()`

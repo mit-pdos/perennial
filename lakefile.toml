@@ -35,6 +35,7 @@ globs = [
   "Perennial.Algebra.NaHeap",
   "Perennial.Code.github_com.goose_lang.primitive",
   "Perennial.Code.github_com.mit_pdos.perennial.goose.model.channel",
+  "Perennial.Code.github_com.mit_pdos.perennial.goose.model.pool",
   "Perennial.Code.github_com.mit_pdos.perennial.goose.model.strings",
   "Perennial.GeneratedProof.github_com.goose_lang.primitive",
   "Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.model.channel",
