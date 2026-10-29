@@ -9,14 +9,26 @@ of a `[]byte` (or of any slice of plain elements) are viewed at an offset as a t
 another plain type, which the generated machinery (`wp_load`, field loads and stores, whole-struct
 stores) then uses, and the view is given back as bytes:
 
-* `bytesPointsto_view`: the bytes from `l`, viewed at offset `k` as a `V`;
-* `ownSlice_bytes_acc`: a slice of plain elements as the bytes of its elements;
-* `ownSlice_byte_view`: a `[]byte` viewed at offset `k` as a `V` (`(*T)(unsafe.Pointer(&buf[k]))`);
-* `ownSlice_plain_view`: the same for a slice of any plain elements.
+* `typedPointsto_zero_byte_array`, `typedPointsto_byte_array`, `typedPointsto_zero_array_bytes`,
+  `ownSlice_bytes_acc`: an array or slice of plain elements as the bytes of its elements (the
+  bytes of `make([]T, n)` are where a proof starts);
+* `bytesPointsto_view` / `bytesPointsto_view_at`: the bytes from `l`, viewed at offset `k` as a
+  `V`, at the program's address `l'` for it (`sliceIndexRef_byte_W64`, `sliceIndexRef_plain`,
+  ...); storing `v` through the view leaves `replaceBytes bs k (encode v)`;
+* `bytesPointsto_view_read`: the same for reading only, giving the bytes back unchanged;
+* `ownSlice_byte_view`, `ownSlice_plain_view`: views straight from a slice points-to.
+
+Views of disjoint byte ranges can be open at once after splitting the bytes with
+`bytesPointsto_app`; overlapping views are opened one after the other. `replaceBytes_single`,
+`replaceBytes_flatMap_set` and `flatMap_encode_take_drop` relate stores and loads of whole
+elements to the bytes.
 
 Encodings and views of the scalars are here; a plain struct's encoding is the concatenation of its
-fields' (`ByteEncoding.prod`, `ByteEncoding.ofEquiv`), and its view is proved from the struct's
-field offsets (`structFieldRef_plain`) with `bytesPointsto_app` (see the `unsafememory` proofs).
+fields' (`ByteEncoding.prod`, `ByteEncoding.ofEquiv`), and its view (`BytesView`) is proved from
+the struct's field offsets (`structFieldRef_offset`) with `bytesView_field`,
+`bytesView_last_field` and `bytesView_of_def`. The tactics `solve_plain_struct_layout` and
+`solve_plain_field_offset` prove a struct's `go.PlainLayout` and field offsets. The `unsafememory`
+example's `Layout.lean` does all of this for its types.
 -/
 module
 
@@ -208,11 +220,55 @@ theorem replaceBytes_self (bs : List w8) (k n : Nat) :
     rw [List.take_of_length_le (l := bs.drop k) (by simp; omega), e, List.append_nil,
       List.take_append_drop]
 
+/-- Replacing one byte is `List.set`. -/
+theorem replaceBytes_single (bs : List w8) (k : Nat) (b : w8) (hk : k < bs.length) :
+    replaceBytes bs k [b] = bs.set k b := by
+  unfold replaceBytes
+  rw [List.set_eq_take_append_cons_drop]; simp [hk]
+
 theorem replaceBytes_drop_take (bs : List w8) (k : Nat) (new : List w8)
     (h : k + new.length ≤ bs.length) :
     ((replaceBytes bs k new).drop k).take new.length = new := by
   unfold replaceBytes
   rw [List.append_assoc, List.drop_left' (by simp; omega), List.take_left' rfl]
+
+theorem replaceBytes_append_left (a bs : List w8) (k : Nat) (new : List w8) :
+    replaceBytes (a ++ bs) (a.length + k) new = a ++ replaceBytes bs k new := by
+  unfold replaceBytes
+  rw [List.take_append, List.take_of_length_le (by omega), Nat.add_sub_cancel_left,
+    show a.length + k + new.length = a.length + (k + new.length) by omega,
+    List.drop_append, List.drop_of_length_le (l := a) (by omega), Nat.add_sub_cancel_left]
+  simp
+
+/-- Replacing the bytes of element `i` of the bytes of a list is `List.set`. -/
+theorem replaceBytes_flatMap_set {V : Type} {n : Nat} [ByteEncoding V n] (vs : List V) (i : Nat)
+    (v : V) (hi : i < vs.length) :
+    replaceBytes (vs.flatMap encode) (i * n) (encode v) = (vs.set i v).flatMap encode := by
+  induction vs generalizing i with
+  | nil => simp at hi
+  | cons x xs ih =>
+    cases i with
+    | zero =>
+      simp [replaceBytes, List.flatMap_cons, List.drop_left' (ByteEncoding.encode_length x)]
+    | succ i =>
+      simp only [List.flatMap_cons, List.set_cons_succ]
+      rw [show (i + 1) * n = (encode x).length + i * n by simp [Nat.succ_mul]; omega,
+        replaceBytes_append_left, ih i (by simpa using hi)]
+
+omit [GooseExts] in
+/-- The bytes of element `i` of the bytes of a list. -/
+theorem flatMap_encode_take_drop {V : Type} {n : Nat} [ByteEncoding V n] (vs : List V) (i : Nat)
+    (hi : i < vs.length) : ((vs.flatMap encode).drop (i * n)).take n = encode vs[i] := by
+  induction vs generalizing i with
+  | nil => simp at hi
+  | cons x xs ih =>
+    cases i with
+    | zero => simp [List.flatMap_cons, List.take_left' (ByteEncoding.encode_length x)]
+    | succ i =>
+      simp only [List.flatMap_cons, List.getElem_cons_succ]
+      rw [show (i + 1) * n = (encode x).length + i * n by simp [Nat.succ_mul]; omega,
+        List.drop_append, List.drop_of_length_le (by omega), Nat.add_sub_cancel_left,
+        List.nil_append, ih i (by simpa using hi)]
 
 end replace
 
@@ -309,6 +365,10 @@ theorem bytesPointsto_typed {V : Type} {n : Nat} [ByteEncoding V n] [TypedPoints
   have := typedPointsto_bytes (GF := GF) (V := V) l (decode bs) dq hl
   rw [ByteEncoding.encode_decode bs h] at this
   exact ⟨this.2, this.1⟩
+
+/-- Rewrite the bytes of a byte points-to by an equal list (e.g. a computed literal). -/
+theorem bytesPointsto_congr (l : Loc) (dq : DFrac) (bs bs' : List w8) (h : bs = bs') :
+    bytesPointsto (GF := GF) l dq bs ⊢ bytesPointsto l dq bs' := h ▸ .rfl
 
 /-- The bytes of `replaceBytes bs k new`, in three parts. -/
 theorem bytesPointsto_replaceBytes (l : Loc) (dq : DFrac) (bs : List w8) (k : Nat)
@@ -477,6 +537,40 @@ theorem ownSlice_bytes_acc (e : go.GoType) [TypeRepr e V] {a : Nat} (hlay : go.P
       · ipureintro; show ((vs'.length : Int)) = _; rw [Hvs']; exact Hlen
       · iapply (arrayElems_bytesView e hlay s.ptr vs' dq hl).2 $$ Hb
     · ipureintro; exact Hcap
+
+omit [ByteEncoding V n] [BytesView (GF := GF) V] in
+/-- A non-empty array of elements whose points-tos are at positive addresses is at a positive
+address. -/
+theorem typedPointsto_array_pos [PointstoPos (GF := GF) V] (l : Loc) (len : Int)
+    (arr : GoArray V len) (dq : DFrac) (hne : arr.arr ≠ []) :
+    typedPointsto (GF := GF) l arr dq ⊢ ⌜0 < l.addr⌝ := by
+  obtain ⟨vs⟩ := arr
+  cases vs with
+  | nil => exact absurd rfl hne
+  | cons v vs =>
+    iintro H
+    icases typedPointsto_split _ _ _ $$ H with H
+    simp only [TypedPointsto.typedPointstoDef]
+    icases H with ⟨_, H⟩
+    icases (arrayElems_cons l v vs dq).1 $$ H with ⟨Hv, _⟩
+    rw [go.arrayIndexRef_0]
+    iapply typedPointsto_pos _ _ _ $$ Hv
+
+/-- A new zeroed array of plain `e` with points-tos at positive addresses (`make([]T, n)`'s
+backing array) is the bytes of `n` zero values at a positive address. -/
+theorem typedPointsto_zero_array_bytes [PointstoPos (GF := GF) V] (e : go.GoType) [TypeRepr e V]
+    {a : Nat} (hlay : go.PlainLayout e n a) (l : Loc) (len : Int) (k : Nat) (dq : DFrac)
+    (hk : len = k) (hpos : 0 < k) :
+    typedPointsto (GF := GF) l (zero_val (GoArray V len)) dq ⊢
+      ⌜0 < l.addr⌝ ∗ bytesPointsto l dq ((List.replicate k (zero_val V)).flatMap encode) := by
+  subst hk
+  iintro H
+  icases typedPointsto_array_pos l _ _ dq
+    (by simp [zero_val, ZeroVal.zeroValDef]; omega) $$ H with %Hl
+  icases (typedPointsto_array_bytes e hlay l _ _ dq Hl).1 $$ H with ⟨_, H⟩
+  simp only [zero_val, ZeroVal.zeroValDef, Int.toNat_natCast]
+  iframe H
+  ipureintro; exact Hl
 
 omit [ByteEncoding V n] [BytesView (GF := GF) V] in
 /-- A non-empty slice of elements whose points-tos are at positive addresses is at a positive
@@ -656,6 +750,25 @@ theorem arrayIndexRef_plain_eq {V : Type} {n : Nat} [ZeroVal V] (e : go.GoType) 
     (hlay : go.PlainLayout e n a) (l : Loc) (i : Int) (hl : 0 < l.addr) (hi : 0 ≤ i) :
     arrayIndexRef V i l = l +ₗ i * (n : Int) :=
   go.arrayIndexRef_plain e V n a i l hlay hl hi
+
+/-- The address of element `i` of a slice of plain `e`, for the literal index `W64 i` of the
+program. -/
+theorem sliceIndexRef_plain_W64 {V : Type} {n : Nat} [ZeroVal V] (e : go.GoType) [TypeRepr e V]
+    {a : Nat} (hlay : go.PlainLayout e n a) (s : GoSlice) (i : Nat) (hl : 0 < s.ptr.addr)
+    (hi : i < 2 ^ 63) :
+    sliceIndexRef V (sint.Z (W64 (i : Int))) s = s.ptr +ₗ ((i * n : Nat) : Int) := by
+  simp only [sliceIndexRef]
+  rw [sint_Z_W64_nat i hi, arrayIndexRef_plain_eq e hlay s.ptr i hl (by omega)]
+  norm_cast
+
+/-- The address of element `i` of a slice of plain `e`, for an index `i` of the program. -/
+theorem sliceIndexRef_plain {V : Type} {n : Nat} [ZeroVal V] (e : go.GoType) [TypeRepr e V]
+    {a : Nat} (hlay : go.PlainLayout e n a) (s : GoSlice) (i : w64) (hl : 0 < s.ptr.addr)
+    (hi : 0 ≤ sint.Z i) :
+    sliceIndexRef V (sint.Z i) s = s.ptr +ₗ ((sint.nat i * n : Nat) : Int) := by
+  simp only [sliceIndexRef]
+  rw [arrayIndexRef_plain_eq e hlay s.ptr _ hl hi]
+  congr 1; simp only [sint.nat]; push_cast; rw [Int.toNat_of_nonneg hi]
 
 /-- The address of byte `i` of a byte array at a positive address. -/
 theorem arrayIndexRef_byte (l : Loc) (i : Int) (hl : 0 < l.addr) (hi : 0 ≤ i) :
