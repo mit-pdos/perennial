@@ -182,6 +182,8 @@ inductive GoInstruction where
   | InternalStringLen
   /-- the integer literal of `w` bytes whose little-endian bytes are the argument tuple -/
   | InternalBytesTo (w : Nat)
+  /-- `unsafe.Slice` of a plain element type: the pointer and the length as an `int64` -/
+  | InternalUnsafeSlice (elem : go.GoType)
 
 noncomputable instance : DecidableEq GoInstruction := fun a b => Classical.propDecidable (a = b)
 
@@ -309,7 +311,7 @@ export GoInstruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad GoS
   InternalSliceLen InternalSliceCap InternalDynamicArrayAlloc InternalMakeSlice IndexRef Index
   Slice FullSlice ArraySet ArrayLength InternalMapCheckKey InternalMapLookup InternalMapInsert
   InternalMapDelete InternalMapLength InternalMapForRange InternalMapMake InternalMapLookupId
-  InternalBytesTo
+  InternalBytesTo InternalUnsafeSlice
   CompositeLiteral SelectStmt InternalStringLen)
 
 section derived

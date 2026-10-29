@@ -53,21 +53,19 @@ end helpers
 
 namespace «unsafe»
 def Pointer : go.GoType := go.Named go!"unsafe.Pointer" []
+def Add : GoString := go!"unsafe.Add"
+def Slice : GoString := go!"unsafe.Slice"
 
 class Semantics [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemanticsFunctions] : Prop where
   go_zero_val_Pointer : go.TypeReprUnderlying Pointer Loc
   go_eq_Pointer : go.IsStrictlyComparable Pointer Loc
   underlying_pointer : unsafe.Pointer ↓u unsafe.Pointer
-  convert_unsafe_to_pointer (elem : go.GoType) (l : Loc) :
-    ⟦Convert unsafe.Pointer (go.PointerType elem), #l⟧ ⤳[under] #l
   convert_pointer_to_unsafe (elem : go.GoType) (l : Loc) :
     ⟦Convert (go.PointerType elem) unsafe.Pointer, #l⟧ ⤳[under] #l
 
 attribute [instance] Semantics.go_zero_val_Pointer Semantics.go_eq_Pointer
-  Semantics.underlying_pointer Semantics.convert_unsafe_to_pointer
-  Semantics.convert_pointer_to_unsafe
-export Semantics (go_zero_val_Pointer go_eq_Pointer underlying_pointer convert_unsafe_to_pointer
-  convert_pointer_to_unsafe)
+  Semantics.underlying_pointer Semantics.convert_pointer_to_unsafe
+export Semantics (go_zero_val_Pointer go_eq_Pointer underlying_pointer convert_pointer_to_unsafe)
 end «unsafe»
 
 namespace any
@@ -870,15 +868,17 @@ assumption, not a separate choice. So `uintptr` is modelled exactly like `uint`/
   those of `uint64`: identity to/from 64-bit types, truncation to narrower types, sign/zero
   extension from narrower signed/unsigned types.
 
-Conversions between pointers (or `unsafe.Pointer`) and `uintptr` are deliberately *not*
-modelled: there is no `Convert unsafe.Pointer go.uintptr` or `Convert go.uintptr unsafe.Pointer`
-fact, so such a conversion is stuck (a program using one cannot be verified). A `uintptr` value
-is thus only ever an integer, never the address of an object. -/
+`uintptr(p)` of an `unsafe.Pointer` is an arbitrary word (`convert_unsafe_to_uintptr`): the
+model does not relate a pointer to its address as an integer, and two conversions of one pointer
+are unrelated (gc's stacks move). `unsafe.Pointer(u)` of a `uintptr` has no rule, so it is stuck:
+a `uintptr` is never turned back into the address of an object. -/
 class UintptrSemantics [GoSemanticsFunctions] : Prop where
   go_zero_val_uintptr : TypeReprUnderlying go.uintptr w64
   comparable_uintptr : ⟦CheckComparable go.uintptr, #()⟧ ⤳[under] #()
   underlying_uintptr : go.uintptr ↓u go.uintptr
   go_eq_uintptr : IsStrictlyComparable go.uintptr w64
+  convert_unsafe_to_uintptr (l : Loc) :
+    ⟦Convert «unsafe».Pointer go.uintptr, #l⟧ ⤳[under] ArbitraryInt
   le_uintptr (v1 v2 : w64) : ⟦GoOp GoLe go.uintptr, (#v1, #v2)⟧
     ⤳[under] #(decide (uint.Z v1 ≤ uint.Z v2))
   lt_uintptr (v1 v2 : w64) : ⟦GoOp GoLt go.uintptr, (#v1, #v2)⟧
@@ -933,7 +933,8 @@ class UintptrSemantics [GoSemanticsFunctions] : Prop where
   convert_uintptr_to_uint8 (v : w64) : ⟦Convert go.uintptr go.uint8, #v⟧ ⤳[under] #(W8 (uint.Z v))
 
 attribute [instance] UintptrSemantics.go_zero_val_uintptr UintptrSemantics.comparable_uintptr
-  UintptrSemantics.underlying_uintptr UintptrSemantics.go_eq_uintptr UintptrSemantics.le_uintptr
+  UintptrSemantics.underlying_uintptr UintptrSemantics.go_eq_uintptr
+  UintptrSemantics.convert_unsafe_to_uintptr UintptrSemantics.le_uintptr
   UintptrSemantics.lt_uintptr UintptrSemantics.ge_uintptr UintptrSemantics.gt_uintptr
   UintptrSemantics.plus_uintptr UintptrSemantics.sub_uintptr UintptrSemantics.mul_uintptr
   UintptrSemantics.div_uintptr UintptrSemantics.remainder_uintptr UintptrSemantics.and_uintptr UintptrSemantics.bitclear_uintptr
@@ -951,6 +952,7 @@ attribute [instance] UintptrSemantics.go_zero_val_uintptr UintptrSemantics.compa
   UintptrSemantics.convert_uintptr_to_uint64 UintptrSemantics.convert_uintptr_to_uint32
   UintptrSemantics.convert_uintptr_to_uint16 UintptrSemantics.convert_uintptr_to_uint8
 export UintptrSemantics (go_zero_val_uintptr comparable_uintptr underlying_uintptr go_eq_uintptr
+  convert_unsafe_to_uintptr
   le_uintptr lt_uintptr ge_uintptr gt_uintptr plus_uintptr sub_uintptr mul_uintptr div_uintptr
   remainder_uintptr and_uintptr bitclear_uintptr or_uintptr xor_uintptr shiftl_uintptr shiftr_uintptr
   complement_uintptr neg_uintptr convert_untyped_int_to_uintptr convert_int_to_uintptr convert_int64_to_uintptr

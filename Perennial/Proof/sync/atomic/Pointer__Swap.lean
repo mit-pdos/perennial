@@ -28,8 +28,9 @@ theorem sync.atomic.Pointer.Swap.wp_proof
     sync.atomic.Pointer.Swap.spec (GF := GF) (hG := hG) := by
   intro T' _ _ T _ u v'
   wp_start as _
+  rw [Pointer_ty_eq, SwapPointer_name_eq]
   wp_auto
-  wp_apply_core wp_SwapPointer $$ [] [HΦ old]
+  wp_apply_core wp_SwapPointer $$ [] [HΦ]
   · iPkgInit
   imod HΦ with ⟨%v, Hown, HΦ⟩
   imodintro; inext
@@ -39,12 +40,11 @@ theorem sync.atomic.Pointer.Swap.wp_proof
   iexists v
   iframe v
   iintro Hv
-  imod HΦ $$ [- old] with HΦ
+  imod HΦ $$ [-] with HΦ
   · iapply typedPointsto_combine _ _ _ Hnn
     simp only [TypedPointsto.typedPointstoDef]
     iframe
   imodintro
-  wp_auto
   iexact HΦ
 
 end proof

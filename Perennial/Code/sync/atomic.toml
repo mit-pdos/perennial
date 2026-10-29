@@ -13,6 +13,8 @@ translate = [
   "noCopy",
   "Pointer",
   "Pointer*",
+  "!Pointer.Load",
+  "!Pointer.Swap",
 
   "_",
 
@@ -55,6 +57,13 @@ trusted = [
   # not have (an interface is one value). They are modeled in
   # TrustedCode/sync/atomic.lean as atomic operations on the field `v`.
   "Value.*",
+
+  # `Pointer[T].Load` and `Swap` convert the `unsafe.Pointer` in `v` back to a `*T`, which the
+  # semantics makes stuck for a non-plain `T` (it does not track where a pointer came from).
+  # They are modeled in TrustedCode/sync/atomic.lean without that conversion; `v` only ever
+  # holds a `*T`.
+  "Pointer.Load",
+  "Pointer.Swap",
 ]
 
 imports = ["!*"]

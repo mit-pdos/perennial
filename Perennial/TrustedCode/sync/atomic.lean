@@ -144,6 +144,23 @@ def Value.CompareAndSwap.impl : val :=
          else #false)
       else #false
 
+/-- `Pointer[T].Load` (`return (*T)(LoadPointer(&x.v))`) without the conversion of the loaded
+`unsafe.Pointer` to `*T`, which the semantics makes stuck for a non-plain `T` (it does not track
+where a pointer came from). `x.v` only ever holds a `*T`: `Store`, `Swap` and
+`CompareAndSwap` are the only writers. -/
+def Pointer.Load.impl (T : go.GoType) : val :=
+  λ: "x" <>,
+    (FuncResolve go!"sync/atomic.LoadPointer" []) #()
+      (StructFieldRef (go.GoType.Named go!"sync/atomic.Pointer" [T]) go!"v" "x")
+
+/-- `Pointer[T].Swap` (`return (*T)(SwapPointer(&x.v, unsafe.Pointer(new)))`) without the
+conversion of the old `unsafe.Pointer` to `*T`, as for `Pointer.Load`. -/
+def Pointer.Swap.impl (T : go.GoType) : val :=
+  λ: "x" "new",
+    (FuncResolve go!"sync/atomic.SwapPointer" []) #()
+      (StructFieldRef (go.GoType.Named go!"sync/atomic.Pointer" [T]) go!"v" "x")
+      (Convert (go.PointerType T) «unsafe».Pointer "new")
+
 end code
 
 end sync.atomic

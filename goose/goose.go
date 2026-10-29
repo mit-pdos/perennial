@@ -359,6 +359,23 @@ func (ctx *Ctx) maybeHandleSpecialBuiltin(s *ast.CallExpr) (glang.Expr, bool) {
 		return nil, false
 	}
 
+	// unsafe.Add(p, n) and unsafe.Slice(p, n): a call of the function «unsafe».Add or
+	// «unsafe».Slice, at the types of their operands; the semantics decides the rest.
+	if sel, ok := s.Fun.(*ast.SelectorExpr); ok {
+		b, ok := ctx.info.Uses[sel.Sel].(*types.Builtin)
+		if ok && (b.Name() == "Add" || b.Name() == "Slice") {
+			sig := ctx.typeOf(s.Fun).(*types.Signature)
+			var tys glang.ListExpr
+			if b.Name() == "Slice" {
+				tys = append(tys, ctx.glangType(s.Fun, sig.Params().At(0).Type().(*types.Pointer).Elem()))
+			}
+			tys = append(tys, ctx.glangType(s.Fun, sig.Params().At(1).Type()))
+			fn := glang.NewCallExpr(glang.VerbatimExpr("FuncResolve"),
+				glang.VerbatimExpr("«unsafe»."+b.Name()), tys, glang.Tt)
+			return ctx.callExprPrelude(s, glang.NewCallExpr(fn, ctx.callArgs(s)...)), true
+		}
+	}
+
 	f, ok := s.Fun.(*ast.Ident)
 	if !ok {
 		ctx.unsupported(s.Fun, "builtin that isn't an ident")

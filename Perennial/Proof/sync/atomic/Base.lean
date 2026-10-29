@@ -256,6 +256,16 @@ which are below `Value.ty`'s definition. -/
 theorem Value_ty_eq : (go.GoType.Named go!"sync/atomic.Value" [] : go.GoType) = Value.ty := by
   unfold Value.ty; rfl
 
+theorem Pointer_ty_eq (T : go.GoType) :
+    (go.GoType.Named go!"sync/atomic.Pointer" [T] : go.GoType) = Pointer.ty T := by
+  unfold Pointer.ty; rfl
+
+theorem LoadPointer_name_eq : go!"sync/atomic.LoadPointer" = LoadPointer := by
+  unfold LoadPointer; rfl
+
+theorem SwapPointer_name_eq : go!"sync/atomic.SwapPointer" = SwapPointer := by
+  unfold SwapPointer; rfl
+
 end wps
 
 end sync.atomic

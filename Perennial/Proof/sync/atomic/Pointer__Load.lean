@@ -28,8 +28,9 @@ theorem sync.atomic.Pointer.Load.wp_proof
     sync.atomic.Pointer.Load.spec (GF := GF) (hG := hG) := by
   intro T' _ _ T _ u dq
   wp_start as _
+  rw [Pointer_ty_eq, LoadPointer_name_eq]
   wp_auto
-  wp_apply_core wp_LoadPointer $$ [] [HΦ «$res0»]
+  wp_apply_core wp_LoadPointer $$ [] [HΦ]
   · iPkgInit
   imod HΦ with ⟨%v, Hown, HΦ⟩
   imodintro; inext
@@ -39,12 +40,11 @@ theorem sync.atomic.Pointer.Load.wp_proof
   iexists v
   iframe v
   iintro Hv
-  imod HΦ $$ [- «$res0»] with HΦ
+  imod HΦ $$ [-] with HΦ
   · iapply typedPointsto_combine _ _ _ Hnn
     simp only [TypedPointsto.typedPointstoDef]
     iframe
   imodintro
-  wp_auto
   iexact HΦ
 
 end proof
