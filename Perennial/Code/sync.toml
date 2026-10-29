@@ -50,11 +50,17 @@ trusted = [
   # a runtime linkname with no Go body
   "runtime_registerPoolCleanup",
 
-  # `Pool`'s methods pin the goroutine to its P (`runtime_procPin`, a runtime
-  # linkname with no Go body), index the per-P pools by pointer arithmetic on an
-  # `unsafe.Pointer` (`indexLocal`), and rely on the GC clearing them
-  # (`poolCleanup`). `Get` and `Put` are modeled in TrustedCode/sync.lean with
-  # the Go model goose/model/pool.
+  # `Pool.Get` and `Put` are modeled in TrustedCode/sync.lean with the Go model
+  # goose/model/pool. With them and all their helpers (`pin`, `pinSlow`,
+  # `getSlow`, `indexLocal`, `poolChain.*`, `poolDequeue.*`) in `translate`,
+  # goose rejects only the runtime linknames with no Go body
+  # (`runtime_procPin`, `runtime_procUnpin`, `runtime_LoadAcquintptr`,
+  # `runtime_StoreReluintptr`), but what it translates is irreducible too:
+  # `indexLocal` converts a `uintptr` back to an `unsafe.Pointer` (pointer
+  # arithmetic, stuck in the semantics), `poolDequeue` stores an `any` through
+  # `(*any)(unsafe.Pointer(slot))` of an `eface` (layout reinterpretation), and
+  # the plain accesses to `l.private` are race-free only because `procPin`
+  # keeps the goroutine on its P, which Go code cannot express.
   "Pool.Get",
   "Pool.Put",
 ]

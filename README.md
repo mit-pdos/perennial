@@ -198,6 +198,15 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   descriptor), `math.useFMA` and `math/big.hasADX` (CPU features the runtime
   detects) model irreducible behaviour. Each model's docstring says why it is
   faithful.
+* **`sync.Pool`.** `Get` and `Put` are trusted (`TrustedCode/sync.lean`): the real
+  ones rely on runtime pinning to a P, pointer arithmetic and `eface` layout
+  reinterpretation (`Perennial/Code/sync.toml` has the goose run). They keep Go's
+  `Put(nil)` and `New` handling and replace the per-P pools by the Go model
+  `goose/model/pool`, a lock-protected multiset in the pool's field `local`, where
+  `Put` may drop its value and `Get` may ignore the pool. That is more
+  nondeterministic than gc's pools, victim cache and GC clearing. As with the
+  channel and string models, the model's translation is part of `go.Semantics`
+  (`pool_sem`).
 * **Method sets.** Whether a type implements an interface (`go.typeSetContains`, used by
   type assertions and conversions) is decided by `methodSet`, an uninterpreted function of
   the semantics constrained by `go.MethodSetIs t ms` facts (`Golang/Defn/MethodSet.lean`):

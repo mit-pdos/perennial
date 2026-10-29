@@ -19,7 +19,7 @@ Tiers (what the helper script reports):
 
 | tier | what | files |
 |---|---|---|
-| 0 | **semantics** (the model of Go) | `Perennial/GooseLang/{Lang,BoundedLang,Adequacy,Threads,Receipts,Locations,Ext}.lean`, `GooseLang/Ext/**`, `Perennial/Golang/Defn/**`, `GrovePrelude.lean` |
+| 0 | **semantics** (the model of Go) | `Perennial/GooseLang/{Lang,BoundedLang,Adequacy,Threads,Receipts,Locations,Ext}.lean`, `GooseLang/Ext/**`, `Perennial/Golang/Defn.lean`, `Perennial/Golang/Defn/**`, `GrovePrelude.lean` |
 | 0 | **translator** | `goose/**` (`*.go`), gold files `goose/testdata/**/*.gold.lean`, Go models `goose/model/**` |
 | 0 | **trusted models** | `Perennial/TrustedCode/**` |
 | 0 | **goose configuration** | `Perennial/Code/**/*.toml` (`trusted`, `translate`, `!p`, `trust_proofgen`) |
