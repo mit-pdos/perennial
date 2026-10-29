@@ -1476,12 +1476,15 @@ theorem wp_slice_delete {st t : go.GoType} [st ↓u go.SliceType t]
   exact wp_slice_delete_range sl vs i (i + W64 1) ⟨hi.1, by word, by word⟩
 
 set_option goose.wp.unfoldSliceLiterals true in
-theorem wp_slice_literal {st t : go.GoType} [IntoValTyped (GF := GF) V t] [st ↓u go.SliceType t]
+/-- **A slice literal**, with its pointer non-null: the literal allocates its backing array, so even
+an empty literal (`[]T{}`) is not `nil`, as in Go (a zero-length allocation still yields a valid,
+non-nil pointer). `wp_slice_literal` is this without the pointer's fact. -/
+theorem wp_slice_literal_nonnull {st t : go.GoType} [IntoValTyped (GF := GF) V t] [st ↓u go.SliceType t]
     (l : List V) (kvs : List keyed_element) (Φ : val → IProp GF) :
     WP (App (Val (GoInstruction (CompositeLiteral (go.ArrayType (go.arrayLiteralSize kvs) t))))
           (Val (LiteralValueV kvs))) @ s; E
       {{ v, ⌜v = #(array.mk (go.arrayLiteralSize kvs) l)⌝ ∗
-        (∀ sl_ptr : Loc,
+        (∀ sl_ptr : Loc, ⌜sl_ptr ≠ null⌝ -∗
           (slice.mk sl_ptr (W64 (go.arrayLiteralSize kvs)) (W64 (go.arrayLiteralSize kvs)) ↦* l ∗
             ownSliceCap V (slice.mk sl_ptr (W64 (go.arrayLiteralSize kvs))
               (W64 (go.arrayLiteralSize kvs))) (DFrac.own 1)) -∗
@@ -1507,12 +1510,34 @@ theorem wp_slice_literal {st t : go.GoType} [IntoValTyped (GF := GF) V t] [st �
     simp only [show sint.Z (W64 0) = 0 from rfl, go.arrayIndexRef_0, hz]
     wp_pures
     ihave %Hlen := array_len _ _ _ _ $$ tmp
-    iapply HΦ
+    ihave %Hnn := typedPointsto_not_null _ _ _ $$ tmp
+    iapply HΦ $$ %tmp_ptr %Hnn
     isplitl [tmp]
     · iapply slice_array tmp_ptr _ (array.mk (go.arrayLiteralSize kvs) l) (by simp only; omega)
       iexact tmp
     · iapply ownSliceCap_empty _ rfl (by simp only; word)
   · rw [ite_eq_right hlen]; iapply wp_AngelicExit
+
+/-- **A slice literal** (`wp_slice_literal_nonnull` without the pointer's fact). -/
+theorem wp_slice_literal {st t : go.GoType} [IntoValTyped (GF := GF) V t] [st ↓u go.SliceType t]
+    (l : List V) (kvs : List keyed_element) (Φ : val → IProp GF) :
+    WP (App (Val (GoInstruction (CompositeLiteral (go.ArrayType (go.arrayLiteralSize kvs) t))))
+          (Val (LiteralValueV kvs))) @ s; E
+      {{ v, ⌜v = #(array.mk (go.arrayLiteralSize kvs) l)⌝ ∗
+        (∀ sl_ptr : Loc,
+          (slice.mk sl_ptr (W64 (go.arrayLiteralSize kvs)) (W64 (go.arrayLiteralSize kvs)) ↦* l ∗
+            ownSliceCap V (slice.mk sl_ptr (W64 (go.arrayLiteralSize kvs))
+              (W64 (go.arrayLiteralSize kvs))) (DFrac.own 1)) -∗
+          Φ #(slice.mk sl_ptr (W64 (go.arrayLiteralSize kvs)) (W64 (go.arrayLiteralSize kvs)))) }} ⊢
+    WP (App (Val (GoInstruction (CompositeLiteral st))) (Val (LiteralValueV kvs))) @ s; E {{ Φ }} := by
+  iintro HΦ
+  iapply wp_slice_literal_nonnull l kvs Φ
+  iapply wp_wand $$ HΦ
+  iintro %v ⟨%Hv, HΦ⟩
+  isplitr
+  · ipureintro; exact Hv
+  iintro %sl_ptr %_ Hs
+  iapply HΦ $$ Hs
 
 end wps
 
