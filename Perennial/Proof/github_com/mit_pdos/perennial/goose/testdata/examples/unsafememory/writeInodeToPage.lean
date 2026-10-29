@@ -29,10 +29,10 @@ variable [sem : go.Semantics]
 variable [package_sem : Assumptions]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.writeInodeToPage.wp_proof
-    (wp_unsafeByteSlice : unsafeByteSlice.spec (GF := GF) (hG := hG))
-    (wp_pageElementSize : Page.pageElementSize.spec (GF := GF) (hG := hG))
-    (wp_leafPageElement : Page.leafPageElement.spec (GF := GF) (hG := hG))
-    (wp_branchPageElement : Page.branchPageElement.spec (GF := GF) (hG := hG)) :
+    (wp_unsafeByteSlice : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.unsafeByteSlice.spec (GF := GF) (hG := hG))
+    (wp_pageElementSize : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.pageElementSize.spec (GF := GF) (hG := hG))
+    (wp_leafPageElement : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.leafPageElement.spec (GF := GF) (hG := hG))
+    (wp_branchPageElement : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.branchPageElement.spec (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.writeInodeToPage.spec (GF := GF) (hG := hG) := by
   intro s ms p hdr R
   wp_start as ⟨#Hin, Hp, Hb, %H⟩
@@ -220,7 +220,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.write
       have hvl : m.value.length = m.kv.length - m.key.length := by
         simp [InodeM.kv]
       simp only [hklZ, hszZ, show 0 ≤ (m.key.length : Int) ∧ (m.key.length : Int) ≤ m.kv.length ∧
-        (m.kv.length : Int) ≤ m.kv.length from ⟨by omega, by omega, by omega⟩, ite_true]
+        (m.kv.length : Int) ≤ m.kv.length from ⟨by omega, by omega, by omega⟩]
       wp_auto
       have hsplit : 0 ≤ sint.Z (W64 (m.key.length : Int)) ∧ sint.Z (W64 (m.key.length : Int)) ≤
           sint.Z (slice.mk (p +ₗ (dataOff ms (sint.nat j) : Int)) (W64 (m.kv.length : Int))
@@ -343,7 +343,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.write
       have hvl : m.value.length = m.kv.length - m.key.length := by
         simp [InodeM.kv]
       simp only [hklZ, hszZ, show 0 ≤ (m.key.length : Int) ∧ (m.key.length : Int) ≤ m.kv.length ∧
-        (m.kv.length : Int) ≤ m.kv.length from ⟨by omega, by omega, by omega⟩, ite_true]
+        (m.kv.length : Int) ≤ m.kv.length from ⟨by omega, by omega, by omega⟩]
       wp_auto
       have hsplit : 0 ≤ sint.Z (W64 (m.key.length : Int)) ∧ sint.Z (W64 (m.key.length : Int)) ≤
           sint.Z (slice.mk (p +ₗ (dataOff ms (sint.nat j) : Int)) (W64 (m.kv.length : Int))

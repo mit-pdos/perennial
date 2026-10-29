@@ -42,10 +42,10 @@ theorem branchModel_fits : pageFits branchModel := by
 
 set_option goose.wp.extras true in
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testBranchRoundTrip.wp_proof
-    (wp_pageAt : pageAt.spec (GF := GF) (hG := hG))
-    (wp_writeInodeToPage : writeInodeToPage.spec (GF := GF) (hG := hG))
-    (wp_readInodeFromPage : readInodeFromPage.spec (GF := GF) (hG := hG))
-    (wp_inodesEqual : inodesEqual.spec (GF := GF) (hG := hG)) :
+    (wp_pageAt : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.pageAt.spec (GF := GF) (hG := hG))
+    (wp_writeInodeToPage : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.writeInodeToPage.spec (GF := GF) (hG := hG))
+    (wp_readInodeFromPage : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.readInodeFromPage.spec (GF := GF) (hG := hG))
+    (wp_inodesEqual : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inodesEqual.spec (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testBranchRoundTrip.spec (GF := GF) (hG := hG) := by
   intro Φ
   iintro #Hpkg HΦ

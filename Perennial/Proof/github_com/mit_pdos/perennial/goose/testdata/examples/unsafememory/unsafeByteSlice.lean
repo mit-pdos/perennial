@@ -26,7 +26,7 @@ variable [sem : go.Semantics]
 variable [package_sem : Assumptions]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.unsafeByteSlice.wp_proof
-    (wp_unsafeAdd : unsafeAdd.spec (GF := GF) (hG := hG)) :
+    (wp_unsafeAdd : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.unsafeAdd.spec (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.unsafeByteSlice.spec (GF := GF) (hG := hG) := by
   intro base off i j
   wp_start as %H
@@ -40,10 +40,10 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.unsaf
     intro h; rw [h] at H; simp [null] at H
   have h3 : ¬ (2 ^ 64 < base.addr + sint.Z off + sint.Z j * ((1 : Nat) : Int)) := by
     simp only [Loc.add, maxAddr] at H; omega
-  simp only [h1, h2, h3, if_false]
+  simp only [h1, h2, h3, ↓reduceIte]
   wp_auto
   simp only [show 0 ≤ sint.Z i ∧ sint.Z i ≤ sint.Z j ∧ sint.Z j ≤ sint.Z j from
-    ⟨H.2.2.1, H.2.2.2, Int.le_refl _⟩, if_true]
+    ⟨H.2.2.1, H.2.2.2, Int.le_refl _⟩]
   wp_auto
   simp only [slice.fullSlice]
   rw [sliceIndexRef_byte _ _ H.1 H.2.2.1]

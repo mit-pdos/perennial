@@ -29,9 +29,9 @@ variable [package_sem : Assumptions]
 
 set_option goose.wp.extras true in
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testSearch.wp_proof
-    (wp_leafInodes : leafInodes.spec (GF := GF) (hG := hG))
-    (wp_writeLeaf : writeLeaf.spec (GF := GF) (hG := hG))
-    (wp_searchLeaf : searchLeaf.spec (GF := GF) (hG := hG)) :
+    (wp_leafInodes : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafInodes.spec (GF := GF) (hG := hG))
+    (wp_writeLeaf : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.writeLeaf.spec (GF := GF) (hG := hG))
+    (wp_searchLeaf : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.searchLeaf.spec (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testSearch.spec (GF := GF) (hG := hG) := by
   intro Φ
   iintro #Hpkg HΦ

@@ -59,7 +59,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode
           ma.take (sint.nat j) = mb.take (sint.nat j)⌝ : IProp GF) $$ [i Hk HΦ «$res0» a b]
     · iexists (W64 0), _
       iframe
-      ipureintro; refine ⟨by decide, by simp, by simp [sint.nat, sint.Z]⟩
+      ipureintro; refine ⟨by decide, by simp, by simp [sint.nat]⟩
     wp_for HI
     have hjt : sint.Z j = j.toInt := rfl
     wp_if_destruct
@@ -86,22 +86,22 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode
       icases Heb' with ⟨Hflb, Hpgb, Hkyb, Hvlb, -⟩
       have hb1 : 0 ≤ sint.Z j ∧ sint.Z j < sint.Z a.len := ⟨Hj.1, by omega⟩
       have hb2 : 0 ≤ sint.Z j ∧ sint.Z j < sint.Z b.len := ⟨Hj.1, by omega⟩
-      simp only [hb1, hb2, _root_.and_self, ite_true]
+      simp only [hb1, _root_.and_self, ite_true]
       wp_apply wp_load_slice_index a (sint.Z j) xa DFrac.discard xa1 Hj.1 as -
       · isplitr
         · iexact Hsa
         · ipureintro; exact hxa1
-      repeat (first | (simp only [hb1, hb2, ite_true]; wp_auto) | wp_auto)
+      repeat (first | (simp only [hb1]; wp_auto) | (simp only [hb2]; wp_auto) | wp_auto)
       have hdiff : ∀ (P : Prop), (P → ma1 ≠ mb1) → P → decide (ma = mb) = false := by
         intro P hP hp; exact decide_eq_false (ne_of_getElem?_ne hma1 hmb1 (hP hp))
       wp_if_destruct
       · -- the flags agree
         have hfl := Hif
-        repeat (first | (simp only [hb1, hb2, ite_true]; wp_auto) | wp_auto)
+        repeat (first | (simp only [hb1]; wp_auto) | (simp only [hb2]; wp_auto) | wp_auto)
         wp_if_destruct
         · -- the page ids agree
           have hpg := Hif
-          repeat (first | (simp only [hb1, hb2, ite_true]; wp_auto) | wp_auto)
+          repeat (first | (simp only [hb1]; wp_auto) | (simp only [hb2]; wp_auto) | wp_auto)
           wp_apply (wp_Equal xa1.key' xb1.key' DFrac.discard DFrac.discard ma1.key mb1.key) as ⟨-, -⟩
           · isplitr
             · iexact Hka
@@ -109,7 +109,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inode
           wp_if_destruct
           · -- the keys agree
             have hky := Hif
-            repeat (first | (simp only [hb1, hb2, ite_true]; wp_auto) | wp_auto)
+            repeat (first | (simp only [hb1]; wp_auto) | (simp only [hb2]; wp_auto) | wp_auto)
             wp_apply (wp_Equal xa1.value' xb1.value' DFrac.discard DFrac.discard ma1.value mb1.value)
               as ⟨-, -⟩
             · isplitr

@@ -28,8 +28,8 @@ variable [sem : go.Semantics]
 variable [package_sem : Assumptions]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.searchLeaf.wp_proof
-    (wp_leafPageElements : Page.leafPageElements.spec (GF := GF) (hG := hG))
-    (wp_leafKey : leafPageElement.key.spec (GF := GF) (hG := hG))
+    (wp_leafPageElements : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.leafPageElements.spec (GF := GF) (hG := hG))
+    (wp_leafKey : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement.key.spec (GF := GF) (hG := hG))
     (wp_Compare : bytes.Compare.spec (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.searchLeaf.spec (GF := GF) (hG := hG) := by
   intro p hdr ms tail key k dk r
@@ -62,7 +62,10 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.searc
     · rename_i h; rw [hn0.1 h]; rfl
     · rw [hcZ]; exact sint_Z_W64_nat _ (by omega)
   have hesPtr : 0 < ms.length → es = slice.mk (p +ₗ 16) (W64 (ms.length : Int)) (W64 (ms.length : Int)) := by
-    intro h; rw [← hes, if_neg (fun h' => by have := hn0.1 h'; omega), hcZ]
+    intro h
+    rw [← hes]
+    simp only [show ¬ hdr.count' = W16 0 from fun h' => by have := hn0.1 h'; omega, ↓reduceIte]
+    rw [hcZ]
   ihave HI : (∃ lo hi : w64,
       "lo" ∷ lo_ptr ↦ lo ∗
       "hi" ∷ hi_ptr ↦ hi ∗

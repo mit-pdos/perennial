@@ -27,8 +27,8 @@ variable [sem : go.Semantics]
 variable [package_sem : Assumptions]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.writeLeaf.wp_proof
-    (wp_pageAt : pageAt.spec (GF := GF) (hG := hG))
-    (wp_writeInodeToPage : writeInodeToPage.spec (GF := GF) (hG := hG)) :
+    (wp_pageAt : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.pageAt.spec (GF := GF) (hG := hG))
+    (wp_writeInodeToPage : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.writeInodeToPage.spec (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.writeLeaf.spec (GF := GF) (hG := hG) := by
   intro buf s ms N
   wp_start as ⟨#Hin, Hb, %H⟩

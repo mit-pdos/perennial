@@ -26,7 +26,7 @@ variable [sem : go.Semantics]
 variable [package_sem : Assumptions]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.pageBytes.wp_proof
-    (wp_unsafeByteSlice : unsafeByteSlice.spec (GF := GF) (hG := hG)) :
+    (wp_unsafeByteSlice : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.unsafeByteSlice.spec (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.pageBytes.spec (GF := GF) (hG := hG) := by
   intro p n
   wp_start as %H

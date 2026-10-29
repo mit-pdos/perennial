@@ -30,10 +30,10 @@ variable [package_sem : Assumptions]
 
 set_option goose.wp.extras true in
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testLeafRoundTrip.wp_proof
-    (wp_leafInodes : leafInodes.spec (GF := GF) (hG := hG))
-    (wp_writeLeaf : writeLeaf.spec (GF := GF) (hG := hG))
-    (wp_readInodeFromPage : readInodeFromPage.spec (GF := GF) (hG := hG))
-    (wp_inodesEqual : inodesEqual.spec (GF := GF) (hG := hG)) :
+    (wp_leafInodes : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafInodes.spec (GF := GF) (hG := hG))
+    (wp_writeLeaf : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.writeLeaf.spec (GF := GF) (hG := hG))
+    (wp_readInodeFromPage : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.readInodeFromPage.spec (GF := GF) (hG := hG))
+    (wp_inodesEqual : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inodesEqual.spec (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testLeafRoundTrip.spec (GF := GF) (hG := hG) := by
   intro Φ
   iintro #Hpkg HΦ

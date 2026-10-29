@@ -26,7 +26,7 @@ variable [sem : go.Semantics]
 variable [package_sem : Assumptions]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.leafPageElements.wp_proof
-    (wp_unsafeAdd : unsafeAdd.spec (GF := GF) (hG := hG)) :
+    (wp_unsafeAdd : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.unsafeAdd.spec (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.leafPageElements.spec (GF := GF) (hG := hG) := by
   intro p hdr dq
   wp_start as ⟨Hp, %H⟩
@@ -38,7 +38,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.
   have h16 : sint.Z (W64 16) = 16 := rfl
   wp_auto
   wp_if_destruct
-  · rw [if_pos Hif]
+  · simp only [show (hdr.count' = W16 0) = True from eq_true Hif, ↓reduceIte]
     iapply HΦ
     iapply typedPointsto_combine _ _ _ hnn
     simp only [TypedPointsto.typedPointstoDef]
@@ -58,7 +58,8 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.
       rw [hz, h16]; simp only [maxAddr] at H; omega
     simp only [h1, h2, h3, ite_false]
     wp_auto
-    rw [if_neg Hif, h16]
+    simp only [show (hdr.count' = W16 0) = False from eq_false Hif, ↓reduceIte]
+    rw [h16]
     iapply HΦ
     iapply typedPointsto_combine _ _ _ hnn
     simp only [TypedPointsto.typedPointstoDef]

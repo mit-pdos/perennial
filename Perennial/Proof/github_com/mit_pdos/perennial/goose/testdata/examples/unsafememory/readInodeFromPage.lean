@@ -31,11 +31,11 @@ variable [package_sem : Assumptions]
 
 set_option goose.wp.extras true in
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.readInodeFromPage.wp_proof
-    (wp_leafPageElement : Page.leafPageElement.spec (GF := GF) (hG := hG))
-    (wp_branchPageElement : Page.branchPageElement.spec (GF := GF) (hG := hG))
-    (wp_leafKey : leafPageElement.key.spec (GF := GF) (hG := hG))
-    (wp_leafValue : leafPageElement.value.spec (GF := GF) (hG := hG))
-    (wp_branchKey : branchPageElement.key.spec (GF := GF) (hG := hG)) :
+    (wp_leafPageElement : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.leafPageElement.spec (GF := GF) (hG := hG))
+    (wp_branchPageElement : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.branchPageElement.spec (GF := GF) (hG := hG))
+    (wp_leafKey : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement.key.spec (GF := GF) (hG := hG))
+    (wp_leafValue : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement.value.spec (GF := GF) (hG := hG))
+    (wp_branchKey : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement.key.spec (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.readInodeFromPage.spec (GF := GF) (hG := hG) := by
   intro p hdr ms tail
   wp_start as ⟨#Hp, #Hb, %H⟩
@@ -134,7 +134,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.readI
           have e1 : sint.Z sl.len = sl.len.toInt := rfl
           have e2 := Hsll.2
           simp only [sint.nat] at Hsll e2; omega
-        simp only [show 0 ≤ sint.Z i ∧ sint.Z i < sint.Z sl.len from ⟨Hi.1, by omega⟩, ite_true]
+        simp only [show 0 ≤ sint.Z i ∧ sint.Z i < sint.Z sl.len from ⟨Hi.1, by omega⟩]
         wp_apply wp_store_slice_index $$ [Hsl] as Hsl
         · iframe Hsl; ipureintro; simp only [List.length_append, List.length_replicate]; omega
         -- the key aliases the page
@@ -215,7 +215,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.readI
           have e1 : sint.Z sl.len = sl.len.toInt := rfl
           have e2 := Hsll.2
           simp only [sint.nat] at Hsll e2; omega
-        simp only [show 0 ≤ sint.Z i ∧ sint.Z i < sint.Z sl.len from ⟨Hi.1, by omega⟩, ite_true]
+        simp only [show 0 ≤ sint.Z i ∧ sint.Z i < sint.Z sl.len from ⟨Hi.1, by omega⟩]
         wp_apply wp_store_slice_index $$ [Hsl] as Hsl
         · iframe Hsl; ipureintro; simp only [List.length_append, List.length_replicate]; omega
         -- the key and the value alias the page

@@ -26,7 +26,7 @@ variable [sem : go.Semantics]
 variable [package_sem : Assumptions]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.branchPageElement.wp_proof
-    (wp_unsafeIndex : unsafeIndex.spec (GF := GF) (hG := hG)) :
+    (wp_unsafeIndex : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.unsafeIndex.spec (GF := GF) (hG := hG)) :
     github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.branchPageElement.spec (GF := GF) (hG := hG) := by
   intro p idx
   wp_start as %H
