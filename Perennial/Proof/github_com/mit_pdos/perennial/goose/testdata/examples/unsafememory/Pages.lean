@@ -339,6 +339,32 @@ theorem w64_of_sint_nat (w : w64) (n : Nat) (h : n = sint.nat w) (h0 : 0 ≤ sin
   rw [show (W64 (n : Int)).toInt = n from sint_Z_W64_nat _ (by omega)]
   omega
 
+theorem sint_Z_eq_of_sint_nat (w : w64) (n : Nat) (h : n = sint.nat w) (h0 : 0 ≤ sint.Z w) :
+    sint.Z w = n := by
+  simp only [sint.nat, sint.Z] at h h0 ⊢; omega
+
+theorem ne_of_getElem?_ne {α : Type} {l l' : List α} {i : Nat} {a b : α} (h1 : l[i]? = some a)
+    (h2 : l'[i]? = some b) (hne : a ≠ b) : l ≠ l' := by
+  intro h; subst h; rw [h1] at h2; exact hne (Option.some.inj h2)
+
+/-- The midpoint `lo + (hi-lo)/2` of a binary search, for small non-negative bounds. -/
+theorem mid_eq (a b : Nat) (hab : a ≤ b) (hb : b < 2 ^ 62) :
+    W64 (a : Int) + BitVec.sdiv (W64 (b : Int) - W64 (a : Int)) (W64 2) =
+      W64 ((a + (b - a) / 2 : Nat) : Int) := by
+  have e1 : W64 (b : Int) - W64 (a : Int) = W64 ((b - a : Nat) : Int) := by
+    apply BitVec.eq_of_toNat_eq
+    simp [W64, BitVec.toNat_sub]
+    omega
+  rw [e1, BitVec.sdiv_eq]
+  have h1 : (W64 ((b - a : Nat) : Int)).msb = false := by
+    rw [BitVec.msb_eq_decide]; simp [W64]; omega
+  have h2 : (W64 (2 : Int)).msb = false := by decide
+  rw [h1, h2]
+  simp only
+  apply BitVec.eq_of_toNat_eq
+  simp [W64, BitVec.toNat_udiv, BitVec.toNat_add]
+  omega
+
 end model
 
 /-! ## Byte points-tos -/
@@ -475,6 +501,15 @@ instance inodesOwn_persistent (s : GoSlice) (ms : List InodeM) :
   infer_instance
 
 end inodes
+
+/-- `bytes.Compare(a, b) < 0` is `a < b`. -/
+theorem compareResult_lt [GooseExts] (a b : List w8) :
+    sint.Z (bytes.compareResult a b) < sint.Z (W64 0) ↔ go.GoStringLt a b := by
+  unfold bytes.compareResult
+  by_cases h : go.GoStringLt a b
+  · simp only [h, ↓reduceIte, iff_true]; decide
+  · simp only [h, ↓reduceIte, iff_false]
+    split <;> decide
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory
 
