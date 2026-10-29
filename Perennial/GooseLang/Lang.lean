@@ -738,10 +738,20 @@ def stateInitHeap (l : Loc) (v : val) (σ : state) : state :=
 
 def IsWriting {A} (mna : Option (NonAtomic A)) : Prop := ∃ x, mna = some (Writing, x)
 
-/-- `l` is a positive address with no cell in `σg`: where `Alloc` may put its cell. The choice
-is nondeterministic: a new cell may sit next to an existing one or leave a gap. -/
+/-- The end of the address space: every allocation lies in `(0, maxAddr]`, gc's user address
+space on linux/amd64. -/
+def maxAddr : Int := 2 ^ 47
+
+/-- `l` is an address in `(0, maxAddr)` with no cell in `σg`: where `Alloc` may put its cell.
+The choice is nondeterministic: a new cell may sit next to an existing one or leave a gap. -/
 def IsFresh (σg : CfgState) (l : Loc) : Prop :=
-  0 < l.addr ∧ σg.1.heap !! l = none
+  0 < l.addr ∧ l.addr < maxAddr ∧ σg.1.heap !! l = none
+
+/-- `w` cells from `l`, in `(0, maxAddr]`, with no cell in `σg`, at an address `w` divides:
+where `AllocBytes w` may put its cells. -/
+def IsFreshBytes (σg : CfgState) (w : Nat) (l : Loc) : Prop :=
+  0 < l.addr ∧ l.addr + w ≤ maxAddr ∧ (w : Int) ∣ l.addr ∧
+    ∀ k < w, σg.1.heap !! (l +ₗ (k : Int)) = none
 
 def atomicAddEval (v1 v2 : val) : Option val :=
   match v1, v2 with
@@ -820,6 +830,11 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
   | AllocS v l σg :
       IsFresh σg l →
       BaseStep (Alloc (Val v)) σg [] (Val #l) (stateInitHeap l v σg.1, σg.2) []
+  /-- Out of memory: no address is free. The allocation loops, so out-of-memory is outside the
+  model (gc ends the program with a fatal error). -/
+  | AllocOOMS v σg :
+      (¬ ∃ l, IsFresh σg l) →
+      BaseStep (Alloc (Val v)) σg [] (Alloc (Val v)) σg []
   /-- non-atomic load part 1 (used for map accesses) -/
   | StartReadS l n v σg :
       σg.1.heap !! l = some (Reading n, v) →
@@ -848,9 +863,12 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
       atomicAddEval v0 v = some v' →
       BaseStep (AtomicAdd (Val #l) (Val v)) σg [] (Val v') (setHeap (<[l := Free v']> ·) σg) []
   | AllocBytesS (w : Nat) v bs l σg :
-      valBytes w v = some bs → 0 < l.addr → (w : Int) ∣ l.addr →
-      (∀ k < w, σg.1.heap !! (l +ₗ (k : Int)) = none) →
+      valBytes w v = some bs → IsFreshBytes σg w l →
       BaseStep (AllocBytes w (Val v)) σg [] (Val #l) (setHeap (setBytes l bs) σg) []
+  /-- Out of memory, as for `Alloc`. -/
+  | AllocBytesOOMS (w : Nat) v bs σg :
+      valBytes w v = some bs → (¬ ∃ l, IsFreshBytes σg w l) →
+      BaseStep (AllocBytes w (Val v)) σg [] (AllocBytes w (Val v)) σg []
   | LoadBytesS (w : Nat) l bs v σg :
       (w : Int) ∣ l.addr → BytesAt σg l bs true → bytesVal w bs = some v →
       BaseStep (LoadBytes w (Val #l)) σg [] (Val v) σg []

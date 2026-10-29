@@ -69,10 +69,12 @@ variable {σ σ' : CfgState} {κ : List Observation} {e' : Expr} {efs : List Exp
 
 theorem baseStep_AllocBytes_inv {w : Nat} {v : val}
     (h : BaseStep (AllocBytes w (Val v)) σ κ e' σ' efs) :
-    ∃ bs l, valBytes w v = some bs ∧ 0 < l.addr ∧ (w : Int) ∣ l.addr ∧
-      (∀ k < w, σ.1.heap !! (l +ₗ (k : Int)) = none) ∧
-      κ = [] ∧ e' = Val #l ∧ σ' = setHeap (setBytes l bs) σ ∧ efs = [] := by
-  cases h; exact ⟨_, _, ‹_›, ‹_›, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
+    (∃ bs l, valBytes w v = some bs ∧ IsFreshBytes σ w l ∧
+      κ = [] ∧ e' = Val #l ∧ σ' = setHeap (setBytes l bs) σ ∧ efs = []) ∨
+    ((¬ ∃ l, IsFreshBytes σ w l) ∧ κ = [] ∧ e' = AllocBytes w (Val v) ∧ σ' = σ ∧ efs = []) := by
+  cases h with
+  | AllocBytesS => exact .inl ⟨_, _, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
+  | AllocBytesOOMS => exact .inr ⟨‹_›, rfl, rfl, rfl, rfl⟩
 
 theorem baseStep_LoadBytes_inv {w : Nat} {v : val}
     (h : BaseStep (LoadBytes w (Val v)) σ κ e' σ' efs) :
@@ -121,27 +123,6 @@ theorem BytesAt_unique {l : Loc} {bs bs' : List w8} {r r' : Bool} (h : BytesAt �
       rw [hb] at hb'; cases hb'
       rw [ih hrest hrest' (by simpa using hlen)]
 
-/-- An address `w` divides, above every allocated cell. -/
-theorem exists_fresh_aligned (σ : CfgState) (w : Nat) (hw : 0 < w) :
-    ∃ l : Loc, 0 < l.addr ∧ (w : Int) ∣ l.addr ∧
-      ∀ k : Nat, σ.1.heap !! (l +ₗ (k : Int)) = none := by
-  have hpos := freshLoc_pos σ.1.heap.domList
-  have hgt := freshLoc_gt σ.1.heap.domList
-  generalize freshLoc σ.1.heap.domList = f at hpos hgt
-  have hle : f.addr ≤ (w : Int) * f.addr := by
-    have h1 : (1 : Int) ≤ w := by omega
-    have := Int.mul_le_mul_of_nonneg_right h1 (Int.le_of_lt hpos)
-    omega
-  refine ⟨⟨w * f.addr⟩, show (0 : Int) < w * f.addr by omega, ⟨f.addr, rfl⟩, ?_⟩
-  intro k
-  cases h : σ.1.heap !! (⟨w * f.addr⟩ +ₗ (k : Int)) with
-  | none => rfl
-  | some _ =>
-    have hm := (GMap.mem_dom_list σ.1.heap _).mpr (by rw [h]; rfl)
-    have := hgt _ hm
-    simp only [Loc.add] at this
-    omega
-
 end inversion
 
 /-! ## Atomicity of the byte primitives -/
@@ -151,10 +132,6 @@ variable [GooseExts] [GooseSemantics] [GoGlobalContext]
 
 local macro "solve_sub_redexes" : tactic =>
   `(tactic| (intro Ki e' h; cases Ki <;> simp only [fillItem] at h <;> cases h <;> rfl))
-
-instance alloc_bytes_atomic (a : Language.Atomicity) (w : Nat) (v : val) :
-    Language.Atomic a (AllocBytes w (Val v)) :=
-  goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
 
 instance load_bytes_atomic (a : Language.Atomicity) (w : Nat) (v : val) :
     Language.Atomic a (LoadBytes w (Val v)) :=
@@ -266,14 +243,15 @@ theorem bytesPointsto_write (h : GMap Loc (NonAtomic val)) (l : Loc) (bs bs' : L
       iapply Hb_rest $$ Hb
 
 theorem bytesPointsto_alloc (h : GMap Loc (NonAtomic val)) (l : Loc) (bs : List w8)
-    (hpos : 0 < l.addr) (hfresh : ∀ k < bs.length, h !! (l +ₗ (k : Int)) = none) :
+    (hpos : 0 < l.addr) (hbnd : l.addr + bs.length ≤ maxAddr)
+    (hfresh : ∀ k < bs.length, h !! (l +ₗ (k : Int)) = none) :
     naHeapCtx tls h ⊢
       |==> (naHeapCtx tls (setBytes l bs h) ∗ bytesPointsto (GF := GF) l (.own 1) bs) := by
   induction bs generalizing l h with
   | nil => simp only [setBytes, bytesPointsto]; iintro Hσ; imodintro; iframe Hσ
   | cons b bs ih =>
     have h0 : h !! l = none := by simpa using hfresh 0 (by simp)
-    have hnn : l ≠ null := fun e => by rw [e] at hpos; simp [null] at hpos
+    have hlt : l.addr < maxAddr := by simp at hbnd; omega
     have hfresh' : ∀ k < bs.length,
         (<[l := (Reading 0, LitV (LitByte b))]> h) !! (l +ₗ 1 +ₗ (k : Int)) = none := by
       intro k hk
@@ -284,40 +262,53 @@ theorem bytesPointsto_alloc (h : GMap Loc (NonAtomic val)) (l : Loc) (bs : List 
     unfold bytesPointsto
     iintro Hσ
     imod na_heap_alloc tls h l (LitV (LitByte b)) (Reading 0) h0 rfl $$ Hσ with ⟨Hσ, Hb⟩
-    imod ih _ (l +ₗ 1) (by simp [Loc.add]; omega) hfresh' $$ Hσ with ⟨Hσ, Hbs⟩
+    imod ih _ (l +ₗ 1) (by simp [Loc.add]; omega) (by simp [Loc.add] at hbnd ⊢; omega) hfresh'
+      $$ Hσ with ⟨Hσ, Hbs⟩
     imodintro
     iframe Hσ Hbs
-    iapply na_pointsto_to_heap l _ _ hpos $$ Hb
+    iapply na_pointsto_to_heap l _ _ ⟨hpos, hlt⟩ $$ Hb
 
 theorem wp_alloc_bytes (w : Nat) (v : val) (bs : List w8) (Hv : valBytes w v = some bs) :
     {{ (True : IProp GF) }} (AllocBytes w (Val v)) @ s; E
     {{ l, RET #l; ⌜(w : Int) ∣ l.addr⌝ ∗ bytesPointsto l (.own 1) bs }} := by
   have Hvp := valBytes_not_panic Hv
-  iintro %Φ _ HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
+  iintro %Φ
+  iloeb as IH
+  iintro _ HΦ
+  iapply wp_lift_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   imodintro
   isplitr
   · ipureintro
-    obtain ⟨l, hpos, hal, hfr⟩ := exists_fresh_aligned σ₁ w (valBytes_pos Hv)
-    exact ⟨[], _, _, [], BaseStep.AllocBytesS w v bs l σ₁ Hv hpos hal (fun k _ => hfr k)⟩
+    by_cases hf : ∃ l, IsFreshBytes σ₁ w l
+    · obtain ⟨l, hl⟩ := hf
+      exact ⟨[], _, _, [], BaseStep.AllocBytesS w v bs l σ₁ Hv hl⟩
+    · exact ⟨[], _, _, [], BaseStep.AllocBytesOOMS w v bs σ₁ Hv hf⟩
   inext
   iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨bs', l, Hv', hpos, hal, hfr, rfl, rfl, rfl, rfl⟩ := baseStep_AllocBytes_inv Hstep
-  rw [Hv] at Hv'; cases Hv'
-  imod bytesPointsto_alloc σ₁.1.heap l bs hpos
-    (fun k hk => hfr k (by rw [valBytes_length Hv] at hk; exact hk)) $$ Hσ with ⟨Hσ, Hbs⟩
-  imodintro
-  isplitr
-  · ipureintro; exact ⟨rfl, rfl⟩
-  isplitl [Hσ]
-  · iexists _; iframe Hσ; ipureintro; rfl
-  iexists #l
-  isplit
-  · ipureintro; rfl
-  iapply HΦ
-  iframe Hbs
-  ipureintro; exact hal
+  rcases baseStep_AllocBytes_inv Hstep with
+    ⟨bs', l, Hv', ⟨hpos, hbnd, hal, hfr⟩, rfl, rfl, rfl, rfl⟩ | ⟨_, rfl, rfl, rfl, rfl⟩
+  · rw [Hv] at Hv'; cases Hv'
+    have hlen := valBytes_length Hv
+    imod bytesPointsto_alloc σ₁.1.heap l bs hpos (by rw [hlen]; exact hbnd)
+      (fun k hk => hfr k (by rw [hlen] at hk; exact hk)) $$ Hσ with ⟨Hσ, Hbs⟩
+    imodintro
+    isplitr
+    · ipureintro; exact ⟨rfl, rfl⟩
+    isplitl [Hσ]
+    · iexists _; iframe Hσ; ipureintro; rfl
+    iapply wp_value'
+    iapply HΦ
+    iframe Hbs
+    ipureintro; exact hal
+  · imodintro
+    isplitr
+    · ipureintro; exact ⟨rfl, rfl⟩
+    isplitl [Hσ]
+    · iexists _; iframe Hσ; ipureintro; rfl
+    iapply IH
+    · itrivial
+    · inext; iexact HΦ
 
 theorem wp_load_bytes (w : Nat) (l : Loc) (dq : DFrac) (bs : List w8) (v : val)
     (Hv : bytesVal w bs = some v) (Hal : (w : Int) ∣ l.addr) :

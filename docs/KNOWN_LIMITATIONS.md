@@ -143,6 +143,11 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   valid; a length of `2^63` or more is not a Go type, and reaches `AngelicExit`). A size
   check needs the layout table, which R1 of `docs/design/unsafe-memory.md` adds for plain
   types only.
+- **Out of memory is outside the model.** The heap is bounded: every allocation lies in
+  `(0, maxAddr]`, `maxAddr = 2^47` (gc's user address space on linux/amd64,
+  `GooseLang/Lang.lean`). When no free range is left, an allocation steps to itself forever
+  (`AllocOOMS`, `AllocBytesOOMS`), so a proof covers only the executions that do not run out
+  of memory, where gc ends the program with a fatal error.
 
 ## Struct types
 

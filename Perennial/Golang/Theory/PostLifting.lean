@@ -426,25 +426,25 @@ variable {s : Stuckness} {E : CoPset}
 
 theorem wp_GoPrealloc_pos :
     {{ (True : IProp GF) }} (App (Val (GoInstruction GoPrealloc)) (Val #())) @ s; E
-    {{ (l : Loc), RET #l; ⌜0 < l.addr⌝ }} := by
+    {{ (l : Loc), RET #l; ⌜0 < l.addr ∧ l.addr < maxAddr⌝ }} := by
   iintro %Φ _ HΦ
   have hstep : is_go_step_pure GoPrealloc #() = _ := go.go_prealloc_step
   iapply wp_GoInstruction' (s := s) (E := E) GoPrealloc #() Φ
     (fun gs => ⟨Val #(⟨1⟩ : Loc), gs, by
       refine ⟨?_, rfl⟩
       show is_go_step_pure GoPrealloc #() _
-      rw [hstep]; exact ⟨⟨1⟩, by decide, rfl⟩⟩)
+      rw [hstep]; exact ⟨⟨1⟩, by decide, by decide, rfl⟩⟩)
   inext
   iintro %e' %gs %gs' %Hstep _ Hctx
   obtain ⟨Hp, rfl⟩ := Hstep
   have Hp' : is_go_step_pure GoPrealloc #() e' := Hp
   rw [hstep] at Hp'
-  obtain ⟨l, Hl, rfl⟩ := Hp'
+  obtain ⟨l, Hl, Hl', rfl⟩ := Hp'
   imodintro
   iframe Hctx
   iapply wp_value'
   iapply HΦ
-  ipureintro; exact Hl
+  ipureintro; exact ⟨Hl, Hl'⟩
 
 theorem wp_GoPrealloc :
     {{ (True : IProp GF) }} (App (Val (GoInstruction GoPrealloc)) (Val #())) @ s; E

@@ -119,9 +119,10 @@ attribute [local instance] GSet.lawfulSet
 section definitions
 variable [GooseExts] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
 
-/-- A non-atomic points-to, at a positive address (every allocation is at one, `IsFresh`). -/
+/-- A non-atomic points-to, at an address in `(0, maxAddr)` (every allocation is in that
+range, `IsFresh`). -/
 def heapPointsto (l : Loc) (dq : DFrac) (v : val) : IProp GF :=
-  iprop(⌜0 < l.addr⌝ ∗ naHeapPointsto l dq v)
+  iprop(⌜0 < l.addr ∧ l.addr < maxAddr⌝ ∗ naHeapPointsto l dq v)
 
 end definitions
 
@@ -201,7 +202,7 @@ theorem heapPointsto_agree (l : Loc) (dq1 dq2 : DFrac) (v1 v2 : val) :
   icombine H1 H2 gives %⟨_, H⟩
   ipureintro; exact H
 
-theorem na_pointsto_to_heap (l : Loc) (dq : DFrac) (v : val) (H : 0 < l.addr) :
+theorem na_pointsto_to_heap (l : Loc) (dq : DFrac) (v : val) (H : 0 < l.addr ∧ l.addr < maxAddr) :
     naHeapPointsto (hG := hG) l dq v ⊢ heapPointsto l dq v := by
   unfold heapPointsto
   iintro Hl
@@ -232,7 +233,14 @@ theorem heapPointsto_pos (l : Loc) (dq : DFrac) (v : val) :
     heapPointsto (hG := hG) l dq v ⊢ ⌜0 < l.addr⌝ := by
   unfold heapPointsto
   iintro ⟨%Hl, _⟩
-  ipureintro; exact Hl
+  ipureintro; exact Hl.1
+
+/-- A heap points-to is below `maxAddr`. -/
+theorem heapPointsto_lt_maxAddr (l : Loc) (dq : DFrac) (v : val) :
+    heapPointsto (hG := hG) l dq v ⊢ ⌜l.addr < maxAddr⌝ := by
+  unfold heapPointsto
+  iintro ⟨%Hl, _⟩
+  ipureintro; exact Hl.2
 
 theorem heapPointsto_non_null (l : Loc) (dq : DFrac) (v : val) :
     heapPointsto (hG := hG) l dq v ⊢ ⌜l ≠ null⌝ := by
@@ -706,9 +714,6 @@ theorem goose_atomic {e : Expr} (a : Language.Atomicity)
 local macro "solve_sub_redexes" : tactic =>
   `(tactic| (intro Ki e' h; cases Ki <;> simp only [fillItem] at h <;> cases h <;> rfl))
 
-instance alloc_atomic (a : Language.Atomicity) (v : val) : Language.Atomic a (Alloc (Val v)) :=
-  goose_atomic a (fun _ _ _ _ _ h => by cases h; rfl) (by solve_sub_redexes)
-
 /-- `PrepareWrite` and `FinishStore` are individually atomic, but the two need to
 be combined to actually write to the heap and that is not atomic. -/
 instance prepare_write_atomic (a : Language.Atomicity) (v : val) :
@@ -870,8 +875,11 @@ theorem baseStep_ThreadExit_inv (h : BaseStep ThreadExit σ κ e' σ' efs) :
   cases h; exact ⟨rfl, rfl, rfl, rfl⟩
 
 theorem baseStep_Alloc_inv {v : val} (h : BaseStep (Alloc (Val v)) σ κ e' σ' efs) :
-    ∃ l, IsFresh σ l ∧ κ = [] ∧ e' = Val #l ∧ σ' = (stateInitHeap l v σ.1, σ.2) ∧ efs = [] := by
-  cases h; exact ⟨_, ‹_›, rfl, rfl, rfl, rfl⟩
+    (∃ l, IsFresh σ l ∧ κ = [] ∧ e' = Val #l ∧ σ' = (stateInitHeap l v σ.1, σ.2) ∧ efs = []) ∨
+    ((¬ ∃ l, IsFresh σ l) ∧ κ = [] ∧ e' = Alloc (Val v) ∧ σ' = σ ∧ efs = []) := by
+  cases h with
+  | AllocS => exact .inl ⟨_, ‹_›, rfl, rfl, rfl, rfl⟩
+  | AllocOOMS => exact .inr ⟨‹_›, rfl, rfl, rfl, rfl⟩
 
 theorem baseStep_StartRead_inv {v : val} (h : BaseStep (StartRead (Val v)) σ κ e' σ' efs) :
     ∃ l n w, v = #l ∧ σ.1.heap !! l = some (Reading n, w) ∧ κ = [] ∧ e' = Val w ∧
@@ -1105,6 +1113,42 @@ theorem wp_lift_atomic_heap_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVa
   dsimp only [setHeap, List.nil_append]
   iframe
   ipureintro; exact Hlctx
+
+/-- A lifting lemma for steps that only change the heap, to any expression (an allocation that
+is out of memory steps to itself). -/
+theorem wp_lift_heap_step {e₁ : Expr} {Φ : val → IProp GF} (h : toVal e₁ = none)
+    (hnc : redexKind e₁ = .plain) (hnu : ∀ p, ¬ Unwinds e₁ p) :
+    (∀ σ₁ : CfgState, naHeapCtx tls σ₁.1.heap ={E}=∗
+      ⌜GooseBaseReducible e₁ σ₁⌝ ∗
+      ▷ ∀ κ e₂ σ₂ eₜ, ⌜BaseStep e₁ σ₁ κ e₂ σ₂ eₜ⌝ -∗ £ 1 ={E}=∗
+        ⌜κ = [] ∧ eₜ = []⌝ ∗
+        (∃ h', ⌜σ₂ = setHeap (fun _ => h') σ₁⌝ ∗ naHeapCtx tls h') ∗
+        WP e₂ @ s; E {{ Φ }})
+    ⊢ WP e₁ @ s; E {{ Φ }} := by
+  iintro H
+  iapply goose_wp_lift_base_step h hnc hnu
+  iintro %σ₁ %ns %obs %obs' %nt Hσ
+  icases (goose_stateInterp_eq σ₁ ns (obs ++ obs') nt).mp $$ Hσ with
+    ⟨Hheap, Hext, Hgs, %Hlctx, Hgext, Hproph⟩
+  imod H $$ %σ₁ Hheap with ⟨%Hred, H⟩
+  iapply fupd_mask_intro Std.LawfulSet.empty_subset
+  iintro Hclose
+  isplitr
+  · ipureintro; exact Hred
+  inext
+  iintro %e₂ %σ₂ %eₜ %Hstep Hcred
+  imod Hclose
+  imod H $$ %obs %e₂ %σ₂ %eₜ %Hstep Hcred with ⟨%⟨rfl, rfl⟩, ⟨%h', %rfl, Hheap⟩, Hwp⟩
+  imodintro
+  simp only [List.length_nil, Nat.add_zero]
+  iframe Hwp
+  isplitl [Hheap Hext Hgs Hgext Hproph]
+  · iapply (goose_stateInterp_eq _ (ns + 1) obs' nt).mpr
+    dsimp only [setHeap, List.nil_append]
+    iframe
+    ipureintro; exact Hlctx
+  · iapply BigSepL.bigSepL_nil.2
+    itrivial
 
 /-- The lifting lemma for an operation `o` of the extension `X`: a step of `X`
 with access to the heap and to `X`'s state. -/
@@ -1548,47 +1592,49 @@ theorem gmap_singleton_union_eq_insert {K V : Type} [DecidableEq K] (m : GMap K 
   rw [show ({[k := v]} : GMap K V).lookup k' = _ from GMap.lookup_singleton_iff k k' v]
   split <;> simp
 
-theorem exists_isFresh (σ : CfgState) : ∃ l, IsFresh σ l := by
-  refine ⟨freshLoc σ.1.heap.domList, freshLoc_pos _, ?_⟩
-  cases h : σ.1.heap !! (freshLoc σ.1.heap.domList) with
-  | none => rfl
-  | some _ =>
-    exact absurd ((GMap.mem_dom_list σ.1.heap _).mpr (by rw [h]; rfl)) (freshLoc_fresh _)
-
 def pointstoVals (l : Loc) (q : DFrac) (vs : List val) : IProp GF :=
   [∗list] j ↦ vj ∈ vs, heapPointsto (l +ₗ (j : Int)) q vj
 
 theorem wp_allocN_seq (v : val) (Hv : v.isPanic = false := by simp) :
     {{ (True : IProp GF) }} (Alloc (Val v)) @ s; E
     {{ l, RET #l; pointstoVals l (.own 1) [v] }} := by
-  iintro %Φ _ HΦ
-  iapply wp_lift_atomic_heap_step rfl rfl (by not_unwinds)
+  iintro %Φ
+  iloeb as IH
+  iintro _ HΦ
+  iapply wp_lift_heap_step rfl rfl (by not_unwinds)
   iintro %σ₁ Hσ
   imodintro
   isplitr
   · ipureintro
-    obtain ⟨l, hl⟩ := exists_isFresh σ₁
-    exact ⟨[], _, _, [], BaseStep.AllocS v l σ₁ hl⟩
+    by_cases hf : ∃ l, IsFresh σ₁ l
+    · obtain ⟨l, hl⟩ := hf
+      exact ⟨[], _, _, [], BaseStep.AllocS v l σ₁ hl⟩
+    · exact ⟨[], _, _, [], BaseStep.AllocOOMS v σ₁ hf⟩
   inext
   iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨l, Hfresh, rfl, rfl, rfl, rfl⟩ := baseStep_Alloc_inv Hstep
-  have Hnone : σ₁.1.heap !! l = none := Hfresh.2
-  have Hnn : l ≠ null := fun h => by have := Hfresh.1; rw [h] at this; simp [null] at this
-  imod na_heap_alloc tls σ₁.1.heap l v (Reading 0) Hnone rfl $$ Hσ with ⟨Hσ, Hl⟩
-  imodintro
-  isplitr
-  · ipureintro; exact ⟨rfl, rfl⟩
-  isplitl [Hσ]
-  · iexists _; iframe Hσ; ipureintro
-    simp only [setHeap, stateInitHeap, gmap_singleton_union_eq_insert]; rfl
-  iexists #l
-  isplit
-  · ipureintro; rfl
-  iapply HΦ
-  unfold pointstoVals
-  iapply BigSepL.bigSepL_singleton.2
-  rw [show l +ₗ ((0 : Nat) : Int) = l by simp]
-  iapply na_pointsto_to_heap l _ v Hfresh.1 $$ Hl
+  rcases baseStep_Alloc_inv Hstep with ⟨l, Hfresh, rfl, rfl, rfl, rfl⟩ | ⟨_, rfl, rfl, rfl, rfl⟩
+  · have Hnone : σ₁.1.heap !! l = none := Hfresh.2.2
+    imod na_heap_alloc tls σ₁.1.heap l v (Reading 0) Hnone rfl $$ Hσ with ⟨Hσ, Hl⟩
+    imodintro
+    isplitr
+    · ipureintro; exact ⟨rfl, rfl⟩
+    isplitl [Hσ]
+    · iexists _; iframe Hσ; ipureintro
+      simp only [setHeap, stateInitHeap, gmap_singleton_union_eq_insert]; rfl
+    iapply wp_value'
+    iapply HΦ
+    unfold pointstoVals
+    iapply BigSepL.bigSepL_singleton.2
+    rw [show l +ₗ ((0 : Nat) : Int) = l by simp]
+    iapply na_pointsto_to_heap l _ v ⟨Hfresh.1, Hfresh.2.1⟩ $$ Hl
+  · imodintro
+    isplitr
+    · ipureintro; exact ⟨rfl, rfl⟩
+    isplitl [Hσ]
+    · iexists _; iframe Hσ; ipureintro; rfl
+    iapply IH
+    · itrivial
+    · inext; iexact HΦ
 
 theorem wp_alloc_untyped (v : val) (Hv : v.isPanic = false := by simp) :
     {{ (True : IProp GF) }} (Alloc (Val v)) @ s; E

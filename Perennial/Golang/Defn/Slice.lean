@@ -138,11 +138,9 @@ class SliceSemantics [GoSemanticsFunctions] : Prop where
        else
          let: "p" := (InternalDynamicArrayAlloc elem_type) "cap" in
          InternalMakeSlice ("p", "len", "cap") : val)
-  /-- Stuck outside `[0, 2^64)`, where gc's address arithmetic wraps (only `unsafe.Add` uses
-  it); not an instance, as its premise is not found by instance search. -/
-  is_go_op_pointer_plus (t : go.GoType) (l : Loc) (x : w64)
-      (h : 0 ≤ (l +ₗ sint.Z x).addr ∧ (l +ₗ sint.Z x).addr < 2 ^ 64) :
-    ⟦GoOp GoPlus (go.PointerType t), (#l, #x)⟧ ⤳[under] (#(l +ₗ sint.Z x))
+  /-- Address arithmetic wraps mod `2^64`, as gc's does (only `unsafe.Add` uses it). -/
+  is_go_op_pointer_plus (t : go.GoType) (l : Loc) (x : w64) :
+    ⟦GoOp GoPlus (go.PointerType t), (#l, #x)⟧ ⤳[under] (#(⟨(l.addr + sint.Z x) % 2 ^ 64⟩ : Loc))
 
   make2_slice {st elem_type : go.GoType} [st ↓u go.SliceType elem_type] :
     FuncUnfold go.make2 [st]
@@ -208,7 +206,7 @@ attribute [instance] SliceSemantics.internal_len_step SliceSemantics.internal_ca
   SliceSemantics.slice_slice_step_pure SliceSemantics.fullSlice_slice_step_pure
   SliceSemantics.is_go_op_go_equals_slice_nil_l SliceSemantics.is_go_op_go_equals_slice_nil_r
   SliceSemantics.clear_slice SliceSemantics.copy_slice SliceSemantics.make3_slice
-  SliceSemantics.make2_slice SliceSemantics.index_ref_slice
+  SliceSemantics.is_go_op_pointer_plus SliceSemantics.make2_slice SliceSemantics.index_ref_slice
   SliceSemantics.index_slice SliceSemantics.len_slice SliceSemantics.cap_slice
   SliceSemantics.append_slice SliceSemantics.composite_literal_slice
 export SliceSemantics (internal_len_step internal_cap_step internal_make_slice_step
