@@ -97,7 +97,12 @@ add_unfold (it : go.GoType) [go.IsInteger it] : FuncUnfold «unsafe».Add [it]
 ```
 - The offset uses Go's conversion of `n`, so an unsigned `^7` is -8. That matches gc (run:
   `unsafe.Add(&b[8], uint64(^7)) == &b[0]`).
-- `is_go_op_pointer_plus` (`Slice.lean:142`) adds `sint.Z x` without wrapping.
+- `is_go_op_pointer_plus` (`Slice.lean:142`) adds `sint.Z x` without wrapping, and has a rule
+  only when the result is in `[0, 2^64)`: gc's addresses wrap mod 2^64, so
+  `unsafe.Add(unsafe.Add(p, MinInt64), MinInt64) == p` in Go (found by the review of the
+  implementation, 2026-10-29). Outside that range `unsafe.Add` is stuck.
+- A nil `unsafe.Pointer` converts to the nil pointer of every type
+  (`convert_unsafe_nil_to_pointer`), plain or not: `time`'s zero `Location` needs it.
 
 ### `unsafe.Slice(p, n)`
 

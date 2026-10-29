@@ -83,6 +83,9 @@ class PlainSemantics [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemantics
   pointer to a non-plain type has no rule (stuck). -/
   convert_unsafe_to_pointer (elem : go.GoType) (s : Nat) [IsPlain elem s] (l : Loc) :
     ⟦Convert «unsafe».Pointer (go.PointerType elem), #l⟧ ⤳[under] #l
+  /-- A nil `unsafe.Pointer` converts to the nil pointer of any type. -/
+  convert_unsafe_nil_to_pointer (elem : go.GoType) :
+    ⟦Convert «unsafe».Pointer (go.PointerType elem), #null⟧ ⤳[under] #null
   /-- `unsafe.Add(p, n)`: no check that the result is in an allocation
   (`docs/KNOWN_LIMITATIONS.md`). -/
   add_unfold (it : go.GoType) [IsInteger it] :
@@ -108,10 +111,12 @@ class PlainSemantics [GooseExts] [GoLocalContext] [GoGlobalContext] [GoSemantics
     PlainLayout (go.StructType fds) s a → PlainFieldOffset fds 0 f off → 0 < l.addr →
       structFieldRef V f l = l +ₗ off
 
-attribute [instance] PlainSemantics.convert_unsafe_to_pointer PlainSemantics.add_unfold
+attribute [instance] PlainSemantics.convert_unsafe_to_pointer
+  PlainSemantics.convert_unsafe_nil_to_pointer PlainSemantics.add_unfold
   PlainSemantics.slice_unfold PlainSemantics.internal_unsafe_slice
 
 export PlainSemantics (arrayIndexRef_plain structFieldRef_plain convert_unsafe_to_pointer
+  convert_unsafe_nil_to_pointer
   add_unfold slice_unfold internal_unsafe_slice)
 
 end go
