@@ -24,7 +24,6 @@ func TestTargets(t *testing.T) {
 		"testMixedWidthAtomics":      testMixedWidthAtomics,
 		"testOverlappingCopyViaTemp": testOverlappingCopyViaTemp,
 		"testAddPastEnd":             testAddPastEnd,
-		"testMisalignedAtomic":       testMisalignedAtomic,
 	} {
 		if !f() {
 			t.Errorf("%s returned false", name)

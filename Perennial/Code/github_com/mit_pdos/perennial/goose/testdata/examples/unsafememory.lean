@@ -220,9 +220,6 @@ noncomputable def testOverlappingCopyViaTemp [GooseExts] [GoGlobalContext] : GoS
 noncomputable def testAddPastEnd [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unsafememory.testAddPastEnd"
 
-noncomputable def testMisalignedAtomic [GooseExts] [GoGlobalContext] : GoString :=
-  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unsafememory.testMisalignedAtomic"
-
 /-- go: bucket.go:7:6 -/
 noncomputable def cloneBytes.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
@@ -2531,31 +2528,6 @@ noncomputable def testAddPastEnd.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "buf") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- An atomic on bytes at an address that is not 8-aligned in some executions (a
-    []byte is only 1-aligned). The model does not check alignment: a misaligned
-    atomic is assumed not to tear (docs/KNOWN_LIMITATIONS.md). Single-threaded,
-    as here, it is true in Go (LOCK XADD is atomic across a cache line).
-
-    go: targets.go:320:6 -/
-noncomputable def testMisalignedAtomic.impl [GooseExts] [GoGlobalContext] : val :=
-  (LamV BAnon
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Seq (App (Val exceptionDo)
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 16)))
-  (Let "buf" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (Let "$a0" (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType go.int64)))) (App (Val (GoInstruction (Convert (go.GoType.PointerType go.byte) «unsafe».Pointer))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "buf")) (Val #(W64 1))))))
-  (Let "$a1" (Val #(W64 1))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.AddInt64 []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W64 1))))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "buf") (Var "$r0"))))))))
-  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
-
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory where
   pkgImportedPkgs := [pkg_id.«unsafe», pkg_id.bytes, pkg_id.sync.atomic, pkg_id.time, pkg_id.sync]
 
@@ -3121,7 +3093,6 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   copyWordsViaTemp_unfold : FuncUnfold copyWordsViaTemp [] copyWordsViaTemp.impl
   testOverlappingCopyViaTemp_unfold : FuncUnfold testOverlappingCopyViaTemp [] testOverlappingCopyViaTemp.impl
   testAddPastEnd_unfold : FuncUnfold testAddPastEnd [] testAddPastEnd.impl
-  testMisalignedAtomic_unfold : FuncUnfold testMisalignedAtomic [] testMisalignedAtomic.impl
   import_unsafe_Assumption : _root_.Perennial.«unsafe».Assumptions
   import_bytes_Assumption : _root_.Perennial.bytes.Assumptions
   import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
@@ -3176,7 +3147,6 @@ attribute [instance] Assumptions.InBucket_instance
   Assumptions.copyWordsViaTemp_unfold
   Assumptions.testOverlappingCopyViaTemp_unfold
   Assumptions.testAddPastEnd_unfold
-  Assumptions.testMisalignedAtomic_unfold
   Assumptions.import_unsafe_Assumption
   Assumptions.import_bytes_Assumption
   Assumptions.import_atomic_Assumption

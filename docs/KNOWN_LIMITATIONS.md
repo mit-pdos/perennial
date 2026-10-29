@@ -188,9 +188,20 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   atomic on a misaligned address (a split lock), but its atomic loads and stores are plain
   `MOVQ`/`MOVL`, which can tear across a cache line, so `atomic.LoadInt64` racing with
   `atomic.StoreInt64` on `(*int64)(unsafe.Pointer(&buf[1]))` can read a mix of both values.
-  Only `unsafe` can make a misaligned integer (a view over byte memory); Go lays out every
-  typed integer at its alignment. The owner's decision of 2026-10-29 (assumption A5 of
-  `docs/design/unsafe-memory.md`).
+  A misaligned read-modify-write can also fail outright: it is a split lock, which Linux's
+  `split_lock_detect` throttles (`warn`, the default) or kills with `SIGBUS` (`fatal`); the
+  model has neither. For example,
+
+  ```go
+  buf := make([]byte, 16)
+  atomic.AddInt64((*int64)(unsafe.Pointer(&buf[1])), 1) // an atomic add in the model
+  ```
+
+  is provable in the model, but in gc it is a split lock when the 8 bytes cross a cache line,
+  and an atomic load of the same address racing with a store can tear. Only `unsafe` can make
+  a misaligned integer (a view over byte memory); Go lays out every typed integer at its
+  alignment. Proofs must not rely on atomics at addresses they cannot show aligned. The
+  owner's decision of 2026-10-29 (assumption A5 of `docs/design/unsafe-memory.md`).
 - **Mixed-width atomics are not stuck (unsound, assumed).** Atomics of two widths on the
   same bytes (`atomic.AddUint64(&u, 1)` and `atomic.AddUint32((*uint32)(unsafe.Pointer(&u)),
   1)`) get sequentially consistent byte semantics, which Intel does not promise when they

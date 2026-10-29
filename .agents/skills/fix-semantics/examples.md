@@ -892,8 +892,10 @@ points-tos.
 
 **Taken.** The byte atomics and `AllocBytes` drop the alignment premise; the typed points-to of
 `w16`/`w32`/`w64` is the bytes. A misaligned atomic is assumed not to tear (a known
-limitation, design assumption A5); `testMisalignedAtomic` moves from the probes to the
-targets. Trusted: 6 premises removed.
+limitation, design assumption A5). `testMisalignedAtomic` leaves the acceptance tests: under
+A5 it is provable, but it is an example of where the semantics is unsound, not of what to
+prove (owner: "We should not reason about code with misaligned atomics"); it is the example
+of the known limitation instead. Trusted: 6 premises removed.
 
 **Not taken.**
 - A separate view points-to for byte memory, keeping alignment in the typed points-to.
