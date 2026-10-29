@@ -26,9 +26,10 @@ elements to the bytes.
 Encodings and views of the scalars are here; a plain struct's encoding is the concatenation of its
 fields' (`ByteEncoding.prod`, `ByteEncoding.ofEquiv`), and its view (`BytesView`) is proved from
 the struct's field offsets (`structFieldRef_offset`) with `bytesView_field`,
-`bytesView_last_field` and `bytesView_of_def`. The tactics `solve_plain_struct_layout` and
-`solve_plain_field_offset` prove a struct's `go.PlainLayout` and field offsets. The `unsafememory`
-example's `Layout.lean` does all of this for its types.
+`bytesView_last_field` and `bytesView_of_def`; `go.PlainLayout.struct'` and
+`go.PlainFields.cons_` are the layout rules in a form for `apply` (the tactics
+`solve_plain_struct_layout` and `solve_plain_field_offset` of the `unsafememory` example's
+`Layout.lean`, which does all of this for its types, use them).
 -/
 module
 
@@ -796,7 +797,7 @@ theorem structFieldRef_offset (fds : List go.field_decl) (V : Type) [ZeroVal V]
 
 end addresses
 
-/-! ## Layout tactics -/
+/-! ## Layout rules for `apply` -/
 
 /-- `go.PlainLayout.struct` with the alignment the fields compute checked by an equation. -/
 theorem go.PlainLayout.struct' [GooseExts] [GoSemanticsFunctions] (fds : List go.field_decl)
@@ -809,39 +810,5 @@ theorem go.PlainFields.cons_ [GooseExts] [GoSemanticsFunctions] {fd : go.field_d
     (hl : go.PlainLayout (go.fieldDeclType fd) s a) (hb : go.isBlankField (go.fieldDeclName fd) = false)
     (hd : a ∣ off) (hr : go.PlainFields fds (off + s) stop a') :
     go.PlainFields (fd :: fds) off stop (Nat.max a a') := .cons fd fds off s a stop a' hl hb hd hr
-
-/-- Prove `go.PlainFields fds off stop ?align` for a concrete field list, computing the alignment:
-each field's layout is a scalar's or a hypothesis in the context (a named type's
-`PlainLayout`). -/
-macro "solve_plain_fields" : tactic => `(tactic| (
-  repeat (first
-    | exact go.PlainFields.nil _
-    | (apply go.PlainFields.cons_ (hb := rfl)
-       · dsimp only [go.fieldDeclType]
-         first
-         | exact go.PlainLayout.scalar _ _ inferInstance
-         | assumption
-       · decide))))
-
-/-- Prove `go.PlainLayout (go.StructType fds) size align` for a concrete field list (field layouts
-as in `solve_plain_fields`). -/
-macro "solve_plain_struct_layout" : tactic => `(tactic| (
-  apply go.PlainLayout.struct'
-  · simp
-  · solve_plain_fields
-  · decide
-  · decide))
-
-/-- Prove `go.PlainFieldOffset fds base f off` for a concrete field list (field layouts as in
-`solve_plain_fields`). -/
-macro "solve_plain_field_offset" : tactic => `(tactic| (
-  repeat (first
-    | exact go.PlainFieldOffset.here _ _ _
-    | (apply go.PlainFieldOffset.there
-       · dsimp only [go.fieldDeclName]; decide
-       · dsimp only [go.fieldDeclType]
-         first
-         | exact go.PlainLayout.scalar _ _ inferInstance
-         | assumption))))
 
 end Perennial
