@@ -119,9 +119,9 @@ attribute [local instance] GSet.lawfulSet
 section definitions
 variable [GooseExts] {GF : BundledGFunctors} [hG : NaHeapGS Loc val GF]
 
-/-- A non-null location with a non-atomic points-to. -/
+/-- A non-atomic points-to, at a positive address (every allocation is at one, `IsFresh`). -/
 def heapPointsto (l : Loc) (dq : DFrac) (v : val) : IProp GF :=
-  iprop(⌜l ≠ null⌝ ∗ naHeapPointsto l dq v)
+  iprop(⌜0 < l.addr⌝ ∗ naHeapPointsto l dq v)
 
 end definitions
 
@@ -201,7 +201,7 @@ theorem heapPointsto_agree (l : Loc) (dq1 dq2 : DFrac) (v1 v2 : val) :
   icombine H1 H2 gives %⟨_, H⟩
   ipureintro; exact H
 
-theorem na_pointsto_to_heap (l : Loc) (dq : DFrac) (v : val) (H : l ≠ null) :
+theorem na_pointsto_to_heap (l : Loc) (dq : DFrac) (v : val) (H : 0 < l.addr) :
     naHeapPointsto (hG := hG) l dq v ⊢ heapPointsto l dq v := by
   unfold heapPointsto
   iintro Hl
@@ -228,11 +228,17 @@ theorem heapPointsto_frac_valid (l : Loc) (q : Qp) (v : val) :
     heapPointsto (hG := hG) l (.own q) v ⊢ ⌜q.val ≤ 1⌝ :=
   heapPointsto_valid l (.own q) v
 
+theorem heapPointsto_pos (l : Loc) (dq : DFrac) (v : val) :
+    heapPointsto (hG := hG) l dq v ⊢ ⌜0 < l.addr⌝ := by
+  unfold heapPointsto
+  iintro ⟨%Hl, _⟩
+  ipureintro; exact Hl
+
 theorem heapPointsto_non_null (l : Loc) (dq : DFrac) (v : val) :
     heapPointsto (hG := hG) l dq v ⊢ ⌜l ≠ null⌝ := by
   unfold heapPointsto
   iintro ⟨%Hl, _⟩
-  ipureintro; exact Hl
+  ipureintro; intro h; rw [h] at Hl; simp [null] at Hl
 
 end heapPointsto
 
@@ -1582,7 +1588,7 @@ theorem wp_allocN_seq (v : val) (Hv : v.isPanic = false := by simp) :
   unfold pointstoVals
   iapply BigSepL.bigSepL_singleton.2
   rw [show l +ₗ ((0 : Nat) : Int) = l by simp]
-  iapply na_pointsto_to_heap l _ v Hnn $$ Hl
+  iapply na_pointsto_to_heap l _ v Hfresh.1 $$ Hl
 
 theorem wp_alloc_untyped (v : val) (Hv : v.isPanic = false := by simp) :
     {{ (True : IProp GF) }} (Alloc (Val v)) @ s; E

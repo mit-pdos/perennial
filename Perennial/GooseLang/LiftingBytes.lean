@@ -287,7 +287,7 @@ theorem bytesPointsto_alloc (h : GMap Loc (NonAtomic val)) (l : Loc) (bs : List 
     imod ih _ (l +ₗ 1) (by simp [Loc.add]; omega) hfresh' $$ Hσ with ⟨Hσ, Hbs⟩
     imodintro
     iframe Hσ Hbs
-    iapply na_pointsto_to_heap l _ _ hnn $$ Hb
+    iapply na_pointsto_to_heap l _ _ hpos $$ Hb
 
 theorem wp_alloc_bytes (w : Nat) (v : val) (bs : List w8) (Hv : valBytes w v = some bs) :
     {{ (True : IProp GF) }} (AllocBytes w (Val v)) @ s; E

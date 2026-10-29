@@ -822,3 +822,28 @@ struct could be modelled, and integer atomics had no alignment check (a misalign
 
 **Why.** The owner signed off the plan with option (C) for concrete plain addresses (a later
 step) and "Go ahead and start implementing the unsafe semantics".
+
+## Case 26 — ACCEPTED: concrete element and field addresses for plain types (branch `worktree-plain-addresses`)
+
+**Symptom.** Incomplete, for the unsafe memory design (R1, plan step 2): element and field
+addresses were abstract functions of the Lean type, so nothing related a struct view's
+`p.flags` to the byte `buf[8]` it lies over.
+
+**Taken.** Option (C) of `docs/design/unsafe-memory-rules-plan.md`:
+- `go.PlainLayout t size align` and `go.PlainFieldOffset` (`Golang/Defn/Plain.lean`), and the
+  class `go.PlainSemantics` with two axioms: at `0 < l`, a plain element's address is
+  `l + i·size` (`0 ≤ i`) and a plain struct field's is `l + offset`. The existing
+  `arrayIndexRef` axioms stay.
+- `GoPrealloc`'s address is positive, so a Go-allocated plain struct's base qualifies.
+- Proofs: `heapPointsto` carries `0 < l.addr` instead of `l ≠ null`.
+- About 90 trusted lines (definitions and two axioms), no goose change.
+
+**Not taken.**
+- (A) refining the seven address rules by Go type: the slice points-to is keyed by the Lean
+  type, so every slice proof changes (about 66 files).
+- (B) the axiom at every address: it contradicts `arrayIndexRef_null_inv` (`l = -8`, `i = 1`).
+- A state-interpretation invariant for `0 < l` (the plan's wording): the fact is needed outside
+  WP steps, so it is carried by the heap points-to instead.
+
+**Why.** The owner: "Do (c)".
+

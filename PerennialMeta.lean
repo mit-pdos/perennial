@@ -38,6 +38,7 @@ public import Perennial.Golang.Defn.Loop
 public import Perennial.Golang.Defn.Map
 public import Perennial.Golang.Defn.MethodSet
 public import Perennial.Golang.Defn.Pkg
+public import Perennial.Golang.Defn.Plain
 public import Perennial.Golang.Defn.PostLang
 public import Perennial.Golang.Defn.Pre
 public import Perennial.Golang.Defn.PreLang
