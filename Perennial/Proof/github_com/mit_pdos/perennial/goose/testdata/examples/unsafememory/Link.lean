@@ -11,12 +11,15 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page__leafPageElements
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page__pageElementSize
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement__key
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.cloneBytes
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inodesEqual
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafInodes
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement__key
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement__value
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.openInlineBucket
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.pageAt
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.pageBytes
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.pageSize
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.readInodeFromPage
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.searchLeaf
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testAddPastEnd
@@ -28,6 +31,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFloatBits
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFreelistOverflow
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFreelistRoundTrip
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testInlineBucket
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testLeafRoundTrip
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testMixedWidthAtomics
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testOverlappingCopyViaTemp
@@ -38,6 +42,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.unsafeAdd
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.unsafeByteSlice
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.unsafeIndex
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.writeInlineBucket
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.writeInodeToPage
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.writeLeaf
 public import Perennial.Proof.sync.Link
@@ -80,6 +85,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_un
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement.wp_key : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement.key.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement.key.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_unsafeByteSlice
 
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_cloneBytes : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.cloneBytes.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.cloneBytes.wp_proof
+
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_inodesEqual : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inodesEqual.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.inodesEqual.wp_proof bytes.wp_Equal
 
@@ -92,11 +100,17 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafP
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement.wp_value : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement.value.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement.value.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_unsafeByteSlice
 
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_openInlineBucket : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.openInlineBucket.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.openInlineBucket.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_cloneBytes
+
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_pageAt : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.pageAt.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.pageAt.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_pageBytes : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.pageBytes.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.pageBytes.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_unsafeByteSlice
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_pageSize : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.pageSize.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.pageSize.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_readInodeFromPage : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.readInodeFromPage.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.readInodeFromPage.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.wp_leafPageElement github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.wp_branchPageElement github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement.wp_key github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement.wp_value github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.branchPageElement.wp_key
@@ -182,6 +196,12 @@ variable [package_sem : Assumptions]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testFreelistRoundTrip : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFreelistRoundTrip.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFreelistRoundTrip.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_writeInlineBucket : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.writeInlineBucket.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.writeInlineBucket.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_pageSize github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_writeInodeToPage
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testInlineBucket : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testInlineBucket.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testInlineBucket.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_leafInodes github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_writeInlineBucket github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_writeLeaf github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Page.wp_leafPageElement github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.leafPageElement.wp_value bytes.wp_Equal github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_openInlineBucket github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_readInodeFromPage github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_inodesEqual
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testLeafRoundTrip : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testLeafRoundTrip.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testLeafRoundTrip.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_leafInodes github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_writeLeaf github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_readInodeFromPage github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_inodesEqual
