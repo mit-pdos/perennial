@@ -387,7 +387,7 @@ variable [sem : go.Semantics]
 open ProofMode
 
 /-- The bytes of a non-empty byte points-to lie in `(0, maxAddr]`. -/
-theorem bytesPointsto_bounds (l : Loc) (dq : DFrac) (bs : List w8) (h : bs ≠ []) :
+theorem bytesPointsto_in_bounds (l : Loc) (dq : DFrac) (bs : List w8) (h : bs ≠ []) :
     bytesPointsto (GF := GF) l dq bs ⊢ ⌜0 < l.addr ∧ l.addr + bs.length ≤ maxAddr⌝ := by
   induction bs generalizing l with
   | nil => exact absurd rfl h
@@ -404,13 +404,13 @@ theorem bytesPointsto_bounds (l : Loc) (dq : DFrac) (bs : List w8) (h : bs ≠ [
       simp only [Loc.add, List.length_cons] at H3 ⊢
       omega
 
-/-- `bytesPointsto_bounds` for bytes that may be empty. -/
-theorem bytesPointsto_bounds_imp (l : Loc) (dq : DFrac) (bs : List w8) :
+/-- `bytesPointsto_in_bounds` for bytes that may be empty. -/
+theorem bytesPointsto_in_bounds_imp (l : Loc) (dq : DFrac) (bs : List w8) :
     bytesPointsto (GF := GF) l dq bs ⊢ ⌜bs ≠ [] → 0 < l.addr ∧ l.addr + bs.length ≤ maxAddr⌝ := by
   by_cases h : bs = []
   · iintro _; ipureintro; intro h'; exact absurd h h'
   · iintro H
-    icases bytesPointsto_bounds l dq bs h $$ H with %Hb
+    icases bytesPointsto_in_bounds l dq bs h $$ H with %Hb
     ipureintro; intro _; exact Hb
 
 instance bytesPointsto_discard_persistent (l : Loc) (bs : List w8) :

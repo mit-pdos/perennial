@@ -135,7 +135,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testF
     (List.ne_nil_of_length_pos (by rw [List.length_replicate]; decide)) $$ Hbuf with %Hpos
   ihave Hb := ownSlice_to_bytes go.uint8 (.scalar _ _ .isPlainScalar_uint8) buf _ _ Hpos $$ Hbuf
   rw [flatMap_encode_w8]
-  wp_apply wp_pageAt buf
+  wp_apply wp_pageAt_zero buf
     (by have h := Hblen.1; rw [List.length_replicate] at h
         have : (sint.Z buf.len).toNat = 524312 := h.symm
         omega)

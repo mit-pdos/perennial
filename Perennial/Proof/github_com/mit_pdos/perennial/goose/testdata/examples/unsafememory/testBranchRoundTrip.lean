@@ -91,7 +91,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testB
   rw [List.length_replicate] at Hbl
   have hbufW : buf.len = W64 (4096 : Nat) := w64_of_sint_nat _ _ Hbl.1 Hbl.2
   have hbufZ : sint.Z buf.len = 4096 := by rw [hbufW]; rfl
-  ihave %Hbd := bytesPointsto_bounds _ _ _ (by
+  ihave %Hbd := bytesPointsto_in_bounds _ _ _ (by
     intro h; have := congrArg List.length h; rw [List.length_replicate] at this
     exact absurd this (by decide)) $$ Hb
   wp_apply wp_pageAt

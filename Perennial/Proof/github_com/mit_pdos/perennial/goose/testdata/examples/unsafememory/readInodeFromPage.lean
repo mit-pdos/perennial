@@ -44,7 +44,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.readI
   icases typedPointsto_split _ _ _ $$ Hp with Hp'
   simp only [TypedPointsto.typedPointstoDef]
   icases Hp' with ⟨Hid, Hflags, Hcnt, Hoverflow, -⟩
-  ihave %Hbd := bytesPointsto_bounds_imp _ _ _ $$ Hb
+  ihave %Hbd := bytesPointsto_in_bounds_imp _ _ _ $$ Hb
   have hcZ : uint.Z hdr.count' = ms.length := by
     rw [Hcount]; simp only [uint.Z]; word
   simp only [leafPageFlag]

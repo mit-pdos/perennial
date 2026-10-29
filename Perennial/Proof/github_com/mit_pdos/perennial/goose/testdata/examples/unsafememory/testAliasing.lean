@@ -73,7 +73,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testA
   rw [flatMap_encode_w8, show (zero_val w8 : w8) = 0 from rfl]
   rw [List.length_replicate] at Hbl
   have hbufW : buf.len = W64 (4096 : Nat) := w64_of_sint_nat _ _ Hbl.1 Hbl.2
-  ihave %Hbd := bytesPointsto_bounds _ _ _ (by
+  ihave %Hbd := bytesPointsto_in_bounds _ _ _ (by
     intro h; have := congrArg List.length h; rw [List.length_replicate] at this
     exact absurd this (by decide)) $$ Hb
   simp only [List.length_replicate] at Hbd

@@ -54,7 +54,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.write
   have hEle : List.replicate R (0 : w8) = List.replicate (16 * ms.length) 0 ++
       List.replicate (R - 16 * ms.length) 0 := by
     rw [List.replicate_append_replicate]; congr 1; omega
-  ihave %Hbd := bytesPointsto_bounds_imp _ _ _ $$ Hb
+  ihave %Hbd := bytesPointsto_in_bounds_imp _ _ _ $$ Hb
   have hbound : 0 < R → p.addr + 16 + R ≤ maxAddr := by
     intro hR0
     have := (Hbd (by simp; omega)).2

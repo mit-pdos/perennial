@@ -33,7 +33,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.write
   intro buf s ms N
   wp_start as ⟨#Hin, Hb, %H⟩
   obtain ⟨Hlen, HN, Hfit, HR⟩ := H
-  ihave %Hbd := bytesPointsto_bounds _ _ _ (by intro h; have := congrArg List.length h; simp at this; omega) $$ Hb
+  ihave %Hbd := bytesPointsto_in_bounds _ _ _ (by intro h; have := congrArg List.length h; simp at this; omega) $$ Hb
   simp only [List.length_replicate] at Hbd
   wp_auto
   have hNZ : sint.Z buf.len = N := by rw [Hlen]; exact sint_Z_W64_nat _ HN

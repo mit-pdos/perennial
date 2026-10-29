@@ -115,7 +115,7 @@ theorem ownSlice_to_bytes {V : Type} {n : Nat} [ZeroVal V] [ByteEncoding V n]
   iexact Hb
 
 /-- `pageAt(buf, 0)`: the page at the start of a non-empty buffer. -/
-theorem wp_pageAt (buf : GoSlice) (hlen : 0 < sint.Z buf.len) :
+theorem wp_pageAt_zero (buf : GoSlice) (hlen : 0 < sint.Z buf.len) :
     {{ (True : IProp GF) }}
       (App (App (Val (@! pageAt)) (Val #buf)) (Val #(W64 0)))
     {{ RET #buf.ptr; True }} := by
@@ -127,7 +127,7 @@ theorem wp_pageAt (buf : GoSlice) (hlen : 0 < sint.Z buf.len) :
   iapply HΦ; itrivial
 
 /-- `unsafeAdd(base, offset)`, for a result in `[0, maxAddr]`. -/
-theorem wp_unsafeAdd (l : Loc) (x : w64)
+theorem wp_unsafeAdd_direct (l : Loc) (x : w64)
     (h : 0 ≤ (l +ₗ sint.Z x).addr ∧ (l +ₗ sint.Z x).addr ≤ maxAddr) :
     {{ (True : IProp GF) }}
       (App (App (Val (@! unsafeAdd)) (Val #l)) (Val #x))
@@ -228,7 +228,7 @@ theorem wp_writeIds (p : Loc) (bs : List w8) (ids : GoSlice) (vs : List w64) (dq
   have hadd : 0 ≤ (p +ₗ sint.Z (W64 16)).addr ∧ (p +ₗ sint.Z (W64 16)).addr ≤ maxAddr := by
     simp only [h16', Loc.add]; omega
   wp_if_destruct
-  · wp_apply wp_unsafeAdd p (W64 16) hadd
+  · wp_apply wp_unsafeAdd_direct p (W64 16) hadd
     rw [h16']
     have hsmall : vs.length < 65535 := by rw [show sint.Z (W64 65535) = 65535 from rfl] at Hif; omega
     have hfi : freelistIds vs = vs := by simp [freelistIds, hsmall]
@@ -254,7 +254,7 @@ theorem wp_writeIds (p : Loc) (bs : List w8) (ids : GoSlice) (vs : List w64) (dq
         rw [List.drop_drop]; congr 1; omega,
       show (List.take (vs.length * 8) (List.drop 16 bs)).length = vs.length * 8 by simp; omega]
     iframe
-  · wp_apply wp_unsafeAdd p (W64 16) hadd
+  · wp_apply wp_unsafeAdd_direct p (W64 16) hadd
     rw [h16']
     have hbig : 65535 ≤ vs.length := by rw [show sint.Z (W64 65535) = 65535 from rfl] at Hif; omega
     have hfi : freelistIds vs = W64 vs.length :: vs := by simp [freelistIds]; omega
@@ -317,7 +317,7 @@ theorem wp_writeIds (p : Loc) (bs : List w8) (ids : GoSlice) (vs : List w64) (dq
     iframe
 
 /-- `unsafeIndex(base, offset, elemsz, n)`, for a result in `[0, maxAddr]`. -/
-theorem wp_unsafeIndex (l : Loc) (off sz n : w64)
+theorem wp_unsafeIndex_direct (l : Loc) (off sz n : w64)
     (h : 0 ≤ (l +ₗ sint.Z (off + n * sz)).addr ∧ (l +ₗ sint.Z (off + n * sz)).addr ≤ maxAddr) :
     {{ (True : IProp GF) }}
       (App (App (App (App (Val (@! unsafeIndex)) (Val #l)) (Val #off)) (Val #sz)) (Val #n))
@@ -389,7 +389,7 @@ theorem wp_readIds (p : Loc) (h : Page) (vs : List w64) (rest : List w8)
     rw [ByteEncoding.encode_length, show ((8 : Nat) : Int) = 8 from rfl]
     icases (typedPointsto_bytes (p +ₗ 16) (W64 (vs.length : Int)) _ (by simp [Loc.add]; omega)).2
       $$ Hc with Hc
-    wp_apply wp_unsafeAdd p (W64 16) (by simp only [h16', Loc.add]; omega)
+    wp_apply wp_unsafeAdd_direct p (W64 16) (by simp only [h16', Loc.add]; omega)
     rw [h16']
     wp_auto
     have hn : sint.Z (W64 (vs.length : Int)) = vs.length := sint_Z_W64_nat _ (by omega)
@@ -398,7 +398,7 @@ theorem wp_readIds (p : Loc) (h : Page) (vs : List w64) (rest : List w8)
       have := congrArg (fun x : w64 => sint.Z x) Hif
       simp only [hn, show sint.Z (W64 0) = 0 from rfl] at this; omega
     have h24 : sint.Z (W64 16 + W64 1 * W64 8) = 24 := by rfl
-    wp_apply wp_unsafeIndex p (W64 16) (W64 8) (W64 1) (by rw [h24]; simp only [Loc.add]; omega)
+    wp_apply wp_unsafeIndex_direct p (W64 16) (W64 8) (W64 1) (by rw [h24]; simp only [Loc.add]; omega)
     rw [h24, show p +ₗ 24 = p +ₗ 16 +ₗ 8 by rw [loc_add_assoc]; rfl]
     wp_apply wp_unsafe_slice_Pgid (p +ₗ 16 +ₗ 8) (W64 vs.length) (by omega)
       (by simp [Loc.add]; omega) (by simp only [Loc.add]; simp [maxAddr] at Hbnd; omega)
@@ -455,7 +455,7 @@ theorem wp_readIds (p : Loc) (h : Page) (vs : List w64) (rest : List w8)
       · ipureintro; intro _; rfl
       iapply ownSlice_nil
     have hn : sint.Z (W64 (vs.length : Int)) = vs.length := sint_Z_W64_nat _ (by omega)
-    wp_apply wp_unsafeIndex p (W64 16) (W64 8) (W64 0)
+    wp_apply wp_unsafeIndex_direct p (W64 16) (W64 8) (W64 0)
       (by rw [show W64 16 + W64 0 * W64 8 = W64 16 by rfl, h16']; simp only [Loc.add]; omega)
     rw [show W64 16 + W64 0 * W64 8 = W64 16 by rfl, h16']
     wp_apply wp_unsafe_slice_Pgid (p +ₗ 16) (W64 vs.length) (by omega) (by simp [Loc.add]; omega)

@@ -56,7 +56,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testF
   icases ownSlice_ptr_pos buf _ _ (by simp) $$ Hbuf with %Hpos
   ihave Hb := ownSlice_to_bytes go.uint8 (.scalar _ _ .isPlainScalar_uint8) buf _ _ Hpos $$ Hbuf
   rw [flatMap_encode_w8]
-  wp_apply wp_pageAt buf
+  wp_apply wp_pageAt_zero buf
     (by have h := Hblen.1; rw [List.length_replicate] at h
         have : (sint.Z buf.len).toNat = 40 := h.symm
         omega)
@@ -132,12 +132,12 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testF
     have h := Helen.1; rw [List.length_replicate] at h
     have : (sint.Z emp.len).toNat = 16 := h.symm
     omega
-  wp_apply wp_pageAt emp helen
+  wp_apply wp_pageAt_zero emp helen
   ihave Hnil := ownSlice_nil (V := w64) (DFrac.own 1)
   wp_apply wp_writeIds emp.ptr (List.replicate 16 (zero_val w8)) slice.nil [] (DFrac.own 1)
     (by simp [freelistIds]) (by simp) $$ [He] as ⟨He, _⟩
   · iframe; iexact Hnil
-  wp_apply wp_pageAt emp helen
+  wp_apply wp_pageAt_zero emp helen
   unfold freelistBytes
   wp_apply wp_readIds emp.ptr
     (freelistHeader (decode (List.take 16 (List.replicate 16 (zero_val w8)))) []) [] _ rfl (by simp)

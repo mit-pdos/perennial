@@ -38,9 +38,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.searc
   have hnn : p ≠ null := by intro h; subst h; simp [null] at Hpos
   have hcZ : uint.Z hdr.count' = ms.length := by
     rw [Hcount]; simp only [uint.Z]; word
-  ihave %Hbd := bytesPointsto_bounds_imp _ _ _ $$ Hb
+  ihave %Hbd := bytesPointsto_in_bounds_imp _ _ _ $$ Hb
   icases (typedPointsto_bytes (V := Page) _ _ _ Hpos).1 $$ Hp with Hpb
-  ihave %Hpbd := bytesPointsto_bounds _ _ _ (ByteEncoding.encode_ne_nil hdr (by decide)) $$ Hpb
+  ihave %Hpbd := bytesPointsto_in_bounds _ _ _ (ByteEncoding.encode_ne_nil hdr (by decide)) $$ Hpb
   rw [ByteEncoding.encode_length] at Hpbd
   have hbody := pageBody_length true ms
   wp_auto
