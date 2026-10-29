@@ -857,9 +857,11 @@ so a view of byte cells as a pointer, string, bool or map read a malformed value
 - the conversion to `*T` needs `go.IsPlain T` (a class over `PlainLayout`), so it is stuck for
   a non-plain `T`;
 - `uintptr(p)` is `ArbitraryInt`;
-- `unsafe.Add` is `(p + n) mod 2^64`, gc's wrapping (found by the blind review:
-  `Add(Add(p, MinInt64), MinInt64) == p` in Go), with the heap bounded below `maxAddr = 2^47`
-  so that every address is gc's; an allocation that finds no free range loops. A first fix,
+- `unsafe.Add` is `p + n`, stuck unless the result is in `[0, maxAddr]`, with the heap bounded
+  below `maxAddr = 2^47` so that every valid address and allocation end is in that range, where
+  gc does not wrap; an allocation that finds no free range loops. Two earlier forms were wrong
+  against gc (blind reviews): unbounded addition (`Add(Add(p, MinInt64), MinInt64) == p` in
+  Go) and wrapping mod `2^64` (an array view's element address over the wrapped pointer). A first fix,
   stuck outside `[0, 2^64)`, made every target unprovable: an unbounded heap can place an
   object above `2^64`. The owner chose between that, a `w64` address type and a bounded `Int`
   heap: "Let's keep Int but bound the heap.";

@@ -178,7 +178,8 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   failure, so a verified program that forms such a pointer (`unsafe.Add(p, len)`, or a
   reslice of an `unsafe.Slice` that reaches past the allocation) can still crash in gc.
   Accesses through such a pointer are still stuck where no cell exists (R2 of
-  `docs/design/unsafe-memory.md`). The owner's decision of 2026-10-29: "If the real
+  `docs/design/unsafe-memory.md`), and an `unsafe.Add` whose result leaves the heap's range
+  `[0, maxAddr]` is stuck (so the model never wraps an address, where gc would). The owner's decision of 2026-10-29: "If the real
   program runs into that problem, it'll be very obvious".
 - **Mixed-width atomics are not stuck (unsound, assumed).** Atomics of two widths on the
   same bytes (`atomic.AddUint64(&u, 1)` and `atomic.AddUint32((*uint32)(unsafe.Pointer(&u)),

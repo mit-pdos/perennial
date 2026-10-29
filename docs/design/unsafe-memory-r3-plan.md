@@ -97,13 +97,16 @@ add_unfold (it : go.GoType) [go.IsInteger it] : FuncUnfold «unsafe».Add [it]
 ```
 - The offset uses Go's conversion of `n`, so an unsigned `^7` is -8. That matches gc (run:
   `unsafe.Add(&b[8], uint64(^7)) == &b[0]`).
-- `is_go_op_pointer_plus` (`Slice.lean:142`) is `(l + sint.Z x) mod 2^64`: gc's addresses wrap,
-  so `unsafe.Add(unsafe.Add(p, MinInt64), MinInt64) == p` in Go (found by the review of the
-  implementation, 2026-10-29). The heap is bounded below `maxAddr = 2^47` (owner's decision,
-  2026-10-29: "keep Int but bound the heap"), so every allocated address is below `2^64`
-  and the model's wrapping is gc's; `unsafe.Slice`'s overflow check is gc's too, and a proof
-  can discharge it. An allocation that finds no free range loops (out of memory is outside the
-  model).
+- `is_go_op_pointer_plus` (`Slice.lean:142`) has a rule only for a result in `[0, maxAddr]`,
+  and is stuck elsewhere. The heap is bounded below `maxAddr = 2^47` (owner's decision,
+  2026-10-29: "keep Int but bound the heap"), so every valid pointer, and an allocation's end,
+  is in that range, where gc's arithmetic does not wrap; a result outside it leaves every
+  allocation (the accepted limitation), and is stuck. History: unbounded addition disagreed
+  with gc's wrapping (`Add(Add(p, MinInt64), MinInt64) == p` in Go); wrapping mod `2^64`
+  disagreed with the unwrapped element addresses of an array view over the wrapped pointer
+  (`&p[1<<47] == q`); both found by blind reviews of the implementation.
+- An allocation that finds no free range loops (out of memory is outside the model), and
+  `unsafe.Slice`'s overflow check, gc's, can be discharged by a proof from the bound.
 - A nil `unsafe.Pointer` converts to the nil pointer of every type
   (`convert_unsafe_nil_to_pointer`), plain or not: `time`'s zero `Location` needs it.
 
