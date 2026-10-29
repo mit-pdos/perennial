@@ -7,6 +7,9 @@ module
 
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testAddPastEnd
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFloatBits
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testMixedWidthAtomics
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testStatsConcurrent
+public import Perennial.Proof.sync.Link
 
 @[expose] public section
 
@@ -26,6 +29,12 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_te
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testFloatBits : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFloatBits.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFloatBits.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testMixedWidthAtomics : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testMixedWidthAtomics.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testMixedWidthAtomics.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testStatsConcurrent : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testStatsConcurrent.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testStatsConcurrent.wp_proof sync.WaitGroup.wp_Add sync.WaitGroup.wp_Done sync.WaitGroup.wp_Wait
 
 end link
 
