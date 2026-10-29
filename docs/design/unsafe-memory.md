@@ -28,7 +28,7 @@
 - **Out-of-memory** is outside the model, as it already is. A 2^48-byte
   allocation passes gc's checks and then dies of a fatal out-of-memory
   error, which is not a panic.
-- **Acceptance tests:** `goose/testdata/disabled-tests/bboltmini`. Every
+- **Acceptance tests:** `goose/testdata/disabled-tests/unsafememory`. Every
   target there must be provable, every `stuck/` probe unprovable, and goose
   must refuse every package under `rejected/` (section 12).
 
@@ -45,7 +45,7 @@ unsigned integers**: `Page`, `branchPageElement`, `leafPageElement` and
 `InBucket` (16 bytes each), `Meta` (64 bytes; it contains an `InBucket`),
 and `Pgid` (8 bytes).
 
-The idioms, with sites listed in `bboltmini/README.md`:
+The idioms, with sites listed in `unsafememory/README.md`:
 
 | | idiom |
 |---|---|
@@ -565,7 +565,7 @@ The list is complete: `goose/cmd/modelcheck -all` over bbolt's `.`,
 `internal/common` and `internal/freelist` reports exactly these six at
 v1.5.0, and nothing on the fork.
 
-bbolt's `go.mod` requires Go 1.25, which has both builtins. `bboltmini` is
+bbolt's `go.mod` requires Go 1.25, which has both builtins. `unsafememory` is
 written in these forms, and its probes keep the originals stuck or rejected.
 
 ## 7. Prerequisites: existing bugs and gaps on `lean`
@@ -713,7 +713,7 @@ as any store does. These principles are all that bbolt's page code needs.
 The rules above are short. Most of their clauses answer a specific way a
 simpler design is unsound against gc, or makes bbolt unprovable. This
 section gives the reason for each, and the simpler choice it rules out. The
-probe names are in `bboltmini/stuck/` and `bboltmini/rejected/`.
+probe names are in `unsafememory/stuck/` and `unsafememory/rejected/`.
 
 ### 10.1 Why integers become bytes at all
 
@@ -1148,13 +1148,13 @@ Status on 2026-10-28. Each step is a branch off the current `lean`.
    layout with concrete addresses at positive addresses.
 6. **R3 and goose:** done (`unsafe-memory-r3-plan.md`), with `unsafe.Add` and
    `unsafe.Slice` as pure arithmetic: a pointer outside its allocation is not
-   checked (owner, 2026-10-29; `docs/KNOWN_LIMITATIONS.md`). `bboltmini` is in
+   checked (owner, 2026-10-29; `docs/KNOWN_LIMITATIONS.md`). `unsafememory` is in
    `goose/testdata/examples`.
 7. **The acceptance tests,** brought in line with this draft (done,
    2026-10-28):
    - **Copies between places:** `testOverlappingCopy`,
      `testArrayFieldOverlapCopy` and `testOverlappingArrayCopy` move to
-     `bboltmini/rejected/`, a package goose must refuse, together with the
+     `unsafememory/rejected/`, a package goose must refuse, together with the
      review's three copies through loaded pointers and slices
      (`testCopyViaPointerFields`, `testCopyViaSliceFields`,
      `testCopyViaNestedSlices`, each false in Go).
@@ -1169,6 +1169,6 @@ Status on 2026-10-28. Each step is a branch off the current `lean`.
    - **Renamed targets:** `testTagsClearedByByteStores` becomes
      `testBufferReuseShifted`.
    - **Rewritten targets:** the whole copies in the targets and in
-     `bboltmini`'s bbolt code are written through locals, as in section 6
+     `unsafememory`'s bbolt code are written through locals, as in section 6
      (`targets.go:138, 237-239`, `bucket.go:18, 41`, `meta.go:55`).
 8. **The program logic of section 9,** and the proofs of the targets.

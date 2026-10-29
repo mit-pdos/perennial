@@ -1,6 +1,7 @@
-# bboltmini: acceptance tests for byte memory and `unsafe`
+# unsafememory: examples of unsafe memory use
 
-bbolt's use of byte memory, cut to about 400 lines. Every idiom is written
+The acceptance tests for byte memory and `unsafe`: bbolt's use of byte
+memory, cut to about 400 lines. Every idiom is written
 as `go.etcd.io/bbolt` v1.5.0 writes it, except for the patched forms of
 `docs/design/unsafe-memory.md` section 6:
 - `unsafeAdd` and `unsafeIndex` use `unsafe.Add`;
@@ -12,16 +13,16 @@ as `go.etcd.io/bbolt` v1.5.0 writes it, except for the patched forms of
 The semantics and reasoning principles are enough for bbolt when goose
 translates every target below and each one is proved, none of the probes
 in `stuck/` can be proved, and goose refuses every copy in
-`goose/testdata/disabled-tests/bboltmini-rejected`.
+`goose/testdata/disabled-tests/unsafememory-rejected`.
 
 `go test ./...` here checks that each
 target holds in Go, what Go answers for each probe and each rejected copy
 that has a fixed answer, and that goose's guard refuses exactly the copies
-marked `// refused` in `bboltmini-rejected` (`go test` there). The targets also pass under `-race`, whose `checkptr` checks every
+marked `// refused` in `unsafememory-rejected` (`go test` there). The targets also pass under `-race`, whose `checkptr` checks every
 unsafe conversion for alignment and for staying inside its allocation.
 
-goose translates both packages (`bboltmini.gold.lean`, `stuck/stuck.gold.lean`; the Lean
-translation is under `Perennial/Code/.../examples/bboltmini`), and `goose/cmd/modelcheck`
+goose translates both packages (`unsafememory.gold.lean`, `stuck/stuck.gold.lean`; the Lean
+translation is under `Perennial/Code/.../examples/unsafememory`), and `goose/cmd/modelcheck`
 reports nothing on them.
 
 ## Targets (`targets.go`): each `{{ True }} testX() {{ RET true }}`
@@ -78,7 +79,7 @@ stuck on purpose.
 Each probe marked **false** found an unsound point in an earlier draft of
 the design. Section 11 of the design records the review rounds.
 
-## Rejected copies (`goose/testdata/disabled-tests/bboltmini-rejected`): goose must refuse each
+## Rejected copies (`goose/testdata/disabled-tests/unsafememory-rejected`): goose must refuse each
 
 The semantics copies a struct or array by value; gc copies with a `Move`,
 which is wrong when its two sides partially overlap (design R4). goose's

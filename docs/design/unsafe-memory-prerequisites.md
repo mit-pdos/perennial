@@ -311,7 +311,7 @@ The owner's answer on R1 ("don't think in terms of blocks"); the design is in
 - Not done (owner's decision, 2026-10-26: "let's not do P9b and do the bare minimum in
   R1"): the layout table, concrete `structFieldRef`/`arrayIndexRef`, one-range
   allocation, and `0 < l` in typed points-tos. Only plain types need concrete
-  addresses (bboltmini views bytes only as plain structs and arrays), so R1 gives
+  addresses (unsafememory views bytes only as plain structs and arrays), so R1 gives
   `StructFieldRef`/`IndexRef` at a plain type a rule computing `l + offset` from the
   Go type, and the abstract rules gain `¬ Plain`. Non-plain refs stay abstract, keyed
   by the Lean type as today, so no generated proof changes for them. Allocation keeps

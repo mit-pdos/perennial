@@ -1,4 +1,4 @@
-package bboltmini
+package unsafememory
 
 import (
 	"sync/atomic"

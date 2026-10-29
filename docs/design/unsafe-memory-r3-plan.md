@@ -72,7 +72,7 @@ convert_unsafe_to_uintptr (l : Loc) : ⟦Convert unsafe.Pointer go.uintptr, #l�
   stacks require (design 10.4). It includes gc's answers: `uintptr(nil)` is 0, and an
   allocated `uint64` is 8-aligned.
 - It serves:
-  - bboltmini's alignment test (`testInlineBucket`, `bucket.go`): both branches must verify;
+  - unsafememory's alignment test (`testInlineBucket`, `bucket.go`): both branches must verify;
   - the probes `testOriginalPos`, `testFieldResidue` and `testByteSliceAligned`, which must
     stay unprovable.
 - `unsafe.Pointer(u)` from a `uintptr` keeps no rule (stuck), so `testOriginalUnsafeAdd`
@@ -152,18 +152,18 @@ type-dependent choice. Cost:
   sizes with no padding.
 - The semantics test should check it on a struct with fields of mixed widths.
 
-## 4. bboltmini moves to `testdata/examples`
+## 4. unsafememory moves to `testdata/examples`
 
-- `goose/testdata/disabled-tests/bboltmini` and its `stuck/` move to
-  `goose/testdata/examples/bboltmini`. This adds `bboltmini.gold.lean` and
+- `goose/testdata/disabled-tests/unsafememory` and its `stuck/` move to
+  `goose/testdata/examples/unsafememory`. This adds `unsafememory.gold.lean` and
   `stuck/stuck.gold.lean` (`go test ./goose -update-gold`), and the Lean translation under
-  `Perennial/Code/.../examples/bboltmini` (`etc/update-goose-new.py`).
+  `Perennial/Code/.../examples/unsafememory` (`etc/update-goose-new.py`).
 - **goose must then translate every declaration,** with modelcheck finding nothing on either
   package (checked: only the 7 `unsafe.Add`/`Slice` calls fail today).
 - **`rejected/` stays out of `examples`,** since `TestExamples` translates every package
-  there. It moves to `goose/testdata/disabled-tests/bboltmini-rejected`, and `TestRefused`
+  there. It moves to `goose/testdata/disabled-tests/unsafememory-rejected`, and `TestRefused`
   keeps checking it.
-- **Which rule each bboltmini test needs:**
+- **Which rule each unsafememory test needs:**
   - **targets:**
     - the page code (`unsafeAdd`, `unsafeIndex`, `unsafeByteSlice`, `leafPageElements`,
       `writeIds`, `readIds`) needs §3;
@@ -202,13 +202,13 @@ these two methods. etcd-grove is checked at its next bump.
 1. §1 with the two models, after item 1 has landed `PlainLayout`;
 2. §2;
 3. §3 with goose;
-4. the bboltmini move.
+4. the unsafememory move.
 
 **Left out:**
 - P2: field and element addresses through nil are still defined (deferred until after the
   unsafe work);
 - allocation bounds (P7b, L3);
-- `unsafe.String`, `unsafe.StringData`, `unsafe.SliceData`: not used by bboltmini; stuck,
+- `unsafe.String`, `unsafe.StringData`, `unsafe.SliceData`: not used by unsafememory; stuck,
   since goose rejects them;
 - `unsafe.Slice` of a non-plain element type;
 - the program logic of design §9 (byte-view and field-split lemmas) and the target proofs,

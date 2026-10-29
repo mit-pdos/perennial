@@ -1,4 +1,4 @@
-// Package stuck holds the constructs next to bboltmini's that the model must
+// Package stuck holds the constructs next to unsafememory's that the model must
 // NOT verify: for each test function here, {{ True }} testX() {{ RET true }}
 // must be unprovable. Some return true in Go but use something the model
 // leaves stuck on purpose (bbolt's original uintptr forms, padded structs);

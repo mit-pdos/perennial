@@ -1,5 +1,5 @@
-// Package bboltmini is bbolt's use of byte memory, cut down to what a proof
-// has to get through: page headers and element arrays laid over a []byte, keys
+// Package unsafememory holds examples of unsafe memory use, taken from bbolt's
+// use of byte memory and cut down to what a proof has to get through: page headers and element arrays laid over a []byte, keys
 // and values sliced out of a page at element-relative offsets, the meta page's
 // checksum over a struct's bytes, the freelist's id array, inline buckets at
 // unaligned offsets, and an atomic on a *time.Duration cast to *int64.
@@ -11,7 +11,7 @@
 // instead of as a pointer difference, and whole-struct copies between two
 // memory places go through a local. The original forms are in package
 // stuck, with the other constructs the model must not verify.
-package bboltmini
+package unsafememory
 
 import (
 	"bytes"

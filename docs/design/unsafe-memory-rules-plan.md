@@ -113,7 +113,7 @@ store_plain_scalar : stuck unless every cell is a byte cell; then writes the w c
 
 ## R1: concrete addresses for plain types (to decide)
 
-bboltmini needs `&p.f = p + plainOffset` and `&a[i] = a + i·plainSize` for
+unsafememory needs `&p.f = p + plainOffset` and `&a[i] = a + i·plainSize` for
 plain types, through every rule that computes an element address, and
 through the slice points-to: `unsafe.Slice` over a page must agree with the
 page's bytes. There are two ways.
