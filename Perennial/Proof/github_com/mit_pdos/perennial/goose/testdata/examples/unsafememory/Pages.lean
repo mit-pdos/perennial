@@ -365,6 +365,16 @@ theorem mid_eq (a b : Nat) (hab : a ≤ b) (hb : b < 2 ^ 62) :
   simp [W64, BitVec.toNat_udiv, BitVec.toNat_add]
   omega
 
+theorem pageIsLeaf_leafHeader (ms : List InodeM) : pageIsLeaf (leafHeader ms) = true := by
+  simp [pageIsLeaf, leafHeader]
+
+theorem leafModel_body_length (leaf : Bool) : (pageBody leaf leafModel).length = 68 := by
+  rw [pageBody_length]; simp [dataBytes, leafModel, InodeM.kv]
+
+theorem leafModel_fits : pageFits leafModel := by
+  refine ⟨by simp [leafModel], by rw [leafModel_body_length]; omega, ?_⟩
+  intro m hm; simp [leafModel] at hm; rcases hm with rfl | rfl | rfl <;> simp
+
 end model
 
 /-! ## Byte points-tos -/
@@ -425,6 +435,16 @@ theorem typedPointsto_of_eq {V : Type} [TypedPointsto (GF := GF) V] (l : Loc) (v
   iintro ⟨H, %h⟩
   rw [← h]
   iexact H
+
+/-- A typed points-to of a type with a byte view can be made persistent. -/
+theorem typedPointsto_persist_view {V : Type} {n : Nat} [ByteEncoding V n] [TypedPointsto (GF := GF) V]
+    [BytesView (GF := GF) V] (l : Loc) (v : V) (dq : DFrac) (hl : 0 < l.addr) :
+    typedPointsto (GF := GF) l v dq ⊢ |==> typedPointsto l v .discard := by
+  iintro H
+  icases (typedPointsto_bytes l v dq hl).1 $$ H with H
+  imod bytesPointsto_persist _ _ _ $$ H with H
+  imodintro
+  iapply (typedPointsto_bytes l v _ hl).2 $$ H
 
 /-- A sub-range of persistent bytes. -/
 theorem bytesPointsto_sub (l : Loc) (B X : List w8) (k : Nat) (hk : k + X.length ≤ B.length)
