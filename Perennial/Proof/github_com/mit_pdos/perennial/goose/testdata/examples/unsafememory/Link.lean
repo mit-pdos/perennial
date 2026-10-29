@@ -10,6 +10,8 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testDisjointStructCopy
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testEndianness
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFloatBits
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFreelistOverflow
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFreelistRoundTrip
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testMixedWidthAtomics
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testOverlappingCopyViaTemp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testOverlappingLoads
@@ -62,6 +64,40 @@ variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.un
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testFloatBits : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFloatBits.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFloatBits.wp_proof
+
+end link
+
+section link
+variable [GooseExts]
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem : Assumptions]
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testFreelistOverflow : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFreelistOverflow.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFreelistOverflow.wp_proof
+
+end link
+
+section link
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem : Assumptions]
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testFreelistRoundTrip : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFreelistRoundTrip.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFreelistRoundTrip.wp_proof
+
+end link
+
+section link
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Assumptions]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testMixedWidthAtomics : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testMixedWidthAtomics.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testMixedWidthAtomics.wp_proof
