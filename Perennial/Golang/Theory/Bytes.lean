@@ -79,6 +79,56 @@ theorem bytesPointsto_app (l : Loc) (dq : DFrac) (bs1 bs2 : List w8) :
       · iapply this.2
         iframe
 
+/-- The little-endian bytes of `m` in `a + b` bytes are its low `a` bytes, then the `b` bytes of
+`m / 256 ^ a`. -/
+theorem natBytes_add (a b m : Nat) :
+    natBytes (a + b) m = natBytes a m ++ natBytes b (m / 256 ^ a) := by
+  induction a generalizing m with
+  | zero => simp [natBytes]
+  | succ a ih =>
+    rw [Nat.succ_add, natBytes, natBytes, ih, Nat.div_div_eq_div_mul, Nat.pow_succ',
+      List.cons_append]
+
+/-- The `w` little-endian bytes of `m` depend only on `m % 256 ^ w`. -/
+theorem natBytes_mod (w m : Nat) : natBytes w (m % 256 ^ w) = natBytes w m := by
+  induction w generalizing m with
+  | zero => simp [natBytes]
+  | succ w ih =>
+    simp only [natBytes, List.cons.injEq]
+    constructor
+    · apply BitVec.eq_of_toNat_eq
+      simp only [BitVec.toNat_ofNat]
+      rw [Nat.pow_succ', Nat.mod_mul_right_mod]
+    · rw [Nat.pow_succ', Nat.mod_mul_right_div_self, ih]
+
+/-- A `uint64` points-to is a `uint32` points-to of its low half, followed by the 4 bytes of
+its high half (integers are little-endian). -/
+theorem typedPointsto_w64_split (l : Loc) (dq : DFrac) (v : w64) :
+    l ↦{dq} v ⊣⊢@{IProp GF}
+      l ↦{dq} (v.setWidth 32) ∗ bytesPointsto (l +ₗ 4) dq (natBytes 4 (v.toNat / 2 ^ 32)) := by
+  have e : natBytes 8 v.toNat =
+      natBytes 4 (v.setWidth 32).toNat ++ natBytes 4 (v.toNat / 2 ^ 32) := by
+    rw [show (8 : Nat) = 4 + 4 from rfl, natBytes_add, BitVec.toNat_setWidth,
+      show (2 : Nat) ^ 32 = 256 ^ 4 from rfl, natBytes_mod]
+  rw [typedPointsto_unseal]
+  unfold typedPointstoWrap
+  rw [typedPointstoDef_w64, typedPointstoDef_w32, e]
+  have hs := bytesPointsto_app (GF := GF) l dq (natBytes 4 (v.setWidth 32).toNat)
+    (natBytes 4 (v.toNat / 2 ^ 32))
+  rw [natBytes_length] at hs
+  constructor
+  · iintro ⟨H, %Hnn⟩
+    icases hs.1 $$ H with ⟨H1, H2⟩
+    isplitl [H1]
+    · iframe H1
+      ipureintro; exact Hnn
+    · iexact H2
+  · iintro ⟨⟨H1, %Hnn⟩, H2⟩
+    isplitl [H1 H2]
+    · iapply hs.2
+      iframe H1 H2
+    · ipureintro; exact Hnn
+
 end bytes
 
 end Perennial
