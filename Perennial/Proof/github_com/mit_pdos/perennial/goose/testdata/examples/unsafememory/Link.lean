@@ -10,8 +10,11 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testDisjointStructCopy
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testEndianness
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFloatBits
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testMixedWidthAtomics
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testOverlappingCopyViaTemp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testOverlappingLoads
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testStatsConcurrent
+public import Perennial.Proof.sync.Link
 
 @[expose] public section
 
@@ -60,6 +63,9 @@ variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.un
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testFloatBits : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFloatBits.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testFloatBits.wp_proof
 
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testMixedWidthAtomics : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testMixedWidthAtomics.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testMixedWidthAtomics.wp_proof
+
 end link
 
 section link
@@ -84,6 +90,18 @@ variable [package_sem : Assumptions]
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testOverlappingLoads : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testOverlappingLoads.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testOverlappingLoads.wp_proof
+
+end link
+
+section link
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Assumptions]
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.wp_testStatsConcurrent : github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testStatsConcurrent.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.testStatsConcurrent.wp_proof sync.WaitGroup.wp_Add sync.WaitGroup.wp_Done sync.WaitGroup.wp_Wait
 
 end link
 
