@@ -4,10 +4,16 @@ over the bytes of a `Meta` before its `checksum` field. Each step `h ↦ (h ^ c)
 injective in `c` for a fixed `h` and in `h` for a fixed `c` (the prime is odd, so multiplying by
 it is invertible mod `2^64`), so changing one byte of the input changes the hash
 (`fnv64_set_ne`).
+
+`metaSum v` is `sum64`'s result: FNV-1a over the first 56 bytes of `v`. It does not depend on the
+checksum (`metaSum_with_checksum`), and changing a byte before the checksum of a `Meta` with a
+valid checksum leaves an invalid one (`Meta.set_checksum_ne`). `[56]byte`, the array `sum64`
+views the `Meta` as, is plain (`byteArray56.isPlain`), and `Meta.wp_alloc_pos` allocates a `Meta`
+at a positive address, where it has a byte view.
 -/
 module
 
-public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Layout
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pages
 
 @[expose] public section
 
@@ -33,6 +39,10 @@ def fnvFrom (h : BitVec 64) (bs : List (BitVec 8)) : BitVec 64 := bs.foldl fnvSt
 
 /-- FNV-1a's 64-bit hash of `bs`. -/
 def fnv64 (bs : List (BitVec 8)) : BitVec 64 := fnvFrom fnvOffset bs
+
+/-- `Meta.sum64`'s result for a `Meta` `v`: FNV-1a over its bytes before `checksum` (56 of its
+64). -/
+def metaSum [GooseExts] (v : Meta) : w64 := fnv64 ((encode v).take 56)
 
 /-- The inverse of `fnvPrime` mod `2^64`. -/
 def fnvPrimeInv : BitVec 64 := 14886173955864302971
@@ -94,6 +104,56 @@ theorem fnv64_set_ne (bs : List (BitVec 8)) (i : Nat) (c : BitVec 8) (hi : i < b
   conv => rhs; rw [e1]
   exact fun e => fnvFrom_ne fnvOffset _ _ hc e.symm
 
+/-- Flipping the low bit changes a byte. -/
+theorem w8_ne_xor_one (c : BitVec 8) : c ≠ c ^^^ 1#8 := by
+  intro h
+  have e := congrArg (c ^^^ ·) h
+  simp only [BitVec.xor_self, ← BitVec.xor_assoc] at e
+  exact absurd e (by decide)
+
+/-! ## The checksum of a `Meta` -/
+
+section meta_bytes
+variable [GooseExts]
+
+/-- The bytes of a `Meta` before its checksum are those of its other fields. -/
+theorem Meta.encode_take (v : Meta) :
+    (encode v).take 56 = encode (v.magic', v.version', v.pageSize', v.flags', v.root',
+      v.freelist', v.pgid', v.txid') := by
+  have e : encode v = encode (v.magic', v.version', v.pageSize', v.flags', v.root', v.freelist',
+      v.pgid', v.txid') ++ encode v.checksum' := by
+    show encode (v.magic', v.version', v.pageSize', v.flags', v.root', v.freelist', v.pgid',
+      v.txid', v.checksum') = _
+    simp only [ByteEncoding.prod_encode, List.append_assoc]
+  rw [e, List.take_left' (by rw [ByteEncoding.encode_length])]
+
+/-- The checksum does not cover itself. -/
+theorem metaSum_with_checksum (v : Meta) (c : w64) :
+    metaSum { v with checksum' := c } = metaSum v := by
+  simp only [metaSum, Meta.encode_take]
+
+/-- The checksum of the `Meta` decoded from `bs` is its last 8 bytes. -/
+theorem Meta.decode_checksum (bs : List w8) :
+    (decode bs : Meta).checksum' = decode (bs.drop 56) := by
+  have e : (decode bs : Meta).checksum' = decode ((((((((bs.drop 4).drop 4).drop 4).drop 4).drop
+      16).drop 8).drop 8).drop 8) := rfl
+  rw [e]
+  simp only [List.drop_drop]
+
+/-- Changing a byte of a `Meta` before its checksum makes a valid checksum invalid. -/
+theorem Meta.set_checksum_ne (v : Meta) (i : Nat) (b : w8) (hi : i < 56)
+    (hb : (encode v)[i]'(by rw [ByteEncoding.encode_length]; omega) ≠ b)
+    (hv : v.checksum' = metaSum v) :
+    (decode ((encode v).set i b) : Meta).checksum' ≠ metaSum (decode ((encode v).set i b)) := by
+  have hlen : ((encode v).set i b).length = 64 := by simp
+  rw [Meta.decode_checksum, List.drop_set_of_lt (by omega), ← Meta.decode_checksum,
+    ByteEncoding.decode_encode, hv]
+  unfold metaSum
+  rw [ByteEncoding.encode_decode _ hlen, List.take_set]
+  exact (fnv64_set_ne _ i b (by simp; omega) (by simpa using hb)).symm
+
+end meta_bytes
+
 end github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory
 
 /-! ## Allocation of a struct at a positive address
@@ -151,6 +211,12 @@ theorem struct_wp_alloc_pos {V : Type} [ZeroVal V] [TypedPointsto (GF := GF) V]
 end alloc_pos
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory
+
+/-- `[56]byte`, the bytes `sum64` views (`(*[unsafe.Offsetof(Meta{}.checksum)]byte)(...)`), is
+plain. -/
+instance byteArray56.isPlain [GooseExts] [GoSemanticsFunctions] :
+    go.IsPlain (go.ArrayType 56 go.byte) 56 :=
+  ⟨1, .array 56 go.byte 1 1 (.scalar _ _ .isPlainScalar_uint8) (by decide)⟩
 
 section meta_alloc
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
