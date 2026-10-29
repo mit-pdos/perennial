@@ -1,6 +1,8 @@
 # Plan: R3 of the unsafe memory design (`unsafe` conversions, `unsafe.Add`, `unsafe.Slice`)
 
-- **Date:** 2026-10-28. **Status:** for sign-off. Nothing here is implemented.
+- **Date:** 2026-10-28. **Status:** signed off 2026-10-29 with the decisions at the end
+  (`unsafe.Add` and `unsafe.Slice` are pure arithmetic, with no allocation check). Nothing here
+  is implemented.
 - **Serves:** `docs/design/unsafe-memory.md`, R3, and step 6 of section 12.
 - **Checked against:** `lean` at `b568d70ca`, where integers and floats are already bytes
   (R1/R2 for scalars, R5; `unsafe-memory-rules-plan.md`).
@@ -80,40 +82,22 @@ convert_unsafe_to_uintptr (l : Loc) : ⟦Convert unsafe.Pointer go.uintptr, #l�
 
 ## 3. `unsafe.Add` and `unsafe.Slice`
 
-### A new primitive: check that cells exist
-
-Neither builtin accesses memory, but both must be stuck unless their addresses are allocated
-(design R3: gc's collector can crash on a pointer outside an allocation). A pure Go rule
-cannot look at the heap, so the check is a GooseLang primitive (`Lang.lean`, about 8 lines,
-plus 2 `Countable` lines):
-```lean
-| CheckCellsOp (s : Nat)   -- PrimOp2: pointer, count
-| CheckCellsS (s : Nat) (l : Loc) (n : w64) σg :
-    (∀ k : Int, 0 ≤ k → k < sint.Z n * s → σg.1.heap !! (l +ₗ k) ≠ none) →
-    BaseStep (CheckCells s (Val #l) (Val #n)) σg [] (Val #()) σg []
-```
-- The cells may hold anything, in any lock state.
-- `n · s` is computed over `Int`, so a large `n` cannot wrap to a small check. A count that
-  does not fit has no cells and is stuck; Go panics there.
-- **Not taken: reusing `Read` in a loop.** It adds no primitive, but it is stuck when a
-  concurrent writer holds the cell, which is not a race in Go. It also needs a loop lemma.
+Both are **pure arithmetic** (owner's decision, 2026-10-29). Go makes a pointer outside its
+allocation invalid, and gc's collector can stop the program on one ("found bad pointer in Go
+heap"); the model does not check for it, which is a known limitation
+(`docs/KNOWN_LIMITATIONS.md`). Accesses through such a pointer are still checked cell by cell
+(R2), so they stay stuck where no cell exists.
 
 ### `unsafe.Add(p, n)`
 
 A field of `«unsafe».Semantics`, for every integer type `it` of `n`:
 ```lean
 add_unfold (it : go.GoType) [go.IsInteger it] : FuncUnfold «unsafe».Add [it]
-  (λ: "p" "n",
-     let: "q" := "p" +⟨go.PointerType go.byte⟩ Convert it go.int64 "n" in
-     CheckCells 1 "q" #(W64 1) ;; "q" : val)
+  (λ: "p" "n", "p" +⟨go.PointerType go.byte⟩ Convert it go.int64 "n" : val)
 ```
 - The offset uses Go's conversion of `n`, so an unsigned `^7` is -8. That matches gc (run:
   `unsafe.Add(&b[8], uint64(^7)) == &b[0]`).
-- `is_go_op_pointer_plus` (`Slice.lean:142`) adds `sint.Z x` without wrapping. A wrapped
-  address has no cell and is stuck.
-- The result must be a cell of any kind, so one past the end is stuck (`testAddPastEnd`).
-- `unsafe.Add(nil, k)` is stuck in every execution that leaves no cell at `k`, so no proof can
-  rely on it (design 10.9).
+- `is_go_op_pointer_plus` (`Slice.lean:142`) adds `sint.Z x` without wrapping.
 
 ### `unsafe.Slice(p, n)`
 
@@ -127,16 +111,16 @@ slice_unfold (elem it : go.GoType) [go.IsInteger it] (s a : Nat) [go.PlainLayout
      if: "p" =⟨go.PointerType elem⟩ #null then
        (if: "len" =⟨go.int64⟩ #(W64 0) then #slice.nil
         else Panic "unsafe.Slice: ptr is nil and len is not zero")
-     else (CheckCells s "p" "len" ;; InternalMakeSlice ("p", "len", "len")) : val)
+     else InternalMakeSlice ("p", "len", "len") : val)
 ```
 - **It matches `runtime.unsafeslice` and the compiler's check:**
   - an unsigned `n ≥ 2^63` is "len out of range", as the conversion to `int64` makes it
     negative;
   - `(nil, 0)` is a nil slice; `(nil, 1)` panics;
-  - an overflowing `n · s` is stuck where Go panics, which is less defined and allowed.
+  - gc also panics when `n · s` exceeds the address space ("len out of range"); the model has
+    no rule for that case only if `InternalMakeSlice` does not accept it, otherwise it is part
+    of the known limitation above (check while implementing).
 - The panics are stuck `Panic`s, as elsewhere.
-- **Every one of the `n · s` cells is checked,** because reslicing can form pointers anywhere
-  up to the capacity. Serves `testSlicePastEnd` and `testPastEndAddress`.
 - **A non-plain element type has no rule.** Go allows one, but bbolt needs only
   `byte`, `leafPageElement`, `branchPageElement` and `Pgid`, all plain.
 
@@ -186,23 +170,25 @@ type-dependent choice. Cost:
       plain) and `testBlankFieldEq` (blank field, so not plain);
     - §2: `testOriginalUnsafeAdd`, `testOriginalPos`, `testByteSliceAligned`,
       `testFieldResidue`;
-    - §3: `testAddPastEnd`, `testSlicePastEnd`, `testPastEndAddress`;
+    - §3: `testSlicePastEnd` (its read past the allocation is stuck) and `testPastEndAddress`
+      (placement is nondeterministic, so both answers are model behaviours);
+    - `testAddPastEnd` becomes provable, since `unsafe.Add` checks nothing; it is true in Go,
+      so it moves to the targets;
     - R2, already done: `testBytesOverPointer`.
 
 ## 5. Costs, order, and what is left out
 
-**Trusted, about 45 lines:**
+**Trusted, about 30 lines:**
 - §1: 1 premise and 2 `atomic.Pointer` models (about 10 lines and 4 trust-list entries);
 - §2: 2 lines;
-- §3: `CheckCells` (about 10 lines) and two `FuncUnfold` rules (about 20 lines);
+- §3: two `FuncUnfold` rules (about 15 lines);
 - goose: about 15 lines.
 
 **Proofs:**
 - the `wp_pures` instance for the conversion gains the `PlainLayout` premise, found by
   instance search at plain types;
 - `Pointer__Load` and `Pointer__Swap`;
-- new, untrusted lemmas for `CheckCells`, `unsafe.Add` and `unsafe.Slice`, each taking the byte
-  points-tos of the cells as fractions.
+- new, untrusted lemmas for `unsafe.Add` and `unsafe.Slice` (pure steps).
 
 No proof in Perennial uses `convert_unsafe_to_pointer` at a non-plain type except through
 these two methods. etcd-grove is checked at its next bump.
@@ -223,14 +209,14 @@ these two methods. etcd-grove is checked at its next bump.
 - the program logic of design §9 (byte-view and field-split lemmas) and the target proofs,
   which follow.
 
-## Questions for the owner
+## Decisions (2026-10-29)
 
-1. **The two `atomic.Pointer` methods** (`Load`, `Swap`): trusted models without the
-   conversion (rung 5)? Alternative: keep the conversion defined for non-plain `T` and check
-   cell shapes on load. That does not catch interface and map puns (`testInterfacePun`,
-   `testMapPun`), so I recommend the models.
-2. **`CheckCells` as one new primitive,** rather than a `Read` loop? Recommendation: the
-   primitive, because a `Read` loop is spuriously stuck under a concurrent writer and needs a
-   loop lemma.
-3. **`unsafe.Slice` defined for plain element types only?** Recommendation: yes, it is all
-   bbolt needs, and a non-plain element would need a provenance story.
+1. **The two `atomic.Pointer` methods** become trusted models without the conversion (rung 5):
+   "ok".
+2. **`uintptr(p)` is `ArbitraryInt`; `unsafe.Pointer(u)` stays stuck:** "ok".
+3. **`unsafe.Add` and `unsafe.Slice` are pure arithmetic,** with no allocation check (a
+   `CheckCells` primitive was proposed): "Let's leave the 'found bad pointer in Go heap' as a
+   known limitation. If the real program runs into that problem, it'll be very obvious, so I'm
+   ok not modeling that in the semantics, since skipping it will make the semantics for
+   unsafe.Add/Slice pure rather than requiring heap accesses."
+4. `unsafe.Slice` is defined for plain element types only.
