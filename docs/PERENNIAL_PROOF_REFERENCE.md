@@ -561,7 +561,7 @@ Specs take `isPkgInit` of their package; `wp_apply` discharges it.
 | `wp_alloc`, `wp_store`, `IntoValTyped.wp_load` | typed allocation/store/load (used by the tactics; `wp_load` is not exported, write `IntoValTyped.wp_load`) |
 | `wp_cmpxchg_suc`, `wp_cmpxchg_fail`, `wp_atomic_load`, `wp_atomic_swap` | one-cell atomic operations on typed points-to (`AtomicWps`: `bool`, `w8`, pointers) |
 | `wp_load_bytes_typed`, `wp_swap_bytes_typed`, `wp_add_bytes_typed`, `wp_cmpxchg_bytes_suc_typed`, `wp_cmpxchg_bytes_fail_typed` | the integer atomics (`ByteAtomicWps`, `w64` and `w32`) |
-| `typedPointstoDef_w64`, `_w32`, `_w16` | an integer or float of `w` bytes is `⌜w ∣ l⌝ ∗ bytesPointsto l dq (natBytes w v.toNat)` (`GooseLang/LiftingBytes.lean`): its little-endian bytes, at an address `w` divides |
+| `typedPointstoDef_w64`, `_w32`, `_w16` | an integer or float of `w` bytes is `bytesPointsto l dq (natBytes w v.toNat)` (`GooseLang/LiftingBytes.lean`): its little-endian bytes, at any address |
 | `typedPointsto_split` | struct points-to to fields (used by `iStructNamed`) |
 | `wp_AngelicExit` | unreachable code |
 | `wp_GoPrealloc`, `wp_GlobalAlloc` | low level allocation |

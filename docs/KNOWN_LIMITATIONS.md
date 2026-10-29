@@ -181,6 +181,16 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   `docs/design/unsafe-memory.md`), and an `unsafe.Add` whose result leaves the heap's range
   `[0, maxAddr]` is stuck (so the model never wraps an address, where gc would). The owner's decision of 2026-10-29: "If the real
   program runs into that problem, it'll be very obvious".
+- **Misaligned atomics are assumed not to tear (unsound, assumed).** The integer atomics
+  (`LoadBytes`, `SwapBytes`, `AddBytes`, `CmpXchgBytes`, `GooseLang/Lang.lean`) act on their
+  bytes in one atomic step at any address; alignment is not checked, so that typed points-tos
+  need none and views over byte memory can use them. gc's `LOCK`ed read-modify-writes stay
+  atomic on a misaligned address (a split lock), but its atomic loads and stores are plain
+  `MOVQ`/`MOVL`, which can tear across a cache line, so `atomic.LoadInt64` racing with
+  `atomic.StoreInt64` on `(*int64)(unsafe.Pointer(&buf[1]))` can read a mix of both values.
+  Only `unsafe` can make a misaligned integer (a view over byte memory); Go lays out every
+  typed integer at its alignment. The owner's decision of 2026-10-29 (assumption A5 of
+  `docs/design/unsafe-memory.md`).
 - **Mixed-width atomics are not stuck (unsound, assumed).** Atomics of two widths on the
   same bytes (`atomic.AddUint64(&u, 1)` and `atomic.AddUint32((*uint32)(unsafe.Pointer(&u)),
   1)`) get sequentially consistent byte semantics, which Intel does not promise when they

@@ -23,8 +23,8 @@ the `nil` interface, as in Go:
 
 The integer functions (`LoadUint64`, ..., `CompareAndSwapInt32`) are the byte atomics of
 their width (`LoadBytes 8`, ...): each acts on the integer's little-endian bytes in one step,
-and is stuck unless the address is a multiple of the width (gc's alignment of the integer
-types; a misaligned 8-byte atomic tears across a cache line).
+at any address. A misaligned atomic load or store can tear in gc (`docs/KNOWN_LIMITATIONS.md`);
+only `unsafe` can produce a misaligned integer.
 
 `Panic msg` is stuck (`wp_PanicOp`), whereas Go's panics here are ordinary,
 recoverable panics; and a `nil` receiver, where Go panics on the dereference,

@@ -76,14 +76,6 @@ func testPaddedView() bool {
 	return (*padded)(unsafe.Pointer(&buf[0])).b == 7
 }
 
-// An atomic at an address that is not 8-aligned in some executions: a []byte
-// is only 1-aligned. Go: works, tears, or faults, depending on the address and
-// the CPU.
-func testMisalignedAtomic() bool {
-	buf := make([]byte, 16)
-	return atomic.AddInt64((*int64)(unsafe.Pointer(&buf[1])), 1) == 1
-}
-
 // Go promises a []byte nothing beyond 1-alignment.
 func testByteSliceAligned() bool {
 	buf := make([]byte, 16)

@@ -80,18 +80,18 @@ theorem wp_writeBytes (l : Loc) (bs bs' : List w8) (hlen : bs'.length = bs.lengt
 theorem wp_alloc_plain_scalar (w : Nat) {t t_under : go.GoType} [go.IsUnderlying t t_under]
     [go.IsPlainScalar t_under w] (v : val) (bs : List w8) (hv : valBytes w v = some bs) :
     {{ (True : IProp GF) }} (App (Val (GoInstruction (GoAlloc t))) (Val v)) @ s; E
-    {{ l, RET #l; (⌜(w : Int) ∣ l.addr⌝ ∗ bytesPointsto l (.own 1) bs) ∗ ⌜l ≠ null⌝ }} := by
+    {{ l, RET #l; bytesPointsto l (.own 1) bs ∗ ⌜l ≠ null⌝ }} := by
   have := valBytes_not_panic hv
   iintro %Φ _ HΦ
   wp_pures
   wp_apply_core wp_alloc_bytes w v bs hv
-  iintro %l ⟨%Hal, Hbs⟩
+  iintro %l Hbs
   have hne : bs ≠ [] := by
     intro h; have := valBytes_length hv; have := valBytes_pos hv; subst h; simp at *; omega
   icases bytesPointsto_non_null l _ bs hne $$ Hbs with ⟨Hbs, %Hnn⟩
   iapply HΦ
   iframe Hbs
-  isplit <;> ipureintro <;> assumption
+  ipureintro; assumption
 
 theorem wp_load_plain_scalar (w : Nat) {t t_under : go.GoType} [go.IsUnderlying t t_under]
     [go.IsPlainScalar t_under w] (l : Loc) (dq : DFrac) (bs : List w8) (v : val)
@@ -146,7 +146,7 @@ macro "solve_into_val_typed_byte" : tactic => `(tactic| (
     iintro %Φ _ HΦ
     wp_apply_core wp_alloc_plain_scalar _ #v [v]
       (by rw [go.intoVal_unfold w8]; simp [valBytes, natBytes])
-    iintro %l ⟨⟨_, Hbs⟩, %Hnn⟩
+    iintro %l ⟨Hbs, %Hnn⟩
     icases (bytesPointsto_singleton l _ v).1 $$ Hbs with Hb
     iapply HΦ
     iframe Hb
@@ -183,22 +183,22 @@ macro "solve_into_val_typed_bytes" : tactic => `(tactic| (
   · intro s E t _ v
     iapply wp_alloc_plain_scalar _ #v (natBytes _ v.toNat) (by rw [go.intoVal_unfold]; rfl)
   · intro s E t _ l dq v
-    iintro %Φ ⟨⟨%Hal, Hbs⟩, %Hnn⟩ HΦ
+    iintro %Φ ⟨Hbs, %Hnn⟩ HΦ
     wp_apply_core wp_load_plain_scalar _ l dq (natBytes _ v.toNat) #v (natBytes_length _ _)
       (bytesVal_valBytes (by rw [go.intoVal_unfold]; rfl)) $$ Hbs
     iintro Hbs
     iapply HΦ
     iframe Hbs
-    isplit <;> ipureintro <;> assumption
+    ipureintro; assumption
   · intro s E t _ l v w
-    iintro %Φ ⟨⟨%Hal, Hbs⟩, %Hnn⟩ HΦ
+    iintro %Φ ⟨Hbs, %Hnn⟩ HΦ
     wp_apply_core wp_store_plain_scalar _ l (natBytes _ v.toNat) (natBytes _ w.toNat) #v #w
       (natBytes_length _ _) (bytesVal_valBytes (by rw [go.intoVal_unfold]; rfl))
       (by rw [go.intoVal_unfold]; rfl) $$ Hbs
     iintro Hbs
     iapply HΦ
     iframe Hbs
-    isplit <;> ipureintro <;> assumption
+    ipureintro; assumption
   · infer_instance))
 
 instance intoVal_typed_uint64 : IntoValTypedUnderlying (GF := GF) w64 go.uint64 := by

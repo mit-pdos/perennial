@@ -46,6 +46,7 @@ reports nothing on them.
 | `testMixedWidthAtomics` | — | R5 | sequential atomics of two widths on one word; the concurrent case is assumption A3 |
 | `testOverlappingCopyViaTemp` | — | R4 | a copy between overlapping views through a local has value semantics, as in gc 1.26 (A2) |
 | `testAddPastEnd` | — | R3 | `unsafe.Add` one past the allocation is defined: the model does not check that a pointer is in its allocation (`docs/KNOWN_LIMITATIONS.md`), so `!= nil` holds (true in Go too) |
+| `testMisalignedAtomic` | — | R5 | an atomic on bytes at an address that need not be aligned: alignment is not checked, and a misaligned atomic is assumed not to tear (`docs/KNOWN_LIMITATIONS.md`); single-threaded it is true in Go |
 
 Two targets are scale tests rather than new idioms:
 - `testFreelistOverflow` writes 65536 ids, so its proof must use loop
@@ -72,7 +73,6 @@ stuck on purpose.
 | `testPaddedView` | true | padded structs are not plain (deliberately incomplete) | R1 |
 | `testBlankFieldEq` | **false** | `==` ignores blank fields; structs with blank fields are not plain | R1 |
 | `testZeroSizeDistinct` | **false** (heap), true (stack) | pointers to distinct zero-size objects may be equal | R1 |
-| `testMisalignedAtomic` | depends on address and CPU | an atomic on a `[]byte`, whose address is arbitrary | R1, R5 |
 | `testByteSliceAligned` | true in practice, not promised | a `[]byte` is only 1-aligned | R3 |
 | `testFieldResidue` | **false** | the residue of a plain field of a non-plain struct (offset 12) | R3 |
 

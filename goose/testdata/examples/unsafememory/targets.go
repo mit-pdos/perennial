@@ -312,3 +312,12 @@ func testAddPastEnd() bool {
 	buf := make([]byte, 16)
 	return unsafe.Add(unsafe.Pointer(&buf[0]), len(buf)) != nil
 }
+
+// An atomic on bytes at an address that is not 8-aligned in some executions (a
+// []byte is only 1-aligned). The model does not check alignment: a misaligned
+// atomic is assumed not to tear (docs/KNOWN_LIMITATIONS.md). Single-threaded,
+// as here, it is true in Go (LOCK XADD is atomic across a cache line).
+func testMisalignedAtomic() bool {
+	buf := make([]byte, 16)
+	return atomic.AddInt64((*int64)(unsafe.Pointer(&buf[1])), 1) == 1
+}

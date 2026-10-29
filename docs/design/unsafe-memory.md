@@ -412,7 +412,11 @@ Every integer is bytes (R1), including the integer state of `Lock.lean` and
 - **Integer atomics:** new byte-level primitives (load, store, swap, add,
   compare-and-swap), with a width `w ∈ {4, 8}`.
   - Each reads or writes `w` byte cells, little-endian, in one step.
-  - Each is stuck unless all of them are bytes and `w ∣ l`.
+  - Each is stuck unless all of them are bytes. **As implemented
+    (2026-10-29), alignment is not checked:** the owner's decision, so that a
+    typed points-to needs no alignment and a view over byte memory can use it.
+    A misaligned atomic is assumed not to tear (assumption A5, section 5;
+    `docs/KNOWN_LIMITATIONS.md`).
   - Users: `TrustedCode/sync/atomic.lean`'s integer models,
     `TrustedCode/sync.lean`'s semaphores (`*uint32`, `w = 4`), `Lock.lean`
     and `copyChecker`.
@@ -510,6 +514,12 @@ as stated, but it lacks every declaration with a finding and does not build
   atomic, while another atomic uses all 8 bytes of `u`. Neither std nor
   bbolt mixes widths. Draft 6's atomic tags made this stuck; they are
   dropped with the other tags, for now.
+- **A5, misaligned atomics (2026-10-29).** No integer atomic is on a
+  misaligned address. Only `unsafe` can make one (a view over byte memory);
+  gc's `LOCK`ed read-modify-writes stay atomic there, but its atomic loads and
+  stores (`MOVQ`) can tear across a cache line. The model gives every integer
+  atomic one atomic step at any address. bbolt's atomics are all on Go-allocated
+  fields.
 - **A4, the trust base.** `TrustedCode`, the FFI models, and the specs of
   axiomatized declarations are faithful. The guard does not look inside
   them, so none of them may give value semantics to a whole copy that gc

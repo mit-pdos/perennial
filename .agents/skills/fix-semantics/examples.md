@@ -883,3 +883,25 @@ so a view of byte cells as a pointer, string, bool or map read a malformed value
 
 **Why.** Plan signed off 2026-10-29 ("1. ok. 2. ok.").
 
+## Case 28 — ACCEPTED: integer atomics do not check alignment (branch `worktree-unsafememory-proofs`)
+
+**Symptom.** Incomplete for proofs: the integer atomics were stuck unless `w ∣ l`, so the typed
+points-to of an integer carried `⌜w ∣ l⌝`, which a view of a plain struct over a `[]byte` (Go
+promises it only 1-alignment) cannot have; views could not use the generated struct
+points-tos.
+
+**Taken.** The byte atomics and `AllocBytes` drop the alignment premise; the typed points-to of
+`w16`/`w32`/`w64` is the bytes. A misaligned atomic is assumed not to tear (a known
+limitation, design assumption A5); `testMisalignedAtomic` moves from the probes to the
+targets. Trusted: 6 premises removed.
+
+**Not taken.**
+- A separate view points-to for byte memory, keeping alignment in the typed points-to.
+- Alignment out of the typed points-to with an aligned-integer predicate for atomics, given
+  by an alternate allocation lemma and carried by every atomic and synchronization spec.
+- Atomics left undefined on byte memory: all integers are byte memory, so the logic would still
+  need a predicate for atomic-capable memory.
+
+**Why.** bbolt's views never use atomics, and its atomics are all on Go-allocated fields. The
+owner: "Let's do this and document this as a known limitation of the unsafe memory semantics".
+

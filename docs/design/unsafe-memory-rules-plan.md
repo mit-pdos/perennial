@@ -231,9 +231,12 @@ widths.
 the `w` bytes of `v` at `w` fresh cells from an address `w` divides, in one step. It replaces
 the `GoPreallocAligned` scheme below: fewer trusted lines, no `AngelicExit`, one lifting
 lemma. The rule is `alloc_plain_scalar : ⟦GoAlloc u, v⟧ ⤳[internalUnder] AllocBytes w v`.
-Proof side: the alignment is part of the typed points-to of `w16`/`w32`/`w64` (allocation
-gives it), not a separate fact, so no atomic or semaphore spec changes. A view of an integer
-at an unaligned address is reasoned about with byte points-tos.
+Proof side: the typed points-to of `w16`/`w32`/`w64` is the bytes, at any address. A first
+version also required `w ∣ l` in `AllocBytes` and in every integer atomic, and carried it in
+the typed points-to; that kept views over `[]byte` (whose alignment Go does not promise) from
+using typed points-tos. The owner's decision of 2026-10-29: atomics do not check alignment,
+and a misaligned atomic is a known limitation ("document this as a known limitation of the
+unsafe memory semantics").
 
 
 - **A new instruction, `GoPreallocAligned (align : Nat)`** (owner's

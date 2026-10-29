@@ -99,9 +99,9 @@ inductive PrimOp1 where
   | LoadOp
   /-- allocation (initial value) -/
   | AllocOp
-  /-- allocation of the `w` little-endian bytes of an integer, at an address `w` divides -/
+  /-- allocation of the `w` little-endian bytes of an integer -/
   | AllocBytesOp (w : Nat)
-  /-- atomic load of `w` bytes at an address `w` divides -/
+  /-- atomic load of `w` bytes, at any address (`docs/KNOWN_LIMITATIONS.md`: misaligned atomics) -/
   | LoadBytesOp (w : Nat)
   /-- start a panic with the given value (the body of `go.panic`) -/
   | RaiseOp
@@ -114,7 +114,7 @@ inductive PrimOp2 where
   | AtomicSwapOp
   /-- pointer, value -/
   | AtomicAddOp
-  /-- the atomic operations on `w` bytes at an address `w` divides: pointer, value; returns
+  /-- the atomic operations on `w` bytes, at any address: pointer, value; returns
   the old value -/
   | SwapBytesOp (w : Nat)
   /-- pointer, value; returns the new value -/
@@ -747,11 +747,10 @@ The choice is nondeterministic: a new cell may sit next to an existing one or le
 def IsFresh (σg : CfgState) (l : Loc) : Prop :=
   0 < l.addr ∧ l.addr < maxAddr ∧ σg.1.heap !! l = none
 
-/-- `w` cells from `l`, in `(0, maxAddr]`, with no cell in `σg`, at an address `w` divides:
-where `AllocBytes w` may put its cells. -/
+/-- `w` cells from `l`, in `(0, maxAddr]`, with no cell in `σg`: where `AllocBytes w` may put
+its cells. -/
 def IsFreshBytes (σg : CfgState) (w : Nat) (l : Loc) : Prop :=
-  0 < l.addr ∧ l.addr + w ≤ maxAddr ∧ (w : Int) ∣ l.addr ∧
-    ∀ k < w, σg.1.heap !! (l +ₗ (k : Int)) = none
+  0 < l.addr ∧ l.addr + w ≤ maxAddr ∧ ∀ k < w, σg.1.heap !! (l +ₗ (k : Int)) = none
 
 def atomicAddEval (v1 v2 : val) : Option val :=
   match v1, v2 with
@@ -870,21 +869,21 @@ inductive BaseStep : Expr → CfgState → List Observation → Expr → CfgStat
       valBytes w v = some bs → (¬ ∃ l, IsFreshBytes σg w l) →
       BaseStep (AllocBytes w (Val v)) σg [] (AllocBytes w (Val v)) σg []
   | LoadBytesS (w : Nat) l bs v σg :
-      (w : Int) ∣ l.addr → BytesAt σg l bs true → bytesVal w bs = some v →
+      BytesAt σg l bs true → bytesVal w bs = some v →
       BaseStep (LoadBytes w (Val #l)) σg [] (Val v) σg []
   | SwapBytesS (w : Nat) l bs v0 v bs' σg :
-      (w : Int) ∣ l.addr → BytesAt σg l bs false → bytesVal w bs = some v0 →
+      BytesAt σg l bs false → bytesVal w bs = some v0 →
       valBytes w v = some bs' →
       BaseStep (SwapBytes w (Val #l) (Val v)) σg [] (Val v0) (setHeap (setBytes l bs') σg) []
   | AddBytesS (w : Nat) l bs v0 v v' bs' σg :
-      (w : Int) ∣ l.addr → BytesAt σg l bs false → bytesVal w bs = some v0 →
+      BytesAt σg l bs false → bytesVal w bs = some v0 →
       atomicAddEval v0 v = some v' → valBytes w v' = some bs' →
       BaseStep (AddBytes w (Val #l) (Val v)) σg [] (Val v') (setHeap (setBytes l bs') σg) []
   | CmpXchgBytesFailS (w : Nat) l bs vl v1 v2 σg :
-      (w : Int) ∣ l.addr → BytesAt σg l bs true → bytesVal w bs = some vl → vl ≠ v1 →
+      BytesAt σg l bs true → bytesVal w bs = some vl → vl ≠ v1 →
       BaseStep (CmpXchgBytes w (Val #l) (Val (PairV v1 v2))) σg [] (Val (PairV vl #false)) σg []
   | CmpXchgBytesSucS (w : Nat) l bs vl v1 v2 bs' σg :
-      (w : Int) ∣ l.addr → BytesAt σg l bs false → bytesVal w bs = some vl → vl = v1 →
+      BytesAt σg l bs false → bytesVal w bs = some vl → vl = v1 →
       valBytes w v2 = some bs' →
       BaseStep (CmpXchgBytes w (Val #l) (Val (PairV v1 v2))) σg [] (Val (PairV vl #true))
         (setHeap (setBytes l bs') σg) []

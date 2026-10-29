@@ -78,36 +78,36 @@ theorem baseStep_AllocBytes_inv {w : Nat} {v : val}
 
 theorem baseStep_LoadBytes_inv {w : Nat} {v : val}
     (h : BaseStep (LoadBytes w (Val v)) σ κ e' σ' efs) :
-    ∃ l bs v', v = #l ∧ (w : Int) ∣ l.addr ∧ BytesAt σ l bs true ∧ bytesVal w bs = some v' ∧
+    ∃ l bs v', v = #l ∧ BytesAt σ l bs true ∧ bytesVal w bs = some v' ∧
       κ = [] ∧ e' = Val v' ∧ σ' = σ ∧ efs = [] := by
-  cases h; exact ⟨_, _, _, rfl, ‹_›, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
+  cases h; exact ⟨_, _, _, rfl, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
 
 theorem baseStep_SwapBytes_inv {w : Nat} {v1 v2 : val}
     (h : BaseStep (SwapBytes w (Val v1) (Val v2)) σ κ e' σ' efs) :
-    ∃ l bs v0 bs', v1 = #l ∧ (w : Int) ∣ l.addr ∧ BytesAt σ l bs false ∧
+    ∃ l bs v0 bs', v1 = #l ∧ BytesAt σ l bs false ∧
       bytesVal w bs = some v0 ∧ valBytes w v2 = some bs' ∧
       κ = [] ∧ e' = Val v0 ∧ σ' = setHeap (setBytes l bs') σ ∧ efs = [] := by
-  cases h; exact ⟨_, _, _, _, rfl, ‹_›, ‹_›, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
+  cases h; exact ⟨_, _, _, _, rfl, ‹_›, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
 
 theorem baseStep_AddBytes_inv {w : Nat} {v1 v2 : val}
     (h : BaseStep (AddBytes w (Val v1) (Val v2)) σ κ e' σ' efs) :
-    ∃ l bs v0 v' bs', v1 = #l ∧ (w : Int) ∣ l.addr ∧ BytesAt σ l bs false ∧
+    ∃ l bs v0 v' bs', v1 = #l ∧ BytesAt σ l bs false ∧
       bytesVal w bs = some v0 ∧ atomicAddEval v0 v2 = some v' ∧ valBytes w v' = some bs' ∧
       κ = [] ∧ e' = Val v' ∧ σ' = setHeap (setBytes l bs') σ ∧ efs = [] := by
-  cases h; exact ⟨_, _, _, _, _, rfl, ‹_›, ‹_›, ‹_›, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
+  cases h; exact ⟨_, _, _, _, _, rfl, ‹_›, ‹_›, ‹_›, ‹_›, rfl, rfl, rfl, rfl⟩
 
 theorem baseStep_CmpXchgBytes_inv {w : Nat} {v0 v12 : val}
     (h : BaseStep (CmpXchgBytes w (Val v0) (Val v12)) σ κ e' σ' efs) :
-    ∃ l bs vl v1 v2, v0 = #l ∧ v12 = PairV v1 v2 ∧ (w : Int) ∣ l.addr ∧
+    ∃ l bs vl v1 v2, v0 = #l ∧ v12 = PairV v1 v2 ∧
       bytesVal w bs = some vl ∧ κ = [] ∧ efs = [] ∧
       ((vl ≠ v1 ∧ BytesAt σ l bs true ∧ e' = Val (PairV vl #false) ∧ σ' = σ) ∨
        (vl = v1 ∧ BytesAt σ l bs false ∧ e' = Val (PairV vl #true) ∧
         ∃ bs', valBytes w v2 = some bs' ∧ σ' = setHeap (setBytes l bs') σ)) := by
   cases h with
   | CmpXchgBytesFailS =>
-    exact ⟨_, _, _, _, _, rfl, rfl, ‹_›, ‹_›, rfl, rfl, .inl ⟨‹_›, ‹_›, rfl, rfl⟩⟩
+    exact ⟨_, _, _, _, _, rfl, rfl, ‹_›, rfl, rfl, .inl ⟨‹_›, ‹_›, rfl, rfl⟩⟩
   | CmpXchgBytesSucS =>
-    exact ⟨_, _, _, _, _, rfl, rfl, ‹_›, ‹_›, rfl, rfl, .inr ⟨‹_›, ‹_›, rfl, _, ‹_›, rfl⟩⟩
+    exact ⟨_, _, _, _, _, rfl, rfl, ‹_›, rfl, rfl, .inr ⟨‹_›, ‹_›, rfl, _, ‹_›, rfl⟩⟩
 
 /-- Two byte lists at the same cells, of the same length, are equal. -/
 theorem BytesAt_unique {l : Loc} {bs bs' : List w8} {r r' : Bool} (h : BytesAt σ l bs r)
@@ -270,7 +270,7 @@ theorem bytesPointsto_alloc (h : GMap Loc (NonAtomic val)) (l : Loc) (bs : List 
 
 theorem wp_alloc_bytes (w : Nat) (v : val) (bs : List w8) (Hv : valBytes w v = some bs) :
     {{ (True : IProp GF) }} (AllocBytes w (Val v)) @ s; E
-    {{ l, RET #l; ⌜(w : Int) ∣ l.addr⌝ ∗ bytesPointsto l (.own 1) bs }} := by
+    {{ l, RET #l; bytesPointsto l (.own 1) bs }} := by
   have Hvp := valBytes_not_panic Hv
   iintro %Φ
   iloeb as IH
@@ -287,7 +287,7 @@ theorem wp_alloc_bytes (w : Nat) (v : val) (bs : List w8) (Hv : valBytes w v = s
   inext
   iintro %κ %e₂ %σ₂ %eₜ %Hstep _
   rcases baseStep_AllocBytes_inv Hstep with
-    ⟨bs', l, Hv', ⟨hpos, hbnd, hal, hfr⟩, rfl, rfl, rfl, rfl⟩ | ⟨_, rfl, rfl, rfl, rfl⟩
+    ⟨bs', l, Hv', ⟨hpos, hbnd, hfr⟩, rfl, rfl, rfl, rfl⟩ | ⟨_, rfl, rfl, rfl, rfl⟩
   · rw [Hv] at Hv'; cases Hv'
     have hlen := valBytes_length Hv
     imod bytesPointsto_alloc σ₁.1.heap l bs hpos (by rw [hlen]; exact hbnd)
@@ -298,9 +298,7 @@ theorem wp_alloc_bytes (w : Nat) (v : val) (bs : List w8) (Hv : valBytes w v = s
     isplitl [Hσ]
     · iexists _; iframe Hσ; ipureintro; rfl
     iapply wp_value'
-    iapply HΦ
-    iframe Hbs
-    ipureintro; exact hal
+    iapply HΦ $$ Hbs
   · imodintro
     isplitr
     · ipureintro; exact ⟨rfl, rfl⟩
@@ -311,7 +309,7 @@ theorem wp_alloc_bytes (w : Nat) (v : val) (bs : List w8) (Hv : valBytes w v = s
     · inext; iexact HΦ
 
 theorem wp_load_bytes (w : Nat) (l : Loc) (dq : DFrac) (bs : List w8) (v : val)
-    (Hv : bytesVal w bs = some v) (Hal : (w : Int) ∣ l.addr) :
+    (Hv : bytesVal w bs = some v) :
     {{ ▷ bytesPointsto (GF := GF) l dq bs }} (LoadBytes w (Val #l)) @ s; E
     {{ RET v; bytesPointsto l dq bs }} := by
   iintro %Φ >Hbs HΦ
@@ -320,10 +318,10 @@ theorem wp_load_bytes (w : Nat) (l : Loc) (dq : DFrac) (bs : List w8) (v : val)
   icases bytesPointsto_lookup σ₁ l dq bs $$ Hσ Hbs with %Hat
   imodintro
   isplitr
-  · ipureintro; exact ⟨[], _, _, [], BaseStep.LoadBytesS w l bs v σ₁ Hal Hat Hv⟩
+  · ipureintro; exact ⟨[], _, _, [], BaseStep.LoadBytesS w l bs v σ₁ Hat Hv⟩
   inext
   iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨l', bs', v', Hl', _, Hat', Hv', rfl, rfl, rfl, rfl⟩ := baseStep_LoadBytes_inv Hstep
+  obtain ⟨l', bs', v', Hl', Hat', Hv', rfl, rfl, rfl, rfl⟩ := baseStep_LoadBytes_inv Hstep
   cases GoGlobalContext.intoVal_inj_loc Hl'
   cases BytesAt_unique Hat Hat' (by rw [bytesVal_length Hv, bytesVal_length Hv'])
   rw [Hv] at Hv'; cases Hv'
@@ -338,7 +336,7 @@ theorem wp_load_bytes (w : Nat) (l : Loc) (dq : DFrac) (bs : List w8) (v : val)
   iapply HΦ $$ Hbs
 
 theorem wp_swap_bytes (w : Nat) (l : Loc) (bs bs' : List w8) (v0 v : val)
-    (Hv0 : bytesVal w bs = some v0) (Hv : valBytes w v = some bs') (Hal : (w : Int) ∣ l.addr) :
+    (Hv0 : bytesVal w bs = some v0) (Hv : valBytes w v = some bs') :
     {{ ▷ bytesPointsto (GF := GF) l (.own 1) bs }} (SwapBytes w (Val #l) (Val v)) @ s; E
     {{ RET v0; bytesPointsto l (.own 1) bs' }} := by
   have Hvp := valBytes_not_panic Hv
@@ -348,10 +346,10 @@ theorem wp_swap_bytes (w : Nat) (l : Loc) (bs bs' : List w8) (v0 v : val)
   icases bytesPointsto_lookup_1 σ₁ l bs $$ Hσ Hbs with %Hat
   imodintro
   isplitr
-  · ipureintro; exact ⟨[], _, _, [], BaseStep.SwapBytesS w l bs v0 v bs' σ₁ Hal Hat Hv0 Hv⟩
+  · ipureintro; exact ⟨[], _, _, [], BaseStep.SwapBytesS w l bs v0 v bs' σ₁ Hat Hv0 Hv⟩
   inext
   iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨l', b1, v0', b2, Hl', _, Hat', Hv0', Hv', rfl, rfl, rfl, rfl⟩ :=
+  obtain ⟨l', b1, v0', b2, Hl', Hat', Hv0', Hv', rfl, rfl, rfl, rfl⟩ :=
     baseStep_SwapBytes_inv Hstep
   cases GoGlobalContext.intoVal_inj_loc Hl'
   cases BytesAt_unique Hat Hat' (by rw [bytesVal_length Hv0, bytesVal_length Hv0'])
@@ -371,7 +369,7 @@ theorem wp_swap_bytes (w : Nat) (l : Loc) (bs bs' : List w8) (v0 v : val)
 
 theorem wp_add_bytes (w : Nat) (l : Loc) (bs bs' : List w8) (v0 v v' : val)
     (Hv0 : bytesVal w bs = some v0) (Hev : atomicAddEval v0 v = some v')
-    (Hv' : valBytes w v' = some bs') (Hal : (w : Int) ∣ l.addr) :
+    (Hv' : valBytes w v' = some bs') :
     {{ ▷ bytesPointsto (GF := GF) l (.own 1) bs }} (AddBytes w (Val #l) (Val v)) @ s; E
     {{ RET v'; bytesPointsto l (.own 1) bs' }} := by
   have Hvp := atomicAddEval_not_panic Hev
@@ -382,10 +380,10 @@ theorem wp_add_bytes (w : Nat) (l : Loc) (bs bs' : List w8) (v0 v v' : val)
   imodintro
   isplitr
   · ipureintro
-    exact ⟨[], _, _, [], BaseStep.AddBytesS w l bs v0 v v' bs' σ₁ Hal Hat Hv0 Hev Hv'⟩
+    exact ⟨[], _, _, [], BaseStep.AddBytesS w l bs v0 v v' bs' σ₁ Hat Hv0 Hev Hv'⟩
   inext
   iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨l', b1, v0', v'', b2, Hl', _, Hat', Hv0', Hev', Hv'', rfl, rfl, rfl, rfl⟩ :=
+  obtain ⟨l', b1, v0', v'', b2, Hl', Hat', Hv0', Hev', Hv'', rfl, rfl, rfl, rfl⟩ :=
     baseStep_AddBytes_inv Hstep
   cases GoGlobalContext.intoVal_inj_loc Hl'
   cases BytesAt_unique Hat Hat' (by rw [bytesVal_length Hv0, bytesVal_length Hv0'])
@@ -405,7 +403,7 @@ theorem wp_add_bytes (w : Nat) (l : Loc) (bs bs' : List w8) (v0 v v' : val)
   iapply HΦ $$ Hbs
 
 theorem wp_cmpxchg_bytes_fail (w : Nat) (l : Loc) (dq : DFrac) (bs : List w8) (vl v1 v2 : val)
-    (Hvl : bytesVal w bs = some vl) (Hne : vl ≠ v1) (Hal : (w : Int) ∣ l.addr) :
+    (Hvl : bytesVal w bs = some vl) (Hne : vl ≠ v1) :
     {{ ▷ bytesPointsto (GF := GF) l dq bs }}
       (CmpXchgBytes w (Val #l) (Val (PairV v1 v2))) @ s; E
     {{ RET (PairV vl #false); bytesPointsto l dq bs }} := by
@@ -416,10 +414,10 @@ theorem wp_cmpxchg_bytes_fail (w : Nat) (l : Loc) (dq : DFrac) (bs : List w8) (v
   imodintro
   isplitr
   · ipureintro
-    exact ⟨[], _, _, [], BaseStep.CmpXchgBytesFailS w l bs vl v1 v2 σ₁ Hal Hat Hvl Hne⟩
+    exact ⟨[], _, _, [], BaseStep.CmpXchgBytesFailS w l bs vl v1 v2 σ₁ Hat Hvl Hne⟩
   inext
   iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨l', bs', vl', v1', v2', Hl', Hp, _, Hvl', rfl, rfl, Hcase⟩ :=
+  obtain ⟨l', bs', vl', v1', v2', Hl', Hp, Hvl', rfl, rfl, Hcase⟩ :=
     baseStep_CmpXchgBytes_inv Hstep
   cases GoGlobalContext.intoVal_inj_loc Hl'
   cases Hp
@@ -441,7 +439,7 @@ theorem wp_cmpxchg_bytes_fail (w : Nat) (l : Loc) (dq : DFrac) (bs : List w8) (v
 
 theorem wp_cmpxchg_bytes_suc (w : Nat) (l : Loc) (bs bs' : List w8) (vl v1 v2 : val)
     (Hvl : bytesVal w bs = some vl) (Heq : vl = v1) (Hv2 : valBytes w v2 = some bs')
-    (Hal : (w : Int) ∣ l.addr) :
+    :
     {{ ▷ bytesPointsto (GF := GF) l (.own 1) bs }}
       (CmpXchgBytes w (Val #l) (Val (PairV v1 v2))) @ s; E
     {{ RET (PairV vl #true); bytesPointsto l (.own 1) bs' }} := by
@@ -452,10 +450,10 @@ theorem wp_cmpxchg_bytes_suc (w : Nat) (l : Loc) (bs bs' : List w8) (vl v1 v2 : 
   imodintro
   isplitr
   · ipureintro
-    exact ⟨[], _, _, [], BaseStep.CmpXchgBytesSucS w l bs vl v1 v2 bs' σ₁ Hal Hat Hvl Heq Hv2⟩
+    exact ⟨[], _, _, [], BaseStep.CmpXchgBytesSucS w l bs vl v1 v2 bs' σ₁ Hat Hvl Heq Hv2⟩
   inext
   iintro %κ %e₂ %σ₂ %eₜ %Hstep _
-  obtain ⟨l', bs'', vl', v1', v2', Hl', Hp, _, Hvl', rfl, rfl, Hcase⟩ :=
+  obtain ⟨l', bs'', vl', v1', v2', Hl', Hp, Hvl', rfl, rfl, Hcase⟩ :=
     baseStep_CmpXchgBytes_inv Hstep
   cases GoGlobalContext.intoVal_inj_loc Hl'
   cases Hp

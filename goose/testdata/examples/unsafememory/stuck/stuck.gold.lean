@@ -88,9 +88,6 @@ noncomputable def testBytesOverPointer [GooseExts] [GoGlobalContext] : GoString 
 noncomputable def testPaddedView [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unsafememory/stuck.testPaddedView"
 
-noncomputable def testMisalignedAtomic [GooseExts] [GoGlobalContext] : GoString :=
-  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unsafememory/stuck.testMisalignedAtomic"
-
 noncomputable def testByteSliceAligned [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unsafememory/stuck.testByteSliceAligned"
 
@@ -294,33 +291,9 @@ noncomputable def testPaddedView.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "buf") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- An atomic at an address that is not 8-aligned in some executions: a []byte
-    is only 1-aligned. Go: works, tears, or faults, depending on the address and
-    the CPU.
-
-    go: stuck.go:82:6 -/
-noncomputable def testMisalignedAtomic.impl [GooseExts] [GoGlobalContext] : val :=
-  (LamV BAnon
-  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
-  (Seq (App (Val exceptionDo)
-  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 16)))
-  (Let "buf" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (Let "$a0" (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType go.int64)))) (App (Val (GoInstruction (Convert (go.GoType.PointerType go.byte) «unsafe».Pointer))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "buf")) (Val #(W64 1))))))
-  (Let "$a1" (Val #(W64 1))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.AddInt64 []))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W64 1))))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (Val doReturn)
-  (Val #()))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "buf") (Var "$r0"))))))))
-  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
-
 /-- Go promises a []byte nothing beyond 1-alignment.
 
-    go: stuck.go:88:6 -/
+    go: stuck.go:80:6 -/
 noncomputable def testByteSliceAligned.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -338,7 +311,7 @@ noncomputable def testByteSliceAligned.impl [GooseExts] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "buf") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- go: stuck.go:102:6 -/
+/-- go: stuck.go:94:6 -/
 noncomputable def testFieldResidue.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -356,7 +329,7 @@ noncomputable def testFieldResidue.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType mixed.ty)))) (Pair (Var "s") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- go: stuck.go:112:6 -/
+/-- go: stuck.go:104:6 -/
 noncomputable def testZeroSizeDistinct.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -387,7 +360,7 @@ noncomputable def testZeroSizeDistinct.impl [GooseExts] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.ArrayType 0 go.uint64))))) (Pair (Var "p") (Var "$r0"))))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- go: stuck.go:126:6 -/
+/-- go: stuck.go:118:6 -/
 noncomputable def testStringOverPointer.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -415,7 +388,7 @@ noncomputable def testStringOverPointer.impl [GooseExts] [GoGlobalContext] : val
 
 /-- A map viewed as a map of another key type: Go finds the key (false here).
 
-    go: stuck.go:134:6 -/
+    go: stuck.go:126:6 -/
 noncomputable def testMapPun.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -452,7 +425,7 @@ noncomputable def testMapPun.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.MapType go.int go.int)))) (Pair (Var "m") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- go: stuck.go:145:21 -/
+/-- go: stuck.go:137:21 -/
 noncomputable def readerWriter.Read.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
@@ -471,7 +444,7 @@ noncomputable def readerWriter.Read.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1"))))))))
 
-/-- go: stuck.go:146:21 -/
+/-- go: stuck.go:138:21 -/
 noncomputable def readerWriter.Write.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Lam BAnon
@@ -490,7 +463,7 @@ noncomputable def readerWriter.Write.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1"))))))))
 
-/-- go: stuck.go:148:6 -/
+/-- go: stuck.go:140:6 -/
 noncomputable def testInterfacePun.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -529,7 +502,7 @@ noncomputable def testInterfacePun.impl [GooseExts] [GoGlobalContext] : val :=
 /-- A pointer stored atomically into an integer's bytes: Go writes the
     address's bytes (false here).
 
-    go: stuck.go:157:6 -/
+    go: stuck.go:149:6 -/
 noncomputable def testAtomicPointerIntoBytes.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -551,7 +524,7 @@ noncomputable def testAtomicPointerIntoBytes.impl [GooseExts] [GoGlobalContext] 
 /-- An address past an object, compared without being accessed: gc places the
     two 16-byte objects next to each other, so this is false in Go.
 
-    go: stuck.go:165:6 -/
+    go: stuck.go:157:6 -/
 noncomputable def testPastEndAddress.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -581,7 +554,7 @@ noncomputable def testPastEndAddress.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "a") (Var "$r0"))))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- go: stuck.go:177:6 -/
+/-- go: stuck.go:169:6 -/
 noncomputable def testBlankFieldEq.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -936,7 +909,6 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testPointerFromBytes_unfold : FuncUnfold testPointerFromBytes [] testPointerFromBytes.impl
   testBytesOverPointer_unfold : FuncUnfold testBytesOverPointer [] testBytesOverPointer.impl
   testPaddedView_unfold : FuncUnfold testPaddedView [] testPaddedView.impl
-  testMisalignedAtomic_unfold : FuncUnfold testMisalignedAtomic [] testMisalignedAtomic.impl
   testByteSliceAligned_unfold : FuncUnfold testByteSliceAligned [] testByteSliceAligned.impl
   testFieldResidue_unfold : FuncUnfold testFieldResidue [] testFieldResidue.impl
   testZeroSizeDistinct_unfold : FuncUnfold testZeroSizeDistinct [] testZeroSizeDistinct.impl
@@ -964,7 +936,6 @@ attribute [instance] Assumptions.Pgid_instance
   Assumptions.testPointerFromBytes_unfold
   Assumptions.testBytesOverPointer_unfold
   Assumptions.testPaddedView_unfold
-  Assumptions.testMisalignedAtomic_unfold
   Assumptions.testByteSliceAligned_unfold
   Assumptions.testFieldResidue_unfold
   Assumptions.testZeroSizeDistinct_unfold

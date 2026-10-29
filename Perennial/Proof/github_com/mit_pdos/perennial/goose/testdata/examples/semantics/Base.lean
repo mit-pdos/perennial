@@ -59,7 +59,7 @@ theorem w64_pointsto_excl (l : Loc) (v w : w64) :
     (typedPointsto l v (DFrac.own 1) : IProp GF) ∗ typedPointsto l w (DFrac.own 1) ⊢ False := by
   simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_w64, natBytes,
     bytesPointsto]
-  iintro ⟨⟨⟨-, H1, -⟩, _⟩, ⟨⟨-, H2, -⟩, _⟩⟩
+  iintro ⟨⟨⟨H1, -⟩, _⟩, ⟨⟨H2, -⟩, _⟩⟩
   icombine H1 H2 gives % ⟨Hv, _⟩
   exact absurd (DFrac.valid_op_own Hv) (by simp)
 

@@ -100,47 +100,47 @@ export ByteAtomicWps (wp_load_bytes_typed wp_swap_bytes_typed wp_add_bytes_typed
   wp_cmpxchg_bytes_fail_typed wp_cmpxchg_bytes_suc_typed)
 
 /-- Prove `ByteAtomicWps V w` for an integer type `V` of `w` bytes, whose typed points-to is
-its bytes at an address `w` divides. -/
+its bytes. -/
 macro "solve_byte_atomic_wps" : tactic => `(tactic| (
   constructor
   all_goals try simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_w64,
     typedPointstoDef_w32]
   · intro s E l dq v
     iintro %Φ Hl HΦ
-    icases Hl with ⟨⟨>%Hal, Hbs⟩, >%Hnn⟩
-    iapply wp_load_bytes _ l dq _ #v (bytesVal_valBytes (by rw [go.intoVal_unfold]; rfl)) Hal $$ Hbs
+    icases Hl with ⟨Hbs, >%Hnn⟩
+    iapply wp_load_bytes _ l dq _ #v (bytesVal_valBytes (by rw [go.intoVal_unfold]; rfl)) $$ Hbs
     inext; iintro Hbs
-    iapply HΦ; iframe Hbs; isplit <;> ipureintro <;> assumption
+    iapply HΦ; iframe Hbs; ipureintro; assumption
   · intro s E l v v'
     iintro %Φ Hl HΦ
-    icases Hl with ⟨⟨>%Hal, Hbs⟩, >%Hnn⟩
+    icases Hl with ⟨Hbs, >%Hnn⟩
     iapply wp_swap_bytes _ l _ _ #v #v' (bytesVal_valBytes (by rw [go.intoVal_unfold]; rfl))
-      (by rw [go.intoVal_unfold]; rfl) Hal $$ Hbs
+      (by rw [go.intoVal_unfold]; rfl) $$ Hbs
     inext; iintro Hbs
-    iapply HΦ; iframe Hbs; isplit <;> ipureintro <;> assumption
+    iapply HΦ; iframe Hbs; ipureintro; assumption
   · intro s E l v d
     iintro %Φ Hl HΦ
-    icases Hl with ⟨⟨>%Hal, Hbs⟩, >%Hnn⟩
+    icases Hl with ⟨Hbs, >%Hnn⟩
     iapply wp_add_bytes _ l _ _ #v #d #(v + d) (bytesVal_valBytes (by rw [go.intoVal_unfold]; rfl))
-      (by simp only [go.intoVal_unfold, atomicAddEval]) (by rw [go.intoVal_unfold]; rfl) Hal $$ Hbs
+      (by simp only [go.intoVal_unfold, atomicAddEval]) (by rw [go.intoVal_unfold]; rfl) $$ Hbs
     inext; iintro Hbs
-    iapply HΦ; iframe Hbs; isplit <;> ipureintro <;> assumption
+    iapply HΦ; iframe Hbs; ipureintro; assumption
   · intro l v' v1 v2 dq s E Hne
     iintro %Φ Hl HΦ
-    icases Hl with ⟨⟨>%Hal, Hbs⟩, >%Hnn⟩
+    icases Hl with ⟨Hbs, >%Hnn⟩
     iapply wp_cmpxchg_bytes_fail _ l dq _ #v' #v1 #v2
-      (bytesVal_valBytes (by rw [go.intoVal_unfold]; rfl)) (fun h => Hne (go.intoVal_inj h)) Hal
+      (bytesVal_valBytes (by rw [go.intoVal_unfold]; rfl)) (fun h => Hne (go.intoVal_inj h))
       $$ Hbs
     inext; iintro Hbs
-    iapply HΦ; iframe Hbs; isplit <;> ipureintro <;> assumption
+    iapply HΦ; iframe Hbs; ipureintro; assumption
   · intro l v' v1 v2 s E Heq
     iintro %Φ Hl HΦ
-    icases Hl with ⟨⟨>%Hal, Hbs⟩, >%Hnn⟩
+    icases Hl with ⟨Hbs, >%Hnn⟩
     iapply wp_cmpxchg_bytes_suc _ l _ _ #v' #v1 #v2
       (bytesVal_valBytes (by rw [go.intoVal_unfold]; rfl)) (congrArg _ Heq)
-      (by rw [go.intoVal_unfold]; rfl) Hal $$ Hbs
+      (by rw [go.intoVal_unfold]; rfl) $$ Hbs
     inext; iintro Hbs
-    iapply HΦ; iframe Hbs; isplit <;> ipureintro <;> assumption))
+    iapply HΦ; iframe Hbs; ipureintro; assumption))
 
 instance byte_atomic_wps_w64 : ByteAtomicWps (GF := GF) w64 8 := by solve_byte_atomic_wps
 instance byte_atomic_wps_w32 : ByteAtomicWps (GF := GF) w32 4 := by solve_byte_atomic_wps

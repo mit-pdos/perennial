@@ -182,8 +182,8 @@ theorem wp_NewChannel_unbuffered_ne (l : Loc) (x : w64) :
     iexfalso
     simp only [typedPointsto_unseal, typedPointstoWrap, typedPointstoDef_w64, natBytes,
       bytesPointsto]
-    icases cap with ⟨⟨-, Hc1, -⟩, -⟩
-    icases Hl with ⟨⟨-, Hc2, -⟩, -⟩
+    icases cap with ⟨⟨Hc1, -⟩, -⟩
+    icases Hl with ⟨⟨Hc2, -⟩, -⟩
     icombine Hc1 Hc2 gives %H
     exact absurd (DFrac.valid_own_op_discard.1 H.1) (by simp)
   imod ghostVar_alloc (ChanState.Idle (V := V)) with ⟨%state_gname, Hstate⟩

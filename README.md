@@ -121,11 +121,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
 * **Integers and floats are bytes.** A value of an integer or float type of `w`
   bytes (`go.IsPlainScalar`, `Perennial/Golang/Defn/Predeclared.lean`) is `w`
   heap cells holding its little-endian bytes, allocated together (`AllocBytes`)
-  at an address `w` divides, as gc aligns them on linux/amd64. Loads and stores
-  go byte by byte, and are stuck on a cell that is not a byte. The integer
-  atomics of `sync/atomic` and the semaphores are byte atomics of their width
-  (`LoadBytes`, `SwapBytes`, `AddBytes`, `CmpXchgBytes`, `GooseLang/Lang.lean`),
-  stuck unless the address is a multiple of the width. `bool`, `string`,
+  at any address. Loads and stores go byte by byte, and are stuck on a cell
+  that is not a byte. The integer atomics of `sync/atomic` and the semaphores
+  are byte atomics of their width (`LoadBytes`, `SwapBytes`, `AddBytes`,
+  `CmpXchgBytes`, `GooseLang/Lang.lean`), at any address: a misaligned atomic
+  is assumed not to tear (`docs/KNOWN_LIMITATIONS.md`). `bool`, `string`,
   pointers and the other non-plain values stay one opaque cell
   (`docs/design/unsafe-memory.md`, R1, R2 and R5).
 * **Plain types have gc's layout.** A plain type (`go.PlainLayout`,
