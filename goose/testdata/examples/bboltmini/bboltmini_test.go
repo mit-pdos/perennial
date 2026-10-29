@@ -23,6 +23,7 @@ func TestTargets(t *testing.T) {
 		"testFloatBits":              testFloatBits,
 		"testMixedWidthAtomics":      testMixedWidthAtomics,
 		"testOverlappingCopyViaTemp": testOverlappingCopyViaTemp,
+		"testAddPastEnd":             testAddPastEnd,
 	} {
 		if !f() {
 			t.Errorf("%s returned false", name)

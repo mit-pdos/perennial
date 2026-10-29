@@ -249,6 +249,7 @@ def main():
             "./channel/...",
             "./crashfs/...",
             "./netfs/...",
+            "./bboltmini/...",
         )
 
     if args.models:

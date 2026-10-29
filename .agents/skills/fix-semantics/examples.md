@@ -847,3 +847,31 @@ addresses were abstract functions of the Lean type, so nothing related a struct 
 
 **Why.** The owner: "Do (c)".
 
+## Case 27 — ACCEPTED: `unsafe` conversions, `uintptr`, `unsafe.Add` and `unsafe.Slice` (branch `worktree-agent-aa70bf40ee9ce37bc`)
+
+**Symptom.** Unsound and incomplete. `(*T)(unsafe.Pointer(p))` was the identity for every `T`,
+so a view of byte cells as a pointer, string, bool or map read a malformed value; `uintptr(p)`,
+`unsafe.Add` and `unsafe.Slice` were stuck or refused by goose.
+
+**Taken** (`docs/design/unsafe-memory-r3-plan.md`):
+- the conversion to `*T` needs `go.IsPlain T` (a class over `PlainLayout`), so it is stuck for
+  a non-plain `T`;
+- `uintptr(p)` is `ArbitraryInt`;
+- `unsafe.Add` is `p + n`; `unsafe.Slice` follows `runtime.unsafeslice`'s panics, through a pure
+  instruction `InternalUnsafeSlice` (its `ptr + n·size` overflow check needs the address, which
+  a program cannot read);
+- goose: `unsafe.Add`/`unsafe.Slice` as calls of `«unsafe».Add`/`«unsafe».Slice` at their
+  operands' types (about 15 lines);
+- `atomic.Pointer[T].Load`/`Swap` as trusted models without the conversion.
+
+**Not taken.**
+- A `CheckCells` primitive making `unsafe.Add`/`Slice` stuck outside an allocation (gc's collector
+  can crash on such a pointer). The owner: "Let's leave the 'found bad pointer in Go heap' as a
+  known limitation. If the real program runs into that problem, it'll be very obvious, so I'm ok
+  not modeling that in the semantics, since skipping it will make the semantics for
+  unsafe.Add/Slice pure rather than requiring heap accesses."
+- Keeping the conversion defined and checking cell shapes on loads: misses interface and map
+  puns.
+
+**Why.** Plan signed off 2026-10-29 ("1. ok. 2. ok.").
+

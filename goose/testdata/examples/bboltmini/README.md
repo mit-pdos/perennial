@@ -11,18 +11,18 @@ as `go.etcd.io/bbolt` v1.5.0 writes it, except for the patched forms of
 
 The semantics and reasoning principles are enough for bbolt when goose
 translates every target below and each one is proved, none of the probes
-in `stuck/` can be proved, and goose refuses every copy in `rejected/`.
+in `stuck/` can be proved, and goose refuses every copy in
+`goose/testdata/disabled-tests/bboltmini-rejected`.
 
-`go test ./goose/testdata/disabled-tests/bboltmini/...` checks that each
+`go test ./...` here checks that each
 target holds in Go, what Go answers for each probe and each rejected copy
 that has a fixed answer, and that goose's guard refuses exactly the copies
-marked `// refused` in `rejected/`. The targets also pass under `-race`, whose `checkptr` checks every
+marked `// refused` in `bboltmini-rejected` (`go test` there). The targets also pass under `-race`, whose `checkptr` checks every
 unsafe conversion for alignment and for staying inside its allocation.
 
-The package is in `disabled-tests` because goose refuses it today: it
-rejects the `unsafe.Add`/`unsafe.Slice` calls and nothing else
-(`goose/cmd/modelcheck` reports nothing on it or on `stuck/`). It moves to
-`testdata/examples` once goose translates it.
+goose translates both packages (`bboltmini.gold.lean`, `stuck/stuck.gold.lean`; the Lean
+translation is under `Perennial/Code/.../examples/bboltmini`), and `goose/cmd/modelcheck`
+reports nothing on them.
 
 ## Targets (`targets.go`): each `{{ True }} testX() {{ RET true }}`
 
@@ -44,6 +44,7 @@ rejects the `unsafe.Add`/`unsafe.Slice` calls and nothing else
 | `testFloatBits` | — | R1 | floats are plain: a `float64` is 8 byte cells holding its IEEE bits |
 | `testMixedWidthAtomics` | — | R5 | sequential atomics of two widths on one word; the concurrent case is assumption A3 |
 | `testOverlappingCopyViaTemp` | — | R4 | a copy between overlapping views through a local has value semantics, as in gc 1.26 (A2) |
+| `testAddPastEnd` | — | R3 | `unsafe.Add` one past the allocation is defined: the model does not check that a pointer is in its allocation (`docs/KNOWN_LIMITATIONS.md`), so `!= nil` holds (true in Go too) |
 
 Two targets are scale tests rather than new idioms:
 - `testFreelistOverflow` writes 65536 ids, so its proof must use loop
@@ -59,7 +60,6 @@ stuck on purpose.
 |---|---|---|---|
 | `testOriginalUnsafeAdd` | true | bbolt's `unsafe.Pointer(uintptr(base)+offset)`: `uintptr → unsafe.Pointer` stays stuck | §6, R3 |
 | `testOriginalPos` | true | bbolt's pointer difference: `uintptr(p)` is arbitrary | §6, R3 |
-| `testAddPastEnd` | true | `unsafe.Add` one past the allocation is invalid | R3 |
 | `testSlicePastEnd` | reads another object | an `unsafe.Slice` past the allocation | R3 |
 | `testPastEndAddress` | **false** (the objects are adjacent) | an address past an object compared with the next object's address: `unsafe.Slice` checks its cells, and placement is nondeterministic, so both answers are model behaviours | R3 |
 | `testPointerFromBytes` | true | a pointer read out of bytes | R3 (conversion to non-plain) |
@@ -78,7 +78,7 @@ stuck on purpose.
 Each probe marked **false** found an unsound point in an earlier draft of
 the design. Section 11 of the design records the review rounds.
 
-## Rejected copies (`rejected/`): goose must refuse each
+## Rejected copies (`goose/testdata/disabled-tests/bboltmini-rejected`): goose must refuse each
 
 The semantics copies a struct or array by value; gc copies with a `Move`,
 which is wrong when its two sides partially overlap (design R4). goose's

@@ -304,3 +304,11 @@ func testOverlappingCopyViaTemp() bool {
 	copyWordsViaTemp((*words)(unsafe.Pointer(&buf[1])), (*words)(unsafe.Pointer(&buf[0])))
 	return buf[3] == 2
 }
+
+// unsafe.Add one past the end of the allocation: invalid in Go (gc's collector can stop on
+// such a pointer), but the model does not check it (docs/KNOWN_LIMITATIONS.md), so this is a
+// target, true in Go.
+func testAddPastEnd() bool {
+	buf := make([]byte, 16)
+	return unsafe.Add(unsafe.Pointer(&buf[0]), len(buf)) != nil
+}

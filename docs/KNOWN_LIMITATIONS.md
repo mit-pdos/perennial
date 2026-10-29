@@ -165,42 +165,20 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
 
 ## `unsafe` and layouts
 
-- **`bool` and `sync.Mutex` share element addresses (unsound).** Element and field
-  addresses (`arrayIndexRef V i l`, `structFieldRef V f l`) are keyed by the Lean type
-  `V`, and `sync.Mutex` and `primitive.Mutex` are represented as `Bool`
-  (`Mutex.underlying := go.bool`, `TrustedCode/sync.lean`,
-  `TrustedCode/github_com/goose_lang/primitive.lean`), so a 1-byte `bool` and an 8-byte
-  `Mutex` get the same element addresses. `unsafe.Pointer` conversions are the identity
-  (`convert_unsafe_to_pointer`, `Golang/Defn/Predeclared.lean`), so a view of one as the
-  other reads the wrong cell:
-
-  ```go
-  var mus [2]sync.Mutex
-  mus[1].Lock()
-  return (*[2]bool)(unsafe.Pointer(&mus))[1] // Go: false (byte 1 of mus[0]); the model: true
-  ```
-
-  goose translates this, and the model's only answer is `true`. The reverse view
-  (`[16]bool` read as `[2]sync.Mutex`, then `TryLock`) and a generic struct instantiated
-  at `bool` and at `sync.Mutex` go wrong the same way. Before arrays were allocated
-  (`05ef8d959`), the allocation reached `AngelicExit`, so such a program verified any
-  spec vacuously. Fixes: a Lean representation of the mutexes of their own, so that
-  equal Lean types mean equal gc layouts, or making a conversion between pointers to
-  types of different layouts stuck (R1 and R3 of `docs/design/unsafe-memory.md`).
-  Found 2026-10-26 by a blind trusted-base review of the flat-address change.
-- **Views of integers as non-plain types (unsound).** `convert_unsafe_to_pointer` is the
-  identity for every pointer type, so `unsafe` can view an integer's byte cells (R1, R2) as a
-  pointer, string, bool or other one-cell type:
-  - a load through `(*unsafe.Pointer)(unsafe.Pointer(&u))` yields the `LitByte` of `u`'s
-    first cell as a pointer, so `== nil` can be false where Go says true (before the byte
-    representation it yielded the integer literal, with the same problem);
-  - a store through `(**T)(unsafe.Pointer(&u))` replaces only `u`'s first byte cell with the
-    pointer's one cell, and a byte view of `u` then reads the old bytes 1 to 7, where Go
-    reads the pointer's bytes.
-
-  Views between plain types (`*uint64` as `*uint32`, `*float64` as `*uint64`) give Go's
-  little-endian answer. R3 of `docs/design/unsafe-memory.md` makes the conversion to a
-  non-plain pointer type stuck, which removes this.
+- **Pointers outside their allocation are not checked (unsound, accepted).** `unsafe.Add`
+  and `unsafe.Slice` are pure arithmetic (`go.PlainSemantics`, `Golang/Defn/Plain.lean`).
+  Go makes a pointer outside its allocation invalid, past-the-end included, and gc's garbage
+  collector can stop the program with a fatal, unrecoverable "found bad pointer in Go heap"
+  when it finds one, even if the program never dereferences it. The model has no such
+  failure, so a verified program that forms such a pointer (`unsafe.Add(p, len)`, or a
+  reslice of an `unsafe.Slice` that reaches past the allocation) can still crash in gc.
+  Accesses through such a pointer are still stuck where no cell exists (R2 of
+  `docs/design/unsafe-memory.md`). The owner's decision of 2026-10-29: "If the real
+  program runs into that problem, it'll be very obvious".
+- **Mixed-width atomics are not stuck (unsound, assumed).** Atomics of two widths on the
+  same bytes (`atomic.AddUint64(&u, 1)` and `atomic.AddUint32((*uint32)(unsafe.Pointer(&u)),
+  1)`) get sequentially consistent byte semantics, which Intel does not promise when they
+  are concurrent (assumption A3 of `docs/design/unsafe-memory.md`).
 
 ## The step bound of the adequacy theorems
 

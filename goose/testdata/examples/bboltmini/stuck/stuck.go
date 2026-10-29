@@ -43,12 +43,6 @@ func testOriginalPos() bool {
 	return pos == 48
 }
 
-// unsafe.Add one past the end of the allocation is invalid. True in Go.
-func testAddPastEnd() bool {
-	buf := make([]byte, 16)
-	return unsafe.Add(unsafe.Pointer(&buf[0]), len(buf)) != nil
-}
-
 // unsafe.Slice past the allocation, then an access there. Go reads whatever
 // follows; the model has no cell.
 func testSlicePastEnd() bool {
