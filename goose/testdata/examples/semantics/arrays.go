@@ -105,3 +105,13 @@ func sumArrayLit() uint64 {
 func testRangeArrayLit() bool {
 	return sumArrayLit() == 9
 }
+
+// slicing a pointer to an array slices the array it points to
+func testSliceArrayPointer() bool {
+	var a [3]uint64
+	p := &a
+	s := p[1:]
+	s[0] = 5
+	t := p[:2:3]
+	return len(s) == 2 && cap(s) == 2 && a[1] == 5 && len(t) == 2 && cap(t) == 3 && t[1] == 5
+}

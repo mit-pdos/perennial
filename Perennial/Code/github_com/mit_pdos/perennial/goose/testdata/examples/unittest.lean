@@ -411,6 +411,9 @@ noncomputable def arrayToSlice [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def arrayLiteralKeyed [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.arrayLiteralKeyed"
 
+noncomputable def arrayPointerToSlice [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.arrayPointerToSlice"
+
 noncomputable def chanBasic [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.chanBasic"
 
@@ -1120,6 +1123,21 @@ noncomputable def arrayLiteralKeyed.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 13 go.string)))) (Pair (Var "x") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
+
+/-- go: array.go:55:6 -/
+noncomputable def arrayPointerToSlice.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.string)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType (go.GoType.ArrayType 2 go.string))))) (Var "p"))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType (go.GoType.ArrayType 2 go.string))))) (Var "p"))
+  (App (Val (GoInstruction (Slice (go.GoType.ArrayType 2 go.string)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 2)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "$res0")))))
 
 /-- go: chan.go:5:6 -/
 noncomputable def chanBasic.impl [GooseExts] [GoGlobalContext] : val :=
@@ -7362,6 +7380,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   sum_unfold : FuncUnfold sum [] sum.impl
   arrayToSlice_unfold : FuncUnfold arrayToSlice [] arrayToSlice.impl
   arrayLiteralKeyed_unfold : FuncUnfold arrayLiteralKeyed [] arrayLiteralKeyed.impl
+  arrayPointerToSlice_unfold : FuncUnfold arrayPointerToSlice [] arrayPointerToSlice.impl
   chanBasic_unfold : FuncUnfold chanBasic [] chanBasic.impl
   f_unfold : FuncUnfold f [] f.impl
   chanSelect_unfold : FuncUnfold chanSelect [] chanSelect.impl
@@ -7619,6 +7638,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.sum_unfold
   Assumptions.arrayToSlice_unfold
   Assumptions.arrayLiteralKeyed_unfold
+  Assumptions.arrayPointerToSlice_unfold
   Assumptions.chanBasic_unfold
   Assumptions.f_unfold
   Assumptions.chanSelect_unfold

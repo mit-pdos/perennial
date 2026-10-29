@@ -192,7 +192,10 @@ func testInlineBucket() bool {
 	inner := leafInodes()
 	value := writeInlineBucket(&InBucket{sequence: 42}, inner)
 	for keyLen := 1; keyLen <= 8; keyLen++ {
-		key := bytes.Repeat([]byte("k"), keyLen)
+		key := make([]byte, keyLen)
+		for i := range key {
+			key[i] = 'k'
+		}
 		outer := make([]byte, 4096)
 		p := writeLeaf(outer, []inode{{flags: bucketLeafFlag, key: key, value: value}})
 		v := p.leafPageElement(0).value()

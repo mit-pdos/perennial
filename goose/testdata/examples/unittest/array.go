@@ -51,3 +51,7 @@ func arrayLiteralKeyed() string {
 	}
 	return x[0]
 }
+
+func arrayPointerToSlice(p *[2]string) []string {
+	return p[:]
+}

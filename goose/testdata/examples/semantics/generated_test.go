@@ -51,6 +51,10 @@ func (suite *GoTestSuite) TestRangeArrayLit() {
 	suite.Equal(true, testRangeArrayLit())
 }
 
+func (suite *GoTestSuite) TestSliceArrayPointer() {
+	suite.Equal(true, testSliceArrayPointer())
+}
+
 func (suite *GoTestSuite) TestBlankFieldEq() {
 	suite.Equal(true, testBlankFieldEq())
 }

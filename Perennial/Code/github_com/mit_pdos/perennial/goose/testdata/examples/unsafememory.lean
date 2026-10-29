@@ -606,7 +606,7 @@ noncomputable def Meta.sum64.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0"))))))))
   (Let "$range" (Let "$s" (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType (go.GoType.ArrayType 56 go.byte))))) (App (Val (GoInstruction (Convert (go.GoType.PointerType Meta.ty) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Meta.ty)))) (Var "m"))))
-  (App (Val (GoInstruction (Slice (go.GoType.PointerType (go.GoType.ArrayType 56 go.byte))))) (Pair (Pair (Var "$s") (Val #(W64 0))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.PointerType (go.GoType.ArrayType 56 go.byte))]))) (Val #())) (Var "$s")))))
+  (App (Val (GoInstruction (Slice (go.GoType.ArrayType 56 go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 56)))))
   (Let "c" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
   (App (App (Val (slice.forRange go.byte)) (Var "$range"))
   (Lam "$key"
@@ -2090,10 +2090,9 @@ noncomputable def testInlineBucket.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (App (Val doFor) (Lam BAnon
   (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "keyLen")) (Val #(W64 8)))))) (Lam BAnon
-  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.SliceType go.byte)))) (Val #(go!"k")))
-  (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "keyLen"))
-  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.bytes.Repeat []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (App (Val (GoInstruction (GoLoad go.int))) (Var "keyLen")))
   (Let "key" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 4096)))
   (Let "outer" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
@@ -2187,6 +2186,17 @@ noncomputable def testInlineBucket.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType Page.ty)))) (Pair (Var "p") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "outer") (Var "$r0")))))))))
+  (Let "$range" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "key"))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val (slice.forRange go.byte)) (Var "$range"))
+  (Lam "$key"
+  (Lam "$value"
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W8 107))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "key")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$key")))))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "key") (Var "$r0")))))))))
   (Lam BAnon
@@ -2203,7 +2213,7 @@ noncomputable def testInlineBucket.impl [GooseExts] [GoGlobalContext] : val :=
 /-- Atomics on a Go-allocated struct, one of them through *time.Duration cast
     to *int64.
 
-    go: targets.go:217:6 -/
+    go: targets.go:220:6 -/
 noncomputable def testStatsConcurrent.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -2260,7 +2270,7 @@ noncomputable def testStatsConcurrent.impl [GooseExts] [GoGlobalContext] : val :
 /-- Whole-struct copies, through a local, between disjoint views of one buffer
     and onto the same place.
 
-    go: targets.go:234:6 -/
+    go: targets.go:237:6 -/
 noncomputable def testDisjointStructCopy.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -2318,7 +2328,7 @@ noncomputable def testDisjointStructCopy.impl [GooseExts] [GoGlobalContext] : va
     a whole-struct load at offset 0 and byte stores, the same type is stored and
     loaded at offset 8.
 
-    go: targets.go:250:6 -/
+    go: targets.go:253:6 -/
 noncomputable def testBufferReuseShifted.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -2371,7 +2381,7 @@ noncomputable def testBufferReuseShifted.impl [GooseExts] [GoGlobalContext] : va
 /-- Whole loads of one type at overlapping offsets are defined: a load is a
     plain read of the bytes (design R2).
 
-    go: targets.go:264:6 -/
+    go: targets.go:267:6 -/
 noncomputable def testOverlappingLoads.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -2406,7 +2416,7 @@ noncomputable def testOverlappingLoads.impl [GooseExts] [GoGlobalContext] : val 
 /-- A float's bits through a uint64 view: floats are plain (design R1), 8 byte
     cells holding their IEEE bits.
 
-    go: targets.go:274:6 -/
+    go: targets.go:277:6 -/
 noncomputable def testFloatBits.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -2427,7 +2437,7 @@ noncomputable def testFloatBits.impl [GooseExts] [GoGlobalContext] : val :=
 /-- Atomics of two widths on one word, one after the other. The concurrent case
     is outside the model (design section 5, A3).
 
-    go: targets.go:281:6 -/
+    go: targets.go:284:6 -/
 noncomputable def testMixedWidthAtomics.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -2451,7 +2461,7 @@ noncomputable def testMixedWidthAtomics.impl [GooseExts] [GoGlobalContext] : val
   (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.atomic.AddUint64 []))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- go: targets.go:294:6 -/
+/-- go: targets.go:297:6 -/
 noncomputable def copyWordsViaTemp.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "dst"
   (Lam "src"
@@ -2468,7 +2478,7 @@ noncomputable def copyWordsViaTemp.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore words.ty))) (Pair (Var "x") (Var "$r0"))))))))))
   (Val #()))))
 
-/-- go: targets.go:299:6 -/
+/-- go: targets.go:302:6 -/
 noncomputable def testOverlappingCopyViaTemp.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -2507,7 +2517,7 @@ noncomputable def testOverlappingCopyViaTemp.impl [GooseExts] [GoGlobalContext] 
     such a pointer), but the model does not check it (docs/KNOWN_LIMITATIONS.md), so this is a
     target, true in Go.
 
-    go: targets.go:311:6 -/
+    go: targets.go:314:6 -/
 noncomputable def testAddPastEnd.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))

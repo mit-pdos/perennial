@@ -907,3 +907,19 @@ of the known limitation instead. Trusted: 6 premises removed.
 **Why.** bbolt's views never use atomics, and its atomics are all on Go-allocated fields. The
 owner: "Let's do this and document this as a known limitation of the unsafe memory semantics".
 
+
+## Case 29 — ACCEPTED: slicing a pointer to an array (branch `worktree-goose-array-ptr-slice`)
+
+**Symptom.** Incomplete: goose emitted `Slice (PointerType (ArrayType n t))` and
+`go.len [PointerType …]` for `p[lo:hi]` with `p` a pointer to an array, and neither has a rule
+(`testMetaChecksum`'s `(*[56]byte)(unsafe.Pointer(m))[:]`).
+
+**Taken.** goose desugars it as the Go spec defines it, `(*p)[lo:hi]`: the array slice with `p`
+as the array's address and the array's length as the default high bound. No semantics change.
+Slicing through a nil `p` inherits the array slice's missing nil check (the deferred P2
+defect).
+
+**Not taken.** A `Slice` rule for pointer-to-array types: a second rule for what is one
+operation in Go.
+
+**Why.** The owner: "Make the addition to the translator (it's basically desugaring)".

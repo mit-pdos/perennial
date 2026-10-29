@@ -781,6 +781,11 @@ func (ctx *Ctx) shiftCount(y ast.Expr, yT types.Type) glang.Expr {
 
 func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
 	xT := ctx.typeOf(e.X)
+	// A slice of a pointer to an array p is a slice of *p, whose address is p.
+	ptrTy, isPtr := underlyingType(xT).(*types.Pointer)
+	if isPtr {
+		xT = ptrTy.Elem()
+	}
 	ty := ctx.glangType(e, xT)
 	arrayTy, isArray := underlyingType(xT).(*types.Array)
 
@@ -790,7 +795,10 @@ func (ctx *Ctx) sliceExpr(e *ast.SliceExpr) glang.Expr {
 	// Go requires an array slice operand to be addressable, so exprAddr is
 	// defined here. The result aliases the array, so a loaded copy would be
 	// wrong. len of an array is its constant length.
-	if isArray {
+	if isPtr {
+		x = ctx.expr(e.X)
+		highExpr = glang.Int64Val{Value: glang.IntToZ(arrayTy.Len())}
+	} else if isArray {
 		x = ctx.exprAddr(e.X)
 		highExpr = glang.Int64Val{Value: glang.IntToZ(arrayTy.Len())}
 	} else {
