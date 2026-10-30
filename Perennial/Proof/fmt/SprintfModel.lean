@@ -1,7 +1,7 @@
 /-
 Specs of the helpers of the model of `fmt.Sprintf` (`Perennial/TrustedCode/fmt.lean`), which
-are not functions of package `fmt`: `arbitraryString`, `formatInt`, `intVerb`, `intArg` and
-`formatArg`.
+are not functions of package `fmt`: `arbitraryString`, `formatInt`, `formatHex`, `intVerb`,
+`intArg` and `formatArg`.
 -/
 module
 
@@ -182,6 +182,86 @@ theorem wp_formatInt (neg : Bool) (mag width : w64) (hneg : neg = true → uint.
       word
     rw [Hds, decimalNat_of_ge Hm, show uint.nat (m / W64 10) = uint.nat m / 10 by word]
     simp
+
+theorem hexadecimal_signedValue (neg : Bool) (mag : w64) (hneg : neg = true → uint.Z mag ≠ 0) :
+    hexadecimal (signedValue neg mag) =
+      (if neg then go!"-" ++ hexNat (uint.nat mag) else hexNat (uint.nat mag)) := by
+  cases neg
+  · have h : (uint.Z mag).natAbs = uint.nat mag := by word
+    simp only [hexadecimal, signedValue, Bool.false_eq_true, ↓reduceIte, h]
+    rw [ite_eq_right (by word)]
+  · have h : (-uint.Z mag).natAbs = uint.nat mag := by word
+    have := hneg rfl
+    simp only [hexadecimal, signedValue, ↓reduceIte, h]
+    rw [ite_eq_left (by word)]
+    rfl
+
+/-- The helper `fmt.formatHex` of the model of `Sprintf`: the lowercase hexadecimal of the integer
+of sign `neg` and magnitude `mag` (non-zero if `neg`). -/
+theorem wp_formatHex (neg : Bool) (mag : w64) (hneg : neg = true → uint.Z mag ≠ 0) :
+    {{ (True : IProp GF) }}
+      (App (App (Val formatHex) (Val #neg)) (Val #mag))
+    {{ RET #(hexadecimal (signedValue neg mag)); True }} := by
+  iintro %Φ - HΦ
+  unfold formatHex
+  wp_auto
+  ihave IH : iprop(∃ (m : w64) (ds : GoString),
+      "mag" ∷ mag_ptr ↦ m ∗
+      "digits" ∷ digits_ptr ↦ ds ∗
+      "%Hds" ∷ ⌜hexNat (uint.nat mag) = hexNat (uint.nat m) ++ ds⌝) $$ [mag digits]
+  · iexists _, _
+    iframe
+    ipureintro
+    simp [show zero_val GoString = [] from rfl]
+  wp_for IH
+  have Hm16 : uint.nat m % 16 < 16 := Nat.mod_lt _ (by omega)
+  obtain ⟨db, Hdb⟩ : ∃ db, db = hexDigitByte (uint.nat m % 16) := ⟨_, rfl⟩
+  wp_if_destruct
+  -- the digit `d`, either way `hexDigitByte (m % 16)`
+  have Hdig : W8 48 + W8 (uint.Z (m % W64 16)) = hexDigitByte (uint.nat m % 16) := by
+    have : uint.nat m % 16 < 10 := by word
+    unfold hexDigitByte; rw [if_pos this]; word
+  rw [Hdig, ← Hdb]
+  clear Hdig Hif
+  rotate_left
+  have Hdig : W8 97 + (W8 (uint.Z (m % W64 16)) - W8 10) = hexDigitByte (uint.nat m % 16) := by
+    have : ¬ uint.nat m % 16 < 10 := by
+      intro h; apply Hif; word
+    unfold hexDigitByte; rw [if_neg this]; word
+  rw [Hdig, ← Hdb]
+  clear Hdig Hif
+  rotate_left
+  all_goals
+    wp_bind (App (Val (GoInstruction (CompositeLiteral (go.SliceType go.byte))))
+      (Val (LiteralValueV _)))
+    iapply wp_slice_literal (V := w8) (t := go.byte) [db]
+    wp_auto
+    rw [show go.arrayLiteralSize
+      [KeyedElement none (ElementExpression go.byte #db)] = 1 from rfl]
+    isplitl []
+    · ipureintro; rfl
+    iintro %sl_ptr ⟨Hsl, -⟩
+    wp_apply wp_bytes_to_string $$ Hsl as -
+    wp_if_destruct
+    · -- the last digit
+      wp_for_post
+      have Hm : uint.nat m < 16 := by
+        have := congrArg uint.Z Hif; word
+      have HD : hexNat (uint.nat mag) = [db] ++ ds := by
+        rw [Hds, hexNat_of_lt Hm, Nat.mod_eq_of_lt Hm] at *; rw [Hdb]
+      rw [← HD, hexadecimal_signedValue neg mag hneg]
+      cases neg <;> simp only [Bool.false_eq_true, ↓reduceIte] <;> wp_auto <;> iapply HΦ <;>
+        itrivial
+    · wp_for_post
+      iframe
+      iexists _, _
+      iframe
+      ipureintro
+      have Hm : 16 ≤ uint.nat m := by
+        have : m / W64 16 ≠ W64 0 := fun h => Hif (by rw [h])
+        word
+      rw [Hds, hexNat_of_ge Hm, show uint.nat (m / W64 16) = uint.nat m / 16 by word, Hdb]
+      simp
 
 /-- The helper `fmt.intVerb` of the model of `Sprintf`: at the `%` at index `i` of `format`, the
 integer directive that follows, `parseIntVerb` of the format after the `%`, with the index after
@@ -609,13 +689,15 @@ omit [GooseSemantics] in
 theorem not_simpleDirective (f : GoString) (x : GoInterface) (args : List GoInterface)
     (h1 : f.head? ≠ some (W8 37))
     (h2 : f.head? ≠ some (W8 115) ∨ ∀ ii, x = interface.ok ii → ii.ty ≠ go.string)
-    (h3 : parseIntVerb f = none ∨ ∀ ii, x = interface.ok ii → ¬ IsIntType ii.ty) :
+    (h3 : parseIntVerb f = none ∨ ∀ ii, x = interface.ok ii → ¬ IsIntType ii.ty)
+    (h4 : f.head? ≠ some (W8 120) ∨ ∀ ii, x = interface.ok ii → ¬ IsIntType ii.ty) :
     ¬ SimpleDirective f (x :: args) := by
   cases f with
   | nil => simp [SimpleDirective]
   | cons c f =>
     simp only [SimpleDirective, List.cons.injEq]
-    rintro (h | ⟨hc, ii, rest, ⟨rfl, -⟩, hty⟩ | ⟨hp, ii, rest, ⟨rfl, -⟩, hty⟩)
+    rintro (h | ⟨hc, ii, rest, ⟨rfl, -⟩, hty⟩ | ⟨hp, ii, rest, ⟨rfl, -⟩, hty⟩ |
+      ⟨hc, ii, rest, ⟨rfl, -⟩, hty⟩)
     · exact h1 (by simp [h])
     · rcases h2 with h2 | h2
       · exact h2 (by simp [hc])
@@ -623,6 +705,9 @@ theorem not_simpleDirective (f : GoString) (x : GoInterface) (args : List GoInte
     · rcases h3 with h3 | h3
       · rw [h3] at hp; simp at hp
       · exact h3 ii rfl hty
+    · rcases h4 with h4 | h4
+      · exact h4 (by simp [hc])
+      · exact h4 ii rfl hty
 
 omit [GooseSemantics] in
 theorem not_simpleDirective_nil (f : GoString) (h : f.head? ≠ some (W8 37)) :
@@ -631,8 +716,9 @@ theorem not_simpleDirective_nil (f : GoString) (h : f.head? ≠ some (W8 37)) :
   | nil => simp [SimpleDirective]
   | cons c f =>
     simp only [SimpleDirective]
-    rintro (h' | ⟨-, ii, rest, h', -⟩ | ⟨-, ii, rest, h', -⟩)
+    rintro (h' | ⟨-, ii, rest, h', -⟩ | ⟨-, ii, rest, h', -⟩ | ⟨-, ii, rest, h', -⟩)
     · exact h (by simp [h'])
+    · cases h'
     · cases h'
     · cases h'
 
@@ -669,6 +755,8 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
       simp only [_root_.decide_true]
       have Hnp : parseIntVerb (format.drop (sint.nat i + 1)) = none := by
         rw [Hdrop]; simp [parseIntVerb]
+      have Hnx : (format.drop (sint.nat i + 1)).head? ≠ some (W8 120) := by
+        rw [Hdrop]; simp only [List.head?_cons, ne_eq, Option.some.injEq]; decide
       cases x with
       | nil =>
         wp_auto
@@ -676,7 +764,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
         isplitl []
         · ipureintro; intro h; cases h
         · ipureintro; intro _ hp args
-          exact not_simpleDirective _ _ _ hp (.inr (fun ii h => by cases h)) (.inl Hnp)
+          exact not_simpleDirective _ _ _ hp (.inr (fun ii h => by cases h)) (.inl Hnp) (.inl Hnx)
       | ok ii =>
         by_cases hty : ii.ty = go.string
         · obtain ⟨sx, hv⟩ := (Hx ii rfl).1 hty
@@ -700,20 +788,22 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
           · ipureintro; intro h; cases h
           · ipureintro; intro _ hp args
             exact not_simpleDirective _ _ _ hp
-              (.inr (fun ii' h => by cases h; exact hty)) (.inl Hnp)
+              (.inr (fun ii' h => by cases h; exact hty)) (.inl Hnp) (.inl Hnx)
     · rw [decide_eq_false hs]
       wp_auto
       have Hns : (format.drop (sint.nat i + 1)).head? ≠ some (W8 115) := by
         rw [Hdrop]; simpa using hs
-      wp_apply wp_intVerb format i Hi as %w %next %ok ⟨%Hv1, %Hv2⟩
-      cases ok
-      · wp_auto
-        iapply HΦ
-        isplitl []
-        · ipureintro; intro h; cases h
-        · ipureintro; intro _ hp args
-          exact not_simpleDirective _ _ _ hp (.inl Hns) (.inl (Hv2 rfl))
-      · obtain ⟨Hparse, Hw1, Hw2, Hn1, Hn2⟩ := Hv1 rfl
+      wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %-
+      rw [decide_eq_true Hif]
+      wp_auto
+      rw [if_pos (show 0 ≤ sint.Z (i + W64 1) by word), Hidx]
+      wp_auto
+      by_cases hx : c = W8 120
+      · -- `%x`
+        subst hx
+        simp only [_root_.decide_true]
+        have Hnp : parseIntVerb (format.drop (sint.nat i + 1)) = none := by
+          rw [Hdrop]; simp [parseIntVerb]
         wp_auto
         wp_apply wp_intArg x Hx as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
         cases ok2
@@ -722,18 +812,57 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
           isplitl []
           · ipureintro; intro h; cases h
           · ipureintro; intro _ hp args
-            exact not_simpleDirective _ _ _ hp (.inl Hns) (.inr (Ha2 rfl))
+            exact not_simpleDirective _ _ _ hp (.inl Hns) (.inl Hnp) (.inr (Ha2 rfl))
         · obtain ⟨ii, rfl, Hval, Hmag⟩ := Ha1 rfl
           wp_auto
-          wp_apply wp_formatInt neg mag w Hmag ⟨Hw1, Hw2⟩
+          wp_apply wp_formatHex neg mag Hmag
           iapply HΦ
           isplitl []
           · ipureintro; intro _
-            exact ⟨Hn1, Hn2, fun args r hr => SprintfOut.int _ _ _ _ _ _ _ Hparse Hval hr⟩
+            refine ⟨by word, by word, fun args r hr => ?_⟩
+            rw [Hdrop2] at hr
+            rw [Hdrop]
+            exact SprintfOut.hex _ _ _ _ _ Hval hr
           · ipureintro; intro h; cases h
+      · rw [decide_eq_false hx]
+        wp_auto
+        have Hnx : (format.drop (sint.nat i + 1)).head? ≠ some (W8 120) := by
+          rw [Hdrop]; simpa using hx
+        wp_apply wp_intVerb format i Hi as %w %next %ok ⟨%Hv1, %Hv2⟩
+        cases ok
+        · wp_auto
+          iapply HΦ
+          isplitl []
+          · ipureintro; intro h; cases h
+          · ipureintro; intro _ hp args
+            exact not_simpleDirective _ _ _ hp (.inl Hns) (.inl (Hv2 rfl)) (.inl Hnx)
+        · obtain ⟨Hparse, Hw1, Hw2, Hn1, Hn2⟩ := Hv1 rfl
+          wp_auto
+          wp_apply wp_intArg x Hx as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
+          cases ok2
+          · wp_auto
+            iapply HΦ
+            isplitl []
+            · ipureintro; intro h; cases h
+            · ipureintro; intro _ hp args
+              exact not_simpleDirective _ _ _ hp (.inl Hns) (.inr (Ha2 rfl)) (.inl Hnx)
+          · obtain ⟨ii, rfl, Hval, Hmag⟩ := Ha1 rfl
+            wp_auto
+            wp_apply wp_formatInt neg mag w Hmag ⟨Hw1, Hw2⟩
+            iapply HΦ
+            isplitl []
+            · ipureintro; intro _
+              exact ⟨Hn1, Hn2, fun args r hr => SprintfOut.int _ _ _ _ _ _ _ Hparse Hval hr⟩
+            · ipureintro; intro h; cases h
+
   · (try wp_auto)
     have Hns : (format.drop (sint.nat i + 1)).head? ≠ some (W8 115) := by
       rw [List.drop_eq_nil_of_le (by word)]; simp
+    have Hnx : (format.drop (sint.nat i + 1)).head? ≠ some (W8 120) := by
+      rw [List.drop_eq_nil_of_le (by word)]; simp
+    wp_apply github_com.mit_pdos.perennial.goose.model.strings.wp_string_len with %-
+    wp_if_destruct
+    · exfalso; word
     wp_apply wp_intVerb format i Hi as %w %next %ok ⟨%Hv1, %Hv2⟩
     cases ok
     · wp_auto
@@ -741,7 +870,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
       isplitl []
       · ipureintro; intro h; cases h
       · ipureintro; intro _ hp args
-        exact not_simpleDirective _ _ _ hp (.inl Hns) (.inl (Hv2 rfl))
+        exact not_simpleDirective _ _ _ hp (.inl Hns) (.inl (Hv2 rfl)) (.inl Hnx)
     · obtain ⟨Hparse, Hw1, Hw2, Hn1, Hn2⟩ := Hv1 rfl
       wp_auto
       wp_apply wp_intArg x Hx as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
@@ -751,7 +880,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
         isplitl []
         · ipureintro; intro h; cases h
         · ipureintro; intro _ hp args
-          exact not_simpleDirective _ _ _ hp (.inl Hns) (.inr (Ha2 rfl))
+          exact not_simpleDirective _ _ _ hp (.inl Hns) (.inr (Ha2 rfl)) (.inl Hnx)
       · obtain ⟨ii, rfl, Hval, Hmag⟩ := Ha1 rfl
         wp_auto
         wp_apply wp_formatInt neg mag w Hmag ⟨Hw1, Hw2⟩

@@ -1,7 +1,7 @@
 /-
 Shared definitions of the proofs of the Go `fmt` package: its `isPkgInit`, `SprintfOut` (the
-relation the result of `Sprintf` satisfies), the decimals its integer directives write, the
-well-formedness of arguments (`ArgsWf`), and lemmas about them.
+relation the result of `Sprintf` satisfies), the decimals and hexadecimals its integer directives
+write, the well-formedness of arguments (`ArgsWf`), and lemmas about them.
 -/
 module
 
@@ -214,11 +214,90 @@ theorem padZeros_decimal_lt (N : Nat) (a b : Int) (ha : 0 ≤ a) (hab : a < b)
   have h10 : ((10 ^ N : Nat) : Int) = 10 ^ N := Int.natCast_pow 10 N
   exact padZeros_decimalNat_lt N _ _ (by omega) (by omega)
 
+/-! ## Hexadecimals
+
+What `%x` writes for an integer: `hexadecimal z`, from the lowercase hexadecimal digits of a
+natural number, `hexNat`. -/
+
+/-- The lowercase hexadecimal digit of `d < 16`: `'0' + d` below 10, `'a' + (d - 10)` above. -/
+def hexDigitByte (d : Nat) : w8 := if d < 10 then W8 (48 + d) else W8 (97 + (d - 10))
+
+/-- The lowercase hexadecimal digits of `n`, most significant first, without leading zeros
+(`"0"` for `0`). -/
+def hexNat (n : Nat) : GoString :=
+  (if n < 16 then [] else hexNat (n / 16)) ++ [hexDigitByte (n % 16)]
+termination_by n
+decreasing_by omega
+
+/-- The lowercase hexadecimal of `z`, without a `0x` prefix, with a leading `-` if `z` is
+negative: what `%x` writes. -/
+def hexadecimal (z : Int) : GoString :=
+  if z < 0 then W8 45 :: hexNat z.natAbs else hexNat z.natAbs
+
+theorem hexNat_eq (n : Nat) :
+    hexNat n = (if n < 16 then [] else hexNat (n / 16)) ++ [hexDigitByte (n % 16)] := by
+  rw [hexNat]
+
+theorem hexNat_of_lt {n : Nat} (h : n < 16) : hexNat n = [hexDigitByte n] := by
+  rw [hexNat_eq, ite_eq_left h, Nat.mod_eq_of_lt h]; rfl
+
+theorem hexNat_of_ge {n : Nat} (h : 16 ≤ n) :
+    hexNat n = hexNat (n / 16) ++ [hexDigitByte (n % 16)] := by
+  rw [hexNat_eq, ite_eq_right (by omega)]
+
+theorem hexNat_ne_nil (n : Nat) : hexNat n ≠ [] := by
+  rw [hexNat_eq]; simp
+
+/-- The hexadecimal of `n < 16^k` has at most `k` digits (`k ≥ 1`). -/
+theorem length_hexNat_le (n k : Nat) (hk : 1 ≤ k) (h : n < 16 ^ k) :
+    (hexNat n).length ≤ k := by
+  induction n using Nat.strongRecOn generalizing k with
+  | _ n ih =>
+    by_cases hn : n < 16
+    · rw [hexNat_of_lt hn]; simpa using hk
+    · rw [hexNat_of_ge (by omega)]
+      obtain ⟨k', rfl⟩ : ∃ k', k = k' + 1 := ⟨k - 1, by omega⟩
+      have hk' : 1 ≤ k' := by
+        rcases k' with _ | k'
+        · simp at h; omega
+        · omega
+      have h' : n / 16 < 16 ^ k' := by
+        rw [Nat.pow_succ] at h; exact Nat.div_lt_of_lt_mul (by rw [Nat.mul_comm]; exact h)
+      have := ih (n / 16) (by omega) k' hk' h'
+      simp; omega
+
+/-- The hexadecimal of an integer of magnitude below `2^64` (any value of Go's integer types) has
+at most 16 digits, and so at most 17 bytes with the sign. -/
+theorem length_hexadecimal_le (z : Int) (h : z.natAbs < 2 ^ 64) :
+    (hexadecimal z).length ≤ 17 := by
+  have := length_hexNat_le z.natAbs 16 (by omega) (by simpa using h)
+  unfold hexadecimal; split <;> simp <;> omega
+
+/-- The hexadecimal of a non-negative integer below `2^64` has at most 16 bytes. -/
+theorem length_hexadecimal_le_of_nonneg (z : Int) (h0 : 0 ≤ z) (h : z < 2 ^ 64) :
+    (hexadecimal z).length ≤ 16 := by
+  have := length_hexNat_le z.natAbs 16 (by omega) (by omega)
+  unfold hexadecimal; rw [ite_eq_right (by omega)]; exact this
+
+/-! Tests of the hexadecimals. -/
+
+example : hexadecimal 0 = go!"0" := by
+  simp [hexadecimal, hexNat_eq, hexDigitByte]
+example : hexadecimal 255 = go!"ff" := by
+  simp [hexadecimal, hexNat_eq, hexDigitByte]
+example : hexadecimal (-255) = go!"-ff" := by
+  simp [hexadecimal, hexNat_eq, hexDigitByte]
+example : hexadecimal 0x694d71ddd3a1f00d = go!"694d71ddd3a1f00d" := by
+  simp [hexadecimal, hexNat_eq, hexDigitByte]
+example : hexadecimal (-2 ^ 63) = go!"-8000000000000000" := by
+  simp [hexadecimal, hexNat_eq, hexDigitByte]
+
 /-! ## The output of `Sprintf`
 
 `SprintfOut format args out`: `out` is a possible result of the model of `Sprintf`
 (`Perennial/TrustedCode/fmt.lean`) on `format` and the arguments `args`. Bytes are `w8`:
-`W8 37` is `%`, `W8 115` is `s`, `W8 100` is `d`, `W8 118` is `v`, `W8 48` is `0`. -/
+`W8 37` is `%`, `W8 115` is `s`, `W8 100` is `d`, `W8 118` is `v`, `W8 120` is `x`, `W8 48` is
+`0`. -/
 
 /-- The width of `%0Nd` read from `f` (after the `0`) with `w` read so far, and the rest of `f`:
 digits are read while the width so far is at most `10^6`, as in the model's `intVerb`. -/
@@ -337,18 +416,21 @@ theorem IntArgValue.of_uint8 [GooseExts] [GoGlobalContext] {v : val} {z : Int}
     first | exact ⟨_, rfl, rfl⟩ | (exfalso; simp [go.int, go.int64, go.int32, go.int16, go.int8, go.uint, go.uint64, go.uint32, go.uint16, go.uint8] at hty)
 
 /-- At `%` followed by `f`, with arguments `args` left: whether the model formats the directive
-(`%%`, `%s` of an interface holding a `string`, or an integer directive, `parseIntVerb`, of an
-interface holding an integer); at any other directive the rest of the output is arbitrary. -/
+(`%%`, `%s` of an interface holding a `string`, an integer directive, `parseIntVerb`, of an
+interface holding an integer, or `%x` of an interface holding an integer); at any other
+directive the rest of the output is arbitrary. -/
 def SimpleDirective [GooseExts] : GoString → List GoInterface → Prop
   | c :: f, args =>
       c = W8 37 ∨ (c = W8 115 ∧ ∃ ii rest, args = interface.ok ii :: rest ∧ ii.ty = go.string) ∨
-      ((parseIntVerb (c :: f)).isSome ∧ ∃ ii rest, args = interface.ok ii :: rest ∧ IsIntType ii.ty)
+      ((parseIntVerb (c :: f)).isSome ∧ ∃ ii rest, args = interface.ok ii :: rest ∧ IsIntType ii.ty) ∨
+      (c = W8 120 ∧ ∃ ii rest, args = interface.ok ii :: rest ∧ IsIntType ii.ty)
   | [], _ => False
 
 /-- `SprintfOut format args out`: `out` is a possible result of `fmt.Sprintf(format, args...)`,
 as the model of `Sprintf` formats it. Bytes other than `%` are copied, `%%` gives `%`, `%s` with
 an interface holding a `string` next gives that string, `%d`, `%v` and `%0Nd` with an interface
-holding an integer next give its (zero-padded) decimal; at any other directive, and after the
+holding an integer next give its (zero-padded) decimal, `%x` with an interface holding an integer
+next gives its hexadecimal; at any other directive, and after the
 format if arguments remain unused, the rest of the output is arbitrary. -/
 inductive SprintfOut [GooseExts] [GoGlobalContext] :
     GoString → List GoInterface → GoString → Prop
@@ -373,6 +455,11 @@ inductive SprintfOut [GooseExts] [GoGlobalContext] :
       (out : GoString) :
       parseIntVerb f = some (w, rest) → IntArgValue ii z → SprintfOut rest args out →
       SprintfOut (W8 37 :: f) (interface.ok ii :: args) (decimalPad w z ++ out)
+  /-- `%x` of an interface holding the integer `z` gives `hexadecimal z` (lowercase, no `0x`, a
+  `-` if negative), and consumes the argument. -/
+  | hex (f : GoString) (ii : GoInterfaceOk) (z : Int) (args : List GoInterface) (out : GoString) :
+      IntArgValue ii z → SprintfOut f args out →
+      SprintfOut (W8 37 :: W8 120 :: f) (interface.ok ii :: args) (hexadecimal z ++ out)
   /-- Any other directive (or a trailing lone `%`): the rest of the output is arbitrary. -/
   | other (f : GoString) (args : List GoInterface) (junk : GoString) :
       ¬ SimpleDirective f args → SprintfOut (W8 37 :: f) args junk
@@ -451,6 +538,9 @@ theorem SprintfOut.str_prefix [go.IntoValInj GoString] (x f : GoString)
     simp only [List.cons.injEq] at hF
     obtain ⟨-, rfl⟩ := hF
     simp [parseIntVerb] at hp
+  | hex =>
+    simp only [List.cons.injEq] at hF
+    exact absurd hF.2.1 (by decide)
   | other _ _ _ hnot =>
     simp only [List.cons.injEq] at hF
     obtain ⟨-, rfl⟩ := hF
@@ -529,6 +619,7 @@ theorem SprintfOut.byte_inv {c : w8} {f : GoString} {args : List GoInterface} {o
   | percent => simp only [List.cons.injEq] at hF; exact absurd hF.1 hc
   | str => simp only [List.cons.injEq] at hF; exact absurd hF.1 hc
   | int => simp only [List.cons.injEq] at hF; exact absurd hF.1 hc
+  | hex => simp only [List.cons.injEq] at hF; exact absurd hF.1 hc
   | other => simp only [List.cons.injEq] at hF; exact absurd hF.1 hc
 
 theorem SprintfOut.str_inv [go.IntoValInj GoString] {x f : GoString} {args : List GoInterface}
@@ -557,6 +648,9 @@ theorem SprintfOut.str_inv [go.IntoValInj GoString] {x f : GoString} {args : Lis
     simp only [List.cons.injEq] at hF
     obtain ⟨-, rfl⟩ := hF
     simp [parseIntVerb] at hp
+  | hex =>
+    simp only [List.cons.injEq] at hF
+    exact absurd hF.2.1 (by decide)
   | other _ _ _ hnot =>
     simp only [List.cons.injEq] at hF
     obtain ⟨-, rfl⟩ := hF
@@ -595,6 +689,10 @@ theorem SprintfOut.int_inv {f rest : GoString} {w : Nat} {ii : GoInterfaceOk} {z
     obtain ⟨rfl, rfl⟩ := hp'
     rw [huniq z' hz']
     exact ⟨out', rfl, h'⟩
+  | hex f' =>
+    simp only [List.cons.injEq] at hF
+    obtain ⟨-, rfl⟩ := hF
+    simp [parseIntVerb] at hp
   | other _ _ _ hnot =>
     simp only [List.cons.injEq] at hF
     obtain ⟨-, rfl⟩ := hF
@@ -603,7 +701,48 @@ theorem SprintfOut.int_inv {f rest : GoString} {w : Nat} {ii : GoInterfaceOk} {z
     cases f with
     | nil => simp [parseIntVerb] at hp
     | cons c f =>
-      exact Or.inr (Or.inr ⟨by rw [hp]; rfl, _, _, rfl, hz.isIntType⟩)
+      exact Or.inr (Or.inr (Or.inl ⟨by rw [hp]; rfl, _, _, rfl, hz.isIntType⟩))
+
+theorem SprintfOut.hex_inv {f : GoString} {ii : GoInterfaceOk} {z : Int}
+    {args : List GoInterface} {out : GoString}
+    (hz : IntArgValue ii z) (huniq : ∀ z', IntArgValue ii z' → z' = z)
+    (h : SprintfOut (W8 37 :: W8 120 :: f) (interface.ok ii :: args) out) :
+    ∃ out', out = hexadecimal z ++ out' ∧ SprintfOut f args out' := by
+  generalize hF : W8 37 :: W8 120 :: f = F at h
+  generalize hA : interface.ok ii :: args = A at h
+  cases h with
+  | done => cases hF
+  | extra => cases hF
+  | byte _ _ _ _ hc _ =>
+    simp only [List.cons.injEq] at hF
+    exact absurd hF.1.symm hc
+  | percent =>
+    simp only [List.cons.injEq] at hF
+    exact absurd hF.2.1 (by decide)
+  | str =>
+    simp only [List.cons.injEq] at hF
+    exact absurd hF.2.1 (by decide)
+  | int f' _ _ _ _ _ _ hp =>
+    simp only [List.cons.injEq] at hF
+    obtain ⟨-, rfl⟩ := hF
+    simp [parseIntVerb] at hp
+  | hex f' ii' z' args' out' hz' h' =>
+    simp only [List.cons.injEq] at hF hA
+    obtain ⟨-, -, rfl⟩ := hF
+    obtain ⟨hii, rfl⟩ := hA
+    cases hii
+    rw [huniq z' hz']
+    exact ⟨out', rfl, h'⟩
+  | other _ _ _ hnot =>
+    simp only [List.cons.injEq] at hF
+    obtain ⟨-, rfl⟩ := hF
+    subst hA
+    exact absurd (Or.inr (Or.inr (Or.inr ⟨rfl, _, _, rfl, hz.isIntType⟩))) hnot
+
+/-- The integer an `IntArgValue` holds has magnitude below `2^64`. -/
+theorem IntArgValue.natAbs_lt {ii : GoInterfaceOk} {z : Int} (h : IntArgValue ii z) :
+    z.natAbs < 2 ^ 64 := by
+  cases h <;> word
 
 theorem IntArgValue.uniq_int64 [go.IntoValInj w64] (n : w64) :
     ∀ z', IntArgValue (interface.mk go.int64 #n) z' → z' = sint.Z n := by
@@ -666,6 +805,36 @@ theorem SprintfOut.str_slash_016d_int [go.IntoValInj GoString] [go.IntoValInj w6
     (IntArgValue.uniq_int n) h2
   rw [SprintfOut.done_inv h3, decimalPad_of_nonneg _ hn]
   simp
+
+/-- The hexadecimal of an integer argument has at most 17 bytes (16 digits and a sign). -/
+theorem IntArgValue.length_hexadecimal_le {ii : GoInterfaceOk} {z : Int} (h : IntArgValue ii z) :
+    (hexadecimal z).length ≤ 17 :=
+  fmt.length_hexadecimal_le z h.natAbs_lt
+
+/-- `Sprintf("%s%x", x, n)` for a string `x` and an argument `n` holding the integer `z` is
+exactly `x` then the hexadecimal of `z`. -/
+theorem SprintfOut.str_x [go.IntoValInj GoString] (x : GoString) {ii : GoInterfaceOk} {z : Int}
+    (hz : IntArgValue ii z) (huniq : ∀ z', IntArgValue ii z' → z' = z) (out : GoString)
+    (h : SprintfOut go!"%s%x" [interface.mkOk go.string #x, interface.ok ii] out) :
+    out = x ++ hexadecimal z := by
+  have hfmt : go!"%s%x" = W8 37 :: W8 115 :: W8 37 :: [W8 120] := rfl
+  rw [hfmt] at h
+  obtain ⟨o1, rfl, h1⟩ := SprintfOut.str_inv h
+  obtain ⟨o2, rfl, h2⟩ := SprintfOut.hex_inv hz huniq h1
+  rw [SprintfOut.done_inv h2]
+  simp
+
+/-- `Sprintf("%s%x", x, n)` for a string `x` and an `int64` `n` is exactly `x` then `n` in
+lowercase hexadecimal, at most `x.length + 17` bytes. -/
+theorem SprintfOut.str_x_int64 [go.IntoValInj GoString] [go.IntoValInj w64]
+    (x : GoString) (n : w64) (out : GoString)
+    (h : SprintfOut go!"%s%x" [interface.mkOk go.string #x, interface.mkOk go.int64 #n] out) :
+    out = x ++ hexadecimal (sint.Z n) ∧ out.length ≤ x.length + 17 := by
+  have hout := SprintfOut.str_x x (IntArgValue.int64 n) (IntArgValue.uniq_int64 n) out h
+  refine ⟨hout, ?_⟩
+  rw [hout, List.length_append]
+  have := (IntArgValue.int64 n).length_hexadecimal_le
+  omega
 
 /-! Tests of `SprintfOut`, `ArgsWf` and the decimals. -/
 
