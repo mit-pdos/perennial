@@ -92,12 +92,15 @@ class InterfaceSemantics : Prop where
              else decide (ii.ty = t))
      ))
 
-  /-- `reflect.ValueOf(i)` read at the kind of `t`: an interface whose dynamic type has `t`'s
-  underlying type gives its value, any other interface (`nil` included) `t`'s zero value, with
-  whether it did. Go values of types with the same underlying type have the same representation
-  (`CoreSemantics.convert_underlying`). (A dynamic type is never an interface type,
-  `convert_to_interface`, so for an interface type `t` it never succeeds.) -/
-  type_assert_underlying2_step {t t_under : go.GoType} [t ↓u t_under] (i : GoInterface) {v : val}
+  /-- `reflect.ValueOf(i)` read at the kind of `t`, for a `t` whose underlying type is an integer
+  type (`v.Int()`, `v.Uint()`): an interface whose dynamic type has `t`'s underlying type gives its
+  value, any other interface (`nil` included) `t`'s zero value, with whether it did. Go values of
+  types with the same underlying type have the same representation
+  (`CoreSemantics.convert_underlying`). Restricted to integer types (`IsInteger`): for a struct
+  type, Lean's field names are unqualified where Go's unexported ones are not, so equal underlying
+  types here need not be equal in Go. -/
+  type_assert_underlying2_step {t t_under : go.GoType} [t ↓u t_under] [IsInteger t_under]
+    (i : GoInterface) {v : val}
     [⟦GoZeroVal t, #()⟧ ⤳ Val v] :
     ⟦TypeAssertUnderlying2 t, #i⟧ ⤳
     glv(((match i with

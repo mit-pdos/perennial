@@ -148,9 +148,9 @@ inductive GoInstruction where
   | MethodResolve (t : go.GoType) (m : GoString)
   | TypeAssert (t : go.GoType)
   | TypeAssert2 (t : go.GoType)
-  /-- `v, ok := x.(~t)`, for a non-interface `t`: the value of the interface `x` if its
-  dynamic type's underlying type is `t`'s, as `reflect.ValueOf(x)` reads a value of any
-  type by its kind (`Value.Int`, `Value.Uint`). Not a Go expression: goose never emits it;
+  /-- `v, ok := x.(~t)`, for a `t` whose underlying type is an integer type: the value of the
+  interface `x` if its dynamic type's underlying type is `t`'s, as `reflect.ValueOf(x)` reads a
+  value of any type by its kind (`Value.Int`, `Value.Uint`); it has no semantics at other `t`. Not a Go expression: goose never emits it;
   trusted models use it (the model of `fmt.Sprintf`). -/
   | TypeAssertUnderlying2 (t : go.GoType)
   | PackageInitCheck (pkg_name : GoString)
