@@ -24,7 +24,8 @@ variable [package_sem : fmt.Assumptions]
 The model of `Errorf` (`Perennial/TrustedCode/fmt.lean`) does not format: it is
 `errors.New(format)`, ignoring the arguments, so this follows from `errors.wp_New`. (The
 statement does not give back `args_sl ↦* args`, which the model never reads.) The arguments must
-be of predeclared basic types (`ArgsWf`): Go's `Errorf` calls the `Error()`/`String()` methods of
+be of predeclared basic types or named integer types without formatting methods (`ArgsWf`): Go's
+`Errorf` calls the `Error()`/`String()` methods of
 other arguments, which the model does not, so for them it could panic or have effects the model
 lacks. -/
 abbrev fmt.Errorf.spec : Prop :=

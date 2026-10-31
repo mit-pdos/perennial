@@ -92,6 +92,21 @@ class InterfaceSemantics : Prop where
              else decide (ii.ty = t))
      ))
 
+  /-- `reflect.ValueOf(i)` read at the kind of `t`: an interface whose dynamic type has `t`'s
+  underlying type gives its value, any other interface (`nil` included) `t`'s zero value, with
+  whether it did. Go values of types with the same underlying type have the same representation
+  (`CoreSemantics.convert_underlying`). (A dynamic type is never an interface type,
+  `convert_to_interface`, so for an interface type `t` it never succeeds.) -/
+  type_assert_underlying2_step {t t_under : go.GoType} [t ↓u t_under] (i : GoInterface) {v : val}
+    [⟦GoZeroVal t, #()⟧ ⤳ Val v] :
+    ⟦TypeAssertUnderlying2 t, #i⟧ ⤳
+    glv(((match i with
+      | interface.nil => v
+      | interface.ok ii => if underlying ii.ty = t_under then ii.v else v),
+       #(match i with
+         | interface.nil => false
+         | interface.ok ii => decide (underlying ii.ty = t_under))))
+
   method_interface_ok (m : GoString) {t : go.GoType} {elems : List go.InterfaceElem}
     [t ≤u go.InterfaceType elems] (i : GoInterface) :
     ⟦MethodResolve t m, #i⟧ ⤳
@@ -106,10 +121,12 @@ class InterfaceSemantics : Prop where
 
 attribute [instance] InterfaceSemantics.is_comparable_interface InterfaceSemantics.go_eq_interface
   InterfaceSemantics.convert_to_interface InterfaceSemantics.type_assert_step
-  InterfaceSemantics.type_assert2_interface_step InterfaceSemantics.method_interface_ok
+  InterfaceSemantics.type_assert2_interface_step InterfaceSemantics.type_assert_underlying2_step
+  InterfaceSemantics.method_interface_ok
   InterfaceSemantics.method_set_no_methods
 export InterfaceSemantics (is_comparable_interface go_eq_interface convert_to_interface
-  type_assert_step type_assert2_interface_step method_interface_ok method_set_no_methods)
+  type_assert_step type_assert2_interface_step type_assert_underlying2_step method_interface_ok
+  method_set_no_methods)
 
 end defs
 end go

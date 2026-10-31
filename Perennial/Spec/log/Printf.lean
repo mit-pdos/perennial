@@ -24,7 +24,8 @@ variable [package_sem : log.Assumptions]
 /-- `log.Printf(format, args...)` returns; the output is not modelled. The model
 (`TrustedCode/log.lean`) does nothing, while Go formats the arguments as `fmt.Sprintf` does,
 calling the `Error()`/`String()` methods of arguments that have them: so the arguments must be of
-predeclared basic types (`fmt.ArgsWf`), for which Go calls no method. -/
+predeclared basic types or named integer types without formatting methods (`fmt.ArgsWf`), for
+which Go calls no method. -/
 abbrev log.Printf.spec : Prop :=
   ∀ (msg : GoString) (arg : GoSlice) (xs : List GoInterface) (dq : DFrac),
   fmt.ArgsWf xs →

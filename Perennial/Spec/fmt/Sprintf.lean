@@ -24,7 +24,8 @@ variable [package_sem : fmt.Assumptions]
 `%s` of a `string`, and `%d`, `%v`, `%0Nd` and `%x` of an integer are formatted, the rest of the
 output is arbitrary from any other directive on (see the model of `Sprintf`,
 `Perennial/TrustedCode/fmt.lean`). The arguments' values must be of their dynamic types where
-these are `string` or an integer type (`ArgsWf`). -/
+these are `string` or an integer type, and be of predeclared basic types or of named integer
+types without formatting methods (`IsIntArgType`, formatted as integers) (`ArgsWf`). -/
 abbrev fmt.Sprintf.spec : Prop :=
   ∀ (format : GoString) (args_sl : GoSlice) (xs : List GoInterface) (dq : DFrac),
   ArgsWf xs →

@@ -21,7 +21,8 @@ variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
 /-- `fmt.Printf(format, args...)` returns; the output is not modelled, nor the results. The
-arguments `args_sl ↦*{dq} xs` must be of predeclared basic types (`ArgsWf`), as for
+arguments `args_sl ↦*{dq} xs` must be of predeclared basic types or named integer types without
+formatting methods (`ArgsWf`), as for
 `wp_Sprintf`: Go calls the methods of other arguments, which the model does not. -/
 abbrev fmt.Printf.spec : Prop :=
   ∀ (format : GoString) (args_sl : GoSlice) (xs : List GoInterface) (dq : DFrac),

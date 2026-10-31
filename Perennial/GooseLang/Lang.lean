@@ -148,6 +148,11 @@ inductive GoInstruction where
   | MethodResolve (t : go.GoType) (m : GoString)
   | TypeAssert (t : go.GoType)
   | TypeAssert2 (t : go.GoType)
+  /-- `v, ok := x.(~t)`, for a non-interface `t`: the value of the interface `x` if its
+  dynamic type's underlying type is `t`'s, as `reflect.ValueOf(x)` reads a value of any
+  type by its kind (`Value.Int`, `Value.Uint`). Not a Go expression: goose never emits it;
+  trusted models use it (the model of `fmt.Sprintf`). -/
+  | TypeAssertUnderlying2 (t : go.GoType)
   | PackageInitCheck (pkg_name : GoString)
   | PackageInitStart (pkg_name : GoString)
   | PackageInitFinish (pkg_name : GoString)
@@ -306,7 +311,7 @@ export GoOperator (GoEquals GoLt GoLe GoGt GoGe GoPlus GoSub GoMul GoDiv GoRemai
   GoOr GoXor GoBitClear GoShiftl GoShiftr)
 export GoUnaryOperator (GoPos GoNeg GoNot GoComplement)
 export GoInstruction (AngelicExit Convert GoOp GoUnOp CheckComparable GoLoad GoStore GoAlloc
-  GoPrealloc GoZeroVal FuncResolve MethodResolve TypeAssert TypeAssert2 PackageInitCheck
+  GoPrealloc GoZeroVal FuncResolve MethodResolve TypeAssert TypeAssert2 TypeAssertUnderlying2 PackageInitCheck
   PackageInitStart PackageInitFinish GlobalVarAddr StructFieldRef StructFieldGet StructFieldSet
   InternalSliceLen InternalSliceCap InternalDynamicArrayAlloc InternalMakeSlice IndexRef Index
   Slice FullSlice ArraySet ArrayLength InternalMapCheckKey InternalMapLookup InternalMapInsert

@@ -1,7 +1,7 @@
 /-
 Specs of the helpers of the model of `fmt.Sprintf` (`Perennial/TrustedCode/fmt.lean`), which
 are not functions of package `fmt`: `arbitraryString`, `formatInt`, `formatHex`, `intVerb`,
-`intArg` and `formatArg`.
+`intArg`, `namedIntArg`, `anyIntArg` and `formatArg`.
 -/
 module
 
@@ -508,7 +508,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h1 : ty = go.int
     · subst h1
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (Or.inl (by simp [IsIntType]))
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -528,7 +528,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h2 : ty = go.int64
     · subst h2
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (Or.inl (by simp [IsIntType]))
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int64 hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -548,7 +548,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h3 : ty = go.int32
     · subst h3
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (Or.inl (by simp [IsIntType]))
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int32 hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -568,7 +568,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h4 : ty = go.int16
     · subst h4
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (Or.inl (by simp [IsIntType]))
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int16 hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -588,7 +588,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h5 : ty = go.int8
     · subst h5
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (Or.inl (by simp [IsIntType]))
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int8 hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -608,7 +608,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h6 : ty = go.uint
     · subst h6
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (Or.inl (by simp [IsIntType]))
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -622,7 +622,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h7 : ty = go.uint64
     · subst h7
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (Or.inl (by simp [IsIntType]))
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint64 hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -636,7 +636,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h8 : ty = go.uint32
     · subst h8
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (Or.inl (by simp [IsIntType]))
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint32 hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -650,7 +650,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h9 : ty = go.uint16
     · subst h9
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (Or.inl (by simp [IsIntType]))
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint16 hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -664,7 +664,7 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
     wp_auto
     by_cases h10 : ty = go.uint8
     · subst h10
-      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (by simp [IsIntType])
+      obtain ⟨z, hz⟩ := (Hx _ rfl).2.1 (Or.inl (by simp [IsIntType]))
       obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint8 hz
       simp only [↓reduceIte, _root_.decide_true]
       wp_auto
@@ -685,12 +685,315 @@ theorem wp_intArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf 
       simp only [IsIntType, not_or]
       exact ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10⟩
 
+theorem tsc_method1 (t : go.GoType) (m : GoString) (sig : go.signature) :
+    go.typeSetContains t (go.InterfaceType [go.MethodElem m sig]) =
+      decide (methodSet t !! m = some sig) := by
+  rw [go.typeSetContains_underlying]
+  simp [go.typeSetElemsContains, go.typeSetElemContains]
+
+theorem tsc_error (t : go.GoType) :
+    go.typeSetContains t go.error =
+      decide (methodSet t !! go!"Error" = some (go.Signature [] false [go.string])) :=
+  tsc_method1 t _ _
+
+/-- Each of Go's ten integer types is its own underlying type. -/
+theorem underlying_intType (u : go.GoType) (h : IsIntType u) : underlying u = u := by
+  rcases h with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> exact go.is_underlying
+
+/-- A predeclared basic type has no methods. -/
+theorem noFmtMethods_basic (t : go.GoType) (h : IsBasicType t) : NoFmtMethods t := by
+  rcases h with rfl | rfl | h | rfl | rfl | rfl | rfl | rfl
+  all_goals try exact NoFmtMethods.of_methodSetIs_nil _
+  rcases h with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+    exact NoFmtMethods.of_methodSetIs_nil _
+
+/-- A well-formed argument whose type's underlying type is the integer type `u` holds an integer,
+which is its value read at `u`. -/
+theorem argWf_value {ty u : go.GoType} {v : val} (H : ArgWf ⟨ty, v⟩) (hu : underlying ty = u)
+    (hi : IsIntType u) : ∃ z, IntArgValue ⟨ty, v⟩ z ∧ IntArgValue (interface.mk u v) z := by
+  have hm : NoFmtMethods ty := by
+    rcases H.2.2 with hb | (h | ⟨-, h⟩)
+    · exact noFmtMethods_basic _ hb
+    · exact noFmtMethods_basic _ (Or.inr (Or.inr (Or.inl h)))
+    · exact h
+  obtain ⟨z, hz⟩ := H.2.1 (Or.inr ⟨hu ▸ hi, hm⟩)
+  refine ⟨z, hz, ?_⟩
+  have := hz.underlying_inv underlying_intType
+  rw [hu] at this
+  exact this
+
+theorem not_noFmtMethods_of {t : go.GoType} {m : GoString} {sig : go.signature}
+    (hm : m = go!"Format" ∨ m = go!"Error" ∨ m = go!"String")
+    (h : go.typeSetContains t (go.InterfaceType [go.MethodElem m sig]) = true) :
+    ¬ NoFmtMethods t := by
+  rw [tsc_method1] at h
+  have h := of_decide_eq_true h
+  rintro ⟨h1, -, h3, h4⟩
+  rcases hm with rfl | rfl | rfl
+  · rw [h1] at h; cases h
+  · rw [h3] at h; cases h
+  · rw [h4] at h; cases h
+
+/-- The helper `fmt.namedIntArg` of the model of `Sprintf`: the integer an argument of a type
+whose underlying type is an integer type and that implements none of `fmt.Formatter`,
+`fmt.Stringer` and `error` holds. -/
+theorem wp_namedIntArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf ii) :
+    {{ (True : IProp GF) }}
+      (App (Val namedIntArg) (Val #x))
+    {{ (neg : Bool) (mag : w64) (ok : Bool), RET (PairV (PairV #neg #mag) #ok);
+        ⌜ok = true → ∃ ii, x = interface.ok ii ∧ IntArgValue ii (signedValue neg mag) ∧
+          (neg = true → uint.Z mag ≠ 0)⌝ ∗
+        ⌜ok = false → ∀ ii, x = interface.ok ii →
+          ¬ (IsIntType (underlying ii.ty) ∧ NoFmtMethods ii.ty)⌝ }} := by
+  iintro %Φ - HΦ
+  unfold namedIntArg
+  wp_auto
+  cases x with
+  | nil =>
+    wp_auto
+    iapply HΦ
+    isplitl []
+    · ipureintro; simp
+    · ipureintro; intro _ ii h; cases h
+  | ok ii =>
+    obtain ⟨ty, v⟩ := ii
+    simp only
+    by_cases hF : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"Format"
+        (go.Signature [go.Named go!"fmt.State" [], go.rune] false [])]) = true
+    · simp only [hF, ↓reduceIte]
+      wp_auto
+      iapply HΦ
+      isplitl []
+      · ipureintro; intro h; cases h
+      · ipureintro; intro _ ii h; cases h
+        exact fun ⟨_, hm⟩ => not_noFmtMethods_of (.inl rfl) hF hm
+    simp only [hF, Bool.false_eq_true, ↓reduceIte]
+    wp_auto
+    by_cases hS : go.typeSetContains ty (go.InterfaceType [go.MethodElem go!"String"
+        (go.Signature [] false [go.string])]) = true
+    · rw [hS]
+      wp_auto
+      iapply HΦ
+      isplitl []
+      · ipureintro; intro h; cases h
+      · ipureintro; intro _ ii h; cases h
+        exact fun ⟨_, hm⟩ => not_noFmtMethods_of (.inr (.inr rfl)) hS hm
+    rw [Bool.not_eq_true] at hS
+    rw [hS]
+    wp_auto
+    by_cases hE : go.typeSetContains ty go.error = true
+    · simp only [hE, ↓reduceIte]
+      wp_auto
+      iapply HΦ
+      isplitl []
+      · ipureintro; intro h; cases h
+      · ipureintro; intro _ ii h; cases h
+        exact fun ⟨_, hm⟩ => not_noFmtMethods_of (.inr (.inl rfl)) hE hm
+    simp only [hE, Bool.false_eq_true, ↓reduceIte]
+    wp_auto
+    by_cases hu1 : underlying ty = go.int
+    · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu1 (by simp [IsIntType])
+      obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int hz'
+      simp only [hu1, ↓reduceIte, _root_.decide_true]
+      wp_auto
+      wp_if_destruct
+      · iapply HΦ
+        isplitl []
+        · ipureintro; intro _
+          exact ⟨_, rfl, hz.cast (by unfold signedValue; simp only [↓reduceIte] <;> word), fun _ => by word⟩
+        · ipureintro; intro h; cases h
+      · iapply HΦ
+        isplitl []
+        · ipureintro; intro _
+          exact ⟨_, rfl, hz.cast (by unfold signedValue; simp only [Bool.false_eq_true, ↓reduceIte] <;> word),
+            fun h => by cases h⟩
+        · ipureintro; intro h; cases h
+    simp only [hu1, ↓reduceIte, decide_false]
+    wp_auto
+    by_cases hu2 : underlying ty = go.int64
+    · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu2 (by simp [IsIntType])
+      obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int64 hz'
+      simp only [hu2, ↓reduceIte, _root_.decide_true]
+      wp_auto
+      wp_if_destruct
+      · iapply HΦ
+        isplitl []
+        · ipureintro; intro _
+          exact ⟨_, rfl, hz.cast (by unfold signedValue; simp only [↓reduceIte] <;> word), fun _ => by word⟩
+        · ipureintro; intro h; cases h
+      · iapply HΦ
+        isplitl []
+        · ipureintro; intro _
+          exact ⟨_, rfl, hz.cast (by unfold signedValue; simp only [Bool.false_eq_true, ↓reduceIte] <;> word),
+            fun h => by cases h⟩
+        · ipureintro; intro h; cases h
+    simp only [hu2, ↓reduceIte, decide_false]
+    wp_auto
+    by_cases hu3 : underlying ty = go.int32
+    · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu3 (by simp [IsIntType])
+      obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int32 hz'
+      simp only [hu3, ↓reduceIte, _root_.decide_true]
+      wp_auto
+      wp_if_destruct
+      · iapply HΦ
+        isplitl []
+        · ipureintro; intro _
+          exact ⟨_, rfl, hz.cast (by unfold signedValue; simp only [↓reduceIte] <;> word), fun _ => by word⟩
+        · ipureintro; intro h; cases h
+      · iapply HΦ
+        isplitl []
+        · ipureintro; intro _
+          exact ⟨_, rfl, hz.cast (by unfold signedValue; simp only [Bool.false_eq_true, ↓reduceIte] <;> word),
+            fun h => by cases h⟩
+        · ipureintro; intro h; cases h
+    simp only [hu3, ↓reduceIte, decide_false]
+    wp_auto
+    by_cases hu4 : underlying ty = go.int16
+    · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu4 (by simp [IsIntType])
+      obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int16 hz'
+      simp only [hu4, ↓reduceIte, _root_.decide_true]
+      wp_auto
+      wp_if_destruct
+      · iapply HΦ
+        isplitl []
+        · ipureintro; intro _
+          exact ⟨_, rfl, hz.cast (by unfold signedValue; simp only [↓reduceIte] <;> word), fun _ => by word⟩
+        · ipureintro; intro h; cases h
+      · iapply HΦ
+        isplitl []
+        · ipureintro; intro _
+          exact ⟨_, rfl, hz.cast (by unfold signedValue; simp only [Bool.false_eq_true, ↓reduceIte] <;> word),
+            fun h => by cases h⟩
+        · ipureintro; intro h; cases h
+    simp only [hu4, ↓reduceIte, decide_false]
+    wp_auto
+    by_cases hu5 : underlying ty = go.int8
+    · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu5 (by simp [IsIntType])
+      obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_int8 hz'
+      simp only [hu5, ↓reduceIte, _root_.decide_true]
+      wp_auto
+      wp_if_destruct
+      · iapply HΦ
+        isplitl []
+        · ipureintro; intro _
+          exact ⟨_, rfl, hz.cast (by unfold signedValue; simp only [↓reduceIte] <;> word), fun _ => by word⟩
+        · ipureintro; intro h; cases h
+      · iapply HΦ
+        isplitl []
+        · ipureintro; intro _
+          exact ⟨_, rfl, hz.cast (by unfold signedValue; simp only [Bool.false_eq_true, ↓reduceIte] <;> word),
+            fun h => by cases h⟩
+        · ipureintro; intro h; cases h
+    simp only [hu5, ↓reduceIte, decide_false]
+    wp_auto
+    by_cases hu6 : underlying ty = go.uint
+    · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu6 (by simp [IsIntType])
+      obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint hz'
+      simp only [hu6, ↓reduceIte, _root_.decide_true]
+      wp_auto
+      iapply HΦ
+      isplitl []
+      · ipureintro; intro _
+        exact ⟨_, rfl, hz.cast (by unfold signedValue; simp only [Bool.false_eq_true, ↓reduceIte] <;> word),
+          fun h => by cases h⟩
+      · ipureintro; intro h; cases h
+    simp only [hu6, ↓reduceIte, decide_false]
+    wp_auto
+    by_cases hu7 : underlying ty = go.uint64
+    · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu7 (by simp [IsIntType])
+      obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint64 hz'
+      simp only [hu7, ↓reduceIte, _root_.decide_true]
+      wp_auto
+      iapply HΦ
+      isplitl []
+      · ipureintro; intro _
+        exact ⟨_, rfl, hz.cast (by unfold signedValue; simp only [Bool.false_eq_true, ↓reduceIte] <;> word),
+          fun h => by cases h⟩
+      · ipureintro; intro h; cases h
+    simp only [hu7, ↓reduceIte, decide_false]
+    wp_auto
+    by_cases hu8 : underlying ty = go.uint32
+    · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu8 (by simp [IsIntType])
+      obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint32 hz'
+      simp only [hu8, ↓reduceIte, _root_.decide_true]
+      wp_auto
+      iapply HΦ
+      isplitl []
+      · ipureintro; intro _
+        exact ⟨_, rfl, hz.cast (by unfold signedValue; simp only [Bool.false_eq_true, ↓reduceIte] <;> word),
+          fun h => by cases h⟩
+      · ipureintro; intro h; cases h
+    simp only [hu8, ↓reduceIte, decide_false]
+    wp_auto
+    by_cases hu9 : underlying ty = go.uint16
+    · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu9 (by simp [IsIntType])
+      obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint16 hz'
+      simp only [hu9, ↓reduceIte, _root_.decide_true]
+      wp_auto
+      iapply HΦ
+      isplitl []
+      · ipureintro; intro _
+        exact ⟨_, rfl, hz.cast (by unfold signedValue; simp only [Bool.false_eq_true, ↓reduceIte] <;> word),
+          fun h => by cases h⟩
+      · ipureintro; intro h; cases h
+    simp only [hu9, ↓reduceIte, decide_false]
+    wp_auto
+    by_cases hu10 : underlying ty = go.uint8
+    · obtain ⟨z, hz, hz'⟩ := argWf_value (Hx _ rfl) hu10 (by simp [IsIntType])
+      obtain ⟨n, rfl, rfl⟩ := IntArgValue.of_uint8 hz'
+      simp only [hu10, ↓reduceIte, _root_.decide_true]
+      wp_auto
+      iapply HΦ
+      isplitl []
+      · ipureintro; intro _
+        exact ⟨_, rfl, hz.cast (by unfold signedValue; simp only [Bool.false_eq_true, ↓reduceIte] <;> word),
+          fun h => by cases h⟩
+      · ipureintro; intro h; cases h
+    simp only [hu10, ↓reduceIte, decide_false]
+    wp_auto
+    iapply HΦ
+    isplitl []
+    · ipureintro; intro h; cases h
+    · ipureintro
+      intro _ ii h
+      cases h
+      rintro ⟨hi, -⟩
+      simp only [IsIntType] at hi
+      rcases hi with h | h | h | h | h | h | h | h | h | h <;> simp_all
+
+/-- The helper `fmt.anyIntArg` of the model of `Sprintf`: the integer an argument of one of Go's
+integer types, or of a named integer type without formatting methods, holds. -/
+theorem wp_anyIntArg (x : GoInterface) (Hx : ∀ ii, x = interface.ok ii → ArgWf ii) :
+    {{ (True : IProp GF) }}
+      (App (Val anyIntArg) (Val #x))
+    {{ (neg : Bool) (mag : w64) (ok : Bool), RET (PairV (PairV #neg #mag) #ok);
+        ⌜ok = true → ∃ ii, x = interface.ok ii ∧ IntArgValue ii (signedValue neg mag) ∧
+          (neg = true → uint.Z mag ≠ 0)⌝ ∗
+        ⌜ok = false → ∀ ii, x = interface.ok ii → ¬ IsIntArgType ii.ty⌝ }} := by
+  iintro %Φ - HΦ
+  unfold anyIntArg
+  wp_auto
+  wp_apply wp_intArg x Hx as %neg %mag %ok ⟨%Ha1, %Ha2⟩
+  cases ok
+  · wp_auto
+    wp_apply wp_namedIntArg x Hx as %neg' %mag' %ok' ⟨%Hb1, %Hb2⟩
+    iapply HΦ
+    ipureintro
+    refine ⟨Hb1, fun hf ii hx => ?_⟩
+    rintro (h | h)
+    · exact Ha2 rfl ii hx h
+    · exact Hb2 hf ii hx h
+  · wp_auto
+    iapply HΦ
+    ipureintro
+    exact ⟨fun _ => Ha1 rfl, fun h => by cases h⟩
+
 omit [GooseSemantics] in
 theorem not_simpleDirective (f : GoString) (x : GoInterface) (args : List GoInterface)
     (h1 : f.head? ≠ some (W8 37))
     (h2 : f.head? ≠ some (W8 115) ∨ ∀ ii, x = interface.ok ii → ii.ty ≠ go.string)
-    (h3 : parseIntVerb f = none ∨ ∀ ii, x = interface.ok ii → ¬ IsIntType ii.ty)
-    (h4 : f.head? ≠ some (W8 120) ∨ ∀ ii, x = interface.ok ii → ¬ IsIntType ii.ty) :
+    (h3 : parseIntVerb f = none ∨ ∀ ii, x = interface.ok ii → ¬ IsIntArgType ii.ty)
+    (h4 : f.head? ≠ some (W8 120) ∨ ∀ ii, x = interface.ok ii → ¬ IsIntArgType ii.ty) :
     ¬ SimpleDirective f (x :: args) := by
   cases f with
   | nil => simp [SimpleDirective]
@@ -805,7 +1108,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
         have Hnp : parseIntVerb (format.drop (sint.nat i + 1)) = none := by
           rw [Hdrop]; simp [parseIntVerb]
         wp_auto
-        wp_apply wp_intArg x Hx as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
+        wp_apply wp_anyIntArg x Hx as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
         cases ok2
         · wp_auto
           iapply HΦ
@@ -838,7 +1141,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
             exact not_simpleDirective _ _ _ hp (.inl Hns) (.inl (Hv2 rfl)) (.inl Hnx)
         · obtain ⟨Hparse, Hw1, Hw2, Hn1, Hn2⟩ := Hv1 rfl
           wp_auto
-          wp_apply wp_intArg x Hx as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
+          wp_apply wp_anyIntArg x Hx as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
           cases ok2
           · wp_auto
             iapply HΦ
@@ -873,7 +1176,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
         exact not_simpleDirective _ _ _ hp (.inl Hns) (.inl (Hv2 rfl)) (.inl Hnx)
     · obtain ⟨Hparse, Hw1, Hw2, Hn1, Hn2⟩ := Hv1 rfl
       wp_auto
-      wp_apply wp_intArg x Hx as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
+      wp_apply wp_anyIntArg x Hx as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
       cases ok2
       · wp_auto
         iapply HΦ
