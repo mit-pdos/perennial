@@ -16,7 +16,9 @@ about it. The classes here state it once instead:
 
 A development fixes its constants by putting `[ThreadBoundLe GF k] [ReceiptBoundLe GF k']` among a
 section's variables. The proofs that need a bound use it (`ThreadBoundLe.le`, `.le_of`, `.lt_of`
-derive the form they need by `omega`), and the specs in between say nothing. The adequacy theorem
+derive the form they need by `omega`), and the specs in between say nothing. A spec states the
+power of two its own proof needs; an instance at a smaller power of two meets it by instance search
+(`pow_succ`), so a caller under `[ThreadBoundLe GF (2 ^ 29)]` meets a spec under `2 ^ 31`. The adequacy theorem
 gives the instances from its choice of `T` and `N` (`ThreadBoundLe.of_eq`/`ReceiptBoundLe.of_eq`,
 from `goose_adequacy`'s `threadBound GF = T`; `ProgramLogic/ThreadTokensTest.lean` has an example).
 
@@ -63,6 +65,13 @@ theorem weaken (k : Nat) [ThreadBoundLe GF k] {k' : Nat} (hk : k ≤ k') : Threa
 /-- The instance from the adequacy theorem's choice `threadBound GF = T`. -/
 theorem of_eq {T : Nat} (h : threadBound GF = T) : ThreadBoundLe GF T := ⟨Nat.le_of_eq h⟩
 
+/-- **Weakening between powers of two, by instance search**: an instance at `2 ^ e` gives one at
+every larger power of two (`ThreadBoundLe GF (2 ^ 29)` gives `ThreadBoundLe GF (2 ^ 31)`), so
+that a spec states the bound its own proof needs and a caller under a smaller one meets it
+without a step of its own. -/
+instance pow_succ {e : Nat} [h : ThreadBoundLe GF (2 ^ e)] : ThreadBoundLe GF (2 ^ (e + 1)) :=
+  ⟨Nat.le_trans h.threadBound_le (Nat.pow_le_pow_right (by decide) (Nat.le_succ e))⟩
+
 end ThreadBoundLe
 
 namespace ReceiptBoundLe
@@ -87,6 +96,10 @@ theorem weaken (k : Nat) [ReceiptBoundLe GF k] {k' : Nat} (hk : k ≤ k') : Rece
 
 /-- The instance from the adequacy theorem's choice `receiptBound GF = N`. -/
 theorem of_eq {N : Nat} (h : receiptBound GF = N) : ReceiptBoundLe GF N := ⟨Nat.le_of_eq h⟩
+
+/-- Weakening between powers of two, by instance search (as `ThreadBoundLe.pow_succ`). -/
+instance pow_succ {e : Nat} [h : ReceiptBoundLe GF (2 ^ e)] : ReceiptBoundLe GF (2 ^ (e + 1)) :=
+  ⟨Nat.le_trans h.receiptBound_le (Nat.pow_le_pow_right (by decide) (Nat.le_succ e))⟩
 
 end ReceiptBoundLe
 

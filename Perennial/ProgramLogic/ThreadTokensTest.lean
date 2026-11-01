@@ -175,6 +175,9 @@ example [GooseGpreS GF] (N : Nat) (e : Expr) (σ : state) (g : GlobalState) (φ 
     (@fun hG _ HT Hlctx => @Hwp hG (ThreadBoundLe.of_eq HT) Hlctx) n κs t2 σ2 Hsteps Hn
     Hthreads Hlive
 
+/-- An instance at a smaller power of two meets a spec stated at a larger one (`pow_succ`). -/
+example [HeapGS .hasLC GF] [ThreadBoundLe GF (2 ^ 29)] : ThreadBoundLe GF (2 ^ 31) := inferInstance
+
 /-- A proof under the instance gets the premise a spec states with a larger constant. -/
 example [HeapGS .hasLC GF] [ThreadBoundLe GF (2 ^ 29)] : threadBound GF ≤ 2 ^ 31 :=
   ThreadBoundLe.le_of (GF := GF) (2 ^ 29) (by decide)
