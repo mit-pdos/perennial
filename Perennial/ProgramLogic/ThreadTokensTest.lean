@@ -16,6 +16,7 @@ module
 
 public import Perennial.Proof.sync.atomic
 public import Perennial.GooseLang.Adequacy
+public import Perennial.ProgramLogic.Bounds
 
 @[expose] public section
 
@@ -150,6 +151,33 @@ example [GooseGpreS GF] (N : Nat) (e : Expr) (σ : state) (g : GlobalState) (φ 
   goose_adequacy N (2 ^ 31) e σ g φ hφ Hinitg Hinit
     (@fun hG _ HT Hlctx => Hwp (hG := hG) (Nat.le_of_eq HT) Hlctx) n κs t2 σ2 Hsteps Hn
     Hthreads Hlive
+
+/-- The same with the bound as an instance (`ProgramLogic/Bounds.lean`): the WP proof assumes
+`[ThreadBoundLe GF (2 ^ 31)]` (here it derives the premise of `wp_counter_register` from it; the
+specs between such a proof and the adequacy theorem need not mention the bound), and the
+adequacy theorem gives the instance from its `threadBound GF = T` (`ThreadBoundLe.of_eq`). -/
+example [GooseGpreS GF] (N : Nat) (e : Expr) (σ : state) (g : GlobalState) (φ : val → Prop)
+    (hφ : ∀ p, ¬ φ (PanicV p))
+    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
+    (Hwp : ∀ [hG : HeapGS .hasLC GF] [ThreadBoundLe GF (2 ^ 31)],
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
+        extsLocalStart (GF := GF) σ.world -∗
+        ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
+    (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)
+    (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2)) (Hn : n < N)
+    (Hthreads : σ.threads = 1)
+    (Hlive : RealThreadsBelow (2 ^ 31) n ([e], ((σ, g) : CfgState))) :
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
+      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) :=
+  goose_adequacy N (2 ^ 31) e σ g φ hφ Hinitg Hinit
+    (@fun hG _ HT Hlctx => @Hwp hG (ThreadBoundLe.of_eq HT) Hlctx) n κs t2 σ2 Hsteps Hn
+    Hthreads Hlive
+
+/-- A proof under the instance gets the premise a spec states with a larger constant. -/
+example [HeapGS .hasLC GF] [ThreadBoundLe GF (2 ^ 29)] : threadBound GF ≤ 2 ^ 31 :=
+  ThreadBoundLe.le_of (GF := GF) (2 ^ 29) (by decide)
 
 end adequacy
 

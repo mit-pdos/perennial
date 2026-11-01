@@ -1083,6 +1083,16 @@ one `AllG` of every proof under `HeapGS`); as for `N`, a proof that needs `T` to
 (`Hbound : threadBound GF ≤ 2 ^ 31`), discharged by the client at adequacy
 time.
 
+**The bounds as instances.** A premise on `T` (or on `N`) is restated by every spec between the
+proof that uses it and the adequacy theorem that discharges it. `Perennial/ProgramLogic/Bounds.lean`
+states it once instead: `ThreadBoundLe GF k` (`threadBound GF ≤ k`) and `ReceiptBoundLe GF k`
+(`receiptBound GF ≤ k`) are `Prop`-valued classes. A development puts
+`[ThreadBoundLe GF k] [ReceiptBoundLe GF k']` among its section variables; a proof that needs a
+bound derives its form (`ThreadBoundLe.le`, `.le_of`, `.lt_of`), and the specs in between do not
+mention it. The adequacy theorem gives the instances from its choice
+(`ThreadBoundLe.of_eq`/`ReceiptBoundLe.of_eq` of `goose_adequacy`'s `threadBound GF = T`;
+an example at the end of `ThreadTokensTest.lean`).
+
 **Semantics.** The thread fuel `threads` of `Fuel` is the number of threads
 that may still be forked. With thread fuel `t + 1` a `Fork` takes its real
 step and leaves `t`; with thread fuel `0` it stutters (like a Go instruction

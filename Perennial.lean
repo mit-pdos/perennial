@@ -18,6 +18,7 @@ public import Perennial.GooseLang.CrashAdequacy
 public import Perennial.GooseLang.DistLang
 public import Perennial.GooseLang.DistAdequacy
 public import Perennial.ProgramLogic.AtomicFupd
+public import Perennial.ProgramLogic.Bounds
 public import Perennial.GooseLang.Ext.Grove.Adequacy
 public import Perennial.GooseLang.Ext.Fs.Adequacy
 public import Perennial.GooseLang.Ext.Net.Adequacy
