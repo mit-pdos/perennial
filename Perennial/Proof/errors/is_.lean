@@ -23,7 +23,7 @@ variable [package_sem : errors.Assumptions]
 /-- By Löb induction (for the recursive calls on the errors of an `Unwrap() []error`). -/
 theorem errors.is.wp_proof :
     errors.is.spec (GF := GF) (hG := hG) := by
-  intro S M err target c hS hc
+  intro S I U err target c hS hc
   iloeb as IH generalizing %err %hS
   irevert IH
   iapply asTypeHide_intro
@@ -32,10 +32,10 @@ theorem errors.is.wp_proof :
   wp_auto
   ihave HI : (∃ e : GoError,
       "err" ∷ err_ptr ↦ e ∗ "%HSe" ∷ ⌜S e⌝ ∗
-      "%He" ∷ ⌜(c = true ∧ err ≠ interface.nil ∧ err = target) → e = err⌝ : IProp GF) $$ [err]
+      "%He" ∷ ⌜∀ b, IsWalk c I U target e b → IsWalk c I U target err b⌝ : IProp GF) $$ [err]
   · iexists err
     iframe
-    ipureintro; exact ⟨hS, fun _ => rfl⟩
+    ipureintro; exact ⟨hS, fun _ h => h⟩
   wp_for HI
   -- the comparison `targetComparable && err == target`, joined
   wp_bind (If _ _ _)
@@ -96,13 +96,13 @@ theorem errors.is.wp_proof :
     iapply HΦ
     ipureintro
     obtain ⟨⟨tii, rfl, -⟩, -⟩ := hc rfl
-    exact ⟨fun _ => ⟨tii, HSe, Or.inl rfl⟩, fun h => by cases h⟩
+    exact He _ (.eq rfl rfl)
   subst Hv
   wp_auto
-  -- the final `b = false` obligation, at every `return false`
-  have Hfalse : c = true → err ≠ interface.nil → err ≠ target := by
-    intro hc1 hn heq
-    exact Hne hc1 ((He ⟨hc1, hn, heq⟩).trans heq)
+  have Htnil : c = true → target ≠ interface.nil := by
+    intro hc1 h
+    obtain ⟨⟨tii, ht, -⟩, -⟩ := hc hc1
+    rw [ht] at h; cases h
   cases e with
   | nil =>
     dsimp only
@@ -110,7 +110,7 @@ theorem errors.is.wp_proof :
     wp_for_post
     iapply HΦ
     ipureintro
-    exact ⟨fun h => absurd h (by decide), fun _ => Hfalse⟩
+    exact He _ (.nilSkip Htnil .done)
   | ok ii =>
     ihave Hnode := Htree $$ %ii %HSe
     iNamed Hnode
@@ -120,10 +120,10 @@ theorem errors.is.wp_proof :
       go.is_underlying
     -- the `Is` method, joined before the `Unwrap` switch
     wp_join (Q := fun v => iprop(
-        (⌜v = executeVal⌝ ∗ "err" ∷ err_ptr ↦ (interface.ok ii : GoError) ∗
+        (⌜v = executeVal ∧ I ii false⌝ ∗ "err" ∷ err_ptr ↦ (interface.ok ii : GoError) ∗
           "target" ∷ target_ptr ↦ target ∗ "targetComparable" ∷ targetComparable_ptr ↦ c ∗
           "«$res0»" ∷ «$res0_ptr» ↦ zero_val Bool) ∨
-        ⌜v = returnVal #() ∧ M ii⌝ ∗ «$res0_ptr» ↦ true)) at next
+        ⌜v = returnVal #() ∧ I ii true⌝ ∗ «$res0_ptr» ↦ true)) at next
       with [err target targetComparable «$res0»]
     cases hIs : go.typeSetContains ii.ty
       (go.InterfaceType [go.MethodElem go!"Is" (go.Signature [go.error] false [go.bool])])
@@ -136,23 +136,26 @@ theorem errors.is.wp_proof :
       cases b
       case true =>
         wp_auto
-        iright; iframe; ipureintro; exact ⟨rfl, Hb rfl⟩
+        iright; iframe; ipureintro; exact ⟨rfl, Hb⟩
       wp_auto
-      ileft; iframe; ipureintro; rfl
+      ileft; iframe; ipureintro; exact ⟨rfl, Hb⟩
     case' false =>
-      simp only [Bool.false_eq_true, ↓reduceIte]
+      simp only [go.typeSetContains, huIs, go.typeSetElemsContains, go.typeSetElemContains,
+        List.all_cons, List.all_nil, Bool.and_true, decide_eq_false_iff_not] at hIs
+      simp only [hIs, Bool.false_eq_true, ↓reduceIte]
+      icases HIs with %hI
       wp_auto
-      ileft; iframe; ipureintro; rfl
+      ileft; iframe; ipureintro; exact ⟨rfl, hI⟩
     iintro HQ
     icases HQ with (⟨%Hv, err, target, targetComparable, «$res0»⟩ | ⟨%Hret, «$res0»⟩)
     rotate_left
-    · obtain ⟨rfl, hM⟩ := Hret
+    · obtain ⟨rfl, hI⟩ := Hret
       wp_auto
       wp_for_post
       iapply HΦ
       ipureintro
-      exact ⟨fun _ => ⟨ii, HSe, Or.inr hM⟩, fun h => absurd h (by decide)⟩
-    subst Hv
+      exact He _ (.is Hne hI)
+    obtain ⟨rfl, hIf⟩ := Hv
     wp_auto
     have hu1 : underlying (go.InterfaceType
         [go.MethodElem go!"Unwrap" (go.Signature [] false [go.error])]) =
@@ -162,10 +165,6 @@ theorem errors.is.wp_proof :
         [go.MethodElem go!"Unwrap" (go.Signature [] false [go.GoType.SliceType go.error])]) =
         go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.GoType.SliceType go.error])] :=
       go.is_underlying
-    -- a new error of the tree, to continue the loop with
-    have Hnext : ∀ e' : GoError, (c = true ∧ err ≠ interface.nil ∧ err = target) → e' = err := by
-      intro e' h
-      exact absurd ((He h).trans h.2.2) (Hne h.1)
     cases hU : go.typeSetContains ii.ty
       (go.InterfaceType [go.MethodElem go!"Unwrap" (go.Signature [] false [go.error])])
     case true =>
@@ -173,14 +172,14 @@ theorem errors.is.wp_proof :
         List.all_cons, List.all_nil, Bool.and_true, decide_eq_true_eq] at hU
       simp only [hU, ↓reduceIte]
       wp_auto
-      wp_apply HUnwrap as %e' %HSe'
+      wp_apply HUnwrap as %e' ⟨%HSe', %hU1⟩
       cases e' with
       | nil =>
         wp_auto
         wp_for_post
         iapply HΦ
         ipureintro
-        exact ⟨fun h => absurd h (by decide), fun _ => Hfalse⟩
+        exact He _ (IsWalk.children Hne hIf hU1 (.nilSkip Htnil .done))
       | ok ii' =>
         wp_auto
         wp_for_post
@@ -188,7 +187,7 @@ theorem errors.is.wp_proof :
         iexists _
         iframe
         ipureintro
-        exact ⟨HSe', Hnext _⟩
+        exact ⟨HSe', fun b h => He b (IsWalk.children Hne hIf hU1 h)⟩
     case false =>
       simp only [go.typeSetContains, hu1, go.typeSetElemsContains, go.typeSetElemContains,
         List.all_cons, List.all_nil, Bool.and_true, decide_eq_false_iff_not] at hU
@@ -202,14 +201,16 @@ theorem errors.is.wp_proof :
         simp only [hU, ↓reduceIte]
         simp only [hU2, ↓reduceIte]
         wp_auto
-        wp_apply HUnwrap as %s %dq %es ⟨Hs, %Hes⟩
+        wp_apply HUnwrap as %s %dq %es ⟨Hs, %Hes, %hUs⟩
         ihave %Hlen := ownSlice_len _ _ _ $$ Hs
         ihave HI2 : (∃ (j : w64) (e2 : GoError),
             "i" ∷ i_ptr ↦ j ∗ "Hs" ∷ s ↦*{dq} es ∗ "err" ∷ err_ptr ↦ e2 ∗
-            "%Hj" ∷ ⌜0 ≤ sint.Z j ∧ sint.Z j ≤ sint.Z s.len⌝ : IProp GF) $$ [i Hs err]
+            "%Hj" ∷ ⌜0 ≤ sint.Z j ∧ sint.Z j ≤ sint.Z s.len⌝ ∗
+            "%Hd" ∷ ⌜∀ b, IsWalkL c I U target (es.drop (sint.nat j)) b →
+              IsWalkL c I U target es b⌝ : IProp GF) $$ [i Hs err]
         · iexists W64 0, _
           iframe
-          ipureintro; word
+          ipureintro; exact ⟨by word, fun _ h => h⟩
         wp_for HI2
         wp_if_destruct
         · simp only [Hj.1, Hif, _root_.and_self, ↓reduceIte]
@@ -221,8 +222,13 @@ theorem errors.is.wp_proof :
           · iframe; ipureintro; exact He2'_lookup
           have HSe2' : S e2' := Hes e2' (List.mem_of_getElem? He2'_lookup)
           (try wp_auto)
-          wp_apply IH $$ %e2' %HSe2' [] as %b0 ⟨%Hb0, -⟩
+          wp_apply IH $$ %e2' %HSe2' [] as %b0 %Hb0
           · iframe #
+          have hlt : sint.nat j < es.length := (List.getElem?_eq_some_iff.mp He2'_lookup).1
+          have hdrop : es.drop (sint.nat j) = e2' :: es.drop (sint.nat (j + W64 1)) := by
+            rw [List.drop_eq_getElem_cons hlt,
+              (List.getElem?_eq_some_iff.mp He2'_lookup).2,
+              show sint.nat (j + W64 1) = sint.nat j + 1 by word]
           cases b0
           case true =>
             wp_auto
@@ -230,25 +236,30 @@ theorem errors.is.wp_proof :
             wp_for_post
             iapply HΦ
             ipureintro
-            exact ⟨fun _ => Hb0 rfl, fun h => absurd h (by decide)⟩
+            exact He _ (IsWalk.children Hne hIf hUs (Hd _ (hdrop ▸ IsWalkL.cons_true Hb0)))
           case false =>
             wp_auto
             wp_for_post
             iframe
             iexists j + W64 1, _
             iframe
-            ipureintro; word
+            ipureintro
+            exact ⟨by word, fun b h => Hd b (hdrop ▸ IsWalkL.cons_false Hb0 h)⟩
         · wp_for_post
           iapply HΦ
           ipureintro
-          exact ⟨fun h => absurd h (by decide), fun _ => Hfalse⟩
+          have hnil : es.drop (sint.nat j) = [] := List.drop_eq_nil_of_le (by word)
+          exact He _ (IsWalk.children Hne hIf hUs (Hd _ (hnil ▸ .done)))
       case false =>
-        simp only [Bool.false_eq_true, ↓reduceIte]
+        simp only [go.typeSetContains, hu2, go.typeSetElemsContains, go.typeSetElemContains,
+          List.all_cons, List.all_nil, Bool.and_true, decide_eq_false_iff_not] at hU2
+        simp only [hU, hU2, Bool.false_eq_true, ↓reduceIte]
+        icases HUnwrap with %hU0
         wp_auto
         wp_for_post
         iapply HΦ
         ipureintro
-        exact ⟨fun h => absurd h (by decide), fun _ => Hfalse⟩
+        exact He _ (IsWalk.children Hne hIf hU0 .done)
 
 end proof
 

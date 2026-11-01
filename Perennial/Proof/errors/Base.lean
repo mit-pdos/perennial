@@ -188,35 +188,65 @@ is the equality of their types and pointers, Lean's equality of the interface va
 def IsPointerError [GooseExts] [GoGlobalContext] (ii : GoInterfaceOk) : Prop :=
   ∃ (T : go.GoType) (l : Loc), ii.ty = go.PointerType T ∧ ii.v = #l
 
-/-- The specs `Is(err, target)` needs of one error `ii` of the tree `S`:
-* `Is(error) bool` (if `ii` has it) is called with `target` and returns a `bool`, `true` only if
-  `M ii`;
-* `Unwrap() error` returns an error in `S`;
-* `Unwrap() []error` returns a slice of errors in `S`. -/
-def errorIsNode (S : GoError → Prop) (M : GoInterfaceOk → Prop) (target : GoError)
-    (ii : GoInterfaceOk) : IProp GF :=
+/-- The specs `Is(err, target)` needs of one error `ii` of the tree `S`, as relations: `I ii b`,
+that `ii.Is(target)` may return `b`; `U ii cs`, that `ii`'s `Unwrap` may return `cs` (`[e]` for
+`Unwrap() error`, the slice's errors for `Unwrap() []error`):
+* `Is(error) bool` (if `ii` has it) is called with `target` and returns a `b` with `I ii b`;
+  without it, `I ii false`;
+* `Unwrap() error` returns an error `e` in `S` with `U ii [e]`;
+* `Unwrap() []error` returns a slice of errors `es` in `S` with `U ii es`;
+* without either, `U ii []`.
+
+Exact relations (functions: `I ii b ↔ b = f ii`, `U ii cs ↔ cs = ch ii`) make `Is` a function
+of the tree (`isWalk_det`), as Go's is for errors whose methods are deterministic;
+`errorIsNode` is the over-approximation, `I ii b := b = true → M ii` and `U ii cs := cs ⊆ S`. -/
+def errorWalkNode (S : GoError → Prop) (I : GoInterfaceOk → Bool → Prop)
+    (U : GoInterfaceOk → List GoError → Prop) (target : GoError) (ii : GoInterfaceOk) :
+    IProp GF :=
   iprop(
     "#HIs" ∷ (if methodSet ii.ty !! go!"Is" = some (go.Signature [go.error] false [go.bool]) then
       iprop({{ True }}
         (App (Val #(methods ii.ty go!"Is" ii.v)) (Val #target))
-      {{ (b : Bool), RET #b; ⌜b = true → M ii⌝ }})
-      else iprop(True)) ∗
+      {{ (b : Bool), RET #b; ⌜I ii b⌝ }})
+      else iprop(⌜I ii false⌝)) ∗
     "#HUnwrap" ∷ (if methodSet ii.ty !! go!"Unwrap" = some (go.Signature [] false [go.error]) then
       iprop({{ True }}
         (App (Val #(methods ii.ty go!"Unwrap" ii.v)) (Val #()))
-      {{ (e : GoError), RET #e; ⌜S e⌝ }})
+      {{ (e : GoError), RET #e; ⌜S e ∧ U ii [e]⌝ }})
       else if methodSet ii.ty !! go!"Unwrap" =
           some (go.Signature [] false [go.GoType.SliceType go.error]) then
       iprop({{ True }}
         (App (Val #(methods ii.ty go!"Unwrap" ii.v)) (Val #()))
       {{ (s : GoSlice) (dq : DFrac) (es : List GoError), RET #s;
-          s ↦*{dq} es ∗ ⌜∀ e ∈ es, S e⌝ }})
-      else iprop(True)))
+          s ↦*{dq} es ∗ ⌜(∀ e ∈ es, S e) ∧ U ii es⌝ }})
+      else iprop(⌜U ii []⌝)))
+
+/-- Every non-nil error of `S` satisfies `errorWalkNode`. -/
+abbrev errorWalkTree (S : GoError → Prop) (I : GoInterfaceOk → Bool → Prop)
+    (U : GoInterfaceOk → List GoError → Prop) (target : GoError) : IProp GF :=
+  iprop(□ ∀ ii : GoInterfaceOk, ⌜S (interface.ok ii)⌝ -∗ errorWalkNode (GF := GF) S I U target ii)
+
+/-- The over-approximating `Is` relation: a `true` only if `M ii`. -/
+abbrev isRelOf (M : GoInterfaceOk → Prop) : GoInterfaceOk → Bool → Prop :=
+  fun ii b => b = true → M ii
+
+/-- The over-approximating `Unwrap` relation: errors of `S`. -/
+abbrev unwrapRelOf (S : GoError → Prop) : GoInterfaceOk → List GoError → Prop :=
+  fun _ cs => ∀ e ∈ cs, S e
+
+/-- The specs `Is(err, target)` needs of one error `ii` of the tree `S`, over-approximated:
+* `Is(error) bool` (if `ii` has it) is called with `target` and returns a `bool`, `true` only if
+  `M ii`;
+* `Unwrap() error` returns an error in `S`;
+* `Unwrap() []error` returns a slice of errors in `S`. -/
+abbrev errorIsNode (S : GoError → Prop) (M : GoInterfaceOk → Prop) (target : GoError)
+    (ii : GoInterfaceOk) : IProp GF :=
+  errorWalkNode (GF := GF) S (isRelOf M) (unwrapRelOf S) target ii
 
 /-- Every non-nil error of `S` satisfies `errorIsNode`. -/
 abbrev errorIsTree (S : GoError → Prop) (M : GoInterfaceOk → Prop) (target : GoError) :
     IProp GF :=
-  iprop(□ ∀ ii : GoInterfaceOk, ⌜S (interface.ok ii)⌝ -∗ errorIsNode (GF := GF) S M target ii)
+  errorWalkTree (GF := GF) S (isRelOf M) (unwrapRelOf S) target
 
 /-- A leaf error without an `Is(error) bool` method is a one-error tree, for any `M`. -/
 theorem errorIsTree_leaf (ii : GoInterfaceOk) (M : GoInterfaceOk → Prop) (target : GoError)
@@ -226,9 +256,62 @@ theorem errorIsTree_leaf (ii : GoInterfaceOk) (M : GoInterfaceOk → Prop) (targ
   obtain ⟨-, hU1, hU2⟩ := hleaf
   iintro !> %ii' %h
   cases h
-  unfold errorIsNode
+  unfold errorWalkNode
   simp only [hIs, hU1, hU2, ↓reduceIte]
-  isplitr <;> itrivial
+  isplitr
+  · ipureintro; intro h; cases h
+  · ipureintro; intro _ h; cases h
+
+/-- A tree is an over-approximating one, an `Is` method's `true` meaning `I ii true`. -/
+theorem errorIsTree_of_walk (S : GoError → Prop) (I : GoInterfaceOk → Bool → Prop)
+    (U : GoInterfaceOk → List GoError → Prop) (target : GoError) :
+    errorWalkTree (GF := GF) S I U target ⊢ errorIsTree (GF := GF) S (fun ii => I ii true) target := by
+  iintro #Ht !> %ii %hS
+  ihave Hn := Ht $$ %ii %hS
+  unfold errorWalkNode
+  iNamed Hn
+  isplitl
+  · by_cases h : methodSet ii.ty !! go!"Is" = some (go.Signature [go.error] false [go.bool])
+    · simp only [h, ↓reduceIte]
+      iintro !> %Φ - HΦ
+      wp_apply HIs as %b %Hb
+      iapply HΦ
+      ipureintro
+      intro hb; subst hb; exact Hb
+    · simp only [h, ↓reduceIte]
+      ipureintro; intro h; cases h
+  · by_cases h1 : methodSet ii.ty !! go!"Unwrap" = some (go.Signature [] false [go.error])
+    · simp only [h1, ↓reduceIte]
+      iintro !> %Φ - HΦ
+      wp_apply HUnwrap as %e ⟨%He, -⟩
+      iapply HΦ
+      ipureintro
+      exact ⟨He, fun c hc => by rw [List.mem_singleton.mp hc]; exact He⟩
+    · by_cases h2 : methodSet ii.ty !! go!"Unwrap" =
+          some (go.Signature [] false [go.GoType.SliceType go.error])
+      · simp only [h1, ↓reduceIte]
+        simp only [h2, ↓reduceIte]
+        iintro !> %Φ - HΦ
+        wp_apply HUnwrap as %s %dq %es ⟨Hs, %Hes, -⟩
+        iapply HΦ
+        iframe
+        ipureintro
+        exact ⟨Hes, Hes⟩
+      · simp only [h1, h2, ↓reduceIte]
+        ipureintro; intro _ h; cases h
+
+/-- A leaf error without an `Is(error) bool` method is a one-error tree with exact relations: its
+`Is` answers `false`, its `Unwrap` nothing. -/
+theorem errorWalkTree_leaf (ii : GoInterfaceOk) (target : GoError) (hleaf : isLeafError ii)
+    (hIs : methodSet ii.ty !! go!"Is" ≠ some (go.Signature [go.error] false [go.bool])) :
+    ⊢ errorWalkTree (GF := GF) (· = interface.ok ii) (fun _ b => b = false) (fun _ cs => cs = [])
+      target := by
+  obtain ⟨-, hU1, hU2⟩ := hleaf
+  iintro !> %ii' %h
+  cases h
+  unfold errorWalkNode
+  simp only [hIs, hU1, hU2, ↓reduceIte]
+  isplitr <;> ipureintro <;> trivial
 
 /-- The errors of the tree `S` whose dynamic type is that of `target` hold a pointer, as
 `target` does for a pointer error: Go's typing, which the model (with no typing of interface
@@ -245,6 +328,126 @@ theorem treeTyped_pointer (ii : GoInterfaceOk) (target : GoError) (h : IsPointer
   cases hii'
   obtain ⟨_, l, -, hl⟩ := h
   exact ⟨l, hl⟩
+
+/-! ### The answers of the walk -/
+
+/-- The answers of Go's tree walk `is` on a list of errors, each walked in turn until one answers
+`true` (`IsWalk` for one error), over the methods' relations `I` and `U` (`errorWalkNode`): an
+error that is `target` (when `c`, `target`'s type comparable), or whose `Is` answers `true`, is a
+`true`; otherwise its children (`U`) are walked; `nil` is a `false` (`target` not `nil` when `c`).
+An inductive: the walk of a cyclic tree has no answer, as Go's does not return. -/
+inductive IsWalkL (c : Bool) (I : GoInterfaceOk → Bool → Prop)
+    (U : GoInterfaceOk → List GoError → Prop) (target : GoError) : List GoError → Bool → Prop
+  | done : IsWalkL c I U target [] false
+  | nilSkip {es b} : (c = true → target ≠ interface.nil) → IsWalkL c I U target es b →
+      IsWalkL c I U target (interface.nil :: es) b
+  | eq {ii es} : c = true → interface.ok ii = target →
+      IsWalkL c I U target (interface.ok ii :: es) true
+  | is {ii es} : (c = true → interface.ok ii ≠ target) → I ii true →
+      IsWalkL c I U target (interface.ok ii :: es) true
+  | hit {ii cs es} : (c = true → interface.ok ii ≠ target) → I ii false → U ii cs →
+      IsWalkL c I U target cs true → IsWalkL c I U target (interface.ok ii :: es) true
+  | miss {ii cs es b} : (c = true → interface.ok ii ≠ target) → I ii false → U ii cs →
+      IsWalkL c I U target cs false → IsWalkL c I U target es b →
+      IsWalkL c I U target (interface.ok ii :: es) b
+
+/-- `b` is an answer of Go's walk `is(err, target, c)` (`IsWalkL` of `[err]`). -/
+abbrev IsWalk (c : Bool) (I : GoInterfaceOk → Bool → Prop)
+    (U : GoInterfaceOk → List GoError → Prop) (target : GoError) (err : GoError) (b : Bool) :
+    Prop :=
+  IsWalkL c I U target [err] b
+
+section walk
+variable {c : Bool} {I : GoInterfaceOk → Bool → Prop} {U : GoInterfaceOk → List GoError → Prop}
+  {target : GoError}
+
+/-- A list whose first error answers `false` answers what the rest does. -/
+theorem IsWalkL.cons_false {e : GoError} {es : List GoError} {b : Bool}
+    (h : IsWalk c I U target e false) (hes : IsWalkL c I U target es b) :
+    IsWalkL c I U target (e :: es) b := by
+  cases h with
+  | nilSkip hn h' => cases h'; exact .nilSkip hn hes
+  | miss hne hI hU hcs h' => cases h'; exact .miss hne hI hU hcs hes
+
+/-- A list whose first error answers `true` answers `true`. -/
+theorem IsWalkL.cons_true {e : GoError} {es : List GoError}
+    (h : IsWalk c I U target e true) : IsWalkL c I U target (e :: es) true := by
+  cases h with
+  | nilSkip _ h' => cases h'
+  | eq hc heq => exact .eq hc heq
+  | is hne hI => exact .is hne hI
+  | hit hne hI hU hcs => exact .hit hne hI hU hcs
+  | miss _ _ _ _ h' => cases h'
+
+/-- An error not `target`, whose `Is` answers `false`, answers what its children do. -/
+theorem IsWalk.children {ii : GoInterfaceOk} {cs : List GoError} {b : Bool}
+    (hne : c = true → interface.ok ii ≠ target) (hI : I ii false) (hU : U ii cs)
+    (h : IsWalkL c I U target cs b) : IsWalk c I U target (interface.ok ii) b := by
+  cases b
+  · exact .miss hne hI hU h .done
+  · exact .hit hne hI hU h
+
+/-- **The walk is a function of the tree** when the methods' relations are. -/
+theorem isWalkL_det (hI : ∀ ii b b', I ii b → I ii b' → b = b')
+    (hU : ∀ ii cs cs', U ii cs → U ii cs' → cs = cs') {es : List GoError} {b b' : Bool}
+    (h : IsWalkL c I U target es b) (h' : IsWalkL c I U target es b') : b = b' := by
+  induction h generalizing b' with
+  | done => cases h'; rfl
+  | nilSkip _ _ ih => cases h' with
+    | nilSkip _ h' => exact ih h'
+  | eq hc heq => cases h' with
+    | eq => rfl
+    | is => rfl
+    | hit => rfl
+    | miss hne => exact absurd heq (hne hc)
+  | is hne hI1 => cases h' with
+    | eq => rfl
+    | is => rfl
+    | hit => rfl
+    | miss _ hI2 => exact absurd (hI _ _ _ hI1 hI2) (by decide)
+  | hit hne hI1 hU1 _ ih => cases h' with
+    | eq => rfl
+    | is => rfl
+    | hit => rfl
+    | miss _ _ hU2 hcs2 =>
+      exact absurd (ih (hU _ _ _ hU1 hU2 ▸ hcs2)) (by decide)
+  | miss hne hI1 hU1 _ _ ihc ih => cases h' with
+    | eq hc heq => exact absurd heq (hne hc)
+    | is _ hI2 => exact absurd (hI _ _ _ hI1 hI2).symm (by decide)
+    | hit _ _ hU2 hcs2 => exact absurd (ihc (hU _ _ _ hU1 hU2 ▸ hcs2)) (by decide)
+    | miss _ _ _ _ hes2 => exact ih hes2
+
+/-- `errors.Is` is a function of the tree: two walks of one error with functional relations give
+the same answer. -/
+theorem isWalk_det (hI : ∀ ii b b', I ii b → I ii b' → b = b')
+    (hU : ∀ ii cs cs', U ii cs → U ii cs' → cs = cs') {err : GoError} {b b' : Bool}
+    (h : IsWalk c I U target err b) (h' : IsWalk c I U target err b') : b = b' :=
+  isWalkL_det hI hU h h'
+
+/-- Under the over-approximating relations, a `true` comes from an error of the tree that is
+`target` or whose `Is` said so. -/
+theorem isWalkL_true_mem {S : GoError → Prop} {M : GoInterfaceOk → Prop} {es : List GoError}
+    (h : IsWalkL c (isRelOf M) (unwrapRelOf S) target es true) (hS : ∀ e ∈ es, S e) :
+    ∃ ii, S (interface.ok ii) ∧ (interface.ok ii = target ∨ M ii) := by
+  generalize hb : true = b at h
+  induction h with
+  | done => cases hb
+  | nilSkip _ _ ih => exact ih (fun e he => hS e (List.mem_cons_of_mem _ he)) hb
+  | eq _ heq => exact ⟨_, hS _ List.mem_cons_self, Or.inl heq⟩
+  | is _ hI => exact ⟨_, hS _ List.mem_cons_self, Or.inr (hI rfl)⟩
+  | hit _ _ hU _ ih => exact ih hU rfl
+  | miss _ _ _ _ _ _ ih => exact ih (fun e he => hS e (List.mem_cons_of_mem _ he)) hb
+
+/-- When `c`, an error that is `target` answers `true`. -/
+theorem isWalk_eq_true {ii : GoInterfaceOk} {b : Bool} (hc : c = true)
+    (heq : interface.ok ii = target) (h : IsWalk c I U target (interface.ok ii) b) : b = true := by
+  cases h with
+  | eq => rfl
+  | is => rfl
+  | hit => rfl
+  | miss hne => exact absurd heq (hne hc)
+
+end walk
 
 end wps
 
