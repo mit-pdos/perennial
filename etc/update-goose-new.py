@@ -249,6 +249,7 @@ def main():
             "./channel/...",
             "./crashfs/...",
             "./netfs/...",
+            "./prophkv/...",
             "./unsafememory/...",
         )
 
