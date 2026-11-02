@@ -8,20 +8,17 @@
 // Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/prophkv.
 package prophkv
 
-import (
-	"sync"
+import "github.com/goose-lang/primitive"
 
-	"github.com/goose-lang/primitive"
-)
-
-// KV is a key-value map protected by a mutex.
+// KV is a key-value map protected by a mutex (primitive.Mutex: a sync.Mutex whose package
+// has nothing to initialize).
 type KV struct {
-	mu *sync.Mutex
+	mu *primitive.Mutex
 	m  map[string]string
 }
 
 func NewKV() *KV {
-	return &KV{mu: new(sync.Mutex), m: make(map[string]string)}
+	return &KV{mu: new(primitive.Mutex), m: make(map[string]string)}
 }
 
 func (kv *KV) Put(k string, v string) {
