@@ -100,6 +100,25 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   real executions of *fewer than `N` steps* along which *fewer than `T`
   threads are live*, explicit hypotheses. See
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts" and "Thread tokens".
+* **Prophecies the Go code does not contain.** A proof may need a prophecy
+  variable (`NewProph`, `ResolveProph`) that the program does not have, e.g. to
+  know at a read whether its answer is the one the program will return.
+  `withProph e` (`GooseLang/ProphInstrument.lean`) is the program `e` under a
+  prophecy of its result: it creates the prophecy, runs `e` unchanged in an
+  evaluation context, resolves the prophecy with `e`'s result and returns it.
+  `wp_withProph` (`Golang/Theory/WithProph.lean`) gives the proof of `e` the
+  prophesied list of results, and `goose_adequacy_withProph` turns a WP of
+  `withProph e` into `goose_adequacy`'s conclusions about the real executions
+  of `e` itself, with the same bounds. It is proved from the semantics, which
+  it leaves unchanged: the wrapper's steps are plain (no fuel), and each step of
+  `e` is a step of the instrumented program, whose state also holds the
+  prophecy's id, which no step of `e` uses. End-to-end example: the Go package
+  `goose/testdata/examples/prophkv`, where `GetAny` reads a map twice and
+  returns one answer chosen at random afterwards; its logically atomic spec
+  takes a prediction of its result, a prophecy of the program's result
+  supplies it, and `prog_safe`
+  (`Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/prophkv/Results.lean`)
+  is about the program without the prophecy.
 * **Iris substrate.** iris-lean provides the BI, proof mode, invariants,
   ghost maps, later credits and the WP. General-purpose libraries that iris-lean
   lacks (finite maps and sets, machine words, list lemmas) live in

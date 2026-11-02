@@ -51,6 +51,10 @@ instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg :=
 /-- The abstract state of the map `γ`: half of it (the lock holds the other half). -/
 def kvState (γ : GName) (m : GMap GoString GoString) : IProp GF := ghostVar γ (1 : Qp).half m
 
+instance kvState_timeless (γ : GName) (m : GMap GoString GoString) :
+    Timeless (kvState (GF := GF) γ m) := by
+  unfold kvState; infer_instance
+
 /-- The lock's invariant: the Go map, and the lock's half of the abstract state. -/
 def kvLockInv (mref : Loc) (γ : GName) : IProp GF :=
   iprop(∃ m : GMap GoString GoString, mref ↦$ m ∗ kvState γ m)
@@ -128,16 +132,6 @@ theorem wp_Get (kv : Loc) (γ : GName) (k : GoString) (R : GoString → IProp GF
 
 theorem str_inj [go.IntoValInj GoString] {a b : GoString} (h : (#a : val) = #b) : a = b :=
   go.IntoValInj.intoVal_inj h
-
-/-- The two halves of the abstract state agree. -/
-theorem kvState_agree (γ : GName) (m1 m2 : GMap GoString GoString) :
-    kvState (GF := GF) γ m1 ∗ kvState γ m2 ⊢ ⌜m1 = m2⌝ ∗ kvState γ m1 ∗ kvState γ m2 := by
-  unfold kvState
-  iintro ⟨H1, H2⟩
-  icombine H1 H2 gives %H
-  obtain ⟨-, rfl⟩ := H
-  iframe H1 H2
-  ipureintro; rfl
 
 /-! ## `GetAny`: logically atomic, with a prediction of its result -/
 
@@ -231,6 +225,135 @@ theorem wp_GetAny (kv : Loc) (γ : GName) (k : GoString) (pv : val) (Q : GoStrin
       exact absurd h h1
     · iapply HΦ
       iexact H2
+
+/-! ## `Test` -/
+
+/-- The answers `Test`'s map ever gives for `"k"`. -/
+def goodVal (v : GoString) : Prop := v = go!"a" ∨ v = go!"b"
+
+/-- `Test`'s invariant: the client's half of the abstract state, in which `"k"` is `"a"` or
+`"b"`. -/
+abbrev testInv (γ : GName) : IProp GF :=
+  iprop(∃ m : GMap GoString GoString, kvState γ m ∗ ⌜∃ v, m !! go!"k" = some v ∧ goodVal v⌝)
+
+def testN : Namespace := nroot.@"prophkv"
+
+/-- The atomic update `GetAny` takes, from the invariant: a read of `"k"` answers a good value. -/
+theorem au_of_inv (γ : GName) :
+    inv testN (testInv (GF := GF) γ) ⊢
+      AU <{ ∃∃ (m : GMap GoString GoString), kvState γ m }> @ ⊤, ∅
+        <{ kvState γ m, COMM ⌜goodVal ((m !! go!"k").getD go!"")⌝ }> := by
+  refine (and_intro .rfl true_intro).trans (aupd_intro ?_)
+  iintro ⟨#Hinv, -⟩
+  unfold atomic_acc
+  iinv Hinv with ⟨%m, >Hst, >%Hgood⟩ Hclose
+  iapply fupd_mask_intro Std.LawfulSet.empty_subset
+  iintro Hmask
+  iexists ⟨m, ⟨⟩⟩
+  simp only [Tele.app]
+  iframe Hst
+  isplit
+  · iintro Hst
+    imod Hmask with -
+    imod Hclose $$ [Hst] with -
+    · inext; iexists m; iframe Hst; ipureintro; exact Hgood
+    imodintro; itrivial
+  · iintro %y Hst
+    imod Hmask with -
+    imod Hclose $$ [Hst] with -
+    · inext; iexists m; iframe Hst; ipureintro; exact Hgood
+    imodintro
+    ipureintro
+    obtain ⟨v, hv, hg⟩ := Hgood
+    simp [hv, hg]
+
+/-- **`Test()`**, given a prediction `pv` of its result: the result is `"a"` or `"b"` if it is
+`pv`. -/
+theorem wp_Test (pv : val) :
+    {{ isPkgInit (PROP := IProp GF) pkg }}
+      (App (Val (@! Test)) (Val #()))
+    {{ (r : GoString), RET #r; ⌜(#r : val) = pv⌝ -∗ ⌜goodVal r⌝ }} := by
+  wp_start as #Hpkg
+  wp_auto
+  wp_apply wp_NewKV as %kv %γ ⟨#Hkv, Hst⟩
+  -- `Put("k", "a")`, on the client's own half of the abstract state
+  wp_apply (wp_Put kv γ go!"k" go!"a" (kvState γ (<[go!"k" := go!"a"]> ∅))) $$ [$Hkv Hst]
+    as Hst
+  · iintro %m Hlk
+    iunfold kvState at Hlk Hst
+    icombine Hlk Hst gives %Hagree
+    obtain ⟨_, rfl⟩ := Hagree
+    imod ghostVar_update_halves (<[go!"k" := go!"a"]> ∅) γ ∅ ∅ $$ Hlk Hst with ⟨Hlk, Hst⟩
+    imodintro
+    unfold kvState
+    iframe
+  -- the invariant: `"k"` is `"a"` or `"b"`
+  imod inv_alloc testN ⊤ (testInv γ) $$ [Hst] with #Hinv
+  · inext; iexists _; iframe Hst; ipureintro; exact ⟨go!"a", by simp, Or.inl rfl⟩
+  -- the goroutine: `Put("k", "b")`, through the invariant
+  ipersist kv
+  wp_apply wp_fork $$ []
+  · wp_auto
+    wp_apply (wp_Put kv γ go!"k" go!"b" iprop(True)) $$ [$Hkv]
+    · iintro %m Hlk
+      iinv Hinv with ⟨%m', >Hst, >%Hgood⟩ Hclose
+      iunfold kvState at Hlk Hst
+      icombine Hlk Hst gives %Hagree
+      obtain ⟨_, rfl⟩ := Hagree
+      imod ghostVar_update_halves (<[go!"k" := go!"b"]> m) γ m m $$ Hlk Hst with ⟨Hlk, Hst⟩
+      imod Hclose $$ [Hst] with -
+      · inext; iexists _; unfold kvState; iframe Hst
+        ipureintro; exact ⟨go!"b", by simp, Or.inr rfl⟩
+      imodintro
+      unfold kvState
+      iframe
+    itrivial
+  -- `GetAny`, with the prediction `pv` and the update from the invariant
+  ihave HAU := au_of_inv γ $$ Hinv
+  wp_apply (wp_GetAny kv γ go!"k" pv (fun x => iprop(⌜goodVal x⌝))) $$ [$Hkv $HAU] as %r Hr
+  iapply HΦ $$ Hr
+
+/-! ## The program: initialization, then `Test()` -/
+
+theorem wp_initialize' (get_is_pkg_init : GoString → IProp GF)
+    (Hinit : GetIsPkgInitProp pkg get_is_pkg_init) :
+    {{ ownInitializing get_is_pkg_init }}
+      (App (Val initialize') (Val #()))
+    {{ RET #(); ownInitializing get_is_pkg_init ∗ isPkgInit (PROP := IProp GF) pkg }} := by
+  wp_start as Hown
+  iapply wp_package_init (heq := Hinit.1) $$ [Hown] HΦ
+  iframe Hown
+  iintro Hown
+  wp_auto
+  wp_apply github_com.goose_lang.primitive.wp_initialize' _ Hinit.2.1 $$ Hown as ⟨Hown, #Hprim⟩
+  iframe Hown
+  is_pkg_init_finish
+
+/-- The program: initialize the package, then call `Test` (as goose calls a function). -/
+def prog : Expr :=
+  Seq (App (Val initialize') (Val #()))
+    (App (App (Val (GoInstruction (FuncResolve Test []))) (Val #())) (Val #()))
+
+/-- What the program returns: `"a"` or `"b"`. -/
+def resultOk (v : val) : Prop := v = #go!"a" ∨ v = #go!"b"
+
+/-- **The program under a prophecy of its result**: the prophecy's head is `Test`'s result, the
+prediction its proof takes (`wp_withProph`). -/
+theorem wp_withProph_prog (get_is_pkg_init : GoString → IProp GF)
+    (Hinit : GetIsPkgInitProp pkg get_is_pkg_init) :
+    ownInitializing get_is_pkg_init ⊢ WP (withProph prog) {{ v, ⌜resultOk v⌝ }} := by
+  iintro Hown
+  iapply wp_withProph
+  iintro %vs
+  unfold prog
+  wp_apply wp_initialize' _ Hinit $$ Hown as ⟨_, #Hpkg⟩
+  wp_apply (wp_Test (vs.head?.getD #())) as %r Hr
+  isplit
+  · ipureintro; exact isPanic_intoVal r
+  iintro %Hh
+  ihave %Hg := Hr $$ %(by simp [Hh])
+  ipureintro
+  rcases Hg with h | h <;> subst h <;> simp [resultOk]
 
 end proofs
 
