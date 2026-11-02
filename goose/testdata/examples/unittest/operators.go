@@ -62,6 +62,16 @@ func AssignOps() {
 	x--
 }
 
+func AssignOps16() (uint16, int16) {
+	var x uint16
+	var y int16
+	x++
+	x--
+	x++
+	y--
+	return x, y
+}
+
 func BitwiseAndNot(x uint32, y uint64) uint64 {
 	z := uint64(x) &^ y
 	z &^= 0xff

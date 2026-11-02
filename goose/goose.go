@@ -1928,8 +1928,12 @@ func (ctx *Ctx) incDecStmt(stmt *ast.IncDecStmt, cont glang.Expr) glang.Expr {
 			y = glang.Int64Val{Value: one}
 		case types.Uint32, types.Int32:
 			y = glang.Int32Val{Value: one}
+		case types.Uint16, types.Int16:
+			y = glang.Int16Val{Value: one}
 		case types.Uint8, types.Int8:
 			y = glang.Int8Val{Value: one}
+		default:
+			ctx.unsupported(stmt.X, "inc or dec statement with unsupported type %v", ctx.typeOf(stmt.X))
 		}
 	default:
 		ctx.unsupported(stmt.X, "inc or dec statement with unsupported type %v", ctx.typeOf(stmt.X))

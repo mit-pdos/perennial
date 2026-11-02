@@ -843,6 +843,9 @@ noncomputable def Comparison [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def AssignOps [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.AssignOps"
 
+noncomputable def AssignOps16 [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.AssignOps16"
+
 noncomputable def BitwiseAndNot [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.BitwiseAndNot"
 
@@ -4434,6 +4437,38 @@ noncomputable def AssignOps.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))
 
 /-- go: operators.go:65:6 -/
+noncomputable def AssignOps16.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint16))) (App (Val (GoInstruction (GoZeroVal go.uint16))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.int16))) (App (Val (GoInstruction (GoZeroVal go.int16))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint16))) (App (Val (GoInstruction (GoZeroVal go.uint16))) (Val #())))
+  (Let "y" (App (Val (GoInstruction (GoAlloc go.int16))) (App (Val (GoInstruction (GoZeroVal go.int16))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x"))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.int16))) (Var "y"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int16))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint16))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int16))) (Pair (Var "y") (App (Val (GoInstruction (GoOp GoSub go.int16))) (Pair (App (Val (GoInstruction (GoLoad go.int16))) (Var "y")) (Val #(W16 1))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint16))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (Val #(W16 1))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint16))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoSub go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (Val #(W16 1))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint16))) (Pair (Var "x") (App (Val (GoInstruction (GoOp GoPlus go.uint16))) (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "x")) (Val #(W16 1)))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.uint16))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.int16))) (Var "$res1")))))))
+
+/-- go: operators.go:75:6 -/
 noncomputable def BitwiseAndNot.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
   (Lam "y"
@@ -4457,7 +4492,7 @@ noncomputable def BitwiseAndNot.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "z") (Var "$r0"))))))))))
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0"))))))
 
-/-- go: operators.go:71:6 -/
+/-- go: operators.go:81:6 -/
 noncomputable def Negative.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Seq (App (Val exceptionDo)
@@ -7524,6 +7559,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   BitwiseOps_unfold : FuncUnfold BitwiseOps [] BitwiseOps.impl
   Comparison_unfold : FuncUnfold Comparison [] Comparison.impl
   AssignOps_unfold : FuncUnfold AssignOps [] AssignOps.impl
+  AssignOps16_unfold : FuncUnfold AssignOps16 [] AssignOps16.impl
   BitwiseAndNot_unfold : FuncUnfold BitwiseAndNot [] BitwiseAndNot.impl
   Negative_unfold : FuncUnfold Negative [] Negative.impl
   PanicAtTheDisco_unfold : FuncUnfold PanicAtTheDisco [] PanicAtTheDisco.impl
@@ -7782,6 +7818,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.BitwiseOps_unfold
   Assumptions.Comparison_unfold
   Assumptions.AssignOps_unfold
+  Assumptions.AssignOps16_unfold
   Assumptions.BitwiseAndNot_unfold
   Assumptions.Negative_unfold
   Assumptions.PanicAtTheDisco_unfold
