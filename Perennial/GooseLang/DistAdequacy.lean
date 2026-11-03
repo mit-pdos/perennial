@@ -231,7 +231,7 @@ theorem goose_local_init [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF] (T
       threadTok (hT := L.goose_threadGS) := by
   imod na_heap_init (L := Loc) (V := val)
     (hG := ⟨hPre.goose_preG_heap.na_heap_preG_inG, default⟩) tls σ.heap with ⟨%hHeap, Hh⟩
-  imod goState_init hPre.goose_preG_go_state σ.goState.packageState with ⟨%γ, Hgs, Hgs'⟩
+  imod goState_init hPre.goose_preG_go_state hPre.goosePreGAllG σ.goState.packageState with ⟨%γ, %γm, Hgs, Hgs'⟩
   imod Exts.local_init exts _ hPre.goosePreGExts σ.world g.globalWorld Hinit
     with ⟨%hFL, Hlctx, Hlstart⟩
   imod thread_init T hT with ⟨%γT, HT⟩
@@ -240,7 +240,7 @@ theorem goose_local_init [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF] (T
   rw [show T - 2 + 1 = T - 1 by omega] at Hsplit
   icases Hsplit $$ HT with ⟨Hfuel, Htok⟩
   imodintro
-  iexists (⟨hFL, σ.goState.goLctx, hHeap, goStateGSUpdatePre GF hPre.goose_preG_go_state γ,
+  iexists (⟨hFL, σ.goState.goLctx, hHeap, goStateGSUpdatePre GF hPre.goose_preG_go_state hPre.goosePreGAllG γ γm,
     ⟨γT, T, hT⟩, ⟨γC⟩⟩ : GooseLocalGS GF)
   unfold nodeInterp threadFuel
   iframe

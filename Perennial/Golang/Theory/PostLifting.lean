@@ -492,7 +492,11 @@ theorem wp_PackageInitCheck (pkg : GoString) (σ : GMap GoString Bool) :
   iapply wp_value'
   iapply HΦ $$ Hown
 
-theorem wp_PackageInitStart (pkg : GoString) (σ : GMap GoString Bool) :
+/-- Starting the initialization of a package that is not initialized (`h`, found by
+`wp_PackageInitCheck`). The semantics also allows restarting an initialized package; the
+logic does not, so that an initialized package stays initialized (`ownGoStateLb`). -/
+theorem wp_PackageInitStart (pkg : GoString) (σ : GMap GoString Bool)
+    (h : (σ !! pkg).getD false = false := by assumption) :
     {{ ownGoState (GF := GF) σ }} (App (Val (GoInstruction (PackageInitStart pkg))) (Val #())) @ s; E
     {{ RET #(); ownGoState (<[pkg := false]> σ) }} := by
   iintro %Φ Hown HΦ
@@ -503,7 +507,7 @@ theorem wp_PackageInitStart (pkg : GoString) (σ : GMap GoString Bool) :
   obtain ⟨-, rfl, rfl⟩ := Hstep
   icombine Hauth Hown gives %Heq
   subst Heq
-  imod ownGoState_update _ _ (<[pkg := false]> gs) $$ Hown Hauth with ⟨Hown, Hauth⟩
+  imod ownGoState_update_start gs gs pkg h $$ Hown Hauth with ⟨Hown, Hauth⟩
   imodintro
   iframe Hauth
   iapply wp_value'
@@ -520,7 +524,7 @@ theorem wp_PackageInitFinish (pkg : GoString) (σ : GMap GoString Bool) :
   obtain ⟨-, rfl, rfl⟩ := Hstep
   icombine Hauth Hown gives %Heq
   subst Heq
-  imod ownGoState_update _ _ (<[pkg := true]> gs) $$ Hown Hauth with ⟨Hown, Hauth⟩
+  imod ownGoState_update_finish gs gs pkg $$ Hown Hauth with ⟨Hown, Hauth⟩
   imodintro
   iframe Hauth
   iapply wp_value'

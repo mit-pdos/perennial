@@ -53,6 +53,92 @@ theorem ownInitializing_unseal : @ownInitializing = @ownInitializingDef := by
 
 end init_defns
 
+noncomputable section init_lb
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+
+/-! ## Initialized packages stay initialized
+
+`ownGoState σ` (inside `ownInitializing g`) holds the authority of a ghost map of the packages `σ`
+has initialized, which only grows (`GoStateGS.packageMonoName`); its persistent fragment
+`ownGoStateLb σ0` names packages known initialized. So every proof that keeps
+`ownInitializing g`, whatever it does, keeps them initialized (`wp_ownInitializingLb`): a
+package's `wp_initialize'` need not be restated to say so. -/
+
+/-- `ownInitializing g`, with every package `σ0` has initialized initialized. -/
+def ownInitializingLb (get_is_pkg_init : GoString → IProp GF) (σ0 : GMap GoString Bool) :
+    IProp GF :=
+  iprop(∃ package_inited : GMap GoString Bool,
+    ownGoState package_inited ∗
+    □ ([∗map] pkg_name ↦ inited ∈ package_inited,
+      if inited then get_is_pkg_init pkg_name else iprop(True)) ∗
+    ⌜pkgInitLe σ0 package_inited⌝)
+
+/-- `ownInitializingLb g σ0` is `ownInitializing g` and the persistent fact that `σ0`'s packages
+are initialized. -/
+theorem ownInitializingLb_iff (get_is_pkg_init : GoString → IProp GF) (σ0 : GMap GoString Bool) :
+    ownInitializingLb get_is_pkg_init σ0 ⊣⊢
+      ownInitializing get_is_pkg_init ∗ ownGoStateLb σ0 := by
+  rw [ownInitializing_unseal]
+  unfold ownInitializingDef ownInitializingLb
+  constructor
+  · iintro ⟨%σ, Hg, #Hinit, %Hle⟩
+    ihave ⟨Hg, #Hlb⟩ := ownGoState_get_lb σ $$ Hg
+    isplitl [Hg]
+    · iexists σ
+      iframe Hg Hinit
+    · iapply ownGoStateLb_mono Hle $$ Hlb
+  · iintro ⟨⟨%σ, Hg, #Hinit⟩, #Hlb⟩
+    ihave %Hle := ownGoStateLb_le σ0 σ $$ Hlb Hg
+    iexists σ
+    iframe Hg Hinit
+    ipureintro; exact Hle
+
+theorem ownInitializing_lb_empty (get_is_pkg_init : GoString → IProp GF) :
+    ownInitializing get_is_pkg_init ⊢ ownInitializingLb get_is_pkg_init ∅ := by
+  iintro Hown
+  iapply (ownInitializingLb_iff get_is_pkg_init ∅).2
+  iframe Hown
+  iapply ownGoStateLb_empty
+
+/-- **Initialized packages stay initialized**, through any proof that keeps
+`ownInitializing g`: from `ownInitializingLb g σ0`, a WP whose postcondition has
+`ownInitializing g` ends with `ownInitializingLb g σ0`. -/
+theorem wp_ownInitializingLb (get_is_pkg_init : GoString → IProp GF) (σ0 : GMap GoString Bool)
+    (e : Expr) (s : Stuckness) (E : CoPset) (Ψ : val → IProp GF) :
+    ⊢ ownInitializingLb get_is_pkg_init σ0 -∗
+      (ownInitializing get_is_pkg_init -∗
+        WP e @ s; E {{ v, ownInitializing get_is_pkg_init ∗ Ψ v }}) -∗
+      WP e @ s; E {{ v, ownInitializingLb get_is_pkg_init σ0 ∗ Ψ v }} := by
+  iintro Hlb Hwp
+  ihave ⟨Hown, #Hl⟩ := (ownInitializingLb_iff get_is_pkg_init σ0).1 $$ Hlb
+  iapply wp_wand $$ [Hwp Hown]
+  · iapply Hwp $$ Hown
+  iintro %v ⟨Hown, HΨ⟩
+  iframe HΨ
+  iapply (ownInitializingLb_iff get_is_pkg_init σ0).2
+  iframe Hown Hl
+
+/-- The triple form: an initializer that meets the standard spec (Perennial's
+`initialize'.spec` shape) keeps every package initialized before initialized. -/
+theorem initLb_of_initSpec (init : val) (get_is_pkg_init : GoString → IProp GF) (Q : IProp GF)
+    (Hstd : {{ ownInitializing get_is_pkg_init }} (App (Val init) (Val #()))
+      {{ RET #(); ownInitializing get_is_pkg_init ∗ Q }}) (σ0 : GMap GoString Bool) :
+    {{ ownInitializingLb get_is_pkg_init σ0 }} (App (Val init) (Val #()))
+      {{ RET #(); ownInitializingLb get_is_pkg_init σ0 ∗ Q }} := by
+  iintro %Φ Hlb HΦ
+  ihave ⟨Hown, #Hl⟩ := (ownInitializingLb_iff get_is_pkg_init σ0).1 $$ Hlb
+  iapply Hstd $$ Hown
+  inext
+  iintro ⟨Hown, HQ⟩
+  iapply HΦ
+  iframe HQ
+  iapply (ownInitializingLb_iff get_is_pkg_init σ0).2
+  iframe Hown Hl
+
+end init_lb
+
 section package_init_and_defined
 variable {PROP : Type _} [BI PROP]
 

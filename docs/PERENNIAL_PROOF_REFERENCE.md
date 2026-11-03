@@ -1298,3 +1298,14 @@ example (get_is_pkg_init : GoString → IProp GF)
   iframe Hown
   is_pkg_init_finish
 ```
+
+Initialized packages stay initialized. `ownGoState σ` (inside `ownInitializing g`)
+holds a ghost map of `σ`'s initialized packages that only grows; its persistent
+fragment `ownGoStateLb σ0` says the packages `σ0` has initialized are
+initialized (`ownGoStateLb_le`). `ownInitializingLb g σ0` (`⊣⊢ ownInitializing g ∗
+ownGoStateLb σ0`, `ownInitializingLb_iff`) is kept by every proof that keeps
+`ownInitializing g`: `wp_ownInitializingLb` for a WP, `initLb_of_initSpec` for an
+initializer meeting the standard spec above. So a package's `wp_initialize'` need
+not be restated to show that it initializes nothing away. The price is that
+`wp_PackageInitStart` takes the premise that the package is not initialized (an
+autoParam `by assumption`: `package.init` checks first).
