@@ -28,7 +28,10 @@ The initializer allocates the package's variables, initializes `errors`, `sync`,
 `init()`, which closes `closedchan`. It establishes `isInit` (the `goroutines` counter in an
 invariant, the fixed `closedchan` and `Canceled`, whose dynamic types `*errors.errorString` and
 `deadlineExceededError` are in the type set of `error`: `isTypedErr`, from their method sets,
-`errorString_is_error` and `deadlineExceededError_is_error`). -/
+`errorString_is_error` and `deadlineExceededError_is_error`; `Canceled`'s `s` field, which holds
+`"context canceled"`, and `DeadlineExceeded`'s value `deadlineExceededError{}`, from which
+`isCtxErr_of_Canceled` and `isCtxErr_of_DeadlineExceeded` make the errors of `Err()`'s
+contract). -/
 abbrev context.initialize'.spec : Prop :=
   ∀ (get_is_pkg_init : GoString → IProp GF),
     GetIsPkgInitProp pkg_id.context get_is_pkg_init →

@@ -36,10 +36,10 @@ theorem context.timerCtx.cancel.wp_proof
     (wp_removeChild : context.removeChild.spec (GF := GF) (hG := hG)) :
     context.timerCtx.cancel.spec (GF := GF) (hG := hG) := fun c γ rm err cause herr => by
   have wp_Stop_func := wp_Timer_Stop_func_of wp_Stop
-  wp_start as ⟨#Hc, Hrm⟩
+  wp_start as ⟨#Hc, #Hce, Hrm⟩
   ihave #Hc' := isCancelCtxOfR_of _ _ _ _ $$ Hc
   wp_auto
-  wp_apply wp_cancelCtx_cancel (tcc c) γ iprop(True) false err cause herr $$ [$Hc'] as #Hclosed
+  wp_apply wp_cancelCtx_cancel (tcc c) γ iprop(True) false err cause herr $$ [$Hc' $Hce] as #Hclosed
   · isplitl []
     · imodintro; itrivial
     · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial

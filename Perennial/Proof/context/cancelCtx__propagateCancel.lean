@@ -111,10 +111,10 @@ theorem context.cancelCtx.propagateCancel.wp_proof
           · simp only [↓reduceIte]; iexact Hcl
           have hne := hne rfl
           rw [ite_eq_right hne]
-          icases He with ⟨%htyped, -, -⟩
+          icases He with ⟨%htyped, #Hce, -⟩
           wp_apply wp_Cause (interface.mk (go.GoType.PointerType context.cancelCtx.ty) #p) s $$ [$Hctx]
             as %cause -
-          wp_apply wp_cancelCtx_cancel c γ P false e cause htyped $$ [$Hc] as -
+          wp_apply wp_cancelCtx_cancel c γ P false e cause htyped $$ [$Hc $Hce] as -
           · isplitl []
             · imodintro; iapply HPP $$ Hpd
             · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
@@ -147,10 +147,10 @@ theorem context.cancelCtx.propagateCancel.wp_proof
           · simp only [↓reduceIte]; iexact Hcl
           have hne := hne rfl
           rw [ite_eq_right hne]
-          icases He with ⟨%htyped, -, -⟩
+          icases He with ⟨%htyped, #Hce, -⟩
           wp_apply wp_Cause (interface.mk (go.GoType.PointerType context.cancelCtx.ty) #p) s $$ [$Hctx]
             as %cause -
-          wp_apply wp_cancelCtx_cancel c γ P false e cause htyped $$ [$Hc] as -
+          wp_apply wp_cancelCtx_cancel c γ P false e cause htyped $$ [$Hc $Hce] as -
           · isplitl []
             · imodintro; iapply HPP $$ Hpd
             · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
@@ -233,15 +233,16 @@ theorem context.cancelCtx.propagateCancel.wp_proof
           icases Hcl with ⟨#Hclosed, %hch⟩
           wp_apply wp_err_Load_frag p _ _ true $$ [$Hp] as %e ⟨-, Hhe⟩
           · unfold closedFrag; simp only [↓reduceIte]; iexact Hclosed
-          icases Hhe with ⟨-, %ht, #Hpd⟩
+          icases Hhe with ⟨-, %ht, #Hpd, #Hce⟩
           have ht := ht (by simp)
+          ihave #Hce := Hce $$ %(by simp)
           cases e with
           | nil => exact absurd ht id
           | ok ie =>
           wp_auto
           erw [ite_eq_left ht]
           wp_auto
-          wp_apply wp_cancelCtx_cancel c γ P false (GoInterface.ok ie) cause ht $$ [$Hc] as -
+          wp_apply wp_cancelCtx_cancel c γ P false (GoInterface.ok ie) cause ht $$ [$Hc $Hce] as -
           · isplitl []
             · imodintro; iapply HPP; iapply Hpd; ipureintro; simp
             · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
@@ -303,10 +304,11 @@ theorem context.cancelCtx.propagateCancel.wp_proof
           · iexact Hcchan
           iapply closed_chan_nonblocking_receive $$ Hcinv
           wp_auto
-          wp_apply HErrDone $$ Hcl as %e %htyped
+          wp_apply HErrDone $$ Hcl as %e %htyped #Hce
           wp_apply wp_Cause parent s $$ [$Hctx] as %cause -
           wp_apply Hk
           · ipureintro; exact htyped
+          · iexact Hce
           · imodintro; itrivial
           iapply HΦ $$ Hf
         · iframe
@@ -331,10 +333,11 @@ theorem context.cancelCtx.propagateCancel.wp_proof
         isplit
         · iintro ⟨-, #Hcl⟩
           wp_auto
-          wp_apply HErrDone $$ Hcl as %e %htyped
+          wp_apply HErrDone $$ Hcl as %e %htyped #Hce
           wp_apply wp_Cause parent s $$ [$Hctx] as %cause -
           wp_apply Hk
           · ipureintro; exact htyped
+          · iexact Hce
           · imodintro; itrivial
           iapply HΦ $$ Hf
         · iframe; ipureintro; exact hcc
@@ -422,8 +425,9 @@ theorem context.cancelCtx.propagateCancel.wp_proof
           icases Hcl with ⟨#Hclosed, %hch⟩
           wp_apply wp_err_Load_frag p _ _ true $$ [$Hp] as %e ⟨-, Hhe⟩
           · unfold closedFrag; simp only [↓reduceIte]; iexact Hclosed
-          icases Hhe with ⟨-, %ht, -⟩
+          icases Hhe with ⟨-, %ht, -, #Hce⟩
           have ht := ht (by simp)
+          ihave #Hce := Hce $$ %(by simp)
           cases e with
           | nil => exact absurd ht id
           | ok ie =>
@@ -432,6 +436,7 @@ theorem context.cancelCtx.propagateCancel.wp_proof
           wp_auto
           wp_apply Hk
           · ipureintro; exact ht
+          · iexact Hce
           · imodintro; itrivial
           wp_apply wp_Unlock $$ [$Hmup $Hlocked Hchildren Hcause Hod HR]
           · inext; unfold cancelCtxLockInv

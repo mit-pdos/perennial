@@ -142,7 +142,7 @@ theorem wp_err_Load_of
         go.GoType.PointerType sync.atomic.Value.ty @!! go!"Load")) (Val #()))
     {{ (e : GoInterface), RET #e; ⌜cl = true → e ≠ interface.nil⌝ ∗
         (if e = interface.nil then iprop(True)
-         else iprop(⌜isTypedErr e⌝ ∗ □ P ∗ ContextClosed γ)) }} := by
+         else iprop(⌜isTypedErr e⌝ ∗ isCtxErr e ∗ □ P ∗ ContextClosed γ)) }} := by
   iintro %Φ ⟨#Hpkg, #Hc, Hcl⟩ HΦ
   unfold isCancelCtxOf
   iNamed Hc
@@ -174,7 +174,7 @@ theorem wp_err_Load_of
       ihave %h := dghostVar_agree _ _ _ _ _ $$ Hcl Hcg
       cases h
   · simp only [he, ↓reduceIte]
-    icases Hcg with ⟨%ht, #Hp, #Hc⟩
+    icases Hcg with ⟨%ht, #Hce, #Hp, #Hc⟩
     imod Hclose $$ [Hdone Hdg Herr] with -
     · inext; iexists od, e; iframe Hdone Hdg Herr
       simp only [he, ↓reduceIte, named]
@@ -196,7 +196,7 @@ theorem wp_err_Load_frag_of
         go.GoType.PointerType sync.atomic.Value.ty @!! go!"Load")) (Val #()))
     {{ (e : GoInterface), RET #e; closedFrag γ closed ∗
         ⌜closed = false → e = interface.nil⌝ ∗ ⌜closed = true → isTypedErr e⌝ ∗
-        □ (⌜closed = true⌝ -∗ P) }} := by
+        □ (⌜closed = true⌝ -∗ P) ∗ □ (⌜closed = true⌝ -∗ isCtxErr e) }} := by
   iintro %Φ ⟨#Hpkg, #Hc, Hf⟩ HΦ
   unfold isCancelCtxOf
   iNamed Hc
@@ -222,11 +222,12 @@ theorem wp_err_Load_frag_of
       iframe Hf
       isplitl []; · ipureintro; intro _; rfl
       isplitl []; · ipureintro; intro h; cases h
+      isplitl []; · imodintro; iintro %h; cases h
       imodintro; iintro %h; cases h
     · ihave %h := dghostVar_agree _ _ _ _ _ $$ Hf Hcg
       cases h
   · simp only [he, ↓reduceIte]
-    icases Hcg with ⟨%ht, #Hp, #Hc⟩
+    icases Hcg with ⟨%ht, #Hce, #Hp, #Hc⟩
     cases closed <;> simp only [closedFrag, Bool.false_eq_true, ↓reduceIte]
     · unfold ContextClosed
       ihave %h := dghostVar_agree _ _ _ _ _ $$ Hf Hc
@@ -240,7 +241,8 @@ theorem wp_err_Load_frag_of
       iframe Hf
       isplitl []; · ipureintro; intro h; cases h
       isplitl []; · ipureintro; intro _; exact ht
-      imodintro; iintro -; iexact Hp
+      isplitl []; · imodintro; iintro -; iexact Hp
+      imodintro; iintro -; iexact Hce
 
 /-- `c.done.Load()` once the Done channel `ch` is known: it returns `ch`. -/
 theorem wp_done_Load_known_of

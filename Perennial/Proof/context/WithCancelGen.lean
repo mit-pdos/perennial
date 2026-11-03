@@ -59,6 +59,7 @@ theorem wp_WithCancel_gen_of
   wp_start as ⟨#Hcci, Hpre, #Hpar⟩
   ihave #Hi := isInit_access $$ Hpkg
   icases Hi with ⟨_, _, ⟨%canceled, #Hcanceled, %hcanceled⟩, _⟩
+  ihave #Hce := isCtxErr_of_Canceled _ $$ Hpkg Hcanceled
   wp_auto
   iapply wp_fupd
   wp_apply wp_withCancel parent P Pre Hprop $$ [$Hcci $Hpre] as %c %γ ⟨#Hc, #Hf⟩
@@ -70,7 +71,7 @@ theorem wp_WithCancel_gen_of
   imodintro
   iintro %Φ' #Hp HΦ'
   wp_auto
-  wp_apply wp_cancelCtx_cancel c γ P true canceled GoInterface.nil hcanceled $$ [$Hc]
+  wp_apply wp_cancelCtx_cancel c γ P true canceled GoInterface.nil hcanceled $$ [$Hc $Hce]
     as #Hclosed
   · iframe #
     simp only [↓reduceIte]

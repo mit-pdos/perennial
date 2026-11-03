@@ -91,7 +91,7 @@ theorem wp_err_Load (c : Loc) (γ : ContextNames) (P : IProp GF) (cl : Bool) :
         go.GoType.PointerType sync.atomic.Value.ty @!! go!"Load")) (Val #()))
     {{ (e : GoInterface), RET #e; ⌜cl = true → e ≠ interface.nil⌝ ∗
         (if e = interface.nil then iprop(True)
-         else iprop(⌜isTypedErr e⌝ ∗ □ P ∗ ContextClosed γ)) }} :=
+         else iprop(⌜isTypedErr e⌝ ∗ isCtxErr e ∗ □ P ∗ ContextClosed γ)) }} :=
   wp_err_Load_of sync.atomic.Value.wp_Load c γ P cl
 
 /-- `c.err.Load()` given the lock invariant's half of the closed flag, which determines whether
@@ -102,7 +102,7 @@ theorem wp_err_Load_frag (c : Loc) (γ : ContextNames) (P : IProp GF) (closed : 
         go.GoType.PointerType sync.atomic.Value.ty @!! go!"Load")) (Val #()))
     {{ (e : GoInterface), RET #e; closedFrag γ closed ∗
         ⌜closed = false → e = interface.nil⌝ ∗ ⌜closed = true → isTypedErr e⌝ ∗
-        □ (⌜closed = true⌝ -∗ P) }} :=
+        □ (⌜closed = true⌝ -∗ P) ∗ □ (⌜closed = true⌝ -∗ isCtxErr e) }} :=
   wp_err_Load_frag_of sync.atomic.Value.wp_Load c γ P closed
 
 /-- `c.done.Load()` once the Done channel `ch` is known: it returns `ch`. -/
@@ -245,7 +245,7 @@ theorem wp_timerCtx_Err (c : Loc) (γ : ContextNames) (P : IProp GF) (cl : Bool)
       (App (Val #(methods (go.GoType.PointerType context.timerCtx.ty) go!"Err" #c)) (Val #()))
     {{ (e : GoInterface), RET #e; ⌜cl = true → e ≠ interface.nil⌝ ∗
         (if e = interface.nil then iprop(True)
-         else iprop(⌜isTypedErr e⌝ ∗ □ P ∗ ContextClosed γ)) }} :=
+         else iprop(⌜isTypedErr e⌝ ∗ isCtxErr e ∗ □ P ∗ ContextClosed γ)) }} :=
   wp_timerCtx_Err_of cancelCtx.wp_Err c γ P cl
 
 /-- `wp_timerCtx_Value_of` applied to the linked results (see there). -/

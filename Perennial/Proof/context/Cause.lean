@@ -33,7 +33,7 @@ theorem context.Cause.wp_proof
   icases Hctx with ⟨#HDeadline, #HDone, #HErr, #HValue, -⟩
   wp_auto
   ihave #HErr' := HErr $$ %Broadcast.Unknown
-  wp_apply HErr' as %err -
+  wp_apply HErr' as %err - -
   cases err with
   | nil =>
     wp_auto

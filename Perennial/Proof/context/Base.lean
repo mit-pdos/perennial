@@ -48,7 +48,8 @@ Design (see also the comments at each definition):
     return the same channel), `isContextDone_weaken`.
   - `isContext`: `"#HDone"` returns some `ch` with `isContextDone s ch γch`; `"#HErr"` takes
     `ContextClosed s.Done_gn` for `cl = Done` (nothing otherwise) and returns
-    `□ s.PDone ∗ ContextClosed s.Done_gn` for a non-nil error.
+    `□ s.PDone ∗ ContextClosed s.Done_gn` for a non-nil error, which is `Canceled`'s or
+    `DeadlineExceeded`'s value (`isCtxErr`: Go's contract of `Context.Err`).
   - `isContext_weaken`: `isContext` is monotone in `PDone`.
   - `wp_WithCancel`, `wp_WithDeadlineCause`, `wp_WithDeadline`, `wp_WithTimeout` return
     fresh ghost names `γ' : ContextNames` for the new context (`Done_gn := γ'`).
@@ -59,7 +60,8 @@ Design (see also the comments at each definition):
     lock, with half of the ghost cells `γ.doneGn` / `γ.closedGn` while they are unset. Once the
     Done channel is set, `isContextDone` and `doneFresh` (it is not `closedchan`, or the context
     is done; a channel made by `Done()` is fresh by `chan.wp_make1_ne`); once `err` is set, it is
-    a typed error (`isTypedErr`), `□ P` and `ContextClosed γ`.
+    a typed error (`isTypedErr`) that is `Canceled`'s or `DeadlineExceeded`'s value
+    (`isCtxErr`), `□ P` and `ContextClosed γ`.
   - `cancelCtxLockInv` (lock invariant of `c.mu`): `children`, `cause`, the other halves of the
     ghost cells, the right to close a Done channel made by `Done()`
     (`ownBroadcastChan .. .Pending`), and, until `c` is canceled, the children (`childrenInv`).
@@ -82,6 +84,9 @@ Design (see also the comments at each definition):
 * `isInit`: `"#Hclosedchan"`: the global `closedchan` holds a
   fixed channel; `"#HCanceled"`: the global `Canceled` holds a fixed typed error. Go never writes
   either after initialization. `parentCancelCtx` compares `parent.Done()` with `closedchan`.
+  `"#HCanceledCell"`/`"#HDeadlineExceededTy"`: what the two errors are (`Canceled`'s
+  `*errorString` with its message, `DeadlineExceeded`'s dynamic type), which `isCtxErr_cases`
+  gives a client of `Err()`.
 * `isClosedchanInit` (persistent; ghost state): `closedchan`'s channel is closed (an
   invariant holds its state `Closed []`; `init` closes it), which `cancel` (it stores
   `closedchan`) and `Done` need. A conjunct of `isInit` (`isClosedchanInit_of_init`). Every `*cancelCtx`
@@ -195,6 +200,25 @@ def isClosedchanInit : IProp GF :=
 instance isClosedchanInit_pers : Persistent (isClosedchanInit (GF := GF)) := by
   unfold isClosedchanInit; infer_instance
 
+/-- `e` is the value of `Canceled` or of `DeadlineExceeded`: the errors a done context's `Err()`
+may return. Go's contract of `Context.Err`: "If Done is closed, Err returns a non-nil error
+explaining why: DeadlineExceeded if the context's deadline passed, or Canceled if the context was
+canceled for some other reason." (A `*cancelCtx` stores `Canceled`, `DeadlineExceeded` or its
+parent's `Err()`.) With what the two values are, which `context`'s initializer fixes (`isInit`'s
+`"#HCanceledCell"` and `"#HDeadlineExceededTy"`): `Canceled`'s is `errors.New("context
+canceled")`, a `*errors.errorString` whose `s` field holds the message for good;
+`DeadlineExceeded`'s is `deadlineExceededError{}` (no `*errorString`). Persistent; made by
+`isCtxErr_of_Canceled` and `isCtxErr_of_DeadlineExceeded`, from `isPkgInit`. -/
+def isCtxErr (e : GoInterface) : IProp GF :=
+  iprop((globalAddr context.Canceled ↦□ e ∗ ∃ x : Loc,
+      ⌜e = interface.mkOk (go.GoType.PointerType errors.errorString.ty) #x⌝ ∗
+      x.[errors.errorString, go!"s"] ↦□ go!"context canceled") ∨
+    (globalAddr context.DeadlineExceeded ↦□ e ∗
+      ⌜e = interface.mkOk context.deadlineExceededError.ty #(zero_val context.deadlineExceededError)⌝))
+
+instance isCtxErr_pers (e : GoInterface) : Persistent (isCtxErr (GF := GF) e) := by
+  unfold isCtxErr; infer_instance
+
 /-- The package invariant:
 * `"Hgoroutines"`: the `goroutines` counter;
 * `"#Hclosedchan"`: the global `closedchan` holds a fixed channel;
@@ -204,6 +228,10 @@ instance isClosedchanInit_pers : Persistent (isClosedchanInit (GF := GF)) := by
 * `"#Hcci"`: `closedchan`'s channel is closed (`isClosedchanInit`, ghost state: the channel's
   names and an invariant on its state). Appended last, so patterns ending in a catch-all
   that destructure the earlier conjuncts are unaffected.
+* `"#HCanceledCell"`: `Canceled`'s value is a `*errors.errorString` whose `s` field holds
+  `"context canceled"` for good (`errors.New` writes it once);
+* `"#HDeadlineExceededTy"`: `DeadlineExceeded`'s value is `deadlineExceededError{}` (so it is no
+  `*errors.errorString`). These two are also appended after `"#Hcci"`.
 Go never writes `closedchan`, `Canceled` or `DeadlineExceeded` after initialization. -/
 abbrev isInit : IProp GF :=
   iprop("Hgoroutines" ∷
@@ -213,6 +241,11 @@ abbrev isInit : IProp GF :=
   "#HDeadlineExceeded" ∷
     (∃ e : GoInterface, globalAddr context.DeadlineExceeded ↦□ e ∗ ⌜isTypedErr e⌝) ∗
   "#Hcci" ∷ isClosedchanInit ∗
+  "#HCanceledCell" ∷ (∃ x : Loc, globalAddr context.Canceled ↦□
+      interface.mkOk (go.GoType.PointerType errors.errorString.ty) #x ∗
+    x.[errors.errorString, go!"s"] ↦□ go!"context canceled") ∗
+  "#HDeadlineExceededTy" ∷ globalAddr context.DeadlineExceeded ↦□
+      interface.mkOk context.deadlineExceededError.ty #(zero_val context.deadlineExceededError) ∗
   "_" ∷ True)
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.context :=
@@ -238,6 +271,12 @@ theorem deadlineExceededError_is_error :
     go.typeSetContains context.deadlineExceededError.ty go.error = true := by
   go_type_set
 
+/-- `deadlineExceededError` is not a pointer type (so `DeadlineExceeded`'s value is no
+`*errors.errorString`). -/
+theorem deadlineExceededError_ne_ptr (t : go.GoType) :
+    context.deadlineExceededError.ty ≠ go.GoType.PointerType t := by
+  unfold context.deadlineExceededError.ty; intro h; cases h
+
 end is_error
 
 section wps
@@ -260,6 +299,43 @@ theorem isClosedchanInit_of_init :
   ihave #Hi := isInit_access $$ Hpkg
   icases Hi with ⟨-, -, -, -, #Hcci, -⟩
   iexact Hcci
+
+/-- `Canceled`'s value is a context's error (`isCtxErr`), once `context` is initialized. -/
+theorem isCtxErr_of_Canceled (e : GoInterface) :
+    isPkgInit (PROP := IProp GF) pkg_id.context ⊢ globalAddr context.Canceled ↦□ e -∗
+      isCtxErr e := by
+  iintro #Hpkg #He
+  ihave #Hi := isInit_access $$ Hpkg
+  icases Hi with ⟨-, -, -, -, -, ⟨%x, #Hcx, #Hs⟩, -, -⟩
+  icombine He Hcx gives %h
+  unfold isCtxErr
+  ileft
+  iframe He
+  iexists x
+  iframe Hs
+  ipureintro; exact h
+
+/-- `DeadlineExceeded`'s value is a context's error (`isCtxErr`), once `context` is
+initialized. -/
+theorem isCtxErr_of_DeadlineExceeded (e : GoInterface) :
+    isPkgInit (PROP := IProp GF) pkg_id.context ⊢ globalAddr context.DeadlineExceeded ↦□ e -∗
+      isCtxErr e := by
+  iintro #Hpkg #He
+  ihave #Hi := isInit_access $$ Hpkg
+  icases Hi with ⟨-, -, -, -, -, -, #Hdv, -⟩
+  icombine He Hdv gives %h
+  unfold isCtxErr
+  iright
+  iframe He
+  ipureintro; exact h
+
+/-- A context's error is a typed error. -/
+theorem isCtxErr_typed (e : GoInterface) : isCtxErr (GF := GF) e ⊢ ⌜isTypedErr e⌝ := by
+  iintro #He
+  unfold isCtxErr
+  icases He with (⟨-, %x, %hx, -⟩ | ⟨-, %hv⟩)
+  · ipureintro; subst hx; exact errorString_is_error
+  · ipureintro; subst hv; exact deadlineExceededError_is_error
 
 /-- `&cancelCtxKey` converted to `any`: the key for which `Value` returns the
 innermost enclosing `*cancelCtx`. -/
@@ -352,7 +428,8 @@ instance doneFreshT_timeless (γ : ContextNames) (ch : GoChan) :
   half is in the lock invariant); once `od = some ch`, `isContextDone` for `ch` and
   `doneFresh` (`ch` is not `closedchan`, or the context is done).
 * `err` holds `e`; while `e = nil`, half of the closed flag `γ.closedGn` (the other half is
-  in the lock invariant); once set, `e` is a typed error, `□ P` and `ContextClosed γ`. -/
+  in the lock invariant); once set, `e` is a typed error, `Canceled`'s or `DeadlineExceeded`'s
+  value (`isCtxErr`), `□ P` and `ContextClosed γ`. -/
 def cancelCtxInv (c : Loc) (γ : ContextNames) (P : IProp GF) : IProp GF :=
   iprop(∃ (od : Option GoChan) (e : GoInterface),
     "Hdone" ∷ sync.atomic.ownValue (structFieldRef context.cancelCtx go!"done" c) (DFrac.own 1)
@@ -362,14 +439,15 @@ def cancelCtxInv (c : Loc) (γ : ContextNames) (P : IProp GF) : IProp GF :=
       | some ch => ∃ γch, isContextDone (cdesc γ P) ch γch ∗ doneFresh γ P ch) ∗
     "Herr" ∷ sync.atomic.ownValue (structFieldRef context.cancelCtx go!"err" c) (DFrac.own 1) e ∗
     "Hcg" ∷ (if e = interface.nil then dghostVar γ.closedGn (.own (1 : Qp).half) false
-      else iprop(⌜isTypedErr e⌝ ∗ □ P ∗ ContextClosed γ)))
+      else iprop(⌜isTypedErr e⌝ ∗ isCtxErr e ∗ □ P ∗ ContextClosed γ)))
 
 /-- The spec a parent `*cancelCtx` (with Done proposition `P`) keeps for each child `k` in its
-`children` map: `k.cancel(false, err, cause)` for a typed error `err`, given `□ P`. -/
+`children` map: `k.cancel(false, err, cause)` for a typed error `err` that is `Canceled`'s or
+`DeadlineExceeded`'s value (`isCtxErr`), given `□ P`. -/
 def childCancelSpec (P : IProp GF) (k : GoInterface) : IProp GF :=
   match k with
   | .ok ki => iprop(□ (∀ (err cause : GoInterface) (Φ : val → IProp GF),
-      ⌜isTypedErr err⌝ -∗ □ P -∗ ▷ Φ #() -∗
+      ⌜isTypedErr err⌝ -∗ isCtxErr err -∗ □ P -∗ ▷ Φ #() -∗
       WP (App (App (App (Val #(methods ki.ty go!"cancel" ki.v)) (Val #false)) (Val #err))
         (Val #cause)) {{ Φ }}))
   | .nil => iprop(False)
@@ -499,6 +577,7 @@ def isContextDef (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
            | .Done => iprop(⌜err ≠ interface.nil⌝)
            | _ => if err = interface.nil then iprop(True)
                   else iprop(□ s.PDone ∗ ContextClosed s.Done_gn)) -∗
+          (if err = interface.nil then iprop(True) else isCtxErr err) -∗
           Φ #err) -∗
       WP (App (Val #(methods c.ty go!"Err" c.v)) (Val #())) {{ Φ }})) ∗
   "#HValue" ∷
@@ -507,7 +586,7 @@ def isContextDef (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
       WP (App (Val #(methods c.ty go!"Value" c.v)) (Val #cancelCtxKeyAny)) {{ Φ }}) ∗
   "#HErrDone" ∷
     □ (∀ Φ : val → IProp GF, ContextClosed s.Done_gn -∗
-      ▷ (∀ err : GoInterface, ⌜isTypedErr err⌝ -∗ Φ #err) -∗
+      ▷ (∀ err : GoInterface, ⌜isTypedErr err⌝ -∗ isCtxErr err -∗ Φ #err) -∗
       WP (App (Val #(methods c.ty go!"Err" c.v)) (Val #())) {{ Φ }}) ∗
   "#HDoneFresh" ∷
     □ (∀ ch : GoChan, dghostVar s.Done_gn.doneGn .discard (some ch) ={⊤}=∗
@@ -523,12 +602,15 @@ def isContextDef (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
 /-- `c` is a valid context described by `s` (not sealed). See the file header:
 * `"#HDone"` returns some channel `ch` with `isContextDone s ch γch`, which carries the
   broadcast-channel knowledge about the Done channel.
-* `"#HErr"` takes `ContextClosed s.Done_gn` (precondition, only for `cl = Done`) and gives
-  `□ s.PDone ∗ ContextClosed s.Done_gn` (postcondition, for a non-nil error).
+* `"#HErr"` is Go's contract of `Err()`: it takes `ContextClosed s.Done_gn` (precondition,
+  only for `cl = Done`; the error is then not `nil`) and gives, for a non-nil error,
+  `□ s.PDone ∗ ContextClosed s.Done_gn` and that the error is `Canceled`'s or
+  `DeadlineExceeded`'s value (`isCtxErr`; a separate premise of the continuation, for any `cl`).
 * `"#HValue"` only specifies the key `&cancelCtxKey`; the `Values` field of `ContextDesc` is
   unused.
-* `"#HErrDone"`: once the context is done, `Err()` returns a typed error (`isTypedErr`), which
-  a child's `cancel` stores (and its `Err()` type-asserts to `error`).
+* `"#HErrDone"`: once the context is done, `Err()` returns a typed error (`isTypedErr`) that is
+  `Canceled`'s or `DeadlineExceeded`'s value (`isCtxErr`), which a child's `cancel` stores (and
+  its `Err()` type-asserts to `error`).
 * `"#HDoneFresh"`: the Done channel `ch` (once known) is not `closedchan`, or the context is
   done.
 * `"#HParentCC"`: `c` is not a `stopCtx`, and `parentCancelCtx(c)` finds a `*cancelCtx` once the
@@ -918,8 +1000,8 @@ theorem childCancelSpec_true (Q : IProp GF) (k : GoInterface) :
     simp only [childCancelSpec]
     iintro #H
     imodintro
-    iintro %err %cause %Φ %herr #- HΦ
-    iapply H $$ %err %cause %Φ %herr [] HΦ
+    iintro %err %cause %Φ %herr #Hce #- HΦ
+    iapply H $$ %err %cause %Φ %herr Hce [] HΦ
     imodintro; itrivial
 
 /-- A new `*cancelCtx` (all fields zero) with Done proposition `P` and extra lock resource

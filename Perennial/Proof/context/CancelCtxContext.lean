@@ -75,8 +75,8 @@ theorem childCancelSpec_cancelCtx_of
   iintro ⟨#Hpkg, #Hc, #HQ⟩
   simp only [childCancelSpec]
   imodintro
-  iintro %err %cause %Φ %herr #Hq HΦ
-  iapply wp_cancelCtx_cancel c γ P false err cause herr $$ [$Hpkg $Hc]
+  iintro %err %cause %Φ %herr #Hce #Hq HΦ
+  iapply wp_cancelCtx_cancel c γ P false err cause herr $$ [$Hpkg $Hc $Hce]
   · isplitl []
     · imodintro; iapply HQ $$ Hq
     · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
@@ -128,21 +128,28 @@ theorem isContext_cancelCtx_of
       iapply wp_cancelCtx_Err c _ _ true $$ [$Hpkg $Hc Hpre]
       · simp only [↓reduceIte]; iexact Hpre
       inext
-      iintro %e ⟨%hne, -⟩
+      iintro %e ⟨%hne, He⟩
+      have hne := hne rfl
+      rw [ite_eq_right hne] at *
+      icases He with ⟨-, #Hce, -⟩
       iapply HΦ
-      ipureintro; exact hne rfl
+      · ipureintro; exact hne
+      · rw [ite_eq_right hne]; iexact Hce
     all_goals
       iapply wp_cancelCtx_Err c _ _ false $$ [$Hpkg $Hc]
       · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
       inext
       iintro %e ⟨-, He⟩
-      iapply HΦ
-      dsimp only
       by_cases he : e = interface.nil
-      · subst he; simp only [ite_true]; itrivial
-      · rw [ite_eq_right he]; rw [ite_eq_right he] at *
-        icases He with ⟨-, #Hp, #Hcl⟩
-        iframe #
+      · subst he
+        iapply HΦ
+        · dsimp only; simp only [ite_true]; itrivial
+        · simp only [ite_true]; itrivial
+      · rw [ite_eq_right he] at *
+        icases He with ⟨-, #Hce, #Hp, #Hcl⟩
+        iapply HΦ
+        · dsimp only; rw [ite_eq_right he]; iframe #
+        · rw [ite_eq_right he]; iexact Hce
   isplitl []
   · imodintro
     iintro %Φ - HΦ
@@ -165,8 +172,10 @@ theorem isContext_cancelCtx_of
     iintro %e ⟨%hne, He⟩
     have hne := hne rfl
     rw [ite_eq_right hne]
-    icases He with ⟨%ht, -⟩
-    iapply HΦ; ipureintro; exact ht
+    icases He with ⟨%ht, #Hce, -⟩
+    iapply HΦ
+    · ipureintro; exact ht
+    · iexact Hce
   isplitl []
   · imodintro
     iintro %ch #Hd
