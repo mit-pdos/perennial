@@ -1083,4 +1083,329 @@ theorem sim_step {er ei er' : Expr} {sr sr' : BcfgState} {κ : List Observation}
 
 end sim
 
+/-! ## The simulation of an execution -/
+
+section simExec
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
+
+open EctxLanguage.Notation
+
+/-- A bounded step is a stutter, or a head step. -/
+theorem BoundedBaseStep.inv {e : Expr} {s s' : BcfgState} {κ : List Observation} {e' : Expr}
+    {efs : List Expr} (h : BoundedBaseStep e s κ e' s' efs) :
+    (e' = e ∧ s'.1 = s.1 ∧ efs = []) ∨ HeadStep e s.1 κ e' s'.1 efs := by
+  cases h with
+  | step _ hh => exact .inr hh
+  | tick _ hh => exact .inr hh
+  | stutter => exact .inl ⟨rfl, rfl, rfl⟩
+  | fork hh => exact .inr hh
+  | forkStutter => exact .inl ⟨rfl, rfl, rfl⟩
+  | exit hh => exact .inr hh
+
+variable (f : GoString) (impl : val) (L : GoLocalContext)
+
+/-- The real configuration's invariant: calls of `f` in position, the model `L`. -/
+def RealInv (ρ : List Expr × BcfgState) : Prop :=
+  PoolOk (giOf f) ρ.1 ∧ heapOk (giOf f) ρ.2.1.1.heap ∧ ρ.2.1.1.goState.goLctx = L
+
+theorem RealInv.step {ρ ρ' : List Expr × BcfgState} {κ : List Observation}
+    (h : Language.Step ρ κ ρ') (hinv : RealInv f L ρ) (hM : GoodModel (giOf f) L)
+    (hX : GoodExts (giOf f)) (hI : IntoValOk (giOf f)) : RealInv f L ρ' := by
+  obtain ⟨hp, hh, hL⟩ := hinv
+  cases h with
+  | atomic H t1 t2 =>
+  rename_i e σ e' σ' efs
+  generalize hE : e = e0 at H
+  cases H with
+  | intro hb =>
+  rename_i e1 e2 K
+  subst hE
+  have hok := hp _ (List.mem_append_right _ List.mem_cons_self)
+  rw [fill_eq_fillK, ok_fillK] at hok
+  rcases BoundedBaseStep.inv hb with ⟨rfl, hs, rfl⟩ | hh'
+  · refine ⟨?_, hs ▸ hh, hs ▸ hL⟩
+    intro e he
+    simp only [List.append_nil] at he
+    rcases List.mem_append.1 he with he | he
+    · exact hp e (List.mem_append_left _ he)
+    rcases List.mem_cons.1 he with rfl | he
+    · rw [fill_eq_fillK, ok_fillK]; exact hok
+    · exact hp e (List.mem_append_right _ (List.mem_cons_of_mem _ he))
+  · obtain ⟨h1, h2, h3⟩ := hh'.keeps_ok _ hok.2 hh (hL ▸ hM) hX hI ⟨_, rfl⟩
+    refine ⟨?_, h2, hh'.goLctx.trans hL⟩
+    intro e he
+    rcases List.mem_append.1 he with he | he
+    · rcases List.mem_append.1 he with he | he
+      · exact hp e (List.mem_append_left _ he)
+      rcases List.mem_cons.1 he with rfl | he
+      · rw [fill_eq_fillK, ok_fillK]; exact ⟨hok.1, h1⟩
+      · exact hp e (List.mem_append_right _ (List.mem_cons_of_mem _ he))
+    · exact h3 e he
+
+theorem Forall₂_split {A B : Type} {R : A → B → Prop} {t1 : List A} {a : A} {t2 : List A}
+    {l : List B} (h : List.Forall₂ R (t1 ++ a :: t2) l) :
+    ∃ l1 b l2, l = l1 ++ b :: l2 ∧ List.Forall₂ R t1 l1 ∧ R a b ∧ List.Forall₂ R t2 l2 := by
+  induction t1 generalizing l with
+  | nil =>
+    cases h with
+    | cons hab h2 => exact ⟨[], _, _, rfl, .nil, hab, h2⟩
+  | cons x t1 ih =>
+    cases h with
+    | cons hx h' =>
+      obtain ⟨l1, b, l2, rfl, h1, hab, h2⟩ := ih h'
+      exact ⟨_ :: l1, b, l2, rfl, .cons hx h1, hab, h2⟩
+
+theorem Forall₂_refl {A : Type} {R : A → A → Prop} (hR : ∀ a, R a a) :
+    ∀ (l : List A), List.Forall₂ R l l
+  | [] => .nil
+  | a :: l => .cons (hR a) (Forall₂_refl hR l)
+
+/-- **The simulation**: an execution of the bounded language in the model `L` (keeping calls of
+`f` in position) is matched by an execution in the patched model, with related threads. -/
+theorem sim_nsteps (Himpl : ∀ e, L.is_go_step_pure (.FuncResolve f []) unitV e ↔ e = Val impl)
+    (hM : GoodModel (giOf f) L) (hX : GoodExts (giOf f)) (hI : IntoValOk (giOf f))
+    {n : Nat} {ρ ρ' : List Expr × BcfgState} {κs : List Observation}
+    (h : Language.NSteps n ρ κs ρ') (U : GSet proph_id)
+    (hU : ∀ q ∈ ρ'.2.1.2.usedProphId, q ∈ U) (hinv : RealInv f L ρ)
+    (ti : List Expr) (hrel : List.Forall₂ ThreadRel ρ.1 ti)
+    (ps : List proph_id) (hnd : ps.Nodup) (hps : ∀ p ∈ ps, p ∉ U) :
+    ∃ ti' ps' m κs', Language.NSteps m (ti, instrSt (patchLctx L f (prophFnV impl)) ps ρ.2) κs'
+        (ti', instrSt (patchLctx L f (prophFnV impl)) ps' ρ'.2) ∧
+      List.Forall₂ ThreadRel ρ'.1 ti' ∧ RealInv f L ρ' := by
+  induction h generalizing ti ps with
+  | refl => exact ⟨ti, ps, 0, [], .refl _, hrel, hinv⟩
+  | @cons n ρ₁ ρ₂ ρ₃ obs obs' hs hrest ih =>
+    have hU₂ : ∀ q ∈ ρ₂.2.1.2.usedProphId, q ∈ U :=
+      fun q hq => hU q (nsteps_usedProph_mono hrest q hq)
+    have hinv₂ := RealInv.step f L hs hinv hM hX hI
+    cases hs with
+    | atomic H t1 t2 =>
+    rename_i efs
+    obtain ⟨l1, ei, l2, rfl, h1, hei, h2⟩ := Forall₂_split hrel
+    have hok := hinv.1 _ (List.mem_append_right _ List.mem_cons_self)
+    obtain ⟨ei', ps', hrel', hnd', hps', hsteps⟩ :=
+      sim_step f impl L H hei hok hinv.2.2 Himpl ps hnd U hU₂ hps
+    obtain ⟨m1, κs1, H1⟩ := hsteps l1 l2
+    have hrel₂ : List.Forall₂ ThreadRel (t1 ++ _ :: t2 ++ efs) (l1 ++ ei' :: l2 ++ efs) :=
+      List.Forall₂.append (List.Forall₂.append h1 (.cons hrel' h2)) (Forall₂_refl ThreadRel.rfl' _)
+    obtain ⟨ti', ps'', m2, κs2, H2, hr3, hinv3⟩ := ih hU hinv₂ _ hrel₂ ps' hnd' hps'
+    exact ⟨ti', ps'', _, _, nsteps_append H1 H2, hr3, hinv3⟩
+
+end simExec
+
+/-! ## Back to the real execution -/
+
+section back
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
+
+open EctxLanguage.Notation
+
+theorem fillItem_panic_noval {Ki Kj : EctxItem} {p : val} {e : Expr}
+    (h : fillItem Kj (Val (PanicV p)) = fillItem Ki e) (he : toVal e = none) : False := by
+  cases Kj <;> cases Ki <;> simp only [fillItem, reduceCtorEq] at h <;> injections <;>
+    subst_vars <;> simp_all [toVal, val.isPanic]
+
+theorem UnrecoveredPanic.val_inv {v : val} (h : UnrecoveredPanic (Val v)) : ∃ p, v = PanicV p := by
+  generalize hE : Val v = E at h
+  cases h with
+  | panic p => injection hE with hE; exact ⟨p, hE⟩
+  | frame _ _ => rename_i Ki e _ _; cases Ki <;> simp [fillItem] at hE
+
+theorem UnrecoveredPanic.fillItem_inv {Ki : EctxItem} {e : Expr}
+    (h : UnrecoveredPanic (fillItem Ki e)) (he : toVal e = none) :
+    Ki.unwinds = true ∧ UnrecoveredPanic e := by
+  generalize hE : fillItem Ki e = E at h
+  cases h with
+  | panic p => cases Ki <;> simp [fillItem] at hE
+  | frame hu h' =>
+    rename_i Kj e'
+    cases he' : toVal e' with
+    | none =>
+      have := fillItem_no_val_inj Kj Ki he' he hE.symm
+      subst this
+      have := fillItem_inj Kj hE.symm
+      subst this
+      exact ⟨hu, h'⟩
+    | some v =>
+      have := of_to_val he'; subst this
+      obtain ⟨p, rfl⟩ := h'.val_inv
+      exact (fillItem_panic_noval hE.symm he).elim
+
+/-- The frames of `K` all unwind. -/
+def AllUnwind (K : List EctxItem) : Prop := ∀ Ki ∈ K, Ki.unwinds = true
+
+theorem UnrecoveredPanic.fillK_inv : ∀ {K : List EctxItem} {e : Expr},
+    UnrecoveredPanic (fillK K e) → toVal e = none → AllUnwind K ∧ UnrecoveredPanic e
+  | [], _, h, _ => ⟨by simp [AllUnwind], h⟩
+  | Ki :: K, e, h, he => by
+    obtain ⟨h1, h2⟩ := UnrecoveredPanic.fillK_inv (K := K) h (toVal_fillItem Ki e)
+    obtain ⟨h3, h4⟩ := h2.fillItem_inv he
+    refine ⟨?_, h4⟩
+    intro Kj hKj
+    rcases List.mem_cons.1 hKj with rfl | hKj
+    · exact h3
+    · exact h1 Kj hKj
+
+theorem UnrecoveredPanic.fillK_ctxRel {Kr Ki : List EctxItem} (hr : CtxRel Kr Ki)
+    (hu : AllUnwind Kr) {e : Expr} (h : UnrecoveredPanic e) : UnrecoveredPanic (fillK Ki e) := by
+  induction hr generalizing e with
+  | nil => exact h
+  | same Kj _ ih =>
+    exact ih (fun K hK => hu K (List.mem_cons_of_mem _ hK)) (.frame (hu Kj List.mem_cons_self) h)
+  | proph p _ ih => exact ih hu (.frame rfl h)
+
+variable (f : GoString) (impl : val) (L : GoLocalContext)
+
+/-- A head step of the instrumented state is backed by one of the real state. -/
+theorem HeadStep.fromInstr {e : Expr} {σ : state} {g : GlobalState} {ps : List proph_id}
+    {κ : List Observation} {e' : Expr} {σg' : CfgState} {efs : List Expr}
+    (h : HeadStep e (Perennial.setLctx (patchLctx L f (prophFnV impl)) σ,
+      Perennial.addProphs ps g) κ e' σg' efs)
+    (hL : σ.goState.goLctx = L)
+    (Himpl : ∀ e, L.is_go_step_pure (.FuncResolve f []) unitV e ↔ e = Val impl) :
+    ∃ κ' e'' σg'' efs', HeadStep e (σ, g) κ' e'' σg'' efs' := by
+  obtain ⟨κ₁, e₁, σg₁, efs₁, h₁⟩ := HeadStep.delProphs h
+  by_cases hpat : e = App (Val (giOf f)) (Val unitV)
+  · subst hpat
+    have hIs : @IsGoStep _ _ σ.goState.goLctx (.FuncResolve f []) unitV (Val impl)
+        σ.goState.packageState σ.goState.packageState := by
+      unfold IsGoStep; simp only; rw [hL, Himpl]; simp
+    exact ⟨_, _, _, _, .base (not_unwinds_GoInstruction rfl)
+      (BaseStep.GoInstructionS _ _ _ _ (σ, g) hIs)⟩
+  · obtain ⟨σ₁, g₁⟩ := σg₁
+    have h₂ := HeadStep.setLctx L h₁ (fun op a he => by
+      exact (patchLctx_other L f _ op a (by rintro ⟨rfl, rfl⟩; exact hpat he)).symm)
+    rw [setLctx_setLctx, ← hL, setLctx_self] at h₂
+    exact ⟨_, _, _, _, h₂⟩
+
+theorem Forall₂_mem {A B : Type} {R : A → B → Prop} {l1 : List A} {l2 : List B}
+    (h : List.Forall₂ R l1 l2) {a : A} (ha : a ∈ l1) :
+    ∃ m1 b m2, l2 = m1 ++ b :: m2 ∧ R a b := by
+  induction h with
+  | nil => cases ha
+  | @cons x y l1 l2 hxy _ ih =>
+    rcases List.mem_cons.1 ha with rfl | ha
+    · exact ⟨[], y, l2, rfl, hxy⟩
+    · obtain ⟨m1, b, m2, rfl, hab⟩ := ih ha
+      exact ⟨y :: m1, b, m2, rfl, hab⟩
+
+end back
+
+/-! ## The theorem -/
+
+section adequacy
+variable [GooseExts] [GooseInterp] [GooseSemantics] [GoGlobalContext] {GF : BundledGFunctors}
+
+open EctxLanguage.Notation
+
+/-- **Adequacy of a program from a WP in which the function `f` runs instrumented**: the
+conclusions of `goose_adequacy` about the real executions of `e` in the Go model of `σ` (in which
+`f` resolves to `impl`), from a WP of `e` in the patched model, where `f` resolves to
+`prophFnV impl` (its body under a prophecy of its result). The program keeps `f`'s calls in
+position (`ok`: checked on `e`, given of the model's results `GoodModel`, the extensions
+`GoodExts`, the basic values `IntoValOk` and the initial heap). -/
+theorem goose_adequacy_funcProph [hPre : GooseGpreS GF] (N T : Nat) (e : Expr) (σ : state)
+    (g : GlobalState) (φ : val → Prop) (hφ : ∀ p, ¬ φ (PanicV p)) (f : GoString) (impl : val)
+    (Himpl : ∀ e, σ.goState.goLctx.is_go_step_pure (.FuncResolve f []) unitV e ↔ e = Val impl)
+    (hM : GoodModel (giOf f) σ.goState.goLctx) (hX : GoodExts (giOf f))
+    (hI : IntoValOk (giOf f)) (he : ok (giOf f) 0 e) (hheap : heapOk (giOf f) σ.heap)
+    (Hinitg : extsInitgP g.globalWorld) (Hinit : extsInitP σ.world g.globalWorld)
+    (Hwp : ∀ [hG : HeapGS .hasLC GF],
+      receiptBound GF = N →
+      threadBound GF = T →
+      hG.goose_localGS.goose_go_local_context = patchLctx σ.goState.goLctx f (prophFnV impl) →
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld -∗
+        extsLocalStart (GF := GF) σ.world -∗
+        ownGoState σ.goState.packageState -∗ threadTok ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ v⌝ }})
+    (n : Nat) (κs : List Observation) (t2 : List Expr) (σ2 : CfgState)
+    (Hsteps : RealNsteps n ([e], ((σ, g) : CfgState)) κs (t2, σ2))
+    (Hbound : n < N) (Hthreads : σ.threads = 1)
+    (Hlive : RealThreadsBelow T n ([e], ((σ, g) : CfgState))) :
+    (∀ v t2', t2 = Val v :: t2' → φ v) ∧ (∀ e2, e2 ∈ t2 → RealNotStuck e2 σ2) ∧
+      (∀ e2, e2 ∈ t2 → ¬ UnrecoveredPanic e2) := by
+  have hT : 1 < T := by have := Hlive.start; simp only at this; omega
+  have Hadeq := goose_adequacy_blang N T (by omega) hT e
+    (setLctx (patchLctx σ.goState.goLctx f (prophFnV impl)) σ) g φ Hinitg Hinit Hwp
+  -- the real execution in the bounded language
+  obtain ⟨c, t, Hb⟩ := bounded_nsteps_of_real Hsteps (N - 1) (by omega) T (T - 2) Hlive
+    (by simp only; omega)
+  -- the instrumented execution
+  obtain ⟨ti, ps, m, κs', Hi, hrel, hinv⟩ := sim_nsteps f impl σ.goState.goLctx Himpl hM hX hI Hb
+    σ2.2.usedProphId (fun q hq => hq)
+    ⟨by simpa [PoolOk] using he, hheap, rfl⟩ [e] (Forall₂_refl ThreadRel.rfl' _) []
+    List.nodup_nil (by simp)
+  have Hrtc : ∀ {m' κs'' ρ}, Language.NSteps m'
+      (ti, instrSt (patchLctx σ.goState.goLctx f (prophFnV impl)) ps ((σ2, ⟨c, t⟩) : BcfgState))
+      κs'' ρ →
+      ([e], (((setLctx (patchLctx σ.goState.goLctx f (prophFnV impl)) σ, g), ⟨N - 1, T - 2⟩) :
+        BcfgState)) -·->ₜₚ* ρ := by
+    intro m' κs'' ρ Hm
+    exact (Language.erasedStep_nSteps _ _).mpr ⟨_, _, nsteps_append Hi Hm⟩
+  refine ⟨?_, ?_, ?_⟩
+  · -- the result: leave the main thread's wrapper frames
+    rintro v t2' rfl
+    cases hrel with
+    | cons hr0 hrest =>
+    rename_i ei ti'
+    obtain ⟨Kr, Ki, e0, hKr, rfl, hr⟩ := hr0
+    cases Kr with
+    | cons Kj Kr => have := toVal_fillK_cons Kj Kr e0; rw [← hKr] at this; cases this
+    | nil =>
+    simp only [fillK_nil] at hKr; subst hKr
+    obtain ⟨m1, κs1, H1⟩ := (hr.stripAll v _ _).pool [] ti'
+    exact Hadeq.adequate_result ti' _ v (Hrtc H1)
+  · -- progress: the related thread, normalized, is not stuck
+    intro e2 he2
+    obtain ⟨m1, ei, m2, rfl, hr2⟩ := Forall₂_mem hrel he2
+    cases hv : toVal e2 with
+    | some _ => exact .inl (by simp [hv])
+    | none =>
+    obtain ⟨Kr, Ki, e0, ei', rfl, h0, hr, hs, rfl⟩ := hr2.normalize hv
+      (instrSt (patchLctx σ.goState.goLctx f (prophFnV impl)) ps ((σ2, ⟨c, t⟩) : BcfgState)).1
+      ⟨c, t⟩
+    obtain ⟨m3, κs3, H3⟩ := hs.pool m1 m2
+    have hns := Hadeq.adequate_not_stuck _ _ _ rfl (Hrtc H3)
+      (List.mem_append_right _ List.mem_cons_self)
+    have hns0 := Language.Context.notStuck_fill_inv (K := EvContext.fill Ki) hns
+    rcases hns0 with h | ⟨κ1, e3, s3, efs3, H⟩
+    · change (toVal e0).isSome = true at h; rw [h0] at h; cases h
+    obtain ⟨hb⟩ := H
+    rename_i e1 e4 K1
+    obtain ⟨κ₁, e₁, σg₁, efs₁, hh⟩ := BoundedBaseStep.real hb
+    obtain ⟨σ2l, g2⟩ := σ2
+    obtain ⟨κ', e'', σg'', efs', hreal⟩ :=
+      HeadStep.fromInstr f impl σ.goState.goLctx hh hinv.2.2 Himpl
+    right
+    rw [show fillK Kr (EvContext.fill K1 e1) = fillK (K1 ++ Kr) e1 from (fillK_append _ _ _).symm]
+    exact ⟨κ', _, σg'', efs', letI := gooseRealEctxiLang;
+      BaseStep.ContextStep.intro (K := K1 ++ Kr) hreal⟩
+  · -- no unrecovered panic: the related thread has one too
+    intro e2 he2 hu
+    obtain ⟨m1, ei, m2, rfl, hr2⟩ := Forall₂_mem hrel he2
+    cases hv : toVal e2 with
+    | some v =>
+      have := of_to_val hv; subst this
+      obtain ⟨Kr, Ki, e0, hKr, rfl, hr⟩ := hr2
+      cases Kr with
+      | cons Kj Kr => have := toVal_fillK_cons Kj Kr e0; rw [← hKr] at this; cases this
+      | nil =>
+      simp only [fillK_nil] at hKr; subst hKr
+      exact goose_no_unrecovered_panic_blang N T (by omega) hT e
+        (setLctx (patchLctx σ.goState.goLctx f (prophFnV impl)) σ) g φ hφ Hinitg Hinit Hwp
+        (nsteps_append Hi (.refl _)) _ (List.mem_append_right _ List.mem_cons_self)
+        (UnrecoveredPanic.fillK_ctxRel hr (by simp [AllUnwind]) hu)
+    | none =>
+      obtain ⟨Kr, Ki, e0, ei', rfl, h0, hr, hs, rfl⟩ := hr2.normalize hv
+        (instrSt (patchLctx σ.goState.goLctx f (prophFnV impl)) ps ((σ2, ⟨c, t⟩) : BcfgState)).1
+        ⟨c, t⟩
+      obtain ⟨m3, κs3, H3⟩ := hs.pool m1 m2
+      obtain ⟨hK, hu0⟩ := hu.fillK_inv h0
+      exact goose_no_unrecovered_panic_blang N T (by omega) hT e
+        (setLctx (patchLctx σ.goState.goLctx f (prophFnV impl)) σ) g φ hφ Hinitg Hinit Hwp
+        (nsteps_append Hi H3) _ (List.mem_append_right _ List.mem_cons_self)
+        (UnrecoveredPanic.fillK_ctxRel hr hK hu0)
+
+end adequacy
+
 end Perennial
