@@ -17,6 +17,7 @@ public import Perennial.Proof.github_com.goose_lang.primitive.Link
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.testdata.examples.prophkv
 public import Perennial.GeneratedProof.github_com.mit_pdos.perennial.goose.testdata.examples.prophkv
 public import Perennial.Golang.Theory.WithProph
+public import Perennial.GooseLang.FuncInstrument
 public import Perennial.Ghost.GhostVar
 
 @[expose] public section
@@ -32,12 +33,87 @@ open Iris Iris.BI Iris.ProgramLogic Iris.Std OFE Iris.ProofMode
 
 namespace github_com.mit_pdos.perennial.goose.testdata.examples.prophkv
 
+/-- `GetAny`'s instrumented body: its body under a prophecy of its result (`prophFnV`). -/
+def GetAnyP [GooseExts] [GoGlobalContext] : val := prophFnV GetAny.impl
+
+/-- The package's assumptions in the instrumented model: `Assumptions`, with `GetAny` resolving
+to its instrumented body `GetAnyP` (`FuncProph.lean` builds such a model from a real one). -/
+class AssumptionsP [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop
+    where
+  KV_instance : KV.TypeAssumptions
+  NewKV_unfold : FuncUnfold NewKV [] NewKV.impl
+  GetAny_unfold : FuncUnfold GetAny [] GetAnyP
+  Test_unfold : FuncUnfold Test [] Test.impl
+  import_primitive_Assumption : _root_.Perennial.github_com.goose_lang.primitive.Assumptions
+
+attribute [instance] AssumptionsP.KV_instance AssumptionsP.NewKV_unfold AssumptionsP.GetAny_unfold
+  AssumptionsP.Test_unfold AssumptionsP.import_primitive_Assumption
+
+/-! The generated instances of `KV` (`GeneratedProof`) take the package's `Assumptions`, which
+the instrumented model does not satisfy (`GetAny` resolves to `GetAnyP`); the same instances
+from `AssumptionsP`. -/
+namespace KV
+section shim
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : AssumptionsP]
+
+noncomputable instance KVP_typed_pointsto :
+    TypedPointsto (GF := GF) KV where
+  typedPointstoDef l v dq := iprop(
+    "mu" ∷ typedPointsto (structFieldRef KV go!"mu" l) v.mu' dq ∗
+    "m" ∷ typedPointsto (structFieldRef KV go!"m" l) v.m' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance KVP_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) KV KV.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance KVP_access_load_mu (l : Loc) (v : KV) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef KV go!"mu" l) v.mu' dq)
+      (typedPointsto (structFieldRef KV go!"mu" l) v.mu' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance KVP_access_store_mu (l : Loc) (v : KV) (mu' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef KV go!"mu" l) v.mu' (DFrac.own 1))
+      (typedPointsto (structFieldRef KV go!"mu" l) mu' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := mu' } : KV) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance KVP_access_load_m (l : Loc) (v : KV) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef KV go!"m" l) v.m' dq)
+      (typedPointsto (structFieldRef KV go!"m" l) v.m' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance KVP_access_store_m (l : Loc) (v : KV) (m' : GoMap) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef KV go!"m" l) v.m' (DFrac.own 1))
+      (typedPointsto (structFieldRef KV go!"m" l) m' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with m' := m' } : KV) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end shim
+end KV
+
 section proofs
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
-variable [package_sem : Assumptions]
+variable [package_sem : AssumptionsP]
 
 local notation "pkg" => pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.prophkv
 
@@ -147,11 +223,11 @@ def firstRead (γ : GName) (k : GoString) (pv : val) (Q : GoString → IProp GF)
 atomic update of the abstract state fires once, at the first of the two reads whose answer is
 `pv`, with that answer, so that a result equal to `pv` comes with `Q` of it. The prediction is a
 prophecy of the result (`Test`'s proof), which the Go code does not contain. -/
-theorem wp_GetAny (kv : Loc) (γ : GName) (k : GoString) (pv : val) (Q : GoString → IProp GF) :
+theorem wp_GetAny_pred (kv : Loc) (γ : GName) (k : GoString) (pv : val) (Q : GoString → IProp GF) :
     {{ isPkgInit (PROP := IProp GF) pkg ∗ isKV kv γ ∗
         AU <{ ∃∃ (m : GMap GoString GoString), kvState γ m }> @ ⊤, ∅
           <{ kvState γ m, COMM Q ((m !! k).getD go!"") }> }}
-      (App (App (Val (@! GetAny)) (Val #kv)) (Val #k))
+      (App (App (Val GetAny.impl) (Val #kv)) (Val #k))
     {{ (r : GoString), RET #r; ⌜(#r : val) = pv⌝ -∗ Q r }} := by
   wp_start as ⟨#Hkv, HAU⟩
   wp_auto
@@ -226,6 +302,27 @@ theorem wp_GetAny (kv : Loc) (γ : GName) (k : GoString) (pv : val) (Q : GoStrin
     · iapply HΦ
       iexact H2
 
+/-- **`GetAny(kv, k)`, logically atomic**: the caller's atomic update of the abstract state
+fires once, with the answer `GetAny` returns. The proof runs `GetAny`'s instrumented body, whose
+prophecy of the result is the prediction `wp_GetAny_pred` takes; the spec does not mention it. -/
+theorem wp_GetAny (kv : Loc) (γ : GName) (k : GoString) (Q : GoString → IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg ∗ isKV kv γ ∗
+        AU <{ ∃∃ (m : GMap GoString GoString), kvState γ m }> @ ⊤, ∅
+          <{ kvState γ m, COMM Q ((m !! k).getD go!"") }> }}
+      (App (App (Val (@! GetAny)) (Val #kv)) (Val #k))
+    {{ (r : GoString), RET #r; Q r }} := by
+  wp_start as ⟨#Hkv, HAU⟩
+  iapply wp_prophWrapper
+  iintro %vs
+  wp_apply (wp_GetAny_pred kv γ k (vs.head?.getD #()) Q) $$ [$Hkv $HAU] as %r Hr
+  isplit
+  · ipureintro; exact isPanic_intoVal r
+  iintro %Hh
+  iapply HΦ
+  iapply Hr
+  ipureintro
+  simp [Hh]
+
 /-! ## `Test` -/
 
 /-- The answers `Test`'s map ever gives for `"k"`. -/
@@ -267,12 +364,11 @@ theorem au_of_inv (γ : GName) :
     obtain ⟨v, hv, hg⟩ := Hgood
     simp [hv, hg]
 
-/-- **`Test()`**, given a prediction `pv` of its result: the result is `"a"` or `"b"` if it is
-`pv`. -/
-theorem wp_Test (pv : val) :
+/-- **`Test()`**: the result is `"a"` or `"b"`. -/
+theorem wp_Test :
     {{ isPkgInit (PROP := IProp GF) pkg }}
       (App (Val (@! Test)) (Val #()))
-    {{ (r : GoString), RET #r; ⌜(#r : val) = pv⌝ -∗ ⌜goodVal r⌝ }} := by
+    {{ (r : GoString), RET #r; ⌜goodVal r⌝ }} := by
   wp_start as #Hpkg
   wp_auto
   wp_apply wp_NewKV as %kv %γ ⟨#Hkv, Hst⟩
@@ -308,9 +404,9 @@ theorem wp_Test (pv : val) :
       unfold kvState
       iframe
     itrivial
-  -- `GetAny`, with the prediction `pv` and the update from the invariant
+  -- `GetAny`, with the update from the invariant
   ihave HAU := au_of_inv γ $$ Hinv
-  wp_apply (wp_GetAny kv γ go!"k" pv (fun x => iprop(⌜goodVal x⌝))) $$ [$Hkv $HAU] as %r Hr
+  wp_apply (wp_GetAny kv γ go!"k" (fun x => iprop(⌜goodVal x⌝))) $$ [$Hkv $HAU] as %r Hr
   iapply HΦ $$ Hr
 
 /-! ## The program: initialization, then `Test()` -/
@@ -337,21 +433,14 @@ def prog : Expr :=
 /-- What the program returns: `"a"` or `"b"`. -/
 def resultOk (v : val) : Prop := v = #go!"a" ∨ v = #go!"b"
 
-/-- **The program under a prophecy of its result**: the prophecy's head is `Test`'s result, the
-prediction its proof takes (`wp_withProph`). -/
-theorem wp_withProph_prog (get_is_pkg_init : GoString → IProp GF)
+/-- **The program**: its result is `"a"` or `"b"`. -/
+theorem wp_prog (get_is_pkg_init : GoString → IProp GF)
     (Hinit : GetIsPkgInitProp pkg get_is_pkg_init) :
-    ownInitializing get_is_pkg_init ⊢ WP (withProph prog) {{ v, ⌜resultOk v⌝ }} := by
+    ownInitializing get_is_pkg_init ⊢ WP prog {{ v, ⌜resultOk v⌝ }} := by
   iintro Hown
-  iapply wp_withProph
-  iintro %vs
   unfold prog
   wp_apply wp_initialize' _ Hinit $$ Hown as ⟨_, #Hpkg⟩
-  wp_apply (wp_Test (vs.head?.getD #())) as %r Hr
-  isplit
-  · ipureintro; exact isPanic_intoVal r
-  iintro %Hh
-  ihave %Hg := Hr $$ %(by simp [Hh])
+  wp_apply wp_Test as %r %Hg
   ipureintro
   rcases Hg with h | h <;> subst h <;> simp [resultOk]
 

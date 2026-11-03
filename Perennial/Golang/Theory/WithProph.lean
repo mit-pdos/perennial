@@ -43,6 +43,27 @@ theorem wp_withProph (e : Expr) (Φ : val → IProp GF) :
   ipureintro
   simp [Heq]
 
+/-- `wp_withProph` once the thunk is a value (as `wp_pures` leaves it). -/
+theorem wp_prophWrapper (e : Expr) (Φ : val → IProp GF) :
+    (∀ vs : List val, WP e {{ v, ⌜v.isPanic = false⌝ ∗ (⌜vs.head? = some v⌝ -∗ Φ v) }})
+      ⊢ WP (App (Val prophWrapper) (Val (RecV BAnon BAnon e))) {{ Φ }} := by
+  iintro H
+  unfold prophWrapper
+  wp_pures
+  wp_apply_core wp_new_proph
+  iintro %pvs %p Hp
+  wp_pures
+  wp_bind e
+  iapply wp_wand $$ (H $$ %pvs)
+  iintro %v ⟨%hv, Hv⟩
+  wp_pures
+  wp_apply_core (wp_resolve_proph p pvs v hv) $$ Hp
+  iintro %pvs' ⟨%Heq, -⟩
+  wp_pures
+  iapply Hv
+  ipureintro
+  simp [Heq]
+
 end wp
 
 end Perennial
