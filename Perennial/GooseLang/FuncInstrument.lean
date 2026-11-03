@@ -524,4 +524,343 @@ theorem HeadStep.keeps_ok {e : Expr} {σg : CfgState} {κ : List Observation} {e
 
 end okSteps
 
+/-! ## The instrumented state: the patched model, and the wrapper's prophecy ids -/
+
+section instrState
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
+
+/-- The local state with the Go model `L`. -/
+def setLctx (L : GoLocalContext) (σ : state) : state :=
+  { σ with goState := { σ.goState with goLctx := L } }
+
+theorem extStep_setLctx (L : GoLocalContext) {ext op : String} {v : val} {σ σ' : state}
+    {g g' : GlobalState} {e' : Expr} (h : extStep ext op v (σ, g) e' (σ', g')) :
+    extStep ext op v (setLctx L σ, g) e' (setLctx L σ', g') := by
+  obtain ⟨E, hE, h', s', gw', hs, heq⟩ := h
+  simp only [Prod.mk.injEq] at heq
+  obtain ⟨rfl, rfl⟩ := heq
+  exact ⟨E, hE, h', s', gw', hs, rfl⟩
+
+theorem extStep_unsetLctx (L : GoLocalContext) {ext op : String} {v : val} {σ : state}
+    {g : GlobalState} {e' : Expr} {σg' : CfgState} (h : extStep ext op v (setLctx L σ, g) e' σg') :
+    ∃ σg'', extStep ext op v (σ, g) e' σg'' := by
+  obtain ⟨E, hE, h', s', gw', hs, -⟩ := h
+  exact ⟨_, E, hE, h', s', gw', hs, rfl⟩
+
+theorem IsGoStep_congr {L L' : GoLocalContext} {op : GoInstruction} {a : val}
+    (h : @GoLocalContext.is_go_step_pure _ L' op a = @GoLocalContext.is_go_step_pure _ L op a)
+    (e' : Expr) (s s' : GMap GoString Bool) :
+    @IsGoStep _ _ L' op a e' s s' ↔ @IsGoStep _ _ L op a e' s s' := by
+  unfold IsGoStep; split <;> simp [h]
+
+theorem BytesAt_heap {σg σg' : CfgState} (hh : σg.1.heap = σg'.1.heap) {l : Loc} {bs : List w8}
+    {r : Bool} (h : BytesAt σg l bs r) : BytesAt σg' l bs r := by
+  induction bs generalizing l with
+  | nil => trivial
+  | cons b bs ih => exact ⟨hh ▸ h.1, ih h.2⟩
+
+/-- A base step in the model `L'`, where `L'` agrees with the state's model on the redex. -/
+theorem BaseStep.setLctx (L' : GoLocalContext) {e : Expr} {σ σ' : state} {g g' : GlobalState}
+    {κ : List Observation} {e' : Expr} {efs : List Expr}
+    (h : BaseStep e (σ, g) κ e' (σ', g') efs)
+    (hL : ∀ op a, e = App (Val (.GoInstruction op)) (Val a) →
+      @GoLocalContext.is_go_step_pure _ L' op a =
+        @GoLocalContext.is_go_step_pure _ σ.goState.goLctx op a) :
+    BaseStep e (Perennial.setLctx L' σ, g) κ e' (Perennial.setLctx L' σ', g') efs := by
+  generalize hs : ((σ, g) : CfgState) = s at h
+  generalize hs' : ((σ', g') : CfgState) = s' at h
+  cases h with
+  | ExternalOpS ext op v e' σg σg' hst =>
+    subst hs hs'
+    exact .ExternalOpS _ _ _ _ _ _ (extStep_setLctx L' hst)
+  | GoInstructionS op arg e' s' σg hst =>
+    subst hs; simp only [Prod.mk.injEq] at hs'; obtain ⟨rfl, rfl⟩ := hs'
+    have h2 : @IsGoStep _ _ L' op arg e' σ.goState.packageState s' :=
+      (IsGoStep_congr (L := σ.goState.goLctx) (L' := L') (hL op arg rfl) _ _ _).2 hst
+    exact BaseStep.GoInstructionS op arg e' s' (Perennial.setLctx L' σ, g') h2
+  | _ =>
+    subst hs
+    simp only [Prod.mk.injEq, setHeap, stateInitHeap] at hs'
+    obtain ⟨rfl, rfl⟩ := hs'
+    constructor <;> first | assumption | (refine BytesAt_heap ?_ ‹BytesAt _ _ _ _›; rfl)
+
+end instrState
+
+section instrState2
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
+
+theorem setLctx_self (σ : state) : setLctx σ.goState.goLctx σ = σ := by
+  obtain ⟨h, ⟨L, ps⟩, w, t⟩ := σ; rfl
+
+theorem setLctx_setLctx (L L' : GoLocalContext) (σ : state) :
+    setLctx L (setLctx L' σ) = setLctx L σ := rfl
+
+@[simp] theorem setLctx_goLctx (L : GoLocalContext) (σ : state) :
+    (setLctx L σ).goState.goLctx = L := rfl
+
+theorem HeadStep.setLctx (L' : GoLocalContext) {e : Expr} {σ σ' : state} {g g' : GlobalState}
+    {κ : List Observation} {e' : Expr} {efs : List Expr}
+    (h : HeadStep e (σ, g) κ e' (σ', g') efs)
+    (hL : ∀ op a, e = App (Val (.GoInstruction op)) (Val a) →
+      @GoLocalContext.is_go_step_pure _ L' op a =
+        @GoLocalContext.is_go_step_pure _ σ.goState.goLctx op a) :
+    HeadStep e (Perennial.setLctx L' σ, g) κ e' (Perennial.setLctx L' σ', g') efs := by
+  generalize hs : ((σ, g) : CfgState) = s at h
+  generalize hs' : ((σ', g') : CfgState) = s' at h
+  cases h with
+  | unwind hu =>
+    subst hs; simp only [Prod.mk.injEq] at hs'; obtain ⟨rfl, rfl⟩ := hs'; exact .unwind hu
+  | base hu hb =>
+    subst hs hs'; exact .base hu (hb.setLctx L' hL)
+
+/-- The global state with the prophecy ids `ps` used. -/
+def addProphs (ps : List proph_id) (g : GlobalState) : GlobalState :=
+  ps.foldr GlobalState.addProph g
+
+theorem mem_addProphs {q : proph_id} {ps : List proph_id} {g : GlobalState} :
+    q ∈ (addProphs ps g).usedProphId ↔ q ∈ ps ∨ q ∈ g.usedProphId := by
+  induction ps with
+  | nil => simp [addProphs]
+  | cons p ps ih =>
+    simp only [addProphs, List.foldr, GlobalState.addProph] at ih ⊢
+    rw [elem_of_union, mem_singletonU, ih]
+    simp [or_assoc, eq_comm]
+
+theorem HeadStep.addProphs {e : Expr} {σ σ' : state} {g g' : GlobalState}
+    {κ : List Observation} {e' : Expr} {efs : List Expr} {ps : List proph_id}
+    (h : HeadStep e (σ, g) κ e' (σ', g') efs) (hnd : ps.Nodup)
+    (hps : ∀ p ∈ ps, p ∉ g'.usedProphId) :
+    HeadStep e (σ, Perennial.addProphs ps g) κ e' (σ', Perennial.addProphs ps g') efs := by
+  induction ps with
+  | nil => exact h
+  | cons p ps ih =>
+    rw [List.nodup_cons] at hnd
+    have ih := ih hnd.2 (fun q hq => hps q (List.mem_cons_of_mem _ hq))
+    refine HeadStep.addProph ih p ?_
+    rw [mem_addProphs]
+    rintro (hm | hm)
+    · exact hnd.1 hm
+    · exact hps p List.mem_cons_self hm
+
+theorem HeadStep.delProphs {e : Expr} {σ : state} {g : GlobalState} {κ : List Observation}
+    {e' : Expr} {σg' : CfgState} {efs : List Expr} {ps : List proph_id}
+    (h : HeadStep e (σ, Perennial.addProphs ps g) κ e' σg' efs) :
+    ∃ κ' e'' σg'' efs', HeadStep e (σ, g) κ' e'' σg'' efs' := by
+  induction ps generalizing κ e' σg' efs with
+  | nil => exact ⟨_, _, _, _, h⟩
+  | cons p ps ih =>
+    obtain ⟨κ', e'', σg'', efs', h'⟩ := HeadStep.delProph p h
+    exact ih h'
+
+/-- The instrumented state of the real bounded state `s`: the model `L'`, the ids `ps` used. -/
+def instrSt (L' : GoLocalContext) (ps : List proph_id) (s : BcfgState) : BcfgState :=
+  ((setLctx L' s.1.1, addProphs ps s.1.2), s.2)
+
+/-- A head step changes neither the Go model nor drops a used prophecy id. -/
+theorem HeadStep.goLctx {e : Expr} {σg σg' : CfgState} {κ : List Observation} {e' : Expr}
+    {efs : List Expr} (h : HeadStep e σg κ e' σg' efs) :
+    σg'.1.goState.goLctx = σg.1.goState.goLctx := by
+  cases h with
+  | unwind => rfl
+  | base _ hb =>
+    cases hb with
+    | ExternalOpS ext op v e' σg σg' hst =>
+      obtain ⟨E, hE, h', s', gw', hs, rfl⟩ := hst; rfl
+    | _ => rfl
+
+end instrState2
+
+/-! ## Thread-local steps of the bounded language -/
+
+section lsteps
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
+
+open EctxLanguage.Notation
+
+theorem fill_eq_fillK (K : List EctxItem) (e : Expr) : EvContext.fill K e = fillK K e := rfl
+
+/-- Steps of one thread that fork nothing. -/
+inductive LSteps : Expr → BcfgState → Expr → BcfgState → Prop
+  | refl (e : Expr) (s : BcfgState) : LSteps e s e s
+  | step {e s κ e' s' e'' s''} :
+      (e, s) -<κ>-> (e', s', []) → LSteps e' s' e'' s'' → LSteps e s e'' s''
+
+theorem LSteps.trans {e s e' s' e'' s''} (h1 : LSteps e s e' s') (h2 : LSteps e' s' e'' s'') :
+    LSteps e s e'' s'' := by
+  induction h1 with
+  | refl => exact h2
+  | step h _ ih => exact .step h (ih h2)
+
+theorem LSteps.fill (K : List EctxItem) {e s e' s'} (h : LSteps e s e' s') :
+    LSteps (fillK K e) s (fillK K e') s' := by
+  induction h with
+  | refl => exact .refl _ _
+  | step h _ ih => exact .step (EctxLanguage.fill_primStep K h) ih
+
+theorem LSteps.pool {e s e' s'} (h : LSteps e s e' s') (t1 t2 : List Expr) :
+    ∃ m κs, Language.NSteps m (t1 ++ e :: t2, s) κs (t1 ++ e' :: t2, s') := by
+  induction h with
+  | refl => exact ⟨0, [], .refl _⟩
+  | step h _ ih =>
+    obtain ⟨m, κs, H⟩ := ih
+    have := Language.Step.atomic h t1 t2
+    simp only [List.append_nil] at this
+    exact ⟨_, _, .cons this H⟩
+
+theorem LSteps.plain {e1 e2 : Expr} {σg σg' : CfgState} {f : Fuel} {κ : List Observation}
+    (hk : redexKind e1 = .plain) (hu : ∀ q, ¬ Unwinds e1 q) (hb : BaseStep e1 σg κ e2 σg' []) :
+    LSteps e1 (σg, f) e2 (σg', f) := by
+  have hbb : BoundedBaseStep e1 (σg, f) κ e2 (σg', f) [] := .step hk (.base hu hb)
+  exact .step (BaseStep.ContextStep.intro (K := []) hbb) (.refl _ _)
+
+/-- The wrapper's frame `[AppRCtx (prophRet #p)]`. -/
+abbrev pfItem (p : proph_id) : EctxItem := .AppRCtx (prophRet (Val #p))
+
+/-- **The wrapper's end**: a value (or a panic) leaves the wrapper's frame in plain steps. -/
+theorem LSteps.suffix (p : proph_id) (v : val) (σg : CfgState) (f : Fuel) :
+    LSteps (fillItem (pfItem p) (Val v)) (σg, f) (Val v) (σg, f) := by
+  cases hv : v.isPanic
+  · have hpv : (#p : val).isPanic = false := isPanic_intoVal p
+    have huv : (#() : val).isPanic = false := isPanic_intoVal ()
+    have s1 := LSteps.fill [.AppLCtx v hv] (LSteps.plain (σg := σg) (f := f)
+      (e1 := prophRet (Val #p)) rfl (not_unwinds_Rec _ _ _) (BaseStep.RecS _ _ _ _))
+    have s2 := LSteps.plain (σg := σg) (f := f)
+      (e1 := App (Val (RecV BAnon "r" (App (Rec BAnon BAnon (Var "r"))
+        (ResolveProph (Val #p) (Var "r"))))) (Val v)) rfl (not_unwinds_App_val rfl hv)
+      (BaseStep.BetaS BAnon "r" _ v σg)
+    have s3 := LSteps.fill [.AppRCtx (Rec BAnon BAnon (Val v))] (LSteps.plain (σg := σg) (f := f)
+      (e1 := ResolveProph (Val #p) (Val v)) rfl (not_unwinds_Resolve_val hpv hv)
+      (BaseStep.ResolveProphS p v σg))
+    have s4 := LSteps.fill [.AppLCtx #() huv] (LSteps.plain (σg := σg) (f := f)
+      (e1 := Rec BAnon BAnon (Val v)) rfl (not_unwinds_Rec _ _ _) (BaseStep.RecS _ _ _ _))
+    have s5 := LSteps.plain (σg := σg) (f := f)
+      (e1 := App (Val (RecV BAnon BAnon (Val v))) (Val #())) rfl (not_unwinds_App_val rfl huv)
+      (BaseStep.BetaS BAnon BAnon (Val v) #() σg)
+    simp only [fillK_cons, fillK_nil, fillItem, subst', subst, prophRet, id] at s1 s2 s3 s4 s5 ⊢
+    exact s1.trans (s2.trans (s3.trans (s4.trans s5)))
+  · obtain ⟨q, rfl⟩ := val.isPanic_eq_true hv
+    have hbb : BoundedBaseStep (fillItem (pfItem p) (Val (PanicV q))) (σg, f) []
+        (Val (PanicV q)) (σg, f) [] :=
+      .step rfl (.unwind ⟨pfItem p, rfl, rfl⟩)
+    exact .step (BaseStep.ContextStep.intro (K := []) hbb) (.refl _ _)
+
+/-- **The wrapper's start**: `withProph e` creates the prophecy `p` and reaches `e` in the
+wrapper's frame, in plain steps. -/
+theorem LSteps.prefix (e : Expr) (σg : CfgState) (f : Fuel) (p : proph_id)
+    (hp : p ∉ σg.2.usedProphId) :
+    LSteps (withProph e) (σg, f) (fillItem (pfItem p) e) (σg.addProph p, f) := by
+  have hpv : (#p : val).isPanic = false := isPanic_intoVal p
+  have s1 := LSteps.fill [.AppRCtx (Val prophWrapper)] (LSteps.plain (σg := σg) (f := f)
+    (e1 := Rec BAnon BAnon e) rfl (not_unwinds_Rec _ _ _) (BaseStep.RecS BAnon BAnon e σg))
+  have s2 := LSteps.plain (σg := σg) (f := f)
+    (e1 := App (Val prophWrapper) (Val (RecV BAnon BAnon e))) rfl (not_unwinds_App_val rfl rfl)
+    (BaseStep.BetaS BAnon "t" _ (RecV BAnon BAnon e) σg)
+  have s3 := LSteps.fill [.AppRCtx (Rec BAnon "p" (App (prophRet (Var "p"))
+      (App (Val (RecV BAnon BAnon e)) (Val unitV))))] (LSteps.plain (f := f)
+    (e1 := NewProph) rfl not_unwinds_NewProph (BaseStep.NewProphS p σg hp))
+  have s4 := LSteps.fill [.AppLCtx #p hpv] (LSteps.plain (σg := σg.addProph p) (f := f)
+    (e1 := Rec BAnon "p" (App (prophRet (Var "p")) (App (Val (RecV BAnon BAnon e)) (Val unitV))))
+    rfl (not_unwinds_Rec _ _ _) (BaseStep.RecS _ _ _ _))
+  have s5 := LSteps.plain (σg := σg.addProph p) (f := f)
+    (e1 := App (Val (RecV BAnon "p" (App (prophRet (Var "p"))
+      (App (Val (RecV BAnon BAnon e)) (Val unitV))))) (Val #p))
+    rfl (not_unwinds_App_val rfl hpv) (BaseStep.BetaS BAnon "p" _ #p _)
+  have s6 := LSteps.fill [pfItem p] (LSteps.plain (σg := σg.addProph p) (f := f)
+    (e1 := App (Val (RecV BAnon BAnon e)) (Val unitV))
+    rfl (not_unwinds_App_val rfl rfl) (BaseStep.BetaS BAnon BAnon e unitV _))
+  simp only [fillK_cons, fillK_nil, fillItem, subst', subst, prophRet, prophWrapper, withProph,
+    id] at s1 s2 s3 s4 s5 s6 ⊢
+  exact s1.trans (s2.trans (s3.trans (s4.trans (s5.trans s6))))
+
+end lsteps
+
+/-! ## The threads' relation: the real frames, with the wrapper's inserted -/
+
+section ctxrel
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
+
+open EctxLanguage.Notation
+
+/-- `CtxRel K K'`: `K'` is `K` with wrapper frames `pfItem p` inserted. -/
+inductive CtxRel : List EctxItem → List EctxItem → Prop
+  | nil : CtxRel [] []
+  | same (Ki : EctxItem) {K K' : List EctxItem} : CtxRel K K' → CtxRel (Ki :: K) (Ki :: K')
+  | proph (p : proph_id) {K K' : List EctxItem} : CtxRel K K' → CtxRel K (pfItem p :: K')
+
+theorem CtxRel.rfl' : ∀ (K : List EctxItem), CtxRel K K
+  | [] => .nil
+  | Ki :: K => .same Ki (CtxRel.rfl' K)
+
+theorem CtxRel.prefix : ∀ (K1 : List EctxItem) {K K' : List EctxItem}, CtxRel K K' →
+    CtxRel (K1 ++ K) (K1 ++ K')
+  | [], _, _, h => h
+  | Ki :: K1, _, _, h => .same Ki (CtxRel.prefix K1 h)
+
+/-- **Leaving the wrapper's frames** above a value, up to the next real frame `Ki`. -/
+theorem CtxRel.strip {Ki : EctxItem} {K Kx : List EctxItem} (h : CtxRel (Ki :: K) Kx) (v : val)
+    (σg : CfgState) (f : Fuel) :
+    ∃ Kx', CtxRel K Kx' ∧
+      LSteps (fillK Kx (Val v)) (σg, f) (fillK Kx' (fillItem Ki (Val v))) (σg, f) := by
+  generalize hK : Ki :: K = K0 at h
+  induction h with
+  | nil => cases hK
+  | same Kj h _ =>
+    cases hK
+    exact ⟨_, h, .refl _ _⟩
+  | proph p h ih =>
+    obtain ⟨Kx', h', hs⟩ := ih hK
+    exact ⟨Kx', h', (LSteps.fill _ (LSteps.suffix p v σg f)).trans hs⟩
+
+/-- Leaving all the wrapper's frames of a value. -/
+theorem CtxRel.stripAll {Kx : List EctxItem} (h : CtxRel [] Kx) (v : val) (σg : CfgState)
+    (f : Fuel) : LSteps (fillK Kx (Val v)) (σg, f) (Val v) (σg, f) := by
+  generalize hK : ([] : List EctxItem) = K0 at h
+  induction h with
+  | nil => exact .refl _ _
+  | same Kj h _ => cases hK
+  | proph p h ih => exact (LSteps.fill _ (LSteps.suffix p v σg f)).trans (ih hK)
+
+/-- The body of `prophFnV impl` once applied to `v1`. -/
+def prophFnBody (impl v1 : val) : Expr :=
+  withProph (App (App (Val impl) (Val v1)) (Var "$a2"))
+
+theorem LSteps.callA (impl v1 : val) (h1 : v1.isPanic = false) (σg : CfgState) (f : Fuel) :
+    LSteps (App (Val (prophFnV impl)) (Val v1)) (σg, f)
+      (Val (RecV BAnon "$a2" (prophFnBody impl v1))) (σg, f) := by
+  have s1 := LSteps.plain (σg := σg) (f := f) (e1 := App (Val (prophFnV impl)) (Val v1)) rfl
+    (not_unwinds_App_val rfl h1) (BaseStep.BetaS BAnon "$a1" _ v1 σg)
+  have s2 := LSteps.plain (σg := σg) (f := f) (e1 := Rec BAnon "$a2" (prophFnBody impl v1)) rfl
+    (not_unwinds_Rec _ _ _) (BaseStep.RecS _ _ _ _)
+  simp only [subst', subst, prophFnV, prophFnBody, withProph, id] at s1 s2 ⊢
+  exact s1.trans s2
+
+theorem LSteps.callB (impl v1 v2 : val) (h2 : v2.isPanic = false) (σg : CfgState) (f : Fuel)
+    (p : proph_id) (hp : p ∉ σg.2.usedProphId) :
+    LSteps (App (Val (RecV BAnon "$a2" (prophFnBody impl v1))) (Val v2)) (σg, f)
+      (fillItem (pfItem p) (App (App (Val impl) (Val v1)) (Val v2))) (σg.addProph p, f) := by
+  have s1 := LSteps.plain (σg := σg) (f := f)
+    (e1 := App (Val (RecV BAnon "$a2" (prophFnBody impl v1))) (Val v2)) rfl
+    (not_unwinds_App_val rfl h2) (BaseStep.BetaS BAnon "$a2" _ v2 σg)
+  have s2 := LSteps.prefix (App (App (Val impl) (Val v1)) (Val v2)) σg f p hp
+  simp only [subst', subst, prophFnBody, withProph, id] at s1 s2 ⊢
+  exact s1.trans s2
+
+/-- **A call of the instrumented function**: from its resolution to `prophFnV impl` in the
+call's context (up to the wrapper's frames), plain steps reach `impl` applied to the
+arguments, in a new wrapper frame. -/
+theorem LSteps.call (impl v1 : val) (h1 : v1.isPanic = false) (v2 : val)
+    (h2 : v2.isPanic = false) {K3 Kx : List EctxItem}
+    (hrel : CtxRel (.AppLCtx v1 h1 :: .AppLCtx v2 h2 :: K3) Kx) (σg : CfgState) (f : Fuel)
+    (p : proph_id) (hp : p ∉ σg.2.usedProphId) :
+    ∃ Kx3, CtxRel K3 Kx3 ∧
+      LSteps (fillK Kx (Val (prophFnV impl))) (σg, f)
+        (fillK (pfItem p :: Kx3) (App (App (Val impl) (Val v1)) (Val v2))) (σg.addProph p, f) := by
+  obtain ⟨Kx1, hr1, hs1⟩ := hrel.strip (prophFnV impl) σg f
+  obtain ⟨Kx3, hr3, hs3⟩ := hr1.strip (RecV BAnon "$a2" (prophFnBody impl v1)) σg f
+  refine ⟨Kx3, hr3, hs1.trans (((LSteps.callA impl v1 h1 σg f).fill Kx1).trans
+    (hs3.trans ?_))⟩
+  exact (LSteps.callB impl v1 v2 h2 σg f p hp).fill Kx3
+
+end ctxrel
+
 end Perennial
