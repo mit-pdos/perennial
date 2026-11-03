@@ -117,7 +117,7 @@ theorem goose_init [hPre : GooseGpreS GF] [Hinv : InvGS_gen .hasLC GF]
   imod na_heap_init (L := Loc) (V := val)
     (hG := ⟨hPre.goose_preG_heap.na_heap_preG_inG, default⟩) tls σ.heap with ⟨%hHeap, Hh⟩
   imod ProphMap.init (H := GMap proph_id) (V := val) κs g.usedProphId with ⟨%hProph, Hp⟩
-  imod goState_init hPre.goose_preG_go_state σ.goState.packageState with ⟨%γ, Hgs, Hgs'⟩
+  imod goState_init hPre.goose_preG_go_state hPre.goosePreGAllG σ.goState.packageState with ⟨%γ, %γm, Hgs, Hgs'⟩
   imod Exts.global_init exts _ hPre.goosePreGExts g.globalWorld Hinitg with ⟨%hFG, Hgctx, Hgstart⟩
   imod Exts.local_init exts _ hPre.goosePreGExts σ.world g.globalWorld Hinit
     with ⟨%hFL, Hlctx, Hlstart⟩
@@ -128,7 +128,7 @@ theorem goose_init [hPre : GooseGpreS GF] [Hinv : InvGS_gen .hasLC GF]
   let G : GooseGlobalGS .hasLC GF :=
     ⟨Hinv, hPre.goosePreGAllG, hProph, hFG, ⟨γR, γL, N, hN⟩⟩
   let L : GooseLocalGS GF :=
-    ⟨hFL, σ.goState.goLctx, hHeap, goStateGSUpdatePre GF hPre.goose_preG_go_state γ,
+    ⟨hFL, σ.goState.goLctx, hHeap, goStateGSUpdatePre GF hPre.goose_preG_go_state hPre.goosePreGAllG γ γm,
       ⟨γT, T, hT⟩, ⟨γC⟩⟩
   let hG : HeapGS .hasLC GF := ⟨G, L⟩
   -- the main thread's token and the thread fuel

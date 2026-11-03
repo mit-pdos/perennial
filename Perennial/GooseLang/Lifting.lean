@@ -49,6 +49,7 @@ public import Iris.BI.Lib.ProphMap
 public import Iris.Instances.Lib.GhostVar
 public import Iris.Std.GenSets
 public import Perennial.Algebra.NaHeap
+public import Perennial.Ghost.GhostMap
 public import Perennial.GooseLang.Lang
 public import Perennial.GooseLang.BoundedLang
 public import Perennial.GooseLang.Receipts
@@ -254,62 +255,219 @@ end heapPointsto
 
 section go_state_definitions
 
+/-- The initialized packages of a package-state map: its `true` entries. -/
+def initedOf (v : GMap GoString Bool) : GMap GoString Bool := GMap.filter (fun _ b => b) v
+
+/-- Every package initialized in `σ0` is initialized in `σ`. -/
+def pkgInitLe (σ0 σ : GMap GoString Bool) : Prop :=
+  ∀ p, σ0 !! p = some true → σ !! p = some true
+
 class GoStateGS (GF : BundledGFunctors) where
   package_inited_inG : GhostVarG GF (GMap GoString Bool)
   packageInitedName : GName
+  /-- The ghost state of `packageMonoName`. Not an instance: under `HeapGS` the one
+  `AllG GF` is `gooseAllG` (the adequacy theorems put the same one here). -/
+  package_mono_allG : AllG GF
+  /-- A ghost map of the initialized packages (`initedOf`), which only grows: the program's
+  half `ownGoState` holds its authority and its persistent elements, so that what it has seen
+  initialized stays initialized (`ownGoStateLb`). Logical only: the semantics may reset an
+  entry (`PackageInitStart`), and the program logic then refuses the step
+  (`ownGoState_update_start`'s premise). -/
+  packageMonoName : GName
 
 class GoStatePreG (GF : BundledGFunctors) where
   package_inited_preG_inG : GhostVarG GF (GMap GoString Bool)
 
 attribute [reducible, instance] GoStateGS.package_inited_inG GoStatePreG.package_inited_preG_inG
 
-abbrev goStateGSUpdatePre (GF : BundledGFunctors) (hT : GoStatePreG GF) (γ : GName) :
-    GoStateGS GF :=
-  ⟨hT.package_inited_preG_inG, γ⟩
+abbrev goStateGSUpdatePre (GF : BundledGFunctors) (hT : GoStatePreG GF) (hA : AllG GF)
+    (γ γm : GName) : GoStateGS GF :=
+  ⟨hT.package_inited_preG_inG, γ, hA, γm⟩
 
-abbrev goStateGSUpdate (GF : BundledGFunctors) (hT : GoStateGS GF) (γ : GName) :
+abbrev goStateGSUpdate (GF : BundledGFunctors) (hT : GoStateGS GF) (γ γm : GName) :
     GoStateGS GF :=
-  ⟨hT.package_inited_inG, γ⟩
+  ⟨hT.package_inited_inG, γ, hT.package_mono_allG, γm⟩
 
 variable {GF : BundledGFunctors}
 
 def ownGoStateCtx [hG : GoStateGS GF] (package_inited : GMap GoString Bool) : IProp GF :=
   ghost_var hG.packageInitedName (.own (1 : Qp).half) package_inited
 
+/-- The packages initialized in `σ0` (persistent): with `ownGoState σ`, `σ` has them
+initialized (`ownGoStateLb_le`). -/
+def ownGoStateLb [hG : GoStateGS GF] (σ0 : GMap GoString Bool) : IProp GF :=
+  letI := hG.package_mono_allG
+  iprop([∗map] p ↦ b ∈ initedOf σ0, p ↪[hG.packageMonoName]□ b)
+
+/-- The program's half of the package state, and the authority of the map of initialized
+packages (`GoStateGS.packageMonoName`). -/
 def ownGoState [hG : GoStateGS GF] (package_inited : GMap GoString Bool) : IProp GF :=
-  ghost_var hG.packageInitedName (.own (1 : Qp).half) package_inited
+  letI := hG.package_mono_allG
+  iprop(ghost_var hG.packageInitedName (.own (1 : Qp).half) package_inited ∗
+    ghostMapAuth hG.packageMonoName 1 (initedOf package_inited) ∗
+    ownGoStateLb package_inited)
+
+instance ownGoStateLb_persistent [GoStateGS GF] (v : GMap GoString Bool) :
+    Persistent (ownGoStateLb (GF := GF) v) := by
+  unfold ownGoStateLb; infer_instance
 
 instance ownGoStateCtx_combine_sep_gives [GoStateGS GF] (v1 v2 : GMap GoString Bool) :
     ProofMode.CombineSepGives (ownGoStateCtx (GF := GF) v1) (ownGoState v2)
       iprop(⌜v1 = v2⌝) where
   combine_sep_gives := by
     unfold ownGoStateCtx ownGoState
-    iintro ⟨H1, H2⟩
+    iintro ⟨H1, H2, -⟩
     icombine H1 H2 gives %⟨_, H⟩
     imodintro; ipureintro; exact H
 
-instance ownGoState_timeless [GoStateGS GF] (v : GMap GoString Bool) :
+instance ownGoState_timeless [hG : GoStateGS GF] (v : GMap GoString Bool) :
     Timeless (ownGoState (GF := GF) v) := by
-  unfold ownGoState; infer_instance
+  letI := hG.package_mono_allG
+  unfold ownGoState ownGoStateLb; infer_instance
 
-theorem ownGoState_update [GoStateGS GF] (v v' v'' : GMap GoString Bool) :
+theorem initedOf_lookup (v : GMap GoString Bool) (p : GoString) :
+    initedOf v !! p = if v !! p = some true then some true else none := by
+  unfold initedOf
+  rw [GMap.lookup_filter]
+  cases h : v !! p with
+  | none => rfl
+  | some b => cases b <;> rfl
+
+theorem pkgInitLe_of_subseteq {σ0 σ : GMap GoString Bool}
+    (h : ∀ p b, initedOf σ0 !! p = some b → initedOf σ !! p = some b) : pkgInitLe σ0 σ := by
+  intro p hp
+  have := h p true (by rw [initedOf_lookup, hp]; rfl)
+  rw [initedOf_lookup] at this
+  split at this
+  · assumption
+  · cases this
+
+theorem pkgInitLe_refl (σ : GMap GoString Bool) : pkgInitLe σ σ := fun _ h => h
+
+theorem pkgInitLe_trans {σ0 σ1 σ2 : GMap GoString Bool} (h1 : pkgInitLe σ0 σ1)
+    (h2 : pkgInitLe σ1 σ2) : pkgInitLe σ0 σ2 := fun p h => h2 p (h1 p h)
+
+theorem ownGoState_get_lb [GoStateGS GF] (v : GMap GoString Bool) :
+    ownGoState (GF := GF) v ⊢ ownGoState v ∗ ownGoStateLb v := by
+  unfold ownGoState
+  iintro ⟨H1, H2, #H3⟩
+  iframe H1 H2 H3
+
+/-- What `σ0` has initialized, `σ` has. -/
+theorem ownGoStateLb_le [hG : GoStateGS GF] (σ0 σ : GMap GoString Bool) :
+    ⊢@{IProp GF} ownGoStateLb σ0 -∗ ownGoState σ -∗ ⌜pkgInitLe σ0 σ⌝ := by
+  letI := hG.package_mono_allG
+  unfold ownGoState ownGoStateLb
+  iintro #Hlb ⟨-, Ha, -⟩
+  ihave %H := ghost_map_lookup_big (initedOf σ0) $$ Ha Hlb
+  ipureintro
+  exact pkgInitLe_of_subseteq H
+
+theorem ownGoStateLb_mono [hG : GoStateGS GF] {σ0 σ : GMap GoString Bool}
+    (h : pkgInitLe σ0 σ) : ownGoStateLb (GF := GF) σ ⊢ ownGoStateLb σ0 := by
+  letI := hG.package_mono_allG
+  unfold ownGoStateLb
+  iintro #H
+  iapply BigSepM.bigSepM_intro (P := iprop(□ [∗map] p ↦ b ∈ initedOf σ, p ↪[hG.packageMonoName]□ b))
+  · intro k b hk
+    have hk' : initedOf σ0 !! k = some b := hk
+    rw [initedOf_lookup] at hk'
+    split at hk'
+    · rename_i hσ0
+      cases hk'
+      have hσ : initedOf σ !! k = some true := by rw [initedOf_lookup, h k hσ0]; rfl
+      iintro #H'
+      iapply BigSepM.bigSepM_lookup (Φ := fun p b => iprop(p ↪[hG.packageMonoName]□ b)) hσ $$ H'
+    · cases hk'
+  · imodintro; iexact H
+
+theorem ownGoStateLb_empty [GoStateGS GF] : ⊢ ownGoStateLb (GF := GF) ∅ := by
+  unfold ownGoStateLb
+  have : initedOf (∅ : GMap GoString Bool) = ∅ := by
+    ext k; rw [initedOf_lookup]; rfl
+  rw [this]
+  iapply BigSepM.bigSepM_empty.2
+  itrivial
+
+/-- Starting a package not initialized. -/
+theorem ownGoState_update_start [GoStateGS GF] (v v' : GMap GoString Bool) (p : GoString)
+    (h : (v !! p).getD false = false) :
     ⊢@{IProp GF} ownGoState v -∗ ownGoStateCtx v' ==∗
-      ownGoState v'' ∗ ownGoStateCtx v'' := by
+      ownGoState (<[p := false]> v) ∗ ownGoStateCtx (<[p := false]> v) := by
+  have heq : initedOf (<[p := false]> v) = initedOf v := by
+    ext k
+    rw [initedOf_lookup, initedOf_lookup, GMap.lookup_insert_eq_iff]
+    split
+    · subst_vars
+      cases hv : v !! k with
+      | none => rfl
+      | some b => rw [hv] at h; cases b <;> simp_all
+    · rfl
   unfold ownGoState ownGoStateCtx
-  iintro H1 H2
-  iapply ghost_var_update_halves $$ H1 H2
+  rw [heq]
+  unfold ownGoStateLb
+  rw [heq]
+  iintro ⟨H1, Ha, #Hl⟩ H2
+  imod ghost_var_update_halves (<[p := false]> v) $$ H1 H2 with ⟨H1, H2⟩
+  imodintro
+  iframe H1 Ha H2 Hl
 
-theorem goState_init (hT : GoStatePreG GF) (package_inited : GMap GoString Bool) :
-    ⊢@{IProp GF} |==> ∃ γ : GName,
-      ownGoStateCtx (hG := goStateGSUpdatePre GF hT γ) package_inited ∗
-      ownGoState (hG := goStateGSUpdatePre GF hT γ) package_inited := by
+/-- Finishing a package's initialization. -/
+theorem ownGoState_update_finish [hG : GoStateGS GF] (v v' : GMap GoString Bool) (p : GoString) :
+    ⊢@{IProp GF} ownGoState v -∗ ownGoStateCtx v' ==∗
+      ownGoState (<[p := true]> v) ∗ ownGoStateCtx (<[p := true]> v) := by
+  letI := hG.package_mono_allG
+  have heq : initedOf (<[p := true]> v) = <[p := true]> (initedOf v) := by
+    ext k
+    rw [initedOf_lookup, GMap.lookup_insert_eq_iff, GMap.lookup_insert_eq_iff, initedOf_lookup]
+    split <;> rfl
   unfold ownGoState ownGoStateCtx
+  unfold ownGoStateLb
+  rw [heq]
+  iintro ⟨H1, Ha, #Hl⟩ H2
+  imod ghost_var_update_halves (<[p := true]> v) $$ H1 H2 with ⟨H1, H2⟩
+  iframe H1 H2
+  cases hp : initedOf v !! p with
+  | some b =>
+    have hb : b = true := by
+      rw [initedOf_lookup] at hp; split at hp
+      · cases hp; rfl
+      · cases hp
+    subst hb
+    have hsame : <[p := true]> (initedOf v) = initedOf v := by
+      apply GMap.ext; intro k
+      rw [GMap.lookup_insert_eq_iff]
+      split
+      · subst_vars; exact hp.symm
+      · rfl
+    rw [hsame]
+    imodintro
+    iframe Ha Hl
+  | none =>
+    imod ghost_map_insert_persist p true hp $$ Ha with ⟨Ha, #He⟩
+    imodintro
+    iframe Ha
+    iapply (BigSepM.bigSepM_insert (Φ := fun p b => iprop(p ↪[hG.packageMonoName]□ b)) hp).2
+    iframe He Hl
+
+theorem goState_init (hT : GoStatePreG GF) (hA : AllG GF) (package_inited : GMap GoString Bool) :
+    ⊢@{IProp GF} |==> ∃ γ γm : GName,
+      ownGoStateCtx (hG := goStateGSUpdatePre GF hT hA γ γm) package_inited ∗
+      ownGoState (hG := goStateGSUpdatePre GF hT hA γ γm) package_inited := by
+  letI := hA
+  unfold ownGoState ownGoStateCtx ownGoStateLb
   imod ghost_var_alloc package_inited with ⟨%γ, H⟩
+  imod ghost_map_alloc (GF := GF) (initedOf package_inited) with ⟨%γm, Ha, Hs⟩
+  imod (BigSepM.bigSepM_bupd (Φ := fun p b => iprop(p ↪[γm]□ b))) $$ [Hs] with Hs
+  · iapply BigSepM.bigSepM_impl $$ Hs
+    iintro !> %k %v %_ H
+    iapply ghostMapElem_persist $$ H
   imodintro
   iexists γ
-  iapply (ghost_var_split γ package_inited (1 : Qp).half (1 : Qp).half)
-  rw [Qp.half_add_half]
-  iexact H
+  iexists γm
+  ihave ⟨H1, H2⟩ := (ghost_var_split γ package_inited (1 : Qp).half (1 : Qp).half) $$ [H]
+  · rw [Qp.half_add_half]; iexact H
+  iframe H1 H2 Ha Hs
 
 end go_state_definitions
 

@@ -149,7 +149,7 @@ theorem goose_crash_step [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF]
   iintro ⟨⟨-, Hext, -, %Hlctx, Hg, Hp⟩, Hr, -, Hnc⟩
   imod notCrashed_crash $$ Hnc with #Hcr
   imod na_heap_init (L := Loc) (V := val) tls σ'.heap with ⟨%hHeap, Hh⟩
-  imod goState_init hPre.goose_preG_go_state ∅ with ⟨%γ, Hgs, Hgs'⟩
+  imod goState_init hPre.goose_preG_go_state hPre.goosePreGAllG ∅ with ⟨%γ, %γm, Hgs, Hgs'⟩
   imod Exts.local_crash exts _ _ GooseCrashInterp.crashInterps hPre.goosePreGExts
     L.gooseExtsLocalGS σ.world σ'.world hc.world $$ Hext with ⟨%hFL, Hext, Hcs⟩
   imod thread_init T hT with ⟨%γT, HT⟩
@@ -159,7 +159,7 @@ theorem goose_crash_step [hPre : GooseGpreS GF] [G : GooseGlobalGS .hasLC GF]
   icases Hsplit $$ HT with ⟨Hfuel, Htok⟩
   imodintro
   iexists (⟨hFL, L.goose_go_local_context, hHeap,
-    goStateGSUpdatePre GF hPre.goose_preG_go_state γ, ⟨γT, T, hT⟩, ⟨γC⟩⟩ : GooseLocalGS GF)
+    goStateGSUpdatePre GF hPre.goose_preG_go_state hPre.goosePreGAllG γ γm, ⟨γT, T, hT⟩, ⟨γC⟩⟩ : GooseLocalGS GF)
   isplitr
   · ipureintro; rfl
   isplitr
