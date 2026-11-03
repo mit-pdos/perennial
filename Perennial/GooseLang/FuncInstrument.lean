@@ -863,4 +863,224 @@ theorem LSteps.call (impl v1 : val) (h1 : v1.isPanic = false) (v2 : val)
 
 end ctxrel
 
+/-! ## The simulation -/
+
+section sim
+variable [GooseExts] [GooseSemantics] [GoGlobalContext]
+
+open EctxLanguage.Notation
+
+/-- The instruction value that resolves `f`. -/
+abbrev giOf (f : GoString) : val := .GoInstruction (.FuncResolve f [])
+
+theorem fillK_inj (K : List EctxItem) {e1 e2 : Expr} (h : fillK K e1 = fillK K e2) : e1 = e2 := by
+  induction K generalizing e1 e2 with
+  | nil => exact h
+  | cons Ki K ih => exact fillItem_inj Ki (ih h)
+
+theorem toVal_fillK_cons (Ki : EctxItem) (K : List EctxItem) (e : Expr) :
+    toVal (fillK (Ki :: K) e) = none := by
+  induction K generalizing e Ki with
+  | nil => exact toVal_fillItem Ki e
+  | cons Kj K ih => exact ih Kj (fillItem Ki e)
+
+theorem toVal_fillK_none {K : List EctxItem} {e : Expr} (h : toVal e = none) :
+    toVal (fillK K e) = none := by
+  cases K with
+  | nil => exact h
+  | cons Ki K => exact toVal_fillK_cons Ki K e
+
+/-- A thread of the real execution and of the instrumented one. -/
+def ThreadRel (er ei : Expr) : Prop :=
+  ∃ Kr Ki e0, er = fillK Kr e0 ∧ ei = fillK Ki e0 ∧ CtxRel Kr Ki
+
+theorem ThreadRel.rfl' (e : Expr) : ThreadRel e e := ⟨[], [], e, rfl, rfl, .nil⟩
+
+/-- **Normalization**: the instrumented thread leaves the wrapper's frames above a value that
+the real thread's next frame consumes; then the related expression is not a value. -/
+theorem ThreadRel.normalize {er ei : Expr} (h : ThreadRel er ei) (hv : toVal er = none)
+    (σg : CfgState) (f : Fuel) :
+    ∃ Kr Ki e0 ei', er = fillK Kr e0 ∧ toVal e0 = none ∧ CtxRel Kr Ki ∧
+      LSteps ei (σg, f) ei' (σg, f) ∧ ei' = fillK Ki e0 := by
+  obtain ⟨Kr, Ki, e0, rfl, rfl, hr⟩ := h
+  cases h0 : toVal e0 with
+  | none => exact ⟨Kr, Ki, e0, _, rfl, h0, hr, .refl _ _, rfl⟩
+  | some v =>
+    have := of_to_val h0; subst this
+    cases Kr with
+    | nil => simp at hv
+    | cons Kj Kr =>
+      obtain ⟨Ki', hr', hs⟩ := hr.strip v σg f
+      exact ⟨Kr, Ki', fillItem Kj (Val v), _, rfl, toVal_fillItem _ _, hr', hs, rfl⟩
+
+theorem HeadStep.toInstr (L' : GoLocalContext) {e : Expr} {σg σg' : CfgState}
+    {κ : List Observation} {e' : Expr} {efs : List Expr} (h : HeadStep e σg κ e' σg' efs)
+    (hL : ∀ op a, e = App (Val (.GoInstruction op)) (Val a) →
+      @GoLocalContext.is_go_step_pure _ L' op a =
+        @GoLocalContext.is_go_step_pure _ σg.1.goState.goLctx op a)
+    {ps : List proph_id} (hnd : ps.Nodup) (hps : ∀ p ∈ ps, p ∉ σg'.2.usedProphId) :
+    HeadStep e (Perennial.setLctx L' σg.1, Perennial.addProphs ps σg.2) κ e'
+      (Perennial.setLctx L' σg'.1, Perennial.addProphs ps σg'.2) efs := by
+  obtain ⟨σ, g⟩ := σg; obtain ⟨σ', g'⟩ := σg'
+  exact (h.setLctx L' hL).addProphs hnd hps
+
+theorem BoundedBaseStep.toInstr (L' : GoLocalContext) {e : Expr} {s s' : BcfgState}
+    {κ : List Observation} {e' : Expr} {efs : List Expr} (h : BoundedBaseStep e s κ e' s' efs)
+    (hL : ∀ op a, e = App (Val (.GoInstruction op)) (Val a) →
+      @GoLocalContext.is_go_step_pure _ L' op a =
+        @GoLocalContext.is_go_step_pure _ s.1.1.goState.goLctx op a)
+    {ps : List proph_id} (hnd : ps.Nodup) (U : GSet proph_id)
+    (hU : ∀ q ∈ s.1.2.usedProphId, q ∈ U) (hU' : ∀ q ∈ s'.1.2.usedProphId, q ∈ U)
+    (hps : ∀ p ∈ ps, p ∉ U) :
+    BoundedBaseStep e (instrSt L' ps s) κ e' (instrSt L' ps s') efs := by
+  cases h with
+  | step hk hh => exact .step hk (hh.toInstr L' hL hnd fun p hp hm => hps p hp (hU' p hm))
+  | tick hk hh => exact .tick hk (hh.toInstr L' hL hnd fun p hp hm => hps p hp (hU' p hm))
+  | stutter hk hh =>
+    have hg := hh.counted_global hk
+    exact .stutter hk (hh.toInstr L' hL hnd fun p hp hm => hps p hp (hU p (hg ▸ hm)))
+  | fork hh => exact .fork (hh.toInstr L' hL hnd fun p hp hm => hps p hp (hU' p hm))
+  | forkStutter => exact .forkStutter
+  | exit hh => exact .exit (hh.toInstr L' hL hnd fun p hp hm => hps p hp (hU' p hm))
+
+/-- Every thread of the configuration keeps calls in position. -/
+def PoolOk (gi : val) (t : List Expr) : Prop := ∀ e ∈ t, ok gi 0 e
+
+variable (f : GoString) (impl : val) (L : GoLocalContext)
+
+theorem state_packageState_self (σ : state) :
+    { σ with goState := { σ.goState with packageState := σ.goState.packageState } } = σ := by
+  obtain ⟨h, ⟨L, ps⟩, w, t⟩ := σ; rfl
+
+/-- A step of the resolution of `f`: a stutter, or `impl`. -/
+theorem BoundedBaseStep.patched {s s' : BcfgState} {κ : List Observation} {e' : Expr}
+    {efs : List Expr} (h : BoundedBaseStep (App (Val (giOf f)) (Val unitV)) s κ e' s' efs)
+    (hL : s.1.1.goState.goLctx = L)
+    (Himpl : ∀ e, L.is_go_step_pure (.FuncResolve f []) unitV e ↔ e = Val impl) :
+    (e' = App (Val (giOf f)) (Val unitV) ∧ s' = s ∧ efs = [] ∧ κ = []) ∨
+      (∃ c t, s.2 = ⟨c + 1, t⟩ ∧ s' = (s.1, ⟨c, t⟩) ∧ e' = Val impl ∧ efs = [] ∧ κ = []) := by
+  cases h with
+  | step hk _ => simp [redexKind] at hk
+  | tick hk hh =>
+    right
+    cases hh with
+    | unwind hu => exact absurd hu (not_unwinds_GoInstruction rfl _)
+    | base _ hb =>
+      cases hb with
+      | GoInstructionS op arg e' s' σg hst =>
+        unfold IsGoStep at hst
+        simp only at hst
+        obtain ⟨hst, rfl⟩ := hst
+        rw [hL, Himpl] at hst
+        subst hst
+        refine ⟨_, _, rfl, ?_, rfl, rfl, rfl⟩
+        rw [state_packageState_self]
+  | stutter => left; exact ⟨rfl, rfl, rfl, rfl⟩
+
+/-- **One step of one thread** of the real execution (in the model `L`, where `f` resolves to
+`impl`) is matched by steps of the instrumented thread (in the patched model, with the ids `ps`
+used): the related thread after them, the same forked threads. -/
+theorem sim_step {er ei er' : Expr} {sr sr' : BcfgState} {κ : List Observation}
+    {efs : List Expr} (hstep : (er, sr) -<κ>-> (er', sr', efs)) (hrel : ThreadRel er ei)
+    (hok : ok (giOf f) 0 er) (hL : sr.1.1.goState.goLctx = L)
+    (Himpl : ∀ e, L.is_go_step_pure (.FuncResolve f []) unitV e ↔ e = Val impl)
+    (ps : List proph_id) (hnd : ps.Nodup) (U : GSet proph_id)
+    (hU : ∀ q ∈ sr'.1.2.usedProphId, q ∈ U) (hps : ∀ p ∈ ps, p ∉ U) :
+    ∃ ei' ps', ThreadRel er' ei' ∧ ps'.Nodup ∧ (∀ p ∈ ps', p ∉ U) ∧
+      ∀ t1 t2, ∃ m κs, Language.NSteps m
+        (t1 ++ ei :: t2, instrSt (patchLctx L f (prophFnV impl)) ps sr) κs
+        (t1 ++ ei' :: t2 ++ efs, instrSt (patchLctx L f (prophFnV impl)) ps' sr') := by
+  have hv : toVal er = none := Language.val_stuck hstep
+  obtain ⟨σg, fu⟩ := sr
+  obtain ⟨Kr, Ki, e0, ei1, her, h0, hr, hs1, rfl⟩ :=
+    hrel.normalize hv (instrSt (patchLctx L f (prophFnV impl)) ps (σg, fu)).1 fu
+  subst her
+  generalize hE : fillK Kr e0 = er0 at hstep
+  cases hstep with
+  | intro hb =>
+  rename_i e1 e2 K
+  obtain ⟨K'', rfl⟩ := EctxLanguage.step_by_val (K' := Kr) hE h0 hb
+  have he0 : e0 = fillK K'' e1 := by
+    apply fillK_inj Kr
+    rw [hE]; exact fillK_append K'' Kr e1
+  subst he0
+  have hrel' : CtxRel (K'' ++ Kr) (K'' ++ Ki) := CtxRel.prefix K'' hr
+  have hpool1 := fun t1 t2 => hs1.pool t1 t2
+  by_cases hpat : e1 = App (Val (giOf f)) (Val unitV)
+  · subst hpat
+    rcases BoundedBaseStep.patched f impl L hb hL Himpl with
+      ⟨rfl, rfl, rfl, rfl⟩ | ⟨c, t, hfu, hs', rfl, rfl, rfl⟩
+    · refine ⟨_, ps, ⟨Kr, Ki, _, fillK_append K'' Kr _, rfl, hr⟩, hnd, hps, fun t1 t2 => ?_⟩
+      obtain ⟨m, κs, H⟩ := hpool1 t1 t2
+      exact ⟨m, κs, by rw [List.append_nil]; exact H⟩
+    · -- the resolution of `f`: the instrumented thread resolves it to `prophFnV impl`, and calls it
+      rw [← fillK_append] at hok
+      obtain ⟨v1, h1, v2, h2, K3, hK3⟩ := ctx_of_ok_call (o := .FuncResolve f []) hok
+      subst hfu
+      obtain ⟨p, hp⟩ := exists_fresh_proph (addProphs ps { σg.2 with usedProphId := U }).usedProphId
+      rw [mem_addProphs] at hp
+      simp only [not_or] at hp
+      have hpU : p ∉ σg.2.usedProphId := fun hm => hp.2 (hU p (by rw [hs']; exact hm))
+      subst hs'
+      have hIs : @IsGoStep _ _ (patchLctx L f (prophFnV impl)) (.FuncResolve f []) unitV
+          (Val (prophFnV impl)) (setLctx (patchLctx L f (prophFnV impl)) σg.1).goState.packageState
+          (setLctx (patchLctx L f (prophFnV impl)) σg.1).goState.packageState := by
+        unfold IsGoStep; simp only [patchLctx_nil]; simp
+      have hbs := BaseStep.GoInstructionS (.FuncResolve f []) unitV (Val (prophFnV impl)) _
+        (setLctx (patchLctx L f (prophFnV impl)) σg.1, addProphs ps σg.2) hIs
+      rw [state_packageState_self] at hbs
+      have hbb : BoundedBaseStep (App (Val (giOf f)) (Val unitV))
+          ((setLctx (patchLctx L f (prophFnV impl)) σg.1, addProphs ps σg.2), ⟨c + 1, t⟩) []
+          (Val (prophFnV impl))
+          ((setLctx (patchLctx L f (prophFnV impl)) σg.1, addProphs ps σg.2), ⟨c, t⟩) [] :=
+        .tick rfl (.base (not_unwinds_GoInstruction rfl) hbs)
+      have hst : (fillK (K'' ++ Ki) (App (Val (giOf f)) (Val unitV)),
+          (((setLctx (patchLctx L f (prophFnV impl)) σg.1, addProphs ps σg.2), ⟨c + 1, t⟩) :
+            BcfgState)) -<([] : List Observation)>->
+          (fillK (K'' ++ Ki) (Val (prophFnV impl)),
+            ((setLctx (patchLctx L f (prophFnV impl)) σg.1, addProphs ps σg.2), ⟨c, t⟩), []) :=
+        BaseStep.ContextStep.intro (K := K'' ++ Ki) hbb
+      have hrel3 : CtxRel (.AppLCtx v1 h1 :: .AppLCtx v2 h2 :: K3) (K'' ++ Ki) := hK3 ▸ hrel'
+      obtain ⟨Kx3, hr3, hs3⟩ := LSteps.call impl v1 h1 v2 h2 hrel3
+        (setLctx (patchLctx L f (prophFnV impl)) σg.1, addProphs ps σg.2) ⟨c, t⟩ p
+        (by rw [mem_addProphs]; simp [hp.1, hpU])
+      refine ⟨fillK (pfItem p :: Kx3) (App (App (Val impl) (Val v1)) (Val v2)), p :: ps, ?_,
+        List.nodup_cons.2 ⟨hp.1, hnd⟩, ?_, fun t1 t2 => ?_⟩
+      · refine ⟨K3, pfItem p :: Kx3, _, ?_, rfl, .proph p hr3⟩
+        show fillK (K'' ++ Kr) (Val impl) = _
+        rw [hK3]; rfl
+      · intro q hq
+        rcases List.mem_cons.1 hq with rfl | hq
+        · exact hp.2
+        · exact hps q hq
+      · obtain ⟨m1, κs1, H1⟩ := hpool1 t1 t2
+        have H2 := Language.Step.atomic hst t1 t2
+        obtain ⟨m3, κs3, H3⟩ := hs3.pool t1 t2
+        rw [List.append_nil] at H2 ⊢
+        rw [fillK_append] at H2
+        exact ⟨_, _, nsteps_append H1 (.cons H2 H3)⟩
+  · -- any other step: the same step, in the instrumented state
+    have hL' : ∀ op a, e1 = App (Val (.GoInstruction op)) (Val a) →
+        @GoLocalContext.is_go_step_pure _ (patchLctx L f (prophFnV impl)) op a =
+          @GoLocalContext.is_go_step_pure _ (σg, fu).1.1.goState.goLctx op a := by
+      intro op a he
+      rw [hL]
+      apply patchLctx_other
+      rintro ⟨rfl, rfl⟩; exact hpat he
+    have hb0 : BoundedBaseStep e1 (σg, fu) κ e2 sr' efs := hb
+    have hU0 : ∀ q ∈ (σg, fu).1.2.usedProphId, q ∈ U :=
+      fun q hq => hU q (BoundedBaseStep.usedProph_mono hb0 q hq)
+    have hb' := BoundedBaseStep.toInstr (patchLctx L f (prophFnV impl)) hb0 hL' hnd U hU0 hU hps
+    have hst : (fillK (K'' ++ Ki) e1, instrSt (patchLctx L f (prophFnV impl)) ps (σg, fu))
+        -<κ>-> (fillK (K'' ++ Ki) e2, instrSt (patchLctx L f (prophFnV impl)) ps sr', efs) :=
+      BaseStep.ContextStep.intro (K := K'' ++ Ki) hb'
+    refine ⟨fillK (K'' ++ Ki) e2, ps, ⟨Kr, Ki, fillK K'' e2, fillK_append K'' Kr _,
+      fillK_append K'' Ki _, hr⟩, hnd, hps, fun t1 t2 => ?_⟩
+    obtain ⟨m1, κs1, H1⟩ := hpool1 t1 t2
+    have H2 := Language.Step.atomic hst t1 t2
+    rw [fillK_append] at H2
+    exact ⟨_, _, nsteps_append H1 (.cons H2 (.refl _))⟩
+
+end sim
+
 end Perennial
