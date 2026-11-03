@@ -27,7 +27,7 @@ abbrev context.cancelCtx.Err.spec : Prop :=
       (App (Val #(methods (go.GoType.PointerType context.cancelCtx.ty) go!"Err" #c)) (Val #()))
     {{ (e : GoInterface), RET #e; ⌜cl = true → e ≠ interface.nil⌝ ∗
         (if e = interface.nil then iprop(True)
-         else iprop(⌜isTypedErr e⌝ ∗ □ P ∗ ContextClosed γ)) }}
+         else iprop(⌜isTypedErr e⌝ ∗ isCtxErr e ∗ □ P ∗ ContextClosed γ)) }}
 
 end spec
 

@@ -48,7 +48,7 @@ theorem context.initialize'.wp_proof
   wp_apply wp_atomic_init _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #H2⟩
   wp_apply wp_sync_init _ Hinit.2.2.1 $$ Hown as ⟨Hown, #H3⟩
   wp_apply wp_errors_init _ Hinit.2.1 $$ Hown as ⟨Hown, #H4⟩
-  wp_apply wp_New_errorString as %x _
+  wp_apply wp_New_errorString as %x ⟨#Hs, _⟩
   wp_apply chan.wp_make1 (V := Unit) as %ch %γ ⟨#His_ch, %Hcap, Hch⟩
   ipersist HC
   ipersist HDE
@@ -105,6 +105,11 @@ theorem context.initialize'.wp_proof
   · iunfold isClosedchanInit
     iexists ch, γ
     iframe Hcl His_ch Hccinv
+  isplitr
+  · iexists x
+    iframe HC Hs
+  isplitr
+  · iexact HDE
   itrivial
 
 end proof

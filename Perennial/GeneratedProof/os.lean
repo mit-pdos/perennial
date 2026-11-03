@@ -2,7 +2,6 @@
 module
 
 public import Perennial.Proof.ProofPrelude
-public import Perennial.ManualProof.os
 public import Perennial.GeneratedProof.errors
 public import Perennial.GeneratedProof.sync
 public import Perennial.Golang.Theory

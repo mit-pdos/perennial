@@ -59,7 +59,7 @@ theorem wp_timerCtx_Err_of
       (App (Val #(methods (go.GoType.PointerType context.timerCtx.ty) go!"Err" #c)) (Val #()))
     {{ (e : GoInterface), RET #e; ⌜cl = true → e ≠ interface.nil⌝ ∗
         (if e = interface.nil then iprop(True)
-         else iprop(⌜isTypedErr e⌝ ∗ □ P ∗ ContextClosed γ)) }} := by
+         else iprop(⌜isTypedErr e⌝ ∗ isCtxErr e ∗ □ P ∗ ContextClosed γ)) }} := by
   wp_start as ⟨#Hc, Hcl⟩
   wp_apply wp_cancelCtx_Err (tcc c) γ P cl $$ [$Hc $Hcl] as %e He
   iapply HΦ $$ He
@@ -87,8 +87,8 @@ theorem childCancelSpec_timerCtx_of
   iintro ⟨#Hpkg, #Hc⟩
   simp only [childCancelSpec]
   imodintro
-  iintro %err %cause %Φ %herr - HΦ
-  iapply wp_timerCtx_cancel c γ false err cause herr $$ [$Hpkg $Hc]
+  iintro %err %cause %Φ %herr #Hce - HΦ
+  iapply wp_timerCtx_cancel c γ false err cause herr $$ [$Hpkg $Hc $Hce]
   · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
   inext; iintro -; iexact HΦ
 
@@ -175,24 +175,31 @@ theorem isContext_timerCtx_of
       iapply wp_timerCtx_Err c _ _ true $$ [$Hpkg $Hc Hpre]
       · simp only [↓reduceIte]; iexact Hpre
       inext
-      iintro %e ⟨%hne, -⟩
+      iintro %e ⟨%hne, He⟩
+      have hne := hne rfl
+      rw [ite_eq_right hne] at *
+      icases He with ⟨-, #Hce, -⟩
       iapply HΦ
-      ipureintro; exact hne rfl
+      · ipureintro; exact hne
+      · rw [ite_eq_right hne]; iexact Hce
     all_goals
       iapply wp_timerCtx_Err c _ _ false $$ [$Hpkg $Hc]
       · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
       inext
       iintro %e ⟨-, He⟩
-      iapply HΦ
-      dsimp only
       by_cases he : e = interface.nil
-      · subst he; simp only [ite_true]; itrivial
-      · rw [ite_eq_right he]; rw [ite_eq_right he] at *
-        icases He with ⟨-, -, #Hcl⟩
-        rw [hP]
-        isplitl []
-        · imodintro; itrivial
-        · iexact Hcl
+      · subst he
+        iapply HΦ
+        · dsimp only; simp only [ite_true]; itrivial
+        · simp only [ite_true]; itrivial
+      · rw [ite_eq_right he] at *
+        icases He with ⟨-, #Hce, -, #Hcl⟩
+        iapply HΦ
+        · dsimp only; rw [ite_eq_right he, hP]
+          isplitl []
+          · imodintro; itrivial
+          · iexact Hcl
+        · rw [ite_eq_right he]; iexact Hce
   isplitl []
   · imodintro
     iintro %Φ - HΦ
@@ -214,8 +221,10 @@ theorem isContext_timerCtx_of
     iintro %e ⟨%hne, He⟩
     have hne := hne rfl
     rw [ite_eq_right hne]
-    icases He with ⟨%ht, -⟩
-    iapply HΦ; ipureintro; exact ht
+    icases He with ⟨%ht, #Hce, -⟩
+    iapply HΦ
+    · ipureintro; exact ht
+    · iexact Hce
   isplitl []
   · imodintro
     iintro %ch #Hd

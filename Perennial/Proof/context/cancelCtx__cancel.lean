@@ -37,7 +37,7 @@ theorem context.cancelCtx.cancel.wp_proof
     context.cancelCtx.cancel.spec (GF := GF) (hG := hG) := fun c γ P rm err cause herr => by
   have wp_done_Load_frag := wp_done_Load_frag_of wp_VLoad
   have wp_err_Load_frag := wp_err_Load_frag_of wp_VLoad
-  wp_start as ⟨#Hc, #Hp, Hrm⟩
+  wp_start as ⟨#Hc, #Hce, #Hp, Hrm⟩
   ihave #Hc' := Hc
   iunfold isCancelCtxOf at Hc'
   iNamed Hc'
@@ -168,6 +168,7 @@ theorem context.cancelCtx.cancel.wp_proof
                  wp_auto
                  wp_apply Hsp
                  · ipureintro; exact herr
+                 · iexact Hce
                  · iexact Hp
                  unfold forMapPostcondition
                  iright; ileft
@@ -192,7 +193,7 @@ theorem context.cancelCtx.cancel.wp_proof
               wp_apply wp_removeChild parent (interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c) $$ [$Hpar]
               iapply HΦ; unfold ContextClosed; iexact Hclosed
       · rw [ite_eq_right he]
-        icases Hcg' with ⟨-, -, Hc2⟩
+        icases Hcg' with ⟨-, -, -, Hc2⟩
         unfold ContextClosed
         ihave %h := dghostVar_agree _ _ _ _ _ $$ Hcg Hc2
         cases h

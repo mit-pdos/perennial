@@ -20,14 +20,15 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : context.Assumptions]
 
-/-- `c.cancel(rm, err, cause)` for a typed error `err`, given `□ P`: closes `c` (and its Done
+/-- `c.cancel(rm, err, cause)` for a typed error `err` that is `Canceled`'s or
+`DeadlineExceeded`'s value (`isCtxErr`), given `□ P`: closes `c` (and its Done
 channel), cancels `c`'s children (with their stored `childCancelSpec`), and, if `rm`, removes `c`
 from its parent's `children` (`removeChild(c.Context, c)`, for a parent of the kinds of
 `isParentCtx`). -/
 abbrev context.cancelCtx.cancel.spec : Prop :=
   ∀ (c : Loc) (γ : ContextNames) (P : IProp GF) (rm : Bool) (err cause : GoInterface),
     isTypedErr err →
-    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf c γ P ∗ □ P ∗
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isCancelCtxOf c γ P ∗ isCtxErr err ∗ □ P ∗
         (if rm then iprop(∃ parent : GoInterfaceOk,
             structFieldRef context.cancelCtx go!"Context" c ↦□ (interface.ok parent : GoInterface) ∗
             isParentCtx parent)

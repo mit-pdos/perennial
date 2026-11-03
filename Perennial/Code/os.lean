@@ -4,7 +4,6 @@ module
 public import Perennial.Code.sync
 public import Perennial.Code.errors
 public import Perennial.Golang.Defn
-public import Perennial.TrustedCode.os
 
 @[expose] public section
 
@@ -286,23 +285,37 @@ noncomputable def dirBufPool [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def ErrInvalid [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.ErrInvalid"
 
+axiom ErrInvalid.init [GooseExts] [GoGlobalContext] : val
+
 noncomputable def ErrPermission [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.ErrPermission"
+
+axiom ErrPermission.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def ErrExist [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.ErrExist"
 
+axiom ErrExist.init [GooseExts] [GoGlobalContext] : val
+
 noncomputable def ErrNotExist [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.ErrNotExist"
+
+axiom ErrNotExist.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def ErrClosed [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.ErrClosed"
 
+axiom ErrClosed.init [GooseExts] [GoGlobalContext] : val
+
 noncomputable def ErrNoDeadline [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.ErrNoDeadline"
 
+axiom ErrNoDeadline.init [GooseExts] [GoGlobalContext] : val
+
 noncomputable def ErrDeadlineExceeded [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.ErrDeadlineExceeded"
+
+axiom ErrDeadlineExceeded.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def ErrProcessDone [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.ErrProcessDone"
@@ -316,17 +329,27 @@ noncomputable def ErrNoHandle [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def Interrupt [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.Interrupt"
 
+axiom Interrupt.init [GooseExts] [GoGlobalContext] : val
+
 noncomputable def Kill [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.Kill"
+
+axiom Kill.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def Stdin [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.Stdin"
 
+axiom Stdin.init [GooseExts] [GoGlobalContext] : val
+
 noncomputable def Stdout [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.Stdout"
 
+axiom Stdout.init [GooseExts] [GoGlobalContext] : val
+
 noncomputable def Stderr [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.Stderr"
+
+axiom Stderr.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def errWriteAtInAppendMode [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.errWriteAtInAppendMode"
@@ -337,6 +360,8 @@ noncomputable def errPathEscapes [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def lstat [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.lstat"
 
+axiom lstat.init [GooseExts] [GoGlobalContext] : val
+
 noncomputable def checkWrapErr [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.checkWrapErr"
 
@@ -345,6 +370,8 @@ noncomputable def getwdCache [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def checkPidfdOnce [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.checkPidfdOnce"
+
+axiom checkPidfdOnce.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def Args [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.Args"
@@ -355,8 +382,12 @@ noncomputable def errPatternHasSeparator [GooseExts] [GoGlobalContext] : GoStrin
 noncomputable def pollCopyFileRange [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.pollCopyFileRange"
 
+axiom pollCopyFileRange.init [GooseExts] [GoGlobalContext] : val
+
 noncomputable def pollSplice [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.pollSplice"
+
+axiom pollSplice.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def ReadDir [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.ReadDir"
@@ -900,6 +931,8 @@ noncomputable def tryLimitedReader [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable instance info' : PkgInfo pkg_id.os where
   pkgImportedPkgs := [pkg_id.sync, pkg_id.errors]
+
+axiom «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -1762,7 +1795,6 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   errSymlink_instance : errSymlink.TypeAssumptions
   File_instance : File.TypeAssumptions
   fileStat_instance : fileStat.TypeAssumptions
-  «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
   import_errors_Assumption : _root_.Perennial.errors.Assumptions
 
@@ -1792,7 +1824,6 @@ attribute [instance] Assumptions.readdirMode_instance
   Assumptions.errSymlink_instance
   Assumptions.File_instance
   Assumptions.fileStat_instance
-  Assumptions.«init.0_unfold»
   Assumptions.import_sync_Assumption
   Assumptions.import_errors_Assumption
 

@@ -20,13 +20,14 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : context.Assumptions]
 
-/-- `c.cancel(rm, err, cause)` for a `*timerCtx` `c` and a typed error `err`: cancels the
+/-- `c.cancel(rm, err, cause)` for a `*timerCtx` `c` and a typed error `err` that is `Canceled`'s
+or `DeadlineExceeded`'s value (`isCtxErr`): cancels the
 embedded `*cancelCtx`, removes `c` from its parent if `rm`, and stops the timer. -/
 abbrev context.timerCtx.cancel.spec : Prop :=
   ∀ (c : Loc) (γ : ContextNames) (rm : Bool) (err cause : GoInterface),
     isTypedErr err →
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
-        isCancelCtxOfR (tcc c) γ iprop(True) (timerR c) ∗
+        isCancelCtxOfR (tcc c) γ iprop(True) (timerR c) ∗ isCtxErr err ∗
         (if rm then iprop(∃ parent : GoInterfaceOk,
             ctxField (tcc c) ↦□ (interface.ok parent : GoInterface) ∗ isParentCtx parent)
          else iprop(True)) }}

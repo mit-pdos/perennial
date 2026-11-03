@@ -70,6 +70,8 @@ theorem context.WithDeadlineCause.wp_proof
   icases Hctx2 with ⟨#HDeadline, -, -, -, -, -, -, #Hcci⟩
   ihave #Hi := isInit_access $$ Hpkg
   icases Hi with ⟨_, _, ⟨%canceled, #Hcanceled, %hcanceled⟩, ⟨%dexc, #Hdexc, %hdexc⟩, _⟩
+  ihave #HceC := isCtxErr_of_Canceled _ $$ Hpkg Hcanceled
+  ihave #HceD := isCtxErr_of_DeadlineExceeded _ $$ Hpkg Hdexc
   wp_auto
   wp_apply wp_with_defer as %defer Hdefer
   wp_apply HDeadline
@@ -114,7 +116,7 @@ theorem context.WithDeadlineCause.wp_proof
       ihave #Hc' := isCancelCtxOfR_of _ _ _ _ $$ Hc
       wp_apply wp_Until as %dur -
       wp_if_destruct
-      · wp_apply wp_timerCtx_cancel «$r0_ptr» γ true dexc cause hdexc $$ [$Hc] as -
+      · wp_apply wp_timerCtx_cancel «$r0_ptr» γ true dexc cause hdexc $$ [$Hc $HceD] as -
         · simp only [↓reduceIte]
           iexists parent; iframe #
           unfold isParentCtx; iright; iexists parent_desc; iframe #
@@ -125,7 +127,7 @@ theorem context.WithDeadlineCause.wp_proof
         · imodintro
           iintro %Φ' - HΦ'
           wp_auto
-          wp_apply wp_timerCtx_cancel «$r0_ptr» γ false canceled GoInterface.nil hcanceled $$ [$Hc]
+          wp_apply wp_timerCtx_cancel «$r0_ptr» γ false canceled GoInterface.nil hcanceled $$ [$Hc $HceC]
             as -
           · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
           iapply HΦ' $$ []; itrivial
@@ -146,7 +148,7 @@ theorem context.WithDeadlineCause.wp_proof
           wp_auto
           wp_apply wp_AfterFunc as %tm #Htm
           · wp_auto
-            wp_apply wp_timerCtx_cancel «$r0_ptr» γ true dexc cause hdexc $$ [$Hc] as -
+            wp_apply wp_timerCtx_cancel «$r0_ptr» γ true dexc cause hdexc $$ [$Hc $HceD] as -
             · simp only [↓reduceIte]
               iexists parent; iframe #
               unfold isParentCtx; iright; iexists parent_desc; iframe #
@@ -161,7 +163,7 @@ theorem context.WithDeadlineCause.wp_proof
           · imodintro
             iintro %Φ' - HΦ'
             wp_auto
-            wp_apply wp_timerCtx_cancel «$r0_ptr» γ true canceled GoInterface.nil hcanceled $$ [$Hc]
+            wp_apply wp_timerCtx_cancel «$r0_ptr» γ true canceled GoInterface.nil hcanceled $$ [$Hc $HceC]
               as -
             · simp only [↓reduceIte]
               iexists parent; iframe #
@@ -181,7 +183,7 @@ theorem context.WithDeadlineCause.wp_proof
           · imodintro
             iintro %Φ' - HΦ'
             wp_auto
-            wp_apply wp_timerCtx_cancel «$r0_ptr» γ true canceled GoInterface.nil hcanceled $$ [$Hc]
+            wp_apply wp_timerCtx_cancel «$r0_ptr» γ true canceled GoInterface.nil hcanceled $$ [$Hc $HceC]
               as -
             · simp only [↓reduceIte]
               iexists parent; iframe #
@@ -206,7 +208,7 @@ theorem context.WithDeadlineCause.wp_proof
     ihave #Hc' := isCancelCtxOfR_of _ _ _ _ $$ Hc
     wp_apply wp_Until as %dur -
     wp_if_destruct
-    · wp_apply wp_timerCtx_cancel «$r0_ptr» γ true dexc cause hdexc $$ [$Hc] as -
+    · wp_apply wp_timerCtx_cancel «$r0_ptr» γ true dexc cause hdexc $$ [$Hc $HceD] as -
       · simp only [↓reduceIte]
         iexists parent; iframe #
         unfold isParentCtx; iright; iexists parent_desc; iframe #
@@ -217,7 +219,7 @@ theorem context.WithDeadlineCause.wp_proof
       · imodintro
         iintro %Φ' - HΦ'
         wp_auto
-        wp_apply wp_timerCtx_cancel «$r0_ptr» γ false canceled GoInterface.nil hcanceled $$ [$Hc]
+        wp_apply wp_timerCtx_cancel «$r0_ptr» γ false canceled GoInterface.nil hcanceled $$ [$Hc $HceC]
           as -
         · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
         iapply HΦ' $$ []; itrivial
@@ -238,7 +240,7 @@ theorem context.WithDeadlineCause.wp_proof
         wp_auto
         wp_apply wp_AfterFunc as %tm #Htm
         · wp_auto
-          wp_apply wp_timerCtx_cancel «$r0_ptr» γ true dexc cause hdexc $$ [$Hc] as -
+          wp_apply wp_timerCtx_cancel «$r0_ptr» γ true dexc cause hdexc $$ [$Hc $HceD] as -
           · simp only [↓reduceIte]
             iexists parent; iframe #
             unfold isParentCtx; iright; iexists parent_desc; iframe #
@@ -253,7 +255,7 @@ theorem context.WithDeadlineCause.wp_proof
         · imodintro
           iintro %Φ' - HΦ'
           wp_auto
-          wp_apply wp_timerCtx_cancel «$r0_ptr» γ true canceled GoInterface.nil hcanceled $$ [$Hc]
+          wp_apply wp_timerCtx_cancel «$r0_ptr» γ true canceled GoInterface.nil hcanceled $$ [$Hc $HceC]
             as -
           · simp only [↓reduceIte]
             iexists parent; iframe #
@@ -273,7 +275,7 @@ theorem context.WithDeadlineCause.wp_proof
         · imodintro
           iintro %Φ' - HΦ'
           wp_auto
-          wp_apply wp_timerCtx_cancel «$r0_ptr» γ true canceled GoInterface.nil hcanceled $$ [$Hc]
+          wp_apply wp_timerCtx_cancel «$r0_ptr» γ true canceled GoInterface.nil hcanceled $$ [$Hc $HceC]
             as -
           · simp only [↓reduceIte]
             iexists parent; iframe #
