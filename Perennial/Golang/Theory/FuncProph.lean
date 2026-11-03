@@ -2,6 +2,7 @@ module
 
 public import Perennial.Golang.Theory.WithProph
 public import Perennial.Golang.Defn
+public import Perennial.GooseLang.FuncInstrument
 
 @[expose] public section
 
@@ -84,13 +85,6 @@ section model
 variable [GooseExts] [GoGlobalContext]
 
 open Classical in
-def patchLctx (L : GoLocalContext) (f : GoString) (w : val) : GoLocalContext where
-  is_go_step_pure op arg e := match op with
-    | .FuncResolve n [] =>
-      if n = f ∧ arg = #() then e = Val w else L.is_go_step_pure (.FuncResolve n []) arg e
-    | op => L.is_go_step_pure op arg e
-
-open Classical in
 def patchFns (S : GoSemanticsFunctions) (f : GoString) (w : GoFunc) : GoSemanticsFunctions :=
   { S with functions := fun n ts => match ts with
       | [] => if n = f then w else S.functions n []
@@ -121,22 +115,22 @@ theorem patchFns_functions_ne (n : GoString) (ts : List go.GoType) (hn : n ≠ f
   · rw [patchFns_functions_nil, if_neg hn]
   · rfl
 
-omit sem in
-theorem patchLctx_nil (L : GoLocalContext) (v : val) (n : GoString) (a : val) (e : Expr) :
-    @GoLocalContext.is_go_step_pure _ (patchLctx L f v) (FuncResolve n []) a e =
-      if n = f ∧ a = #() then e = Val v else L.is_go_step_pure (FuncResolve n []) a e := rfl
-
 theorem patch_func_resolve (n : GoString) (ts : List go.GoType) :
-    @go.IsGoStepPureDet _ (patchLctx ⟨F⟩ f (#w : val)) _ (FuncResolve n ts) #()
+    @go.IsGoStepPureDet _ (patchLctx ⟨F⟩ f (RecV w.f w.x w.e)) _ (FuncResolve n ts) #()
       (Val (#(@functions _ (patchFns sem.sem_fn f w) n ts) : val)) := by
   have h0 := @go.CoreSemantics.go_func_resolve_step _ ⟨F⟩ _ sem.sem_fn
     (@go.PreSemantics.core_sem _ ⟨F⟩ _ sem.sem_fn (@go.Semantics.core_sem _ ⟨F⟩ _ sem)) n ts
-  refine @go.IsGoStepPureDet.mk _ (patchLctx ⟨F⟩ f (#w : val)) _ _ _ _ (fun _ _ _ => Iff.rfl) ?_
+  refine @go.IsGoStepPureDet.mk _ (patchLctx ⟨F⟩ f (RecV w.f w.x w.e)) _ _ _ _ (fun _ _ _ => Iff.rfl) ?_
   have h1 := h0.2
+  have hc := @go.PreSemantics.core_sem _ ⟨F⟩ _ sem.sem_fn (@go.Semantics.core_sem _ ⟨F⟩ _ sem)
+  have hunit : (#() : val) = unitV := congrFun hc.intoVal_unfold_unit.intoVal_unfold ()
+  have hfunc : (#w : val) = RecV w.f w.x w.e := congrFun hc.intoVal_unfold_func.intoVal_unfold w
   cases ts with
   | nil =>
     by_cases hn : n = f
-    · subst hn; funext e; rw [patchLctx_nil, patchFns_functions_nil]; simp [eq_comm]
+    · subst hn; funext e
+      rw [patchLctx_nil, patchFns_functions_nil, if_pos rfl, if_pos ⟨rfl, hunit⟩, hfunc]
+      exact propext ⟨Eq.symm, Eq.symm⟩
     · funext e
       have := congrFun h1 e
       rw [patchLctx_nil, patchFns_functions_nil, if_neg (fun h => hn h.1), if_neg hn]
@@ -187,28 +181,28 @@ local macro "close_left" : tactic => `(tactic| first
      exact h))
 
 set_option maxHeartbeats 4000000 in
-theorem patch_pre : @go.PreSemantics _ (patchLctx ⟨F⟩ f (#w : val)) _ (patchFns sem.sem_fn f w) := by
+theorem patch_pre : @go.PreSemantics _ (patchLctx ⟨F⟩ f (RecV w.f w.x w.e)) _ (patchFns sem.sem_fn f w) := by
   transfer sem.core_sem using patch_func_resolve F sem f w
   all_goals close_left
 
-theorem patch_chan : @go.ChanSemantics _ (patchLctx ⟨F⟩ f (#w : val)) _ (patchFns sem.sem_fn f w) := by
+theorem patch_chan : @go.ChanSemantics _ (patchLctx ⟨F⟩ f (RecV w.f w.x w.e)) _ (patchFns sem.sem_fn f w) := by
   transfer sem.chan_sem
   all_goals close_left
 
 theorem patch_string :
-    @go.StringSemantics _ (patchLctx ⟨F⟩ f (#w : val)) _ (patchFns sem.sem_fn f w) := by
+    @go.StringSemantics _ (patchLctx ⟨F⟩ f (RecV w.f w.x w.e)) _ (patchFns sem.sem_fn f w) := by
   transfer sem.string_sem
   all_goals close_left
 
 theorem patch_pool : @github_com.mit_pdos.perennial.goose.model.pool.Assumptions _ _
-    (patchLctx ⟨F⟩ f (#w : val)) (patchFns sem.sem_fn f w) := by
+    (patchLctx ⟨F⟩ f (RecV w.f w.x w.e)) (patchFns sem.sem_fn f w) := by
   transfer sem.pool_sem
   all_goals close_left
 
 /-- **The patched model**: the Go semantics `F` (with its functions `sem.sem_fn`) with the
 function `f` (no type arguments) resolved to `w` instead, satisfies the Go semantics. -/
-def patchSem : @go.Semantics _ (patchLctx ⟨F⟩ f (#w : val)) _ :=
-  @go.Semantics.mk _ (patchLctx ⟨F⟩ f (#w : val)) _ (patchFns sem.sem_fn f w)
+def patchSem : @go.Semantics _ (patchLctx ⟨F⟩ f (RecV w.f w.x w.e)) _ :=
+  @go.Semantics.mk _ (patchLctx ⟨F⟩ f (RecV w.f w.x w.e)) _ (patchFns sem.sem_fn f w)
     (patch_pre F sem f w hf) (patch_chan F sem f w hf) (patch_string F sem f w hf)
     (patch_pool F sem f w hf)
 

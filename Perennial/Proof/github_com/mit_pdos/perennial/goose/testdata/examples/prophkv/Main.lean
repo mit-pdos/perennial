@@ -3,13 +3,14 @@ The proofs of `github.com/mit-pdos/perennial/goose/testdata/examples/prophkv`: t
 map `KV`, `GetAny`'s logically atomic spec, and `Test`.
 
 `GetAny` reads a key twice and returns one of the two answers, chosen at random afterwards.
-Its spec is logically atomic: the caller's atomic update `AU` of the map's abstract state fires
-once, at the point of the read whose answer `GetAny` returns. At the first read, the proof must
-know whether that read's answer is the one returned: it takes a prediction `pv` of the result,
-and fires the update at the first read that answers `pv`; the post holds when the result is
-`pv`. The prediction comes from a prophecy of the program's result (`wp_withProph`), which the
-Go code does not contain: `Results.lean` concludes about the program as it runs
-(`goose_adequacy_withProph`).
+Its spec is logically atomic (`wp_GetAny`): the caller's atomic update `AU` of the map's abstract
+state fires once, with the answer `GetAny` returns. At the first read, the proof must know
+whether that read's answer is the one returned: it fires the update at the first read that
+answers a prediction `pv` of the result (`wp_GetAny_pred`, about `GetAny`'s body). The prediction
+is a prophecy of `GetAny`'s result, which the Go code does not contain: the proofs here are in a
+Go model where `GetAny` resolves to its body under that prophecy (`GetAnyP`, `AssumptionsP`), and
+`Results.lean` concludes about the program as it runs in the real model
+(`goose_adequacy_funcProph`). No spec mentions the prophecy.
 -/
 module
 

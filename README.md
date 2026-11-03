@@ -113,10 +113,18 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   it leaves unchanged: the wrapper's steps are plain (no fuel), and each step of
   `e` is a step of the instrumented program, whose state also holds the
   prophecy's id, which no step of `e` uses. End-to-end example: the Go package
-  `goose/testdata/examples/prophkv`, where `GetAny` reads a map twice and
-  returns one answer chosen at random afterwards; its logically atomic spec
-  takes a prediction of its result, a prophecy of the program's result
-  supplies it, and `prog_safe`
+  `goose/testdata/examples/prophkv`.
+  A prophecy can also be confined to one function, so that its spec hides it:
+  `goose_adequacy_funcProph` (`GooseLang/FuncInstrument.lean`) concludes about
+  the real executions from a WP in a patched Go model where the function `f`
+  resolves to its body under a prophecy of its result (`prophFnV impl`), and
+  `patchSem` (`Golang/Theory/FuncProph.lean`) shows that the patched model
+  satisfies `go.Semantics` (the `transfer` tactic carries the instance over
+  field by field). Its side condition: `f`'s resolution is only ever applied to
+  its arguments (`ok`, checked on the program; assumed of the model's results and
+  of the initial heap). Example: in `prophkv`, `GetAny` reads a map twice and
+  returns one answer chosen at random afterwards; its spec is a plain logically
+  atomic one, and `prog_safe`
   (`Perennial/Proof/github_com/mit_pdos/perennial/goose/testdata/examples/prophkv/Results.lean`)
   is about the program without the prophecy.
 * **Iris substrate.** iris-lean provides the BI, proof mode, invariants,

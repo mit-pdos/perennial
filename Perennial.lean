@@ -18,6 +18,7 @@ public import Perennial.GooseLang.CrashAdequacy
 public import Perennial.GooseLang.DistLang
 public import Perennial.GooseLang.DistAdequacy
 public import Perennial.GooseLang.ProphInstrument
+public import Perennial.GooseLang.FuncInstrument
 public import Perennial.ProgramLogic.AtomicFupd
 public import Perennial.GooseLang.Ext.Grove.Adequacy
 public import Perennial.GooseLang.Ext.Fs.Adequacy
@@ -30,5 +31,6 @@ public import Perennial.Golang.Theory.ChanAuto
 public import Perennial.Golang.Theory.IfJoin
 public import Perennial.Golang.Theory.Chan.Idioms.Idioms
 public import Perennial.Golang.Theory.WithProph
+public import Perennial.Golang.Theory.FuncProph
 
 @[expose] public section
