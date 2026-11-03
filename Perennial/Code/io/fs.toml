@@ -1,0 +1,14 @@
+# io/fs: its package-level variables (the error variables, which are internal/oserror's, `SkipDir`,
+# `SkipAll` and the `var _ I = (*subFS)(nil)` assertions) and the functions their initializers call;
+# the rest is names only.
+translate = ["!*",
+  "ErrInvalid", "ErrPermission", "ErrExist", "ErrNotExist", "ErrClosed",
+  "errInvalid", "errPermission", "errExist", "errNotExist", "errClosed",
+  "SkipDir", "SkipAll",
+  "_",
+]
+
+imports = ["!*", "errors", "internal/oserror", "io", "time"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

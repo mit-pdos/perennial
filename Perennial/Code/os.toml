@@ -1,15 +1,26 @@
-# os is names-only, but for the package-level variable initializers whose callees are translated
-# (the `errors.New` errors, `checkWrapErr`, `dirBufPool`'s `sync.Pool` literal). The other
-# initializers call code Perennial does not translate (`io/fs`'s and `internal/poll`'s variables,
-# `syscall`'s types, `NewFile`, `sync.OnceValue`, the runtime's `runtime_args`), and are
-# axiomatized.
+# os is names-only, but for the package-level variable initializers whose callees are translated:
+# the `errors.New` errors, `checkWrapErr`, `dirBufPool`'s `sync.Pool` literal, the error variables
+# that are io/fs's (`ErrInvalid`, ..., `ErrClosed`), `lstat = Lstat` and the `var _ fs.StatFS =
+# dirFS("")` assertions. The other initializers stay axiomatized:
+# * `checkPidfdOnce = sync.OnceValue(checkPidfd)`: `OnceValue` keeps its state in a variable of an
+#   anonymous struct type, which goose does not translate ("unsupported: anonymous struct");
+# * `Interrupt`, `Kill` (`syscall.SIGINT`, `SIGKILL`) and `ErrNoDeadline`, `ErrDeadlineExceeded`,
+#   `pollSplice`, `pollCopyFileRange` (internal/poll's variables and functions): importing syscall
+#   (directly or through internal/poll) runs syscall's initializer, which reaches the same
+#   `sync.OnceFunc` (`copyenv`) and raw system calls (`init`'s `Getrlimit`/`setrlimit`);
+# * `Stdin`, `Stdout`, `Stderr` (`NewFile`): internal/poll and syscall as above, and
+#   `runtime.SetFinalizer`;
+# * `init.0` (`Args = runtime_args()`) compares `runtime.GOOS`, so it would import runtime, whose
+#   own initializer is names-only.
 translate = ["!*",
   "ErrProcessDone", "errProcessReleased", "ErrNoHandle",
   "errWriteAtInAppendMode", "errPathEscapes", "errPatternHasSeparator",
   "checkWrapErr", "dirBufPool",
+  "ErrInvalid", "ErrPermission", "ErrExist", "ErrNotExist", "ErrClosed",
+  "_", "lstat",
 ]
 
-imports = ["!*", "errors", "sync"]
+imports = ["!*", "errors", "sync", "io/fs"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

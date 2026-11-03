@@ -3,6 +3,7 @@ module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.GeneratedProof.errors
+public import Perennial.GeneratedProof.io.fs
 public import Perennial.GeneratedProof.sync
 public import Perennial.Golang.Theory
 public import Perennial.Code.os
@@ -521,12 +522,84 @@ variable [sem : go.Semantics]
 variable [package_sem' : os.Assumptions]
 
 noncomputable instance unixDirent_typed_pointsto :
-    TypedPointsto (GF := GF) os.unixDirent :=
-  sorry -- axiomatized type
+    TypedPointsto (GF := GF) os.unixDirent where
+  typedPointstoDef l v dq := iprop(
+    "parent" ∷ typedPointsto (structFieldRef os.unixDirent go!"parent" l) v.parent' dq ∗
+    "name" ∷ typedPointsto (structFieldRef os.unixDirent go!"name" l) v.name' dq ∗
+    "typ" ∷ typedPointsto (structFieldRef os.unixDirent go!"typ" l) v.typ' dq ∗
+    "info" ∷ typedPointsto (structFieldRef os.unixDirent go!"info" l) v.info' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance unixDirent_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) os.unixDirent os.unixDirent.underlying :=
-  sorry -- axiomatized type
+    IntoValTypedUnderlying (GF := GF) os.unixDirent os.unixDirent.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance unixDirent_access_load_parent (l : Loc) (v : os.unixDirent) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef os.unixDirent go!"parent" l) v.parent' dq)
+      (typedPointsto (structFieldRef os.unixDirent go!"parent" l) v.parent' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance unixDirent_access_store_parent (l : Loc) (v : os.unixDirent) (parent' : GoString) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef os.unixDirent go!"parent" l) v.parent' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.unixDirent go!"parent" l) parent' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with parent' := parent' } : os.unixDirent) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance unixDirent_access_load_name (l : Loc) (v : os.unixDirent) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef os.unixDirent go!"name" l) v.name' dq)
+      (typedPointsto (structFieldRef os.unixDirent go!"name" l) v.name' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance unixDirent_access_store_name (l : Loc) (v : os.unixDirent) (name' : GoString) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef os.unixDirent go!"name" l) v.name' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.unixDirent go!"name" l) name' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with name' := name' } : os.unixDirent) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance unixDirent_access_load_typ (l : Loc) (v : os.unixDirent) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef os.unixDirent go!"typ" l) v.typ' dq)
+      (typedPointsto (structFieldRef os.unixDirent go!"typ" l) v.typ' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance unixDirent_access_store_typ (l : Loc) (v : os.unixDirent) (typ' : io.fs.FileMode) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef os.unixDirent go!"typ" l) v.typ' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.unixDirent go!"typ" l) typ' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with typ' := typ' } : os.unixDirent) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance unixDirent_access_load_info (l : Loc) (v : os.unixDirent) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef os.unixDirent go!"info" l) v.info' dq)
+      (typedPointsto (structFieldRef os.unixDirent go!"info" l) v.info' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance unixDirent_access_store_info (l : Loc) (v : os.unixDirent) (info' : io.fs.FileInfo) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef os.unixDirent go!"info" l) v.info' (DFrac.own 1))
+      (typedPointsto (structFieldRef os.unixDirent go!"info" l) info' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with info' := info' } : os.unixDirent) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end unixDirent
