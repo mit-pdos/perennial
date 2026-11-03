@@ -1,5 +1,27 @@
-translate = ["!*"]
-imports = ["!*"]
+# os is names-only, but for the package-level variable initializers whose callees are translated
+# (the `errors.New` errors, `checkWrapErr`, `dirBufPool`'s `sync.Pool` literal).
+translate = ["!*",
+  "ErrProcessDone", "errProcessReleased", "ErrNoHandle",
+  "errWriteAtInAppendMode", "errPathEscapes", "errPatternHasSeparator",
+  "checkWrapErr", "dirBufPool",
+]
+
+# The other initializers and `init` (proc.go's, setting `Args`) have trusted models
+# (TrustedCode/os.lean), because what they call is not translated: `io/fs`'s and
+# `internal/poll`'s variables and functions, `syscall`'s types and `NewFile` (down to `fcntl`),
+# `sync.OnceValue`, the runtime's `runtime_args` (a `go:linkname` with no Go body). No translated
+# code reads their variables but `Stderr` (raft's default logger), whose model allocates it; the
+# others do nothing. `_` stands for the blank `var _ fs.StatFS = dirFS("")`, ....
+trusted = [
+  "ErrInvalid", "ErrPermission", "ErrExist", "ErrNotExist", "ErrClosed",
+  "ErrNoDeadline", "ErrDeadlineExceeded",
+  "Interrupt", "Kill",
+  "Stdin", "Stdout", "Stderr",
+  "_", "lstat", "checkPidfdOnce", "pollCopyFileRange", "pollSplice",
+  "init.0",
+]
+
+imports = ["!*", "errors", "sync"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true
