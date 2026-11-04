@@ -15,6 +15,9 @@ public import Perennial.Proof.sync.Mutex__Lock
 public import Perennial.Proof.sync.Mutex__TryLock
 public import Perennial.Proof.sync.Mutex__Unlock
 public import Perennial.Proof.sync.NewCond
+public import Perennial.Proof.sync.OnceFunc
+public import Perennial.Proof.sync.OnceValue
+public import Perennial.Proof.sync.OnceValues
 public import Perennial.Proof.sync.Once__Do
 public import Perennial.Proof.sync.Once__doSlow
 public import Perennial.Proof.sync.Pool__Get
@@ -116,6 +119,15 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
+
+theorem sync.wp_OnceFunc : sync.OnceFunc.spec (GF := GF) (hG := hG) :=
+  sync.OnceFunc.wp_proof
+
+theorem sync.wp_OnceValue : sync.OnceValue.spec (GF := GF) (hG := hG) :=
+  sync.OnceValue.wp_proof
+
+theorem sync.wp_OnceValues : sync.OnceValues.spec (GF := GF) (hG := hG) :=
+  sync.OnceValues.wp_proof
 
 theorem sync.Pool.wp_Get : sync.Pool.Get.spec (GF := GF) (hG := hG) :=
   sync.Pool.Get.wp_proof github_com.mit_pdos.perennial.goose.model.pool.Pool.wp_Get
