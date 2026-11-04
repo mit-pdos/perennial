@@ -406,9 +406,10 @@ func (ctx *Ctx) structInfoToGlangType(info structTypeInfo) glang.Expr {
 
 func (ctx *Ctx) getStructInfo(t types.Type) (structTypeInfo, bool) {
 	throughPointer := false
+	t = types.Unalias(t)
 	if pt, ok := t.(*types.Pointer); ok {
 		throughPointer = true
-		t = pt.Elem()
+		t = types.Unalias(pt.Elem())
 	}
 	if t, ok := t.(*types.Named); ok {
 		name := ctx.qualifiedName(t.Obj())

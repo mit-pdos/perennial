@@ -923,3 +923,30 @@ defect).
 operation in Go.
 
 **Why.** The owner: "Make the addition to the translator (it's basically desugaring)".
+
+## Case 30 — ACCEPTED: field selection through a type alias of a struct (branch `goose-unalias`)
+
+**Symptom.** Translation refused where Go runs (incomplete). `getStructInfo` matched
+`*types.Named` (and a pointer to one) without unaliasing, so a selector on a value whose
+type is an alias of a struct type (`*types.Alias`, the default since Go 1.23) was rejected
+by `fieldAddrSelection`. Kubernetes' apiserver hits it at `clientv3.Event = mvccpb.Event`
+(etcd-grove, `notes/k8s-compactor-plan.md`, Q1 (b)).
+
+**Witness.** `type S struct{ x uint64 }; type A = S; func f(a A) uint64 { return a.x }`, and
+the same through `p *A`: Go returns the field; goose stops with an unsupported selector.
+
+**Taken.** `types.Unalias` on the type before the pointer test and on the pointer's
+element, in `getStructInfo` (two lines; no new goose branch, no semantics rule, no negative
+test). Both selector translations go through `getStructInfo`; the other `*types.Named`
+matches already unalias or handle declared names. The translation is the aliased struct's
+`StructFieldRef S.ty` (the alias's type is `@[reducible]`, `A.ty := S.ty`). Tests: the
+unittest gold file (value and pointer), a semantics test (`testStructFieldThroughAlias`).
+Regenerating `Perennial/Code` and `GeneratedProof` with and without the change gives
+identical output.
+
+**Not taken.** Nothing tempting: a separate `*types.Alias` case in each selector caller
+would duplicate the lookup.
+
+**Why.** Same shape as Case 23 (`FuncName` unaliases a method's receiver): an alias is
+its target, so the lookup unaliases first. The user signed off on the plan as proposed
+("G1 approved", 2026-11-04).

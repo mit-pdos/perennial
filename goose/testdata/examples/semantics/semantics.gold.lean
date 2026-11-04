@@ -340,6 +340,9 @@ attribute [irreducible] variadicSlice.ty
 @[reducible] noncomputable def MultipleArgsType.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.FunctionType (go.signature.Signature [go.uint64, go.bool] false [go.uint64]))
 
+@[reducible] noncomputable def TwoIntsAlias.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  TwoInts.ty
+
 @[reducible] noncomputable def DefinedStr2.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   DefinedStr.ty
 
@@ -1152,6 +1155,9 @@ noncomputable def testStoreSlice [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def testStructFieldFunc [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testStructFieldFunc"
+
+noncomputable def testStructFieldThroughAlias [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testStructFieldThroughAlias"
 
 noncomputable def testSwitchVal [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSwitchVal"
@@ -10841,6 +10847,35 @@ noncomputable def testStructFieldFunc.impl [GooseExts] [GoGlobalContext] : val :
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType StructWithFunc.ty)))) (Pair (Var "a") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
+/-- go: structs.go:165:6 -/
+noncomputable def testStructFieldThroughAlias.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (Val #(W64 2))
+  (App (Val (GoInstruction (CompositeLiteral TwoIntsAlias.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement (some (KeyField go!"y")) (ElementExpression go.uint64 (Var "$v1")))]))))
+  (Let "a" (App (Val (GoInstruction (GoAlloc TwoIntsAlias.ty))) (App (Val (GoInstruction (GoZeroVal TwoIntsAlias.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Var "a")
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType TwoIntsAlias.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType TwoIntsAlias.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 3))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts.ty go!"x"))) (Var "a"))) (Val #(W64 1)))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts.ty go!"y"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType TwoIntsAlias.ty)))) (Var "p")))) (Val #(W64 3)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef TwoInts.ty go!"y"))) (Var "a"))) (Val #(W64 3)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (StructFieldRef TwoInts.ty go!"y"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType TwoIntsAlias.ty)))) (Var "p"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType TwoIntsAlias.ty)))) (Pair (Var "p") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore TwoIntsAlias.ty))) (Pair (Var "a") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
 /-- go: switch.go:3:6 -/
 noncomputable def testSwitchVal.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -13768,6 +13803,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testStoreComposite_unfold : FuncUnfold testStoreComposite [] testStoreComposite.impl
   testStoreSlice_unfold : FuncUnfold testStoreSlice [] testStoreSlice.impl
   testStructFieldFunc_unfold : FuncUnfold testStructFieldFunc [] testStructFieldFunc.impl
+  testStructFieldThroughAlias_unfold : FuncUnfold testStructFieldThroughAlias [] testStructFieldThroughAlias.impl
   testSwitchVal_unfold : FuncUnfold testSwitchVal [] testSwitchVal.impl
   testSwitchMultiple_unfold : FuncUnfold testSwitchMultiple [] testSwitchMultiple.impl
   testSwitchDefaultTrue_unfold : FuncUnfold testSwitchDefaultTrue [] testSwitchDefaultTrue.impl
@@ -14126,6 +14162,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testStoreComposite_unfold
   Assumptions.testStoreSlice_unfold
   Assumptions.testStructFieldFunc_unfold
+  Assumptions.testStructFieldThroughAlias_unfold
   Assumptions.testSwitchVal_unfold
   Assumptions.testSwitchMultiple_unfold
   Assumptions.testSwitchDefaultTrue_unfold

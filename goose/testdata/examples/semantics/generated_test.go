@@ -839,6 +839,10 @@ func (suite *GoTestSuite) TestStructFieldFunc() {
 	suite.Equal(true, testStructFieldFunc())
 }
 
+func (suite *GoTestSuite) TestStructFieldThroughAlias() {
+	suite.Equal(true, testStructFieldThroughAlias())
+}
+
 func (suite *GoTestSuite) TestSwitchVal() {
 	suite.Equal(true, testSwitchVal())
 }

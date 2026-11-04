@@ -270,8 +270,16 @@ noncomputable def UseNamedType.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] UseNamedType.ty
 
+noncomputable def aliasedStruct.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.aliasedStruct" [])
+
+attribute [irreducible] aliasedStruct.ty
+
 @[reducible] noncomputable def my_u64.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   go.uint64
+
+@[reducible] noncomputable def structAlias.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  aliasedStruct.ty
 
 @[reducible] noncomputable def arrayA [GooseExts] [GoGlobalContext] : val :=
   #(0 : Int)
@@ -968,6 +976,12 @@ noncomputable def mkNothing [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def convertToAlias [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.convertToAlias"
+
+noncomputable def readAliasField [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.readAliasField"
+
+noncomputable def readAliasFieldPtr [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.readAliasFieldPtr"
 
 noncomputable def typeAssertInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.typeAssertInt"
@@ -5458,6 +5472,34 @@ noncomputable def convertToAlias.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad Timestamp.ty))) (Var "$res0")))))
 
+/-- go: type_alias.go:22:6 -/
+noncomputable def readAliasField.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "a"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "a" (App (Val (GoInstruction (GoAlloc structAlias.ty))) (Var "a"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef aliasedStruct.ty go!"x"))) (Var "a")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")))))
+
+/-- go: type_alias.go:26:6 -/
+noncomputable def readAliasFieldPtr.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType structAlias.ty)))) (Var "p"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef aliasedStruct.ty go!"x"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType structAlias.ty)))) (Var "p"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")))))
+
 /-- go: type_switch.go:3:6 -/
 noncomputable def typeAssertInt.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
@@ -7359,6 +7401,41 @@ attribute [instance] UseNamedType.TypeAssumptions.underlying
   UseNamedType.TypeAssumptions.method_set
   UseNamedType.TypeAssumptions.ptr_method_set
 
+structure aliasedStruct [GooseExts] where
+  mk ::
+  x' : w64
+
+noncomputable instance aliasedStruct.zero_val [GooseExts] : ZeroVal aliasedStruct :=
+  ⟨aliasedStruct.mk zeroValDef⟩
+
+@[reducible] noncomputable def aliasedStruct.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"x" go.uint64)]
+
+@[irreducible] noncomputable def aliasedStruct.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  aliasedStruct.fieldsUnsealed
+
+noncomputable instance equals_unfold_aliasedStruct [GooseExts] [GoGlobalContext] :
+    EqualsUnfold aliasedStruct.fields aliasedStruct.fieldsUnsealed :=
+  ⟨by unfold aliasedStruct.fields; rfl⟩
+
+@[reducible] noncomputable def aliasedStruct.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType aliasedStruct.fields)
+
+class aliasedStruct.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying aliasedStruct.underlying aliasedStruct
+  underlying : go.UnderlyingDirectedEq aliasedStruct.ty aliasedStruct.underlying
+  get_x : ∀ (x : aliasedStruct), go.IsGoStepPureDetTagged under (StructFieldGet aliasedStruct.underlying go!"x") #x (Val #(x.x'))
+  set_x : ∀ (x : aliasedStruct) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet aliasedStruct.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : aliasedStruct)))
+  method_set : go.MethodSetIs aliasedStruct.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType aliasedStruct.ty) []
+
+attribute [instance] aliasedStruct.TypeAssumptions.type_repr
+  aliasedStruct.TypeAssumptions.underlying
+  aliasedStruct.TypeAssumptions.get_x
+  aliasedStruct.TypeAssumptions.set_x
+  aliasedStruct.TypeAssumptions.method_set
+  aliasedStruct.TypeAssumptions.ptr_method_set
+
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Foo_instance : Foo.TypeAssumptions
   importantStruct_instance : importantStruct.TypeAssumptions
@@ -7409,6 +7486,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Timestamp_instance : Timestamp.TypeAssumptions
   UseTypeAbbrev_instance : UseTypeAbbrev.TypeAssumptions
   UseNamedType_instance : UseNamedType.TypeAssumptions
+  aliasedStruct_instance : aliasedStruct.TypeAssumptions
   takesArray_unfold : FuncUnfold takesArray [] takesArray.impl
   takesPtr_unfold : FuncUnfold takesPtr [] takesPtr.impl
   usesArrayElemRef_unfold : FuncUnfold usesArrayElemRef [] usesArrayElemRef.impl
@@ -7601,6 +7679,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   mkInt_unfold : FuncUnfold mkInt [] mkInt.impl
   mkNothing_unfold : FuncUnfold mkNothing [] mkNothing.impl
   convertToAlias_unfold : FuncUnfold convertToAlias [] convertToAlias.impl
+  readAliasField_unfold : FuncUnfold readAliasField [] readAliasField.impl
+  readAliasFieldPtr_unfold : FuncUnfold readAliasFieldPtr [] readAliasFieldPtr.impl
   typeAssertInt_unfold : FuncUnfold typeAssertInt [] typeAssertInt.impl
   wrapUnwrapInt_unfold : FuncUnfold wrapUnwrapInt [] wrapUnwrapInt.impl
   checkedTypeAssert_unfold : FuncUnfold checkedTypeAssert [] checkedTypeAssert.impl
@@ -7668,6 +7748,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.Timestamp_instance
   Assumptions.UseTypeAbbrev_instance
   Assumptions.UseNamedType_instance
+  Assumptions.aliasedStruct_instance
   Assumptions.takesArray_unfold
   Assumptions.takesPtr_unfold
   Assumptions.usesArrayElemRef_unfold
@@ -7860,6 +7941,8 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.mkInt_unfold
   Assumptions.mkNothing_unfold
   Assumptions.convertToAlias_unfold
+  Assumptions.readAliasField_unfold
+  Assumptions.readAliasFieldPtr_unfold
   Assumptions.typeAssertInt_unfold
   Assumptions.wrapUnwrapInt_unfold
   Assumptions.checkedTypeAssert_unfold
