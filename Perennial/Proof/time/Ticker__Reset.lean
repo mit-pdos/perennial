@@ -1,5 +1,5 @@
 /-
-The proof of `time.Ticker.Reset` (over its trusted model, `TrustedCode/time.lean`).
+`time.Ticker.Reset`'s spec, assumed.
 -/
 module
 
@@ -20,16 +20,9 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-theorem time.Ticker.Reset.wp_proof : time.Ticker.Reset.spec (GF := GF) (hG := hG) := by
-  intro t d
-  wp_start as ⟨%Hd, %ch, %γ, #Ht⟩
-  unfold isTicker
-  icases Ht with ⟨#HC, #Hinit, #Hch⟩
-  wp_if_destruct
-  · exfalso; word
-  rw [show go.GoType.Named go!"time.Ticker" [] = time.Ticker.ty by with_unfolding_all rfl]
-  wp_auto
-  wp_end
+/-- Axiom: `Ticker.Reset` is not translated (Go reinterprets the runtime's `*Timer` as a `*Ticker`
+through `unsafe.Pointer`; the runtime's timers are not modelled). -/
+axiom time.Ticker.Reset.wp_proof : time.Ticker.Reset.spec (GF := GF) (hG := hG)
 
 end proof
 

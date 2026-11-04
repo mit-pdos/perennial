@@ -1,8 +1,8 @@
 /-
 Shared definitions of the proofs of the Go `time` package: its `isPkgInit` (`isInit`, the global
 `startNano`), the `Countable` instance of `time.Time` (for the channel ghost state), the
-predicates of the timer specs (`newTimerMade`, `isTimer`, `isFuncTimer`), and the spec of the
-trusted model's `arbitraryTime` (not a Go function).
+predicates of the timer and ticker specs (`newTimerMade`, `isTimer`, `isFuncTimer`, `isTicker`),
+and the spec of the trusted model's `arbitraryTime` (not a Go function).
 
 Notes on the package's specs:
 * The `Time` arithmetic is translated and proved (`Time.wp_Add`, `Time.wp_Sub`,
@@ -15,9 +15,9 @@ Notes on the package's specs:
 * `AfterFunc` is translated; the runtime's `newTimer` (a fresh `*Timer` and a goroutine that
   calls the callback) is modeled in `TrustedCode/time.lean`. `Stop` of its timers is (a case
   of) the axiom `Timer.Stop.wp_proof`.
-* `NewTicker`, `Ticker.Stop` and `Ticker.Reset` are modeled in `TrustedCode/time.lean` (Go
-  reinterprets the runtime's `*Timer` as a `*Ticker` through `unsafe.Pointer`); their specs are
-  proved over the model (`isTicker`). `Time.After` is translated and proved.
+* `NewTicker`, `Ticker.Stop` and `Ticker.Reset` are not translated (Go reinterprets the
+  runtime's `*Timer` as a `*Ticker` through `unsafe.Pointer`); their specs are axioms over
+  `isTicker`, as the timer specs are. `Time.After` is translated and proved.
 * `wp_After`, the timer specs, `wp_when` and `wp_AfterFunc` are stated with the channel
   theory's instances, which fix `hlc := HasLC.hasLC` (sections `chan_*`).
   `Pos.Countable time.Time.t` (for the channel ghost state) is defined here.
@@ -85,13 +85,15 @@ theorem wp_arbitraryTime :
 
 end wps
 
-/-- `t` was returned by `NewTimer` (opaque): the runtime allocated it as the head of one of its
-timers (`runtime.timeTimer`: the `Timer`'s fields followed by the runtime's state) and set its
-`initTimer`, so that `Stop` and `Reset` may call the runtime's `stopTimer` and `resetTimer` on
-it. Only the axiom `wp_NewTimer` provides it; no points-to gives it, so a `Timer` the program
+/-- `t` heads one of the runtime's timers (opaque): the runtime allocated it as the head of a
+`runtime.timeTimer` (the `Timer`'s fields, or the `Ticker`'s, which are their prefix, followed by
+the runtime's state) and set its `initTimer` (a `Ticker`'s `initTicker`), so that `Stop` and
+`Reset` may call the runtime's `stopTimer` and `resetTimer` on it. Only the axioms `wp_NewTimer`
+and `wp_NewTicker` provide it; no points-to gives it, so a `Timer` or `Ticker` the program
 allocates, or a copy of one, is not one. Its meaning is fixed by the axioms that mention it
-(`wp_NewTimer`, `Timer.wp_Stop`, `Timer.wp_Reset`); nothing else is proved about it (the value
-`False` only shows that the type is inhabited: Lean does not unfold an `opaque`). -/
+(`wp_NewTimer`, `Timer.wp_Stop`, `Timer.wp_Reset`, `wp_NewTicker`, `Ticker.wp_Stop`,
+`Ticker.wp_Reset`); nothing else is proved about it (the value `False` only shows that the type
+is inhabited: Lean does not unfold an `opaque`). -/
 opaque newTimerMade {GF : BundledGFunctors} (t : Loc) : IProp GF := iprop(False)
 
 section chan_defs
@@ -142,18 +144,22 @@ def isFuncTimer (t : Loc) : IProp GF :=
 instance isFuncTimer_persistent (t : Loc) : Persistent (isFuncTimer (GF := GF) t) := by
   unfold isFuncTimer; infer_instance
 
-/-! ### Tickers
+/-! ### Tickers (the trust boundary: `NewTicker`, `Ticker.Stop` and `Ticker.Reset` are not
+translated: Go reinterprets the runtime's `*Timer` as a `*Ticker` through `unsafe.Pointer`)
 
-`NewTicker`, `Ticker.Stop` and `Ticker.Reset` are modeled in `TrustedCode/time.lean` (Go
-reinterprets the runtime's `*Timer` as a `*Ticker` through `unsafe.Pointer`): a fresh `*Ticker`
-with `initTicker` set, and a goroutine that sends arbitrary times on its channel. Like a timer's,
-a ticker's channel may yield some time at a receive (a bag of times with no logical content), or
-nothing; `Stop` and `Reset` change nothing the proof can observe. -/
+Like a timer's, a ticker's channel may yield some time at a receive (a bag of times with no
+logical content), or nothing; `Stop` and `Reset` change nothing the proof can observe.
+
+`newTimerMade t` makes `isTicker` unforgeable, as it does `isTimer`. The points-tos of `C` and
+`initTicker` are not: a copy `u := new(time.Ticker); *u = *t` has both, and Go's `u.Reset(d)`
+then fails ("fatal error: unlock of unlocked lock", go1.27.3: the runtime's timer state after the
+`Ticker` is not copied), while `u.Stop()` runs the runtime's `stopTimer` on memory that is not a
+timer. -/
 
 /-- `t` is a `*Ticker` made by `NewTicker`, whose channel `C` is `ch` (persistent). -/
 def isTicker (t : Loc) (ch : Loc) (γ : ChanNames) : IProp GF :=
   iprop(structFieldRef time.Ticker go!"C" t ↦□ ch ∗
-    structFieldRef time.Ticker go!"initTicker" t ↦□ true ∗
+    □ newTimerMade (GF := GF) t ∗
     isChanBag γ ch (V := time.Time) (fun _ => iprop(True)))
 
 instance isTicker_persistent (t ch : Loc) (γ : ChanNames) :

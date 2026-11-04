@@ -1708,8 +1708,6 @@ class Ticker.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   set_initTicker : ∀ (x : Ticker) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Ticker.underlying go!"initTicker") (PairV #x #y) (Val #(({ x with initTicker' := y } : Ticker)))
   method_set : go.MethodSetIs Ticker.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Ticker.ty) [(go!"Reset", (some (go.signature.Signature [Duration.ty] false []))), (go!"Stop", (some (go.signature.Signature [] false [])))]
-  ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Ticker.ty) go!"Reset" Ticker.Reset.impl
-  ptr_Stop_unfold : MethodUnfold (go.GoType.PointerType Ticker.ty) go!"Stop" Ticker.Stop.impl
 
 attribute [instance] Ticker.TypeAssumptions.type_repr
   Ticker.TypeAssumptions.underlying
@@ -1719,8 +1717,6 @@ attribute [instance] Ticker.TypeAssumptions.type_repr
   Ticker.TypeAssumptions.set_initTicker
   Ticker.TypeAssumptions.method_set
   Ticker.TypeAssumptions.ptr_method_set
-  Ticker.TypeAssumptions.ptr_Reset_unfold
-  Ticker.TypeAssumptions.ptr_Stop_unfold
 
 structure Time [GooseExts] where
   mk ::
@@ -2293,7 +2289,6 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   After_unfold : FuncUnfold After [] After.impl
   AfterFunc_unfold : FuncUnfold AfterFunc [] AfterFunc.impl
   goFunc_unfold : FuncUnfold goFunc [] goFunc.impl
-  NewTicker_unfold : FuncUnfold NewTicker [] NewTicker.impl
   subMono_unfold : FuncUnfold subMono [] subMono.impl
   Since_unfold : FuncUnfold Since [] Since.impl
   Until_unfold : FuncUnfold Until [] Until.impl
@@ -2331,7 +2326,6 @@ attribute [instance] Assumptions.ParseError_instance
   Assumptions.After_unfold
   Assumptions.AfterFunc_unfold
   Assumptions.goFunc_unfold
-  Assumptions.NewTicker_unfold
   Assumptions.subMono_unfold
   Assumptions.Since_unfold
   Assumptions.Until_unfold
