@@ -68,6 +68,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testStoreSlice
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testStructConstructions
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testStructFieldFunc
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testStructFieldThroughAlias
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testStructUpdates
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTypeAssertionInterface
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testU32Len
@@ -277,6 +278,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testS
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testStructFieldFunc : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testStructFieldFunc.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testStructFieldFunc.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testStructFieldThroughAlias : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testStructFieldThroughAlias.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testStructFieldThroughAlias.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testStructUpdates : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testStructUpdates.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testStructUpdates.wp_proof

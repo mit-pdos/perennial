@@ -281,6 +281,9 @@ attribute [irreducible] aliasedStruct.ty
 @[reducible] noncomputable def structAlias.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   aliasedStruct.ty
 
+@[reducible] noncomputable def ptrAlias.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.PointerType aliasedStruct.ty)
+
 @[reducible] noncomputable def arrayA [GooseExts] [GoGlobalContext] : val :=
   #(0 : Int)
 
@@ -982,6 +985,9 @@ noncomputable def readAliasField [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def readAliasFieldPtr [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.readAliasFieldPtr"
+
+noncomputable def readPtrAliasField [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.readPtrAliasField"
 
 noncomputable def typeAssertInt [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.typeAssertInt"
@@ -5500,6 +5506,20 @@ noncomputable def readAliasFieldPtr.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")))))
 
+/-- go: type_alias.go:32:6 -/
+noncomputable def readPtrAliasField.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "p"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "p" (App (Val (GoInstruction (GoAlloc ptrAlias.ty))) (Var "p"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (StructFieldRef aliasedStruct.ty go!"x"))) (App (Val (GoInstruction (GoLoad ptrAlias.ty))) (Var "p"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")))))
+
 /-- go: type_switch.go:3:6 -/
 noncomputable def typeAssertInt.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "x"
@@ -7681,6 +7701,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   convertToAlias_unfold : FuncUnfold convertToAlias [] convertToAlias.impl
   readAliasField_unfold : FuncUnfold readAliasField [] readAliasField.impl
   readAliasFieldPtr_unfold : FuncUnfold readAliasFieldPtr [] readAliasFieldPtr.impl
+  readPtrAliasField_unfold : FuncUnfold readPtrAliasField [] readPtrAliasField.impl
   typeAssertInt_unfold : FuncUnfold typeAssertInt [] typeAssertInt.impl
   wrapUnwrapInt_unfold : FuncUnfold wrapUnwrapInt [] wrapUnwrapInt.impl
   checkedTypeAssert_unfold : FuncUnfold checkedTypeAssert [] checkedTypeAssert.impl
@@ -7943,6 +7964,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.convertToAlias_unfold
   Assumptions.readAliasField_unfold
   Assumptions.readAliasFieldPtr_unfold
+  Assumptions.readPtrAliasField_unfold
   Assumptions.typeAssertInt_unfold
   Assumptions.wrapUnwrapInt_unfold
   Assumptions.checkedTypeAssert_unfold

@@ -933,16 +933,17 @@ by `fieldAddrSelection`. Kubernetes' apiserver hits it at `clientv3.Event = mvcc
 (etcd-grove, `notes/k8s-compactor-plan.md`, Q1 (b)).
 
 **Witness.** `type S struct{ x uint64 }; type A = S; func f(a A) uint64 { return a.x }`, and
-the same through `p *A`: Go returns the field; goose stops with an unsupported selector.
+the same through `p *A` and `type P = *S`: Go returns the field; goose stops with an unsupported selector.
 
 **Taken.** `types.Unalias` on the type before the pointer test and on the pointer's
 element, in `getStructInfo` (two lines; no new goose branch, no semantics rule, no negative
 test). Both selector translations go through `getStructInfo`; the other `*types.Named`
 matches already unalias or handle declared names. The translation is the aliased struct's
 `StructFieldRef S.ty` (the alias's type is `@[reducible]`, `A.ty := S.ty`). Tests: the
-unittest gold file (value and pointer), a semantics test (`testStructFieldThroughAlias`).
-Regenerating `Perennial/Code` and `GeneratedProof` with and without the change gives
-identical output.
+unittest gold file (a value, a pointer to an alias, an alias of a pointer), a semantics test
+(`testStructFieldThroughAlias`, proved by `semantics_auto`). Regenerating the standard
+library and models with and without the change gives identical output; only goose's own
+examples change.
 
 **Not taken.** Nothing tempting: a separate `*types.Alias` case in each selector caller
 would duplicate the lookup.
