@@ -1062,3 +1062,43 @@ address (P1 (i)); translating `NewFile` with models of `Fcntl`, the poller linkn
 **Why.** R2 would require translating `NewFile`; the user overrode it for the standard streams:
 a model less defined than Go (stuck where Go runs) is sound, and here it costs nothing the
 proofs need. The `init.0` no-op is faithful for every program Perennial can express.
+
+## Case 34 — ACCEPTED: the runtime's timers keep their state in a cell only the model allocates; `newTimerMade` and the timer/ticker axioms removed (branch `worktree-timer-runtime-cell`)
+
+**Symptom.** Unsound model, then worse trust. The models of `NewTicker`, `Ticker.Stop` and
+`Ticker.Reset` (and before them a translated `Timer.Stop` over a `stopTimer` stub) read only
+`initTimer`/`initTicker`, so on a copy (`u := new(time.Ticker); *u = *t`) they returned where Go
+crashes (go1.27.3: `u.Reset(time.Second)` dies with "fatal error: unlock of unlocked lock"; the
+runtime's timer state after the header is not copied). `isFuncTimer` (`initTimer ↦□ true`) had
+the same hole for `AfterFunc` timers. cf98e5f15 (timers) and 432c32f (tickers) "fixed" this by
+deleting the models, stating the six specs as axioms, and adding
+`opaque newTimerMade (t : Loc) : IProp GF := iprop(False)` as an unforgeable token that only the
+axioms hand out. An earlier fix (82c53dd53, proving the timer specs over models) was dropped
+in the merge f58cb0a26, which took cf98e5f15's side of the conflict whole.
+
+**Witness.** `t := time.NewTicker(time.Second); u := new(time.Ticker); *u = *t; u.Reset(time.Second)`.
+
+**Taken.** Go's runtime allocates a timer as `runtime.timeTimer`: the `Timer`/`Ticker` header
+followed by the embedded `timer`. The model keeps that state as one cell at
+`structFieldRef time.Timer "timer" t` (`runtimeTimerRef`; Go's `Timer` has no field `timer`, so
+goose never emits that address and no program allocation creates the cell), allocated by
+`runtimeTimerAlloc` with the `alloc_struct`/`GlobalAlloc` scheme (`GoAlloc`, `AngelicExit` unless
+it landed there). The models of the runtime's `newTimer` and of `NewTimer`/`NewTicker` allocate
+it; the new models of `stopTimer`/`resetTimer` load it, so they are stuck on a copy. `Timer.Stop`
+and `Timer.Reset` are translated; `NewTimer`, `NewTicker` (channel capacity 0 or 1: the runtime
+makes timer channels synchronous) and `Ticker.Stop`/`Ticker.Reset` (`(*Timer)(unsafe.Pointer(t))`
+is stuck, `Timer` is not plain) are hand-written. The token is the points-to
+`isRuntimeTimer t`, in `isTimer`, `isFuncTimer` and `isTicker`. All six specs are proved. Trust:
+−1 opaque, −6 axioms; +6 models and a 2-function helper; no goose or semantics change.
+
+**Not taken.** Naming `runtime.timeTimer` itself: `time` does not import `runtime`, and
+`runtime.Assumptions` would join every time spec and its clients. Modelling the runtime's timer
+set as a package-level registry: global state, a lock and ghost state for what a points-to gives.
+
+**Why.** The user: the axioms over an opaque `False` were "an obviously unsound axiom into the
+tcb", "I'd rather not introduce iris axioms here", and "make sure that future agents know that
+the prior changes that introduced those axioms were bad, and we should avoid those kind of
+changes in the future". cf98e5f15 and 432c32f are rejected precedent: when a model is more
+defined than Go, make it stuck where Go fails by modelling the state Go depends on; never
+delete the model in favour of axioms, and never mint a token as an `opaque` proposition whose
+meaning only axioms fix (review-trusted R10). Plan signed off 2026-11-04 ("Make it so.").

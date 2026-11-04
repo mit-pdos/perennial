@@ -77,7 +77,7 @@ variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
 /-- `(*Timer).Stop()` for a timer made by `NewTimer` (`isTimer`): some `bool` (`Timer.wp_Stop`'s
-first case; this was the axiom `Timer.wp_Stop`). -/
+first case). -/
 theorem Timer.wp_Stop_timer (t ch : Loc) (γ : ChanNames) :
     {{ isTimer (GF := GF) t ch γ }}
       (App (Val (t @!! go.GoType.PointerType time.Timer.ty @!! go!"Stop")) (Val #()))

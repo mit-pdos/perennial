@@ -20,8 +20,8 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- Spec of `time.NewTimer(d)` (axiom): a `*Timer` (`isTimer`), one of the runtime's timers
-(`newTimerMade`). -/
+/-- Spec of `time.NewTimer(d)`: a `*Timer` (`isTimer`), one of the runtime's timers
+(`isRuntimeTimer`). -/
 abbrev time.NewTimer.spec : Prop :=
   ∀ (d : time.Duration),
     {{ (True : IProp GF) }}

@@ -1,5 +1,5 @@
 /-
-`time.Ticker.Stop`'s spec, assumed.
+The proof of `time.Ticker.Stop` (over its trusted model, `TrustedCode/time.lean`).
 -/
 module
 
@@ -20,9 +20,19 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- Axiom: `Ticker.Stop` is not translated (Go reinterprets the runtime's `*Timer` as a `*Ticker`
-through `unsafe.Pointer`; the runtime's timers are not modelled). -/
-axiom time.Ticker.Stop.wp_proof : time.Ticker.Stop.spec (GF := GF) (hG := hG)
+theorem time.Ticker.Stop.wp_proof : time.Ticker.Stop.spec (GF := GF) (hG := hG) := by
+  intro t
+  wp_start as ⟨%ch, %γ, #Ht⟩
+  unfold isTicker
+  icases Ht with ⟨#HC, #Hinit, #Hrt, #Hch⟩
+  unfold isRuntimeTimer
+  rw [show go.GoType.Named go!"time.Ticker" [] = time.Ticker.ty by with_unfolding_all rfl]
+  wp_auto
+  unfold runtimeTimerRef
+  rw [show go.GoType.Named go!"time.Timer" [] = time.Timer.ty by with_unfolding_all rfl]
+  wp_auto
+  wp_apply wp_ArbitraryInt as %x -
+  wp_end
 
 end proof
 
