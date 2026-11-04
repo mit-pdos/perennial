@@ -367,16 +367,79 @@ attribute [instance] gcBgMarkWorkerNodePadded.TypeAssumptions.type_repr
   gcBgMarkWorkerNodePadded.TypeAssumptions.method_set
   gcBgMarkWorkerNodePadded.TypeAssumptions.ptr_method_set
 
+class «struct#51fa335f».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#51fa335f».underlying «struct#51fa335f»
+  get_fill : ∀ (x : «struct#51fa335f»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#51fa335f».underlying go!"fill") #x (Val #(x.fill'))
+  set_fill : ∀ (x : «struct#51fa335f») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#51fa335f».underlying go!"fill") (PairV #x #y) (Val #(({ x with fill' := y } : «struct#51fa335f»)))
+  get_capacity : ∀ (x : «struct#51fa335f»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#51fa335f».underlying go!"capacity") #x (Val #(x.capacity'))
+  set_capacity : ∀ (x : «struct#51fa335f») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#51fa335f».underlying go!"capacity") (PairV #x #y) (Val #(({ x with capacity' := y } : «struct#51fa335f»)))
+
+attribute [instance] «struct#51fa335f».TypeAssumptions.type_repr
+  «struct#51fa335f».TypeAssumptions.get_fill
+  «struct#51fa335f».TypeAssumptions.set_fill
+  «struct#51fa335f».TypeAssumptions.get_capacity
+  «struct#51fa335f».TypeAssumptions.set_capacity
+
 class gcCPULimiterState.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying gcCPULimiterState.underlying gcCPULimiterState
   underlying : go.UnderlyingDirectedEq gcCPULimiterState.ty gcCPULimiterState.underlying
-  isUnderlying : go.IsUnderlying gcCPULimiterState.underlying gcCPULimiterState.underlying
+  get_lock : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"lock") #x (Val #(x.lock'))
+  set_lock : ∀ (x : gcCPULimiterState) (y : _root_.Perennial.internal.runtime.atomic.Uint32), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : gcCPULimiterState)))
+  get_enabled : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"enabled") #x (Val #(x.enabled'))
+  set_enabled : ∀ (x : gcCPULimiterState) (y : _root_.Perennial.internal.runtime.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"enabled") (PairV #x #y) (Val #(({ x with enabled' := y } : gcCPULimiterState)))
+  get_gcEnabled : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"gcEnabled") #x (Val #(x.gcEnabled'))
+  set_gcEnabled : ∀ (x : gcCPULimiterState) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"gcEnabled") (PairV #x #y) (Val #(({ x with gcEnabled' := y } : gcCPULimiterState)))
+  get_transitioning : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"transitioning") #x (Val #(x.transitioning'))
+  set_transitioning : ∀ (x : gcCPULimiterState) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"transitioning") (PairV #x #y) (Val #(({ x with transitioning' := y } : gcCPULimiterState)))
+  get_test : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"test") #x (Val #(x.test'))
+  set_test : ∀ (x : gcCPULimiterState) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"test") (PairV #x #y) (Val #(({ x with test' := y } : gcCPULimiterState)))
+  get_bucket : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"bucket") #x (Val #(x.bucket'))
+  set_bucket : ∀ (x : gcCPULimiterState) (y : «struct#51fa335f»), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"bucket") (PairV #x #y) (Val #(({ x with bucket' := y } : gcCPULimiterState)))
+  get_overflow : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"overflow") #x (Val #(x.overflow'))
+  set_overflow : ∀ (x : gcCPULimiterState) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"overflow") (PairV #x #y) (Val #(({ x with overflow' := y } : gcCPULimiterState)))
+  get_assistTimePool : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"assistTimePool") #x (Val #(x.assistTimePool'))
+  set_assistTimePool : ∀ (x : gcCPULimiterState) (y : _root_.Perennial.internal.runtime.atomic.Int64), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"assistTimePool") (PairV #x #y) (Val #(({ x with assistTimePool' := y } : gcCPULimiterState)))
+  get_idleMarkTimePool : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"idleMarkTimePool") #x (Val #(x.idleMarkTimePool'))
+  set_idleMarkTimePool : ∀ (x : gcCPULimiterState) (y : _root_.Perennial.internal.runtime.atomic.Int64), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"idleMarkTimePool") (PairV #x #y) (Val #(({ x with idleMarkTimePool' := y } : gcCPULimiterState)))
+  get_idleTimePool : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"idleTimePool") #x (Val #(x.idleTimePool'))
+  set_idleTimePool : ∀ (x : gcCPULimiterState) (y : _root_.Perennial.internal.runtime.atomic.Int64), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"idleTimePool") (PairV #x #y) (Val #(({ x with idleTimePool' := y } : gcCPULimiterState)))
+  get_lastUpdate : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"lastUpdate") #x (Val #(x.lastUpdate'))
+  set_lastUpdate : ∀ (x : gcCPULimiterState) (y : _root_.Perennial.internal.runtime.atomic.Int64), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"lastUpdate") (PairV #x #y) (Val #(({ x with lastUpdate' := y } : gcCPULimiterState)))
+  get_lastEnabledCycle : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"lastEnabledCycle") #x (Val #(x.lastEnabledCycle'))
+  set_lastEnabledCycle : ∀ (x : gcCPULimiterState) (y : _root_.Perennial.internal.runtime.atomic.Uint32), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"lastEnabledCycle") (PairV #x #y) (Val #(({ x with lastEnabledCycle' := y } : gcCPULimiterState)))
+  get_nprocs : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"nprocs") #x (Val #(x.nprocs'))
+  set_nprocs : ∀ (x : gcCPULimiterState) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"nprocs") (PairV #x #y) (Val #(({ x with nprocs' := y } : gcCPULimiterState)))
   method_set : go.MethodSetIs gcCPULimiterState.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType gcCPULimiterState.ty) [(go!"runtime.accumulate", (some (go.signature.Signature [go.int64, go.int64] false []))), (go!"runtime.addAssistTime", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.addIdleTime", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.finishGCTransition", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.limiting", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.needUpdate", (some (go.signature.Signature [go.int64] false [go.bool]))), (go!"runtime.resetCapacity", (some (go.signature.Signature [go.int64, go.int32] false []))), (go!"runtime.startGCTransition", (some (go.signature.Signature [go.bool, go.int64] false []))), (go!"runtime.tryLock", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.unlock", (some (go.signature.Signature [] false []))), (go!"runtime.update", (some (go.signature.Signature [go.int64] false []))), (go!"runtime.updateLocked", (some (go.signature.Signature [go.int64] false [])))]
 
 attribute [instance] gcCPULimiterState.TypeAssumptions.type_repr
   gcCPULimiterState.TypeAssumptions.underlying
-  gcCPULimiterState.TypeAssumptions.isUnderlying
+  gcCPULimiterState.TypeAssumptions.get_lock
+  gcCPULimiterState.TypeAssumptions.set_lock
+  gcCPULimiterState.TypeAssumptions.get_enabled
+  gcCPULimiterState.TypeAssumptions.set_enabled
+  gcCPULimiterState.TypeAssumptions.get_gcEnabled
+  gcCPULimiterState.TypeAssumptions.set_gcEnabled
+  gcCPULimiterState.TypeAssumptions.get_transitioning
+  gcCPULimiterState.TypeAssumptions.set_transitioning
+  gcCPULimiterState.TypeAssumptions.get_test
+  gcCPULimiterState.TypeAssumptions.set_test
+  gcCPULimiterState.TypeAssumptions.get_bucket
+  gcCPULimiterState.TypeAssumptions.set_bucket
+  gcCPULimiterState.TypeAssumptions.get_overflow
+  gcCPULimiterState.TypeAssumptions.set_overflow
+  gcCPULimiterState.TypeAssumptions.get_assistTimePool
+  gcCPULimiterState.TypeAssumptions.set_assistTimePool
+  gcCPULimiterState.TypeAssumptions.get_idleMarkTimePool
+  gcCPULimiterState.TypeAssumptions.set_idleMarkTimePool
+  gcCPULimiterState.TypeAssumptions.get_idleTimePool
+  gcCPULimiterState.TypeAssumptions.set_idleTimePool
+  gcCPULimiterState.TypeAssumptions.get_lastUpdate
+  gcCPULimiterState.TypeAssumptions.set_lastUpdate
+  gcCPULimiterState.TypeAssumptions.get_lastEnabledCycle
+  gcCPULimiterState.TypeAssumptions.set_lastEnabledCycle
+  gcCPULimiterState.TypeAssumptions.get_nprocs
+  gcCPULimiterState.TypeAssumptions.set_nprocs
   gcCPULimiterState.TypeAssumptions.method_set
   gcCPULimiterState.TypeAssumptions.ptr_method_set
 
@@ -458,16 +521,56 @@ attribute [instance] spanInlineMarkBits.TypeAssumptions.type_repr
   spanInlineMarkBits.TypeAssumptions.method_set
   spanInlineMarkBits.TypeAssumptions.ptr_method_set
 
+class objptr.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq objptr.ty objptr.underlying
+  method_set : go.MethodSetIs objptr.ty [(go!"runtime.objIndex", (some (go.signature.Signature [] false [go.uint16]))), (go!"runtime.spanBase", (some (go.signature.Signature [] false [go.uintptr])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType objptr.ty) [(go!"runtime.objIndex", (some (go.signature.Signature [] false [go.uint16]))), (go!"runtime.spanBase", (some (go.signature.Signature [] false [go.uintptr])))]
+
+attribute [instance] objptr.TypeAssumptions.underlying
+  objptr.TypeAssumptions.method_set
+  objptr.TypeAssumptions.ptr_method_set
+
+class «struct#1e853569».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#1e853569».underlying «struct#1e853569»
+  get_head : ∀ (x : «struct#1e853569»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#1e853569».underlying go!"head") #x (Val #(x.head'))
+  set_head : ∀ (x : «struct#1e853569») (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «struct#1e853569».underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : «struct#1e853569»)))
+  get_tail : ∀ (x : «struct#1e853569»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#1e853569».underlying go!"tail") #x (Val #(x.tail'))
+  set_tail : ∀ (x : «struct#1e853569») (y : _root_.Perennial.internal.runtime.atomic.UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldSet «struct#1e853569».underlying go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : «struct#1e853569»)))
+
+attribute [instance] «struct#1e853569».TypeAssumptions.type_repr
+  «struct#1e853569».TypeAssumptions.get_head
+  «struct#1e853569».TypeAssumptions.set_head
+  «struct#1e853569».TypeAssumptions.get_tail
+  «struct#1e853569».TypeAssumptions.set_tail
+
 class spanQueue.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying spanQueue.underlying spanQueue
   underlying : go.UnderlyingDirectedEq spanQueue.ty spanQueue.underlying
-  isUnderlying : go.IsUnderlying spanQueue.underlying spanQueue.underlying
+  get_head : ∀ (x : spanQueue), go.IsGoStepPureDetTagged under (StructFieldGet spanQueue.underlying go!"head") #x (Val #(x.head'))
+  set_head : ∀ (x : spanQueue) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet spanQueue.underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : spanQueue)))
+  get_tail : ∀ (x : spanQueue), go.IsGoStepPureDetTagged under (StructFieldGet spanQueue.underlying go!"tail") #x (Val #(x.tail'))
+  set_tail : ∀ (x : spanQueue) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet spanQueue.underlying go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : spanQueue)))
+  get_ring : ∀ (x : spanQueue), go.IsGoStepPureDetTagged under (StructFieldGet spanQueue.underlying go!"ring") #x (Val #(x.ring'))
+  set_ring : ∀ (x : spanQueue) (y : (GoArray objptr 256)), go.IsGoStepPureDetTagged under (StructFieldSet spanQueue.underlying go!"ring") (PairV #x #y) (Val #(({ x with ring' := y } : spanQueue)))
+  get_putsSinceDrain : ∀ (x : spanQueue), go.IsGoStepPureDetTagged under (StructFieldGet spanQueue.underlying go!"putsSinceDrain") #x (Val #(x.putsSinceDrain'))
+  set_putsSinceDrain : ∀ (x : spanQueue) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet spanQueue.underlying go!"putsSinceDrain") (PairV #x #y) (Val #(({ x with putsSinceDrain' := y } : spanQueue)))
+  get_chain : ∀ (x : spanQueue), go.IsGoStepPureDetTagged under (StructFieldGet spanQueue.underlying go!"chain") #x (Val #(x.chain'))
+  set_chain : ∀ (x : spanQueue) (y : «struct#1e853569»), go.IsGoStepPureDetTagged under (StructFieldSet spanQueue.underlying go!"chain") (PairV #x #y) (Val #(({ x with chain' := y } : spanQueue)))
   method_set : go.MethodSetIs spanQueue.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType spanQueue.ty) [(go!"runtime.chainEmpty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.destroy", (some (go.signature.Signature [] false []))), (go!"runtime.drain", (some (go.signature.Signature [go.uint32] false []))), (go!"runtime.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.flush", (some (go.signature.Signature [] false []))), (go!"runtime.put", (some (go.signature.Signature [objptr.ty] false [go.bool]))), (go!"runtime.putFast", (some (go.signature.Signature [objptr.ty] false [go.bool]))), (go!"runtime.refill", (some (go.signature.Signature [(go.GoType.PointerType spanSPMC.ty)] false [objptr.ty]))), (go!"runtime.steal", (some (go.signature.Signature [(go.GoType.PointerType spanQueue.ty)] false [objptr.ty]))), (go!"runtime.tryDrain", (some (go.signature.Signature [(go.GoType.PointerType spanSPMC.ty), go.uint32] false [go.bool]))), (go!"runtime.tryGetFast", (some (go.signature.Signature [] false [objptr.ty])))]
 
 attribute [instance] spanQueue.TypeAssumptions.type_repr
   spanQueue.TypeAssumptions.underlying
-  spanQueue.TypeAssumptions.isUnderlying
+  spanQueue.TypeAssumptions.get_head
+  spanQueue.TypeAssumptions.set_head
+  spanQueue.TypeAssumptions.get_tail
+  spanQueue.TypeAssumptions.set_tail
+  spanQueue.TypeAssumptions.get_ring
+  spanQueue.TypeAssumptions.set_ring
+  spanQueue.TypeAssumptions.get_putsSinceDrain
+  spanQueue.TypeAssumptions.set_putsSinceDrain
+  spanQueue.TypeAssumptions.get_chain
+  spanQueue.TypeAssumptions.set_chain
   spanQueue.TypeAssumptions.method_set
   spanQueue.TypeAssumptions.ptr_method_set
 
@@ -513,15 +616,6 @@ attribute [instance] spanSPMC.TypeAssumptions.type_repr
   spanSPMC.TypeAssumptions.set_ring
   spanSPMC.TypeAssumptions.method_set
   spanSPMC.TypeAssumptions.ptr_method_set
-
-class objptr.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  underlying : go.UnderlyingDirectedEq objptr.ty objptr.underlying
-  method_set : go.MethodSetIs objptr.ty [(go!"runtime.objIndex", (some (go.signature.Signature [] false [go.uint16]))), (go!"runtime.spanBase", (some (go.signature.Signature [] false [go.uintptr])))]
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType objptr.ty) [(go!"runtime.objIndex", (some (go.signature.Signature [] false [go.uint16]))), (go!"runtime.spanBase", (some (go.signature.Signature [] false [go.uintptr])))]
-
-attribute [instance] objptr.TypeAssumptions.underlying
-  objptr.TypeAssumptions.method_set
-  objptr.TypeAssumptions.ptr_method_set
 
 class sizeClassScanStats.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying sizeClassScanStats.underlying sizeClassScanStats
@@ -1071,114 +1165,6 @@ attribute [instance] sweepdata.TypeAssumptions.type_repr
   sweepdata.TypeAssumptions.set_centralIndex
   sweepdata.TypeAssumptions.method_set
   sweepdata.TypeAssumptions.ptr_method_set
-
-class sweepLocker.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying sweepLocker.underlying sweepLocker
-  underlying : go.UnderlyingDirectedEq sweepLocker.ty sweepLocker.underlying
-  get_sweepGen : ∀ (x : sweepLocker), go.IsGoStepPureDetTagged under (StructFieldGet sweepLocker.underlying go!"sweepGen") #x (Val #(x.sweepGen'))
-  set_sweepGen : ∀ (x : sweepLocker) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet sweepLocker.underlying go!"sweepGen") (PairV #x #y) (Val #(({ x with sweepGen' := y } : sweepLocker)))
-  get_valid : ∀ (x : sweepLocker), go.IsGoStepPureDetTagged under (StructFieldGet sweepLocker.underlying go!"valid") #x (Val #(x.valid'))
-  set_valid : ∀ (x : sweepLocker) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet sweepLocker.underlying go!"valid") (PairV #x #y) (Val #(({ x with valid' := y } : sweepLocker)))
-  method_set : go.MethodSetIs sweepLocker.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sweepLocker.ty) [(go!"runtime.tryAcquire", (some (go.signature.Signature [(go.GoType.PointerType mspan.ty)] false [sweepLocked.ty, go.bool])))]
-
-attribute [instance] sweepLocker.TypeAssumptions.type_repr
-  sweepLocker.TypeAssumptions.underlying
-  sweepLocker.TypeAssumptions.get_sweepGen
-  sweepLocker.TypeAssumptions.set_sweepGen
-  sweepLocker.TypeAssumptions.get_valid
-  sweepLocker.TypeAssumptions.set_valid
-  sweepLocker.TypeAssumptions.method_set
-  sweepLocker.TypeAssumptions.ptr_method_set
-
-class sweepLocked.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying sweepLocked.underlying sweepLocked
-  underlying : go.UnderlyingDirectedEq sweepLocked.ty sweepLocked.underlying
-  get_mspan : ∀ (x : sweepLocked), go.IsGoStepPureDetTagged under (StructFieldGet sweepLocked.underlying go!"mspan") #x (Val #(x.mspan'))
-  set_mspan : ∀ (x : sweepLocked) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet sweepLocked.underlying go!"mspan") (PairV #x #y) (Val #(({ x with mspan' := y } : sweepLocked)))
-  method_set : go.MethodSetIs sweepLocked.ty [(go!"runtime.allocBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.base", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.countAlloc", (some (go.signature.Signature [] false [go.int]))), (go!"runtime.decPinCounter", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.divideByElemSize", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.ensureSwept", (some (go.signature.Signature [] false []))), (go!"runtime.getPinnerBits", (some (go.signature.Signature [] false [(go.GoType.PointerType pinnerBits.ty)]))), (go!"runtime.heapBits", (some (go.signature.Signature [] false [(go.GoType.SliceType go.uintptr)]))), (go!"runtime.heapBitsSmallForAddr", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.inList", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.incPinCounter", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.init", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"runtime.initHeapBits", (some (go.signature.Signature [] false []))), (go!"runtime.initInlineMarkBits", (some (go.signature.Signature [] false []))), (go!"runtime.inlineMarkBits", (some (go.signature.Signature [] false [(go.GoType.PointerType spanInlineMarkBits.ty)]))), (go!"runtime.isFree", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.isFreeOrNewlyAllocated", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.isUnusedUserArenaChunk", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.layout", (some (go.signature.Signature [] false [go.uintptr, go.uintptr, go.uintptr]))), (go!"runtime.markBitsForBase", (some (go.signature.Signature [] false [markBits.ty]))), (go!"runtime.markBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.moveInlineMarks", (some (go.signature.Signature [(go.GoType.PointerType gcBits.ty)] false []))), (go!"runtime.newPinnerBits", (some (go.signature.Signature [] false [(go.GoType.PointerType pinnerBits.ty)]))), (go!"runtime.nextFreeIndex", (some (go.signature.Signature [] false [go.uint16]))), (go!"runtime.objBase", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.objIndex", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.pinnerBitSize", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.refillAllocCache", (some (go.signature.Signature [go.uint16] false []))), (go!"runtime.refreshPinnerBits", (some (go.signature.Signature [] false []))), (go!"runtime.reportZombies", (some (go.signature.Signature [] false []))), (go!"runtime.scannedBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.setPinnerBits", (some (go.signature.Signature [(go.GoType.PointerType pinnerBits.ty)] false []))), (go!"runtime.setUserArenaChunkToFault", (some (go.signature.Signature [] false []))), (go!"runtime.specialFindSplicePoint", (some (go.signature.Signature [go.uintptr, go.byte] false [(go.GoType.PointerType (go.GoType.PointerType special.ty)), go.bool]))), (go!"runtime.typePointersOf", (some (go.signature.Signature [go.uintptr, go.uintptr] false [typePointers.ty]))), (go!"runtime.typePointersOfType", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.Named go!"internal/abi.Type" [])), go.uintptr] false [typePointers.ty]))), (go!"runtime.typePointersOfUnchecked", (some (go.signature.Signature [go.uintptr] false [typePointers.ty]))), (go!"runtime.userArenaNextFree", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.Named go!"internal/abi.Type" [])), go.int] false [«unsafe».Pointer]))), (go!"runtime.writeHeapBitsSmall", (some (go.signature.Signature [go.uintptr, go.uintptr, (go.GoType.PointerType (go.GoType.Named go!"internal/abi.Type" []))] false [go.uintptr]))), (go!"runtime.writeUserArenaHeapBits", (some (go.signature.Signature [go.uintptr] false [writeUserArenaHeapBits.ty])))]
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType sweepLocked.ty) [(go!"runtime.allocBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.base", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.countAlloc", (some (go.signature.Signature [] false [go.int]))), (go!"runtime.decPinCounter", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.divideByElemSize", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.ensureSwept", (some (go.signature.Signature [] false []))), (go!"runtime.getPinnerBits", (some (go.signature.Signature [] false [(go.GoType.PointerType pinnerBits.ty)]))), (go!"runtime.heapBits", (some (go.signature.Signature [] false [(go.GoType.SliceType go.uintptr)]))), (go!"runtime.heapBitsSmallForAddr", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.inList", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.incPinCounter", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.init", (some (go.signature.Signature [go.uintptr, go.uintptr] false []))), (go!"runtime.initHeapBits", (some (go.signature.Signature [] false []))), (go!"runtime.initInlineMarkBits", (some (go.signature.Signature [] false []))), (go!"runtime.inlineMarkBits", (some (go.signature.Signature [] false [(go.GoType.PointerType spanInlineMarkBits.ty)]))), (go!"runtime.isFree", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.isFreeOrNewlyAllocated", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.isUnusedUserArenaChunk", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.layout", (some (go.signature.Signature [] false [go.uintptr, go.uintptr, go.uintptr]))), (go!"runtime.markBitsForBase", (some (go.signature.Signature [] false [markBits.ty]))), (go!"runtime.markBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.moveInlineMarks", (some (go.signature.Signature [(go.GoType.PointerType gcBits.ty)] false []))), (go!"runtime.newPinnerBits", (some (go.signature.Signature [] false [(go.GoType.PointerType pinnerBits.ty)]))), (go!"runtime.nextFreeIndex", (some (go.signature.Signature [] false [go.uint16]))), (go!"runtime.objBase", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.objIndex", (some (go.signature.Signature [go.uintptr] false [go.uintptr]))), (go!"runtime.pinnerBitSize", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.refillAllocCache", (some (go.signature.Signature [go.uint16] false []))), (go!"runtime.refreshPinnerBits", (some (go.signature.Signature [] false []))), (go!"runtime.reportZombies", (some (go.signature.Signature [] false []))), (go!"runtime.scannedBitsForIndex", (some (go.signature.Signature [go.uintptr] false [markBits.ty]))), (go!"runtime.setPinnerBits", (some (go.signature.Signature [(go.GoType.PointerType pinnerBits.ty)] false []))), (go!"runtime.setUserArenaChunkToFault", (some (go.signature.Signature [] false []))), (go!"runtime.specialFindSplicePoint", (some (go.signature.Signature [go.uintptr, go.byte] false [(go.GoType.PointerType (go.GoType.PointerType special.ty)), go.bool]))), (go!"runtime.sweep", (some (go.signature.Signature [go.bool] false [go.bool]))), (go!"runtime.typePointersOf", (some (go.signature.Signature [go.uintptr, go.uintptr] false [typePointers.ty]))), (go!"runtime.typePointersOfType", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.Named go!"internal/abi.Type" [])), go.uintptr] false [typePointers.ty]))), (go!"runtime.typePointersOfUnchecked", (some (go.signature.Signature [go.uintptr] false [typePointers.ty]))), (go!"runtime.userArenaNextFree", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.Named go!"internal/abi.Type" [])), go.int] false [«unsafe».Pointer]))), (go!"runtime.writeHeapBitsSmall", (some (go.signature.Signature [go.uintptr, go.uintptr, (go.GoType.PointerType (go.GoType.Named go!"internal/abi.Type" []))] false [go.uintptr]))), (go!"runtime.writeUserArenaHeapBits", (some (go.signature.Signature [go.uintptr] false [writeUserArenaHeapBits.ty])))]
-
-attribute [instance] sweepLocked.TypeAssumptions.type_repr
-  sweepLocked.TypeAssumptions.underlying
-  sweepLocked.TypeAssumptions.get_mspan
-  sweepLocked.TypeAssumptions.set_mspan
-  sweepLocked.TypeAssumptions.method_set
-  sweepLocked.TypeAssumptions.ptr_method_set
-
-class gcWork.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying gcWork.underlying gcWork
-  underlying : go.UnderlyingDirectedEq gcWork.ty gcWork.underlying
-  get_id : ∀ (x : gcWork), go.IsGoStepPureDetTagged under (StructFieldGet gcWork.underlying go!"id") #x (Val #(x.id'))
-  set_id : ∀ (x : gcWork) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet gcWork.underlying go!"id") (PairV #x #y) (Val #(({ x with id' := y } : gcWork)))
-  get_wbuf1 : ∀ (x : gcWork), go.IsGoStepPureDetTagged under (StructFieldGet gcWork.underlying go!"wbuf1") #x (Val #(x.wbuf1'))
-  set_wbuf1 : ∀ (x : gcWork) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet gcWork.underlying go!"wbuf1") (PairV #x #y) (Val #(({ x with wbuf1' := y } : gcWork)))
-  get_wbuf2 : ∀ (x : gcWork), go.IsGoStepPureDetTagged under (StructFieldGet gcWork.underlying go!"wbuf2") #x (Val #(x.wbuf2'))
-  set_wbuf2 : ∀ (x : gcWork) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet gcWork.underlying go!"wbuf2") (PairV #x #y) (Val #(({ x with wbuf2' := y } : gcWork)))
-  get_spanq : ∀ (x : gcWork), go.IsGoStepPureDetTagged under (StructFieldGet gcWork.underlying go!"spanq") #x (Val #(x.spanq'))
-  set_spanq : ∀ (x : gcWork) (y : spanQueue), go.IsGoStepPureDetTagged under (StructFieldSet gcWork.underlying go!"spanq") (PairV #x #y) (Val #(({ x with spanq' := y } : gcWork)))
-  get_ptrBuf : ∀ (x : gcWork), go.IsGoStepPureDetTagged under (StructFieldGet gcWork.underlying go!"ptrBuf") #x (Val #(x.ptrBuf'))
-  set_ptrBuf : ∀ (x : gcWork) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet gcWork.underlying go!"ptrBuf") (PairV #x #y) (Val #(({ x with ptrBuf' := y } : gcWork)))
-  get_bytesMarked : ∀ (x : gcWork), go.IsGoStepPureDetTagged under (StructFieldGet gcWork.underlying go!"bytesMarked") #x (Val #(x.bytesMarked'))
-  set_bytesMarked : ∀ (x : gcWork) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet gcWork.underlying go!"bytesMarked") (PairV #x #y) (Val #(({ x with bytesMarked' := y } : gcWork)))
-  get_heapScanWork : ∀ (x : gcWork), go.IsGoStepPureDetTagged under (StructFieldGet gcWork.underlying go!"heapScanWork") #x (Val #(x.heapScanWork'))
-  set_heapScanWork : ∀ (x : gcWork) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet gcWork.underlying go!"heapScanWork") (PairV #x #y) (Val #(({ x with heapScanWork' := y } : gcWork)))
-  get_flushedWork : ∀ (x : gcWork), go.IsGoStepPureDetTagged under (StructFieldGet gcWork.underlying go!"flushedWork") #x (Val #(x.flushedWork'))
-  set_flushedWork : ∀ (x : gcWork) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet gcWork.underlying go!"flushedWork") (PairV #x #y) (Val #(({ x with flushedWork' := y } : gcWork)))
-  get_mayNeedWorker : ∀ (x : gcWork), go.IsGoStepPureDetTagged under (StructFieldGet gcWork.underlying go!"mayNeedWorker") #x (Val #(x.mayNeedWorker'))
-  set_mayNeedWorker : ∀ (x : gcWork) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet gcWork.underlying go!"mayNeedWorker") (PairV #x #y) (Val #(({ x with mayNeedWorker' := y } : gcWork)))
-  get_stats : ∀ (x : gcWork), go.IsGoStepPureDetTagged under (StructFieldGet gcWork.underlying go!"stats") #x (Val #(x.stats'))
-  set_stats : ∀ (x : gcWork) (y : (GoArray sizeClassScanStats 68)), go.IsGoStepPureDetTagged under (StructFieldSet gcWork.underlying go!"stats") (PairV #x #y) (Val #(({ x with stats' := y } : gcWork)))
-  method_set : go.MethodSetIs gcWork.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType gcWork.ty) [(go!"runtime.balance", (some (go.signature.Signature [] false []))), (go!"runtime.dispose", (some (go.signature.Signature [] false []))), (go!"runtime.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.flushScanStats", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.ArrayType 68 sizeClassScanStats.ty))] false []))), (go!"runtime.init", (some (go.signature.Signature [] false []))), (go!"runtime.putObj", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.putObjBatch", (some (go.signature.Signature [(go.GoType.SliceType go.uintptr)] false []))), (go!"runtime.putObjFast", (some (go.signature.Signature [go.uintptr] false [go.bool]))), (go!"runtime.tryGetObj", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.tryGetObjFast", (some (go.signature.Signature [] false [go.uintptr]))), (go!"runtime.tryGetSpan", (some (go.signature.Signature [] false [objptr.ty]))), (go!"runtime.tryGetSpanFast", (some (go.signature.Signature [] false [objptr.ty]))), (go!"runtime.tryStealSpan", (some (go.signature.Signature [] false [objptr.ty])))]
-
-attribute [instance] gcWork.TypeAssumptions.type_repr
-  gcWork.TypeAssumptions.underlying
-  gcWork.TypeAssumptions.get_id
-  gcWork.TypeAssumptions.set_id
-  gcWork.TypeAssumptions.get_wbuf1
-  gcWork.TypeAssumptions.set_wbuf1
-  gcWork.TypeAssumptions.get_wbuf2
-  gcWork.TypeAssumptions.set_wbuf2
-  gcWork.TypeAssumptions.get_spanq
-  gcWork.TypeAssumptions.set_spanq
-  gcWork.TypeAssumptions.get_ptrBuf
-  gcWork.TypeAssumptions.set_ptrBuf
-  gcWork.TypeAssumptions.get_bytesMarked
-  gcWork.TypeAssumptions.set_bytesMarked
-  gcWork.TypeAssumptions.get_heapScanWork
-  gcWork.TypeAssumptions.set_heapScanWork
-  gcWork.TypeAssumptions.get_flushedWork
-  gcWork.TypeAssumptions.set_flushedWork
-  gcWork.TypeAssumptions.get_mayNeedWorker
-  gcWork.TypeAssumptions.set_mayNeedWorker
-  gcWork.TypeAssumptions.get_stats
-  gcWork.TypeAssumptions.set_stats
-  gcWork.TypeAssumptions.method_set
-  gcWork.TypeAssumptions.ptr_method_set
-
-class workbuf.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying workbuf.underlying workbuf
-  underlying : go.UnderlyingDirectedEq workbuf.ty workbuf.underlying
-  «get__#0» : ∀ (x : workbuf), go.IsGoStepPureDetTagged under (StructFieldGet workbuf.underlying go!"_#0") #x (Val #(x.«_#0'»))
-  «set__#0» : ∀ (x : workbuf) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet workbuf.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : workbuf)))
-  get_workbufhdr : ∀ (x : workbuf), go.IsGoStepPureDetTagged under (StructFieldGet workbuf.underlying go!"workbufhdr") #x (Val #(x.workbufhdr'))
-  set_workbufhdr : ∀ (x : workbuf) (y : workbufhdr), go.IsGoStepPureDetTagged under (StructFieldSet workbuf.underlying go!"workbufhdr") (PairV #x #y) (Val #(({ x with workbufhdr' := y } : workbuf)))
-  get_obj : ∀ (x : workbuf), go.IsGoStepPureDetTagged under (StructFieldGet workbuf.underlying go!"obj") #x (Val #(x.obj'))
-  set_obj : ∀ (x : workbuf) (y : (GoArray w64 253)), go.IsGoStepPureDetTagged under (StructFieldSet workbuf.underlying go!"obj") (PairV #x #y) (Val #(({ x with obj' := y } : workbuf)))
-  method_set : go.MethodSetIs workbuf.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType workbuf.ty) [(go!"runtime.checkempty", (some (go.signature.Signature [] false []))), (go!"runtime.checknonempty", (some (go.signature.Signature [] false [])))]
-
-attribute [instance] workbuf.TypeAssumptions.type_repr
-  workbuf.TypeAssumptions.underlying
-  workbuf.TypeAssumptions.«get__#0»
-  workbuf.TypeAssumptions.«set__#0»
-  workbuf.TypeAssumptions.get_workbufhdr
-  workbuf.TypeAssumptions.set_workbufhdr
-  workbuf.TypeAssumptions.get_obj
-  workbuf.TypeAssumptions.set_obj
-  workbuf.TypeAssumptions.method_set
-  workbuf.TypeAssumptions.ptr_method_set
 
 end runtime
 

@@ -12,6 +12,7 @@ public import Perennial.Code.testing
 public import Perennial.GeneratedProof.testing.chunk1
 public import Perennial.GeneratedProof.testing.chunk2
 public import Perennial.GeneratedProof.testing.chunk3
+public import Perennial.GeneratedProof.testing.chunk4
 
 @[expose] public section
 

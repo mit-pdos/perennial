@@ -8,9 +8,10 @@ public import Perennial.GeneratedProof.internal.runtime.sys
 public import Perennial.Golang.Theory
 public import Perennial.Code.runtime
 public import Perennial.GeneratedProof.runtime.chunk1
+public import Perennial.GeneratedProof.runtime.chunk2
 public import Perennial.GeneratedProof.runtime.chunk3
-public import Perennial.GeneratedProof.runtime.chunk5
-public import Perennial.GeneratedProof.runtime.chunk6
+public import Perennial.GeneratedProof.runtime.chunk7
+public import Perennial.GeneratedProof.runtime.chunk8
 
 @[expose] public section
 
@@ -23,7 +24,7 @@ open Iris Iris.BI
 noncomputable section
 namespace runtime
 
-namespace gobuf
+namespace cpuProfile
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -31,124 +32,141 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance gobuf_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.gobuf where
+noncomputable instance cpuProfile_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.cpuProfile where
   typedPointstoDef l v dq := iprop(
-    "sp" ∷ typedPointsto (structFieldRef runtime.gobuf go!"sp" l) v.sp' dq ∗
-    "pc" ∷ typedPointsto (structFieldRef runtime.gobuf go!"pc" l) v.pc' dq ∗
-    "g" ∷ typedPointsto (structFieldRef runtime.gobuf go!"g" l) v.g' dq ∗
-    "ctxt" ∷ typedPointsto (structFieldRef runtime.gobuf go!"ctxt" l) v.ctxt' dq ∗
-    "lr" ∷ typedPointsto (structFieldRef runtime.gobuf go!"lr" l) v.lr' dq ∗
-    "bp" ∷ typedPointsto (structFieldRef runtime.gobuf go!"bp" l) v.bp' dq ∗
+    "lock" ∷ typedPointsto (structFieldRef runtime.cpuProfile go!"lock" l) v.lock' dq ∗
+    "on" ∷ typedPointsto (structFieldRef runtime.cpuProfile go!"on" l) v.on' dq ∗
+    "log" ∷ typedPointsto (structFieldRef runtime.cpuProfile go!"log" l) v.log' dq ∗
+    "extra" ∷ typedPointsto (structFieldRef runtime.cpuProfile go!"extra" l) v.extra' dq ∗
+    "numExtra" ∷ typedPointsto (structFieldRef runtime.cpuProfile go!"numExtra" l) v.numExtra' dq ∗
+    "lostExtra" ∷ typedPointsto (structFieldRef runtime.cpuProfile go!"lostExtra" l) v.lostExtra' dq ∗
+    "lostAtomic" ∷ typedPointsto (structFieldRef runtime.cpuProfile go!"lostAtomic" l) v.lostAtomic' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance gobuf_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.gobuf runtime.gobuf.underlying := by
+noncomputable instance cpuProfile_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.cpuProfile runtime.cpuProfile.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance gobuf_access_load_sp (l : Loc) (v : runtime.gobuf) (dq : DFrac) :
+noncomputable instance cpuProfile_access_load_lock (l : Loc) (v : runtime.cpuProfile) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gobuf go!"sp" l) v.sp' dq)
-      (typedPointsto (structFieldRef runtime.gobuf go!"sp" l) v.sp' dq)
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"lock" l) v.lock' dq)
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"lock" l) v.lock' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gobuf_access_store_sp (l : Loc) (v : runtime.gobuf) (sp' : w64) :
+noncomputable instance cpuProfile_access_store_lock (l : Loc) (v : runtime.cpuProfile) (lock' : runtime.mutex) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gobuf go!"sp" l) v.sp' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.gobuf go!"sp" l) sp' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sp' := sp' } : runtime.gobuf) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"lock" l) v.lock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"lock" l) lock' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lock' := lock' } : runtime.cpuProfile) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gobuf_access_load_pc (l : Loc) (v : runtime.gobuf) (dq : DFrac) :
+noncomputable instance cpuProfile_access_load_on (l : Loc) (v : runtime.cpuProfile) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gobuf go!"pc" l) v.pc' dq)
-      (typedPointsto (structFieldRef runtime.gobuf go!"pc" l) v.pc' dq)
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"on" l) v.on' dq)
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"on" l) v.on' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gobuf_access_store_pc (l : Loc) (v : runtime.gobuf) (pc' : w64) :
+noncomputable instance cpuProfile_access_store_on (l : Loc) (v : runtime.cpuProfile) (on' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gobuf go!"pc" l) v.pc' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.gobuf go!"pc" l) pc' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pc' := pc' } : runtime.gobuf) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"on" l) v.on' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"on" l) on' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with on' := on' } : runtime.cpuProfile) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gobuf_access_load_g (l : Loc) (v : runtime.gobuf) (dq : DFrac) :
+noncomputable instance cpuProfile_access_load_log (l : Loc) (v : runtime.cpuProfile) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gobuf go!"g" l) v.g' dq)
-      (typedPointsto (structFieldRef runtime.gobuf go!"g" l) v.g' dq)
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"log" l) v.log' dq)
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"log" l) v.log' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gobuf_access_store_g (l : Loc) (v : runtime.gobuf) (g' : runtime.guintptr) :
+noncomputable instance cpuProfile_access_store_log (l : Loc) (v : runtime.cpuProfile) (log' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gobuf go!"g" l) v.g' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.gobuf go!"g" l) g' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with g' := g' } : runtime.gobuf) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"log" l) v.log' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"log" l) log' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with log' := log' } : runtime.cpuProfile) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gobuf_access_load_ctxt (l : Loc) (v : runtime.gobuf) (dq : DFrac) :
+noncomputable instance cpuProfile_access_load_extra (l : Loc) (v : runtime.cpuProfile) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gobuf go!"ctxt" l) v.ctxt' dq)
-      (typedPointsto (structFieldRef runtime.gobuf go!"ctxt" l) v.ctxt' dq)
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"extra" l) v.extra' dq)
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"extra" l) v.extra' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gobuf_access_store_ctxt (l : Loc) (v : runtime.gobuf) (ctxt' : Loc) :
+noncomputable instance cpuProfile_access_store_extra (l : Loc) (v : runtime.cpuProfile) (extra' : (GoArray w64 1000)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gobuf go!"ctxt" l) v.ctxt' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.gobuf go!"ctxt" l) ctxt' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ctxt' := ctxt' } : runtime.gobuf) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"extra" l) v.extra' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"extra" l) extra' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with extra' := extra' } : runtime.cpuProfile) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gobuf_access_load_lr (l : Loc) (v : runtime.gobuf) (dq : DFrac) :
+noncomputable instance cpuProfile_access_load_numExtra (l : Loc) (v : runtime.cpuProfile) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gobuf go!"lr" l) v.lr' dq)
-      (typedPointsto (structFieldRef runtime.gobuf go!"lr" l) v.lr' dq)
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"numExtra" l) v.numExtra' dq)
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"numExtra" l) v.numExtra' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gobuf_access_store_lr (l : Loc) (v : runtime.gobuf) (lr' : w64) :
+noncomputable instance cpuProfile_access_store_numExtra (l : Loc) (v : runtime.cpuProfile) (numExtra' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gobuf go!"lr" l) v.lr' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.gobuf go!"lr" l) lr' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lr' := lr' } : runtime.gobuf) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"numExtra" l) v.numExtra' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"numExtra" l) numExtra' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with numExtra' := numExtra' } : runtime.cpuProfile) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gobuf_access_load_bp (l : Loc) (v : runtime.gobuf) (dq : DFrac) :
+noncomputable instance cpuProfile_access_load_lostExtra (l : Loc) (v : runtime.cpuProfile) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gobuf go!"bp" l) v.bp' dq)
-      (typedPointsto (structFieldRef runtime.gobuf go!"bp" l) v.bp' dq)
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"lostExtra" l) v.lostExtra' dq)
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"lostExtra" l) v.lostExtra' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gobuf_access_store_bp (l : Loc) (v : runtime.gobuf) (bp' : w64) :
+noncomputable instance cpuProfile_access_store_lostExtra (l : Loc) (v : runtime.cpuProfile) (lostExtra' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gobuf go!"bp" l) v.bp' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.gobuf go!"bp" l) bp' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with bp' := bp' } : runtime.gobuf) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"lostExtra" l) v.lostExtra' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"lostExtra" l) lostExtra' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lostExtra' := lostExtra' } : runtime.cpuProfile) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cpuProfile_access_load_lostAtomic (l : Loc) (v : runtime.cpuProfile) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"lostAtomic" l) v.lostAtomic' dq)
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"lostAtomic" l) v.lostAtomic' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cpuProfile_access_store_lostAtomic (l : Loc) (v : runtime.cpuProfile) (lostAtomic' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"lostAtomic" l) v.lostAtomic' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cpuProfile go!"lostAtomic" l) lostAtomic' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lostAtomic' := lostAtomic' } : runtime.cpuProfile) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end gobuf
+end cpuProfile
 
-namespace maybeTraceableChan
+namespace dloggerImpl
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -156,39 +174,90 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance maybeTraceableChan_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.maybeTraceableChan where
+noncomputable instance dloggerImpl_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.dloggerImpl where
   typedPointstoDef l v dq := iprop(
-    "maybeTraceablePtr" ∷ typedPointsto (structFieldRef runtime.maybeTraceableChan go!"maybeTraceablePtr" l) v.maybeTraceablePtr' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef runtime.dloggerImpl go!"_#0" l) v.«_#0'» dq ∗
+    "w" ∷ typedPointsto (structFieldRef runtime.dloggerImpl go!"w" l) v.w' dq ∗
+    "allLink" ∷ typedPointsto (structFieldRef runtime.dloggerImpl go!"allLink" l) v.allLink' dq ∗
+    "owned" ∷ typedPointsto (structFieldRef runtime.dloggerImpl go!"owned" l) v.owned' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance maybeTraceableChan_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.maybeTraceableChan runtime.maybeTraceableChan.underlying := by
+noncomputable instance dloggerImpl_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.dloggerImpl runtime.dloggerImpl.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance maybeTraceableChan_access_load_maybeTraceablePtr (l : Loc) (v : runtime.maybeTraceableChan) (dq : DFrac) :
+noncomputable instance «dloggerImpl_access_load__#0» (l : Loc) (v : runtime.dloggerImpl) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.maybeTraceableChan go!"maybeTraceablePtr" l) v.maybeTraceablePtr' dq)
-      (typedPointsto (structFieldRef runtime.maybeTraceableChan go!"maybeTraceablePtr" l) v.maybeTraceablePtr' dq)
+      (typedPointsto (structFieldRef runtime.dloggerImpl go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef runtime.dloggerImpl go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance maybeTraceableChan_access_store_maybeTraceablePtr (l : Loc) (v : runtime.maybeTraceableChan) (maybeTraceablePtr' : runtime.maybeTraceablePtr) :
+noncomputable instance «dloggerImpl_access_store__#0» (l : Loc) (v : runtime.dloggerImpl) («_#0'» : internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.maybeTraceableChan go!"maybeTraceablePtr" l) v.maybeTraceablePtr' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.maybeTraceableChan go!"maybeTraceablePtr" l) maybeTraceablePtr' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with maybeTraceablePtr' := maybeTraceablePtr' } : runtime.maybeTraceableChan) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.dloggerImpl go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.dloggerImpl go!"_#0" l) «_#0'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : runtime.dloggerImpl) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance dloggerImpl_access_load_w (l : Loc) (v : runtime.dloggerImpl) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.dloggerImpl go!"w" l) v.w' dq)
+      (typedPointsto (structFieldRef runtime.dloggerImpl go!"w" l) v.w' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance dloggerImpl_access_store_w (l : Loc) (v : runtime.dloggerImpl) (w' : runtime.debugLogWriter) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.dloggerImpl go!"w" l) v.w' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.dloggerImpl go!"w" l) w' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with w' := w' } : runtime.dloggerImpl) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance dloggerImpl_access_load_allLink (l : Loc) (v : runtime.dloggerImpl) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.dloggerImpl go!"allLink" l) v.allLink' dq)
+      (typedPointsto (structFieldRef runtime.dloggerImpl go!"allLink" l) v.allLink' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance dloggerImpl_access_store_allLink (l : Loc) (v : runtime.dloggerImpl) (allLink' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.dloggerImpl go!"allLink" l) v.allLink' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.dloggerImpl go!"allLink" l) allLink' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with allLink' := allLink' } : runtime.dloggerImpl) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance dloggerImpl_access_load_owned (l : Loc) (v : runtime.dloggerImpl) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.dloggerImpl go!"owned" l) v.owned' dq)
+      (typedPointsto (structFieldRef runtime.dloggerImpl go!"owned" l) v.owned' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance dloggerImpl_access_store_owned (l : Loc) (v : runtime.dloggerImpl) (owned' : internal.runtime.atomic.Uint32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.dloggerImpl go!"owned" l) v.owned' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.dloggerImpl go!"owned" l) owned' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with owned' := owned' } : runtime.dloggerImpl) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end maybeTraceableChan
+end dloggerImpl
 
-namespace heldLockInfo
+namespace ucontext
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -196,56 +265,124 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance heldLockInfo_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.heldLockInfo where
+noncomputable instance ucontext_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.ucontext where
   typedPointstoDef l v dq := iprop(
-    "lockAddr" ∷ typedPointsto (structFieldRef runtime.heldLockInfo go!"lockAddr" l) v.lockAddr' dq ∗
-    "rank" ∷ typedPointsto (structFieldRef runtime.heldLockInfo go!"rank" l) v.rank' dq ∗
+    "uc_flags" ∷ typedPointsto (structFieldRef runtime.ucontext go!"uc_flags" l) v.uc_flags' dq ∗
+    "uc_link" ∷ typedPointsto (structFieldRef runtime.ucontext go!"uc_link" l) v.uc_link' dq ∗
+    "uc_stack" ∷ typedPointsto (structFieldRef runtime.ucontext go!"uc_stack" l) v.uc_stack' dq ∗
+    "uc_mcontext" ∷ typedPointsto (structFieldRef runtime.ucontext go!"uc_mcontext" l) v.uc_mcontext' dq ∗
+    "uc_sigmask" ∷ typedPointsto (structFieldRef runtime.ucontext go!"uc_sigmask" l) v.uc_sigmask' dq ∗
+    "__fpregs_mem" ∷ typedPointsto (structFieldRef runtime.ucontext go!"__fpregs_mem" l) v.__fpregs_mem' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance heldLockInfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.heldLockInfo runtime.heldLockInfo.underlying := by
+noncomputable instance ucontext_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.ucontext runtime.ucontext.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance heldLockInfo_access_load_lockAddr (l : Loc) (v : runtime.heldLockInfo) (dq : DFrac) :
+noncomputable instance ucontext_access_load_uc_flags (l : Loc) (v : runtime.ucontext) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.heldLockInfo go!"lockAddr" l) v.lockAddr' dq)
-      (typedPointsto (structFieldRef runtime.heldLockInfo go!"lockAddr" l) v.lockAddr' dq)
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_flags" l) v.uc_flags' dq)
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_flags" l) v.uc_flags' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance heldLockInfo_access_store_lockAddr (l : Loc) (v : runtime.heldLockInfo) (lockAddr' : w64) :
+noncomputable instance ucontext_access_store_uc_flags (l : Loc) (v : runtime.ucontext) (uc_flags' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.heldLockInfo go!"lockAddr" l) v.lockAddr' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.heldLockInfo go!"lockAddr" l) lockAddr' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lockAddr' := lockAddr' } : runtime.heldLockInfo) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_flags" l) v.uc_flags' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_flags" l) uc_flags' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with uc_flags' := uc_flags' } : runtime.ucontext) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance heldLockInfo_access_load_rank (l : Loc) (v : runtime.heldLockInfo) (dq : DFrac) :
+noncomputable instance ucontext_access_load_uc_link (l : Loc) (v : runtime.ucontext) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.heldLockInfo go!"rank" l) v.rank' dq)
-      (typedPointsto (structFieldRef runtime.heldLockInfo go!"rank" l) v.rank' dq)
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_link" l) v.uc_link' dq)
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_link" l) v.uc_link' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance heldLockInfo_access_store_rank (l : Loc) (v : runtime.heldLockInfo) (rank' : runtime.lockRank) :
+noncomputable instance ucontext_access_store_uc_link (l : Loc) (v : runtime.ucontext) (uc_link' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.heldLockInfo go!"rank" l) v.rank' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.heldLockInfo go!"rank" l) rank' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rank' := rank' } : runtime.heldLockInfo) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_link" l) v.uc_link' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_link" l) uc_link' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with uc_link' := uc_link' } : runtime.ucontext) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance ucontext_access_load_uc_stack (l : Loc) (v : runtime.ucontext) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_stack" l) v.uc_stack' dq)
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_stack" l) v.uc_stack' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance ucontext_access_store_uc_stack (l : Loc) (v : runtime.ucontext) (uc_stack' : runtime.stackt) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_stack" l) v.uc_stack' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_stack" l) uc_stack' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with uc_stack' := uc_stack' } : runtime.ucontext) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance ucontext_access_load_uc_mcontext (l : Loc) (v : runtime.ucontext) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_mcontext" l) v.uc_mcontext' dq)
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_mcontext" l) v.uc_mcontext' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance ucontext_access_store_uc_mcontext (l : Loc) (v : runtime.ucontext) (uc_mcontext' : runtime.mcontext) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_mcontext" l) v.uc_mcontext' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_mcontext" l) uc_mcontext' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with uc_mcontext' := uc_mcontext' } : runtime.ucontext) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance ucontext_access_load_uc_sigmask (l : Loc) (v : runtime.ucontext) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_sigmask" l) v.uc_sigmask' dq)
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_sigmask" l) v.uc_sigmask' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance ucontext_access_store_uc_sigmask (l : Loc) (v : runtime.ucontext) (uc_sigmask' : runtime.usigset) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_sigmask" l) v.uc_sigmask' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.ucontext go!"uc_sigmask" l) uc_sigmask' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with uc_sigmask' := uc_sigmask' } : runtime.ucontext) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance ucontext_access_load___fpregs_mem (l : Loc) (v : runtime.ucontext) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.ucontext go!"__fpregs_mem" l) v.__fpregs_mem' dq)
+      (typedPointsto (structFieldRef runtime.ucontext go!"__fpregs_mem" l) v.__fpregs_mem' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance ucontext_access_store___fpregs_mem (l : Loc) (v : runtime.ucontext) (__fpregs_mem' : runtime.fpstate) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.ucontext go!"__fpregs_mem" l) v.__fpregs_mem' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.ucontext go!"__fpregs_mem" l) __fpregs_mem' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with __fpregs_mem' := __fpregs_mem' } : runtime.ucontext) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end heldLockInfo
+end ucontext
 
-namespace gTraceState
+namespace mcache
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -253,39 +390,209 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance gTraceState_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.gTraceState where
+noncomputable instance mcache_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.mcache where
   typedPointstoDef l v dq := iprop(
-    "traceSchedResourceState" ∷ typedPointsto (structFieldRef runtime.gTraceState go!"traceSchedResourceState" l) v.traceSchedResourceState' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef runtime.mcache go!"_#0" l) v.«_#0'» dq ∗
+    "nextSample" ∷ typedPointsto (structFieldRef runtime.mcache go!"nextSample" l) v.nextSample' dq ∗
+    "memProfRate" ∷ typedPointsto (structFieldRef runtime.mcache go!"memProfRate" l) v.memProfRate' dq ∗
+    "scanAlloc" ∷ typedPointsto (structFieldRef runtime.mcache go!"scanAlloc" l) v.scanAlloc' dq ∗
+    "tiny" ∷ typedPointsto (structFieldRef runtime.mcache go!"tiny" l) v.tiny' dq ∗
+    "tinyoffset" ∷ typedPointsto (structFieldRef runtime.mcache go!"tinyoffset" l) v.tinyoffset' dq ∗
+    "tinyAllocs" ∷ typedPointsto (structFieldRef runtime.mcache go!"tinyAllocs" l) v.tinyAllocs' dq ∗
+    "alloc" ∷ typedPointsto (structFieldRef runtime.mcache go!"alloc" l) v.alloc' dq ∗
+    "reusableNoscan" ∷ typedPointsto (structFieldRef runtime.mcache go!"reusableNoscan" l) v.reusableNoscan' dq ∗
+    "stackcache" ∷ typedPointsto (structFieldRef runtime.mcache go!"stackcache" l) v.stackcache' dq ∗
+    "flushGen" ∷ typedPointsto (structFieldRef runtime.mcache go!"flushGen" l) v.flushGen' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance gTraceState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.gTraceState runtime.gTraceState.underlying := by
+noncomputable instance mcache_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.mcache runtime.mcache.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance gTraceState_access_load_traceSchedResourceState (l : Loc) (v : runtime.gTraceState) (dq : DFrac) :
+noncomputable instance «mcache_access_load__#0» (l : Loc) (v : runtime.mcache) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gTraceState go!"traceSchedResourceState" l) v.traceSchedResourceState' dq)
-      (typedPointsto (structFieldRef runtime.gTraceState go!"traceSchedResourceState" l) v.traceSchedResourceState' dq)
+      (typedPointsto (structFieldRef runtime.mcache go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef runtime.mcache go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gTraceState_access_store_traceSchedResourceState (l : Loc) (v : runtime.gTraceState) (traceSchedResourceState' : runtime.traceSchedResourceState) :
+noncomputable instance «mcache_access_store__#0» (l : Loc) (v : runtime.mcache) («_#0'» : internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gTraceState go!"traceSchedResourceState" l) v.traceSchedResourceState' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.gTraceState go!"traceSchedResourceState" l) traceSchedResourceState' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with traceSchedResourceState' := traceSchedResourceState' } : runtime.gTraceState) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.mcache go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.mcache go!"_#0" l) «_#0'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : runtime.mcache) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_load_nextSample (l : Loc) (v : runtime.mcache) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"nextSample" l) v.nextSample' dq)
+      (typedPointsto (structFieldRef runtime.mcache go!"nextSample" l) v.nextSample' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_store_nextSample (l : Loc) (v : runtime.mcache) (nextSample' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"nextSample" l) v.nextSample' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.mcache go!"nextSample" l) nextSample' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with nextSample' := nextSample' } : runtime.mcache) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_load_memProfRate (l : Loc) (v : runtime.mcache) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"memProfRate" l) v.memProfRate' dq)
+      (typedPointsto (structFieldRef runtime.mcache go!"memProfRate" l) v.memProfRate' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_store_memProfRate (l : Loc) (v : runtime.mcache) (memProfRate' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"memProfRate" l) v.memProfRate' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.mcache go!"memProfRate" l) memProfRate' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with memProfRate' := memProfRate' } : runtime.mcache) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_load_scanAlloc (l : Loc) (v : runtime.mcache) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"scanAlloc" l) v.scanAlloc' dq)
+      (typedPointsto (structFieldRef runtime.mcache go!"scanAlloc" l) v.scanAlloc' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_store_scanAlloc (l : Loc) (v : runtime.mcache) (scanAlloc' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"scanAlloc" l) v.scanAlloc' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.mcache go!"scanAlloc" l) scanAlloc' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with scanAlloc' := scanAlloc' } : runtime.mcache) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_load_tiny (l : Loc) (v : runtime.mcache) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"tiny" l) v.tiny' dq)
+      (typedPointsto (structFieldRef runtime.mcache go!"tiny" l) v.tiny' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_store_tiny (l : Loc) (v : runtime.mcache) (tiny' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"tiny" l) v.tiny' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.mcache go!"tiny" l) tiny' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with tiny' := tiny' } : runtime.mcache) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_load_tinyoffset (l : Loc) (v : runtime.mcache) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"tinyoffset" l) v.tinyoffset' dq)
+      (typedPointsto (structFieldRef runtime.mcache go!"tinyoffset" l) v.tinyoffset' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_store_tinyoffset (l : Loc) (v : runtime.mcache) (tinyoffset' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"tinyoffset" l) v.tinyoffset' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.mcache go!"tinyoffset" l) tinyoffset' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with tinyoffset' := tinyoffset' } : runtime.mcache) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_load_tinyAllocs (l : Loc) (v : runtime.mcache) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"tinyAllocs" l) v.tinyAllocs' dq)
+      (typedPointsto (structFieldRef runtime.mcache go!"tinyAllocs" l) v.tinyAllocs' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_store_tinyAllocs (l : Loc) (v : runtime.mcache) (tinyAllocs' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"tinyAllocs" l) v.tinyAllocs' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.mcache go!"tinyAllocs" l) tinyAllocs' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with tinyAllocs' := tinyAllocs' } : runtime.mcache) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_load_alloc (l : Loc) (v : runtime.mcache) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"alloc" l) v.alloc' dq)
+      (typedPointsto (structFieldRef runtime.mcache go!"alloc" l) v.alloc' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_store_alloc (l : Loc) (v : runtime.mcache) (alloc' : (GoArray Loc 136)) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"alloc" l) v.alloc' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.mcache go!"alloc" l) alloc' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with alloc' := alloc' } : runtime.mcache) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_load_reusableNoscan (l : Loc) (v : runtime.mcache) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"reusableNoscan" l) v.reusableNoscan' dq)
+      (typedPointsto (structFieldRef runtime.mcache go!"reusableNoscan" l) v.reusableNoscan' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_store_reusableNoscan (l : Loc) (v : runtime.mcache) (reusableNoscan' : (GoArray runtime.gclinkptr 136)) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"reusableNoscan" l) v.reusableNoscan' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.mcache go!"reusableNoscan" l) reusableNoscan' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with reusableNoscan' := reusableNoscan' } : runtime.mcache) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_load_stackcache (l : Loc) (v : runtime.mcache) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"stackcache" l) v.stackcache' dq)
+      (typedPointsto (structFieldRef runtime.mcache go!"stackcache" l) v.stackcache' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_store_stackcache (l : Loc) (v : runtime.mcache) (stackcache' : (GoArray runtime.stackfreelist 4)) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"stackcache" l) v.stackcache' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.mcache go!"stackcache" l) stackcache' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stackcache' := stackcache' } : runtime.mcache) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_load_flushGen (l : Loc) (v : runtime.mcache) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"flushGen" l) v.flushGen' dq)
+      (typedPointsto (structFieldRef runtime.mcache go!"flushGen" l) v.flushGen' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance mcache_access_store_flushGen (l : Loc) (v : runtime.mcache) (flushGen' : internal.runtime.atomic.Uint32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.mcache go!"flushGen" l) v.flushGen' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.mcache go!"flushGen" l) flushGen' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flushGen' := flushGen' } : runtime.mcache) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end gTraceState
+end mcache
 
-namespace mPadded
+namespace spanSet
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -293,56 +600,107 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance mPadded_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.mPadded where
+noncomputable instance spanSet_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.spanSet where
   typedPointstoDef l v dq := iprop(
-    "m" ∷ typedPointsto (structFieldRef runtime.mPadded go!"m" l) v.m' dq ∗
-    "«_#1»" ∷ typedPointsto (structFieldRef runtime.mPadded go!"_#1" l) v.«_#1'» dq ∗
+    "spineLock" ∷ typedPointsto (structFieldRef runtime.spanSet go!"spineLock" l) v.spineLock' dq ∗
+    "spine" ∷ typedPointsto (structFieldRef runtime.spanSet go!"spine" l) v.spine' dq ∗
+    "spineLen" ∷ typedPointsto (structFieldRef runtime.spanSet go!"spineLen" l) v.spineLen' dq ∗
+    "spineCap" ∷ typedPointsto (structFieldRef runtime.spanSet go!"spineCap" l) v.spineCap' dq ∗
+    "index" ∷ typedPointsto (structFieldRef runtime.spanSet go!"index" l) v.index' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance mPadded_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.mPadded runtime.mPadded.underlying := by
+noncomputable instance spanSet_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.spanSet runtime.spanSet.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance mPadded_access_load_m (l : Loc) (v : runtime.mPadded) (dq : DFrac) :
+noncomputable instance spanSet_access_load_spineLock (l : Loc) (v : runtime.spanSet) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mPadded go!"m" l) v.m' dq)
-      (typedPointsto (structFieldRef runtime.mPadded go!"m" l) v.m' dq)
+      (typedPointsto (structFieldRef runtime.spanSet go!"spineLock" l) v.spineLock' dq)
+      (typedPointsto (structFieldRef runtime.spanSet go!"spineLock" l) v.spineLock' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance mPadded_access_store_m (l : Loc) (v : runtime.mPadded) (m' : runtime.m) :
+noncomputable instance spanSet_access_store_spineLock (l : Loc) (v : runtime.spanSet) (spineLock' : runtime.mutex) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mPadded go!"m" l) v.m' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.mPadded go!"m" l) m' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with m' := m' } : runtime.mPadded) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.spanSet go!"spineLock" l) v.spineLock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.spanSet go!"spineLock" l) spineLock' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with spineLock' := spineLock' } : runtime.spanSet) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «mPadded_access_load__#1» (l : Loc) (v : runtime.mPadded) (dq : DFrac) :
+noncomputable instance spanSet_access_load_spine (l : Loc) (v : runtime.spanSet) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mPadded go!"_#1" l) v.«_#1'» dq)
-      (typedPointsto (structFieldRef runtime.mPadded go!"_#1" l) v.«_#1'» dq)
+      (typedPointsto (structFieldRef runtime.spanSet go!"spine" l) v.spine' dq)
+      (typedPointsto (structFieldRef runtime.spanSet go!"spine" l) v.spine' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «mPadded_access_store__#1» (l : Loc) (v : runtime.mPadded) («_#1'» : (GoArray w8 216)) :
+noncomputable instance spanSet_access_store_spine (l : Loc) (v : runtime.spanSet) (spine' : runtime.atomicSpanSetSpinePointer) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.mPadded go!"_#1" l) v.«_#1'» (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.mPadded go!"_#1" l) «_#1'» (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#1'» := «_#1'» } : runtime.mPadded) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.spanSet go!"spine" l) v.spine' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.spanSet go!"spine" l) spine' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with spine' := spine' } : runtime.spanSet) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance spanSet_access_load_spineLen (l : Loc) (v : runtime.spanSet) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.spanSet go!"spineLen" l) v.spineLen' dq)
+      (typedPointsto (structFieldRef runtime.spanSet go!"spineLen" l) v.spineLen' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance spanSet_access_store_spineLen (l : Loc) (v : runtime.spanSet) (spineLen' : internal.runtime.atomic.Uintptr) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.spanSet go!"spineLen" l) v.spineLen' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.spanSet go!"spineLen" l) spineLen' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with spineLen' := spineLen' } : runtime.spanSet) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance spanSet_access_load_spineCap (l : Loc) (v : runtime.spanSet) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.spanSet go!"spineCap" l) v.spineCap' dq)
+      (typedPointsto (structFieldRef runtime.spanSet go!"spineCap" l) v.spineCap' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance spanSet_access_store_spineCap (l : Loc) (v : runtime.spanSet) (spineCap' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.spanSet go!"spineCap" l) v.spineCap' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.spanSet go!"spineCap" l) spineCap' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with spineCap' := spineCap' } : runtime.spanSet) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance spanSet_access_load_index (l : Loc) (v : runtime.spanSet) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.spanSet go!"index" l) v.index' dq)
+      (typedPointsto (structFieldRef runtime.spanSet go!"index" l) v.index' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance spanSet_access_store_index (l : Loc) (v : runtime.spanSet) (index' : runtime.atomicHeadTailIndex) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.spanSet go!"index" l) v.index' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.spanSet go!"index" l) index' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with index' := index' } : runtime.spanSet) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end mPadded
+end spanSet
 
-namespace runtimeSelect
+namespace cleanupBlock
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -350,90 +708,56 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance runtimeSelect_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.runtimeSelect where
+noncomputable instance cleanupBlock_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.cleanupBlock where
   typedPointstoDef l v dq := iprop(
-    "dir" ∷ typedPointsto (structFieldRef runtime.runtimeSelect go!"dir" l) v.dir' dq ∗
-    "typ" ∷ typedPointsto (structFieldRef runtime.runtimeSelect go!"typ" l) v.typ' dq ∗
-    "ch" ∷ typedPointsto (structFieldRef runtime.runtimeSelect go!"ch" l) v.ch' dq ∗
-    "val" ∷ typedPointsto (structFieldRef runtime.runtimeSelect go!"val" l) v.val' dq ∗
+    "cleanupBlockHeader" ∷ typedPointsto (structFieldRef runtime.cleanupBlock go!"cleanupBlockHeader" l) v.cleanupBlockHeader' dq ∗
+    "cleanups" ∷ typedPointsto (structFieldRef runtime.cleanupBlock go!"cleanups" l) v.cleanups' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance runtimeSelect_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.runtimeSelect runtime.runtimeSelect.underlying := by
+noncomputable instance cleanupBlock_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.cleanupBlock runtime.cleanupBlock.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance runtimeSelect_access_load_dir (l : Loc) (v : runtime.runtimeSelect) (dq : DFrac) :
+noncomputable instance cleanupBlock_access_load_cleanupBlockHeader (l : Loc) (v : runtime.cleanupBlock) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.runtimeSelect go!"dir" l) v.dir' dq)
-      (typedPointsto (structFieldRef runtime.runtimeSelect go!"dir" l) v.dir' dq)
+      (typedPointsto (structFieldRef runtime.cleanupBlock go!"cleanupBlockHeader" l) v.cleanupBlockHeader' dq)
+      (typedPointsto (structFieldRef runtime.cleanupBlock go!"cleanupBlockHeader" l) v.cleanupBlockHeader' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance runtimeSelect_access_store_dir (l : Loc) (v : runtime.runtimeSelect) (dir' : runtime.selectDir) :
+noncomputable instance cleanupBlock_access_store_cleanupBlockHeader (l : Loc) (v : runtime.cleanupBlock) (cleanupBlockHeader' : runtime.cleanupBlockHeader) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.runtimeSelect go!"dir" l) v.dir' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.runtimeSelect go!"dir" l) dir' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with dir' := dir' } : runtime.runtimeSelect) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.cleanupBlock go!"cleanupBlockHeader" l) v.cleanupBlockHeader' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupBlock go!"cleanupBlockHeader" l) cleanupBlockHeader' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cleanupBlockHeader' := cleanupBlockHeader' } : runtime.cleanupBlock) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance runtimeSelect_access_load_typ (l : Loc) (v : runtime.runtimeSelect) (dq : DFrac) :
+noncomputable instance cleanupBlock_access_load_cleanups (l : Loc) (v : runtime.cleanupBlock) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.runtimeSelect go!"typ" l) v.typ' dq)
-      (typedPointsto (structFieldRef runtime.runtimeSelect go!"typ" l) v.typ' dq)
+      (typedPointsto (structFieldRef runtime.cleanupBlock go!"cleanups" l) v.cleanups' dq)
+      (typedPointsto (structFieldRef runtime.cleanupBlock go!"cleanups" l) v.cleanups' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance runtimeSelect_access_store_typ (l : Loc) (v : runtime.runtimeSelect) (typ' : Loc) :
+noncomputable instance cleanupBlock_access_store_cleanups (l : Loc) (v : runtime.cleanupBlock) (cleanups' : (GoArray runtime.cleanupFn 20)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.runtimeSelect go!"typ" l) v.typ' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.runtimeSelect go!"typ" l) typ' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with typ' := typ' } : runtime.runtimeSelect) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance runtimeSelect_access_load_ch (l : Loc) (v : runtime.runtimeSelect) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.runtimeSelect go!"ch" l) v.ch' dq)
-      (typedPointsto (structFieldRef runtime.runtimeSelect go!"ch" l) v.ch' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance runtimeSelect_access_store_ch (l : Loc) (v : runtime.runtimeSelect) (ch' : Loc) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.runtimeSelect go!"ch" l) v.ch' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.runtimeSelect go!"ch" l) ch' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ch' := ch' } : runtime.runtimeSelect) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance runtimeSelect_access_load_val (l : Loc) (v : runtime.runtimeSelect) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.runtimeSelect go!"val" l) v.val' dq)
-      (typedPointsto (structFieldRef runtime.runtimeSelect go!"val" l) v.val' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance runtimeSelect_access_store_val (l : Loc) (v : runtime.runtimeSelect) (val' : Loc) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.runtimeSelect go!"val" l) v.val' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.runtimeSelect go!"val" l) val' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with val' := val' } : runtime.runtimeSelect) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.cleanupBlock go!"cleanups" l) v.cleanups' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupBlock go!"cleanups" l) cleanups' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cleanups' := cleanups' } : runtime.cleanupBlock) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end runtimeSelect
+end cleanupBlock
 
-namespace gsignalStack
+namespace cleanupQueue
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -441,90 +765,294 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance gsignalStack_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.gsignalStack where
+noncomputable instance cleanupQueue_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.cleanupQueue where
   typedPointstoDef l v dq := iprop(
-    "stack" ∷ typedPointsto (structFieldRef runtime.gsignalStack go!"stack" l) v.stack' dq ∗
-    "stackguard0" ∷ typedPointsto (structFieldRef runtime.gsignalStack go!"stackguard0" l) v.stackguard0' dq ∗
-    "stackguard1" ∷ typedPointsto (structFieldRef runtime.gsignalStack go!"stackguard1" l) v.stackguard1' dq ∗
-    "stktopsp" ∷ typedPointsto (structFieldRef runtime.gsignalStack go!"stktopsp" l) v.stktopsp' dq ∗
+    "full" ∷ typedPointsto (structFieldRef runtime.cleanupQueue go!"full" l) v.full' dq ∗
+    "workUnits" ∷ typedPointsto (structFieldRef runtime.cleanupQueue go!"workUnits" l) v.workUnits' dq ∗
+    "«_#2»" ∷ typedPointsto (structFieldRef runtime.cleanupQueue go!"_#2" l) v.«_#2'» dq ∗
+    "free" ∷ typedPointsto (structFieldRef runtime.cleanupQueue go!"free" l) v.free' dq ∗
+    "flushed" ∷ typedPointsto (structFieldRef runtime.cleanupQueue go!"flushed" l) v.flushed' dq ∗
+    "«_#5»" ∷ typedPointsto (structFieldRef runtime.cleanupQueue go!"_#5" l) v.«_#5'» dq ∗
+    "all" ∷ typedPointsto (structFieldRef runtime.cleanupQueue go!"all" l) v.all' dq ∗
+    "«_#7»" ∷ typedPointsto (structFieldRef runtime.cleanupQueue go!"_#7" l) v.«_#7'» dq ∗
+    "lock" ∷ typedPointsto (structFieldRef runtime.cleanupQueue go!"lock" l) v.lock' dq ∗
+    "sleeping" ∷ typedPointsto (structFieldRef runtime.cleanupQueue go!"sleeping" l) v.sleeping' dq ∗
+    "asleep" ∷ typedPointsto (structFieldRef runtime.cleanupQueue go!"asleep" l) v.asleep' dq ∗
+    "running" ∷ typedPointsto (structFieldRef runtime.cleanupQueue go!"running" l) v.running' dq ∗
+    "ng" ∷ typedPointsto (structFieldRef runtime.cleanupQueue go!"ng" l) v.ng' dq ∗
+    "needg" ∷ typedPointsto (structFieldRef runtime.cleanupQueue go!"needg" l) v.needg' dq ∗
+    "queued" ∷ typedPointsto (structFieldRef runtime.cleanupQueue go!"queued" l) v.queued' dq ∗
+    "executed" ∷ typedPointsto (structFieldRef runtime.cleanupQueue go!"executed" l) v.executed' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance gsignalStack_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.gsignalStack runtime.gsignalStack.underlying := by
+noncomputable instance cleanupQueue_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.cleanupQueue runtime.cleanupQueue.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance gsignalStack_access_load_stack (l : Loc) (v : runtime.gsignalStack) (dq : DFrac) :
+noncomputable instance cleanupQueue_access_load_full (l : Loc) (v : runtime.cleanupQueue) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gsignalStack go!"stack" l) v.stack' dq)
-      (typedPointsto (structFieldRef runtime.gsignalStack go!"stack" l) v.stack' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"full" l) v.full' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"full" l) v.full' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gsignalStack_access_store_stack (l : Loc) (v : runtime.gsignalStack) (stack' : runtime.stack) :
+noncomputable instance cleanupQueue_access_store_full (l : Loc) (v : runtime.cleanupQueue) (full' : runtime.lfstack) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gsignalStack go!"stack" l) v.stack' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.gsignalStack go!"stack" l) stack' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stack' := stack' } : runtime.gsignalStack) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"full" l) v.full' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"full" l) full' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with full' := full' } : runtime.cleanupQueue) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gsignalStack_access_load_stackguard0 (l : Loc) (v : runtime.gsignalStack) (dq : DFrac) :
+noncomputable instance cleanupQueue_access_load_workUnits (l : Loc) (v : runtime.cleanupQueue) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gsignalStack go!"stackguard0" l) v.stackguard0' dq)
-      (typedPointsto (structFieldRef runtime.gsignalStack go!"stackguard0" l) v.stackguard0' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"workUnits" l) v.workUnits' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"workUnits" l) v.workUnits' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gsignalStack_access_store_stackguard0 (l : Loc) (v : runtime.gsignalStack) (stackguard0' : w64) :
+noncomputable instance cleanupQueue_access_store_workUnits (l : Loc) (v : runtime.cleanupQueue) (workUnits' : internal.runtime.atomic.Uint64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gsignalStack go!"stackguard0" l) v.stackguard0' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.gsignalStack go!"stackguard0" l) stackguard0' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stackguard0' := stackguard0' } : runtime.gsignalStack) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"workUnits" l) v.workUnits' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"workUnits" l) workUnits' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with workUnits' := workUnits' } : runtime.cleanupQueue) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gsignalStack_access_load_stackguard1 (l : Loc) (v : runtime.gsignalStack) (dq : DFrac) :
+noncomputable instance «cleanupQueue_access_load__#2» (l : Loc) (v : runtime.cleanupQueue) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gsignalStack go!"stackguard1" l) v.stackguard1' dq)
-      (typedPointsto (structFieldRef runtime.gsignalStack go!"stackguard1" l) v.stackguard1' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"_#2" l) v.«_#2'» dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"_#2" l) v.«_#2'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gsignalStack_access_store_stackguard1 (l : Loc) (v : runtime.gsignalStack) (stackguard1' : w64) :
+noncomputable instance «cleanupQueue_access_store__#2» (l : Loc) (v : runtime.cleanupQueue) («_#2'» : (GoArray w8 48)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gsignalStack go!"stackguard1" l) v.stackguard1' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.gsignalStack go!"stackguard1" l) stackguard1' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stackguard1' := stackguard1' } : runtime.gsignalStack) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"_#2" l) v.«_#2'» (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"_#2" l) «_#2'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#2'» := «_#2'» } : runtime.cleanupQueue) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gsignalStack_access_load_stktopsp (l : Loc) (v : runtime.gsignalStack) (dq : DFrac) :
+noncomputable instance cleanupQueue_access_load_free (l : Loc) (v : runtime.cleanupQueue) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gsignalStack go!"stktopsp" l) v.stktopsp' dq)
-      (typedPointsto (structFieldRef runtime.gsignalStack go!"stktopsp" l) v.stktopsp' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"free" l) v.free' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"free" l) v.free' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance gsignalStack_access_store_stktopsp (l : Loc) (v : runtime.gsignalStack) (stktopsp' : w64) :
+noncomputable instance cleanupQueue_access_store_free (l : Loc) (v : runtime.cleanupQueue) (free' : runtime.lfstack) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.gsignalStack go!"stktopsp" l) v.stktopsp' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.gsignalStack go!"stktopsp" l) stktopsp' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stktopsp' := stktopsp' } : runtime.gsignalStack) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"free" l) v.free' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"free" l) free' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with free' := free' } : runtime.cleanupQueue) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_load_flushed (l : Loc) (v : runtime.cleanupQueue) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"flushed" l) v.flushed' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"flushed" l) v.flushed' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_store_flushed (l : Loc) (v : runtime.cleanupQueue) (flushed' : internal.runtime.atomic.Bool') :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"flushed" l) v.flushed' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"flushed" l) flushed' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flushed' := flushed' } : runtime.cleanupQueue) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «cleanupQueue_access_load__#5» (l : Loc) (v : runtime.cleanupQueue) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"_#5" l) v.«_#5'» dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"_#5" l) v.«_#5'» dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «cleanupQueue_access_store__#5» (l : Loc) (v : runtime.cleanupQueue) («_#5'» : (GoArray w8 55)) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"_#5" l) v.«_#5'» (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"_#5" l) «_#5'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#5'» := «_#5'» } : runtime.cleanupQueue) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_load_all (l : Loc) (v : runtime.cleanupQueue) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"all" l) v.all' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"all" l) v.all' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_store_all (l : Loc) (v : runtime.cleanupQueue) (all' : internal.runtime.atomic.UnsafePointer) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"all" l) v.all' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"all" l) all' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with all' := all' } : runtime.cleanupQueue) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «cleanupQueue_access_load__#7» (l : Loc) (v : runtime.cleanupQueue) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"_#7" l) v.«_#7'» dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"_#7" l) v.«_#7'» dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «cleanupQueue_access_store__#7» (l : Loc) (v : runtime.cleanupQueue) («_#7'» : (GoArray w8 56)) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"_#7" l) v.«_#7'» (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"_#7" l) «_#7'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#7'» := «_#7'» } : runtime.cleanupQueue) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_load_lock (l : Loc) (v : runtime.cleanupQueue) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"lock" l) v.lock' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"lock" l) v.lock' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_store_lock (l : Loc) (v : runtime.cleanupQueue) (lock' : runtime.mutex) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"lock" l) v.lock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"lock" l) lock' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lock' := lock' } : runtime.cleanupQueue) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_load_sleeping (l : Loc) (v : runtime.cleanupQueue) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"sleeping" l) v.sleeping' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"sleeping" l) v.sleeping' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_store_sleeping (l : Loc) (v : runtime.cleanupQueue) (sleeping' : runtime.gList) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"sleeping" l) v.sleeping' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"sleeping" l) sleeping' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sleeping' := sleeping' } : runtime.cleanupQueue) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_load_asleep (l : Loc) (v : runtime.cleanupQueue) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"asleep" l) v.asleep' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"asleep" l) v.asleep' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_store_asleep (l : Loc) (v : runtime.cleanupQueue) (asleep' : internal.runtime.atomic.Uint32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"asleep" l) v.asleep' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"asleep" l) asleep' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with asleep' := asleep' } : runtime.cleanupQueue) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_load_running (l : Loc) (v : runtime.cleanupQueue) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"running" l) v.running' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"running" l) v.running' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_store_running (l : Loc) (v : runtime.cleanupQueue) (running' : internal.runtime.atomic.Uint32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"running" l) v.running' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"running" l) running' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with running' := running' } : runtime.cleanupQueue) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_load_ng (l : Loc) (v : runtime.cleanupQueue) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"ng" l) v.ng' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"ng" l) v.ng' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_store_ng (l : Loc) (v : runtime.cleanupQueue) (ng' : internal.runtime.atomic.Uint32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"ng" l) v.ng' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"ng" l) ng' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ng' := ng' } : runtime.cleanupQueue) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_load_needg (l : Loc) (v : runtime.cleanupQueue) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"needg" l) v.needg' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"needg" l) v.needg' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_store_needg (l : Loc) (v : runtime.cleanupQueue) (needg' : internal.runtime.atomic.Uint32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"needg" l) v.needg' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"needg" l) needg' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with needg' := needg' } : runtime.cleanupQueue) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_load_queued (l : Loc) (v : runtime.cleanupQueue) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"queued" l) v.queued' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"queued" l) v.queued' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_store_queued (l : Loc) (v : runtime.cleanupQueue) (queued' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"queued" l) v.queued' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"queued" l) queued' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with queued' := queued' } : runtime.cleanupQueue) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_load_executed (l : Loc) (v : runtime.cleanupQueue) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"executed" l) v.executed' dq)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"executed" l) v.executed' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance cleanupQueue_access_store_executed (l : Loc) (v : runtime.cleanupQueue) (executed' : internal.runtime.atomic.Uint64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"executed" l) v.executed' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.cleanupQueue go!"executed" l) executed' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with executed' := executed' } : runtime.cleanupQueue) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end gsignalStack
+end cleanupQueue
 
-namespace adjustinfo
+namespace statAggregate
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -532,73 +1060,141 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance adjustinfo_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.adjustinfo where
+noncomputable instance statAggregate_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.statAggregate where
   typedPointstoDef l v dq := iprop(
-    "old" ∷ typedPointsto (structFieldRef runtime.adjustinfo go!"old" l) v.old' dq ∗
-    "delta" ∷ typedPointsto (structFieldRef runtime.adjustinfo go!"delta" l) v.delta' dq ∗
-    "sghi" ∷ typedPointsto (structFieldRef runtime.adjustinfo go!"sghi" l) v.sghi' dq ∗
+    "ensured" ∷ typedPointsto (structFieldRef runtime.statAggregate go!"ensured" l) v.ensured' dq ∗
+    "heapStats" ∷ typedPointsto (structFieldRef runtime.statAggregate go!"heapStats" l) v.heapStats' dq ∗
+    "sysStats" ∷ typedPointsto (structFieldRef runtime.statAggregate go!"sysStats" l) v.sysStats' dq ∗
+    "cpuStats" ∷ typedPointsto (structFieldRef runtime.statAggregate go!"cpuStats" l) v.cpuStats' dq ∗
+    "gcStats" ∷ typedPointsto (structFieldRef runtime.statAggregate go!"gcStats" l) v.gcStats' dq ∗
+    "finalStats" ∷ typedPointsto (structFieldRef runtime.statAggregate go!"finalStats" l) v.finalStats' dq ∗
+    "schedStats" ∷ typedPointsto (structFieldRef runtime.statAggregate go!"schedStats" l) v.schedStats' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance adjustinfo_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.adjustinfo runtime.adjustinfo.underlying := by
+noncomputable instance statAggregate_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.statAggregate runtime.statAggregate.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance adjustinfo_access_load_old (l : Loc) (v : runtime.adjustinfo) (dq : DFrac) :
+noncomputable instance statAggregate_access_load_ensured (l : Loc) (v : runtime.statAggregate) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.adjustinfo go!"old" l) v.old' dq)
-      (typedPointsto (structFieldRef runtime.adjustinfo go!"old" l) v.old' dq)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"ensured" l) v.ensured' dq)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"ensured" l) v.ensured' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance adjustinfo_access_store_old (l : Loc) (v : runtime.adjustinfo) (old' : runtime.stack) :
+noncomputable instance statAggregate_access_store_ensured (l : Loc) (v : runtime.statAggregate) (ensured' : runtime.statDepSet) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.adjustinfo go!"old" l) v.old' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.adjustinfo go!"old" l) old' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with old' := old' } : runtime.adjustinfo) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.statAggregate go!"ensured" l) v.ensured' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.statAggregate go!"ensured" l) ensured' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ensured' := ensured' } : runtime.statAggregate) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance adjustinfo_access_load_delta (l : Loc) (v : runtime.adjustinfo) (dq : DFrac) :
+noncomputable instance statAggregate_access_load_heapStats (l : Loc) (v : runtime.statAggregate) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.adjustinfo go!"delta" l) v.delta' dq)
-      (typedPointsto (structFieldRef runtime.adjustinfo go!"delta" l) v.delta' dq)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"heapStats" l) v.heapStats' dq)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"heapStats" l) v.heapStats' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance adjustinfo_access_store_delta (l : Loc) (v : runtime.adjustinfo) (delta' : w64) :
+noncomputable instance statAggregate_access_store_heapStats (l : Loc) (v : runtime.statAggregate) (heapStats' : runtime.heapStatsAggregate) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.adjustinfo go!"delta" l) v.delta' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.adjustinfo go!"delta" l) delta' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with delta' := delta' } : runtime.adjustinfo) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.statAggregate go!"heapStats" l) v.heapStats' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.statAggregate go!"heapStats" l) heapStats' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with heapStats' := heapStats' } : runtime.statAggregate) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance adjustinfo_access_load_sghi (l : Loc) (v : runtime.adjustinfo) (dq : DFrac) :
+noncomputable instance statAggregate_access_load_sysStats (l : Loc) (v : runtime.statAggregate) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.adjustinfo go!"sghi" l) v.sghi' dq)
-      (typedPointsto (structFieldRef runtime.adjustinfo go!"sghi" l) v.sghi' dq)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"sysStats" l) v.sysStats' dq)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"sysStats" l) v.sysStats' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance adjustinfo_access_store_sghi (l : Loc) (v : runtime.adjustinfo) (sghi' : w64) :
+noncomputable instance statAggregate_access_store_sysStats (l : Loc) (v : runtime.statAggregate) (sysStats' : runtime.sysStatsAggregate) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.adjustinfo go!"sghi" l) v.sghi' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.adjustinfo go!"sghi" l) sghi' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sghi' := sghi' } : runtime.adjustinfo) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.statAggregate go!"sysStats" l) v.sysStats' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.statAggregate go!"sysStats" l) sysStats' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sysStats' := sysStats' } : runtime.statAggregate) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance statAggregate_access_load_cpuStats (l : Loc) (v : runtime.statAggregate) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"cpuStats" l) v.cpuStats' dq)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"cpuStats" l) v.cpuStats' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance statAggregate_access_store_cpuStats (l : Loc) (v : runtime.statAggregate) (cpuStats' : runtime.cpuStatsAggregate) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"cpuStats" l) v.cpuStats' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.statAggregate go!"cpuStats" l) cpuStats' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with cpuStats' := cpuStats' } : runtime.statAggregate) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance statAggregate_access_load_gcStats (l : Loc) (v : runtime.statAggregate) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"gcStats" l) v.gcStats' dq)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"gcStats" l) v.gcStats' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance statAggregate_access_store_gcStats (l : Loc) (v : runtime.statAggregate) (gcStats' : runtime.gcStatsAggregate) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"gcStats" l) v.gcStats' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.statAggregate go!"gcStats" l) gcStats' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with gcStats' := gcStats' } : runtime.statAggregate) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance statAggregate_access_load_finalStats (l : Loc) (v : runtime.statAggregate) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"finalStats" l) v.finalStats' dq)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"finalStats" l) v.finalStats' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance statAggregate_access_store_finalStats (l : Loc) (v : runtime.statAggregate) (finalStats' : runtime.finalStatsAggregate) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"finalStats" l) v.finalStats' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.statAggregate go!"finalStats" l) finalStats' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with finalStats' := finalStats' } : runtime.statAggregate) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance statAggregate_access_load_schedStats (l : Loc) (v : runtime.statAggregate) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"schedStats" l) v.schedStats' dq)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"schedStats" l) v.schedStats' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance statAggregate_access_store_schedStats (l : Loc) (v : runtime.statAggregate) (schedStats' : runtime.schedStatsAggregate) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.statAggregate go!"schedStats" l) v.schedStats' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.statAggregate go!"schedStats" l) schedStats' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with schedStats' := schedStats' } : runtime.statAggregate) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end adjustinfo
+end statAggregate
 
-namespace stkframe
+namespace metricSample
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -606,158 +1202,56 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance stkframe_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.stkframe where
+noncomputable instance metricSample_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.metricSample where
   typedPointstoDef l v dq := iprop(
-    "fn" ∷ typedPointsto (structFieldRef runtime.stkframe go!"fn" l) v.fn' dq ∗
-    "pc" ∷ typedPointsto (structFieldRef runtime.stkframe go!"pc" l) v.pc' dq ∗
-    "continpc" ∷ typedPointsto (structFieldRef runtime.stkframe go!"continpc" l) v.continpc' dq ∗
-    "lr" ∷ typedPointsto (structFieldRef runtime.stkframe go!"lr" l) v.lr' dq ∗
-    "sp" ∷ typedPointsto (structFieldRef runtime.stkframe go!"sp" l) v.sp' dq ∗
-    "fp" ∷ typedPointsto (structFieldRef runtime.stkframe go!"fp" l) v.fp' dq ∗
-    "varp" ∷ typedPointsto (structFieldRef runtime.stkframe go!"varp" l) v.varp' dq ∗
-    "argp" ∷ typedPointsto (structFieldRef runtime.stkframe go!"argp" l) v.argp' dq ∗
+    "name" ∷ typedPointsto (structFieldRef runtime.metricSample go!"name" l) v.name' dq ∗
+    "value" ∷ typedPointsto (structFieldRef runtime.metricSample go!"value" l) v.value' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance stkframe_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.stkframe runtime.stkframe.underlying := by
+noncomputable instance metricSample_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.metricSample runtime.metricSample.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance stkframe_access_load_fn (l : Loc) (v : runtime.stkframe) (dq : DFrac) :
+noncomputable instance metricSample_access_load_name (l : Loc) (v : runtime.metricSample) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stkframe go!"fn" l) v.fn' dq)
-      (typedPointsto (structFieldRef runtime.stkframe go!"fn" l) v.fn' dq)
+      (typedPointsto (structFieldRef runtime.metricSample go!"name" l) v.name' dq)
+      (typedPointsto (structFieldRef runtime.metricSample go!"name" l) v.name' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance stkframe_access_store_fn (l : Loc) (v : runtime.stkframe) (fn' : runtime.funcInfo) :
+noncomputable instance metricSample_access_store_name (l : Loc) (v : runtime.metricSample) (name' : GoString) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stkframe go!"fn" l) v.fn' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.stkframe go!"fn" l) fn' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fn' := fn' } : runtime.stkframe) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.metricSample go!"name" l) v.name' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.metricSample go!"name" l) name' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with name' := name' } : runtime.metricSample) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance stkframe_access_load_pc (l : Loc) (v : runtime.stkframe) (dq : DFrac) :
+noncomputable instance metricSample_access_load_value (l : Loc) (v : runtime.metricSample) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stkframe go!"pc" l) v.pc' dq)
-      (typedPointsto (structFieldRef runtime.stkframe go!"pc" l) v.pc' dq)
+      (typedPointsto (structFieldRef runtime.metricSample go!"value" l) v.value' dq)
+      (typedPointsto (structFieldRef runtime.metricSample go!"value" l) v.value' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance stkframe_access_store_pc (l : Loc) (v : runtime.stkframe) (pc' : w64) :
+noncomputable instance metricSample_access_store_value (l : Loc) (v : runtime.metricSample) (value' : runtime.metricValue) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stkframe go!"pc" l) v.pc' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.stkframe go!"pc" l) pc' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pc' := pc' } : runtime.stkframe) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance stkframe_access_load_continpc (l : Loc) (v : runtime.stkframe) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stkframe go!"continpc" l) v.continpc' dq)
-      (typedPointsto (structFieldRef runtime.stkframe go!"continpc" l) v.continpc' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance stkframe_access_store_continpc (l : Loc) (v : runtime.stkframe) (continpc' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stkframe go!"continpc" l) v.continpc' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.stkframe go!"continpc" l) continpc' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with continpc' := continpc' } : runtime.stkframe) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance stkframe_access_load_lr (l : Loc) (v : runtime.stkframe) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stkframe go!"lr" l) v.lr' dq)
-      (typedPointsto (structFieldRef runtime.stkframe go!"lr" l) v.lr' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance stkframe_access_store_lr (l : Loc) (v : runtime.stkframe) (lr' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stkframe go!"lr" l) v.lr' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.stkframe go!"lr" l) lr' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lr' := lr' } : runtime.stkframe) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance stkframe_access_load_sp (l : Loc) (v : runtime.stkframe) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stkframe go!"sp" l) v.sp' dq)
-      (typedPointsto (structFieldRef runtime.stkframe go!"sp" l) v.sp' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance stkframe_access_store_sp (l : Loc) (v : runtime.stkframe) (sp' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stkframe go!"sp" l) v.sp' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.stkframe go!"sp" l) sp' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sp' := sp' } : runtime.stkframe) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance stkframe_access_load_fp (l : Loc) (v : runtime.stkframe) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stkframe go!"fp" l) v.fp' dq)
-      (typedPointsto (structFieldRef runtime.stkframe go!"fp" l) v.fp' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance stkframe_access_store_fp (l : Loc) (v : runtime.stkframe) (fp' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stkframe go!"fp" l) v.fp' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.stkframe go!"fp" l) fp' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with fp' := fp' } : runtime.stkframe) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance stkframe_access_load_varp (l : Loc) (v : runtime.stkframe) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stkframe go!"varp" l) v.varp' dq)
-      (typedPointsto (structFieldRef runtime.stkframe go!"varp" l) v.varp' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance stkframe_access_store_varp (l : Loc) (v : runtime.stkframe) (varp' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stkframe go!"varp" l) v.varp' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.stkframe go!"varp" l) varp' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with varp' := varp' } : runtime.stkframe) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance stkframe_access_load_argp (l : Loc) (v : runtime.stkframe) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stkframe go!"argp" l) v.argp' dq)
-      (typedPointsto (structFieldRef runtime.stkframe go!"argp" l) v.argp' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance stkframe_access_store_argp (l : Loc) (v : runtime.stkframe) (argp' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.stkframe go!"argp" l) v.argp' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.stkframe go!"argp" l) argp' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with argp' := argp' } : runtime.stkframe) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.metricSample go!"value" l) v.value' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.metricSample go!"value" l) value' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with value' := value' } : runtime.metricSample) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end stkframe
+end metricSample
 
-namespace Frame
+namespace gcBgMarkWorkerNodePadded
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -765,158 +1259,56 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance Frame_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.Frame where
+noncomputable instance gcBgMarkWorkerNodePadded_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.gcBgMarkWorkerNodePadded where
   typedPointstoDef l v dq := iprop(
-    "PC" ∷ typedPointsto (structFieldRef runtime.Frame go!"PC" l) v.PC' dq ∗
-    "Func" ∷ typedPointsto (structFieldRef runtime.Frame go!"Func" l) v.Func' dq ∗
-    "Function" ∷ typedPointsto (structFieldRef runtime.Frame go!"Function" l) v.Function' dq ∗
-    "File" ∷ typedPointsto (structFieldRef runtime.Frame go!"File" l) v.File' dq ∗
-    "Line" ∷ typedPointsto (structFieldRef runtime.Frame go!"Line" l) v.Line' dq ∗
-    "startLine" ∷ typedPointsto (structFieldRef runtime.Frame go!"startLine" l) v.startLine' dq ∗
-    "Entry" ∷ typedPointsto (structFieldRef runtime.Frame go!"Entry" l) v.Entry' dq ∗
-    "funcInfo" ∷ typedPointsto (structFieldRef runtime.Frame go!"funcInfo" l) v.funcInfo' dq ∗
+    "gcBgMarkWorkerNode" ∷ typedPointsto (structFieldRef runtime.gcBgMarkWorkerNodePadded go!"gcBgMarkWorkerNode" l) v.gcBgMarkWorkerNode' dq ∗
+    "pad" ∷ typedPointsto (structFieldRef runtime.gcBgMarkWorkerNodePadded go!"pad" l) v.pad' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance Frame_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.Frame runtime.Frame.underlying := by
+noncomputable instance gcBgMarkWorkerNodePadded_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.gcBgMarkWorkerNodePadded runtime.gcBgMarkWorkerNodePadded.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance Frame_access_load_PC (l : Loc) (v : runtime.Frame) (dq : DFrac) :
+noncomputable instance gcBgMarkWorkerNodePadded_access_load_gcBgMarkWorkerNode (l : Loc) (v : runtime.gcBgMarkWorkerNodePadded) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.Frame go!"PC" l) v.PC' dq)
-      (typedPointsto (structFieldRef runtime.Frame go!"PC" l) v.PC' dq)
+      (typedPointsto (structFieldRef runtime.gcBgMarkWorkerNodePadded go!"gcBgMarkWorkerNode" l) v.gcBgMarkWorkerNode' dq)
+      (typedPointsto (structFieldRef runtime.gcBgMarkWorkerNodePadded go!"gcBgMarkWorkerNode" l) v.gcBgMarkWorkerNode' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Frame_access_store_PC (l : Loc) (v : runtime.Frame) (PC' : w64) :
+noncomputable instance gcBgMarkWorkerNodePadded_access_store_gcBgMarkWorkerNode (l : Loc) (v : runtime.gcBgMarkWorkerNodePadded) (gcBgMarkWorkerNode' : runtime.gcBgMarkWorkerNode) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.Frame go!"PC" l) v.PC' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.Frame go!"PC" l) PC' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with PC' := PC' } : runtime.Frame) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.gcBgMarkWorkerNodePadded go!"gcBgMarkWorkerNode" l) v.gcBgMarkWorkerNode' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.gcBgMarkWorkerNodePadded go!"gcBgMarkWorkerNode" l) gcBgMarkWorkerNode' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with gcBgMarkWorkerNode' := gcBgMarkWorkerNode' } : runtime.gcBgMarkWorkerNodePadded) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Frame_access_load_Func (l : Loc) (v : runtime.Frame) (dq : DFrac) :
+noncomputable instance gcBgMarkWorkerNodePadded_access_load_pad (l : Loc) (v : runtime.gcBgMarkWorkerNodePadded) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.Frame go!"Func" l) v.Func' dq)
-      (typedPointsto (structFieldRef runtime.Frame go!"Func" l) v.Func' dq)
+      (typedPointsto (structFieldRef runtime.gcBgMarkWorkerNodePadded go!"pad" l) v.pad' dq)
+      (typedPointsto (structFieldRef runtime.gcBgMarkWorkerNodePadded go!"pad" l) v.pad' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance Frame_access_store_Func (l : Loc) (v : runtime.Frame) (Func' : Loc) :
+noncomputable instance gcBgMarkWorkerNodePadded_access_store_pad (l : Loc) (v : runtime.gcBgMarkWorkerNodePadded) (pad' : (GoArray w8 480)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.Frame go!"Func" l) v.Func' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.Frame go!"Func" l) Func' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Func' := Func' } : runtime.Frame) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Frame_access_load_Function (l : Loc) (v : runtime.Frame) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.Frame go!"Function" l) v.Function' dq)
-      (typedPointsto (structFieldRef runtime.Frame go!"Function" l) v.Function' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Frame_access_store_Function (l : Loc) (v : runtime.Frame) (Function' : GoString) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.Frame go!"Function" l) v.Function' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.Frame go!"Function" l) Function' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Function' := Function' } : runtime.Frame) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Frame_access_load_File (l : Loc) (v : runtime.Frame) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.Frame go!"File" l) v.File' dq)
-      (typedPointsto (structFieldRef runtime.Frame go!"File" l) v.File' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Frame_access_store_File (l : Loc) (v : runtime.Frame) (File' : GoString) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.Frame go!"File" l) v.File' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.Frame go!"File" l) File' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with File' := File' } : runtime.Frame) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Frame_access_load_Line (l : Loc) (v : runtime.Frame) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.Frame go!"Line" l) v.Line' dq)
-      (typedPointsto (structFieldRef runtime.Frame go!"Line" l) v.Line' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Frame_access_store_Line (l : Loc) (v : runtime.Frame) (Line' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.Frame go!"Line" l) v.Line' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.Frame go!"Line" l) Line' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Line' := Line' } : runtime.Frame) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Frame_access_load_startLine (l : Loc) (v : runtime.Frame) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.Frame go!"startLine" l) v.startLine' dq)
-      (typedPointsto (structFieldRef runtime.Frame go!"startLine" l) v.startLine' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Frame_access_store_startLine (l : Loc) (v : runtime.Frame) (startLine' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.Frame go!"startLine" l) v.startLine' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.Frame go!"startLine" l) startLine' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with startLine' := startLine' } : runtime.Frame) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Frame_access_load_Entry (l : Loc) (v : runtime.Frame) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.Frame go!"Entry" l) v.Entry' dq)
-      (typedPointsto (structFieldRef runtime.Frame go!"Entry" l) v.Entry' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Frame_access_store_Entry (l : Loc) (v : runtime.Frame) (Entry' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.Frame go!"Entry" l) v.Entry' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.Frame go!"Entry" l) Entry' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Entry' := Entry' } : runtime.Frame) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Frame_access_load_funcInfo (l : Loc) (v : runtime.Frame) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.Frame go!"funcInfo" l) v.funcInfo' dq)
-      (typedPointsto (structFieldRef runtime.Frame go!"funcInfo" l) v.funcInfo' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance Frame_access_store_funcInfo (l : Loc) (v : runtime.Frame) (funcInfo' : runtime.funcInfo) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.Frame go!"funcInfo" l) v.funcInfo' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.Frame go!"funcInfo" l) funcInfo' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with funcInfo' := funcInfo' } : runtime.Frame) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.gcBgMarkWorkerNodePadded go!"pad" l) v.pad' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.gcBgMarkWorkerNodePadded go!"pad" l) pad' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pad' := pad' } : runtime.gcBgMarkWorkerNodePadded) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end Frame
+end gcBgMarkWorkerNodePadded
 
-namespace pcvalueCache
+namespace scavengerState
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -924,56 +1316,260 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance pcvalueCache_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.pcvalueCache where
+noncomputable instance scavengerState_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.scavengerState where
   typedPointstoDef l v dq := iprop(
-    "entries" ∷ typedPointsto (structFieldRef runtime.pcvalueCache go!"entries" l) v.entries' dq ∗
-    "inUse" ∷ typedPointsto (structFieldRef runtime.pcvalueCache go!"inUse" l) v.inUse' dq ∗
+    "lock" ∷ typedPointsto (structFieldRef runtime.scavengerState go!"lock" l) v.lock' dq ∗
+    "g" ∷ typedPointsto (structFieldRef runtime.scavengerState go!"g" l) v.g' dq ∗
+    "timer" ∷ typedPointsto (structFieldRef runtime.scavengerState go!"timer" l) v.timer' dq ∗
+    "sysmonWake" ∷ typedPointsto (structFieldRef runtime.scavengerState go!"sysmonWake" l) v.sysmonWake' dq ∗
+    "parked" ∷ typedPointsto (structFieldRef runtime.scavengerState go!"parked" l) v.parked' dq ∗
+    "printControllerReset" ∷ typedPointsto (structFieldRef runtime.scavengerState go!"printControllerReset" l) v.printControllerReset' dq ∗
+    "targetCPUFraction" ∷ typedPointsto (structFieldRef runtime.scavengerState go!"targetCPUFraction" l) v.targetCPUFraction' dq ∗
+    "sleepRatio" ∷ typedPointsto (structFieldRef runtime.scavengerState go!"sleepRatio" l) v.sleepRatio' dq ∗
+    "sleepController" ∷ typedPointsto (structFieldRef runtime.scavengerState go!"sleepController" l) v.sleepController' dq ∗
+    "controllerCooldown" ∷ typedPointsto (structFieldRef runtime.scavengerState go!"controllerCooldown" l) v.controllerCooldown' dq ∗
+    "sleepStub" ∷ typedPointsto (structFieldRef runtime.scavengerState go!"sleepStub" l) v.sleepStub' dq ∗
+    "scavenge" ∷ typedPointsto (structFieldRef runtime.scavengerState go!"scavenge" l) v.scavenge' dq ∗
+    "shouldStop" ∷ typedPointsto (structFieldRef runtime.scavengerState go!"shouldStop" l) v.shouldStop' dq ∗
+    "gomaxprocs" ∷ typedPointsto (structFieldRef runtime.scavengerState go!"gomaxprocs" l) v.gomaxprocs' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance pcvalueCache_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.pcvalueCache runtime.pcvalueCache.underlying := by
+noncomputable instance scavengerState_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.scavengerState runtime.scavengerState.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance pcvalueCache_access_load_entries (l : Loc) (v : runtime.pcvalueCache) (dq : DFrac) :
+noncomputable instance scavengerState_access_load_lock (l : Loc) (v : runtime.scavengerState) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.pcvalueCache go!"entries" l) v.entries' dq)
-      (typedPointsto (structFieldRef runtime.pcvalueCache go!"entries" l) v.entries' dq)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"lock" l) v.lock' dq)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"lock" l) v.lock' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance pcvalueCache_access_store_entries (l : Loc) (v : runtime.pcvalueCache) (entries' : (GoArray (GoArray runtime.pcvalueCacheEnt 8) 2)) :
+noncomputable instance scavengerState_access_store_lock (l : Loc) (v : runtime.scavengerState) (lock' : runtime.mutex) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.pcvalueCache go!"entries" l) v.entries' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.pcvalueCache go!"entries" l) entries' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with entries' := entries' } : runtime.pcvalueCache) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.scavengerState go!"lock" l) v.lock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.scavengerState go!"lock" l) lock' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lock' := lock' } : runtime.scavengerState) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance pcvalueCache_access_load_inUse (l : Loc) (v : runtime.pcvalueCache) (dq : DFrac) :
+noncomputable instance scavengerState_access_load_g (l : Loc) (v : runtime.scavengerState) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.pcvalueCache go!"inUse" l) v.inUse' dq)
-      (typedPointsto (structFieldRef runtime.pcvalueCache go!"inUse" l) v.inUse' dq)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"g" l) v.g' dq)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"g" l) v.g' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance pcvalueCache_access_store_inUse (l : Loc) (v : runtime.pcvalueCache) (inUse' : w64) :
+noncomputable instance scavengerState_access_store_g (l : Loc) (v : runtime.scavengerState) (g' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.pcvalueCache go!"inUse" l) v.inUse' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.pcvalueCache go!"inUse" l) inUse' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with inUse' := inUse' } : runtime.pcvalueCache) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.scavengerState go!"g" l) v.g' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.scavengerState go!"g" l) g' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with g' := g' } : runtime.scavengerState) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_load_timer (l : Loc) (v : runtime.scavengerState) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"timer" l) v.timer' dq)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"timer" l) v.timer' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_store_timer (l : Loc) (v : runtime.scavengerState) (timer' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"timer" l) v.timer' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.scavengerState go!"timer" l) timer' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with timer' := timer' } : runtime.scavengerState) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_load_sysmonWake (l : Loc) (v : runtime.scavengerState) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"sysmonWake" l) v.sysmonWake' dq)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"sysmonWake" l) v.sysmonWake' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_store_sysmonWake (l : Loc) (v : runtime.scavengerState) (sysmonWake' : internal.runtime.atomic.Uint32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"sysmonWake" l) v.sysmonWake' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.scavengerState go!"sysmonWake" l) sysmonWake' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sysmonWake' := sysmonWake' } : runtime.scavengerState) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_load_parked (l : Loc) (v : runtime.scavengerState) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"parked" l) v.parked' dq)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"parked" l) v.parked' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_store_parked (l : Loc) (v : runtime.scavengerState) (parked' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"parked" l) v.parked' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.scavengerState go!"parked" l) parked' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with parked' := parked' } : runtime.scavengerState) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_load_printControllerReset (l : Loc) (v : runtime.scavengerState) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"printControllerReset" l) v.printControllerReset' dq)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"printControllerReset" l) v.printControllerReset' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_store_printControllerReset (l : Loc) (v : runtime.scavengerState) (printControllerReset' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"printControllerReset" l) v.printControllerReset' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.scavengerState go!"printControllerReset" l) printControllerReset' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with printControllerReset' := printControllerReset' } : runtime.scavengerState) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_load_targetCPUFraction (l : Loc) (v : runtime.scavengerState) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"targetCPUFraction" l) v.targetCPUFraction' dq)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"targetCPUFraction" l) v.targetCPUFraction' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_store_targetCPUFraction (l : Loc) (v : runtime.scavengerState) (targetCPUFraction' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"targetCPUFraction" l) v.targetCPUFraction' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.scavengerState go!"targetCPUFraction" l) targetCPUFraction' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with targetCPUFraction' := targetCPUFraction' } : runtime.scavengerState) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_load_sleepRatio (l : Loc) (v : runtime.scavengerState) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"sleepRatio" l) v.sleepRatio' dq)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"sleepRatio" l) v.sleepRatio' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_store_sleepRatio (l : Loc) (v : runtime.scavengerState) (sleepRatio' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"sleepRatio" l) v.sleepRatio' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.scavengerState go!"sleepRatio" l) sleepRatio' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sleepRatio' := sleepRatio' } : runtime.scavengerState) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_load_sleepController (l : Loc) (v : runtime.scavengerState) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"sleepController" l) v.sleepController' dq)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"sleepController" l) v.sleepController' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_store_sleepController (l : Loc) (v : runtime.scavengerState) (sleepController' : runtime.piController) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"sleepController" l) v.sleepController' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.scavengerState go!"sleepController" l) sleepController' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sleepController' := sleepController' } : runtime.scavengerState) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_load_controllerCooldown (l : Loc) (v : runtime.scavengerState) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"controllerCooldown" l) v.controllerCooldown' dq)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"controllerCooldown" l) v.controllerCooldown' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_store_controllerCooldown (l : Loc) (v : runtime.scavengerState) (controllerCooldown' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"controllerCooldown" l) v.controllerCooldown' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.scavengerState go!"controllerCooldown" l) controllerCooldown' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with controllerCooldown' := controllerCooldown' } : runtime.scavengerState) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_load_sleepStub (l : Loc) (v : runtime.scavengerState) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"sleepStub" l) v.sleepStub' dq)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"sleepStub" l) v.sleepStub' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_store_sleepStub (l : Loc) (v : runtime.scavengerState) (sleepStub' : GoFunc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"sleepStub" l) v.sleepStub' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.scavengerState go!"sleepStub" l) sleepStub' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sleepStub' := sleepStub' } : runtime.scavengerState) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_load_scavenge (l : Loc) (v : runtime.scavengerState) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"scavenge" l) v.scavenge' dq)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"scavenge" l) v.scavenge' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_store_scavenge (l : Loc) (v : runtime.scavengerState) (scavenge' : GoFunc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"scavenge" l) v.scavenge' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.scavengerState go!"scavenge" l) scavenge' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with scavenge' := scavenge' } : runtime.scavengerState) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_load_shouldStop (l : Loc) (v : runtime.scavengerState) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"shouldStop" l) v.shouldStop' dq)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"shouldStop" l) v.shouldStop' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_store_shouldStop (l : Loc) (v : runtime.scavengerState) (shouldStop' : GoFunc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"shouldStop" l) v.shouldStop' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.scavengerState go!"shouldStop" l) shouldStop' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with shouldStop' := shouldStop' } : runtime.scavengerState) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_load_gomaxprocs (l : Loc) (v : runtime.scavengerState) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"gomaxprocs" l) v.gomaxprocs' dq)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"gomaxprocs" l) v.gomaxprocs' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance scavengerState_access_store_gomaxprocs (l : Loc) (v : runtime.scavengerState) (gomaxprocs' : GoFunc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.scavengerState go!"gomaxprocs" l) v.gomaxprocs' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.scavengerState go!"gomaxprocs" l) gomaxprocs' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with gomaxprocs' := gomaxprocs' } : runtime.scavengerState) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end pcvalueCache
+end scavengerState
 
-namespace inlineUnwinder
+namespace stackWorkBufHdr
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -981,56 +1577,73 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance inlineUnwinder_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.inlineUnwinder where
+noncomputable instance stackWorkBufHdr_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.stackWorkBufHdr where
   typedPointstoDef l v dq := iprop(
-    "f" ∷ typedPointsto (structFieldRef runtime.inlineUnwinder go!"f" l) v.f' dq ∗
-    "inlTree" ∷ typedPointsto (structFieldRef runtime.inlineUnwinder go!"inlTree" l) v.inlTree' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef runtime.stackWorkBufHdr go!"_#0" l) v.«_#0'» dq ∗
+    "workbufhdr" ∷ typedPointsto (structFieldRef runtime.stackWorkBufHdr go!"workbufhdr" l) v.workbufhdr' dq ∗
+    "next" ∷ typedPointsto (structFieldRef runtime.stackWorkBufHdr go!"next" l) v.next' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance inlineUnwinder_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.inlineUnwinder runtime.inlineUnwinder.underlying := by
+noncomputable instance stackWorkBufHdr_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.stackWorkBufHdr runtime.stackWorkBufHdr.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance inlineUnwinder_access_load_f (l : Loc) (v : runtime.inlineUnwinder) (dq : DFrac) :
+noncomputable instance «stackWorkBufHdr_access_load__#0» (l : Loc) (v : runtime.stackWorkBufHdr) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.inlineUnwinder go!"f" l) v.f' dq)
-      (typedPointsto (structFieldRef runtime.inlineUnwinder go!"f" l) v.f' dq)
+      (typedPointsto (structFieldRef runtime.stackWorkBufHdr go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef runtime.stackWorkBufHdr go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance inlineUnwinder_access_store_f (l : Loc) (v : runtime.inlineUnwinder) (f' : runtime.funcInfo) :
+noncomputable instance «stackWorkBufHdr_access_store__#0» (l : Loc) (v : runtime.stackWorkBufHdr) («_#0'» : internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.inlineUnwinder go!"f" l) v.f' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.inlineUnwinder go!"f" l) f' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with f' := f' } : runtime.inlineUnwinder) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.stackWorkBufHdr go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.stackWorkBufHdr go!"_#0" l) «_#0'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : runtime.stackWorkBufHdr) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance inlineUnwinder_access_load_inlTree (l : Loc) (v : runtime.inlineUnwinder) (dq : DFrac) :
+noncomputable instance stackWorkBufHdr_access_load_workbufhdr (l : Loc) (v : runtime.stackWorkBufHdr) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.inlineUnwinder go!"inlTree" l) v.inlTree' dq)
-      (typedPointsto (structFieldRef runtime.inlineUnwinder go!"inlTree" l) v.inlTree' dq)
+      (typedPointsto (structFieldRef runtime.stackWorkBufHdr go!"workbufhdr" l) v.workbufhdr' dq)
+      (typedPointsto (structFieldRef runtime.stackWorkBufHdr go!"workbufhdr" l) v.workbufhdr' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance inlineUnwinder_access_store_inlTree (l : Loc) (v : runtime.inlineUnwinder) (inlTree' : Loc) :
+noncomputable instance stackWorkBufHdr_access_store_workbufhdr (l : Loc) (v : runtime.stackWorkBufHdr) (workbufhdr' : runtime.workbufhdr) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.inlineUnwinder go!"inlTree" l) v.inlTree' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.inlineUnwinder go!"inlTree" l) inlTree' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with inlTree' := inlTree' } : runtime.inlineUnwinder) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.stackWorkBufHdr go!"workbufhdr" l) v.workbufhdr' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.stackWorkBufHdr go!"workbufhdr" l) workbufhdr' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with workbufhdr' := workbufhdr' } : runtime.stackWorkBufHdr) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance stackWorkBufHdr_access_load_next (l : Loc) (v : runtime.stackWorkBufHdr) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.stackWorkBufHdr go!"next" l) v.next' dq)
+      (typedPointsto (structFieldRef runtime.stackWorkBufHdr go!"next" l) v.next' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance stackWorkBufHdr_access_store_next (l : Loc) (v : runtime.stackWorkBufHdr) (next' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.stackWorkBufHdr go!"next" l) v.next' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.stackWorkBufHdr go!"next" l) next' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with next' := next' } : runtime.stackWorkBufHdr) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end inlineUnwinder
+end stackWorkBufHdr
 
-namespace specialBubble
+namespace stackObjectBufHdr
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -1038,73 +1651,73 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance specialBubble_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.specialBubble where
+noncomputable instance stackObjectBufHdr_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.stackObjectBufHdr where
   typedPointstoDef l v dq := iprop(
-    "«_#0»" ∷ typedPointsto (structFieldRef runtime.specialBubble go!"_#0" l) v.«_#0'» dq ∗
-    "special" ∷ typedPointsto (structFieldRef runtime.specialBubble go!"special" l) v.special' dq ∗
-    "bubbleid" ∷ typedPointsto (structFieldRef runtime.specialBubble go!"bubbleid" l) v.bubbleid' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef runtime.stackObjectBufHdr go!"_#0" l) v.«_#0'» dq ∗
+    "workbufhdr" ∷ typedPointsto (structFieldRef runtime.stackObjectBufHdr go!"workbufhdr" l) v.workbufhdr' dq ∗
+    "next" ∷ typedPointsto (structFieldRef runtime.stackObjectBufHdr go!"next" l) v.next' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance specialBubble_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.specialBubble runtime.specialBubble.underlying := by
+noncomputable instance stackObjectBufHdr_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.stackObjectBufHdr runtime.stackObjectBufHdr.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «specialBubble_access_load__#0» (l : Loc) (v : runtime.specialBubble) (dq : DFrac) :
+noncomputable instance «stackObjectBufHdr_access_load__#0» (l : Loc) (v : runtime.stackObjectBufHdr) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.specialBubble go!"_#0" l) v.«_#0'» dq)
-      (typedPointsto (structFieldRef runtime.specialBubble go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef runtime.stackObjectBufHdr go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef runtime.stackObjectBufHdr go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «specialBubble_access_store__#0» (l : Loc) (v : runtime.specialBubble) («_#0'» : internal.runtime.sys.NotInHeap) :
+noncomputable instance «stackObjectBufHdr_access_store__#0» (l : Loc) (v : runtime.stackObjectBufHdr) («_#0'» : internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.specialBubble go!"_#0" l) v.«_#0'» (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.specialBubble go!"_#0" l) «_#0'» (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : runtime.specialBubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.stackObjectBufHdr go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.stackObjectBufHdr go!"_#0" l) «_#0'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : runtime.stackObjectBufHdr) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance specialBubble_access_load_special (l : Loc) (v : runtime.specialBubble) (dq : DFrac) :
+noncomputable instance stackObjectBufHdr_access_load_workbufhdr (l : Loc) (v : runtime.stackObjectBufHdr) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.specialBubble go!"special" l) v.special' dq)
-      (typedPointsto (structFieldRef runtime.specialBubble go!"special" l) v.special' dq)
+      (typedPointsto (structFieldRef runtime.stackObjectBufHdr go!"workbufhdr" l) v.workbufhdr' dq)
+      (typedPointsto (structFieldRef runtime.stackObjectBufHdr go!"workbufhdr" l) v.workbufhdr' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance specialBubble_access_store_special (l : Loc) (v : runtime.specialBubble) (special' : runtime.special) :
+noncomputable instance stackObjectBufHdr_access_store_workbufhdr (l : Loc) (v : runtime.stackObjectBufHdr) (workbufhdr' : runtime.workbufhdr) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.specialBubble go!"special" l) v.special' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.specialBubble go!"special" l) special' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with special' := special' } : runtime.specialBubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.stackObjectBufHdr go!"workbufhdr" l) v.workbufhdr' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.stackObjectBufHdr go!"workbufhdr" l) workbufhdr' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with workbufhdr' := workbufhdr' } : runtime.stackObjectBufHdr) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance specialBubble_access_load_bubbleid (l : Loc) (v : runtime.specialBubble) (dq : DFrac) :
+noncomputable instance stackObjectBufHdr_access_load_next (l : Loc) (v : runtime.stackObjectBufHdr) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.specialBubble go!"bubbleid" l) v.bubbleid' dq)
-      (typedPointsto (structFieldRef runtime.specialBubble go!"bubbleid" l) v.bubbleid' dq)
+      (typedPointsto (structFieldRef runtime.stackObjectBufHdr go!"next" l) v.next' dq)
+      (typedPointsto (structFieldRef runtime.stackObjectBufHdr go!"next" l) v.next' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance specialBubble_access_store_bubbleid (l : Loc) (v : runtime.specialBubble) (bubbleid' : w64) :
+noncomputable instance stackObjectBufHdr_access_store_next (l : Loc) (v : runtime.stackObjectBufHdr) (next' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.specialBubble go!"bubbleid" l) v.bubbleid' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.specialBubble go!"bubbleid" l) bubbleid' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with bubbleid' := bubbleid' } : runtime.specialBubble) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.stackObjectBufHdr go!"next" l) v.next' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.stackObjectBufHdr go!"next" l) next' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with next' := next' } : runtime.stackObjectBufHdr) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end specialBubble
+end stackObjectBufHdr
 
-namespace traceBufHeader
+namespace sweepdata
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -1112,90 +1725,107 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance traceBufHeader_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.traceBufHeader where
+noncomputable instance sweepdata_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.sweepdata where
   typedPointstoDef l v dq := iprop(
-    "link" ∷ typedPointsto (structFieldRef runtime.traceBufHeader go!"link" l) v.link' dq ∗
-    "lastTime" ∷ typedPointsto (structFieldRef runtime.traceBufHeader go!"lastTime" l) v.lastTime' dq ∗
-    "pos" ∷ typedPointsto (structFieldRef runtime.traceBufHeader go!"pos" l) v.pos' dq ∗
-    "lenPos" ∷ typedPointsto (structFieldRef runtime.traceBufHeader go!"lenPos" l) v.lenPos' dq ∗
+    "lock" ∷ typedPointsto (structFieldRef runtime.sweepdata go!"lock" l) v.lock' dq ∗
+    "g" ∷ typedPointsto (structFieldRef runtime.sweepdata go!"g" l) v.g' dq ∗
+    "parked" ∷ typedPointsto (structFieldRef runtime.sweepdata go!"parked" l) v.parked' dq ∗
+    "active" ∷ typedPointsto (structFieldRef runtime.sweepdata go!"active" l) v.active' dq ∗
+    "centralIndex" ∷ typedPointsto (structFieldRef runtime.sweepdata go!"centralIndex" l) v.centralIndex' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance traceBufHeader_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceBufHeader runtime.traceBufHeader.underlying := by
+noncomputable instance sweepdata_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.sweepdata runtime.sweepdata.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance traceBufHeader_access_load_link (l : Loc) (v : runtime.traceBufHeader) (dq : DFrac) :
+noncomputable instance sweepdata_access_load_lock (l : Loc) (v : runtime.sweepdata) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceBufHeader go!"link" l) v.link' dq)
-      (typedPointsto (structFieldRef runtime.traceBufHeader go!"link" l) v.link' dq)
+      (typedPointsto (structFieldRef runtime.sweepdata go!"lock" l) v.lock' dq)
+      (typedPointsto (structFieldRef runtime.sweepdata go!"lock" l) v.lock' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceBufHeader_access_store_link (l : Loc) (v : runtime.traceBufHeader) (link' : Loc) :
+noncomputable instance sweepdata_access_store_lock (l : Loc) (v : runtime.sweepdata) (lock' : runtime.mutex) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceBufHeader go!"link" l) v.link' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.traceBufHeader go!"link" l) link' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with link' := link' } : runtime.traceBufHeader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sweepdata go!"lock" l) v.lock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sweepdata go!"lock" l) lock' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lock' := lock' } : runtime.sweepdata) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceBufHeader_access_load_lastTime (l : Loc) (v : runtime.traceBufHeader) (dq : DFrac) :
+noncomputable instance sweepdata_access_load_g (l : Loc) (v : runtime.sweepdata) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceBufHeader go!"lastTime" l) v.lastTime' dq)
-      (typedPointsto (structFieldRef runtime.traceBufHeader go!"lastTime" l) v.lastTime' dq)
+      (typedPointsto (structFieldRef runtime.sweepdata go!"g" l) v.g' dq)
+      (typedPointsto (structFieldRef runtime.sweepdata go!"g" l) v.g' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceBufHeader_access_store_lastTime (l : Loc) (v : runtime.traceBufHeader) (lastTime' : runtime.traceTime) :
+noncomputable instance sweepdata_access_store_g (l : Loc) (v : runtime.sweepdata) (g' : Loc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceBufHeader go!"lastTime" l) v.lastTime' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.traceBufHeader go!"lastTime" l) lastTime' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lastTime' := lastTime' } : runtime.traceBufHeader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sweepdata go!"g" l) v.g' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sweepdata go!"g" l) g' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with g' := g' } : runtime.sweepdata) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceBufHeader_access_load_pos (l : Loc) (v : runtime.traceBufHeader) (dq : DFrac) :
+noncomputable instance sweepdata_access_load_parked (l : Loc) (v : runtime.sweepdata) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceBufHeader go!"pos" l) v.pos' dq)
-      (typedPointsto (structFieldRef runtime.traceBufHeader go!"pos" l) v.pos' dq)
+      (typedPointsto (structFieldRef runtime.sweepdata go!"parked" l) v.parked' dq)
+      (typedPointsto (structFieldRef runtime.sweepdata go!"parked" l) v.parked' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceBufHeader_access_store_pos (l : Loc) (v : runtime.traceBufHeader) (pos' : w64) :
+noncomputable instance sweepdata_access_store_parked (l : Loc) (v : runtime.sweepdata) (parked' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceBufHeader go!"pos" l) v.pos' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.traceBufHeader go!"pos" l) pos' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pos' := pos' } : runtime.traceBufHeader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sweepdata go!"parked" l) v.parked' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sweepdata go!"parked" l) parked' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with parked' := parked' } : runtime.sweepdata) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceBufHeader_access_load_lenPos (l : Loc) (v : runtime.traceBufHeader) (dq : DFrac) :
+noncomputable instance sweepdata_access_load_active (l : Loc) (v : runtime.sweepdata) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceBufHeader go!"lenPos" l) v.lenPos' dq)
-      (typedPointsto (structFieldRef runtime.traceBufHeader go!"lenPos" l) v.lenPos' dq)
+      (typedPointsto (structFieldRef runtime.sweepdata go!"active" l) v.active' dq)
+      (typedPointsto (structFieldRef runtime.sweepdata go!"active" l) v.active' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceBufHeader_access_store_lenPos (l : Loc) (v : runtime.traceBufHeader) (lenPos' : w64) :
+noncomputable instance sweepdata_access_store_active (l : Loc) (v : runtime.sweepdata) (active' : runtime.activeSweep) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceBufHeader go!"lenPos" l) v.lenPos' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.traceBufHeader go!"lenPos" l) lenPos' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lenPos' := lenPos' } : runtime.traceBufHeader) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.sweepdata go!"active" l) v.active' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sweepdata go!"active" l) active' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with active' := active' } : runtime.sweepdata) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance sweepdata_access_load_centralIndex (l : Loc) (v : runtime.sweepdata) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.sweepdata go!"centralIndex" l) v.centralIndex' dq)
+      (typedPointsto (structFieldRef runtime.sweepdata go!"centralIndex" l) v.centralIndex' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance sweepdata_access_store_centralIndex (l : Loc) (v : runtime.sweepdata) (centralIndex' : runtime.sweepClass) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.sweepdata go!"centralIndex" l) v.centralIndex' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.sweepdata go!"centralIndex" l) centralIndex' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with centralIndex' := centralIndex' } : runtime.sweepdata) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end traceBufHeader
+end sweepdata
 
-namespace traceEventWriter
+namespace gcWork
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -1203,39 +1833,192 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance traceEventWriter_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.traceEventWriter where
+noncomputable instance gcWork_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.gcWork where
   typedPointstoDef l v dq := iprop(
-    "tl" ∷ typedPointsto (structFieldRef runtime.traceEventWriter go!"tl" l) v.tl' dq ∗
+    "id" ∷ typedPointsto (structFieldRef runtime.gcWork go!"id" l) v.id' dq ∗
+    "wbuf1" ∷ typedPointsto (structFieldRef runtime.gcWork go!"wbuf1" l) v.wbuf1' dq ∗
+    "wbuf2" ∷ typedPointsto (structFieldRef runtime.gcWork go!"wbuf2" l) v.wbuf2' dq ∗
+    "spanq" ∷ typedPointsto (structFieldRef runtime.gcWork go!"spanq" l) v.spanq' dq ∗
+    "ptrBuf" ∷ typedPointsto (structFieldRef runtime.gcWork go!"ptrBuf" l) v.ptrBuf' dq ∗
+    "bytesMarked" ∷ typedPointsto (structFieldRef runtime.gcWork go!"bytesMarked" l) v.bytesMarked' dq ∗
+    "heapScanWork" ∷ typedPointsto (structFieldRef runtime.gcWork go!"heapScanWork" l) v.heapScanWork' dq ∗
+    "flushedWork" ∷ typedPointsto (structFieldRef runtime.gcWork go!"flushedWork" l) v.flushedWork' dq ∗
+    "mayNeedWorker" ∷ typedPointsto (structFieldRef runtime.gcWork go!"mayNeedWorker" l) v.mayNeedWorker' dq ∗
+    "stats" ∷ typedPointsto (structFieldRef runtime.gcWork go!"stats" l) v.stats' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance traceEventWriter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceEventWriter runtime.traceEventWriter.underlying := by
+noncomputable instance gcWork_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.gcWork runtime.gcWork.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance traceEventWriter_access_load_tl (l : Loc) (v : runtime.traceEventWriter) (dq : DFrac) :
+noncomputable instance gcWork_access_load_id (l : Loc) (v : runtime.gcWork) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceEventWriter go!"tl" l) v.tl' dq)
-      (typedPointsto (structFieldRef runtime.traceEventWriter go!"tl" l) v.tl' dq)
+      (typedPointsto (structFieldRef runtime.gcWork go!"id" l) v.id' dq)
+      (typedPointsto (structFieldRef runtime.gcWork go!"id" l) v.id' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceEventWriter_access_store_tl (l : Loc) (v : runtime.traceEventWriter) (tl' : runtime.traceLocker) :
+noncomputable instance gcWork_access_store_id (l : Loc) (v : runtime.gcWork) (id' : w32) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceEventWriter go!"tl" l) v.tl' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.traceEventWriter go!"tl" l) tl' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with tl' := tl' } : runtime.traceEventWriter) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.gcWork go!"id" l) v.id' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.gcWork go!"id" l) id' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with id' := id' } : runtime.gcWork) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_load_wbuf1 (l : Loc) (v : runtime.gcWork) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"wbuf1" l) v.wbuf1' dq)
+      (typedPointsto (structFieldRef runtime.gcWork go!"wbuf1" l) v.wbuf1' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_store_wbuf1 (l : Loc) (v : runtime.gcWork) (wbuf1' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"wbuf1" l) v.wbuf1' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.gcWork go!"wbuf1" l) wbuf1' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wbuf1' := wbuf1' } : runtime.gcWork) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_load_wbuf2 (l : Loc) (v : runtime.gcWork) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"wbuf2" l) v.wbuf2' dq)
+      (typedPointsto (structFieldRef runtime.gcWork go!"wbuf2" l) v.wbuf2' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_store_wbuf2 (l : Loc) (v : runtime.gcWork) (wbuf2' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"wbuf2" l) v.wbuf2' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.gcWork go!"wbuf2" l) wbuf2' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with wbuf2' := wbuf2' } : runtime.gcWork) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_load_spanq (l : Loc) (v : runtime.gcWork) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"spanq" l) v.spanq' dq)
+      (typedPointsto (structFieldRef runtime.gcWork go!"spanq" l) v.spanq' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_store_spanq (l : Loc) (v : runtime.gcWork) (spanq' : runtime.spanQueue) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"spanq" l) v.spanq' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.gcWork go!"spanq" l) spanq' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with spanq' := spanq' } : runtime.gcWork) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_load_ptrBuf (l : Loc) (v : runtime.gcWork) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"ptrBuf" l) v.ptrBuf' dq)
+      (typedPointsto (structFieldRef runtime.gcWork go!"ptrBuf" l) v.ptrBuf' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_store_ptrBuf (l : Loc) (v : runtime.gcWork) (ptrBuf' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"ptrBuf" l) v.ptrBuf' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.gcWork go!"ptrBuf" l) ptrBuf' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ptrBuf' := ptrBuf' } : runtime.gcWork) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_load_bytesMarked (l : Loc) (v : runtime.gcWork) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"bytesMarked" l) v.bytesMarked' dq)
+      (typedPointsto (structFieldRef runtime.gcWork go!"bytesMarked" l) v.bytesMarked' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_store_bytesMarked (l : Loc) (v : runtime.gcWork) (bytesMarked' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"bytesMarked" l) v.bytesMarked' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.gcWork go!"bytesMarked" l) bytesMarked' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with bytesMarked' := bytesMarked' } : runtime.gcWork) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_load_heapScanWork (l : Loc) (v : runtime.gcWork) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"heapScanWork" l) v.heapScanWork' dq)
+      (typedPointsto (structFieldRef runtime.gcWork go!"heapScanWork" l) v.heapScanWork' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_store_heapScanWork (l : Loc) (v : runtime.gcWork) (heapScanWork' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"heapScanWork" l) v.heapScanWork' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.gcWork go!"heapScanWork" l) heapScanWork' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with heapScanWork' := heapScanWork' } : runtime.gcWork) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_load_flushedWork (l : Loc) (v : runtime.gcWork) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"flushedWork" l) v.flushedWork' dq)
+      (typedPointsto (structFieldRef runtime.gcWork go!"flushedWork" l) v.flushedWork' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_store_flushedWork (l : Loc) (v : runtime.gcWork) (flushedWork' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"flushedWork" l) v.flushedWork' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.gcWork go!"flushedWork" l) flushedWork' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with flushedWork' := flushedWork' } : runtime.gcWork) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_load_mayNeedWorker (l : Loc) (v : runtime.gcWork) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"mayNeedWorker" l) v.mayNeedWorker' dq)
+      (typedPointsto (structFieldRef runtime.gcWork go!"mayNeedWorker" l) v.mayNeedWorker' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_store_mayNeedWorker (l : Loc) (v : runtime.gcWork) (mayNeedWorker' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"mayNeedWorker" l) v.mayNeedWorker' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.gcWork go!"mayNeedWorker" l) mayNeedWorker' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mayNeedWorker' := mayNeedWorker' } : runtime.gcWork) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_load_stats (l : Loc) (v : runtime.gcWork) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"stats" l) v.stats' dq)
+      (typedPointsto (structFieldRef runtime.gcWork go!"stats" l) v.stats' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance gcWork_access_store_stats (l : Loc) (v : runtime.gcWork) (stats' : (GoArray runtime.sizeClassScanStats 68)) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.gcWork go!"stats" l) v.stats' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.gcWork go!"stats" l) stats' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stats' := stats' } : runtime.gcWork) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end traceEventWriter
+end gcWork
 
-namespace traceRegionAllocBlock
+namespace workbuf
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -1243,73 +2026,73 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance traceRegionAllocBlock_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.traceRegionAllocBlock where
+noncomputable instance workbuf_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.workbuf where
   typedPointstoDef l v dq := iprop(
-    "«_#0»" ∷ typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"_#0" l) v.«_#0'» dq ∗
-    "traceRegionAllocBlockHeader" ∷ typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"traceRegionAllocBlockHeader" l) v.traceRegionAllocBlockHeader' dq ∗
-    "data" ∷ typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"data" l) v.data' dq ∗
+    "«_#0»" ∷ typedPointsto (structFieldRef runtime.workbuf go!"_#0" l) v.«_#0'» dq ∗
+    "workbufhdr" ∷ typedPointsto (structFieldRef runtime.workbuf go!"workbufhdr" l) v.workbufhdr' dq ∗
+    "obj" ∷ typedPointsto (structFieldRef runtime.workbuf go!"obj" l) v.obj' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance traceRegionAllocBlock_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceRegionAllocBlock runtime.traceRegionAllocBlock.underlying := by
+noncomputable instance workbuf_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.workbuf runtime.workbuf.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «traceRegionAllocBlock_access_load__#0» (l : Loc) (v : runtime.traceRegionAllocBlock) (dq : DFrac) :
+noncomputable instance «workbuf_access_load__#0» (l : Loc) (v : runtime.workbuf) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"_#0" l) v.«_#0'» dq)
-      (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef runtime.workbuf go!"_#0" l) v.«_#0'» dq)
+      (typedPointsto (structFieldRef runtime.workbuf go!"_#0" l) v.«_#0'» dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «traceRegionAllocBlock_access_store__#0» (l : Loc) (v : runtime.traceRegionAllocBlock) («_#0'» : internal.runtime.sys.NotInHeap) :
+noncomputable instance «workbuf_access_store__#0» (l : Loc) (v : runtime.workbuf) («_#0'» : internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"_#0" l) v.«_#0'» (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"_#0" l) «_#0'» (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : runtime.traceRegionAllocBlock) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.workbuf go!"_#0" l) v.«_#0'» (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.workbuf go!"_#0" l) «_#0'» (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with «_#0'» := «_#0'» } : runtime.workbuf) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceRegionAllocBlock_access_load_traceRegionAllocBlockHeader (l : Loc) (v : runtime.traceRegionAllocBlock) (dq : DFrac) :
+noncomputable instance workbuf_access_load_workbufhdr (l : Loc) (v : runtime.workbuf) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"traceRegionAllocBlockHeader" l) v.traceRegionAllocBlockHeader' dq)
-      (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"traceRegionAllocBlockHeader" l) v.traceRegionAllocBlockHeader' dq)
+      (typedPointsto (structFieldRef runtime.workbuf go!"workbufhdr" l) v.workbufhdr' dq)
+      (typedPointsto (structFieldRef runtime.workbuf go!"workbufhdr" l) v.workbufhdr' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceRegionAllocBlock_access_store_traceRegionAllocBlockHeader (l : Loc) (v : runtime.traceRegionAllocBlock) (traceRegionAllocBlockHeader' : runtime.traceRegionAllocBlockHeader) :
+noncomputable instance workbuf_access_store_workbufhdr (l : Loc) (v : runtime.workbuf) (workbufhdr' : runtime.workbufhdr) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"traceRegionAllocBlockHeader" l) v.traceRegionAllocBlockHeader' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"traceRegionAllocBlockHeader" l) traceRegionAllocBlockHeader' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with traceRegionAllocBlockHeader' := traceRegionAllocBlockHeader' } : runtime.traceRegionAllocBlock) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.workbuf go!"workbufhdr" l) v.workbufhdr' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.workbuf go!"workbufhdr" l) workbufhdr' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with workbufhdr' := workbufhdr' } : runtime.workbuf) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceRegionAllocBlock_access_load_data (l : Loc) (v : runtime.traceRegionAllocBlock) (dq : DFrac) :
+noncomputable instance workbuf_access_load_obj (l : Loc) (v : runtime.workbuf) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"data" l) v.data' dq)
-      (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"data" l) v.data' dq)
+      (typedPointsto (structFieldRef runtime.workbuf go!"obj" l) v.obj' dq)
+      (typedPointsto (structFieldRef runtime.workbuf go!"obj" l) v.obj' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceRegionAllocBlock_access_store_data (l : Loc) (v : runtime.traceRegionAllocBlock) (data' : (GoArray w8 65520)) :
+noncomputable instance workbuf_access_store_obj (l : Loc) (v : runtime.workbuf) (obj' : (GoArray w64 253)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"data" l) v.data' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.traceRegionAllocBlock go!"data" l) data' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with data' := data' } : runtime.traceRegionAllocBlock) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.workbuf go!"obj" l) v.obj' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.workbuf go!"obj" l) obj' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with obj' := obj' } : runtime.workbuf) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end traceRegionAllocBlock
+end workbuf
 
-namespace pTraceState
+namespace «struct#3a8454c5»
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -1317,124 +2100,73 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance pTraceState_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.pTraceState where
+noncomputable instance «struct#3a8454c5_typed_pointsto» :
+    TypedPointsto (GF := GF) runtime.«struct#3a8454c5» where
   typedPointstoDef l v dq := iprop(
-    "traceSchedResourceState" ∷ typedPointsto (structFieldRef runtime.pTraceState go!"traceSchedResourceState" l) v.traceSchedResourceState' dq ∗
-    "mSyscallID" ∷ typedPointsto (structFieldRef runtime.pTraceState go!"mSyscallID" l) v.mSyscallID' dq ∗
-    "maySweep" ∷ typedPointsto (structFieldRef runtime.pTraceState go!"maySweep" l) v.maySweep' dq ∗
-    "inSweep" ∷ typedPointsto (structFieldRef runtime.pTraceState go!"inSweep" l) v.inSweep' dq ∗
-    "swept" ∷ typedPointsto (structFieldRef runtime.pTraceState go!"swept" l) v.swept' dq ∗
-    "reclaimed" ∷ typedPointsto (structFieldRef runtime.pTraceState go!"reclaimed" l) v.reclaimed' dq ∗
+    "index" ∷ typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"index" l) v.index' dq ∗
+    "releasedBg" ∷ typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"releasedBg" l) v.releasedBg' dq ∗
+    "releasedEager" ∷ typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"releasedEager" l) v.releasedEager' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance pTraceState_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.pTraceState runtime.pTraceState.underlying := by
+noncomputable instance «struct#3a8454c5_into_val_typed» :
+    IntoValTypedUnderlying (GF := GF) runtime.«struct#3a8454c5» runtime.«struct#3a8454c5».underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance pTraceState_access_load_traceSchedResourceState (l : Loc) (v : runtime.pTraceState) (dq : DFrac) :
+noncomputable instance «struct#3a8454c5_access_load_index» (l : Loc) (v : runtime.«struct#3a8454c5») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"traceSchedResourceState" l) v.traceSchedResourceState' dq)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"traceSchedResourceState" l) v.traceSchedResourceState' dq)
+      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"index" l) v.index' dq)
+      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"index" l) v.index' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance pTraceState_access_store_traceSchedResourceState (l : Loc) (v : runtime.pTraceState) (traceSchedResourceState' : runtime.traceSchedResourceState) :
+noncomputable instance «struct#3a8454c5_access_store_index» (l : Loc) (v : runtime.«struct#3a8454c5») (index' : runtime.scavengeIndex) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"traceSchedResourceState" l) v.traceSchedResourceState' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.pTraceState go!"traceSchedResourceState" l) traceSchedResourceState' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with traceSchedResourceState' := traceSchedResourceState' } : runtime.pTraceState) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"index" l) v.index' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"index" l) index' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with index' := index' } : runtime.«struct#3a8454c5») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance pTraceState_access_load_mSyscallID (l : Loc) (v : runtime.pTraceState) (dq : DFrac) :
+noncomputable instance «struct#3a8454c5_access_load_releasedBg» (l : Loc) (v : runtime.«struct#3a8454c5») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"mSyscallID" l) v.mSyscallID' dq)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"mSyscallID" l) v.mSyscallID' dq)
+      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"releasedBg" l) v.releasedBg' dq)
+      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"releasedBg" l) v.releasedBg' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance pTraceState_access_store_mSyscallID (l : Loc) (v : runtime.pTraceState) (mSyscallID' : w64) :
+noncomputable instance «struct#3a8454c5_access_store_releasedBg» (l : Loc) (v : runtime.«struct#3a8454c5») (releasedBg' : internal.runtime.atomic.Uintptr) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"mSyscallID" l) v.mSyscallID' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.pTraceState go!"mSyscallID" l) mSyscallID' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mSyscallID' := mSyscallID' } : runtime.pTraceState) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"releasedBg" l) v.releasedBg' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"releasedBg" l) releasedBg' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with releasedBg' := releasedBg' } : runtime.«struct#3a8454c5») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance pTraceState_access_load_maySweep (l : Loc) (v : runtime.pTraceState) (dq : DFrac) :
+noncomputable instance «struct#3a8454c5_access_load_releasedEager» (l : Loc) (v : runtime.«struct#3a8454c5») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"maySweep" l) v.maySweep' dq)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"maySweep" l) v.maySweep' dq)
+      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"releasedEager" l) v.releasedEager' dq)
+      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"releasedEager" l) v.releasedEager' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance pTraceState_access_store_maySweep (l : Loc) (v : runtime.pTraceState) (maySweep' : Bool) :
+noncomputable instance «struct#3a8454c5_access_store_releasedEager» (l : Loc) (v : runtime.«struct#3a8454c5») (releasedEager' : internal.runtime.atomic.Uintptr) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"maySweep" l) v.maySweep' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.pTraceState go!"maySweep" l) maySweep' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with maySweep' := maySweep' } : runtime.pTraceState) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance pTraceState_access_load_inSweep (l : Loc) (v : runtime.pTraceState) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"inSweep" l) v.inSweep' dq)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"inSweep" l) v.inSweep' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance pTraceState_access_store_inSweep (l : Loc) (v : runtime.pTraceState) (inSweep' : Bool) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"inSweep" l) v.inSweep' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.pTraceState go!"inSweep" l) inSweep' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with inSweep' := inSweep' } : runtime.pTraceState) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance pTraceState_access_load_swept (l : Loc) (v : runtime.pTraceState) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"swept" l) v.swept' dq)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"swept" l) v.swept' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance pTraceState_access_store_swept (l : Loc) (v : runtime.pTraceState) (swept' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"swept" l) v.swept' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.pTraceState go!"swept" l) swept' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with swept' := swept' } : runtime.pTraceState) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance pTraceState_access_load_reclaimed (l : Loc) (v : runtime.pTraceState) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"reclaimed" l) v.reclaimed' dq)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"reclaimed" l) v.reclaimed' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance pTraceState_access_store_reclaimed (l : Loc) (v : runtime.pTraceState) (reclaimed' : w64) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.pTraceState go!"reclaimed" l) v.reclaimed' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.pTraceState go!"reclaimed" l) reclaimed' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with reclaimed' := reclaimed' } : runtime.pTraceState) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"releasedEager" l) v.releasedEager' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"releasedEager" l) releasedEager' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with releasedEager' := releasedEager' } : runtime.«struct#3a8454c5») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end pTraceState
+end «struct#3a8454c5»
 
-namespace traceStackTable
+namespace spanSetBlockHeader2
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -1442,39 +2174,56 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance traceStackTable_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.traceStackTable where
+noncomputable instance spanSetBlockHeader2_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.spanSetBlockHeader2 where
   typedPointstoDef l v dq := iprop(
-    "tab" ∷ typedPointsto (structFieldRef runtime.traceStackTable go!"tab" l) v.tab' dq ∗
+    "spanSetBlockHeader" ∷ typedPointsto (structFieldRef runtime.spanSetBlockHeader2 go!"spanSetBlockHeader" l) v.spanSetBlockHeader' dq ∗
+    "pad" ∷ typedPointsto (structFieldRef runtime.spanSetBlockHeader2 go!"pad" l) v.pad' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance traceStackTable_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceStackTable runtime.traceStackTable.underlying := by
+noncomputable instance spanSetBlockHeader2_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.spanSetBlockHeader2 runtime.spanSetBlockHeader2.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance traceStackTable_access_load_tab (l : Loc) (v : runtime.traceStackTable) (dq : DFrac) :
+noncomputable instance spanSetBlockHeader2_access_load_spanSetBlockHeader (l : Loc) (v : runtime.spanSetBlockHeader2) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceStackTable go!"tab" l) v.tab' dq)
-      (typedPointsto (structFieldRef runtime.traceStackTable go!"tab" l) v.tab' dq)
+      (typedPointsto (structFieldRef runtime.spanSetBlockHeader2 go!"spanSetBlockHeader" l) v.spanSetBlockHeader' dq)
+      (typedPointsto (structFieldRef runtime.spanSetBlockHeader2 go!"spanSetBlockHeader" l) v.spanSetBlockHeader' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceStackTable_access_store_tab (l : Loc) (v : runtime.traceStackTable) (tab' : runtime.traceMap) :
+noncomputable instance spanSetBlockHeader2_access_store_spanSetBlockHeader (l : Loc) (v : runtime.spanSetBlockHeader2) (spanSetBlockHeader' : runtime.spanSetBlockHeader) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceStackTable go!"tab" l) v.tab' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.traceStackTable go!"tab" l) tab' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with tab' := tab' } : runtime.traceStackTable) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.spanSetBlockHeader2 go!"spanSetBlockHeader" l) v.spanSetBlockHeader' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.spanSetBlockHeader2 go!"spanSetBlockHeader" l) spanSetBlockHeader' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with spanSetBlockHeader' := spanSetBlockHeader' } : runtime.spanSetBlockHeader2) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance spanSetBlockHeader2_access_load_pad (l : Loc) (v : runtime.spanSetBlockHeader2) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.spanSetBlockHeader2 go!"pad" l) v.pad' dq)
+      (typedPointsto (structFieldRef runtime.spanSetBlockHeader2 go!"pad" l) v.pad' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance spanSetBlockHeader2_access_store_pad (l : Loc) (v : runtime.spanSetBlockHeader2) (pad' : (GoArray w8 488)) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.spanSetBlockHeader2 go!"pad" l) v.pad' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.spanSetBlockHeader2 go!"pad" l) pad' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pad' := pad' } : runtime.spanSetBlockHeader2) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end traceStackTable
+end spanSetBlockHeader2
 
-namespace traceTypeTable
+namespace consistentHeapStats
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -1482,37 +2231,349 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance traceTypeTable_typed_pointsto :
-    TypedPointsto (GF := GF) runtime.traceTypeTable where
+noncomputable instance consistentHeapStats_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.consistentHeapStats where
   typedPointstoDef l v dq := iprop(
-    "tab" ∷ typedPointsto (structFieldRef runtime.traceTypeTable go!"tab" l) v.tab' dq ∗
+    "stats" ∷ typedPointsto (structFieldRef runtime.consistentHeapStats go!"stats" l) v.stats' dq ∗
+    "gen" ∷ typedPointsto (structFieldRef runtime.consistentHeapStats go!"gen" l) v.gen' dq ∗
+    "noPLock" ∷ typedPointsto (structFieldRef runtime.consistentHeapStats go!"noPLock" l) v.noPLock' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance traceTypeTable_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) runtime.traceTypeTable runtime.traceTypeTable.underlying := by
+noncomputable instance consistentHeapStats_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.consistentHeapStats runtime.consistentHeapStats.underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance traceTypeTable_access_load_tab (l : Loc) (v : runtime.traceTypeTable) (dq : DFrac) :
+noncomputable instance consistentHeapStats_access_load_stats (l : Loc) (v : runtime.consistentHeapStats) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceTypeTable go!"tab" l) v.tab' dq)
-      (typedPointsto (structFieldRef runtime.traceTypeTable go!"tab" l) v.tab' dq)
+      (typedPointsto (structFieldRef runtime.consistentHeapStats go!"stats" l) v.stats' dq)
+      (typedPointsto (structFieldRef runtime.consistentHeapStats go!"stats" l) v.stats' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceTypeTable_access_store_tab (l : Loc) (v : runtime.traceTypeTable) (tab' : runtime.traceMap) :
+noncomputable instance consistentHeapStats_access_store_stats (l : Loc) (v : runtime.consistentHeapStats) (stats' : (GoArray runtime.heapStatsDelta 3)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.traceTypeTable go!"tab" l) v.tab' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.traceTypeTable go!"tab" l) tab' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with tab' := tab' } : runtime.traceTypeTable) (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.consistentHeapStats go!"stats" l) v.stats' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.consistentHeapStats go!"stats" l) stats' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stats' := stats' } : runtime.consistentHeapStats) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance consistentHeapStats_access_load_gen (l : Loc) (v : runtime.consistentHeapStats) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.consistentHeapStats go!"gen" l) v.gen' dq)
+      (typedPointsto (structFieldRef runtime.consistentHeapStats go!"gen" l) v.gen' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance consistentHeapStats_access_store_gen (l : Loc) (v : runtime.consistentHeapStats) (gen' : internal.runtime.atomic.Uint32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.consistentHeapStats go!"gen" l) v.gen' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.consistentHeapStats go!"gen" l) gen' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with gen' := gen' } : runtime.consistentHeapStats) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance consistentHeapStats_access_load_noPLock (l : Loc) (v : runtime.consistentHeapStats) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.consistentHeapStats go!"noPLock" l) v.noPLock' dq)
+      (typedPointsto (structFieldRef runtime.consistentHeapStats go!"noPLock" l) v.noPLock' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance consistentHeapStats_access_store_noPLock (l : Loc) (v : runtime.consistentHeapStats) (noPLock' : runtime.mutex) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.consistentHeapStats go!"noPLock" l) v.noPLock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.consistentHeapStats go!"noPLock" l) noPLock' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noPLock' := noPLock' } : runtime.consistentHeapStats) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end traceTypeTable
+end consistentHeapStats
+
+namespace timer
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : runtime.Assumptions]
+
+noncomputable instance timer_typed_pointsto :
+    TypedPointsto (GF := GF) runtime.timer where
+  typedPointstoDef l v dq := iprop(
+    "mu" ∷ typedPointsto (structFieldRef runtime.timer go!"mu" l) v.mu' dq ∗
+    "astate" ∷ typedPointsto (structFieldRef runtime.timer go!"astate" l) v.astate' dq ∗
+    "state" ∷ typedPointsto (structFieldRef runtime.timer go!"state" l) v.state' dq ∗
+    "isChan" ∷ typedPointsto (structFieldRef runtime.timer go!"isChan" l) v.isChan' dq ∗
+    "isFake" ∷ typedPointsto (structFieldRef runtime.timer go!"isFake" l) v.isFake' dq ∗
+    "blocked" ∷ typedPointsto (structFieldRef runtime.timer go!"blocked" l) v.blocked' dq ∗
+    "rand" ∷ typedPointsto (structFieldRef runtime.timer go!"rand" l) v.rand' dq ∗
+    "when" ∷ typedPointsto (structFieldRef runtime.timer go!"when" l) v.when' dq ∗
+    "period" ∷ typedPointsto (structFieldRef runtime.timer go!"period" l) v.period' dq ∗
+    "f" ∷ typedPointsto (structFieldRef runtime.timer go!"f" l) v.f' dq ∗
+    "arg" ∷ typedPointsto (structFieldRef runtime.timer go!"arg" l) v.arg' dq ∗
+    "seq" ∷ typedPointsto (structFieldRef runtime.timer go!"seq" l) v.seq' dq ∗
+    "ts" ∷ typedPointsto (structFieldRef runtime.timer go!"ts" l) v.ts' dq ∗
+    "sendLock" ∷ typedPointsto (structFieldRef runtime.timer go!"sendLock" l) v.sendLock' dq ∗
+    "isSending" ∷ typedPointsto (structFieldRef runtime.timer go!"isSending" l) v.isSending' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance timer_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) runtime.timer runtime.timer.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance timer_access_load_mu (l : Loc) (v : runtime.timer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"mu" l) v.mu' dq)
+      (typedPointsto (structFieldRef runtime.timer go!"mu" l) v.mu' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_store_mu (l : Loc) (v : runtime.timer) (mu' : runtime.mutex) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"mu" l) v.mu' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.timer go!"mu" l) mu' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with mu' := mu' } : runtime.timer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_load_astate (l : Loc) (v : runtime.timer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"astate" l) v.astate' dq)
+      (typedPointsto (structFieldRef runtime.timer go!"astate" l) v.astate' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_store_astate (l : Loc) (v : runtime.timer) (astate' : internal.runtime.atomic.Uint8) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"astate" l) v.astate' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.timer go!"astate" l) astate' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with astate' := astate' } : runtime.timer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_load_state (l : Loc) (v : runtime.timer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"state" l) v.state' dq)
+      (typedPointsto (structFieldRef runtime.timer go!"state" l) v.state' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_store_state (l : Loc) (v : runtime.timer) (state' : w8) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"state" l) v.state' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.timer go!"state" l) state' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with state' := state' } : runtime.timer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_load_isChan (l : Loc) (v : runtime.timer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"isChan" l) v.isChan' dq)
+      (typedPointsto (structFieldRef runtime.timer go!"isChan" l) v.isChan' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_store_isChan (l : Loc) (v : runtime.timer) (isChan' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"isChan" l) v.isChan' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.timer go!"isChan" l) isChan' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with isChan' := isChan' } : runtime.timer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_load_isFake (l : Loc) (v : runtime.timer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"isFake" l) v.isFake' dq)
+      (typedPointsto (structFieldRef runtime.timer go!"isFake" l) v.isFake' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_store_isFake (l : Loc) (v : runtime.timer) (isFake' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"isFake" l) v.isFake' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.timer go!"isFake" l) isFake' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with isFake' := isFake' } : runtime.timer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_load_blocked (l : Loc) (v : runtime.timer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"blocked" l) v.blocked' dq)
+      (typedPointsto (structFieldRef runtime.timer go!"blocked" l) v.blocked' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_store_blocked (l : Loc) (v : runtime.timer) (blocked' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"blocked" l) v.blocked' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.timer go!"blocked" l) blocked' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with blocked' := blocked' } : runtime.timer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_load_rand (l : Loc) (v : runtime.timer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"rand" l) v.rand' dq)
+      (typedPointsto (structFieldRef runtime.timer go!"rand" l) v.rand' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_store_rand (l : Loc) (v : runtime.timer) (rand' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"rand" l) v.rand' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.timer go!"rand" l) rand' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with rand' := rand' } : runtime.timer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_load_when (l : Loc) (v : runtime.timer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"when" l) v.when' dq)
+      (typedPointsto (structFieldRef runtime.timer go!"when" l) v.when' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_store_when (l : Loc) (v : runtime.timer) (when' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"when" l) v.when' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.timer go!"when" l) when' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with when' := when' } : runtime.timer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_load_period (l : Loc) (v : runtime.timer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"period" l) v.period' dq)
+      (typedPointsto (structFieldRef runtime.timer go!"period" l) v.period' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_store_period (l : Loc) (v : runtime.timer) (period' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"period" l) v.period' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.timer go!"period" l) period' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with period' := period' } : runtime.timer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_load_f (l : Loc) (v : runtime.timer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"f" l) v.f' dq)
+      (typedPointsto (structFieldRef runtime.timer go!"f" l) v.f' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_store_f (l : Loc) (v : runtime.timer) (f' : GoFunc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"f" l) v.f' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.timer go!"f" l) f' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with f' := f' } : runtime.timer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_load_arg (l : Loc) (v : runtime.timer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"arg" l) v.arg' dq)
+      (typedPointsto (structFieldRef runtime.timer go!"arg" l) v.arg' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_store_arg (l : Loc) (v : runtime.timer) (arg' : GoInterface) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"arg" l) v.arg' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.timer go!"arg" l) arg' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with arg' := arg' } : runtime.timer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_load_seq (l : Loc) (v : runtime.timer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"seq" l) v.seq' dq)
+      (typedPointsto (structFieldRef runtime.timer go!"seq" l) v.seq' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_store_seq (l : Loc) (v : runtime.timer) (seq' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"seq" l) v.seq' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.timer go!"seq" l) seq' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with seq' := seq' } : runtime.timer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_load_ts (l : Loc) (v : runtime.timer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"ts" l) v.ts' dq)
+      (typedPointsto (structFieldRef runtime.timer go!"ts" l) v.ts' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_store_ts (l : Loc) (v : runtime.timer) (ts' : Loc) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"ts" l) v.ts' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.timer go!"ts" l) ts' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with ts' := ts' } : runtime.timer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_load_sendLock (l : Loc) (v : runtime.timer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"sendLock" l) v.sendLock' dq)
+      (typedPointsto (structFieldRef runtime.timer go!"sendLock" l) v.sendLock' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_store_sendLock (l : Loc) (v : runtime.timer) (sendLock' : runtime.mutex) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"sendLock" l) v.sendLock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.timer go!"sendLock" l) sendLock' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with sendLock' := sendLock' } : runtime.timer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_load_isSending (l : Loc) (v : runtime.timer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"isSending" l) v.isSending' dq)
+      (typedPointsto (structFieldRef runtime.timer go!"isSending" l) v.isSending' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance timer_access_store_isSending (l : Loc) (v : runtime.timer) (isSending' : internal.runtime.atomic.Int32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef runtime.timer go!"isSending" l) v.isSending' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.timer go!"isSending" l) isSending' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with isSending' := isSending' } : runtime.timer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end timer
 
 end runtime
 end

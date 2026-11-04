@@ -19,6 +19,30 @@ func (suite *GoTestSuite) TestAllocateFull() {
 	suite.Equal(true, testAllocateFull())
 }
 
+func (suite *GoTestSuite) TestAnonStructFields() {
+	suite.Equal(true, testAnonStructFields())
+}
+
+func (suite *GoTestSuite) TestAnonStructPointer() {
+	suite.Equal(true, testAnonStructPointer())
+}
+
+func (suite *GoTestSuite) TestAnonStructSameType() {
+	suite.Equal(true, testAnonStructSameType())
+}
+
+func (suite *GoTestSuite) TestAnonStructGeneric() {
+	suite.Equal(true, testAnonStructGeneric())
+}
+
+func (suite *GoTestSuite) TestAnonStructNested() {
+	suite.Equal(true, testAnonStructNested())
+}
+
+func (suite *GoTestSuite) TestAnonStructArray() {
+	suite.Equal(true, testAnonStructArray())
+}
+
 func (suite *GoTestSuite) TestRangeArray() {
 	suite.Equal(true, testRangeArray())
 }
