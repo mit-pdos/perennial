@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/mit-pdos/perennial/goose"
 	"github.com/mit-pdos/perennial/goose/declfilter"
 	"github.com/mit-pdos/perennial/goose/glang"
 	"github.com/mit-pdos/perennial/goose/proofgen/tmpl"
@@ -41,12 +42,18 @@ func (tr *typesTranslator) translateStructType(spec *ast.TypeSpec, s *types.Stru
 			}
 		}
 	}
+	decl.LeanFields = tr.leanFields(s)
+	return []tmpl.TypeDecl{decl}
+}
+
+func (tr *typesTranslator) leanFields(s *types.Struct) []tmpl.LeanField {
+	var fields []tmpl.LeanField
 	for i := 0; i < s.NumFields(); i++ {
 		fieldName := s.Field(i).Name()
 		if fieldName == "_" {
 			fieldName = "_#" + strconv.Itoa(i)
 		}
-		decl.LeanFields = append(decl.LeanFields, tmpl.LeanField{
+		fields = append(fields, tmpl.LeanField{
 			Name:     fieldName,
 			Proj:     glang.LeanQuoteComponent(fieldName + "'"),
 			GoString: glang.LeanStringLit(fieldName),
@@ -55,7 +62,24 @@ func (tr *typesTranslator) translateStructType(spec *ast.TypeSpec, s *types.Stru
 			Type:    tr.toLeanType(s.Field(i).Type()),
 		})
 	}
-	return []tmpl.TypeDecl{decl}
+	return fields
+}
+
+// anonStructDecl is the TypeDecl of an unnamed struct type of the translation
+// (goose.AnonStructs), modeled like a defined struct type.
+func (tr *typesTranslator) anonStructDecl(a goose.AnonStruct) tmpl.TypeDecl {
+	decl := tmpl.TypeDecl{
+		PkgName:    glang.LeanNamespace(tr.pkg.PkgPath),
+		Name:       glang.LeanQuoteComponent(a.Name),
+		RawName:    a.Name,
+		ImplName:   glang.LeanIdent(glang.TypeImpl(a.Name)),
+		TypeParams: a.TypeParams,
+		Axiomatize: a.Axiomatized,
+	}
+	if !a.Axiomatized {
+		decl.LeanFields = tr.leanFields(a.Struct)
+	}
+	return decl
 }
 
 func (tr *typesTranslator) translateType(spec *ast.TypeSpec) []tmpl.TypeDecl {
@@ -140,6 +164,43 @@ func translateTypesDeps(pkg *packages.Package, filter declfilter.DeclFilter) []t
 
 	var decls []translatedType
 
+	// the unnamed struct types, each emitted before the first type whose
+	// values contain it (and after those its own values contain)
+	anonByName := make(map[string]goose.AnonStruct)
+	anons := goose.AnonStructs(pkg, filter)
+	for _, a := range anons {
+		anonByName[a.Name] = a
+	}
+	anonDeps := func(def types.Type) []string {
+		var deps []string
+		for _, s := range util.AnonStructsInDef(def) {
+			if _, ok := anonByName[util.AnonStructName(s)]; ok {
+				deps = append(deps, util.AnonStructName(s))
+			}
+		}
+		return deps
+	}
+	emitted := make(map[string]bool)
+	var emitAnon func(name string)
+	emitAnon = func(name string) {
+		a, ok := anonByName[name]
+		if !ok || emitted[name] {
+			return
+		}
+		emitted[name] = true
+		for _, dep := range anonDeps(a.Struct) {
+			emitAnon(dep)
+		}
+		var deps []string
+		for n := range util.TypeGetDependencies(pkg.PkgPath, a.Struct) {
+			if _, ok := tr.nameToTypeSpec[n]; ok {
+				deps = append(deps, n)
+			}
+		}
+		decls = append(decls, translatedType{decl: tr.anonStructDecl(a), name: name,
+			deps: append(deps, anonDeps(a.Struct)...)})
+	}
+
 	depsOf := func(s *ast.TypeSpec) []string {
 		var deps []string
 		if tr.filter.GetAction(s.Name.Name) == declfilter.Axiomatize {
@@ -150,7 +211,7 @@ func translateTypesDeps(pkg *packages.Package, filter declfilter.DeclFilter) []t
 				deps = append(deps, n)
 			}
 		}
-		return deps
+		return append(deps, anonDeps(pkg.TypesInfo.TypeOf(s.Type))...)
 	}
 
 	for t := range toposort.ToposortSeq(slices.Values(tr.specs),
@@ -177,9 +238,17 @@ func translateTypesDeps(pkg *packages.Package, filter declfilter.DeclFilter) []t
 			}
 			log.Fatal(cycle[0], "%s", s)
 		}) {
+		if tr.filter.GetAction(t.Name.Name) != declfilter.Axiomatize {
+			for _, dep := range anonDeps(pkg.TypesInfo.TypeOf(t.Type)) {
+				emitAnon(dep)
+			}
+		}
 		for _, d := range tr.translateType(t) {
 			decls = append(decls, translatedType{decl: d, name: t.Name.Name, deps: depsOf(t)})
 		}
+	}
+	for _, a := range anons {
+		emitAnon(a.Name)
 	}
 	return decls
 }
@@ -253,6 +322,15 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 		if t.NumFields() == 0 {
 			return "Unit"
 		}
+		base := glang.LeanNamespace(tr.pkg.PkgPath) + "." + glang.LeanQuoteComponent(util.AnonStructName(t))
+		var params []string
+		for _, p := range util.AnonStructParams(t) {
+			params = append(params, tr.toLeanType(p))
+		}
+		if len(params) == 0 {
+			return base
+		}
+		return fmt.Sprintf("(%s %s)", base, strings.Join(params, " "))
 	}
 	log.Fatalf("unsupported type %s in struct field", t)
 	return ""

@@ -10,6 +10,7 @@ import (
 
 	"github.com/mit-pdos/perennial/goose/declfilter"
 	"github.com/mit-pdos/perennial/goose/glang"
+	"github.com/mit-pdos/perennial/goose/util"
 )
 
 // this file has the translations for types themselves
@@ -131,7 +132,7 @@ func (ctx *Ctx) namedTypeImplDecl(spec *ast.TypeSpec) (decls []glang.Decl) {
 	if s, ok := ctx.typeOf(spec.Type).(*types.Struct); ok {
 		ty := ctx.structType(s)
 
-		decls = append(decls, glang.VerbatimDecl{Content: ctx.leanFdsDecl(spec, ty)})
+		decls = append(decls, glang.VerbatimDecl{Content: ctx.leanFdsDecl(typeName, ctx.typeParamList(spec.TypeParams), ty)})
 		body = ctx.leanStructImplBody(spec)
 	} else {
 		body = ctx.glangType(spec, ctx.typeOf(spec.Type))
@@ -281,7 +282,18 @@ func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 				ctx.unsupported(n, "struct tag on a struct type that is not a defined type")
 			}
 		}
-		return ctx.structType(t)
+		if t.NumFields() == 0 {
+			return ctx.structType(t)
+		}
+		a := ctx.anonStructOf(n, t)
+		var args []glang.Expr
+		for _, p := range a.params {
+			args = append(args, glang.TermIdent(p))
+		}
+		if len(args) == 0 {
+			return glang.TermIdent(glang.TypeImpl(a.name))
+		}
+		return glang.CallExpr{MethodName: glang.TermIdent(glang.TypeImpl(a.name)), Args: args}
 	case *types.TypeParam:
 		return glang.TermIdent(t.Obj().Name())
 	case *types.Basic:
@@ -320,7 +332,8 @@ func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 			}
 			ctx.nope(n, "unexpected built-in type %v", t.Obj())
 		}
-		if ctx.spellOut && !ctx.typeNameable(t, map[types.Type]bool{}) {
+		if ctx.spellOut && !ctx.typeNameable(t, map[types.Type]bool{}) ||
+			ctx.inAnonStructFields && t.Obj().Pkg().Path() == ctx.pkgPath {
 			// the type it denotes
 			return ctx.glangType(n, types.Unalias(t))
 		}
@@ -400,7 +413,18 @@ type structTypeInfo struct {
 	typeArgs       *types.TypeList
 }
 
-func (ctx *Ctx) structInfoToGlangType(info structTypeInfo) glang.Expr {
+// goType is the struct type: the defined type, or the unnamed struct type
+func (info structTypeInfo) goType() types.Type {
+	if info.namedType == nil {
+		return info.structType
+	}
+	return info.namedType
+}
+
+func (ctx *Ctx) structInfoToGlangType(n locatable, info structTypeInfo) glang.Expr {
+	if info.namedType == nil {
+		return ctx.glangType(n, info.structType)
+	}
 	return glang.TypeIdent(info.name)
 }
 
@@ -422,6 +446,9 @@ func (ctx *Ctx) getStructInfo(t types.Type) (structTypeInfo, bool) {
 				structType:     structType,
 			}, true
 		}
+	}
+	if s, ok := util.IsAnonStruct(types.Unalias(t)); ok {
+		return structTypeInfo{throughPointer: throughPointer, structType: s}, true
 	}
 	return structTypeInfo{}, false
 }

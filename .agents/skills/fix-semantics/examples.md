@@ -924,7 +924,58 @@ operation in Go.
 
 **Why.** The owner: "Make the addition to the translator (it's basically desugaring)".
 
-## Case 30 — ACCEPTED: field selection through a type alias of a struct (branch `goose-unalias`)
+## Case 30 — ACCEPTED: unnamed struct types get one generated structure each, option (a) (branch `anon-struct`)
+
+**Symptom.** Incomplete. goose refused an unnamed struct type with fields wherever it needed a
+Lean type for its values ("Anonymous structs with fields are not supported"), and a field
+selection on an addressable one ("unsupported: anonymous struct", `fieldAddrSelection`: only a
+defined type had a `structTypeInfo`); `translate_types` kept every defined type with such a field
+axiomatized. The semantics already had the type, `go.StructType fds` (composite literals,
+`StructFieldGet`/`Set`, `==`). It blocked `sync.OnceValue`/`OnceFunc`, which keep their state in
+`d := struct{f; once; valid; p; result}{f: f}`, captured by the returned closure.
+
+**Witness.** `d := struct{ f int; valid bool }{f: 3}; return d.f` (goose: unsupported).
+
+**Taken.** The named struct scheme, without the `go.Named`: each unnamed struct type with fields
+that a package's translation mentions gets a structure `«struct#<h>»` (`<h>`: 8 hex digits of the
+SHA-256 of the type as Go prints it, packages by path), parameterized by the type parameters it
+mentions; its `fields`/`fieldsUnsealed`/`equals_unfold_`, `«struct#<h>».underlying :=
+go.StructType fields` (the translation's go.GoType for the type), and a `TypeAssumptions` class
+(`type_repr` and the field steps, the named type's minus `underlying` and the method sets) in the
+package's `Assumptions`; proofgen gives it the named type's typed points-to and access instances.
+The field selection takes the unnamed type like a defined one. Costs: 1 goose branch in
+`glangType`, 1 in `toLeanType`, 1 in `getStructInfo` (and `fieldAddrSelection`'s refusal gone),
+the declarations emitted per type (`anon_structs.go`, reusing the named type's helpers), 1 proofgen
+branch; `autotypes`' by-value refusal replaced by Case 12's tag refusal. No semantics rule, no
+negative test. Regenerated: `runtime` and `testing` (their defined types with unnamed-struct
+fields are now translated), the semantics tests (`anon_structs.go`, five proved by
+`semantics_auto`).
+- *Naming*: a function of the type alone, so every occurrence in a package names one structure
+  whatever the declaration order, and proofgen (which reads goose's list, `goose.AnonStructs`)
+  names it alike; `#` is in no Go identifier.
+- *Across packages*: each package has its own structure for the type, and the same go.GoType
+  (structural), which is what keeps Go's type identity right; two packages exchanging such a
+  value see two Lean records of the same type, as two defined types with one underlying type do.
+- *Order*: the types' field lists come before the package's aliases (an alias may denote one; in
+  a field list a same-package alias is written as what it denotes), the structures before the
+  first defined type whose values contain them.
+- *Untranslatable fields* (follow-up, branch `anon-struct-axiomatize`): an unnamed struct type
+  whose fields goose cannot give Lean types (a type of a package the translation does not import,
+  as `translate_types` decides for a defined type: `util.ValueTypeReasons`) gets an axiomatized
+  structure (`axiom «struct#<h>» : Type`, its zero value, `type_repr` only), as a defined type
+  goose cannot translate; found by etcd-grove's protobuf-go `protoreflect`, whose unnamed struct
+  embeds `internal/pragma.NoUnkeyedLiterals`, a package it does not import.
+- Left out: method sets of unnamed structs with embedded fields (no promoted-method facts, as
+  before); unexported field names are not package-qualified in `FieldDecl` (an existing defect of
+  every unnamed struct type, unrelated to this change).
+
+**Not taken.** (b) one generic `TypeReprUnderlying (go.StructType fds) V` in Perennial, `V` a
+nested product of the fields' types: nothing generated, but proofs about tuples instead of named
+fields, and a new instance scheme next to the named one.
+
+**Why.** The owner chose (a), the existing named-struct scheme ("Do (a)").
+
+## Case 31 — ACCEPTED: field selection through a type alias of a struct (branch `goose-unalias`)
 
 **Symptom.** Translation refused where Go runs (incomplete). `getStructInfo` matched
 `*types.Named` (and a pointer to one) without unaliasing, so a selector on a value whose

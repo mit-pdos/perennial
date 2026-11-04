@@ -362,8 +362,6 @@ noncomputable def getwdCache [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def checkPidfdOnce [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.checkPidfdOnce"
 
-axiom checkPidfdOnce.init [GooseExts] [GoGlobalContext] : val
-
 noncomputable def Args [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.Args"
 
@@ -944,6 +942,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$v0" (Lam BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
   (Seq (App (Val exceptionDo)
@@ -1001,6 +1000,8 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (Let "$r0" (App (Val (GoInstruction (Convert dirFS.ty _root_.Perennial.io.fs.ReadFileFS.ty))) (Val #(go!"")))
   (Let "$r0" (App (Val (GoInstruction (Convert dirFS.ty _root_.Perennial.io.fs.ReadDirFS.ty))) (Val #(go!"")))
   (Let "$r0" (App (Val (GoInstruction (Convert dirFS.ty _root_.Perennial.io.fs.ReadLinkFS.ty))) (Val #(go!"")))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (FuncResolve checkPidfd []))) (Val #()))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.sync.OnceValue [go.error]))) (Val #())) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"pattern contains path separator"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
@@ -1016,7 +1017,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr errPatternHasSeparator))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val checkPidfdOnce.init) (Val #()))))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [go.error]))))) (Pair (App (Val (GoInstruction (GlobalVarAddr checkPidfdOnce))) (Val #())) (Var "$r0"))))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (GlobalVarAddr checkWrapErr))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
@@ -1089,6 +1090,8 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val (go.GlobalAlloc lstat (go.GoType.FunctionType (go.signature.Signature [go.string] false [FileInfo.ty, go.error])))) (Val #()))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc checkWrapErr go.bool)) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc checkPidfdOnce (go.GoType.FunctionType (go.signature.Signature [] false [go.error])))) (Val #()))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc errPatternHasSeparator go.error)) (Val #()))))))))
 

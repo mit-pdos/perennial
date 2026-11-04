@@ -1,9 +1,8 @@
 # os is names-only, but for the package-level variable initializers whose callees are translated:
 # the `errors.New` errors, `checkWrapErr`, `dirBufPool`'s `sync.Pool` literal, the error variables
 # that are io/fs's (`ErrInvalid`, ..., `ErrClosed`), `lstat = Lstat` and the `var _ fs.StatFS =
-# dirFS("")` assertions. The other initializers stay axiomatized:
-# * `checkPidfdOnce = sync.OnceValue(checkPidfd)`: `OnceValue` keeps its state in a variable of an
-#   anonymous struct type, which goose does not translate ("unsupported: anonymous struct");
+# dirFS("")` assertions, and `checkPidfdOnce = sync.OnceValue(checkPidfd)`. The other initializers
+# stay axiomatized:
 # * `Interrupt`, `Kill` (`syscall.SIGINT`, `SIGKILL`) and `ErrNoDeadline`, `ErrDeadlineExceeded`,
 #   `pollSplice`, `pollCopyFileRange` (internal/poll's variables and functions): importing syscall
 #   (directly or through internal/poll) runs syscall's initializer, which reaches the same
@@ -17,7 +16,7 @@ translate = ["!*",
   "errWriteAtInAppendMode", "errPathEscapes", "errPatternHasSeparator",
   "checkWrapErr", "dirBufPool",
   "ErrInvalid", "ErrPermission", "ErrExist", "ErrNotExist", "ErrClosed",
-  "_", "lstat",
+  "_", "lstat", "checkPidfdOnce",
 ]
 
 imports = ["!*", "errors", "sync", "io/fs"]
