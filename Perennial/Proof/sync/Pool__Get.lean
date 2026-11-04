@@ -27,9 +27,9 @@ variable [package_sem : sync.Assumptions]
 theorem sync.Pool.Get.wp_proof
     (wp_model_Get : github_com.mit_pdos.perennial.goose.model.pool.Pool.Get.spec (GF := GF) (hG := hG)) :
     sync.Pool.Get.spec (GF := GF) (hG := hG) := by
-  intro p f P
-  wp_start as #His
-  wp_apply sync.wp_Pool_state p f P $$ [$His] as %s #Hs
+  intro p f R P
+  wp_start as ⟨#His, HR⟩
+  wp_apply sync.wp_Pool_state p f R P $$ [$His] as %s #Hs
   wp_apply wp_model_Get $$ [$Hs] as %x Hx
   rw [sync.Pool_ty_eq]
   cases x with
@@ -38,7 +38,7 @@ theorem sync.Pool.Get.wp_proof
     iapply HΦ
     icases Hx with (%h | Hx)
     · cases h
-    ileft; iexact Hx
+    iframe
   | nil =>
     simp only [sync.isPool_unseal, sync.isPoolDef]
     iNamed His
@@ -47,15 +47,16 @@ theorem sync.Pool.Get.wp_proof
     · rw [decide_eq_true hf]
       wp_auto
       iapply HΦ
+      iframe
       iright; ipureintro; exact ⟨hf, rfl⟩
     · rw [decide_eq_false hf]
       unfold sync.newSpec
       icases HNew with (%h | #HNew)
       · exact absurd h hf
       wp_auto
-      wp_apply HNew as %y Hy
+      wp_apply HNew $$ [$HR] as %y ⟨Hy, HR⟩
       iapply HΦ
-      ileft; iexact Hy
+      iframe
 
 end proof
 

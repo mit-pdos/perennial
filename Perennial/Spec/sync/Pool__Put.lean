@@ -24,8 +24,8 @@ variable [package_sem : sync.Assumptions]
 
 /-- `p.Put(x)`: gives `x`, with `P x`, to the pool (which may drop it). -/
 abbrev sync.Pool.Put.spec : Prop :=
-  ∀ (p : Loc) (f : GoFunc) (P : GoAny → IProp GF) (x : GoAny),
-    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isPool p f P ∗ P x }}
+  ∀ (p : Loc) (f : GoFunc) (R : IProp GF) (P : GoAny → IProp GF) (x : GoAny),
+    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isPool p f R P ∗ P x }}
       (App (Val (p @!! go.GoType.PointerType Pool.ty @!! go!"Put")) (Val #x))
     {{ RET #(); True }}
 
