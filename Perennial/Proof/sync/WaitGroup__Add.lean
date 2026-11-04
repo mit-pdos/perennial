@@ -104,7 +104,6 @@ theorem sync.WaitGroup.Add.wp_proof
       exact ⟨Hpossible_waiters_bound_wg, by simp, by decide, Hwaiter_notbubbled_wg⟩
     imod HΦ with HΦ
     imodintro
-    simp only [internal.race.Enabled]
     wp_auto
     simp only [enc_get_waitGroupBubbleFlag _ _ Hwaiter_notbubbled_wg.1, eq_self_iff_true,
       _root_.decide_true, Bool.not_true]
@@ -243,7 +242,6 @@ theorem sync.WaitGroup.Add.wp_proof
     exact ⟨Hpossible_waiters_bound_wg, by simp, by decide, Hwaiter_notbubbled_wg⟩
   imod HΦ with HΦ
   imodintro
-  simp only [internal.race.Enabled]
   wp_auto
   simp only [enc_get_waitGroupBubbleFlag _ _ Hwaiter_notbubbled_wg.1, eq_self_iff_true, _root_.decide_true, Bool.not_true]
   wp_auto
