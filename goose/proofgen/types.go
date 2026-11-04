@@ -68,14 +68,18 @@ func (tr *typesTranslator) leanFields(s *types.Struct) []tmpl.LeanField {
 // anonStructDecl is the TypeDecl of an unnamed struct type of the translation
 // (goose.AnonStructs), modeled like a defined struct type.
 func (tr *typesTranslator) anonStructDecl(a goose.AnonStruct) tmpl.TypeDecl {
-	return tmpl.TypeDecl{
+	decl := tmpl.TypeDecl{
 		PkgName:    glang.LeanNamespace(tr.pkg.PkgPath),
 		Name:       glang.LeanQuoteComponent(a.Name),
 		RawName:    a.Name,
 		ImplName:   glang.LeanIdent(glang.TypeImpl(a.Name)),
 		TypeParams: a.TypeParams,
-		LeanFields: tr.leanFields(a.Struct),
+		Axiomatize: a.Axiomatized,
 	}
+	if !a.Axiomatized {
+		decl.LeanFields = tr.leanFields(a.Struct)
+	}
+	return decl
 }
 
 func (tr *typesTranslator) translateType(spec *ast.TypeSpec) []tmpl.TypeDecl {

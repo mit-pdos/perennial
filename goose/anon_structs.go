@@ -23,6 +23,9 @@ type anonStruct struct {
 	t      *types.Struct
 	params []string // the type parameters it mentions (util.AnonStructParams)
 	fields glang.StructType
+	// goose cannot give its fields Lean types (util.ValueTypeReasons): its
+	// values' type is an axiom, as a defined type's that goose cannot translate
+	axiomatized bool
 	// its structure and TypeAssumptions class are emitted
 	emitted bool
 }
@@ -53,7 +56,17 @@ func (ctx *Ctx) anonStructOf(n locatable, t *types.Struct) *anonStruct {
 	for _, p := range util.AnonStructParams(t) {
 		params = append(params, p.Obj().Name())
 	}
-	a := &anonStruct{name: name, key: key, t: t, params: params, fields: fields}
+	imported := make(map[string]bool)
+	for path := range ctx.importNames {
+		imported[path] = true
+	}
+	axiomatized := false
+	for i := range t.NumFields() {
+		if len(util.ValueTypeReasons(ctx.pkgPath, imported, t.Field(i).Type())) > 0 {
+			axiomatized = true
+		}
+	}
+	a := &anonStruct{name: name, key: key, t: t, params: params, fields: fields, axiomatized: axiomatized}
 	ctx.anonStructs[name] = a
 	ctx.anonStructOrder = append(ctx.anonStructOrder, a)
 	return a
@@ -92,7 +105,11 @@ func (ctx *Ctx) anonStructDecls(a *anonStruct) []glang.Decl {
 	}
 	n := ctx.anonStructPos(a)
 	ns := glang.LeanIdent(a.name)
-	decls = append(decls, glang.VerbatimDecl{Content: ctx.leanStructureDecl(n, ns, a.params, a.t)})
+	if a.axiomatized {
+		decls = append(decls, glang.VerbatimDecl{Content: leanAxiomTypeDecl(ns, a.params)})
+	} else {
+		decls = append(decls, glang.VerbatimDecl{Content: ctx.leanStructureDecl(n, ns, a.params, a.t)})
+	}
 
 	goBinders := leanTypeParamBinders(a.params, "go.GoType")
 	valBinders := leanTypeParamBinders(primed(a.params), "Type")
@@ -111,7 +128,9 @@ func (ctx *Ctx) anonStructDecls(a *anonStruct) []glang.Decl {
 		}
 	}
 	add("type_repr", leanForall(binders, fmt.Sprintf("go.TypeReprUnderlying %s %s", implTy, valTy)))
-	ctx.structFieldAssumptions(n, a.t, valTy, implTy, goBinders, valBinders, add)
+	if !a.axiomatized {
+		ctx.structFieldAssumptions(n, a.t, valTy, implTy, goBinders, valBinders, add)
+	}
 	decls = append(decls, typeAssumptionsDecl{
 		VerbatimDecl: glang.VerbatimDecl{Content: leanClass(glang.LeanEncodedName(a.name+"_Assumptions"),
 			" [GooseExts] "+leanClassParams, fields)},
@@ -143,6 +162,8 @@ type AnonStruct struct {
 	Name       string
 	Struct     *types.Struct
 	TypeParams []string
+	// its values' type is an axiom (see anonStruct)
+	Axiomatized bool
 }
 
 // AnonStructs are the unnamed struct types (with fields) the translation of
@@ -153,7 +174,8 @@ func AnonStructs(pkg *packages.Package, filter declfilter.DeclFilter) []AnonStru
 	ctx.files(pkg.Syntax)
 	var out []AnonStruct
 	for _, a := range ctx.anonStructOrder {
-		out = append(out, AnonStruct{Name: a.name, Struct: a.t, TypeParams: a.params})
+		out = append(out, AnonStruct{Name: a.name, Struct: a.t, TypeParams: a.params,
+			Axiomatized: a.axiomatized})
 	}
 	return out
 }

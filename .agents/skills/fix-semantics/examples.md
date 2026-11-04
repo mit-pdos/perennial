@@ -960,6 +960,12 @@ fields are now translated), the semantics tests (`anon_structs.go`, five proved 
 - *Order*: the types' field lists come before the package's aliases (an alias may denote one; in
   a field list a same-package alias is written as what it denotes), the structures before the
   first defined type whose values contain them.
+- *Untranslatable fields* (follow-up, branch `anon-struct-axiomatize`): an unnamed struct type
+  whose fields goose cannot give Lean types (a type of a package the translation does not import,
+  as `translate_types` decides for a defined type: `util.ValueTypeReasons`) gets an axiomatized
+  structure (`axiom «struct#<h>» : Type`, its zero value, `type_repr` only), as a defined type
+  goose cannot translate; found by etcd-grove's protobuf-go `protoreflect`, whose unnamed struct
+  embeds `internal/pragma.NoUnkeyedLiterals`, a package it does not import.
 - Left out: method sets of unnamed structs with embedded fields (no promoted-method facts, as
   before); unexported field names are not package-qualified in `FieldDecl` (an existing defect of
   every unnamed struct type, unrelated to this change).

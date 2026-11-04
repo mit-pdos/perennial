@@ -139,6 +139,22 @@ func (c *typeTranslatability) checkObj(obj types.Object) {
 	}
 }
 
+// ValueTypeReasons are the reasons goose cannot give a Lean type to the values
+// of t, a field type of a struct type of package pkgPath translating the
+// packages imported (as ExtendFilter decides for a defined struct type); nil if
+// it can.
+func ValueTypeReasons(pkgPath string, imported map[string]bool, t types.Type) []string {
+	c := &typeTranslatability{pkgPath: pkgPath, imported: imported,
+		reasons: make(map[string]bool), aliasDeps: make(map[string]bool)}
+	c.check(t, true, false)
+	var reasons []string
+	for r := range c.reasons {
+		reasons = append(reasons, r)
+	}
+	sort.Strings(reasons)
+	return reasons
+}
+
 var typesLogMu sync.Mutex
 
 // ExtendFilter implements the translate_types option: it returns df, extended

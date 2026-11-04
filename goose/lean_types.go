@@ -96,20 +96,10 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 	ns := glang.LeanIdent(spec.Name.Name)
 	params := ctx.namedTypeParams(spec)
 	typeBinders := leanTypeParamBinders(params, "Type")
-	tApplied := leanApplied(ns, params)
 
 	switch ctx.filter.GetAction(spec.Name.Name) {
 	case declfilter.Axiomatize:
-		fmt.Fprintf(w, "axiom %s : %s\n", ns, leanForall(typeBinders, "Type"))
-		zvBinders := ""
-		if len(params) > 0 {
-			zvBinders = "{" + strings.TrimSuffix(strings.TrimPrefix(typeBinders, "("), ")") + "}"
-			for _, p := range params {
-				zvBinders += " [ZeroVal " + glang.LeanIdent(p) + "]"
-			}
-		}
-		fmt.Fprintf(w, "axiom %s.zero_val : %s\n", ns, leanForall(zvBinders, "ZeroVal "+tApplied))
-		fmt.Fprintf(w, "attribute [instance] %s.zero_val", ns)
+		w.WriteString(leanAxiomTypeDecl(ns, params))
 	case declfilter.Translate:
 		switch t := ctx.typeOf(spec.Type).(type) {
 		case *types.Struct:
@@ -122,6 +112,25 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 			fmt.Fprintf(w, "abbrev %s [GooseExts]%s%s : Type := %s", ns, sep, typeBinders, ctx.toLeanType(spec, t))
 		}
 	}
+	return w.String()
+}
+
+// leanAxiomTypeDecl declares ns (with type parameters params), the Lean type of
+// the values of a type goose cannot translate, and its zero value, as axioms.
+func leanAxiomTypeDecl(ns string, params []string) string {
+	w := new(strings.Builder)
+	typeBinders := leanTypeParamBinders(params, "Type")
+	tApplied := leanApplied(ns, params)
+	fmt.Fprintf(w, "axiom %s : %s\n", ns, leanForall(typeBinders, "Type"))
+	zvBinders := ""
+	if len(params) > 0 {
+		zvBinders = "{" + strings.TrimSuffix(strings.TrimPrefix(typeBinders, "("), ")") + "}"
+		for _, p := range params {
+			zvBinders += " [ZeroVal " + glang.LeanIdent(p) + "]"
+		}
+	}
+	fmt.Fprintf(w, "axiom %s.zero_val : %s\n", ns, leanForall(zvBinders, "ZeroVal "+tApplied))
+	fmt.Fprintf(w, "attribute [instance] %s.zero_val", ns)
 	return w.String()
 }
 
