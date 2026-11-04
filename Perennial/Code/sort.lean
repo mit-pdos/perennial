@@ -2221,7 +2221,7 @@ attribute [instance] lessSwap.TypeAssumptions.type_repr
 
 structure reverse [GooseExts] where
   mk ::
-  Interface' : Interface
+  Interface' : _root_.Perennial.sort.Interface
 
 noncomputable instance reverse.zero_val [GooseExts] : ZeroVal reverse :=
   ⟨reverse.mk zeroValDef⟩
@@ -2243,7 +2243,7 @@ class reverse.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying reverse.underlying reverse
   underlying : go.UnderlyingDirectedEq reverse.ty reverse.underlying
   get_Interface : ∀ (x : reverse), go.IsGoStepPureDetTagged under (StructFieldGet reverse.underlying go!"Interface") #x (Val #(x.Interface'))
-  set_Interface : ∀ (x : reverse) (y : Interface), go.IsGoStepPureDetTagged under (StructFieldSet reverse.underlying go!"Interface") (PairV #x #y) (Val #(({ x with Interface' := y } : reverse)))
+  set_Interface : ∀ (x : reverse) (y : _root_.Perennial.sort.Interface), go.IsGoStepPureDetTagged under (StructFieldSet reverse.underlying go!"Interface") (PairV #x #y) (Val #(({ x with Interface' := y } : reverse)))
   method_set : go.MethodSetIs reverse.ty [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType reverse.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Less", (some (go.signature.Signature [go.int, go.int] false [go.bool]))), (go!"Swap", (some (go.signature.Signature [go.int, go.int] false [])))]
   Len_unfold : MethodUnfold reverse.ty go!"Len" (LamV "$r"

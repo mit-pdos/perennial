@@ -81,7 +81,7 @@ noncomputable instance Buffer_access_load_lastRead (l : Loc) (v : bytes.Buffer) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance Buffer_access_store_lastRead (l : Loc) (v : bytes.Buffer) (lastRead' : bytes.readOp) :
+noncomputable instance Buffer_access_store_lastRead (l : Loc) (v : bytes.Buffer) (lastRead' : _root_.Perennial.bytes.readOp) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef bytes.Buffer go!"lastRead" l) v.lastRead' (DFrac.own 1))
       (typedPointsto (structFieldRef bytes.Buffer go!"lastRead" l) lastRead' (DFrac.own 1))

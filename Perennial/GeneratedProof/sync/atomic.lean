@@ -70,7 +70,7 @@ noncomputable instance «Bool'_access_load__#0» (l : Loc) (v : sync.atomic.Bool
  by
   solve_pointsto_access_struct
 
-noncomputable instance «Bool'_access_store__#0» (l : Loc) (v : sync.atomic.Bool') («_#0'» : sync.atomic.noCopy) :
+noncomputable instance «Bool'_access_store__#0» (l : Loc) (v : sync.atomic.Bool') («_#0'» : _root_.Perennial.sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Bool' go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Bool' go!"_#0" l) «_#0'» (DFrac.own 1))
@@ -144,7 +144,7 @@ noncomputable instance «Pointer_access_load__#1» {T' : Type} [TypedPointsto (G
  by
   solve_pointsto_access_struct
 
-noncomputable instance «Pointer_access_store__#1» {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) («_#1'» : sync.atomic.noCopy) :
+noncomputable instance «Pointer_access_store__#1» {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.atomic.Pointer T')) («_#1'» : _root_.Perennial.sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_#1" l) v.«_#1'» (DFrac.own 1))
       (typedPointsto (structFieldRef (sync.atomic.Pointer T') go!"_#1" l) «_#1'» (DFrac.own 1))
@@ -201,7 +201,7 @@ noncomputable instance «Int32_access_load__#0» (l : Loc) (v : sync.atomic.Int3
  by
   solve_pointsto_access_struct
 
-noncomputable instance «Int32_access_store__#0» (l : Loc) (v : sync.atomic.Int32) («_#0'» : sync.atomic.noCopy) :
+noncomputable instance «Int32_access_store__#0» (l : Loc) (v : sync.atomic.Int32) («_#0'» : _root_.Perennial.sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int32 go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Int32 go!"_#0" l) «_#0'» (DFrac.own 1))
@@ -282,7 +282,7 @@ noncomputable instance «Int64_access_load__#0» (l : Loc) (v : sync.atomic.Int6
  by
   solve_pointsto_access_struct
 
-noncomputable instance «Int64_access_store__#0» (l : Loc) (v : sync.atomic.Int64) («_#0'» : sync.atomic.noCopy) :
+noncomputable instance «Int64_access_store__#0» (l : Loc) (v : sync.atomic.Int64) («_#0'» : _root_.Perennial.sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"_#0" l) «_#0'» (DFrac.own 1))
@@ -298,7 +298,7 @@ noncomputable instance «Int64_access_load__#1» (l : Loc) (v : sync.atomic.Int6
  by
   solve_pointsto_access_struct
 
-noncomputable instance «Int64_access_store__#1» (l : Loc) (v : sync.atomic.Int64) («_#1'» : sync.atomic.align64) :
+noncomputable instance «Int64_access_store__#1» (l : Loc) (v : sync.atomic.Int64) («_#1'» : _root_.Perennial.sync.atomic.align64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"_#1" l) v.«_#1'» (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Int64 go!"_#1" l) «_#1'» (DFrac.own 1))
@@ -355,7 +355,7 @@ noncomputable instance «Uint32_access_load__#0» (l : Loc) (v : sync.atomic.Uin
  by
   solve_pointsto_access_struct
 
-noncomputable instance «Uint32_access_store__#0» (l : Loc) (v : sync.atomic.Uint32) («_#0'» : sync.atomic.noCopy) :
+noncomputable instance «Uint32_access_store__#0» (l : Loc) (v : sync.atomic.Uint32) («_#0'» : _root_.Perennial.sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint32 go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uint32 go!"_#0" l) «_#0'» (DFrac.own 1))
@@ -413,7 +413,7 @@ noncomputable instance «Uint64_access_load__#0» (l : Loc) (v : sync.atomic.Uin
  by
   solve_pointsto_access_struct
 
-noncomputable instance «Uint64_access_store__#0» (l : Loc) (v : sync.atomic.Uint64) («_#0'» : sync.atomic.noCopy) :
+noncomputable instance «Uint64_access_store__#0» (l : Loc) (v : sync.atomic.Uint64) («_#0'» : _root_.Perennial.sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_#0" l) «_#0'» (DFrac.own 1))
@@ -429,7 +429,7 @@ noncomputable instance «Uint64_access_load__#1» (l : Loc) (v : sync.atomic.Uin
  by
   solve_pointsto_access_struct
 
-noncomputable instance «Uint64_access_store__#1» (l : Loc) (v : sync.atomic.Uint64) («_#1'» : sync.atomic.align64) :
+noncomputable instance «Uint64_access_store__#1» (l : Loc) (v : sync.atomic.Uint64) («_#1'» : _root_.Perennial.sync.atomic.align64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_#1" l) v.«_#1'» (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uint64 go!"_#1" l) «_#1'» (DFrac.own 1))
@@ -486,7 +486,7 @@ noncomputable instance «Uintptr_access_load__#0» (l : Loc) (v : sync.atomic.Ui
  by
   solve_pointsto_access_struct
 
-noncomputable instance «Uintptr_access_store__#0» (l : Loc) (v : sync.atomic.Uintptr) («_#0'» : sync.atomic.noCopy) :
+noncomputable instance «Uintptr_access_store__#0» (l : Loc) (v : sync.atomic.Uintptr) («_#0'» : _root_.Perennial.sync.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sync.atomic.Uintptr go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef sync.atomic.Uintptr go!"_#0" l) «_#0'» (DFrac.own 1))

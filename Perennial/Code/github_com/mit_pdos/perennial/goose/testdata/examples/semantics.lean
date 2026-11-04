@@ -169,6 +169,16 @@ noncomputable def Daisy.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Daisy.ty
 
+noncomputable def Type'.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Type" [])
+
+attribute [irreducible] Type'.ty
+
+noncomputable def IntOrString.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.IntOrString" [])
+
+attribute [irreducible] IntOrString.ty
+
 noncomputable def LoopStruct.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.LoopStruct" [])
 
@@ -775,6 +785,9 @@ noncomputable def testEmbeddingInterface [GooseExts] [GoGlobalContext] : GoStrin
 
 noncomputable def testDowncastInterface [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testDowncastInterface"
+
+noncomputable def testLocalTypeNameShadow [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testLocalTypeNameShadow"
 
 noncomputable def testsUseLocks [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testsUseLocks"
@@ -4932,6 +4945,29 @@ noncomputable def testDowncastInterface.impl [GooseExts] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore Flora.ty))) (Pair (Var "f") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Lily.ty))) (Pair (Var "l") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: local_type_names.go:9:6 -/
+noncomputable def testLocalTypeNameShadow.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Let "$v0" (Val #(W64 7))
+  (App (Val (GoInstruction (CompositeLiteral IntOrString.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"Type")) (ElementExpression Type'.ty (Var "$v0")))])))
+  (Let "x" (App (Val (GoInstruction (GoAlloc IntOrString.ty))) (App (Val (GoInstruction (GoZeroVal IntOrString.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 9))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals Type'.ty))) (Pair (App (Val (GoInstruction (GoLoad Type'.ty))) (App (Val (GoInstruction (StructFieldRef IntOrString.ty go!"Type"))) (Var "x"))) (Val #(W64 9))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Type'.ty))) (Pair (App (Val (GoInstruction (StructFieldRef IntOrString.ty go!"Type"))) (Var "x")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore IntOrString.ty))) (Pair (Var "x") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- We can't interpret multithreaded code, so this just checks that
@@ -12695,6 +12731,55 @@ attribute [instance] Daisy.TypeAssumptions.type_repr
   Daisy.TypeAssumptions.ptr_Genus_unfold
   Daisy.TypeAssumptions.ptr_Petals_unfold
 
+abbrev Type' [GooseExts] : Type := w64
+
+@[reducible] noncomputable def Type'.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  go.int64
+
+class «Type».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Type'.ty Type'.underlying
+  method_set : go.MethodSetIs Type'.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Type'.ty) []
+
+attribute [instance] «Type».TypeAssumptions.underlying
+  «Type».TypeAssumptions.method_set
+  «Type».TypeAssumptions.ptr_method_set
+
+structure IntOrString [GooseExts] where
+  mk ::
+  Type' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Type'
+
+noncomputable instance IntOrString.zero_val [GooseExts] : ZeroVal IntOrString :=
+  ⟨IntOrString.mk zeroValDef⟩
+
+@[reducible] noncomputable def IntOrString.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"Type" Type'.ty)]
+
+@[irreducible] noncomputable def IntOrString.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  IntOrString.fieldsUnsealed
+
+noncomputable instance equals_unfold_IntOrString [GooseExts] [GoGlobalContext] :
+    EqualsUnfold IntOrString.fields IntOrString.fieldsUnsealed :=
+  ⟨by unfold IntOrString.fields; rfl⟩
+
+@[reducible] noncomputable def IntOrString.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType IntOrString.fields)
+
+class IntOrString.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying IntOrString.underlying IntOrString
+  underlying : go.UnderlyingDirectedEq IntOrString.ty IntOrString.underlying
+  get_Type : ∀ (x : IntOrString), go.IsGoStepPureDetTagged under (StructFieldGet IntOrString.underlying go!"Type") #x (Val #(x.Type'))
+  set_Type : ∀ (x : IntOrString) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Type'), go.IsGoStepPureDetTagged under (StructFieldSet IntOrString.underlying go!"Type") (PairV #x #y) (Val #(({ x with Type' := y } : IntOrString)))
+  method_set : go.MethodSetIs IntOrString.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType IntOrString.ty) []
+
+attribute [instance] IntOrString.TypeAssumptions.type_repr
+  IntOrString.TypeAssumptions.underlying
+  IntOrString.TypeAssumptions.get_Type
+  IntOrString.TypeAssumptions.set_Type
+  IntOrString.TypeAssumptions.method_set
+  IntOrString.TypeAssumptions.ptr_method_set
+
 structure LoopStruct [GooseExts] where
   mk ::
   loopNext' : Loc
@@ -12968,8 +13053,8 @@ attribute [instance] msInt.TypeAssumptions.underlying
 
 structure msEmbedVal [GooseExts] where
   mk ::
-  msValRecv' : msValRecv
-  msPtrRecv' : msPtrRecv
+  msValRecv' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msValRecv
+  msPtrRecv' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msPtrRecv
 
 noncomputable instance msEmbedVal.zero_val [GooseExts] : ZeroVal msEmbedVal :=
   ⟨msEmbedVal.mk zeroValDef zeroValDef⟩
@@ -12992,9 +13077,9 @@ class msEmbedVal.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] 
   type_repr : go.TypeReprUnderlying msEmbedVal.underlying msEmbedVal
   underlying : go.UnderlyingDirectedEq msEmbedVal.ty msEmbedVal.underlying
   get_msValRecv : ∀ (x : msEmbedVal), go.IsGoStepPureDetTagged under (StructFieldGet msEmbedVal.underlying go!"msValRecv") #x (Val #(x.msValRecv'))
-  set_msValRecv : ∀ (x : msEmbedVal) (y : msValRecv), go.IsGoStepPureDetTagged under (StructFieldSet msEmbedVal.underlying go!"msValRecv") (PairV #x #y) (Val #(({ x with msValRecv' := y } : msEmbedVal)))
+  set_msValRecv : ∀ (x : msEmbedVal) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msValRecv), go.IsGoStepPureDetTagged under (StructFieldSet msEmbedVal.underlying go!"msValRecv") (PairV #x #y) (Val #(({ x with msValRecv' := y } : msEmbedVal)))
   get_msPtrRecv : ∀ (x : msEmbedVal), go.IsGoStepPureDetTagged under (StructFieldGet msEmbedVal.underlying go!"msPtrRecv") #x (Val #(x.msPtrRecv'))
-  set_msPtrRecv : ∀ (x : msEmbedVal) (y : msPtrRecv), go.IsGoStepPureDetTagged under (StructFieldSet msEmbedVal.underlying go!"msPtrRecv") (PairV #x #y) (Val #(({ x with msPtrRecv' := y } : msEmbedVal)))
+  set_msPtrRecv : ∀ (x : msEmbedVal) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msPtrRecv), go.IsGoStepPureDetTagged under (StructFieldSet msEmbedVal.underlying go!"msPtrRecv") (PairV #x #y) (Val #(({ x with msPtrRecv' := y } : msEmbedVal)))
   method_set : go.MethodSetIs msEmbedVal.ty [(go!"Get", (some (go.signature.Signature [] false [go.uint64])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType msEmbedVal.ty) [(go!"Get", (some (go.signature.Signature [] false [go.uint64]))), (go!"Set", (some (go.signature.Signature [go.uint64] false [])))]
   Get_unfold : MethodUnfold msEmbedVal.ty go!"Get" (LamV "$r"
@@ -13059,7 +13144,7 @@ attribute [instance] msEmbedPtr.TypeAssumptions.type_repr
 
 structure msEmbedIface [GooseExts] where
   mk ::
-  msGetter' : msGetter
+  msGetter' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msGetter
 
 noncomputable instance msEmbedIface.zero_val [GooseExts] : ZeroVal msEmbedIface :=
   ⟨msEmbedIface.mk zeroValDef⟩
@@ -13081,7 +13166,7 @@ class msEmbedIface.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   type_repr : go.TypeReprUnderlying msEmbedIface.underlying msEmbedIface
   underlying : go.UnderlyingDirectedEq msEmbedIface.ty msEmbedIface.underlying
   get_msGetter : ∀ (x : msEmbedIface), go.IsGoStepPureDetTagged under (StructFieldGet msEmbedIface.underlying go!"msGetter") #x (Val #(x.msGetter'))
-  set_msGetter : ∀ (x : msEmbedIface) (y : msGetter), go.IsGoStepPureDetTagged under (StructFieldSet msEmbedIface.underlying go!"msGetter") (PairV #x #y) (Val #(({ x with msGetter' := y } : msEmbedIface)))
+  set_msGetter : ∀ (x : msEmbedIface) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msGetter), go.IsGoStepPureDetTagged under (StructFieldSet msEmbedIface.underlying go!"msGetter") (PairV #x #y) (Val #(({ x with msGetter' := y } : msEmbedIface)))
   method_set : go.MethodSetIs msEmbedIface.ty [(go!"Get", (some (go.signature.Signature [] false [go.uint64])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType msEmbedIface.ty) [(go!"Get", (some (go.signature.Signature [] false [go.uint64])))]
   Get_unfold : MethodUnfold msEmbedIface.ty go!"Get" (LamV "$r"
@@ -13193,8 +13278,8 @@ attribute [instance] msBox.TypeAssumptions.type_repr
 
 structure msEmbedGeneric [GooseExts] (T : Type) where
   mk ::
-  msPtrRecv' : msPtrRecv
-  msGetter' : msGetter
+  msPtrRecv' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msPtrRecv
+  msGetter' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msGetter
   v' : T
 
 noncomputable instance msEmbedGeneric.zero_val [GooseExts] {T : Type} [ZeroVal T] : ZeroVal (msEmbedGeneric T) :=
@@ -13219,9 +13304,9 @@ class msEmbedGeneric.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalConte
   type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (msEmbedGeneric.underlying T) (msEmbedGeneric T')
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (msEmbedGeneric.ty T) (msEmbedGeneric.underlying T)
   get_msPtrRecv : ∀ (T : go.GoType) (T' : Type) (x : (msEmbedGeneric T')), go.IsGoStepPureDetTagged under (StructFieldGet (msEmbedGeneric.underlying T) go!"msPtrRecv") #x (Val #(x.msPtrRecv'))
-  set_msPtrRecv : ∀ (T : go.GoType) (T' : Type) (x : (msEmbedGeneric T')) (y : msPtrRecv), go.IsGoStepPureDetTagged under (StructFieldSet (msEmbedGeneric.underlying T) go!"msPtrRecv") (PairV #x #y) (Val #(({ x with msPtrRecv' := y } : (msEmbedGeneric T'))))
+  set_msPtrRecv : ∀ (T : go.GoType) (T' : Type) (x : (msEmbedGeneric T')) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msPtrRecv), go.IsGoStepPureDetTagged under (StructFieldSet (msEmbedGeneric.underlying T) go!"msPtrRecv") (PairV #x #y) (Val #(({ x with msPtrRecv' := y } : (msEmbedGeneric T'))))
   get_msGetter : ∀ (T : go.GoType) (T' : Type) (x : (msEmbedGeneric T')), go.IsGoStepPureDetTagged under (StructFieldGet (msEmbedGeneric.underlying T) go!"msGetter") #x (Val #(x.msGetter'))
-  set_msGetter : ∀ (T : go.GoType) (T' : Type) (x : (msEmbedGeneric T')) (y : msGetter), go.IsGoStepPureDetTagged under (StructFieldSet (msEmbedGeneric.underlying T) go!"msGetter") (PairV #x #y) (Val #(({ x with msGetter' := y } : (msEmbedGeneric T'))))
+  set_msGetter : ∀ (T : go.GoType) (T' : Type) (x : (msEmbedGeneric T')) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msGetter), go.IsGoStepPureDetTagged under (StructFieldSet (msEmbedGeneric.underlying T) go!"msGetter") (PairV #x #y) (Val #(({ x with msGetter' := y } : (msEmbedGeneric T'))))
   get_v : ∀ (T : go.GoType) (T' : Type) (x : (msEmbedGeneric T')), go.IsGoStepPureDetTagged under (StructFieldGet (msEmbedGeneric.underlying T) go!"v") #x (Val #(x.v'))
   set_v : ∀ (T : go.GoType) (T' : Type) (x : (msEmbedGeneric T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet (msEmbedGeneric.underlying T) go!"v") (PairV #x #y) (Val #(({ x with v' := y } : (msEmbedGeneric T'))))
   method_set : ∀ (T : go.GoType), go.MethodSetIs (msEmbedGeneric.ty T) [(go!"Get", (some (go.signature.Signature [] false [go.uint64])))]
@@ -13540,7 +13625,7 @@ attribute [instance] Bar.TypeAssumptions.type_repr
 
 structure Foo [GooseExts] where
   mk ::
-  bar' : Bar
+  bar' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar
 
 noncomputable instance Foo.zero_val [GooseExts] : ZeroVal Foo :=
   ⟨Foo.mk zeroValDef⟩
@@ -13562,7 +13647,7 @@ class Foo.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSema
   type_repr : go.TypeReprUnderlying Foo.underlying Foo
   underlying : go.UnderlyingDirectedEq Foo.ty Foo.underlying
   get_bar : ∀ (x : Foo), go.IsGoStepPureDetTagged under (StructFieldGet Foo.underlying go!"bar") #x (Val #(x.bar'))
-  set_bar : ∀ (x : Foo) (y : Bar), go.IsGoStepPureDetTagged under (StructFieldSet Foo.underlying go!"bar") (PairV #x #y) (Val #(({ x with bar' := y } : Foo)))
+  set_bar : ∀ (x : Foo) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar), go.IsGoStepPureDetTagged under (StructFieldSet Foo.underlying go!"bar") (PairV #x #y) (Val #(({ x with bar' := y } : Foo)))
   method_set : go.MethodSetIs Foo.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Foo.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.mutateBar", (some (go.signature.Signature [] false [])))]
   ptr_mutateBar_unfold : MethodUnfold (go.GoType.PointerType Foo.ty) go!"mutateBar" Foo.mutateBar.impl
@@ -13619,7 +13704,7 @@ attribute [instance] TwoInts.TypeAssumptions.type_repr
 structure S [GooseExts] where
   mk ::
   a' : w64
-  b' : TwoInts
+  b' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts
   c' : Bool
 
 noncomputable instance S.zero_val [GooseExts] : ZeroVal S :=
@@ -13646,7 +13731,7 @@ class S.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemant
   get_a : ∀ (x : S), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"a") #x (Val #(x.a'))
   set_a : ∀ (x : S) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : S)))
   get_b : ∀ (x : S), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : S) (y : TwoInts), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : S)))
+  set_b : ∀ (x : S) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : S)))
   get_c : ∀ (x : S), go.IsGoStepPureDetTagged under (StructFieldGet S.underlying go!"c") #x (Val #(x.c'))
   set_c : ∀ (x : S) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet S.underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : S)))
   method_set : go.MethodSetIs S.ty [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.readBVal", (some (go.signature.Signature [] false [TwoInts.ty])))]
@@ -13953,7 +14038,7 @@ attribute [instance] «struct#448f9a0d».TypeAssumptions.type_repr
 
 structure «struct#568e4f73» [GooseExts] where
   mk ::
-  msValRecv' : msValRecv
+  msValRecv' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msValRecv
 
 noncomputable instance «struct#568e4f73».zero_val [GooseExts] : ZeroVal «struct#568e4f73» :=
   ⟨«struct#568e4f73».mk zeroValDef⟩
@@ -13961,7 +14046,7 @@ noncomputable instance «struct#568e4f73».zero_val [GooseExts] : ZeroVal «stru
 class «struct#568e4f73».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying «struct#568e4f73».underlying «struct#568e4f73»
   get_msValRecv : ∀ (x : «struct#568e4f73»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#568e4f73».underlying go!"msValRecv") #x (Val #(x.msValRecv'))
-  set_msValRecv : ∀ (x : «struct#568e4f73») (y : msValRecv), go.IsGoStepPureDetTagged under (StructFieldSet «struct#568e4f73».underlying go!"msValRecv") (PairV #x #y) (Val #(({ x with msValRecv' := y } : «struct#568e4f73»)))
+  set_msValRecv : ∀ (x : «struct#568e4f73») (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msValRecv), go.IsGoStepPureDetTagged under (StructFieldSet «struct#568e4f73».underlying go!"msValRecv") (PairV #x #y) (Val #(({ x with msValRecv' := y } : «struct#568e4f73»)))
 
 attribute [instance] «struct#568e4f73».TypeAssumptions.type_repr
   «struct#568e4f73».TypeAssumptions.get_msValRecv
@@ -13997,6 +14082,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Lily_instance : Lily.TypeAssumptions
   Rose_instance : Rose.TypeAssumptions
   Daisy_instance : Daisy.TypeAssumptions
+  Type_instance : «Type».TypeAssumptions
+  IntOrString_instance : IntOrString.TypeAssumptions
   LoopStruct_instance : LoopStruct.TypeAssumptions
   loopCounter_instance : loopCounter.TypeAssumptions
   msGetter_instance : msGetter.TypeAssumptions
@@ -14144,6 +14231,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testPolymorphismInterface_unfold : FuncUnfold testPolymorphismInterface [] testPolymorphismInterface.impl
   testEmbeddingInterface_unfold : FuncUnfold testEmbeddingInterface [] testEmbeddingInterface.impl
   testDowncastInterface_unfold : FuncUnfold testDowncastInterface [] testDowncastInterface.impl
+  testLocalTypeNameShadow_unfold : FuncUnfold testLocalTypeNameShadow [] testLocalTypeNameShadow.impl
   testsUseLocks_unfold : FuncUnfold testsUseLocks [] testsUseLocks.impl
   standardForLoop_unfold : FuncUnfold standardForLoop [] standardForLoop.impl
   testStandardForLoop_unfold : FuncUnfold testStandardForLoop [] testStandardForLoop.impl
@@ -14373,6 +14461,8 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.Lily_instance
   Assumptions.Rose_instance
   Assumptions.Daisy_instance
+  Assumptions.Type_instance
+  Assumptions.IntOrString_instance
   Assumptions.LoopStruct_instance
   Assumptions.loopCounter_instance
   Assumptions.msGetter_instance
@@ -14520,6 +14610,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testPolymorphismInterface_unfold
   Assumptions.testEmbeddingInterface_unfold
   Assumptions.testDowncastInterface_unfold
+  Assumptions.testLocalTypeNameShadow_unfold
   Assumptions.testsUseLocks_unfold
   Assumptions.standardForLoop_unfold
   Assumptions.testStandardForLoop_unfold

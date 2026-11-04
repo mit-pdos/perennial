@@ -496,7 +496,7 @@ noncomputable instance «notInHeap_access_load__#0» (l : Loc) (v : runtime.notI
  by
   solve_pointsto_access_struct
 
-noncomputable instance «notInHeap_access_store__#0» (l : Loc) (v : runtime.notInHeap) («_#0'» : internal.runtime.sys.NotInHeap) :
+noncomputable instance «notInHeap_access_store__#0» (l : Loc) (v : runtime.notInHeap) («_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.notInHeap go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.notInHeap go!"_#0" l) «_#0'» (DFrac.own 1))
@@ -629,7 +629,7 @@ noncomputable instance atomicSpanSetSpinePointer_access_load_a (l : Loc) (v : ru
  by
   solve_pointsto_access_struct
 
-noncomputable instance atomicSpanSetSpinePointer_access_store_a (l : Loc) (v : runtime.atomicSpanSetSpinePointer) (a' : internal.runtime.atomic.UnsafePointer) :
+noncomputable instance atomicSpanSetSpinePointer_access_store_a (l : Loc) (v : runtime.atomicSpanSetSpinePointer) (a' : _root_.Perennial.internal.runtime.atomic.UnsafePointer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.atomicSpanSetSpinePointer go!"a" l) v.a' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.atomicSpanSetSpinePointer go!"a" l) a' (DFrac.own 1))
@@ -669,7 +669,7 @@ noncomputable instance atomicHeadTailIndex_access_load_u (l : Loc) (v : runtime.
  by
   solve_pointsto_access_struct
 
-noncomputable instance atomicHeadTailIndex_access_store_u (l : Loc) (v : runtime.atomicHeadTailIndex) (u' : internal.runtime.atomic.Uint64) :
+noncomputable instance atomicHeadTailIndex_access_store_u (l : Loc) (v : runtime.atomicHeadTailIndex) (u' : _root_.Perennial.internal.runtime.atomic.Uint64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.atomicHeadTailIndex go!"u" l) v.u' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.atomicHeadTailIndex go!"u" l) u' (DFrac.own 1))
@@ -710,7 +710,7 @@ noncomputable instance «checkmarksMap_access_load__#0» (l : Loc) (v : runtime.
  by
   solve_pointsto_access_struct
 
-noncomputable instance «checkmarksMap_access_store__#0» (l : Loc) (v : runtime.checkmarksMap) («_#0'» : internal.runtime.sys.NotInHeap) :
+noncomputable instance «checkmarksMap_access_store__#0» (l : Loc) (v : runtime.checkmarksMap) («_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.checkmarksMap go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.checkmarksMap go!"_#0" l) «_#0'» (DFrac.own 1))
@@ -2195,7 +2195,7 @@ noncomputable instance «mlink_access_load__#0» (l : Loc) (v : runtime.mlink) (
  by
   solve_pointsto_access_struct
 
-noncomputable instance «mlink_access_store__#0» (l : Loc) (v : runtime.mlink) («_#0'» : internal.runtime.sys.NotInHeap) :
+noncomputable instance «mlink_access_store__#0» (l : Loc) (v : runtime.mlink) («_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.mlink go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.mlink go!"_#0" l) «_#0'» (DFrac.own 1))
@@ -2327,7 +2327,7 @@ noncomputable instance limiterEvent_access_load_stamp (l : Loc) (v : runtime.lim
  by
   solve_pointsto_access_struct
 
-noncomputable instance limiterEvent_access_store_stamp (l : Loc) (v : runtime.limiterEvent) (stamp' : internal.runtime.atomic.Uint64) :
+noncomputable instance limiterEvent_access_store_stamp (l : Loc) (v : runtime.limiterEvent) (stamp' : _root_.Perennial.internal.runtime.atomic.Uint64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.limiterEvent go!"stamp" l) v.stamp' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.limiterEvent go!"stamp" l) stamp' (DFrac.own 1))
@@ -2384,7 +2384,7 @@ noncomputable instance «struct#1e853569_access_load_tail» (l : Loc) (v : runti
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#1e853569_access_store_tail» (l : Loc) (v : runtime.«struct#1e853569») (tail' : internal.runtime.atomic.UnsafePointer) :
+noncomputable instance «struct#1e853569_access_store_tail» (l : Loc) (v : runtime.«struct#1e853569») (tail' : _root_.Perennial.internal.runtime.atomic.UnsafePointer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.«struct#1e853569» go!"tail" l) v.tail' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.«struct#1e853569» go!"tail" l) tail' (DFrac.own 1))

@@ -102,7 +102,7 @@ noncomputable instance Frames_access_load_frameStore (l : Loc) (v : runtime.Fram
  by
   solve_pointsto_access_struct
 
-noncomputable instance Frames_access_store_frameStore (l : Loc) (v : runtime.Frames) (frameStore' : (GoArray runtime.Frame 2)) :
+noncomputable instance Frames_access_store_frameStore (l : Loc) (v : runtime.Frames) (frameStore' : (GoArray _root_.Perennial.runtime.Frame 2)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.Frames go!"frameStore" l) v.frameStore' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.Frames go!"frameStore" l) frameStore' (DFrac.own 1))
@@ -160,7 +160,7 @@ noncomputable instance wakeableSleep_access_load_lock (l : Loc) (v : runtime.wak
  by
   solve_pointsto_access_struct
 
-noncomputable instance wakeableSleep_access_store_lock (l : Loc) (v : runtime.wakeableSleep) (lock' : runtime.mutex) :
+noncomputable instance wakeableSleep_access_store_lock (l : Loc) (v : runtime.wakeableSleep) (lock' : _root_.Perennial.runtime.mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.wakeableSleep go!"lock" l) v.lock' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.wakeableSleep go!"lock" l) lock' (DFrac.own 1))
@@ -218,7 +218,7 @@ noncomputable instance «traceBuf_access_load__#0» (l : Loc) (v : runtime.trace
  by
   solve_pointsto_access_struct
 
-noncomputable instance «traceBuf_access_store__#0» (l : Loc) (v : runtime.traceBuf) («_#0'» : internal.runtime.sys.NotInHeap) :
+noncomputable instance «traceBuf_access_store__#0» (l : Loc) (v : runtime.traceBuf) («_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceBuf go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceBuf go!"_#0" l) «_#0'» (DFrac.own 1))
@@ -234,7 +234,7 @@ noncomputable instance traceBuf_access_load_traceBufHeader (l : Loc) (v : runtim
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceBuf_access_store_traceBufHeader (l : Loc) (v : runtime.traceBuf) (traceBufHeader' : runtime.traceBufHeader) :
+noncomputable instance traceBuf_access_store_traceBufHeader (l : Loc) (v : runtime.traceBuf) (traceBufHeader' : _root_.Perennial.runtime.traceBufHeader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceBuf go!"traceBufHeader" l) v.traceBufHeader' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceBuf go!"traceBufHeader" l) traceBufHeader' (DFrac.own 1))
@@ -293,7 +293,7 @@ noncomputable instance traceRegionAlloc_access_load_lock (l : Loc) (v : runtime.
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceRegionAlloc_access_store_lock (l : Loc) (v : runtime.traceRegionAlloc) (lock' : runtime.mutex) :
+noncomputable instance traceRegionAlloc_access_store_lock (l : Loc) (v : runtime.traceRegionAlloc) (lock' : _root_.Perennial.runtime.mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceRegionAlloc go!"lock" l) v.lock' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceRegionAlloc go!"lock" l) lock' (DFrac.own 1))
@@ -309,7 +309,7 @@ noncomputable instance traceRegionAlloc_access_load_dropping (l : Loc) (v : runt
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceRegionAlloc_access_store_dropping (l : Loc) (v : runtime.traceRegionAlloc) (dropping' : internal.runtime.atomic.Bool') :
+noncomputable instance traceRegionAlloc_access_store_dropping (l : Loc) (v : runtime.traceRegionAlloc) (dropping' : _root_.Perennial.internal.runtime.atomic.Bool') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceRegionAlloc go!"dropping" l) v.dropping' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceRegionAlloc go!"dropping" l) dropping' (DFrac.own 1))
@@ -325,7 +325,7 @@ noncomputable instance traceRegionAlloc_access_load_current (l : Loc) (v : runti
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceRegionAlloc_access_store_current (l : Loc) (v : runtime.traceRegionAlloc) (current' : internal.runtime.atomic.UnsafePointer) :
+noncomputable instance traceRegionAlloc_access_store_current (l : Loc) (v : runtime.traceRegionAlloc) (current' : _root_.Perennial.internal.runtime.atomic.UnsafePointer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceRegionAlloc go!"current" l) v.current' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceRegionAlloc go!"current" l) current' (DFrac.own 1))
@@ -383,7 +383,7 @@ noncomputable instance traceStringTable_access_load_lock (l : Loc) (v : runtime.
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceStringTable_access_store_lock (l : Loc) (v : runtime.traceStringTable) (lock' : runtime.mutex) :
+noncomputable instance traceStringTable_access_store_lock (l : Loc) (v : runtime.traceStringTable) (lock' : _root_.Perennial.runtime.mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceStringTable go!"lock" l) v.lock' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceStringTable go!"lock" l) lock' (DFrac.own 1))
@@ -415,7 +415,7 @@ noncomputable instance traceStringTable_access_load_tab (l : Loc) (v : runtime.t
  by
   solve_pointsto_access_struct
 
-noncomputable instance traceStringTable_access_store_tab (l : Loc) (v : runtime.traceStringTable) (tab' : runtime.traceMap) :
+noncomputable instance traceStringTable_access_store_tab (l : Loc) (v : runtime.traceStringTable) (tab' : _root_.Perennial.runtime.traceMap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.traceStringTable go!"tab" l) v.tab' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.traceStringTable go!"tab" l) tab' (DFrac.own 1))

@@ -522,7 +522,7 @@ attribute [instance] ReadDirFS.TypeAssumptions.underlying
 
 structure dirInfo [GooseExts] where
   mk ::
-  fileInfo' : FileInfo
+  fileInfo' : _root_.Perennial.io.fs.FileInfo
 
 noncomputable instance dirInfo.zero_val [GooseExts] : ZeroVal dirInfo :=
   ⟨dirInfo.mk zeroValDef⟩
@@ -544,7 +544,7 @@ class dirInfo.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying dirInfo.underlying dirInfo
   underlying : go.UnderlyingDirectedEq dirInfo.ty dirInfo.underlying
   get_fileInfo : ∀ (x : dirInfo), go.IsGoStepPureDetTagged under (StructFieldGet dirInfo.underlying go!"fileInfo") #x (Val #(x.fileInfo'))
-  set_fileInfo : ∀ (x : dirInfo) (y : FileInfo), go.IsGoStepPureDetTagged under (StructFieldSet dirInfo.underlying go!"fileInfo") (PairV #x #y) (Val #(({ x with fileInfo' := y } : dirInfo)))
+  set_fileInfo : ∀ (x : dirInfo) (y : _root_.Perennial.io.fs.FileInfo), go.IsGoStepPureDetTagged under (StructFieldSet dirInfo.underlying go!"fileInfo") (PairV #x #y) (Val #(({ x with fileInfo' := y } : dirInfo)))
   method_set : go.MethodSetIs dirInfo.ty [(go!"Info", (some (go.signature.Signature [] false [FileInfo.ty, go.error]))), (go!"IsDir", (some (go.signature.Signature [] false [go.bool]))), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Type", (some (go.signature.Signature [] false [FileMode.ty])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType dirInfo.ty) [(go!"Info", (some (go.signature.Signature [] false [FileInfo.ty, go.error]))), (go!"IsDir", (some (go.signature.Signature [] false [go.bool]))), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Type", (some (go.signature.Signature [] false [FileMode.ty])))]
 
@@ -613,7 +613,7 @@ attribute [instance] SubFS.TypeAssumptions.underlying
 
 structure subFS [GooseExts] where
   mk ::
-  fsys' : FS
+  fsys' : _root_.Perennial.io.fs.FS
   dir' : GoString
 
 noncomputable instance subFS.zero_val [GooseExts] : ZeroVal subFS :=
@@ -637,7 +637,7 @@ class subFS.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying subFS.underlying subFS
   underlying : go.UnderlyingDirectedEq subFS.ty subFS.underlying
   get_fsys : ∀ (x : subFS), go.IsGoStepPureDetTagged under (StructFieldGet subFS.underlying go!"fsys") #x (Val #(x.fsys'))
-  set_fsys : ∀ (x : subFS) (y : FS), go.IsGoStepPureDetTagged under (StructFieldSet subFS.underlying go!"fsys") (PairV #x #y) (Val #(({ x with fsys' := y } : subFS)))
+  set_fsys : ∀ (x : subFS) (y : _root_.Perennial.io.fs.FS), go.IsGoStepPureDetTagged under (StructFieldSet subFS.underlying go!"fsys") (PairV #x #y) (Val #(({ x with fsys' := y } : subFS)))
   get_dir : ∀ (x : subFS), go.IsGoStepPureDetTagged under (StructFieldGet subFS.underlying go!"dir") #x (Val #(x.dir'))
   set_dir : ∀ (x : subFS) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet subFS.underlying go!"dir") (PairV #x #y) (Val #(({ x with dir' := y } : subFS)))
   method_set : go.MethodSetIs subFS.ty []

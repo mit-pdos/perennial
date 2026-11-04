@@ -303,7 +303,7 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 	case *types.Named:
 		var base string
 		if pkg := t.Obj().Pkg(); pkg != nil {
-			base = glang.LeanNamespace(pkg.Path()) + "." + glang.LeanQuote(glang.ToIdent(t.Obj().Name()))
+			base = "_root_.Perennial." + glang.LeanNamespace(pkg.Path()) + "." + glang.LeanIdent(t.Obj().Name())
 		} else {
 			// universe types (error) are modeled by the framework
 			base = glang.LeanUniverseType(t.Obj().Name())

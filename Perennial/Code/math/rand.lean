@@ -262,8 +262,8 @@ attribute [instance] Source64.TypeAssumptions.underlying
 
 structure Rand [GooseExts] where
   mk ::
-  src' : Source
-  s64' : Source64
+  src' : _root_.Perennial.math.rand.Source
+  s64' : _root_.Perennial.math.rand.Source64
   readVal' : w64
   readPos' : w8
 
@@ -290,9 +290,9 @@ class Rand.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   type_repr : go.TypeReprUnderlying Rand.underlying Rand
   underlying : go.UnderlyingDirectedEq Rand.ty Rand.underlying
   get_src : ∀ (x : Rand), go.IsGoStepPureDetTagged under (StructFieldGet Rand.underlying go!"src") #x (Val #(x.src'))
-  set_src : ∀ (x : Rand) (y : Source), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"src") (PairV #x #y) (Val #(({ x with src' := y } : Rand)))
+  set_src : ∀ (x : Rand) (y : _root_.Perennial.math.rand.Source), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"src") (PairV #x #y) (Val #(({ x with src' := y } : Rand)))
   get_s64 : ∀ (x : Rand), go.IsGoStepPureDetTagged under (StructFieldGet Rand.underlying go!"s64") #x (Val #(x.s64'))
-  set_s64 : ∀ (x : Rand) (y : Source64), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"s64") (PairV #x #y) (Val #(({ x with s64' := y } : Rand)))
+  set_s64 : ∀ (x : Rand) (y : _root_.Perennial.math.rand.Source64), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"s64") (PairV #x #y) (Val #(({ x with s64' := y } : Rand)))
   get_readVal : ∀ (x : Rand), go.IsGoStepPureDetTagged under (StructFieldGet Rand.underlying go!"readVal") #x (Val #(x.readVal'))
   set_readVal : ∀ (x : Rand) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Rand.underlying go!"readVal") (PairV #x #y) (Val #(({ x with readVal' := y } : Rand)))
   get_readPos : ∀ (x : Rand), go.IsGoStepPureDetTagged under (StructFieldGet Rand.underlying go!"readPos") #x (Val #(x.readPos'))

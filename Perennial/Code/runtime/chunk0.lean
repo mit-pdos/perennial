@@ -10974,7 +10974,7 @@ abbrev guintptr [GooseExts] : Type := w64
 
 structure coro [GooseExts] where
   mk ::
-  gp' : guintptr
+  gp' : _root_.Perennial.runtime.guintptr
   f' : GoFunc
   mp' : Loc
   lockedExt' : w32
@@ -11021,7 +11021,7 @@ noncomputable instance equals_unfold_lockRankStruct [GooseExts] [GoGlobalContext
 
 structure mutex [GooseExts] where
   mk ::
-  lockRankStruct' : lockRankStruct
+  lockRankStruct' : _root_.Perennial.runtime.lockRankStruct
   key' : w64
 
 noncomputable instance mutex.zero_val [GooseExts] : ZeroVal mutex :=
@@ -11043,7 +11043,7 @@ noncomputable instance equals_unfold_mutex [GooseExts] [GoGlobalContext] :
 
 structure cpuProfile [GooseExts] where
   mk ::
-  lock' : mutex
+  lock' : _root_.Perennial.runtime.mutex
   on' : Bool
   log' : Loc
   extra' : (GoArray w64 1000)
@@ -11149,10 +11149,10 @@ structure debugLogWriter [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   write' : w64
-  data' : debugLogBuf
+  data' : _root_.Perennial.runtime.debugLogBuf
   tick' : w64
   nano' : w64
-  r' : debugLogReader
+  r' : _root_.Perennial.runtime.debugLogReader
   buf' : (GoArray w8 10)
 
 noncomputable instance debugLogWriter.zero_val [GooseExts] : ZeroVal debugLogWriter :=
@@ -11180,7 +11180,7 @@ noncomputable instance equals_unfold_debugLogWriter [GooseExts] [GoGlobalContext
 structure dloggerImpl [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  w' : debugLogWriter
+  w' : _root_.Perennial.runtime.debugLogWriter
   allLink' : Loc
   owned' : _root_.Perennial.internal.runtime.atomic.Uint32
 
@@ -11339,7 +11339,7 @@ noncomputable instance equals_unfold_siginfoFields [GooseExts] [GoGlobalContext]
 
 structure siginfo [GooseExts] where
   mk ::
-  siginfoFields' : siginfoFields
+  siginfoFields' : _root_.Perennial.runtime.siginfoFields
   «_#1'» : (GoArray w8 104)
 
 noncomputable instance siginfo.zero_val [GooseExts] : ZeroVal siginfo :=
@@ -11361,8 +11361,8 @@ noncomputable instance equals_unfold_siginfo [GooseExts] [GoGlobalContext] :
 
 structure itimerspec [GooseExts] where
   mk ::
-  it_interval' : timespec
-  it_value' : timespec
+  it_interval' : _root_.Perennial.runtime.timespec
+  it_value' : _root_.Perennial.runtime.timespec
 
 noncomputable instance itimerspec.zero_val [GooseExts] : ZeroVal itimerspec :=
   ⟨itimerspec.mk zeroValDef zeroValDef⟩
@@ -11383,8 +11383,8 @@ noncomputable instance equals_unfold_itimerspec [GooseExts] [GoGlobalContext] :
 
 structure itimerval [GooseExts] where
   mk ::
-  it_interval' : timeval
-  it_value' : timeval
+  it_interval' : _root_.Perennial.runtime.timeval
+  it_value' : _root_.Perennial.runtime.timeval
 
 noncomputable instance itimerval.zero_val [GooseExts] : ZeroVal itimerval :=
   ⟨itimerval.mk zeroValDef zeroValDef⟩
@@ -11431,7 +11431,7 @@ noncomputable instance equals_unfold_sigeventFields [GooseExts] [GoGlobalContext
 
 structure sigevent [GooseExts] where
   mk ::
-  sigeventFields' : sigeventFields
+  sigeventFields' : _root_.Perennial.runtime.sigeventFields
   «_#1'» : (GoArray w8 40)
 
 noncomputable instance sigevent.zero_val [GooseExts] : ZeroVal sigevent :=
@@ -11525,8 +11525,8 @@ structure fpstate [GooseExts] where
   rdp' : w64
   mxcsr' : w32
   mxcr_mask' : w32
-  _st' : (GoArray fpxreg 8)
-  _xmm' : (GoArray xmmreg 16)
+  _st' : (GoArray _root_.Perennial.runtime.fpxreg 8)
+  _xmm' : (GoArray _root_.Perennial.runtime.xmmreg 16)
   padding' : (GoArray w32 24)
 
 noncomputable instance fpstate.zero_val [GooseExts] : ZeroVal fpstate :=
@@ -11609,8 +11609,8 @@ structure fpstate1 [GooseExts] where
   rdp' : w64
   mxcsr' : w32
   mxcr_mask' : w32
-  _st' : (GoArray fpxreg1 8)
-  _xmm' : (GoArray xmmreg1 16)
+  _st' : (GoArray _root_.Perennial.runtime.fpxreg1 8)
+  _xmm' : (GoArray _root_.Perennial.runtime.xmmreg1 16)
   padding' : (GoArray w32 24)
 
 noncomputable instance fpstate1.zero_val [GooseExts] : ZeroVal fpstate1 :=
@@ -11715,10 +11715,10 @@ structure ucontext [GooseExts] where
   mk ::
   uc_flags' : w64
   uc_link' : Loc
-  uc_stack' : stackt
-  uc_mcontext' : mcontext
-  uc_sigmask' : usigset
-  __fpregs_mem' : fpstate
+  uc_stack' : _root_.Perennial.runtime.stackt
+  uc_mcontext' : _root_.Perennial.runtime.mcontext
+  uc_sigmask' : _root_.Perennial.runtime.usigset
+  __fpregs_mem' : _root_.Perennial.runtime.fpstate
 
 noncomputable instance ucontext.zero_val [GooseExts] : ZeroVal ucontext :=
   ⟨ucontext.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -11917,7 +11917,7 @@ structure childInfo [GooseExts] where
   mk ::
   argoff' : w64
   arglen' : w64
-  args' : bitvector
+  args' : _root_.Perennial.runtime.bitvector
   sp' : Loc
   depth' : w64
 
@@ -12158,7 +12158,7 @@ abbrev muintptr [GooseExts] : Type := w64
 
 structure mWaitList [GooseExts] where
   mk ::
-  next' : muintptr
+  next' : _root_.Perennial.runtime.muintptr
   startTicks' : w64
 
 noncomputable instance mWaitList.zero_val [GooseExts] : ZeroVal mWaitList :=
@@ -12286,7 +12286,7 @@ abbrev gclinkptr [GooseExts] : Type := w64
 
 structure stackfreelist [GooseExts] where
   mk ::
-  list' : gclinkptr
+  list' : _root_.Perennial.runtime.gclinkptr
   size' : w64
 
 noncomputable instance stackfreelist.zero_val [GooseExts] : ZeroVal stackfreelist :=
@@ -12316,8 +12316,8 @@ structure mcache [GooseExts] where
   tinyoffset' : w64
   tinyAllocs' : w64
   alloc' : (GoArray Loc 136)
-  reusableNoscan' : (GoArray gclinkptr 136)
-  stackcache' : (GoArray stackfreelist 4)
+  reusableNoscan' : (GoArray _root_.Perennial.runtime.gclinkptr 136)
+  stackcache' : (GoArray _root_.Perennial.runtime.stackfreelist 4)
   flushGen' : _root_.Perennial.internal.runtime.atomic.Uint32
 
 noncomputable instance mcache.zero_val [GooseExts] : ZeroVal mcache :=
@@ -12348,7 +12348,7 @@ noncomputable instance equals_unfold_mcache [GooseExts] [GoGlobalContext] :
 
 structure gclink [GooseExts] where
   mk ::
-  next' : gclinkptr
+  next' : _root_.Perennial.runtime.gclinkptr
 
 noncomputable instance gclink.zero_val [GooseExts] : ZeroVal gclink :=
   ⟨gclink.mk zeroValDef⟩
@@ -12413,11 +12413,11 @@ noncomputable instance equals_unfold_atomicHeadTailIndex [GooseExts] [GoGlobalCo
 
 structure spanSet [GooseExts] where
   mk ::
-  spineLock' : mutex
-  spine' : atomicSpanSetSpinePointer
+  spineLock' : _root_.Perennial.runtime.mutex
+  spine' : _root_.Perennial.runtime.atomicSpanSetSpinePointer
   spineLen' : _root_.Perennial.internal.runtime.atomic.Uintptr
   spineCap' : w64
-  index' : atomicHeadTailIndex
+  index' : _root_.Perennial.runtime.atomicHeadTailIndex
 
 noncomputable instance spanSet.zero_val [GooseExts] : ZeroVal spanSet :=
   ⟨spanSet.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -12442,9 +12442,9 @@ noncomputable instance equals_unfold_spanSet [GooseExts] [GoGlobalContext] :
 structure mcentral [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  spanclass' : spanClass
-  partial' : (GoArray spanSet 2)
-  full' : (GoArray spanSet 2)
+  spanclass' : _root_.Perennial.runtime.spanClass
+  partial' : (GoArray _root_.Perennial.runtime.spanSet 2)
+  full' : (GoArray _root_.Perennial.runtime.spanSet 2)
 
 noncomputable instance mcentral.zero_val [GooseExts] : ZeroVal mcentral :=
   ⟨mcentral.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -12534,7 +12534,7 @@ noncomputable instance equals_unfold_lfnode [GooseExts] [GoGlobalContext] :
 structure cleanupBlockHeader [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  lfnode' : lfnode
+  lfnode' : _root_.Perennial.runtime.lfnode
   alllink' : Loc
   n' : w32
 
@@ -12583,8 +12583,8 @@ noncomputable instance equals_unfold_cleanupFn [GooseExts] [GoGlobalContext] :
 
 structure cleanupBlock [GooseExts] where
   mk ::
-  cleanupBlockHeader' : cleanupBlockHeader
-  cleanups' : (GoArray cleanupFn 20)
+  cleanupBlockHeader' : _root_.Perennial.runtime.cleanupBlockHeader
+  cleanups' : (GoArray _root_.Perennial.runtime.cleanupFn 20)
 
 noncomputable instance cleanupBlock.zero_val [GooseExts] : ZeroVal cleanupBlock :=
   ⟨cleanupBlock.mk zeroValDef zeroValDef⟩
@@ -12605,7 +12605,7 @@ noncomputable instance equals_unfold_cleanupBlock [GooseExts] [GoGlobalContext] 
 
 structure gList [GooseExts] where
   mk ::
-  head' : guintptr
+  head' : _root_.Perennial.runtime.guintptr
   size' : w32
 
 noncomputable instance gList.zero_val [GooseExts] : ZeroVal gList :=
@@ -12627,16 +12627,16 @@ noncomputable instance equals_unfold_gList [GooseExts] [GoGlobalContext] :
 
 structure cleanupQueue [GooseExts] where
   mk ::
-  full' : lfstack
+  full' : _root_.Perennial.runtime.lfstack
   workUnits' : _root_.Perennial.internal.runtime.atomic.Uint64
   «_#2'» : (GoArray w8 48)
-  free' : lfstack
+  free' : _root_.Perennial.runtime.lfstack
   flushed' : _root_.Perennial.internal.runtime.atomic.Bool'
   «_#5'» : (GoArray w8 55)
   all' : _root_.Perennial.internal.runtime.atomic.UnsafePointer
   «_#7'» : (GoArray w8 56)
-  lock' : mutex
-  sleeping' : gList
+  lock' : _root_.Perennial.runtime.mutex
+  sleeping' : _root_.Perennial.runtime.gList
   asleep' : _root_.Perennial.internal.runtime.atomic.Uint32
   running' : _root_.Perennial.internal.runtime.atomic.Uint32
   ng' : _root_.Perennial.internal.runtime.atomic.Uint32
@@ -12682,7 +12682,7 @@ abbrev statDepSet [GooseExts] : Type := (GoArray w64 1)
 
 structure metricData [GooseExts] where
   mk ::
-  deps' : statDepSet
+  deps' : _root_.Perennial.runtime.statDepSet
   compute' : GoFunc
 
 noncomputable instance metricData.zero_val [GooseExts] : ZeroVal metricData :=
@@ -12756,7 +12756,7 @@ noncomputable instance equals_unfold_heapStatsDelta [GooseExts] [GoGlobalContext
 
 structure heapStatsAggregate [GooseExts] where
   mk ::
-  heapStatsDelta' : heapStatsDelta
+  heapStatsDelta' : _root_.Perennial.runtime.heapStatsDelta
   inObjects' : w64
   numObjects' : w64
   totalAllocated' : w64
@@ -12868,7 +12868,7 @@ noncomputable instance equals_unfold_cpuStats [GooseExts] [GoGlobalContext] :
 
 structure cpuStatsAggregate [GooseExts] where
   mk ::
-  cpuStats' : cpuStats
+  cpuStats' : _root_.Perennial.runtime.cpuStats
 
 noncomputable instance cpuStatsAggregate.zero_val [GooseExts] : ZeroVal cpuStatsAggregate :=
   ⟨cpuStatsAggregate.mk zeroValDef⟩
@@ -12972,13 +12972,13 @@ noncomputable instance equals_unfold_schedStatsAggregate [GooseExts] [GoGlobalCo
 
 structure statAggregate [GooseExts] where
   mk ::
-  ensured' : statDepSet
-  heapStats' : heapStatsAggregate
-  sysStats' : sysStatsAggregate
-  cpuStats' : cpuStatsAggregate
-  gcStats' : gcStatsAggregate
-  finalStats' : finalStatsAggregate
-  schedStats' : schedStatsAggregate
+  ensured' : _root_.Perennial.runtime.statDepSet
+  heapStats' : _root_.Perennial.runtime.heapStatsAggregate
+  sysStats' : _root_.Perennial.runtime.sysStatsAggregate
+  cpuStats' : _root_.Perennial.runtime.cpuStatsAggregate
+  gcStats' : _root_.Perennial.runtime.gcStatsAggregate
+  finalStats' : _root_.Perennial.runtime.finalStatsAggregate
+  schedStats' : _root_.Perennial.runtime.schedStatsAggregate
 
 noncomputable instance statAggregate.zero_val [GooseExts] : ZeroVal statAggregate :=
   ⟨statAggregate.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -13009,7 +13009,7 @@ abbrev metricKind [GooseExts] : Type := w64
 
 structure metricValue [GooseExts] where
   mk ::
-  kind' : metricKind
+  kind' : _root_.Perennial.runtime.metricKind
   scalar' : w64
   pointer' : Loc
 
@@ -13034,7 +13034,7 @@ noncomputable instance equals_unfold_metricValue [GooseExts] [GoGlobalContext] :
 structure metricSample [GooseExts] where
   mk ::
   name' : GoString
-  value' : metricValue
+  value' : _root_.Perennial.runtime.metricValue
 
 noncomputable instance metricSample.zero_val [GooseExts] : ZeroVal metricSample :=
   ⟨metricSample.mk zeroValDef zeroValDef⟩
@@ -13078,7 +13078,7 @@ noncomputable instance equals_unfold_metricFloat64Histogram [GooseExts] [GoGloba
 structure metricName [GooseExts] where
   mk ::
   name' : GoString
-  kind' : metricKind
+  kind' : _root_.Perennial.runtime.metricKind
 
 noncomputable instance metricName.zero_val [GooseExts] : ZeroVal metricName :=
   ⟨metricName.mk zeroValDef zeroValDef⟩
@@ -13108,7 +13108,7 @@ structure finBlock [GooseExts] where
   next' : Loc
   cnt' : w32
   «_#4'» : w32
-  fin' : (GoArray finalizer 101)
+  fin' : (GoArray _root_.Perennial.runtime.finalizer 101)
 
 noncomputable instance finBlock.zero_val [GooseExts] : ZeroVal finBlock :=
   ⟨finBlock.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -13212,7 +13212,7 @@ abbrev gcTriggerKind [GooseExts] : Type := w64
 
 structure gcTrigger [GooseExts] where
   mk ::
-  kind' : gcTriggerKind
+  kind' : _root_.Perennial.runtime.gcTriggerKind
   now' : w64
   n' : w32
 
@@ -13236,9 +13236,9 @@ noncomputable instance equals_unfold_gcTrigger [GooseExts] [GoGlobalContext] :
 
 structure gcBgMarkWorkerNode [GooseExts] where
   mk ::
-  node' : lfnode
-  gp' : guintptr
-  m' : muintptr
+  node' : _root_.Perennial.runtime.lfnode
+  gp' : _root_.Perennial.runtime.guintptr
+  m' : _root_.Perennial.runtime.muintptr
 
 noncomputable instance gcBgMarkWorkerNode.zero_val [GooseExts] : ZeroVal gcBgMarkWorkerNode :=
   ⟨gcBgMarkWorkerNode.mk zeroValDef zeroValDef zeroValDef⟩
@@ -13260,7 +13260,7 @@ noncomputable instance equals_unfold_gcBgMarkWorkerNode [GooseExts] [GoGlobalCon
 
 structure gcBgMarkWorkerNodePadded [GooseExts] where
   mk ::
-  gcBgMarkWorkerNode' : gcBgMarkWorkerNode
+  gcBgMarkWorkerNode' : _root_.Perennial.runtime.gcBgMarkWorkerNode
   pad' : (GoArray w8 480)
 
 noncomputable instance gcBgMarkWorkerNodePadded.zero_val [GooseExts] : ZeroVal gcBgMarkWorkerNodePadded :=
@@ -13375,9 +13375,9 @@ abbrev spanScanOwnership [GooseExts] : Type := w8
 structure spanInlineMarkBits [GooseExts] where
   mk ::
   scans' : (GoArray w8 63)
-  owned' : spanScanOwnership
+  owned' : _root_.Perennial.runtime.spanScanOwnership
   marks' : (GoArray w8 63)
-  class' : spanClass
+  class' : _root_.Perennial.runtime.spanClass
 
 noncomputable instance spanInlineMarkBits.zero_val [GooseExts] : ZeroVal spanInlineMarkBits :=
   ⟨spanInlineMarkBits.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -13415,7 +13415,7 @@ structure spanQueue [GooseExts] where
   mk ::
   head' : w32
   tail' : w32
-  ring' : (GoArray objptr 256)
+  ring' : (GoArray _root_.Perennial.runtime.objptr 256)
   putsSinceDrain' : w64
   chain' : «struct#1e853569»
 
@@ -13442,7 +13442,7 @@ noncomputable instance equals_unfold_spanQueue [GooseExts] [GoGlobalContext] :
 structure spanSPMC [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  allnode' : listNodeManual
+  allnode' : _root_.Perennial.runtime.listNodeManual
   dead' : _root_.Perennial.internal.runtime.atomic.Bool'
   prev' : _root_.Perennial.internal.runtime.atomic.UnsafePointer
   head' : _root_.Perennial.internal.runtime.atomic.Uint32
@@ -13541,7 +13541,7 @@ noncomputable instance equals_unfold_piController [GooseExts] [GoGlobalContext] 
 
 structure scavengerState [GooseExts] where
   mk ::
-  lock' : mutex
+  lock' : _root_.Perennial.runtime.mutex
   g' : Loc
   timer' : Loc
   sysmonWake' : _root_.Perennial.internal.runtime.atomic.Uint32
@@ -13549,7 +13549,7 @@ structure scavengerState [GooseExts] where
   printControllerReset' : Bool
   targetCPUFraction' : w64
   sleepRatio' : w64
-  sleepController' : piController
+  sleepController' : _root_.Perennial.runtime.piController
   controllerCooldown' : w64
   sleepStub' : GoFunc
   scavenge' : GoFunc
@@ -13631,9 +13631,9 @@ structure scavengeIndex [GooseExts] where
   min' : _root_.Perennial.internal.runtime.atomic.Uintptr
   max' : _root_.Perennial.internal.runtime.atomic.Uintptr
   minHeapIdx' : _root_.Perennial.internal.runtime.atomic.Uintptr
-  searchAddrBg' : atomicOffAddr
-  searchAddrForce' : atomicOffAddr
-  freeHWM' : offAddr
+  searchAddrBg' : _root_.Perennial.runtime.atomicOffAddr
+  searchAddrForce' : _root_.Perennial.runtime.atomicOffAddr
+  freeHWM' : _root_.Perennial.runtime.offAddr
   gen' : w32
   test' : Bool
 
@@ -13691,7 +13691,7 @@ structure scavChunkData [GooseExts] where
   inUse' : w16
   lastInUse' : w16
   gen' : w32
-  scavChunkFlags' : scavChunkFlags
+  scavChunkFlags' : _root_.Perennial.runtime.scavChunkFlags
 
 noncomputable instance scavChunkData.zero_val [GooseExts] : ZeroVal scavChunkData :=
   ⟨scavChunkData.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -13714,7 +13714,7 @@ noncomputable instance equals_unfold_scavChunkData [GooseExts] [GoGlobalContext]
 
 structure workbufhdr [GooseExts] where
   mk ::
-  node' : lfnode
+  node' : _root_.Perennial.runtime.lfnode
   nobj' : w64
 
 noncomputable instance workbufhdr.zero_val [GooseExts] : ZeroVal workbufhdr :=
@@ -13737,7 +13737,7 @@ noncomputable instance equals_unfold_workbufhdr [GooseExts] [GoGlobalContext] :
 structure stackWorkBufHdr [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  workbufhdr' : workbufhdr
+  workbufhdr' : _root_.Perennial.runtime.workbufhdr
   next' : Loc
 
 noncomputable instance stackWorkBufHdr.zero_val [GooseExts] : ZeroVal stackWorkBufHdr :=
@@ -13761,7 +13761,7 @@ noncomputable instance equals_unfold_stackWorkBufHdr [GooseExts] [GoGlobalContex
 structure stackWorkBuf [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  stackWorkBufHdr' : stackWorkBufHdr
+  stackWorkBufHdr' : _root_.Perennial.runtime.stackWorkBufHdr
   obj' : (GoArray w64 252)
 
 noncomputable instance stackWorkBuf.zero_val [GooseExts] : ZeroVal stackWorkBuf :=
@@ -13785,7 +13785,7 @@ noncomputable instance equals_unfold_stackWorkBuf [GooseExts] [GoGlobalContext] 
 structure stackObjectBufHdr [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  workbufhdr' : workbufhdr
+  workbufhdr' : _root_.Perennial.runtime.workbufhdr
   next' : Loc
 
 noncomputable instance stackObjectBufHdr.zero_val [GooseExts] : ZeroVal stackObjectBufHdr :=
@@ -13839,8 +13839,8 @@ noncomputable instance equals_unfold_stackObject [GooseExts] [GoGlobalContext] :
 structure stackObjectBuf [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  stackObjectBufHdr' : stackObjectBufHdr
-  obj' : (GoArray stackObject 63)
+  stackObjectBufHdr' : _root_.Perennial.runtime.stackObjectBufHdr
+  obj' : (GoArray _root_.Perennial.runtime.stackObject 63)
 
 noncomputable instance stackObjectBuf.zero_val [GooseExts] : ZeroVal stackObjectBuf :=
   ⟨stackObjectBuf.mk zeroValDef zeroValDef zeroValDef⟩
@@ -13884,7 +13884,7 @@ noncomputable instance equals_unfold_stack [GooseExts] [GoGlobalContext] :
 
 structure stackScanState [GooseExts] where
   mk ::
-  stack' : stack
+  stack' : _root_.Perennial.runtime.stack
   conservative' : Bool
   buf' : Loc
   freeBuf' : Loc
@@ -13945,11 +13945,11 @@ abbrev sweepClass [GooseExts] : Type := w32
 
 structure sweepdata [GooseExts] where
   mk ::
-  lock' : mutex
+  lock' : _root_.Perennial.runtime.mutex
   g' : Loc
   parked' : Bool
-  active' : activeSweep
-  centralIndex' : sweepClass
+  active' : _root_.Perennial.runtime.activeSweep
+  centralIndex' : _root_.Perennial.runtime.sweepClass
 
 noncomputable instance sweepdata.zero_val [GooseExts] : ZeroVal sweepdata :=
   ⟨sweepdata.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -14018,13 +14018,13 @@ structure gcWork [GooseExts] where
   id' : w32
   wbuf1' : Loc
   wbuf2' : Loc
-  spanq' : spanQueue
+  spanq' : _root_.Perennial.runtime.spanQueue
   ptrBuf' : Loc
   bytesMarked' : w64
   heapScanWork' : w64
   flushedWork' : Bool
   mayNeedWorker' : Bool
-  stats' : (GoArray sizeClassScanStats 68)
+  stats' : (GoArray _root_.Perennial.runtime.sizeClassScanStats 68)
 
 noncomputable instance gcWork.zero_val [GooseExts] : ZeroVal gcWork :=
   ⟨gcWork.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -14054,7 +14054,7 @@ noncomputable instance equals_unfold_gcWork [GooseExts] [GoGlobalContext] :
 structure workbuf [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  workbufhdr' : workbufhdr
+  workbufhdr' : _root_.Perennial.runtime.workbufhdr
   obj' : (GoArray w64 253)
 
 noncomputable instance workbuf.zero_val [GooseExts] : ZeroVal workbuf :=
@@ -14235,8 +14235,8 @@ attribute [instance] specialfinalizer.zero_val
 structure specialCleanup [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  special' : special
-  cleanup' : cleanupFn
+  special' : _root_.Perennial.runtime.special
+  cleanup' : _root_.Perennial.runtime.cleanupFn
   id' : w64
 
 noncomputable instance specialCleanup.zero_val [GooseExts] : ZeroVal specialCleanup :=
@@ -14265,7 +14265,7 @@ attribute [instance] specialCheckFinalizer.zero_val
 structure specialTinyBlock [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  special' : special
+  special' : _root_.Perennial.runtime.special
 
 noncomputable instance specialTinyBlock.zero_val [GooseExts] : ZeroVal specialTinyBlock :=
   ⟨specialTinyBlock.mk zeroValDef zeroValDef⟩
@@ -14287,7 +14287,7 @@ noncomputable instance equals_unfold_specialTinyBlock [GooseExts] [GoGlobalConte
 structure specialWeakHandle [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  special' : special
+  special' : _root_.Perennial.runtime.special
   handle' : Loc
 
 noncomputable instance specialWeakHandle.zero_val [GooseExts] : ZeroVal specialWeakHandle :=
@@ -14355,7 +14355,7 @@ noncomputable instance equals_unfold_immortalWeakHandle [GooseExts] [GoGlobalCon
 structure specialprofile [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  special' : special
+  special' : _root_.Perennial.runtime.special
   b' : Loc
 
 noncomputable instance specialprofile.zero_val [GooseExts] : ZeroVal specialprofile :=
@@ -14378,7 +14378,7 @@ noncomputable instance equals_unfold_specialprofile [GooseExts] [GoGlobalContext
 
 structure specialReachable [GooseExts] where
   mk ::
-  special' : special
+  special' : _root_.Perennial.runtime.special
   done' : Bool
   reachable' : Bool
 
@@ -14402,7 +14402,7 @@ noncomputable instance equals_unfold_specialReachable [GooseExts] [GoGlobalConte
 
 structure specialPinCounter [GooseExts] where
   mk ::
-  special' : special
+  special' : _root_.Perennial.runtime.special
   counter' : w64
 
 noncomputable instance specialPinCounter.zero_val [GooseExts] : ZeroVal specialPinCounter :=
@@ -14425,7 +14425,7 @@ noncomputable instance equals_unfold_specialPinCounter [GooseExts] [GoGlobalCont
 structure specialSecret [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  special' : special
+  special' : _root_.Perennial.runtime.special
   size' : w64
 
 noncomputable instance specialSecret.zero_val [GooseExts] : ZeroVal specialSecret :=
@@ -14517,7 +14517,7 @@ structure gcBitsArena [GooseExts] where
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   free' : w64
   next' : Loc
-  bits' : (GoArray gcBits 65520)
+  bits' : (GoArray _root_.Perennial.runtime.gcBits 65520)
 
 noncomputable instance gcBitsArena.zero_val [GooseExts] : ZeroVal gcBitsArena :=
   ⟨gcBitsArena.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -14574,7 +14574,7 @@ noncomputable instance equals_unfold_addrRanges [GooseExts] [GoGlobalContext] :
 
 structure «struct#3a8454c5» [GooseExts] where
   mk ::
-  index' : scavengeIndex
+  index' : _root_.Perennial.runtime.scavengeIndex
   releasedBg' : _root_.Perennial.internal.runtime.atomic.Uintptr
   releasedEager' : _root_.Perennial.internal.runtime.atomic.Uintptr
 
@@ -14585,10 +14585,10 @@ structure pageAlloc [GooseExts] where
   mk ::
   summary' : (GoArray GoSlice 5)
   chunks' : (GoArray Loc 8192)
-  searchAddr' : offAddr
-  start' : chunkIdx
-  end' : chunkIdx
-  inUse' : addrRanges
+  searchAddr' : _root_.Perennial.runtime.offAddr
+  start' : _root_.Perennial.runtime.chunkIdx
+  end' : _root_.Perennial.runtime.chunkIdx
+  inUse' : _root_.Perennial.runtime.addrRanges
   scav' : «struct#3a8454c5»
   mheapLock' : Loc
   sysStat' : Loc
@@ -14657,15 +14657,15 @@ abbrev pageBits [GooseExts] : Type := (GoArray w64 8)
 @[reducible] noncomputable def pageBits.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.ArrayType 8 go.uint64)
 
-abbrev pallocBits [GooseExts] : Type := pageBits
+abbrev pallocBits [GooseExts] : Type := _root_.Perennial.runtime.pageBits
 
 @[reducible] noncomputable def pallocBits.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   pageBits.ty
 
 structure pallocData [GooseExts] where
   mk ::
-  pallocBits' : pallocBits
-  scavenged' : pageBits
+  pallocBits' : _root_.Perennial.runtime.pallocBits
+  scavenged' : _root_.Perennial.runtime.pageBits
 
 noncomputable instance pallocData.zero_val [GooseExts] : ZeroVal pallocData :=
   ⟨pallocData.mk zeroValDef zeroValDef⟩
@@ -14694,7 +14694,7 @@ structure bucket [GooseExts] where
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
   next' : Loc
   allnext' : Loc
-  typ' : bucketType
+  typ' : _root_.Perennial.runtime.bucketType
   hash' : w64
   size' : w64
   nstk' : w64
@@ -14749,8 +14749,8 @@ noncomputable instance equals_unfold_memRecordCycle [GooseExts] [GoGlobalContext
 
 structure memRecord [GooseExts] where
   mk ::
-  active' : memRecordCycle
-  future' : (GoArray memRecordCycle 3)
+  active' : _root_.Perennial.runtime.memRecordCycle
+  future' : (GoArray _root_.Perennial.runtime.memRecordCycle 3)
 
 noncomputable instance memRecord.zero_val [GooseExts] : ZeroVal memRecord :=
   ⟨memRecord.mk zeroValDef zeroValDef⟩
@@ -14898,7 +14898,7 @@ structure BlockProfileRecord [GooseExts] where
   mk ::
   Count' : w64
   Cycles' : w64
-  StackRecord' : StackRecord
+  StackRecord' : _root_.Perennial.runtime.StackRecord
 
 noncomputable instance BlockProfileRecord.zero_val [GooseExts] : ZeroVal BlockProfileRecord :=
   ⟨BlockProfileRecord.mk zeroValDef zeroValDef zeroValDef⟩
@@ -14930,8 +14930,8 @@ abbrev goroutineProfileStateHolder [GooseExts] : Type := _root_.Perennial.intern
 
 structure addrRange [GooseExts] where
   mk ::
-  base' : offAddr
-  limit' : offAddr
+  base' : _root_.Perennial.runtime.offAddr
+  limit' : _root_.Perennial.runtime.offAddr
 
 noncomputable instance addrRange.zero_val [GooseExts] : ZeroVal addrRange :=
   ⟨addrRange.mk zeroValDef zeroValDef⟩
@@ -14952,7 +14952,7 @@ noncomputable instance equals_unfold_addrRange [GooseExts] [GoGlobalContext] :
 
 structure spanSetBlockHeader [GooseExts] where
   mk ::
-  lfnode' : lfnode
+  lfnode' : _root_.Perennial.runtime.lfnode
   popped' : _root_.Perennial.internal.runtime.atomic.Uint32
 
 noncomputable instance spanSetBlockHeader.zero_val [GooseExts] : ZeroVal spanSetBlockHeader :=
@@ -14974,7 +14974,7 @@ noncomputable instance equals_unfold_spanSetBlockHeader [GooseExts] [GoGlobalCon
 
 structure spanSetBlockHeader2 [GooseExts] where
   mk ::
-  spanSetBlockHeader' : spanSetBlockHeader
+  spanSetBlockHeader' : _root_.Perennial.runtime.spanSetBlockHeader
   pad' : (GoArray w8 488)
 
 noncomputable instance spanSetBlockHeader2.zero_val [GooseExts] : ZeroVal spanSetBlockHeader2 :=
@@ -15016,8 +15016,8 @@ noncomputable instance equals_unfold_atomicMSpanPointer [GooseExts] [GoGlobalCon
 
 structure spanSetBlock [GooseExts] where
   mk ::
-  spanSetBlockHeader2' : spanSetBlockHeader2
-  spans' : (GoArray atomicMSpanPointer 512)
+  spanSetBlockHeader2' : _root_.Perennial.runtime.spanSetBlockHeader2
+  spans' : (GoArray _root_.Perennial.runtime.atomicMSpanPointer 512)
 
 noncomputable instance spanSetBlock.zero_val [GooseExts] : ZeroVal spanSetBlock :=
   ⟨spanSetBlock.mk zeroValDef zeroValDef⟩
@@ -15058,7 +15058,7 @@ noncomputable instance equals_unfold_spanSetSpinePointer [GooseExts] [GoGlobalCo
 
 structure spanSetBlockAlloc [GooseExts] where
   mk ::
-  stack' : lfstack
+  stack' : _root_.Perennial.runtime.lfstack
 
 noncomputable instance spanSetBlockAlloc.zero_val [GooseExts] : ZeroVal spanSetBlockAlloc :=
   ⟨spanSetBlockAlloc.mk zeroValDef⟩
@@ -15083,9 +15083,9 @@ abbrev headTailIndex [GooseExts] : Type := w64
 
 structure consistentHeapStats [GooseExts] where
   mk ::
-  stats' : (GoArray heapStatsDelta 3)
+  stats' : (GoArray _root_.Perennial.runtime.heapStatsDelta 3)
   gen' : _root_.Perennial.internal.runtime.atomic.Uint32
-  noPLock' : mutex
+  noPLock' : _root_.Perennial.runtime.mutex
 
 noncomputable instance consistentHeapStats.zero_val [GooseExts] : ZeroVal consistentHeapStats :=
   ⟨consistentHeapStats.mk zeroValDef zeroValDef zeroValDef⟩
@@ -15112,13 +15112,13 @@ abbrev sysMemStat [GooseExts] : Type := w64
 
 structure mstats [GooseExts] where
   mk ::
-  heapStats' : consistentHeapStats
-  stacks_sys' : sysMemStat
-  mspan_sys' : sysMemStat
-  mcache_sys' : sysMemStat
-  buckhash_sys' : sysMemStat
-  gcMiscSys' : sysMemStat
-  other_sys' : sysMemStat
+  heapStats' : _root_.Perennial.runtime.consistentHeapStats
+  stacks_sys' : _root_.Perennial.runtime.sysMemStat
+  mspan_sys' : _root_.Perennial.runtime.sysMemStat
+  mcache_sys' : _root_.Perennial.runtime.sysMemStat
+  buckhash_sys' : _root_.Perennial.runtime.sysMemStat
+  gcMiscSys' : _root_.Perennial.runtime.sysMemStat
+  other_sys' : _root_.Perennial.runtime.sysMemStat
   last_gc_unix' : w64
   pause_total_ns' : w64
   pause_ns' : (GoArray w64 256)
@@ -15128,7 +15128,7 @@ structure mstats [GooseExts] where
   gc_cpu_fraction' : w64
   last_gc_nanotime' : w64
   lastHeapInUse' : w64
-  lastScanStats' : (GoArray sizeClassScanStats 68)
+  lastScanStats' : (GoArray _root_.Perennial.runtime.sizeClassScanStats 68)
   enablegc' : Bool
 
 noncomputable instance mstats.zero_val [GooseExts] : ZeroVal mstats :=
@@ -15281,7 +15281,7 @@ noncomputable instance equals_unfold_wbBuf [GooseExts] [GoGlobalContext] :
 
 structure timer [GooseExts] where
   mk ::
-  mu' : mutex
+  mu' : _root_.Perennial.runtime.mutex
   astate' : _root_.Perennial.internal.runtime.atomic.Uint8
   state' : w8
   isChan' : Bool
@@ -15294,7 +15294,7 @@ structure timer [GooseExts] where
   arg' : GoInterface
   seq' : w64
   ts' : Loc
-  sendLock' : mutex
+  sendLock' : _root_.Perennial.runtime.mutex
   isSending' : _root_.Perennial.internal.runtime.atomic.Int32
 
 noncomputable instance timer.zero_val [GooseExts] : ZeroVal timer :=
@@ -15336,16 +15336,16 @@ structure pollDesc [GooseExts] where
   atomicInfo' : _root_.Perennial.internal.runtime.atomic.Uint32
   rg' : _root_.Perennial.internal.runtime.atomic.Uintptr
   wg' : _root_.Perennial.internal.runtime.atomic.Uintptr
-  lock' : mutex
+  lock' : _root_.Perennial.runtime.mutex
   closing' : Bool
   rrun' : Bool
   wrun' : Bool
   user' : w32
   rseq' : w64
-  rt' : timer
+  rt' : _root_.Perennial.runtime.timer
   rd' : w64
   wseq' : w64
-  wt' : timer
+  wt' : _root_.Perennial.runtime.timer
   wd' : w64
   self' : Loc
 
@@ -15390,7 +15390,7 @@ abbrev pollInfo [GooseExts] : Type := w32
 
 structure pollCache [GooseExts] where
   mk ::
-  lock' : mutex
+  lock' : _root_.Perennial.runtime.mutex
   first' : Loc
 
 noncomputable instance pollCache.zero_val [GooseExts] : ZeroVal pollCache :=
@@ -15609,7 +15609,7 @@ noncomputable instance equals_unfold_pinState [GooseExts] [GoGlobalContext] :
 @[reducible] noncomputable def pinState.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType pinState.fields)
 
-abbrev pinnerBits [GooseExts] : Type := gcBits
+abbrev pinnerBits [GooseExts] : Type := _root_.Perennial.runtime.gcBits
 
 @[reducible] noncomputable def pinnerBits.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   gcBits.ty
@@ -15743,7 +15743,7 @@ noncomputable instance equals_unfold_xRegs [GooseExts] [GoGlobalContext] :
 structure xRegState [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  regs' : xRegs
+  regs' : _root_.Perennial.runtime.xRegs
 
 noncomputable instance xRegState.zero_val [GooseExts] : ZeroVal xRegState :=
   ⟨xRegState.mk zeroValDef zeroValDef⟩
@@ -15784,7 +15784,7 @@ noncomputable instance equals_unfold_xRegPerG [GooseExts] [GoGlobalContext] :
 
 structure xRegPerP [GooseExts] where
   mk ::
-  scratch' : xRegs
+  scratch' : _root_.Perennial.runtime.xRegs
   cache' : Loc
 
 noncomputable instance xRegPerP.zero_val [GooseExts] : ZeroVal xRegPerP :=
@@ -15821,7 +15821,7 @@ abbrev stwReason [GooseExts] : Type := w8
 
 structure worldStop [GooseExts] where
   mk ::
-  reason' : stwReason
+  reason' : _root_.Perennial.runtime.stwReason
   startedStopping' : w64
   finishedStopping' : w64
   stoppingCPUTime' : w64
@@ -15847,7 +15847,7 @@ noncomputable instance equals_unfold_worldStop [GooseExts] [GoGlobalContext] :
 
 structure cgothreadstart [GooseExts] where
   mk ::
-  g' : guintptr
+  g' : _root_.Perennial.runtime.guintptr
   tls' : Loc
   fn' : Loc
 
@@ -15923,7 +15923,7 @@ noncomputable instance equals_unfold_syscallingThread [GooseExts] [GoGlobalConte
 
 structure updateMaxProcsGState [GooseExts] where
   mk ::
-  lock' : mutex
+  lock' : _root_.Perennial.runtime.mutex
   g' : Loc
   idle' : _root_.Perennial.internal.runtime.atomic.Bool'
   procs' : w32
@@ -15954,8 +15954,8 @@ abbrev pMask [GooseExts] : Type := GoSlice
 
 structure gQueue [GooseExts] where
   mk ::
-  head' : guintptr
-  tail' : guintptr
+  head' : _root_.Perennial.runtime.guintptr
+  tail' : _root_.Perennial.runtime.guintptr
   size' : w32
 
 noncomputable instance gQueue.zero_val [GooseExts] : ZeroVal gQueue :=
@@ -16084,17 +16084,17 @@ abbrev profIndex [GooseExts] : Type := w64
 
 structure profBuf [GooseExts] where
   mk ::
-  r' : profAtomic
-  w' : profAtomic
+  r' : _root_.Perennial.runtime.profAtomic
+  w' : _root_.Perennial.runtime.profAtomic
   overflow' : _root_.Perennial.internal.runtime.atomic.Uint64
   overflowTime' : _root_.Perennial.internal.runtime.atomic.Uint64
   eof' : _root_.Perennial.internal.runtime.atomic.Uint32
   hdrsize' : w64
   data' : GoSlice
   tags' : GoSlice
-  rNext' : profIndex
+  rNext' : _root_.Perennial.runtime.profIndex
   overflowBuf' : GoSlice
-  wait' : note
+  wait' : _root_.Perennial.runtime.note
 
 noncomputable instance profBuf.zero_val [GooseExts] : ZeroVal profBuf :=
   ⟨profBuf.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -16129,7 +16129,7 @@ abbrev profBufReadMode [GooseExts] : Type := w64
 
 structure ticksType [GooseExts] where
   mk ::
-  lock' : mutex
+  lock' : _root_.Perennial.runtime.mutex
   startTicks' : w64
   startTime' : w64
   val' : _root_.Perennial.internal.runtime.atomic.Int64
@@ -16238,7 +16238,7 @@ structure gobuf [GooseExts] where
   mk ::
   sp' : w64
   pc' : w64
-  g' : guintptr
+  g' : _root_.Perennial.runtime.guintptr
   ctxt' : Loc
   lr' : w64
   bp' : w64
@@ -16288,7 +16288,7 @@ noncomputable instance equals_unfold_maybeTraceablePtr [GooseExts] [GoGlobalCont
 
 structure maybeTraceableChan [GooseExts] where
   mk ::
-  maybeTraceablePtr' : maybeTraceablePtr
+  maybeTraceablePtr' : _root_.Perennial.runtime.maybeTraceablePtr
 
 noncomputable instance maybeTraceableChan.zero_val [GooseExts] : ZeroVal maybeTraceableChan :=
   ⟨maybeTraceableChan.mk zeroValDef⟩
@@ -16311,7 +16311,7 @@ structure sudog [GooseExts] where
   g' : Loc
   next' : Loc
   prev' : Loc
-  elem' : maybeTraceablePtr
+  elem' : _root_.Perennial.runtime.maybeTraceablePtr
   acquiretime' : w64
   releasetime' : w64
   ticket' : w32
@@ -16321,7 +16321,7 @@ structure sudog [GooseExts] where
   parent' : Loc
   waitlink' : Loc
   waittail' : Loc
-  c' : maybeTraceableChan
+  c' : _root_.Perennial.runtime.maybeTraceableChan
 
 noncomputable instance sudog.zero_val [GooseExts] : ZeroVal sudog :=
   ⟨sudog.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -16385,7 +16385,7 @@ noncomputable instance equals_unfold_libcall [GooseExts] [GoGlobalContext] :
 structure heldLockInfo [GooseExts] where
   mk ::
   lockAddr' : w64
-  rank' : lockRank
+  rank' : _root_.Perennial.runtime.lockRank
 
 noncomputable instance heldLockInfo.zero_val [GooseExts] : ZeroVal heldLockInfo :=
   ⟨heldLockInfo.mk zeroValDef zeroValDef⟩
@@ -16433,7 +16433,7 @@ noncomputable instance equals_unfold_traceSchedResourceState [GooseExts] [GoGlob
 
 structure gTraceState [GooseExts] where
   mk ::
-  traceSchedResourceState' : traceSchedResourceState
+  traceSchedResourceState' : _root_.Perennial.runtime.traceSchedResourceState
 
 noncomputable instance gTraceState.zero_val [GooseExts] : ZeroVal gTraceState :=
   ⟨gTraceState.mk zeroValDef⟩
@@ -16453,13 +16453,13 @@ noncomputable instance equals_unfold_gTraceState [GooseExts] [GoGlobalContext] :
 
 structure g [GooseExts] where
   mk ::
-  stack' : stack
+  stack' : _root_.Perennial.runtime.stack
   stackguard0' : w64
   stackguard1' : w64
   _panic' : Loc
   _defer' : Loc
   m' : Loc
-  sched' : gobuf
+  sched' : _root_.Perennial.runtime.gobuf
   syscallsp' : w64
   syscallpc' : w64
   syscallbp' : w64
@@ -16468,9 +16468,9 @@ structure g [GooseExts] where
   atomicstatus' : _root_.Perennial.internal.runtime.atomic.Uint32
   stackLock' : w32
   goid' : w64
-  schedlink' : guintptr
+  schedlink' : _root_.Perennial.runtime.guintptr
   waitsince' : w64
-  waitreason' : waitReason
+  waitreason' : _root_.Perennial.runtime.waitReason
   preempt' : Bool
   preemptStop' : Bool
   preemptShrink' : Bool
@@ -16488,7 +16488,7 @@ structure g [GooseExts] where
   trackingSeq' : w8
   trackingStamp' : w64
   runnableTime' : w64
-  lockedm' : muintptr
+  lockedm' : _root_.Perennial.runtime.muintptr
   fipsIndicator' : w8
   fipsOnlyBypass' : Bool
   ditWanted' : Bool
@@ -16511,11 +16511,11 @@ structure g [GooseExts] where
   timer' : Loc
   sleepWhen' : w64
   selectDone' : _root_.Perennial.internal.runtime.atomic.Uint32
-  goroutineProfiled' : goroutineProfileStateHolder
+  goroutineProfiled' : _root_.Perennial.runtime.goroutineProfileStateHolder
   coroarg' : Loc
   bubble' : Loc
-  xRegs' : xRegPerG
-  trace' : gTraceState
+  xRegs' : _root_.Perennial.runtime.xRegPerG
+  trace' : _root_.Perennial.runtime.gTraceState
   gcAssistBytes' : w64
   valgrindStackID' : w64
 
@@ -16605,7 +16605,7 @@ attribute [instance] m.zero_val
 
 structure mPadded [GooseExts] where
   mk ::
-  m' : m
+  m' : _root_.Perennial.runtime.m
   «_#1'» : (GoArray w8 216)
 
 noncomputable instance mPadded.zero_val [GooseExts] : ZeroVal mPadded :=
@@ -16647,7 +16647,7 @@ noncomputable instance equals_unfold_mWeakPointer [GooseExts] [GoGlobalContext] 
 
 structure pTraceState [GooseExts] where
   mk ::
-  traceSchedResourceState' : traceSchedResourceState
+  traceSchedResourceState' : _root_.Perennial.runtime.traceSchedResourceState
   mSyscallID' : w64
   maySweep' : Bool
   inSweep' : Bool
@@ -16677,7 +16677,7 @@ noncomputable instance equals_unfold_pTraceState [GooseExts] [GoGlobalContext] :
 
 structure timers [GooseExts] where
   mk ::
-  mu' : mutex
+  mu' : _root_.Perennial.runtime.mutex
   heap' : GoSlice
   len' : _root_.Perennial.internal.runtime.atomic.Uint32
   zombies' : _root_.Perennial.internal.runtime.atomic.Int32
@@ -16719,41 +16719,41 @@ structure p [GooseExts] where
   mk ::
   id' : w32
   status' : w32
-  link' : puintptr
+  link' : _root_.Perennial.runtime.puintptr
   schedtick' : w32
   syscalltick' : w32
-  sysmontick' : sysmontick
-  m' : muintptr
+  sysmontick' : _root_.Perennial.runtime.sysmontick
+  m' : _root_.Perennial.runtime.muintptr
   mcache' : Loc
-  pcache' : pageCache
+  pcache' : _root_.Perennial.runtime.pageCache
   raceprocctx' : w64
-  oldm' : mWeakPointer
+  oldm' : _root_.Perennial.runtime.mWeakPointer
   deferpool' : GoSlice
   deferpoolbuf' : (GoArray Loc 32)
   goidcache' : w64
   goidcacheend' : w64
   runqhead' : w32
   runqtail' : w32
-  runq' : (GoArray guintptr 256)
-  runnext' : guintptr
-  gFree' : gList
+  runq' : (GoArray _root_.Perennial.runtime.guintptr 256)
+  runnext' : _root_.Perennial.runtime.guintptr
+  gFree' : _root_.Perennial.runtime.gList
   sudogcache' : GoSlice
   sudogbuf' : (GoArray Loc 128)
   mspancache' : «struct#8786e874»
   pinnerCache' : Loc
-  trace' : pTraceState
-  palloc' : persistentAlloc
+  trace' : _root_.Perennial.runtime.pTraceState
+  palloc' : _root_.Perennial.runtime.persistentAlloc
   gcAssistTime' : w64
   gcFractionalMarkTime' : _root_.Perennial.internal.runtime.atomic.Int64
-  limiterEvent' : limiterEvent
-  gcMarkWorkerMode' : gcMarkWorkerMode
+  limiterEvent' : _root_.Perennial.runtime.limiterEvent
+  gcMarkWorkerMode' : _root_.Perennial.runtime.gcMarkWorkerMode
   gcMarkWorkerStartTime' : w64
   nextGCMarkWorker' : Loc
-  gcw' : gcWork
-  wbBuf' : wbBuf
+  gcw' : _root_.Perennial.runtime.gcWork
+  wbBuf' : _root_.Perennial.runtime.wbBuf
   runSafePointFn' : w32
   statsSeq' : _root_.Perennial.internal.runtime.atomic.Uint32
-  timers' : timers
+  timers' : _root_.Perennial.runtime.timers
   cleanups' : Loc
   cleanupsQueued' : w64
   maxStackScanDelta' : w64
@@ -16762,7 +16762,7 @@ structure p [GooseExts] where
   preempt' : Bool
   gcStopTime' : w64
   goroutinesCreated' : w64
-  xRegs' : xRegPerP
+  xRegs' : _root_.Perennial.runtime.xRegPerP
 
 noncomputable instance p.zero_val [GooseExts] : ZeroVal p :=
   ⟨p.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -16828,16 +16828,16 @@ noncomputable instance equals_unfold_p [GooseExts] [GoGlobalContext] :
 structure «struct#72a1e364» [GooseExts] where
   mk ::
   user' : Bool
-  runnable' : gQueue
+  runnable' : _root_.Perennial.runtime.gQueue
 
 noncomputable instance «struct#72a1e364».zero_val [GooseExts] : ZeroVal «struct#72a1e364» :=
   ⟨«struct#72a1e364».mk zeroValDef zeroValDef⟩
 
 structure «struct#cf01e664» [GooseExts] where
   mk ::
-  lock' : mutex
-  stack' : gList
-  noStack' : gList
+  lock' : _root_.Perennial.runtime.mutex
+  stack' : _root_.Perennial.runtime.gList
+  noStack' : _root_.Perennial.runtime.gList
 
 noncomputable instance «struct#cf01e664».zero_val [GooseExts] : ZeroVal «struct#cf01e664» :=
   ⟨«struct#cf01e664».mk zeroValDef zeroValDef zeroValDef⟩
@@ -16848,8 +16848,8 @@ structure schedt [GooseExts] where
   lastpoll' : _root_.Perennial.internal.runtime.atomic.Int64
   pollUntil' : _root_.Perennial.internal.runtime.atomic.Int64
   pollingNet' : _root_.Perennial.internal.runtime.atomic.Int32
-  lock' : mutex
-  midle' : listHeadManual
+  lock' : _root_.Perennial.runtime.mutex
+  midle' : _root_.Perennial.runtime.listHeadManual
   nmidle' : w32
   nmidlelocked' : w32
   mnext' : w64
@@ -16858,38 +16858,38 @@ structure schedt [GooseExts] where
   nmfreed' : w64
   ngsys' : _root_.Perennial.internal.runtime.atomic.Int32
   nGsyscallNoP' : _root_.Perennial.internal.runtime.atomic.Int32
-  pidle' : puintptr
+  pidle' : _root_.Perennial.runtime.puintptr
   npidle' : _root_.Perennial.internal.runtime.atomic.Int32
   nmspinning' : _root_.Perennial.internal.runtime.atomic.Int32
   needspinning' : _root_.Perennial.internal.runtime.atomic.Uint32
-  runq' : gQueue
+  runq' : _root_.Perennial.runtime.gQueue
   disable' : «struct#72a1e364»
   gFree' : «struct#cf01e664»
-  sudoglock' : mutex
+  sudoglock' : _root_.Perennial.runtime.mutex
   sudogcache' : Loc
-  deferlock' : mutex
+  deferlock' : _root_.Perennial.runtime.mutex
   deferpool' : Loc
   freem' : Loc
   gcwaiting' : _root_.Perennial.internal.runtime.atomic.Bool'
   stopwait' : w32
-  stopnote' : note
+  stopnote' : _root_.Perennial.runtime.note
   sysmonwait' : _root_.Perennial.internal.runtime.atomic.Bool'
-  sysmonnote' : note
+  sysmonnote' : _root_.Perennial.runtime.note
   safePointFn' : GoFunc
   safePointWait' : w32
-  safePointNote' : note
+  safePointNote' : _root_.Perennial.runtime.note
   profilehz' : w32
   procresizetime' : w64
   totaltime' : w64
   customGOMAXPROCS' : Bool
-  sysmonlock' : mutex
-  timeToRun' : timeHistogram
+  sysmonlock' : _root_.Perennial.runtime.mutex
+  timeToRun' : _root_.Perennial.runtime.timeHistogram
   idleTime' : _root_.Perennial.internal.runtime.atomic.Int64
   totalMutexWaitTime' : _root_.Perennial.internal.runtime.atomic.Int64
-  stwStoppingTimeGC' : timeHistogram
-  stwStoppingTimeOther' : timeHistogram
-  stwTotalTimeGC' : timeHistogram
-  stwTotalTimeOther' : timeHistogram
+  stwStoppingTimeGC' : _root_.Perennial.runtime.timeHistogram
+  stwStoppingTimeOther' : _root_.Perennial.runtime.timeHistogram
+  stwTotalTimeGC' : _root_.Perennial.runtime.timeHistogram
+  stwTotalTimeOther' : _root_.Perennial.runtime.timeHistogram
   totalRuntimeLockWaitTime' : _root_.Perennial.internal.runtime.atomic.Int64
   goroutinesCreated' : _root_.Perennial.internal.runtime.atomic.Uint64
 
@@ -16992,7 +16992,7 @@ noncomputable instance equals_unfold_funcinl [GooseExts] [GoGlobalContext] :
 
 structure forcegcstate [GooseExts] where
   mk ::
-  lock' : mutex
+  lock' : _root_.Perennial.runtime.mutex
   g' : Loc
   idle' : _root_.Perennial.internal.runtime.atomic.Bool'
 
@@ -17144,14 +17144,14 @@ noncomputable instance equals_unfold_ancestorInfo [GooseExts] [GoGlobalContext] 
 
 structure rwmutex [GooseExts] where
   mk ::
-  rLock' : mutex
-  readers' : muintptr
+  rLock' : _root_.Perennial.runtime.mutex
+  readers' : _root_.Perennial.runtime.muintptr
   readerPass' : w32
-  wLock' : mutex
-  writer' : muintptr
+  wLock' : _root_.Perennial.runtime.mutex
+  writer' : _root_.Perennial.runtime.muintptr
   readerCount' : _root_.Perennial.internal.runtime.atomic.Int32
   readerWait' : _root_.Perennial.internal.runtime.atomic.Int32
-  readRank' : lockRank
+  readRank' : _root_.Perennial.runtime.lockRank
 
 noncomputable instance rwmutex.zero_val [GooseExts] : ZeroVal rwmutex :=
   ⟨rwmutex.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -17205,7 +17205,7 @@ abbrev selectDir [GooseExts] : Type := w64
 
 structure runtimeSelect [GooseExts] where
   mk ::
-  dir' : selectDir
+  dir' : _root_.Perennial.runtime.selectDir
   typ' : Loc
   ch' : Loc
   val' : Loc
@@ -17231,7 +17231,7 @@ noncomputable instance equals_unfold_runtimeSelect [GooseExts] [GoGlobalContext]
 
 structure semaRoot [GooseExts] where
   mk ::
-  lock' : mutex
+  lock' : _root_.Perennial.runtime.mutex
   treap' : Loc
   nwait' : _root_.Perennial.internal.runtime.atomic.Uint32
 
@@ -17255,7 +17255,7 @@ noncomputable instance equals_unfold_semaRoot [GooseExts] [GoGlobalContext] :
 
 structure «struct#1768b3d4» [GooseExts] where
   mk ::
-  root' : semaRoot
+  root' : _root_.Perennial.runtime.semaRoot
   pad' : (GoArray w8 40)
 
 noncomputable instance «struct#1768b3d4».zero_val [GooseExts] : ZeroVal «struct#1768b3d4» :=
@@ -17275,7 +17275,7 @@ structure notifyList [GooseExts] where
   mk ::
   wait' : _root_.Perennial.internal.runtime.atomic.Uint32
   notify' : w32
-  lock' : mutex
+  lock' : _root_.Perennial.runtime.mutex
   head' : Loc
   tail' : Loc
 
@@ -17345,7 +17345,7 @@ noncomputable instance equals_unfold_sigTabT [GooseExts] [GoGlobalContext] :
 
 structure gsignalStack [GooseExts] where
   mk ::
-  stack' : stack
+  stack' : _root_.Perennial.runtime.stack
   stackguard0' : w64
   stackguard1' : w64
   stktopsp' : w64
@@ -17420,8 +17420,8 @@ noncomputable instance equals_unfold_notInHeapSlice [GooseExts] [GoGlobalContext
 structure stackpoolItem [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  mu' : mutex
-  span' : mSpanList
+  mu' : _root_.Perennial.runtime.mutex
+  span' : _root_.Perennial.runtime.mSpanList
 
 noncomputable instance stackpoolItem.zero_val [GooseExts] : ZeroVal stackpoolItem :=
   ⟨stackpoolItem.mk zeroValDef zeroValDef zeroValDef⟩
@@ -17443,7 +17443,7 @@ noncomputable instance equals_unfold_stackpoolItem [GooseExts] [GoGlobalContext]
 
 structure adjustinfo [GooseExts] where
   mk ::
-  old' : stack
+  old' : _root_.Perennial.runtime.stack
   delta' : w64
   sghi' : w64
 
@@ -17515,7 +17515,7 @@ noncomputable instance equals_unfold_funcInfo [GooseExts] [GoGlobalContext] :
 
 structure stkframe [GooseExts] where
   mk ::
-  fn' : funcInfo
+  fn' : _root_.Perennial.runtime.funcInfo
   pc' : w64
   continpc' : w64
   lr' : w64
@@ -17648,7 +17648,7 @@ structure Frame [GooseExts] where
   Line' : w64
   startLine' : w64
   Entry' : w64
-  funcInfo' : funcInfo
+  funcInfo' : _root_.Perennial.runtime.funcInfo
 
 noncomputable instance Frame.zero_val [GooseExts] : ZeroVal Frame :=
   ⟨Frame.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -17678,7 +17678,7 @@ structure Frames [GooseExts] where
   callers' : GoSlice
   nextPC' : w64
   frames' : GoSlice
-  frameStore' : (GoArray Frame 2)
+  frameStore' : (GoArray _root_.Perennial.runtime.Frame 2)
 
 noncomputable instance Frames.zero_val [GooseExts] : ZeroVal Frames :=
   ⟨Frames.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -17851,7 +17851,7 @@ noncomputable instance equals_unfold_pcvalueCacheEnt [GooseExts] [GoGlobalContex
 
 structure pcvalueCache [GooseExts] where
   mk ::
-  entries' : (GoArray (GoArray pcvalueCacheEnt 8) 2)
+  entries' : (GoArray (GoArray _root_.Perennial.runtime.pcvalueCacheEnt 8) 2)
   inUse' : w64
 
 noncomputable instance pcvalueCache.zero_val [GooseExts] : ZeroVal pcvalueCache :=
@@ -17901,7 +17901,7 @@ attribute [instance] inlinedCall.zero_val
 
 structure inlineUnwinder [GooseExts] where
   mk ::
-  f' : funcInfo
+  f' : _root_.Perennial.runtime.funcInfo
   inlTree' : Loc
 
 noncomputable instance inlineUnwinder.zero_val [GooseExts] : ZeroVal inlineUnwinder :=
@@ -17945,8 +17945,8 @@ noncomputable instance equals_unfold_inlineFrame [GooseExts] [GoGlobalContext] :
 
 structure synctestBubble [GooseExts] where
   mk ::
-  mu' : mutex
-  timers' : timers
+  mu' : _root_.Perennial.runtime.mutex
+  timers' : _root_.Perennial.runtime.timers
   id' : w64
   now' : w64
   root' : Loc
@@ -18010,7 +18010,7 @@ noncomputable instance equals_unfold_synctestDeadlockError [GooseExts] [GoGlobal
 structure specialBubble [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  special' : special
+  special' : _root_.Perennial.runtime.special
   bubbleid' : w64
 
 noncomputable instance specialBubble.zero_val [GooseExts] : ZeroVal specialBubble :=
@@ -18062,7 +18062,7 @@ structure timeTimer [GooseExts] where
   mk ::
   c' : Loc
   init' : Bool
-  timer' : timer
+  timer' : _root_.Perennial.runtime.timer
 
 noncomputable instance timeTimer.zero_val [GooseExts] : ZeroVal timeTimer :=
   ⟨timeTimer.mk zeroValDef zeroValDef zeroValDef⟩
@@ -18107,7 +18107,7 @@ noncomputable instance equals_unfold_traceAdvancerState [GooseExts] [GoGlobalCon
 structure wakeableSleep [GooseExts] where
   mk ::
   timer' : Loc
-  lock' : mutex
+  lock' : _root_.Perennial.runtime.mutex
   wakeup' : GoChan
 
 noncomputable instance wakeableSleep.zero_val [GooseExts] : ZeroVal wakeableSleep :=
@@ -18249,7 +18249,7 @@ abbrev traceTime [GooseExts] : Type := w64
 structure traceBufHeader [GooseExts] where
   mk ::
   link' : Loc
-  lastTime' : traceTime
+  lastTime' : _root_.Perennial.runtime.traceTime
   pos' : w64
   lenPos' : w64
 
@@ -18275,7 +18275,7 @@ noncomputable instance equals_unfold_traceBufHeader [GooseExts] [GoGlobalContext
 structure traceBuf [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  traceBufHeader' : traceBufHeader
+  traceBufHeader' : _root_.Perennial.runtime.traceBufHeader
   arr' : (GoArray w8 65504)
 
 noncomputable instance traceBuf.zero_val [GooseExts] : ZeroVal traceBuf :=
@@ -18325,7 +18325,7 @@ noncomputable instance equals_unfold_traceLocker [GooseExts] [GoGlobalContext] :
 
 structure traceEventWriter [GooseExts] where
   mk ::
-  tl' : traceLocker
+  tl' : _root_.Perennial.runtime.traceLocker
 
 noncomputable instance traceEventWriter.zero_val [GooseExts] : ZeroVal traceEventWriter :=
   ⟨traceEventWriter.mk zeroValDef⟩
@@ -18377,7 +18377,7 @@ noncomputable instance equals_unfold_traceMapNode [GooseExts] [GoGlobalContext] 
 
 structure traceRegionAlloc [GooseExts] where
   mk ::
-  lock' : mutex
+  lock' : _root_.Perennial.runtime.mutex
   dropping' : _root_.Perennial.internal.runtime.atomic.Bool'
   current' : _root_.Perennial.internal.runtime.atomic.UnsafePointer
   full' : Loc
@@ -18426,7 +18426,7 @@ noncomputable instance equals_unfold_traceRegionAllocBlockHeader [GooseExts] [Go
 structure traceRegionAllocBlock [GooseExts] where
   mk ::
   «_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap
-  traceRegionAllocBlockHeader' : traceRegionAllocBlockHeader
+  traceRegionAllocBlockHeader' : _root_.Perennial.runtime.traceRegionAllocBlockHeader
   data' : (GoArray w8 65520)
 
 noncomputable instance traceRegionAllocBlock.zero_val [GooseExts] : ZeroVal traceRegionAllocBlock :=
@@ -18489,7 +18489,7 @@ abbrev traceGoStopReason [GooseExts] : Type := w8
 
 structure traceStackTable [GooseExts] where
   mk ::
-  tab' : traceMap
+  tab' : _root_.Perennial.runtime.traceMap
 
 noncomputable instance traceStackTable.zero_val [GooseExts] : ZeroVal traceStackTable :=
   ⟨traceStackTable.mk zeroValDef⟩
@@ -18535,9 +18535,9 @@ noncomputable instance equals_unfold_traceFrame [GooseExts] [GoGlobalContext] :
 
 structure traceStringTable [GooseExts] where
   mk ::
-  lock' : mutex
+  lock' : _root_.Perennial.runtime.mutex
   buf' : Loc
-  tab' : traceMap
+  tab' : _root_.Perennial.runtime.traceMap
 
 noncomputable instance traceStringTable.zero_val [GooseExts] : ZeroVal traceStringTable :=
   ⟨traceStringTable.mk zeroValDef zeroValDef zeroValDef⟩
@@ -18559,7 +18559,7 @@ noncomputable instance equals_unfold_traceStringTable [GooseExts] [GoGlobalConte
 
 structure traceTypeTable [GooseExts] where
   mk ::
-  tab' : traceMap
+  tab' : _root_.Perennial.runtime.traceMap
 
 noncomputable instance traceTypeTable.zero_val [GooseExts] : ZeroVal traceTypeTable :=
   ⟨traceTypeTable.mk zeroValDef⟩

@@ -565,10 +565,8 @@ func (ctx *Ctx) toLeanTypeP(l locatable, t types.Type, primed bool) string {
 		if pkg == nil {
 			// universe types (error) are modeled by the framework
 			baseName = glang.LeanUniverseType(t.Obj().Name())
-		} else if pkg.Path() != ctx.pkgPath {
-			baseName = glang.LeanQuote(ctx.pkgRef(pkg)) + "." + glang.LeanIdent(t.Obj().Name())
 		} else {
-			baseName = glang.LeanIdent(t.Obj().Name())
+			baseName = glang.LeanQuote(ctx.pkgRef(pkg)) + "." + glang.LeanIdent(t.Obj().Name())
 		}
 		if t.TypeParams() != nil {
 			var params []string

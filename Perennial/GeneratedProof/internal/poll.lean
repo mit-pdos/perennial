@@ -257,7 +257,7 @@ noncomputable instance FD_access_load_fdmu (l : Loc) (v : internal.poll.FD) (dq 
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_store_fdmu (l : Loc) (v : internal.poll.FD) (fdmu' : internal.poll.fdMutex) :
+noncomputable instance FD_access_store_fdmu (l : Loc) (v : internal.poll.FD) (fdmu' : _root_.Perennial.internal.poll.fdMutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"fdmu" l) v.fdmu' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.FD go!"fdmu" l) fdmu' (DFrac.own 1))
@@ -289,7 +289,7 @@ noncomputable instance FD_access_load_SysFile (l : Loc) (v : internal.poll.FD) (
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_store_SysFile (l : Loc) (v : internal.poll.FD) (SysFile' : internal.poll.SysFile) :
+noncomputable instance FD_access_store_SysFile (l : Loc) (v : internal.poll.FD) (SysFile' : _root_.Perennial.internal.poll.SysFile) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"SysFile" l) v.SysFile' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.FD go!"SysFile" l) SysFile' (DFrac.own 1))
@@ -305,7 +305,7 @@ noncomputable instance FD_access_load_pd (l : Loc) (v : internal.poll.FD) (dq : 
  by
   solve_pointsto_access_struct
 
-noncomputable instance FD_access_store_pd (l : Loc) (v : internal.poll.FD) (pd' : internal.poll.pollDesc) :
+noncomputable instance FD_access_store_pd (l : Loc) (v : internal.poll.FD) (pd' : _root_.Perennial.internal.poll.pollDesc) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.poll.FD go!"pd" l) v.pd' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.poll.FD go!"pd" l) pd' (DFrac.own 1))

@@ -71,7 +71,7 @@ noncomputable instance B_access_load_common (l : Loc) (v : testing.B) (dq : DFra
  by
   solve_pointsto_access_struct
 
-noncomputable instance B_access_store_common (l : Loc) (v : testing.B) (common' : testing.common) :
+noncomputable instance B_access_store_common (l : Loc) (v : testing.B) (common' : _root_.Perennial.testing.common) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.B go!"common" l) v.common' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.B go!"common" l) common' (DFrac.own 1))
@@ -151,7 +151,7 @@ noncomputable instance B_access_load_previousDuration (l : Loc) (v : testing.B) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance B_access_store_previousDuration (l : Loc) (v : testing.B) (previousDuration' : time.Duration) :
+noncomputable instance B_access_store_previousDuration (l : Loc) (v : testing.B) (previousDuration' : _root_.Perennial.time.Duration) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.B go!"previousDuration" l) v.previousDuration' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.B go!"previousDuration" l) previousDuration' (DFrac.own 1))
@@ -183,7 +183,7 @@ noncomputable instance B_access_load_benchTime (l : Loc) (v : testing.B) (dq : D
  by
   solve_pointsto_access_struct
 
-noncomputable instance B_access_store_benchTime (l : Loc) (v : testing.B) (benchTime' : testing.durationOrCountFlag) :
+noncomputable instance B_access_store_benchTime (l : Loc) (v : testing.B) (benchTime' : _root_.Perennial.testing.durationOrCountFlag) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.B go!"benchTime" l) v.benchTime' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.B go!"benchTime" l) benchTime' (DFrac.own 1))
@@ -263,7 +263,7 @@ noncomputable instance B_access_load_result (l : Loc) (v : testing.B) (dq : DFra
  by
   solve_pointsto_access_struct
 
-noncomputable instance B_access_store_result (l : Loc) (v : testing.B) (result' : testing.BenchmarkResult) :
+noncomputable instance B_access_store_result (l : Loc) (v : testing.B) (result' : _root_.Perennial.testing.BenchmarkResult) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.B go!"result" l) v.result' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.B go!"result" l) result' (DFrac.own 1))
@@ -421,7 +421,7 @@ noncomputable instance F_access_load_common (l : Loc) (v : testing.F) (dq : DFra
  by
   solve_pointsto_access_struct
 
-noncomputable instance F_access_store_common (l : Loc) (v : testing.F) (common' : testing.common) :
+noncomputable instance F_access_store_common (l : Loc) (v : testing.F) (common' : _root_.Perennial.testing.common) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.F go!"common" l) v.common' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.F go!"common" l) common' (DFrac.own 1))
@@ -501,7 +501,7 @@ noncomputable instance F_access_load_result (l : Loc) (v : testing.F) (dq : DFra
  by
   solve_pointsto_access_struct
 
-noncomputable instance F_access_store_result (l : Loc) (v : testing.F) (result' : testing.fuzzResult) :
+noncomputable instance F_access_store_result (l : Loc) (v : testing.F) (result' : _root_.Perennial.testing.fuzzResult) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.F go!"result" l) v.result' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.F go!"result" l) result' (DFrac.own 1))
@@ -559,7 +559,7 @@ noncomputable instance T_access_load_common (l : Loc) (v : testing.T) (dq : DFra
  by
   solve_pointsto_access_struct
 
-noncomputable instance T_access_store_common (l : Loc) (v : testing.T) (common' : testing.common) :
+noncomputable instance T_access_store_common (l : Loc) (v : testing.T) (common' : _root_.Perennial.testing.common) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.T go!"common" l) v.common' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.T go!"common" l) common' (DFrac.own 1))

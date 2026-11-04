@@ -562,7 +562,7 @@ attribute [instance] fmtFlags.TypeAssumptions.type_repr
 structure fmt [GooseExts] where
   mk ::
   buf' : Loc
-  fmtFlags' : fmtFlags
+  fmtFlags' : _root_.Perennial.fmt.fmtFlags
   wid' : w64
   prec' : w64
   intbuf' : (GoArray w8 68)
@@ -593,7 +593,7 @@ class fmt.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSema
   get_buf : ∀ (x : fmt), go.IsGoStepPureDetTagged under (StructFieldGet fmt.underlying go!"buf") #x (Val #(x.buf'))
   set_buf : ∀ (x : fmt) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet fmt.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : fmt)))
   get_fmtFlags : ∀ (x : fmt), go.IsGoStepPureDetTagged under (StructFieldGet fmt.underlying go!"fmtFlags") #x (Val #(x.fmtFlags'))
-  set_fmtFlags : ∀ (x : fmt) (y : fmtFlags), go.IsGoStepPureDetTagged under (StructFieldSet fmt.underlying go!"fmtFlags") (PairV #x #y) (Val #(({ x with fmtFlags' := y } : fmt)))
+  set_fmtFlags : ∀ (x : fmt) (y : _root_.Perennial.fmt.fmtFlags), go.IsGoStepPureDetTagged under (StructFieldSet fmt.underlying go!"fmtFlags") (PairV #x #y) (Val #(({ x with fmtFlags' := y } : fmt)))
   get_wid : ∀ (x : fmt), go.IsGoStepPureDetTagged under (StructFieldGet fmt.underlying go!"wid") #x (Val #(x.wid'))
   set_wid : ∀ (x : fmt) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet fmt.underlying go!"wid") (PairV #x #y) (Val #(({ x with wid' := y } : fmt)))
   get_prec : ∀ (x : fmt), go.IsGoStepPureDetTagged under (StructFieldGet fmt.underlying go!"prec") #x (Val #(x.prec'))
@@ -850,10 +850,10 @@ attribute [instance] ssave.TypeAssumptions.type_repr
 structure ss [GooseExts] where
   mk ::
   rs' : _root_.Perennial.io.RuneScanner
-  buf' : buffer
+  buf' : _root_.Perennial.fmt.buffer
   count' : w64
   atEOF' : Bool
-  ssave' : ssave
+  ssave' : _root_.Perennial.fmt.ssave
 
 noncomputable instance ss.zero_val [GooseExts] : ZeroVal ss :=
   ⟨ss.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -881,13 +881,13 @@ class ss.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSeman
   get_rs : ∀ (x : ss), go.IsGoStepPureDetTagged under (StructFieldGet ss.underlying go!"rs") #x (Val #(x.rs'))
   set_rs : ∀ (x : ss) (y : _root_.Perennial.io.RuneScanner), go.IsGoStepPureDetTagged under (StructFieldSet ss.underlying go!"rs") (PairV #x #y) (Val #(({ x with rs' := y } : ss)))
   get_buf : ∀ (x : ss), go.IsGoStepPureDetTagged under (StructFieldGet ss.underlying go!"buf") #x (Val #(x.buf'))
-  set_buf : ∀ (x : ss) (y : buffer), go.IsGoStepPureDetTagged under (StructFieldSet ss.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : ss)))
+  set_buf : ∀ (x : ss) (y : _root_.Perennial.fmt.buffer), go.IsGoStepPureDetTagged under (StructFieldSet ss.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : ss)))
   get_count : ∀ (x : ss), go.IsGoStepPureDetTagged under (StructFieldGet ss.underlying go!"count") #x (Val #(x.count'))
   set_count : ∀ (x : ss) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet ss.underlying go!"count") (PairV #x #y) (Val #(({ x with count' := y } : ss)))
   get_atEOF : ∀ (x : ss), go.IsGoStepPureDetTagged under (StructFieldGet ss.underlying go!"atEOF") #x (Val #(x.atEOF'))
   set_atEOF : ∀ (x : ss) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet ss.underlying go!"atEOF") (PairV #x #y) (Val #(({ x with atEOF' := y } : ss)))
   get_ssave : ∀ (x : ss), go.IsGoStepPureDetTagged under (StructFieldGet ss.underlying go!"ssave") #x (Val #(x.ssave'))
-  set_ssave : ∀ (x : ss) (y : ssave), go.IsGoStepPureDetTagged under (StructFieldSet ss.underlying go!"ssave") (PairV #x #y) (Val #(({ x with ssave' := y } : ss)))
+  set_ssave : ∀ (x : ss) (y : _root_.Perennial.fmt.ssave), go.IsGoStepPureDetTagged under (StructFieldSet ss.underlying go!"ssave") (PairV #x #y) (Val #(({ x with ssave' := y } : ss)))
   method_set : go.MethodSetIs ss.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType ss.ty) [(go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadRune", (some (go.signature.Signature [] false [go.rune, go.int, go.error]))), (go!"SkipSpace", (some (go.signature.Signature [] false []))), (go!"Token", (some (go.signature.Signature [go.bool, (go.GoType.FunctionType (go.signature.Signature [go.rune] false [go.bool]))] false [(go.GoType.SliceType go.byte), go.error]))), (go!"UnreadRune", (some (go.signature.Signature [] false [go.error]))), (go!"Width", (some (go.signature.Signature [] false [go.int, go.bool]))), (go!"fmt.accept", (some (go.signature.Signature [go.string] false [go.bool]))), (go!"fmt.advance", (some (go.signature.Signature [go.string] false [go.int]))), (go!"fmt.complexTokens", (some (go.signature.Signature [] false [go.string, go.string]))), (go!"fmt.consume", (some (go.signature.Signature [go.string, go.bool] false [go.bool]))), (go!"fmt.convertFloat", (some (go.signature.Signature [go.string, go.int] false [go.float64]))), (go!"fmt.convertString", (some (go.signature.Signature [go.rune] false [go.string]))), (go!"fmt.doScan", (some (go.signature.Signature [(go.GoType.SliceType go.any)] false [go.int, go.error]))), (go!"fmt.doScanf", (some (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] false [go.int, go.error]))), (go!"fmt.error", (some (go.signature.Signature [go.error] false []))), (go!"fmt.errorString", (some (go.signature.Signature [go.string] false []))), (go!"fmt.floatToken", (some (go.signature.Signature [] false [go.string]))), (go!"fmt.free", (some (go.signature.Signature [ssave.ty] false []))), (go!"fmt.getBase", (some (go.signature.Signature [go.rune] false [go.int, go.string]))), (go!"fmt.getRune", (some (go.signature.Signature [] false [go.rune]))), (go!"fmt.hexByte", (some (go.signature.Signature [] false [go.byte, go.bool]))), (go!"fmt.hexString", (some (go.signature.Signature [] false [go.string]))), (go!"fmt.mustReadRune", (some (go.signature.Signature [] false [go.rune]))), (go!"fmt.notEOF", (some (go.signature.Signature [] false []))), (go!"fmt.okVerb", (some (go.signature.Signature [go.rune, go.string, go.string] false [go.bool]))), (go!"fmt.peek", (some (go.signature.Signature [go.string] false [go.bool]))), (go!"fmt.quotedString", (some (go.signature.Signature [] false [go.string]))), (go!"fmt.scanBasePrefix", (some (go.signature.Signature [] false [go.int, go.string, go.bool]))), (go!"fmt.scanBool", (some (go.signature.Signature [go.rune] false [go.bool]))), (go!"fmt.scanComplex", (some (go.signature.Signature [go.rune, go.int] false [go.complex128]))), (go!"fmt.scanInt", (some (go.signature.Signature [go.rune, go.int] false [go.int64]))), (go!"fmt.scanNumber", (some (go.signature.Signature [go.string, go.bool] false [go.string]))), (go!"fmt.scanOne", (some (go.signature.Signature [go.rune, go.any] false []))), (go!"fmt.scanPercent", (some (go.signature.Signature [] false []))), (go!"fmt.scanRune", (some (go.signature.Signature [go.int] false [go.int64]))), (go!"fmt.scanUint", (some (go.signature.Signature [go.rune, go.int] false [go.uint64]))), (go!"fmt.token", (some (go.signature.Signature [go.bool, (go.GoType.FunctionType (go.signature.Signature [go.rune] false [go.bool]))] false [(go.GoType.SliceType go.byte)])))]
 

@@ -99,7 +99,7 @@ noncomputable instance userArena_access_load_defunct (l : Loc) (v : runtime.user
  by
   solve_pointsto_access_struct
 
-noncomputable instance userArena_access_store_defunct (l : Loc) (v : runtime.userArena) (defunct' : internal.runtime.atomic.Bool') :
+noncomputable instance userArena_access_store_defunct (l : Loc) (v : runtime.userArena) (defunct' : _root_.Perennial.internal.runtime.atomic.Bool') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.userArena go!"defunct" l) v.defunct' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.userArena go!"defunct" l) defunct' (DFrac.own 1))
@@ -501,7 +501,7 @@ noncomputable instance «debugLogBuf_access_load__#0» (l : Loc) (v : runtime.de
  by
   solve_pointsto_access_struct
 
-noncomputable instance «debugLogBuf_access_store__#0» (l : Loc) (v : runtime.debugLogBuf) («_#0'» : internal.runtime.sys.NotInHeap) :
+noncomputable instance «debugLogBuf_access_store__#0» (l : Loc) (v : runtime.debugLogBuf) («_#0'» : _root_.Perennial.internal.runtime.sys.NotInHeap) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.debugLogBuf go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.debugLogBuf go!"_#0" l) «_#0'» (DFrac.own 1))
@@ -2533,7 +2533,7 @@ noncomputable instance timeHistogram_access_load_counts (l : Loc) (v : runtime.t
  by
   solve_pointsto_access_struct
 
-noncomputable instance timeHistogram_access_store_counts (l : Loc) (v : runtime.timeHistogram) (counts' : (GoArray internal.runtime.atomic.Uint64 160)) :
+noncomputable instance timeHistogram_access_store_counts (l : Loc) (v : runtime.timeHistogram) (counts' : (GoArray _root_.Perennial.internal.runtime.atomic.Uint64 160)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.timeHistogram go!"counts" l) v.counts' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.timeHistogram go!"counts" l) counts' (DFrac.own 1))
@@ -2549,7 +2549,7 @@ noncomputable instance timeHistogram_access_load_underflow (l : Loc) (v : runtim
  by
   solve_pointsto_access_struct
 
-noncomputable instance timeHistogram_access_store_underflow (l : Loc) (v : runtime.timeHistogram) (underflow' : internal.runtime.atomic.Uint64) :
+noncomputable instance timeHistogram_access_store_underflow (l : Loc) (v : runtime.timeHistogram) (underflow' : _root_.Perennial.internal.runtime.atomic.Uint64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.timeHistogram go!"underflow" l) v.underflow' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.timeHistogram go!"underflow" l) underflow' (DFrac.own 1))
@@ -2565,7 +2565,7 @@ noncomputable instance timeHistogram_access_load_overflow (l : Loc) (v : runtime
  by
   solve_pointsto_access_struct
 
-noncomputable instance timeHistogram_access_store_overflow (l : Loc) (v : runtime.timeHistogram) (overflow' : internal.runtime.atomic.Uint64) :
+noncomputable instance timeHistogram_access_store_overflow (l : Loc) (v : runtime.timeHistogram) (overflow' : _root_.Perennial.internal.runtime.atomic.Uint64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.timeHistogram go!"overflow" l) v.overflow' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.timeHistogram go!"overflow" l) overflow' (DFrac.own 1))

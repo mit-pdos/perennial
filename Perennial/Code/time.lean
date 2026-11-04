@@ -2251,7 +2251,7 @@ attribute [instance] ruleKind.TypeAssumptions.underlying
 
 structure rule [GooseExts] where
   mk ::
-  kind' : ruleKind
+  kind' : _root_.Perennial.time.ruleKind
   day' : w64
   week' : w64
   mon' : w64
@@ -2281,7 +2281,7 @@ class rule.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   type_repr : go.TypeReprUnderlying rule.underlying rule
   underlying : go.UnderlyingDirectedEq rule.ty rule.underlying
   get_kind : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"kind") #x (Val #(x.kind'))
-  set_kind : ∀ (x : rule) (y : ruleKind), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"kind") (PairV #x #y) (Val #(({ x with kind' := y } : rule)))
+  set_kind : ∀ (x : rule) (y : _root_.Perennial.time.ruleKind), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"kind") (PairV #x #y) (Val #(({ x with kind' := y } : rule)))
   get_day : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"day") #x (Val #(x.day'))
   set_day : ∀ (x : rule) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet rule.underlying go!"day") (PairV #x #y) (Val #(({ x with day' := y } : rule)))
   get_week : ∀ (x : rule), go.IsGoStepPureDetTagged under (StructFieldGet rule.underlying go!"week") #x (Val #(x.week'))

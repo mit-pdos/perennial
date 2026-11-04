@@ -125,7 +125,7 @@ noncomputable instance SiginfoChild_access_load_siErrnoCode (l : Loc) (v : inter
  by
   solve_pointsto_access_struct
 
-noncomputable instance SiginfoChild_access_store_siErrnoCode (l : Loc) (v : internal.syscall.unix.SiginfoChild) (siErrnoCode' : internal.syscall.unix.siErrnoCode) :
+noncomputable instance SiginfoChild_access_store_siErrnoCode (l : Loc) (v : internal.syscall.unix.SiginfoChild) (siErrnoCode' : _root_.Perennial.internal.syscall.unix.siErrnoCode) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"siErrnoCode" l) v.siErrnoCode' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.syscall.unix.SiginfoChild go!"siErrnoCode" l) siErrnoCode' (DFrac.own 1))

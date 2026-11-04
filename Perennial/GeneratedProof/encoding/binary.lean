@@ -98,7 +98,7 @@ noncomputable instance coder_access_load_order (l : Loc) (v : encoding.binary.co
  by
   solve_pointsto_access_struct
 
-noncomputable instance coder_access_store_order (l : Loc) (v : encoding.binary.coder) (order' : encoding.binary.ByteOrder) :
+noncomputable instance coder_access_store_order (l : Loc) (v : encoding.binary.coder) (order' : _root_.Perennial.encoding.binary.ByteOrder) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.coder go!"order" l) v.order' (DFrac.own 1))
       (typedPointsto (structFieldRef encoding.binary.coder go!"order" l) order' (DFrac.own 1))
@@ -170,7 +170,7 @@ noncomputable instance nativeEndian_access_load_littleEndian (l : Loc) (v : enco
  by
   solve_pointsto_access_struct
 
-noncomputable instance nativeEndian_access_store_littleEndian (l : Loc) (v : encoding.binary.nativeEndian) (littleEndian' : encoding.binary.littleEndian) :
+noncomputable instance nativeEndian_access_store_littleEndian (l : Loc) (v : encoding.binary.nativeEndian) (littleEndian' : _root_.Perennial.encoding.binary.littleEndian) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) v.littleEndian' (DFrac.own 1))
       (typedPointsto (structFieldRef encoding.binary.nativeEndian go!"littleEndian" l) littleEndian' (DFrac.own 1))

@@ -68,7 +68,7 @@ noncomputable instance «NotInHeap_access_load__#0» (l : Loc) (v : internal.run
  by
   solve_pointsto_access_struct
 
-noncomputable instance «NotInHeap_access_store__#0» (l : Loc) (v : internal.runtime.sys.NotInHeap) («_#0'» : internal.runtime.sys.nih) :
+noncomputable instance «NotInHeap_access_store__#0» (l : Loc) (v : internal.runtime.sys.NotInHeap) («_#0'» : _root_.Perennial.internal.runtime.sys.nih) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_#0" l) v.«_#0'» (DFrac.own 1))
       (typedPointsto (structFieldRef internal.runtime.sys.NotInHeap go!"_#0" l) «_#0'» (DFrac.own 1))

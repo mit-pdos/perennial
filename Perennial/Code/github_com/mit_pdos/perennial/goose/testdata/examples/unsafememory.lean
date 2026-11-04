@@ -2576,7 +2576,7 @@ attribute [instance] Pgid.TypeAssumptions.underlying
 
 structure InBucket [GooseExts] where
   mk ::
-  root' : Pgid
+  root' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid
   sequence' : w64
 
 noncomputable instance InBucket.zero_val [GooseExts] : ZeroVal InBucket :=
@@ -2600,7 +2600,7 @@ class InBucket.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying InBucket.underlying InBucket
   underlying : go.UnderlyingDirectedEq InBucket.ty InBucket.underlying
   get_root : ∀ (x : InBucket), go.IsGoStepPureDetTagged under (StructFieldGet InBucket.underlying go!"root") #x (Val #(x.root'))
-  set_root : ∀ (x : InBucket) (y : Pgid), go.IsGoStepPureDetTagged under (StructFieldSet InBucket.underlying go!"root") (PairV #x #y) (Val #(({ x with root' := y } : InBucket)))
+  set_root : ∀ (x : InBucket) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid), go.IsGoStepPureDetTagged under (StructFieldSet InBucket.underlying go!"root") (PairV #x #y) (Val #(({ x with root' := y } : InBucket)))
   get_sequence : ∀ (x : InBucket), go.IsGoStepPureDetTagged under (StructFieldGet InBucket.underlying go!"sequence") #x (Val #(x.sequence'))
   set_sequence : ∀ (x : InBucket) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet InBucket.underlying go!"sequence") (PairV #x #y) (Val #(({ x with sequence' := y } : InBucket)))
   method_set : go.MethodSetIs InBucket.ty []
@@ -2621,9 +2621,9 @@ structure Meta [GooseExts] where
   version' : w32
   pageSize' : w32
   flags' : w32
-  root' : InBucket
-  freelist' : Pgid
-  pgid' : Pgid
+  root' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket
+  freelist' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid
+  pgid' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid
   txid' : w64
   checksum' : w64
 
@@ -2663,11 +2663,11 @@ class Meta.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   get_flags : ∀ (x : Meta), go.IsGoStepPureDetTagged under (StructFieldGet Meta.underlying go!"flags") #x (Val #(x.flags'))
   set_flags : ∀ (x : Meta) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Meta.underlying go!"flags") (PairV #x #y) (Val #(({ x with flags' := y } : Meta)))
   get_root : ∀ (x : Meta), go.IsGoStepPureDetTagged under (StructFieldGet Meta.underlying go!"root") #x (Val #(x.root'))
-  set_root : ∀ (x : Meta) (y : InBucket), go.IsGoStepPureDetTagged under (StructFieldSet Meta.underlying go!"root") (PairV #x #y) (Val #(({ x with root' := y } : Meta)))
+  set_root : ∀ (x : Meta) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.InBucket), go.IsGoStepPureDetTagged under (StructFieldSet Meta.underlying go!"root") (PairV #x #y) (Val #(({ x with root' := y } : Meta)))
   get_freelist : ∀ (x : Meta), go.IsGoStepPureDetTagged under (StructFieldGet Meta.underlying go!"freelist") #x (Val #(x.freelist'))
-  set_freelist : ∀ (x : Meta) (y : Pgid), go.IsGoStepPureDetTagged under (StructFieldSet Meta.underlying go!"freelist") (PairV #x #y) (Val #(({ x with freelist' := y } : Meta)))
+  set_freelist : ∀ (x : Meta) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid), go.IsGoStepPureDetTagged under (StructFieldSet Meta.underlying go!"freelist") (PairV #x #y) (Val #(({ x with freelist' := y } : Meta)))
   get_pgid : ∀ (x : Meta), go.IsGoStepPureDetTagged under (StructFieldGet Meta.underlying go!"pgid") #x (Val #(x.pgid'))
-  set_pgid : ∀ (x : Meta) (y : Pgid), go.IsGoStepPureDetTagged under (StructFieldSet Meta.underlying go!"pgid") (PairV #x #y) (Val #(({ x with pgid' := y } : Meta)))
+  set_pgid : ∀ (x : Meta) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid), go.IsGoStepPureDetTagged under (StructFieldSet Meta.underlying go!"pgid") (PairV #x #y) (Val #(({ x with pgid' := y } : Meta)))
   get_txid : ∀ (x : Meta), go.IsGoStepPureDetTagged under (StructFieldGet Meta.underlying go!"txid") #x (Val #(x.txid'))
   set_txid : ∀ (x : Meta) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Meta.underlying go!"txid") (PairV #x #y) (Val #(({ x with txid' := y } : Meta)))
   get_checksum : ∀ (x : Meta), go.IsGoStepPureDetTagged under (StructFieldGet Meta.underlying go!"checksum") #x (Val #(x.checksum'))
@@ -2706,7 +2706,7 @@ attribute [instance] Meta.TypeAssumptions.type_repr
 
 structure Page [GooseExts] where
   mk ::
-  id' : Pgid
+  id' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid
   flags' : w16
   count' : w16
   overflow' : w32
@@ -2734,7 +2734,7 @@ class Page.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   type_repr : go.TypeReprUnderlying Page.underlying Page
   underlying : go.UnderlyingDirectedEq Page.ty Page.underlying
   get_id : ∀ (x : Page), go.IsGoStepPureDetTagged under (StructFieldGet Page.underlying go!"id") #x (Val #(x.id'))
-  set_id : ∀ (x : Page) (y : Pgid), go.IsGoStepPureDetTagged under (StructFieldSet Page.underlying go!"id") (PairV #x #y) (Val #(({ x with id' := y } : Page)))
+  set_id : ∀ (x : Page) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid), go.IsGoStepPureDetTagged under (StructFieldSet Page.underlying go!"id") (PairV #x #y) (Val #(({ x with id' := y } : Page)))
   get_flags : ∀ (x : Page), go.IsGoStepPureDetTagged under (StructFieldGet Page.underlying go!"flags") #x (Val #(x.flags'))
   set_flags : ∀ (x : Page) (y : w16), go.IsGoStepPureDetTagged under (StructFieldSet Page.underlying go!"flags") (PairV #x #y) (Val #(({ x with flags' := y } : Page)))
   get_count : ∀ (x : Page), go.IsGoStepPureDetTagged under (StructFieldGet Page.underlying go!"count") #x (Val #(x.count'))
@@ -2832,7 +2832,7 @@ structure branchPageElement [GooseExts] where
   mk ::
   pos' : w32
   ksize' : w32
-  pgid' : Pgid
+  pgid' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid
 
 noncomputable instance branchPageElement.zero_val [GooseExts] : ZeroVal branchPageElement :=
   ⟨branchPageElement.mk zeroValDef zeroValDef zeroValDef⟩
@@ -2860,7 +2860,7 @@ class branchPageElement.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCo
   get_ksize : ∀ (x : branchPageElement), go.IsGoStepPureDetTagged under (StructFieldGet branchPageElement.underlying go!"ksize") #x (Val #(x.ksize'))
   set_ksize : ∀ (x : branchPageElement) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet branchPageElement.underlying go!"ksize") (PairV #x #y) (Val #(({ x with ksize' := y } : branchPageElement)))
   get_pgid : ∀ (x : branchPageElement), go.IsGoStepPureDetTagged under (StructFieldGet branchPageElement.underlying go!"pgid") #x (Val #(x.pgid'))
-  set_pgid : ∀ (x : branchPageElement) (y : Pgid), go.IsGoStepPureDetTagged under (StructFieldSet branchPageElement.underlying go!"pgid") (PairV #x #y) (Val #(({ x with pgid' := y } : branchPageElement)))
+  set_pgid : ∀ (x : branchPageElement) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid), go.IsGoStepPureDetTagged under (StructFieldSet branchPageElement.underlying go!"pgid") (PairV #x #y) (Val #(({ x with pgid' := y } : branchPageElement)))
   method_set : go.MethodSetIs branchPageElement.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType branchPageElement.ty) [(go!"github.com/mit-pdos/perennial/goose/testdata/examples/unsafememory.key", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)])))]
   ptr_key_unfold : MethodUnfold (go.GoType.PointerType branchPageElement.ty) go!"key" branchPageElement.key.impl
@@ -2880,7 +2880,7 @@ attribute [instance] branchPageElement.TypeAssumptions.type_repr
 structure inode [GooseExts] where
   mk ::
   flags' : w32
-  pgid' : Pgid
+  pgid' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid
   key' : GoSlice
   value' : GoSlice
 
@@ -2909,7 +2909,7 @@ class inode.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   get_flags : ∀ (x : inode), go.IsGoStepPureDetTagged under (StructFieldGet inode.underlying go!"flags") #x (Val #(x.flags'))
   set_flags : ∀ (x : inode) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet inode.underlying go!"flags") (PairV #x #y) (Val #(({ x with flags' := y } : inode)))
   get_pgid : ∀ (x : inode), go.IsGoStepPureDetTagged under (StructFieldGet inode.underlying go!"pgid") #x (Val #(x.pgid'))
-  set_pgid : ∀ (x : inode) (y : Pgid), go.IsGoStepPureDetTagged under (StructFieldSet inode.underlying go!"pgid") (PairV #x #y) (Val #(({ x with pgid' := y } : inode)))
+  set_pgid : ∀ (x : inode) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unsafememory.Pgid), go.IsGoStepPureDetTagged under (StructFieldSet inode.underlying go!"pgid") (PairV #x #y) (Val #(({ x with pgid' := y } : inode)))
   get_key : ∀ (x : inode), go.IsGoStepPureDetTagged under (StructFieldGet inode.underlying go!"key") #x (Val #(x.key'))
   set_key : ∀ (x : inode) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet inode.underlying go!"key") (PairV #x #y) (Val #(({ x with key' := y } : inode)))
   get_value : ∀ (x : inode), go.IsGoStepPureDetTagged under (StructFieldGet inode.underlying go!"value") #x (Val #(x.value'))

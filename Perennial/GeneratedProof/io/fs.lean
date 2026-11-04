@@ -123,7 +123,7 @@ noncomputable instance dirInfo_access_load_fileInfo (l : Loc) (v : io.fs.dirInfo
  by
   solve_pointsto_access_struct
 
-noncomputable instance dirInfo_access_store_fileInfo (l : Loc) (v : io.fs.dirInfo) (fileInfo' : io.fs.FileInfo) :
+noncomputable instance dirInfo_access_store_fileInfo (l : Loc) (v : io.fs.dirInfo) (fileInfo' : _root_.Perennial.io.fs.FileInfo) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.dirInfo go!"fileInfo" l) v.fileInfo' (DFrac.own 1))
       (typedPointsto (structFieldRef io.fs.dirInfo go!"fileInfo" l) fileInfo' (DFrac.own 1))
@@ -164,7 +164,7 @@ noncomputable instance subFS_access_load_fsys (l : Loc) (v : io.fs.subFS) (dq : 
  by
   solve_pointsto_access_struct
 
-noncomputable instance subFS_access_store_fsys (l : Loc) (v : io.fs.subFS) (fsys' : io.fs.FS) :
+noncomputable instance subFS_access_store_fsys (l : Loc) (v : io.fs.subFS) (fsys' : _root_.Perennial.io.fs.FS) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.fs.subFS go!"fsys" l) v.fsys' (DFrac.own 1))
       (typedPointsto (structFieldRef io.fs.subFS go!"fsys" l) fsys' (DFrac.own 1))

@@ -102,7 +102,7 @@ class pcvalueCache.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   type_repr : go.TypeReprUnderlying pcvalueCache.underlying pcvalueCache
   underlying : go.UnderlyingDirectedEq pcvalueCache.ty pcvalueCache.underlying
   get_entries : ∀ (x : pcvalueCache), go.IsGoStepPureDetTagged under (StructFieldGet pcvalueCache.underlying go!"entries") #x (Val #(x.entries'))
-  set_entries : ∀ (x : pcvalueCache) (y : (GoArray (GoArray pcvalueCacheEnt 8) 2)), go.IsGoStepPureDetTagged under (StructFieldSet pcvalueCache.underlying go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : pcvalueCache)))
+  set_entries : ∀ (x : pcvalueCache) (y : (GoArray (GoArray _root_.Perennial.runtime.pcvalueCacheEnt 8) 2)), go.IsGoStepPureDetTagged under (StructFieldSet pcvalueCache.underlying go!"entries") (PairV #x #y) (Val #(({ x with entries' := y } : pcvalueCache)))
   get_inUse : ∀ (x : pcvalueCache), go.IsGoStepPureDetTagged under (StructFieldGet pcvalueCache.underlying go!"inUse") #x (Val #(x.inUse'))
   set_inUse : ∀ (x : pcvalueCache) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pcvalueCache.underlying go!"inUse") (PairV #x #y) (Val #(({ x with inUse' := y } : pcvalueCache)))
   method_set : go.MethodSetIs pcvalueCache.ty []
@@ -157,7 +157,7 @@ class inlineUnwinder.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalConte
   type_repr : go.TypeReprUnderlying inlineUnwinder.underlying inlineUnwinder
   underlying : go.UnderlyingDirectedEq inlineUnwinder.ty inlineUnwinder.underlying
   get_f : ∀ (x : inlineUnwinder), go.IsGoStepPureDetTagged under (StructFieldGet inlineUnwinder.underlying go!"f") #x (Val #(x.f'))
-  set_f : ∀ (x : inlineUnwinder) (y : funcInfo), go.IsGoStepPureDetTagged under (StructFieldSet inlineUnwinder.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : inlineUnwinder)))
+  set_f : ∀ (x : inlineUnwinder) (y : _root_.Perennial.runtime.funcInfo), go.IsGoStepPureDetTagged under (StructFieldSet inlineUnwinder.underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : inlineUnwinder)))
   get_inlTree : ∀ (x : inlineUnwinder), go.IsGoStepPureDetTagged under (StructFieldGet inlineUnwinder.underlying go!"inlTree") #x (Val #(x.inlTree'))
   set_inlTree : ∀ (x : inlineUnwinder) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet inlineUnwinder.underlying go!"inlTree") (PairV #x #y) (Val #(({ x with inlTree' := y } : inlineUnwinder)))
   method_set : go.MethodSetIs inlineUnwinder.ty []
@@ -195,9 +195,9 @@ class synctestBubble.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalConte
   type_repr : go.TypeReprUnderlying synctestBubble.underlying synctestBubble
   underlying : go.UnderlyingDirectedEq synctestBubble.ty synctestBubble.underlying
   get_mu : ∀ (x : synctestBubble), go.IsGoStepPureDetTagged under (StructFieldGet synctestBubble.underlying go!"mu") #x (Val #(x.mu'))
-  set_mu : ∀ (x : synctestBubble) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet synctestBubble.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : synctestBubble)))
+  set_mu : ∀ (x : synctestBubble) (y : _root_.Perennial.runtime.mutex), go.IsGoStepPureDetTagged under (StructFieldSet synctestBubble.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : synctestBubble)))
   get_timers : ∀ (x : synctestBubble), go.IsGoStepPureDetTagged under (StructFieldGet synctestBubble.underlying go!"timers") #x (Val #(x.timers'))
-  set_timers : ∀ (x : synctestBubble) (y : timers), go.IsGoStepPureDetTagged under (StructFieldSet synctestBubble.underlying go!"timers") (PairV #x #y) (Val #(({ x with timers' := y } : synctestBubble)))
+  set_timers : ∀ (x : synctestBubble) (y : _root_.Perennial.runtime.timers), go.IsGoStepPureDetTagged under (StructFieldSet synctestBubble.underlying go!"timers") (PairV #x #y) (Val #(({ x with timers' := y } : synctestBubble)))
   get_id : ∀ (x : synctestBubble), go.IsGoStepPureDetTagged under (StructFieldGet synctestBubble.underlying go!"id") #x (Val #(x.id'))
   set_id : ∀ (x : synctestBubble) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet synctestBubble.underlying go!"id") (PairV #x #y) (Val #(({ x with id' := y } : synctestBubble)))
   get_now : ∀ (x : synctestBubble), go.IsGoStepPureDetTagged under (StructFieldGet synctestBubble.underlying go!"now") #x (Val #(x.now'))
@@ -275,7 +275,7 @@ class specialBubble.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContex
   «get__#0» : ∀ (x : specialBubble), go.IsGoStepPureDetTagged under (StructFieldGet specialBubble.underlying go!"_#0") #x (Val #(x.«_#0'»))
   «set__#0» : ∀ (x : specialBubble) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet specialBubble.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : specialBubble)))
   get_special : ∀ (x : specialBubble), go.IsGoStepPureDetTagged under (StructFieldGet specialBubble.underlying go!"special") #x (Val #(x.special'))
-  set_special : ∀ (x : specialBubble) (y : special), go.IsGoStepPureDetTagged under (StructFieldSet specialBubble.underlying go!"special") (PairV #x #y) (Val #(({ x with special' := y } : specialBubble)))
+  set_special : ∀ (x : specialBubble) (y : _root_.Perennial.runtime.special), go.IsGoStepPureDetTagged under (StructFieldSet specialBubble.underlying go!"special") (PairV #x #y) (Val #(({ x with special' := y } : specialBubble)))
   get_bubbleid : ∀ (x : specialBubble), go.IsGoStepPureDetTagged under (StructFieldGet specialBubble.underlying go!"bubbleid") #x (Val #(x.bubbleid'))
   set_bubbleid : ∀ (x : specialBubble) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet specialBubble.underlying go!"bubbleid") (PairV #x #y) (Val #(({ x with bubbleid' := y } : specialBubble)))
   method_set : go.MethodSetIs specialBubble.ty []
@@ -328,7 +328,7 @@ class timeTimer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   get_init : ∀ (x : timeTimer), go.IsGoStepPureDetTagged under (StructFieldGet timeTimer.underlying go!"init") #x (Val #(x.init'))
   set_init : ∀ (x : timeTimer) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet timeTimer.underlying go!"init") (PairV #x #y) (Val #(({ x with init' := y } : timeTimer)))
   get_timer : ∀ (x : timeTimer), go.IsGoStepPureDetTagged under (StructFieldGet timeTimer.underlying go!"timer") #x (Val #(x.timer'))
-  set_timer : ∀ (x : timeTimer) (y : timer), go.IsGoStepPureDetTagged under (StructFieldSet timeTimer.underlying go!"timer") (PairV #x #y) (Val #(({ x with timer' := y } : timeTimer)))
+  set_timer : ∀ (x : timeTimer) (y : _root_.Perennial.runtime.timer), go.IsGoStepPureDetTagged under (StructFieldSet timeTimer.underlying go!"timer") (PairV #x #y) (Val #(({ x with timer' := y } : timeTimer)))
   method_set : go.MethodSetIs timeTimer.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType timeTimer.ty) [(go!"runtime.hchan", (some (go.signature.Signature [] false [(go.GoType.PointerType hchan.ty)]))), (go!"runtime.lock", (some (go.signature.Signature [] false []))), (go!"runtime.maybeAdd", (some (go.signature.Signature [] false []))), (go!"runtime.maybeRunAsync", (some (go.signature.Signature [] false []))), (go!"runtime.maybeRunChan", (some (go.signature.Signature [(go.GoType.PointerType hchan.ty)] false []))), (go!"runtime.modify", (some (go.signature.Signature [go.int64, go.int64, (go.GoType.FunctionType (go.signature.Signature [go.any, go.uintptr, go.int64] false [])), go.any, go.uintptr] false [go.bool]))), (go!"runtime.needsAdd", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.reset", (some (go.signature.Signature [go.int64, go.int64] false [go.bool]))), (go!"runtime.stop", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.trace", (some (go.signature.Signature [go.string] false []))), (go!"runtime.trace1", (some (go.signature.Signature [go.string] false []))), (go!"runtime.unlock", (some (go.signature.Signature [] false []))), (go!"runtime.unlockAndRun", (some (go.signature.Signature [go.int64, (go.GoType.PointerType synctestBubble.ty)] false []))), (go!"runtime.updateHeap", (some (go.signature.Signature [] false [go.bool])))]
 
@@ -368,7 +368,7 @@ class wakeableSleep.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContex
   get_timer : ∀ (x : wakeableSleep), go.IsGoStepPureDetTagged under (StructFieldGet wakeableSleep.underlying go!"timer") #x (Val #(x.timer'))
   set_timer : ∀ (x : wakeableSleep) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet wakeableSleep.underlying go!"timer") (PairV #x #y) (Val #(({ x with timer' := y } : wakeableSleep)))
   get_lock : ∀ (x : wakeableSleep), go.IsGoStepPureDetTagged under (StructFieldGet wakeableSleep.underlying go!"lock") #x (Val #(x.lock'))
-  set_lock : ∀ (x : wakeableSleep) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet wakeableSleep.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : wakeableSleep)))
+  set_lock : ∀ (x : wakeableSleep) (y : _root_.Perennial.runtime.mutex), go.IsGoStepPureDetTagged under (StructFieldSet wakeableSleep.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : wakeableSleep)))
   get_wakeup : ∀ (x : wakeableSleep), go.IsGoStepPureDetTagged under (StructFieldGet wakeableSleep.underlying go!"wakeup") #x (Val #(x.wakeup'))
   set_wakeup : ∀ (x : wakeableSleep) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet wakeableSleep.underlying go!"wakeup") (PairV #x #y) (Val #(({ x with wakeup' := y } : wakeableSleep)))
   method_set : go.MethodSetIs wakeableSleep.ty []
@@ -535,7 +535,7 @@ class traceBufHeader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalConte
   get_link : ∀ (x : traceBufHeader), go.IsGoStepPureDetTagged under (StructFieldGet traceBufHeader.underlying go!"link") #x (Val #(x.link'))
   set_link : ∀ (x : traceBufHeader) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet traceBufHeader.underlying go!"link") (PairV #x #y) (Val #(({ x with link' := y } : traceBufHeader)))
   get_lastTime : ∀ (x : traceBufHeader), go.IsGoStepPureDetTagged under (StructFieldGet traceBufHeader.underlying go!"lastTime") #x (Val #(x.lastTime'))
-  set_lastTime : ∀ (x : traceBufHeader) (y : traceTime), go.IsGoStepPureDetTagged under (StructFieldSet traceBufHeader.underlying go!"lastTime") (PairV #x #y) (Val #(({ x with lastTime' := y } : traceBufHeader)))
+  set_lastTime : ∀ (x : traceBufHeader) (y : _root_.Perennial.runtime.traceTime), go.IsGoStepPureDetTagged under (StructFieldSet traceBufHeader.underlying go!"lastTime") (PairV #x #y) (Val #(({ x with lastTime' := y } : traceBufHeader)))
   get_pos : ∀ (x : traceBufHeader), go.IsGoStepPureDetTagged under (StructFieldGet traceBufHeader.underlying go!"pos") #x (Val #(x.pos'))
   set_pos : ∀ (x : traceBufHeader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet traceBufHeader.underlying go!"pos") (PairV #x #y) (Val #(({ x with pos' := y } : traceBufHeader)))
   get_lenPos : ∀ (x : traceBufHeader), go.IsGoStepPureDetTagged under (StructFieldGet traceBufHeader.underlying go!"lenPos") #x (Val #(x.lenPos'))
@@ -562,7 +562,7 @@ class traceBuf.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   «get__#0» : ∀ (x : traceBuf), go.IsGoStepPureDetTagged under (StructFieldGet traceBuf.underlying go!"_#0") #x (Val #(x.«_#0'»))
   «set__#0» : ∀ (x : traceBuf) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet traceBuf.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : traceBuf)))
   get_traceBufHeader : ∀ (x : traceBuf), go.IsGoStepPureDetTagged under (StructFieldGet traceBuf.underlying go!"traceBufHeader") #x (Val #(x.traceBufHeader'))
-  set_traceBufHeader : ∀ (x : traceBuf) (y : traceBufHeader), go.IsGoStepPureDetTagged under (StructFieldSet traceBuf.underlying go!"traceBufHeader") (PairV #x #y) (Val #(({ x with traceBufHeader' := y } : traceBuf)))
+  set_traceBufHeader : ∀ (x : traceBuf) (y : _root_.Perennial.runtime.traceBufHeader), go.IsGoStepPureDetTagged under (StructFieldSet traceBuf.underlying go!"traceBufHeader") (PairV #x #y) (Val #(({ x with traceBufHeader' := y } : traceBuf)))
   get_arr : ∀ (x : traceBuf), go.IsGoStepPureDetTagged under (StructFieldGet traceBuf.underlying go!"arr") #x (Val #(x.arr'))
   set_arr : ∀ (x : traceBuf) (y : (GoArray w8 65504)), go.IsGoStepPureDetTagged under (StructFieldSet traceBuf.underlying go!"arr") (PairV #x #y) (Val #(({ x with arr' := y } : traceBuf)))
   method_set : go.MethodSetIs traceBuf.ty []
@@ -611,7 +611,7 @@ class traceEventWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCon
   type_repr : go.TypeReprUnderlying traceEventWriter.underlying traceEventWriter
   underlying : go.UnderlyingDirectedEq traceEventWriter.ty traceEventWriter.underlying
   get_tl : ∀ (x : traceEventWriter), go.IsGoStepPureDetTagged under (StructFieldGet traceEventWriter.underlying go!"tl") #x (Val #(x.tl'))
-  set_tl : ∀ (x : traceEventWriter) (y : traceLocker), go.IsGoStepPureDetTagged under (StructFieldSet traceEventWriter.underlying go!"tl") (PairV #x #y) (Val #(({ x with tl' := y } : traceEventWriter)))
+  set_tl : ∀ (x : traceEventWriter) (y : _root_.Perennial.runtime.traceLocker), go.IsGoStepPureDetTagged under (StructFieldSet traceEventWriter.underlying go!"tl") (PairV #x #y) (Val #(({ x with tl' := y } : traceEventWriter)))
   method_set : go.MethodSetIs traceEventWriter.ty [(go!"runtime.event", (some (go.signature.Signature [(go.GoType.Named go!"internal/trace/tracev2.EventType" []), (go.GoType.SliceType traceArg.ty)] true [])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceEventWriter.ty) [(go!"runtime.event", (some (go.signature.Signature [(go.GoType.Named go!"internal/trace/tracev2.EventType" []), (go.GoType.SliceType traceArg.ty)] true [])))]
 
@@ -670,7 +670,7 @@ class traceRegionAlloc.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCon
   type_repr : go.TypeReprUnderlying traceRegionAlloc.underlying traceRegionAlloc
   underlying : go.UnderlyingDirectedEq traceRegionAlloc.ty traceRegionAlloc.underlying
   get_lock : ∀ (x : traceRegionAlloc), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAlloc.underlying go!"lock") #x (Val #(x.lock'))
-  set_lock : ∀ (x : traceRegionAlloc) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAlloc.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : traceRegionAlloc)))
+  set_lock : ∀ (x : traceRegionAlloc) (y : _root_.Perennial.runtime.mutex), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAlloc.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : traceRegionAlloc)))
   get_dropping : ∀ (x : traceRegionAlloc), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAlloc.underlying go!"dropping") #x (Val #(x.dropping'))
   set_dropping : ∀ (x : traceRegionAlloc) (y : _root_.Perennial.internal.runtime.atomic.Bool'), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAlloc.underlying go!"dropping") (PairV #x #y) (Val #(({ x with dropping' := y } : traceRegionAlloc)))
   get_current : ∀ (x : traceRegionAlloc), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAlloc.underlying go!"current") #x (Val #(x.current'))
@@ -718,7 +718,7 @@ class traceRegionAllocBlock.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLoc
   «get__#0» : ∀ (x : traceRegionAllocBlock), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAllocBlock.underlying go!"_#0") #x (Val #(x.«_#0'»))
   «set__#0» : ∀ (x : traceRegionAllocBlock) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAllocBlock.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : traceRegionAllocBlock)))
   get_traceRegionAllocBlockHeader : ∀ (x : traceRegionAllocBlock), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAllocBlock.underlying go!"traceRegionAllocBlockHeader") #x (Val #(x.traceRegionAllocBlockHeader'))
-  set_traceRegionAllocBlockHeader : ∀ (x : traceRegionAllocBlock) (y : traceRegionAllocBlockHeader), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAllocBlock.underlying go!"traceRegionAllocBlockHeader") (PairV #x #y) (Val #(({ x with traceRegionAllocBlockHeader' := y } : traceRegionAllocBlock)))
+  set_traceRegionAllocBlockHeader : ∀ (x : traceRegionAllocBlock) (y : _root_.Perennial.runtime.traceRegionAllocBlockHeader), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAllocBlock.underlying go!"traceRegionAllocBlockHeader") (PairV #x #y) (Val #(({ x with traceRegionAllocBlockHeader' := y } : traceRegionAllocBlock)))
   get_data : ∀ (x : traceRegionAllocBlock), go.IsGoStepPureDetTagged under (StructFieldGet traceRegionAllocBlock.underlying go!"data") #x (Val #(x.data'))
   set_data : ∀ (x : traceRegionAllocBlock) (y : (GoArray w8 65520)), go.IsGoStepPureDetTagged under (StructFieldSet traceRegionAllocBlock.underlying go!"data") (PairV #x #y) (Val #(({ x with data' := y } : traceRegionAllocBlock)))
   method_set : go.MethodSetIs traceRegionAllocBlock.ty []
@@ -792,7 +792,7 @@ class traceStackTable.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCont
   type_repr : go.TypeReprUnderlying traceStackTable.underlying traceStackTable
   underlying : go.UnderlyingDirectedEq traceStackTable.ty traceStackTable.underlying
   get_tab : ∀ (x : traceStackTable), go.IsGoStepPureDetTagged under (StructFieldGet traceStackTable.underlying go!"tab") #x (Val #(x.tab'))
-  set_tab : ∀ (x : traceStackTable) (y : traceMap), go.IsGoStepPureDetTagged under (StructFieldSet traceStackTable.underlying go!"tab") (PairV #x #y) (Val #(({ x with tab' := y } : traceStackTable)))
+  set_tab : ∀ (x : traceStackTable) (y : _root_.Perennial.runtime.traceMap), go.IsGoStepPureDetTagged under (StructFieldSet traceStackTable.underlying go!"tab") (PairV #x #y) (Val #(({ x with tab' := y } : traceStackTable)))
   method_set : go.MethodSetIs traceStackTable.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceStackTable.ty) [(go!"runtime.dump", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.put", (some (go.signature.Signature [(go.GoType.SliceType go.uintptr)] false [go.uint64])))]
 
@@ -834,11 +834,11 @@ class traceStringTable.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCon
   type_repr : go.TypeReprUnderlying traceStringTable.underlying traceStringTable
   underlying : go.UnderlyingDirectedEq traceStringTable.ty traceStringTable.underlying
   get_lock : ∀ (x : traceStringTable), go.IsGoStepPureDetTagged under (StructFieldGet traceStringTable.underlying go!"lock") #x (Val #(x.lock'))
-  set_lock : ∀ (x : traceStringTable) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet traceStringTable.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : traceStringTable)))
+  set_lock : ∀ (x : traceStringTable) (y : _root_.Perennial.runtime.mutex), go.IsGoStepPureDetTagged under (StructFieldSet traceStringTable.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : traceStringTable)))
   get_buf : ∀ (x : traceStringTable), go.IsGoStepPureDetTagged under (StructFieldGet traceStringTable.underlying go!"buf") #x (Val #(x.buf'))
   set_buf : ∀ (x : traceStringTable) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet traceStringTable.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : traceStringTable)))
   get_tab : ∀ (x : traceStringTable), go.IsGoStepPureDetTagged under (StructFieldGet traceStringTable.underlying go!"tab") #x (Val #(x.tab'))
-  set_tab : ∀ (x : traceStringTable) (y : traceMap), go.IsGoStepPureDetTagged under (StructFieldSet traceStringTable.underlying go!"tab") (PairV #x #y) (Val #(({ x with tab' := y } : traceStringTable)))
+  set_tab : ∀ (x : traceStringTable) (y : _root_.Perennial.runtime.traceMap), go.IsGoStepPureDetTagged under (StructFieldSet traceStringTable.underlying go!"tab") (PairV #x #y) (Val #(({ x with tab' := y } : traceStringTable)))
   method_set : go.MethodSetIs traceStringTable.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceStringTable.ty) [(go!"runtime.emit", (some (go.signature.Signature [go.uintptr, go.string] false [go.uint64]))), (go!"runtime.put", (some (go.signature.Signature [go.uintptr, go.string] false [go.uint64]))), (go!"runtime.reset", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.writeString", (some (go.signature.Signature [go.uintptr, go.uint64, go.string] false [])))]
 
@@ -857,7 +857,7 @@ class traceTypeTable.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalConte
   type_repr : go.TypeReprUnderlying traceTypeTable.underlying traceTypeTable
   underlying : go.UnderlyingDirectedEq traceTypeTable.ty traceTypeTable.underlying
   get_tab : ∀ (x : traceTypeTable), go.IsGoStepPureDetTagged under (StructFieldGet traceTypeTable.underlying go!"tab") #x (Val #(x.tab'))
-  set_tab : ∀ (x : traceTypeTable) (y : traceMap), go.IsGoStepPureDetTagged under (StructFieldSet traceTypeTable.underlying go!"tab") (PairV #x #y) (Val #(({ x with tab' := y } : traceTypeTable)))
+  set_tab : ∀ (x : traceTypeTable) (y : _root_.Perennial.runtime.traceMap), go.IsGoStepPureDetTagged under (StructFieldSet traceTypeTable.underlying go!"tab") (PairV #x #y) (Val #(({ x with tab' := y } : traceTypeTable)))
   method_set : go.MethodSetIs traceTypeTable.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType traceTypeTable.ty) [(go!"runtime.dump", (some (go.signature.Signature [go.uintptr] false []))), (go!"runtime.put", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.Named go!"internal/abi.Type" []))] false [go.uint64])))]
 

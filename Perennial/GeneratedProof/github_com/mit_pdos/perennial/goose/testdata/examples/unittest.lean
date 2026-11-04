@@ -153,7 +153,7 @@ noncomputable instance embedB_access_load_embedA (l : Loc) (v : github_com.mit_p
  by
   solve_pointsto_access_struct
 
-noncomputable instance embedB_access_store_embedA (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedB) (embedA' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedA) :
+noncomputable instance embedB_access_store_embedA (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedB) (embedA' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedA) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedB go!"embedA" l) v.embedA' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedB go!"embedA" l) embedA' (DFrac.own 1))
@@ -233,7 +233,7 @@ noncomputable instance embedD_access_load_embedC (l : Loc) (v : github_com.mit_p
  by
   solve_pointsto_access_struct
 
-noncomputable instance embedD_access_store_embedC (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedD) (embedC' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedC) :
+noncomputable instance embedD_access_store_embedC (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedD) (embedC' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedC) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedD go!"embedC" l) v.embedC' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.embedD go!"embedC" l) embedC' (DFrac.own 1))
@@ -313,7 +313,7 @@ noncomputable instance FooerUser_access_load_f (l : Loc) (v : github_com.mit_pdo
  by
   solve_pointsto_access_struct
 
-noncomputable instance FooerUser_access_store_f (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.FooerUser) (f' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Fooer) :
+noncomputable instance FooerUser_access_store_f (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.FooerUser) (f' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Fooer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.FooerUser go!"f" l) v.f' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.FooerUser go!"f" l) f' (DFrac.own 1))
@@ -594,7 +594,7 @@ noncomputable instance msBoth_access_load_msLeft (l : Loc) (v : github_com.mit_p
  by
   solve_pointsto_access_struct
 
-noncomputable instance msBoth_access_store_msLeft (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth) (msLeft' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msLeft) :
+noncomputable instance msBoth_access_store_msLeft (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth) (msLeft' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msLeft) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth go!"msLeft" l) v.msLeft' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth go!"msLeft" l) msLeft' (DFrac.own 1))
@@ -610,7 +610,7 @@ noncomputable instance msBoth_access_load_msRight (l : Loc) (v : github_com.mit_
  by
   solve_pointsto_access_struct
 
-noncomputable instance msBoth_access_store_msRight (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth) (msRight' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msRight) :
+noncomputable instance msBoth_access_store_msRight (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth) (msRight' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msRight) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth go!"msRight" l) v.msRight' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msBoth go!"msRight" l) msRight' (DFrac.own 1))
@@ -651,7 +651,7 @@ noncomputable instance msShadow_access_load_msLeft (l : Loc) (v : github_com.mit
  by
   solve_pointsto_access_struct
 
-noncomputable instance msShadow_access_store_msLeft (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow) (msLeft' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msLeft) :
+noncomputable instance msShadow_access_store_msLeft (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow) (msLeft' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msLeft) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow go!"msLeft" l) v.msLeft' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.msShadow go!"msLeft" l) msLeft' (DFrac.own 1))
@@ -827,7 +827,7 @@ noncomputable instance typing_access_load_proph (l : Loc) (v : github_com.mit_pd
  by
   solve_pointsto_access_struct
 
-noncomputable instance typing_access_store_proph (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing) (proph' : github_com.goose_lang.primitive.ProphId) :
+noncomputable instance typing_access_store_proph (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing) (proph' : _root_.Perennial.github_com.goose_lang.primitive.ProphId) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing go!"proph" l) v.proph' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.typing go!"proph" l) proph' (DFrac.own 1))
@@ -987,7 +987,7 @@ noncomputable instance RecursiveEmbedded_access_load_Other (l : Loc) (v : github
  by
   solve_pointsto_access_struct
 
-noncomputable instance RecursiveEmbedded_access_store_Other (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.RecursiveEmbedded) (Other' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Other) :
+noncomputable instance RecursiveEmbedded_access_store_Other (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.RecursiveEmbedded) (Other' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.Other) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.RecursiveEmbedded go!"Other" l) v.Other' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.RecursiveEmbedded go!"Other" l) Other' (DFrac.own 1))
@@ -1239,7 +1239,7 @@ noncomputable instance S_access_load_b (l : Loc) (v : github_com.mit_pdos.perenn
  by
   solve_pointsto_access_struct
 
-noncomputable instance S_access_store_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S) (b' : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts) :
+noncomputable instance S_access_store_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S) (b' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.TwoInts) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S go!"b" l) v.b' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.S go!"b" l) b' (DFrac.own 1))

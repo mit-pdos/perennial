@@ -325,7 +325,7 @@ noncomputable instance genericReplacer_access_load_root (l : Loc) (v : strings.g
  by
   solve_pointsto_access_struct
 
-noncomputable instance genericReplacer_access_store_root (l : Loc) (v : strings.genericReplacer) (root' : strings.trieNode) :
+noncomputable instance genericReplacer_access_store_root (l : Loc) (v : strings.genericReplacer) (root' : _root_.Perennial.strings.trieNode) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef strings.genericReplacer go!"root" l) v.root' (DFrac.own 1))
       (typedPointsto (structFieldRef strings.genericReplacer go!"root" l) root' (DFrac.own 1))

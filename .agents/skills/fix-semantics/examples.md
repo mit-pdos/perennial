@@ -1108,3 +1108,31 @@ changes in the future". cf98e5f15 and 432c32f are rejected precedent: when a mod
 defined than Go, make it stuck where Go fails by modelling the state Go depends on; never
 delete the model in favour of axioms, and never mint a token as an `opaque` proposition whose
 meaning only axioms fix (review-trusted R10). Plan signed off 2026-11-04 ("Make it so.").
+
+## Case 35 — ACCEPTED: local named types use rooted references (branch `fix-goose-local-type-names`)
+
+**Symptom.** Incomplete: generated Lean fails to elaborate. For `type Type int64;
+type IntOrString struct { Type Type }`, the setter in
+`IntOrString.TypeAssumptions` writes `(y : Type')`, which resolves to the
+structure projection `IntOrString.Type'` rather than the package's type.
+
+**Witness.** `x := IntOrString{Type: Type(7)}; x.Type = Type(9); return x.Type == Type(9)`
+returns true in Go. The unqualified Lean annotation fails with "type expected";
+`_root_.Perennial.<package>.Type'` elaborates.
+
+**Taken.** The named-type value printer uses the imported-type path for local
+types too (`ctx.pkgRef`, already rooted), removing its local-package branch.
+Proofgen's sibling printer roots named types and uses the same `LeanIdent`
+renderer. Cost: 1 branch removed, 0 new branches, 0 semantics rules, 0 negative
+tests, 0 trusted models; 2 changed printer lines and 2 removed lines. Regression:
+`testLocalTypeNameShadow`, with regenerated gold files, code and proofgen output,
+and its `semantics_auto` proof. Existing generated changes only qualify names.
+
+**Not taken.** Detecting field/type collisions and qualifying only those uses:
+the meaning of a type reference should not depend on its enclosing namespace.
+
+**Why.** Case 18's small printer correction, with Case 9's affected siblings
+fixed together. The user approved the proposed plan ("approve", 2026-11-04).
+
+**Left out.** Other identifier and type-parameter naming collisions; this
+change only fixes references to named value types.

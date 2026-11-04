@@ -327,6 +327,10 @@ func (suite *GoTestSuite) TestDowncastInterface() {
 	suite.Equal(true, testDowncastInterface())
 }
 
+func (suite *GoTestSuite) TestLocalTypeNameShadow() {
+	suite.Equal(true, testLocalTypeNameShadow())
+}
+
 func (suite *GoTestSuite) TestsUseLocks() {
 	suite.Equal(true, testsUseLocks())
 }

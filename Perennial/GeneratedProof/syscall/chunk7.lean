@@ -64,7 +64,7 @@ noncomputable instance Rusage_access_load_Utime (l : Loc) (v : syscall.Rusage) (
  by
   solve_pointsto_access_struct
 
-noncomputable instance Rusage_access_store_Utime (l : Loc) (v : syscall.Rusage) (Utime' : syscall.Timeval) :
+noncomputable instance Rusage_access_store_Utime (l : Loc) (v : syscall.Rusage) (Utime' : _root_.Perennial.syscall.Timeval) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Rusage go!"Utime" l) v.Utime' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Rusage go!"Utime" l) Utime' (DFrac.own 1))
@@ -80,7 +80,7 @@ noncomputable instance Rusage_access_load_Stime (l : Loc) (v : syscall.Rusage) (
  by
   solve_pointsto_access_struct
 
-noncomputable instance Rusage_access_store_Stime (l : Loc) (v : syscall.Rusage) (Stime' : syscall.Timeval) :
+noncomputable instance Rusage_access_store_Stime (l : Loc) (v : syscall.Rusage) (Stime' : _root_.Perennial.syscall.Timeval) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Rusage go!"Stime" l) v.Stime' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Rusage go!"Stime" l) Stime' (DFrac.own 1))
@@ -534,7 +534,7 @@ noncomputable instance Stat_t_access_load_Atim (l : Loc) (v : syscall.Stat_t) (d
  by
   solve_pointsto_access_struct
 
-noncomputable instance Stat_t_access_store_Atim (l : Loc) (v : syscall.Stat_t) (Atim' : syscall.Timespec) :
+noncomputable instance Stat_t_access_store_Atim (l : Loc) (v : syscall.Stat_t) (Atim' : _root_.Perennial.syscall.Timespec) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Stat_t go!"Atim" l) v.Atim' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Stat_t go!"Atim" l) Atim' (DFrac.own 1))
@@ -550,7 +550,7 @@ noncomputable instance Stat_t_access_load_Mtim (l : Loc) (v : syscall.Stat_t) (d
  by
   solve_pointsto_access_struct
 
-noncomputable instance Stat_t_access_store_Mtim (l : Loc) (v : syscall.Stat_t) (Mtim' : syscall.Timespec) :
+noncomputable instance Stat_t_access_store_Mtim (l : Loc) (v : syscall.Stat_t) (Mtim' : _root_.Perennial.syscall.Timespec) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Stat_t go!"Mtim" l) v.Mtim' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Stat_t go!"Mtim" l) Mtim' (DFrac.own 1))
@@ -566,7 +566,7 @@ noncomputable instance Stat_t_access_load_Ctim (l : Loc) (v : syscall.Stat_t) (d
  by
   solve_pointsto_access_struct
 
-noncomputable instance Stat_t_access_store_Ctim (l : Loc) (v : syscall.Stat_t) (Ctim' : syscall.Timespec) :
+noncomputable instance Stat_t_access_store_Ctim (l : Loc) (v : syscall.Stat_t) (Ctim' : _root_.Perennial.syscall.Timespec) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Stat_t go!"Ctim" l) v.Ctim' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Stat_t go!"Ctim" l) Ctim' (DFrac.own 1))
@@ -745,7 +745,7 @@ noncomputable instance Statfs_t_access_load_Fsid (l : Loc) (v : syscall.Statfs_t
  by
   solve_pointsto_access_struct
 
-noncomputable instance Statfs_t_access_store_Fsid (l : Loc) (v : syscall.Statfs_t) (Fsid' : syscall.Fsid) :
+noncomputable instance Statfs_t_access_store_Fsid (l : Loc) (v : syscall.Statfs_t) (Fsid' : _root_.Perennial.syscall.Fsid) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Statfs_t go!"Fsid" l) v.Fsid' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Statfs_t go!"Fsid" l) Fsid' (DFrac.own 1))
@@ -850,7 +850,7 @@ noncomputable instance RawSockaddrAny_access_load_Addr (l : Loc) (v : syscall.Ra
  by
   solve_pointsto_access_struct
 
-noncomputable instance RawSockaddrAny_access_store_Addr (l : Loc) (v : syscall.RawSockaddrAny) (Addr' : syscall.RawSockaddr) :
+noncomputable instance RawSockaddrAny_access_store_Addr (l : Loc) (v : syscall.RawSockaddrAny) (Addr' : _root_.Perennial.syscall.RawSockaddr) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.RawSockaddrAny go!"Addr" l) v.Addr' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.RawSockaddrAny go!"Addr" l) Addr' (DFrac.own 1))
@@ -907,7 +907,7 @@ noncomputable instance IPv6MTUInfo_access_load_Addr (l : Loc) (v : syscall.IPv6M
  by
   solve_pointsto_access_struct
 
-noncomputable instance IPv6MTUInfo_access_store_Addr (l : Loc) (v : syscall.IPv6MTUInfo) (Addr' : syscall.RawSockaddrInet6) :
+noncomputable instance IPv6MTUInfo_access_store_Addr (l : Loc) (v : syscall.IPv6MTUInfo) (Addr' : _root_.Perennial.syscall.RawSockaddrInet6) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.IPv6MTUInfo go!"Addr" l) v.Addr' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.IPv6MTUInfo go!"Addr" l) Addr' (DFrac.own 1))
@@ -980,7 +980,7 @@ noncomputable instance NlMsgerr_access_load_Msg (l : Loc) (v : syscall.NlMsgerr)
  by
   solve_pointsto_access_struct
 
-noncomputable instance NlMsgerr_access_store_Msg (l : Loc) (v : syscall.NlMsgerr) (Msg' : syscall.NlMsghdr) :
+noncomputable instance NlMsgerr_access_store_Msg (l : Loc) (v : syscall.NlMsgerr) (Msg' : _root_.Perennial.syscall.NlMsghdr) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.NlMsgerr go!"Msg" l) v.Msg' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.NlMsgerr go!"Msg" l) Msg' (DFrac.own 1))

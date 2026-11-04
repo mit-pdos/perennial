@@ -48,7 +48,7 @@ noncomputable instance LimitedReader_access_load_R (l : Loc) (v : io.LimitedRead
  by
   solve_pointsto_access_struct
 
-noncomputable instance LimitedReader_access_store_R (l : Loc) (v : io.LimitedReader) (R' : io.Reader) :
+noncomputable instance LimitedReader_access_store_R (l : Loc) (v : io.LimitedReader) (R' : _root_.Perennial.io.Reader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.LimitedReader go!"R" l) v.R' (DFrac.own 1))
       (typedPointsto (structFieldRef io.LimitedReader go!"R" l) R' (DFrac.own 1))
@@ -108,7 +108,7 @@ noncomputable instance SectionReader_access_load_r (l : Loc) (v : io.SectionRead
  by
   solve_pointsto_access_struct
 
-noncomputable instance SectionReader_access_store_r (l : Loc) (v : io.SectionReader) (r' : io.ReaderAt) :
+noncomputable instance SectionReader_access_store_r (l : Loc) (v : io.SectionReader) (r' : _root_.Perennial.io.ReaderAt) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.SectionReader go!"r" l) v.r' (DFrac.own 1))
       (typedPointsto (structFieldRef io.SectionReader go!"r" l) r' (DFrac.own 1))
@@ -214,7 +214,7 @@ noncomputable instance OffsetWriter_access_load_w (l : Loc) (v : io.OffsetWriter
  by
   solve_pointsto_access_struct
 
-noncomputable instance OffsetWriter_access_store_w (l : Loc) (v : io.OffsetWriter) (w' : io.WriterAt) :
+noncomputable instance OffsetWriter_access_store_w (l : Loc) (v : io.OffsetWriter) (w' : _root_.Perennial.io.WriterAt) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.OffsetWriter go!"w" l) v.w' (DFrac.own 1))
       (typedPointsto (structFieldRef io.OffsetWriter go!"w" l) w' (DFrac.own 1))
@@ -287,7 +287,7 @@ noncomputable instance teeReader_access_load_r (l : Loc) (v : io.teeReader) (dq 
  by
   solve_pointsto_access_struct
 
-noncomputable instance teeReader_access_store_r (l : Loc) (v : io.teeReader) (r' : io.Reader) :
+noncomputable instance teeReader_access_store_r (l : Loc) (v : io.teeReader) (r' : _root_.Perennial.io.Reader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.teeReader go!"r" l) v.r' (DFrac.own 1))
       (typedPointsto (structFieldRef io.teeReader go!"r" l) r' (DFrac.own 1))
@@ -303,7 +303,7 @@ noncomputable instance teeReader_access_load_w (l : Loc) (v : io.teeReader) (dq 
  by
   solve_pointsto_access_struct
 
-noncomputable instance teeReader_access_store_w (l : Loc) (v : io.teeReader) (w' : io.Writer) :
+noncomputable instance teeReader_access_store_w (l : Loc) (v : io.teeReader) (w' : _root_.Perennial.io.Writer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.teeReader go!"w" l) v.w' (DFrac.own 1))
       (typedPointsto (structFieldRef io.teeReader go!"w" l) w' (DFrac.own 1))
@@ -366,7 +366,7 @@ noncomputable instance nopCloser_access_load_Reader (l : Loc) (v : io.nopCloser)
  by
   solve_pointsto_access_struct
 
-noncomputable instance nopCloser_access_store_Reader (l : Loc) (v : io.nopCloser) (Reader' : io.Reader) :
+noncomputable instance nopCloser_access_store_Reader (l : Loc) (v : io.nopCloser) (Reader' : _root_.Perennial.io.Reader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.nopCloser go!"Reader" l) v.Reader' (DFrac.own 1))
       (typedPointsto (structFieldRef io.nopCloser go!"Reader" l) Reader' (DFrac.own 1))
@@ -406,7 +406,7 @@ noncomputable instance nopCloserWriterTo_access_load_Reader (l : Loc) (v : io.no
  by
   solve_pointsto_access_struct
 
-noncomputable instance nopCloserWriterTo_access_store_Reader (l : Loc) (v : io.nopCloserWriterTo) (Reader' : io.Reader) :
+noncomputable instance nopCloserWriterTo_access_store_Reader (l : Loc) (v : io.nopCloserWriterTo) (Reader' : _root_.Perennial.io.Reader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.nopCloserWriterTo go!"Reader" l) v.Reader' (DFrac.own 1))
       (typedPointsto (structFieldRef io.nopCloserWriterTo go!"Reader" l) Reader' (DFrac.own 1))
@@ -550,7 +550,7 @@ noncomputable instance onceError_access_load_Mutex (l : Loc) (v : io.onceError) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance onceError_access_store_Mutex (l : Loc) (v : io.onceError) (Mutex' : sync.Mutex) :
+noncomputable instance onceError_access_store_Mutex (l : Loc) (v : io.onceError) (Mutex' : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.onceError go!"Mutex" l) v.Mutex' (DFrac.own 1))
       (typedPointsto (structFieldRef io.onceError go!"Mutex" l) Mutex' (DFrac.own 1))
@@ -612,7 +612,7 @@ noncomputable instance pipe_access_load_wrMu (l : Loc) (v : io.pipe) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance pipe_access_store_wrMu (l : Loc) (v : io.pipe) (wrMu' : sync.Mutex) :
+noncomputable instance pipe_access_store_wrMu (l : Loc) (v : io.pipe) (wrMu' : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"wrMu" l) v.wrMu' (DFrac.own 1))
       (typedPointsto (structFieldRef io.pipe go!"wrMu" l) wrMu' (DFrac.own 1))
@@ -660,7 +660,7 @@ noncomputable instance pipe_access_load_once (l : Loc) (v : io.pipe) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance pipe_access_store_once (l : Loc) (v : io.pipe) (once' : sync.Once) :
+noncomputable instance pipe_access_store_once (l : Loc) (v : io.pipe) (once' : _root_.Perennial.sync.Once) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"once" l) v.once' (DFrac.own 1))
       (typedPointsto (structFieldRef io.pipe go!"once" l) once' (DFrac.own 1))
@@ -692,7 +692,7 @@ noncomputable instance pipe_access_load_rerr (l : Loc) (v : io.pipe) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance pipe_access_store_rerr (l : Loc) (v : io.pipe) (rerr' : io.onceError) :
+noncomputable instance pipe_access_store_rerr (l : Loc) (v : io.pipe) (rerr' : _root_.Perennial.io.onceError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"rerr" l) v.rerr' (DFrac.own 1))
       (typedPointsto (structFieldRef io.pipe go!"rerr" l) rerr' (DFrac.own 1))
@@ -708,7 +708,7 @@ noncomputable instance pipe_access_load_werr (l : Loc) (v : io.pipe) (dq : DFrac
  by
   solve_pointsto_access_struct
 
-noncomputable instance pipe_access_store_werr (l : Loc) (v : io.pipe) (werr' : io.onceError) :
+noncomputable instance pipe_access_store_werr (l : Loc) (v : io.pipe) (werr' : _root_.Perennial.io.onceError) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.pipe go!"werr" l) v.werr' (DFrac.own 1))
       (typedPointsto (structFieldRef io.pipe go!"werr" l) werr' (DFrac.own 1))
@@ -748,7 +748,7 @@ noncomputable instance PipeReader_access_load_pipe (l : Loc) (v : io.PipeReader)
  by
   solve_pointsto_access_struct
 
-noncomputable instance PipeReader_access_store_pipe (l : Loc) (v : io.PipeReader) (pipe' : io.pipe) :
+noncomputable instance PipeReader_access_store_pipe (l : Loc) (v : io.PipeReader) (pipe' : _root_.Perennial.io.pipe) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.PipeReader go!"pipe" l) v.pipe' (DFrac.own 1))
       (typedPointsto (structFieldRef io.PipeReader go!"pipe" l) pipe' (DFrac.own 1))
@@ -788,7 +788,7 @@ noncomputable instance PipeWriter_access_load_r (l : Loc) (v : io.PipeWriter) (d
  by
   solve_pointsto_access_struct
 
-noncomputable instance PipeWriter_access_store_r (l : Loc) (v : io.PipeWriter) (r' : io.PipeReader) :
+noncomputable instance PipeWriter_access_store_r (l : Loc) (v : io.PipeWriter) (r' : _root_.Perennial.io.PipeReader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef io.PipeWriter go!"r" l) v.r' (DFrac.own 1))
       (typedPointsto (structFieldRef io.PipeWriter go!"r" l) r' (DFrac.own 1))

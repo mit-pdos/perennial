@@ -359,7 +359,7 @@ noncomputable instance fmt_access_load_fmtFlags (l : Loc) (v : fmt.fmt) (dq : DF
  by
   solve_pointsto_access_struct
 
-noncomputable instance fmt_access_store_fmtFlags (l : Loc) (v : fmt.fmt) (fmtFlags' : fmt.fmtFlags) :
+noncomputable instance fmt_access_store_fmtFlags (l : Loc) (v : fmt.fmt) (fmtFlags' : _root_.Perennial.fmt.fmtFlags) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef fmt.fmt go!"fmtFlags" l) v.fmtFlags' (DFrac.own 1))
       (typedPointsto (structFieldRef fmt.fmt go!"fmtFlags" l) fmtFlags' (DFrac.own 1))
@@ -635,7 +635,7 @@ noncomputable instance ss_access_load_rs (l : Loc) (v : fmt.ss) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-noncomputable instance ss_access_store_rs (l : Loc) (v : fmt.ss) (rs' : io.RuneScanner) :
+noncomputable instance ss_access_store_rs (l : Loc) (v : fmt.ss) (rs' : _root_.Perennial.io.RuneScanner) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef fmt.ss go!"rs" l) v.rs' (DFrac.own 1))
       (typedPointsto (structFieldRef fmt.ss go!"rs" l) rs' (DFrac.own 1))
@@ -651,7 +651,7 @@ noncomputable instance ss_access_load_buf (l : Loc) (v : fmt.ss) (dq : DFrac) :
  by
   solve_pointsto_access_struct
 
-noncomputable instance ss_access_store_buf (l : Loc) (v : fmt.ss) (buf' : fmt.buffer) :
+noncomputable instance ss_access_store_buf (l : Loc) (v : fmt.ss) (buf' : _root_.Perennial.fmt.buffer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef fmt.ss go!"buf" l) v.buf' (DFrac.own 1))
       (typedPointsto (structFieldRef fmt.ss go!"buf" l) buf' (DFrac.own 1))
@@ -699,7 +699,7 @@ noncomputable instance ss_access_load_ssave (l : Loc) (v : fmt.ss) (dq : DFrac) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance ss_access_store_ssave (l : Loc) (v : fmt.ss) (ssave' : fmt.ssave) :
+noncomputable instance ss_access_store_ssave (l : Loc) (v : fmt.ss) (ssave' : _root_.Perennial.fmt.ssave) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef fmt.ss go!"ssave" l) v.ssave' (DFrac.own 1))
       (typedPointsto (structFieldRef fmt.ss go!"ssave" l) ssave' (DFrac.own 1))

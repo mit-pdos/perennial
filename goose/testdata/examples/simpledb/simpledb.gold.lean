@@ -1923,7 +1923,7 @@ structure tableWriter [GooseExts] where
   mk ::
   index' : GoMap
   name' : GoString
-  file' : bufFile
+  file' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.simpledb.bufFile
   offset' : Loc
 
 noncomputable instance tableWriter.zero_val [GooseExts] : ZeroVal tableWriter :=
@@ -1953,7 +1953,7 @@ class tableWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   get_name : ∀ (x : tableWriter), go.IsGoStepPureDetTagged under (StructFieldGet tableWriter.underlying go!"name") #x (Val #(x.name'))
   set_name : ∀ (x : tableWriter) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet tableWriter.underlying go!"name") (PairV #x #y) (Val #(({ x with name' := y } : tableWriter)))
   get_file : ∀ (x : tableWriter), go.IsGoStepPureDetTagged under (StructFieldGet tableWriter.underlying go!"file") #x (Val #(x.file'))
-  set_file : ∀ (x : tableWriter) (y : bufFile), go.IsGoStepPureDetTagged under (StructFieldSet tableWriter.underlying go!"file") (PairV #x #y) (Val #(({ x with file' := y } : tableWriter)))
+  set_file : ∀ (x : tableWriter) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.simpledb.bufFile), go.IsGoStepPureDetTagged under (StructFieldSet tableWriter.underlying go!"file") (PairV #x #y) (Val #(({ x with file' := y } : tableWriter)))
   get_offset : ∀ (x : tableWriter), go.IsGoStepPureDetTagged under (StructFieldGet tableWriter.underlying go!"offset") #x (Val #(x.offset'))
   set_offset : ∀ (x : tableWriter) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet tableWriter.underlying go!"offset") (PairV #x #y) (Val #(({ x with offset' := y } : tableWriter)))
   method_set : go.MethodSetIs tableWriter.ty []

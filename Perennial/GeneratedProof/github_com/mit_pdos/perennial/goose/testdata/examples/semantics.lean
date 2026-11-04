@@ -791,6 +791,46 @@ noncomputable instance Daisy_into_val_typed :
 end def_
 end Daisy
 
+namespace IntOrString
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
+
+noncomputable instance IntOrString_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString where
+  typedPointstoDef l v dq := iprop(
+    "Type'" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString go!"Type" l) v.Type' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance IntOrString_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance IntOrString_access_load_Type (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString go!"Type" l) v.Type' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString go!"Type" l) v.Type' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance IntOrString_access_store_Type (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString) (Type' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Type') :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString go!"Type" l) v.Type' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString go!"Type" l) Type' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with Type' := Type' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.IntOrString) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end IntOrString
+
 namespace LoopStruct
 section def_
 
@@ -1027,7 +1067,7 @@ noncomputable instance msEmbedVal_access_load_msValRecv (l : Loc) (v : github_co
  by
   solve_pointsto_access_struct
 
-noncomputable instance msEmbedVal_access_store_msValRecv (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedVal) (msValRecv' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msValRecv) :
+noncomputable instance msEmbedVal_access_store_msValRecv (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedVal) (msValRecv' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msValRecv) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedVal go!"msValRecv" l) v.msValRecv' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedVal go!"msValRecv" l) msValRecv' (DFrac.own 1))
@@ -1043,7 +1083,7 @@ noncomputable instance msEmbedVal_access_load_msPtrRecv (l : Loc) (v : github_co
  by
   solve_pointsto_access_struct
 
-noncomputable instance msEmbedVal_access_store_msPtrRecv (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedVal) (msPtrRecv' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msPtrRecv) :
+noncomputable instance msEmbedVal_access_store_msPtrRecv (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedVal) (msPtrRecv' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msPtrRecv) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedVal go!"msPtrRecv" l) v.msPtrRecv' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedVal go!"msPtrRecv" l) msPtrRecv' (DFrac.own 1))
@@ -1123,7 +1163,7 @@ noncomputable instance msEmbedIface_access_load_msGetter (l : Loc) (v : github_c
  by
   solve_pointsto_access_struct
 
-noncomputable instance msEmbedIface_access_store_msGetter (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedIface) (msGetter' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msGetter) :
+noncomputable instance msEmbedIface_access_store_msGetter (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedIface) (msGetter' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msGetter) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedIface go!"msGetter" l) v.msGetter' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedIface go!"msGetter" l) msGetter' (DFrac.own 1))
@@ -1245,7 +1285,7 @@ noncomputable instance msEmbedGeneric_access_load_msPtrRecv {T' : Type} [TypedPo
  by
   solve_pointsto_access_struct
 
-noncomputable instance msEmbedGeneric_access_store_msPtrRecv {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGeneric T')) (msPtrRecv' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msPtrRecv) :
+noncomputable instance msEmbedGeneric_access_store_msPtrRecv {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGeneric T')) (msPtrRecv' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msPtrRecv) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGeneric T') go!"msPtrRecv" l) v.msPtrRecv' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGeneric T') go!"msPtrRecv" l) msPtrRecv' (DFrac.own 1))
@@ -1261,7 +1301,7 @@ noncomputable instance msEmbedGeneric_access_load_msGetter {T' : Type} [TypedPoi
  by
   solve_pointsto_access_struct
 
-noncomputable instance msEmbedGeneric_access_store_msGetter {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGeneric T')) (msGetter' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msGetter) :
+noncomputable instance msEmbedGeneric_access_store_msGetter {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGeneric T')) (msGetter' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msGetter) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGeneric T') go!"msGetter" l) v.msGetter' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msEmbedGeneric T') go!"msGetter" l) msGetter' (DFrac.own 1))
@@ -1642,7 +1682,7 @@ noncomputable instance Foo_access_load_bar (l : Loc) (v : github_com.mit_pdos.pe
  by
   solve_pointsto_access_struct
 
-noncomputable instance Foo_access_store_bar (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo) (bar' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar) :
+noncomputable instance Foo_access_store_bar (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo) (bar' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Bar) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo go!"bar" l) v.bar' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Foo go!"bar" l) bar' (DFrac.own 1))
@@ -1757,7 +1797,7 @@ noncomputable instance S_access_load_b (l : Loc) (v : github_com.mit_pdos.perenn
  by
   solve_pointsto_access_struct
 
-noncomputable instance S_access_store_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S) (b' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts) :
+noncomputable instance S_access_store_b (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S) (b' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.TwoInts) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S go!"b" l) v.b' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.S go!"b" l) b' (DFrac.own 1))
@@ -2207,7 +2247,7 @@ noncomputable instance «struct#568e4f73_access_load_msValRecv» (l : Loc) (v : 
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#568e4f73_access_store_msValRecv» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#568e4f73») (msValRecv' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msValRecv) :
+noncomputable instance «struct#568e4f73_access_store_msValRecv» (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#568e4f73») (msValRecv' : _root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.msValRecv) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#568e4f73» go!"msValRecv" l) v.msValRecv' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.«struct#568e4f73» go!"msValRecv" l) msValRecv' (DFrac.own 1))

@@ -52,7 +52,7 @@ noncomputable instance durationOrCountFlag_access_load_d (l : Loc) (v : testing.
  by
   solve_pointsto_access_struct
 
-noncomputable instance durationOrCountFlag_access_store_d (l : Loc) (v : testing.durationOrCountFlag) (d' : time.Duration) :
+noncomputable instance durationOrCountFlag_access_store_d (l : Loc) (v : testing.durationOrCountFlag) (d' : _root_.Perennial.time.Duration) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.durationOrCountFlag go!"d" l) v.d' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.durationOrCountFlag go!"d" l) d' (DFrac.own 1))
@@ -181,7 +181,7 @@ noncomputable instance highPrecisionTime_access_load_now (l : Loc) (v : testing.
  by
   solve_pointsto_access_struct
 
-noncomputable instance highPrecisionTime_access_store_now (l : Loc) (v : testing.highPrecisionTime) (now' : time.Time) :
+noncomputable instance highPrecisionTime_access_store_now (l : Loc) (v : testing.highPrecisionTime) (now' : _root_.Perennial.time.Time) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.highPrecisionTime go!"now" l) v.now' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.highPrecisionTime go!"now" l) now' (DFrac.own 1))
@@ -242,7 +242,7 @@ noncomputable instance BenchmarkResult_access_load_T (l : Loc) (v : testing.Benc
  by
   solve_pointsto_access_struct
 
-noncomputable instance BenchmarkResult_access_store_T (l : Loc) (v : testing.BenchmarkResult) (T' : time.Duration) :
+noncomputable instance BenchmarkResult_access_store_T (l : Loc) (v : testing.BenchmarkResult) (T' : _root_.Perennial.time.Duration) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.BenchmarkResult go!"T" l) v.T' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.BenchmarkResult go!"T" l) T' (DFrac.own 1))
@@ -973,7 +973,7 @@ noncomputable instance fuzzResult_access_load_T (l : Loc) (v : testing.fuzzResul
  by
   solve_pointsto_access_struct
 
-noncomputable instance fuzzResult_access_store_T (l : Loc) (v : testing.fuzzResult) (T' : time.Duration) :
+noncomputable instance fuzzResult_access_store_T (l : Loc) (v : testing.fuzzResult) (T' : _root_.Perennial.time.Duration) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.fuzzResult go!"T" l) v.T' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.fuzzResult go!"T" l) T' (DFrac.own 1))
@@ -1108,7 +1108,7 @@ noncomputable instance chattyPrinter_access_load_w (l : Loc) (v : testing.chatty
  by
   solve_pointsto_access_struct
 
-noncomputable instance chattyPrinter_access_store_w (l : Loc) (v : testing.chattyPrinter) (w' : io.Writer) :
+noncomputable instance chattyPrinter_access_store_w (l : Loc) (v : testing.chattyPrinter) (w' : _root_.Perennial.io.Writer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.chattyPrinter go!"w" l) v.w' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.chattyPrinter go!"w" l) w' (DFrac.own 1))
@@ -1124,7 +1124,7 @@ noncomputable instance chattyPrinter_access_load_lastNameMu (l : Loc) (v : testi
  by
   solve_pointsto_access_struct
 
-noncomputable instance chattyPrinter_access_store_lastNameMu (l : Loc) (v : testing.chattyPrinter) (lastNameMu' : sync.Mutex) :
+noncomputable instance chattyPrinter_access_store_lastNameMu (l : Loc) (v : testing.chattyPrinter) (lastNameMu' : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.chattyPrinter go!"lastNameMu" l) v.lastNameMu' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.chattyPrinter go!"lastNameMu" l) lastNameMu' (DFrac.own 1))
@@ -1373,7 +1373,7 @@ noncomputable instance testState_access_load_deadline (l : Loc) (v : testing.tes
  by
   solve_pointsto_access_struct
 
-noncomputable instance testState_access_store_deadline (l : Loc) (v : testing.testState) (deadline' : time.Time) :
+noncomputable instance testState_access_store_deadline (l : Loc) (v : testing.testState) (deadline' : _root_.Perennial.time.Time) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.testState go!"deadline" l) v.deadline' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.testState go!"deadline" l) deadline' (DFrac.own 1))
@@ -1405,7 +1405,7 @@ noncomputable instance testState_access_load_mu (l : Loc) (v : testing.testState
  by
   solve_pointsto_access_struct
 
-noncomputable instance testState_access_store_mu (l : Loc) (v : testing.testState) (mu' : sync.Mutex) :
+noncomputable instance testState_access_store_mu (l : Loc) (v : testing.testState) (mu' : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.testState go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.testState go!"mu" l) mu' (DFrac.own 1))
