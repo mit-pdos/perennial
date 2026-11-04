@@ -16,49 +16,56 @@ namespace time
 section code
 variable [GooseExts] [GoGlobalContext]
 
+/-- The type of the runtime's state of a timer in the model: what the timer does when it fires. -/
+def runtimeTimerType : go.GoType := go.GoType.FunctionType (go.signature.Signature [] false [])
+
 /-- The address of the runtime's state of the timer whose `Timer` (or `Ticker`) is at `t`. The
 runtime allocates a timer as a `runtime.timeTimer`, the `Timer`'s fields followed by the
-embedded `timer`; this is that `timer`, as one cell. -/
+embedded `timer`; this is that `timer`, as one cell, which holds what the timer does when it
+fires. -/
 def runtimeTimerRef : val :=
   λ: "t", StructFieldRef (go.Named go!"time.Timer" []) go!"timer" "t"
 
-/-- Allocates the runtime's state of the timer at `t`. -/
+/-- Allocates the runtime's state of the timer at `t`, which fires by calling `fire`. -/
 def runtimeTimerAlloc : val :=
-  λ: "t",
-    let: "r" := GoAlloc go.bool #true in
-    if: "r" =⟨go.PointerType go.bool⟩ runtimeTimerRef "t" then #() else AngelicExit #()
+  λ: "t" "fire",
+    let: "r" := GoAlloc runtimeTimerType "fire" in
+    if: "r" =⟨go.PointerType runtimeTimerType⟩ runtimeTimerRef "t" then #() else AngelicExit #()
 
 /-- The runtime's `stopTimer(t)` (a `go:linkname`): some `bool`, for one of the runtime's
-timers. The runtime also stops the timer; the model's timers have no state to stop. -/
+timers. The runtime also stops the timer; the model's timers may fire regardless. -/
 def stopTimer.impl : val :=
   λ: "t",
-    ![go.bool] (runtimeTimerRef "t") ;;
+    ![runtimeTimerType] (runtimeTimerRef "t") ;;
     ArbitraryInt =⟨go.int64⟩ #(W64 0)
 
 /-- The runtime's `resetTimer(t, when, period)` (a `go:linkname`): some `bool`, for one of the
-runtime's timers. The runtime also reschedules the timer; the model's timers have no schedule. -/
+runtime's timers, which fires (again): the model forks one more firing. The delay is a no-op,
+and the timer's earlier firings may still happen. -/
 def resetTimer.impl : val :=
   λ: "t" "when" "period",
-    ![go.bool] (runtimeTimerRef "t") ;;
+    let: "fire" := ![runtimeTimerType] (runtimeTimerRef "t") in
+    Fork ("fire" #()) ;;
     ArbitraryInt =⟨go.int64⟩ #(W64 0)
 
 /-- The runtime's `newTimer(when, period, f, arg, cp)` (a `go:linkname`): a new `*Timer` with
 `initTimer` set (and no channel; `NewTimer` sets `C` itself), whose runtime timer calls
 `f(arg, seq, delta)` from a goroutine when it fires, once, or every `period` if `period ≠ 0`.
 Modeled as a goroutine that calls `f` (with arbitrary `seq` and `delta`) once, or repeatedly if
-`period ≠ 0`. The delay is a no-op, and an execution in which the timer never fires (it is
-stopped first, or `when` is never reached) is a prefix of the model's executions. Not modeled:
-`Reset` (the runtime may then call `f` again). -/
+`period ≠ 0`; the runtime's state holds that call, which `resetTimer` forks again. The delay is
+a no-op, and an execution in which the timer never fires (it is stopped first, or `when` is
+never reached) is a prefix of the model's executions. -/
 def newTimer.impl : val :=
   λ: "when" "period" "f" "arg" "cp",
     let: "t" := GoAlloc (go.Named go!"time.Timer" [])
       (CompositeLiteral (go.Named go!"time.Timer" []) (LiteralValue [
         KeyedElement (some (KeyField go!"initTimer")) (ElementExpression go.bool #true)
       ])) in
-    runtimeTimerAlloc "t" ;;
-    Fork ((rec: "fire" <> :=
-        "f" "arg" ArbitraryInt ArbitraryInt ;;
-        if: "period" =⟨go.int64⟩ #(W64 0) then #() else "fire" #()) #()) ;;
+    let: "fire" := (λ: <>, "f" "arg" ArbitraryInt ArbitraryInt) in
+    runtimeTimerAlloc "t" "fire" ;;
+    Fork ((rec: "loop" <> :=
+        "fire" #() ;;
+        if: "period" =⟨go.int64⟩ #(W64 0) then #() else "loop" #()) #()) ;;
     "t"
 
 def runtimeNano.impl : val :=
@@ -87,10 +94,12 @@ def arbitraryTime : val :=
         KeyedElement (some (KeyField go!"loc")) (ElementExpression «unsafe».Pointer #null)
      ])
 
+/-- `After(d)` is `NewTimer(d).C`: a channel of capacity 0 or 1 (see `NewTimer`), on which the
+model sends one arbitrary time. -/
 def After.impl : val :=
   λ: "d",
     let: "ch" := FuncResolve go.make2 [go.ChannelType go.sendrecv (go.Named go!"time.Time" [])]
-      #() #(W64 0) in
+      #() (if: ArbitraryInt =⟨go.int64⟩ #(W64 0) then #(W64 0) else #(W64 1)) in
     -- delay is modeled as a no-op
     Fork (chan.send (go.Named go!"time.Time" []) "ch" (arbitraryTime #())) ;;
     "ch"
@@ -112,8 +121,9 @@ func NewTimer(d Duration) *Timer {
 When `syncTimer(c) != nil` (GODEBUG `asynctimerchan=0`, the default), the runtime's `newTimer`
 makes `c` synchronous: its `cap` and `len` are 0. The model makes `c` with capacity 0 or 1,
 chosen arbitrarily, and returns a fresh `*Timer` with `C = c`, `initTimer` set and the runtime's
-state (`runtimeTimerAlloc`). Each firing of Go's timer calls `sendTime`, a non-blocking send of
-the current time on `c`; the model forks a goroutine that sends arbitrary times on `c` forever,
+state (`runtimeTimerAlloc`), whose firing does nothing of its own. Each firing of Go's timer
+calls `sendTime`, a non-blocking send of the current time on `c`; the model forks a goroutine that
+sends arbitrary times on `c` forever, covering every firing, including those after a `Reset`,
 which allows more (values after `Stop` or `Reset`, stale values), and an execution in which
 the timer never fires is a prefix of the model's. -/
 def NewTimer.impl : val :=
@@ -126,7 +136,7 @@ def NewTimer.impl : val :=
           (ElementExpression (go.ChannelType go.recvonly (go.Named go!"time.Time" [])) "c"),
         KeyedElement (some (KeyField go!"initTimer")) (ElementExpression go.bool #true)
       ])) in
-    runtimeTimerAlloc "t" ;;
+    runtimeTimerAlloc "t" (λ: <>, #()) ;;
     Fork ((rec: "tick" <> :=
         chan.send (go.Named go!"time.Time" []) "c" (arbitraryTime #()) ;; "tick" #()) #()) ;;
     "t"
@@ -161,7 +171,7 @@ def NewTicker.impl : val :=
           (ElementExpression (go.ChannelType go.recvonly (go.Named go!"time.Time" [])) "c"),
         KeyedElement (some (KeyField go!"initTicker")) (ElementExpression go.bool #true)
       ])) in
-    runtimeTimerAlloc "t" ;;
+    runtimeTimerAlloc "t" (λ: <>, #()) ;;
     Fork ((rec: "tick" <> :=
         chan.send (go.Named go!"time.Time" []) "c" (arbitraryTime #()) ;; "tick" #()) #()) ;;
     "t"

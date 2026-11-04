@@ -49,7 +49,7 @@ theorem time.NewTicker.wp_proof : time.NewTicker.spec (GF := GF) (hG := hG) := b
     inext
     wp_pures
     iapply HΦ
-    unfold isTicker
+    unfold isTicker noFire
     iframe #
 
 end proof

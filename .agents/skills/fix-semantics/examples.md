@@ -1087,9 +1087,15 @@ it landed there). The models of the runtime's `newTimer` and of `NewTimer`/`NewT
 it; the new models of `stopTimer`/`resetTimer` load it, so they are stuck on a copy. `Timer.Stop`
 and `Timer.Reset` are translated; `NewTimer`, `NewTicker` (channel capacity 0 or 1: the runtime
 makes timer channels synchronous) and `Ticker.Stop`/`Ticker.Reset` (`(*Timer)(unsafe.Pointer(t))`
-is stuck, `Timer` is not plain) are hand-written. The token is the points-to
-`isRuntimeTimer t`, in `isTimer`, `isFuncTimer` and `isTicker`. All six specs are proved. Trust:
-−1 opaque, −6 axioms; +6 models and a 2-function helper; no goose or semantics change.
+is stuck, `Timer` is not plain) are hand-written. The cell holds what the timer does when it
+fires (`func()`): `newTimer` stores the call of `f`, `NewTimer`/`NewTicker` a no-op (their
+goroutines send forever), and `resetTimer` forks it once more, as Go's runtime fires a reset
+timer again; the blind review found that without this an `AfterFunc` timer's `Reset` never ran
+`f` again (`t := time.AfterFunc(0, f); <-ch; t.Reset(0)`: Go runs `f` twice). The token is the
+points-to of the cell, in `isTimer`/`isTicker` (holding the no-op) and `isFuncTimer` (any
+firing). All six specs are proved. `After`'s channel also gets capacity 0 or 1 (the same
+`asynctimerchan` defect as `NewTicker`'s). Trust: −1 opaque, −6 axioms; +6 models and a
+helper; no goose or semantics change.
 
 **Not taken.** Naming `runtime.timeTimer` itself: `time` does not import `runtime`, and
 `runtime.Assumptions` would join every time spec and its clients. Modelling the runtime's timer

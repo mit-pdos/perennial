@@ -25,10 +25,10 @@ theorem time.Ticker.Stop.wp_proof : time.Ticker.Stop.spec (GF := GF) (hG := hG) 
   wp_start as ⟨%ch, %γ, #Ht⟩
   unfold isTicker
   icases Ht with ⟨#HC, #Hinit, #Hrt, #Hch⟩
-  unfold isRuntimeTimer
+  unfold runtimeTimerCell
   rw [show go.GoType.Named go!"time.Ticker" [] = time.Ticker.ty by with_unfolding_all rfl]
   wp_auto
-  unfold runtimeTimerRef
+  unfold runtimeTimerRef runtimeTimerType
   rw [show go.GoType.Named go!"time.Timer" [] = time.Timer.ty by with_unfolding_all rfl]
   wp_auto
   wp_apply wp_ArbitraryInt as %x -

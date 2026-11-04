@@ -54,7 +54,7 @@ theorem time.AfterFunc.wp_proof
   inext
   wp_auto
   iapply HΦ
-  unfold isFuncTimer
+  unfold isFuncTimer isRuntimeTimer
   iframe #
 
 end proof

@@ -47,7 +47,7 @@ theorem time.NewTimer.wp_proof : time.NewTimer.spec (GF := GF) (hG := hG) := by
     inext
     wp_pures
     iapply HΦ
-    unfold isTimer
+    unfold isTimer noFire
     iframe #
 
 end proof

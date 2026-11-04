@@ -102,7 +102,7 @@ The models in `TrustedCode/time.lean` keep the runtime's state as one cell at
 `structFieldRef time.Timer "timer" t` (`runtimeTimerRef`), allocated only by the models of the
 runtime's `newTimer`, `NewTimer` and `NewTicker`: the models of `stopTimer` and `resetTimer`
 load it, so they are stuck on a `Timer` or `Ticker` the program allocated, or a copy. Its
-points-to, `isRuntimeTimer t`, is what makes `isTimer`, `isFuncTimer` and `isTicker`
+points-to (`runtimeTimerCell`, `isRuntimeTimer t`) is what makes `isTimer`, `isFuncTimer` and `isTicker`
 unforgeable: no allocation of the program has a cell at that address (`timer` is no field of a
 Go type the program can name).
 
@@ -111,9 +111,22 @@ channel (a bag of times, `isChanBag`, with no logical content): `Stop` and `Rese
 `bool` and change nothing the proof can observe. This over-approximates Go's timers (a stopped
 timer's channel delivers nothing; the model allows it), which is sound for safety. -/
 
-/-- `t` heads one of the runtime's timers (persistent): the cell of its runtime state. -/
+/-- The runtime's state of the timer at `t` (persistent): the cell `runtimeTimerAlloc`
+allocates, holding what the timer does when it fires (`resetTimer` forks it again). -/
+def runtimeTimerCell (t : Loc) (fire : GoFunc) : IProp GF :=
+  iprop(structFieldRef time.Timer go!"timer" t ↦□ fire)
+
+instance runtimeTimerCell_persistent (t : Loc) (fire : GoFunc) :
+    Persistent (runtimeTimerCell (GF := GF) t fire) := by
+  unfold runtimeTimerCell; infer_instance
+
+/-- The firing of the runtime's state of `NewTimer`'s and `NewTicker`'s timers: nothing (their
+goroutines send on `C` regardless). -/
+def noFire : GoFunc := func.mk BAnon BAnon (Val #())
+
+/-- `t` heads one of the runtime's timers (persistent). -/
 def isRuntimeTimer (t : Loc) : IProp GF :=
-  iprop(structFieldRef time.Timer go!"timer" t ↦□ true)
+  iprop(∃ fire : GoFunc, runtimeTimerCell t fire)
 
 instance isRuntimeTimer_persistent (t : Loc) : Persistent (isRuntimeTimer (GF := GF) t) := by
   unfold isRuntimeTimer; infer_instance
@@ -122,7 +135,7 @@ instance isRuntimeTimer_persistent (t : Loc) : Persistent (isRuntimeTimer (GF :=
 def isTimer (t : Loc) (ch : Loc) (γ : ChanNames) : IProp GF :=
   iprop(structFieldRef time.Timer go!"C" t ↦□ ch ∗
     structFieldRef time.Timer go!"initTimer" t ↦□ true ∗
-    isRuntimeTimer t ∗
+    runtimeTimerCell t noFire ∗
     isChanBag γ ch (V := time.Time) (fun _ => iprop(True)))
 
 instance isTimer_persistent (t ch : Loc) (γ : ChanNames) :
@@ -141,7 +154,7 @@ instance isFuncTimer_persistent (t : Loc) : Persistent (isFuncTimer (GF := GF) t
 def isTicker (t : Loc) (ch : Loc) (γ : ChanNames) : IProp GF :=
   iprop(structFieldRef time.Ticker go!"C" t ↦□ ch ∗
     structFieldRef time.Ticker go!"initTicker" t ↦□ true ∗
-    isRuntimeTimer t ∗
+    runtimeTimerCell t noFire ∗
     isChanBag γ ch (V := time.Time) (fun _ => iprop(True)))
 
 instance isTicker_persistent (t ch : Loc) (γ : ChanNames) :
@@ -149,14 +162,15 @@ instance isTicker_persistent (t ch : Loc) (γ : ChanNames) :
   unfold isTicker; infer_instance
 
 /-- `runtimeTimerAlloc` (a helper of the trusted model): the runtime's state of the timer at
-`t`. -/
-theorem wp_runtimeTimerAlloc (t : Loc) :
+`t`, firing by the closure `fire`. -/
+theorem wp_runtimeTimerAlloc (t : Loc) (f x : Binder) (e : Expr) :
     {{ (True : IProp GF) }}
-      (App (Val time.runtimeTimerAlloc) (Val #t))
-    {{ RET #(); isRuntimeTimer (GF := GF) t }} := by
+      (App (App (Val time.runtimeTimerAlloc) (Val #t)) (Val (RecV f x e)))
+    {{ RET #(); runtimeTimerCell (GF := GF) t (func.mk f x e) }} := by
   wp_start
-  unfold runtimeTimerRef
-  rw [show go.GoType.Named go!"time.Timer" [] = time.Timer.ty by with_unfolding_all rfl]
+  unfold runtimeTimerRef runtimeTimerType
+  rw [show go.GoType.Named go!"time.Timer" [] = time.Timer.ty by with_unfolding_all rfl,
+    show RecV f x e = #(func.mk f x e) by rw [go.intoVal_unfold GoFunc]]
   wp_auto
   wp_if_angelic
   iintro %Heq
@@ -164,7 +178,7 @@ theorem wp_runtimeTimerAlloc (t : Loc) :
   ipersist r
   wp_auto
   iapply HΦ
-  unfold isRuntimeTimer
+  unfold runtimeTimerCell
   iexact r
 
 /-- The trusted model of the runtime's `stopTimer`: some `bool`, for one of its timers. -/
@@ -173,20 +187,31 @@ theorem wp_stopTimer (t : Loc) :
       (App (Val time.stopTimer.impl) (Val #t))
     {{ (b : Bool), RET #b; True }} := by
   wp_start as Hr
-  unfold isRuntimeTimer runtimeTimerRef
+  unfold isRuntimeTimer
+  icases Hr with ⟨%fire, #Hr⟩
+  unfold runtimeTimerCell runtimeTimerRef runtimeTimerType
   rw [show go.GoType.Named go!"time.Timer" [] = time.Timer.ty by with_unfolding_all rfl]
   wp_auto
   wp_apply wp_ArbitraryInt as %x -
   wp_end
 
-/-- The trusted model of the runtime's `resetTimer`: some `bool`, for one of its timers. -/
+/-- The trusted model of the runtime's `resetTimer`: some `bool`, for one of its timers whose
+firing does nothing of its own (`NewTimer`'s, `NewTicker`'s). -/
 theorem wp_resetTimer (t : Loc) (w p : w64) :
-    {{ isRuntimeTimer (GF := GF) t }}
+    {{ runtimeTimerCell (GF := GF) t noFire }}
       (App (App (App (Val time.resetTimer.impl) (Val #t)) (Val #w)) (Val #p))
     {{ (b : Bool), RET #b; True }} := by
   wp_start as Hr
-  unfold isRuntimeTimer runtimeTimerRef
+  unfold runtimeTimerCell runtimeTimerRef runtimeTimerType
   rw [show go.GoType.Named go!"time.Timer" [] = time.Timer.ty by with_unfolding_all rfl]
+  wp_auto
+  wp_bind (Fork _)
+  iapply wp_fork $$ []
+  · inext
+    unfold noFire
+    wp_auto
+    itrivial
+  inext
   wp_auto
   wp_apply wp_ArbitraryInt as %x -
   wp_end

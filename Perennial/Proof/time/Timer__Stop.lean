@@ -29,7 +29,7 @@ theorem time.Timer.Stop.wp_proof : time.Timer.Stop.spec (GF := GF) (hG := hG) :=
     wp_auto
     wp_func_call
     wp_apply wp_stopTimer as %b -
-    all_goals try iexact Hrt
+    all_goals first | iexact Hrt | (unfold isRuntimeTimer; iexists _; iexact Hrt) | skip
     wp_end
 
 end proof

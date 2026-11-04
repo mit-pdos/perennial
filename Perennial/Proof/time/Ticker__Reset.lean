@@ -27,11 +27,19 @@ theorem time.Ticker.Reset.wp_proof : time.Ticker.Reset.spec (GF := GF) (hG := hG
   icases Ht with ⟨#HC, #Hinit, #Hrt, #Hch⟩
   wp_if_destruct
   · exfalso; word
-  unfold isRuntimeTimer
+  unfold runtimeTimerCell
   rw [show go.GoType.Named go!"time.Ticker" [] = time.Ticker.ty by with_unfolding_all rfl]
   wp_auto
-  unfold runtimeTimerRef
+  unfold runtimeTimerRef runtimeTimerType
   rw [show go.GoType.Named go!"time.Timer" [] = time.Timer.ty by with_unfolding_all rfl]
+  wp_auto
+  wp_bind (Fork _)
+  iapply wp_fork $$ []
+  · inext
+    unfold noFire
+    wp_auto
+    itrivial
+  inext
   wp_auto
   wp_apply wp_ArbitraryInt as %x -
   wp_end
