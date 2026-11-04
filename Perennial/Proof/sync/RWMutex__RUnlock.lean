@@ -36,7 +36,6 @@ theorem sync.rwmutex.RWMutex.RUnlock.wp_proof
   wp_start as #His
   simp only [isRWMutex_unseal, isRWMutexDef, ownRLockToken_unseal, ownRLockTokenDef]
   iNamed His
-  simp only [internal.race.Enabled]
   wp_auto
   wp_apply_core wp_Int32_Add $$ [] [-]
   · iPkgInit
