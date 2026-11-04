@@ -20,8 +20,8 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- Spec of `(*Ticker).Reset(d)` (axiom): for a ticker made by `NewTicker` (`isTicker`, whose
-`newTimerMade t` rules out Go's panic on an uninitialized ticker and its failure on a copy) and a
+/-- Spec of `(*Ticker).Reset(d)`: for a ticker made by `NewTicker` (`isTicker`, whose
+`initTicker ↦□ true` and `isRuntimeTimer t` rule out Go's panic on an uninitialized ticker and its failure on a copy) and a
 positive `d` (Go panics otherwise). -/
 abbrev time.Ticker.Reset.spec : Prop :=
   ∀ (t : Loc) (d : time.Duration),

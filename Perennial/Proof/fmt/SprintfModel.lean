@@ -25,6 +25,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
+omit package_sem in
 /-- The helper `fmt.arbitraryString` of the model of `Sprintf` returns some string. -/
 theorem wp_arbitraryString :
     {{ (True : IProp GF) }}

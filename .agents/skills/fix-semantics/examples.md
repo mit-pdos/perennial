@@ -1029,3 +1029,82 @@ constants too: they are already definitions with their values, unchanged.
 
 **Why.** A constant is a value fixed at compile time (the build goose translates already fixes
 `GOOS` by build tags); the user: "Do the translator change" (2026-11-04).
+
+## Case 33 — ACCEPTED: `os`'s remaining initializers: `syscall`'s `init` a no-op, the standard streams not translated (branch `os-init-final`)
+
+**Symptom.** Incomplete: `os`'s initializer called opaque `X.init`s (etcd-grove's
+`os.opaqueInitsOk`, `initFuncsOk`, `Stderr_init` axioms) for `Interrupt`/`Kill` (`syscall`'s
+types), internal/poll's variables, the standard streams and `init.0`. Translating them reaches
+`syscall`'s and `internal/poll`'s initializers, and `NewFile`.
+
+**Taken** (the user's decisions, 2026-11-04, etcd-grove `notes/perennial-changes.md` P1-P4):
+* `syscall`, `internal/poll` and `internal/syscall/unix` translate their variable initializers
+  (and the constants they use); each initializer is proved (`isPkgInit`: `True`, and for
+  internal/poll the cells of `ErrNoDeadline`/`ErrDeadlineExceeded`, which `os` copies).
+* `syscall`'s `init.0` (`rlimit.go`: raises RLIMIT_NOFILE through the raw `prlimit` system call)
+  is a trusted no-op. The user: "P1: (ii)": the changed limit is observable only by `exec`,
+  `Getrlimit` or running out of descriptors, none of which Perennial models.
+* `runtime_envs` and `os.runtime_args` (linknames with no Go body) return an arbitrary
+  `[]string` (`syscall.arbitraryStrings`, the `fmt.arbitraryString` scheme).
+* `os.Stdin`/`Stdout` initializers are trusted no-ops (the variables are not allocated: any use
+  is stuck); `Stderr`'s allocates the variable and stores a fresh pointer to an untyped cell (a
+  non-nil `*File` whose `File` cannot be read), because initializers that only store
+  `os.Stderr` (raft's `defaultLogger`) must be provable. The user: "I don't want to reason about
+  any of that. What about a trusted model that does nothing? This is conservative because it
+  leaves Stdin, Stdout, Stderr as undefined, so any code relying on it will be unprovable. I do
+  not want to follow the rule 'translatable => *must* verify' in this case."
+* `os.init.0` is translated (`runtime.GOOS` is a value since Case 32).
+
+**Not taken.** A model of the raw system call writing an arbitrary `Rlimit` through an integer
+address (P1 (i)); translating `NewFile` with models of `Fcntl`, the poller linknames and a
+`SetFinalizer` that may run the finalizer (P3 (ii)).
+
+**Why.** R2 would require translating `NewFile`; the user overrode it for the standard streams:
+a model less defined than Go (stuck where Go runs) is sound, and here it costs nothing the
+proofs need. The `init.0` no-op is faithful for every program Perennial can express.
+
+## Case 34 — ACCEPTED: the runtime's timers keep their state in a cell only the model allocates; `newTimerMade` and the timer/ticker axioms removed (branch `worktree-timer-runtime-cell`)
+
+**Symptom.** Unsound model, then worse trust. The models of `NewTicker`, `Ticker.Stop` and
+`Ticker.Reset` (and before them a translated `Timer.Stop` over a `stopTimer` stub) read only
+`initTimer`/`initTicker`, so on a copy (`u := new(time.Ticker); *u = *t`) they returned where Go
+crashes (go1.27.3: `u.Reset(time.Second)` dies with "fatal error: unlock of unlocked lock"; the
+runtime's timer state after the header is not copied). `isFuncTimer` (`initTimer ↦□ true`) had
+the same hole for `AfterFunc` timers. cf98e5f15 (timers) and 432c32f (tickers) "fixed" this by
+deleting the models, stating the six specs as axioms, and adding
+`opaque newTimerMade (t : Loc) : IProp GF := iprop(False)` as an unforgeable token that only the
+axioms hand out. An earlier fix (82c53dd53, proving the timer specs over models) was dropped
+in the merge f58cb0a26, which took cf98e5f15's side of the conflict whole.
+
+**Witness.** `t := time.NewTicker(time.Second); u := new(time.Ticker); *u = *t; u.Reset(time.Second)`.
+
+**Taken.** Go's runtime allocates a timer as `runtime.timeTimer`: the `Timer`/`Ticker` header
+followed by the embedded `timer`. The model keeps that state as one cell at
+`structFieldRef time.Timer "timer" t` (`runtimeTimerRef`; Go's `Timer` has no field `timer`, so
+goose never emits that address and no program allocation creates the cell), allocated by
+`runtimeTimerAlloc` with the `alloc_struct`/`GlobalAlloc` scheme (`GoAlloc`, `AngelicExit` unless
+it landed there). The models of the runtime's `newTimer` and of `NewTimer`/`NewTicker` allocate
+it; the new models of `stopTimer`/`resetTimer` load it, so they are stuck on a copy. `Timer.Stop`
+and `Timer.Reset` are translated; `NewTimer`, `NewTicker` (channel capacity 0 or 1: the runtime
+makes timer channels synchronous) and `Ticker.Stop`/`Ticker.Reset` (`(*Timer)(unsafe.Pointer(t))`
+is stuck, `Timer` is not plain) are hand-written. The cell holds what the timer does when it
+fires (`func()`): `newTimer` stores the call of `f`, `NewTimer`/`NewTicker` a no-op (their
+goroutines send forever), and `resetTimer` forks it once more, as Go's runtime fires a reset
+timer again; the blind review found that without this an `AfterFunc` timer's `Reset` never ran
+`f` again (`t := time.AfterFunc(0, f); <-ch; t.Reset(0)`: Go runs `f` twice). The token is the
+points-to of the cell, in `isTimer`/`isTicker` (holding the no-op) and `isFuncTimer` (any
+firing). All six specs are proved. `After`'s channel also gets capacity 0 or 1 (the same
+`asynctimerchan` defect as `NewTicker`'s). Trust: −1 opaque, −6 axioms; +6 models and a
+helper; no goose or semantics change.
+
+**Not taken.** Naming `runtime.timeTimer` itself: `time` does not import `runtime`, and
+`runtime.Assumptions` would join every time spec and its clients. Modelling the runtime's timer
+set as a package-level registry: global state, a lock and ghost state for what a points-to gives.
+
+**Why.** The user: the axioms over an opaque `False` were "an obviously unsound axiom into the
+tcb", "I'd rather not introduce iris axioms here", and "make sure that future agents know that
+the prior changes that introduced those axioms were bad, and we should avoid those kind of
+changes in the future". cf98e5f15 and 432c32f are rejected precedent: when a model is more
+defined than Go, make it stuck where Go fails by modelling the state Go depends on; never
+delete the model in favour of axioms, and never mint a token as an `opaque` proposition whose
+meaning only axioms fix (review-trusted R10). Plan signed off 2026-11-04 ("Make it so.").

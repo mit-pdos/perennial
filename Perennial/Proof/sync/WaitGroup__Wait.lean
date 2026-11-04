@@ -71,7 +71,6 @@ theorem sync.WaitGroup.Wait.wp_proof
       exact ⟨Hpossible_waiters_bound_wg, Hunfinished_zero_wg, Hunfinished_bound_wg,
         Hwaiter_notbubbled_wg⟩
     imodintro
-    simp only [internal.race.Enabled]
     wp_auto
     simp only [enc_get_counter, enc_get_wait _ _ Hw0, enc_get_waitGroupBubbleFlag _ _ Hw0,
       _root_.decide_true]
@@ -94,7 +93,6 @@ theorem sync.WaitGroup.Wait.wp_proof
       Hwaiter_notbubbled_wg⟩
   clear Hpossible_waiters_bound_wg Hunfinished_zero_wg Hunfinished_bound_wg Hwaiter_notbubbled_wg
   imodintro
-  simp only [internal.race.Enabled]
   wp_auto
   simp only [enc_get_counter, enc_get_wait _ _ Hw0, hc, _root_.decide_false]
   wp_auto

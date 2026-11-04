@@ -6,10 +6,19 @@ trusted = [
   "newTimer",    # go:linkname newTimer
   "syncTimer",
   "runtimeIsBubbled", # go:linkname runtimeIsBubbled (true only inside a synctest bubble)
+  "stopTimer",   # go:linkname stopTimer
+  "resetTimer",  # go:linkname resetTimer
   # "sendTime",
 
   "After",
   "Sleep",
+
+  # the runtime makes their channel synchronous (cap 0), which goose's `make` cannot express
+  "NewTimer",
+  "NewTicker",
+  # `(*Timer)(unsafe.Pointer(t))` is stuck: `Timer` is not plain
+  "Ticker.Stop",
+  "Ticker.Reset",
 
   # `asynctimerchan = godebug.New(...)`: `internal/godebug` is not translated
   # (TrustedCode/time.lean)
@@ -25,6 +34,8 @@ translate = [
   "Microsecond",
   "Nanosecond",
   "Timer",
+  "Timer.Stop",
+  "Timer.Reset",
   "Time.UnixNano",
   "Time.nsec",
   "Time.unixSec",

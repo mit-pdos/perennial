@@ -1,5 +1,5 @@
 /-
-`time.NewTicker`'s spec, assumed.
+The proof of `time.NewTicker` (over its trusted model, `TrustedCode/time.lean`).
 -/
 module
 
@@ -20,9 +20,37 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- Axiom: `NewTicker` is not translated (Go reinterprets the runtime's `*Timer` as a `*Ticker`
-through `unsafe.Pointer`; the runtime's timers are not modelled). -/
-axiom time.NewTicker.wp_proof : time.NewTicker.spec (GF := GF) (hG := hG)
+theorem time.NewTicker.wp_proof : time.NewTicker.spec (GF := GF) (hG := hG) := by
+  intro d
+  wp_start as %Hd
+  wp_if_destruct
+  · exfalso; word
+  wp_apply wp_ArbitraryInt as %x -
+  rw [show go.GoType.Named go!"time.Time" [] = time.Time.ty by with_unfolding_all rfl]
+  wp_if_destruct
+  all_goals
+    wp_apply chan.wp_make2 (V := time.Time) $$ [] as %ch %γ ⟨#His, -, Hown⟩
+    · ipureintro; decide
+    imod start_bag (fun _ => iprop(True)) _ ch γ trivial $$ His Hown with #Hch
+    rw [show go.GoType.Named go!"time.Ticker" [] = time.Ticker.ty by with_unfolding_all rfl]
+    wp_auto
+    iStructNamed t
+    ipersist C
+    ipersist initTicker
+    wp_apply wp_runtimeTimerAlloc as #Hrt
+    wp_bind (Fork _)
+    iapply wp_fork $$ []
+    · inext
+      wp_pures
+      iloeb as IH
+      wp_apply wp_arbitraryTime as %tm -
+      wp_apply wp_bag_send $$ [$Hch]
+      iexact IH
+    inext
+    wp_pures
+    iapply HΦ
+    unfold isTicker noFire
+    iframe #
 
 end proof
 
