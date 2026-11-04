@@ -1002,3 +1002,30 @@ would duplicate the lookup.
 **Why.** Same shape as Case 23 (`FuncName` unaliases a method's receiver): an alias is
 its target, so the lookup unaliases first. The user signed off on the plan as proposed
 ("G1 approved", 2026-11-04).
+
+## Case 32 — ACCEPTED: a constant of an imported package is its value (branch `goose-pkgconst`)
+
+**Symptom.** Translation incomplete where Go runs. `selectorExpr` emitted a package-qualified
+constant (`runtime.GOOS`) as a reference to the other package's declaration, so the translation
+needed that package: for a names-only package (`runtime`) the name is an opaque `axiom GOOS : val`,
+and importing it runs its initializer (95 opaque initializers). `os`'s `init.0` (`if runtime.GOOS
+== "windows" { return }; Args = runtime_args()`) could not be translated (etcd-grove,
+`notes/perennial-changes.md`, P4).
+
+**Witness.** `func IsWindows() bool { return runtime.GOOS == "windows" }` with `runtime` not
+imported by the configuration: goose emitted `Val _root_.Perennial.runtime.GOOS`.
+
+**Taken.** In `selectorExpr`, a `*types.Const` of another package is `constantLiteral(e)`: the
+value go/types records for the expression at its type, the path every constant expression and
+literal already takes. `constantLiteral` converts an integer-valued constant to an integer before
+emitting it at an integer type. Test: `filteredimport`'s `IsWindows` and `DepConsts` (a typed, an
+untyped and a named-typed constant of a package the configuration does not import). Regenerated:
+`strconv` (`internal/strconv`'s error codes), `sync` (`internal/race.Enabled`, `false` in the
+non-race build goose translates), `goose-lang/std` (`math.MaxInt`, `MinInt`, `time.Millisecond`),
+the channel examples (`time.Millisecond`, `Second`).
+
+**Not taken.** Translating `runtime`'s initializer for one comparison. Folding own-package
+constants too: they are already definitions with their values, unchanged.
+
+**Why.** A constant is a value fixed at compile time (the build goose translates already fixes
+`GOOS` by build tags); the user: "Do the translator change" (2026-11-04).
