@@ -37,7 +37,13 @@ structure Log [GooseExts] where
   diskSz' : w64
 ```
 
-and each function to a GooseLang `val` (`noncomputable def Open.impl ... : val`),
+An unnamed struct type with fields is translated the same way, without the
+`go.Named` descriptor: a structure `«struct#<h>»` (`<h>` a hash of the type,
+`util.AnonStructName`), its field list, `«struct#<h>».underlying` (the type the
+translation writes for it) and its `TypeAssumptions` class, once per package
+(`anon_structs.go`).
+
+Each function is translated to a GooseLang `val` (`noncomputable def Open.impl ... : val`),
 printed as plain constructor applications of `Perennial/GooseLang/Lang.lean`.
 
 ## Running goose
