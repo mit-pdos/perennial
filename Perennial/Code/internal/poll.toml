@@ -1,0 +1,18 @@
+# internal/poll: the types, and the package-level variable initializers (what importing it runs):
+# `errors.New` errors, `ErrNetClosing`/`ErrDeadlineExceeded` values, `syscall`'s errno values, the
+# hook function values (`syscall.Close`, `Accept`, `Accept4`), `supportCopyFileRange =
+# sync.OnceValue(...)` (builds the closure; does not call it) and `splicePipePool`'s `sync.Pool`
+# literal.
+translate = ["!*",
+  "supportCopyFileRange",
+  "errEAGAIN", "errEINVAL", "errENOENT",
+  "ErrNetClosing", "ErrFileClosing", "ErrNoDeadline", "ErrDeadlineExceeded", "ErrNotPollable",
+  "TestHookDidWritev", "TestHookDidSendFile",
+  "Accept4Func", "CloseFunc", "AcceptFunc",
+  "splicePipePool", "_",
+]
+
+imports = ["!*", "errors", "sync", "syscall", "internal/syscall/unix"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

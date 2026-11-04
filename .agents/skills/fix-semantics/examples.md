@@ -1029,3 +1029,36 @@ constants too: they are already definitions with their values, unchanged.
 
 **Why.** A constant is a value fixed at compile time (the build goose translates already fixes
 `GOOS` by build tags); the user: "Do the translator change" (2026-11-04).
+
+## Case 33 — ACCEPTED: `os`'s remaining initializers: `syscall`'s `init` a no-op, the standard streams not translated (branch `os-init-final`)
+
+**Symptom.** Incomplete: `os`'s initializer called opaque `X.init`s (etcd-grove's
+`os.opaqueInitsOk`, `initFuncsOk`, `Stderr_init` axioms) for `Interrupt`/`Kill` (`syscall`'s
+types), internal/poll's variables, the standard streams and `init.0`. Translating them reaches
+`syscall`'s and `internal/poll`'s initializers, and `NewFile`.
+
+**Taken** (the user's decisions, 2026-11-04, etcd-grove `notes/perennial-changes.md` P1-P4):
+* `syscall`, `internal/poll` and `internal/syscall/unix` translate their variable initializers
+  (and the constants they use); each initializer is proved (`isPkgInit`: `True`, and for
+  internal/poll the cells of `ErrNoDeadline`/`ErrDeadlineExceeded`, which `os` copies).
+* `syscall`'s `init.0` (`rlimit.go`: raises RLIMIT_NOFILE through the raw `prlimit` system call)
+  is a trusted no-op. The user: "P1: (ii)": the changed limit is observable only by `exec`,
+  `Getrlimit` or running out of descriptors, none of which Perennial models.
+* `runtime_envs` and `os.runtime_args` (linknames with no Go body) return an arbitrary
+  `[]string` (`syscall.arbitraryStrings`, the `fmt.arbitraryString` scheme).
+* `os.Stdin`/`Stdout` initializers are trusted no-ops (the variables are not allocated: any use
+  is stuck); `Stderr`'s allocates the variable and stores a fresh pointer to an untyped cell (a
+  non-nil `*File` whose `File` cannot be read), because initializers that only store
+  `os.Stderr` (raft's `defaultLogger`) must be provable. The user: "I don't want to reason about
+  any of that. What about a trusted model that does nothing? This is conservative because it
+  leaves Stdin, Stdout, Stderr as undefined, so any code relying on it will be unprovable. I do
+  not want to follow the rule 'translatable => *must* verify' in this case."
+* `os.init.0` is translated (`runtime.GOOS` is a value since Case 32).
+
+**Not taken.** A model of the raw system call writing an arbitrary `Rlimit` through an integer
+address (P1 (i)); translating `NewFile` with models of `Fcntl`, the poller linknames and a
+`SetFinalizer` that may run the finalizer (P3 (ii)).
+
+**Why.** R2 would require translating `NewFile`; the user overrode it for the standard streams:
+a model less defined than Go (stuck where Go runs) is sound, and here it costs nothing the
+proofs need. The `init.0` no-op is faithful for every program Perennial can express.
