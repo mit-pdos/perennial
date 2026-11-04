@@ -24,8 +24,14 @@
 # changes after the review invalidates it.
 set -u
 export PATH="$HOME/.elan/bin:$PATH"
+# go (for goose's tests and modelcheck) is often installed outside the PATH
+# a non-interactive shell gets; use the first usual install location that has it
+for d in "$HOME/.local/go/bin" "/usr/local/go/bin" "$HOME/go/bin" "$HOME/sdk/go/bin"; do
+  [ -x "$d/go" ] && { export PATH="$d:$PATH"; break; }
+done
 
 die() { echo "land: $*" >&2; exit 1; }
+need_go() { command -v go >/dev/null 2>&1 || die "go not found (looked on PATH and in ~/.local/go/bin, /usr/local/go/bin); install go or put it on PATH"; }
 cmd=${1:-status}; shift || true
 NOBUILD=0
 for a in "$@"; do case "$a" in --no-build) NOBUILD=1;; *) die "unknown option $a";; esac; done
@@ -91,13 +97,13 @@ build_changed() {
     esac
   fi
   if [ "$goose" = 1 ]; then
-    echo "land: goose changed; go test ./goose/..."
+    need_go; echo "land: goose changed; go test ./goose/..."
     (cd "$ROOT" && go test ./goose/...) || die "goose tests failed"
   fi
   # the guard of docs/design/unsafe-memory.md (R4, section 5): no translated
   # package may contain code the semantics models incorrectly
   if [ "$goose" = 1 ] || [ "$code" = 1 ]; then
-    echo "land: goose or its translations changed; etc/update-goose-new.py --modelcheck"
+    need_go; echo "land: goose or its translations changed; etc/update-goose-new.py --modelcheck"
     python3 etc/update-goose-new.py --modelcheck --std-lib --models --goose-examples \
       || die "modelcheck found code the semantics models incorrectly (docs/design/unsafe-memory.md, R4)"
   fi
