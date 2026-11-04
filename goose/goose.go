@@ -561,6 +561,12 @@ func (ctx *Ctx) selectorExpr(e *ast.SelectorExpr) glang.Expr {
 				args,
 				glang.Tt,
 			)
+		} else if _, ok := ctx.info.ObjectOf(e.Sel).(*types.Const); ok && ctx.info.Types[e].Value != nil {
+			// A constant of an imported package is a constant expression: it is
+			// emitted as its value (at the expression's type, as go/types records
+			// it), not as a reference to the other package's declaration, so a
+			// translation does not need the other package (`runtime.GOOS`).
+			return ctx.constantLiteral(e)
 		} else {
 			obj := ctx.info.ObjectOf(e.Sel)
 			return ctx.handleImplicitConversion(e,
@@ -2673,8 +2679,14 @@ func (ctx *Ctx) constantLiteral(e ast.Expr) glang.Expr {
 	if e, ok := e.(*ast.Ident); ok {
 		val = ctx.info.ObjectOf(e).(*types.Const).Val()
 	}
-	v := constant.Val(val)
 	t := ctx.typeOf(e)
+	if b, ok := t.Underlying().(*types.Basic); ok && b.Info()&types.IsInteger != 0 {
+		// an integer-valued untyped float constant used at an integer type
+		if iv := constant.ToInt(val); iv.Kind() == constant.Int {
+			val = iv
+		}
+	}
+	v := constant.Val(val)
 	constInt := func(cons string) glang.Expr {
 		switch v := v.(type) {
 		case *big.Int:

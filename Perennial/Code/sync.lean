@@ -728,7 +728,7 @@ noncomputable def RWMutex.RLock.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))))
@@ -746,7 +746,7 @@ noncomputable def RWMutex.RLock.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (App (App (Val (GoInstruction (FuncResolve runtime_SemacquireRWMutexR []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2"))))))
   (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Disable []))) (Val #())) (Val #())))))
@@ -787,7 +787,7 @@ noncomputable def RWMutex.TryRLock.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"readerSem"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))))
@@ -806,7 +806,7 @@ noncomputable def RWMutex.TryRLock.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Enable []))) (Val #())) (Val #())))
   (App (Val doExecute)
@@ -817,7 +817,7 @@ noncomputable def RWMutex.TryRLock.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "c") (Var "$r0")))))))))
   (Lam BAnon
   (Val #())))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Disable []))) (Val #())) (Val #())))))
@@ -841,7 +841,7 @@ noncomputable def RWMutex.RUnlock.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "rw" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType RWMutex.ty)))) (Var "rw"))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Enable []))) (Val #())) (Val #())))
   (App (Val doExecute)
@@ -858,7 +858,7 @@ noncomputable def RWMutex.RUnlock.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "r") (Var "$r0"))))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
@@ -918,7 +918,7 @@ noncomputable def RWMutex.Lock.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "r" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
@@ -944,7 +944,7 @@ noncomputable def RWMutex.Lock.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "r") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef RWMutex.ty go!"w"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType RWMutex.ty)))) (Var "rw")))) (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Disable []))) (Val #())) (Val #())))))
@@ -978,7 +978,7 @@ noncomputable def RWMutex.TryLock.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
@@ -1002,7 +1002,7 @@ noncomputable def RWMutex.TryLock.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Enable []))) (Val #())) (Val #())))
   (App (Val doExecute)
@@ -1019,14 +1019,14 @@ noncomputable def RWMutex.TryLock.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Enable []))) (Val #())) (Val #())))
   (App (Val doExecute)
   (Val #()))))
   (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Disable []))) (Val #())) (Val #())))))
@@ -1058,7 +1058,7 @@ noncomputable def RWMutex.Unlock.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Enable []))) (Val #())) (Val #())))
   (App (Val doExecute)
@@ -1091,7 +1091,7 @@ noncomputable def RWMutex.Unlock.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "r") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
@@ -1233,7 +1233,7 @@ noncomputable def WaitGroup.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (If (Val _root_.Perennial.internal.race.Enabled) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "delta")) (Val #(W64 0)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "v")) (App (Val (GoInstruction (Convert go.int go.int32))) (App (Val (GoInstruction (GoLoad go.int))) (Var "delta"))))) (Val #false)))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (If (Val #false) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "delta")) (Val #(W64 0)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.int32))) (Pair (App (Val (GoInstruction (GoLoad go.int32))) (Var "v")) (App (Val (GoInstruction (Convert go.int go.int32))) (App (Val (GoInstruction (GoLoad go.int))) (Var "delta"))))) (Val #false)))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"sema"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Read []))) (Val #())) (Var "$a0"))))
@@ -1254,14 +1254,14 @@ noncomputable def WaitGroup.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (If (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.IsInBubble []))) (Val #())) (Val #()))
   (Let "$sw" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.Associate [WaitGroup.ty]))) (Val #())) (Var "$a0")))
-  (If (App (Val (GoInstruction (GoOp GoEquals _root_.Perennial.internal.synctest.Association.ty))) (Pair (Var "$sw") (Val _root_.Perennial.internal.synctest.Unbubbled)))
+  (If (App (Val (GoInstruction (GoOp GoEquals _root_.Perennial.internal.synctest.Association.ty))) (Pair (Var "$sw") (Val #(W64 0))))
   (App (Val doExecute)
   (Val #()))
-  (If (App (Val (GoInstruction (GoOp GoEquals _root_.Perennial.internal.synctest.Association.ty))) (Pair (Var "$sw") (Val _root_.Perennial.internal.synctest.OtherBubble)))
+  (If (App (Val (GoInstruction (GoOp GoEquals _root_.Perennial.internal.synctest.Association.ty))) (Pair (Var "$sw") (Val #(W64 2))))
   (App (Val doExecute)
   (Let "$a0" (Val #(go!"sync: WaitGroup.Add called from multiple synctest bubbles"))
   (App (App (Val (GoInstruction (FuncResolve fatal []))) (Val #())) (Var "$a0"))))
-  (If (App (Val (GoInstruction (GoOp GoEquals _root_.Perennial.internal.synctest.Association.ty))) (Pair (Var "$sw") (Val _root_.Perennial.internal.synctest.CurrentBubble)))
+  (If (App (Val (GoInstruction (GoOp GoEquals _root_.Perennial.internal.synctest.Association.ty))) (Pair (Var "$sw") (Val #(W64 1))))
   (Let "$r0" (Val #true)
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val waitGroupBubbleFlag))
@@ -1284,7 +1284,7 @@ noncomputable def WaitGroup.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "bubbled") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
@@ -1369,7 +1369,7 @@ noncomputable def WaitGroup.Wait.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType WaitGroup.ty) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))
@@ -1387,7 +1387,7 @@ noncomputable def WaitGroup.Wait.impl [GooseExts] [GoGlobalContext] : val :=
   (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoAnd go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "state")) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val waitGroupBubbleFlag)))) (Val #(W64 0))))) (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.synctest.IsInBubble []))) (Val #())) (Val #())) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Disable []))) (Val #())) (Val #())))
   (App (Val doExecute)
@@ -1399,7 +1399,7 @@ noncomputable def WaitGroup.Wait.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "synctestDurable") (Var "$r0")))))
   (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Enable []))) (Val #())) (Val #())))
   (App (Val doExecute)
@@ -1408,7 +1408,7 @@ noncomputable def WaitGroup.Wait.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "synctestDurable") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (Val _root_.Perennial.internal.race.Enabled) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "w")) (Val #(W32 0)))) (Val #false)))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (Val #false) (App (Val (GoInstruction (GoOp GoEquals go.uint32))) (Pair (App (Val (GoInstruction (GoLoad go.uint32))) (Var "w")) (Val #(W32 0)))) (Val #false)))
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType go.uint32) «unsafe».Pointer))) (App (Val (GoInstruction (StructFieldRef WaitGroup.ty go!"sema"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg"))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Write []))) (Val #())) (Var "$a0"))))
@@ -1433,7 +1433,7 @@ noncomputable def WaitGroup.Wait.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))
   (App (Val doExecute)
   (Val #()))))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (Let "$a0" (App (Val (GoInstruction (Convert (go.GoType.PointerType WaitGroup.ty) «unsafe».Pointer))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType WaitGroup.ty)))) (Var "wg")))
@@ -1452,7 +1452,7 @@ noncomputable def WaitGroup.Wait.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "state") (Var "$r0")))))))))
   (Lam BAnon
   (Val #())))))
-  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val _root_.Perennial.internal.race.Enabled))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (Val #false))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.race.Disable []))) (Val #())) (Val #())))
   (App (Val doExecute)

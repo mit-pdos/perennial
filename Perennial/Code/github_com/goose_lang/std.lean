@@ -139,7 +139,7 @@ noncomputable def SignedSumAssumeNoOverflow.impl [GooseExts] [GoGlobalContext] :
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
-  (Let "$a0" (If (If (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "y")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val _root_.Perennial.math.MaxInt)) (App (Val (GoInstruction (GoLoad go.int))) (Var "y")))))) (Val #false)) (Val #true) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "y")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.int))) (Val _root_.Perennial.math.MinInt)) (App (Val (GoInstruction (GoLoad go.int))) (Var "y")))))) (Val #false)))
+  (Let "$a0" (If (If (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "y")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Val #(W64 9223372036854775807)) (App (Val (GoInstruction (GoLoad go.int))) (Var "y")))))) (Val #false)) (Val #true) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "y")) (Val #(W64 0)))) (App (Val (GoInstruction (GoOp GoGe go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "x")) (App (Val (GoInstruction (GoOp GoSub go.int))) (Pair (Val #(W64 (-9223372036854775808))) (App (Val (GoInstruction (GoLoad go.int))) (Var "y")))))) (Val #false)))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.github_com.goose_lang.primitive.Assume []))) (Val #())) (Var "$a0"))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
@@ -504,7 +504,7 @@ noncomputable def WaitTimeout.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.sync.Cond.ty) go!"Wait"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType _root_.Perennial.sync.Cond.ty)))) (Var "cond"))) (Val #())))))
   (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$ch0" (Let "$a0" (App (Val (GoInstruction (GoOp GoMul _root_.Perennial.time.Duration.ty))) (Pair (App (Val (GoInstruction (Convert go.uint64 _root_.Perennial.time.Duration.ty))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "timeoutMs"))) (Val _root_.Perennial.time.Millisecond)))
+  (Let "$ch0" (Let "$a0" (App (Val (GoInstruction (GoOp GoMul _root_.Perennial.time.Duration.ty))) (Pair (App (Val (GoInstruction (Convert go.uint64 _root_.Perennial.time.Duration.ty))) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "timeoutMs"))) (Val #(W64 1000000))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.After []))) (Val #())) (Var "$a0")))
   (Let "$ch1" (App (Val (GoInstruction (GoLoad (go.GoType.ChannelType go.ChanDir.sendrecv (go.GoType.StructType []))))) (Var "done"))
   (App (Val (GoInstruction SelectStmt)) (SelectStmtClauses none [(CommClause (RecvCase _root_.Perennial.time.Time.ty (Var "$ch0")) (Lam "$recvVal"

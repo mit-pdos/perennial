@@ -47,6 +47,51 @@ attribute [irreducible] PlainCloser.ty
 
 axiom withDep.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
+noncomputable def IsWindows [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport.IsWindows"
+
+noncomputable def DepConsts [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport.DepConsts"
+
+/-- constants of a package the translation does not import are their values, as
+    is `runtime.GOOS` (runtime is not imported either)
+
+    go: filteredimport.go:16:6 -/
+noncomputable def IsWindows.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (Val #(go!"linux")) (Val #(go!"windows"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: filteredimport.go:18:6 -/
+noncomputable def DepConsts.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (Let "$res2" (App (Val (GoInstruction (GoAlloc go.uint32))) (App (Val (GoInstruction (GoZeroVal go.uint32))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(W64 3))
+  (Let "$r1" (Val #(W64 1099511627776))
+  (Let "$r2" (Val #(W32 2))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint32))) (Pair (Var "$res2") (Var "$r2")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (Pair (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res1"))) (App (Val (GoInstruction (GoLoad go.uint32))) (Var "$res2"))))))))
+
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport where
   pkgImportedPkgs := []
 
@@ -159,12 +204,16 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   Getter_instance : Getter.TypeAssumptions
   plain_instance : plain.TypeAssumptions
   PlainCloser_instance : PlainCloser.TypeAssumptions
+  IsWindows_unfold : FuncUnfold IsWindows [] IsWindows.impl
+  DepConsts_unfold : FuncUnfold DepConsts [] DepConsts.impl
 
 attribute [instance] Assumptions.T_instance
   Assumptions.withDep_instance
   Assumptions.Getter_instance
   Assumptions.plain_instance
   Assumptions.PlainCloser_instance
+  Assumptions.IsWindows_unfold
+  Assumptions.DepConsts_unfold
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport
 
