@@ -29,6 +29,9 @@ once (of the same pool, or of two pools) needs two thread tokens.
 * `init`: a pool from `n` copies, `threadBound GF ≤ n + 1`.
 * `borrow` (`▷ R`), `borrow_timeless`, `borrow_lc` (with a later credit; for
   `HeapGS .hasLC GF`), and `giveBack`.
+* At a level `l` (`isThreadPoolL N l γ R`, `initL`, `borrowL`, `borrowL_timeless`, `borrowL_lc`,
+  `giveBackL`, and the cancelable `isThreadPoolCL`, `initCL`, `borrowCL`, `giveBackCL`, `cancelL`,
+  `reclaimL`): the same with a level-`l` token (`levelTok l`) for the thread token.
 * The cancelable form, `isThreadPoolC N γ γc R` (`initC`, `borrowC`, `giveBackC`): a borrower
   holds a share of the pool's open half (`poolOpen γc q`); `cancel`, with the whole half, returns
   what the pool holds, and `reclaim` takes back a loan outstanding at the cancel. For a resource
@@ -304,6 +307,247 @@ theorem canceled_none (m : Nat) (Hle : threadBound GF ≤ 0 + m + 1) : threadBou
 
 end pool
 
+/-! ### Pools at a level
+
+A pool at level `l` (`isThreadPoolL N l γ R`) is the pool above with level-`l` tokens
+(`levelTok l`, `GooseLang/Threads.lean`) in place of whole thread tokens: a level-`l` token
+borrows a copy, and the pool keeps it until the copy comes back. Each level has its own `T - 1`
+tokens, so the argument is the same and the pool is sized the same (`threadBound GF ≤ n + 1`).
+What a level buys: a thread that holds only some levels of its token, e.g. a goroutine of a
+leveled wait group (`sync.tokJoinL`, which keeps the goroutine's level-`0` token), borrows with
+one of the levels it holds. The loans (`ownThreadLoan`) and the open half (`poolOpen`) are those
+of the pools above. -/
+
+section pool_level
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+
+/-- The level-`l` pool's invariant: `b` copies lent out, backed by their borrowers' level-`l`
+tokens and counted by `ownTokAuth γ b`, and `m` copies left, with
+`threadBound GF ≤ b + m + 1`. -/
+def poolInvL (l : Nat) (γ : GName) (R : IProp GF) : IProp GF :=
+  iprop(∃ (b m : Nat), ownTokAuth γ b ∗ levelToks l b ∗
+    ([∗list] _x ∈ List.replicate m (), R) ∗ ⌜threadBound GF ≤ b + m + 1⌝)
+
+/-- A pool of copies of `R`, any of which a level-`l` token borrows. -/
+def isThreadPoolL (N : Namespace) (l : Nat) (γ : GName) (R : IProp GF) : IProp GF :=
+  inv N (poolInvL l γ R)
+
+instance isThreadPoolL_persistent (N : Namespace) (l : Nat) (γ : GName) (R : IProp GF) :
+    Persistent (isThreadPoolL N l γ R) := by
+  unfold isThreadPoolL; infer_instance
+
+/-- A level-`l` pool from `n` copies of `R`: `threadBound GF ≤ n + 1`. -/
+theorem initL (N : Namespace) (l : Nat) (R : IProp GF) (E : CoPset) (n : Nat)
+    (Hn : threadBound GF ≤ n + 1) :
+    ([∗list] _x ∈ List.replicate n (), R) ⊢ |={E}=> ∃ γ, isThreadPoolL N l γ R := by
+  iintro HR
+  imod ownTokAuth_alloc (GF := GF) with ⟨%γ, Hauth⟩
+  imod inv_alloc N E (poolInvL l γ R) $$ [Hauth HR] with #Hinv
+  · inext
+    unfold poolInvL
+    iexists 0, n
+    iframe
+    isplitr
+    · iapply levelToks_zero l
+    · ipureintro; omega
+  imodintro
+  iexists γ
+  unfold isThreadPoolL
+  iexact Hinv
+
+/-- Borrow a copy of `R` with a level-`l` token. -/
+theorem borrowL (N : Namespace) (l : Nat) (γ : GName) (R : IProp GF) (E : CoPset)
+    (HN : ↑N ⊆ E) :
+    isThreadPoolL N l γ R ∗ levelTok l ⊢ |={E}=> ▷ R ∗ ownThreadLoan γ := by
+  iintro ⟨#Hinv, Htok⟩
+  unfold isThreadPoolL
+  iinv Hinv with Hi Hclose
+  unfold poolInvL
+  icases Hi with ⟨%b, %m, >Hauth, >Htoks, HR, >%Hle⟩
+  icases levelToks_add_one_lt l b $$ [Htok Htoks] with ⟨%Hlt, Htoks⟩
+  · iframe
+  obtain ⟨m', rfl⟩ : ∃ m', m = m' + 1 := ⟨m - 1, by omega⟩
+  simp only [List.replicate]
+  icases HR with ⟨HR, HRs⟩
+  imod ownTokAuth_S γ b $$ Hauth with ⟨Hauth, Hloan⟩
+  imod Hclose $$ [Hauth Htoks HRs] with _
+  · inext
+    iexists b + 1, m'
+    iframe
+    ipureintro; omega
+  imodintro
+  unfold ownThreadLoan
+  iframe
+
+/-- `borrowL`, for a timeless `R`. -/
+theorem borrowL_timeless (N : Namespace) (l : Nat) (γ : GName) (R : IProp GF) [Timeless R]
+    (E : CoPset) (HN : ↑N ⊆ E) :
+    isThreadPoolL N l γ R ∗ levelTok l ⊢ |={E}=> R ∗ ownThreadLoan γ := by
+  iintro H
+  imod borrowL N l γ R E HN $$ H with ⟨>HR, Hl⟩
+  imodintro
+  iframe
+
+/-- Give a borrowed copy back, for the level-`l` token. -/
+theorem giveBackL (N : Namespace) (l : Nat) (γ : GName) (R : IProp GF) (E : CoPset)
+    (HN : ↑N ⊆ E) :
+    isThreadPoolL N l γ R ∗ ownThreadLoan γ ∗ R ⊢ |={E}=> levelTok l := by
+  iintro ⟨#Hinv, Hloan, HR⟩
+  unfold isThreadPoolL ownThreadLoan
+  iinv Hinv with Hi Hclose
+  unfold poolInvL
+  icases Hi with ⟨%b, %m, >Hauth, >Htoks, HRs, >%Hle⟩
+  icombine Hauth Hloan gives %Hb
+  obtain ⟨b', rfl⟩ : ∃ b', b = b' + 1 := ⟨b - 1, by omega⟩
+  imod ownTokAuth_delete_S γ b' $$ Hauth Hloan with Hauth
+  icases (levelToks_add l b' 1).1 $$ Htoks with ⟨Htoks, Htok⟩
+  imod Hclose $$ [Hauth Htoks HR HRs] with _
+  · inext
+    iexists b', m + 1
+    simp only [List.replicate]
+    iframe
+    ipureintro; omega
+  imodintro
+  iexact Htok
+
+/-! #### The cancelable pool at a level (as `isThreadPoolC`) -/
+
+/-- The cancelable level-`l` pool's invariant (as `poolInvC`). -/
+def poolInvCL (l : Nat) (γ γc : GName) (R : IProp GF) : IProp GF :=
+  iprop((ghostVar γc (1 : Qp).half true ∗ poolInvL l γ R) ∨ ghostVar γc (1 : Qp).half false)
+
+/-- A cancelable level-`l` pool of copies of `R` (persistent). -/
+def isThreadPoolCL (N : Namespace) (l : Nat) (γ γc : GName) (R : IProp GF) : IProp GF :=
+  inv N (poolInvCL l γ γc R)
+
+instance isThreadPoolCL_persistent (N : Namespace) (l : Nat) (γ γc : GName) (R : IProp GF) :
+    Persistent (isThreadPoolCL N l γ γc R) := by
+  unfold isThreadPoolCL; infer_instance
+
+/-- A cancelable level-`l` pool from `n` copies of `R`, with its whole open half. -/
+theorem initCL (N : Namespace) (l : Nat) (R : IProp GF) (E : CoPset) (n : Nat)
+    (Hn : threadBound GF ≤ n + 1) :
+    ([∗list] _x ∈ List.replicate n (), R) ⊢
+      |={E}=> ∃ γ γc, isThreadPoolCL N l γ γc R ∗ poolOpen γc (1 : Qp).half := by
+  iintro HR
+  imod ownTokAuth_alloc (GF := GF) with ⟨%γ, Hauth⟩
+  imod ghostVar_alloc (GF := GF) true with ⟨%γc, Hc⟩
+  icases (ghostVar_split_half γc 1 true).1 $$ Hc with ⟨Hc, Hc'⟩
+  imod inv_alloc N E (poolInvCL l γ γc R) $$ [Hauth HR Hc] with #Hinv
+  · inext
+    unfold poolInvCL poolInvL
+    ileft
+    iframe Hc
+    iexists 0, n
+    iframe
+    isplitr
+    · iapply levelToks_zero l
+    · ipureintro; omega
+  imodintro
+  iexists γ, γc
+  unfold isThreadPoolCL poolOpen
+  iframe Hc'
+  iexact Hinv
+
+/-- Borrow a copy of `R` with a level-`l` token, from a pool not canceled. -/
+theorem borrowCL (N : Namespace) (l : Nat) (γ γc : GName) (R : IProp GF) (q : Qp) (E : CoPset)
+    (HN : ↑N ⊆ E) :
+    isThreadPoolCL N l γ γc R ∗ poolOpen γc q ∗ levelTok l ⊢
+      |={E}=> ▷ R ∗ ownThreadLoan γ ∗ poolOpen γc q := by
+  iintro ⟨#Hinv, Ho, Htok⟩
+  unfold isThreadPoolCL poolOpen
+  iinv Hinv with Hi Hclose
+  unfold poolInvCL
+  icases Hi with (⟨>Hc, Hi⟩ | >Hc)
+  · unfold poolInvL
+    icases Hi with ⟨%b, %m, >Hauth, >Htoks, HR, >%Hle⟩
+    icases levelToks_add_one_lt l b $$ [Htok Htoks] with ⟨%Hlt, Htoks⟩
+    · iframe
+    obtain ⟨m', rfl⟩ : ∃ m', m = m' + 1 := ⟨m - 1, by omega⟩
+    simp only [List.replicate]
+    icases HR with ⟨HR, HRs⟩
+    imod ownTokAuth_S γ b $$ Hauth with ⟨Hauth, Hloan⟩
+    imod Hclose $$ [Hc Hauth Htoks HRs] with _
+    · inext
+      ileft
+      iframe Hc
+      iexists b + 1, m'
+      iframe
+      ipureintro; omega
+    imodintro
+    unfold ownThreadLoan
+    iframe
+  · icombine Ho Hc gives %Hft
+    exact absurd Hft.2 (by decide)
+
+/-- Give a borrowed copy back to a pool not canceled, for the level-`l` token. -/
+theorem giveBackCL (N : Namespace) (l : Nat) (γ γc : GName) (R : IProp GF) (q : Qp) (E : CoPset)
+    (HN : ↑N ⊆ E) :
+    isThreadPoolCL N l γ γc R ∗ poolOpen γc q ∗ ownThreadLoan γ ∗ R ⊢
+      |={E}=> levelTok l ∗ poolOpen γc q := by
+  iintro ⟨#Hinv, Ho, Hloan, HR⟩
+  unfold isThreadPoolCL ownThreadLoan poolOpen
+  iinv Hinv with Hi Hclose
+  unfold poolInvCL
+  icases Hi with (⟨>Hc, Hi⟩ | >Hc)
+  · unfold poolInvL
+    icases Hi with ⟨%b, %m, >Hauth, >Htoks, HRs, >%Hle⟩
+    icombine Hauth Hloan gives %Hb
+    obtain ⟨b', rfl⟩ : ∃ b', b = b' + 1 := ⟨b - 1, by omega⟩
+    imod ownTokAuth_delete_S γ b' $$ Hauth Hloan with Hauth
+    icases (levelToks_add l b' 1).1 $$ Htoks with ⟨Htoks, Htok⟩
+    imod Hclose $$ [Hc Hauth Htoks HR HRs] with _
+    · inext
+      ileft
+      iframe Hc
+      iexists b', m + 1
+      simp only [List.replicate]
+      iframe
+      ipureintro; omega
+    imodintro
+    iframe
+  · icombine Ho Hc gives %Hft
+    exact absurd Hft.2 (by decide)
+
+/-- **Cancel the level-`l` pool**, with its whole open half: what it holds, the `m` copies left,
+and the count of the `b` loans out with their level-`l` tokens, `threadBound GF ≤ b + m + 1`. -/
+theorem cancelL (N : Namespace) (l : Nat) (γ γc : GName) (R : IProp GF) (E : CoPset)
+    (HN : ↑N ⊆ E) :
+    isThreadPoolCL N l γ γc R ∗ poolOpen γc (1 : Qp).half ⊢
+      |={E}=> ▷ ∃ (b m : Nat), ownTokAuth γ b ∗ levelToks l b ∗
+        ([∗list] _x ∈ List.replicate m (), R) ∗ ⌜threadBound GF ≤ b + m + 1⌝ := by
+  iintro ⟨#Hinv, Ho⟩
+  unfold isThreadPoolCL poolOpen
+  iinv Hinv with Hi Hclose
+  unfold poolInvCL
+  icases Hi with (⟨>Hc, Hi⟩ | >Hc)
+  · imod ghostVar_update_halves false γc true true $$ Ho Hc with ⟨Ho, Hc⟩
+    imod Hclose $$ [Hc] with _
+    · inext
+      iright
+      iexact Hc
+    imodintro
+    unfold poolInvL
+    iexact Hi
+  · icombine Ho Hc gives %Hft
+    exact absurd Hft.2 (by decide)
+
+/-- **A loan outstanding at the cancel of a level-`l` pool comes back**: its count goes down and
+its level-`l` token is returned (its copy of `R` is the borrower's). -/
+theorem reclaimL (l : Nat) (γ : GName) (b : Nat) :
+    ownTokAuth γ (b + 1) ∗ levelToks l (b + 1) ∗ ownThreadLoan γ ⊢
+      |==> ownTokAuth (GF := GF) γ b ∗ levelToks l b ∗ levelTok l := by
+  iintro ⟨Hauth, Htoks, Hloan⟩
+  unfold ownThreadLoan
+  icases (levelToks_add l b 1).1 $$ Htoks with ⟨Htoks, Htok⟩
+  iframe Htoks Htok
+  iapply ownTokAuth_delete_S γ b $$ Hauth Hloan
+
+
+end pool_level
+
 section lc
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [GoGlobalContext]
@@ -314,6 +558,16 @@ theorem borrow_lc (N : Namespace) (γ : GName) (R : IProp GF) (E : CoPset) (HN :
     £ 1 ∗ isThreadPool N γ R ∗ threadTok ⊢ |={E}=> R ∗ ownThreadLoan γ := by
   iintro ⟨Hlc, H⟩
   imod borrow N γ R E HN $$ H with ⟨HR, Hl⟩
+  imod lc_fupd_elim_later (E := E) $$ Hlc HR with HR
+  imodintro
+  iframe
+
+/-- `borrowL`, the later taken off with a later credit. -/
+theorem borrowL_lc (N : Namespace) (l : Nat) (γ : GName) (R : IProp GF) (E : CoPset)
+    (HN : ↑N ⊆ E) :
+    £ 1 ∗ isThreadPoolL N l γ R ∗ levelTok l ⊢ |={E}=> R ∗ ownThreadLoan γ := by
+  iintro ⟨Hlc, H⟩
+  imod borrowL N l γ R E HN $$ H with ⟨HR, Hl⟩
   imod lc_fupd_elim_later (E := E) $$ Hlc HR with HR
   imodintro
   iframe

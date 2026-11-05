@@ -20,6 +20,9 @@ give it back after `RUnlock` (`threadPool.giveBack`), so the stock never runs ou
   (`RWMutex.wp_Lock_guard`). `ownRWMutex rw P` is not timeless: borrow it with a later credit
   (`threadPool.borrow_lc`) or where a later is stripped.
 
+* `rwmutex.init_RWMutex_threadPoolL`, `init_RWMutex_threadPoolL`: the same with the pool at a
+  level `l` (`threadPool.isThreadPoolL`), borrowed with a level-`l` token (`levelTok l`).
+
 A pool can also be made from some of the tokens only (`threadPool.init`), the others used as
 before. A thread borrows one token at a time per thread token it holds, so this pays for one
 read lock at a time per thread; a thread holding the read locks of two `RWMutex`es at once
@@ -74,6 +77,21 @@ theorem init_RWMutex_threadPool {E : CoPset} (N Np : Namespace) (rw : Loc)
   iframe
   iframe #
 
+/-- `init_RWMutex_threadPool`, the pool at level `l` (`threadPool.isThreadPoolL`). -/
+theorem init_RWMutex_threadPoolL {E : CoPset} (N Np : Namespace) (l : Nat) (rw : Loc)
+    (Hb : threadBound GF ≤ 2 ^ 30) :
+    typedPointsto (GF := GF) rw (zero_val RWMutex) (DFrac.own 1) ⊢
+    |={E}=> ∃ (γ : RWMutexNames) (γp : GName), isRWMutex rw γ N ∗ ownRWMutex γ (.RLocked 0) ∗
+      threadPool.isThreadPoolL Np l γp (ownRLockToken γ) := by
+  iintro Hrw
+  imod init_RWMutex (E := E) N rw $$ Hrw with ⟨%γ, #His, Hst, Htoks⟩
+  imod threadPool.initL Np l (ownRLockToken γ) E _ (threadBound_le_actualMaxReaders Hb) $$ Htoks
+    with ⟨%γp, #Hpool⟩
+  imodintro
+  iexists γ, γp
+  iframe
+  iframe #
+
 end rwmutex
 
 /-- A guarded reader token gives the persistent guard. -/
@@ -100,6 +118,27 @@ theorem init_RWMutex_threadPool (P : Qp → IProp GF) {E : CoPset} (Np : Namespa
   icases Htoks with ⟨Htok, Htoks⟩
   icases persistent_entails_left (ownRWMutex_isRWMutexGuard rw P) $$ Htok with ⟨Htok, #Hguard⟩
   imod threadPool.init Np (ownRWMutex rw P) E (n + 1)
+    (by have := threadBound_le_actualMaxReaders Hb; omega) $$ [Htok Htoks] with ⟨%γp, #Hpool⟩
+  · simp only [List.replicate]
+    iframe
+  imodintro
+  iexists γp
+  iframe #
+
+/-- The guarded `init_RWMutex_threadPool`, the pool at level `l` (`threadPool.isThreadPoolL`). -/
+theorem init_RWMutex_threadPoolL (P : Qp → IProp GF) {E : CoPset} (Np : Namespace) (l : Nat)
+    (rw : Loc) [HPfrac : Fractional P] (Hb : threadBound GF ≤ 2 ^ 30) :
+    ⊢ ▷ P 1 -∗ typedPointsto (GF := GF) rw (zero_val RWMutex) (DFrac.own 1) ={E}=∗
+      ∃ γp : GName, isRWMutexGuard rw P ∗ threadPool.isThreadPoolL Np l γp (ownRWMutex rw P) := by
+  iintro HP Hrw
+  imod init_RWMutex P (E := E) rw $$ HP Hrw with Htoks
+  obtain ⟨n, hn⟩ : ∃ n, Int.toNat rwmutex.actualMaxReaders = n + 1 :=
+    ⟨Int.toNat rwmutex.actualMaxReaders - 1, by have := actualMaxReaders_ge_2; omega⟩
+  rw [hn]
+  simp only [List.replicate]
+  icases Htoks with ⟨Htok, Htoks⟩
+  icases persistent_entails_left (ownRWMutex_isRWMutexGuard rw P) $$ Htok with ⟨Htok, #Hguard⟩
+  imod threadPool.initL Np l (ownRWMutex rw P) E (n + 1)
     (by have := threadBound_le_actualMaxReaders Hb; omega) $$ [Htok Htoks] with ⟨%γp, #Hpool⟩
   · simp only [List.replicate]
     iframe

@@ -89,7 +89,8 @@ def threadTokList : List Nat → IProp GF
 def levelTokList (l : Nat) : List Nat → IProp GF
   | [] => iprop(emp)
   | k :: ks =>
-    iprop(⌜k + 1 < hT.threadBound⌝ ∗ (levelKey (GF := GF) l k ↪[hT.threadTokName] ()) ∗ levelTokList l ks)
+    iprop(⌜k + 1 < hT.threadBound⌝ ∗ (levelKey (GF := GF) l k ↪[hT.threadTokName] ()) ∗
+      levelTokList l ks)
 
 /-- `levelToks l n`: `n` exclusive tokens of level `l`, of `n` distinct slots. -/
 def levelToks (l n : Nat) : IProp GF :=
@@ -174,7 +175,8 @@ theorem levelTokList_append (l : Nat) (ks1 ks2 : List Nat) :
   induction ks1 with
   | nil => exact emp_sep.symm
   | cons k ks ih =>
-    show iprop(_ ∗ _ ∗ levelTokList l (ks ++ ks2)) ⊣⊢ iprop((_ ∗ _ ∗ levelTokList l ks) ∗ _)
+    show iprop(_ ∗ _ ∗ levelTokList l (ks ++ ks2)) ⊣⊢
+      iprop((_ ∗ _ ∗ levelTokList l ks) ∗ _)
     exact (sep_congr .rfl (sep_congr .rfl ih)).trans
       ((sep_congr .rfl sep_assoc.symm).trans sep_assoc.symm)
 
@@ -205,13 +207,15 @@ theorem threadTokList_not_mem (k : Nat) (ks : List Nat) :
 
 /-- A level-`l` token is not among the level-`l` tokens of `ks`. -/
 theorem levelTokList_not_mem (l k : Nat) (ks : List Nat) :
-    (levelKey (GF := GF) l k ↪[hT.threadTokName] ()) ∗ levelTokList (GF := GF) l ks ⊢ ⌜k ∉ ks⌝ := by
+    (levelKey (GF := GF) l k ↪[hT.threadTokName] ()) ∗ levelTokList (GF := GF) l ks ⊢
+      ⌜k ∉ ks⌝ := by
   induction ks with
   | nil => iintro -; ipureintro; simp
   | cons k' ks ih =>
     unfold levelTokList
     iintro ⟨Hk, -, Hk', Hks⟩
-    icases ghostMapElem_ne _ (levelKey (GF := GF) l k) (levelKey (GF := GF) l k') _ () () $$ Hk Hk' with %Hne
+    icases ghostMapElem_ne _ (levelKey (GF := GF) l k) (levelKey (GF := GF) l k') _ () ()
+      $$ Hk Hk' with %Hne
     ihave %Hnot := ih $$ [Hk Hks]
     · iframe
     ipureintro
@@ -296,7 +300,8 @@ theorem levelBound_elim (l : Nat) : levelToks (GF := GF) l hT.threadBound ⊢ Fa
 
 /-- One more level-`l` token joining `n` of them: `n + 1 < T`. -/
 theorem levelToks_add_one_lt (l n : Nat) :
-    levelTok l ∗ levelToks (GF := GF) l n ⊢ ⌜n + 1 < hT.threadBound⌝ ∗ levelToks l (n + 1) := by
+    levelTok l ∗ levelToks (GF := GF) l n ⊢
+      ⌜n + 1 < hT.threadBound⌝ ∗ levelToks l (n + 1) := by
   refine sep_comm.1.trans ((levelToks_add l n 1).2.trans ?_)
   exact (persistent_entails_left (levelToks_lt l (n + 1))).trans sep_comm.1
 
@@ -508,7 +513,9 @@ private theorem levels_init_aux (T : Nat) (hT : 1 < T) (γ : GName) (c : Nat) :
     iexists m''
     iframe Hm
     isplitr
-    · ipureintro; intro k hk; exact Hfree'' k (by rw [show l + 1 + c = l + (c + 1) by omega]; exact hk)
+    · ipureintro
+      intro k hk
+      exact Hfree'' k (by rw [show l + 1 + c = l + (c + 1) by omega]; exact hk)
     · simp only [levelsToks]
       iframe
 
