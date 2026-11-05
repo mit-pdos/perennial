@@ -3,8 +3,8 @@ What is derived from the linked results of `sync` and is not a Go function's tri
 `Locker` instances (`Mutex_is_Locker`, `rlocker_isLockerWith`), the variant
 `Cond.wp_Wait_with` of `Cond.Wait`'s spec, the guarded `RWMutex` specs (`sync.RWMutex.wp_RLock`,
 ..., corollaries of the low-level `sync.rwmutex.RWMutex.wp_RLock`, ...) and the specs of the
-`WaitGroup` "join" idiom (`sync.join.WaitGroup.wp_Add`, ...) and of its thread-token variant
-(`sync.tokJoin.WaitGroup.wp_Add`, ...).
+`WaitGroup` "join" idiom (`sync.join.WaitGroup.wp_Add`, ...) and of its thread-token variants
+(`sync.tokJoin.WaitGroup.wp_Add`, ..., and the leveled `sync.tokJoinL.WaitGroup.wp_Add`, ...).
 -/
 module
 
@@ -12,6 +12,7 @@ public import Perennial.Proof.sync.Link
 public import Perennial.Proof.sync.RWMutexGuard
 public import Perennial.Proof.sync.WaitGroupJoin
 public import Perennial.Proof.sync.WaitGroupTokJoin
+public import Perennial.Proof.sync.WaitGroupTokJoinL
 
 @[expose] public section
 
@@ -191,6 +192,38 @@ theorem WaitGroup.wp_Wait (N : Namespace) (L : IProp GF) (wg : Loc) (n : Nat) (P
 end waitgroup_tok_join_idiom
 
 end tokJoin
+
+namespace tokJoinL
+
+section waitgroup_tok_join_level_idiom
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem : sync.Assumptions]
+
+theorem WaitGroup.wp_Add (P' : IProp GF) (N : Namespace) (p : Nat) (wg : Loc) (n : Nat)
+    (P : IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownAdder N p wg n P ∗ levelTok p }}
+      (App (Val (wg @!! go.GoType.PointerType WaitGroup.ty @!! go!"Add")) (Val #(W64 1)))
+    {{ RET #(); ownAdder N p wg (n + 1) iprop(P ∗ P') ∗ ownPending N p wg P' }} :=
+  WaitGroup.wp_Add_of sync.WaitGroup.wp_Add P' N p wg n P
+
+theorem WaitGroup.wp_Done (N : Namespace) (p : Nat) (wg : Loc) (P : IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownDone N p wg P ∗ P }}
+      (App (Val (wg @!! go.GoType.PointerType WaitGroup.ty @!! go!"Done")) (Val #()))
+    {{ RET #(); levelTok 0 }} :=
+  WaitGroup.wp_Done_of sync.WaitGroup.wp_Done N p wg P
+
+theorem WaitGroup.wp_Wait (N : Namespace) (p : Nat) (wg : Loc) (n : Nat) (P : IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ ownAdder N p wg n P }}
+      (App (Val (wg @!! go.GoType.PointerType WaitGroup.ty @!! go!"Wait")) (Val #()))
+    {{ RET #(); ▷ P ∗ ownAdder N p wg 0 iprop(True) }} :=
+  WaitGroup.wp_Wait_of sync.WaitGroup.wp_Wait N p wg n P
+
+end waitgroup_tok_join_level_idiom
+
+end tokJoinL
 
 end sync
 

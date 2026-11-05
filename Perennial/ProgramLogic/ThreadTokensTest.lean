@@ -43,6 +43,21 @@ example : threadToks (threadBound GF) ⊢@{IProp GF} False := threadBound_elim
 example (n : Nat) : Timeless (threadToks n : IProp GF) := inferInstance
 example : 1 < threadBound GF := threadBound_gt
 
+-- levels: each of the `T` levels has its own `T - 1` tokens
+example (l n : Nat) : levelToks l n ⊢@{IProp GF} ⌜n < threadBound GF⌝ := levelToks_lt l n
+example (l m n : Nat) : levelToks l (m + n) ⊣⊢@{IProp GF} levelToks l m ∗ levelToks l n :=
+  levelToks_add l m n
+example : threadTok ⊣⊢@{IProp GF} levelTok 0 ∗ threadTokFrom 1 := threadTok_level0
+example (l : Nat) (h : l < threadBound GF) :
+    threadTokFrom l ⊣⊢@{IProp GF} levelTok l ∗ threadTokFrom (l + 1) := threadTokFrom_succ l h
+example (l : Nat) (h : threadBound GF ≤ l) : threadTokFrom l ⊣⊢@{IProp GF} emp :=
+  threadToksFrom_of_le l 1 h
+example : threadTok ⊣⊢@{IProp GF} [∗list] l ∈ List.range (threadBound GF), levelTok l :=
+  threadTok_bigSepL
+-- whole tokens, however assembled from levels, are bounded by their level-0 tokens
+example (n : Nat) : threadToks n ⊢@{IProp GF} levelToks 0 n ∗ threadToksFrom 1 n :=
+  (threadToksFrom_succ 0 n (by have := threadBound_gt (GF := GF); omega)).1
+
 end laws
 
 /-! ## A counter of live threads that cannot overflow -/
