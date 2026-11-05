@@ -18,6 +18,9 @@ for each proved function `F`. By Go source file:
   literal that sets a named result (`recoverNamed`), a panic raised two calls down
   inside a loop that reaches a recovering `defer` (`catchTwoDeep`), and a panic that
   runs the deferred functions and continues (`panicUnrecovered`).
+* `anon_structs.go`: unnamed struct types (each modeled by a generated structure): field
+  reads, writes and addresses, a pointer to one, one type in two functions, one nested in
+  another, and one with a type parameter captured by a closure (as `sync.OnceValue`'s).
 * `allocator.go`: nothing stated yet (see `Base`).
 -/
 module

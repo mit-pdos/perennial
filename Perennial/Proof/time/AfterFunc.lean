@@ -22,7 +22,7 @@ variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
 /-- The runtime's `newTimer` is modeled in `TrustedCode/time.lean` (a fresh `*Timer` with
-`initTimer` set and a goroutine that calls the callback). -/
+`initTimer` set and the runtime's state, and a goroutine that calls the callback). -/
 theorem time.AfterFunc.wp_proof
     (wp_when : time.when.spec (GF := GF) (hG := hG)) :
     time.AfterFunc.spec (GF := GF) (hG := hG) := by
@@ -36,6 +36,7 @@ theorem time.AfterFunc.wp_proof
   wp_auto
   iStructNamed t
   ipersist initTimer
+  wp_apply wp_runtimeTimerAlloc as #Hrt
   wp_bind (Fork _)
   iapply wp_fork $$ [Hf]
   · inext
@@ -53,8 +54,8 @@ theorem time.AfterFunc.wp_proof
   inext
   wp_auto
   iapply HΦ
-  unfold isFuncTimer
-  iexact initTimer
+  unfold isFuncTimer isRuntimeTimer
+  iframe #
 
 end proof
 

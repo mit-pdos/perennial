@@ -598,7 +598,7 @@ noncomputable def HelloWorldWithTimeout.impl [GooseExts] [GoGlobalContext] : val
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "errMsg") (Var "$r0"))))))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoOp GoMul _root_.Perennial.time.Duration.ty))) (Pair (Val #(W64 10)) (Val _root_.Perennial.time.Millisecond)))
+  (Let "$a0" (App (Val (GoInstruction (GoOp GoMul _root_.Perennial.time.Duration.ty))) (Pair (Val #(W64 10)) (Val #(W64 1000000))))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.Sleep []))) (Val #())) (Var "$a0"))))))
   (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon

@@ -20,8 +20,8 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- Spec of `(*Ticker).Stop()` (trusted model, `TrustedCode/time.lean`): for a ticker made by
-`NewTicker` (`isTicker`). The ticker's channel may still yield some time afterwards (Go's
+/-- Spec of `(*Ticker).Stop()`: for a ticker made by `NewTicker` (`isTicker`, whose
+`isRuntimeTimer t` a `Ticker` the program made, such as a copy, does not have). The ticker's channel may still yield some time afterwards (Go's
 delivers none; the specs of the channel say nothing of when values arrive). -/
 abbrev time.Ticker.Stop.spec : Prop :=
   ∀ (t : Loc),

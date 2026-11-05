@@ -152,7 +152,7 @@ noncomputable instance InternalBenchmark_access_store_F (l : Loc) (v : testing.I
 end def_
 end InternalBenchmark
 
-namespace B
+namespace highPrecisionTime
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -160,16 +160,37 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : testing.Assumptions]
 
-noncomputable instance B_typed_pointsto :
-    TypedPointsto (GF := GF) testing.B :=
-  sorry -- axiomatized type
+noncomputable instance highPrecisionTime_typed_pointsto :
+    TypedPointsto (GF := GF) testing.highPrecisionTime where
+  typedPointstoDef l v dq := iprop(
+    "now" ∷ typedPointsto (structFieldRef testing.highPrecisionTime go!"now" l) v.now' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance B_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.B testing.B.underlying :=
-  sorry -- axiomatized type
+noncomputable instance highPrecisionTime_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) testing.highPrecisionTime testing.highPrecisionTime.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance highPrecisionTime_access_load_now (l : Loc) (v : testing.highPrecisionTime) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef testing.highPrecisionTime go!"now" l) v.now' dq)
+      (typedPointsto (structFieldRef testing.highPrecisionTime go!"now" l) v.now' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance highPrecisionTime_access_store_now (l : Loc) (v : testing.highPrecisionTime) (now' : time.Time) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef testing.highPrecisionTime go!"now" l) v.now' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.highPrecisionTime go!"now" l) now' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with now' := now' } : testing.highPrecisionTime) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
-end B
+end highPrecisionTime
 
 namespace BenchmarkResult
 section def_
@@ -295,6 +316,80 @@ noncomputable instance BenchmarkResult_access_store_Extra (l : Loc) (v : testing
 
 end def_
 end BenchmarkResult
+
+namespace «struct#6419a40c»
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : testing.Assumptions]
+
+noncomputable instance «struct#6419a40c_typed_pointsto» :
+    TypedPointsto (GF := GF) testing.«struct#6419a40c» where
+  typedPointstoDef l v dq := iprop(
+    "n" ∷ typedPointsto (structFieldRef testing.«struct#6419a40c» go!"n" l) v.n' dq ∗
+    "i" ∷ typedPointsto (structFieldRef testing.«struct#6419a40c» go!"i" l) v.i' dq ∗
+    "done" ∷ typedPointsto (structFieldRef testing.«struct#6419a40c» go!"done" l) v.done' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance «struct#6419a40c_into_val_typed» :
+    IntoValTypedUnderlying (GF := GF) testing.«struct#6419a40c» testing.«struct#6419a40c».underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance «struct#6419a40c_access_load_n» (l : Loc) (v : testing.«struct#6419a40c») (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"n" l) v.n' dq)
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"n" l) v.n' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «struct#6419a40c_access_store_n» (l : Loc) (v : testing.«struct#6419a40c») (n' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"n" l) v.n' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"n" l) n' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := n' } : testing.«struct#6419a40c») (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «struct#6419a40c_access_load_i» (l : Loc) (v : testing.«struct#6419a40c») (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"i" l) v.i' dq)
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"i" l) v.i' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «struct#6419a40c_access_store_i» (l : Loc) (v : testing.«struct#6419a40c») (i' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"i" l) v.i' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"i" l) i' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with i' := i' } : testing.«struct#6419a40c») (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «struct#6419a40c_access_load_done» (l : Loc) (v : testing.«struct#6419a40c») (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"done" l) v.done' dq)
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"done" l) v.done' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance «struct#6419a40c_access_store_done» (l : Loc) (v : testing.«struct#6419a40c») (done' : Bool) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"done" l) v.done' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"done" l) done' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with done' := done' } : testing.«struct#6419a40c») (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end «struct#6419a40c»
 
 namespace benchState
 section def_
@@ -830,46 +925,6 @@ noncomputable instance InternalFuzzTarget_access_store_Fn (l : Loc) (v : testing
 
 end def_
 end InternalFuzzTarget
-
-namespace highPrecisionTime
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : testing.Assumptions]
-
-noncomputable instance highPrecisionTime_typed_pointsto :
-    TypedPointsto (GF := GF) testing.highPrecisionTime where
-  typedPointstoDef l v dq := iprop(
-    "now" ∷ typedPointsto (structFieldRef testing.highPrecisionTime go!"now" l) v.now' dq ∗
-    "_" ∷ True)
-  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
-  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
-  typedPointsto_agree := by solve_typed_pointsto_agree
-
-noncomputable instance highPrecisionTime_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) testing.highPrecisionTime testing.highPrecisionTime.underlying := by
-  solve_into_val_typed_struct
-
-noncomputable instance highPrecisionTime_access_load_now (l : Loc) (v : testing.highPrecisionTime) (dq : DFrac) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.highPrecisionTime go!"now" l) v.now' dq)
-      (typedPointsto (structFieldRef testing.highPrecisionTime go!"now" l) v.now' dq)
-      (typedPointsto l v dq) (typedPointsto l v dq) :=
- by
-  solve_pointsto_access_struct
-
-noncomputable instance highPrecisionTime_access_store_now (l : Loc) (v : testing.highPrecisionTime) (now' : time.Time) :
-    AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.highPrecisionTime go!"now" l) v.now' (DFrac.own 1))
-      (typedPointsto (structFieldRef testing.highPrecisionTime go!"now" l) now' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with now' := now' } : testing.highPrecisionTime) (DFrac.own 1)) :=
- by
-  solve_pointsto_access_struct
-
-end def_
-end highPrecisionTime
 
 namespace fuzzResult
 section def_

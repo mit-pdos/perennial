@@ -5,7 +5,17 @@
 // interfaces).
 package filteredimport
 
-import "github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport/dep"
+import (
+	"runtime"
+
+	"github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport/dep"
+)
+
+// constants of a package the translation does not import are their values, as
+// is `runtime.GOOS` (runtime is not imported either)
+func IsWindows() bool { return runtime.GOOS == "windows" }
+
+func DepConsts() (uint64, uint64, uint32) { return dep.N, dep.Untyped, uint32(dep.KindB) }
 
 // a method set entry whose signature mentions dep.X: `(id, none)`
 type T struct{ n uint64 }

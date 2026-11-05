@@ -175,7 +175,7 @@ variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
 theorem time.Timer.wp_Reset : time.Timer.Reset.spec (GF := GF) (hG := hG) :=
-  time.Timer.Reset.wp_proof
+  time.Timer.Reset.wp_proof time.wp_when
 
 theorem time.Timer.wp_Stop : time.Timer.Stop.spec (GF := GF) (hG := hG) :=
   time.Timer.Stop.wp_proof

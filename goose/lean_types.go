@@ -11,6 +11,7 @@ import (
 
 	"github.com/mit-pdos/perennial/goose/declfilter"
 	"github.com/mit-pdos/perennial/goose/glang"
+	"github.com/mit-pdos/perennial/goose/util"
 )
 
 const leanClassParams = "[GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions]"
@@ -95,45 +96,14 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 	ns := glang.LeanIdent(spec.Name.Name)
 	params := ctx.namedTypeParams(spec)
 	typeBinders := leanTypeParamBinders(params, "Type")
-	tApplied := leanApplied(ns, params)
 
 	switch ctx.filter.GetAction(spec.Name.Name) {
 	case declfilter.Axiomatize:
-		fmt.Fprintf(w, "axiom %s : %s\n", ns, leanForall(typeBinders, "Type"))
-		zvBinders := ""
-		if len(params) > 0 {
-			zvBinders = "{" + strings.TrimSuffix(strings.TrimPrefix(typeBinders, "("), ")") + "}"
-			for _, p := range params {
-				zvBinders += " [ZeroVal " + glang.LeanIdent(p) + "]"
-			}
-		}
-		fmt.Fprintf(w, "axiom %s.zero_val : %s\n", ns, leanForall(zvBinders, "ZeroVal "+tApplied))
-		fmt.Fprintf(w, "attribute [instance] %s.zero_val", ns)
+		w.WriteString(leanAxiomTypeDecl(ns, params))
 	case declfilter.Translate:
 		switch t := ctx.typeOf(spec.Type).(type) {
 		case *types.Struct:
-			sep := ""
-			if typeBinders != "" {
-				sep = " "
-			}
-			fmt.Fprintf(w, "structure %s [GooseExts]%s%s where\n  mk ::\n", ns, sep, typeBinders)
-			for i := range t.NumFields() {
-				f := t.Field(i)
-				ft := ctx.toLeanType(spec, f.Type())
-				fmt.Fprintf(w, "  %s : %s\n", glang.LeanQuoteComponent(recordProjection(i, f.Name())), ft)
-			}
-			zvBinders := ""
-			if len(params) > 0 {
-				zvBinders = " {" + strings.TrimSuffix(strings.TrimPrefix(typeBinders, "("), ")") + "}"
-				for _, p := range params {
-					zvBinders += " [ZeroVal " + glang.LeanIdent(p) + "]"
-				}
-			}
-			fmt.Fprintf(w, "\nnoncomputable instance %s.zero_val [GooseExts]%s : ZeroVal %s :=\n  ⟨%s.mk", ns, zvBinders, tApplied, ns)
-			for range t.NumFields() {
-				fmt.Fprint(w, " zeroValDef")
-			}
-			fmt.Fprint(w, "⟩")
+			w.WriteString(ctx.leanStructureDecl(spec, ns, params, t))
 		default:
 			sep := ""
 			if typeBinders != "" {
@@ -145,11 +115,59 @@ func (ctx *Ctx) namedLeanTypeDecl(spec *ast.TypeSpec) string {
 	return w.String()
 }
 
+// leanAxiomTypeDecl declares ns (with type parameters params), the Lean type of
+// the values of a type goose cannot translate, and its zero value, as axioms.
+func leanAxiomTypeDecl(ns string, params []string) string {
+	w := new(strings.Builder)
+	typeBinders := leanTypeParamBinders(params, "Type")
+	tApplied := leanApplied(ns, params)
+	fmt.Fprintf(w, "axiom %s : %s\n", ns, leanForall(typeBinders, "Type"))
+	zvBinders := ""
+	if len(params) > 0 {
+		zvBinders = "{" + strings.TrimSuffix(strings.TrimPrefix(typeBinders, "("), ")") + "}"
+		for _, p := range params {
+			zvBinders += " [ZeroVal " + glang.LeanIdent(p) + "]"
+		}
+	}
+	fmt.Fprintf(w, "axiom %s.zero_val : %s\n", ns, leanForall(zvBinders, "ZeroVal "+tApplied))
+	fmt.Fprintf(w, "attribute [instance] %s.zero_val", ns)
+	return w.String()
+}
+
+// leanStructureDecl is the structure ns (with type parameters params) modeling
+// the values of the struct type t, and its zero value.
+func (ctx *Ctx) leanStructureDecl(l locatable, ns string, params []string, t *types.Struct) string {
+	w := new(strings.Builder)
+	typeBinders := leanTypeParamBinders(params, "Type")
+	tApplied := leanApplied(ns, params)
+	sep := ""
+	if typeBinders != "" {
+		sep = " "
+	}
+	fmt.Fprintf(w, "structure %s [GooseExts]%s%s where\n  mk ::\n", ns, sep, typeBinders)
+	for i := range t.NumFields() {
+		f := t.Field(i)
+		ft := ctx.toLeanType(l, f.Type())
+		fmt.Fprintf(w, "  %s : %s\n", glang.LeanQuoteComponent(recordProjection(i, f.Name())), ft)
+	}
+	zvBinders := ""
+	if len(params) > 0 {
+		zvBinders = " {" + strings.TrimSuffix(strings.TrimPrefix(typeBinders, "("), ")") + "}"
+		for _, p := range params {
+			zvBinders += " [ZeroVal " + glang.LeanIdent(p) + "]"
+		}
+	}
+	fmt.Fprintf(w, "\nnoncomputable instance %s.zero_val [GooseExts]%s : ZeroVal %s :=\n  ⟨%s.mk", ns, zvBinders, tApplied, ns)
+	for range t.NumFields() {
+		fmt.Fprint(w, " zeroValDef")
+	}
+	fmt.Fprint(w, "⟩")
+	return w.String()
+}
+
 // leanFdsDecl declares the field list of a struct type: X.fieldsUnsealed, and
 // X.fields, an irreducible copy.
-func (ctx *Ctx) leanFdsDecl(spec *ast.TypeSpec, ty glang.StructType) string {
-	name := spec.Name.Name
-	params := ctx.typeParamList(spec.TypeParams)
+func (ctx *Ctx) leanFdsDecl(name string, params []string, ty glang.StructType) string {
 	binders := ""
 	if len(params) > 0 {
 		binders = " " + leanTypeParamBinders(params, "go.GoType")
@@ -252,24 +270,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 	// maybe emit StructFieldSet and StructFieldGet instances
 	if ctx.filter.GetAction(t.Obj().Name()) == declfilter.Translate {
 		if st, ok := tunder.(*types.Struct); ok {
-			for i := range st.NumFields() {
-				fieldName := fieldName(i, st.Field(i).Name())
-				projName := glang.LeanQuoteComponent(recordProjection(i, st.Field(i).Name()))
-				fieldTy := ctx.toLeanTypeP(spec, st.Field(i).Type(), true)
-				xBinder := goBinders
-				if valBinders != "" {
-					xBinder += " " + valBinders
-				}
-				if xBinder != "" {
-					xBinder += " "
-				}
-				add("get_"+fieldName, fmt.Sprintf(
-					"∀ %s(x : %s), go.IsGoStepPureDetTagged under (StructFieldGet %s %s) #x (Val #(x.%s))",
-					xBinder, valTy, implTy, glang.LeanStringLit(fieldName), projName))
-				add("set_"+fieldName, fmt.Sprintf(
-					"∀ %s(x : %s) (y : %s), go.IsGoStepPureDetTagged under (StructFieldSet %s %s) (PairV #x #y) (Val #(({ x with %s := y } : %s)))",
-					xBinder, valTy, fieldTy, implTy, glang.LeanStringLit(fieldName), projName, valTy))
-			}
+			ctx.structFieldAssumptions(spec, st, valTy, implTy, goBinders, valBinders, add)
 		}
 	}
 
@@ -374,6 +375,31 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 	return typeAssumptionsDecl{
 		VerbatimDecl: glang.VerbatimDecl{Content: leanClass(glang.LeanEncodedName(typeName+"_Assumptions"), " [GooseExts] "+leanClassParams, fields)},
 		fields:       len(fields),
+	}
+}
+
+// structFieldAssumptions adds the StructFieldGet and StructFieldSet steps of the
+// fields of st, a struct type whose values valTy models and whose go.GoType is
+// implTy.
+func (ctx *Ctx) structFieldAssumptions(l locatable, st *types.Struct, valTy, implTy, goBinders, valBinders string,
+	add func(name, ty string)) {
+	for i := range st.NumFields() {
+		fieldName := fieldName(i, st.Field(i).Name())
+		projName := glang.LeanQuoteComponent(recordProjection(i, st.Field(i).Name()))
+		fieldTy := ctx.toLeanTypeP(l, st.Field(i).Type(), true)
+		xBinder := goBinders
+		if valBinders != "" {
+			xBinder += " " + valBinders
+		}
+		if xBinder != "" {
+			xBinder += " "
+		}
+		add("get_"+fieldName, fmt.Sprintf(
+			"∀ %s(x : %s), go.IsGoStepPureDetTagged under (StructFieldGet %s %s) #x (Val #(x.%s))",
+			xBinder, valTy, implTy, glang.LeanStringLit(fieldName), projName))
+		add("set_"+fieldName, fmt.Sprintf(
+			"∀ %s(x : %s) (y : %s), go.IsGoStepPureDetTagged under (StructFieldSet %s %s) (PairV #x #y) (Val #(({ x with %s := y } : %s)))",
+			xBinder, valTy, fieldTy, implTy, glang.LeanStringLit(fieldName), projName, valTy))
 	}
 }
 
@@ -561,7 +587,15 @@ func (ctx *Ctx) toLeanTypeP(l locatable, t types.Type, primed bool) string {
 		if t.NumFields() == 0 {
 			return "Unit"
 		}
-		ctx.unsupported(l, "Anonymous structs with fields are not supported %s", t.String())
+		a := ctx.anonStructOf(l, t)
+		var args []string
+		for _, p := range util.AnonStructParams(t) {
+			args = append(args, ctx.toLeanTypeP(l, p, primed))
+		}
+		if len(args) == 0 {
+			return glang.LeanIdent(a.name)
+		}
+		return fmt.Sprintf("(%s %s)", glang.LeanIdent(a.name), strings.Join(args, " "))
 	}
 	ctx.unsupported(l, "Unknown type %s (of type %T)", t, t)
 	return ""
@@ -574,6 +608,10 @@ func (ctx *Ctx) leanPackagePropClass(typeSpecs []*ast.TypeSpec) string {
 	for _, t := range typeSpecs {
 		fields = append(fields, leanClassField{name: t.Name.Name + "_instance",
 			ty: glang.LeanEncodedName(t.Name.Name + "_Assumptions")})
+	}
+	for _, a := range ctx.anonStructOrder {
+		fields = append(fields, leanClassField{name: a.name + "_instance",
+			ty: glang.LeanEncodedName(a.name + "_Assumptions")})
 	}
 	for _, f := range ctx.functions {
 		name := ctx.funcDeclName(f)

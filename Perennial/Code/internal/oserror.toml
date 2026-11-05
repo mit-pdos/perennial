@@ -1,0 +1,5 @@
+# internal/oserror: the five `errors.New` errors that io/fs's (and so os's) error variables are.
+imports = ["errors"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

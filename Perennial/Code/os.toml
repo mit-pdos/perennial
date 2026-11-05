@@ -1,15 +1,30 @@
-# os is names-only, but for the package-level variable initializers whose callees are translated
-# (the `errors.New` errors, `checkWrapErr`, `dirBufPool`'s `sync.Pool` literal). The other
-# initializers call code Perennial does not translate (`io/fs`'s and `internal/poll`'s variables,
-# `syscall`'s types, `NewFile`, `sync.OnceValue`, the runtime's `runtime_args`), and are
-# axiomatized.
+# os is names-only, but for its package-level variable initializers and `init` (what importing os
+# runs): the `errors.New` errors, `checkWrapErr`, `dirBufPool`'s `sync.Pool` literal, io/fs's error
+# variables, `lstat = Lstat`, the `var _ fs.StatFS = dirFS("")` assertions, `checkPidfdOnce =
+# sync.OnceValue(checkPidfd)`, `Interrupt`/`Kill` (`syscall.SIGINT`, `SIGKILL`), internal/poll's
+# `ErrNoDeadline`/`ErrDeadlineExceeded` and `CopyFileRange`/`Splice` function values, and `init.0`
+# (`Args = runtime_args()` unless `runtime.GOOS` is "windows", a constant goose emits as its value).
+# Trusted models (TrustedCode/os.lean):
+# * `runtime_args` (a `go:linkname` into the runtime, no Go body): an arbitrary `[]string`;
+# * `Stdin`, `Stdout`, `Stderr` (`NewFile(uintptr(syscall.Stdin), "/dev/stdin")`, ...): `Stdin`
+#   and `Stdout` do nothing (the variables are not allocated: code using them is stuck), `Stderr`
+#   allocates its variable and stores a fresh pointer whose memory is not a `File` (raft's logger
+#   stores `os.Stderr`; any use of the file is stuck). Not translated by the user's decision
+#   (fix-semantics Case 33): `NewFile` reaches `Fcntl`, the runtime poller and `SetFinalizer`.
 translate = ["!*",
   "ErrProcessDone", "errProcessReleased", "ErrNoHandle",
   "errWriteAtInAppendMode", "errPathEscapes", "errPatternHasSeparator",
   "checkWrapErr", "dirBufPool",
+  "ErrInvalid", "ErrPermission", "ErrExist", "ErrNotExist", "ErrClosed",
+  "_", "lstat", "checkPidfdOnce",
+  "Interrupt", "Kill",
+  "ErrNoDeadline", "ErrDeadlineExceeded", "errNoDeadline", "errDeadlineExceeded",
+  "pollCopyFileRange", "pollSplice",
+  "Args", "init.0",
 ]
+trusted = ["runtime_args", "Stdin", "Stdout", "Stderr"]
 
-imports = ["!*", "errors", "sync"]
+imports = ["!*", "errors", "sync", "io/fs", "syscall", "internal/poll"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

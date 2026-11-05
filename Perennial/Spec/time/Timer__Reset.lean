@@ -20,8 +20,8 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- Spec of `(*Timer).Reset(d)` (axiom): some `bool`, for a timer made by `NewTimer` (`isTimer`; see
-`Timer.wp_Stop`). -/
+/-- Spec of `(*Timer).Reset(d)`: some `bool`, for a timer made by `NewTimer` (`isTimer`; see
+`Timer.Stop.spec`). -/
 abbrev time.Timer.Reset.spec : Prop :=
   ∀ (t ch : Loc) (γ : ChanNames) (d : time.Duration),
     {{ isTimer (GF := GF) t ch γ }}

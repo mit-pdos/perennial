@@ -47,6 +47,12 @@ attribute [irreducible] PlainCloser.ty
 
 axiom withDep.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
+noncomputable def IsWindows [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport.IsWindows"
+
+noncomputable def DepConsts [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport.DepConsts"
+
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport where
   pkgImportedPkgs := []
 

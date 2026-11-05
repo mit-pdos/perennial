@@ -1,8 +1,8 @@
 /-
 Shared definitions of the proofs of the Go `time` package: its `isPkgInit` (`isInit`, the global
 `startNano`), the `Countable` instance of `time.Time` (for the channel ghost state), the
-predicates of the timer specs (`newTimerMade`, `isTimer`, `isFuncTimer`), and the spec of the
-trusted model's `arbitraryTime` (not a Go function).
+predicates of the timer and ticker specs (`isRuntimeTimer`, `isTimer`, `isFuncTimer`, `isTicker`),
+and the spec of the trusted model's `arbitraryTime` (not a Go function).
 
 Notes on the package's specs:
 * The `Time` arithmetic is translated and proved (`Time.wp_Add`, `Time.wp_Sub`,
@@ -12,12 +12,10 @@ Notes on the package's specs:
   (`isInit`); they call `Now`, whose spec `wp_Now` is an axiom (`Now` reads the clock through
   the `go:linkname` `runtimeNow`). The model of `runtimeIsBubbled` (true only inside a
   `testing/synctest` bubble) is an arbitrary boolean (`TrustedCode/time.lean`).
-* `AfterFunc` is translated; the runtime's `newTimer` (a fresh `*Timer` and a goroutine that
-  calls the callback) is modeled in `TrustedCode/time.lean`. `Stop` of its timers is (a case
-  of) the axiom `Timer.Stop.wp_proof`.
-* `NewTicker`, `Ticker.Stop` and `Ticker.Reset` are modeled in `TrustedCode/time.lean` (Go
-  reinterprets the runtime's `*Timer` as a `*Ticker` through `unsafe.Pointer`); their specs are
-  proved over the model (`isTicker`). `Time.After` is translated and proved.
+* The runtime's timers are modeled in `TrustedCode/time.lean`: its `newTimer` (used by the
+  translated `AfterFunc`), `stopTimer` and `resetTimer` (used by the translated `Timer.Stop`
+  and `Timer.Reset`), and `NewTimer`, `NewTicker`, `Ticker.Stop` and `Ticker.Reset`. All the
+  timer and ticker specs are proved over these models. `Time.After` is translated and proved.
 * `wp_After`, the timer specs, `wp_when` and `wp_AfterFunc` are stated with the channel
   theory's instances, which fix `hlc := HasLC.hasLC` (sections `chan_*`).
   `Pos.Countable time.Time.t` (for the channel ghost state) is defined here.
@@ -85,14 +83,6 @@ theorem wp_arbitraryTime :
 
 end wps
 
-/-- `t` was returned by `NewTimer` (opaque): the runtime allocated it as the head of one of its
-timers (`runtime.timeTimer`: the `Timer`'s fields followed by the runtime's state) and set its
-`initTimer`, so that `Stop` and `Reset` may call the runtime's `stopTimer` and `resetTimer` on
-it. Only the axiom `wp_NewTimer` provides it; no points-to gives it, so a `Timer` the program
-allocates, or a copy of one, is not one. Its meaning is fixed by the axioms that mention it
-(`wp_NewTimer`, `Timer.wp_Stop`, `Timer.wp_Reset`); nothing else is proved about it (the value
-`False` only shows that the type is inhabited: Lean does not unfold an `opaque`). -/
-opaque newTimerMade {GF : BundledGFunctors} (t : Loc) : IProp GF := iprop(False)
 
 section chan_defs
 variable [GooseExts] [GooseSemantics] [GooseInterp]
@@ -101,64 +91,130 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-! ### Timers (the trust boundary: `NewTimer`, `Timer.Stop` and `Timer.Reset` are not
-translated; the runtime's timers are not modelled)
+/-! ### The runtime's timers
 
-A `*Timer` from `NewTimer` is `isTimer t ch γ`: its `C` field holds, for good, a channel `ch` on
-which a receive may yield some time (a bag of times, `isChanBag`, with no logical content), and
-`t` is one of the runtime's timers (`newTimerMade t`). The specs say nothing about *when* (or
-whether) a value arrives: `Stop` and `Reset` return some `bool` and change nothing the proof can
-observe. This over-approximates Go's timers (a stopped timer's channel delivers nothing; the
-model allows it), which is sound for safety.
+The runtime allocates each of its timers as a `runtime.timeTimer`: the `Timer`'s fields (or the
+`Ticker`'s, which are their prefix) followed by the runtime's state, which `stopTimer` and
+`resetTimer` use. A copy of a `Timer` or `Ticker` (`*u = *t`) copies only the fields, and Go's
+`stopTimer`/`resetTimer` on it treat the memory after `u` as timer state (go1.27.3:
+`u.Reset(time.Second)` on a copied `Ticker` dies with "fatal error: unlock of unlocked lock").
+The models in `TrustedCode/time.lean` keep the runtime's state as one cell at
+`structFieldRef time.Timer "timer" t` (`runtimeTimerRef`), allocated only by the models of the
+runtime's `newTimer`, `NewTimer` and `NewTicker`: the models of `stopTimer` and `resetTimer`
+load it, so they are stuck on a `Timer` or `Ticker` the program allocated, or a copy. Its
+points-to (`runtimeTimerCell`, `isRuntimeTimer t`) is what makes `isTimer`, `isFuncTimer` and `isTicker`
+unforgeable: no allocation of the program has a cell at that address (`timer` is no field of a
+Go type the program can name).
 
-`newTimerMade t` is what makes `isTimer` unforgeable. The points-to of `C` alone is not: a
-program can allocate its own `Timer` and copy `C` into it (`u := new(time.Timer); u.C = t.C`),
-and Go's `Stop` and `Reset` on that `u` panic ("uninitialized Timer"); with the points-to of
-`initTimer` as well, it could copy the whole struct (`*u = *t`), and the runtime's `stopTimer`
-and `resetTimer` would treat the memory after `u` as their timer state. -/
+The specs say nothing about *when* (or whether) a value arrives on a timer's or ticker's
+channel (a bag of times, `isChanBag`, with no logical content): `Stop` and `Reset` return some
+`bool` and change nothing the proof can observe. This over-approximates Go's timers (a stopped
+timer's channel delivers nothing; the model allows it), which is sound for safety. -/
+
+/-- The runtime's state of the timer at `t` (persistent): the cell `runtimeTimerAlloc`
+allocates, holding what the timer does when it fires (`resetTimer` forks it again). -/
+def runtimeTimerCell (t : Loc) (fire : GoFunc) : IProp GF :=
+  iprop(structFieldRef time.Timer go!"timer" t ↦□ fire)
+
+instance runtimeTimerCell_persistent (t : Loc) (fire : GoFunc) :
+    Persistent (runtimeTimerCell (GF := GF) t fire) := by
+  unfold runtimeTimerCell; infer_instance
+
+/-- The firing of the runtime's state of `NewTimer`'s and `NewTicker`'s timers: nothing (their
+goroutines send on `C` regardless). -/
+def noFire : GoFunc := func.mk BAnon BAnon (Val #())
+
+/-- `t` heads one of the runtime's timers (persistent). -/
+def isRuntimeTimer (t : Loc) : IProp GF :=
+  iprop(∃ fire : GoFunc, runtimeTimerCell t fire)
+
+instance isRuntimeTimer_persistent (t : Loc) : Persistent (isRuntimeTimer (GF := GF) t) := by
+  unfold isRuntimeTimer; infer_instance
 
 /-- `t` is a `*Timer` made by `NewTimer`, whose channel `C` is `ch` (persistent). -/
 def isTimer (t : Loc) (ch : Loc) (γ : ChanNames) : IProp GF :=
   iprop(structFieldRef time.Timer go!"C" t ↦□ ch ∗
-    isChanBag γ ch (V := time.Time) (fun _ => iprop(True)) ∗
-    □ newTimerMade (GF := GF) t)
+    structFieldRef time.Timer go!"initTimer" t ↦□ true ∗
+    runtimeTimerCell t noFire ∗
+    isChanBag γ ch (V := time.Time) (fun _ => iprop(True)))
 
 instance isTimer_persistent (t ch : Loc) (γ : ChanNames) :
     Persistent (isTimer (GF := GF) t ch γ) := by
   unfold isTimer; infer_instance
 
-/-! ### `AfterFunc` timers
-
-`AfterFunc(d, f)` is translated: it calls the runtime's `newTimer` (modeled in
-`TrustedCode/time.lean` as a fresh `*Timer` with `initTimer` set and a goroutine that calls the
-callback) with `goFunc`, which runs `f` in a new goroutine. `Stop` is not translated (it calls
-the runtime's `stopTimer`); `Timer.Stop.spec` covers its timers (`Timer.wp_Stop_func`). -/
-
-/-- `t` is a `*Timer` made by `AfterFunc` (persistent): `initTimer` is set. Only `wp_AfterFunc`
-gives it out (with no access to `C`, see `Timer.wp_Stop_func`). -/
+/-- `t` is a `*Timer` made by `AfterFunc` (persistent): `initTimer` is set, and `t` heads one
+of the runtime's timers. (`wp_AfterFunc` withholds `C`, which no caller needs.) -/
 def isFuncTimer (t : Loc) : IProp GF :=
-  iprop(structFieldRef time.Timer go!"initTimer" t ↦□ true)
+  iprop(structFieldRef time.Timer go!"initTimer" t ↦□ true ∗ isRuntimeTimer t)
 
 instance isFuncTimer_persistent (t : Loc) : Persistent (isFuncTimer (GF := GF) t) := by
   unfold isFuncTimer; infer_instance
-
-/-! ### Tickers
-
-`NewTicker`, `Ticker.Stop` and `Ticker.Reset` are modeled in `TrustedCode/time.lean` (Go
-reinterprets the runtime's `*Timer` as a `*Ticker` through `unsafe.Pointer`): a fresh `*Ticker`
-with `initTicker` set, and a goroutine that sends arbitrary times on its channel. Like a timer's,
-a ticker's channel may yield some time at a receive (a bag of times with no logical content), or
-nothing; `Stop` and `Reset` change nothing the proof can observe. -/
 
 /-- `t` is a `*Ticker` made by `NewTicker`, whose channel `C` is `ch` (persistent). -/
 def isTicker (t : Loc) (ch : Loc) (γ : ChanNames) : IProp GF :=
   iprop(structFieldRef time.Ticker go!"C" t ↦□ ch ∗
     structFieldRef time.Ticker go!"initTicker" t ↦□ true ∗
+    runtimeTimerCell t noFire ∗
     isChanBag γ ch (V := time.Time) (fun _ => iprop(True)))
 
 instance isTicker_persistent (t ch : Loc) (γ : ChanNames) :
     Persistent (isTicker (GF := GF) t ch γ) := by
   unfold isTicker; infer_instance
+
+/-- `runtimeTimerAlloc` (a helper of the trusted model): the runtime's state of the timer at
+`t`, firing by the closure `fire`. -/
+theorem wp_runtimeTimerAlloc (t : Loc) (f x : Binder) (e : Expr) :
+    {{ (True : IProp GF) }}
+      (App (App (Val time.runtimeTimerAlloc) (Val #t)) (Val (RecV f x e)))
+    {{ RET #(); runtimeTimerCell (GF := GF) t (func.mk f x e) }} := by
+  wp_start
+  unfold runtimeTimerRef runtimeTimerType
+  rw [show go.GoType.Named go!"time.Timer" [] = time.Timer.ty by with_unfolding_all rfl,
+    show RecV f x e = #(func.mk f x e) by rw [go.intoVal_unfold GoFunc]]
+  wp_auto
+  wp_if_angelic
+  iintro %Heq
+  subst Heq
+  ipersist r
+  wp_auto
+  iapply HΦ
+  unfold runtimeTimerCell
+  iexact r
+
+/-- The trusted model of the runtime's `stopTimer`: some `bool`, for one of its timers. -/
+theorem wp_stopTimer (t : Loc) :
+    {{ isRuntimeTimer (GF := GF) t }}
+      (App (Val time.stopTimer.impl) (Val #t))
+    {{ (b : Bool), RET #b; True }} := by
+  wp_start as Hr
+  unfold isRuntimeTimer
+  icases Hr with ⟨%fire, #Hr⟩
+  unfold runtimeTimerCell runtimeTimerRef runtimeTimerType
+  rw [show go.GoType.Named go!"time.Timer" [] = time.Timer.ty by with_unfolding_all rfl]
+  wp_auto
+  wp_apply wp_ArbitraryInt as %x -
+  wp_end
+
+/-- The trusted model of the runtime's `resetTimer`: some `bool`, for one of its timers whose
+firing does nothing of its own (`NewTimer`'s, `NewTicker`'s). -/
+theorem wp_resetTimer (t : Loc) (w p : w64) :
+    {{ runtimeTimerCell (GF := GF) t noFire }}
+      (App (App (App (Val time.resetTimer.impl) (Val #t)) (Val #w)) (Val #p))
+    {{ (b : Bool), RET #b; True }} := by
+  wp_start as Hr
+  unfold runtimeTimerCell runtimeTimerRef runtimeTimerType
+  rw [show go.GoType.Named go!"time.Timer" [] = time.Timer.ty by with_unfolding_all rfl]
+  wp_auto
+  wp_bind (Fork _)
+  iapply wp_fork $$ []
+  · inext
+    unfold noFire
+    wp_auto
+    itrivial
+  inext
+  wp_auto
+  wp_apply wp_ArbitraryInt as %x -
+  wp_end
 
 end chan_defs
 

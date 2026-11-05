@@ -106,8 +106,12 @@ func (c *typeTranslatability) check(t types.Type, byValue bool, top bool) {
 			}
 		}
 	case *types.Struct:
-		if byValue && !top && t.NumFields() > 0 {
-			c.fail("anonymous struct with fields")
+		if !top {
+			for i := range t.NumFields() {
+				if t.Tag(i) != "" {
+					c.fail("struct tag on an unnamed struct type")
+				}
+			}
 		}
 		for i := range t.NumFields() {
 			c.check(t.Field(i).Type(), true, false)
@@ -133,6 +137,22 @@ func (c *typeTranslatability) checkObj(obj types.Object) {
 	if !c.imported[pkg.Path()] {
 		c.fail("needs import %s", pkg.Path())
 	}
+}
+
+// ValueTypeReasons are the reasons goose cannot give a Lean type to the values
+// of t, a field type of a struct type of package pkgPath translating the
+// packages imported (as ExtendFilter decides for a defined struct type); nil if
+// it can.
+func ValueTypeReasons(pkgPath string, imported map[string]bool, t types.Type) []string {
+	c := &typeTranslatability{pkgPath: pkgPath, imported: imported,
+		reasons: make(map[string]bool), aliasDeps: make(map[string]bool)}
+	c.check(t, true, false)
+	var reasons []string
+	for r := range c.reasons {
+		reasons = append(reasons, r)
+	}
+	sort.Strings(reasons)
+	return reasons
 }
 
 var typesLogMu sync.Mutex

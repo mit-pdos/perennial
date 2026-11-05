@@ -1,0 +1,8 @@
+# internal/syscall/unix: the types, and the package-level variable initializers (what importing it
+# runs): `faccessat = syscall.Faccessat`, a function value.
+translate = ["!*", "faccessat", "_"]
+
+imports = ["!*", "syscall"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

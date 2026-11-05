@@ -20,9 +20,9 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- Spec of `(*Ticker).Reset(d)` (trusted model, `TrustedCode/time.lean`): for a ticker made by
-`NewTicker` (`isTicker`, which rules out Go's panic on an uninitialized ticker) and a positive
-`d` (Go panics otherwise). -/
+/-- Spec of `(*Ticker).Reset(d)`: for a ticker made by `NewTicker` (`isTicker`, whose
+`initTicker ↦□ true` and `isRuntimeTimer t` rule out Go's panic on an uninitialized ticker and its failure on a copy) and a
+positive `d` (Go panics otherwise). -/
 abbrev time.Ticker.Reset.spec : Prop :=
   ∀ (t : Loc) (d : time.Duration),
     {{ ⌜0 < sint.Z d⌝ ∗ ∃ (ch : Loc) (γ : ChanNames), isTicker (GF := GF) t ch γ }}

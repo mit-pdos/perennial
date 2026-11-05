@@ -6,14 +6,17 @@ trusted = [
   "newTimer",    # go:linkname newTimer
   "syncTimer",
   "runtimeIsBubbled", # go:linkname runtimeIsBubbled (true only inside a synctest bubble)
+  "stopTimer",   # go:linkname stopTimer
+  "resetTimer",  # go:linkname resetTimer
   # "sendTime",
 
   "After",
   "Sleep",
 
-  # `NewTicker` and the `*Ticker` methods convert the runtime's `*Timer` to and from `*Ticker`
-  # through `unsafe.Pointer` (the two structs share a prefix): modeled in TrustedCode/time.lean
+  # the runtime makes their channel synchronous (cap 0), which goose's `make` cannot express
+  "NewTimer",
   "NewTicker",
+  # `(*Timer)(unsafe.Pointer(t))` is stuck: `Timer` is not plain
   "Ticker.Stop",
   "Ticker.Reset",
 
@@ -31,6 +34,8 @@ translate = [
   "Microsecond",
   "Nanosecond",
   "Timer",
+  "Timer.Stop",
+  "Timer.Reset",
   "Time.UnixNano",
   "Time.nsec",
   "Time.unixSec",

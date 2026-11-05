@@ -808,6 +808,103 @@ noncomputable def when.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))))
   (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0")))))
 
+/-- Stop prevents the [Timer] from firing.
+    It returns true if the call stops the timer, false if the timer has already
+    expired or been stopped.
+
+    For a func-based timer created with [AfterFunc](d, f),
+    if t.Stop returns false, then the timer has already expired
+    and the function f has been started in its own goroutine;
+    Stop does not wait for f to complete before returning.
+    If the caller needs to know whether f is completed,
+    it must coordinate with f explicitly.
+
+    For a chan-based timer created with NewTimer(d), as of Go 1.23,
+    any receive from t.C after Stop has returned is guaranteed to block
+    rather than receive a stale time value from before the Stop;
+    if the program has not received from t.C already and the timer is
+    running, Stop is guaranteed to return true.
+    Before Go 1.23, the only safe way to use Stop was insert an extra
+    <-t.C if Stop returned false to drain a potential stale value.
+    See the [NewTimer] documentation for more details.
+
+    go: sleep.go:113:17 -/
+noncomputable def Timer.Stop.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "t"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Timer.ty)))) (Var "t"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Timer.ty)))) (Var "t"))
+  (App (App (Val (GoInstruction (FuncResolve stopTimer []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef Timer.ty go!"initTimer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Timer.ty)))) (Var "t")))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"time: Stop called on uninitialized Timer")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
+
+/-- Reset changes the timer to expire after duration d.
+    It returns true if the timer had been active, false if the timer had
+    expired or been stopped.
+
+    For a func-based timer created with [AfterFunc](d, f), Reset either reschedules
+    when f will run, in which case Reset returns true, or schedules f
+    to run again, in which case it returns false.
+    When Reset returns false, Reset neither waits for the prior f to
+    complete before returning nor does it guarantee that the subsequent
+    goroutine running f does not run concurrently with the prior
+    one. If the caller needs to know whether the prior execution of
+    f is completed, it must coordinate with f explicitly.
+
+    For a chan-based timer created with NewTimer, as of Go 1.23,
+    any receive from t.C after Reset has returned is guaranteed not
+    to receive a time value corresponding to the previous timer settings;
+    if the program has not received from t.C already and the timer is
+    running, Reset is guaranteed to return true.
+    Before Go 1.23, the only safe way to use Reset was to call [Timer.Stop]
+    and explicitly drain the timer first.
+    See the [NewTimer] documentation for more details.
+
+    go: sleep.go:171:17 -/
+noncomputable def Timer.Reset.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "t"
+  (Lam "d"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Timer.ty)))) (Var "t"))
+  (Let "d" (App (Val (GoInstruction (GoAlloc Duration.ty))) (Var "d"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d"))
+  (App (App (Val (GoInstruction (FuncResolve when []))) (Val #())) (Var "$a0")))
+  (Let "w" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Timer.ty)))) (Var "t"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.int64))) (Var "w"))
+  (Let "$a2" (Val #(W64 0))
+  (App (App (App (App (Val (GoInstruction (FuncResolve resetTimer []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "w") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef Timer.ty go!"initTimer"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Timer.ty)))) (Var "t")))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"time: Reset called on uninitialized Timer")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #())))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
+
 /-- AfterFunc waits for the duration to elapse and then calls f
     in its own goroutine. It returns a [Timer] that can
     be used to cancel the call using its Stop method.
@@ -1667,6 +1764,8 @@ class Timer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   set_initTimer : ∀ (x : Timer) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet Timer.underlying go!"initTimer") (PairV #x #y) (Val #(({ x with initTimer' := y } : Timer)))
   method_set : go.MethodSetIs Timer.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Timer.ty) [(go!"Reset", (some (go.signature.Signature [Duration.ty] false [go.bool]))), (go!"Stop", (some (go.signature.Signature [] false [go.bool])))]
+  ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Timer.ty) go!"Reset" Timer.Reset.impl
+  ptr_Stop_unfold : MethodUnfold (go.GoType.PointerType Timer.ty) go!"Stop" Timer.Stop.impl
 
 attribute [instance] Timer.TypeAssumptions.type_repr
   Timer.TypeAssumptions.underlying
@@ -1676,6 +1775,8 @@ attribute [instance] Timer.TypeAssumptions.type_repr
   Timer.TypeAssumptions.set_initTimer
   Timer.TypeAssumptions.method_set
   Timer.TypeAssumptions.ptr_method_set
+  Timer.TypeAssumptions.ptr_Reset_unfold
+  Timer.TypeAssumptions.ptr_Stop_unfold
 
 structure Ticker [GooseExts] where
   mk ::
@@ -2290,6 +2391,9 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   syncTimer_unfold : FuncUnfold syncTimer [] syncTimer.impl
   when_unfold : FuncUnfold when [] when.impl
   newTimer_unfold : FuncUnfold newTimer [] newTimer.impl
+  stopTimer_unfold : FuncUnfold stopTimer [] stopTimer.impl
+  resetTimer_unfold : FuncUnfold resetTimer [] resetTimer.impl
+  NewTimer_unfold : FuncUnfold NewTimer [] NewTimer.impl
   After_unfold : FuncUnfold After [] After.impl
   AfterFunc_unfold : FuncUnfold AfterFunc [] AfterFunc.impl
   goFunc_unfold : FuncUnfold goFunc [] goFunc.impl
@@ -2328,6 +2432,9 @@ attribute [instance] Assumptions.ParseError_instance
   Assumptions.syncTimer_unfold
   Assumptions.when_unfold
   Assumptions.newTimer_unfold
+  Assumptions.stopTimer_unfold
+  Assumptions.resetTimer_unfold
+  Assumptions.NewTimer_unfold
   Assumptions.After_unfold
   Assumptions.AfterFunc_unfold
   Assumptions.goFunc_unfold

@@ -31,7 +31,6 @@ theorem github_com.goose_lang.std.SignedSumAssumeNoOverflow.wp_proof
     github_com.goose_lang.std.SignedSumAssumeNoOverflow.spec (GF := GF) (hG := hG) := fun x y => by
   wp_start
   wp_auto
-  simp only [math.MaxInt, math.MinInt]
   wp_if_destruct
   · wp_if_destruct
     · wp_apply wp_Assume as %_
