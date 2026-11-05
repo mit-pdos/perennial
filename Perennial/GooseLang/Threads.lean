@@ -4,6 +4,8 @@ Thread tokens: the ghost-state side of the thread bound of the bounded semantics
 
 * `threadTok`: one exclusive thread token, "a live thread".
 * `threadToks n`: `n` of them.
+* `levelTok l`, `levelToks l n`: the token of one **level** `l < T`; `threadTokFrom l`: the
+  levels `l` to `T - 1` of one thread token.
 
 The bound `T = threadBound GF` is not fixed: it is chosen when the ghost state
 is allocated by the adequacy theorem (`goose_adequacy N T`, `Adequacy.lean`),
@@ -28,11 +30,22 @@ by that many tokens, is below `T`. Since every live thread is accounted for by
 exactly one token, this is the argument "`T` goroutines cannot be live at the
 same time" made inside the logic.
 
+Levels. A thread token is one token of each of `T` levels (`threadTok_bigSepL`,
+`threadTokFrom_succ`: `threadTokFrom l ⊣⊢ levelTok l ∗ threadTokFrom (l + 1)` for `l < T`), and
+each level has its own `T - 1` tokens (`levelToks l n ⊢ ⌜n < T⌝`). A thread may hand some levels
+of its token to others and keep the rest: e.g. a goroutine of a leveled wait group
+(`sync.tokJoinL`) runs with its levels from `1` while the group holds its level `0`, and borrows
+from a thread pool at a level it holds (`threadPool.isThreadPoolL`). The levels of
+`threadToks n` need not be of the same slots. The fuel and `ThreadExit` still trade whole tokens,
+and `n` whole tokens contain `n` level-`0` tokens, so they are still fewer than `T`, however they
+were assembled.
+
 The tokens are built from a `ghost_map Nat Unit` (`threadTokName`): the token
-of slot `k` is `k ↪ ()` together with `⌜k + 1 < T⌝`. Tokens are exclusive, so
-the `n` tokens of `threadToks n` are `n` distinct slots below `T - 1`, whence
-`n ≤ T - 1` *without* access to an authoritative part: the authoritative map
-is allocated with all `T - 1` slots and discarded (`thread_init`).
+of slot `k` at level `l` is `levelKey l k ↪ ()` (the key `l * T + k`) together with
+`⌜k + 1 < T⌝`. Tokens are exclusive, so the `n` tokens of `levelToks l n` are `n`
+distinct slots below `T - 1`, whence `n ≤ T - 1` *without* access to an
+authoritative part: the authoritative map is allocated with all `T - 1` slots of
+every level and discarded (`thread_init`).
 
 The tokens are ghost state of the one `allG GF`, which `GooseGlobalGS`
 (`Lifting.lean`) carries; here it is the ambient `[AllG GF]`. `ThreadGS` is
@@ -63,7 +76,8 @@ it as a premise (e.g. `threadBound GF ≤ 2 ^ 31`). The names are those of ghost
 state of the ambient `[AllG GF]`; before allocation (`thread_init`) nothing but
 `AllG GF` is needed. -/
 class ThreadGS (GF : BundledGFunctors) where
-  /-- `ghost_map Nat Unit`: the token `k ↪ ()` of every thread slot `k < T - 1`. -/
+  /-- `ghost_map Nat Unit`: the token `l * T + k ↪ ()` of every thread slot `k < T - 1` at every
+  level `l < T` (`levelKey`). -/
   threadTokName : GName
   threadBound : Nat
   threadBound_gt : 1 < threadBound
