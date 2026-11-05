@@ -35,16 +35,19 @@ type outputDecls struct {
 	importDecls    []glang.Decl
 	typeNamedDecls []glang.Decl
 	typeAliasDecls []glang.Decl
-	constDecls     []glang.Decl
-	varDecls       []glang.Decl
-	funcDecls      []glang.Decl
-	funcImplDecls  []glang.Decl
-	finalDecls     []glang.Decl
+	// the field lists and go.GoTypes of the unnamed struct types
+	anonStructDecls []glang.Decl
+	constDecls      []glang.Decl
+	varDecls        []glang.Decl
+	funcDecls       []glang.Decl
+	funcImplDecls   []glang.Decl
+	finalDecls      []glang.Decl
 }
 
 func (o *outputDecls) decls() []glang.Decl {
 	return slices.Concat(
 		o.typeNamedDecls,
+		o.anonStructDecls,
 		o.typeAliasDecls,
 		o.constDecls,
 		o.varDecls,
@@ -67,7 +70,6 @@ type Ctx struct {
 	// glang.LeanPkgId).
 	pkgIdent string
 	errorReporter
-
 
 	// XXX: this is so we can determine the expected return type when handling a
 	// `returnStmt` so the appropriate conversion is inserted
@@ -92,6 +94,13 @@ type Ctx struct {
 	functions      []*ast.FuncDecl
 	namedTypeSpecs []*ast.TypeSpec
 	localTypes     map[string]bool // names of the types declared in functions
+	// the unnamed struct types (with fields) the translation mentions, by
+	// name, in the order they were met (a struct after those its fields
+	// mention; see anonStructOf)
+	anonStructs     map[string]*anonStruct
+	anonStructOrder []*anonStruct
+	// glangType is translating the field types of an unnamed struct type
+	inAnonStructFields bool
 
 	importNames map[string]*types.PkgName
 	// spellOut: glangType writes the types this translation cannot name
@@ -122,6 +131,7 @@ func NewPkgCtx(pkg *packages.Package, filter declfilter.DeclFilter) Ctx {
 		importAssumptions: make(map[string]string),
 		filter:            filter,
 		localTypes:        make(map[string]bool),
+		anonStructs:       make(map[string]*anonStruct),
 		inits:             initFuncs(pkg.Syntax),
 	}
 }
@@ -511,7 +521,7 @@ func (ctx *Ctx) fieldSelection(n locatable, index *[]int, curType *types.Type, e
 		}
 		v := info.structType.Field(i)
 		*expr = glang.NewCallExpr(glang.VerbatimExpr("StructFieldGet"),
-			ctx.structInfoToGlangType(info), glang.TermString(v.Name()), *expr)
+			ctx.structInfoToGlangType(n, info), glang.TermString(v.Name()), *expr)
 		*curType = v.Type()
 	}
 }
@@ -523,9 +533,6 @@ func (ctx *Ctx) fieldAddrSelection(n locatable, index []int, curType *types.Type
 	for _, i := range index {
 		info, ok := ctx.getStructInfo(*curType)
 		if !ok {
-			if _, ok := (*curType).(*types.Struct); ok {
-				ctx.unsupported(n, "anonymous struct")
-			}
 			ctx.nope(n, "expected (pointer to) struct type for base of selector, got %s", *curType)
 		}
 		if info.throughPointer {
@@ -534,7 +541,7 @@ func (ctx *Ctx) fieldAddrSelection(n locatable, index []int, curType *types.Type
 		v := info.structType.Field(i)
 
 		*expr = glang.NewCallExpr(glang.VerbatimExpr("StructFieldRef"),
-			ctx.glangType(n, info.namedType), glang.StringLiteral{Value: v.Name()}, *expr)
+			ctx.glangType(n, info.goType()), glang.StringLiteral{Value: v.Name()}, *expr)
 		*curType = v.Type()
 	}
 }
@@ -554,6 +561,12 @@ func (ctx *Ctx) selectorExpr(e *ast.SelectorExpr) glang.Expr {
 				args,
 				glang.Tt,
 			)
+		} else if _, ok := ctx.info.ObjectOf(e.Sel).(*types.Const); ok && ctx.info.Types[e].Value != nil {
+			// A constant of an imported package is a constant expression: it is
+			// emitted as its value (at the expression's type, as go/types records
+			// it), not as a reference to the other package's declaration, so a
+			// translation does not need the other package (`runtime.GOOS`).
+			return ctx.constantLiteral(e)
 		} else {
 			obj := ctx.info.ObjectOf(e.Sel)
 			return ctx.handleImplicitConversion(e,
@@ -2666,8 +2679,14 @@ func (ctx *Ctx) constantLiteral(e ast.Expr) glang.Expr {
 	if e, ok := e.(*ast.Ident); ok {
 		val = ctx.info.ObjectOf(e).(*types.Const).Val()
 	}
-	v := constant.Val(val)
 	t := ctx.typeOf(e)
+	if b, ok := t.Underlying().(*types.Basic); ok && b.Info()&types.IsInteger != 0 {
+		// an integer-valued untyped float constant used at an integer type
+		if iv := constant.ToInt(val); iv.Kind() == constant.Int {
+			val = iv
+		}
+	}
+	v := constant.Val(val)
 	constInt := func(cons string) glang.Expr {
 		switch v := v.(type) {
 		case *big.Int:
@@ -3031,7 +3050,18 @@ func (ctx *Ctx) packagePropClass() []glang.Decl {
 			}
 			ctx.unsupported(cycle[0], "%s", s)
 		}) {
-		decls = append(decls, ctx.namedTypeSemanticsDecl(t)...)
+		tdecls := ctx.namedTypeSemanticsDecl(t)
+		if ctx.filter.GetAction(t.Name.Name) == declfilter.Translate {
+			for _, s := range util.AnonStructsInDef(ctx.typeOf(t.Type)) {
+				if a, ok := ctx.anonStructs[util.AnonStructName(s)]; ok {
+					decls = append(decls, ctx.anonStructDecls(a)...)
+				}
+			}
+		}
+		decls = append(decls, tdecls...)
+	}
+	for i := 0; i < len(ctx.anonStructOrder); i++ {
+		decls = append(decls, ctx.anonStructDecls(ctx.anonStructOrder[i])...)
 	}
 
 	decls = append(decls, packageAssumptionsDecl{glang.VerbatimDecl{Content: ctx.leanPackagePropClass(ctx.namedTypeSpecs)}})
@@ -3183,4 +3213,7 @@ InitLoop:
 
 	decls = append(decls, ctx.packagePropClass()...)
 	ctx.out.finalDecls = decls
+	for _, a := range ctx.anonStructOrder {
+		ctx.out.anonStructDecls = append(ctx.out.anonStructDecls, ctx.anonStructTypeDecls(a)...)
+	}
 }

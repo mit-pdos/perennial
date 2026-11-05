@@ -27,7 +27,7 @@ variable [package_sem : sync.Assumptions]
 theorem sync.Pool.Put.wp_proof
     (wp_model_Put : github_com.mit_pdos.perennial.goose.model.pool.Pool.Put.spec (GF := GF) (hG := hG)) :
     sync.Pool.Put.spec (GF := GF) (hG := hG) := by
-  intro p f P x
+  intro p f R P x
   wp_start as ⟨#His, Hx⟩
   cases x with
   | nil =>
@@ -36,7 +36,7 @@ theorem sync.Pool.Put.wp_proof
     itrivial
   | ok i =>
     wp_auto
-    wp_apply sync.wp_Pool_state p f P $$ [$His] as %s #Hs
+    wp_apply sync.wp_Pool_state p f R P $$ [$His] as %s #Hs
     wp_apply wp_model_Put $$ [$Hs $Hx]
     iapply HΦ
     itrivial

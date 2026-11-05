@@ -159,3 +159,12 @@ func testStructFieldFunc() bool {
 	}
 	return (a.fn(10) == 20)
 }
+
+type TwoIntsAlias = TwoInts
+
+func testStructFieldThroughAlias() bool {
+	a := TwoIntsAlias{x: 1, y: 2}
+	p := &a
+	p.y = 3
+	return a.x == 1 && p.y == 3 && a.y == 3
+}

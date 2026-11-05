@@ -923,3 +923,188 @@ defect).
 operation in Go.
 
 **Why.** The owner: "Make the addition to the translator (it's basically desugaring)".
+
+## Case 30 — ACCEPTED: unnamed struct types get one generated structure each, option (a) (branch `anon-struct`)
+
+**Symptom.** Incomplete. goose refused an unnamed struct type with fields wherever it needed a
+Lean type for its values ("Anonymous structs with fields are not supported"), and a field
+selection on an addressable one ("unsupported: anonymous struct", `fieldAddrSelection`: only a
+defined type had a `structTypeInfo`); `translate_types` kept every defined type with such a field
+axiomatized. The semantics already had the type, `go.StructType fds` (composite literals,
+`StructFieldGet`/`Set`, `==`). It blocked `sync.OnceValue`/`OnceFunc`, which keep their state in
+`d := struct{f; once; valid; p; result}{f: f}`, captured by the returned closure.
+
+**Witness.** `d := struct{ f int; valid bool }{f: 3}; return d.f` (goose: unsupported).
+
+**Taken.** The named struct scheme, without the `go.Named`: each unnamed struct type with fields
+that a package's translation mentions gets a structure `«struct#<h>»` (`<h>`: 8 hex digits of the
+SHA-256 of the type as Go prints it, packages by path), parameterized by the type parameters it
+mentions; its `fields`/`fieldsUnsealed`/`equals_unfold_`, `«struct#<h>».underlying :=
+go.StructType fields` (the translation's go.GoType for the type), and a `TypeAssumptions` class
+(`type_repr` and the field steps, the named type's minus `underlying` and the method sets) in the
+package's `Assumptions`; proofgen gives it the named type's typed points-to and access instances.
+The field selection takes the unnamed type like a defined one. Costs: 1 goose branch in
+`glangType`, 1 in `toLeanType`, 1 in `getStructInfo` (and `fieldAddrSelection`'s refusal gone),
+the declarations emitted per type (`anon_structs.go`, reusing the named type's helpers), 1 proofgen
+branch; `autotypes`' by-value refusal replaced by Case 12's tag refusal. No semantics rule, no
+negative test. Regenerated: `runtime` and `testing` (their defined types with unnamed-struct
+fields are now translated), the semantics tests (`anon_structs.go`, five proved by
+`semantics_auto`).
+- *Naming*: a function of the type alone, so every occurrence in a package names one structure
+  whatever the declaration order, and proofgen (which reads goose's list, `goose.AnonStructs`)
+  names it alike; `#` is in no Go identifier.
+- *Across packages*: each package has its own structure for the type, and the same go.GoType
+  (structural), which is what keeps Go's type identity right; two packages exchanging such a
+  value see two Lean records of the same type, as two defined types with one underlying type do.
+- *Order*: the types' field lists come before the package's aliases (an alias may denote one; in
+  a field list a same-package alias is written as what it denotes), the structures before the
+  first defined type whose values contain them.
+- *Untranslatable fields* (follow-up, branch `anon-struct-axiomatize`): an unnamed struct type
+  whose fields goose cannot give Lean types (a type of a package the translation does not import,
+  as `translate_types` decides for a defined type: `util.ValueTypeReasons`) gets an axiomatized
+  structure (`axiom «struct#<h>» : Type`, its zero value, `type_repr` only), as a defined type
+  goose cannot translate; found by etcd-grove's protobuf-go `protoreflect`, whose unnamed struct
+  embeds `internal/pragma.NoUnkeyedLiterals`, a package it does not import.
+- Left out: method sets of unnamed structs with embedded fields (no promoted-method facts, as
+  before); unexported field names are not package-qualified in `FieldDecl` (an existing defect of
+  every unnamed struct type, unrelated to this change).
+
+**Not taken.** (b) one generic `TypeReprUnderlying (go.StructType fds) V` in Perennial, `V` a
+nested product of the fields' types: nothing generated, but proofs about tuples instead of named
+fields, and a new instance scheme next to the named one.
+
+**Why.** The owner chose (a), the existing named-struct scheme ("Do (a)").
+
+## Case 31 — ACCEPTED: field selection through a type alias of a struct (branch `goose-unalias`)
+
+**Symptom.** Translation refused where Go runs (incomplete). `getStructInfo` matched
+`*types.Named` (and a pointer to one) without unaliasing, so a selector on a value whose
+type is an alias of a struct type (`*types.Alias`, the default since Go 1.23) was rejected
+by `fieldAddrSelection`. Kubernetes' apiserver hits it at `clientv3.Event = mvccpb.Event`
+(etcd-grove, `notes/k8s-compactor-plan.md`, Q1 (b)).
+
+**Witness.** `type S struct{ x uint64 }; type A = S; func f(a A) uint64 { return a.x }`, and
+the same through `p *A` and `type P = *S`: Go returns the field; goose stops with an unsupported selector.
+
+**Taken.** `types.Unalias` on the type before the pointer test and on the pointer's
+element, in `getStructInfo` (two lines; no new goose branch, no semantics rule, no negative
+test). Both selector translations go through `getStructInfo`; the other `*types.Named`
+matches already unalias or handle declared names. The translation is the aliased struct's
+`StructFieldRef S.ty` (the alias's type is `@[reducible]`, `A.ty := S.ty`). Tests: the
+unittest gold file (a value, a pointer to an alias, an alias of a pointer), a semantics test
+(`testStructFieldThroughAlias`, proved by `semantics_auto`). Regenerating the standard
+library and models with and without the change gives identical output; only goose's own
+examples change.
+
+**Not taken.** Nothing tempting: a separate `*types.Alias` case in each selector caller
+would duplicate the lookup.
+
+**Why.** Same shape as Case 23 (`FuncName` unaliases a method's receiver): an alias is
+its target, so the lookup unaliases first. The user signed off on the plan as proposed
+("G1 approved", 2026-11-04).
+
+## Case 32 — ACCEPTED: a constant of an imported package is its value (branch `goose-pkgconst`)
+
+**Symptom.** Translation incomplete where Go runs. `selectorExpr` emitted a package-qualified
+constant (`runtime.GOOS`) as a reference to the other package's declaration, so the translation
+needed that package: for a names-only package (`runtime`) the name is an opaque `axiom GOOS : val`,
+and importing it runs its initializer (95 opaque initializers). `os`'s `init.0` (`if runtime.GOOS
+== "windows" { return }; Args = runtime_args()`) could not be translated (etcd-grove,
+`notes/perennial-changes.md`, P4).
+
+**Witness.** `func IsWindows() bool { return runtime.GOOS == "windows" }` with `runtime` not
+imported by the configuration: goose emitted `Val _root_.Perennial.runtime.GOOS`.
+
+**Taken.** In `selectorExpr`, a `*types.Const` of another package is `constantLiteral(e)`: the
+value go/types records for the expression at its type, the path every constant expression and
+literal already takes. `constantLiteral` converts an integer-valued constant to an integer before
+emitting it at an integer type. Test: `filteredimport`'s `IsWindows` and `DepConsts` (a typed, an
+untyped and a named-typed constant of a package the configuration does not import). Regenerated:
+`strconv` (`internal/strconv`'s error codes), `sync` (`internal/race.Enabled`, `false` in the
+non-race build goose translates), `goose-lang/std` (`math.MaxInt`, `MinInt`, `time.Millisecond`),
+the channel examples (`time.Millisecond`, `Second`).
+
+**Not taken.** Translating `runtime`'s initializer for one comparison. Folding own-package
+constants too: they are already definitions with their values, unchanged.
+
+**Why.** A constant is a value fixed at compile time (the build goose translates already fixes
+`GOOS` by build tags); the user: "Do the translator change" (2026-11-04).
+
+## Case 33 — ACCEPTED: `os`'s remaining initializers: `syscall`'s `init` a no-op, the standard streams not translated (branch `os-init-final`)
+
+**Symptom.** Incomplete: `os`'s initializer called opaque `X.init`s (etcd-grove's
+`os.opaqueInitsOk`, `initFuncsOk`, `Stderr_init` axioms) for `Interrupt`/`Kill` (`syscall`'s
+types), internal/poll's variables, the standard streams and `init.0`. Translating them reaches
+`syscall`'s and `internal/poll`'s initializers, and `NewFile`.
+
+**Taken** (the user's decisions, 2026-11-04, etcd-grove `notes/perennial-changes.md` P1-P4):
+* `syscall`, `internal/poll` and `internal/syscall/unix` translate their variable initializers
+  (and the constants they use); each initializer is proved (`isPkgInit`: `True`, and for
+  internal/poll the cells of `ErrNoDeadline`/`ErrDeadlineExceeded`, which `os` copies).
+* `syscall`'s `init.0` (`rlimit.go`: raises RLIMIT_NOFILE through the raw `prlimit` system call)
+  is a trusted no-op. The user: "P1: (ii)": the changed limit is observable only by `exec`,
+  `Getrlimit` or running out of descriptors, none of which Perennial models.
+* `runtime_envs` and `os.runtime_args` (linknames with no Go body) return an arbitrary
+  `[]string` (`syscall.arbitraryStrings`, the `fmt.arbitraryString` scheme).
+* `os.Stdin`/`Stdout` initializers are trusted no-ops (the variables are not allocated: any use
+  is stuck); `Stderr`'s allocates the variable and stores a fresh pointer to an untyped cell (a
+  non-nil `*File` whose `File` cannot be read), because initializers that only store
+  `os.Stderr` (raft's `defaultLogger`) must be provable. The user: "I don't want to reason about
+  any of that. What about a trusted model that does nothing? This is conservative because it
+  leaves Stdin, Stdout, Stderr as undefined, so any code relying on it will be unprovable. I do
+  not want to follow the rule 'translatable => *must* verify' in this case."
+* `os.init.0` is translated (`runtime.GOOS` is a value since Case 32).
+
+**Not taken.** A model of the raw system call writing an arbitrary `Rlimit` through an integer
+address (P1 (i)); translating `NewFile` with models of `Fcntl`, the poller linknames and a
+`SetFinalizer` that may run the finalizer (P3 (ii)).
+
+**Why.** R2 would require translating `NewFile`; the user overrode it for the standard streams:
+a model less defined than Go (stuck where Go runs) is sound, and here it costs nothing the
+proofs need. The `init.0` no-op is faithful for every program Perennial can express.
+
+## Case 34 — ACCEPTED: the runtime's timers keep their state in a cell only the model allocates; `newTimerMade` and the timer/ticker axioms removed (branch `worktree-timer-runtime-cell`)
+
+**Symptom.** Unsound model, then worse trust. The models of `NewTicker`, `Ticker.Stop` and
+`Ticker.Reset` (and before them a translated `Timer.Stop` over a `stopTimer` stub) read only
+`initTimer`/`initTicker`, so on a copy (`u := new(time.Ticker); *u = *t`) they returned where Go
+crashes (go1.27.3: `u.Reset(time.Second)` dies with "fatal error: unlock of unlocked lock"; the
+runtime's timer state after the header is not copied). `isFuncTimer` (`initTimer ↦□ true`) had
+the same hole for `AfterFunc` timers. cf98e5f15 (timers) and 432c32f (tickers) "fixed" this by
+deleting the models, stating the six specs as axioms, and adding
+`opaque newTimerMade (t : Loc) : IProp GF := iprop(False)` as an unforgeable token that only the
+axioms hand out. An earlier fix (82c53dd53, proving the timer specs over models) was dropped
+in the merge f58cb0a26, which took cf98e5f15's side of the conflict whole.
+
+**Witness.** `t := time.NewTicker(time.Second); u := new(time.Ticker); *u = *t; u.Reset(time.Second)`.
+
+**Taken.** Go's runtime allocates a timer as `runtime.timeTimer`: the `Timer`/`Ticker` header
+followed by the embedded `timer`. The model keeps that state as one cell at
+`structFieldRef time.Timer "timer" t` (`runtimeTimerRef`; Go's `Timer` has no field `timer`, so
+goose never emits that address and no program allocation creates the cell), allocated by
+`runtimeTimerAlloc` with the `alloc_struct`/`GlobalAlloc` scheme (`GoAlloc`, `AngelicExit` unless
+it landed there). The models of the runtime's `newTimer` and of `NewTimer`/`NewTicker` allocate
+it; the new models of `stopTimer`/`resetTimer` load it, so they are stuck on a copy. `Timer.Stop`
+and `Timer.Reset` are translated; `NewTimer`, `NewTicker` (channel capacity 0 or 1: the runtime
+makes timer channels synchronous) and `Ticker.Stop`/`Ticker.Reset` (`(*Timer)(unsafe.Pointer(t))`
+is stuck, `Timer` is not plain) are hand-written. The cell holds what the timer does when it
+fires (`func()`): `newTimer` stores the call of `f`, `NewTimer`/`NewTicker` a no-op (their
+goroutines send forever), and `resetTimer` forks it once more, as Go's runtime fires a reset
+timer again; the blind review found that without this an `AfterFunc` timer's `Reset` never ran
+`f` again (`t := time.AfterFunc(0, f); <-ch; t.Reset(0)`: Go runs `f` twice). The token is the
+points-to of the cell, in `isTimer`/`isTicker` (holding the no-op) and `isFuncTimer` (any
+firing). All six specs are proved. `After`'s channel also gets capacity 0 or 1 (the same
+`asynctimerchan` defect as `NewTicker`'s). Trust: −1 opaque, −6 axioms; +6 models and a
+helper; no goose or semantics change.
+
+**Not taken.** Naming `runtime.timeTimer` itself: `time` does not import `runtime`, and
+`runtime.Assumptions` would join every time spec and its clients. Modelling the runtime's timer
+set as a package-level registry: global state, a lock and ghost state for what a points-to gives.
+
+**Why.** The user: the axioms over an opaque `False` were "an obviously unsound axiom into the
+tcb", "I'd rather not introduce iris axioms here", and "make sure that future agents know that
+the prior changes that introduced those axioms were bad, and we should avoid those kind of
+changes in the future". cf98e5f15 and 432c32f are rejected precedent: when a model is more
+defined than Go, make it stuck where Go fails by modelling the state Go depends on; never
+delete the model in favour of axioms, and never mint a token as an `opaque` proposition whose
+meaning only axioms fix (review-trusted R10). Plan signed off 2026-11-04 ("Make it so.").

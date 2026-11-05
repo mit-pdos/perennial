@@ -20,8 +20,8 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- Spec of `time.NewTicker(d)` (axiom): for a positive `d` (Go panics otherwise), a `*Ticker`
-(`isTicker`), one of the runtime's timers (`newTimerMade`), whose channel may yield some time at
+/-- Spec of `time.NewTicker(d)`: for a positive `d` (Go panics otherwise), a `*Ticker`
+(`isTicker`), one of the runtime's timers (`isRuntimeTimer`), whose channel may yield some time at
 a receive. -/
 abbrev time.NewTicker.spec : Prop :=
   ∀ (d : time.Duration),

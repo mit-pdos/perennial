@@ -25,6 +25,20 @@ noncomputable def X.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] X.ty
 
+noncomputable def Kind.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport/dep.Kind" [])
+
+attribute [irreducible] Kind.ty
+
+@[reducible] noncomputable def N [GooseExts] [GoGlobalContext] : val :=
+  #(W64 3)
+
+@[reducible] noncomputable def Untyped [GooseExts] [GoGlobalContext] : val :=
+  #(1099511627776 : Int)
+
+@[reducible] noncomputable def KindB [GooseExts] [GoGlobalContext] : val :=
+  #(W32 2)
+
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.dep where
   pkgImportedPkgs := []
 
@@ -65,10 +79,26 @@ attribute [instance] X.TypeAssumptions.type_repr
   X.TypeAssumptions.method_set
   X.TypeAssumptions.ptr_method_set
 
+abbrev Kind [GooseExts] : Type := w32
+
+@[reducible] noncomputable def Kind.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  go.uint32
+
+class Kind.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq Kind.ty Kind.underlying
+  method_set : go.MethodSetIs Kind.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Kind.ty) []
+
+attribute [instance] Kind.TypeAssumptions.underlying
+  Kind.TypeAssumptions.method_set
+  Kind.TypeAssumptions.ptr_method_set
+
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   X_instance : X.TypeAssumptions
+  Kind_instance : Kind.TypeAssumptions
 
 attribute [instance] Assumptions.X_instance
+  Assumptions.Kind_instance
 
 end github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport.dep
 

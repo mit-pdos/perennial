@@ -23,12 +23,13 @@ variable [sem : go.Semantics]
 variable [package_sem : sync.Assumptions]
 
 /-- `p.Get()`: returns a value `x` with `P x`, one that was `Put` (and is returned by no other
-`Get`) or one `New` returned; or, only if `New` is `nil`, returns `nil`. -/
+`Get`) or one `New` returned; or, only if `New` is `nil`, returns `nil`. The caller lends `R` to
+`New` for the call and gets it back. -/
 abbrev sync.Pool.Get.spec : Prop :=
-  ∀ (p : Loc) (f : GoFunc) (P : GoAny → IProp GF),
-    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isPool p f P }}
+  ∀ (p : Loc) (f : GoFunc) (R : IProp GF) (P : GoAny → IProp GF),
+    {{ isPkgInit (PROP := IProp GF) pkg_id.sync ∗ isPool p f R P ∗ R }}
       (App (Val (p @!! go.GoType.PointerType Pool.ty @!! go!"Get")) (Val #()))
-    {{ (x : GoAny), RET #x; P x ∨ ⌜f = func.nil ∧ x = GoInterface.nil⌝ }}
+    {{ (x : GoAny), RET #x; (P x ∨ ⌜f = func.nil ∧ x = GoInterface.nil⌝) ∗ R }}
 
 end spec
 

@@ -24,15 +24,18 @@ theorem time.After.wp_proof :
     time.After.spec (GF := GF) (hG := hG) := by
   intro d
   wp_start
+  wp_apply wp_ArbitraryInt as %x -
   rw [show go.GoType.Named go!"time.Time" [] = time.Time.ty by with_unfolding_all rfl]
-  wp_apply chan.wp_make2 (V := time.Time) $$ [] as %ch %γ ⟨#His, -, Hown⟩
-  · ipureintro; decide
-  imod start_bag (fun _ => iprop(True)) _ ch γ trivial $$ His Hown with #Hch
-  wp_apply wp_fork $$ []
-  · wp_apply wp_arbitraryTime as %t -
-    wp_apply wp_bag_send $$ [$Hch]
-    itrivial
-  wp_end
+  wp_if_destruct
+  all_goals
+    wp_apply chan.wp_make2 (V := time.Time) $$ [] as %ch %γ ⟨#His, -, Hown⟩
+    · ipureintro; decide
+    imod start_bag (fun _ => iprop(True)) _ ch γ trivial $$ His Hown with #Hch
+    wp_apply wp_fork $$ []
+    · wp_apply wp_arbitraryTime as %t -
+      wp_apply wp_bag_send $$ [$Hch]
+      itrivial
+    wp_end
 
 end proof
 

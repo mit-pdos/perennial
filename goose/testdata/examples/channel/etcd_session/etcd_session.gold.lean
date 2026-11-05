@@ -169,7 +169,7 @@ noncomputable def sessionMain.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$go" (App (Val (GoInstruction (FuncResolve monitorSession []))) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (Let "$a0" (Let "$a0" (Val _root_.Perennial.time.Second)
+  (Let "$a0" (Let "$a0" (Val #(W64 1000000000))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.time.After []))) (Val #())) (Var "$a0")))
   (App (App (Val (GoInstruction (FuncResolve waitSession [_root_.Perennial.time.Time.ty]))) (Val #())) (Var "$a0"))))))
   (App (Val doExecute)

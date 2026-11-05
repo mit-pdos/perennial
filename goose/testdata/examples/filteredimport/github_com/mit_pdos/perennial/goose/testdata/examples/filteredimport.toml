@@ -1,4 +1,5 @@
-# types and names only, and dep is not imported: the translation cannot name its types
-translate = ["!*"]
+# types and names only, and dep is not imported: the translation cannot name its types; `IsWindows`
+# and `DepConsts` are translated: the constants of runtime and dep they use are their values
+translate = ["!*", "IsWindows", "DepConsts"]
 imports = ["!*"]
 translate_types = true

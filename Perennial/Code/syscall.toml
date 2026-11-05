@@ -1,0 +1,23 @@
+# syscall: the types, and the package-level variable initializers (what importing syscall runs).
+# Two pieces have no Go body or no modelled effect; they are trusted models
+# (TrustedCode/syscall.lean):
+# * `runtime_envs` (`env_unix.go`, a `go:linkname` into the runtime): an arbitrary `[]string`;
+# * `init.0` (`rlimit.go`: raises the soft RLIMIT_NOFILE through the raw `prlimit` system call):
+#   a no-op. The changed limit is only observable by `exec` (and `Getrlimit`), which Perennial
+#   does not model (the user's decision, fix-semantics Case 33).
+translate = ["!*",
+  "envs", "env", "copyenv",
+  "none", "slash", "forceClone3", "fcntl64Syscall",
+  "pageBufPool", "mapper",
+  "Stdin", "Stdout", "Stderr",
+  "errEAGAIN", "errEINVAL", "errENOENT",
+  "errors", "signals", "_",
+  # the constants these initializers use
+  "SYS_FCNTL", "EAGAIN", "EINVAL", "ENOENT",
+]
+trusted = ["runtime_envs", "init.0"]
+
+imports = ["!*", "sync"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

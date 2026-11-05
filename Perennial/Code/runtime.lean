@@ -10,6 +10,7 @@ public import Perennial.Code.runtime.chunk5
 public import Perennial.Code.runtime.chunk6
 public import Perennial.Code.runtime.chunk7
 public import Perennial.Code.runtime.chunk8
+public import Perennial.Code.runtime.chunk9
 
 @[expose] public section
 
@@ -396,6 +397,14 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   vdsoSymbolKey_instance : vdsoSymbolKey.TypeAssumptions
   vdsoVersionKey_instance : vdsoVersionKey.TypeAssumptions
   vdsoInfo_instance : vdsoInfo.TypeAssumptions
+  «struct#51fa335f_instance» : «struct#51fa335f».TypeAssumptions
+  «struct#1e853569_instance» : «struct#1e853569».TypeAssumptions
+  «struct#3a8454c5_instance» : «struct#3a8454c5».TypeAssumptions
+  «struct#28cf6959_instance» : «struct#28cf6959».TypeAssumptions
+  «struct#8786e874_instance» : «struct#8786e874».TypeAssumptions
+  «struct#72a1e364_instance» : «struct#72a1e364».TypeAssumptions
+  «struct#cf01e664_instance» : «struct#cf01e664».TypeAssumptions
+  «struct#1768b3d4_instance» : «struct#1768b3d4».TypeAssumptions
   Gosched_unfold : FuncUnfold Gosched [] Gosched.impl
   import_sys_Assumption : _root_.Perennial.internal.runtime.sys.Assumptions
   import_atomic_Assumption : _root_.Perennial.internal.runtime.atomic.Assumptions
@@ -771,6 +780,14 @@ attribute [instance] Assumptions.userArena_instance
   Assumptions.vdsoSymbolKey_instance
   Assumptions.vdsoVersionKey_instance
   Assumptions.vdsoInfo_instance
+  Assumptions.«struct#51fa335f_instance»
+  Assumptions.«struct#1e853569_instance»
+  Assumptions.«struct#3a8454c5_instance»
+  Assumptions.«struct#28cf6959_instance»
+  Assumptions.«struct#8786e874_instance»
+  Assumptions.«struct#72a1e364_instance»
+  Assumptions.«struct#cf01e664_instance»
+  Assumptions.«struct#1768b3d4_instance»
   Assumptions.Gosched_unfold
   Assumptions.import_sys_Assumption
   Assumptions.import_atomic_Assumption

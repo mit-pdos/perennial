@@ -321,6 +321,25 @@ nothing is proved about the value. `native_decide`/`bv_decide`: BLOCK
 (`README.md`). `set_option` that disables a linter or raises a limit in a
 tier-0 file: NOTE, ask why.
 
+**R10. Fix a defective model by making it more faithful, never by retreating
+to axioms.** When a trusted model is more defined than Go (R4), or a spec's
+precondition can be forged, the fix is a model that is stuck where Go fails,
+usually by modelling the state Go's behaviour depends on (for example the
+runtime's state behind a pointer, as a cell only the model allocates, whose
+points-to is then the unforgeable token in the spec). These are BLOCK:
+- deleting a model (or keeping a function untranslated) so that its specs
+  become axioms: that moves from rung 5 down to rung 7, and the axioms are
+  checked by nothing;
+- an `opaque` (or otherwise uninterpreted) proposition whose meaning is fixed
+  only by the axioms that mention it, used as a token, above all one whose body
+  is `False`/`True` "only to show the type is inhabited": unforgeability must
+  come from a resource the logic already has (a points-to, ghost state owned
+  by an invariant), so that the specs that hand it out can be proved.
+A rejected-alternatives list that dismisses the faithful model as "a later
+change" does not justify the axioms. Precedent: cf98e5f15 and 432c32f
+(`time`'s `newTimerMade` and six timer/ticker axioms), undone by modelling
+the runtime's timer state (`fix-semantics/examples.md`, Case 34).
+
 ## Report format
 
 Lead with the verdict, then the trust delta, then findings, then what was

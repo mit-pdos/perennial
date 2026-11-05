@@ -99,6 +99,12 @@ Read both before proposing anything.
   axiom about something the model does define, such as a bound on a
   nondeterministic model's result, contradicts it and makes the logic
   inconsistent, and as a premise it makes every result using it vacuous.
+* **Never retreat from a model to axioms.** A model that is more defined than Go is
+  fixed by a more faithful model (stuck where Go fails, usually by modelling the
+  state Go depends on), not by deleting it and axiomatizing its specs, and an
+  unforgeable token is a resource the logic has (a points-to of a cell only the
+  model allocates), never an `opaque` proposition fixed only by axioms (Case 34,
+  review-trusted R10).
 * **One logical bug per change.** Split unrelated fixes; each gets its own
   plan and case. Sibling rules with the same defect are one bug and are fixed
   together (Case 9).
