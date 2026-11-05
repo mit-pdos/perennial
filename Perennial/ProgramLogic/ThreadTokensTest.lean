@@ -57,6 +57,21 @@ example : threadTok ⊣⊢@{IProp GF} [∗list] l ∈ List.range (threadBound GF
 -- whole tokens, however assembled from levels, are bounded by their level-0 tokens
 example (n : Nat) : threadToks n ⊢@{IProp GF} levelToks 0 n ∗ threadToksFrom 1 n :=
   (threadToksFrom_succ 0 n (by have := threadBound_gt (GF := GF); omega)).1
+-- no over-count: whole tokens held anywhere (`n`), the thread fuel (`t`) and level-0 tokens
+-- parked anywhere (e.g. in `sync.tokJoinL` slots, `m`) are together fewer than `T`, so a thread
+-- that splits its token and trades levels cannot make `Fork` exceed the bound
+example (n t m : Nat) :
+    threadToks n ∗ threadFuel t ∗ levelToks 0 m ⊢@{IProp GF} ⌜n + t + m < threadBound GF⌝ := by
+  iintro ⟨Hn, Ht, Hm⟩
+  unfold threadFuel
+  ihave Hnt := (threadToks_add n t).2 $$ [Hn Ht]
+  · iframe
+  rw [threadToks_eq_from]
+  icases (threadToksFrom_succ 0 (n + t) (by have := threadBound_gt (GF := GF); omega)).1 $$ Hnt
+    with ⟨H0, -⟩
+  ihave H := (levelToks_add 0 (n + t) m).2 $$ [H0 Hm]
+  · iframe
+  iapply levelToks_lt $$ H
 
 end laws
 
