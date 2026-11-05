@@ -93,8 +93,9 @@ variable {GF : BundledGFunctors} [AllG GF] [hT : ThreadGS GF]
 `T - 1`, so different (slot, level) pairs have different keys. -/
 def levelKey (l k : Nat) : Nat := l * hT.threadBound + k
 
-/-- The tokens of the slots `ks` at level `0` (`threadTokList_level0`): each slot's token, and
-that it is below `T - 1`. -/
+/-- The tokens of the slots `ks` at level `0`: each slot's token, and that it is below `T - 1`.
+Kept, with its laws, from before the levels: it is `levelTokList 0` (`threadTokList_level0`), and
+nothing is built from it; use `levelTokList`. -/
 def threadTokList : List Nat → IProp GF
   | [] => iprop(emp)
   | k :: ks => iprop(⌜k + 1 < hT.threadBound⌝ ∗ (k ↪[hT.threadTokName] ()) ∗ threadTokList ks)

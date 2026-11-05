@@ -20,13 +20,16 @@ token of each of the `T = threadBound GF` levels, and each level has its own `T 
 
 The counter is the `d` level-`0` tokens of the started goroutines plus the `q` pending level-`p`
 tokens. Each level has fewer than `T` tokens, so `d < T` and `q < T`, and the counter stays below
-`2 * T`: the premise is `2 * threadBound GF ≤ 2 ^ 31`. (With `p = 0` the two share level `0`, and
-the counter stays below `T`.)
+`2 * T`: the premise is `2 * threadBound GF ≤ 2 ^ 31`, whatever `p`. (With `p = 0` the two share
+level `0`, and the counter stays below `T`; the premise is then stronger than needed.) A pending
+level `p ≥ threadBound GF` is allowed but useless: there is no level-`p` token to `Add` with.
 
 A goroutine of a group with pending level `p` holds levels `1` to `T - 1`: it can `Add` to a
 group of pending level `1` (or any level it holds), and gets the token back at its `go`
 statement; it can borrow from a pool at a level it holds. A thread that holds pending tokens of
-two groups at once uses two levels.
+two groups at once uses two levels. It cannot `Add` to a level-free `tokJoin` group or borrow from
+a level-free pool, which take a whole thread token. There is no lending (`tokJoin.lend_acc`): the
+levels are what it was for.
 
 The specs are proved from `WaitGroup`'s specs, taken as hypotheses (`WaitGroup.wp_Add_of`, ...),
 as in `WaitGroupTokJoin`; `Results` applies them to the linked results

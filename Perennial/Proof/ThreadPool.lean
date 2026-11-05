@@ -29,13 +29,13 @@ once (of the same pool, or of two pools) needs two thread tokens.
 * `init`: a pool from `n` copies, `threadBound GF ≤ n + 1`.
 * `borrow` (`▷ R`), `borrow_timeless`, `borrow_lc` (with a later credit; for
   `HeapGS .hasLC GF`), and `giveBack`.
-* At a level `l` (`isThreadPoolL N l γ R`, `initL`, `borrowL`, `borrowL_timeless`, `borrowL_lc`,
-  `giveBackL`, and the cancelable `isThreadPoolCL`, `initCL`, `borrowCL`, `giveBackCL`, `cancelL`,
-  `reclaimL`): the same with a level-`l` token (`levelTok l`) for the thread token.
 * The cancelable form, `isThreadPoolC N γ γc R` (`initC`, `borrowC`, `giveBackC`): a borrower
   holds a share of the pool's open half (`poolOpen γc q`); `cancel`, with the whole half, returns
   what the pool holds, and `reclaim` takes back a loan outstanding at the cancel. For a resource
   whose owner must get every copy back at the end of its life (a database's readers at its close).
+* At a level `l` (`isThreadPoolL N l γ R`, `initL`, `borrowL`, `borrowL_timeless`, `borrowL_lc`,
+  `giveBackL`, and the cancelable `isThreadPoolCL`, `initCL`, `borrowCL`, `giveBackCL`, `cancelL`,
+  `reclaimL`): the same with a level-`l` token (`levelTok l`) for the thread token.
 -/
 module
 
@@ -316,7 +316,8 @@ tokens, so the argument is the same and the pool is sized the same (`threadBound
 What a level buys: a thread that holds only some levels of its token, e.g. a goroutine of a
 leveled wait group (`sync.tokJoinL`, which keeps the goroutine's level-`0` token), borrows with
 one of the levels it holds. The loans (`ownThreadLoan`) and the open half (`poolOpen`) are those
-of the pools above. -/
+of the pools above. The definitions repeat the level-free ones rather than define them: those
+keep their bodies (`poolInv` holds `threadToks b`), which proofs of their clients unfold. -/
 
 section pool_level
 variable [GooseExts] [GooseSemantics] [GooseInterp]
@@ -544,7 +545,6 @@ theorem reclaimL (l : Nat) (γ : GName) (b : Nat) :
   icases (levelToks_add l b 1).1 $$ Htoks with ⟨Htoks, Htok⟩
   iframe Htoks Htok
   iapply ownTokAuth_delete_S γ b $$ Hauth Hloan
-
 
 end pool_level
 
