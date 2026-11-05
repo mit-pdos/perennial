@@ -82,6 +82,16 @@ instance isPool_persistent (p : Loc) (f : GoFunc) (R : IProp GF) (P : GoAny → 
     Persistent (isPool p f R P) := by
   rw [isPool_unseal]; unfold isPoolDef named; infer_instance
 
+/-- A pool's `isPool` holds for any other `New` spec `R'` that its `New` meets: `isPool` is the
+field `New`, its spec and the pool's invariant, which does not mention the spec. (A pool
+initialized once serves several `R`s: `init_Pool` at one, this lemma for the others.) -/
+theorem isPool_respec (p : Loc) (f : GoFunc) (R R' : IProp GF) (P : GoAny → IProp GF) :
+    isPool p f R P ∗ newSpec f R' P ⊢ isPool p f R' P := by
+  rw [isPool_unseal]
+  unfold isPoolDef named
+  iintro ⟨⟨#HN, -, #Hinv⟩, #Hs⟩
+  iframe #
+
 /-- A pool not used yet (its field `local` is `nil`, as in the zero `Pool` and in
 `Pool{New: f}`) becomes an `isPool`, with its `New`. The pool's points-to can be kept until
 `New`'s spec is known (no method has been called while its owner holds it). -/
