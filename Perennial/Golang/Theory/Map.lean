@@ -504,10 +504,14 @@ theorem wp_mapInsert (key_type : go.GoType) (l : Loc) (m : GMap K V) (k : K) (v 
   ipureintro
   exact map.Repr_insert m ps k v Hnd Hok Hagree Hsafe.key_ok
 
-theorem wp_mapDelete (l : Loc) (m : GMap K V) (k : K) (key_type elem_type : go.GoType)
+/-- `delete(m, k)` of a map the caller owns, at any type `t` whose underlying type is a
+map (`delete_map` takes `[t ↓u go.MapType ..]`): a named map type `type S map[K]V`
+included. `wp_mapDelete` is the literal map type's case. -/
+theorem wp_mapDelete_underlying {t key_type elem_type : go.GoType}
+    [t ↓u go.MapType key_type elem_type] (l : Loc) (m : GMap K V) (k : K)
     [Hsafe : SafeMapKey (GF := GF) key_type k] :
     {{ (l ↦$ m : IProp GF) }}
-      (App (App (Val #(functions go.delete [go.MapType key_type elem_type])) (Val #l)) (Val #k)) @ s; E
+      (App (App (Val #(functions go.delete [t])) (Val #l)) (Val #k)) @ s; E
     {{ RET #(); l ↦$ (GMap.delete k m) }} := by
   wp_start as Hm
   rw [ownMap_unseal]
@@ -528,6 +532,13 @@ theorem wp_mapDelete (l : Loc) (m : GMap K V) (k : K) (key_type elem_type : go.G
   iframe Hown
   ipureintro
   exact map.Repr_delete m ps k Hnd Hok Hagree
+
+theorem wp_mapDelete (l : Loc) (m : GMap K V) (k : K) (key_type elem_type : go.GoType)
+    [Hsafe : SafeMapKey (GF := GF) key_type k] :
+    {{ (l ↦$ m : IProp GF) }}
+      (App (App (Val #(functions go.delete [go.MapType key_type elem_type])) (Val #l)) (Val #k)) @ s; E
+    {{ RET #(); l ↦$ (GMap.delete k m) }} :=
+  wp_mapDelete_underlying (t := go.MapType key_type elem_type) l m k
 
 theorem wp_map_lookup2 (key_type elem_type : go.GoType) (mref : Loc) (m : GMap K V) (k : K)
     (dq : DFrac) [Hsafe : SafeMapKey (GF := GF) key_type k] :

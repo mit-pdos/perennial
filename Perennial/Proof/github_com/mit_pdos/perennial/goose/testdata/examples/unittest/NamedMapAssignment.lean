@@ -35,6 +35,15 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.NamedMapA
   rw [GMap.insert_empty]
   wp_end
 
+/-- A test of `go.delete_map` at a named map type (`MapWrapper`, `map[uint64]bool`): `delete(m, k)`
+unfolds through `MapWrapper`'s underlying map type, as `len` does (`go.len_map`). -/
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.unittest.MapWrapper_delete
+    (m : Loc) (M : GMap w64 Bool) (k : w64) :
+    {{ (m ↦$ M : IProp GF) }}
+      (App (App (Val #(functions go.delete [MapWrapper.ty])) (Val #m)) (Val #k))
+    {{ RET #(); m ↦$ (GMap.delete k M) }} :=
+  wp_mapDelete_underlying (t := MapWrapper.ty) m M k
+
 end proof
 
 end Perennial
