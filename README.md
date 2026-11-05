@@ -80,7 +80,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `sync.WaitGroup`'s) is below `T`, and that a stock of `T - 1` copies of a
   resource lent to threads for their thread tokens never runs out
   (`Proof/ThreadPool.lean`; e.g. an `RWMutex`'s reader tokens,
-  `Proof/sync/RWMutexThreads.lean`). For this the trusted semantics counts the
+  `Proof/sync/RWMutexThreads.lean`). A token splits into `T` levels
+  (`levelTok l`), each with its own `T - 1` tokens, so that a thread can lend
+  part of its token and keep the rest (`sync.tokJoinL`, pools at a level); the
+  levels are ghost state only. For this the trusted semantics counts the
   live threads (`state.threads`): `Fork e` spawns `e ;; ThreadExit` and
   increments it, and the no-op `ThreadExit` decrements it.
   The bounds are *unspecified parameters*, not constants: they are fields of

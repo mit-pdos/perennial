@@ -1102,10 +1102,11 @@ takes its real step and leaves `t + 1`. The adequacy theorems start with
 thread fuel `T - 2`.
 
 **Assertions and laws.** `threadToks n`: `n` exclusive thread tokens;
-`threadTok = threadToks 1`. There are `T - 1` tokens in total (a `ghost_map`
-of the slots `0, ..., T - 2`, allocated by `thread_init` and never changed
-again; a token is a slot's `k ↪ ()` with `⌜k + 1 < T⌝`, so `n` tokens are `n`
-distinct slots and `n ≤ T - 1` without any authoritative part). One token is
+`threadTok = threadToks 1`. There are `T - 1` tokens in total. A token is one token
+of each of `T` *levels* (`levelTok l`, below); a `ghost_map` holds the slots `0, ..., T - 2`
+of every level, allocated by `thread_init` and never changed again (the token of slot `k` at
+level `l` is `l * T + k ↪ ()` with `⌜k + 1 < T⌝`, so `n` tokens of a level are `n` distinct
+slots and `n ≤ T - 1` without any authoritative part). One token is
 the main thread's, handed to the program by the adequacy theorem; the others
 are the thread fuel, owned by the state interpretation
 (`threadFuel t = threadToks t`). Below, `T = threadBound GF`.
@@ -1117,6 +1118,26 @@ are the thread fuel, owned by the state interpretation
 | `threadToks n ⊢ ⌜n < T⌝` | `threadToks_lt` |
 | `threadToks T ⊢ False` (hence `\|={E}=> False`) | `threadBound_elim`, `threadBound_fupd` |
 | `threadTok ∗ threadToks n ⊢ ⌜n + 1 < T⌝ ∗ threadToks (n + 1)` | `threadToks_add_one_lt` |
+
+**Levels.** `levelToks l n`: `n` tokens of level `l` (`levelTok l = levelToks l 1`);
+`threadToksFrom l n`: `n` tokens of each level from `l` to `T - 1`
+(`threadTokFrom l = threadToksFrom l 1`, `threadToks n = threadToksFrom 0 n`). Each level has
+its own `T - 1` tokens, and the levels of a whole token need not be of the same slot. A thread
+can hand out some levels of its token and keep the others: a goroutine of a leveled join
+(`sync.tokJoinL`, below) runs with `threadTokFrom 1`, its level `0` in the join, and can `Add` to
+another such join or borrow from a pool at a level it holds (`threadPool.isThreadPoolL`). The
+fuel and `ThreadExit` trade whole tokens, and `n` whole tokens contain `n` level-`0` tokens, so
+whole tokens are fewer than `T` however they were assembled.
+
+| law | lemma |
+|-----|-------|
+| `levelToks l (m + n) ⊣⊢ levelToks l m ∗ levelToks l n`, `⊢ levelToks l 0` | `levelToks_add`, `levelToks_zero` |
+| `levelToks l n ⊢ ⌜n < T⌝`, `levelToks l T ⊢ False` | `levelToks_lt`, `levelBound_elim` |
+| `levelTok l ∗ levelToks l n ⊢ ⌜n + 1 < T⌝ ∗ levelToks l (n + 1)` | `levelToks_add_one_lt` |
+| `threadToksFrom l n ⊣⊢ levelToks l n ∗ threadToksFrom (l + 1) n` (`l < T`) | `threadToksFrom_succ`, `threadTokFrom_succ` |
+| `threadToksFrom l n ⊣⊢ emp` (`T ≤ l`) | `threadToksFrom_of_le` |
+| `threadTok ⊣⊢ levelTok 0 ∗ threadTokFrom 1` | `threadTok_level0` |
+| `threadToks n ⊣⊢ [∗list] l ∈ List.range T, levelToks l n` | `threadToks_bigSepL`, `threadTok_bigSepL` |
 
 **Getting and returning tokens.**
 
@@ -1158,6 +1179,11 @@ is this argument for a counter of live threads in miniature; etcd-grove's cache
 instead of a bound on the `Add`s, and a slot's token lendable to another
 thread-token-backed structure (`lend_acc`, `unlend_acc`) under a client's
 lending law.
+`sync.tokJoinL` (`Perennial/Proof/sync/WaitGroupTokJoinL.lean`) is the leveled variant: a
+group with pending level `p` takes a level-`p` token at `Add` (pending), swaps in the fresh
+token's level `0` at the `go` statement (`tokJoinL.wp_fork`, `start`) and gives the pending token
+back, so the goroutine runs with `threadTokFrom 1` and `Done` returns its level `0`; the counter
+is below `2 * T` (premise `2 * threadBound GF ≤ 2 ^ 31`).
 
 **Adequacy: picking `T`.** `goose_adequacy N T` (above) assumes `σ.threads = 1`
 of the initial configuration and `RealThreadsBelow T n ([e], (σ, g))`: every
