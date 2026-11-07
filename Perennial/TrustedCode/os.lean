@@ -55,17 +55,26 @@ loads `os.Stdout` is stuck (has no proof), where Go reads a `*File`. -/
 def Stdout.init : val :=
   λ: <>, #()
 
+/-- The address `Stderr`'s model stores: `maxAddr + 1`, outside `(0, maxAddr]`, where every
+allocation lies (`Alloc`, `AllocBytes`), so no heap cell is ever there. It is not `nil`, it is
+different from every pointer to an allocation (as Go's `Stderr`, a `*File` of its own), and a
+program cannot observe the number: `uintptr(unsafe.Pointer(p))` is an arbitrary word
+(`convert_unsafe_to_uintptr`). No other model uses an address above `maxAddr`. -/
+def stderrAddr : Loc := ⟨maxAddr + 1⟩
+
 /-- `Stderr`'s initializer. Unlike `Stdin` and `Stdout`, the model allocates the variable,
-because package initializers that only store `os.Stderr` (`log`'s standard logger in Go,
-raft's `defaultLogger`, `log.New(os.Stderr, ...)`) must be provable: it stores a fresh
-non-nil pointer to an untyped cell, which is not the memory of a `File`. So the variable holds a
-non-nil `*File`, as in Go, and loading it steps; anything that reads the `File` (a method call,
-a field) is stuck (has no proof), where Go writes to the descriptor. -/
+because package initializers that only load `os.Stderr` (raft's `defaultLogger`,
+`log.New(os.Stderr, ...)`) must be provable: it stores the non-`nil` pointer `stderrAddr`, at
+which there is no cell. So the variable holds a non-`nil` `*File`, as in Go, and loading it steps;
+anything that reads or writes through it (a method call, a field, `*os.Stderr = File{}`) is stuck
+(has no proof), where Go reads or writes the `File`. (Until fix-semantics Case 39 the pointer was
+to a fresh untyped cell, which a store through it could overwrite: `*os.Stderr = os.File{};
+log.Printf("x")` ran in the model and panics in Go.) -/
 def Stderr.init : val :=
   λ: <>,
     go.GlobalAlloc go!"os.Stderr" (go.GoType.PointerType (go.GoType.Named go!"os.File" [])) #() ;;
     GlobalVarAddr go!"os.Stderr" #() <-[go.GoType.PointerType (go.GoType.Named go!"os.File" [])]
-      (Alloc (Val #()))
+      (Val #stderrAddr)
 
 end code
 end os

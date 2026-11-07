@@ -1164,3 +1164,23 @@ The platform (review NOTE): `README.md` and `docs/KNOWN_LIMITATIONS.md` ("The pl
 say that translations are of the linux/amd64, `-tags goose`, non-race build and that constant
 folding (Case 32) bakes it in.
 
+## Case 39 — ACCEPTED: `os.Stderr`'s model points at an address with no cell (branch `rt-fixes`)
+
+**Symptom.** Model more defined than Go (second review of Case 33, R4, adversary-confirmed).
+Witness: `*os.Stderr = os.File{}; log.Printf("x")`. Go panics (the standard logger writes
+through `os.Stderr`'s `*File`, whose `file` is now `nil`); the model's `Stderr.init` stored a
+pointer to a fresh untyped cell (`Alloc #()`), so the store succeeded, and `log.Printf.impl`
+reads nothing, so the program ran.
+
+**Taken.** `Stderr.init` stores `stderrAddr = ⟨maxAddr + 1⟩`: not `nil`, outside `(0, maxAddr]`
+where every allocation lies, so no cell is ever there and every load or store through it is
+stuck; different from every allocated pointer (as Go's `*File` is); its number is unobservable
+(`uintptr(unsafe.Pointer(p))` is arbitrary, `convert_unsafe_to_uintptr`). `wp_Stderr_init`'s
+statement is unchanged; raft's `defaultLogger`, which only loads the variable, stays provable.
+
+**Not taken.** Making `log`'s models write through their writer (models more of `log` and
+`os.(*File).Write` for one witness); an arbitrary in-range unallocated address (a later
+allocation could collide with it: extra behaviours, sound, but `p == q` for a fresh `q` becomes
+possible where Go says false).
+
+**Why.** The owner asked for whatever the reviews require; the design is the agent's.
