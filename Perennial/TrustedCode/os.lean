@@ -55,26 +55,23 @@ loads `os.Stdout` is stuck (has no proof), where Go reads a `*File`. -/
 def Stdout.init : val :=
   λ: <>, #()
 
-/-- The address `Stderr`'s model stores: `maxAddr + 1`, outside `(0, maxAddr]`, where every
-allocation lies (`Alloc`, `AllocBytes`), so no heap cell is ever there. It is not `nil`, it is
-different from every pointer to an allocation (as Go's `Stderr`, a `*File` of its own), and a
-program cannot observe the number: `uintptr(unsafe.Pointer(p))` is an arbitrary word
-(`convert_unsafe_to_uintptr`). No other model uses an address above `maxAddr`. -/
-def stderrAddr : Loc := ⟨maxAddr + 1⟩
-
 /-- `Stderr`'s initializer. Unlike `Stdin` and `Stdout`, the model allocates the variable,
 because package initializers that only load `os.Stderr` (raft's `defaultLogger`,
-`log.New(os.Stderr, ...)`) must be provable: it stores the non-`nil` pointer `stderrAddr`, at
-which there is no cell. So the variable holds a non-`nil` `*File`, as in Go, and loading it steps;
-anything that reads or writes through it (a method call, a field, `*os.Stderr = File{}`) is stuck
-(has no proof), where Go reads or writes the `File`. (Until fix-semantics Case 39 the pointer was
-to a fresh untyped cell, which a store through it could overwrite: `*os.Stderr = os.File{};
-log.Printf("x")` ran in the model and panics in Go.) -/
+`log.New(os.Stderr, ...)`) must be provable. It stores an arbitrary non-`nil` address in
+`(0, maxAddr)` (`GoPrealloc`, the instruction an array or struct allocation starts with), where no
+cell is allocated for it: in the executions where no allocation lies there, anything that reads
+or writes through the pointer (a method call, a field, `*os.Stderr = os.File{}`) is stuck, so it
+has no proof, where Go reads or writes the `File`. The address is not reserved: a later
+allocation may land on it, so `os.Stderr == p` may hold for a pointer `p` to a later
+allocation, which Go never does; that only adds executions (the model is less defined than Go,
+never more), and the address is ordered against other allocations nondeterministically, as in Go.
+(Until fix-semantics Case 39 the pointer was to a fresh untyped cell, which a store through it
+could overwrite: `*os.Stderr = os.File{}; log.Printf("x")` ran in the model and panics in Go.) -/
 def Stderr.init : val :=
   λ: <>,
     go.GlobalAlloc go!"os.Stderr" (go.GoType.PointerType (go.GoType.Named go!"os.File" [])) #() ;;
     GlobalVarAddr go!"os.Stderr" #() <-[go.GoType.PointerType (go.GoType.Named go!"os.File" [])]
-      (Val #stderrAddr)
+      (GoPrealloc #())
 
 end code
 end os

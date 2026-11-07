@@ -52,6 +52,7 @@ theorem wp_Stderr_init :
   wp_start
   wp_apply wp_GlobalAlloc (V := Loc) go!"os.Stderr"
     (go.GoType.PointerType (go.GoType.Named go!"os.File" [])) as HS
+  wp_apply wp_GoPrealloc as %l -
   iapply HΦ
   iexists _
   unfold Stderr

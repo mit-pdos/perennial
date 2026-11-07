@@ -1115,18 +1115,24 @@ meaning only axioms fix (review-trusted R10). Plan signed off 2026-11-04 ("Make 
 
 **Symptom.** Unsound (review of Case 30, graded REWORK). Witness: package `p` has
 `func Make() any { return struct{ x int }{5} }`; package `q` has
-`_, ok := p.Make().(struct{ x int })`. Go: `false` (an unexported field name of one package
-is never the same as another's). Model: both write `go.StructType [FieldDecl "x" go.int]`, so
+`_, ok := p.Make().(struct{ x int })`. Go: `false` (a non-exported field name, a blank `_`
+included, of one package is never the same field as another's). Model: both write `go.StructType [FieldDecl "x" go.int]`, so
 the type assertion succeeds; `p.Mk() == q.Mk()` diverges the same way. Since Case 30 the values
 step, so the divergence was provable.
 
-**Taken.** goose writes an unexported field of a struct type literal as `"<pkgpath>.x"`
-(`util.ModelFieldName`), in the `go.StructType`, in `StructFieldRef/Get`, keyed composite
-literals and the generated record's field steps (goose and proofgen alike), as unexported
-method names already are (`"context.cancel"`). A defined type keeps its field names: it is
-identified by its name. Cost: a conversion between a defined struct type and a struct type
-literal with an unexported field is stuck (the underlying types differ by the names);
-documented in `docs/KNOWN_LIMITATIONS.md`, "Struct types". Qualifying every struct's fields
+**Taken.** goose writes an unexported field of a struct type literal as `"<pkgpath>.x"` and a
+blank one as `"<pkgpath>._#i"` (a blank field is non-exported: `struct{ _ int; A int }` from two
+packages are different types in Go) (`util.ModelFieldName`), in the `go.StructType`, in
+`StructFieldRef/Get`, keyed composite literals and the generated record's field steps (goose and
+proofgen alike), as unexported method names already are (`"context.cancel"`); `go.isBlankField`
+recognizes both blank forms. The generated record is named by a hash of `util.AnonStructKey`,
+the printed type plus the package of every unexported or blank field (the printed type omits
+them), and its collision check uses the same key, so two such types never share a record (the
+first version hashed the printed type only: `struct{ x int }` of `a`, used in `c`, got `c`'s
+record; re-review, REWORK). A defined type keeps its field names: it is identified by its name.
+Cost: a conversion between a defined struct type and a struct type literal with an unexported
+or blank field is stuck (the underlying types differ by the names), the pointer conversion
+`(*T)(&struct{ x int }{})` included; documented in `docs/KNOWN_LIMITATIONS.md`, "Struct types". Qualifying every struct's fields
 would make that conversion step but changes every translation and every proof naming a field.
 
 **Why.** The owner asked for whatever the review requires; the design (qualify only in struct
@@ -1137,11 +1143,13 @@ a second translated test package); the gold output shows the qualified names.
 ## Case 36 — ACCEPTED: `==` on structs skips blank fields (branch `rt-fixes`)
 
 **Symptom.** Model differs from Go (review NOTE): `go_eq_struct` compared blank (`_`) fields;
-Go compares the non-blank fields only. Not reachable from programs today (the composite literal
-rule leaves blank fields zero, and goose never writes one), but `==` depended on that invariant.
+Go compares the non-blank fields only. Not reachable from programs today: the composite literal
+rule drops the values given for blank fields (`struct{ _ int; x int }{1, 2}` holds a zero blank
+field), and goose never writes one, so `==` was right, but only through that invariant.
 
 **Taken.** `go_eq_struct` skips a field when `go.isBlankField` (moved before the class). Test:
-`testBlankFieldEqUnnamed` (Go and Lean).
+`testBlankFieldEqUnnamed` (`{1, 2} == {3, 2}` is `true`, Go and Lean), which held before too, by
+the invariant; it now holds by the rule.
 
 ## Case 37 — ACCEPTED: an integer-valued untyped float constant is its exact value (branch `rt-fixes`)
 
@@ -1153,18 +1161,20 @@ imported constants do; `untypedFloatToInt` deleted. Test: `testUntypedFloatConst
 
 ## Case 38 — ACCEPTED: `arbitraryStrings` may return a non-nil empty slice (branch `rt-fixes`)
 
-**Symptom.** Less general than Go (review NOTE, R4): the model's `os.Args`/`envs` was `nil` or
-non-empty, never `[]string{}`, which Go returns for an empty argv on kernels before 5.18, so a
-program could verify `os.Args != nil ⇒ len(os.Args) > 0`.
+**Symptom.** More defined than Go (review NOTE, R4): the model's `os.Args`/`envs` was `nil` or
+non-empty, never a non-`nil` empty slice. Go never returns `nil` there and returns `[]string{}`
+for `envs` under `env -i` on any kernel (and for `os.Args` given an empty argv, on kernels before
+5.18), so a program could verify `envs != nil ⇒ len(envs) > 0`, which Go violates.
 
-**Taken.** The model's Go starts from `[]string{}` or `nil`, chosen arbitrarily; its term is
-goose's translation of that Go with the two documented substitutions. The spec is unchanged.
+**Taken.** The model's Go starts from `[]string{}` or `nil`, chosen arbitrarily (`nil` is an
+extra execution Go never has, harmless); its term is goose's translation of that Go with the two
+documented substitutions. The spec is unchanged.
 
 The platform (review NOTE): `README.md` and `docs/KNOWN_LIMITATIONS.md` ("The platform") now
 say that translations are of the linux/amd64, `-tags goose`, non-race build and that constant
 folding (Case 32) bakes it in.
 
-## Case 39 — ACCEPTED: `os.Stderr`'s model points at an address with no cell (branch `rt-fixes`)
+## Case 39 — ACCEPTED: `os.Stderr`'s model points at an arbitrary address with no cell (branch `rt-fixes`)
 
 **Symptom.** Model more defined than Go (second review of Case 33, R4, adversary-confirmed).
 Witness: `*os.Stderr = os.File{}; log.Printf("x")`. Go panics (the standard logger writes
@@ -1172,15 +1182,19 @@ through `os.Stderr`'s `*File`, whose `file` is now `nil`); the model's `Stderr.i
 pointer to a fresh untyped cell (`Alloc #()`), so the store succeeded, and `log.Printf.impl`
 reads nothing, so the program ran.
 
-**Taken.** `Stderr.init` stores `stderrAddr = ⟨maxAddr + 1⟩`: not `nil`, outside `(0, maxAddr]`
-where every allocation lies, so no cell is ever there and every load or store through it is
-stuck; different from every allocated pointer (as Go's `*File` is); its number is unobservable
-(`uintptr(unsafe.Pointer(p))` is arbitrary, `convert_unsafe_to_uintptr`). `wp_Stderr_init`'s
-statement is unchanged; raft's `defaultLogger`, which only loads the variable, stays provable.
+**Taken.** `Stderr.init` stores `GoPrealloc #()`: an arbitrary non-`nil` address in
+`(0, maxAddr)` at which nothing is allocated for it. In the executions where no allocation lies
+there, every load or store through the pointer is stuck, so the witness has no proof.
+`GoPrealloc` does not reserve the address: a later allocation may land on it (then
+`os.Stderr == p` for that allocation's `p`, which Go never gives), which only adds executions;
+its order against other allocations is nondeterministic, as in Go. `wp_Stderr_init`'s statement
+is unchanged; raft's `defaultLogger`, which only loads the variable, stays provable.
 
-**Not taken.** Making `log`'s models write through their writer (models more of `log` and
-`os.(*File).Write` for one witness); an arbitrary in-range unallocated address (a later
-allocation could collide with it: extra behaviours, sound, but `p == q` for a fresh `q` becomes
-possible where Go says false).
+**Rejected.** A fixed address above `maxAddr` (first version; re-review, REWORK): observable,
+since `(*[1<<20]byte)(unsafe.Pointer(os.Stderr))` and `&a[i] == unsafe.Pointer(new(os.File))`
+can be true in Go (18 of 20 runs) and never in the model, where no allocation lies above
+`maxAddr`. Making `log`'s models write through their writer (models more of `log` and
+`os.(*File).Write` for one witness).
 
-**Why.** The owner asked for whatever the reviews require; the design is the agent's.
+**Why.** The owner asked for whatever the reviews require; the reviewer (coordinator) chose
+`GoPrealloc`; a reserved address does not exist in the semantics (`GoPrealloc` is unreserved).
