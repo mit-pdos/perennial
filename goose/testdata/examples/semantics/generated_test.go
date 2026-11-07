@@ -91,6 +91,10 @@ func (suite *GoTestSuite) TestBlankFieldIdentity() {
 	suite.Equal(true, testBlankFieldIdentity())
 }
 
+func (suite *GoTestSuite) TestBlankFieldEqUnnamed() {
+	suite.Equal(true, testBlankFieldEqUnnamed())
+}
+
 func (suite *GoTestSuite) TestExplicitBlockStmt() {
 	suite.Equal(true, testExplicitBlockStmt())
 }
@@ -261,6 +265,10 @@ func (suite *GoTestSuite) TestU32NewtypeLen() {
 
 func (suite *GoTestSuite) TestUint32Untyped() {
 	suite.Equal(true, testUint32Untyped())
+}
+
+func (suite *GoTestSuite) TestUntypedFloatConstUint64() {
+	suite.Equal(true, testUntypedFloatConstUint64())
 }
 
 func (suite *GoTestSuite) TestBasicInterface() {

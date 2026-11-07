@@ -328,9 +328,9 @@ variable [package_sem' : testing.Assumptions]
 noncomputable instance «struct#6419a40c_typed_pointsto» :
     TypedPointsto (GF := GF) testing.«struct#6419a40c» where
   typedPointstoDef l v dq := iprop(
-    "n" ∷ typedPointsto (structFieldRef testing.«struct#6419a40c» go!"n" l) v.n' dq ∗
-    "i" ∷ typedPointsto (structFieldRef testing.«struct#6419a40c» go!"i" l) v.i' dq ∗
-    "done" ∷ typedPointsto (structFieldRef testing.«struct#6419a40c» go!"done" l) v.done' dq ∗
+    "n" ∷ typedPointsto (structFieldRef testing.«struct#6419a40c» go!"testing.n" l) v.n' dq ∗
+    "i" ∷ typedPointsto (structFieldRef testing.«struct#6419a40c» go!"testing.i" l) v.i' dq ∗
+    "done" ∷ typedPointsto (structFieldRef testing.«struct#6419a40c» go!"testing.done" l) v.done' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
@@ -342,48 +342,48 @@ noncomputable instance «struct#6419a40c_into_val_typed» :
 
 noncomputable instance «struct#6419a40c_access_load_n» (l : Loc) (v : testing.«struct#6419a40c») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"n" l) v.n' dq)
-      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"n" l) v.n' dq)
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"testing.n" l) v.n' dq)
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"testing.n" l) v.n' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#6419a40c_access_store_n» (l : Loc) (v : testing.«struct#6419a40c») (n' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"n" l) v.n' (DFrac.own 1))
-      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"n" l) n' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"testing.n" l) v.n' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"testing.n" l) n' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with n' := n' } : testing.«struct#6419a40c») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#6419a40c_access_load_i» (l : Loc) (v : testing.«struct#6419a40c») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"i" l) v.i' dq)
-      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"i" l) v.i' dq)
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"testing.i" l) v.i' dq)
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"testing.i" l) v.i' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#6419a40c_access_store_i» (l : Loc) (v : testing.«struct#6419a40c») (i' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"i" l) v.i' (DFrac.own 1))
-      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"i" l) i' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"testing.i" l) v.i' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"testing.i" l) i' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with i' := i' } : testing.«struct#6419a40c») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#6419a40c_access_load_done» (l : Loc) (v : testing.«struct#6419a40c») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"done" l) v.done' dq)
-      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"done" l) v.done' dq)
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"testing.done" l) v.done' dq)
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"testing.done" l) v.done' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#6419a40c_access_store_done» (l : Loc) (v : testing.«struct#6419a40c») (done' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"done" l) v.done' (DFrac.own 1))
-      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"done" l) done' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"testing.done" l) v.done' (DFrac.own 1))
+      (typedPointsto (structFieldRef testing.«struct#6419a40c» go!"testing.done" l) done' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with done' := done' } : testing.«struct#6419a40c») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct

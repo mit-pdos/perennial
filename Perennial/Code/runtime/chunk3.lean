@@ -369,10 +369,10 @@ attribute [instance] gcBgMarkWorkerNodePadded.TypeAssumptions.type_repr
 
 class «struct#51fa335f».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying «struct#51fa335f».underlying «struct#51fa335f»
-  get_fill : ∀ (x : «struct#51fa335f»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#51fa335f».underlying go!"fill") #x (Val #(x.fill'))
-  set_fill : ∀ (x : «struct#51fa335f») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#51fa335f».underlying go!"fill") (PairV #x #y) (Val #(({ x with fill' := y } : «struct#51fa335f»)))
-  get_capacity : ∀ (x : «struct#51fa335f»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#51fa335f».underlying go!"capacity") #x (Val #(x.capacity'))
-  set_capacity : ∀ (x : «struct#51fa335f») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#51fa335f».underlying go!"capacity") (PairV #x #y) (Val #(({ x with capacity' := y } : «struct#51fa335f»)))
+  get_fill : ∀ (x : «struct#51fa335f»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#51fa335f».underlying go!"runtime.fill") #x (Val #(x.fill'))
+  set_fill : ∀ (x : «struct#51fa335f») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#51fa335f».underlying go!"runtime.fill") (PairV #x #y) (Val #(({ x with fill' := y } : «struct#51fa335f»)))
+  get_capacity : ∀ (x : «struct#51fa335f»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#51fa335f».underlying go!"runtime.capacity") #x (Val #(x.capacity'))
+  set_capacity : ∀ (x : «struct#51fa335f») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#51fa335f».underlying go!"runtime.capacity") (PairV #x #y) (Val #(({ x with capacity' := y } : «struct#51fa335f»)))
 
 attribute [instance] «struct#51fa335f».TypeAssumptions.type_repr
   «struct#51fa335f».TypeAssumptions.get_fill
@@ -532,10 +532,10 @@ attribute [instance] objptr.TypeAssumptions.underlying
 
 class «struct#1e853569».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying «struct#1e853569».underlying «struct#1e853569»
-  get_head : ∀ (x : «struct#1e853569»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#1e853569».underlying go!"head") #x (Val #(x.head'))
-  set_head : ∀ (x : «struct#1e853569») (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «struct#1e853569».underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : «struct#1e853569»)))
-  get_tail : ∀ (x : «struct#1e853569»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#1e853569».underlying go!"tail") #x (Val #(x.tail'))
-  set_tail : ∀ (x : «struct#1e853569») (y : _root_.Perennial.internal.runtime.atomic.UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldSet «struct#1e853569».underlying go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : «struct#1e853569»)))
+  get_head : ∀ (x : «struct#1e853569»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#1e853569».underlying go!"runtime.head") #x (Val #(x.head'))
+  set_head : ∀ (x : «struct#1e853569») (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «struct#1e853569».underlying go!"runtime.head") (PairV #x #y) (Val #(({ x with head' := y } : «struct#1e853569»)))
+  get_tail : ∀ (x : «struct#1e853569»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#1e853569».underlying go!"runtime.tail") #x (Val #(x.tail'))
+  set_tail : ∀ (x : «struct#1e853569») (y : _root_.Perennial.internal.runtime.atomic.UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldSet «struct#1e853569».underlying go!"runtime.tail") (PairV #x #y) (Val #(({ x with tail' := y } : «struct#1e853569»)))
 
 attribute [instance] «struct#1e853569».TypeAssumptions.type_repr
   «struct#1e853569».TypeAssumptions.get_head

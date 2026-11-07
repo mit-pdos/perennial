@@ -270,7 +270,7 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 	// maybe emit StructFieldSet and StructFieldGet instances
 	if ctx.filter.GetAction(t.Obj().Name()) == declfilter.Translate {
 		if st, ok := tunder.(*types.Struct); ok {
-			ctx.structFieldAssumptions(spec, st, valTy, implTy, goBinders, valBinders, add)
+			ctx.structFieldAssumptions(spec, st, false, valTy, implTy, goBinders, valBinders, add)
 		}
 	}
 
@@ -381,10 +381,11 @@ func (ctx *Ctx) namedTypeLeanPropClassDecl(spec *ast.TypeSpec) typeAssumptionsDe
 // structFieldAssumptions adds the StructFieldGet and StructFieldSet steps of the
 // fields of st, a struct type whose values valTy models and whose go.GoType is
 // implTy.
-func (ctx *Ctx) structFieldAssumptions(l locatable, st *types.Struct, valTy, implTy, goBinders, valBinders string,
+func (ctx *Ctx) structFieldAssumptions(l locatable, st *types.Struct, unnamed bool, valTy, implTy, goBinders, valBinders string,
 	add func(name, ty string)) {
 	for i := range st.NumFields() {
 		fieldName := fieldName(i, st.Field(i).Name())
+		goName := util.ModelFieldName(st, i, unnamed)
 		projName := glang.LeanQuoteComponent(recordProjection(i, st.Field(i).Name()))
 		fieldTy := ctx.toLeanTypeP(l, st.Field(i).Type(), true)
 		xBinder := goBinders
@@ -396,10 +397,10 @@ func (ctx *Ctx) structFieldAssumptions(l locatable, st *types.Struct, valTy, imp
 		}
 		add("get_"+fieldName, fmt.Sprintf(
 			"∀ %s(x : %s), go.IsGoStepPureDetTagged under (StructFieldGet %s %s) #x (Val #(x.%s))",
-			xBinder, valTy, implTy, glang.LeanStringLit(fieldName), projName))
+			xBinder, valTy, implTy, glang.LeanStringLit(goName), projName))
 		add("set_"+fieldName, fmt.Sprintf(
 			"∀ %s(x : %s) (y : %s), go.IsGoStepPureDetTagged under (StructFieldSet %s %s) (PairV #x #y) (Val #(({ x with %s := y } : %s)))",
-			xBinder, valTy, fieldTy, implTy, glang.LeanStringLit(fieldName), projName, valTy))
+			xBinder, valTy, fieldTy, implTy, glang.LeanStringLit(goName), projName, valTy))
 	}
 }
 

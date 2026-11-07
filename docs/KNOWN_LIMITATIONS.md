@@ -149,13 +149,27 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   (`AllocOOMS`, `AllocBytesOOMS`), so a proof covers only the executions that do not run out
   of memory, where gc ends the program with a fatal error.
 
+## The platform
+
+Every translation is of one build: goose loads code with `GOOS=linux GOARCH=amd64`, the
+build tag `goose`, and without `-race`, so the files (and declarations) chosen by build
+constraints are linux/amd64's, and constant folding bakes that build's values into the
+translation (`runtime.GOOS` is `"linux"`, `strconv.IntSize` is `64`, an imported constant is
+its value). A verified result is about the program built that way; another platform's or
+another build tag's build may contain different code.
+
 ## Struct types
 
-- **Unexported field names are not qualified by package (unsound).** Go keeps apart
-  `struct{ a int }` from two packages: `p.Mk() == q.Mk()` is false when each returns
-  `struct{ a int }{}` from its own package, and the model has one type. Refusing such
-  types would reject common code (`struct{ mu sync.Mutex; … }`); modelling it means
-  qualifying field names everywhere.
+- **Unexported field names of struct type literals are qualified by package; a defined
+  struct type's are not.** Go keeps apart `struct{ a int }` from two packages (`p.Mk() ==
+  q.Mk()` is false when each returns `struct{ a int }{}` from its own package; so is
+  `_, ok := p.Make().(struct{ a int })` in `q`). goose names an unexported field of a struct
+  type literal `"<pkgpath>.a"` (`util.ModelFieldName`), so the two are different
+  `go.StructType`s, as in Go. A defined type is identified by its name, so its fields keep
+  their names. Consequence (incomplete, not unsound): a conversion between a defined struct
+  type and a struct type literal with an unexported field (`T(struct{ a int }{1})`, legal in
+  Go) is stuck, since the underlying types differ by the field names (`Convert t t` needs
+  them equal). Struct tags are not modelled; goose refuses a tag on a struct type literal.
 - **A struct type literal with embedded fields has no known method set.** In Go,
   `struct{ T }` has the methods promoted from `T`:
   ```go
@@ -164,9 +178,9 @@ Each entry: what goes wrong, a Go witness, and where in the model it comes from.
   ```
   goose emits method sets only for the named types a package declares
   (`T.TypeAssumptions.method_set`, `Golang/Defn/MethodSet.lean`), so `methodSet` is
-  unconstrained for such a type and neither outcome is provable. Values of a struct type
-  literal with fields do not step either (they have no `TypeRepr` and no field accessors), so
-  the semantics test `testMethodSetUnnamedStruct` has no proof.
+  unconstrained for such a type and neither outcome is provable (values of a struct type
+  literal do step, through its generated record), so the semantics test
+  `testMethodSetUnnamedStruct` has no proof.
 
 ## `unsafe` and layouts
 

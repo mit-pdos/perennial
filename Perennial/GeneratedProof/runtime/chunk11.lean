@@ -1809,8 +1809,8 @@ variable [package_sem' : runtime.Assumptions]
 noncomputable instance «struct#72a1e364_typed_pointsto» :
     TypedPointsto (GF := GF) runtime.«struct#72a1e364» where
   typedPointstoDef l v dq := iprop(
-    "user" ∷ typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"user" l) v.user' dq ∗
-    "runnable" ∷ typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"runnable" l) v.runnable' dq ∗
+    "user" ∷ typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"runtime.user" l) v.user' dq ∗
+    "runnable" ∷ typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"runtime.runnable" l) v.runnable' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
@@ -1822,32 +1822,32 @@ noncomputable instance «struct#72a1e364_into_val_typed» :
 
 noncomputable instance «struct#72a1e364_access_load_user» (l : Loc) (v : runtime.«struct#72a1e364») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"user" l) v.user' dq)
-      (typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"user" l) v.user' dq)
+      (typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"runtime.user" l) v.user' dq)
+      (typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"runtime.user" l) v.user' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#72a1e364_access_store_user» (l : Loc) (v : runtime.«struct#72a1e364») (user' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"user" l) v.user' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"user" l) user' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"runtime.user" l) v.user' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"runtime.user" l) user' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with user' := user' } : runtime.«struct#72a1e364») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#72a1e364_access_load_runnable» (l : Loc) (v : runtime.«struct#72a1e364») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"runnable" l) v.runnable' dq)
-      (typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"runnable" l) v.runnable' dq)
+      (typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"runtime.runnable" l) v.runnable' dq)
+      (typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"runtime.runnable" l) v.runnable' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#72a1e364_access_store_runnable» (l : Loc) (v : runtime.«struct#72a1e364») (runnable' : runtime.gQueue) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"runnable" l) v.runnable' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"runnable" l) runnable' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"runtime.runnable" l) v.runnable' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#72a1e364» go!"runtime.runnable" l) runnable' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with runnable' := runnable' } : runtime.«struct#72a1e364») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
@@ -1866,9 +1866,9 @@ variable [package_sem' : runtime.Assumptions]
 noncomputable instance «struct#cf01e664_typed_pointsto» :
     TypedPointsto (GF := GF) runtime.«struct#cf01e664» where
   typedPointstoDef l v dq := iprop(
-    "lock" ∷ typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"lock" l) v.lock' dq ∗
-    "stack" ∷ typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"stack" l) v.stack' dq ∗
-    "noStack" ∷ typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"noStack" l) v.noStack' dq ∗
+    "lock" ∷ typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"runtime.lock" l) v.lock' dq ∗
+    "stack" ∷ typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"runtime.stack" l) v.stack' dq ∗
+    "noStack" ∷ typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"runtime.noStack" l) v.noStack' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
@@ -1880,48 +1880,48 @@ noncomputable instance «struct#cf01e664_into_val_typed» :
 
 noncomputable instance «struct#cf01e664_access_load_lock» (l : Loc) (v : runtime.«struct#cf01e664») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"lock" l) v.lock' dq)
-      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"lock" l) v.lock' dq)
+      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"runtime.lock" l) v.lock' dq)
+      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"runtime.lock" l) v.lock' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#cf01e664_access_store_lock» (l : Loc) (v : runtime.«struct#cf01e664») (lock' : runtime.mutex) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"lock" l) v.lock' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"lock" l) lock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"runtime.lock" l) v.lock' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"runtime.lock" l) lock' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with lock' := lock' } : runtime.«struct#cf01e664») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#cf01e664_access_load_stack» (l : Loc) (v : runtime.«struct#cf01e664») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"stack" l) v.stack' dq)
-      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"stack" l) v.stack' dq)
+      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"runtime.stack" l) v.stack' dq)
+      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"runtime.stack" l) v.stack' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#cf01e664_access_store_stack» (l : Loc) (v : runtime.«struct#cf01e664») (stack' : runtime.gList) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"stack" l) v.stack' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"stack" l) stack' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"runtime.stack" l) v.stack' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"runtime.stack" l) stack' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with stack' := stack' } : runtime.«struct#cf01e664») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#cf01e664_access_load_noStack» (l : Loc) (v : runtime.«struct#cf01e664») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"noStack" l) v.noStack' dq)
-      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"noStack" l) v.noStack' dq)
+      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"runtime.noStack" l) v.noStack' dq)
+      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"runtime.noStack" l) v.noStack' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#cf01e664_access_store_noStack» (l : Loc) (v : runtime.«struct#cf01e664») (noStack' : runtime.gList) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"noStack" l) v.noStack' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"noStack" l) noStack' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"runtime.noStack" l) v.noStack' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#cf01e664» go!"runtime.noStack" l) noStack' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with noStack' := noStack' } : runtime.«struct#cf01e664») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct

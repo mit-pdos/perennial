@@ -214,9 +214,9 @@ noncomputable instance «equals_unfold_struct#b304a786» [GooseExts] [GoGlobalCo
   (go.GoType.StructType «struct#b304a786».fields)
 
 @[reducible] noncomputable def «struct#6419a40c».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"n" go.uint64),
-(go.field_decl.FieldDecl go!"i" go.uint64),
-(go.field_decl.FieldDecl go!"done" go.bool)]
+  [(go.field_decl.FieldDecl go!"testing.n" go.uint64),
+(go.field_decl.FieldDecl go!"testing.i" go.uint64),
+(go.field_decl.FieldDecl go!"testing.done" go.bool)]
 
 @[irreducible] noncomputable def «struct#6419a40c».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#6419a40c».fieldsUnsealed
@@ -1151,12 +1151,12 @@ noncomputable instance «struct#6419a40c».zero_val [GooseExts] : ZeroVal «stru
 
 class «struct#6419a40c».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying «struct#6419a40c».underlying «struct#6419a40c»
-  get_n : ∀ (x : «struct#6419a40c»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6419a40c».underlying go!"n") #x (Val #(x.n'))
-  set_n : ∀ (x : «struct#6419a40c») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6419a40c».underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : «struct#6419a40c»)))
-  get_i : ∀ (x : «struct#6419a40c»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6419a40c».underlying go!"i") #x (Val #(x.i'))
-  set_i : ∀ (x : «struct#6419a40c») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6419a40c».underlying go!"i") (PairV #x #y) (Val #(({ x with i' := y } : «struct#6419a40c»)))
-  get_done : ∀ (x : «struct#6419a40c»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6419a40c».underlying go!"done") #x (Val #(x.done'))
-  set_done : ∀ (x : «struct#6419a40c») (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6419a40c».underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : «struct#6419a40c»)))
+  get_n : ∀ (x : «struct#6419a40c»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6419a40c».underlying go!"testing.n") #x (Val #(x.n'))
+  set_n : ∀ (x : «struct#6419a40c») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6419a40c».underlying go!"testing.n") (PairV #x #y) (Val #(({ x with n' := y } : «struct#6419a40c»)))
+  get_i : ∀ (x : «struct#6419a40c»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6419a40c».underlying go!"testing.i") #x (Val #(x.i'))
+  set_i : ∀ (x : «struct#6419a40c») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6419a40c».underlying go!"testing.i") (PairV #x #y) (Val #(({ x with i' := y } : «struct#6419a40c»)))
+  get_done : ∀ (x : «struct#6419a40c»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6419a40c».underlying go!"testing.done") #x (Val #(x.done'))
+  set_done : ∀ (x : «struct#6419a40c») (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6419a40c».underlying go!"testing.done") (PairV #x #y) (Val #(({ x with done' := y } : «struct#6419a40c»)))
 
 attribute [instance] «struct#6419a40c».TypeAssumptions.type_repr
   «struct#6419a40c».TypeAssumptions.get_n

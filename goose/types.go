@@ -130,7 +130,7 @@ func (ctx *Ctx) namedTypeImplDecl(spec *ast.TypeSpec) (decls []glang.Decl) {
 
 	var body glang.Expr
 	if s, ok := ctx.typeOf(spec.Type).(*types.Struct); ok {
-		ty := ctx.structType(s)
+		ty := ctx.structType(s, false)
 
 		decls = append(decls, glang.VerbatimDecl{Content: ctx.leanFdsDecl(typeName, ctx.typeParamList(spec.TypeParams), ty)})
 		body = ctx.leanStructImplBody(spec)
@@ -155,11 +155,11 @@ func (ctx *Ctx) typeOf(e ast.Expr) types.Type {
 	return ctx.info.TypeOf(e)
 }
 
-func (ctx *Ctx) structType(t *types.Struct) glang.StructType {
+func (ctx *Ctx) structType(t *types.Struct, unnamed bool) glang.StructType {
 	ty := glang.StructType{}
 	for i := range t.NumFields() {
 		fieldType := t.Field(i).Type()
-		fieldName := fieldName(i, t.Field(i).Name())
+		fieldName := util.ModelFieldName(t, i, unnamed)
 
 		ty.Fields = append(ty.Fields, glang.FieldDecl{
 			Name:     fieldName,
@@ -283,7 +283,7 @@ func (ctx *Ctx) glangType(n locatable, t types.Type) glang.Expr {
 			}
 		}
 		if t.NumFields() == 0 {
-			return ctx.structType(t)
+			return ctx.structType(t, true)
 		}
 		a := ctx.anonStructOf(n, t)
 		var args []glang.Expr

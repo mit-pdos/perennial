@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"go/types"
+	"strconv"
 )
 
 // IsAnonStruct reports whether t is a struct type that is not a defined type
@@ -131,4 +132,28 @@ func AnonStructsInDef(def types.Type) []*types.Struct {
 		return out
 	}
 	return AnonStructsByValue(def)
+}
+
+// ModelFieldName is the name the model gives field i of st: the Go name (blank
+// fields "_#i", as for every struct). In an unnamed struct type (unnamed), an
+// unexported field's name is qualified by its package path ("p/q.x"): Go's type
+// identity distinguishes unexported field names of different packages
+// (`struct{x int}` declared in p and in q are different types), and the model's
+// go.StructType is compared structurally, so the qualification keeps them apart.
+// A defined type is identified by its name, so its fields keep their Go names.
+func ModelFieldName(st *types.Struct, i int, unnamed bool) string {
+	f := st.Field(i)
+	if f.Name() == "_" {
+		return "_#" + strconv.Itoa(i)
+	}
+	return ModelFieldVarName(f, unnamed)
+}
+
+// ModelFieldVarName is ModelFieldName for a non-blank field given by its object
+// (a keyed composite literal's key).
+func ModelFieldVarName(f *types.Var, unnamed bool) string {
+	if unnamed && !f.Exported() && f.Pkg() != nil {
+		return f.Pkg().Path() + "." + f.Name()
+	}
+	return f.Name()
 }

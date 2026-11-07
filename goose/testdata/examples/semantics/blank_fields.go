@@ -24,3 +24,14 @@ func testBlankFieldMapKey() bool {
 func testBlankFieldIdentity() bool {
 	return any(struct{ _ int }{}) != any(struct{ _0 int }{})
 }
+
+// `==` compares the non-blank fields only, of an unnamed struct type too
+func testBlankFieldEqUnnamed() bool {
+	return struct {
+		_ int
+		x int
+	}{1, 2} == struct {
+		_ int
+		x int
+	}{3, 2}
+}

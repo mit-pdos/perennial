@@ -42,11 +42,11 @@ func (tr *typesTranslator) translateStructType(spec *ast.TypeSpec, s *types.Stru
 			}
 		}
 	}
-	decl.LeanFields = tr.leanFields(s)
+	decl.LeanFields = tr.leanFields(s, false)
 	return []tmpl.TypeDecl{decl}
 }
 
-func (tr *typesTranslator) leanFields(s *types.Struct) []tmpl.LeanField {
+func (tr *typesTranslator) leanFields(s *types.Struct, unnamed bool) []tmpl.LeanField {
 	var fields []tmpl.LeanField
 	for i := 0; i < s.NumFields(); i++ {
 		fieldName := s.Field(i).Name()
@@ -56,7 +56,7 @@ func (tr *typesTranslator) leanFields(s *types.Struct) []tmpl.LeanField {
 		fields = append(fields, tmpl.LeanField{
 			Name:     fieldName,
 			Proj:     glang.LeanQuoteComponent(fieldName + "'"),
-			GoString: glang.LeanStringLit(fieldName),
+			GoString: glang.LeanStringLit(util.ModelFieldName(s, i, unnamed)),
 			// iNamed needs the name to parse as an identifier
 			HypName: leanHypName(fieldName),
 			Type:    tr.toLeanType(s.Field(i).Type()),
@@ -77,7 +77,7 @@ func (tr *typesTranslator) anonStructDecl(a goose.AnonStruct) tmpl.TypeDecl {
 		Axiomatize: a.Axiomatized,
 	}
 	if !a.Axiomatized {
-		decl.LeanFields = tr.leanFields(a.Struct)
+		decl.LeanFields = tr.leanFields(a.Struct, true)
 	}
 	return decl
 }

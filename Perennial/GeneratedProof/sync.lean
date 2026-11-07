@@ -957,10 +957,10 @@ variable [package_sem' : sync.Assumptions]
 noncomputable instance «struct#27ad43a3_typed_pointsto» :
     TypedPointsto (GF := GF) sync.«struct#27ad43a3» where
   typedPointstoDef l v dq := iprop(
-    "f" ∷ typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"f" l) v.f' dq ∗
-    "once" ∷ typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"once" l) v.once' dq ∗
-    "valid" ∷ typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"valid" l) v.valid' dq ∗
-    "p" ∷ typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"p" l) v.p' dq ∗
+    "f" ∷ typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.f" l) v.f' dq ∗
+    "once" ∷ typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.once" l) v.once' dq ∗
+    "valid" ∷ typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.valid" l) v.valid' dq ∗
+    "p" ∷ typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.p" l) v.p' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
@@ -972,64 +972,64 @@ noncomputable instance «struct#27ad43a3_into_val_typed» :
 
 noncomputable instance «struct#27ad43a3_access_load_f» (l : Loc) (v : sync.«struct#27ad43a3») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"f" l) v.f' dq)
-      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"f" l) v.f' dq)
+      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.f" l) v.f' dq)
+      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.f" l) v.f' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#27ad43a3_access_store_f» (l : Loc) (v : sync.«struct#27ad43a3») (f' : GoFunc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"f" l) v.f' (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"f" l) f' (DFrac.own 1))
+      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.f" l) v.f' (DFrac.own 1))
+      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.f" l) f' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with f' := f' } : sync.«struct#27ad43a3») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#27ad43a3_access_load_once» (l : Loc) (v : sync.«struct#27ad43a3») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"once" l) v.once' dq)
-      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"once" l) v.once' dq)
+      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.once" l) v.once' dq)
+      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.once" l) v.once' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#27ad43a3_access_store_once» (l : Loc) (v : sync.«struct#27ad43a3») (once' : sync.Once) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"once" l) v.once' (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"once" l) once' (DFrac.own 1))
+      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.once" l) v.once' (DFrac.own 1))
+      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.once" l) once' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with once' := once' } : sync.«struct#27ad43a3») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#27ad43a3_access_load_valid» (l : Loc) (v : sync.«struct#27ad43a3») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"valid" l) v.valid' dq)
-      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"valid" l) v.valid' dq)
+      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.valid" l) v.valid' dq)
+      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.valid" l) v.valid' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#27ad43a3_access_store_valid» (l : Loc) (v : sync.«struct#27ad43a3») (valid' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"valid" l) v.valid' (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"valid" l) valid' (DFrac.own 1))
+      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.valid" l) v.valid' (DFrac.own 1))
+      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.valid" l) valid' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with valid' := valid' } : sync.«struct#27ad43a3») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#27ad43a3_access_load_p» (l : Loc) (v : sync.«struct#27ad43a3») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"p" l) v.p' dq)
-      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"p" l) v.p' dq)
+      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.p" l) v.p' dq)
+      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.p" l) v.p' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#27ad43a3_access_store_p» (l : Loc) (v : sync.«struct#27ad43a3») (p' : GoInterface) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"p" l) v.p' (DFrac.own 1))
-      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"p" l) p' (DFrac.own 1))
+      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.p" l) v.p' (DFrac.own 1))
+      (typedPointsto (structFieldRef sync.«struct#27ad43a3» go!"sync.p" l) p' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with p' := p' } : sync.«struct#27ad43a3») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
@@ -1048,11 +1048,11 @@ variable [package_sem' : sync.Assumptions]
 noncomputable instance «struct#a4b331e8_typed_pointsto» {T' : Type} [TypedPointsto (GF := GF) T'] :
     TypedPointsto (GF := GF) (sync.«struct#a4b331e8» T') where
   typedPointstoDef l v dq := iprop(
-    "f" ∷ typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"f" l) v.f' dq ∗
-    "once" ∷ typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"once" l) v.once' dq ∗
-    "valid" ∷ typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"valid" l) v.valid' dq ∗
-    "p" ∷ typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"p" l) v.p' dq ∗
-    "result" ∷ typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"result" l) v.result' dq ∗
+    "f" ∷ typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.f" l) v.f' dq ∗
+    "once" ∷ typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.once" l) v.once' dq ∗
+    "valid" ∷ typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.valid" l) v.valid' dq ∗
+    "p" ∷ typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.p" l) v.p' dq ∗
+    "result" ∷ typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.result" l) v.result' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
@@ -1064,80 +1064,80 @@ noncomputable instance «struct#a4b331e8_into_val_typed» (T : go.GoType) {T' : 
 
 noncomputable instance «struct#a4b331e8_access_load_f» {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.«struct#a4b331e8» T')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"f" l) v.f' dq)
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"f" l) v.f' dq)
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.f" l) v.f' dq)
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.f" l) v.f' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#a4b331e8_access_store_f» {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.«struct#a4b331e8» T')) (f' : GoFunc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"f" l) v.f' (DFrac.own 1))
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"f" l) f' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.f" l) v.f' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.f" l) f' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with f' := f' } : (sync.«struct#a4b331e8» T')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#a4b331e8_access_load_once» {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.«struct#a4b331e8» T')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"once" l) v.once' dq)
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"once" l) v.once' dq)
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.once" l) v.once' dq)
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.once" l) v.once' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#a4b331e8_access_store_once» {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.«struct#a4b331e8» T')) (once' : sync.Once) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"once" l) v.once' (DFrac.own 1))
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"once" l) once' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.once" l) v.once' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.once" l) once' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with once' := once' } : (sync.«struct#a4b331e8» T')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#a4b331e8_access_load_valid» {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.«struct#a4b331e8» T')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"valid" l) v.valid' dq)
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"valid" l) v.valid' dq)
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.valid" l) v.valid' dq)
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.valid" l) v.valid' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#a4b331e8_access_store_valid» {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.«struct#a4b331e8» T')) (valid' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"valid" l) v.valid' (DFrac.own 1))
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"valid" l) valid' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.valid" l) v.valid' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.valid" l) valid' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with valid' := valid' } : (sync.«struct#a4b331e8» T')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#a4b331e8_access_load_p» {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.«struct#a4b331e8» T')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"p" l) v.p' dq)
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"p" l) v.p' dq)
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.p" l) v.p' dq)
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.p" l) v.p' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#a4b331e8_access_store_p» {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.«struct#a4b331e8» T')) (p' : GoInterface) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"p" l) v.p' (DFrac.own 1))
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"p" l) p' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.p" l) v.p' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.p" l) p' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with p' := p' } : (sync.«struct#a4b331e8» T')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#a4b331e8_access_load_result» {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.«struct#a4b331e8» T')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"result" l) v.result' dq)
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"result" l) v.result' dq)
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.result" l) v.result' dq)
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.result" l) v.result' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#a4b331e8_access_store_result» {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (sync.«struct#a4b331e8» T')) (result' : T') :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"result" l) v.result' (DFrac.own 1))
-      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"result" l) result' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.result" l) v.result' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#a4b331e8» T') go!"sync.result" l) result' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with result' := result' } : (sync.«struct#a4b331e8» T')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
@@ -1156,12 +1156,12 @@ variable [package_sem' : sync.Assumptions]
 noncomputable instance «struct#3b550fdf_typed_pointsto» {T1' : Type} [TypedPointsto (GF := GF) T1'] {T2' : Type} [TypedPointsto (GF := GF) T2'] :
     TypedPointsto (GF := GF) (sync.«struct#3b550fdf» T1' T2') where
   typedPointstoDef l v dq := iprop(
-    "f" ∷ typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"f" l) v.f' dq ∗
-    "once" ∷ typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"once" l) v.once' dq ∗
-    "valid" ∷ typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"valid" l) v.valid' dq ∗
-    "p" ∷ typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"p" l) v.p' dq ∗
-    "r1" ∷ typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"r1" l) v.r1' dq ∗
-    "r2" ∷ typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"r2" l) v.r2' dq ∗
+    "f" ∷ typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.f" l) v.f' dq ∗
+    "once" ∷ typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.once" l) v.once' dq ∗
+    "valid" ∷ typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.valid" l) v.valid' dq ∗
+    "p" ∷ typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.p" l) v.p' dq ∗
+    "r1" ∷ typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.r1" l) v.r1' dq ∗
+    "r2" ∷ typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.r2" l) v.r2' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
@@ -1173,96 +1173,96 @@ noncomputable instance «struct#3b550fdf_into_val_typed» (T1 : go.GoType) {T1' 
 
 noncomputable instance «struct#3b550fdf_access_load_f» {T1' : Type} [TypedPointsto (GF := GF) T1'] {T2' : Type} [TypedPointsto (GF := GF) T2'] (l : Loc) (v : (sync.«struct#3b550fdf» T1' T2')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"f" l) v.f' dq)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"f" l) v.f' dq)
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.f" l) v.f' dq)
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.f" l) v.f' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#3b550fdf_access_store_f» {T1' : Type} [TypedPointsto (GF := GF) T1'] {T2' : Type} [TypedPointsto (GF := GF) T2'] (l : Loc) (v : (sync.«struct#3b550fdf» T1' T2')) (f' : GoFunc) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"f" l) v.f' (DFrac.own 1))
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"f" l) f' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.f" l) v.f' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.f" l) f' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with f' := f' } : (sync.«struct#3b550fdf» T1' T2')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#3b550fdf_access_load_once» {T1' : Type} [TypedPointsto (GF := GF) T1'] {T2' : Type} [TypedPointsto (GF := GF) T2'] (l : Loc) (v : (sync.«struct#3b550fdf» T1' T2')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"once" l) v.once' dq)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"once" l) v.once' dq)
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.once" l) v.once' dq)
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.once" l) v.once' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#3b550fdf_access_store_once» {T1' : Type} [TypedPointsto (GF := GF) T1'] {T2' : Type} [TypedPointsto (GF := GF) T2'] (l : Loc) (v : (sync.«struct#3b550fdf» T1' T2')) (once' : sync.Once) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"once" l) v.once' (DFrac.own 1))
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"once" l) once' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.once" l) v.once' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.once" l) once' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with once' := once' } : (sync.«struct#3b550fdf» T1' T2')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#3b550fdf_access_load_valid» {T1' : Type} [TypedPointsto (GF := GF) T1'] {T2' : Type} [TypedPointsto (GF := GF) T2'] (l : Loc) (v : (sync.«struct#3b550fdf» T1' T2')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"valid" l) v.valid' dq)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"valid" l) v.valid' dq)
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.valid" l) v.valid' dq)
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.valid" l) v.valid' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#3b550fdf_access_store_valid» {T1' : Type} [TypedPointsto (GF := GF) T1'] {T2' : Type} [TypedPointsto (GF := GF) T2'] (l : Loc) (v : (sync.«struct#3b550fdf» T1' T2')) (valid' : Bool) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"valid" l) v.valid' (DFrac.own 1))
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"valid" l) valid' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.valid" l) v.valid' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.valid" l) valid' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with valid' := valid' } : (sync.«struct#3b550fdf» T1' T2')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#3b550fdf_access_load_p» {T1' : Type} [TypedPointsto (GF := GF) T1'] {T2' : Type} [TypedPointsto (GF := GF) T2'] (l : Loc) (v : (sync.«struct#3b550fdf» T1' T2')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"p" l) v.p' dq)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"p" l) v.p' dq)
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.p" l) v.p' dq)
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.p" l) v.p' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#3b550fdf_access_store_p» {T1' : Type} [TypedPointsto (GF := GF) T1'] {T2' : Type} [TypedPointsto (GF := GF) T2'] (l : Loc) (v : (sync.«struct#3b550fdf» T1' T2')) (p' : GoInterface) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"p" l) v.p' (DFrac.own 1))
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"p" l) p' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.p" l) v.p' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.p" l) p' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with p' := p' } : (sync.«struct#3b550fdf» T1' T2')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#3b550fdf_access_load_r1» {T1' : Type} [TypedPointsto (GF := GF) T1'] {T2' : Type} [TypedPointsto (GF := GF) T2'] (l : Loc) (v : (sync.«struct#3b550fdf» T1' T2')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"r1" l) v.r1' dq)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"r1" l) v.r1' dq)
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.r1" l) v.r1' dq)
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.r1" l) v.r1' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#3b550fdf_access_store_r1» {T1' : Type} [TypedPointsto (GF := GF) T1'] {T2' : Type} [TypedPointsto (GF := GF) T2'] (l : Loc) (v : (sync.«struct#3b550fdf» T1' T2')) (r1' : T1') :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"r1" l) v.r1' (DFrac.own 1))
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"r1" l) r1' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.r1" l) v.r1' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.r1" l) r1' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r1' := r1' } : (sync.«struct#3b550fdf» T1' T2')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#3b550fdf_access_load_r2» {T1' : Type} [TypedPointsto (GF := GF) T1'] {T2' : Type} [TypedPointsto (GF := GF) T2'] (l : Loc) (v : (sync.«struct#3b550fdf» T1' T2')) (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"r2" l) v.r2' dq)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"r2" l) v.r2' dq)
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.r2" l) v.r2' dq)
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.r2" l) v.r2' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#3b550fdf_access_store_r2» {T1' : Type} [TypedPointsto (GF := GF) T1'] {T2' : Type} [TypedPointsto (GF := GF) T2'] (l : Loc) (v : (sync.«struct#3b550fdf» T1' T2')) (r2' : T2') :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"r2" l) v.r2' (DFrac.own 1))
-      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"r2" l) r2' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.r2" l) v.r2' (DFrac.own 1))
+      (typedPointsto (structFieldRef (sync.«struct#3b550fdf» T1' T2') go!"sync.r2" l) r2' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r2' := r2' } : (sync.«struct#3b550fdf» T1' T2')) (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct

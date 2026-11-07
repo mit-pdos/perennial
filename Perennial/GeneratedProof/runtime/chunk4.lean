@@ -2079,8 +2079,8 @@ variable [package_sem' : runtime.Assumptions]
 noncomputable instance «struct#8786e874_typed_pointsto» :
     TypedPointsto (GF := GF) runtime.«struct#8786e874» where
   typedPointstoDef l v dq := iprop(
-    "len" ∷ typedPointsto (structFieldRef runtime.«struct#8786e874» go!"len" l) v.len' dq ∗
-    "buf" ∷ typedPointsto (structFieldRef runtime.«struct#8786e874» go!"buf" l) v.buf' dq ∗
+    "len" ∷ typedPointsto (structFieldRef runtime.«struct#8786e874» go!"runtime.len" l) v.len' dq ∗
+    "buf" ∷ typedPointsto (structFieldRef runtime.«struct#8786e874» go!"runtime.buf" l) v.buf' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
@@ -2092,32 +2092,32 @@ noncomputable instance «struct#8786e874_into_val_typed» :
 
 noncomputable instance «struct#8786e874_access_load_len» (l : Loc) (v : runtime.«struct#8786e874») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#8786e874» go!"len" l) v.len' dq)
-      (typedPointsto (structFieldRef runtime.«struct#8786e874» go!"len" l) v.len' dq)
+      (typedPointsto (structFieldRef runtime.«struct#8786e874» go!"runtime.len" l) v.len' dq)
+      (typedPointsto (structFieldRef runtime.«struct#8786e874» go!"runtime.len" l) v.len' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#8786e874_access_store_len» (l : Loc) (v : runtime.«struct#8786e874») (len' : w64) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#8786e874» go!"len" l) v.len' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.«struct#8786e874» go!"len" l) len' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#8786e874» go!"runtime.len" l) v.len' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#8786e874» go!"runtime.len" l) len' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with len' := len' } : runtime.«struct#8786e874») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#8786e874_access_load_buf» (l : Loc) (v : runtime.«struct#8786e874») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#8786e874» go!"buf" l) v.buf' dq)
-      (typedPointsto (structFieldRef runtime.«struct#8786e874» go!"buf" l) v.buf' dq)
+      (typedPointsto (structFieldRef runtime.«struct#8786e874» go!"runtime.buf" l) v.buf' dq)
+      (typedPointsto (structFieldRef runtime.«struct#8786e874» go!"runtime.buf" l) v.buf' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#8786e874_access_store_buf» (l : Loc) (v : runtime.«struct#8786e874») (buf' : (GoArray Loc 128)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#8786e874» go!"buf" l) v.buf' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.«struct#8786e874» go!"buf" l) buf' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#8786e874» go!"runtime.buf" l) v.buf' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#8786e874» go!"runtime.buf" l) buf' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buf' := buf' } : runtime.«struct#8786e874») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct

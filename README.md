@@ -238,11 +238,17 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   it exists), and the method set of any other type (a struct type literal with
   embedded fields, a type declared in a function, a type of an untranslated package) is
   unconstrained. Two limits of the model's type identity (`=` on `go.GoType`) apply here as
-  to type assertions: struct tags are not part of `go.StructType`, and the unexported field
-  names of struct type literals are not qualified by package. goose loads code with the build
+  to type assertions: struct tags are not part of `go.StructType` (goose refuses a tag on a
+  struct type literal), and an unexported field name is qualified by its package only in a
+  struct type literal (`"<pkgpath>.a"`), which keeps Go's type identity for those; a defined
+  type is compared by name. goose loads code with the build
   tag `goose`: a method declared only in files excluded by it (or included only by it) would
   make the emitted method set differ from the real build's.
   `go_type_set` (`Golang/Theory/TypeSet.lean`) decides `typeSetContains` goals.
+* **One platform.** goose translates the linux/amd64 build with the tag `goose` and without
+  `-race` (`GOOS=linux GOARCH=amd64`); constants are folded to that build's values
+  (`runtime.GOOS` is `"linux"`), so a verified result is about that build
+  (`docs/KNOWN_LIMITATIONS.md`, "The platform").
 * **Generated code comes from goose.** The translator in `goose/` emits
   `Perennial/Code/**` and `Perennial/GeneratedProof/**`; regenerate with
   `etc/update-goose-new.py` rather than editing them by hand.

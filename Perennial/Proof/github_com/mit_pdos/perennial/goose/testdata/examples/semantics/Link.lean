@@ -18,6 +18,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructNested
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructPointer
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructSameType
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBlankFieldEqUnnamed
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBreakSwitch
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testByteSliceToString
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCatchTwoDeep
@@ -81,6 +82,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testU32ToU64
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testU64ToU32
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUint32Untyped
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConstUint64
 
 @[expose] public section
 
@@ -133,6 +135,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testA
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testAnonStructSameType : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructSameType.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructSameType.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testBlankFieldEqUnnamed : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBlankFieldEqUnnamed.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBlankFieldEqUnnamed.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testBreakSwitch : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBreakSwitch.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBreakSwitch.wp_proof
@@ -322,6 +327,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testU
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testUint32Untyped : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUint32Untyped.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUint32Untyped.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testUntypedFloatConstUint64 : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConstUint64.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testUntypedFloatConstUint64.wp_proof
 
 end link
 

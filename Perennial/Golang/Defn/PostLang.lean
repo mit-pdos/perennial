@@ -318,6 +318,9 @@ class IsStrictlyComparable [GoSemanticsFunctions] (t : go.GoType) (V : Type) [De
 attribute [instance] IsStrictlyComparable.is_strictly_comparable
 export IsStrictlyComparable (is_strictly_comparable)
 
+/-- A blank field (`_`), which goose names `_#i`: never read, written, or compared. -/
+def isBlankField (n : GoString) : Bool := go!"_#".isPrefixOf n
+
 class CoreComparisonSemantics [GoSemanticsFunctions] : Prop where
   /-- special case equality for functions -/
   go_op_go_equals_func_nil_l (sig : go.signature) (f : GoFunc) :
@@ -345,6 +348,8 @@ class CoreComparisonSemantics [GoSemanticsFunctions] : Prop where
                match fd with
                | go.FieldDecl n t => (n, t)
                | go.EmbeddedField n t => (n, t)
+             -- Go compares the non-blank fields only (spec, "Comparison operators")
+             if go.isBlankField field_name then cmp_so_far else
              gl(if: cmp_so_far then
                 (StructFieldGet (go.StructType fds) field_name v1) =⟨field_type⟩
                 (StructFieldGet (go.StructType fds) field_name v2)
@@ -366,8 +371,6 @@ def structFieldType (f : GoString) : List go.field_decl → go.GoType
   | go.EmbeddedField f' t :: fds =>
       if f = f' then t
       else structFieldType f fds
-
-def isBlankField (n : GoString) : Bool := go!"_#".isPrefixOf n
 
 class IntoValUnfold (V : Type) (f : outParam (V → val)) : Prop where
   intoVal_unfold : @intoVal _ _ V = f

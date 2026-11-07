@@ -33,8 +33,8 @@ variable [package_sem' : runtime.Assumptions]
 noncomputable instance «struct#1768b3d4_typed_pointsto» :
     TypedPointsto (GF := GF) runtime.«struct#1768b3d4» where
   typedPointstoDef l v dq := iprop(
-    "root" ∷ typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"root" l) v.root' dq ∗
-    "pad" ∷ typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"pad" l) v.pad' dq ∗
+    "root" ∷ typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"runtime.root" l) v.root' dq ∗
+    "pad" ∷ typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"runtime.pad" l) v.pad' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
@@ -46,32 +46,32 @@ noncomputable instance «struct#1768b3d4_into_val_typed» :
 
 noncomputable instance «struct#1768b3d4_access_load_root» (l : Loc) (v : runtime.«struct#1768b3d4») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"root" l) v.root' dq)
-      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"root" l) v.root' dq)
+      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"runtime.root" l) v.root' dq)
+      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"runtime.root" l) v.root' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#1768b3d4_access_store_root» (l : Loc) (v : runtime.«struct#1768b3d4») (root' : runtime.semaRoot) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"root" l) v.root' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"root" l) root' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"runtime.root" l) v.root' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"runtime.root" l) root' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with root' := root' } : runtime.«struct#1768b3d4») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#1768b3d4_access_load_pad» (l : Loc) (v : runtime.«struct#1768b3d4») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"pad" l) v.pad' dq)
-      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"pad" l) v.pad' dq)
+      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"runtime.pad" l) v.pad' dq)
+      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"runtime.pad" l) v.pad' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
 noncomputable instance «struct#1768b3d4_access_store_pad» (l : Loc) (v : runtime.«struct#1768b3d4») (pad' : (GoArray w8 40)) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"pad" l) v.pad' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"pad" l) pad' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"runtime.pad" l) v.pad' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"runtime.pad" l) pad' (DFrac.own 1))
       (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pad' := pad' } : runtime.«struct#1768b3d4») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct

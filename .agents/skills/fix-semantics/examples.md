@@ -967,7 +967,9 @@ fields are now translated), the semantics tests (`anon_structs.go`, five proved 
   embeds `internal/pragma.NoUnkeyedLiterals`, a package it does not import.
 - Left out: method sets of unnamed structs with embedded fields (no promoted-method facts, as
   before); unexported field names are not package-qualified in `FieldDecl` (an existing defect of
-  every unnamed struct type, unrelated to this change).
+  every unnamed struct type). *Correction (Case 35):* not unrelated: before this change values
+  of such types did not step, so the defect was unprovable; the generated `TypeRepr` made it
+  provable. Case 35 qualifies the names.
 
 **Not taken.** (b) one generic `TypeReprUnderlying (go.StructType fds) V` in Perennial, `V` a
 nested product of the fields' types: nothing generated, but proofs about tuples instead of named
@@ -1108,3 +1110,44 @@ changes in the future". cf98e5f15 and 432c32f are rejected precedent: when a mod
 defined than Go, make it stuck where Go fails by modelling the state Go depends on; never
 delete the model in favour of axioms, and never mint a token as an `opaque` proposition whose
 meaning only axioms fix (review-trusted R10). Plan signed off 2026-11-04 ("Make it so.").
+
+## Case 35 — ACCEPTED: unexported field names of struct type literals qualified by package (branch `rt-fixes`)
+
+**Symptom.** Unsound (review of Case 30, graded REWORK). Witness: package `p` has
+`func Make() any { return struct{ x int }{5} }`; package `q` has
+`_, ok := p.Make().(struct{ x int })`. Go: `false` (an unexported field name of one package
+is never the same as another's). Model: both write `go.StructType [FieldDecl "x" go.int]`, so
+the type assertion succeeds; `p.Mk() == q.Mk()` diverges the same way. Since Case 30 the values
+step, so the divergence was provable.
+
+**Taken.** goose writes an unexported field of a struct type literal as `"<pkgpath>.x"`
+(`util.ModelFieldName`), in the `go.StructType`, in `StructFieldRef/Get`, keyed composite
+literals and the generated record's field steps (goose and proofgen alike), as unexported
+method names already are (`"context.cancel"`). A defined type keeps its field names: it is
+identified by its name. Cost: a conversion between a defined struct type and a struct type
+literal with an unexported field is stuck (the underlying types differ by the names);
+documented in `docs/KNOWN_LIMITATIONS.md`, "Struct types". Qualifying every struct's fields
+would make that conversion step but changes every translation and every proof naming a field.
+
+**Why.** The owner asked for whatever the review requires; the design (qualify only in struct
+type literals) was the agent's, as the smallest change completing the existing scheme for
+unexported method ids. The cross-package witness is not an executable semantics test (it needs
+a second translated test package); the gold output shows the qualified names.
+
+## Case 36 — ACCEPTED: `==` on structs skips blank fields (branch `rt-fixes`)
+
+**Symptom.** Model differs from Go (review NOTE): `go_eq_struct` compared blank (`_`) fields;
+Go compares the non-blank fields only. Not reachable from programs today (the composite literal
+rule leaves blank fields zero, and goose never writes one), but `==` depended on that invariant.
+
+**Taken.** `go_eq_struct` skips a field when `go.isBlankField` (moved before the class). Test:
+`testBlankFieldEqUnnamed` (Go and Lean).
+
+## Case 37 — ACCEPTED: an integer-valued untyped float constant is its exact value (branch `rt-fixes`)
+
+**Symptom.** Unsound translation (review NOTE): `const Big = 1e19; var x uint64 = Big` was
+translated through `int64` (`untypedFloatToInt`): `#(W64 -2^63)`, Go's value is `10^19`.
+
+**Taken.** `identExpr` uses `constantLiteral` (`constant.ToInt`, exact `big.Int`), as Case 32's
+imported constants do; `untypedFloatToInt` deleted. Test: `testUntypedFloatConstUint64`.
+

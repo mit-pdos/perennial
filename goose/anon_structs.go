@@ -50,7 +50,7 @@ func (ctx *Ctx) anonStructOf(n locatable, t *types.Struct) *anonStruct {
 	// alias may denote one), so the field types spell them out
 	saved := ctx.inAnonStructFields
 	ctx.inAnonStructFields = true
-	fields := ctx.structType(t)
+	fields := ctx.structType(t, true)
 	ctx.inAnonStructFields = saved
 	var params []string
 	for _, p := range util.AnonStructParams(t) {
@@ -129,7 +129,7 @@ func (ctx *Ctx) anonStructDecls(a *anonStruct) []glang.Decl {
 	}
 	add("type_repr", leanForall(binders, fmt.Sprintf("go.TypeReprUnderlying %s %s", implTy, valTy)))
 	if !a.axiomatized {
-		ctx.structFieldAssumptions(n, a.t, valTy, implTy, goBinders, valBinders, add)
+		ctx.structFieldAssumptions(n, a.t, true, valTy, implTy, goBinders, valBinders, add)
 	}
 	decls = append(decls, typeAssumptionsDecl{
 		VerbatimDecl: glang.VerbatimDecl{Content: leanClass(glang.LeanEncodedName(a.name+"_Assumptions"),

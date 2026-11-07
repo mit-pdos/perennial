@@ -340,8 +340,8 @@ noncomputable def variadicSlice.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 attribute [irreducible] variadicSlice.ty
 
 @[reducible] noncomputable def «struct#7d913798».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"f" go.int),
-(go.field_decl.FieldDecl go!"valid" go.bool)]
+  [(go.field_decl.FieldDecl go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.f" go.int),
+(go.field_decl.FieldDecl go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.valid" go.bool)]
 
 @[irreducible] noncomputable def «struct#7d913798».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#7d913798».fieldsUnsealed
@@ -354,7 +354,7 @@ noncomputable instance «equals_unfold_struct#7d913798» [GooseExts] [GoGlobalCo
   (go.GoType.StructType «struct#7d913798».fields)
 
 @[reducible] noncomputable def «struct#3819980a».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"x" go.int)]
+  [(go.field_decl.FieldDecl go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.x" go.int)]
 
 @[irreducible] noncomputable def «struct#3819980a».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#3819980a».fieldsUnsealed
@@ -367,8 +367,8 @@ noncomputable instance «equals_unfold_struct#3819980a» [GooseExts] [GoGlobalCo
   (go.GoType.StructType «struct#3819980a».fields)
 
 @[reducible] noncomputable def «struct#b17138a7».fieldsUnsealed [GooseExts] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"v" T),
-(go.field_decl.FieldDecl go!"n" go.int)]
+  [(go.field_decl.FieldDecl go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.v" T),
+(go.field_decl.FieldDecl go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.n" go.int)]
 
 @[irreducible] noncomputable def «struct#b17138a7».fields [GooseExts] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   («struct#b17138a7».fieldsUnsealed T)
@@ -381,7 +381,7 @@ noncomputable instance «equals_unfold_struct#b17138a7» [GooseExts] [GoGlobalCo
   (go.GoType.StructType («struct#b17138a7».fields T))
 
 @[reducible] noncomputable def «struct#40520aa4».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"c" go.bool)]
+  [(go.field_decl.FieldDecl go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.c" go.bool)]
 
 @[irreducible] noncomputable def «struct#40520aa4».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#40520aa4».fieldsUnsealed
@@ -394,8 +394,8 @@ noncomputable instance «equals_unfold_struct#40520aa4» [GooseExts] [GoGlobalCo
   (go.GoType.StructType «struct#40520aa4».fields)
 
 @[reducible] noncomputable def «struct#6b601a4b».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"a" go.int),
-(go.field_decl.FieldDecl go!"b" «struct#40520aa4».underlying)]
+  [(go.field_decl.FieldDecl go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.a" go.int),
+(go.field_decl.FieldDecl go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.b" «struct#40520aa4».underlying)]
 
 @[irreducible] noncomputable def «struct#6b601a4b».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#6b601a4b».fieldsUnsealed
@@ -408,7 +408,7 @@ noncomputable instance «equals_unfold_struct#6b601a4b» [GooseExts] [GoGlobalCo
   (go.GoType.StructType «struct#6b601a4b».fields)
 
 @[reducible] noncomputable def «struct#3e1ef20f».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"_0" go.int)]
+  [(go.field_decl.FieldDecl go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics._0" go.int)]
 
 @[irreducible] noncomputable def «struct#3e1ef20f».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#3e1ef20f».fieldsUnsealed
@@ -433,8 +433,22 @@ noncomputable instance «equals_unfold_struct#448f9a0d» [GooseExts] [GoGlobalCo
 @[reducible] noncomputable def «struct#448f9a0d».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType «struct#448f9a0d».fields)
 
+@[reducible] noncomputable def «struct#d9914bc8».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"_#0" go.int),
+(go.field_decl.FieldDecl go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.x" go.int)]
+
+@[irreducible] noncomputable def «struct#d9914bc8».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  «struct#d9914bc8».fieldsUnsealed
+
+noncomputable instance «equals_unfold_struct#d9914bc8» [GooseExts] [GoGlobalContext] :
+    EqualsUnfold «struct#d9914bc8».fields «struct#d9914bc8».fieldsUnsealed :=
+  ⟨by unfold «struct#d9914bc8».fields; rfl⟩
+
+@[reducible] noncomputable def «struct#d9914bc8».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType «struct#d9914bc8».fields)
+
 @[reducible] noncomputable def «struct#568e4f73».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.EmbeddedField go!"msValRecv" msValRecv.ty)]
+  [(go.field_decl.EmbeddedField go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.msValRecv" msValRecv.ty)]
 
 @[irreducible] noncomputable def «struct#568e4f73».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#568e4f73».fieldsUnsealed
@@ -457,6 +471,9 @@ noncomputable instance «equals_unfold_struct#568e4f73» [GooseExts] [GoGlobalCo
 
 @[reducible] noncomputable def DefinedStr2.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   DefinedStr.ty
+
+@[reducible] noncomputable def untypedFloatBig [GooseExts] [GoGlobalContext] : val :=
+  #(W64 4891288408196988160)
 
 noncomputable def initOrder [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.initOrder"
@@ -538,6 +555,9 @@ noncomputable def testBlankFieldMapKey [GooseExts] [GoGlobalContext] : GoString 
 
 noncomputable def testBlankFieldIdentity [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBlankFieldIdentity"
+
+noncomputable def testBlankFieldEqUnnamed [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBlankFieldEqUnnamed"
 
 noncomputable def testExplicitBlockStmt [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testExplicitBlockStmt"
@@ -718,6 +738,9 @@ noncomputable def testU32NewtypeLen [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def testUint32Untyped [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testUint32Untyped"
+
+noncomputable def testUntypedFloatConstUint64 [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testUntypedFloatConstUint64"
 
 noncomputable def measureArea [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.measureArea"
@@ -1589,17 +1612,17 @@ noncomputable def testAnonStructFields.impl [GooseExts] [GoGlobalContext] : val 
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "$r0" (Let "$v0" (Val #(W64 3))
-  (App (Val (GoInstruction (CompositeLiteral «struct#7d913798».underlying))) (LiteralValue [(KeyedElement (some (KeyField go!"f")) (ElementExpression go.int (Var "$v0")))])))
+  (App (Val (GoInstruction (CompositeLiteral «struct#7d913798».underlying))) (LiteralValue [(KeyedElement (some (KeyField go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.f")) (ElementExpression go.int (Var "$v0")))])))
   (Let "d" (App (Val (GoInstruction (GoAlloc «struct#7d913798».underlying))) (App (Val (GoInstruction (GoZeroVal «struct#7d913798».underlying))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #true)
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (StructFieldRef «struct#7d913798».underlying go!"valid"))) (Var "d"))
+  (Let "$r0" (App (Val (GoInstruction (StructFieldRef «struct#7d913798».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.valid"))) (Var "d"))
   (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType go.bool)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType go.bool)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #false)
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef «struct#7d913798».underlying go!"f"))) (Var "d"))) (Val #(W64 3)))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef «struct#7d913798».underlying go!"valid"))) (Var "d")))) (Val #false))
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef «struct#7d913798».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.f"))) (Var "d"))) (Val #(W64 3)))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef «struct#7d913798».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.valid"))) (Var "d")))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -1610,7 +1633,7 @@ noncomputable def testAnonStructFields.impl [GooseExts] [GoGlobalContext] : val 
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType go.bool)))) (Pair (Var "p") (Var "$r0")))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#7d913798».underlying go!"valid"))) (Var "d")) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#7d913798».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.valid"))) (Var "d")) (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore «struct#7d913798».underlying))) (Pair (Var "d") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
@@ -1621,18 +1644,18 @@ noncomputable def testAnonStructPointer.impl [GooseExts] [GoGlobalContext] : val
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "$r0" (App (Val (GoInstruction (GoAlloc «struct#3819980a».underlying))) (Let "$v0" (Val #(W64 1))
-  (App (Val (GoInstruction (CompositeLiteral «struct#3819980a».underlying))) (LiteralValue [(KeyedElement (some (KeyField go!"x")) (ElementExpression go.int (Var "$v0")))]))))
+  (App (Val (GoInstruction (CompositeLiteral «struct#3819980a».underlying))) (LiteralValue [(KeyedElement (some (KeyField go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.x")) (ElementExpression go.int (Var "$v0")))]))))
   (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType «struct#3819980a».underlying)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType «struct#3819980a».underlying)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef «struct#3819980a».underlying go!"x"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType «struct#3819980a».underlying)))) (Var "p")))) (Val #(W64 2))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef «struct#3819980a».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.x"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType «struct#3819980a».underlying)))) (Var "p")))) (Val #(W64 2))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#3819980a».underlying go!"x"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType «struct#3819980a».underlying)))) (Var "p"))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef «struct#3819980a».underlying go!"x"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType «struct#3819980a».underlying)))) (Var "p")))) (Val #(W64 1))))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#3819980a».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.x"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType «struct#3819980a».underlying)))) (Var "p"))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef «struct#3819980a».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.x"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType «struct#3819980a».underlying)))) (Var "p")))) (Val #(W64 1))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType «struct#3819980a».underlying)))) (Pair (Var "p") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
@@ -1646,7 +1669,7 @@ noncomputable def anonStructSameType.impl [GooseExts] [GoGlobalContext] : val :=
   (Seq (App (Val exceptionDo)
   (Let "$r0" (Let "$v0" (Val #(W64 1))
   (Let "$v1" (Val #true)
-  (App (Val (GoInstruction (CompositeLiteral «struct#7d913798».underlying))) (LiteralValue [(KeyedElement (some (KeyField go!"f")) (ElementExpression go.int (Var "$v0"))), (KeyedElement (some (KeyField go!"valid")) (ElementExpression go.bool (Var "$v1")))]))))
+  (App (Val (GoInstruction (CompositeLiteral «struct#7d913798».underlying))) (LiteralValue [(KeyedElement (some (KeyField go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.f")) (ElementExpression go.int (Var "$v0"))), (KeyedElement (some (KeyField go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.valid")) (ElementExpression go.bool (Var "$v1")))]))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -1662,7 +1685,7 @@ noncomputable def testAnonStructSameType.impl [GooseExts] [GoGlobalContext] : va
   (Let "$r0" (App (App (Val (GoInstruction (FuncResolve anonStructSameType []))) (Val #())) (Val #()))
   (Let "v" (App (Val (GoInstruction (GoAlloc «struct#7d913798».underlying))) (App (Val (GoInstruction (GoZeroVal «struct#7d913798».underlying))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef «struct#7d913798».underlying go!"f"))) (Var "v"))) (Val #(W64 1)))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef «struct#7d913798».underlying go!"valid"))) (Var "v"))) (Val #false))
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef «struct#7d913798».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.f"))) (Var "v"))) (Val #(W64 1)))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef «struct#7d913798».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.valid"))) (Var "v"))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -1681,21 +1704,21 @@ noncomputable def anonStructBox.impl [GooseExts] [GoGlobalContext] (T : go.GoTyp
   (Seq (App (Val exceptionDo)
   (Let "v" (App (Val (GoInstruction (GoAlloc T))) (Var "v"))
   (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad T))) (Var "v"))
-  (App (Val (GoInstruction (CompositeLiteral («struct#b17138a7».underlying T)))) (LiteralValue [(KeyedElement (some (KeyField go!"v")) (ElementExpression T (Var "$v0")))])))
+  (App (Val (GoInstruction (CompositeLiteral («struct#b17138a7».underlying T)))) (LiteralValue [(KeyedElement (some (KeyField go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.v")) (ElementExpression T (Var "$v0")))])))
   (Let "d" (App (Val (GoInstruction (GoAlloc («struct#b17138a7».underlying T)))) (App (Val (GoInstruction (GoZeroVal («struct#b17138a7».underlying T)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Lam BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Seq (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef («struct#b17138a7».underlying T) go!"v"))) (Var "d")))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef («struct#b17138a7».underlying T) go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.v"))) (Var "d")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef («struct#b17138a7».underlying T) go!"n"))) (Var "d")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef («struct#b17138a7».underlying T) go!"n"))) (Var "d"))) (Val #(W64 1)))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef («struct#b17138a7».underlying T) go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.n"))) (Var "d")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef («struct#b17138a7».underlying T) go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.n"))) (Var "d"))) (Val #(W64 1)))))))))
   (App (Val (GoInstruction (GoLoad T))) (Var "$res0")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -1735,16 +1758,16 @@ noncomputable def testAnonStructNested.impl [GooseExts] [GoGlobalContext] : val 
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #true)
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef «struct#6b601a4b».underlying go!"a"))) (App (Val (GoInstruction (StructFieldRef anonStructHolder.ty go!"inner"))) (Var "h")))) (Val #(W64 4)))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef «struct#40520aa4».underlying go!"c"))) (App (Val (GoInstruction (StructFieldRef «struct#6b601a4b».underlying go!"b"))) (App (Val (GoInstruction (StructFieldRef anonStructHolder.ty go!"inner"))) (Var "h"))))) (Val #false))
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef «struct#6b601a4b».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.a"))) (App (Val (GoInstruction (StructFieldRef anonStructHolder.ty go!"inner"))) (Var "h")))) (Val #(W64 4)))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef «struct#40520aa4».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.c"))) (App (Val (GoInstruction (StructFieldRef «struct#6b601a4b».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.b"))) (App (Val (GoInstruction (StructFieldRef anonStructHolder.ty go!"inner"))) (Var "h"))))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#40520aa4».underlying go!"c"))) (App (Val (GoInstruction (StructFieldRef «struct#6b601a4b».underlying go!"b"))) (App (Val (GoInstruction (StructFieldRef anonStructHolder.ty go!"inner"))) (Var "h")))) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#40520aa4».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.c"))) (App (Val (GoInstruction (StructFieldRef «struct#6b601a4b».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.b"))) (App (Val (GoInstruction (StructFieldRef anonStructHolder.ty go!"inner"))) (Var "h")))) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#6b601a4b».underlying go!"a"))) (App (Val (GoInstruction (StructFieldRef anonStructHolder.ty go!"inner"))) (Var "h"))) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#6b601a4b».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.a"))) (App (Val (GoInstruction (StructFieldRef anonStructHolder.ty go!"inner"))) (Var "h"))) (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: anon_structs.go:69:6 -/
@@ -1755,14 +1778,14 @@ noncomputable def testAnonStructArray.impl [GooseExts] [GoGlobalContext] : val :
   (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 2 «struct#40520aa4».underlying)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 2 «struct#40520aa4».underlying)))) (Val #())))
   (Let "$r0" (Val #true)
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef «struct#40520aa4».underlying go!"c"))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 2 «struct#40520aa4».underlying)))) (Pair (Var "a") (Val #(W64 0))))))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef «struct#40520aa4».underlying go!"c"))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 2 «struct#40520aa4».underlying)))) (Pair (Var "a") (Val #(W64 1)))))) (Val #false))
+  (Let "$r0" (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef «struct#40520aa4».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.c"))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 2 «struct#40520aa4».underlying)))) (Pair (Var "a") (Val #(W64 0))))))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef «struct#40520aa4».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.c"))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 2 «struct#40520aa4».underlying)))) (Pair (Var "a") (Val #(W64 1)))))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#40520aa4».underlying go!"c"))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 2 «struct#40520aa4».underlying)))) (Pair (Var "a") (Val #(W64 1))))) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#40520aa4».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.c"))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 2 «struct#40520aa4».underlying)))) (Pair (Var "a") (Val #(W64 1))))) (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: arrays.go:5:6 -/
@@ -2210,6 +2233,25 @@ noncomputable def testBlankFieldIdentity.impl [GooseExts] [GoGlobalContext] : va
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.any))) (Pair (App (Val (GoInstruction (Convert «struct#448f9a0d».underlying go.any))) (App (Val (GoInstruction (CompositeLiteral «struct#448f9a0d».underlying))) (LiteralValue []))) (App (Val (GoInstruction (Convert «struct#3e1ef20f».underlying go.any))) (App (Val (GoInstruction (CompositeLiteral «struct#3e1ef20f».underlying))) (LiteralValue []))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- `==` compares the non-blank fields only, of an unnamed struct type too
+
+    go: blank_fields.go:29:6 -/
+noncomputable def testBlankFieldEqUnnamed.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals «struct#d9914bc8».underlying))) (Pair (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (Val #(W64 2))
+  (App (Val (GoInstruction (CompositeLiteral «struct#d9914bc8».underlying))) (LiteralValue [(KeyedElement none (ElementExpression go.int (Var "$v0"))), (KeyedElement none (ElementExpression go.int (Var "$v1")))])))) (Let "$v0" (Val #(W64 3))
+  (Let "$v1" (Val #(W64 2))
+  (App (Val (GoInstruction (CompositeLiteral «struct#d9914bc8».underlying))) (LiteralValue [(KeyedElement none (ElementExpression go.int (Var "$v0"))), (KeyedElement none (ElementExpression go.int (Var "$v1")))]))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -4209,6 +4251,24 @@ noncomputable def testUint32Untyped.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Uint32.ty))) (Pair (Var "x") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: int_conversions.go:41:6 -/
+noncomputable def testUntypedFloatConstUint64.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(W64 10000000000000000000))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "x")) (Val #(W64 10000000000000000000))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: interfaces.go:12:6 -/
@@ -11852,8 +11912,8 @@ noncomputable instance «struct#40520aa4».zero_val [GooseExts] : ZeroVal «stru
 
 class «struct#40520aa4».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying «struct#40520aa4».underlying «struct#40520aa4»
-  get_c : ∀ (x : «struct#40520aa4»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#40520aa4».underlying go!"c") #x (Val #(x.c'))
-  set_c : ∀ (x : «struct#40520aa4») (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «struct#40520aa4».underlying go!"c") (PairV #x #y) (Val #(({ x with c' := y } : «struct#40520aa4»)))
+  get_c : ∀ (x : «struct#40520aa4»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#40520aa4».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.c") #x (Val #(x.c'))
+  set_c : ∀ (x : «struct#40520aa4») (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «struct#40520aa4».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.c") (PairV #x #y) (Val #(({ x with c' := y } : «struct#40520aa4»)))
 
 attribute [instance] «struct#40520aa4».TypeAssumptions.type_repr
   «struct#40520aa4».TypeAssumptions.get_c
@@ -11869,10 +11929,10 @@ noncomputable instance «struct#6b601a4b».zero_val [GooseExts] : ZeroVal «stru
 
 class «struct#6b601a4b».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying «struct#6b601a4b».underlying «struct#6b601a4b»
-  get_a : ∀ (x : «struct#6b601a4b»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6b601a4b».underlying go!"a") #x (Val #(x.a'))
-  set_a : ∀ (x : «struct#6b601a4b») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6b601a4b».underlying go!"a") (PairV #x #y) (Val #(({ x with a' := y } : «struct#6b601a4b»)))
-  get_b : ∀ (x : «struct#6b601a4b»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6b601a4b».underlying go!"b") #x (Val #(x.b'))
-  set_b : ∀ (x : «struct#6b601a4b») (y : «struct#40520aa4»), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6b601a4b».underlying go!"b") (PairV #x #y) (Val #(({ x with b' := y } : «struct#6b601a4b»)))
+  get_a : ∀ (x : «struct#6b601a4b»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6b601a4b».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.a") #x (Val #(x.a'))
+  set_a : ∀ (x : «struct#6b601a4b») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6b601a4b».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.a") (PairV #x #y) (Val #(({ x with a' := y } : «struct#6b601a4b»)))
+  get_b : ∀ (x : «struct#6b601a4b»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6b601a4b».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.b") #x (Val #(x.b'))
+  set_b : ∀ (x : «struct#6b601a4b») (y : «struct#40520aa4»), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6b601a4b».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.b") (PairV #x #y) (Val #(({ x with b' := y } : «struct#6b601a4b»)))
 
 attribute [instance] «struct#6b601a4b».TypeAssumptions.type_repr
   «struct#6b601a4b».TypeAssumptions.get_a
@@ -13871,10 +13931,10 @@ noncomputable instance «struct#7d913798».zero_val [GooseExts] : ZeroVal «stru
 
 class «struct#7d913798».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying «struct#7d913798».underlying «struct#7d913798»
-  get_f : ∀ (x : «struct#7d913798»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#7d913798».underlying go!"f") #x (Val #(x.f'))
-  set_f : ∀ (x : «struct#7d913798») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#7d913798».underlying go!"f") (PairV #x #y) (Val #(({ x with f' := y } : «struct#7d913798»)))
-  get_valid : ∀ (x : «struct#7d913798»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#7d913798».underlying go!"valid") #x (Val #(x.valid'))
-  set_valid : ∀ (x : «struct#7d913798») (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «struct#7d913798».underlying go!"valid") (PairV #x #y) (Val #(({ x with valid' := y } : «struct#7d913798»)))
+  get_f : ∀ (x : «struct#7d913798»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#7d913798».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.f") #x (Val #(x.f'))
+  set_f : ∀ (x : «struct#7d913798») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#7d913798».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.f") (PairV #x #y) (Val #(({ x with f' := y } : «struct#7d913798»)))
+  get_valid : ∀ (x : «struct#7d913798»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#7d913798».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.valid") #x (Val #(x.valid'))
+  set_valid : ∀ (x : «struct#7d913798») (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «struct#7d913798».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.valid") (PairV #x #y) (Val #(({ x with valid' := y } : «struct#7d913798»)))
 
 attribute [instance] «struct#7d913798».TypeAssumptions.type_repr
   «struct#7d913798».TypeAssumptions.get_f
@@ -13891,8 +13951,8 @@ noncomputable instance «struct#3819980a».zero_val [GooseExts] : ZeroVal «stru
 
 class «struct#3819980a».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying «struct#3819980a».underlying «struct#3819980a»
-  get_x : ∀ (x : «struct#3819980a»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#3819980a».underlying go!"x") #x (Val #(x.x'))
-  set_x : ∀ (x : «struct#3819980a») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#3819980a».underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : «struct#3819980a»)))
+  get_x : ∀ (x : «struct#3819980a»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#3819980a».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.x") #x (Val #(x.x'))
+  set_x : ∀ (x : «struct#3819980a») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#3819980a».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.x") (PairV #x #y) (Val #(({ x with x' := y } : «struct#3819980a»)))
 
 attribute [instance] «struct#3819980a».TypeAssumptions.type_repr
   «struct#3819980a».TypeAssumptions.get_x
@@ -13908,10 +13968,10 @@ noncomputable instance «struct#b17138a7».zero_val [GooseExts] {T : Type} [Zero
 
 class «struct#b17138a7».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («struct#b17138a7».underlying T) («struct#b17138a7» T')
-  get_v : ∀ (T : go.GoType) (T' : Type) (x : («struct#b17138a7» T')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#b17138a7».underlying T) go!"v") #x (Val #(x.v'))
-  set_v : ∀ (T : go.GoType) (T' : Type) (x : («struct#b17138a7» T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet («struct#b17138a7».underlying T) go!"v") (PairV #x #y) (Val #(({ x with v' := y } : («struct#b17138a7» T'))))
-  get_n : ∀ (T : go.GoType) (T' : Type) (x : («struct#b17138a7» T')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#b17138a7».underlying T) go!"n") #x (Val #(x.n'))
-  set_n : ∀ (T : go.GoType) (T' : Type) (x : («struct#b17138a7» T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet («struct#b17138a7».underlying T) go!"n") (PairV #x #y) (Val #(({ x with n' := y } : («struct#b17138a7» T'))))
+  get_v : ∀ (T : go.GoType) (T' : Type) (x : («struct#b17138a7» T')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#b17138a7».underlying T) go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.v") #x (Val #(x.v'))
+  set_v : ∀ (T : go.GoType) (T' : Type) (x : («struct#b17138a7» T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet («struct#b17138a7».underlying T) go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.v") (PairV #x #y) (Val #(({ x with v' := y } : («struct#b17138a7» T'))))
+  get_n : ∀ (T : go.GoType) (T' : Type) (x : («struct#b17138a7» T')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#b17138a7».underlying T) go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.n") #x (Val #(x.n'))
+  set_n : ∀ (T : go.GoType) (T' : Type) (x : («struct#b17138a7» T')) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet («struct#b17138a7».underlying T) go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.n") (PairV #x #y) (Val #(({ x with n' := y } : («struct#b17138a7» T'))))
 
 attribute [instance] «struct#b17138a7».TypeAssumptions.type_repr
   «struct#b17138a7».TypeAssumptions.get_v
@@ -13928,8 +13988,8 @@ noncomputable instance «struct#3e1ef20f».zero_val [GooseExts] : ZeroVal «stru
 
 class «struct#3e1ef20f».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying «struct#3e1ef20f».underlying «struct#3e1ef20f»
-  get__0 : ∀ (x : «struct#3e1ef20f»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#3e1ef20f».underlying go!"_0") #x (Val #(x._0'))
-  set__0 : ∀ (x : «struct#3e1ef20f») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#3e1ef20f».underlying go!"_0") (PairV #x #y) (Val #(({ x with _0' := y } : «struct#3e1ef20f»)))
+  get__0 : ∀ (x : «struct#3e1ef20f»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#3e1ef20f».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics._0") #x (Val #(x._0'))
+  set__0 : ∀ (x : «struct#3e1ef20f») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#3e1ef20f».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics._0") (PairV #x #y) (Val #(({ x with _0' := y } : «struct#3e1ef20f»)))
 
 attribute [instance] «struct#3e1ef20f».TypeAssumptions.type_repr
   «struct#3e1ef20f».TypeAssumptions.get__0
@@ -13951,6 +14011,27 @@ attribute [instance] «struct#448f9a0d».TypeAssumptions.type_repr
   «struct#448f9a0d».TypeAssumptions.«get__#0»
   «struct#448f9a0d».TypeAssumptions.«set__#0»
 
+structure «struct#d9914bc8» [GooseExts] where
+  mk ::
+  «_#0'» : w64
+  x' : w64
+
+noncomputable instance «struct#d9914bc8».zero_val [GooseExts] : ZeroVal «struct#d9914bc8» :=
+  ⟨«struct#d9914bc8».mk zeroValDef zeroValDef⟩
+
+class «struct#d9914bc8».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#d9914bc8».underlying «struct#d9914bc8»
+  «get__#0» : ∀ (x : «struct#d9914bc8»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#d9914bc8».underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : «struct#d9914bc8») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#d9914bc8».underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : «struct#d9914bc8»)))
+  get_x : ∀ (x : «struct#d9914bc8»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#d9914bc8».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.x") #x (Val #(x.x'))
+  set_x : ∀ (x : «struct#d9914bc8») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#d9914bc8».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.x") (PairV #x #y) (Val #(({ x with x' := y } : «struct#d9914bc8»)))
+
+attribute [instance] «struct#d9914bc8».TypeAssumptions.type_repr
+  «struct#d9914bc8».TypeAssumptions.«get__#0»
+  «struct#d9914bc8».TypeAssumptions.«set__#0»
+  «struct#d9914bc8».TypeAssumptions.get_x
+  «struct#d9914bc8».TypeAssumptions.set_x
+
 structure «struct#568e4f73» [GooseExts] where
   mk ::
   msValRecv' : msValRecv
@@ -13960,8 +14041,8 @@ noncomputable instance «struct#568e4f73».zero_val [GooseExts] : ZeroVal «stru
 
 class «struct#568e4f73».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying «struct#568e4f73».underlying «struct#568e4f73»
-  get_msValRecv : ∀ (x : «struct#568e4f73»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#568e4f73».underlying go!"msValRecv") #x (Val #(x.msValRecv'))
-  set_msValRecv : ∀ (x : «struct#568e4f73») (y : msValRecv), go.IsGoStepPureDetTagged under (StructFieldSet «struct#568e4f73».underlying go!"msValRecv") (PairV #x #y) (Val #(({ x with msValRecv' := y } : «struct#568e4f73»)))
+  get_msValRecv : ∀ (x : «struct#568e4f73»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#568e4f73».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.msValRecv") #x (Val #(x.msValRecv'))
+  set_msValRecv : ∀ (x : «struct#568e4f73») (y : msValRecv), go.IsGoStepPureDetTagged under (StructFieldSet «struct#568e4f73».underlying go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.msValRecv") (PairV #x #y) (Val #(({ x with msValRecv' := y } : «struct#568e4f73»)))
 
 attribute [instance] «struct#568e4f73».TypeAssumptions.type_repr
   «struct#568e4f73».TypeAssumptions.get_msValRecv
@@ -14038,6 +14119,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   «struct#6b601a4b_instance» : «struct#6b601a4b».TypeAssumptions
   «struct#3e1ef20f_instance» : «struct#3e1ef20f».TypeAssumptions
   «struct#448f9a0d_instance» : «struct#448f9a0d».TypeAssumptions
+  «struct#d9914bc8_instance» : «struct#d9914bc8».TypeAssumptions
   «struct#568e4f73_instance» : «struct#568e4f73».TypeAssumptions
   findKey_unfold : FuncUnfold findKey [] findKey.impl
   allocate_unfold : FuncUnfold allocate [] allocate.impl
@@ -14065,6 +14147,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testBlankFieldEq_unfold : FuncUnfold testBlankFieldEq [] testBlankFieldEq.impl
   testBlankFieldMapKey_unfold : FuncUnfold testBlankFieldMapKey [] testBlankFieldMapKey.impl
   testBlankFieldIdentity_unfold : FuncUnfold testBlankFieldIdentity [] testBlankFieldIdentity.impl
+  testBlankFieldEqUnnamed_unfold : FuncUnfold testBlankFieldEqUnnamed [] testBlankFieldEqUnnamed.impl
   testExplicitBlockStmt_unfold : FuncUnfold testExplicitBlockStmt [] testExplicitBlockStmt.impl
   testMinUint64_unfold : FuncUnfold testMinUint64 [] testMinUint64.impl
   testMaxUint64_unfold : FuncUnfold testMaxUint64 [] testMaxUint64.impl
@@ -14125,6 +14208,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testU32Len_unfold : FuncUnfold testU32Len [] testU32Len.impl
   testU32NewtypeLen_unfold : FuncUnfold testU32NewtypeLen [] testU32NewtypeLen.impl
   testUint32Untyped_unfold : FuncUnfold testUint32Untyped [] testUint32Untyped.impl
+  testUntypedFloatConstUint64_unfold : FuncUnfold testUntypedFloatConstUint64 [] testUntypedFloatConstUint64.impl
   measureArea_unfold : FuncUnfold measureArea [] measureArea.impl
   measureVolumePlusNM_unfold : FuncUnfold measureVolumePlusNM [] measureVolumePlusNM.impl
   measureVolume_unfold : FuncUnfold measureVolume [] measureVolume.impl
@@ -14414,6 +14498,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.«struct#6b601a4b_instance»
   Assumptions.«struct#3e1ef20f_instance»
   Assumptions.«struct#448f9a0d_instance»
+  Assumptions.«struct#d9914bc8_instance»
   Assumptions.«struct#568e4f73_instance»
   Assumptions.findKey_unfold
   Assumptions.allocate_unfold
@@ -14441,6 +14526,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testBlankFieldEq_unfold
   Assumptions.testBlankFieldMapKey_unfold
   Assumptions.testBlankFieldIdentity_unfold
+  Assumptions.testBlankFieldEqUnnamed_unfold
   Assumptions.testExplicitBlockStmt_unfold
   Assumptions.testMinUint64_unfold
   Assumptions.testMaxUint64_unfold
@@ -14501,6 +14587,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testU32Len_unfold
   Assumptions.testU32NewtypeLen_unfold
   Assumptions.testUint32Untyped_unfold
+  Assumptions.testUntypedFloatConstUint64_unfold
   Assumptions.measureArea_unfold
   Assumptions.measureVolumePlusNM_unfold
   Assumptions.measureVolume_unfold

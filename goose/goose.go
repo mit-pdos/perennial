@@ -521,7 +521,7 @@ func (ctx *Ctx) fieldSelection(n locatable, index *[]int, curType *types.Type, e
 		}
 		v := info.structType.Field(i)
 		*expr = glang.NewCallExpr(glang.VerbatimExpr("StructFieldGet"),
-			ctx.structInfoToGlangType(n, info), glang.TermString(v.Name()), *expr)
+			ctx.structInfoToGlangType(n, info), glang.TermString(util.ModelFieldName(info.structType, i, info.namedType == nil)), *expr)
 		*curType = v.Type()
 	}
 }
@@ -541,7 +541,7 @@ func (ctx *Ctx) fieldAddrSelection(n locatable, index []int, curType *types.Type
 		v := info.structType.Field(i)
 
 		*expr = glang.NewCallExpr(glang.VerbatimExpr("StructFieldRef"),
-			ctx.glangType(n, info.goType()), glang.StringLiteral{Value: v.Name()}, *expr)
+			ctx.glangType(n, info.goType()), glang.StringLiteral{Value: util.ModelFieldName(info.structType, i, info.namedType == nil)}, *expr)
 		*curType = v.Type()
 	}
 }
@@ -665,8 +665,9 @@ func (ctx *Ctx) compositeLiteralWithBindings(e *ast.CompositeLit, bindings *[]co
 			done := false
 			if elKey, ok := el.Key.(*ast.Ident); ok {
 				if vr, ok := ctx.info.Uses[elKey].(*types.Var); ok && vr.Kind() == types.FieldVar {
+					_, unnamed := types.Unalias(ctx.typeOf(e)).(*types.Struct)
 					k = glang.NewCallExpr(glang.VerbatimExpr("KeyField"),
-						glang.StringLiteral{Value: elKey.Name})
+						glang.StringLiteral{Value: util.ModelFieldVarName(vr, unnamed)})
 					done = true
 				}
 			}
@@ -978,31 +979,6 @@ func (ctx *Ctx) builtinIdent(e *ast.Ident) glang.Expr {
 	return nil
 }
 
-// untypedFloatToInt converts a constant (assumed to be a float) to an integer.
-//
-// Returns ok = false if the float doesn't fit in an int64.
-func untypedFloatToInt(c constant.Value) (i int64, ok bool) {
-	switch x := constant.Val(c).(type) {
-	case *big.Rat:
-		if x.IsInt() {
-			v, exact := x.Float64()
-			if !exact {
-				return 0, false
-			}
-			return int64(v), true
-		}
-	case *big.Float:
-		if x.IsInt() {
-			var acc big.Accuracy
-			i, acc = x.Int64()
-			if acc != big.Exact {
-				return 0, false
-			}
-			return i, true
-		}
-	}
-	return 0, false
-}
 
 func (ctx *Ctx) identExpr(e *ast.Ident, multipleBindings bool) glang.Expr {
 	// XXX: special case for a manually constructed Ident from select recv clause
@@ -1023,31 +999,10 @@ func (ctx *Ctx) identExpr(e *ast.Ident, multipleBindings bool) glang.Expr {
 	if constObj, ok := obj.(*types.Const); ok {
 		// is a constant
 		if constTy, ok := constObj.Type().(*types.Basic); ok && constTy.Kind() == types.UntypedFloat {
-			dstTy := ctx.typeOf(e)
-			if dstTy, ok := dstTy.(*types.Basic); ok && dstTy.Info()&types.IsInteger != 0 {
-				constInt, exact := untypedFloatToInt(constObj.Val())
-				if !exact {
-					ctx.nope(e, "float constant does not fit into int64")
-				}
-				constExpr := glang.VerbatimExpr(fmt.Sprintf("%d", constInt))
-				switch dstTy.Kind() {
-				case types.Uint64, types.Int64, types.Int:
-					return glang.Int64Val{
-						Value: constExpr,
-					}
-				case types.Uint32, types.Int32:
-					return glang.Int32Val{
-						Value: constExpr,
-					}
-				case types.Uint16, types.Int16:
-					return glang.Int16Val{
-						Value: constExpr,
-					}
-				case types.Uint8, types.Int8:
-					return glang.Int8Val{
-						Value: constExpr,
-					}
-				}
+			if dstTy, ok := ctx.typeOf(e).(*types.Basic); ok && dstTy.Info()&types.IsInteger != 0 {
+				// an integer-valued untyped float constant at an integer type: its exact
+				// value (constant.ToInt), as for constants of other packages
+				return ctx.constantLiteral(e)
 			}
 		}
 		constE := ctx.termIdent(e.Name)

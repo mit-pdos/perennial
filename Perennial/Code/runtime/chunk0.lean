@@ -1879,8 +1879,8 @@ noncomputable def vdsoInfo.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 attribute [irreducible] vdsoInfo.ty
 
 @[reducible] noncomputable def «struct#51fa335f».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"fill" go.uint64),
-(go.field_decl.FieldDecl go!"capacity" go.uint64)]
+  [(go.field_decl.FieldDecl go!"runtime.fill" go.uint64),
+(go.field_decl.FieldDecl go!"runtime.capacity" go.uint64)]
 
 @[irreducible] noncomputable def «struct#51fa335f».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#51fa335f».fieldsUnsealed
@@ -1893,8 +1893,8 @@ noncomputable instance «equals_unfold_struct#51fa335f» [GooseExts] [GoGlobalCo
   (go.GoType.StructType «struct#51fa335f».fields)
 
 @[reducible] noncomputable def «struct#1e853569».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"head" (go.GoType.PointerType spanSPMC.ty)),
-(go.field_decl.FieldDecl go!"tail" _root_.Perennial.internal.runtime.atomic.UnsafePointer.ty)]
+  [(go.field_decl.FieldDecl go!"runtime.head" (go.GoType.PointerType spanSPMC.ty)),
+(go.field_decl.FieldDecl go!"runtime.tail" _root_.Perennial.internal.runtime.atomic.UnsafePointer.ty)]
 
 @[irreducible] noncomputable def «struct#1e853569».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#1e853569».fieldsUnsealed
@@ -1907,9 +1907,9 @@ noncomputable instance «equals_unfold_struct#1e853569» [GooseExts] [GoGlobalCo
   (go.GoType.StructType «struct#1e853569».fields)
 
 @[reducible] noncomputable def «struct#3a8454c5».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"index" scavengeIndex.ty),
-(go.field_decl.FieldDecl go!"releasedBg" _root_.Perennial.internal.runtime.atomic.Uintptr.ty),
-(go.field_decl.FieldDecl go!"releasedEager" _root_.Perennial.internal.runtime.atomic.Uintptr.ty)]
+  [(go.field_decl.FieldDecl go!"runtime.index" scavengeIndex.ty),
+(go.field_decl.FieldDecl go!"runtime.releasedBg" _root_.Perennial.internal.runtime.atomic.Uintptr.ty),
+(go.field_decl.FieldDecl go!"runtime.releasedEager" _root_.Perennial.internal.runtime.atomic.Uintptr.ty)]
 
 @[irreducible] noncomputable def «struct#3a8454c5».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#3a8454c5».fieldsUnsealed
@@ -1937,8 +1937,8 @@ noncomputable instance «equals_unfold_struct#28cf6959» [GooseExts] [GoGlobalCo
   (go.GoType.StructType «struct#28cf6959».fields)
 
 @[reducible] noncomputable def «struct#8786e874».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"len" go.int),
-(go.field_decl.FieldDecl go!"buf" (go.GoType.ArrayType 128 (go.GoType.PointerType mspan.ty)))]
+  [(go.field_decl.FieldDecl go!"runtime.len" go.int),
+(go.field_decl.FieldDecl go!"runtime.buf" (go.GoType.ArrayType 128 (go.GoType.PointerType mspan.ty)))]
 
 @[irreducible] noncomputable def «struct#8786e874».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#8786e874».fieldsUnsealed
@@ -1951,8 +1951,8 @@ noncomputable instance «equals_unfold_struct#8786e874» [GooseExts] [GoGlobalCo
   (go.GoType.StructType «struct#8786e874».fields)
 
 @[reducible] noncomputable def «struct#72a1e364».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"user" go.bool),
-(go.field_decl.FieldDecl go!"runnable" gQueue.ty)]
+  [(go.field_decl.FieldDecl go!"runtime.user" go.bool),
+(go.field_decl.FieldDecl go!"runtime.runnable" gQueue.ty)]
 
 @[irreducible] noncomputable def «struct#72a1e364».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#72a1e364».fieldsUnsealed
@@ -1965,9 +1965,9 @@ noncomputable instance «equals_unfold_struct#72a1e364» [GooseExts] [GoGlobalCo
   (go.GoType.StructType «struct#72a1e364».fields)
 
 @[reducible] noncomputable def «struct#cf01e664».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"lock" mutex.ty),
-(go.field_decl.FieldDecl go!"stack" gList.ty),
-(go.field_decl.FieldDecl go!"noStack" gList.ty)]
+  [(go.field_decl.FieldDecl go!"runtime.lock" mutex.ty),
+(go.field_decl.FieldDecl go!"runtime.stack" gList.ty),
+(go.field_decl.FieldDecl go!"runtime.noStack" gList.ty)]
 
 @[irreducible] noncomputable def «struct#cf01e664».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#cf01e664».fieldsUnsealed
@@ -1980,8 +1980,8 @@ noncomputable instance «equals_unfold_struct#cf01e664» [GooseExts] [GoGlobalCo
   (go.GoType.StructType «struct#cf01e664».fields)
 
 @[reducible] noncomputable def «struct#1768b3d4».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  [(go.field_decl.FieldDecl go!"root" semaRoot.ty),
-(go.field_decl.FieldDecl go!"pad" (go.GoType.ArrayType 40 go.byte))]
+  [(go.field_decl.FieldDecl go!"runtime.root" semaRoot.ty),
+(go.field_decl.FieldDecl go!"runtime.pad" (go.GoType.ArrayType 40 go.byte))]
 
 @[irreducible] noncomputable def «struct#1768b3d4».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   «struct#1768b3d4».fieldsUnsealed
