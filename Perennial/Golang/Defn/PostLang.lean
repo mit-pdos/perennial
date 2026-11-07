@@ -318,8 +318,11 @@ class IsStrictlyComparable [GoSemanticsFunctions] (t : go.GoType) (V : Type) [De
 attribute [instance] IsStrictlyComparable.is_strictly_comparable
 export IsStrictlyComparable (is_strictly_comparable)
 
-/-- A blank field (`_`), which goose names `_#i`: never read, written, or compared. -/
-def isBlankField (n : GoString) : Bool := go!"_#".isPrefixOf n
+/-- A blank field (`_`), which goose names `_#i`, or `<pkgpath>._#i` in a struct type literal (a
+blank field is non-exported, so qualified by its package there, as unexported names are): never
+read, written, or compared. `#` is in no Go identifier or import path, so `_#` occurs in no other
+field name. -/
+def isBlankField (n : GoString) : Bool := n.tails.any (go!"_#".isPrefixOf ·)
 
 class CoreComparisonSemantics [GoSemanticsFunctions] : Prop where
   /-- special case equality for functions -/

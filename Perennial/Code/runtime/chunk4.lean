@@ -658,22 +658,22 @@ attribute [instance] addrRanges.TypeAssumptions.type_repr
   addrRanges.TypeAssumptions.method_set
   addrRanges.TypeAssumptions.ptr_method_set
 
-class «struct#3a8454c5».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying «struct#3a8454c5».underlying «struct#3a8454c5»
-  get_index : ∀ (x : «struct#3a8454c5»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#3a8454c5».underlying go!"runtime.index") #x (Val #(x.index'))
-  set_index : ∀ (x : «struct#3a8454c5») (y : scavengeIndex), go.IsGoStepPureDetTagged under (StructFieldSet «struct#3a8454c5».underlying go!"runtime.index") (PairV #x #y) (Val #(({ x with index' := y } : «struct#3a8454c5»)))
-  get_releasedBg : ∀ (x : «struct#3a8454c5»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#3a8454c5».underlying go!"runtime.releasedBg") #x (Val #(x.releasedBg'))
-  set_releasedBg : ∀ (x : «struct#3a8454c5») (y : _root_.Perennial.internal.runtime.atomic.Uintptr), go.IsGoStepPureDetTagged under (StructFieldSet «struct#3a8454c5».underlying go!"runtime.releasedBg") (PairV #x #y) (Val #(({ x with releasedBg' := y } : «struct#3a8454c5»)))
-  get_releasedEager : ∀ (x : «struct#3a8454c5»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#3a8454c5».underlying go!"runtime.releasedEager") #x (Val #(x.releasedEager'))
-  set_releasedEager : ∀ (x : «struct#3a8454c5») (y : _root_.Perennial.internal.runtime.atomic.Uintptr), go.IsGoStepPureDetTagged under (StructFieldSet «struct#3a8454c5».underlying go!"runtime.releasedEager") (PairV #x #y) (Val #(({ x with releasedEager' := y } : «struct#3a8454c5»)))
+class «struct#bd644d1d».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#bd644d1d».underlying «struct#bd644d1d»
+  get_index : ∀ (x : «struct#bd644d1d»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#bd644d1d».underlying go!"runtime.index") #x (Val #(x.index'))
+  set_index : ∀ (x : «struct#bd644d1d») (y : scavengeIndex), go.IsGoStepPureDetTagged under (StructFieldSet «struct#bd644d1d».underlying go!"runtime.index") (PairV #x #y) (Val #(({ x with index' := y } : «struct#bd644d1d»)))
+  get_releasedBg : ∀ (x : «struct#bd644d1d»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#bd644d1d».underlying go!"runtime.releasedBg") #x (Val #(x.releasedBg'))
+  set_releasedBg : ∀ (x : «struct#bd644d1d») (y : _root_.Perennial.internal.runtime.atomic.Uintptr), go.IsGoStepPureDetTagged under (StructFieldSet «struct#bd644d1d».underlying go!"runtime.releasedBg") (PairV #x #y) (Val #(({ x with releasedBg' := y } : «struct#bd644d1d»)))
+  get_releasedEager : ∀ (x : «struct#bd644d1d»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#bd644d1d».underlying go!"runtime.releasedEager") #x (Val #(x.releasedEager'))
+  set_releasedEager : ∀ (x : «struct#bd644d1d») (y : _root_.Perennial.internal.runtime.atomic.Uintptr), go.IsGoStepPureDetTagged under (StructFieldSet «struct#bd644d1d».underlying go!"runtime.releasedEager") (PairV #x #y) (Val #(({ x with releasedEager' := y } : «struct#bd644d1d»)))
 
-attribute [instance] «struct#3a8454c5».TypeAssumptions.type_repr
-  «struct#3a8454c5».TypeAssumptions.get_index
-  «struct#3a8454c5».TypeAssumptions.set_index
-  «struct#3a8454c5».TypeAssumptions.get_releasedBg
-  «struct#3a8454c5».TypeAssumptions.set_releasedBg
-  «struct#3a8454c5».TypeAssumptions.get_releasedEager
-  «struct#3a8454c5».TypeAssumptions.set_releasedEager
+attribute [instance] «struct#bd644d1d».TypeAssumptions.type_repr
+  «struct#bd644d1d».TypeAssumptions.get_index
+  «struct#bd644d1d».TypeAssumptions.set_index
+  «struct#bd644d1d».TypeAssumptions.get_releasedBg
+  «struct#bd644d1d».TypeAssumptions.set_releasedBg
+  «struct#bd644d1d».TypeAssumptions.get_releasedEager
+  «struct#bd644d1d».TypeAssumptions.set_releasedEager
 
 class pageAlloc.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying pageAlloc.underlying pageAlloc
@@ -691,7 +691,7 @@ class pageAlloc.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   get_inUse : ∀ (x : pageAlloc), go.IsGoStepPureDetTagged under (StructFieldGet pageAlloc.underlying go!"inUse") #x (Val #(x.inUse'))
   set_inUse : ∀ (x : pageAlloc) (y : addrRanges), go.IsGoStepPureDetTagged under (StructFieldSet pageAlloc.underlying go!"inUse") (PairV #x #y) (Val #(({ x with inUse' := y } : pageAlloc)))
   get_scav : ∀ (x : pageAlloc), go.IsGoStepPureDetTagged under (StructFieldGet pageAlloc.underlying go!"scav") #x (Val #(x.scav'))
-  set_scav : ∀ (x : pageAlloc) (y : «struct#3a8454c5»), go.IsGoStepPureDetTagged under (StructFieldSet pageAlloc.underlying go!"scav") (PairV #x #y) (Val #(({ x with scav' := y } : pageAlloc)))
+  set_scav : ∀ (x : pageAlloc) (y : «struct#bd644d1d»), go.IsGoStepPureDetTagged under (StructFieldSet pageAlloc.underlying go!"scav") (PairV #x #y) (Val #(({ x with scav' := y } : pageAlloc)))
   get_mheapLock : ∀ (x : pageAlloc), go.IsGoStepPureDetTagged under (StructFieldGet pageAlloc.underlying go!"mheapLock") #x (Val #(x.mheapLock'))
   set_mheapLock : ∀ (x : pageAlloc) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet pageAlloc.underlying go!"mheapLock") (PairV #x #y) (Val #(({ x with mheapLock' := y } : pageAlloc)))
   get_sysStat : ∀ (x : pageAlloc), go.IsGoStepPureDetTagged under (StructFieldGet pageAlloc.underlying go!"sysStat") #x (Val #(x.sysStat'))

@@ -213,20 +213,20 @@ noncomputable instance «equals_unfold_struct#b304a786» [GooseExts] [GoGlobalCo
 @[reducible] noncomputable def «struct#b304a786».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType «struct#b304a786».fields)
 
-@[reducible] noncomputable def «struct#6419a40c».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def «struct#72b83cd5».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"testing.n" go.uint64),
 (go.field_decl.FieldDecl go!"testing.i" go.uint64),
 (go.field_decl.FieldDecl go!"testing.done" go.bool)]
 
-@[irreducible] noncomputable def «struct#6419a40c».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  «struct#6419a40c».fieldsUnsealed
+@[irreducible] noncomputable def «struct#72b83cd5».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  «struct#72b83cd5».fieldsUnsealed
 
-noncomputable instance «equals_unfold_struct#6419a40c» [GooseExts] [GoGlobalContext] :
-    EqualsUnfold «struct#6419a40c».fields «struct#6419a40c».fieldsUnsealed :=
-  ⟨by unfold «struct#6419a40c».fields; rfl⟩
+noncomputable instance «equals_unfold_struct#72b83cd5» [GooseExts] [GoGlobalContext] :
+    EqualsUnfold «struct#72b83cd5».fields «struct#72b83cd5».fieldsUnsealed :=
+  ⟨by unfold «struct#72b83cd5».fields; rfl⟩
 
-@[reducible] noncomputable def «struct#6419a40c».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType «struct#6419a40c».fields)
+@[reducible] noncomputable def «struct#72b83cd5».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType «struct#72b83cd5».fields)
 
 @[reducible] noncomputable def corpusEntry.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   «struct#b304a786».underlying
@@ -1140,31 +1140,31 @@ attribute [instance] BenchmarkResult.TypeAssumptions.type_repr
   BenchmarkResult.TypeAssumptions.method_set
   BenchmarkResult.TypeAssumptions.ptr_method_set
 
-structure «struct#6419a40c» [GooseExts] where
+structure «struct#72b83cd5» [GooseExts] where
   mk ::
   n' : w64
   i' : w64
   done' : Bool
 
-noncomputable instance «struct#6419a40c».zero_val [GooseExts] : ZeroVal «struct#6419a40c» :=
-  ⟨«struct#6419a40c».mk zeroValDef zeroValDef zeroValDef⟩
+noncomputable instance «struct#72b83cd5».zero_val [GooseExts] : ZeroVal «struct#72b83cd5» :=
+  ⟨«struct#72b83cd5».mk zeroValDef zeroValDef zeroValDef⟩
 
-class «struct#6419a40c».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying «struct#6419a40c».underlying «struct#6419a40c»
-  get_n : ∀ (x : «struct#6419a40c»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6419a40c».underlying go!"testing.n") #x (Val #(x.n'))
-  set_n : ∀ (x : «struct#6419a40c») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6419a40c».underlying go!"testing.n") (PairV #x #y) (Val #(({ x with n' := y } : «struct#6419a40c»)))
-  get_i : ∀ (x : «struct#6419a40c»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6419a40c».underlying go!"testing.i") #x (Val #(x.i'))
-  set_i : ∀ (x : «struct#6419a40c») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6419a40c».underlying go!"testing.i") (PairV #x #y) (Val #(({ x with i' := y } : «struct#6419a40c»)))
-  get_done : ∀ (x : «struct#6419a40c»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6419a40c».underlying go!"testing.done") #x (Val #(x.done'))
-  set_done : ∀ (x : «struct#6419a40c») (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6419a40c».underlying go!"testing.done") (PairV #x #y) (Val #(({ x with done' := y } : «struct#6419a40c»)))
+class «struct#72b83cd5».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#72b83cd5».underlying «struct#72b83cd5»
+  get_n : ∀ (x : «struct#72b83cd5»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#72b83cd5».underlying go!"testing.n") #x (Val #(x.n'))
+  set_n : ∀ (x : «struct#72b83cd5») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#72b83cd5».underlying go!"testing.n") (PairV #x #y) (Val #(({ x with n' := y } : «struct#72b83cd5»)))
+  get_i : ∀ (x : «struct#72b83cd5»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#72b83cd5».underlying go!"testing.i") #x (Val #(x.i'))
+  set_i : ∀ (x : «struct#72b83cd5») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#72b83cd5».underlying go!"testing.i") (PairV #x #y) (Val #(({ x with i' := y } : «struct#72b83cd5»)))
+  get_done : ∀ (x : «struct#72b83cd5»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#72b83cd5».underlying go!"testing.done") #x (Val #(x.done'))
+  set_done : ∀ (x : «struct#72b83cd5») (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «struct#72b83cd5».underlying go!"testing.done") (PairV #x #y) (Val #(({ x with done' := y } : «struct#72b83cd5»)))
 
-attribute [instance] «struct#6419a40c».TypeAssumptions.type_repr
-  «struct#6419a40c».TypeAssumptions.get_n
-  «struct#6419a40c».TypeAssumptions.set_n
-  «struct#6419a40c».TypeAssumptions.get_i
-  «struct#6419a40c».TypeAssumptions.set_i
-  «struct#6419a40c».TypeAssumptions.get_done
-  «struct#6419a40c».TypeAssumptions.set_done
+attribute [instance] «struct#72b83cd5».TypeAssumptions.type_repr
+  «struct#72b83cd5».TypeAssumptions.get_n
+  «struct#72b83cd5».TypeAssumptions.set_n
+  «struct#72b83cd5».TypeAssumptions.get_i
+  «struct#72b83cd5».TypeAssumptions.set_i
+  «struct#72b83cd5».TypeAssumptions.get_done
+  «struct#72b83cd5».TypeAssumptions.set_done
 
 structure B [GooseExts] where
   mk ::
@@ -1187,7 +1187,7 @@ structure B [GooseExts] where
   netAllocs' : w64
   netBytes' : w64
   extra' : GoMap
-  loop' : «struct#6419a40c»
+  loop' : «struct#72b83cd5»
 
 noncomputable instance B.zero_val [GooseExts] : ZeroVal B :=
   ⟨B.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -1212,7 +1212,7 @@ noncomputable instance B.zero_val [GooseExts] : ZeroVal B :=
 (go.field_decl.FieldDecl go!"netAllocs" go.uint64),
 (go.field_decl.FieldDecl go!"netBytes" go.uint64),
 (go.field_decl.FieldDecl go!"extra" (go.GoType.MapType go.string go.float64)),
-(go.field_decl.FieldDecl go!"loop" «struct#6419a40c».underlying)]
+(go.field_decl.FieldDecl go!"loop" «struct#72b83cd5».underlying)]
 
 @[irreducible] noncomputable def B.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
   B.fieldsUnsealed
@@ -1266,7 +1266,7 @@ class B.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemant
   get_extra : ∀ (x : B), go.IsGoStepPureDetTagged under (StructFieldGet B.underlying go!"extra") #x (Val #(x.extra'))
   set_extra : ∀ (x : B) (y : GoMap), go.IsGoStepPureDetTagged under (StructFieldSet B.underlying go!"extra") (PairV #x #y) (Val #(({ x with extra' := y } : B)))
   get_loop : ∀ (x : B), go.IsGoStepPureDetTagged under (StructFieldGet B.underlying go!"loop") #x (Val #(x.loop'))
-  set_loop : ∀ (x : B) (y : «struct#6419a40c»), go.IsGoStepPureDetTagged under (StructFieldSet B.underlying go!"loop") (PairV #x #y) (Val #(({ x with loop' := y } : B)))
+  set_loop : ∀ (x : B) (y : «struct#72b83cd5»), go.IsGoStepPureDetTagged under (StructFieldSet B.underlying go!"loop") (PairV #x #y) (Val #(({ x with loop' := y } : B)))
   method_set : go.MethodSetIs B.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType B.ty) [(go!"ArtifactDir", (some (go.signature.Signature [] false [go.string]))), (go!"Attr", (some (go.signature.Signature [go.string, go.string] false []))), (go!"Chdir", (some (go.signature.Signature [go.string] false []))), (go!"Cleanup", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [] false []))] false []))), (go!"Context", (some (go.signature.Signature [] false [_root_.Perennial.context.Context.ty]))), (go!"Elapsed", (some (go.signature.Signature [] false [_root_.Perennial.time.Duration.ty]))), (go!"Error", (some (go.signature.Signature [(go.GoType.SliceType go.any)] true []))), (go!"Errorf", (some (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true []))), (go!"Fail", (some (go.signature.Signature [] false []))), (go!"FailNow", (some (go.signature.Signature [] false []))), (go!"Failed", (some (go.signature.Signature [] false [go.bool]))), (go!"Fatal", (some (go.signature.Signature [(go.GoType.SliceType go.any)] true []))), (go!"Fatalf", (some (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true []))), (go!"Helper", (some (go.signature.Signature [] false []))), (go!"Log", (some (go.signature.Signature [(go.GoType.SliceType go.any)] true []))), (go!"Logf", (some (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true []))), (go!"Loop", (some (go.signature.Signature [] false [go.bool]))), (go!"Name", (some (go.signature.Signature [] false [go.string]))), (go!"Output", (some (go.signature.Signature [] false [_root_.Perennial.io.Writer.ty]))), (go!"ReportAllocs", (some (go.signature.Signature [] false []))), (go!"ReportMetric", (some (go.signature.Signature [go.float64, go.string] false []))), (go!"ResetTimer", (some (go.signature.Signature [] false []))), (go!"Run", (some (go.signature.Signature [go.string, (go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType B.ty)] false []))] false [go.bool]))), (go!"RunParallel", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [(go.GoType.PointerType PB.ty)] false []))] false []))), (go!"SetBytes", (some (go.signature.Signature [go.int64] false []))), (go!"SetParallelism", (some (go.signature.Signature [go.int] false []))), (go!"Setenv", (some (go.signature.Signature [go.string, go.string] false []))), (go!"Skip", (some (go.signature.Signature [(go.GoType.SliceType go.any)] true []))), (go!"SkipNow", (some (go.signature.Signature [] false []))), (go!"Skipf", (some (go.signature.Signature [go.string, (go.GoType.SliceType go.any)] true []))), (go!"Skipped", (some (go.signature.Signature [] false [go.bool]))), (go!"StartTimer", (some (go.signature.Signature [] false []))), (go!"StopTimer", (some (go.signature.Signature [] false []))), (go!"TempDir", (some (go.signature.Signature [] false [go.string]))), (go!"testing.add", (some (go.signature.Signature [BenchmarkResult.ty] false []))), (go!"testing.callSite", (some (go.signature.Signature [go.int] false [go.string]))), (go!"testing.checkFuzzFn", (some (go.signature.Signature [go.string] false []))), (go!"testing.checkRaces", (some (go.signature.Signature [] false [go.int64]))), (go!"testing.destination", (some (go.signature.Signature [] false [(go.GoType.PointerType common.ty)]))), (go!"testing.doBench", (some (go.signature.Signature [] false [BenchmarkResult.ty]))), (go!"testing.flushPartial", (some (go.signature.Signature [] false []))), (go!"testing.flushToParent", (some (go.signature.Signature [go.string, go.string, (go.GoType.SliceType go.any)] true []))), (go!"testing.frameSkip", (some (go.signature.Signature [go.int] false [(go.GoType.Named go!"runtime.Frame" [])]))), (go!"testing.launch", (some (go.signature.Signature [] false []))), (go!"testing.log", (some (go.signature.Signature [go.string] false []))), (go!"testing.loopSlowPath", (some (go.signature.Signature [] false [go.bool]))), (go!"testing.makeArtifactDir", (some (go.signature.Signature [] false [go.string, go.error]))), (go!"testing.makeTempDir", (some (go.signature.Signature [] false [go.string, go.error]))), (go!"testing.private", (some (go.signature.Signature [] false []))), (go!"testing.resetRaces", (some (go.signature.Signature [] false []))), (go!"testing.run", (some (go.signature.Signature [] false []))), (go!"testing.run1", (some (go.signature.Signature [] false [go.bool]))), (go!"testing.runCleanup", (some (go.signature.Signature [panicHandling.ty] false [go.any]))), (go!"testing.runN", (some (go.signature.Signature [go.int] false []))), (go!"testing.setOutputWriter", (some (go.signature.Signature [] false []))), (go!"testing.setRan", (some (go.signature.Signature [] false []))), (go!"testing.stopOrScaleBLoop", (some (go.signature.Signature [] false [go.bool]))), (go!"testing.trimOutput", (some (go.signature.Signature [] false [])))]
 
@@ -2493,7 +2493,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testDeps_instance : testDeps.TypeAssumptions
   highPrecisionTime_instance : highPrecisionTime.TypeAssumptions
   «struct#b304a786_instance» : «struct#b304a786».TypeAssumptions
-  «struct#6419a40c_instance» : «struct#6419a40c».TypeAssumptions
+  «struct#72b83cd5_instance» : «struct#72b83cd5».TypeAssumptions
   import_context_Assumption : _root_.Perennial.context.Assumptions
   import_io_Assumption : _root_.Perennial.io.Assumptions
   import_sync_Assumption : _root_.Perennial.sync.Assumptions
@@ -2535,7 +2535,7 @@ attribute [instance] Assumptions.durationOrCountFlag_instance
   Assumptions.testDeps_instance
   Assumptions.highPrecisionTime_instance
   Assumptions.«struct#b304a786_instance»
-  Assumptions.«struct#6419a40c_instance»
+  Assumptions.«struct#72b83cd5_instance»
   Assumptions.import_context_Assumption
   Assumptions.import_io_Assumption
   Assumptions.import_sync_Assumption

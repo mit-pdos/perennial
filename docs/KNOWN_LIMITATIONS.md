@@ -160,16 +160,20 @@ another build tag's build may contain different code.
 
 ## Struct types
 
-- **Unexported field names of struct type literals are qualified by package; a defined
-  struct type's are not.** Go keeps apart `struct{ a int }` from two packages (`p.Mk() ==
+- **Unexported and blank field names of struct type literals are qualified by package; a
+  defined struct type's are not.** Go keeps apart `struct{ a int }` from two packages (`p.Mk() ==
   q.Mk()` is false when each returns `struct{ a int }{}` from its own package; so is
-  `_, ok := p.Make().(struct{ a int })` in `q`). goose names an unexported field of a struct
-  type literal `"<pkgpath>.a"` (`util.ModelFieldName`), so the two are different
-  `go.StructType`s, as in Go. A defined type is identified by its name, so its fields keep
-  their names. Consequence (incomplete, not unsound): a conversion between a defined struct
-  type and a struct type literal with an unexported field (`T(struct{ a int }{1})`, legal in
-  Go) is stuck, since the underlying types differ by the field names (`Convert t t` needs
-  them equal). Struct tags are not modelled; goose refuses a tag on a struct type literal.
+  `_, ok := p.Make().(struct{ a int })` in `q`), and likewise `struct{ _ int; A int }` (a blank
+  field is non-exported). goose names an unexported field of a struct type literal
+  `"<pkgpath>.a"` and a blank one `"<pkgpath>._#i"` (`util.ModelFieldName`; `go.isBlankField`
+  recognizes both blank forms), and the generated record of such a type is named by a hash that
+  includes those packages (`util.AnonStructKey`), so the two are different `go.StructType`s and
+  records, as in Go. A defined type is identified by its name, so its fields keep their names.
+  Consequence (incomplete, not unsound): a conversion between a defined struct type and a struct
+  type literal with an unexported or blank field is stuck, since their underlying types differ
+  by the field names (`Convert t t` needs them equal): `T(struct{ a int }{1})`, and likewise the
+  pointer conversion `(*T)(&struct{ a int }{})`, both legal in Go. Struct tags are not
+  modelled; goose refuses a tag on a struct type literal.
 - **A struct type literal with embedded fields has no known method set.** In Go,
   `struct{ T }` has the methods promoted from `T`:
   ```go

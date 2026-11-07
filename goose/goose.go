@@ -999,7 +999,7 @@ func (ctx *Ctx) identExpr(e *ast.Ident, multipleBindings bool) glang.Expr {
 	if constObj, ok := obj.(*types.Const); ok {
 		// is a constant
 		if constTy, ok := constObj.Type().(*types.Basic); ok && constTy.Kind() == types.UntypedFloat {
-			if dstTy, ok := ctx.typeOf(e).(*types.Basic); ok && dstTy.Info()&types.IsInteger != 0 {
+			if dstTy, ok := ctx.typeOf(e).Underlying().(*types.Basic); ok && dstTy.Info()&types.IsInteger != 0 {
 				// an integer-valued untyped float constant at an integer type: its exact
 				// value (constant.ToInt), as for constants of other packages
 				return ctx.constantLiteral(e)

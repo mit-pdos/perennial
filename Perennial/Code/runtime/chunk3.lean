@@ -367,18 +367,18 @@ attribute [instance] gcBgMarkWorkerNodePadded.TypeAssumptions.type_repr
   gcBgMarkWorkerNodePadded.TypeAssumptions.method_set
   gcBgMarkWorkerNodePadded.TypeAssumptions.ptr_method_set
 
-class «struct#51fa335f».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying «struct#51fa335f».underlying «struct#51fa335f»
-  get_fill : ∀ (x : «struct#51fa335f»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#51fa335f».underlying go!"runtime.fill") #x (Val #(x.fill'))
-  set_fill : ∀ (x : «struct#51fa335f») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#51fa335f».underlying go!"runtime.fill") (PairV #x #y) (Val #(({ x with fill' := y } : «struct#51fa335f»)))
-  get_capacity : ∀ (x : «struct#51fa335f»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#51fa335f».underlying go!"runtime.capacity") #x (Val #(x.capacity'))
-  set_capacity : ∀ (x : «struct#51fa335f») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#51fa335f».underlying go!"runtime.capacity") (PairV #x #y) (Val #(({ x with capacity' := y } : «struct#51fa335f»)))
+class «struct#8056d144».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#8056d144».underlying «struct#8056d144»
+  get_fill : ∀ (x : «struct#8056d144»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#8056d144».underlying go!"runtime.fill") #x (Val #(x.fill'))
+  set_fill : ∀ (x : «struct#8056d144») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#8056d144».underlying go!"runtime.fill") (PairV #x #y) (Val #(({ x with fill' := y } : «struct#8056d144»)))
+  get_capacity : ∀ (x : «struct#8056d144»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#8056d144».underlying go!"runtime.capacity") #x (Val #(x.capacity'))
+  set_capacity : ∀ (x : «struct#8056d144») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#8056d144».underlying go!"runtime.capacity") (PairV #x #y) (Val #(({ x with capacity' := y } : «struct#8056d144»)))
 
-attribute [instance] «struct#51fa335f».TypeAssumptions.type_repr
-  «struct#51fa335f».TypeAssumptions.get_fill
-  «struct#51fa335f».TypeAssumptions.set_fill
-  «struct#51fa335f».TypeAssumptions.get_capacity
-  «struct#51fa335f».TypeAssumptions.set_capacity
+attribute [instance] «struct#8056d144».TypeAssumptions.type_repr
+  «struct#8056d144».TypeAssumptions.get_fill
+  «struct#8056d144».TypeAssumptions.set_fill
+  «struct#8056d144».TypeAssumptions.get_capacity
+  «struct#8056d144».TypeAssumptions.set_capacity
 
 class gcCPULimiterState.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying gcCPULimiterState.underlying gcCPULimiterState
@@ -394,7 +394,7 @@ class gcCPULimiterState.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCo
   get_test : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"test") #x (Val #(x.test'))
   set_test : ∀ (x : gcCPULimiterState) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"test") (PairV #x #y) (Val #(({ x with test' := y } : gcCPULimiterState)))
   get_bucket : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"bucket") #x (Val #(x.bucket'))
-  set_bucket : ∀ (x : gcCPULimiterState) (y : «struct#51fa335f»), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"bucket") (PairV #x #y) (Val #(({ x with bucket' := y } : gcCPULimiterState)))
+  set_bucket : ∀ (x : gcCPULimiterState) (y : «struct#8056d144»), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"bucket") (PairV #x #y) (Val #(({ x with bucket' := y } : gcCPULimiterState)))
   get_overflow : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"overflow") #x (Val #(x.overflow'))
   set_overflow : ∀ (x : gcCPULimiterState) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet gcCPULimiterState.underlying go!"overflow") (PairV #x #y) (Val #(({ x with overflow' := y } : gcCPULimiterState)))
   get_assistTimePool : ∀ (x : gcCPULimiterState), go.IsGoStepPureDetTagged under (StructFieldGet gcCPULimiterState.underlying go!"assistTimePool") #x (Val #(x.assistTimePool'))
@@ -530,18 +530,18 @@ attribute [instance] objptr.TypeAssumptions.underlying
   objptr.TypeAssumptions.method_set
   objptr.TypeAssumptions.ptr_method_set
 
-class «struct#1e853569».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying «struct#1e853569».underlying «struct#1e853569»
-  get_head : ∀ (x : «struct#1e853569»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#1e853569».underlying go!"runtime.head") #x (Val #(x.head'))
-  set_head : ∀ (x : «struct#1e853569») (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «struct#1e853569».underlying go!"runtime.head") (PairV #x #y) (Val #(({ x with head' := y } : «struct#1e853569»)))
-  get_tail : ∀ (x : «struct#1e853569»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#1e853569».underlying go!"runtime.tail") #x (Val #(x.tail'))
-  set_tail : ∀ (x : «struct#1e853569») (y : _root_.Perennial.internal.runtime.atomic.UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldSet «struct#1e853569».underlying go!"runtime.tail") (PairV #x #y) (Val #(({ x with tail' := y } : «struct#1e853569»)))
+class «struct#bf07b477».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#bf07b477».underlying «struct#bf07b477»
+  get_head : ∀ (x : «struct#bf07b477»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#bf07b477».underlying go!"runtime.head") #x (Val #(x.head'))
+  set_head : ∀ (x : «struct#bf07b477») (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet «struct#bf07b477».underlying go!"runtime.head") (PairV #x #y) (Val #(({ x with head' := y } : «struct#bf07b477»)))
+  get_tail : ∀ (x : «struct#bf07b477»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#bf07b477».underlying go!"runtime.tail") #x (Val #(x.tail'))
+  set_tail : ∀ (x : «struct#bf07b477») (y : _root_.Perennial.internal.runtime.atomic.UnsafePointer), go.IsGoStepPureDetTagged under (StructFieldSet «struct#bf07b477».underlying go!"runtime.tail") (PairV #x #y) (Val #(({ x with tail' := y } : «struct#bf07b477»)))
 
-attribute [instance] «struct#1e853569».TypeAssumptions.type_repr
-  «struct#1e853569».TypeAssumptions.get_head
-  «struct#1e853569».TypeAssumptions.set_head
-  «struct#1e853569».TypeAssumptions.get_tail
-  «struct#1e853569».TypeAssumptions.set_tail
+attribute [instance] «struct#bf07b477».TypeAssumptions.type_repr
+  «struct#bf07b477».TypeAssumptions.get_head
+  «struct#bf07b477».TypeAssumptions.set_head
+  «struct#bf07b477».TypeAssumptions.get_tail
+  «struct#bf07b477».TypeAssumptions.set_tail
 
 class spanQueue.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying spanQueue.underlying spanQueue
@@ -555,7 +555,7 @@ class spanQueue.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   get_putsSinceDrain : ∀ (x : spanQueue), go.IsGoStepPureDetTagged under (StructFieldGet spanQueue.underlying go!"putsSinceDrain") #x (Val #(x.putsSinceDrain'))
   set_putsSinceDrain : ∀ (x : spanQueue) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet spanQueue.underlying go!"putsSinceDrain") (PairV #x #y) (Val #(({ x with putsSinceDrain' := y } : spanQueue)))
   get_chain : ∀ (x : spanQueue), go.IsGoStepPureDetTagged under (StructFieldGet spanQueue.underlying go!"chain") #x (Val #(x.chain'))
-  set_chain : ∀ (x : spanQueue) (y : «struct#1e853569»), go.IsGoStepPureDetTagged under (StructFieldSet spanQueue.underlying go!"chain") (PairV #x #y) (Val #(({ x with chain' := y } : spanQueue)))
+  set_chain : ∀ (x : spanQueue) (y : «struct#bf07b477»), go.IsGoStepPureDetTagged under (StructFieldSet spanQueue.underlying go!"chain") (PairV #x #y) (Val #(({ x with chain' := y } : spanQueue)))
   method_set : go.MethodSetIs spanQueue.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType spanQueue.ty) [(go!"runtime.chainEmpty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.destroy", (some (go.signature.Signature [] false []))), (go!"runtime.drain", (some (go.signature.Signature [go.uint32] false []))), (go!"runtime.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"runtime.flush", (some (go.signature.Signature [] false []))), (go!"runtime.put", (some (go.signature.Signature [objptr.ty] false [go.bool]))), (go!"runtime.putFast", (some (go.signature.Signature [objptr.ty] false [go.bool]))), (go!"runtime.refill", (some (go.signature.Signature [(go.GoType.PointerType spanSPMC.ty)] false [objptr.ty]))), (go!"runtime.steal", (some (go.signature.Signature [(go.GoType.PointerType spanQueue.ty)] false [objptr.ty]))), (go!"runtime.tryDrain", (some (go.signature.Signature [(go.GoType.PointerType spanSPMC.ty), go.uint32] false [go.bool]))), (go!"runtime.tryGetFast", (some (go.signature.Signature [] false [objptr.ty])))]
 

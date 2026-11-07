@@ -2150,7 +2150,7 @@ noncomputable instance gcCPULimiterState_access_load_bucket (l : Loc) (v : runti
  by
   solve_pointsto_access_struct
 
-noncomputable instance gcCPULimiterState_access_store_bucket (l : Loc) (v : runtime.gcCPULimiterState) (bucket' : runtime.«struct#51fa335f») :
+noncomputable instance gcCPULimiterState_access_store_bucket (l : Loc) (v : runtime.gcCPULimiterState) (bucket' : runtime.«struct#8056d144») :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.gcCPULimiterState go!"bucket" l) v.bucket' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.gcCPULimiterState go!"bucket" l) bucket' (DFrac.own 1))
@@ -2461,7 +2461,7 @@ noncomputable instance spanQueue_access_load_chain (l : Loc) (v : runtime.spanQu
  by
   solve_pointsto_access_struct
 
-noncomputable instance spanQueue_access_store_chain (l : Loc) (v : runtime.spanQueue) (chain' : runtime.«struct#1e853569») :
+noncomputable instance spanQueue_access_store_chain (l : Loc) (v : runtime.spanQueue) (chain' : runtime.«struct#bf07b477») :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.spanQueue go!"chain" l) v.chain' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.spanQueue go!"chain" l) chain' (DFrac.own 1))

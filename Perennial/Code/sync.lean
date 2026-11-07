@@ -119,40 +119,40 @@ noncomputable def WaitGroup.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] WaitGroup.ty
 
-@[reducible] noncomputable def «struct#27ad43a3».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+@[reducible] noncomputable def «struct#6f57d83f».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"sync.f" (go.GoType.FunctionType (go.signature.Signature [] false []))),
 (go.field_decl.FieldDecl go!"sync.once" Once.ty),
 (go.field_decl.FieldDecl go!"sync.valid" go.bool),
 (go.field_decl.FieldDecl go!"sync.p" go.any)]
 
-@[irreducible] noncomputable def «struct#27ad43a3».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
-  «struct#27ad43a3».fieldsUnsealed
+@[irreducible] noncomputable def «struct#6f57d83f».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  «struct#6f57d83f».fieldsUnsealed
 
-noncomputable instance «equals_unfold_struct#27ad43a3» [GooseExts] [GoGlobalContext] :
-    EqualsUnfold «struct#27ad43a3».fields «struct#27ad43a3».fieldsUnsealed :=
-  ⟨by unfold «struct#27ad43a3».fields; rfl⟩
+noncomputable instance «equals_unfold_struct#6f57d83f» [GooseExts] [GoGlobalContext] :
+    EqualsUnfold «struct#6f57d83f».fields «struct#6f57d83f».fieldsUnsealed :=
+  ⟨by unfold «struct#6f57d83f».fields; rfl⟩
 
-@[reducible] noncomputable def «struct#27ad43a3».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
-  (go.GoType.StructType «struct#27ad43a3».fields)
+@[reducible] noncomputable def «struct#6f57d83f».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType «struct#6f57d83f».fields)
 
-@[reducible] noncomputable def «struct#a4b331e8».fieldsUnsealed [GooseExts] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+@[reducible] noncomputable def «struct#b4b089c3».fieldsUnsealed [GooseExts] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"sync.f" (go.GoType.FunctionType (go.signature.Signature [] false [T]))),
 (go.field_decl.FieldDecl go!"sync.once" Once.ty),
 (go.field_decl.FieldDecl go!"sync.valid" go.bool),
 (go.field_decl.FieldDecl go!"sync.p" go.any),
 (go.field_decl.FieldDecl go!"sync.result" T)]
 
-@[irreducible] noncomputable def «struct#a4b331e8».fields [GooseExts] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
-  («struct#a4b331e8».fieldsUnsealed T)
+@[irreducible] noncomputable def «struct#b4b089c3».fields [GooseExts] [GoGlobalContext] (T : go.GoType) : List go.field_decl :=
+  («struct#b4b089c3».fieldsUnsealed T)
 
-noncomputable instance «equals_unfold_struct#a4b331e8» [GooseExts] [GoGlobalContext] (T : go.GoType) :
-    EqualsUnfold («struct#a4b331e8».fields T) («struct#a4b331e8».fieldsUnsealed T) :=
-  ⟨by unfold «struct#a4b331e8».fields; rfl⟩
+noncomputable instance «equals_unfold_struct#b4b089c3» [GooseExts] [GoGlobalContext] (T : go.GoType) :
+    EqualsUnfold («struct#b4b089c3».fields T) («struct#b4b089c3».fieldsUnsealed T) :=
+  ⟨by unfold «struct#b4b089c3».fields; rfl⟩
 
-@[reducible] noncomputable def «struct#a4b331e8».underlying [GooseExts] [GoGlobalContext] (T : go.GoType) : go.GoType :=
-  (go.GoType.StructType («struct#a4b331e8».fields T))
+@[reducible] noncomputable def «struct#b4b089c3».underlying [GooseExts] [GoGlobalContext] (T : go.GoType) : go.GoType :=
+  (go.GoType.StructType («struct#b4b089c3».fields T))
 
-@[reducible] noncomputable def «struct#3b550fdf».fieldsUnsealed [GooseExts] [GoGlobalContext] (T1 T2 : go.GoType) : List go.field_decl :=
+@[reducible] noncomputable def «struct#e6c814b5».fieldsUnsealed [GooseExts] [GoGlobalContext] (T1 T2 : go.GoType) : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"sync.f" (go.GoType.FunctionType (go.signature.Signature [] false [T1, T2]))),
 (go.field_decl.FieldDecl go!"sync.once" Once.ty),
 (go.field_decl.FieldDecl go!"sync.valid" go.bool),
@@ -160,15 +160,15 @@ noncomputable instance «equals_unfold_struct#a4b331e8» [GooseExts] [GoGlobalCo
 (go.field_decl.FieldDecl go!"sync.r1" T1),
 (go.field_decl.FieldDecl go!"sync.r2" T2)]
 
-@[irreducible] noncomputable def «struct#3b550fdf».fields [GooseExts] [GoGlobalContext] (T1 T2 : go.GoType) : List go.field_decl :=
-  («struct#3b550fdf».fieldsUnsealed T1 T2)
+@[irreducible] noncomputable def «struct#e6c814b5».fields [GooseExts] [GoGlobalContext] (T1 T2 : go.GoType) : List go.field_decl :=
+  («struct#e6c814b5».fieldsUnsealed T1 T2)
 
-noncomputable instance «equals_unfold_struct#3b550fdf» [GooseExts] [GoGlobalContext] (T1 T2 : go.GoType) :
-    EqualsUnfold («struct#3b550fdf».fields T1 T2) («struct#3b550fdf».fieldsUnsealed T1 T2) :=
-  ⟨by unfold «struct#3b550fdf».fields; rfl⟩
+noncomputable instance «equals_unfold_struct#e6c814b5» [GooseExts] [GoGlobalContext] (T1 T2 : go.GoType) :
+    EqualsUnfold («struct#e6c814b5».fields T1 T2) («struct#e6c814b5».fieldsUnsealed T1 T2) :=
+  ⟨by unfold «struct#e6c814b5».fields; rfl⟩
 
-@[reducible] noncomputable def «struct#3b550fdf».underlying [GooseExts] [GoGlobalContext] (T1 : go.GoType) (T2 : go.GoType) : go.GoType :=
-  (go.GoType.StructType («struct#3b550fdf».fields T1 T2))
+@[reducible] noncomputable def «struct#e6c814b5».underlying [GooseExts] [GoGlobalContext] (T1 : go.GoType) (T2 : go.GoType) : go.GoType :=
+  (go.GoType.StructType («struct#e6c814b5».fields T1 T2))
 
 axiom Map.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
@@ -462,15 +462,15 @@ noncomputable def OnceFunc.impl [GooseExts] [GoGlobalContext] : val :=
   (Seq (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f"))
   (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "f"))
-  (App (Val (GoInstruction (CompositeLiteral «struct#27ad43a3».underlying))) (LiteralValue [(KeyedElement (some (KeyField go!"sync.f")) (ElementExpression (go.GoType.FunctionType (go.signature.Signature [] false [])) (Var "$v0")))])))
-  (Let "d" (App (Val (GoInstruction (GoAlloc «struct#27ad43a3».underlying))) (App (Val (GoInstruction (GoZeroVal «struct#27ad43a3».underlying))) (Val #())))
+  (App (Val (GoInstruction (CompositeLiteral «struct#6f57d83f».underlying))) (LiteralValue [(KeyedElement (some (KeyField go!"sync.f")) (ElementExpression (go.GoType.FunctionType (go.signature.Signature [] false [])) (Var "$v0")))])))
+  (Let "d" (App (Val (GoInstruction (GoAlloc «struct#6f57d83f».underlying))) (App (Val (GoInstruction (GoZeroVal «struct#6f57d83f».underlying))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Lam BAnon
   (Seq (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef «struct#27ad43a3».underlying go!"sync.valid"))) (Var "d"))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef «struct#6f57d83f».underlying go!"sync.valid"))) (Var "d"))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef «struct#27ad43a3».underlying go!"sync.p"))) (Var "d")))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef «struct#6f57d83f».underlying go!"sync.p"))) (Var "d")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #())))))
@@ -483,9 +483,9 @@ noncomputable def OnceFunc.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #true)
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#27ad43a3».underlying go!"sync.valid"))) (Var "d")) (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#6f57d83f».underlying go!"sync.valid"))) (Var "d")) (Var "$r0")))))))
   (App (Val doExecute)
-  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (StructFieldRef «struct#27ad43a3».underlying go!"sync.f"))) (Var "d"))) (Val #()))))))
+  (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (App (Val (GoInstruction (StructFieldRef «struct#6f57d83f».underlying go!"sync.f"))) (Var "d"))) (Val #()))))))
   (App (Val doExecute)
   (Let "$f" (Lam BAnon
   (Seq (App (Val exceptionDo)
@@ -494,23 +494,23 @@ noncomputable def OnceFunc.impl [GooseExts] [GoGlobalContext] : val :=
   (Let "$r0" (App (Val recoverPanic)
   (Var "$panic"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef «struct#27ad43a3».underlying go!"sync.valid"))) (Var "d"))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef «struct#6f57d83f».underlying go!"sync.valid"))) (Var "d"))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef «struct#27ad43a3».underlying go!"sync.p"))) (Var "d")))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef «struct#6f57d83f».underlying go!"sync.p"))) (Var "d")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.any))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#27ad43a3».underlying go!"sync.p"))) (Var "d")) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#6f57d83f».underlying go!"sync.p"))) (Var "d")) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#27ad43a3».underlying go!"sync.f"))) (Var "d")) (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#6f57d83f».underlying go!"sync.f"))) (Var "d")) (Var "$r0")))))))
   (Val #())))
   (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
   (Lam BAnon
   (Seq (App (Var "$f") (Val #()))
   (App (Var "$oldf") (Val #())))))))))))))
   (Val #())))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Once.ty) go!"Do"))) (App (Val (GoInstruction (StructFieldRef «struct#27ad43a3».underlying go!"sync.once"))) (Var "d"))) (Var "$a0"))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Once.ty) go!"Do"))) (App (Val (GoInstruction (StructFieldRef «struct#6f57d83f».underlying go!"sync.once"))) (Var "d"))) (Var "$a0"))))))
   (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -518,7 +518,7 @@ noncomputable def OnceFunc.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore «struct#27ad43a3».underlying))) (Pair (Var "d") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore «struct#6f57d83f».underlying))) (Pair (Var "d") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false []))))) (Var "$res0")))))
 
 /-- OnceValue returns a function that invokes f only once and returns the value
@@ -533,23 +533,23 @@ noncomputable def OnceValue.impl [GooseExts] [GoGlobalContext] (T : go.GoType) :
   (Seq (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false [T]))))) (Var "f"))
   (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [T]))))) (Var "f"))
-  (App (Val (GoInstruction (CompositeLiteral («struct#a4b331e8».underlying T)))) (LiteralValue [(KeyedElement (some (KeyField go!"sync.f")) (ElementExpression (go.GoType.FunctionType (go.signature.Signature [] false [T])) (Var "$v0")))])))
-  (Let "d" (App (Val (GoInstruction (GoAlloc («struct#a4b331e8».underlying T)))) (App (Val (GoInstruction (GoZeroVal («struct#a4b331e8».underlying T)))) (Val #())))
+  (App (Val (GoInstruction (CompositeLiteral («struct#b4b089c3».underlying T)))) (LiteralValue [(KeyedElement (some (KeyField go!"sync.f")) (ElementExpression (go.GoType.FunctionType (go.signature.Signature [] false [T])) (Var "$v0")))])))
+  (Let "d" (App (Val (GoInstruction (GoAlloc («struct#b4b089c3».underlying T)))) (App (Val (GoInstruction (GoZeroVal («struct#b4b089c3».underlying T)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Lam BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc T))) (App (Val (GoInstruction (GoZeroVal T))) (Val #())))
   (Seq (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef («struct#a4b331e8».underlying T) go!"sync.result"))) (Var "d")))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T))) (App (Val (GoInstruction (StructFieldRef («struct#b4b089c3».underlying T) go!"sync.result"))) (Var "d")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T))) (Pair (Var "$res0") (Var "$r0"))))))))
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef («struct#a4b331e8».underlying T) go!"sync.valid"))) (Var "d"))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef («struct#b4b089c3».underlying T) go!"sync.valid"))) (Var "d"))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef («struct#a4b331e8».underlying T) go!"sync.p"))) (Var "d")))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef («struct#b4b089c3».underlying T) go!"sync.p"))) (Var "d")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #()))))))
@@ -559,13 +559,13 @@ noncomputable def OnceValue.impl [GooseExts] [GoGlobalContext] (T : go.GoType) :
   (Lam "$defer"
   (Lam "$panic"
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [T]))))) (App (Val (GoInstruction (StructFieldRef («struct#a4b331e8».underlying T) go!"sync.f"))) (Var "d"))) (Val #()))
+  (Let "$r0" (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [T]))))) (App (Val (GoInstruction (StructFieldRef («struct#b4b089c3».underlying T) go!"sync.f"))) (Var "d"))) (Val #()))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #true)
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef («struct#a4b331e8».underlying T) go!"sync.valid"))) (Var "d")) (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef («struct#b4b089c3».underlying T) go!"sync.valid"))) (Var "d")) (Var "$r0")))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (StructFieldRef («struct#a4b331e8».underlying T) go!"sync.result"))) (Var "d")) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore T))) (Pair (App (Val (GoInstruction (StructFieldRef («struct#b4b089c3».underlying T) go!"sync.result"))) (Var "d")) (Var "$r0"))))))))
   (App (Val doExecute)
   (Let "$f" (Lam BAnon
   (Seq (App (Val exceptionDo)
@@ -574,23 +574,23 @@ noncomputable def OnceValue.impl [GooseExts] [GoGlobalContext] (T : go.GoType) :
   (Let "$r0" (App (Val recoverPanic)
   (Var "$panic"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef («struct#a4b331e8».underlying T) go!"sync.valid"))) (Var "d"))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef («struct#b4b089c3».underlying T) go!"sync.valid"))) (Var "d"))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef («struct#a4b331e8».underlying T) go!"sync.p"))) (Var "d")))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef («struct#b4b089c3».underlying T) go!"sync.p"))) (Var "d")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.any))) (Pair (App (Val (GoInstruction (StructFieldRef («struct#a4b331e8».underlying T) go!"sync.p"))) (Var "d")) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (App (Val (GoInstruction (StructFieldRef («struct#b4b089c3».underlying T) go!"sync.p"))) (Var "d")) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [T]))))) (Pair (App (Val (GoInstruction (StructFieldRef («struct#a4b331e8».underlying T) go!"sync.f"))) (Var "d")) (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [T]))))) (Pair (App (Val (GoInstruction (StructFieldRef («struct#b4b089c3».underlying T) go!"sync.f"))) (Var "d")) (Var "$r0")))))))
   (Val #())))
   (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
   (Lam BAnon
   (Seq (App (Var "$f") (Val #()))
   (App (Var "$oldf") (Val #())))))))))))))
   (Val #())))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Once.ty) go!"Do"))) (App (Val (GoInstruction (StructFieldRef («struct#a4b331e8».underlying T) go!"sync.once"))) (Var "d"))) (Var "$a0"))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Once.ty) go!"Do"))) (App (Val (GoInstruction (StructFieldRef («struct#b4b089c3».underlying T) go!"sync.once"))) (Var "d"))) (Var "$a0"))))))
   (App (Val (GoInstruction (GoLoad T))) (Var "$res0")))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -598,7 +598,7 @@ noncomputable def OnceValue.impl [GooseExts] [GoGlobalContext] (T : go.GoType) :
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [T]))))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore («struct#a4b331e8».underlying T)))) (Pair (Var "d") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore («struct#b4b089c3».underlying T)))) (Pair (Var "d") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [T]))))) (Var "$res0")))))
 
 /-- OnceValues returns a function that invokes f only once and returns the values
@@ -613,8 +613,8 @@ noncomputable def OnceValues.impl [GooseExts] [GoGlobalContext] (T1 T2 : go.GoTy
   (Seq (App (Val exceptionDo)
   (Let "f" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false [T1, T2]))))) (Var "f"))
   (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [T1, T2]))))) (Var "f"))
-  (App (Val (GoInstruction (CompositeLiteral («struct#3b550fdf».underlying T1 T2)))) (LiteralValue [(KeyedElement (some (KeyField go!"sync.f")) (ElementExpression (go.GoType.FunctionType (go.signature.Signature [] false [T1, T2])) (Var "$v0")))])))
-  (Let "d" (App (Val (GoInstruction (GoAlloc («struct#3b550fdf».underlying T1 T2)))) (App (Val (GoInstruction (GoZeroVal («struct#3b550fdf».underlying T1 T2)))) (Val #())))
+  (App (Val (GoInstruction (CompositeLiteral («struct#e6c814b5».underlying T1 T2)))) (LiteralValue [(KeyedElement (some (KeyField go!"sync.f")) (ElementExpression (go.GoType.FunctionType (go.signature.Signature [] false [T1, T2])) (Var "$v0")))])))
+  (Let "d" (App (Val (GoInstruction (GoAlloc («struct#e6c814b5».underlying T1 T2)))) (App (Val (GoInstruction (GoZeroVal («struct#e6c814b5».underlying T1 T2)))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Lam BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc T1))) (App (Val (GoInstruction (GoZeroVal T1))) (Val #())))
@@ -622,8 +622,8 @@ noncomputable def OnceValues.impl [GooseExts] [GoGlobalContext] (T1 T2 : go.GoTy
   (Seq (App (Val exceptionDo)
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoLoad T1))) (App (Val (GoInstruction (StructFieldRef («struct#3b550fdf».underlying T1 T2) go!"sync.r1"))) (Var "d")))
-  (Let "$r1" (App (Val (GoInstruction (GoLoad T2))) (App (Val (GoInstruction (StructFieldRef («struct#3b550fdf».underlying T1 T2) go!"sync.r2"))) (Var "d")))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad T1))) (App (Val (GoInstruction (StructFieldRef («struct#e6c814b5».underlying T1 T2) go!"sync.r1"))) (Var "d")))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad T2))) (App (Val (GoInstruction (StructFieldRef («struct#e6c814b5».underlying T1 T2) go!"sync.r2"))) (Var "d")))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -632,9 +632,9 @@ noncomputable def OnceValues.impl [GooseExts] [GoGlobalContext] (T1 T2 : go.GoTy
   (App (Val (GoInstruction (GoStore T2))) (Pair (Var "$res1") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T1))) (Pair (Var "$res0") (Var "$r0")))))))))
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef («struct#3b550fdf».underlying T1 T2) go!"sync.valid"))) (Var "d"))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef («struct#e6c814b5».underlying T1 T2) go!"sync.valid"))) (Var "d"))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef («struct#3b550fdf».underlying T1 T2) go!"sync.p"))) (Var "d")))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef («struct#e6c814b5».underlying T1 T2) go!"sync.p"))) (Var "d")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #()))))))
@@ -644,9 +644,9 @@ noncomputable def OnceValues.impl [GooseExts] [GoGlobalContext] (T1 T2 : go.GoTy
   (Lam "$defer"
   (Lam "$panic"
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$l0" (App (Val (GoInstruction (StructFieldRef («struct#3b550fdf».underlying T1 T2) go!"sync.r1"))) (Var "d"))
-  (Let "$l1" (App (Val (GoInstruction (StructFieldRef («struct#3b550fdf».underlying T1 T2) go!"sync.r2"))) (Var "d"))
-  (Let "__p" (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [T1, T2]))))) (App (Val (GoInstruction (StructFieldRef («struct#3b550fdf».underlying T1 T2) go!"sync.f"))) (Var "d"))) (Val #()))
+  (Let "$l0" (App (Val (GoInstruction (StructFieldRef («struct#e6c814b5».underlying T1 T2) go!"sync.r1"))) (Var "d"))
+  (Let "$l1" (App (Val (GoInstruction (StructFieldRef («struct#e6c814b5».underlying T1 T2) go!"sync.r2"))) (Var "d"))
+  (Let "__p" (App (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [T1, T2]))))) (App (Val (GoInstruction (StructFieldRef («struct#e6c814b5».underlying T1 T2) go!"sync.f"))) (Var "d"))) (Val #()))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -655,7 +655,7 @@ noncomputable def OnceValues.impl [GooseExts] [GoGlobalContext] (T1 T2 : go.GoTy
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #true)
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef («struct#3b550fdf».underlying T1 T2) go!"sync.valid"))) (Var "d")) (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef («struct#e6c814b5».underlying T1 T2) go!"sync.valid"))) (Var "d")) (Var "$r0")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore T2))) (Pair (Var "$l1") (Var "$r1")))))))
   (App (Val doExecute)
@@ -668,23 +668,23 @@ noncomputable def OnceValues.impl [GooseExts] [GoGlobalContext] (T1 T2 : go.GoTy
   (Let "$r0" (App (Val recoverPanic)
   (Var "$panic"))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef («struct#3b550fdf».underlying T1 T2) go!"sync.valid"))) (Var "d"))))
+  (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (App (Val (GoInstruction (StructFieldRef («struct#e6c814b5».underlying T1 T2) go!"sync.valid"))) (Var "d"))))
   (App (Val doExecute)
-  (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef («struct#3b550fdf».underlying T1 T2) go!"sync.p"))) (Var "d")))
+  (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (App (Val (GoInstruction (StructFieldRef («struct#e6c814b5».underlying T1 T2) go!"sync.p"))) (Var "d")))
   (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
   (App (Val doExecute)
   (Val #())))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore go.any))) (Pair (App (Val (GoInstruction (StructFieldRef («struct#3b550fdf».underlying T1 T2) go!"sync.p"))) (Var "d")) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (App (Val (GoInstruction (StructFieldRef («struct#e6c814b5».underlying T1 T2) go!"sync.p"))) (Var "d")) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [T1, T2]))))) (Pair (App (Val (GoInstruction (StructFieldRef («struct#3b550fdf».underlying T1 T2) go!"sync.f"))) (Var "d")) (Var "$r0")))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [T1, T2]))))) (Pair (App (Val (GoInstruction (StructFieldRef («struct#e6c814b5».underlying T1 T2) go!"sync.f"))) (Var "d")) (Var "$r0")))))))
   (Val #())))
   (App (Val (GoInstruction (GoStore deferType))) (Pair (Var "$defer") (Let "$oldf" (App (Val (GoInstruction (GoLoad deferType))) (Var "$defer"))
   (Lam BAnon
   (Seq (App (Var "$f") (Val #()))
   (App (Var "$oldf") (Val #())))))))))))))
   (Val #())))
-  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Once.ty) go!"Do"))) (App (Val (GoInstruction (StructFieldRef («struct#3b550fdf».underlying T1 T2) go!"sync.once"))) (Var "d"))) (Var "$a0"))))))
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Once.ty) go!"Do"))) (App (Val (GoInstruction (StructFieldRef («struct#e6c814b5».underlying T1 T2) go!"sync.once"))) (Var "d"))) (Var "$a0"))))))
   (Pair (App (Val (GoInstruction (GoLoad T1))) (Var "$res0")) (App (Val (GoInstruction (GoLoad T2))) (Var "$res1")))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
@@ -692,7 +692,7 @@ noncomputable def OnceValues.impl [GooseExts] [GoGlobalContext] (T1 T2 : go.GoTy
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.FunctionType (go.signature.Signature [] false [T1, T2]))))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore («struct#3b550fdf».underlying T1 T2)))) (Pair (Var "d") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoStore («struct#e6c814b5».underlying T1 T2)))) (Pair (Var "d") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.FunctionType (go.signature.Signature [] false [T1, T2]))))) (Var "$res0")))))
 
 /-- go: pool.go:296:6 -/
@@ -2258,38 +2258,38 @@ attribute [instance] WaitGroup.TypeAssumptions.type_repr
   WaitGroup.TypeAssumptions.ptr_Go_unfold
   WaitGroup.TypeAssumptions.ptr_Wait_unfold
 
-structure «struct#27ad43a3» [GooseExts] where
+structure «struct#6f57d83f» [GooseExts] where
   mk ::
   f' : GoFunc
   once' : Once
   valid' : Bool
   p' : GoInterface
 
-noncomputable instance «struct#27ad43a3».zero_val [GooseExts] : ZeroVal «struct#27ad43a3» :=
-  ⟨«struct#27ad43a3».mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
+noncomputable instance «struct#6f57d83f».zero_val [GooseExts] : ZeroVal «struct#6f57d83f» :=
+  ⟨«struct#6f57d83f».mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-class «struct#27ad43a3».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying «struct#27ad43a3».underlying «struct#27ad43a3»
-  get_f : ∀ (x : «struct#27ad43a3»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#27ad43a3».underlying go!"sync.f") #x (Val #(x.f'))
-  set_f : ∀ (x : «struct#27ad43a3») (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet «struct#27ad43a3».underlying go!"sync.f") (PairV #x #y) (Val #(({ x with f' := y } : «struct#27ad43a3»)))
-  get_once : ∀ (x : «struct#27ad43a3»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#27ad43a3».underlying go!"sync.once") #x (Val #(x.once'))
-  set_once : ∀ (x : «struct#27ad43a3») (y : Once), go.IsGoStepPureDetTagged under (StructFieldSet «struct#27ad43a3».underlying go!"sync.once") (PairV #x #y) (Val #(({ x with once' := y } : «struct#27ad43a3»)))
-  get_valid : ∀ (x : «struct#27ad43a3»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#27ad43a3».underlying go!"sync.valid") #x (Val #(x.valid'))
-  set_valid : ∀ (x : «struct#27ad43a3») (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «struct#27ad43a3».underlying go!"sync.valid") (PairV #x #y) (Val #(({ x with valid' := y } : «struct#27ad43a3»)))
-  get_p : ∀ (x : «struct#27ad43a3»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#27ad43a3».underlying go!"sync.p") #x (Val #(x.p'))
-  set_p : ∀ (x : «struct#27ad43a3») (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet «struct#27ad43a3».underlying go!"sync.p") (PairV #x #y) (Val #(({ x with p' := y } : «struct#27ad43a3»)))
+class «struct#6f57d83f».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#6f57d83f».underlying «struct#6f57d83f»
+  get_f : ∀ (x : «struct#6f57d83f»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6f57d83f».underlying go!"sync.f") #x (Val #(x.f'))
+  set_f : ∀ (x : «struct#6f57d83f») (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6f57d83f».underlying go!"sync.f") (PairV #x #y) (Val #(({ x with f' := y } : «struct#6f57d83f»)))
+  get_once : ∀ (x : «struct#6f57d83f»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6f57d83f».underlying go!"sync.once") #x (Val #(x.once'))
+  set_once : ∀ (x : «struct#6f57d83f») (y : Once), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6f57d83f».underlying go!"sync.once") (PairV #x #y) (Val #(({ x with once' := y } : «struct#6f57d83f»)))
+  get_valid : ∀ (x : «struct#6f57d83f»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6f57d83f».underlying go!"sync.valid") #x (Val #(x.valid'))
+  set_valid : ∀ (x : «struct#6f57d83f») (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6f57d83f».underlying go!"sync.valid") (PairV #x #y) (Val #(({ x with valid' := y } : «struct#6f57d83f»)))
+  get_p : ∀ (x : «struct#6f57d83f»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6f57d83f».underlying go!"sync.p") #x (Val #(x.p'))
+  set_p : ∀ (x : «struct#6f57d83f») (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6f57d83f».underlying go!"sync.p") (PairV #x #y) (Val #(({ x with p' := y } : «struct#6f57d83f»)))
 
-attribute [instance] «struct#27ad43a3».TypeAssumptions.type_repr
-  «struct#27ad43a3».TypeAssumptions.get_f
-  «struct#27ad43a3».TypeAssumptions.set_f
-  «struct#27ad43a3».TypeAssumptions.get_once
-  «struct#27ad43a3».TypeAssumptions.set_once
-  «struct#27ad43a3».TypeAssumptions.get_valid
-  «struct#27ad43a3».TypeAssumptions.set_valid
-  «struct#27ad43a3».TypeAssumptions.get_p
-  «struct#27ad43a3».TypeAssumptions.set_p
+attribute [instance] «struct#6f57d83f».TypeAssumptions.type_repr
+  «struct#6f57d83f».TypeAssumptions.get_f
+  «struct#6f57d83f».TypeAssumptions.set_f
+  «struct#6f57d83f».TypeAssumptions.get_once
+  «struct#6f57d83f».TypeAssumptions.set_once
+  «struct#6f57d83f».TypeAssumptions.get_valid
+  «struct#6f57d83f».TypeAssumptions.set_valid
+  «struct#6f57d83f».TypeAssumptions.get_p
+  «struct#6f57d83f».TypeAssumptions.set_p
 
-structure «struct#a4b331e8» [GooseExts] (T : Type) where
+structure «struct#b4b089c3» [GooseExts] (T : Type) where
   mk ::
   f' : GoFunc
   once' : Once
@@ -2297,35 +2297,35 @@ structure «struct#a4b331e8» [GooseExts] (T : Type) where
   p' : GoInterface
   result' : T
 
-noncomputable instance «struct#a4b331e8».zero_val [GooseExts] {T : Type} [ZeroVal T] : ZeroVal («struct#a4b331e8» T) :=
-  ⟨«struct#a4b331e8».mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
+noncomputable instance «struct#b4b089c3».zero_val [GooseExts] {T : Type} [ZeroVal T] : ZeroVal («struct#b4b089c3» T) :=
+  ⟨«struct#b4b089c3».mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-class «struct#a4b331e8».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («struct#a4b331e8».underlying T) («struct#a4b331e8» T')
-  get_f : ∀ (T : go.GoType) (T' : Type) (x : («struct#a4b331e8» T')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#a4b331e8».underlying T) go!"sync.f") #x (Val #(x.f'))
-  set_f : ∀ (T : go.GoType) (T' : Type) (x : («struct#a4b331e8» T')) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet («struct#a4b331e8».underlying T) go!"sync.f") (PairV #x #y) (Val #(({ x with f' := y } : («struct#a4b331e8» T'))))
-  get_once : ∀ (T : go.GoType) (T' : Type) (x : («struct#a4b331e8» T')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#a4b331e8».underlying T) go!"sync.once") #x (Val #(x.once'))
-  set_once : ∀ (T : go.GoType) (T' : Type) (x : («struct#a4b331e8» T')) (y : Once), go.IsGoStepPureDetTagged under (StructFieldSet («struct#a4b331e8».underlying T) go!"sync.once") (PairV #x #y) (Val #(({ x with once' := y } : («struct#a4b331e8» T'))))
-  get_valid : ∀ (T : go.GoType) (T' : Type) (x : («struct#a4b331e8» T')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#a4b331e8».underlying T) go!"sync.valid") #x (Val #(x.valid'))
-  set_valid : ∀ (T : go.GoType) (T' : Type) (x : («struct#a4b331e8» T')) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet («struct#a4b331e8».underlying T) go!"sync.valid") (PairV #x #y) (Val #(({ x with valid' := y } : («struct#a4b331e8» T'))))
-  get_p : ∀ (T : go.GoType) (T' : Type) (x : («struct#a4b331e8» T')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#a4b331e8».underlying T) go!"sync.p") #x (Val #(x.p'))
-  set_p : ∀ (T : go.GoType) (T' : Type) (x : («struct#a4b331e8» T')) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet («struct#a4b331e8».underlying T) go!"sync.p") (PairV #x #y) (Val #(({ x with p' := y } : («struct#a4b331e8» T'))))
-  get_result : ∀ (T : go.GoType) (T' : Type) (x : («struct#a4b331e8» T')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#a4b331e8».underlying T) go!"sync.result") #x (Val #(x.result'))
-  set_result : ∀ (T : go.GoType) (T' : Type) (x : («struct#a4b331e8» T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet («struct#a4b331e8».underlying T) go!"sync.result") (PairV #x #y) (Val #(({ x with result' := y } : («struct#a4b331e8» T'))))
+class «struct#b4b089c3».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying («struct#b4b089c3».underlying T) («struct#b4b089c3» T')
+  get_f : ∀ (T : go.GoType) (T' : Type) (x : («struct#b4b089c3» T')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#b4b089c3».underlying T) go!"sync.f") #x (Val #(x.f'))
+  set_f : ∀ (T : go.GoType) (T' : Type) (x : («struct#b4b089c3» T')) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet («struct#b4b089c3».underlying T) go!"sync.f") (PairV #x #y) (Val #(({ x with f' := y } : («struct#b4b089c3» T'))))
+  get_once : ∀ (T : go.GoType) (T' : Type) (x : («struct#b4b089c3» T')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#b4b089c3».underlying T) go!"sync.once") #x (Val #(x.once'))
+  set_once : ∀ (T : go.GoType) (T' : Type) (x : («struct#b4b089c3» T')) (y : Once), go.IsGoStepPureDetTagged under (StructFieldSet («struct#b4b089c3».underlying T) go!"sync.once") (PairV #x #y) (Val #(({ x with once' := y } : («struct#b4b089c3» T'))))
+  get_valid : ∀ (T : go.GoType) (T' : Type) (x : («struct#b4b089c3» T')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#b4b089c3».underlying T) go!"sync.valid") #x (Val #(x.valid'))
+  set_valid : ∀ (T : go.GoType) (T' : Type) (x : («struct#b4b089c3» T')) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet («struct#b4b089c3».underlying T) go!"sync.valid") (PairV #x #y) (Val #(({ x with valid' := y } : («struct#b4b089c3» T'))))
+  get_p : ∀ (T : go.GoType) (T' : Type) (x : («struct#b4b089c3» T')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#b4b089c3».underlying T) go!"sync.p") #x (Val #(x.p'))
+  set_p : ∀ (T : go.GoType) (T' : Type) (x : («struct#b4b089c3» T')) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet («struct#b4b089c3».underlying T) go!"sync.p") (PairV #x #y) (Val #(({ x with p' := y } : («struct#b4b089c3» T'))))
+  get_result : ∀ (T : go.GoType) (T' : Type) (x : («struct#b4b089c3» T')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#b4b089c3».underlying T) go!"sync.result") #x (Val #(x.result'))
+  set_result : ∀ (T : go.GoType) (T' : Type) (x : («struct#b4b089c3» T')) (y : T'), go.IsGoStepPureDetTagged under (StructFieldSet («struct#b4b089c3».underlying T) go!"sync.result") (PairV #x #y) (Val #(({ x with result' := y } : («struct#b4b089c3» T'))))
 
-attribute [instance] «struct#a4b331e8».TypeAssumptions.type_repr
-  «struct#a4b331e8».TypeAssumptions.get_f
-  «struct#a4b331e8».TypeAssumptions.set_f
-  «struct#a4b331e8».TypeAssumptions.get_once
-  «struct#a4b331e8».TypeAssumptions.set_once
-  «struct#a4b331e8».TypeAssumptions.get_valid
-  «struct#a4b331e8».TypeAssumptions.set_valid
-  «struct#a4b331e8».TypeAssumptions.get_p
-  «struct#a4b331e8».TypeAssumptions.set_p
-  «struct#a4b331e8».TypeAssumptions.get_result
-  «struct#a4b331e8».TypeAssumptions.set_result
+attribute [instance] «struct#b4b089c3».TypeAssumptions.type_repr
+  «struct#b4b089c3».TypeAssumptions.get_f
+  «struct#b4b089c3».TypeAssumptions.set_f
+  «struct#b4b089c3».TypeAssumptions.get_once
+  «struct#b4b089c3».TypeAssumptions.set_once
+  «struct#b4b089c3».TypeAssumptions.get_valid
+  «struct#b4b089c3».TypeAssumptions.set_valid
+  «struct#b4b089c3».TypeAssumptions.get_p
+  «struct#b4b089c3».TypeAssumptions.set_p
+  «struct#b4b089c3».TypeAssumptions.get_result
+  «struct#b4b089c3».TypeAssumptions.set_result
 
-structure «struct#3b550fdf» [GooseExts] (T1 T2 : Type) where
+structure «struct#e6c814b5» [GooseExts] (T1 T2 : Type) where
   mk ::
   f' : GoFunc
   once' : Once
@@ -2334,37 +2334,37 @@ structure «struct#3b550fdf» [GooseExts] (T1 T2 : Type) where
   r1' : T1
   r2' : T2
 
-noncomputable instance «struct#3b550fdf».zero_val [GooseExts] {T1 T2 : Type} [ZeroVal T1] [ZeroVal T2] : ZeroVal («struct#3b550fdf» T1 T2) :=
-  ⟨«struct#3b550fdf».mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
+noncomputable instance «struct#e6c814b5».zero_val [GooseExts] {T1 T2 : Type} [ZeroVal T1] [ZeroVal T2] : ZeroVal («struct#e6c814b5» T1 T2) :=
+  ⟨«struct#e6c814b5».mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
 
-class «struct#3b550fdf».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) [ZeroVal T1'] [TypeRepr T1 T1'] [ZeroVal T2'] [TypeRepr T2 T2'], go.TypeReprUnderlying («struct#3b550fdf».underlying T1 T2) («struct#3b550fdf» T1' T2')
-  get_f : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#3b550fdf» T1' T2')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#3b550fdf».underlying T1 T2) go!"sync.f") #x (Val #(x.f'))
-  set_f : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#3b550fdf» T1' T2')) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet («struct#3b550fdf».underlying T1 T2) go!"sync.f") (PairV #x #y) (Val #(({ x with f' := y } : («struct#3b550fdf» T1' T2'))))
-  get_once : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#3b550fdf» T1' T2')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#3b550fdf».underlying T1 T2) go!"sync.once") #x (Val #(x.once'))
-  set_once : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#3b550fdf» T1' T2')) (y : Once), go.IsGoStepPureDetTagged under (StructFieldSet («struct#3b550fdf».underlying T1 T2) go!"sync.once") (PairV #x #y) (Val #(({ x with once' := y } : («struct#3b550fdf» T1' T2'))))
-  get_valid : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#3b550fdf» T1' T2')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#3b550fdf».underlying T1 T2) go!"sync.valid") #x (Val #(x.valid'))
-  set_valid : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#3b550fdf» T1' T2')) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet («struct#3b550fdf».underlying T1 T2) go!"sync.valid") (PairV #x #y) (Val #(({ x with valid' := y } : («struct#3b550fdf» T1' T2'))))
-  get_p : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#3b550fdf» T1' T2')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#3b550fdf».underlying T1 T2) go!"sync.p") #x (Val #(x.p'))
-  set_p : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#3b550fdf» T1' T2')) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet («struct#3b550fdf».underlying T1 T2) go!"sync.p") (PairV #x #y) (Val #(({ x with p' := y } : («struct#3b550fdf» T1' T2'))))
-  get_r1 : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#3b550fdf» T1' T2')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#3b550fdf».underlying T1 T2) go!"sync.r1") #x (Val #(x.r1'))
-  set_r1 : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#3b550fdf» T1' T2')) (y : T1'), go.IsGoStepPureDetTagged under (StructFieldSet («struct#3b550fdf».underlying T1 T2) go!"sync.r1") (PairV #x #y) (Val #(({ x with r1' := y } : («struct#3b550fdf» T1' T2'))))
-  get_r2 : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#3b550fdf» T1' T2')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#3b550fdf».underlying T1 T2) go!"sync.r2") #x (Val #(x.r2'))
-  set_r2 : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#3b550fdf» T1' T2')) (y : T2'), go.IsGoStepPureDetTagged under (StructFieldSet («struct#3b550fdf».underlying T1 T2) go!"sync.r2") (PairV #x #y) (Val #(({ x with r2' := y } : («struct#3b550fdf» T1' T2'))))
+class «struct#e6c814b5».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) [ZeroVal T1'] [TypeRepr T1 T1'] [ZeroVal T2'] [TypeRepr T2 T2'], go.TypeReprUnderlying («struct#e6c814b5».underlying T1 T2) («struct#e6c814b5» T1' T2')
+  get_f : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#e6c814b5» T1' T2')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#e6c814b5».underlying T1 T2) go!"sync.f") #x (Val #(x.f'))
+  set_f : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#e6c814b5» T1' T2')) (y : GoFunc), go.IsGoStepPureDetTagged under (StructFieldSet («struct#e6c814b5».underlying T1 T2) go!"sync.f") (PairV #x #y) (Val #(({ x with f' := y } : («struct#e6c814b5» T1' T2'))))
+  get_once : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#e6c814b5» T1' T2')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#e6c814b5».underlying T1 T2) go!"sync.once") #x (Val #(x.once'))
+  set_once : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#e6c814b5» T1' T2')) (y : Once), go.IsGoStepPureDetTagged under (StructFieldSet («struct#e6c814b5».underlying T1 T2) go!"sync.once") (PairV #x #y) (Val #(({ x with once' := y } : («struct#e6c814b5» T1' T2'))))
+  get_valid : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#e6c814b5» T1' T2')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#e6c814b5».underlying T1 T2) go!"sync.valid") #x (Val #(x.valid'))
+  set_valid : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#e6c814b5» T1' T2')) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet («struct#e6c814b5».underlying T1 T2) go!"sync.valid") (PairV #x #y) (Val #(({ x with valid' := y } : («struct#e6c814b5» T1' T2'))))
+  get_p : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#e6c814b5» T1' T2')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#e6c814b5».underlying T1 T2) go!"sync.p") #x (Val #(x.p'))
+  set_p : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#e6c814b5» T1' T2')) (y : GoInterface), go.IsGoStepPureDetTagged under (StructFieldSet («struct#e6c814b5».underlying T1 T2) go!"sync.p") (PairV #x #y) (Val #(({ x with p' := y } : («struct#e6c814b5» T1' T2'))))
+  get_r1 : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#e6c814b5» T1' T2')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#e6c814b5».underlying T1 T2) go!"sync.r1") #x (Val #(x.r1'))
+  set_r1 : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#e6c814b5» T1' T2')) (y : T1'), go.IsGoStepPureDetTagged under (StructFieldSet («struct#e6c814b5».underlying T1 T2) go!"sync.r1") (PairV #x #y) (Val #(({ x with r1' := y } : («struct#e6c814b5» T1' T2'))))
+  get_r2 : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#e6c814b5» T1' T2')), go.IsGoStepPureDetTagged under (StructFieldGet («struct#e6c814b5».underlying T1 T2) go!"sync.r2") #x (Val #(x.r2'))
+  set_r2 : ∀ (T1 T2 : go.GoType) (T1' T2' : Type) (x : («struct#e6c814b5» T1' T2')) (y : T2'), go.IsGoStepPureDetTagged under (StructFieldSet («struct#e6c814b5».underlying T1 T2) go!"sync.r2") (PairV #x #y) (Val #(({ x with r2' := y } : («struct#e6c814b5» T1' T2'))))
 
-attribute [instance] «struct#3b550fdf».TypeAssumptions.type_repr
-  «struct#3b550fdf».TypeAssumptions.get_f
-  «struct#3b550fdf».TypeAssumptions.set_f
-  «struct#3b550fdf».TypeAssumptions.get_once
-  «struct#3b550fdf».TypeAssumptions.set_once
-  «struct#3b550fdf».TypeAssumptions.get_valid
-  «struct#3b550fdf».TypeAssumptions.set_valid
-  «struct#3b550fdf».TypeAssumptions.get_p
-  «struct#3b550fdf».TypeAssumptions.set_p
-  «struct#3b550fdf».TypeAssumptions.get_r1
-  «struct#3b550fdf».TypeAssumptions.set_r1
-  «struct#3b550fdf».TypeAssumptions.get_r2
-  «struct#3b550fdf».TypeAssumptions.set_r2
+attribute [instance] «struct#e6c814b5».TypeAssumptions.type_repr
+  «struct#e6c814b5».TypeAssumptions.get_f
+  «struct#e6c814b5».TypeAssumptions.set_f
+  «struct#e6c814b5».TypeAssumptions.get_once
+  «struct#e6c814b5».TypeAssumptions.set_once
+  «struct#e6c814b5».TypeAssumptions.get_valid
+  «struct#e6c814b5».TypeAssumptions.set_valid
+  «struct#e6c814b5».TypeAssumptions.get_p
+  «struct#e6c814b5».TypeAssumptions.set_p
+  «struct#e6c814b5».TypeAssumptions.get_r1
+  «struct#e6c814b5».TypeAssumptions.set_r1
+  «struct#e6c814b5».TypeAssumptions.get_r2
+  «struct#e6c814b5».TypeAssumptions.set_r2
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   Cond_instance : Cond.TypeAssumptions
@@ -2386,9 +2386,9 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   RWMutex_instance : RWMutex.TypeAssumptions
   rlocker_instance : rlocker.TypeAssumptions
   WaitGroup_instance : WaitGroup.TypeAssumptions
-  «struct#27ad43a3_instance» : «struct#27ad43a3».TypeAssumptions
-  «struct#a4b331e8_instance» : «struct#a4b331e8».TypeAssumptions
-  «struct#3b550fdf_instance» : «struct#3b550fdf».TypeAssumptions
+  «struct#6f57d83f_instance» : «struct#6f57d83f».TypeAssumptions
+  «struct#b4b089c3_instance» : «struct#b4b089c3».TypeAssumptions
+  «struct#e6c814b5_instance» : «struct#e6c814b5».TypeAssumptions
   NewCond_unfold : FuncUnfold NewCond [] NewCond.impl
   OnceFunc_unfold : FuncUnfold OnceFunc [] OnceFunc.impl
   OnceValue_unfold : ∀ (T : go.GoType), FuncUnfold OnceValue [T] (OnceValue.impl T)
@@ -2429,9 +2429,9 @@ attribute [instance] Assumptions.Cond_instance
   Assumptions.RWMutex_instance
   Assumptions.rlocker_instance
   Assumptions.WaitGroup_instance
-  Assumptions.«struct#27ad43a3_instance»
-  Assumptions.«struct#a4b331e8_instance»
-  Assumptions.«struct#3b550fdf_instance»
+  Assumptions.«struct#6f57d83f_instance»
+  Assumptions.«struct#b4b089c3_instance»
+  Assumptions.«struct#e6c814b5_instance»
   Assumptions.NewCond_unfold
   Assumptions.OnceFunc_unfold
   Assumptions.OnceValue_unfold

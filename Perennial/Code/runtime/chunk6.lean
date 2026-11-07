@@ -938,18 +938,18 @@ attribute [instance] timers.TypeAssumptions.type_repr
   timers.TypeAssumptions.method_set
   timers.TypeAssumptions.ptr_method_set
 
-class «struct#8786e874».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying «struct#8786e874».underlying «struct#8786e874»
-  get_len : ∀ (x : «struct#8786e874»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#8786e874».underlying go!"runtime.len") #x (Val #(x.len'))
-  set_len : ∀ (x : «struct#8786e874») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#8786e874».underlying go!"runtime.len") (PairV #x #y) (Val #(({ x with len' := y } : «struct#8786e874»)))
-  get_buf : ∀ (x : «struct#8786e874»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#8786e874».underlying go!"runtime.buf") #x (Val #(x.buf'))
-  set_buf : ∀ (x : «struct#8786e874») (y : (GoArray Loc 128)), go.IsGoStepPureDetTagged under (StructFieldSet «struct#8786e874».underlying go!"runtime.buf") (PairV #x #y) (Val #(({ x with buf' := y } : «struct#8786e874»)))
+class «struct#44f3f7f9».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#44f3f7f9».underlying «struct#44f3f7f9»
+  get_len : ∀ (x : «struct#44f3f7f9»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#44f3f7f9».underlying go!"runtime.len") #x (Val #(x.len'))
+  set_len : ∀ (x : «struct#44f3f7f9») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#44f3f7f9».underlying go!"runtime.len") (PairV #x #y) (Val #(({ x with len' := y } : «struct#44f3f7f9»)))
+  get_buf : ∀ (x : «struct#44f3f7f9»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#44f3f7f9».underlying go!"runtime.buf") #x (Val #(x.buf'))
+  set_buf : ∀ (x : «struct#44f3f7f9») (y : (GoArray Loc 128)), go.IsGoStepPureDetTagged under (StructFieldSet «struct#44f3f7f9».underlying go!"runtime.buf") (PairV #x #y) (Val #(({ x with buf' := y } : «struct#44f3f7f9»)))
 
-attribute [instance] «struct#8786e874».TypeAssumptions.type_repr
-  «struct#8786e874».TypeAssumptions.get_len
-  «struct#8786e874».TypeAssumptions.set_len
-  «struct#8786e874».TypeAssumptions.get_buf
-  «struct#8786e874».TypeAssumptions.set_buf
+attribute [instance] «struct#44f3f7f9».TypeAssumptions.type_repr
+  «struct#44f3f7f9».TypeAssumptions.get_len
+  «struct#44f3f7f9».TypeAssumptions.set_len
+  «struct#44f3f7f9».TypeAssumptions.get_buf
+  «struct#44f3f7f9».TypeAssumptions.set_buf
 
 class p.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying p.underlying p
@@ -999,7 +999,7 @@ class p.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemant
   get_sudogbuf : ∀ (x : p), go.IsGoStepPureDetTagged under (StructFieldGet p.underlying go!"sudogbuf") #x (Val #(x.sudogbuf'))
   set_sudogbuf : ∀ (x : p) (y : (GoArray Loc 128)), go.IsGoStepPureDetTagged under (StructFieldSet p.underlying go!"sudogbuf") (PairV #x #y) (Val #(({ x with sudogbuf' := y } : p)))
   get_mspancache : ∀ (x : p), go.IsGoStepPureDetTagged under (StructFieldGet p.underlying go!"mspancache") #x (Val #(x.mspancache'))
-  set_mspancache : ∀ (x : p) (y : «struct#8786e874»), go.IsGoStepPureDetTagged under (StructFieldSet p.underlying go!"mspancache") (PairV #x #y) (Val #(({ x with mspancache' := y } : p)))
+  set_mspancache : ∀ (x : p) (y : «struct#44f3f7f9»), go.IsGoStepPureDetTagged under (StructFieldSet p.underlying go!"mspancache") (PairV #x #y) (Val #(({ x with mspancache' := y } : p)))
   get_pinnerCache : ∀ (x : p), go.IsGoStepPureDetTagged under (StructFieldGet p.underlying go!"pinnerCache") #x (Val #(x.pinnerCache'))
   set_pinnerCache : ∀ (x : p) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet p.underlying go!"pinnerCache") (PairV #x #y) (Val #(({ x with pinnerCache' := y } : p)))
   get_trace : ∀ (x : p), go.IsGoStepPureDetTagged under (StructFieldGet p.underlying go!"trace") #x (Val #(x.trace'))

@@ -397,14 +397,14 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   vdsoSymbolKey_instance : vdsoSymbolKey.TypeAssumptions
   vdsoVersionKey_instance : vdsoVersionKey.TypeAssumptions
   vdsoInfo_instance : vdsoInfo.TypeAssumptions
-  «struct#51fa335f_instance» : «struct#51fa335f».TypeAssumptions
-  «struct#1e853569_instance» : «struct#1e853569».TypeAssumptions
-  «struct#3a8454c5_instance» : «struct#3a8454c5».TypeAssumptions
+  «struct#8056d144_instance» : «struct#8056d144».TypeAssumptions
+  «struct#bf07b477_instance» : «struct#bf07b477».TypeAssumptions
+  «struct#bd644d1d_instance» : «struct#bd644d1d».TypeAssumptions
   «struct#28cf6959_instance» : «struct#28cf6959».TypeAssumptions
-  «struct#8786e874_instance» : «struct#8786e874».TypeAssumptions
-  «struct#72a1e364_instance» : «struct#72a1e364».TypeAssumptions
-  «struct#cf01e664_instance» : «struct#cf01e664».TypeAssumptions
-  «struct#1768b3d4_instance» : «struct#1768b3d4».TypeAssumptions
+  «struct#44f3f7f9_instance» : «struct#44f3f7f9».TypeAssumptions
+  «struct#7d555d83_instance» : «struct#7d555d83».TypeAssumptions
+  «struct#5b3b941c_instance» : «struct#5b3b941c».TypeAssumptions
+  «struct#6a5c53ac_instance» : «struct#6a5c53ac».TypeAssumptions
   Gosched_unfold : FuncUnfold Gosched [] Gosched.impl
   import_sys_Assumption : _root_.Perennial.internal.runtime.sys.Assumptions
   import_atomic_Assumption : _root_.Perennial.internal.runtime.atomic.Assumptions
@@ -780,14 +780,14 @@ attribute [instance] Assumptions.userArena_instance
   Assumptions.vdsoSymbolKey_instance
   Assumptions.vdsoVersionKey_instance
   Assumptions.vdsoInfo_instance
-  Assumptions.«struct#51fa335f_instance»
-  Assumptions.«struct#1e853569_instance»
-  Assumptions.«struct#3a8454c5_instance»
+  Assumptions.«struct#8056d144_instance»
+  Assumptions.«struct#bf07b477_instance»
+  Assumptions.«struct#bd644d1d_instance»
   Assumptions.«struct#28cf6959_instance»
-  Assumptions.«struct#8786e874_instance»
-  Assumptions.«struct#72a1e364_instance»
-  Assumptions.«struct#cf01e664_instance»
-  Assumptions.«struct#1768b3d4_instance»
+  Assumptions.«struct#44f3f7f9_instance»
+  Assumptions.«struct#7d555d83_instance»
+  Assumptions.«struct#5b3b941c_instance»
+  Assumptions.«struct#6a5c53ac_instance»
   Assumptions.Gosched_unfold
   Assumptions.import_sys_Assumption
   Assumptions.import_atomic_Assumption

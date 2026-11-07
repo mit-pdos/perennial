@@ -34,7 +34,7 @@ type anonStruct struct {
 // ones its fields mention.
 func (ctx *Ctx) anonStructOf(n locatable, t *types.Struct) *anonStruct {
 	name := util.AnonStructName(t)
-	key := types.TypeString(t, func(p *types.Package) string { return p.Path() })
+	key := util.AnonStructKey(t)
 	if a, ok := ctx.anonStructs[name]; ok {
 		if a.key != key {
 			ctx.nope(n, "unnamed struct types %s and %s have the same name %s", a.key, key, name)

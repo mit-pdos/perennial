@@ -2092,7 +2092,7 @@ noncomputable instance workbuf_access_store_obj (l : Loc) (v : runtime.workbuf) 
 end def_
 end workbuf
 
-namespace «struct#3a8454c5»
+namespace «struct#bd644d1d»
 section def_
 
 variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
@@ -2100,71 +2100,71 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem' : runtime.Assumptions]
 
-noncomputable instance «struct#3a8454c5_typed_pointsto» :
-    TypedPointsto (GF := GF) runtime.«struct#3a8454c5» where
+noncomputable instance «struct#bd644d1d_typed_pointsto» :
+    TypedPointsto (GF := GF) runtime.«struct#bd644d1d» where
   typedPointstoDef l v dq := iprop(
-    "index" ∷ typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"runtime.index" l) v.index' dq ∗
-    "releasedBg" ∷ typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"runtime.releasedBg" l) v.releasedBg' dq ∗
-    "releasedEager" ∷ typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"runtime.releasedEager" l) v.releasedEager' dq ∗
+    "index" ∷ typedPointsto (structFieldRef runtime.«struct#bd644d1d» go!"runtime.index" l) v.index' dq ∗
+    "releasedBg" ∷ typedPointsto (structFieldRef runtime.«struct#bd644d1d» go!"runtime.releasedBg" l) v.releasedBg' dq ∗
+    "releasedEager" ∷ typedPointsto (structFieldRef runtime.«struct#bd644d1d» go!"runtime.releasedEager" l) v.releasedEager' dq ∗
     "_" ∷ True)
   typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
   typedPointstoDef_timeless := by solve_typed_pointsto_timeless
   typedPointsto_agree := by solve_typed_pointsto_agree
 
-noncomputable instance «struct#3a8454c5_into_val_typed» :
-    IntoValTypedUnderlying (GF := GF) runtime.«struct#3a8454c5» runtime.«struct#3a8454c5».underlying := by
+noncomputable instance «struct#bd644d1d_into_val_typed» :
+    IntoValTypedUnderlying (GF := GF) runtime.«struct#bd644d1d» runtime.«struct#bd644d1d».underlying := by
   solve_into_val_typed_struct
 
-noncomputable instance «struct#3a8454c5_access_load_index» (l : Loc) (v : runtime.«struct#3a8454c5») (dq : DFrac) :
+noncomputable instance «struct#bd644d1d_access_load_index» (l : Loc) (v : runtime.«struct#bd644d1d») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"runtime.index" l) v.index' dq)
-      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"runtime.index" l) v.index' dq)
+      (typedPointsto (structFieldRef runtime.«struct#bd644d1d» go!"runtime.index" l) v.index' dq)
+      (typedPointsto (structFieldRef runtime.«struct#bd644d1d» go!"runtime.index" l) v.index' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#3a8454c5_access_store_index» (l : Loc) (v : runtime.«struct#3a8454c5») (index' : runtime.scavengeIndex) :
+noncomputable instance «struct#bd644d1d_access_store_index» (l : Loc) (v : runtime.«struct#bd644d1d») (index' : runtime.scavengeIndex) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"runtime.index" l) v.index' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"runtime.index" l) index' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with index' := index' } : runtime.«struct#3a8454c5») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.«struct#bd644d1d» go!"runtime.index" l) v.index' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#bd644d1d» go!"runtime.index" l) index' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with index' := index' } : runtime.«struct#bd644d1d») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#3a8454c5_access_load_releasedBg» (l : Loc) (v : runtime.«struct#3a8454c5») (dq : DFrac) :
+noncomputable instance «struct#bd644d1d_access_load_releasedBg» (l : Loc) (v : runtime.«struct#bd644d1d») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"runtime.releasedBg" l) v.releasedBg' dq)
-      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"runtime.releasedBg" l) v.releasedBg' dq)
+      (typedPointsto (structFieldRef runtime.«struct#bd644d1d» go!"runtime.releasedBg" l) v.releasedBg' dq)
+      (typedPointsto (structFieldRef runtime.«struct#bd644d1d» go!"runtime.releasedBg" l) v.releasedBg' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#3a8454c5_access_store_releasedBg» (l : Loc) (v : runtime.«struct#3a8454c5») (releasedBg' : internal.runtime.atomic.Uintptr) :
+noncomputable instance «struct#bd644d1d_access_store_releasedBg» (l : Loc) (v : runtime.«struct#bd644d1d») (releasedBg' : internal.runtime.atomic.Uintptr) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"runtime.releasedBg" l) v.releasedBg' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"runtime.releasedBg" l) releasedBg' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with releasedBg' := releasedBg' } : runtime.«struct#3a8454c5») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.«struct#bd644d1d» go!"runtime.releasedBg" l) v.releasedBg' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#bd644d1d» go!"runtime.releasedBg" l) releasedBg' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with releasedBg' := releasedBg' } : runtime.«struct#bd644d1d») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#3a8454c5_access_load_releasedEager» (l : Loc) (v : runtime.«struct#3a8454c5») (dq : DFrac) :
+noncomputable instance «struct#bd644d1d_access_load_releasedEager» (l : Loc) (v : runtime.«struct#bd644d1d») (dq : DFrac) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"runtime.releasedEager" l) v.releasedEager' dq)
-      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"runtime.releasedEager" l) v.releasedEager' dq)
+      (typedPointsto (structFieldRef runtime.«struct#bd644d1d» go!"runtime.releasedEager" l) v.releasedEager' dq)
+      (typedPointsto (structFieldRef runtime.«struct#bd644d1d» go!"runtime.releasedEager" l) v.releasedEager' dq)
       (typedPointsto l v dq) (typedPointsto l v dq) :=
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#3a8454c5_access_store_releasedEager» (l : Loc) (v : runtime.«struct#3a8454c5») (releasedEager' : internal.runtime.atomic.Uintptr) :
+noncomputable instance «struct#bd644d1d_access_store_releasedEager» (l : Loc) (v : runtime.«struct#bd644d1d») (releasedEager' : internal.runtime.atomic.Uintptr) :
     AccessStrict (PROP := IProp GF)
-      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"runtime.releasedEager" l) v.releasedEager' (DFrac.own 1))
-      (typedPointsto (structFieldRef runtime.«struct#3a8454c5» go!"runtime.releasedEager" l) releasedEager' (DFrac.own 1))
-      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with releasedEager' := releasedEager' } : runtime.«struct#3a8454c5») (DFrac.own 1)) :=
+      (typedPointsto (structFieldRef runtime.«struct#bd644d1d» go!"runtime.releasedEager" l) v.releasedEager' (DFrac.own 1))
+      (typedPointsto (structFieldRef runtime.«struct#bd644d1d» go!"runtime.releasedEager" l) releasedEager' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with releasedEager' := releasedEager' } : runtime.«struct#bd644d1d») (DFrac.own 1)) :=
  by
   solve_pointsto_access_struct
 
 end def_
-end «struct#3a8454c5»
+end «struct#bd644d1d»
 
 namespace spanSetBlockHeader2
 section def_

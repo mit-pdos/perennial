@@ -375,7 +375,7 @@ noncomputable instance B_access_load_loop (l : Loc) (v : testing.B) (dq : DFrac)
  by
   solve_pointsto_access_struct
 
-noncomputable instance B_access_store_loop (l : Loc) (v : testing.B) (loop' : testing.«struct#6419a40c») :
+noncomputable instance B_access_store_loop (l : Loc) (v : testing.B) (loop' : testing.«struct#72b83cd5») :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef testing.B go!"loop" l) v.loop' (DFrac.own 1))
       (typedPointsto (structFieldRef testing.B go!"loop" l) loop' (DFrac.own 1))

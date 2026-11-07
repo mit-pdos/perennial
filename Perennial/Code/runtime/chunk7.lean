@@ -16,35 +16,35 @@ noncomputable section
 
 namespace runtime
 
-class «struct#72a1e364».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying «struct#72a1e364».underlying «struct#72a1e364»
-  get_user : ∀ (x : «struct#72a1e364»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#72a1e364».underlying go!"runtime.user") #x (Val #(x.user'))
-  set_user : ∀ (x : «struct#72a1e364») (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «struct#72a1e364».underlying go!"runtime.user") (PairV #x #y) (Val #(({ x with user' := y } : «struct#72a1e364»)))
-  get_runnable : ∀ (x : «struct#72a1e364»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#72a1e364».underlying go!"runtime.runnable") #x (Val #(x.runnable'))
-  set_runnable : ∀ (x : «struct#72a1e364») (y : gQueue), go.IsGoStepPureDetTagged under (StructFieldSet «struct#72a1e364».underlying go!"runtime.runnable") (PairV #x #y) (Val #(({ x with runnable' := y } : «struct#72a1e364»)))
+class «struct#7d555d83».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#7d555d83».underlying «struct#7d555d83»
+  get_user : ∀ (x : «struct#7d555d83»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#7d555d83».underlying go!"runtime.user") #x (Val #(x.user'))
+  set_user : ∀ (x : «struct#7d555d83») (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet «struct#7d555d83».underlying go!"runtime.user") (PairV #x #y) (Val #(({ x with user' := y } : «struct#7d555d83»)))
+  get_runnable : ∀ (x : «struct#7d555d83»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#7d555d83».underlying go!"runtime.runnable") #x (Val #(x.runnable'))
+  set_runnable : ∀ (x : «struct#7d555d83») (y : gQueue), go.IsGoStepPureDetTagged under (StructFieldSet «struct#7d555d83».underlying go!"runtime.runnable") (PairV #x #y) (Val #(({ x with runnable' := y } : «struct#7d555d83»)))
 
-attribute [instance] «struct#72a1e364».TypeAssumptions.type_repr
-  «struct#72a1e364».TypeAssumptions.get_user
-  «struct#72a1e364».TypeAssumptions.set_user
-  «struct#72a1e364».TypeAssumptions.get_runnable
-  «struct#72a1e364».TypeAssumptions.set_runnable
+attribute [instance] «struct#7d555d83».TypeAssumptions.type_repr
+  «struct#7d555d83».TypeAssumptions.get_user
+  «struct#7d555d83».TypeAssumptions.set_user
+  «struct#7d555d83».TypeAssumptions.get_runnable
+  «struct#7d555d83».TypeAssumptions.set_runnable
 
-class «struct#cf01e664».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying «struct#cf01e664».underlying «struct#cf01e664»
-  get_lock : ∀ (x : «struct#cf01e664»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#cf01e664».underlying go!"runtime.lock") #x (Val #(x.lock'))
-  set_lock : ∀ (x : «struct#cf01e664») (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet «struct#cf01e664».underlying go!"runtime.lock") (PairV #x #y) (Val #(({ x with lock' := y } : «struct#cf01e664»)))
-  get_stack : ∀ (x : «struct#cf01e664»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#cf01e664».underlying go!"runtime.stack") #x (Val #(x.stack'))
-  set_stack : ∀ (x : «struct#cf01e664») (y : gList), go.IsGoStepPureDetTagged under (StructFieldSet «struct#cf01e664».underlying go!"runtime.stack") (PairV #x #y) (Val #(({ x with stack' := y } : «struct#cf01e664»)))
-  get_noStack : ∀ (x : «struct#cf01e664»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#cf01e664».underlying go!"runtime.noStack") #x (Val #(x.noStack'))
-  set_noStack : ∀ (x : «struct#cf01e664») (y : gList), go.IsGoStepPureDetTagged under (StructFieldSet «struct#cf01e664».underlying go!"runtime.noStack") (PairV #x #y) (Val #(({ x with noStack' := y } : «struct#cf01e664»)))
+class «struct#5b3b941c».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#5b3b941c».underlying «struct#5b3b941c»
+  get_lock : ∀ (x : «struct#5b3b941c»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#5b3b941c».underlying go!"runtime.lock") #x (Val #(x.lock'))
+  set_lock : ∀ (x : «struct#5b3b941c») (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet «struct#5b3b941c».underlying go!"runtime.lock") (PairV #x #y) (Val #(({ x with lock' := y } : «struct#5b3b941c»)))
+  get_stack : ∀ (x : «struct#5b3b941c»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#5b3b941c».underlying go!"runtime.stack") #x (Val #(x.stack'))
+  set_stack : ∀ (x : «struct#5b3b941c») (y : gList), go.IsGoStepPureDetTagged under (StructFieldSet «struct#5b3b941c».underlying go!"runtime.stack") (PairV #x #y) (Val #(({ x with stack' := y } : «struct#5b3b941c»)))
+  get_noStack : ∀ (x : «struct#5b3b941c»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#5b3b941c».underlying go!"runtime.noStack") #x (Val #(x.noStack'))
+  set_noStack : ∀ (x : «struct#5b3b941c») (y : gList), go.IsGoStepPureDetTagged under (StructFieldSet «struct#5b3b941c».underlying go!"runtime.noStack") (PairV #x #y) (Val #(({ x with noStack' := y } : «struct#5b3b941c»)))
 
-attribute [instance] «struct#cf01e664».TypeAssumptions.type_repr
-  «struct#cf01e664».TypeAssumptions.get_lock
-  «struct#cf01e664».TypeAssumptions.set_lock
-  «struct#cf01e664».TypeAssumptions.get_stack
-  «struct#cf01e664».TypeAssumptions.set_stack
-  «struct#cf01e664».TypeAssumptions.get_noStack
-  «struct#cf01e664».TypeAssumptions.set_noStack
+attribute [instance] «struct#5b3b941c».TypeAssumptions.type_repr
+  «struct#5b3b941c».TypeAssumptions.get_lock
+  «struct#5b3b941c».TypeAssumptions.set_lock
+  «struct#5b3b941c».TypeAssumptions.get_stack
+  «struct#5b3b941c».TypeAssumptions.set_stack
+  «struct#5b3b941c».TypeAssumptions.get_noStack
+  «struct#5b3b941c».TypeAssumptions.set_noStack
 
 class schedt.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying schedt.underlying schedt
@@ -88,9 +88,9 @@ class schedt.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   get_runq : ∀ (x : schedt), go.IsGoStepPureDetTagged under (StructFieldGet schedt.underlying go!"runq") #x (Val #(x.runq'))
   set_runq : ∀ (x : schedt) (y : gQueue), go.IsGoStepPureDetTagged under (StructFieldSet schedt.underlying go!"runq") (PairV #x #y) (Val #(({ x with runq' := y } : schedt)))
   get_disable : ∀ (x : schedt), go.IsGoStepPureDetTagged under (StructFieldGet schedt.underlying go!"disable") #x (Val #(x.disable'))
-  set_disable : ∀ (x : schedt) (y : «struct#72a1e364»), go.IsGoStepPureDetTagged under (StructFieldSet schedt.underlying go!"disable") (PairV #x #y) (Val #(({ x with disable' := y } : schedt)))
+  set_disable : ∀ (x : schedt) (y : «struct#7d555d83»), go.IsGoStepPureDetTagged under (StructFieldSet schedt.underlying go!"disable") (PairV #x #y) (Val #(({ x with disable' := y } : schedt)))
   get_gFree : ∀ (x : schedt), go.IsGoStepPureDetTagged under (StructFieldGet schedt.underlying go!"gFree") #x (Val #(x.gFree'))
-  set_gFree : ∀ (x : schedt) (y : «struct#cf01e664»), go.IsGoStepPureDetTagged under (StructFieldSet schedt.underlying go!"gFree") (PairV #x #y) (Val #(({ x with gFree' := y } : schedt)))
+  set_gFree : ∀ (x : schedt) (y : «struct#5b3b941c»), go.IsGoStepPureDetTagged under (StructFieldSet schedt.underlying go!"gFree") (PairV #x #y) (Val #(({ x with gFree' := y } : schedt)))
   get_sudoglock : ∀ (x : schedt), go.IsGoStepPureDetTagged under (StructFieldGet schedt.underlying go!"sudoglock") #x (Val #(x.sudoglock'))
   set_sudoglock : ∀ (x : schedt) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet schedt.underlying go!"sudoglock") (PairV #x #y) (Val #(({ x with sudoglock' := y } : schedt)))
   get_sudogcache : ∀ (x : schedt), go.IsGoStepPureDetTagged under (StructFieldGet schedt.underlying go!"sudogcache") #x (Val #(x.sudogcache'))
@@ -597,18 +597,18 @@ attribute [instance] semaRoot.TypeAssumptions.type_repr
   semaRoot.TypeAssumptions.method_set
   semaRoot.TypeAssumptions.ptr_method_set
 
-class «struct#1768b3d4».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying «struct#1768b3d4».underlying «struct#1768b3d4»
-  get_root : ∀ (x : «struct#1768b3d4»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#1768b3d4».underlying go!"runtime.root") #x (Val #(x.root'))
-  set_root : ∀ (x : «struct#1768b3d4») (y : semaRoot), go.IsGoStepPureDetTagged under (StructFieldSet «struct#1768b3d4».underlying go!"runtime.root") (PairV #x #y) (Val #(({ x with root' := y } : «struct#1768b3d4»)))
-  get_pad : ∀ (x : «struct#1768b3d4»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#1768b3d4».underlying go!"runtime.pad") #x (Val #(x.pad'))
-  set_pad : ∀ (x : «struct#1768b3d4») (y : (GoArray w8 40)), go.IsGoStepPureDetTagged under (StructFieldSet «struct#1768b3d4».underlying go!"runtime.pad") (PairV #x #y) (Val #(({ x with pad' := y } : «struct#1768b3d4»)))
+class «struct#6a5c53ac».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#6a5c53ac».underlying «struct#6a5c53ac»
+  get_root : ∀ (x : «struct#6a5c53ac»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6a5c53ac».underlying go!"runtime.root") #x (Val #(x.root'))
+  set_root : ∀ (x : «struct#6a5c53ac») (y : semaRoot), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6a5c53ac».underlying go!"runtime.root") (PairV #x #y) (Val #(({ x with root' := y } : «struct#6a5c53ac»)))
+  get_pad : ∀ (x : «struct#6a5c53ac»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#6a5c53ac».underlying go!"runtime.pad") #x (Val #(x.pad'))
+  set_pad : ∀ (x : «struct#6a5c53ac») (y : (GoArray w8 40)), go.IsGoStepPureDetTagged under (StructFieldSet «struct#6a5c53ac».underlying go!"runtime.pad") (PairV #x #y) (Val #(({ x with pad' := y } : «struct#6a5c53ac»)))
 
-attribute [instance] «struct#1768b3d4».TypeAssumptions.type_repr
-  «struct#1768b3d4».TypeAssumptions.get_root
-  «struct#1768b3d4».TypeAssumptions.set_root
-  «struct#1768b3d4».TypeAssumptions.get_pad
-  «struct#1768b3d4».TypeAssumptions.set_pad
+attribute [instance] «struct#6a5c53ac».TypeAssumptions.type_repr
+  «struct#6a5c53ac».TypeAssumptions.get_root
+  «struct#6a5c53ac».TypeAssumptions.set_root
+  «struct#6a5c53ac».TypeAssumptions.get_pad
+  «struct#6a5c53ac».TypeAssumptions.set_pad
 
 class semTable.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq semTable.ty semTable.underlying

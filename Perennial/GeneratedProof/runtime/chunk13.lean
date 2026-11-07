@@ -403,7 +403,7 @@ noncomputable instance pageAlloc_access_load_scav (l : Loc) (v : runtime.pageAll
  by
   solve_pointsto_access_struct
 
-noncomputable instance pageAlloc_access_store_scav (l : Loc) (v : runtime.pageAlloc) (scav' : runtime.«struct#3a8454c5») :
+noncomputable instance pageAlloc_access_store_scav (l : Loc) (v : runtime.pageAlloc) (scav' : runtime.«struct#bd644d1d») :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.pageAlloc go!"scav" l) v.scav' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.pageAlloc go!"scav" l) scav' (DFrac.own 1))
@@ -1652,7 +1652,7 @@ noncomputable instance p_access_load_mspancache (l : Loc) (v : runtime.p) (dq : 
  by
   solve_pointsto_access_struct
 
-noncomputable instance p_access_store_mspancache (l : Loc) (v : runtime.p) (mspancache' : runtime.«struct#8786e874») :
+noncomputable instance p_access_store_mspancache (l : Loc) (v : runtime.p) (mspancache' : runtime.«struct#44f3f7f9») :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.p go!"mspancache" l) v.mspancache' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.p go!"mspancache" l) mspancache' (DFrac.own 1))
@@ -2411,7 +2411,7 @@ noncomputable instance schedt_access_load_disable (l : Loc) (v : runtime.schedt)
  by
   solve_pointsto_access_struct
 
-noncomputable instance schedt_access_store_disable (l : Loc) (v : runtime.schedt) (disable' : runtime.«struct#72a1e364») :
+noncomputable instance schedt_access_store_disable (l : Loc) (v : runtime.schedt) (disable' : runtime.«struct#7d555d83») :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.schedt go!"disable" l) v.disable' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.schedt go!"disable" l) disable' (DFrac.own 1))
@@ -2427,7 +2427,7 @@ noncomputable instance schedt_access_load_gFree (l : Loc) (v : runtime.schedt) (
  by
   solve_pointsto_access_struct
 
-noncomputable instance schedt_access_store_gFree (l : Loc) (v : runtime.schedt) (gFree' : runtime.«struct#cf01e664») :
+noncomputable instance schedt_access_store_gFree (l : Loc) (v : runtime.schedt) (gFree' : runtime.«struct#5b3b941c») :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.schedt go!"gFree" l) v.gFree' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.schedt go!"gFree" l) gFree' (DFrac.own 1))
