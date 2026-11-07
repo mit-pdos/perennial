@@ -24,6 +24,9 @@ process's strings (`runtime_envs` here, `os.runtime_args`). It is goose's transl
 ```go
 func arbitraryStrings() []string {
 	var a []string
+	if arbitrary() != 0 {
+		a = []string{}
+	}
 	for arbitrary() != 0 {
 		a = append(a, arbitraryString())
 	}
@@ -33,12 +36,14 @@ func arbitraryStrings() []string {
 
 with each call `arbitrary()` replaced by `ArbitraryInt` (an arbitrary `uint64`) and
 `arbitraryString()` by `fmt.arbitraryString` (every string). It can return every slice of
-strings (and may also not terminate, which partial correctness allows). -/
+strings, `nil` and a non-`nil` empty slice included (and may also not terminate, which
+partial correctness allows). -/
 noncomputable def arbitraryStrings : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.string)))) (Val #())))
   (Seq (App (Val exceptionDo)
   (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.string)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "a"))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -55,6 +60,12 @@ noncomputable def arbitraryStrings : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (Var "a") (Var "$r0")))))))
   (Lam BAnon
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair ArbitraryInt (Val #(W64 0))))))
+  (Let "$r0" (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.string)))) (LiteralValue []))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (Var "a") (Var "$r0")))))
+  (App (Val doExecute)
   (Val #()))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "$res0")))))
 

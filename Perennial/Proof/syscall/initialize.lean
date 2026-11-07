@@ -35,39 +35,80 @@ theorem syscall.wp_arbitraryStrings :
   iintro %Φ - HΦ
   unfold syscall.arbitraryStrings
   wp_auto
-  ihave HI : (∃ (sl : GoSlice) (xs : List GoString),
-      "a" ∷ a_ptr ↦ sl ∗ "Hsl" ∷ sl ↦* xs ∗
-      "Hcap" ∷ ownSliceCap GoString sl (DFrac.own 1) : IProp GF) $$ [a]
-  · iexists slice.nil, []
-    iframe
-    isplitl []
-    · iapply ownSlice_nil
-    · iapply ownSliceCap_nil
-  wp_for HI
-  wp_apply wp_ArbitraryInt as %c -
+  -- `if arbitrary() != 0 { a = []string{} }`: then the loop, from either slice
+  wp_apply wp_ArbitraryInt as %c0 -
   wp_if_destruct
-  · wp_apply fmt.wp_arbitraryString as %str -
-    wp_apply wp_slice_literal (V := GoString) [str]
+  · ihave HI : (∃ (sl : GoSlice) (xs : List GoString),
+        "a" ∷ a_ptr ↦ sl ∗ "Hsl" ∷ sl ↦* xs ∗
+        "Hcap" ∷ ownSliceCap GoString sl (DFrac.own 1) : IProp GF) $$ [a]
+    · iexists slice.nil, []
+      iframe
+      isplitl []
+      · iapply ownSlice_nil
+      · iapply ownSliceCap_nil
+
+    wp_for HI
+    wp_apply wp_ArbitraryInt as %c -
+    wp_if_destruct
+    · wp_apply fmt.wp_arbitraryString as %str -
+      wp_apply wp_slice_literal (V := GoString) [str]
+      isplitr
+      · ipureintro; rfl
+      iintro %sl2 ⟨Hsl2, -⟩
+      wp_auto
+      wp_apply wp_slice_append $$ [Hsl Hcap Hsl2] with %sl' ⟨Hsl, Hcap, -⟩
+      · iframe
+      wp_for_post
+      iframe
+      iexists _, _
+      iframe
+    · have Hf : (!decide (c = W64 0)) = false := by
+        revert Hif; cases (!decide (c = W64 0)) <;> simp
+      rw [Hf]
+      simp only [_root_.decide_true, ↓reduceIte]
+      wp_auto
+      iapply HΦ
+      iexists _
+      iframe
+  · wp_apply wp_slice_literal (V := GoString) []
     isplitr
     · ipureintro; rfl
-    iintro %sl2 ⟨Hsl2, -⟩
+    iintro %sl0 ⟨Hsl0, Hcap0⟩
     wp_auto
-    wp_apply wp_slice_append $$ [Hsl Hcap Hsl2] with %sl' ⟨Hsl, Hcap, -⟩
-    · iframe
-    wp_for_post
-    iframe
-    iexists _, _
-    iframe
-  · have Hf : (!decide (c = W64 0)) = false := by
-      revert Hif; cases (!decide (c = W64 0)) <;> simp
-    rw [Hf]
-    simp only [_root_.decide_true, ↓reduceIte]
-    wp_auto
-    iapply HΦ
-    iexists _
-    iframe
+    ihave HI : (∃ (sl : GoSlice) (xs : List GoString),
+        "a" ∷ a_ptr ↦ sl ∗ "Hsl" ∷ sl ↦* xs ∗
+        "Hcap" ∷ ownSliceCap GoString sl (DFrac.own 1) : IProp GF) $$ [a Hsl0 Hcap0]
+    · iexists _, []
+      iframe
+
+    wp_for HI
+    wp_apply wp_ArbitraryInt as %c -
+    wp_if_destruct
+    · wp_apply fmt.wp_arbitraryString as %str -
+      wp_apply wp_slice_literal (V := GoString) [str]
+      isplitr
+      · ipureintro; rfl
+      iintro %sl2 ⟨Hsl2, -⟩
+      wp_auto
+      wp_apply wp_slice_append $$ [Hsl Hcap Hsl2] with %sl' ⟨Hsl, Hcap, -⟩
+      · iframe
+      wp_for_post
+      iframe
+      iexists _, _
+      iframe
+    · have Hf : (!decide (c = W64 0)) = false := by
+        revert Hif; cases (!decide (c = W64 0)) <;> simp
+      rw [Hf]
+      simp only [_root_.decide_true, ↓reduceIte]
+      wp_auto
+      iapply HΦ
+      iexists _
+      iframe
 
 open syscall in
+-- over the default budget since fix-semantics Cases 35–38 (regenerated `sync`, a longer
+-- `arbitraryStrings`): 400000 suffices, 200000 does not
+set_option maxHeartbeats 400000 in
 theorem syscall.initialize'.wp_proof
     (wp_sync_initialize : sync.initialize'.spec (GF := GF) (hG := hG))
     (wp_OnceFunc : sync.OnceFunc.spec (GF := GF) (hG := hG)) :

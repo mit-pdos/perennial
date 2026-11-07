@@ -1151,3 +1151,16 @@ translated through `int64` (`untypedFloatToInt`): `#(W64 -2^63)`, Go's value is 
 **Taken.** `identExpr` uses `constantLiteral` (`constant.ToInt`, exact `big.Int`), as Case 32's
 imported constants do; `untypedFloatToInt` deleted. Test: `testUntypedFloatConstUint64`.
 
+## Case 38 — ACCEPTED: `arbitraryStrings` may return a non-nil empty slice (branch `rt-fixes`)
+
+**Symptom.** Less general than Go (review NOTE, R4): the model's `os.Args`/`envs` was `nil` or
+non-empty, never `[]string{}`, which Go returns for an empty argv on kernels before 5.18, so a
+program could verify `os.Args != nil ⇒ len(os.Args) > 0`.
+
+**Taken.** The model's Go starts from `[]string{}` or `nil`, chosen arbitrarily; its term is
+goose's translation of that Go with the two documented substitutions. The spec is unchanged.
+
+The platform (review NOTE): `README.md` and `docs/KNOWN_LIMITATIONS.md` ("The platform") now
+say that translations are of the linux/amd64, `-tags goose`, non-race build and that constant
+folding (Case 32) bakes it in.
+
