@@ -967,7 +967,7 @@ attribute [instance] noCopy.TypeAssumptions.type_repr
 
 structure Bool' [GooseExts] where
   mk ::
-  «_#0'» : noCopy
+  «_#0'» : _root_.Perennial.sync.atomic.noCopy
   v' : w32
 
 noncomputable instance Bool'.zero_val [GooseExts] : ZeroVal Bool' :=
@@ -991,7 +991,7 @@ class Bool.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   type_repr : go.TypeReprUnderlying Bool'.underlying Bool'
   underlying : go.UnderlyingDirectedEq Bool'.ty Bool'.underlying
   «get__#0» : ∀ (x : Bool'), go.IsGoStepPureDetTagged under (StructFieldGet Bool'.underlying go!"_#0") #x (Val #(x.«_#0'»))
-  «set__#0» : ∀ (x : Bool') (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Bool'.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Bool')))
+  «set__#0» : ∀ (x : Bool') (y : _root_.Perennial.sync.atomic.noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Bool'.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Bool')))
   get_v : ∀ (x : Bool'), go.IsGoStepPureDetTagged under (StructFieldGet Bool'.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Bool') (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Bool'.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Bool')))
   method_set : go.MethodSetIs Bool'.ty []
@@ -1017,7 +1017,7 @@ attribute [instance] Bool.TypeAssumptions.type_repr
 structure Pointer [GooseExts] (T : Type) where
   mk ::
   «_#0'» : (GoArray Loc 0)
-  «_#1'» : noCopy
+  «_#1'» : _root_.Perennial.sync.atomic.noCopy
   v' : Loc
 
 noncomputable instance Pointer.zero_val [GooseExts] {T : Type} [ZeroVal T] : ZeroVal (Pointer T) :=
@@ -1044,7 +1044,7 @@ class Pointer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   «get__#0» : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"_#0") #x (Val #(x.«_#0'»))
   «set__#0» : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : (GoArray Loc 0)), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : (Pointer T'))))
   «get__#1» : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"_#1") #x (Val #(x.«_#1'»))
-  «set__#1» : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : (Pointer T'))))
+  «set__#1» : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : _root_.Perennial.sync.atomic.noCopy), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : (Pointer T'))))
   get_v : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')), go.IsGoStepPureDetTagged under (StructFieldGet (Pointer.underlying T) go!"v") #x (Val #(x.v'))
   set_v : ∀ (T : go.GoType) (T' : Type) (x : (Pointer T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (Pointer.underlying T) go!"v") (PairV #x #y) (Val #(({ x with v' := y } : (Pointer T'))))
   method_set : ∀ (T : go.GoType), go.MethodSetIs (Pointer.ty T) []
@@ -1071,7 +1071,7 @@ attribute [instance] Pointer.TypeAssumptions.type_repr
 
 structure Int32 [GooseExts] where
   mk ::
-  «_#0'» : noCopy
+  «_#0'» : _root_.Perennial.sync.atomic.noCopy
   v' : w32
 
 noncomputable instance Int32.zero_val [GooseExts] : ZeroVal Int32 :=
@@ -1095,7 +1095,7 @@ class Int32.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying Int32.underlying Int32
   underlying : go.UnderlyingDirectedEq Int32.ty Int32.underlying
   «get__#0» : ∀ (x : Int32), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"_#0") #x (Val #(x.«_#0'»))
-  «set__#0» : ∀ (x : Int32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Int32)))
+  «set__#0» : ∀ (x : Int32) (y : _root_.Perennial.sync.atomic.noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Int32)))
   get_v : ∀ (x : Int32), go.IsGoStepPureDetTagged under (StructFieldGet Int32.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Int32) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Int32.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Int32)))
   method_set : go.MethodSetIs Int32.ty []
@@ -1156,8 +1156,8 @@ attribute [instance] align64.TypeAssumptions.type_repr
 
 structure Int64 [GooseExts] where
   mk ::
-  «_#0'» : noCopy
-  «_#1'» : align64
+  «_#0'» : _root_.Perennial.sync.atomic.noCopy
+  «_#1'» : _root_.Perennial.sync.atomic.align64
   v' : w64
 
 noncomputable instance Int64.zero_val [GooseExts] : ZeroVal Int64 :=
@@ -1182,9 +1182,9 @@ class Int64.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying Int64.underlying Int64
   underlying : go.UnderlyingDirectedEq Int64.ty Int64.underlying
   «get__#0» : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"_#0") #x (Val #(x.«_#0'»))
-  «set__#0» : ∀ (x : Int64) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Int64)))
+  «set__#0» : ∀ (x : Int64) (y : _root_.Perennial.sync.atomic.noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Int64)))
   «get__#1» : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"_#1") #x (Val #(x.«_#1'»))
-  «set__#1» : ∀ (x : Int64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : Int64)))
+  «set__#1» : ∀ (x : Int64) (y : _root_.Perennial.sync.atomic.align64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : Int64)))
   get_v : ∀ (x : Int64), go.IsGoStepPureDetTagged under (StructFieldGet Int64.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Int64) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Int64.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Int64)))
   method_set : go.MethodSetIs Int64.ty []
@@ -1217,7 +1217,7 @@ attribute [instance] Int64.TypeAssumptions.type_repr
 
 structure Uint32 [GooseExts] where
   mk ::
-  «_#0'» : noCopy
+  «_#0'» : _root_.Perennial.sync.atomic.noCopy
   v' : w32
 
 noncomputable instance Uint32.zero_val [GooseExts] : ZeroVal Uint32 :=
@@ -1241,7 +1241,7 @@ class Uint32.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying Uint32.underlying Uint32
   underlying : go.UnderlyingDirectedEq Uint32.ty Uint32.underlying
   «get__#0» : ∀ (x : Uint32), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"_#0") #x (Val #(x.«_#0'»))
-  «set__#0» : ∀ (x : Uint32) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Uint32)))
+  «set__#0» : ∀ (x : Uint32) (y : _root_.Perennial.sync.atomic.noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Uint32)))
   get_v : ∀ (x : Uint32), go.IsGoStepPureDetTagged under (StructFieldGet Uint32.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Uint32) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet Uint32.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Uint32)))
   method_set : go.MethodSetIs Uint32.ty []
@@ -1272,8 +1272,8 @@ attribute [instance] Uint32.TypeAssumptions.type_repr
 
 structure Uint64 [GooseExts] where
   mk ::
-  «_#0'» : noCopy
-  «_#1'» : align64
+  «_#0'» : _root_.Perennial.sync.atomic.noCopy
+  «_#1'» : _root_.Perennial.sync.atomic.align64
   v' : w64
 
 noncomputable instance Uint64.zero_val [GooseExts] : ZeroVal Uint64 :=
@@ -1298,9 +1298,9 @@ class Uint64.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying Uint64.underlying Uint64
   underlying : go.UnderlyingDirectedEq Uint64.ty Uint64.underlying
   «get__#0» : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"_#0") #x (Val #(x.«_#0'»))
-  «set__#0» : ∀ (x : Uint64) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Uint64)))
+  «set__#0» : ∀ (x : Uint64) (y : _root_.Perennial.sync.atomic.noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Uint64)))
   «get__#1» : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"_#1") #x (Val #(x.«_#1'»))
-  «set__#1» : ∀ (x : Uint64) (y : align64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : Uint64)))
+  «set__#1» : ∀ (x : Uint64) (y : _root_.Perennial.sync.atomic.align64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"_#1") (PairV #x #y) (Val #(({ x with «_#1'» := y } : Uint64)))
   get_v : ∀ (x : Uint64), go.IsGoStepPureDetTagged under (StructFieldGet Uint64.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Uint64) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Uint64.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Uint64)))
   method_set : go.MethodSetIs Uint64.ty []
@@ -1333,7 +1333,7 @@ attribute [instance] Uint64.TypeAssumptions.type_repr
 
 structure Uintptr [GooseExts] where
   mk ::
-  «_#0'» : noCopy
+  «_#0'» : _root_.Perennial.sync.atomic.noCopy
   v' : w64
 
 noncomputable instance Uintptr.zero_val [GooseExts] : ZeroVal Uintptr :=
@@ -1357,7 +1357,7 @@ class Uintptr.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   type_repr : go.TypeReprUnderlying Uintptr.underlying Uintptr
   underlying : go.UnderlyingDirectedEq Uintptr.ty Uintptr.underlying
   «get__#0» : ∀ (x : Uintptr), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"_#0") #x (Val #(x.«_#0'»))
-  «set__#0» : ∀ (x : Uintptr) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Uintptr)))
+  «set__#0» : ∀ (x : Uintptr) (y : _root_.Perennial.sync.atomic.noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Uintptr)))
   get_v : ∀ (x : Uintptr), go.IsGoStepPureDetTagged under (StructFieldGet Uintptr.underlying go!"v") #x (Val #(x.v'))
   set_v : ∀ (x : Uintptr) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Uintptr.underlying go!"v") (PairV #x #y) (Val #(({ x with v' := y } : Uintptr)))
   method_set : go.MethodSetIs Uintptr.ty []

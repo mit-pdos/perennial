@@ -711,7 +711,7 @@ noncomputable instance rule_access_load_kind (l : Loc) (v : time.rule) (dq : DFr
  by
   solve_pointsto_access_struct
 
-noncomputable instance rule_access_store_kind (l : Loc) (v : time.rule) (kind' : time.ruleKind) :
+noncomputable instance rule_access_store_kind (l : Loc) (v : time.rule) (kind' : _root_.Perennial.time.ruleKind) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef time.rule go!"kind" l) v.kind' (DFrac.own 1))
       (typedPointsto (structFieldRef time.rule go!"kind" l) kind' (DFrac.own 1))

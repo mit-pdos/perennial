@@ -716,7 +716,7 @@ attribute [instance] StringWriter.TypeAssumptions.underlying
 
 structure LimitedReader [GooseExts] where
   mk ::
-  R' : Reader
+  R' : _root_.Perennial.io.Reader
   N' : w64
 
 noncomputable instance LimitedReader.zero_val [GooseExts] : ZeroVal LimitedReader :=
@@ -740,7 +740,7 @@ class LimitedReader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContex
   type_repr : go.TypeReprUnderlying LimitedReader.underlying LimitedReader
   underlying : go.UnderlyingDirectedEq LimitedReader.ty LimitedReader.underlying
   get_R : ∀ (x : LimitedReader), go.IsGoStepPureDetTagged under (StructFieldGet LimitedReader.underlying go!"R") #x (Val #(x.R'))
-  set_R : ∀ (x : LimitedReader) (y : Reader), go.IsGoStepPureDetTagged under (StructFieldSet LimitedReader.underlying go!"R") (PairV #x #y) (Val #(({ x with R' := y } : LimitedReader)))
+  set_R : ∀ (x : LimitedReader) (y : _root_.Perennial.io.Reader), go.IsGoStepPureDetTagged under (StructFieldSet LimitedReader.underlying go!"R") (PairV #x #y) (Val #(({ x with R' := y } : LimitedReader)))
   get_N : ∀ (x : LimitedReader), go.IsGoStepPureDetTagged under (StructFieldGet LimitedReader.underlying go!"N") #x (Val #(x.N'))
   set_N : ∀ (x : LimitedReader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet LimitedReader.underlying go!"N") (PairV #x #y) (Val #(({ x with N' := y } : LimitedReader)))
   method_set : go.MethodSetIs LimitedReader.ty []
@@ -757,7 +757,7 @@ attribute [instance] LimitedReader.TypeAssumptions.type_repr
 
 structure SectionReader [GooseExts] where
   mk ::
-  r' : ReaderAt
+  r' : _root_.Perennial.io.ReaderAt
   base' : w64
   off' : w64
   limit' : w64
@@ -787,7 +787,7 @@ class SectionReader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContex
   type_repr : go.TypeReprUnderlying SectionReader.underlying SectionReader
   underlying : go.UnderlyingDirectedEq SectionReader.ty SectionReader.underlying
   get_r : ∀ (x : SectionReader), go.IsGoStepPureDetTagged under (StructFieldGet SectionReader.underlying go!"r") #x (Val #(x.r'))
-  set_r : ∀ (x : SectionReader) (y : ReaderAt), go.IsGoStepPureDetTagged under (StructFieldSet SectionReader.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : SectionReader)))
+  set_r : ∀ (x : SectionReader) (y : _root_.Perennial.io.ReaderAt), go.IsGoStepPureDetTagged under (StructFieldSet SectionReader.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : SectionReader)))
   get_base : ∀ (x : SectionReader), go.IsGoStepPureDetTagged under (StructFieldGet SectionReader.underlying go!"base") #x (Val #(x.base'))
   set_base : ∀ (x : SectionReader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet SectionReader.underlying go!"base") (PairV #x #y) (Val #(({ x with base' := y } : SectionReader)))
   get_off : ∀ (x : SectionReader), go.IsGoStepPureDetTagged under (StructFieldGet SectionReader.underlying go!"off") #x (Val #(x.off'))
@@ -816,7 +816,7 @@ attribute [instance] SectionReader.TypeAssumptions.type_repr
 
 structure OffsetWriter [GooseExts] where
   mk ::
-  w' : WriterAt
+  w' : _root_.Perennial.io.WriterAt
   base' : w64
   off' : w64
 
@@ -842,7 +842,7 @@ class OffsetWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   type_repr : go.TypeReprUnderlying OffsetWriter.underlying OffsetWriter
   underlying : go.UnderlyingDirectedEq OffsetWriter.ty OffsetWriter.underlying
   get_w : ∀ (x : OffsetWriter), go.IsGoStepPureDetTagged under (StructFieldGet OffsetWriter.underlying go!"w") #x (Val #(x.w'))
-  set_w : ∀ (x : OffsetWriter) (y : WriterAt), go.IsGoStepPureDetTagged under (StructFieldSet OffsetWriter.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : OffsetWriter)))
+  set_w : ∀ (x : OffsetWriter) (y : _root_.Perennial.io.WriterAt), go.IsGoStepPureDetTagged under (StructFieldSet OffsetWriter.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : OffsetWriter)))
   get_base : ∀ (x : OffsetWriter), go.IsGoStepPureDetTagged under (StructFieldGet OffsetWriter.underlying go!"base") #x (Val #(x.base'))
   set_base : ∀ (x : OffsetWriter) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet OffsetWriter.underlying go!"base") (PairV #x #y) (Val #(({ x with base' := y } : OffsetWriter)))
   get_off : ∀ (x : OffsetWriter), go.IsGoStepPureDetTagged under (StructFieldGet OffsetWriter.underlying go!"off") #x (Val #(x.off'))
@@ -863,8 +863,8 @@ attribute [instance] OffsetWriter.TypeAssumptions.type_repr
 
 structure teeReader [GooseExts] where
   mk ::
-  r' : Reader
-  w' : Writer
+  r' : _root_.Perennial.io.Reader
+  w' : _root_.Perennial.io.Writer
 
 noncomputable instance teeReader.zero_val [GooseExts] : ZeroVal teeReader :=
   ⟨teeReader.mk zeroValDef zeroValDef⟩
@@ -887,9 +887,9 @@ class teeReader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying teeReader.underlying teeReader
   underlying : go.UnderlyingDirectedEq teeReader.ty teeReader.underlying
   get_r : ∀ (x : teeReader), go.IsGoStepPureDetTagged under (StructFieldGet teeReader.underlying go!"r") #x (Val #(x.r'))
-  set_r : ∀ (x : teeReader) (y : Reader), go.IsGoStepPureDetTagged under (StructFieldSet teeReader.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : teeReader)))
+  set_r : ∀ (x : teeReader) (y : _root_.Perennial.io.Reader), go.IsGoStepPureDetTagged under (StructFieldSet teeReader.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : teeReader)))
   get_w : ∀ (x : teeReader), go.IsGoStepPureDetTagged under (StructFieldGet teeReader.underlying go!"w") #x (Val #(x.w'))
-  set_w : ∀ (x : teeReader) (y : Writer), go.IsGoStepPureDetTagged under (StructFieldSet teeReader.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : teeReader)))
+  set_w : ∀ (x : teeReader) (y : _root_.Perennial.io.Writer), go.IsGoStepPureDetTagged under (StructFieldSet teeReader.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : teeReader)))
   method_set : go.MethodSetIs teeReader.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType teeReader.ty) [(go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])))]
 
@@ -934,7 +934,7 @@ attribute [instance] discard.TypeAssumptions.type_repr
 
 structure nopCloser [GooseExts] where
   mk ::
-  Reader' : Reader
+  Reader' : _root_.Perennial.io.Reader
 
 noncomputable instance nopCloser.zero_val [GooseExts] : ZeroVal nopCloser :=
   ⟨nopCloser.mk zeroValDef⟩
@@ -956,7 +956,7 @@ class nopCloser.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying nopCloser.underlying nopCloser
   underlying : go.UnderlyingDirectedEq nopCloser.ty nopCloser.underlying
   get_Reader : ∀ (x : nopCloser), go.IsGoStepPureDetTagged under (StructFieldGet nopCloser.underlying go!"Reader") #x (Val #(x.Reader'))
-  set_Reader : ∀ (x : nopCloser) (y : Reader), go.IsGoStepPureDetTagged under (StructFieldSet nopCloser.underlying go!"Reader") (PairV #x #y) (Val #(({ x with Reader' := y } : nopCloser)))
+  set_Reader : ∀ (x : nopCloser) (y : _root_.Perennial.io.Reader), go.IsGoStepPureDetTagged under (StructFieldSet nopCloser.underlying go!"Reader") (PairV #x #y) (Val #(({ x with Reader' := y } : nopCloser)))
   method_set : go.MethodSetIs nopCloser.ty [(go!"Close", (some (go.signature.Signature [] false [go.error]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType nopCloser.ty) [(go!"Close", (some (go.signature.Signature [] false [go.error]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])))]
 
@@ -969,7 +969,7 @@ attribute [instance] nopCloser.TypeAssumptions.type_repr
 
 structure nopCloserWriterTo [GooseExts] where
   mk ::
-  Reader' : Reader
+  Reader' : _root_.Perennial.io.Reader
 
 noncomputable instance nopCloserWriterTo.zero_val [GooseExts] : ZeroVal nopCloserWriterTo :=
   ⟨nopCloserWriterTo.mk zeroValDef⟩
@@ -991,7 +991,7 @@ class nopCloserWriterTo.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCo
   type_repr : go.TypeReprUnderlying nopCloserWriterTo.underlying nopCloserWriterTo
   underlying : go.UnderlyingDirectedEq nopCloserWriterTo.ty nopCloserWriterTo.underlying
   get_Reader : ∀ (x : nopCloserWriterTo), go.IsGoStepPureDetTagged under (StructFieldGet nopCloserWriterTo.underlying go!"Reader") #x (Val #(x.Reader'))
-  set_Reader : ∀ (x : nopCloserWriterTo) (y : Reader), go.IsGoStepPureDetTagged under (StructFieldSet nopCloserWriterTo.underlying go!"Reader") (PairV #x #y) (Val #(({ x with Reader' := y } : nopCloserWriterTo)))
+  set_Reader : ∀ (x : nopCloserWriterTo) (y : _root_.Perennial.io.Reader), go.IsGoStepPureDetTagged under (StructFieldSet nopCloserWriterTo.underlying go!"Reader") (PairV #x #y) (Val #(({ x with Reader' := y } : nopCloserWriterTo)))
   method_set : go.MethodSetIs nopCloserWriterTo.ty [(go!"Close", (some (go.signature.Signature [] false [go.error]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"WriteTo", (some (go.signature.Signature [Writer.ty] false [go.int64, go.error])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType nopCloserWriterTo.ty) [(go!"Close", (some (go.signature.Signature [] false [go.error]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"WriteTo", (some (go.signature.Signature [Writer.ty] false [go.int64, go.error])))]
 
@@ -1150,8 +1150,8 @@ structure pipe [GooseExts] where
   rdCh' : GoChan
   once' : _root_.Perennial.sync.Once
   done' : GoChan
-  rerr' : onceError
-  werr' : onceError
+  rerr' : _root_.Perennial.io.onceError
+  werr' : _root_.Perennial.io.onceError
 
 noncomputable instance pipe.zero_val [GooseExts] : ZeroVal pipe :=
   ⟨pipe.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -1189,9 +1189,9 @@ class pipe.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   get_done : ∀ (x : pipe), go.IsGoStepPureDetTagged under (StructFieldGet pipe.underlying go!"done") #x (Val #(x.done'))
   set_done : ∀ (x : pipe) (y : GoChan), go.IsGoStepPureDetTagged under (StructFieldSet pipe.underlying go!"done") (PairV #x #y) (Val #(({ x with done' := y } : pipe)))
   get_rerr : ∀ (x : pipe), go.IsGoStepPureDetTagged under (StructFieldGet pipe.underlying go!"rerr") #x (Val #(x.rerr'))
-  set_rerr : ∀ (x : pipe) (y : onceError), go.IsGoStepPureDetTagged under (StructFieldSet pipe.underlying go!"rerr") (PairV #x #y) (Val #(({ x with rerr' := y } : pipe)))
+  set_rerr : ∀ (x : pipe) (y : _root_.Perennial.io.onceError), go.IsGoStepPureDetTagged under (StructFieldSet pipe.underlying go!"rerr") (PairV #x #y) (Val #(({ x with rerr' := y } : pipe)))
   get_werr : ∀ (x : pipe), go.IsGoStepPureDetTagged under (StructFieldGet pipe.underlying go!"werr") #x (Val #(x.werr'))
-  set_werr : ∀ (x : pipe) (y : onceError), go.IsGoStepPureDetTagged under (StructFieldSet pipe.underlying go!"werr") (PairV #x #y) (Val #(({ x with werr' := y } : pipe)))
+  set_werr : ∀ (x : pipe) (y : _root_.Perennial.io.onceError), go.IsGoStepPureDetTagged under (StructFieldSet pipe.underlying go!"werr") (PairV #x #y) (Val #(({ x with werr' := y } : pipe)))
   method_set : go.MethodSetIs pipe.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType pipe.ty) [(go!"io.closeRead", (some (go.signature.Signature [go.error] false [go.error]))), (go!"io.closeWrite", (some (go.signature.Signature [go.error] false [go.error]))), (go!"io.read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"io.readCloseError", (some (go.signature.Signature [] false [go.error]))), (go!"io.write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"io.writeCloseError", (some (go.signature.Signature [] false [go.error])))]
 
@@ -1216,7 +1216,7 @@ attribute [instance] pipe.TypeAssumptions.type_repr
 
 structure PipeReader [GooseExts] where
   mk ::
-  pipe' : pipe
+  pipe' : _root_.Perennial.io.pipe
 
 noncomputable instance PipeReader.zero_val [GooseExts] : ZeroVal PipeReader :=
   ⟨PipeReader.mk zeroValDef⟩
@@ -1238,7 +1238,7 @@ class PipeReader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] 
   type_repr : go.TypeReprUnderlying PipeReader.underlying PipeReader
   underlying : go.UnderlyingDirectedEq PipeReader.ty PipeReader.underlying
   get_pipe : ∀ (x : PipeReader), go.IsGoStepPureDetTagged under (StructFieldGet PipeReader.underlying go!"pipe") #x (Val #(x.pipe'))
-  set_pipe : ∀ (x : PipeReader) (y : pipe), go.IsGoStepPureDetTagged under (StructFieldSet PipeReader.underlying go!"pipe") (PairV #x #y) (Val #(({ x with pipe' := y } : PipeReader)))
+  set_pipe : ∀ (x : PipeReader) (y : _root_.Perennial.io.pipe), go.IsGoStepPureDetTagged under (StructFieldSet PipeReader.underlying go!"pipe") (PairV #x #y) (Val #(({ x with pipe' := y } : PipeReader)))
   method_set : go.MethodSetIs PipeReader.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType PipeReader.ty) [(go!"Close", (some (go.signature.Signature [] false [go.error]))), (go!"CloseWithError", (some (go.signature.Signature [go.error] false [go.error]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"io.closeRead", (some (go.signature.Signature [go.error] false [go.error]))), (go!"io.closeWrite", (some (go.signature.Signature [go.error] false [go.error]))), (go!"io.read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"io.readCloseError", (some (go.signature.Signature [] false [go.error]))), (go!"io.write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"io.writeCloseError", (some (go.signature.Signature [] false [go.error])))]
 
@@ -1251,7 +1251,7 @@ attribute [instance] PipeReader.TypeAssumptions.type_repr
 
 structure PipeWriter [GooseExts] where
   mk ::
-  r' : PipeReader
+  r' : _root_.Perennial.io.PipeReader
 
 noncomputable instance PipeWriter.zero_val [GooseExts] : ZeroVal PipeWriter :=
   ⟨PipeWriter.mk zeroValDef⟩
@@ -1273,7 +1273,7 @@ class PipeWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] 
   type_repr : go.TypeReprUnderlying PipeWriter.underlying PipeWriter
   underlying : go.UnderlyingDirectedEq PipeWriter.ty PipeWriter.underlying
   get_r : ∀ (x : PipeWriter), go.IsGoStepPureDetTagged under (StructFieldGet PipeWriter.underlying go!"r") #x (Val #(x.r'))
-  set_r : ∀ (x : PipeWriter) (y : PipeReader), go.IsGoStepPureDetTagged under (StructFieldSet PipeWriter.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : PipeWriter)))
+  set_r : ∀ (x : PipeWriter) (y : _root_.Perennial.io.PipeReader), go.IsGoStepPureDetTagged under (StructFieldSet PipeWriter.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : PipeWriter)))
   method_set : go.MethodSetIs PipeWriter.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType PipeWriter.ty) [(go!"Close", (some (go.signature.Signature [] false [go.error]))), (go!"CloseWithError", (some (go.signature.Signature [go.error] false [go.error]))), (go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error])))]
 

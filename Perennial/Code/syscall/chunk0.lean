@@ -5826,7 +5826,7 @@ structure SysProcAttr [GooseExts] where
   Ctty' : w64
   Foreground' : Bool
   Pgid' : w64
-  Pdeathsig' : Signal
+  Pdeathsig' : _root_.Perennial.syscall.Signal
   Cloneflags' : w64
   Unshareflags' : w64
   UidMappings' : GoSlice
@@ -5920,8 +5920,8 @@ noncomputable instance equals_unfold_capData [GooseExts] [GoGlobalContext] :
 
 structure caps [GooseExts] where
   mk ::
-  hdr' : capHeader
-  data' : (GoArray capData 2)
+  hdr' : _root_.Perennial.syscall.capHeader
+  data' : (GoArray _root_.Perennial.syscall.capData 2)
 
 noncomputable instance caps.zero_val [GooseExts] : ZeroVal caps :=
   ⟨caps.mk zeroValDef zeroValDef⟩
@@ -6114,8 +6114,8 @@ noncomputable instance equals_unfold_RtGenmsg [GooseExts] [GoGlobalContext] :
 
 structure NetlinkRouteRequest [GooseExts] where
   mk ::
-  Header' : NlMsghdr
-  Data' : RtGenmsg
+  Header' : _root_.Perennial.syscall.NlMsghdr
+  Data' : _root_.Perennial.syscall.RtGenmsg
 
 noncomputable instance NetlinkRouteRequest.zero_val [GooseExts] : ZeroVal NetlinkRouteRequest :=
   ⟨NetlinkRouteRequest.mk zeroValDef zeroValDef⟩
@@ -6136,7 +6136,7 @@ noncomputable instance equals_unfold_NetlinkRouteRequest [GooseExts] [GoGlobalCo
 
 structure NetlinkMessage [GooseExts] where
   mk ::
-  Header' : NlMsghdr
+  Header' : _root_.Perennial.syscall.NlMsghdr
   Data' : GoSlice
 
 noncomputable instance NetlinkMessage.zero_val [GooseExts] : ZeroVal NetlinkMessage :=
@@ -6180,7 +6180,7 @@ noncomputable instance equals_unfold_RtAttr [GooseExts] [GoGlobalContext] :
 
 structure NetlinkRouteAttr [GooseExts] where
   mk ::
-  Attr' : RtAttr
+  Attr' : _root_.Perennial.syscall.RtAttr
   Value' : GoSlice
 
 noncomputable instance NetlinkRouteAttr.zero_val [GooseExts] : ZeroVal NetlinkRouteAttr :=
@@ -6226,7 +6226,7 @@ noncomputable instance equals_unfold_Cmsghdr [GooseExts] [GoGlobalContext] :
 
 structure SocketControlMessage [GooseExts] where
   mk ::
-  Header' : Cmsghdr
+  Header' : _root_.Perennial.syscall.Cmsghdr
   Data' : GoSlice
 
 noncomputable instance SocketControlMessage.zero_val [GooseExts] : ZeroVal SocketControlMessage :=
@@ -6291,7 +6291,7 @@ structure SockaddrLinklayer [GooseExts] where
   Pkttype' : w8
   Halen' : w8
   Addr' : (GoArray w8 8)
-  raw' : RawSockaddrLinklayer
+  raw' : _root_.Perennial.syscall.RawSockaddrLinklayer
 
 noncomputable instance SockaddrLinklayer.zero_val [GooseExts] : ZeroVal SockaddrLinklayer :=
   ⟨SockaddrLinklayer.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -6347,7 +6347,7 @@ structure SockaddrNetlink [GooseExts] where
   Pad' : w16
   Pid' : w32
   Groups' : w32
-  raw' : RawSockaddrNetlink
+  raw' : _root_.Perennial.syscall.RawSockaddrNetlink
 
 noncomputable instance SockaddrNetlink.zero_val [GooseExts] : ZeroVal SockaddrNetlink :=
   ⟨SockaddrNetlink.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -6435,7 +6435,7 @@ structure SockaddrInet4 [GooseExts] where
   mk ::
   Port' : w64
   Addr' : (GoArray w8 4)
-  raw' : RawSockaddrInet4
+  raw' : _root_.Perennial.syscall.RawSockaddrInet4
 
 noncomputable instance SockaddrInet4.zero_val [GooseExts] : ZeroVal SockaddrInet4 :=
   ⟨SockaddrInet4.mk zeroValDef zeroValDef zeroValDef⟩
@@ -6488,7 +6488,7 @@ structure SockaddrInet6 [GooseExts] where
   Port' : w64
   ZoneId' : w32
   Addr' : (GoArray w8 16)
-  raw' : RawSockaddrInet6
+  raw' : _root_.Perennial.syscall.RawSockaddrInet6
 
 noncomputable instance SockaddrInet6.zero_val [GooseExts] : ZeroVal SockaddrInet6 :=
   ⟨SockaddrInet6.mk zeroValDef zeroValDef zeroValDef zeroValDef⟩
@@ -6534,7 +6534,7 @@ noncomputable instance equals_unfold_RawSockaddrUnix [GooseExts] [GoGlobalContex
 structure SockaddrUnix [GooseExts] where
   mk ::
   Name' : GoString
-  raw' : RawSockaddrUnix
+  raw' : _root_.Perennial.syscall.RawSockaddrUnix
 
 noncomputable instance SockaddrUnix.zero_val [GooseExts] : ZeroVal SockaddrUnix :=
   ⟨SockaddrUnix.mk zeroValDef zeroValDef⟩
@@ -6630,7 +6630,7 @@ structure Timex [GooseExts] where
   Constant' : w64
   Precision' : w64
   Tolerance' : w64
-  Time' : Timeval
+  Time' : _root_.Perennial.syscall.Timeval
   Tick' : w64
   Ppsfreq' : w64
   Jitter' : w64
@@ -6738,8 +6738,8 @@ noncomputable instance equals_unfold_Utimbuf [GooseExts] [GoGlobalContext] :
 
 structure Rusage [GooseExts] where
   mk ::
-  Utime' : Timeval
-  Stime' : Timeval
+  Utime' : _root_.Perennial.syscall.Timeval
+  Stime' : _root_.Perennial.syscall.Timeval
   Maxrss' : w64
   Ixrss' : w64
   Idrss' : w64
@@ -6826,9 +6826,9 @@ structure Stat_t [GooseExts] where
   Size' : w64
   Blksize' : w64
   Blocks' : w64
-  Atim' : Timespec
-  Mtim' : Timespec
-  Ctim' : Timespec
+  Atim' : _root_.Perennial.syscall.Timespec
+  Mtim' : _root_.Perennial.syscall.Timespec
+  Ctim' : _root_.Perennial.syscall.Timespec
   X__unused' : (GoArray w64 3)
 
 noncomputable instance Stat_t.zero_val [GooseExts] : ZeroVal Stat_t :=
@@ -6890,7 +6890,7 @@ structure Statfs_t [GooseExts] where
   Bavail' : w64
   Files' : w64
   Ffree' : w64
-  Fsid' : Fsid
+  Fsid' : _root_.Perennial.syscall.Fsid
   Namelen' : w64
   Frsize' : w64
   Flags' : w64
@@ -7009,7 +7009,7 @@ noncomputable instance equals_unfold_RawSockaddr [GooseExts] [GoGlobalContext] :
 
 structure RawSockaddrAny [GooseExts] where
   mk ::
-  Addr' : RawSockaddr
+  Addr' : _root_.Perennial.syscall.RawSockaddr
   Pad' : (GoArray w8 96)
 
 noncomputable instance RawSockaddrAny.zero_val [GooseExts] : ZeroVal RawSockaddrAny :=
@@ -7230,7 +7230,7 @@ noncomputable instance equals_unfold_Inet6Pktinfo [GooseExts] [GoGlobalContext] 
 
 structure IPv6MTUInfo [GooseExts] where
   mk ::
-  Addr' : RawSockaddrInet6
+  Addr' : _root_.Perennial.syscall.RawSockaddrInet6
   Mtu' : w32
 
 noncomputable instance IPv6MTUInfo.zero_val [GooseExts] : ZeroVal IPv6MTUInfo :=
@@ -7377,7 +7377,7 @@ noncomputable instance equals_unfold_TCPInfo [GooseExts] [GoGlobalContext] :
 structure NlMsgerr [GooseExts] where
   mk ::
   Error' : w32
-  Msg' : NlMsghdr
+  Msg' : _root_.Perennial.syscall.NlMsghdr
 
 noncomputable instance NlMsgerr.zero_val [GooseExts] : ZeroVal NlMsgerr :=
   ⟨NlMsgerr.mk zeroValDef zeroValDef⟩

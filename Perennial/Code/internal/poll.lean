@@ -632,10 +632,10 @@ attribute [instance] SysFile.TypeAssumptions.type_repr
 
 structure FD [GooseExts] where
   mk ::
-  fdmu' : fdMutex
+  fdmu' : _root_.Perennial.internal.poll.fdMutex
   Sysfd' : w64
-  SysFile' : SysFile
-  pd' : pollDesc
+  SysFile' : _root_.Perennial.internal.poll.SysFile
+  pd' : _root_.Perennial.internal.poll.pollDesc
   csema' : w32
   isBlocking' : w32
   IsStream' : Bool
@@ -670,13 +670,13 @@ class FD.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSeman
   type_repr : go.TypeReprUnderlying FD.underlying FD
   underlying : go.UnderlyingDirectedEq FD.ty FD.underlying
   get_fdmu : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"fdmu") #x (Val #(x.fdmu'))
-  set_fdmu : ∀ (x : FD) (y : fdMutex), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"fdmu") (PairV #x #y) (Val #(({ x with fdmu' := y } : FD)))
+  set_fdmu : ∀ (x : FD) (y : _root_.Perennial.internal.poll.fdMutex), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"fdmu") (PairV #x #y) (Val #(({ x with fdmu' := y } : FD)))
   get_Sysfd : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"Sysfd") #x (Val #(x.Sysfd'))
   set_Sysfd : ∀ (x : FD) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"Sysfd") (PairV #x #y) (Val #(({ x with Sysfd' := y } : FD)))
   get_SysFile : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"SysFile") #x (Val #(x.SysFile'))
-  set_SysFile : ∀ (x : FD) (y : SysFile), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"SysFile") (PairV #x #y) (Val #(({ x with SysFile' := y } : FD)))
+  set_SysFile : ∀ (x : FD) (y : _root_.Perennial.internal.poll.SysFile), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"SysFile") (PairV #x #y) (Val #(({ x with SysFile' := y } : FD)))
   get_pd : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"pd") #x (Val #(x.pd'))
-  set_pd : ∀ (x : FD) (y : pollDesc), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"pd") (PairV #x #y) (Val #(({ x with pd' := y } : FD)))
+  set_pd : ∀ (x : FD) (y : _root_.Perennial.internal.poll.pollDesc), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"pd") (PairV #x #y) (Val #(({ x with pd' := y } : FD)))
   get_csema : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"csema") #x (Val #(x.csema'))
   set_csema : ∀ (x : FD) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet FD.underlying go!"csema") (PairV #x #y) (Val #(({ x with csema' := y } : FD)))
   get_isBlocking : ∀ (x : FD), go.IsGoStepPureDetTagged under (StructFieldGet FD.underlying go!"isBlocking") #x (Val #(x.isBlocking'))

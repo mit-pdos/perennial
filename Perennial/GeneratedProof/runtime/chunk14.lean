@@ -52,7 +52,7 @@ noncomputable instance «struct#1768b3d4_access_load_root» (l : Loc) (v : runti
  by
   solve_pointsto_access_struct
 
-noncomputable instance «struct#1768b3d4_access_store_root» (l : Loc) (v : runtime.«struct#1768b3d4») (root' : runtime.semaRoot) :
+noncomputable instance «struct#1768b3d4_access_store_root» (l : Loc) (v : runtime.«struct#1768b3d4») (root' : _root_.Perennial.runtime.semaRoot) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"root" l) v.root' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.«struct#1768b3d4» go!"root" l) root' (DFrac.own 1))
@@ -119,7 +119,7 @@ noncomputable instance synctestBubble_access_load_mu (l : Loc) (v : runtime.sync
  by
   solve_pointsto_access_struct
 
-noncomputable instance synctestBubble_access_store_mu (l : Loc) (v : runtime.synctestBubble) (mu' : runtime.mutex) :
+noncomputable instance synctestBubble_access_store_mu (l : Loc) (v : runtime.synctestBubble) (mu' : _root_.Perennial.runtime.mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.synctestBubble go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.synctestBubble go!"mu" l) mu' (DFrac.own 1))
@@ -135,7 +135,7 @@ noncomputable instance synctestBubble_access_load_timers (l : Loc) (v : runtime.
  by
   solve_pointsto_access_struct
 
-noncomputable instance synctestBubble_access_store_timers (l : Loc) (v : runtime.synctestBubble) (timers' : runtime.timers) :
+noncomputable instance synctestBubble_access_store_timers (l : Loc) (v : runtime.synctestBubble) (timers' : _root_.Perennial.runtime.timers) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.synctestBubble go!"timers" l) v.timers' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.synctestBubble go!"timers" l) timers' (DFrac.own 1))
@@ -369,7 +369,7 @@ noncomputable instance timeTimer_access_load_timer (l : Loc) (v : runtime.timeTi
  by
   solve_pointsto_access_struct
 
-noncomputable instance timeTimer_access_store_timer (l : Loc) (v : runtime.timeTimer) (timer' : runtime.timer) :
+noncomputable instance timeTimer_access_store_timer (l : Loc) (v : runtime.timeTimer) (timer' : _root_.Perennial.runtime.timer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef runtime.timeTimer go!"timer" l) v.timer' (DFrac.own 1))
       (typedPointsto (structFieldRef runtime.timeTimer go!"timer" l) timer' (DFrac.own 1))

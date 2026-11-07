@@ -69,7 +69,7 @@ noncomputable instance Int32_access_load_noCopy (l : Loc) (v : internal.runtime.
  by
   solve_pointsto_access_struct
 
-noncomputable instance Int32_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Int32) (noCopy' : internal.runtime.atomic.noCopy) :
+noncomputable instance Int32_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Int32) (noCopy' : _root_.Perennial.internal.runtime.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.runtime.atomic.Int32 go!"noCopy" l) v.noCopy' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.runtime.atomic.Int32 go!"noCopy" l) noCopy' (DFrac.own 1))
@@ -150,7 +150,7 @@ noncomputable instance Int64_access_load_noCopy (l : Loc) (v : internal.runtime.
  by
   solve_pointsto_access_struct
 
-noncomputable instance Int64_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Int64) (noCopy' : internal.runtime.atomic.noCopy) :
+noncomputable instance Int64_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Int64) (noCopy' : _root_.Perennial.internal.runtime.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.runtime.atomic.Int64 go!"noCopy" l) v.noCopy' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.runtime.atomic.Int64 go!"noCopy" l) noCopy' (DFrac.own 1))
@@ -166,7 +166,7 @@ noncomputable instance «Int64_access_load__#1» (l : Loc) (v : internal.runtime
  by
   solve_pointsto_access_struct
 
-noncomputable instance «Int64_access_store__#1» (l : Loc) (v : internal.runtime.atomic.Int64) («_#1'» : internal.runtime.atomic.align64) :
+noncomputable instance «Int64_access_store__#1» (l : Loc) (v : internal.runtime.atomic.Int64) («_#1'» : _root_.Perennial.internal.runtime.atomic.align64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.runtime.atomic.Int64 go!"_#1" l) v.«_#1'» (DFrac.own 1))
       (typedPointsto (structFieldRef internal.runtime.atomic.Int64 go!"_#1" l) «_#1'» (DFrac.own 1))
@@ -223,7 +223,7 @@ noncomputable instance Uint8_access_load_noCopy (l : Loc) (v : internal.runtime.
  by
   solve_pointsto_access_struct
 
-noncomputable instance Uint8_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Uint8) (noCopy' : internal.runtime.atomic.noCopy) :
+noncomputable instance Uint8_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Uint8) (noCopy' : _root_.Perennial.internal.runtime.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.runtime.atomic.Uint8 go!"noCopy" l) v.noCopy' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.runtime.atomic.Uint8 go!"noCopy" l) noCopy' (DFrac.own 1))
@@ -279,7 +279,7 @@ noncomputable instance Bool'_access_load_u (l : Loc) (v : internal.runtime.atomi
  by
   solve_pointsto_access_struct
 
-noncomputable instance Bool'_access_store_u (l : Loc) (v : internal.runtime.atomic.Bool') (u' : internal.runtime.atomic.Uint8) :
+noncomputable instance Bool'_access_store_u (l : Loc) (v : internal.runtime.atomic.Bool') (u' : _root_.Perennial.internal.runtime.atomic.Uint8) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.runtime.atomic.Bool' go!"u" l) v.u' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.runtime.atomic.Bool' go!"u" l) u' (DFrac.own 1))
@@ -320,7 +320,7 @@ noncomputable instance Uint32_access_load_noCopy (l : Loc) (v : internal.runtime
  by
   solve_pointsto_access_struct
 
-noncomputable instance Uint32_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Uint32) (noCopy' : internal.runtime.atomic.noCopy) :
+noncomputable instance Uint32_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Uint32) (noCopy' : _root_.Perennial.internal.runtime.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.runtime.atomic.Uint32 go!"noCopy" l) v.noCopy' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.runtime.atomic.Uint32 go!"noCopy" l) noCopy' (DFrac.own 1))
@@ -378,7 +378,7 @@ noncomputable instance Uint64_access_load_noCopy (l : Loc) (v : internal.runtime
  by
   solve_pointsto_access_struct
 
-noncomputable instance Uint64_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Uint64) (noCopy' : internal.runtime.atomic.noCopy) :
+noncomputable instance Uint64_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Uint64) (noCopy' : _root_.Perennial.internal.runtime.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.runtime.atomic.Uint64 go!"noCopy" l) v.noCopy' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.runtime.atomic.Uint64 go!"noCopy" l) noCopy' (DFrac.own 1))
@@ -394,7 +394,7 @@ noncomputable instance «Uint64_access_load__#1» (l : Loc) (v : internal.runtim
  by
   solve_pointsto_access_struct
 
-noncomputable instance «Uint64_access_store__#1» (l : Loc) (v : internal.runtime.atomic.Uint64) («_#1'» : internal.runtime.atomic.align64) :
+noncomputable instance «Uint64_access_store__#1» (l : Loc) (v : internal.runtime.atomic.Uint64) («_#1'» : _root_.Perennial.internal.runtime.atomic.align64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.runtime.atomic.Uint64 go!"_#1" l) v.«_#1'» (DFrac.own 1))
       (typedPointsto (structFieldRef internal.runtime.atomic.Uint64 go!"_#1" l) «_#1'» (DFrac.own 1))
@@ -451,7 +451,7 @@ noncomputable instance Uintptr_access_load_noCopy (l : Loc) (v : internal.runtim
  by
   solve_pointsto_access_struct
 
-noncomputable instance Uintptr_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Uintptr) (noCopy' : internal.runtime.atomic.noCopy) :
+noncomputable instance Uintptr_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.Uintptr) (noCopy' : _root_.Perennial.internal.runtime.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.runtime.atomic.Uintptr go!"noCopy" l) v.noCopy' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.runtime.atomic.Uintptr go!"noCopy" l) noCopy' (DFrac.own 1))
@@ -507,7 +507,7 @@ noncomputable instance Float64_access_load_u (l : Loc) (v : internal.runtime.ato
  by
   solve_pointsto_access_struct
 
-noncomputable instance Float64_access_store_u (l : Loc) (v : internal.runtime.atomic.Float64) (u' : internal.runtime.atomic.Uint64) :
+noncomputable instance Float64_access_store_u (l : Loc) (v : internal.runtime.atomic.Float64) (u' : _root_.Perennial.internal.runtime.atomic.Uint64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.runtime.atomic.Float64 go!"u" l) v.u' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.runtime.atomic.Float64 go!"u" l) u' (DFrac.own 1))
@@ -548,7 +548,7 @@ noncomputable instance UnsafePointer_access_load_noCopy (l : Loc) (v : internal.
  by
   solve_pointsto_access_struct
 
-noncomputable instance UnsafePointer_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.UnsafePointer) (noCopy' : internal.runtime.atomic.noCopy) :
+noncomputable instance UnsafePointer_access_store_noCopy (l : Loc) (v : internal.runtime.atomic.UnsafePointer) (noCopy' : _root_.Perennial.internal.runtime.atomic.noCopy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef internal.runtime.atomic.UnsafePointer go!"noCopy" l) v.noCopy' (DFrac.own 1))
       (typedPointsto (structFieldRef internal.runtime.atomic.UnsafePointer go!"noCopy" l) noCopy' (DFrac.own 1))
@@ -604,7 +604,7 @@ noncomputable instance Pointer_access_load_u {T' : Type} [TypedPointsto (GF := G
  by
   solve_pointsto_access_struct
 
-noncomputable instance Pointer_access_store_u {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (internal.runtime.atomic.Pointer T')) (u' : internal.runtime.atomic.UnsafePointer) :
+noncomputable instance Pointer_access_store_u {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (internal.runtime.atomic.Pointer T')) (u' : _root_.Perennial.internal.runtime.atomic.UnsafePointer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (internal.runtime.atomic.Pointer T') go!"u" l) v.u' (DFrac.own 1))
       (typedPointsto (structFieldRef (internal.runtime.atomic.Pointer T') go!"u" l) u' (DFrac.own 1))

@@ -539,7 +539,7 @@ attribute [instance] trieNode.TypeAssumptions.type_repr
 
 structure genericReplacer [GooseExts] where
   mk ::
-  root' : trieNode
+  root' : _root_.Perennial.strings.trieNode
   tableSize' : w64
   mapping' : (GoArray w8 256)
 
@@ -565,7 +565,7 @@ class genericReplacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCont
   type_repr : go.TypeReprUnderlying genericReplacer.underlying genericReplacer
   underlying : go.UnderlyingDirectedEq genericReplacer.ty genericReplacer.underlying
   get_root : ∀ (x : genericReplacer), go.IsGoStepPureDetTagged under (StructFieldGet genericReplacer.underlying go!"root") #x (Val #(x.root'))
-  set_root : ∀ (x : genericReplacer) (y : trieNode), go.IsGoStepPureDetTagged under (StructFieldSet genericReplacer.underlying go!"root") (PairV #x #y) (Val #(({ x with root' := y } : genericReplacer)))
+  set_root : ∀ (x : genericReplacer) (y : _root_.Perennial.strings.trieNode), go.IsGoStepPureDetTagged under (StructFieldSet genericReplacer.underlying go!"root") (PairV #x #y) (Val #(({ x with root' := y } : genericReplacer)))
   get_tableSize : ∀ (x : genericReplacer), go.IsGoStepPureDetTagged under (StructFieldGet genericReplacer.underlying go!"tableSize") #x (Val #(x.tableSize'))
   set_tableSize : ∀ (x : genericReplacer) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet genericReplacer.underlying go!"tableSize") (PairV #x #y) (Val #(({ x with tableSize' := y } : genericReplacer)))
   get_mapping : ∀ (x : genericReplacer), go.IsGoStepPureDetTagged under (StructFieldGet genericReplacer.underlying go!"mapping") #x (Val #(x.mapping'))

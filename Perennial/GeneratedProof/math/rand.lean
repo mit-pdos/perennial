@@ -49,7 +49,7 @@ noncomputable instance Rand_access_load_src (l : Loc) (v : math.rand.Rand) (dq :
  by
   solve_pointsto_access_struct
 
-noncomputable instance Rand_access_store_src (l : Loc) (v : math.rand.Rand) (src' : math.rand.Source) :
+noncomputable instance Rand_access_store_src (l : Loc) (v : math.rand.Rand) (src' : _root_.Perennial.math.rand.Source) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Rand go!"src" l) v.src' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Rand go!"src" l) src' (DFrac.own 1))
@@ -65,7 +65,7 @@ noncomputable instance Rand_access_load_s64 (l : Loc) (v : math.rand.Rand) (dq :
  by
   solve_pointsto_access_struct
 
-noncomputable instance Rand_access_store_s64 (l : Loc) (v : math.rand.Rand) (s64' : math.rand.Source64) :
+noncomputable instance Rand_access_store_s64 (l : Loc) (v : math.rand.Rand) (s64' : _root_.Perennial.math.rand.Source64) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.Rand go!"s64" l) v.s64' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.Rand go!"s64" l) s64' (DFrac.own 1))
@@ -137,7 +137,7 @@ noncomputable instance runtimeSource_access_load_mu (l : Loc) (v : math.rand.run
  by
   solve_pointsto_access_struct
 
-noncomputable instance runtimeSource_access_store_mu (l : Loc) (v : math.rand.runtimeSource) (mu' : sync.Mutex) :
+noncomputable instance runtimeSource_access_store_mu (l : Loc) (v : math.rand.runtimeSource) (mu' : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.runtimeSource go!"mu" l) v.mu' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.runtimeSource go!"mu" l) mu' (DFrac.own 1))
@@ -178,7 +178,7 @@ noncomputable instance lockedSource_access_load_lk (l : Loc) (v : math.rand.lock
  by
   solve_pointsto_access_struct
 
-noncomputable instance lockedSource_access_store_lk (l : Loc) (v : math.rand.lockedSource) (lk' : sync.Mutex) :
+noncomputable instance lockedSource_access_store_lk (l : Loc) (v : math.rand.lockedSource) (lk' : _root_.Perennial.sync.Mutex) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.rand.lockedSource go!"lk" l) v.lk' (DFrac.own 1))
       (typedPointsto (structFieldRef math.rand.lockedSource go!"lk" l) lk' (DFrac.own 1))

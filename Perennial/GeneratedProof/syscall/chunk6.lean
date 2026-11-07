@@ -228,7 +228,7 @@ noncomputable instance SysProcAttr_access_load_Pdeathsig (l : Loc) (v : syscall.
  by
   solve_pointsto_access_struct
 
-noncomputable instance SysProcAttr_access_store_Pdeathsig (l : Loc) (v : syscall.SysProcAttr) (Pdeathsig' : syscall.Signal) :
+noncomputable instance SysProcAttr_access_store_Pdeathsig (l : Loc) (v : syscall.SysProcAttr) (Pdeathsig' : _root_.Perennial.syscall.Signal) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.SysProcAttr go!"Pdeathsig" l) v.Pdeathsig' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.SysProcAttr go!"Pdeathsig" l) Pdeathsig' (DFrac.own 1))
@@ -413,7 +413,7 @@ noncomputable instance caps_access_load_hdr (l : Loc) (v : syscall.caps) (dq : D
  by
   solve_pointsto_access_struct
 
-noncomputable instance caps_access_store_hdr (l : Loc) (v : syscall.caps) (hdr' : syscall.capHeader) :
+noncomputable instance caps_access_store_hdr (l : Loc) (v : syscall.caps) (hdr' : _root_.Perennial.syscall.capHeader) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.caps go!"hdr" l) v.hdr' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.caps go!"hdr" l) hdr' (DFrac.own 1))
@@ -429,7 +429,7 @@ noncomputable instance caps_access_load_data (l : Loc) (v : syscall.caps) (dq : 
  by
   solve_pointsto_access_struct
 
-noncomputable instance caps_access_store_data (l : Loc) (v : syscall.caps) (data' : (GoArray syscall.capData 2)) :
+noncomputable instance caps_access_store_data (l : Loc) (v : syscall.caps) (data' : (GoArray _root_.Perennial.syscall.capData 2)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.caps go!"data" l) v.data' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.caps go!"data" l) data' (DFrac.own 1))
@@ -470,7 +470,7 @@ noncomputable instance NetlinkRouteRequest_access_load_Header (l : Loc) (v : sys
  by
   solve_pointsto_access_struct
 
-noncomputable instance NetlinkRouteRequest_access_store_Header (l : Loc) (v : syscall.NetlinkRouteRequest) (Header' : syscall.NlMsghdr) :
+noncomputable instance NetlinkRouteRequest_access_store_Header (l : Loc) (v : syscall.NetlinkRouteRequest) (Header' : _root_.Perennial.syscall.NlMsghdr) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.NetlinkRouteRequest go!"Header" l) v.Header' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.NetlinkRouteRequest go!"Header" l) Header' (DFrac.own 1))
@@ -486,7 +486,7 @@ noncomputable instance NetlinkRouteRequest_access_load_Data (l : Loc) (v : sysca
  by
   solve_pointsto_access_struct
 
-noncomputable instance NetlinkRouteRequest_access_store_Data (l : Loc) (v : syscall.NetlinkRouteRequest) (Data' : syscall.RtGenmsg) :
+noncomputable instance NetlinkRouteRequest_access_store_Data (l : Loc) (v : syscall.NetlinkRouteRequest) (Data' : _root_.Perennial.syscall.RtGenmsg) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.NetlinkRouteRequest go!"Data" l) v.Data' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.NetlinkRouteRequest go!"Data" l) Data' (DFrac.own 1))
@@ -527,7 +527,7 @@ noncomputable instance NetlinkMessage_access_load_Header (l : Loc) (v : syscall.
  by
   solve_pointsto_access_struct
 
-noncomputable instance NetlinkMessage_access_store_Header (l : Loc) (v : syscall.NetlinkMessage) (Header' : syscall.NlMsghdr) :
+noncomputable instance NetlinkMessage_access_store_Header (l : Loc) (v : syscall.NetlinkMessage) (Header' : _root_.Perennial.syscall.NlMsghdr) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.NetlinkMessage go!"Header" l) v.Header' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.NetlinkMessage go!"Header" l) Header' (DFrac.own 1))
@@ -584,7 +584,7 @@ noncomputable instance NetlinkRouteAttr_access_load_Attr (l : Loc) (v : syscall.
  by
   solve_pointsto_access_struct
 
-noncomputable instance NetlinkRouteAttr_access_store_Attr (l : Loc) (v : syscall.NetlinkRouteAttr) (Attr' : syscall.RtAttr) :
+noncomputable instance NetlinkRouteAttr_access_store_Attr (l : Loc) (v : syscall.NetlinkRouteAttr) (Attr' : _root_.Perennial.syscall.RtAttr) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.NetlinkRouteAttr go!"Attr" l) v.Attr' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.NetlinkRouteAttr go!"Attr" l) Attr' (DFrac.own 1))
@@ -641,7 +641,7 @@ noncomputable instance SocketControlMessage_access_load_Header (l : Loc) (v : sy
  by
   solve_pointsto_access_struct
 
-noncomputable instance SocketControlMessage_access_store_Header (l : Loc) (v : syscall.SocketControlMessage) (Header' : syscall.Cmsghdr) :
+noncomputable instance SocketControlMessage_access_store_Header (l : Loc) (v : syscall.SocketControlMessage) (Header' : _root_.Perennial.syscall.Cmsghdr) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.SocketControlMessage go!"Header" l) v.Header' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.SocketControlMessage go!"Header" l) Header' (DFrac.own 1))
@@ -799,7 +799,7 @@ noncomputable instance SockaddrLinklayer_access_load_raw (l : Loc) (v : syscall.
  by
   solve_pointsto_access_struct
 
-noncomputable instance SockaddrLinklayer_access_store_raw (l : Loc) (v : syscall.SockaddrLinklayer) (raw' : syscall.RawSockaddrLinklayer) :
+noncomputable instance SockaddrLinklayer_access_store_raw (l : Loc) (v : syscall.SockaddrLinklayer) (raw' : _root_.Perennial.syscall.RawSockaddrLinklayer) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.SockaddrLinklayer go!"raw" l) v.raw' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.SockaddrLinklayer go!"raw" l) raw' (DFrac.own 1))
@@ -907,7 +907,7 @@ noncomputable instance SockaddrNetlink_access_load_raw (l : Loc) (v : syscall.So
  by
   solve_pointsto_access_struct
 
-noncomputable instance SockaddrNetlink_access_store_raw (l : Loc) (v : syscall.SockaddrNetlink) (raw' : syscall.RawSockaddrNetlink) :
+noncomputable instance SockaddrNetlink_access_store_raw (l : Loc) (v : syscall.SockaddrNetlink) (raw' : _root_.Perennial.syscall.RawSockaddrNetlink) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.SockaddrNetlink go!"raw" l) v.raw' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.SockaddrNetlink go!"raw" l) raw' (DFrac.own 1))
@@ -981,7 +981,7 @@ noncomputable instance SockaddrInet4_access_load_raw (l : Loc) (v : syscall.Sock
  by
   solve_pointsto_access_struct
 
-noncomputable instance SockaddrInet4_access_store_raw (l : Loc) (v : syscall.SockaddrInet4) (raw' : syscall.RawSockaddrInet4) :
+noncomputable instance SockaddrInet4_access_store_raw (l : Loc) (v : syscall.SockaddrInet4) (raw' : _root_.Perennial.syscall.RawSockaddrInet4) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.SockaddrInet4 go!"raw" l) v.raw' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.SockaddrInet4 go!"raw" l) raw' (DFrac.own 1))
@@ -1072,7 +1072,7 @@ noncomputable instance SockaddrInet6_access_load_raw (l : Loc) (v : syscall.Sock
  by
   solve_pointsto_access_struct
 
-noncomputable instance SockaddrInet6_access_store_raw (l : Loc) (v : syscall.SockaddrInet6) (raw' : syscall.RawSockaddrInet6) :
+noncomputable instance SockaddrInet6_access_store_raw (l : Loc) (v : syscall.SockaddrInet6) (raw' : _root_.Perennial.syscall.RawSockaddrInet6) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.SockaddrInet6 go!"raw" l) v.raw' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.SockaddrInet6 go!"raw" l) raw' (DFrac.own 1))
@@ -1129,7 +1129,7 @@ noncomputable instance SockaddrUnix_access_load_raw (l : Loc) (v : syscall.Socka
  by
   solve_pointsto_access_struct
 
-noncomputable instance SockaddrUnix_access_store_raw (l : Loc) (v : syscall.SockaddrUnix) (raw' : syscall.RawSockaddrUnix) :
+noncomputable instance SockaddrUnix_access_store_raw (l : Loc) (v : syscall.SockaddrUnix) (raw' : _root_.Perennial.syscall.RawSockaddrUnix) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.SockaddrUnix go!"raw" l) v.raw' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.SockaddrUnix go!"raw" l) raw' (DFrac.own 1))
@@ -1368,7 +1368,7 @@ noncomputable instance Timex_access_load_Time (l : Loc) (v : syscall.Timex) (dq 
  by
   solve_pointsto_access_struct
 
-noncomputable instance Timex_access_store_Time (l : Loc) (v : syscall.Timex) (Time' : syscall.Timeval) :
+noncomputable instance Timex_access_store_Time (l : Loc) (v : syscall.Timex) (Time' : _root_.Perennial.syscall.Timeval) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef syscall.Timex go!"Time" l) v.Time' (DFrac.own 1))
       (typedPointsto (structFieldRef syscall.Timex go!"Time" l) Time' (DFrac.own 1))

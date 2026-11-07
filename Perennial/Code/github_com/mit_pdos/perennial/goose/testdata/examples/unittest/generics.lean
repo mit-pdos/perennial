@@ -440,7 +440,7 @@ attribute [instance] Container.TypeAssumptions.type_repr
 
 structure UseContainer [GooseExts] where
   mk ::
-  X' : (Container w64)
+  X' : (_root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container w64)
 
 noncomputable instance UseContainer.zero_val [GooseExts] : ZeroVal UseContainer :=
   ⟨UseContainer.mk zeroValDef⟩
@@ -462,7 +462,7 @@ class UseContainer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   type_repr : go.TypeReprUnderlying UseContainer.underlying UseContainer
   underlying : go.UnderlyingDirectedEq UseContainer.ty UseContainer.underlying
   get_X : ∀ (x : UseContainer), go.IsGoStepPureDetTagged under (StructFieldGet UseContainer.underlying go!"X") #x (Val #(x.X'))
-  set_X : ∀ (x : UseContainer) (y : (Container w64)), go.IsGoStepPureDetTagged under (StructFieldSet UseContainer.underlying go!"X") (PairV #x #y) (Val #(({ x with X' := y } : UseContainer)))
+  set_X : ∀ (x : UseContainer) (y : (_root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container w64)), go.IsGoStepPureDetTagged under (StructFieldSet UseContainer.underlying go!"X") (PairV #x #y) (Val #(({ x with X' := y } : UseContainer)))
   method_set : go.MethodSetIs UseContainer.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType UseContainer.ty) []
 
@@ -612,7 +612,7 @@ attribute [instance] nonStructGeneric.TypeAssumptions.underlying
 
 structure useNonStructGeneric [GooseExts] (T : Type) where
   mk ::
-  x' : (nonStructGeneric T)
+  x' : (_root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.nonStructGeneric T)
 
 noncomputable instance useNonStructGeneric.zero_val [GooseExts] {T : Type} [ZeroVal T] : ZeroVal (useNonStructGeneric T) :=
   ⟨useNonStructGeneric.mk zeroValDef⟩
@@ -634,7 +634,7 @@ class useNonStructGeneric.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocal
   type_repr : ∀ (T : go.GoType) (T' : Type) [ZeroVal T'] [TypeRepr T T'], go.TypeReprUnderlying (useNonStructGeneric.underlying T) (useNonStructGeneric T')
   underlying : ∀ (T : go.GoType), go.UnderlyingDirectedEq (useNonStructGeneric.ty T) (useNonStructGeneric.underlying T)
   get_x : ∀ (T : go.GoType) (T' : Type) (x : (useNonStructGeneric T')), go.IsGoStepPureDetTagged under (StructFieldGet (useNonStructGeneric.underlying T) go!"x") #x (Val #(x.x'))
-  set_x : ∀ (T : go.GoType) (T' : Type) (x : (useNonStructGeneric T')) (y : (nonStructGeneric T')), go.IsGoStepPureDetTagged under (StructFieldSet (useNonStructGeneric.underlying T) go!"x") (PairV #x #y) (Val #(({ x with x' := y } : (useNonStructGeneric T'))))
+  set_x : ∀ (T : go.GoType) (T' : Type) (x : (useNonStructGeneric T')) (y : (_root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.nonStructGeneric T')), go.IsGoStepPureDetTagged under (StructFieldSet (useNonStructGeneric.underlying T) go!"x") (PairV #x #y) (Val #(({ x with x' := y } : (useNonStructGeneric T'))))
   method_set : ∀ (T : go.GoType), go.MethodSetIs (useNonStructGeneric.ty T) []
   ptr_method_set : ∀ (T : go.GoType), go.MethodSetIs (go.GoType.PointerType (useNonStructGeneric.ty T)) []
 

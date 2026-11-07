@@ -177,7 +177,7 @@ noncomputable instance UseContainer_access_load_X (l : Loc) (v : github_com.mit_
  by
   solve_pointsto_access_struct
 
-noncomputable instance UseContainer_access_store_X (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer) (X' : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container w64)) :
+noncomputable instance UseContainer_access_store_X (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer) (X' : (_root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.Container w64)) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer go!"X" l) v.X' (DFrac.own 1))
       (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.UseContainer go!"X" l) X' (DFrac.own 1))
@@ -388,7 +388,7 @@ noncomputable instance useNonStructGeneric_access_load_x {T' : Type} [TypedPoint
  by
   solve_pointsto_access_struct
 
-noncomputable instance useNonStructGeneric_access_store_x {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T')) (x' : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.nonStructGeneric T')) :
+noncomputable instance useNonStructGeneric_access_store_x {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T')) (x' : (_root_.Perennial.github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.nonStructGeneric T')) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T') go!"x" l) v.x' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.testdata.examples.unittest.generics.useNonStructGeneric T') go!"x" l) x' (DFrac.own 1))

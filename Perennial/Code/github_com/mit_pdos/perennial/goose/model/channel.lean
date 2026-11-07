@@ -2040,7 +2040,7 @@ structure Channel [GooseExts] (T : Type) where
   mk ::
   cap' : w64
   mu' : Loc
-  state' : offerState
+  state' : _root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.offerState
   buffer' : GoSlice
   v' : T
 
@@ -2072,7 +2072,7 @@ class Channel.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [Go
   get_mu : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"mu") #x (Val #(x.mu'))
   set_mu : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : (Channel T'))))
   get_state : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"state") #x (Val #(x.state'))
-  set_state : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')) (y : offerState), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"state") (PairV #x #y) (Val #(({ x with state' := y } : (Channel T'))))
+  set_state : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')) (y : _root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.offerState), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"state") (PairV #x #y) (Val #(({ x with state' := y } : (Channel T'))))
   get_buffer : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"buffer") #x (Val #(x.buffer'))
   set_buffer : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet (Channel.underlying T) go!"buffer") (PairV #x #y) (Val #(({ x with buffer' := y } : (Channel T'))))
   get_v : ∀ (T : go.GoType) (T' : Type) (x : (Channel T')), go.IsGoStepPureDetTagged under (StructFieldGet (Channel.underlying T) go!"v") #x (Val #(x.v'))

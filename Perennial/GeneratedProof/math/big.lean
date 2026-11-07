@@ -127,7 +127,7 @@ noncomputable instance Float_access_load_mode (l : Loc) (v : math.big.Float) (dq
  by
   solve_pointsto_access_struct
 
-noncomputable instance Float_access_store_mode (l : Loc) (v : math.big.Float) (mode' : math.big.RoundingMode) :
+noncomputable instance Float_access_store_mode (l : Loc) (v : math.big.Float) (mode' : _root_.Perennial.math.big.RoundingMode) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Float go!"mode" l) v.mode' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Float go!"mode" l) mode' (DFrac.own 1))
@@ -143,7 +143,7 @@ noncomputable instance Float_access_load_acc (l : Loc) (v : math.big.Float) (dq 
  by
   solve_pointsto_access_struct
 
-noncomputable instance Float_access_store_acc (l : Loc) (v : math.big.Float) (acc' : math.big.Accuracy) :
+noncomputable instance Float_access_store_acc (l : Loc) (v : math.big.Float) (acc' : _root_.Perennial.math.big.Accuracy) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Float go!"acc" l) v.acc' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Float go!"acc" l) acc' (DFrac.own 1))
@@ -159,7 +159,7 @@ noncomputable instance Float_access_load_form (l : Loc) (v : math.big.Float) (dq
  by
   solve_pointsto_access_struct
 
-noncomputable instance Float_access_store_form (l : Loc) (v : math.big.Float) (form' : math.big.form) :
+noncomputable instance Float_access_store_form (l : Loc) (v : math.big.Float) (form' : _root_.Perennial.math.big.form) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Float go!"form" l) v.form' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Float go!"form" l) form' (DFrac.own 1))
@@ -191,7 +191,7 @@ noncomputable instance Float_access_load_mant (l : Loc) (v : math.big.Float) (dq
  by
   solve_pointsto_access_struct
 
-noncomputable instance Float_access_store_mant (l : Loc) (v : math.big.Float) (mant' : math.big.nat) :
+noncomputable instance Float_access_store_mant (l : Loc) (v : math.big.Float) (mant' : _root_.Perennial.math.big.nat) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Float go!"mant" l) v.mant' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Float go!"mant" l) mant' (DFrac.own 1))
@@ -304,7 +304,7 @@ noncomputable instance Int'_access_load_abs (l : Loc) (v : math.big.Int') (dq : 
  by
   solve_pointsto_access_struct
 
-noncomputable instance Int'_access_store_abs (l : Loc) (v : math.big.Int') (abs' : math.big.nat) :
+noncomputable instance Int'_access_store_abs (l : Loc) (v : math.big.Int') (abs' : _root_.Perennial.math.big.nat) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Int' go!"abs" l) v.abs' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Int' go!"abs" l) abs' (DFrac.own 1))
@@ -344,7 +344,7 @@ noncomputable instance byteReader_access_load_ScanState (l : Loc) (v : math.big.
  by
   solve_pointsto_access_struct
 
-noncomputable instance byteReader_access_store_ScanState (l : Loc) (v : math.big.byteReader) (ScanState' : fmt.ScanState) :
+noncomputable instance byteReader_access_store_ScanState (l : Loc) (v : math.big.byteReader) (ScanState' : _root_.Perennial.fmt.ScanState) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.byteReader go!"ScanState" l) v.ScanState' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.byteReader go!"ScanState" l) ScanState' (DFrac.own 1))
@@ -426,7 +426,7 @@ noncomputable instance divisor_access_load_bbb (l : Loc) (v : math.big.divisor) 
  by
   solve_pointsto_access_struct
 
-noncomputable instance divisor_access_store_bbb (l : Loc) (v : math.big.divisor) (bbb' : math.big.nat) :
+noncomputable instance divisor_access_store_bbb (l : Loc) (v : math.big.divisor) (bbb' : _root_.Perennial.math.big.nat) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.divisor go!"bbb" l) v.bbb' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.divisor go!"bbb" l) bbb' (DFrac.own 1))
@@ -499,7 +499,7 @@ noncomputable instance Rat_access_load_a (l : Loc) (v : math.big.Rat) (dq : DFra
  by
   solve_pointsto_access_struct
 
-noncomputable instance Rat_access_store_a (l : Loc) (v : math.big.Rat) (a' : math.big.Int') :
+noncomputable instance Rat_access_store_a (l : Loc) (v : math.big.Rat) (a' : _root_.Perennial.math.big.Int') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Rat go!"a" l) v.a' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Rat go!"a" l) a' (DFrac.own 1))
@@ -515,7 +515,7 @@ noncomputable instance Rat_access_load_b (l : Loc) (v : math.big.Rat) (dq : DFra
  by
   solve_pointsto_access_struct
 
-noncomputable instance Rat_access_store_b (l : Loc) (v : math.big.Rat) (b' : math.big.Int') :
+noncomputable instance Rat_access_store_b (l : Loc) (v : math.big.Rat) (b' : _root_.Perennial.math.big.Int') :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef math.big.Rat go!"b" l) v.b' (DFrac.own 1))
       (typedPointsto (structFieldRef math.big.Rat go!"b" l) b' (DFrac.own 1))

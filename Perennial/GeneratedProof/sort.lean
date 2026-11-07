@@ -104,7 +104,7 @@ noncomputable instance reverse_access_load_Interface (l : Loc) (v : sort.reverse
  by
   solve_pointsto_access_struct
 
-noncomputable instance reverse_access_store_Interface (l : Loc) (v : sort.reverse) (Interface' : sort.Interface) :
+noncomputable instance reverse_access_store_Interface (l : Loc) (v : sort.reverse) (Interface' : _root_.Perennial.sort.Interface) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef sort.reverse go!"Interface" l) v.Interface' (DFrac.own 1))
       (typedPointsto (structFieldRef sort.reverse go!"Interface" l) Interface' (DFrac.own 1))

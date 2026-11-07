@@ -82,7 +82,7 @@ noncomputable instance Channel_access_load_state {T' : Type} [TypedPointsto (GF 
  by
   solve_pointsto_access_struct
 
-noncomputable instance Channel_access_store_state {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T')) (state' : github_com.mit_pdos.perennial.goose.model.channel.offerState) :
+noncomputable instance Channel_access_store_state {T' : Type} [TypedPointsto (GF := GF) T'] (l : Loc) (v : (github_com.mit_pdos.perennial.goose.model.channel.Channel T')) (state' : _root_.Perennial.github_com.mit_pdos.perennial.goose.model.channel.offerState) :
     AccessStrict (PROP := IProp GF)
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T') go!"state" l) v.state' (DFrac.own 1))
       (typedPointsto (structFieldRef (github_com.mit_pdos.perennial.goose.model.channel.Channel T') go!"state" l) state' (DFrac.own 1))

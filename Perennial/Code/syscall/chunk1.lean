@@ -72,7 +72,7 @@ class SysProcAttr.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext]
   get_Pgid : ∀ (x : SysProcAttr), go.IsGoStepPureDetTagged under (StructFieldGet SysProcAttr.underlying go!"Pgid") #x (Val #(x.Pgid'))
   set_Pgid : ∀ (x : SysProcAttr) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet SysProcAttr.underlying go!"Pgid") (PairV #x #y) (Val #(({ x with Pgid' := y } : SysProcAttr)))
   get_Pdeathsig : ∀ (x : SysProcAttr), go.IsGoStepPureDetTagged under (StructFieldGet SysProcAttr.underlying go!"Pdeathsig") #x (Val #(x.Pdeathsig'))
-  set_Pdeathsig : ∀ (x : SysProcAttr) (y : Signal), go.IsGoStepPureDetTagged under (StructFieldSet SysProcAttr.underlying go!"Pdeathsig") (PairV #x #y) (Val #(({ x with Pdeathsig' := y } : SysProcAttr)))
+  set_Pdeathsig : ∀ (x : SysProcAttr) (y : _root_.Perennial.syscall.Signal), go.IsGoStepPureDetTagged under (StructFieldSet SysProcAttr.underlying go!"Pdeathsig") (PairV #x #y) (Val #(({ x with Pdeathsig' := y } : SysProcAttr)))
   get_Cloneflags : ∀ (x : SysProcAttr), go.IsGoStepPureDetTagged under (StructFieldGet SysProcAttr.underlying go!"Cloneflags") #x (Val #(x.Cloneflags'))
   set_Cloneflags : ∀ (x : SysProcAttr) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet SysProcAttr.underlying go!"Cloneflags") (PairV #x #y) (Val #(({ x with Cloneflags' := y } : SysProcAttr)))
   get_Unshareflags : ∀ (x : SysProcAttr), go.IsGoStepPureDetTagged under (StructFieldGet SysProcAttr.underlying go!"Unshareflags") #x (Val #(x.Unshareflags'))
@@ -185,9 +185,9 @@ class caps.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   type_repr : go.TypeReprUnderlying caps.underlying caps
   underlying : go.UnderlyingDirectedEq caps.ty caps.underlying
   get_hdr : ∀ (x : caps), go.IsGoStepPureDetTagged under (StructFieldGet caps.underlying go!"hdr") #x (Val #(x.hdr'))
-  set_hdr : ∀ (x : caps) (y : capHeader), go.IsGoStepPureDetTagged under (StructFieldSet caps.underlying go!"hdr") (PairV #x #y) (Val #(({ x with hdr' := y } : caps)))
+  set_hdr : ∀ (x : caps) (y : _root_.Perennial.syscall.capHeader), go.IsGoStepPureDetTagged under (StructFieldSet caps.underlying go!"hdr") (PairV #x #y) (Val #(({ x with hdr' := y } : caps)))
   get_data : ∀ (x : caps), go.IsGoStepPureDetTagged under (StructFieldGet caps.underlying go!"data") #x (Val #(x.data'))
-  set_data : ∀ (x : caps) (y : (GoArray capData 2)), go.IsGoStepPureDetTagged under (StructFieldSet caps.underlying go!"data") (PairV #x #y) (Val #(({ x with data' := y } : caps)))
+  set_data : ∀ (x : caps) (y : (GoArray _root_.Perennial.syscall.capData 2)), go.IsGoStepPureDetTagged under (StructFieldSet caps.underlying go!"data") (PairV #x #y) (Val #(({ x with data' := y } : caps)))
   method_set : go.MethodSetIs caps.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType caps.ty) []
 
@@ -396,9 +396,9 @@ class NetlinkRouteRequest.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocal
   type_repr : go.TypeReprUnderlying NetlinkRouteRequest.underlying NetlinkRouteRequest
   underlying : go.UnderlyingDirectedEq NetlinkRouteRequest.ty NetlinkRouteRequest.underlying
   get_Header : ∀ (x : NetlinkRouteRequest), go.IsGoStepPureDetTagged under (StructFieldGet NetlinkRouteRequest.underlying go!"Header") #x (Val #(x.Header'))
-  set_Header : ∀ (x : NetlinkRouteRequest) (y : NlMsghdr), go.IsGoStepPureDetTagged under (StructFieldSet NetlinkRouteRequest.underlying go!"Header") (PairV #x #y) (Val #(({ x with Header' := y } : NetlinkRouteRequest)))
+  set_Header : ∀ (x : NetlinkRouteRequest) (y : _root_.Perennial.syscall.NlMsghdr), go.IsGoStepPureDetTagged under (StructFieldSet NetlinkRouteRequest.underlying go!"Header") (PairV #x #y) (Val #(({ x with Header' := y } : NetlinkRouteRequest)))
   get_Data : ∀ (x : NetlinkRouteRequest), go.IsGoStepPureDetTagged under (StructFieldGet NetlinkRouteRequest.underlying go!"Data") #x (Val #(x.Data'))
-  set_Data : ∀ (x : NetlinkRouteRequest) (y : RtGenmsg), go.IsGoStepPureDetTagged under (StructFieldSet NetlinkRouteRequest.underlying go!"Data") (PairV #x #y) (Val #(({ x with Data' := y } : NetlinkRouteRequest)))
+  set_Data : ∀ (x : NetlinkRouteRequest) (y : _root_.Perennial.syscall.RtGenmsg), go.IsGoStepPureDetTagged under (StructFieldSet NetlinkRouteRequest.underlying go!"Data") (PairV #x #y) (Val #(({ x with Data' := y } : NetlinkRouteRequest)))
   method_set : go.MethodSetIs NetlinkRouteRequest.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType NetlinkRouteRequest.ty) [(go!"syscall.toWireFormat", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)])))]
 
@@ -415,7 +415,7 @@ class NetlinkMessage.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalConte
   type_repr : go.TypeReprUnderlying NetlinkMessage.underlying NetlinkMessage
   underlying : go.UnderlyingDirectedEq NetlinkMessage.ty NetlinkMessage.underlying
   get_Header : ∀ (x : NetlinkMessage), go.IsGoStepPureDetTagged under (StructFieldGet NetlinkMessage.underlying go!"Header") #x (Val #(x.Header'))
-  set_Header : ∀ (x : NetlinkMessage) (y : NlMsghdr), go.IsGoStepPureDetTagged under (StructFieldSet NetlinkMessage.underlying go!"Header") (PairV #x #y) (Val #(({ x with Header' := y } : NetlinkMessage)))
+  set_Header : ∀ (x : NetlinkMessage) (y : _root_.Perennial.syscall.NlMsghdr), go.IsGoStepPureDetTagged under (StructFieldSet NetlinkMessage.underlying go!"Header") (PairV #x #y) (Val #(({ x with Header' := y } : NetlinkMessage)))
   get_Data : ∀ (x : NetlinkMessage), go.IsGoStepPureDetTagged under (StructFieldGet NetlinkMessage.underlying go!"Data") #x (Val #(x.Data'))
   set_Data : ∀ (x : NetlinkMessage) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet NetlinkMessage.underlying go!"Data") (PairV #x #y) (Val #(({ x with Data' := y } : NetlinkMessage)))
   method_set : go.MethodSetIs NetlinkMessage.ty []
@@ -453,7 +453,7 @@ class NetlinkRouteAttr.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCon
   type_repr : go.TypeReprUnderlying NetlinkRouteAttr.underlying NetlinkRouteAttr
   underlying : go.UnderlyingDirectedEq NetlinkRouteAttr.ty NetlinkRouteAttr.underlying
   get_Attr : ∀ (x : NetlinkRouteAttr), go.IsGoStepPureDetTagged under (StructFieldGet NetlinkRouteAttr.underlying go!"Attr") #x (Val #(x.Attr'))
-  set_Attr : ∀ (x : NetlinkRouteAttr) (y : RtAttr), go.IsGoStepPureDetTagged under (StructFieldSet NetlinkRouteAttr.underlying go!"Attr") (PairV #x #y) (Val #(({ x with Attr' := y } : NetlinkRouteAttr)))
+  set_Attr : ∀ (x : NetlinkRouteAttr) (y : _root_.Perennial.syscall.RtAttr), go.IsGoStepPureDetTagged under (StructFieldSet NetlinkRouteAttr.underlying go!"Attr") (PairV #x #y) (Val #(({ x with Attr' := y } : NetlinkRouteAttr)))
   get_Value : ∀ (x : NetlinkRouteAttr), go.IsGoStepPureDetTagged under (StructFieldGet NetlinkRouteAttr.underlying go!"Value") #x (Val #(x.Value'))
   set_Value : ∀ (x : NetlinkRouteAttr) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet NetlinkRouteAttr.underlying go!"Value") (PairV #x #y) (Val #(({ x with Value' := y } : NetlinkRouteAttr)))
   method_set : go.MethodSetIs NetlinkRouteAttr.ty []
@@ -495,7 +495,7 @@ class SocketControlMessage.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLoca
   type_repr : go.TypeReprUnderlying SocketControlMessage.underlying SocketControlMessage
   underlying : go.UnderlyingDirectedEq SocketControlMessage.ty SocketControlMessage.underlying
   get_Header : ∀ (x : SocketControlMessage), go.IsGoStepPureDetTagged under (StructFieldGet SocketControlMessage.underlying go!"Header") #x (Val #(x.Header'))
-  set_Header : ∀ (x : SocketControlMessage) (y : Cmsghdr), go.IsGoStepPureDetTagged under (StructFieldSet SocketControlMessage.underlying go!"Header") (PairV #x #y) (Val #(({ x with Header' := y } : SocketControlMessage)))
+  set_Header : ∀ (x : SocketControlMessage) (y : _root_.Perennial.syscall.Cmsghdr), go.IsGoStepPureDetTagged under (StructFieldSet SocketControlMessage.underlying go!"Header") (PairV #x #y) (Val #(({ x with Header' := y } : SocketControlMessage)))
   get_Data : ∀ (x : SocketControlMessage), go.IsGoStepPureDetTagged under (StructFieldGet SocketControlMessage.underlying go!"Data") #x (Val #(x.Data'))
   set_Data : ∀ (x : SocketControlMessage) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet SocketControlMessage.underlying go!"Data") (PairV #x #y) (Val #(({ x with Data' := y } : SocketControlMessage)))
   method_set : go.MethodSetIs SocketControlMessage.ty []
@@ -574,7 +574,7 @@ class SockaddrLinklayer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCo
   get_Addr : ∀ (x : SockaddrLinklayer), go.IsGoStepPureDetTagged under (StructFieldGet SockaddrLinklayer.underlying go!"Addr") #x (Val #(x.Addr'))
   set_Addr : ∀ (x : SockaddrLinklayer) (y : (GoArray w8 8)), go.IsGoStepPureDetTagged under (StructFieldSet SockaddrLinklayer.underlying go!"Addr") (PairV #x #y) (Val #(({ x with Addr' := y } : SockaddrLinklayer)))
   get_raw : ∀ (x : SockaddrLinklayer), go.IsGoStepPureDetTagged under (StructFieldGet SockaddrLinklayer.underlying go!"raw") #x (Val #(x.raw'))
-  set_raw : ∀ (x : SockaddrLinklayer) (y : RawSockaddrLinklayer), go.IsGoStepPureDetTagged under (StructFieldSet SockaddrLinklayer.underlying go!"raw") (PairV #x #y) (Val #(({ x with raw' := y } : SockaddrLinklayer)))
+  set_raw : ∀ (x : SockaddrLinklayer) (y : _root_.Perennial.syscall.RawSockaddrLinklayer), go.IsGoStepPureDetTagged under (StructFieldSet SockaddrLinklayer.underlying go!"raw") (PairV #x #y) (Val #(({ x with raw' := y } : SockaddrLinklayer)))
   method_set : go.MethodSetIs SockaddrLinklayer.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType SockaddrLinklayer.ty) [(go!"syscall.sockaddr", (some (go.signature.Signature [] false [«unsafe».Pointer, _Socklen.ty, go.error])))]
 
@@ -636,7 +636,7 @@ class SockaddrNetlink.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCont
   get_Groups : ∀ (x : SockaddrNetlink), go.IsGoStepPureDetTagged under (StructFieldGet SockaddrNetlink.underlying go!"Groups") #x (Val #(x.Groups'))
   set_Groups : ∀ (x : SockaddrNetlink) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet SockaddrNetlink.underlying go!"Groups") (PairV #x #y) (Val #(({ x with Groups' := y } : SockaddrNetlink)))
   get_raw : ∀ (x : SockaddrNetlink), go.IsGoStepPureDetTagged under (StructFieldGet SockaddrNetlink.underlying go!"raw") #x (Val #(x.raw'))
-  set_raw : ∀ (x : SockaddrNetlink) (y : RawSockaddrNetlink), go.IsGoStepPureDetTagged under (StructFieldSet SockaddrNetlink.underlying go!"raw") (PairV #x #y) (Val #(({ x with raw' := y } : SockaddrNetlink)))
+  set_raw : ∀ (x : SockaddrNetlink) (y : _root_.Perennial.syscall.RawSockaddrNetlink), go.IsGoStepPureDetTagged under (StructFieldSet SockaddrNetlink.underlying go!"raw") (PairV #x #y) (Val #(({ x with raw' := y } : SockaddrNetlink)))
   method_set : go.MethodSetIs SockaddrNetlink.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType SockaddrNetlink.ty) [(go!"syscall.sockaddr", (some (go.signature.Signature [] false [«unsafe».Pointer, _Socklen.ty, go.error])))]
 
@@ -735,7 +735,7 @@ class SockaddrInet4.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContex
   get_Addr : ∀ (x : SockaddrInet4), go.IsGoStepPureDetTagged under (StructFieldGet SockaddrInet4.underlying go!"Addr") #x (Val #(x.Addr'))
   set_Addr : ∀ (x : SockaddrInet4) (y : (GoArray w8 4)), go.IsGoStepPureDetTagged under (StructFieldSet SockaddrInet4.underlying go!"Addr") (PairV #x #y) (Val #(({ x with Addr' := y } : SockaddrInet4)))
   get_raw : ∀ (x : SockaddrInet4), go.IsGoStepPureDetTagged under (StructFieldGet SockaddrInet4.underlying go!"raw") #x (Val #(x.raw'))
-  set_raw : ∀ (x : SockaddrInet4) (y : RawSockaddrInet4), go.IsGoStepPureDetTagged under (StructFieldSet SockaddrInet4.underlying go!"raw") (PairV #x #y) (Val #(({ x with raw' := y } : SockaddrInet4)))
+  set_raw : ∀ (x : SockaddrInet4) (y : _root_.Perennial.syscall.RawSockaddrInet4), go.IsGoStepPureDetTagged under (StructFieldSet SockaddrInet4.underlying go!"raw") (PairV #x #y) (Val #(({ x with raw' := y } : SockaddrInet4)))
   method_set : go.MethodSetIs SockaddrInet4.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType SockaddrInet4.ty) [(go!"syscall.sockaddr", (some (go.signature.Signature [] false [«unsafe».Pointer, _Socklen.ty, go.error])))]
 
@@ -791,7 +791,7 @@ class SockaddrInet6.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContex
   get_Addr : ∀ (x : SockaddrInet6), go.IsGoStepPureDetTagged under (StructFieldGet SockaddrInet6.underlying go!"Addr") #x (Val #(x.Addr'))
   set_Addr : ∀ (x : SockaddrInet6) (y : (GoArray w8 16)), go.IsGoStepPureDetTagged under (StructFieldSet SockaddrInet6.underlying go!"Addr") (PairV #x #y) (Val #(({ x with Addr' := y } : SockaddrInet6)))
   get_raw : ∀ (x : SockaddrInet6), go.IsGoStepPureDetTagged under (StructFieldGet SockaddrInet6.underlying go!"raw") #x (Val #(x.raw'))
-  set_raw : ∀ (x : SockaddrInet6) (y : RawSockaddrInet6), go.IsGoStepPureDetTagged under (StructFieldSet SockaddrInet6.underlying go!"raw") (PairV #x #y) (Val #(({ x with raw' := y } : SockaddrInet6)))
+  set_raw : ∀ (x : SockaddrInet6) (y : _root_.Perennial.syscall.RawSockaddrInet6), go.IsGoStepPureDetTagged under (StructFieldSet SockaddrInet6.underlying go!"raw") (PairV #x #y) (Val #(({ x with raw' := y } : SockaddrInet6)))
   method_set : go.MethodSetIs SockaddrInet6.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType SockaddrInet6.ty) [(go!"syscall.sockaddr", (some (go.signature.Signature [] false [«unsafe».Pointer, _Socklen.ty, go.error])))]
 
@@ -833,7 +833,7 @@ class SockaddrUnix.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext
   get_Name : ∀ (x : SockaddrUnix), go.IsGoStepPureDetTagged under (StructFieldGet SockaddrUnix.underlying go!"Name") #x (Val #(x.Name'))
   set_Name : ∀ (x : SockaddrUnix) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet SockaddrUnix.underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : SockaddrUnix)))
   get_raw : ∀ (x : SockaddrUnix), go.IsGoStepPureDetTagged under (StructFieldGet SockaddrUnix.underlying go!"raw") #x (Val #(x.raw'))
-  set_raw : ∀ (x : SockaddrUnix) (y : RawSockaddrUnix), go.IsGoStepPureDetTagged under (StructFieldSet SockaddrUnix.underlying go!"raw") (PairV #x #y) (Val #(({ x with raw' := y } : SockaddrUnix)))
+  set_raw : ∀ (x : SockaddrUnix) (y : _root_.Perennial.syscall.RawSockaddrUnix), go.IsGoStepPureDetTagged under (StructFieldSet SockaddrUnix.underlying go!"raw") (PairV #x #y) (Val #(({ x with raw' := y } : SockaddrUnix)))
   method_set : go.MethodSetIs SockaddrUnix.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType SockaddrUnix.ty) [(go!"syscall.sockaddr", (some (go.signature.Signature [] false [«unsafe».Pointer, _Socklen.ty, go.error])))]
 
@@ -946,7 +946,7 @@ class Timex.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   get_Tolerance : ∀ (x : Timex), go.IsGoStepPureDetTagged under (StructFieldGet Timex.underlying go!"Tolerance") #x (Val #(x.Tolerance'))
   set_Tolerance : ∀ (x : Timex) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Timex.underlying go!"Tolerance") (PairV #x #y) (Val #(({ x with Tolerance' := y } : Timex)))
   get_Time : ∀ (x : Timex), go.IsGoStepPureDetTagged under (StructFieldGet Timex.underlying go!"Time") #x (Val #(x.Time'))
-  set_Time : ∀ (x : Timex) (y : Timeval), go.IsGoStepPureDetTagged under (StructFieldSet Timex.underlying go!"Time") (PairV #x #y) (Val #(({ x with Time' := y } : Timex)))
+  set_Time : ∀ (x : Timex) (y : _root_.Perennial.syscall.Timeval), go.IsGoStepPureDetTagged under (StructFieldSet Timex.underlying go!"Time") (PairV #x #y) (Val #(({ x with Time' := y } : Timex)))
   get_Tick : ∀ (x : Timex), go.IsGoStepPureDetTagged under (StructFieldGet Timex.underlying go!"Tick") #x (Val #(x.Tick'))
   set_Tick : ∀ (x : Timex) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Timex.underlying go!"Tick") (PairV #x #y) (Val #(({ x with Tick' := y } : Timex)))
   get_Ppsfreq : ∀ (x : Timex), go.IsGoStepPureDetTagged under (StructFieldGet Timex.underlying go!"Ppsfreq") #x (Val #(x.Ppsfreq'))
@@ -1086,9 +1086,9 @@ class Rusage.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying Rusage.underlying Rusage
   underlying : go.UnderlyingDirectedEq Rusage.ty Rusage.underlying
   get_Utime : ∀ (x : Rusage), go.IsGoStepPureDetTagged under (StructFieldGet Rusage.underlying go!"Utime") #x (Val #(x.Utime'))
-  set_Utime : ∀ (x : Rusage) (y : Timeval), go.IsGoStepPureDetTagged under (StructFieldSet Rusage.underlying go!"Utime") (PairV #x #y) (Val #(({ x with Utime' := y } : Rusage)))
+  set_Utime : ∀ (x : Rusage) (y : _root_.Perennial.syscall.Timeval), go.IsGoStepPureDetTagged under (StructFieldSet Rusage.underlying go!"Utime") (PairV #x #y) (Val #(({ x with Utime' := y } : Rusage)))
   get_Stime : ∀ (x : Rusage), go.IsGoStepPureDetTagged under (StructFieldGet Rusage.underlying go!"Stime") #x (Val #(x.Stime'))
-  set_Stime : ∀ (x : Rusage) (y : Timeval), go.IsGoStepPureDetTagged under (StructFieldSet Rusage.underlying go!"Stime") (PairV #x #y) (Val #(({ x with Stime' := y } : Rusage)))
+  set_Stime : ∀ (x : Rusage) (y : _root_.Perennial.syscall.Timeval), go.IsGoStepPureDetTagged under (StructFieldSet Rusage.underlying go!"Stime") (PairV #x #y) (Val #(({ x with Stime' := y } : Rusage)))
   get_Maxrss : ∀ (x : Rusage), go.IsGoStepPureDetTagged under (StructFieldGet Rusage.underlying go!"Maxrss") #x (Val #(x.Maxrss'))
   set_Maxrss : ∀ (x : Rusage) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Rusage.underlying go!"Maxrss") (PairV #x #y) (Val #(({ x with Maxrss' := y } : Rusage)))
   get_Ixrss : ∀ (x : Rusage), go.IsGoStepPureDetTagged under (StructFieldGet Rusage.underlying go!"Ixrss") #x (Val #(x.Ixrss'))

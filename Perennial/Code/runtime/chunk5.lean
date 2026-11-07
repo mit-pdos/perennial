@@ -29,19 +29,19 @@ class mstats.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying mstats.underlying mstats
   underlying : go.UnderlyingDirectedEq mstats.ty mstats.underlying
   get_heapStats : ∀ (x : mstats), go.IsGoStepPureDetTagged under (StructFieldGet mstats.underlying go!"heapStats") #x (Val #(x.heapStats'))
-  set_heapStats : ∀ (x : mstats) (y : consistentHeapStats), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"heapStats") (PairV #x #y) (Val #(({ x with heapStats' := y } : mstats)))
+  set_heapStats : ∀ (x : mstats) (y : _root_.Perennial.runtime.consistentHeapStats), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"heapStats") (PairV #x #y) (Val #(({ x with heapStats' := y } : mstats)))
   get_stacks_sys : ∀ (x : mstats), go.IsGoStepPureDetTagged under (StructFieldGet mstats.underlying go!"stacks_sys") #x (Val #(x.stacks_sys'))
-  set_stacks_sys : ∀ (x : mstats) (y : sysMemStat), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"stacks_sys") (PairV #x #y) (Val #(({ x with stacks_sys' := y } : mstats)))
+  set_stacks_sys : ∀ (x : mstats) (y : _root_.Perennial.runtime.sysMemStat), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"stacks_sys") (PairV #x #y) (Val #(({ x with stacks_sys' := y } : mstats)))
   get_mspan_sys : ∀ (x : mstats), go.IsGoStepPureDetTagged under (StructFieldGet mstats.underlying go!"mspan_sys") #x (Val #(x.mspan_sys'))
-  set_mspan_sys : ∀ (x : mstats) (y : sysMemStat), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"mspan_sys") (PairV #x #y) (Val #(({ x with mspan_sys' := y } : mstats)))
+  set_mspan_sys : ∀ (x : mstats) (y : _root_.Perennial.runtime.sysMemStat), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"mspan_sys") (PairV #x #y) (Val #(({ x with mspan_sys' := y } : mstats)))
   get_mcache_sys : ∀ (x : mstats), go.IsGoStepPureDetTagged under (StructFieldGet mstats.underlying go!"mcache_sys") #x (Val #(x.mcache_sys'))
-  set_mcache_sys : ∀ (x : mstats) (y : sysMemStat), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"mcache_sys") (PairV #x #y) (Val #(({ x with mcache_sys' := y } : mstats)))
+  set_mcache_sys : ∀ (x : mstats) (y : _root_.Perennial.runtime.sysMemStat), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"mcache_sys") (PairV #x #y) (Val #(({ x with mcache_sys' := y } : mstats)))
   get_buckhash_sys : ∀ (x : mstats), go.IsGoStepPureDetTagged under (StructFieldGet mstats.underlying go!"buckhash_sys") #x (Val #(x.buckhash_sys'))
-  set_buckhash_sys : ∀ (x : mstats) (y : sysMemStat), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"buckhash_sys") (PairV #x #y) (Val #(({ x with buckhash_sys' := y } : mstats)))
+  set_buckhash_sys : ∀ (x : mstats) (y : _root_.Perennial.runtime.sysMemStat), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"buckhash_sys") (PairV #x #y) (Val #(({ x with buckhash_sys' := y } : mstats)))
   get_gcMiscSys : ∀ (x : mstats), go.IsGoStepPureDetTagged under (StructFieldGet mstats.underlying go!"gcMiscSys") #x (Val #(x.gcMiscSys'))
-  set_gcMiscSys : ∀ (x : mstats) (y : sysMemStat), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"gcMiscSys") (PairV #x #y) (Val #(({ x with gcMiscSys' := y } : mstats)))
+  set_gcMiscSys : ∀ (x : mstats) (y : _root_.Perennial.runtime.sysMemStat), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"gcMiscSys") (PairV #x #y) (Val #(({ x with gcMiscSys' := y } : mstats)))
   get_other_sys : ∀ (x : mstats), go.IsGoStepPureDetTagged under (StructFieldGet mstats.underlying go!"other_sys") #x (Val #(x.other_sys'))
-  set_other_sys : ∀ (x : mstats) (y : sysMemStat), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"other_sys") (PairV #x #y) (Val #(({ x with other_sys' := y } : mstats)))
+  set_other_sys : ∀ (x : mstats) (y : _root_.Perennial.runtime.sysMemStat), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"other_sys") (PairV #x #y) (Val #(({ x with other_sys' := y } : mstats)))
   get_last_gc_unix : ∀ (x : mstats), go.IsGoStepPureDetTagged under (StructFieldGet mstats.underlying go!"last_gc_unix") #x (Val #(x.last_gc_unix'))
   set_last_gc_unix : ∀ (x : mstats) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"last_gc_unix") (PairV #x #y) (Val #(({ x with last_gc_unix' := y } : mstats)))
   get_pause_total_ns : ∀ (x : mstats), go.IsGoStepPureDetTagged under (StructFieldGet mstats.underlying go!"pause_total_ns") #x (Val #(x.pause_total_ns'))
@@ -61,7 +61,7 @@ class mstats.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   get_lastHeapInUse : ∀ (x : mstats), go.IsGoStepPureDetTagged under (StructFieldGet mstats.underlying go!"lastHeapInUse") #x (Val #(x.lastHeapInUse'))
   set_lastHeapInUse : ∀ (x : mstats) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"lastHeapInUse") (PairV #x #y) (Val #(({ x with lastHeapInUse' := y } : mstats)))
   get_lastScanStats : ∀ (x : mstats), go.IsGoStepPureDetTagged under (StructFieldGet mstats.underlying go!"lastScanStats") #x (Val #(x.lastScanStats'))
-  set_lastScanStats : ∀ (x : mstats) (y : (GoArray sizeClassScanStats 68)), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"lastScanStats") (PairV #x #y) (Val #(({ x with lastScanStats' := y } : mstats)))
+  set_lastScanStats : ∀ (x : mstats) (y : (GoArray _root_.Perennial.runtime.sizeClassScanStats 68)), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"lastScanStats") (PairV #x #y) (Val #(({ x with lastScanStats' := y } : mstats)))
   get_enablegc : ∀ (x : mstats), go.IsGoStepPureDetTagged under (StructFieldGet mstats.underlying go!"enablegc") #x (Val #(x.enablegc'))
   set_enablegc : ∀ (x : mstats) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet mstats.underlying go!"enablegc") (PairV #x #y) (Val #(({ x with enablegc' := y } : mstats)))
   method_set : go.MethodSetIs mstats.ty []
@@ -291,7 +291,7 @@ class timer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   type_repr : go.TypeReprUnderlying timer.underlying timer
   underlying : go.UnderlyingDirectedEq timer.ty timer.underlying
   get_mu : ∀ (x : timer), go.IsGoStepPureDetTagged under (StructFieldGet timer.underlying go!"mu") #x (Val #(x.mu'))
-  set_mu : ∀ (x : timer) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet timer.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : timer)))
+  set_mu : ∀ (x : timer) (y : _root_.Perennial.runtime.mutex), go.IsGoStepPureDetTagged under (StructFieldSet timer.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : timer)))
   get_astate : ∀ (x : timer), go.IsGoStepPureDetTagged under (StructFieldGet timer.underlying go!"astate") #x (Val #(x.astate'))
   set_astate : ∀ (x : timer) (y : _root_.Perennial.internal.runtime.atomic.Uint8), go.IsGoStepPureDetTagged under (StructFieldSet timer.underlying go!"astate") (PairV #x #y) (Val #(({ x with astate' := y } : timer)))
   get_state : ∀ (x : timer), go.IsGoStepPureDetTagged under (StructFieldGet timer.underlying go!"state") #x (Val #(x.state'))
@@ -317,7 +317,7 @@ class timer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
   get_ts : ∀ (x : timer), go.IsGoStepPureDetTagged under (StructFieldGet timer.underlying go!"ts") #x (Val #(x.ts'))
   set_ts : ∀ (x : timer) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet timer.underlying go!"ts") (PairV #x #y) (Val #(({ x with ts' := y } : timer)))
   get_sendLock : ∀ (x : timer), go.IsGoStepPureDetTagged under (StructFieldGet timer.underlying go!"sendLock") #x (Val #(x.sendLock'))
-  set_sendLock : ∀ (x : timer) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet timer.underlying go!"sendLock") (PairV #x #y) (Val #(({ x with sendLock' := y } : timer)))
+  set_sendLock : ∀ (x : timer) (y : _root_.Perennial.runtime.mutex), go.IsGoStepPureDetTagged under (StructFieldSet timer.underlying go!"sendLock") (PairV #x #y) (Val #(({ x with sendLock' := y } : timer)))
   get_isSending : ∀ (x : timer), go.IsGoStepPureDetTagged under (StructFieldGet timer.underlying go!"isSending") #x (Val #(x.isSending'))
   set_isSending : ∀ (x : timer) (y : _root_.Perennial.internal.runtime.atomic.Int32), go.IsGoStepPureDetTagged under (StructFieldSet timer.underlying go!"isSending") (PairV #x #y) (Val #(({ x with isSending' := y } : timer)))
   method_set : go.MethodSetIs timer.ty []
@@ -376,7 +376,7 @@ class pollDesc.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   get_wg : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"wg") #x (Val #(x.wg'))
   set_wg : ∀ (x : pollDesc) (y : _root_.Perennial.internal.runtime.atomic.Uintptr), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"wg") (PairV #x #y) (Val #(({ x with wg' := y } : pollDesc)))
   get_lock : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"lock") #x (Val #(x.lock'))
-  set_lock : ∀ (x : pollDesc) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : pollDesc)))
+  set_lock : ∀ (x : pollDesc) (y : _root_.Perennial.runtime.mutex), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : pollDesc)))
   get_closing : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"closing") #x (Val #(x.closing'))
   set_closing : ∀ (x : pollDesc) (y : Bool), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"closing") (PairV #x #y) (Val #(({ x with closing' := y } : pollDesc)))
   get_rrun : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"rrun") #x (Val #(x.rrun'))
@@ -388,13 +388,13 @@ class pollDesc.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   get_rseq : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"rseq") #x (Val #(x.rseq'))
   set_rseq : ∀ (x : pollDesc) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"rseq") (PairV #x #y) (Val #(({ x with rseq' := y } : pollDesc)))
   get_rt : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"rt") #x (Val #(x.rt'))
-  set_rt : ∀ (x : pollDesc) (y : timer), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"rt") (PairV #x #y) (Val #(({ x with rt' := y } : pollDesc)))
+  set_rt : ∀ (x : pollDesc) (y : _root_.Perennial.runtime.timer), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"rt") (PairV #x #y) (Val #(({ x with rt' := y } : pollDesc)))
   get_rd : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"rd") #x (Val #(x.rd'))
   set_rd : ∀ (x : pollDesc) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"rd") (PairV #x #y) (Val #(({ x with rd' := y } : pollDesc)))
   get_wseq : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"wseq") #x (Val #(x.wseq'))
   set_wseq : ∀ (x : pollDesc) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"wseq") (PairV #x #y) (Val #(({ x with wseq' := y } : pollDesc)))
   get_wt : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"wt") #x (Val #(x.wt'))
-  set_wt : ∀ (x : pollDesc) (y : timer), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"wt") (PairV #x #y) (Val #(({ x with wt' := y } : pollDesc)))
+  set_wt : ∀ (x : pollDesc) (y : _root_.Perennial.runtime.timer), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"wt") (PairV #x #y) (Val #(({ x with wt' := y } : pollDesc)))
   get_wd : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"wd") #x (Val #(x.wd'))
   set_wd : ∀ (x : pollDesc) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet pollDesc.underlying go!"wd") (PairV #x #y) (Val #(({ x with wd' := y } : pollDesc)))
   get_self : ∀ (x : pollDesc), go.IsGoStepPureDetTagged under (StructFieldGet pollDesc.underlying go!"self") #x (Val #(x.self'))
@@ -458,7 +458,7 @@ class pollCache.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying pollCache.underlying pollCache
   underlying : go.UnderlyingDirectedEq pollCache.ty pollCache.underlying
   get_lock : ∀ (x : pollCache), go.IsGoStepPureDetTagged under (StructFieldGet pollCache.underlying go!"lock") #x (Val #(x.lock'))
-  set_lock : ∀ (x : pollCache) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet pollCache.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : pollCache)))
+  set_lock : ∀ (x : pollCache) (y : _root_.Perennial.runtime.mutex), go.IsGoStepPureDetTagged under (StructFieldSet pollCache.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : pollCache)))
   get_first : ∀ (x : pollCache), go.IsGoStepPureDetTagged under (StructFieldGet pollCache.underlying go!"first") #x (Val #(x.first'))
   set_first : ∀ (x : pollCache) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet pollCache.underlying go!"first") (PairV #x #y) (Val #(({ x with first' := y } : pollCache)))
   method_set : go.MethodSetIs pollCache.ty []
@@ -889,7 +889,7 @@ class xRegState.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   «get__#0» : ∀ (x : xRegState), go.IsGoStepPureDetTagged under (StructFieldGet xRegState.underlying go!"_#0") #x (Val #(x.«_#0'»))
   «set__#0» : ∀ (x : xRegState) (y : _root_.Perennial.internal.runtime.sys.NotInHeap), go.IsGoStepPureDetTagged under (StructFieldSet xRegState.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : xRegState)))
   get_regs : ∀ (x : xRegState), go.IsGoStepPureDetTagged under (StructFieldGet xRegState.underlying go!"regs") #x (Val #(x.regs'))
-  set_regs : ∀ (x : xRegState) (y : xRegs), go.IsGoStepPureDetTagged under (StructFieldSet xRegState.underlying go!"regs") (PairV #x #y) (Val #(({ x with regs' := y } : xRegState)))
+  set_regs : ∀ (x : xRegState) (y : _root_.Perennial.runtime.xRegs), go.IsGoStepPureDetTagged under (StructFieldSet xRegState.underlying go!"regs") (PairV #x #y) (Val #(({ x with regs' := y } : xRegState)))
   method_set : go.MethodSetIs xRegState.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType xRegState.ty) []
 
@@ -921,7 +921,7 @@ class xRegPerP.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   type_repr : go.TypeReprUnderlying xRegPerP.underlying xRegPerP
   underlying : go.UnderlyingDirectedEq xRegPerP.ty xRegPerP.underlying
   get_scratch : ∀ (x : xRegPerP), go.IsGoStepPureDetTagged under (StructFieldGet xRegPerP.underlying go!"scratch") #x (Val #(x.scratch'))
-  set_scratch : ∀ (x : xRegPerP) (y : xRegs), go.IsGoStepPureDetTagged under (StructFieldSet xRegPerP.underlying go!"scratch") (PairV #x #y) (Val #(({ x with scratch' := y } : xRegPerP)))
+  set_scratch : ∀ (x : xRegPerP) (y : _root_.Perennial.runtime.xRegs), go.IsGoStepPureDetTagged under (StructFieldSet xRegPerP.underlying go!"scratch") (PairV #x #y) (Val #(({ x with scratch' := y } : xRegPerP)))
   get_cache : ∀ (x : xRegPerP), go.IsGoStepPureDetTagged under (StructFieldGet xRegPerP.underlying go!"cache") #x (Val #(x.cache'))
   set_cache : ∀ (x : xRegPerP) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet xRegPerP.underlying go!"cache") (PairV #x #y) (Val #(({ x with cache' := y } : xRegPerP)))
   method_set : go.MethodSetIs xRegPerP.ty []
@@ -967,7 +967,7 @@ class worldStop.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   type_repr : go.TypeReprUnderlying worldStop.underlying worldStop
   underlying : go.UnderlyingDirectedEq worldStop.ty worldStop.underlying
   get_reason : ∀ (x : worldStop), go.IsGoStepPureDetTagged under (StructFieldGet worldStop.underlying go!"reason") #x (Val #(x.reason'))
-  set_reason : ∀ (x : worldStop) (y : stwReason), go.IsGoStepPureDetTagged under (StructFieldSet worldStop.underlying go!"reason") (PairV #x #y) (Val #(({ x with reason' := y } : worldStop)))
+  set_reason : ∀ (x : worldStop) (y : _root_.Perennial.runtime.stwReason), go.IsGoStepPureDetTagged under (StructFieldSet worldStop.underlying go!"reason") (PairV #x #y) (Val #(({ x with reason' := y } : worldStop)))
   get_startedStopping : ∀ (x : worldStop), go.IsGoStepPureDetTagged under (StructFieldGet worldStop.underlying go!"startedStopping") #x (Val #(x.startedStopping'))
   set_startedStopping : ∀ (x : worldStop) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet worldStop.underlying go!"startedStopping") (PairV #x #y) (Val #(({ x with startedStopping' := y } : worldStop)))
   get_finishedStopping : ∀ (x : worldStop), go.IsGoStepPureDetTagged under (StructFieldGet worldStop.underlying go!"finishedStopping") #x (Val #(x.finishedStopping'))
@@ -994,7 +994,7 @@ class cgothreadstart.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalConte
   type_repr : go.TypeReprUnderlying cgothreadstart.underlying cgothreadstart
   underlying : go.UnderlyingDirectedEq cgothreadstart.ty cgothreadstart.underlying
   get_g : ∀ (x : cgothreadstart), go.IsGoStepPureDetTagged under (StructFieldGet cgothreadstart.underlying go!"g") #x (Val #(x.g'))
-  set_g : ∀ (x : cgothreadstart) (y : guintptr), go.IsGoStepPureDetTagged under (StructFieldSet cgothreadstart.underlying go!"g") (PairV #x #y) (Val #(({ x with g' := y } : cgothreadstart)))
+  set_g : ∀ (x : cgothreadstart) (y : _root_.Perennial.runtime.guintptr), go.IsGoStepPureDetTagged under (StructFieldSet cgothreadstart.underlying go!"g") (PairV #x #y) (Val #(({ x with g' := y } : cgothreadstart)))
   get_tls : ∀ (x : cgothreadstart), go.IsGoStepPureDetTagged under (StructFieldGet cgothreadstart.underlying go!"tls") #x (Val #(x.tls'))
   set_tls : ∀ (x : cgothreadstart) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet cgothreadstart.underlying go!"tls") (PairV #x #y) (Val #(({ x with tls' := y } : cgothreadstart)))
   get_fn : ∀ (x : cgothreadstart), go.IsGoStepPureDetTagged under (StructFieldGet cgothreadstart.underlying go!"fn") #x (Val #(x.fn'))
@@ -1071,7 +1071,7 @@ class updateMaxProcsGState.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLoca
   type_repr : go.TypeReprUnderlying updateMaxProcsGState.underlying updateMaxProcsGState
   underlying : go.UnderlyingDirectedEq updateMaxProcsGState.ty updateMaxProcsGState.underlying
   get_lock : ∀ (x : updateMaxProcsGState), go.IsGoStepPureDetTagged under (StructFieldGet updateMaxProcsGState.underlying go!"lock") #x (Val #(x.lock'))
-  set_lock : ∀ (x : updateMaxProcsGState) (y : mutex), go.IsGoStepPureDetTagged under (StructFieldSet updateMaxProcsGState.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : updateMaxProcsGState)))
+  set_lock : ∀ (x : updateMaxProcsGState) (y : _root_.Perennial.runtime.mutex), go.IsGoStepPureDetTagged under (StructFieldSet updateMaxProcsGState.underlying go!"lock") (PairV #x #y) (Val #(({ x with lock' := y } : updateMaxProcsGState)))
   get_g : ∀ (x : updateMaxProcsGState), go.IsGoStepPureDetTagged under (StructFieldGet updateMaxProcsGState.underlying go!"g") #x (Val #(x.g'))
   set_g : ∀ (x : updateMaxProcsGState) (y : Loc), go.IsGoStepPureDetTagged under (StructFieldSet updateMaxProcsGState.underlying go!"g") (PairV #x #y) (Val #(({ x with g' := y } : updateMaxProcsGState)))
   get_idle : ∀ (x : updateMaxProcsGState), go.IsGoStepPureDetTagged under (StructFieldGet updateMaxProcsGState.underlying go!"idle") #x (Val #(x.idle'))
@@ -1107,9 +1107,9 @@ class gQueue.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   type_repr : go.TypeReprUnderlying gQueue.underlying gQueue
   underlying : go.UnderlyingDirectedEq gQueue.ty gQueue.underlying
   get_head : ∀ (x : gQueue), go.IsGoStepPureDetTagged under (StructFieldGet gQueue.underlying go!"head") #x (Val #(x.head'))
-  set_head : ∀ (x : gQueue) (y : guintptr), go.IsGoStepPureDetTagged under (StructFieldSet gQueue.underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : gQueue)))
+  set_head : ∀ (x : gQueue) (y : _root_.Perennial.runtime.guintptr), go.IsGoStepPureDetTagged under (StructFieldSet gQueue.underlying go!"head") (PairV #x #y) (Val #(({ x with head' := y } : gQueue)))
   get_tail : ∀ (x : gQueue), go.IsGoStepPureDetTagged under (StructFieldGet gQueue.underlying go!"tail") #x (Val #(x.tail'))
-  set_tail : ∀ (x : gQueue) (y : guintptr), go.IsGoStepPureDetTagged under (StructFieldSet gQueue.underlying go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : gQueue)))
+  set_tail : ∀ (x : gQueue) (y : _root_.Perennial.runtime.guintptr), go.IsGoStepPureDetTagged under (StructFieldSet gQueue.underlying go!"tail") (PairV #x #y) (Val #(({ x with tail' := y } : gQueue)))
   get_size : ∀ (x : gQueue), go.IsGoStepPureDetTagged under (StructFieldGet gQueue.underlying go!"size") #x (Val #(x.size'))
   set_size : ∀ (x : gQueue) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet gQueue.underlying go!"size") (PairV #x #y) (Val #(({ x with size' := y } : gQueue)))
   method_set : go.MethodSetIs gQueue.ty []
