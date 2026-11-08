@@ -1007,6 +1007,9 @@ noncomputable def fancyTypeSwitch [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def multiTypeSwitch [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.multiTypeSwitch"
 
+noncomputable def multiTypeSwitchLast [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.multiTypeSwitchLast"
+
 noncomputable def variadicFunc [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.variadicFunc"
 
@@ -5698,7 +5701,7 @@ noncomputable def multiTypeSwitch.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
   (Let "$y" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
-  (Let "$ok" (If (Snd (App (Val (GoInstruction (TypeAssert2 go.int))) (Var "$y"))) (Val #true) (Snd (App (Val (GoInstruction (TypeAssert2 go.int))) (Var "$y"))))
+  (Let "$ok" (If (Snd (App (Val (GoInstruction (TypeAssert2 go.string))) (Var "$y"))) (Val #true) (Snd (App (Val (GoInstruction (TypeAssert2 go.int))) (Var "$y"))))
   (Let "$x" (Var "$y")
   (If (Var "$ok")
   (Let "$r0" (Val #(W64 1))
@@ -5709,6 +5712,43 @@ noncomputable def multiTypeSwitch.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
   (App (Val doExecute)
   (Val #())))))))))
+  (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
+
+/-- go: type_switch.go:52:6 -/
+noncomputable def multiTypeSwitchLast.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$y" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
+  (Let "$ok" (If (Snd (App (Val (GoInstruction (TypeAssert2 go.string))) (Var "$y"))) (Val #true) (Snd (App (Val (GoInstruction (TypeAssert2 go.int))) (Var "$y"))))
+  (Let "$x" (Var "$y")
+  (If (Var "$ok")
+  (Let "$r0" (Val #(W64 1))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.bool))) (Var "$y"))
+  (Let "$x" (Fst (Var "__p"))
+  (Let "$ok" (Snd (Var "__p"))
+  (If (Var "$ok")
+  (Let "$r0" (Val #(W64 2))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")))))
 
 /-- go: varargs.go:3:6 -/
@@ -7708,6 +7748,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   basicTypeSwitch_unfold : FuncUnfold basicTypeSwitch [] basicTypeSwitch.impl
   fancyTypeSwitch_unfold : FuncUnfold fancyTypeSwitch [] fancyTypeSwitch.impl
   multiTypeSwitch_unfold : FuncUnfold multiTypeSwitch [] multiTypeSwitch.impl
+  multiTypeSwitchLast_unfold : FuncUnfold multiTypeSwitchLast [] multiTypeSwitchLast.impl
   variadicFunc_unfold : FuncUnfold variadicFunc [] variadicFunc.impl
   testVariadicCall_unfold : FuncUnfold testVariadicCall [] testVariadicCall.impl
   returnMultiple_unfold : FuncUnfold returnMultiple [] returnMultiple.impl
@@ -7971,6 +8012,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.basicTypeSwitch_unfold
   Assumptions.fancyTypeSwitch_unfold
   Assumptions.multiTypeSwitch_unfold
+  Assumptions.multiTypeSwitchLast_unfold
   Assumptions.variadicFunc_unfold
   Assumptions.testVariadicCall_unfold
   Assumptions.returnMultiple_unfold

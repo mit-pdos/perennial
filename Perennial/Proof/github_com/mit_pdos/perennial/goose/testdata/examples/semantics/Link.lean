@@ -76,6 +76,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testStructFieldThroughAlias
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testStructUpdates
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTypeAssertionInterface
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTypeSwitchLastType
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testU32Len
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testU32NewtypeLen
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testU32ToU64
@@ -307,6 +308,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testS
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testTypeAssertionInterface : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTypeAssertionInterface.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTypeAssertionInterface.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testTypeSwitchLastType : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTypeSwitchLastType.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testTypeSwitchLastType.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testU32Len : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testU32Len.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testU32Len.wp_proof

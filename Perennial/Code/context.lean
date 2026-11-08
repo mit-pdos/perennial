@@ -1774,7 +1774,7 @@ noncomputable def value.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "$res0") (Var "$r0"))))))
   (App (Val doExecute)
   (Val #())))))
-  (Let "$ok" (If (Snd (App (Val (GoInstruction (TypeAssert2 backgroundCtx.ty))) (Var "$y"))) (Val #true) (Snd (App (Val (GoInstruction (TypeAssert2 backgroundCtx.ty))) (Var "$y"))))
+  (Let "$ok" (If (Snd (App (Val (GoInstruction (TypeAssert2 todoCtx.ty))) (Var "$y"))) (Val #true) (Snd (App (Val (GoInstruction (TypeAssert2 backgroundCtx.ty))) (Var "$y"))))
   (Let "$x" (Var "$y")
   (If (Var "$ok")
   (Let "ctx" (App (Val (GoInstruction (GoAlloc Context.ty))) (Var "$x"))

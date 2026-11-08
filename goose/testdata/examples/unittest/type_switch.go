@@ -48,3 +48,13 @@ func multiTypeSwitch(x any) int {
 	}
 	return 0
 }
+
+func multiTypeSwitchLast(x any) int {
+	switch x.(type) {
+	case int, string:
+		return 1
+	case bool:
+		return 2
+	}
+	return 0
+}

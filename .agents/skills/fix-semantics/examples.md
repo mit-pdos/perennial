@@ -1108,3 +1108,39 @@ changes in the future". cf98e5f15 and 432c32f are rejected precedent: when a mod
 defined than Go, make it stuck where Go fails by modelling the state Go depends on; never
 delete the model in favour of axioms, and never mint a token as an `opaque` proposition whose
 meaning only axioms fix (review-trusted R10). Plan signed off 2026-11-04 ("Make it so.").
+
+## Case 35 — ACCEPTED: a type-switch case listing several types tests the last one (branch `goose-typeswitch-multi`)
+
+**Symptom.** Translation wrong (unsound). `typeSwitchStmt` built a multi-type case's condition with
+`for i := range c.List[1:] { ... getCond(i) ... }`: `i` runs `0 .. n-2`, so `case T1, ..., Tn:` tested
+`T1` twice and never `Tn`, and a `Tn` value skipped the case's body. At `lean`, `multiTypeSwitch`'s
+gold was `int || int`, and `context.value`'s `case backgroundCtx, todoCtx:` was `backgroundCtx` twice
+(harmless there: a `todoCtx` reached `default`, `emptyCtx.Value`, `nil`).
+
+**Witness.**
+
+```go
+func lastPanics(x any) int {
+	switch x.(type) {
+	case int, string:
+		panic("int or string")
+	default:
+		return 0
+	}
+}
+// lastPanics("s"): Go panics; the model returned 0.
+```
+
+**Taken.** One line in `goose.go`: `getCond(i + 1)`. Plus a semantics test
+(`testTypeSwitchLastType`, proved by `semantics_auto`), a unittest gold function
+(`multiTypeSwitchLast`, whose last listed type takes a different branch), regenerated gold, and the
+two re-translated bodies (`context.value`, the goose unittest). `unittest.multiTypeSwitch.wp_proof`
+gains the `string` branch. Cost: 1 changed goose line, 0 new branches, 0 semantics rules. The plan:
+`docs/design/goose-typeswitch-multi.md`.
+
+**Why it is the right shape.** As in Case 2: one wrong line in an existing translation scheme ("the
+case is taken if `y` asserts to any listed type"), fixed in place. Siblings checked: the expression
+switch indexes its cases from 1 correctly; no other loop over `X[1:]` uses its index into `X`.
+
+**Sign-off.** The user signed off the plan as written (2026-11-08, relayed by etcd-grove-81). Found by
+etcd-grove while writing the `ctx-value` design.

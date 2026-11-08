@@ -1,7 +1,7 @@
 # Plan: goose tests every type of a multi-type type-switch case
 
-- **Date:** 2026-11-08. **Status:** plan for the user's sign-off (`.agents/skills/fix-semantics/SKILL.md`,
-  step 3). No trusted file is changed until it is signed off.
+- **Date:** 2026-11-08. **Status:** **signed off by the user (2026-11-08, as written; relayed by
+  etcd-grove-81)**; implemented on this branch (`.agents/skills/fix-semantics/SKILL.md`, steps 4-6).
 - **Branch:** `goose-typeswitch-multi`, off `lean` at `84d538063`.
 - **Found by:** etcd-grove (sweep repairs 1), while writing the `ctx-value` design
   (`docs/design/context-value.md` on branch `ctx-value`, a separate and later landing).

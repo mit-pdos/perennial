@@ -602,6 +602,9 @@ noncomputable def testFallthroughBreak [GooseExts] [GoGlobalContext] : GoString 
 noncomputable def testBreakTypeSwitch [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBreakTypeSwitch"
 
+noncomputable def testTypeSwitchLastType [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testTypeSwitchLastType"
+
 noncomputable def testBreakSelect [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBreakSelect"
 
@@ -2947,7 +2950,40 @@ noncomputable def testBreakTypeSwitch.impl [GooseExts] [GoGlobalContext] : val :
   (App (Val (GoInstruction (GoStore (go.GoType.InterfaceType [])))) (Pair (Var "x") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
-/-- go: control_flow.go:113:6 -/
+/-- A type-switch case listing several types is taken for each of them, the last included.
+
+    go: control_flow.go:114:6 -/
+noncomputable def testTypeSwitchLastType.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (Val (GoInstruction (Convert go.string go.any))) (Val #(go!"s")))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (App (Val (GoInstruction (GoZeroVal go.any))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$y" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
+  (Let "$ok" (If (Snd (App (Val (GoInstruction (TypeAssert2 go.string))) (Var "$y"))) (Val #true) (Snd (App (Val (GoInstruction (TypeAssert2 go.int))) (Var "$y"))))
+  (Let "$x" (Var "$y")
+  (If (Var "$ok")
+  (Let "$r0" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #())))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.any))) (Pair (Var "x") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: control_flow.go:123:6 -/
 noncomputable def testBreakSelect.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -3001,7 +3037,7 @@ noncomputable def testBreakSelect.impl [GooseExts] [GoGlobalContext] : val :=
 
 /-- an empty block does not end the statements after it
 
-    go: control_flow.go:131:6 -/
+    go: control_flow.go:141:6 -/
 noncomputable def testEmptyBlock.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
@@ -14086,6 +14122,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testBreakLoopInSwitch_unfold : FuncUnfold testBreakLoopInSwitch [] testBreakLoopInSwitch.impl
   testFallthroughBreak_unfold : FuncUnfold testFallthroughBreak [] testFallthroughBreak.impl
   testBreakTypeSwitch_unfold : FuncUnfold testBreakTypeSwitch [] testBreakTypeSwitch.impl
+  testTypeSwitchLastType_unfold : FuncUnfold testTypeSwitchLastType [] testTypeSwitchLastType.impl
   testBreakSelect_unfold : FuncUnfold testBreakSelect [] testBreakSelect.impl
   testEmptyBlock_unfold : FuncUnfold testEmptyBlock [] testEmptyBlock.impl
   literalCast_unfold : FuncUnfold literalCast [] literalCast.impl
@@ -14462,6 +14499,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testBreakLoopInSwitch_unfold
   Assumptions.testFallthroughBreak_unfold
   Assumptions.testBreakTypeSwitch_unfold
+  Assumptions.testTypeSwitchLastType_unfold
   Assumptions.testBreakSelect_unfold
   Assumptions.testEmptyBlock_unfold
   Assumptions.literalCast_unfold

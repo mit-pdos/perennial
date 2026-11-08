@@ -163,6 +163,10 @@ func (suite *GoTestSuite) TestBreakTypeSwitch() {
 	suite.Equal(true, testBreakTypeSwitch())
 }
 
+func (suite *GoTestSuite) TestTypeSwitchLastType() {
+	suite.Equal(true, testTypeSwitchLastType())
+}
+
 func (suite *GoTestSuite) TestBreakSelect() {
 	suite.Equal(true, testBreakSelect())
 }

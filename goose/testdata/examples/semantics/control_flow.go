@@ -110,6 +110,16 @@ func testBreakTypeSwitch() bool {
 	return n == 2
 }
 
+// A type-switch case listing several types is taken for each of them, the last included.
+func testTypeSwitchLastType() bool {
+	var x any = "s"
+	switch x.(type) {
+	case int, string:
+		return true
+	}
+	return false
+}
+
 func testBreakSelect() bool {
 	c := make(chan uint64, 1)
 	var n uint64

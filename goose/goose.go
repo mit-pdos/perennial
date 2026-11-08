@@ -2415,7 +2415,7 @@ func (ctx *Ctx) typeSwitchStmt(s *ast.TypeSwitchStmt, cont glang.Expr) (e glang.
 					OpId: glang.OpLOr,
 					Type: glang.VerbatimExpr("go.bool"),
 				},
-					X: getCond(i), Y: cond}
+					X: getCond(i + 1), Y: cond}
 			}
 			e = glang.LetExpr{Names: []string{"$ok"}, ValExpr: cond, Cont: e}
 		} else {
