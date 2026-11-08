@@ -13,7 +13,8 @@ Proved: `wp_Background`; `wp_WithCancel_Background` (`WithCancel(Background())`)
 `wp_WithCancel` for a parent that is itself a `*cancelCtx` made by `WithCancel`
 (`isCancelCtxCtx`), and `wp_WithCancel_any` for any parent (`isContext`; the new context's Done
 proposition is then `True`); the `*cancelCtx` methods (`wp_cancelCtx_Done`, `wp_cancelCtx_Err`,
-`wp_cancelCtx_Value`, `wp_cancelCtx_cancel`); `propagateCancel` (`wp_propagateCancel_background`,
+`wp_cancelCtx_Value`, `wp_cancelCtx_cancel`); `Value` at the other keys (`CtxValue.lean`:
+`ctxValue`, and `ctxValueFrom` in the constructors' posts); `propagateCancel` (`wp_propagateCancel_background`,
 `wp_propagateCancel_cancelCtx`, and `wp_propagateCancel_any` for any `isContext` parent and a
 child whose `cancel` needs nothing of the parent); `wp_withCancel`, `wp_WithCancel_gen`,
 `wp_removeChild`; `wp_parentCancelCtx` (any context), `wp_parentCancelCtx_background`,

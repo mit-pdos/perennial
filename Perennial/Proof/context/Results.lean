@@ -211,7 +211,8 @@ theorem wp_WithCancel_any (parent : GoInterfaceOk) (s : ContextDesc (IProp GF)) 
     {{ (ctx' : GoInterfaceOk) (γ' : ContextNames) (cancel : GoFunc),
         RET (PairV #(interface.ok ctx') #cancel);
         cancelSpec cancel γ' iprop(True) ∗
-        isContext ctx' { s with PDone := iprop(True), Done_gn := γ' } }} :=
+        isContext ctx' { s with PDone := iprop(True), Done_gn := γ' } ∗
+        ctxValueFrom parent ctx' }} :=
   wp_WithCancel_any_of wp_withCancel cancelCtx.wp_cancel cancelCtx.wp_propagateCancel
     cancelCtx.wp_Done cancelCtx.wp_Err cancelCtx.wp_Value sync.atomic.Value.wp_Load parent s
 
@@ -226,7 +227,8 @@ theorem wp_WithCancel_Background (PDone' : IProp GF) :
         □ (∀ Φ : val → IProp GF, □ PDone' -∗ ▷ (ContextClosed γ' -∗ Φ #()) -∗
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
         isContext ctx' { Values := ∅, Deadline := none, Done_gn := γ', PDone := PDone' } ∗
-        isCancelCtxCtx ctx' { Values := ∅, Deadline := none, Done_gn := γ', PDone := PDone' } }} :=
+        isCancelCtxCtx ctx' { Values := ∅, Deadline := none, Done_gn := γ', PDone := PDone' } ∗
+        ctxValueFrom backgroundCtxVal ctx' }} :=
   wp_WithCancel_Background_of wp_withCancel cancelCtx.wp_cancel cancelCtx.wp_propagateCancel
     cancelCtx.wp_Done cancelCtx.wp_Err cancelCtx.wp_Value sync.atomic.Value.wp_Load PDone'
 
@@ -312,7 +314,7 @@ theorem wp_WithDeadlineCause_Background (d : time.Time) (cause : GoError) :
         RET (PairV #(interface.ok ctx') #cancel);
         □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
-        isContext ctx' (bgDeadlineDesc d γ') }} :=
+        isContext ctx' (bgDeadlineDesc d γ') ∗ ctxValueFrom backgroundCtxVal ctx' }} :=
   wp_WithDeadlineCause_Background_of sync.Mutex.wp_Lock sync.Mutex.wp_Unlock
     sync.atomic.Value.wp_Load time.wp_Until time.wp_AfterFunc cancelCtx.wp_Done cancelCtx.wp_Err
     cancelCtx.wp_Value cancelCtx.wp_propagateCancel timerCtx.wp_cancel d cause
@@ -325,7 +327,7 @@ theorem wp_WithDeadline_Background (d : time.Time) :
         RET (PairV #(interface.ok ctx') #cancel);
         □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
-        isContext ctx' (bgDeadlineDesc d γ') }} :=
+        isContext ctx' (bgDeadlineDesc d γ') ∗ ctxValueFrom backgroundCtxVal ctx' }} :=
   wp_WithDeadline_Background_of sync.Mutex.wp_Lock sync.Mutex.wp_Unlock
     sync.atomic.Value.wp_Load time.wp_Until time.wp_AfterFunc cancelCtx.wp_Done cancelCtx.wp_Err
     cancelCtx.wp_Value cancelCtx.wp_propagateCancel timerCtx.wp_cancel d
@@ -340,7 +342,7 @@ theorem wp_WithTimeout_Background (tmo : time.Duration) :
         RET (PairV #(interface.ok ctx') #cancel);
         □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
-        isContext ctx' (bgDeadlineDesc d γ') }} :=
+        isContext ctx' (bgDeadlineDesc d γ') ∗ ctxValueFrom backgroundCtxVal ctx' }} :=
   wp_WithTimeout_Background_of time.Time.wp_Add time.wp_Now sync.Mutex.wp_Lock
     sync.Mutex.wp_Unlock sync.atomic.Value.wp_Load time.wp_Until time.wp_AfterFunc
     cancelCtx.wp_Done cancelCtx.wp_Err cancelCtx.wp_Value cancelCtx.wp_propagateCancel

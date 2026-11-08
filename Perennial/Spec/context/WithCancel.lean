@@ -3,7 +3,7 @@
 -/
 module
 
-public import Perennial.Proof.context.Base
+public import Perennial.Proof.context.CtxValue
 
 @[expose] public section
 
@@ -42,7 +42,8 @@ abbrev context.WithCancel.spec : Prop :=
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
         isContext ctx' { ctx_desc with PDone := iprop(ctx_desc.PDone ∨ PDone'), Done_gn := γ' } ∗
         isCancelCtxCtx ctx'
-          { ctx_desc with PDone := iprop(ctx_desc.PDone ∨ PDone'), Done_gn := γ' } }}
+          { ctx_desc with PDone := iprop(ctx_desc.PDone ∨ PDone'), Done_gn := γ' } ∗
+        ctxValueFrom ctx ctx' }}
 
 end spec
 

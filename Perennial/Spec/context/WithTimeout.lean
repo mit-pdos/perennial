@@ -3,7 +3,7 @@
 -/
 module
 
-public import Perennial.Proof.context.Base
+public import Perennial.Proof.context.CtxValue
 
 @[expose] public section
 
@@ -30,7 +30,8 @@ abbrev context.WithTimeout.spec : Prop :=
         □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
         isContext ctx'
-          { parent_desc with Deadline := some d, PDone := iprop(True), Done_gn := γ' } }}
+          { parent_desc with Deadline := some d, PDone := iprop(True), Done_gn := γ' } ∗
+        ctxValueFrom parent ctx' }}
 
 end spec
 

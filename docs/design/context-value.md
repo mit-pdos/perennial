@@ -1,6 +1,7 @@
 # Design: `Context.Value` at keys other than `&cancelCtxKey`
 
-- **Date:** 2026-11-08. **Status:** proposal, for review. Nothing here is implemented.
+- **Date:** 2026-11-08. **Status:** approved in principle (etcd-grove-81, 2026-11-08); **implemented** on
+  this branch, with the changes listed in §7.
 - **Branch:** `ctx-value`, off `lean` at `84d538063`.
 - **Requested by:** etcd-grove, for two needs that are one family:
   - **B2-F1** (sweep repairs 1). `ctx.Value(StartTimeKey{})` and `ctx.Value(keepAliveCtxKey{})` for
@@ -161,3 +162,26 @@ In `context.value` it is harmless: a `todoCtx` reaches `default`, whose `c.Value
 The only multi-type cases in the translations etcd-grove and Perennial check in are these two
 (a grep for the pattern). The fix goes through `.agents/skills/fix-semantics/SKILL.md` as its own
 bug, with the user's sign-off. It is not part of this proposal.
+
+## 7. As implemented (2026-11-08)
+
+- `Perennial/Proof/context/CtxValue.lean` (not `Value.lean`: a proof file of the Go function `value`
+  would be `value.lean`). `ctxValue x k R := ∃ l, ctxChain k R x l`, where `ctxChain` walks a list of
+  links (`CtxLink.cancel c`, `.timer c`, `.valCtx q key val`) ending at a root (`Background()`,
+  `TODO()`, or a context of another type with its own `Value` spec). Persistent, not sealed (it is
+  a description, and clients only build it with the laws).
+- The key premise of L2/L3 is `notIntPtrKey k` (`k` holds no `*int`), not `k ≠ &cancelCtxKey`: an
+  interface comparison of two `*int`s compares their values, which the model reduces only for a
+  pointer value, so a non-`*int` key is what is needed and what every client key is.
+- L4's comparison premise `keyEqOk k key` is stated at the comparison's own step
+  (`CheckComparable t ;; GoOp GoEquals t (v, v')`) for both orders, the form the interface rule
+  reduces `==` on two `any`s of the same dynamic type to.
+- The constructors' posts gain `ctxValueFrom parent ctx'` (`□ ∀ k R, ⌜notIntPtrKey k⌝ -∗ ctxValue
+  parent k R -∗ ctxValue ctx' k R`): `WithCancel.spec`, `wp_WithCancel_any`,
+  `wp_WithCancel_Background` (`parent = backgroundCtxVal`, with `ctxValue_background`),
+  `WithDeadlineCause.spec`, `WithDeadline.spec`, `WithTimeout.spec` and the three `*_Background`
+  deadline results.
+- Results: `wp_value`, `ctxValue_Value` (both take `isPkgInit context`), `ctxValue_mono`, the laws
+  `ctxValue_background`, `ctxValue_todo`, `ctxValue_cancel`, `ctxValue_timer`, `ctxValue_valueCtx`,
+  `ctxValue_other`, and `ctxValueFrom_cancel`, `ctxValueFrom_timer`.
+

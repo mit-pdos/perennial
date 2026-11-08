@@ -34,7 +34,7 @@ theorem context.WithTimeout.wp_proof
   wp_auto
   wp_apply wp_Now as %now -
   wp_apply wp_TAdd as %d -
-  wp_apply wp_WithDeadline $$ [$Hctx] as %ctx' %γ' %cancel %d' ⟨-, #Hcancel, #Hctx'⟩
+  wp_apply wp_WithDeadline $$ [$Hctx] as %ctx' %γ' %cancel %d' ⟨-, #Hcancel, #Hctx', #Hvf⟩
   wp_end
   iframe #
 

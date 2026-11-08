@@ -72,7 +72,9 @@ theorem context.WithCancel.wp_proof
   isplitl []
   · iapply isContext_cancelCtx c γ _ ctx _ rfl rfl
     iframe #
+  isplitl []
   · unfold isCancelCtxCtx; iexists c; iframe #; ipureintro; rfl
+  · iapply ctxValueFrom_cancel c ctx; iexact Hf
 
 end proof
 

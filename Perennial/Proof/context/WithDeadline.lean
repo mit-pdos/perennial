@@ -28,7 +28,7 @@ theorem context.WithDeadline.wp_proof
     context.WithDeadline.spec (GF := GF) (hG := hG) := fun parent parent_desc d => by
   wp_start as #Hctx
   wp_auto
-  wp_apply wp_WithDeadlineCause $$ [$Hctx] as %ctx' %γ' %cancel %d' ⟨%hd, #Hcancel, #Hctx'⟩
+  wp_apply wp_WithDeadlineCause $$ [$Hctx] as %ctx' %γ' %cancel %d' ⟨%hd, #Hcancel, #Hctx', #Hvf⟩
   wp_end
   iframe #
   ipureintro; exact hd

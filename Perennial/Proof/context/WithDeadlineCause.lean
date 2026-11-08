@@ -84,7 +84,7 @@ theorem context.WithDeadlineCause.wp_proof
     case true =>
       wp_auto
       wp_apply wp_WithCancel_any parent parent_desc $$ [$Hctx]
-        as %ctx' %γ' %cancel ⟨#Hcancel, #Hctx'⟩
+        as %ctx' %γ' %cancel ⟨#Hcancel, #Hctx', #Hvf⟩
       have heq : ({ parent_desc with PDone := iprop(True), Done_gn := γ' } : ContextDesc (IProp GF)) =
           { parent_desc with Deadline := some cur, PDone := iprop(True), Done_gn := γ' } := by
         cases parent_desc; simp only at hdl; subst hdl; rfl
@@ -99,7 +99,9 @@ theorem context.WithDeadlineCause.wp_proof
         iapply Hcancel
         · imodintro; itrivial
         inext; iintro -; iapply HΦ' $$ []; itrivial
+      isplitl []
       · iexact Hctx'
+      · iexact Hvf
     all_goals
       wp_auto
       iStructNamedPrefix «$r0» "T"
@@ -131,8 +133,10 @@ theorem context.WithDeadlineCause.wp_proof
             as -
           · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
           iapply HΦ' $$ []; itrivial
+        isplitl []
         · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl
           iframe #
+        · iapply ctxValueFrom_timer «$r0_ptr» parent; iexact Hf
       · ihave #Hc2 := Hc
         iunfold isCancelCtxOfR at Hc2
         icases Hc2 with ⟨#Hmu, -, -⟩
@@ -169,8 +173,10 @@ theorem context.WithDeadlineCause.wp_proof
               iexists parent; iframe #
               unfold isParentCtx; iright; iexists parent_desc; iframe #
             iapply HΦ' $$ []; itrivial
+          isplitl []
           · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl
             iframe #
+          · iapply ctxValueFrom_timer «$r0_ptr» parent; iexact Hf
         | ok ie =>
           wp_auto
           wp_apply wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod Htm0 Htm0r]
@@ -189,8 +195,10 @@ theorem context.WithDeadlineCause.wp_proof
               iexists parent; iframe #
               unfold isParentCtx; iright; iexists parent_desc; iframe #
             iapply HΦ' $$ []; itrivial
+          isplitl []
           · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl
             iframe #
+          · iapply ctxValueFrom_timer «$r0_ptr» parent; iexact Hf
   | none =>
     dsimp only [Option.getD]
     wp_auto
@@ -223,8 +231,10 @@ theorem context.WithDeadlineCause.wp_proof
           as -
         · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
         iapply HΦ' $$ []; itrivial
+      isplitl []
       · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl
         iframe #
+      · iapply ctxValueFrom_timer «$r0_ptr» parent; iexact Hf
     · ihave #Hc2 := Hc
       iunfold isCancelCtxOfR at Hc2
       icases Hc2 with ⟨#Hmu, -, -⟩
@@ -261,8 +271,10 @@ theorem context.WithDeadlineCause.wp_proof
             iexists parent; iframe #
             unfold isParentCtx; iright; iexists parent_desc; iframe #
           iapply HΦ' $$ []; itrivial
+        isplitl []
         · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl
           iframe #
+        · iapply ctxValueFrom_timer «$r0_ptr» parent; iexact Hf
       | ok ie =>
         wp_auto
         wp_apply wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod Htm0 Htm0r]
@@ -281,8 +293,10 @@ theorem context.WithDeadlineCause.wp_proof
             iexists parent; iframe #
             unfold isParentCtx; iright; iexists parent_desc; iframe #
           iapply HΦ' $$ []; itrivial
+        isplitl []
         · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl
           iframe #
+        · iapply ctxValueFrom_timer «$r0_ptr» parent; iexact Hf
 
 end proof
 

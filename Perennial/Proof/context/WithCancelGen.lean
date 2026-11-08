@@ -11,6 +11,7 @@ module
 public import Perennial.Proof.context.CancelCtxContext
 public import Perennial.Proof.context.PropagateCancel
 public import Perennial.Proof.context.BackgroundCtx
+public import Perennial.Proof.context.CtxValue
 public import Perennial.Spec.context.withCancel_
 public import Perennial.Spec.context.cancelCtx__cancel
 
@@ -96,7 +97,8 @@ theorem wp_WithCancel_any_of
     {{ (ctx' : GoInterfaceOk) (γ' : ContextNames) (cancel : GoFunc),
         RET (PairV #(interface.ok ctx') #cancel);
         cancelSpec cancel γ' iprop(True) ∗
-        isContext ctx' { s with PDone := iprop(True), Done_gn := γ' } }} := by
+        isContext ctx' { s with PDone := iprop(True), Done_gn := γ' } ∗
+        ctxValueFrom parent ctx' }} := by
   have childCancelSpec_cancelCtx := childCancelSpec_cancelCtx_of wp_cancelCtx_cancel
   have isContext_cancelCtx := isContext_cancelCtx_of wp_cancelCtx_Done wp_cancelCtx_Err
       wp_cancelCtx_Value wp_VLoad
@@ -122,8 +124,10 @@ theorem wp_WithCancel_any_of
   iapply HΦ $$ %(interface.mk (go.GoType.PointerType context.cancelCtx.ty) #c)
   isplitl []
   · iexact Hcancel
+  isplitl []
   · iapply isContext_cancelCtx c γ _ parent _ rfl rfl
     iframe #
+  · iapply ctxValueFrom_cancel c parent; iexact Hf
 
 /-- `WithCancel(Background())`: as `wp_WithCancel`, for a parent that is never done, with no
 values and no deadline (so the new context's `PDone` is just `PDone'`, which the cancel function
@@ -144,7 +148,8 @@ theorem wp_WithCancel_Background_of
         □ (∀ Φ : val → IProp GF, □ PDone' -∗ ▷ (ContextClosed γ' -∗ Φ #()) -∗
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
         isContext ctx' { Values := ∅, Deadline := none, Done_gn := γ', PDone := PDone' } ∗
-        isCancelCtxCtx ctx' { Values := ∅, Deadline := none, Done_gn := γ', PDone := PDone' } }} := by
+        isCancelCtxCtx ctx' { Values := ∅, Deadline := none, Done_gn := γ', PDone := PDone' } ∗
+        ctxValueFrom backgroundCtxVal ctx' }} := by
   have isContext_cancelCtx := isContext_cancelCtx_of wp_cancelCtx_Done wp_cancelCtx_Err
       wp_cancelCtx_Value wp_VLoad
   have wp_WithCancel_gen := wp_WithCancel_gen_of wp_withCancel wp_cancelCtx_cancel
@@ -167,7 +172,9 @@ theorem wp_WithCancel_Background_of
   isplitl []
   · iapply isContext_cancelCtx c γ PDone' backgroundCtxVal _ rfl rfl
     iframe #
+  isplitl []
   · unfold isCancelCtxCtx; iexists c; iframe #; ipureintro; rfl
+  · iapply ctxValueFrom_cancel c backgroundCtxVal; iexact Hf
 
 end wps
 

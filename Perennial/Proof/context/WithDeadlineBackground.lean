@@ -81,7 +81,7 @@ theorem wp_WithDeadlineCause_Background_of
         RET (PairV #(interface.ok ctx') #cancel);
         □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
-        isContext ctx' (bgDeadlineDesc d γ') }} := by
+        isContext ctx' (bgDeadlineDesc d γ') ∗ ctxValueFrom backgroundCtxVal ctx' }} := by
   have wp_err_Load := wp_err_Load_of wp_VLoad
   have isContext_timerCtx := isContext_timerCtx_of wp_cancelCtx_Done wp_cancelCtx_Err
       wp_cancelCtx_Value wp_VLoad
@@ -125,8 +125,10 @@ theorem wp_WithDeadlineCause_Background_of
         as -
       · simp only [Bool.false_eq_true, ↓reduceIte]; itrivial
       iapply HΦ' $$ []; itrivial
+    isplitl []
     · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl
       iframe #
+    · iapply ctxValueFrom_timer «$r0_ptr» backgroundCtxVal; iexact Hf
   · ihave #Hc2 := Hc
     iunfold isCancelCtxOfR at Hc2
     icases Hc2 with ⟨#Hmu, -, -⟩
@@ -161,8 +163,10 @@ theorem wp_WithDeadlineCause_Background_of
           iexists backgroundCtxVal; iframe #
           unfold isParentCtx; ileft; ipureintro; rfl
         iapply HΦ' $$ []; itrivial
+      isplitl []
       · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl
         iframe #
+      · iapply ctxValueFrom_timer «$r0_ptr» backgroundCtxVal; iexact Hf
     | ok ie =>
       wp_auto
       wp_apply wp_Unlock $$ [$Hmu $Hlocked Hchildren Hcause Hcl Hod Htm0 Htm0r]
@@ -179,8 +183,10 @@ theorem wp_WithDeadlineCause_Background_of
           iexists backgroundCtxVal; iframe #
           unfold isParentCtx; ileft; ipureintro; rfl
         iapply HΦ' $$ []; itrivial
+      isplitl []
       · iapply isContext_timerCtx «$r0_ptr» γ d _ rfl rfl rfl
         iframe #
+      · iapply ctxValueFrom_timer «$r0_ptr» backgroundCtxVal; iexact Hf
 
 /-- `WithDeadline(Background(), d)`: `WithDeadlineCause(Background(), d, nil)`. -/
 theorem wp_WithDeadline_Background_of
@@ -201,7 +207,7 @@ theorem wp_WithDeadline_Background_of
         RET (PairV #(interface.ok ctx') #cancel);
         □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
-        isContext ctx' (bgDeadlineDesc d γ') }} := by
+        isContext ctx' (bgDeadlineDesc d γ') ∗ ctxValueFrom backgroundCtxVal ctx' }} := by
   have wp_WDC := wp_WithDeadlineCause_Background_of wp_Lock wp_Unlock wp_VLoad wp_Until
     wp_AfterFunc wp_cancelCtx_Done wp_cancelCtx_Err wp_cancelCtx_Value wp_propagateCancel
     wp_timerCtx_cancel
@@ -234,7 +240,7 @@ theorem wp_WithTimeout_Background_of
         RET (PairV #(interface.ok ctx') #cancel);
         □ (∀ Φ : val → IProp GF, True -∗ ▷ (True -∗ Φ #()) -∗
           WP (App (Val #cancel) (Val #())) {{ Φ }}) ∗
-        isContext ctx' (bgDeadlineDesc d γ') }} := by
+        isContext ctx' (bgDeadlineDesc d γ') ∗ ctxValueFrom backgroundCtxVal ctx' }} := by
   have wp_WD := wp_WithDeadline_Background_of wp_Lock wp_Unlock wp_VLoad wp_Until
     wp_AfterFunc wp_cancelCtx_Done wp_cancelCtx_Err wp_cancelCtx_Value wp_propagateCancel
     wp_timerCtx_cancel
