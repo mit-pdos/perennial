@@ -158,7 +158,7 @@ class SliceSemantics [GoSemanticsFunctions] : Prop where
 
   index_slice (elem_type : go.GoType) (i : w64) (s : GoSlice) :
     ⟦Index (go.SliceType elem_type), (#s, #i)⟧ ⤳[under]
-    (GoLoad elem_type ((IndexRef (go.SliceType elem_type)) glv((#i, #s))))
+    (GoLoad elem_type ((IndexRef (go.SliceType elem_type)) glv((#s, #i))))
 
   len_slice {st elem_type : go.GoType} [st ↓u go.SliceType elem_type] :
     FuncUnfold go.len [st]

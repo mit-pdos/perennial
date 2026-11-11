@@ -284,6 +284,11 @@ noncomputable def appendNamedSlice.ty [GooseExts] [GoGlobalContext] : go.GoType 
 
 attribute [irreducible] appendNamedSlice.ty
 
+noncomputable def indexNamedBytes.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.indexNamedBytes" [])
+
+attribute [irreducible] indexNamedBytes.ty
+
 noncomputable def Bar.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.Bar" [])
 
@@ -1261,6 +1266,18 @@ noncomputable def testCopyGenericString [GooseExts] [GoGlobalContext] : GoString
 
 noncomputable def testCopyGenericBytes [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCopyGenericBytes"
+
+noncomputable def indexBytesOrString [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.indexBytesOrString"
+
+noncomputable def testIndexGenericBytes [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testIndexGenericBytes"
+
+noncomputable def testIndexGenericNamedBytes [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testIndexGenericNamedBytes"
+
+noncomputable def testIndexGenericString [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testIndexGenericString"
 
 noncomputable def testFooBarMutation [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testFooBarMutation"
@@ -10683,6 +10700,87 @@ noncomputable def testCopyGenericBytes.impl [GooseExts] [GoGlobalContext] : val 
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
+/-- go: slices.go:175:6 -/
+noncomputable def indexBytesOrString.impl [GooseExts] [GoGlobalContext] (S : go.GoType) : val :=
+  (LamV "s"
+  (Lam "i"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (Var "i"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc S))) (Var "s"))
+  (Let "$r0" (App (Val (GoInstruction (Index S))) (Pair (App (Val (GoInstruction (GoLoad S))) (Var "s")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.byte))) (Var "$res0"))))))
+
+/-- go: slices.go:181:6 -/
+noncomputable def testIndexGenericBytes.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.byte)]))) (Val #())) (Val #(W64 3)))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.byte)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W8 20))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b"))
+  (Let "$a1" (Val #(W64 1))
+  (App (App (App (Val (GoInstruction (FuncResolve indexBytesOrString [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W8 20)))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 1))))) (Val #(W8 20)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "b")) (Val #(W64 1)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (Var "b") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: slices.go:187:6 -/
+noncomputable def testIndexGenericNamedBytes.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [indexNamedBytes.ty]))) (Val #())) (Val #(W64 3)))
+  (Let "b" (App (Val (GoInstruction (GoAlloc indexNamedBytes.ty))) (App (Val (GoInstruction (GoZeroVal indexNamedBytes.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W8 30))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad indexNamedBytes.ty))) (Var "b"))
+  (Let "$a1" (Val #(W64 2))
+  (App (App (App (Val (GoInstruction (FuncResolve indexBytesOrString [indexNamedBytes.ty]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W8 30))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (App (Val (GoInstruction (IndexRef indexNamedBytes.ty))) (Pair (App (Val (GoInstruction (GoLoad indexNamedBytes.ty))) (Var "b")) (Val #(W64 2)))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore indexNamedBytes.ty))) (Pair (Var "b") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: slices.go:193:6 -/
+noncomputable def testIndexGenericString.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (Let "$a0" (Val #(go!"abc"))
+  (Let "$a1" (Val #(W64 0))
+  (App (App (App (Val (GoInstruction (FuncResolve indexBytesOrString [go.string]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W8 97)))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (Let "$a0" (Val #(go!"abc"))
+  (Let "$a1" (Val #(W64 2))
+  (App (App (App (Val (GoInstruction (FuncResolve indexBytesOrString [go.string]))) (Val #())) (Var "$a0")) (Var "$a1")))) (Val #(W8 99)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
 /-- go: struct_pointers.go:14:17 -/
 noncomputable def Bar.mutate.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "bar"
@@ -13531,6 +13629,20 @@ attribute [instance] appendNamedSlice.TypeAssumptions.underlying
   appendNamedSlice.TypeAssumptions.method_set
   appendNamedSlice.TypeAssumptions.ptr_method_set
 
+abbrev indexNamedBytes [GooseExts] : Type := GoSlice
+
+@[reducible] noncomputable def indexNamedBytes.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.SliceType go.byte)
+
+class indexNamedBytes.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq indexNamedBytes.ty indexNamedBytes.underlying
+  method_set : go.MethodSetIs indexNamedBytes.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType indexNamedBytes.ty) []
+
+attribute [instance] indexNamedBytes.TypeAssumptions.underlying
+  indexNamedBytes.TypeAssumptions.method_set
+  indexNamedBytes.TypeAssumptions.ptr_method_set
+
 structure Bar [GooseExts] where
   mk ::
   a' : w64
@@ -14056,6 +14168,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   BoolTest_instance : BoolTest.TypeAssumptions
   ArrayEditor_instance : ArrayEditor.TypeAssumptions
   appendNamedSlice_instance : appendNamedSlice.TypeAssumptions
+  indexNamedBytes_instance : indexNamedBytes.TypeAssumptions
   Bar_instance : Bar.TypeAssumptions
   Foo_instance : Foo.TypeAssumptions
   TwoInts_instance : TwoInts.TypeAssumptions
@@ -14342,6 +14455,10 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   copyBytesOrString_unfold : ∀ (S : go.GoType), FuncUnfold copyBytesOrString [S] (copyBytesOrString.impl S)
   testCopyGenericString_unfold : FuncUnfold testCopyGenericString [] testCopyGenericString.impl
   testCopyGenericBytes_unfold : FuncUnfold testCopyGenericBytes [] testCopyGenericBytes.impl
+  indexBytesOrString_unfold : ∀ (S : go.GoType), FuncUnfold indexBytesOrString [S] (indexBytesOrString.impl S)
+  testIndexGenericBytes_unfold : FuncUnfold testIndexGenericBytes [] testIndexGenericBytes.impl
+  testIndexGenericNamedBytes_unfold : FuncUnfold testIndexGenericNamedBytes [] testIndexGenericNamedBytes.impl
+  testIndexGenericString_unfold : FuncUnfold testIndexGenericString [] testIndexGenericString.impl
   testFooBarMutation_unfold : FuncUnfold testFooBarMutation [] testFooBarMutation.impl
   NewS_unfold : FuncUnfold NewS [] NewS.impl
   testStructUpdates_unfold : FuncUnfold testStructUpdates [] testStructUpdates.impl
@@ -14433,6 +14550,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.BoolTest_instance
   Assumptions.ArrayEditor_instance
   Assumptions.appendNamedSlice_instance
+  Assumptions.indexNamedBytes_instance
   Assumptions.Bar_instance
   Assumptions.Foo_instance
   Assumptions.TwoInts_instance
@@ -14719,6 +14837,10 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.copyBytesOrString_unfold
   Assumptions.testCopyGenericString_unfold
   Assumptions.testCopyGenericBytes_unfold
+  Assumptions.indexBytesOrString_unfold
+  Assumptions.testIndexGenericBytes_unfold
+  Assumptions.testIndexGenericNamedBytes_unfold
+  Assumptions.testIndexGenericString_unfold
   Assumptions.testFooBarMutation_unfold
   Assumptions.NewS_unfold
   Assumptions.testStructUpdates_unfold
