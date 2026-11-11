@@ -827,6 +827,18 @@ func (suite *GoTestSuite) TestCopyGenericBytes() {
 	suite.Equal(true, testCopyGenericBytes())
 }
 
+func (suite *GoTestSuite) TestIndexGenericBytes() {
+	suite.Equal(true, testIndexGenericBytes())
+}
+
+func (suite *GoTestSuite) TestIndexGenericNamedBytes() {
+	suite.Equal(true, testIndexGenericNamedBytes())
+}
+
+func (suite *GoTestSuite) TestIndexGenericString() {
+	suite.Equal(true, testIndexGenericString())
+}
+
 func (suite *GoTestSuite) TestFooBarMutation() {
 	suite.Equal(true, testFooBarMutation())
 }

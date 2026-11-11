@@ -171,3 +171,25 @@ func testCopyGenericBytes() bool {
 	n := copyBytesOrString(b, []byte("cd"))
 	return n == 2 && string(b) == "cd"
 }
+
+func indexBytesOrString[S ~[]byte | ~string](s S, i int) byte {
+	return s[i]
+}
+
+type indexNamedBytes []byte
+
+func testIndexGenericBytes() bool {
+	b := make([]byte, 3)
+	b[1] = 20
+	return indexBytesOrString(b, 1) == 20 && b[1] == 20
+}
+
+func testIndexGenericNamedBytes() bool {
+	b := make(indexNamedBytes, 3)
+	b[2] = 30
+	return indexBytesOrString(b, 2) == 30
+}
+
+func testIndexGenericString() bool {
+	return indexBytesOrString("abc", 0) == 'a' && indexBytesOrString("abc", 2) == 'c'
+}
