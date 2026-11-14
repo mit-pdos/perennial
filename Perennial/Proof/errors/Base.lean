@@ -35,10 +35,79 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
 
+/-! ### Package variables made by `errors.New`
+
+`var X = errors.New(msg)` allocates a fresh `errorString{s: msg}` and stores the pointer in `X`,
+which Go never writes after initialization. `newVar X msg` keeps both cells, for good: `X`'s,
+and the `errorString`'s field `s`, so that two such variables whose messages differ hold
+different pointers (`newVar_ne`: `io.EOF` is not `io.ErrUnexpectedEOF`, nor `errors.ErrUnsupported`
+`oserror.ErrNotExist`), and `Error()` returns `msg`. (Variables with the same message are distinct
+pointers too in Go, as each `New` allocates; the field does not tell them apart.) -/
+
+/-- **The global `X` holds `errors.New(msg)`** (persistent): a fixed `*errorString` whose field
+`s` holds `msg` for good, and whose `Error()` returns `msg`. -/
+def newVar (X msg : GoString) : IProp GF :=
+  iprop(∃ x : Loc,
+    globalAddr X ↦□ interface.mkOk (go.GoType.PointerType errorString.ty) #x ∗
+    x.[errors.errorString, go!"s"] ↦□ msg ∗
+    □ ∀ Φ : val → IProp GF, ▷ Φ #msg -∗
+      WP (App (Val #(methods (go.GoType.PointerType errorString.ty) go!"Error" #x)) (Val #()))
+        {{ Φ }})
+
+instance newVar_persistent (X msg : GoString) : Persistent (newVar (GF := GF) X msg) := by
+  unfold newVar; infer_instance
+
+/-- Two `errorString`s whose fields hold different messages are different pointers. -/
+theorem errorString_ne (x y : Loc) (m1 m2 : GoString) (h : m1 ≠ m2) :
+    (x.[errors.errorString, go!"s"] ↦□ m1 : IProp GF) ⊢
+      y.[errors.errorString, go!"s"] ↦□ m2 -∗ ⌜x ≠ y⌝ := by
+  iintro #H1 #H2
+  by_cases hxy : x = y
+  · subst hxy
+    icombine H1 H2 gives %he
+    exact absurd he h
+  · ipureintro; exact hxy
+
+/-- **Two `errors.New` variables with different messages hold different errors**: the values
+of `X` and `Y` (loaded through any persistent points-to of the globals) differ. -/
+theorem newVar_ne (X Y m1 m2 : GoString) (h : m1 ≠ m2) (v1 v2 : GoInterface) :
+    newVar (GF := GF) X m1 ⊢ newVar (GF := GF) Y m2 -∗ globalAddr X ↦□ v1 -∗
+      globalAddr Y ↦□ v2 -∗ ⌜v1 ≠ v2⌝ := by
+  iintro #HX #HY #Hv1 #Hv2
+  iunfold newVar at HX HY
+  icases HX with ⟨%x, #HXg, #HXs, -⟩
+  icases HY with ⟨%y, #HYg, #HYs, -⟩
+  icombine Hv1 HXg gives %h1
+  icombine Hv2 HYg gives %h2
+  ihave %hxy := errorString_ne x y m1 m2 h $$ HXs HYs
+  ipureintro
+  subst h1 h2
+  intro he
+  apply hxy
+  unfold interface.mkOk at he
+  injection he with he
+  injection he with _ he
+  exact go.intoVal_inj he
+
+/-- The package-initialized state (persistent): `ErrUnsupported` holds its `errors.New` error
+(`errorType`, a runtime type descriptor, has no cell: `TrustedCode/errors.lean`). -/
+abbrev isInit : IProp GF :=
+  iprop("#HErrUnsupported" ∷ newVar ErrUnsupported go!"unsupported operation")
+
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.errors :=
-  define_is_pkg_init iprop(True)
+  define_is_pkg_init isInit
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.errors :=
   build_get_is_pkg_init_wf
+
+theorem isInit_access :
+    isPkgInit (PROP := IProp GF) pkg_id.errors ⊢ isInit (GF := GF) := by
+  with_unfolding_all exact isPkgInit_access (PROP := IProp GF) pkg_id.errors
+
+/-- `errors.ErrUnsupported` holds `errors.New("unsupported operation")`. -/
+theorem errUnsupported_of_init :
+    isPkgInit (PROP := IProp GF) pkg_id.errors ⊢
+      newVar (GF := GF) ErrUnsupported go!"unsupported operation" :=
+  isInit_access
 
 def isUnwrappable (err : GoError) : IProp GF :=
   match err with

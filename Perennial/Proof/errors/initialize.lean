@@ -1,10 +1,11 @@
 /-
-The proof of `errors.initialize'`.
+The proof of `errors.initialize'`. `ErrUnsupported` is kept with its `errors.New` error's exact type
+and field (`errors.wp_New_errorString`, from `New`'s code), as `io`'s variables are.
 -/
 module
 
 public import Perennial.Spec.errors.initialize
-public import Perennial.Spec.errors.New
+public import Perennial.Proof.errors.NewVar
 
 @[expose] public section
 
@@ -21,8 +22,7 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
 
-theorem errors.initialize'.wp_proof
-    (wp_New : errors.New.spec (GF := GF) (hG := hG)) :
+theorem errors.initialize'.wp_proof :
     errors.initialize'.spec (GF := GF) (hG := hG) := by
   intro get_is_pkg_init Hinit
   wp_start as Hown
@@ -30,8 +30,13 @@ theorem errors.initialize'.wp_proof
   iframe Hown
   iintro Hown
   wp_auto
-  wp_apply wp_GlobalAlloc (V := GoInterface) ErrUnsupported go.error as _
-  wp_apply wp_New as %_ _
+  wp_apply wp_GlobalAlloc (V := GoInterface) ErrUnsupported go.error as HEU
+  wp_apply errors.wp_New_errorString as %x #E
+  ipersist HEU
+  ihave #N : errors.newVar (GF := GF) ErrUnsupported _ $$ []
+  · iunfold errors.newVar
+    iexists _
+    iframe HEU E
   -- errorType: its trusted initializer does nothing
   wp_call
   iframe Hown

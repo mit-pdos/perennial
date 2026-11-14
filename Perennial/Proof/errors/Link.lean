@@ -49,7 +49,7 @@ theorem errors.wp_Unwrap : errors.Unwrap.spec (GF := GF) (hG := hG) :=
   errors.Unwrap.wp_proof
 
 theorem errors.wp_initialize' : errors.initialize'.spec (GF := GF) (hG := hG) :=
-  errors.initialize'.wp_proof errors.wp_New
+  errors.initialize'.wp_proof
 
 end link
 
