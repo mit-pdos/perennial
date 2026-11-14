@@ -48,7 +48,9 @@ theorem errors.is.wp_proof :
       ileft
       iframe
       ipureintro; simp
-    obtain ⟨⟨tii, rfl, T, l, hT, hl⟩, htyped⟩ := hc rfl
+    obtain ⟨tii, rfl, V, _, hinj, hchk, heq, ⟨vt, hvt⟩, htyped⟩ := hc rfl
+    haveI := hchk
+    haveI := heq
     wp_auto
     cases e with
     | nil =>
@@ -60,8 +62,8 @@ theorem errors.is.wp_proof :
     | ok ii =>
       dsimp only
       by_cases hty : ii.ty = tii.ty
-      · obtain ⟨l', hl'⟩ := htyped ii tii HSe rfl hty
-        simp only [hty, ↓reduceIte, hT, hl, hl']
+      · obtain ⟨v', hv'⟩ := htyped ii HSe hty
+        simp only [hty, ↓reduceIte, hvt, hv']
         wp_auto
         have hii : ∀ jj : GoInterfaceOk, jj.ty = tii.ty → jj.v = tii.v → jj = tii := by
           intro jj h1 h2; cases jj; cases tii; simp_all
@@ -71,15 +73,15 @@ theorem errors.is.wp_proof :
           iframe
           ipureintro
           refine ⟨trivial, trivial, ?_⟩
-          rw [hii ii hty (by rw [hl', hl])]
+          rw [hii ii hty (by rw [hv', hvt])]
         · ileft
           iframe
           ipureintro
           intro _ h
           apply Hif
           cases h
-          rw [hl] at hl'
-          exact (go.intoVal_inj hl').symm
+          rw [hvt] at hv'
+          exact (hinj hv').symm
       · simp only [hty, ↓reduceIte]
         wp_auto
         ileft
@@ -95,13 +97,13 @@ theorem errors.is.wp_proof :
     wp_for_post
     iapply HΦ
     ipureintro
-    obtain ⟨⟨tii, rfl, -⟩, -⟩ := hc rfl
+    obtain ⟨tii, rfl, -⟩ := hc rfl
     exact He _ (.eq rfl rfl)
   subst Hv
   wp_auto
   have Htnil : c = true → target ≠ interface.nil := by
     intro hc1 h
-    obtain ⟨⟨tii, ht, -⟩, -⟩ := hc hc1
+    obtain ⟨tii, ht, -⟩ := hc hc1
     rw [ht] at h; cases h
   cases e with
   | nil =>

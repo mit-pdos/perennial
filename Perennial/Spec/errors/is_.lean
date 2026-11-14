@@ -22,13 +22,14 @@ variable [package_sem : errors.Assumptions]
 
 /-- `is(err, target, c)` (the tree walk of `Is`): it returns an answer of Go's walk of the tree
 (`IsWalk c I U target err`, over the relations `I` and `U` of the tree's methods). For `c`
-(`target`'s type is comparable), `target` is a pointer error and the tree's errors of its type
-are pointers (`TreeTyped`), so that `err == target` does not panic. -/
+(`target`'s type is comparable), `target` is a non-nil error that `==` compares with the tree's
+errors of its type (`ComparableErr`: a pointer, an `Errno`, ...), so that `err == target` does not
+panic. -/
 abbrev errors.is.spec : Prop :=
   ∀ (S : GoError → Prop) (I : GoInterfaceOk → Bool → Prop)
     (U : GoInterfaceOk → List GoError → Prop) (err target : GoError) (c : Bool),
     S err →
-    (c = true → (∃ tii, target = interface.ok tii ∧ IsPointerError tii) ∧ TreeTyped S target) →
+    (c = true → ∃ tii, target = interface.ok tii ∧ ComparableErr S tii) →
     {{ errorWalkTree (GF := GF) S I U target }}
       (App (App (App (Val (@! is')) (Val #err)) (Val #target)) (Val #c))
     {{ (b : Bool), RET #b; ⌜IsWalk c I U target err b⌝ }}

@@ -26,7 +26,7 @@ variable [package_sem : errors.Assumptions]
 theorem errors.Is.wp_proof
     (wp_is : errors.is.spec (GF := GF) (hG := hG)) :
     errors.Is.spec (GF := GF) (hG := hG) := by
-  intro S I U err target htarget htyped
+  intro S I U err target htarget
   wp_start as ⟨#Htree, %HS⟩
   wp_auto
   cases err with
@@ -57,11 +57,10 @@ theorem errors.Is.wp_proof
     | ok tii =>
       dsimp only
       wp_auto
-      obtain ⟨T, l, hT, hl⟩ := htarget tii rfl
       (try wp_auto)
       rw [show (go!"errors.is" : GoString) = is' from rfl]
       wp_apply wp_is S I U (interface.ok ii) (interface.ok tii) true HS
-        (fun _ => ⟨⟨tii, rfl, T, l, hT, hl⟩, htyped⟩) $$ [] as %b %Hb
+        (fun _ => ⟨tii, rfl, htarget tii rfl⟩) $$ [] as %b %Hb
       · iframe #
       iapply HΦ
       ipureintro

@@ -1,6 +1,7 @@
 /-
 Results of `errors` derived from the linked ones: `wp_New_ptr` (the old name of `New`'s
-spec, which tells that the error is a pointer error), `wp_Is_leaf` (`Is` on a leaf error) and
+spec, which tells that the error is a pointer error), `wp_Is_ptr` (`Is` at a pointer target),
+`wp_Is_leaf` (`Is` on a leaf error) and
 `wp_As_first` (`As` when the error itself matches the target).
 -/
 module
@@ -27,6 +28,21 @@ spec, `errors.wp_New`, under its old name.) -/
 theorem errors.wp_New_ptr : errors.New.spec (GF := GF) (hG := hG) :=
   errors.wp_New
 
+/-- `errors.Is(err, target)` for a `nil` or pointer `target` (`IsPointerError`, such as an
+`errors.New` error) whose type's errors in the tree hold pointers (`TreeTyped`): `wp_Is` through
+`comparableTarget_pointer` (`Is`'s spec before comparable targets). -/
+theorem errors.wp_Is_ptr (S : GoError → Prop) (I : GoInterfaceOk → Bool → Prop)
+    (U : GoInterfaceOk → List GoError → Prop) (err target : GoError)
+    (htarget : ∀ tii, target = interface.ok tii → IsPointerError tii)
+    (htyped : TreeTyped S target) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.errors ∗ errorWalkTree (GF := GF) S I U target ∗
+        ⌜S err⌝ }}
+      (App (App (Val (@! Is)) (Val #err)) (Val #target))
+    {{ (b : Bool), RET #b;
+        ⌜(err = interface.nil ∨ target = interface.nil) → b = decide (err = target)⌝ ∗
+        ⌜err ≠ interface.nil → target ≠ interface.nil → IsWalk true I U target err b⌝ }} :=
+  errors.wp_Is S I U err target (comparableTarget_pointer S target htarget htyped)
+
 /-- `errors.Is(err, target)` over an over-approximating tree (`errorIsTree S M target`): it returns
 `err == target` if either is `nil`; otherwise `true` if `err == target`, and `true` only if some
 error of the tree is `target` or has an `Is` method that returned `true` (`M`). -/
@@ -41,7 +57,7 @@ theorem errors.wp_Is_tree (S : GoError → Prop) (M : GoInterfaceOk → Prop) (e
         ⌜∀ tii, target = interface.ok tii → IsPointerError tii → err ≠ interface.nil →
           b = true → ∃ ii, S (interface.ok ii) ∧ (interface.ok ii = target ∨ M ii)⌝ }} := by
   iintro %Φ ⟨#Hinit, #Htree, %HS⟩ HΦ
-  wp_apply +noauto wp_Is S (isRelOf M) (unwrapRelOf S) err target htarget htyped
+  wp_apply +noauto errors.wp_Is_ptr S (isRelOf M) (unwrapRelOf S) err target htarget htyped
     $$ [$Hinit $Htree] as %b ⟨%Hnil, %Hw⟩
   · ipureintro; exact HS
   iapply HΦ

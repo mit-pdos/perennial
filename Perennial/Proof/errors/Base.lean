@@ -43,6 +43,24 @@ def AsFirst [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType)
       go.typeSetContains ii.ty T = true ∧ w = #(interface.ok ii)
     else ii.ty = T ∧ w = ii.v
 
+/-- A non-nil target that Go's `err == target` compares, without panicking, with the errors of the
+tree `S`: its dynamic type's `==` is defined (`CheckComparable` steps) and is the equality of the
+values of some Lean type `V` (with an injective `#`), of which its value, and the values of the
+errors of `S` of its type, are (Go's typing). Pointer errors (`comparableErr_pointer`, `V := Loc`)
+and errors of a named integer type such as `syscall.Errno` (`comparableErr_uintptr`, `V := w64`).
+(`Is` asks `reflectlite` whether `target`'s type is comparable, and the model takes it to be:
+`TrustedCode/errors.lean`; for these types Go's answer is `true` as well.) -/
+def ComparableErr [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] (S : GoError → Prop) (tii : GoInterfaceOk) : Prop :=
+  ∃ (V : Type) (_ : DecidableEq V), Function.Injective (intoVal (V := V)) ∧
+    (⟦CheckComparable tii.ty, #()⟧ ⤳ #()) ∧
+    (∀ v1 v2 : V, ⟦GoOp GoEquals tii.ty, (#v1, #v2)⟧ ⤳ #(decide (v1 = v2))) ∧
+    (∃ vt : V, tii.v = #vt) ∧
+    ∀ ii, S (interface.ok ii) → ii.ty = tii.ty → ∃ v : V, ii.v = #v
+
+/-- `target` is `nil` or a `ComparableErr` for the tree `S`: what `Is` needs of it. -/
+def ComparableTarget [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] (S : GoError → Prop) (target : GoError) : Prop :=
+  ∀ tii, target = interface.ok tii → ComparableErr S tii
+
 section wps
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
@@ -412,6 +430,37 @@ theorem treeTyped_pointer (ii : GoInterfaceOk) (target : GoError) (h : IsPointer
   cases hii'
   obtain ⟨_, l, -, hl⟩ := h
   exact ⟨l, hl⟩
+
+omit package_sem in
+/-- A pointer target, whose type's errors in the tree are pointers, is comparable. -/
+theorem comparableErr_pointer (S : GoError → Prop) (tii : GoInterfaceOk) (h : IsPointerError tii)
+    (htyped : TreeTyped S (interface.ok tii)) : ComparableErr S tii := by
+  obtain ⟨T, l, hT, hl⟩ := h
+  refine ⟨Loc, inferInstance, GoGlobalContext.intoVal_inj_loc, ?_, ?_, ⟨l, hl⟩,
+    fun ii hS hty => htyped ii tii hS rfl hty⟩
+  · rw [hT]; infer_instance
+  · intro v1 v2; rw [hT]; infer_instance
+
+omit package_sem in
+/-- `nil` and pointer targets, whose type's errors in the tree are pointers, are comparable (`Is`'s
+premises before comparable targets). -/
+theorem comparableTarget_pointer (S : GoError → Prop) (target : GoError)
+    (htarget : ∀ tii, target = interface.ok tii → IsPointerError tii)
+    (htyped : TreeTyped S target) : ComparableTarget S target := by
+  unfold ComparableTarget
+  intro tii ht
+  subst ht
+  exact comparableErr_pointer S tii (htarget tii rfl) htyped
+
+omit package_sem in
+/-- A target of a type whose underlying type is `uintptr` (`syscall.Errno`), whose type's errors
+in the tree hold `w64`s, is comparable. -/
+theorem comparableErr_uintptr (S : GoError → Prop) (tii : GoInterfaceOk) [tii.ty ↓u go.uintptr]
+    (vt : w64) (hvt : tii.v = #vt)
+    (htyped : ∀ ii, S (interface.ok ii) → ii.ty = tii.ty → ∃ v : w64, ii.v = #v) :
+    ComparableErr S tii :=
+  ⟨w64, inferInstance, GoGlobalContext.intoVal_inj_w64, inferInstance, fun _ _ => inferInstance,
+    ⟨vt, hvt⟩, htyped⟩
 
 /-! ### The answers of the walk -/
 
