@@ -28,6 +28,21 @@ the type's method set (its package's `Assumptions`). -/
 def AsTarget [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType) : Prop :=
   (∃ elems, underlying T = go.InterfaceType elems) ∨ go.typeSetContains T go.error = true
 
+/-- `As`'s first match: `err`'s own dynamic type matches `As`'s target type `T`, and `w` is what
+`As` stores in the target. Go's `as` first tests `reflectlite.TypeOf(err).AssignableTo(T)` and, if
+it holds, stores `err` converted to `T` and returns `true`, before calling any method of `err`:
+* `T`'s underlying type is an interface type: `err`'s dynamic type is in `T`'s type set (it
+  implements `T`), and `err` itself is stored;
+* otherwise: `err`'s dynamic type is `T` (identical types are assignable), and its dynamic value
+  is stored. (Go's assignability is wider, a type with `T`'s underlying type where one of the two
+  is unnamed; that case is not covered.) -/
+def AsFirst [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (T : go.GoType) (err : GoError)
+    (w : val) : Prop :=
+  ∃ ii, err = interface.ok ii ∧
+    if go.isInterfaceType (underlying T) then
+      go.typeSetContains ii.ty T = true ∧ w = #(interface.ok ii)
+    else ii.ty = T ∧ w = ii.v
+
 section wps
 variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]

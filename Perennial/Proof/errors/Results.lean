@@ -1,6 +1,7 @@
 /-
 Results of `errors` derived from the linked ones: `wp_New_ptr` (the old name of `New`'s
-spec, which tells that the error is a pointer error) and `wp_Is_leaf` (`Is` on a leaf error).
+spec, which tells that the error is a pointer error), `wp_Is_leaf` (`Is` on a leaf error) and
+`wp_As_first` (`As` when the error itself matches the target).
 -/
 module
 
@@ -83,6 +84,21 @@ theorem errors.wp_Is_leaf (ii : GoInterfaceOk) (target : GoError) (hleaf : isLea
   rw [← hb]
   iapply HΦ
   itrivial
+
+/-- `errors.As(err, &x0)` when `err`'s own dynamic type matches the target's element type `T`
+(`AsFirst`): `true`, and `err`'s value `x` stored in the target, with no error tree (Go's `as`
+tests this before calling any method of `err`). -/
+theorem errors.wp_As_first (err : GoError) (l : Loc) {T' : Type} [ZeroVal T']
+    [TypedPointsto (GF := GF) T'] {T : go.GoType} [IntoValTyped (GF := GF) T' T] (v x : T')
+    (hT : AsTarget T) (hfirst : AsFirst T err #x) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.errors ∗ l ↦ v }}
+      (App (App (Val (@! As)) (Val #err)) (Val #(interface.mkOk (go.PointerType T) #l)))
+    {{ RET #true; l ↦ x }} := by
+  iintro %Φ ⟨#Hinit, Hl⟩ HΦ
+  wp_apply +noauto wp_As (fun _ => False) err l v x hT $$ [$Hinit $Hl] as %b %v' ⟨Hl, %Hb⟩
+  · ileft; ipureintro; exact hfirst
+  obtain ⟨rfl, rfl⟩ := Hb hfirst
+  iapply HΦ $$ Hl
 
 end results
 

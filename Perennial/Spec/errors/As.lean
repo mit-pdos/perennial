@@ -21,9 +21,15 @@ variable [sem : go.Semantics]
 variable [package_sem : errors.Assumptions]
 
 /-- Spec of `errors.As(err, target)` for a target `*T`, `l` (axiom). `As` walks the error tree of
-`err` as `AsType[T]` does (its precondition is `wp_AsType`'s), calling the `As` methods with
-`target` itself, and stores a matching error in `*l`; it finds the target's type by reflection
-(`internal/reflectlite`, not translated).
+`err` as `AsType[T]` does, calling the `As` methods with `target` itself, and stores a matching
+error in `*l`; it finds the target's type by reflection (`internal/reflectlite`, not translated).
+
+Its precondition is either of:
+* `err`'s own dynamic type matches `T` (`AsFirst T err #x`): Go's `as` tests that first and, when
+  it holds, stores `err`'s value `x` and returns `true` without calling any method of `err`, so no
+  error tree is needed;
+* the error tree of `err` (`wp_AsType`'s precondition: `isErrorTree S T' T ∗ ⌜S err⌝`).
+It returns some `b` and leaves some `v'` in `*l`, and in the first case `true` and `x`.
 
 Go's `As` panics when `target` is `nil`, is not a non-`nil` pointer, or points to a type that
 is neither an interface type nor implements `error`. The target here is the pointer `l` of type
@@ -36,12 +42,12 @@ type a run-time value, so a model would replace most of `as` by axioms about typ
 (what `AsTypeTyped` assumes for `AsType`), not a few small ones. -/
 abbrev errors.As.spec : Prop :=
   ∀ (S : GoError → Prop) (err : GoError) (l : Loc) {T' : Type} [ZeroVal T']
-    [TypedPointsto (GF := GF) T'] {T : go.GoType} [IntoValTyped (GF := GF) T' T] (v : T'),
+    [TypedPointsto (GF := GF) T'] {T : go.GoType} [IntoValTyped (GF := GF) T' T] (v x : T'),
     AsTarget T →
-    {{ isPkgInit (PROP := IProp GF) pkg_id.errors ∗ isErrorTree (GF := GF) S T' T ∗ ⌜S err⌝ ∗
-        l ↦ v }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.errors ∗
+        (⌜AsFirst T err #x⌝ ∨ isErrorTree (GF := GF) S T' T ∗ ⌜S err⌝) ∗ l ↦ v }}
       (App (App (Val (@! As)) (Val #err)) (Val #(interface.mkOk (go.PointerType T) #l)))
-    {{ (b : Bool) (v' : T'), RET #b; l ↦ v' }}
+    {{ (b : Bool) (v' : T'), RET #b; l ↦ v' ∗ ⌜AsFirst T err #x → b = true ∧ v' = x⌝ }}
 
 end spec
 
