@@ -13,6 +13,12 @@ translate = [
   "multiWriter",
   "_",
   "blackHolePool",
+  "Copy",
+  "CopyBuffer",
+  "copyBuffer",
+  "CopyN",
+  "LimitReader",
+  "LimitedReader.Read",
 ]
 
 # translate the definitions of all type declarations goose supports
