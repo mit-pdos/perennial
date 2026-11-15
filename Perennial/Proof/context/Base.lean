@@ -600,7 +600,7 @@ def isContextDef (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
       dghostVar s.Done_gn.doneGn .discard (some ch) -∗
       globalAddr context.closedchan ↦□ cch -∗ ⌜ch ≠ cch⌝ -∗
       ▷ (∀ (p : Loc) (γp : ContextNames) (Pp : IProp GF),
-          isCancelCtxOf p γp Pp -∗ □ (Pp -∗ s.PDone) -∗ Φ (PairV #p #true)) -∗
+          isCancelCtxOf p γp Pp -∗ □ (□ Pp -∗ s.PDone) -∗ Φ (PairV #p #true)) -∗
       WP (App (Val (@! context.parentCancelCtx)) (Val #(interface.ok c))) {{ Φ }})) ∗
   "#HClosedchan" ∷ isClosedchanInit)
 
@@ -621,13 +621,15 @@ def isContextDef (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
   done.
 * `"#HParentCC"`: `c` is not a `stopCtx`, and `parentCancelCtx(c)` finds a `*cancelCtx` `p` once
   the Done channel `ch` is known (and is not `closedchan`), whose Done proposition `Pp` gives
-  `c`'s (`□ (Pp -∗ s.PDone)`): Go's `parentCancelCtx` returns `p` only when `p`'s Done channel
-  is `c`'s (`pdone == done`), so `p` is canceled only for a reason that closes `c`'s Done channel.
-  So `propagateCancel(c, child)` registers `child` with that `*cancelCtx` (where `p.cancel`
-  cancels it with `□ s.PDone`), or cancels it at once, and never reaches its branches for
-  other parents (an `afterFuncer`, whose type assertion the model cannot decide, or the
-  goroutine), nor does `removeChild(c, child)` reach its `stopCtx` branch. True of the contexts
-  this file makes (`*cancelCtx`, with `Pp = s.PDone`; `*timerCtx`, with `s.PDone = True`).
+  `c`'s once `p` is canceled (`□ (□ Pp -∗ s.PDone)`). Go's `parentCancelCtx` returns `p` only when
+  `p`'s Done channel is `c`'s (`pdone == done`), so `p`'s cancellation closes `c`'s Done channel,
+  and what `p.cancel` needs (`□ Pp`) must give what `c`'s closing promises (`□ s.PDone`); the
+  wand is how the model states that. So `propagateCancel(c, child)` registers `child` with that
+  `*cancelCtx` (where `p.cancel` cancels it with `□ s.PDone`), or cancels it at once, and never
+  reaches its branches for other parents (an `afterFuncer`, whose type assertion the model cannot
+  decide, or the goroutine), nor does `removeChild(c, child)` reach its `stopCtx` branch. True of
+  the contexts this file makes (`*cancelCtx`, with `Pp = s.PDone`; `*timerCtx`, with
+  `s.PDone = True`).
 * `"#HClosedchan"`: `context`'s `isClosedchanInit`. -/
 abbrev isContext (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) : IProp GF :=
   isContextDef c s
@@ -876,7 +878,7 @@ theorem isContext_weaken (c : GoInterfaceOk) (s : ContextDesc (IProp GF)) (P' : 
       iintro %p %γp %Pp #Hp #HPp
       iapply HΦ $$ %p %γp %Pp Hp
       imodintro
-      iintro Hq
+      iintro #Hq
       iapply HP
       iapply HPp $$ Hq
   iframe #
@@ -1033,9 +1035,10 @@ theorem childCancelSpec_true (Q : IProp GF) (k : GoInterface) :
     iapply H $$ %err %cause %Φ %herr Hce [] HΦ
     imodintro; itrivial
 
-/-- `childCancelSpec` is antitone in the proposition its `cancel` needs. -/
+/-- `childCancelSpec` is antitone in the proposition its `cancel` needs (which it gets
+persistently). -/
 theorem childCancelSpec_mono (P Q : IProp GF) (k : GoInterface) :
-    ⊢ □ (Q -∗ P) -∗ childCancelSpec P k -∗ childCancelSpec Q k := by
+    ⊢ □ (□ Q -∗ P) -∗ childCancelSpec P k -∗ childCancelSpec Q k := by
   cases k with
   | nil => simp only [childCancelSpec]; iintro - H; iexact H
   | ok ki =>

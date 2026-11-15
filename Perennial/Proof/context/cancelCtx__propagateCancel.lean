@@ -435,7 +435,7 @@ theorem context.cancelCtx.propagateCancel.wp_proof
           wp_apply Hk
           · ipureintro; exact ht
           · iexact Hce
-          · imodintro; iapply HPp; iapply Hpd; ipureintro; simp
+          · imodintro; iapply HPp; imodintro; iapply Hpd; ipureintro; simp
           wp_apply wp_Unlock $$ [$Hmup $Hlocked Hchildren Hcause Hod HR]
           · inext; unfold cancelCtxLockInv
             iexists children, cause, od, true; simp only [↓reduceIte, named]; iframe; iframe #

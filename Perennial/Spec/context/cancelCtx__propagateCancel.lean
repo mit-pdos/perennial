@@ -33,8 +33,8 @@ names in `Results.lean`):
   or `c` is added to the parent's `children` (with its `childCancelSpec`).
 * any `isContext` parent (`wp_propagateCancel_ctx`, and `wp_propagateCancel_any` for a child
   that needs nothing): `c.propagateCancel(parent, child)` for any context `parent` (`isContext`
-  described by `s`) and a child whose `cancel(false, err, cause)` needs a typed error and
-  `□ s.PDone` (`childCancelSpec s.PDone`): the child is canceled at once if the parent is done
+  described by `s`) and a child whose `cancel(false, err, cause)` needs a typed error that is
+  `Canceled`'s or `DeadlineExceeded`'s value and `□ s.PDone` (`childCancelSpec s.PDone`): the child is canceled at once if the parent is done
   (`□ s.PDone` from the parent's `Err()`, `"#HErrDone"`), and is otherwise added to the
   `children` of the `*cancelCtx` `p` that `parentCancelCtx(parent)` finds, whose Done
   proposition gives `s.PDone` (`"#HParentCC"`; the branches for other parents are not

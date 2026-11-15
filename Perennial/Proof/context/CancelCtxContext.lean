@@ -189,7 +189,7 @@ theorem isContext_cancelCtx_of
       iapply wp_parentCancelCtx_self c _ _ ch cch hne $$ [$Hpkg $Hc $Hd $Hcch]
       inext; iintro -
       iapply HΦ $$ Hc
-      imodintro; iintro Hp; iexact Hp
+      imodintro; iintro #Hp; iexact Hp
   · iapply isCancelCtxOf_closedchan $$ Hc
 
 end wps
