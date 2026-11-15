@@ -43,7 +43,8 @@ func ParseTags(s string) []string {
 // NewPackageConfig is the configuration every command loads Go packages with.
 // The packages are built with the build tag goose and the additional tags
 // (none if tags is empty), which decide the files of a package under build
-// constraints: goose and proofgen must be given the same tags.
+// constraints: goose and proofgen must be given the same tags, and so must
+// every package of one program (build tags are those of a whole Go build).
 func NewPackageConfig(modDir string, needDeps bool, tags []string) *packages.Config {
 	mode := packages.NeedName | packages.NeedCompiledGoFiles
 	mode |= packages.NeedImports

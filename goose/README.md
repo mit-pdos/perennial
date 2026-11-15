@@ -65,7 +65,11 @@ of `Perennial`, for projects that translate their own Go packages.
 `-tags TAG,...` (as `go build -tags`) loads the packages with those Go build
 tags in addition to `goose`, which is always set: it selects the files under
 build constraints (`//go:build with_tla`). `goose`, `proofgen` and `modelcheck`
-take it, and must be given the same tags for a package.
+take it, and must be given the same tags for a package. Build tags are those
+of a whole Go build: translate every package of a program with the same tags
+(a package translated with a tag and a dependency translated without it are
+not the code of any one build), and state results about the program built
+with `-tags goose,TAG,...`. The translation does not record the tags.
 
 The output for a large package is split into modules `<pkg>/chunkN` that lake
 checks in parallel, re-exported by the package's module, which downstream code
