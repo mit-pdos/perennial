@@ -22,9 +22,9 @@ func fileContents(f glang.File) []byte {
 }
 
 func translate(pkgPatterns []string, outRootDir string, configDir string, modDir string,
-	ignoreErrors bool) {
+	tags []string, ignoreErrors bool) {
 	red := color.New(color.FgRed).SprintFunc()
-	fs, errs, patternError := goose.TranslatePackages(configDir, modDir, pkgPatterns...)
+	fs, errs, patternError := goose.TranslatePackages(configDir, modDir, tags, pkgPatterns...)
 	if patternError != nil {
 		fmt.Fprintln(os.Stderr, red(patternError.Error()))
 		os.Exit(1)
@@ -95,10 +95,13 @@ func main() {
 
 	flag.Var(glang.LeanRootFlag{}, "lean-root", glang.LeanRootUsage)
 
+	var tags string
+	flag.StringVar(&tags, "tags", "", util.TagsUsage)
+
 	flag.Parse()
 	if configDir == "" {
 		configDir = outRootDir
 	}
 
-	translate(flag.Args(), outRootDir, configDir, modDir, ignoreErrors)
+	translate(flag.Args(), outRootDir, configDir, modDir, util.ParseTags(tags), ignoreErrors)
 }

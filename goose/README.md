@@ -62,6 +62,10 @@ A package's translation is configured by `<path>.toml` in the config directory
 or trust, and bootstrapping options. `-lean-root PKG=ROOT` places the modules
 of the packages under Go path `PKG` under the Lean module root `ROOT` instead
 of `Perennial`, for projects that translate their own Go packages.
+`-tags TAG,...` (as `go build -tags`) loads the packages with those Go build
+tags in addition to `goose`, which is always set: it selects the files under
+build constraints (`//go:build with_tla`). `goose`, `proofgen` and `modelcheck`
+take it, and must be given the same tags for a package.
 
 The output for a large package is split into modules `<pkg>/chunkN` that lake
 checks in parallel, re-exported by the package's module, which downstream code

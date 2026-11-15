@@ -24,7 +24,27 @@ import (
 // a large generated proof, see proofgen.Package).
 type PackageTranslator func(io.Writer, *packages.Package, bool, declfilter.DeclFilter) map[string]string
 
-func NewPackageConfig(modDir string, needDeps bool) *packages.Config {
+// TagsUsage is the help text of -tags.
+const TagsUsage = "comma-separated list of additional Go build tags for loading the packages " +
+	"(as go build -tags); the goose tag is always set"
+
+// ParseTags splits the argument of -tags, a comma-separated list of build
+// tags, dropping empty entries.
+func ParseTags(s string) []string {
+	var tags []string
+	for _, tag := range strings.Split(s, ",") {
+		if tag = strings.TrimSpace(tag); tag != "" {
+			tags = append(tags, tag)
+		}
+	}
+	return tags
+}
+
+// NewPackageConfig is the configuration every command loads Go packages with.
+// The packages are built with the build tag goose and the additional tags
+// (none if tags is empty), which decide the files of a package under build
+// constraints: goose and proofgen must be given the same tags.
+func NewPackageConfig(modDir string, needDeps bool, tags []string) *packages.Config {
 	mode := packages.NeedName | packages.NeedCompiledGoFiles
 	mode |= packages.NeedImports
 	mode |= packages.NeedTypes | packages.NeedSyntax | packages.NeedTypesInfo
@@ -35,7 +55,7 @@ func NewPackageConfig(modDir string, needDeps bool) *packages.Config {
 		Dir:        modDir,
 		Env:        append(os.Environ(), "GOOS=linux", "GOARCH=amd64"),
 		Mode:       mode,
-		BuildFlags: []string{"-tags", "goose"},
+		BuildFlags: []string{"-tags", strings.Join(append([]string{"goose"}, tags...), ",")},
 		Fset:       token.NewFileSet(),
 	}
 }
@@ -99,9 +119,9 @@ func ReadConfig(configDir string, pkgPath string) (declfilter.FilterConfig, erro
 	return config, nil
 }
 
-func Translate(translatePkg PackageTranslator, pkgPatterns []string, outRootDir string, modDir string, configDir string) {
+func Translate(translatePkg PackageTranslator, pkgPatterns []string, outRootDir string, modDir string, configDir string, tags []string) {
 	red := color.New(color.FgRed).SprintFunc()
-	pkgs, err := packages.Load(NewPackageConfig(modDir, true), pkgPatterns...)
+	pkgs, err := packages.Load(NewPackageConfig(modDir, true, tags), pkgPatterns...)
 
 	if err != nil {
 		panic(err)

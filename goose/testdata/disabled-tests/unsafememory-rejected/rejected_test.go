@@ -45,7 +45,7 @@ func TestRefused(t *testing.T) {
 		}
 	}
 
-	_, errs, patternErr := goose.TranslatePackages(".", ".", ".")
+	_, errs, patternErr := goose.TranslatePackages(".", ".", nil, ".")
 	if patternErr != nil {
 		t.Fatal(patternErr)
 	}

@@ -3,8 +3,59 @@ package util
 import (
 	"os"
 	"path"
+	"path/filepath"
+	"reflect"
+	"sort"
 	"testing"
+
+	"golang.org/x/tools/go/packages"
 )
+
+func TestParseTags(t *testing.T) {
+	for _, c := range []struct {
+		arg  string
+		tags []string
+	}{
+		{"", nil},
+		{"a", []string{"a"}},
+		{"a,b", []string{"a", "b"}},
+		{"a,,b,", []string{"a", "b"}},
+	} {
+		if got := ParseTags(c.arg); !reflect.DeepEqual(got, c.tags) {
+			t.Errorf("ParseTags(%q) = %q, want %q", c.arg, got, c.tags)
+		}
+	}
+}
+
+// TestNewPackageConfigTags checks which files of testdata/tags are loaded:
+// those of the goose tag always, and those of the additional tags.
+func TestNewPackageConfigTags(t *testing.T) {
+	for _, c := range []struct {
+		tags  []string
+		files []string
+	}{
+		{nil, []string{"common.go", "goose.go", "without.go"}},
+		{[]string{"other"}, []string{"common.go", "goose.go", "without.go"}},
+		{[]string{"goose_test_tag"}, []string{"common.go", "goose.go", "with.go"}},
+		{[]string{"other", "goose_test_tag"}, []string{"common.go", "goose.go", "with.go"}},
+	} {
+		pkgs, err := packages.Load(NewPackageConfig(".", false, c.tags), "./testdata/tags")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(pkgs) != 1 || len(pkgs[0].Errors) > 0 {
+			t.Fatalf("tags %q: could not load testdata/tags: %v", c.tags, pkgs)
+		}
+		var files []string
+		for _, f := range pkgs[0].CompiledGoFiles {
+			files = append(files, filepath.Base(f))
+		}
+		sort.Strings(files)
+		if !reflect.DeepEqual(files, c.files) {
+			t.Errorf("tags %q: loaded %q, want %q", c.tags, files, c.files)
+		}
+	}
+}
 
 func TestFileHasContents(t *testing.T) {
 	// Create a temporary directory

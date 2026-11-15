@@ -141,7 +141,7 @@ func TestExamples(testingT *testing.T) {
 		testingT.Run(t.name, func(testingT *testing.T) {
 			testingT.Parallel()
 			assert := assert.New(testingT)
-			files, errs, patternError := goose.TranslatePackages(t.path, t.path, ".")
+			files, errs, patternError := goose.TranslatePackages(t.path, t.path, nil, ".")
 			if patternError != nil {
 				// shouldn't be possible since "." is valid
 				assert.FailNowf("loading failed", "load error: %v", patternError)
@@ -252,7 +252,7 @@ func TestNegativeExamples(testingT *testing.T) {
 		testingT.Run(t.name, func(testingT *testing.T) {
 			testingT.Parallel()
 			assert := assert.New(testingT)
-			files, errs, patternError := goose.TranslatePackages(t.path, t.path, ".")
+			files, errs, patternError := goose.TranslatePackages(t.path, t.path, nil, ".")
 
 			if patternError != nil { // shouldn't be possible since "." is valid
 				assert.FailNowf("loading failed", "load error: %v", patternError)
