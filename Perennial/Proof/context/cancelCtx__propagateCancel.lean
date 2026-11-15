@@ -256,7 +256,7 @@ theorem context.cancelCtx.propagateCancel.wp_proof
           (k : GoInterface) [SafeMapKey (GF := GF) context.canceler.ty k],
       {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
           ctxField c ↦ (interface.nil : GoInterface) ∗ isContext parent s ∗
-          childCancelSpec iprop(True) k }}
+          childCancelSpec s.PDone k }}
         (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
           (Val #(interface.ok parent)))
           (Val #k))
@@ -304,12 +304,12 @@ theorem context.cancelCtx.propagateCancel.wp_proof
           · iexact Hcchan
           iapply closed_chan_nonblocking_receive $$ Hcinv
           wp_auto
-          wp_apply HErrDone $$ Hcl as %e %htyped #Hce
+          wp_apply HErrDone $$ Hcl as %e %htyped #Hce #Hpd
           wp_apply wp_Cause parent s $$ [$Hctx] as %cause -
           wp_apply Hk
           · ipureintro; exact htyped
           · iexact Hce
-          · imodintro; itrivial
+          · iexact Hpd
           iapply HΦ $$ Hf
         · iframe
         · iintro - Hnr
@@ -333,12 +333,12 @@ theorem context.cancelCtx.propagateCancel.wp_proof
         isplit
         · iintro ⟨-, #Hcl⟩
           wp_auto
-          wp_apply HErrDone $$ Hcl as %e %htyped #Hce
+          wp_apply HErrDone $$ Hcl as %e %htyped #Hce #Hpd
           wp_apply wp_Cause parent s $$ [$Hctx] as %cause -
           wp_apply Hk
           · ipureintro; exact htyped
           · iexact Hce
-          · imodintro; itrivial
+          · iexact Hpd
           iapply HΦ $$ Hf
         · iframe; ipureintro; exact hcc
       · iframe
@@ -347,11 +347,9 @@ theorem context.cancelCtx.propagateCancel.wp_proof
         wp_bind (App (Val (@! context.parentCancelCtx)) _)
         iapply HPar $$ %ch %cch Hdg Hcch %hcc
         inext
-        iintro %p #Hp
-        iunfold isCancelCtx at Hp
-        icases Hp with ⟨%γp, %Pp, #Hp⟩
+        iintro %p %γp %Pp #Hp #HPp
         ihave #Hksp : childCancelSpec Pp (GoInterface.ok ki) $$ []
-        · iapply childCancelSpec_true
+        · iapply childCancelSpec_mono $$ HPp
           simp only [childCancelSpec]
           iexact Hk
         ihave #Hp' := Hp
@@ -425,7 +423,7 @@ theorem context.cancelCtx.propagateCancel.wp_proof
           icases Hcl with ⟨#Hclosed, %hch⟩
           wp_apply wp_err_Load_frag p _ _ true $$ [$Hp] as %e ⟨-, Hhe⟩
           · unfold closedFrag; simp only [↓reduceIte]; iexact Hclosed
-          icases Hhe with ⟨-, %ht, -, #Hce⟩
+          icases Hhe with ⟨-, %ht, #Hpd, #Hce⟩
           have ht := ht (by simp)
           ihave #Hce := Hce $$ %(by simp)
           cases e with
@@ -437,7 +435,7 @@ theorem context.cancelCtx.propagateCancel.wp_proof
           wp_apply Hk
           · ipureintro; exact ht
           · iexact Hce
-          · imodintro; itrivial
+          · imodintro; iapply HPp; iapply Hpd; ipureintro; simp
           wp_apply wp_Unlock $$ [$Hmup $Hlocked Hchildren Hcause Hod HR]
           · inext; unfold cancelCtxLockInv
             iexists children, cause, od, true; simp only [↓reduceIte, named]; iframe; iframe #

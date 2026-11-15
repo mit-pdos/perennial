@@ -31,12 +31,14 @@ names in `Results.lean`):
   `c.propagateCancel(parent, c)` for a parent that is a `*cancelCtx` described by `s` whose
   Done proposition implies `c`'s: either the parent is already done (then `c` is canceled at once),
   or `c` is added to the parent's `children` (with its `childCancelSpec`).
-* any `isContext` parent (`wp_propagateCancel_any`):
-  `c.propagateCancel(parent, child)` for any context `parent` (`isContext`) and a child whose
-  `cancel(false, err, cause)` needs nothing but a typed error (`childCancelSpec True`): the child
-  is canceled at once if the parent is done, and is otherwise added to the `children` of the
-  `*cancelCtx` that `parentCancelCtx(parent)` finds (`"#HParentCC"`; the branches for other
-  parents are not reached). -/
+* any `isContext` parent (`wp_propagateCancel_ctx`, and `wp_propagateCancel_any` for a child
+  that needs nothing): `c.propagateCancel(parent, child)` for any context `parent` (`isContext`
+  described by `s`) and a child whose `cancel(false, err, cause)` needs a typed error and
+  `□ s.PDone` (`childCancelSpec s.PDone`): the child is canceled at once if the parent is done
+  (`□ s.PDone` from the parent's `Err()`, `"#HErrDone"`), and is otherwise added to the
+  `children` of the `*cancelCtx` `p` that `parentCancelCtx(parent)` finds, whose Done
+  proposition gives `s.PDone` (`"#HParentCC"`; the branches for other parents are not
+  reached). -/
 abbrev context.cancelCtx.propagateCancel.spec : Prop :=
   ∀ (c : Loc) (parent : GoInterfaceOk) (k : GoInterface)
       [SafeMapKey (GF := GF) context.canceler.ty k],
@@ -47,7 +49,7 @@ abbrev context.cancelCtx.propagateCancel.spec : Prop :=
             ⌜k = interface.mkOk (go.GoType.PointerType context.cancelCtx.ty) #c⌝ ∗
             isCancelCtxOf c γ P ∗ isContext parent s ∗ isCancelCtxCtx parent s ∗
             □ (s.PDone -∗ P)) ∨
-         (∃ s : ContextDesc (IProp GF), isContext parent s ∗ childCancelSpec iprop(True) k)) }}
+         (∃ s : ContextDesc (IProp GF), isContext parent s ∗ childCancelSpec s.PDone k)) }}
       (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
         (Val #(interface.ok parent)))
         (Val #k))

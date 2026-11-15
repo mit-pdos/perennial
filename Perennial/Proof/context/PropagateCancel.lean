@@ -92,18 +92,19 @@ theorem wp_propagateCancel_cancelCtx_of
   · ipureintro; rfl
   iframe #
 
-/-- `c.propagateCancel(parent, child)` for any context `parent` (`isContext`) and a child whose
-`cancel(false, err, cause)` needs nothing but a typed error (`childCancelSpec True`): the child
-is canceled at once if the parent is done, and is otherwise added to the `children` of the
-`*cancelCtx` that `parentCancelCtx(parent)` finds (`"#HParentCC"`; the branches for other
-parents are not reached). -/
-theorem wp_propagateCancel_any_of
+/-- `c.propagateCancel(parent, child)` for any context `parent` (`isContext`, described by `s`)
+and a child whose `cancel(false, err, cause)` needs a typed error and `□ s.PDone`
+(`childCancelSpec s.PDone`): the child is canceled at once if the parent is done, and is
+otherwise added to the `children` of the `*cancelCtx` that `parentCancelCtx(parent)` finds, whose
+Done proposition gives `s.PDone` (`"#HParentCC"`; the branches for other parents are not
+reached). -/
+theorem wp_propagateCancel_ctx_of
     (wp_propagateCancel : context.cancelCtx.propagateCancel.spec (GF := GF) (hG := hG))
     (c : Loc) (parent : GoInterfaceOk) (s : ContextDesc (IProp GF))
     (k : GoInterface) [SafeMapKey (GF := GF) context.canceler.ty k] :
     {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
         ctxField c ↦ (interface.nil : GoInterface) ∗ isContext parent s ∗
-        childCancelSpec iprop(True) k }}
+        childCancelSpec s.PDone k }}
       (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
         (Val #(interface.ok parent)))
         (Val #k))
@@ -118,6 +119,23 @@ theorem wp_propagateCancel_any_of
   iright
   iexists s
   iframe #
+
+/-- `wp_propagateCancel_ctx_of` for a child whose `cancel(false, err, cause)` needs nothing but a
+typed error (`childCancelSpec True`). -/
+theorem wp_propagateCancel_any_of
+    (wp_propagateCancel : context.cancelCtx.propagateCancel.spec (GF := GF) (hG := hG))
+    (c : Loc) (parent : GoInterfaceOk) (s : ContextDesc (IProp GF))
+    (k : GoInterface) [SafeMapKey (GF := GF) context.canceler.ty k] :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
+        ctxField c ↦ (interface.nil : GoInterface) ∗ isContext parent s ∗
+        childCancelSpec iprop(True) k }}
+      (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
+        (Val #(interface.ok parent)))
+        (Val #k))
+    {{ RET #(); ctxField c ↦ (interface.ok parent : GoInterface) }} := by
+  iintro %Φ ⟨#Hpkg, Hf, #Hctx, #Hk⟩ HΦ
+  ihave #Hk' := childCancelSpec_true s.PDone k $$ Hk
+  iapply wp_propagateCancel_ctx_of wp_propagateCancel c parent s k $$ [$Hpkg $Hf $Hctx $Hk'] HΦ
 
 end wps
 

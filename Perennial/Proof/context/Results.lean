@@ -3,8 +3,8 @@ Results of `context` derived from the linked ones, under their old names: the me
 `*cancelCtx` and `*timerCtx` (`wp_cancelCtx_Done`, ..., `wp_timerCtx_cancel`, the Link's
 `cancelCtx.wp_Done`, ...), the promoted methods of `*timerCtx` (`wp_timerCtx_Done`, ...), the
 three cases of `propagateCancel`'s spec (`wp_propagateCancel_background`, `_background_any`,
-`_cancelCtx`, `_any`), the other triples of `WithCancel` (`wp_WithCancel_gen`, `wp_WithCancel_any`,
-`wp_WithCancel_Background`), of the deadline constructors (`wp_WithDeadlineCause_Background`,
+`_cancelCtx`, `_ctx`, `_any`), the other triples of `WithCancel` (`wp_WithCancel_gen`,
+`wp_WithCancel_ctx`, `wp_WithCancel_any`, `wp_WithCancel_Background`), of the deadline constructors (`wp_WithDeadlineCause_Background`,
 `wp_WithDeadline_Background`, `wp_WithTimeout_Background`) and of `parentCancelCtx` (`wp_parentCancelCtx_self`,
 `wp_parentCancelCtx_timer`), the `atomic.Value` cells (`wp_done_Load`, ...) and the `isContext`s of
 `*cancelCtx` and `*timerCtx`: each the shared `_of` lemma applied to the linked results.
@@ -167,6 +167,22 @@ theorem wp_propagateCancel_cancelCtx (c : Loc) (γ : ContextNames) (P : IProp GF
     {{ RET #(); ctxField c ↦ (interface.ok parent : GoInterface) }} :=
   wp_propagateCancel_cancelCtx_of cancelCtx.wp_propagateCancel c γ P parent s
 
+/-- `c.propagateCancel(parent, child)` for any context `parent` (`isContext`, described by `s`)
+and a child whose `cancel(false, err, cause)` needs a typed error and `□ s.PDone`
+(`childCancelSpec s.PDone`): the child is canceled at once if the parent is done, and is
+otherwise added to the `children` of the `*cancelCtx` that `parentCancelCtx(parent)` finds, whose
+Done proposition gives `s.PDone` (`"#HParentCC"`). -/
+theorem wp_propagateCancel_ctx (c : Loc) (parent : GoInterfaceOk) (s : ContextDesc (IProp GF))
+    (k : GoInterface) [SafeMapKey (GF := GF) context.canceler.ty k] :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗
+        ctxField c ↦ (interface.nil : GoInterface) ∗ isContext parent s ∗
+        childCancelSpec s.PDone k }}
+      (App (App (Val (c @!! go.GoType.PointerType context.cancelCtx.ty @!! go!"propagateCancel"))
+        (Val #(interface.ok parent)))
+        (Val #k))
+    {{ RET #(); ctxField c ↦ (interface.ok parent : GoInterface) }} :=
+  wp_propagateCancel_ctx_of cancelCtx.wp_propagateCancel c parent s k
+
 /-- `c.propagateCancel(parent, child)` for any context `parent` (`isContext`) and a child whose
 `cancel(false, err, cause)` needs nothing but a typed error (`childCancelSpec True`): the child
 is canceled at once if the parent is done, and is otherwise added to the `children` of the
@@ -201,6 +217,23 @@ theorem wp_WithCancel_gen (parent : GoInterfaceOk) (P Pre : IProp GF)
         cancelSpec cancel γ P ∗ isCancelCtxOf c γ P ∗
         ctxField c ↦□ (interface.ok parent : GoInterface) }} :=
   wp_WithCancel_gen_of wp_withCancel cancelCtx.wp_cancel parent P Pre Hprop
+
+/-- `WithCancel(parent)` for any context `parent` (`isContext`, described by `s`) and any
+proposition `PDone'`: the new context is a `*cancelCtx` with the parent's deadline, whose Done
+proposition is `s.PDone ∨ PDone'` (it is done because its parent is, or because its cancel function
+ran, which needs `□ PDone'`). -/
+theorem wp_WithCancel_ctx (parent : GoInterfaceOk) (s : ContextDesc (IProp GF))
+    (PDone' : IProp GF) :
+    {{ isPkgInit (PROP := IProp GF) pkg_id.context ∗ isContext parent s }}
+      (App (Val (@! context.WithCancel)) (Val #(interface.ok parent)))
+    {{ (ctx' : GoInterfaceOk) (γ' : ContextNames) (cancel : GoFunc),
+        RET (PairV #(interface.ok ctx') #cancel);
+        cancelSpec cancel γ' PDone' ∗
+        isContext ctx' { s with PDone := iprop(s.PDone ∨ PDone'), Done_gn := γ' } ∗
+        isCancelCtxCtx ctx' { s with PDone := iprop(s.PDone ∨ PDone'), Done_gn := γ' } ∗
+        ctxValueFrom parent ctx' }} :=
+  wp_WithCancel_ctx_of wp_withCancel cancelCtx.wp_cancel cancelCtx.wp_propagateCancel
+    cancelCtx.wp_Done cancelCtx.wp_Err cancelCtx.wp_Value sync.atomic.Value.wp_Load parent s PDone'
 
 /-- `WithCancel(parent)` for any context `parent` (`isContext`): the new context is a
 `*cancelCtx` with the parent's deadline whose cancel function needs nothing (so its Done
