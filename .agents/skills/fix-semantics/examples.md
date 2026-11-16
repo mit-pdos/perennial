@@ -1144,3 +1144,31 @@ switch indexes its cases from 1 correctly; no other loop over `X[1:]` uses its i
 
 **Sign-off.** The user signed off the plan as written (2026-11-08, relayed by etcd-grove-81). Found by
 etcd-grove while writing the `ctx-value` design.
+
+## Case 36 — ACCEPTED: an index read of a slice passes `IndexRef` its operands in order (branch `fix-index-slice-operands`, issue #643)
+
+**Symptom.** Incomplete (stuck where Go runs). `index_slice` stepped `⟦Index (go.SliceType e), (#s, #i)⟧`
+to `GoLoad e (IndexRef (go.SliceType e) (#i, #s))`, and no rule takes `IndexRef` of a slice type with
+the index first (`index_ref_slice` takes `(#s, #i)`), so the read stopped there. Goose emits `Index`
+on a slice only when the operand's type is a type parameter (a read of a slice-typed operand is
+`IndexRef` and a load), so only generic code instantiated at a slice type met it. Reported from a
+proof of `unicode/utf8.Valid`.
+
+**Witness.**
+
+```go
+func first[S ~[]byte | ~string](s S) byte { return s[0] }
+// first([]byte{1}): Go returns 1; the model was stuck.
+```
+
+**Taken.** The operands in `index_slice`'s right-hand side swapped to `(#s, #i)`. Cost: 1 changed
+semantics line, 0 new rules, 0 goose changes. Semantics tests `testIndexGenericBytes`,
+`testIndexGenericNamedBytes` (a named byte-slice type) and `testIndexGenericString` (the string
+instantiation, which never used the rule), all proved; the two slice proofs do not go through with
+the operands reversed.
+
+**Siblings.** None: `index_array`, `string_index`, `index_ref_array` and every use of `IndexRef` in
+`Golang/Defn` take the container first.
+
+**Why.** The user, on the issue's proposed one-line diff: "I think [it] is valid issue. Fix it in a
+branch, so I can make a PR. Also add a regression test for it."

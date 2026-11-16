@@ -34,6 +34,9 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFallthroughBreak
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testFallthroughReturn
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIncompleteStruct
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIndexGenericBytes
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIndexGenericNamedBytes
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIndexGenericString
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testInterfaceNilWithType
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testListTypesEqual
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testLoopVarCapture
@@ -182,6 +185,15 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testF
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testIncompleteStruct : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIncompleteStruct.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIncompleteStruct.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testIndexGenericBytes : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIndexGenericBytes.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIndexGenericBytes.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testIndexGenericNamedBytes : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIndexGenericNamedBytes.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIndexGenericNamedBytes.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testIndexGenericString : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIndexGenericString.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testIndexGenericString.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testInterfaceNilWithType : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testInterfaceNilWithType.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testInterfaceNilWithType.wp_proof
