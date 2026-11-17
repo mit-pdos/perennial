@@ -445,20 +445,21 @@ theorem IntArgValue.of_uint8 [GooseExts] [GoGlobalContext] [GoSemanticsFunctions
       (exfalso; simp [go.int, go.int64, go.int32, go.int16, go.int8, go.uint, go.uint64, go.uint32, go.uint16, go.uint8] at hty)
 
 /-- At `%` followed by `f`, with arguments `args` left: whether the model formats the directive
-(`%%`, `%s` of an interface holding a `string`, an integer directive, `parseIntVerb`, of an
+(`%%`, `%s` or `%v` of an interface holding a `string`, an integer directive, `parseIntVerb`, of an
 interface holding an integer, or `%x` of an interface holding an integer); at any other
 directive the rest of the output is arbitrary. -/
 def SimpleDirective [GooseExts] [GoSemanticsFunctions] : GoString → List GoInterface → Prop
   | c :: f, args =>
-      c = W8 37 ∨ (c = W8 115 ∧ ∃ ii rest, args = interface.ok ii :: rest ∧ ii.ty = go.string) ∨
+      c = W8 37 ∨
+      ((c = W8 115 ∨ c = W8 118) ∧ ∃ ii rest, args = interface.ok ii :: rest ∧ ii.ty = go.string) ∨
       ((parseIntVerb (c :: f)).isSome ∧
         ∃ ii rest, args = interface.ok ii :: rest ∧ IsIntArgType ii.ty) ∨
       (c = W8 120 ∧ ∃ ii rest, args = interface.ok ii :: rest ∧ IsIntArgType ii.ty)
   | [], _ => False
 
 /-- `SprintfOut format args out`: `out` is a possible result of `fmt.Sprintf(format, args...)`,
-as the model of `Sprintf` formats it. Bytes other than `%` are copied, `%%` gives `%`, `%s` with
-an interface holding a `string` next gives that string, `%d`, `%v` and `%0Nd` with an interface
+as the model of `Sprintf` formats it. Bytes other than `%` are copied, `%%` gives `%`, `%s` and
+`%v` with an interface holding a `string` next give that string, `%d`, `%v` and `%0Nd` with an interface
 holding an integer next give its (zero-padded) decimal, `%x` with an interface holding an integer
 next gives its hexadecimal; at any other directive, and after the
 format if arguments remain unused, the rest of the output is arbitrary. -/
@@ -479,6 +480,11 @@ inductive SprintfOut [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] :
   | str (x : GoString) (f : GoString) (args : List GoInterface) (out : GoString) :
       SprintfOut f args out →
       SprintfOut (W8 37 :: W8 115 :: f) (interface.mkOk go.string #x :: args) (x ++ out)
+  /-- `%v` of an interface holding the string `x` gives `x`, as `%s` does, and consumes the
+  argument. -/
+  | strV (x : GoString) (f : GoString) (args : List GoInterface) (out : GoString) :
+      SprintfOut f args out →
+      SprintfOut (W8 37 :: W8 118 :: f) (interface.mkOk go.string #x :: args) (x ++ out)
   /-- An integer directive of width `w` (`%d`, `%v`: 0; `%0Nd`: `N`) of an interface holding the
   integer `z` gives `decimalPad w z`, and consumes the argument. -/
   | int (f rest : GoString) (w : Nat) (ii : GoInterfaceOk) (z : Int) (args : List GoInterface)
@@ -565,6 +571,9 @@ theorem SprintfOut.str_prefix [go.IntoValInj GoString] (x f : GoString)
     simp only [List.cons.injEq, GoInterface.ok.injEq, GoInterfaceOk.mk.injEq, true_and] at hA
     rw [go.intoVal_inj hA.1]
     exact ⟨out', rfl⟩
+  | strV =>
+    simp only [List.cons.injEq] at hF
+    exact absurd hF.2.1 (by decide)
   | int f' _ _ _ _ _ _ hp =>
     simp only [List.cons.injEq] at hF
     obtain ⟨-, rfl⟩ := hF
@@ -576,7 +585,7 @@ theorem SprintfOut.str_prefix [go.IntoValInj GoString] (x f : GoString)
     simp only [List.cons.injEq] at hF
     obtain ⟨-, rfl⟩ := hF
     subst hA
-    exact absurd (Or.inr (Or.inl ⟨rfl, _, _, rfl, rfl⟩)) hnot
+    exact absurd (Or.inr (Or.inl ⟨Or.inl rfl, _, _, rfl, rfl⟩)) hnot
 
 /-- `Sprintf("%s%x", x, n)` begins with `x` (whatever the second argument). -/
 theorem SprintfOut.str_x_prefix [go.IntoValInj GoString] (x : GoString)
@@ -662,6 +671,7 @@ theorem SprintfOut.byte_inv {c : w8} {f : GoString} {args : List GoInterface} {o
     exact ⟨out', rfl, h'⟩
   | percent => simp only [List.cons.injEq] at hF; exact absurd hF.1 hc
   | str => simp only [List.cons.injEq] at hF; exact absurd hF.1 hc
+  | strV => simp only [List.cons.injEq] at hF; exact absurd hF.1 hc
   | int => simp only [List.cons.injEq] at hF; exact absurd hF.1 hc
   | hex => simp only [List.cons.injEq] at hF; exact absurd hF.1 hc
   | other => simp only [List.cons.injEq] at hF; exact absurd hF.1 hc
@@ -688,6 +698,9 @@ theorem SprintfOut.str_inv [go.IntoValInj GoString] {x f : GoString} {args : Lis
     obtain ⟨hxy, rfl⟩ := hA
     rw [go.intoVal_inj hxy]
     exact ⟨out', rfl, h'⟩
+  | strV =>
+    simp only [List.cons.injEq] at hF
+    exact absurd hF.2.1 (by decide)
   | int f' _ _ _ _ _ _ hp =>
     simp only [List.cons.injEq] at hF
     obtain ⟨-, rfl⟩ := hF
@@ -699,9 +712,48 @@ theorem SprintfOut.str_inv [go.IntoValInj GoString] {x f : GoString} {args : Lis
     simp only [List.cons.injEq] at hF
     obtain ⟨-, rfl⟩ := hF
     subst hA
-    exact absurd (Or.inr (Or.inl ⟨rfl, _, _, rfl, rfl⟩)) hnot
+    exact absurd (Or.inr (Or.inl ⟨Or.inl rfl, _, _, rfl, rfl⟩)) hnot
 
-theorem SprintfOut.int_inv {f rest : GoString} {w : Nat} {ii : GoInterfaceOk} {z : Int}
+/-- `%v` of an interface holding the string `x` gives `x`, as `%s` does. -/
+theorem SprintfOut.strV_inv [go.IntoValInj GoString] [go.string ↓u go.string] {x f : GoString}
+    {args : List GoInterface} {out : GoString}
+    (h : SprintfOut (W8 37 :: W8 118 :: f) (interface.mkOk go.string #x :: args) out) :
+    ∃ out', out = x ++ out' ∧ SprintfOut f args out' := by
+  generalize hF : W8 37 :: W8 118 :: f = F at h
+  generalize hA : interface.mkOk go.string #x :: args = A at h
+  cases h with
+  | done => cases hF
+  | extra => cases hF
+  | byte _ _ _ _ hc _ =>
+    simp only [List.cons.injEq] at hF
+    exact absurd hF.1.symm hc
+  | percent =>
+    simp only [List.cons.injEq] at hF
+    exact absurd hF.2.1 (by decide)
+  | str =>
+    simp only [List.cons.injEq] at hF
+    exact absurd hF.2.1 (by decide)
+  | strV y f' args' out' h' =>
+    simp only [List.cons.injEq] at hF hA
+    obtain ⟨-, -, rfl⟩ := hF
+    simp only [GoInterface.ok.injEq, GoInterfaceOk.mk.injEq, true_and] at hA
+    obtain ⟨hxy, rfl⟩ := hA
+    rw [go.intoVal_inj hxy]
+    exact ⟨out', rfl, h'⟩
+  | int f' _ _ ii' _ _ _ _ hz' =>
+    obtain ⟨hii, -⟩ := List.cons.inj hA
+    cases hii
+    exact absurd hz'.isIntArgType not_isIntArgType_string
+  | hex =>
+    simp only [List.cons.injEq] at hF
+    exact absurd hF.2.1 (by decide)
+  | other _ _ _ hnot =>
+    simp only [List.cons.injEq] at hF
+    obtain ⟨-, rfl⟩ := hF
+    subst hA
+    exact absurd (Or.inr (Or.inl ⟨Or.inr rfl, _, _, rfl, rfl⟩)) hnot
+
+theorem SprintfOut.int_inv [go.string ↓u go.string] {f rest : GoString} {w : Nat} {ii : GoInterfaceOk} {z : Int}
     {args : List GoInterface} {out : GoString}
     (hp : parseIntVerb f = some (w, rest)) (hz : IntArgValue ii z)
     (huniq : ∀ z', IntArgValue ii z' → z' = z)
@@ -723,6 +775,10 @@ theorem SprintfOut.int_inv {f rest : GoString} {w : Nat} {ii : GoInterfaceOk} {z
     simp only [List.cons.injEq] at hF
     obtain ⟨-, rfl⟩ := hF
     simp [parseIntVerb] at hp
+  | strV y f' args' out' =>
+    obtain ⟨hii, -⟩ := List.cons.inj hA
+    cases hii
+    exact absurd hz.isIntArgType not_isIntArgType_string
   | int f' rest' w' ii' z' args' out' hp' hz' h' =>
     simp only [List.cons.injEq] at hF hA
     obtain ⟨-, rfl⟩ := hF
@@ -764,6 +820,9 @@ theorem SprintfOut.hex_inv {f : GoString} {ii : GoInterfaceOk} {z : Int}
     simp only [List.cons.injEq] at hF
     exact absurd hF.2.1 (by decide)
   | str =>
+    simp only [List.cons.injEq] at hF
+    exact absurd hF.2.1 (by decide)
+  | strV =>
     simp only [List.cons.injEq] at hF
     exact absurd hF.2.1 (by decide)
   | int f' _ _ _ _ _ _ hp =>
@@ -809,7 +868,7 @@ theorem IntArgValue.uniq_uint16 [go.IntoValInj w16] (n : w16) :
   rw [go.intoVal_inj hv]
 
 /-- `Sprintf("%s/%v", x, n)` for a string `x` and an `int64` `n` is exactly `x/n`, `n` in decimal. -/
-theorem SprintfOut.str_slash_v_int64 [go.IntoValInj GoString] [go.IntoValInj w64]
+theorem SprintfOut.str_slash_v_int64 [go.IntoValInj GoString] [go.IntoValInj w64] [go.string ↓u go.string]
     (x : GoString) (n : w64) (out : GoString)
     (h : SprintfOut go!"%s/%v" [interface.mkOk go.string #x, interface.mkOk go.int64 #n] out) :
     out = x ++ go!"/" ++ decimal (sint.Z n) := by
@@ -824,7 +883,7 @@ theorem SprintfOut.str_slash_v_int64 [go.IntoValInj GoString] [go.IntoValInj w64
 
 /-- `Sprintf("%s%05d", x, n)` for a string `x` and a `uint16` `n` is exactly `x` then `n` in
 decimal with leading zeros up to 5 digits. -/
-theorem SprintfOut.str_05d_uint16 [go.IntoValInj GoString] [go.IntoValInj w16]
+theorem SprintfOut.str_05d_uint16 [go.IntoValInj GoString] [go.IntoValInj w16] [go.string ↓u go.string]
     (x : GoString) (n : w16) (out : GoString)
     (h : SprintfOut go!"%s%05d" [interface.mkOk go.string #x, interface.mkOk go.uint16 #n] out) :
     out = x ++ padZeros 5 (decimal (uint.Z n)) := by
@@ -838,7 +897,7 @@ theorem SprintfOut.str_05d_uint16 [go.IntoValInj GoString] [go.IntoValInj w16]
 
 /-- `Sprintf("%s/%016d", x, n)` for a string `x` and a non-negative `int` `n` is exactly `x/` then
 `n` in decimal with leading zeros up to 16 digits. -/
-theorem SprintfOut.str_slash_016d_int [go.IntoValInj GoString] [go.IntoValInj w64]
+theorem SprintfOut.str_slash_016d_int [go.IntoValInj GoString] [go.IntoValInj w64] [go.string ↓u go.string]
     (x : GoString) (n : w64) (hn : 0 ≤ sint.Z n) (out : GoString)
     (h : SprintfOut go!"%s/%016d" [interface.mkOk go.string #x, interface.mkOk go.int #n] out) :
     out = x ++ go!"/" ++ padZeros 16 (decimal (sint.Z n)) := by
@@ -850,6 +909,15 @@ theorem SprintfOut.str_slash_016d_int [go.IntoValInj GoString] [go.IntoValInj w6
   obtain ⟨o3, rfl, h3⟩ := SprintfOut.int_inv (w := 16) (rest := []) (by decide) (IntArgValue.int n)
     (IntArgValue.uniq_int n) h2
   rw [SprintfOut.done_inv h3, decimalPad_of_nonneg _ hn]
+  simp
+
+/-- `Sprintf("%v", x)` for a string `x` is exactly `x`. -/
+theorem SprintfOut.v_string [go.IntoValInj GoString] [go.string ↓u go.string] (x : GoString)
+    (out : GoString) (h : SprintfOut go!"%v" [interface.mkOk go.string #x] out) : out = x := by
+  have hfmt : go!"%v" = W8 37 :: [W8 118] := rfl
+  rw [hfmt] at h
+  obtain ⟨o1, rfl, h1⟩ := SprintfOut.strV_inv h
+  rw [SprintfOut.done_inv h1]
   simp
 
 /-! Named integer types. -/

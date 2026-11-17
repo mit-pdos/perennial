@@ -21,7 +21,7 @@ variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
 /-- `fmt.Sprintf(format, args...)` returns a string `s` with `SprintfOut format args s`: `%%`,
-`%s` of a `string`, and `%d`, `%v`, `%0Nd` and `%x` of an integer are formatted, the rest of the
+`%s` and `%v` of a `string`, and `%d`, `%v`, `%0Nd` and `%x` of an integer are formatted, the rest of the
 output is arbitrary from any other directive on (see the model of `Sprintf`,
 `Perennial/TrustedCode/fmt.lean`). The arguments' values must be of their dynamic types where
 these are `string` or an integer type, and be of predeclared basic types or of named integer
