@@ -5,6 +5,7 @@ package fmt_test
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -23,6 +24,45 @@ type plainName string
 type stringerName string
 
 func (s stringerName) String() string { return "S(" + string(s) + ")" }
+
+// A named string type with an Error method: Go calls it.
+type errorName string
+
+func (s errorName) Error() string { return "E(" + string(s) + ")" }
+
+// A named string type whose String has another signature: not a fmt.Stringer, so Go formats the
+// string.
+type oddStringName string
+
+func (s oddStringName) String() int { return 0 }
+
+// A named string type whose String has a pointer receiver: a value of it is not a fmt.Stringer,
+// so Go formats the string.
+type ptrStringName string
+
+func (s *ptrStringName) String() string { return "P" }
+
+// The model's strArg (Perennial/TrustedCode/fmt.lean), with underlyingAs[string] as
+// reflect.ValueOf(x).String() at kind String (TypeAssertUnderlying2 go.string).
+func strArg(x any) (string, bool) {
+	if _, ok := x.(interface{ Format(fmt.State, rune) }); ok {
+		return "", false
+	}
+	if _, ok := x.(interface{ String() string }); ok {
+		return "", false
+	}
+	if _, ok := x.(error); ok {
+		return "", false
+	}
+	if x == nil {
+		return "", false
+	}
+	v := reflect.ValueOf(x)
+	if v.Kind() != reflect.String {
+		return "", false
+	}
+	return v.String(), true
+}
 
 // %v of a string is the string itself, byte for byte, as %s gives it; alone, inside other text,
 // and next to other directives. (The model formats %v of an interface holding a `string` so.)
@@ -44,19 +84,51 @@ func TestSprintfVString(t *testing.T) {
 	}
 }
 
-// What the model leaves arbitrary: Go formats a named string type without formatting methods as
-// its string too (for %v and %s), and calls the String method of one that has it. The model
-// over-approximates both (the rest of the output is arbitrary), which this test documents.
+// %v and %s of a named string type without formatting methods are its string, byte for byte, as
+// the model formats them (strArg); a type with a String or Error method is formatted by it, and
+// the model does not format it (strArg's ok is false: the rest of the output is arbitrary).
 func TestSprintfVNamedString(t *testing.T) {
 	for _, s := range samples {
-		if got := fmt.Sprintf("%v", plainName(s)); got != s {
-			t.Errorf("Sprintf(%%v, plainName(%q)) = %q, want the string", s, got)
-		}
-		if got := fmt.Sprintf("%s", plainName(s)); got != s {
-			t.Errorf("Sprintf(%%s, plainName(%q)) = %q, want the string", s, got)
+		for _, x := range []any{plainName(s), oddStringName(s), ptrStringName(s)} {
+			for _, verb := range []string{"%v", "%s"} {
+				if got := fmt.Sprintf(verb, x); got != s {
+					t.Errorf("Sprintf(%s, %T(%q)) = %q, want the string", verb, x, s, got)
+				}
+			}
+			if got, want := fmt.Sprintf("p: %v, q: %v", x, x), "p: "+s+", q: "+s; got != want {
+				t.Errorf("Sprintf(p: %%v, q: %%v, %T(%q) twice) = %q, want %q", x, s, got, want)
+			}
 		}
 		if got, want := fmt.Sprintf("%v", stringerName(s)), "S("+s+")"; got != want {
 			t.Errorf("Sprintf(%%v, stringerName(%q)) = %q, want %q", s, got, want)
+		}
+		if got, want := fmt.Sprintf("%s", errorName(s)), "E("+s+")"; got != want {
+			t.Errorf("Sprintf(%%s, errorName(%q)) = %q, want %q", s, got, want)
+		}
+	}
+}
+
+// The model's strArg agrees with Go: where it returns ok, Go's %v and %s give exactly its
+// string; it returns ok for every string and method-less named string type, and not for a type
+// with a formatting method or a non-string kind.
+func TestStrArgModel(t *testing.T) {
+	for _, s := range samples {
+		args := []any{s, plainName(s), oddStringName(s), ptrStringName(s), stringerName(s),
+			errorName(s), []byte(s), len(s), nil}
+		wantOk := []bool{true, true, true, true, false, false, false, false, false}
+		for k, x := range args {
+			got, ok := strArg(x)
+			if ok != wantOk[k] {
+				t.Errorf("strArg(%T(%q)): ok = %v, want %v", x, s, ok, wantOk[k])
+			}
+			if !ok {
+				continue
+			}
+			for _, verb := range []string{"%v", "%s"} {
+				if g := fmt.Sprintf(verb, x); g != got {
+					t.Errorf("Sprintf(%s, %T(%q)) = %q, model %q", verb, x, s, g, got)
+				}
+			}
 		}
 	}
 }

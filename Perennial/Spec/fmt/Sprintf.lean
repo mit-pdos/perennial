@@ -21,11 +21,13 @@ variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
 /-- `fmt.Sprintf(format, args...)` returns a string `s` with `SprintfOut format args s`: `%%`,
-`%s` and `%v` of a `string`, and `%d`, `%v`, `%0Nd` and `%x` of an integer are formatted, the rest of the
+`%s` and `%v` of a string (a `string`, or a named string type without formatting methods,
+`StrArgValue`), and `%d`, `%v`, `%0Nd` and `%x` of an integer are formatted, the rest of the
 output is arbitrary from any other directive on (see the model of `Sprintf`,
 `Perennial/TrustedCode/fmt.lean`). The arguments' values must be of their dynamic types where
-these are `string` or an integer type, and be of predeclared basic types or of named integer
-types without formatting methods (`IsIntArgType`, formatted as integers) (`ArgsWf`). -/
+these are `string` or an integer type, and be of predeclared basic types, of named integer
+types without formatting methods (`IsIntArgType`, formatted as integers), or of named string
+types without formatting methods holding a string (`IsStrArgType`) (`ArgsWf`). -/
 abbrev fmt.Sprintf.spec : Prop :=
   ∀ (format : GoString) (args_sl : GoSlice) (xs : List GoInterface) (dq : DFrac),
   ArgsWf xs →

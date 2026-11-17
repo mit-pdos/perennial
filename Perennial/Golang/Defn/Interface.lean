@@ -44,6 +44,14 @@ noncomputable def typeSetContains (t t' : go.GoType) : Bool :=
   | go.InterfaceType elems => typeSetElemsContains t elems
   | _ => decide (t = t')
 
+/-- The underlying types at which `TypeAssertUnderlying2` reads a value (`reflect.Value`'s
+`Int`/`Uint` for an integer kind, `String` for kind `String`): the integer types and `string`. -/
+class inductive IsIntegerOrString : go.GoType → Prop
+  | integer (t : go.GoType) [IsInteger t] : IsIntegerOrString t
+  | string : IsIntegerOrString go.string
+
+attribute [instance] IsIntegerOrString.integer IsIntegerOrString.string
+
 class InterfaceSemantics : Prop where
   is_comparable_interface (elems : List go.InterfaceElem) :
     ⟦CheckComparable (go.InterfaceType elems), #()⟧ ⤳[under] #()
@@ -93,13 +101,13 @@ class InterfaceSemantics : Prop where
      ))
 
   /-- `reflect.ValueOf(i)` read at the kind of `t`, for a `t` whose underlying type is an integer
-  type (`v.Int()`, `v.Uint()`): an interface whose dynamic type has `t`'s underlying type gives its
-  value, any other interface (`nil` included) `t`'s zero value, with whether it did. Go values of
-  types with the same underlying type have the same representation
-  (`CoreSemantics.convert_underlying`). Restricted to integer types (`IsInteger`): for a struct
-  type, Lean's field names are unqualified where Go's unexported ones are not, so equal underlying
-  types here need not be equal in Go. -/
-  type_assert_underlying2_step {t t_under : go.GoType} [t ↓u t_under] [IsInteger t_under]
+  type (`v.Int()`, `v.Uint()`) or `string` (`v.String()`): an interface whose dynamic type has
+  `t`'s underlying type gives its value, any other interface (`nil` included) `t`'s zero value,
+  with whether it did. Go values of types with the same underlying type have the same
+  representation (`CoreSemantics.convert_underlying`). Restricted to integer types and `string`
+  (`IsIntegerOrString`): for a struct type, Lean's field names are unqualified where Go's
+  unexported ones are not, so equal underlying types here need not be equal in Go. -/
+  type_assert_underlying2_step {t t_under : go.GoType} [t ↓u t_under] [IsIntegerOrString t_under]
     (i : GoInterface) {v : val}
     [⟦GoZeroVal t, #()⟧ ⤳ Val v] :
     ⟦TypeAssertUnderlying2 t, #i⟧ ⤳

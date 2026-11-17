@@ -349,6 +349,20 @@ types, or a type whose underlying type is one of them and that has no formatting
 def IsIntArgType [GooseExts] [GoSemanticsFunctions] (t : go.GoType) : Prop :=
   IsIntType t ∨ (IsIntType (underlying t) ∧ NoFmtMethods t)
 
+/-- A type whose values the model of `Sprintf` formats as strings (`%s`, `%v`): `string`, or a
+type whose underlying type is `string` and that has no formatting method (`NoFmtMethods`), such
+as `type UID string`. (No integer type has `string` as its underlying type; `¬ IsIntType t` says
+so here, sparing the lemmas the semantics' facts about `underlying`.) -/
+def IsStrArgType [GooseExts] [GoSemanticsFunctions] (t : go.GoType) : Prop :=
+  t = go.string ∨ (¬ IsIntType t ∧ underlying t = go.string ∧ NoFmtMethods t)
+
+/-- `StrArgValue ii x`: the interface `ii` holds the string `x`, of type `string` or of a named
+string type without formatting methods (whose values are those of `string`,
+`CoreSemantics.convert_underlying`). -/
+def StrArgValue [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (ii : GoInterfaceOk)
+    (x : GoString) : Prop :=
+  IsStrArgType ii.ty ∧ ii.v = #x
+
 /-- `IntArgValue ii z`: the interface `ii` holds the integer `z`, of one of Go's integer types
 (signed for `int`, ..., `int8`, unsigned for `uint`, ..., `uint8`), or of a type whose
 underlying type is one of them and that has no formatting method (`named`: its value is that of
@@ -445,13 +459,13 @@ theorem IntArgValue.of_uint8 [GooseExts] [GoGlobalContext] [GoSemanticsFunctions
       (exfalso; simp [go.int, go.int64, go.int32, go.int16, go.int8, go.uint, go.uint64, go.uint32, go.uint16, go.uint8] at hty)
 
 /-- At `%` followed by `f`, with arguments `args` left: whether the model formats the directive
-(`%%`, `%s` or `%v` of an interface holding a `string`, an integer directive, `parseIntVerb`, of an
+(`%%`, `%s` or `%v` of an interface holding a string (`IsStrArgType`), an integer directive, `parseIntVerb`, of an
 interface holding an integer, or `%x` of an interface holding an integer); at any other
 directive the rest of the output is arbitrary. -/
 def SimpleDirective [GooseExts] [GoSemanticsFunctions] : GoString → List GoInterface → Prop
   | c :: f, args =>
       c = W8 37 ∨
-      ((c = W8 115 ∨ c = W8 118) ∧ ∃ ii rest, args = interface.ok ii :: rest ∧ ii.ty = go.string) ∨
+      ((c = W8 115 ∨ c = W8 118) ∧ ∃ ii rest, args = interface.ok ii :: rest ∧ IsStrArgType ii.ty) ∨
       ((parseIntVerb (c :: f)).isSome ∧
         ∃ ii rest, args = interface.ok ii :: rest ∧ IsIntArgType ii.ty) ∨
       (c = W8 120 ∧ ∃ ii rest, args = interface.ok ii :: rest ∧ IsIntArgType ii.ty)
@@ -459,7 +473,7 @@ def SimpleDirective [GooseExts] [GoSemanticsFunctions] : GoString → List GoInt
 
 /-- `SprintfOut format args out`: `out` is a possible result of `fmt.Sprintf(format, args...)`,
 as the model of `Sprintf` formats it. Bytes other than `%` are copied, `%%` gives `%`, `%s` and
-`%v` with an interface holding a `string` next give that string, `%d`, `%v` and `%0Nd` with an interface
+`%v` with an interface holding a string (`StrArgValue`) next give that string, `%d`, `%v` and `%0Nd` with an interface
 holding an integer next give its (zero-padded) decimal, `%x` with an interface holding an integer
 next gives its hexadecimal; at any other directive, and after the
 format if arguments remain unused, the rest of the output is arbitrary. -/
@@ -477,14 +491,16 @@ inductive SprintfOut [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] :
   | percent (f : GoString) (args : List GoInterface) (out : GoString) :
       SprintfOut f args out → SprintfOut (W8 37 :: W8 37 :: f) args (W8 37 :: out)
   /-- `%s` of an interface holding the string `x` gives `x`, and consumes the argument. -/
-  | str (x : GoString) (f : GoString) (args : List GoInterface) (out : GoString) :
-      SprintfOut f args out →
-      SprintfOut (W8 37 :: W8 115 :: f) (interface.mkOk go.string #x :: args) (x ++ out)
+  | str (ii : GoInterfaceOk) (x : GoString) (f : GoString) (args : List GoInterface)
+      (out : GoString) :
+      StrArgValue ii x → SprintfOut f args out →
+      SprintfOut (W8 37 :: W8 115 :: f) (interface.ok ii :: args) (x ++ out)
   /-- `%v` of an interface holding the string `x` gives `x`, as `%s` does, and consumes the
   argument. -/
-  | strV (x : GoString) (f : GoString) (args : List GoInterface) (out : GoString) :
-      SprintfOut f args out →
-      SprintfOut (W8 37 :: W8 118 :: f) (interface.mkOk go.string #x :: args) (x ++ out)
+  | strV (ii : GoInterfaceOk) (x : GoString) (f : GoString) (args : List GoInterface)
+      (out : GoString) :
+      StrArgValue ii x → SprintfOut f args out →
+      SprintfOut (W8 37 :: W8 118 :: f) (interface.ok ii :: args) (x ++ out)
   /-- An integer directive of width `w` (`%d`, `%v`: 0; `%0Nd`: `N`) of an interface holding the
   integer `z` gives `decimalPad w z`, and consumes the argument. -/
   | int (f rest : GoString) (w : Nat) (ii : GoInterfaceOk) (z : Int) (args : List GoInterface)
@@ -505,24 +521,27 @@ is `string` holds a string. (Go's typing guarantees it; a `GoInterface` does not
 def StringArgsWf [GooseExts] [GoGlobalContext] (args : List GoInterface) : Prop :=
   ∀ ii, interface.ok ii ∈ args → ii.ty = go.string → ∃ x : GoString, ii.v = #x
 
-/-- One of Go's predeclared basic types (`string`, `bool`, the integer, floating-point and
-complex types). These have no methods, so Go's formatting of such an argument calls no
+/-- One of Go's predeclared basic types (`string`, `bool`, the integer and floating-point
+types; not the complex types, which the semantics does not model: it has no complex values and
+does not say what their underlying types are, which `TypeAssertUnderlying2` would need). These
+have no methods, so Go's formatting of such an argument calls no
 `Error()`, `String()`, `Format` or `GoString` method: the models of `Sprintf`, `Errorf` and
 `Printf`, which never call an argument's methods, are faithful only for such arguments. (A
 named type, even one whose underlying type is basic, is not a predeclared type: `go.int` is
 `go.Named "int" []`.) -/
 def IsBasicType [GooseExts] (t : go.GoType) : Prop :=
   t = go.string ∨ t = go.bool ∨ IsIntType t ∨ t = go.uintptr ∨ t = go.float32 ∨
-  t = go.float64 ∨ t = go.complex64 ∨ t = go.complex128
+  t = go.float64
 
 /-- An argument's dynamic type tells the truth about its value, for the types the model of
 `Sprintf` formats: a `string` holds a string, an integer type (`IsIntArgType`) an integer of its
 size (Go's typing guarantees it; a `GoInterface` does not); and the type is a predeclared basic
-type (`IsBasicType`) or a named integer type without formatting methods (`IsIntArgType`), so
-that Go calls no method of the argument while formatting it. -/
+type (`IsBasicType`), a named integer type without formatting methods (`IsIntArgType`), or a
+named string type without formatting methods holding a string (`IsStrArgType`), so that Go
+calls no method of the argument while formatting it. -/
 def ArgWf [GooseExts] [GoGlobalContext] [GoSemanticsFunctions] (ii : GoInterfaceOk) : Prop :=
   (ii.ty = go.string → ∃ x : GoString, ii.v = #x) ∧ (IsIntArgType ii.ty → ∃ z, IntArgValue ii z) ∧
-  (IsBasicType ii.ty ∨ IsIntArgType ii.ty)
+  (IsBasicType ii.ty ∨ IsIntArgType ii.ty ∨ (IsStrArgType ii.ty ∧ ∃ x : GoString, ii.v = #x))
 
 /-- Every argument is `nil` or well-formed (`ArgWf`): what `wp_Sprintf`, `wp_Errorf` and
 `wp_Printf` need of the arguments. -/
@@ -550,49 +569,6 @@ theorem StringArgsWf.cons_other (t : go.GoType) (v : val) (args : List GoInterfa
   · cases heq; exact absurd hty ht
   · exact h ii hmem hty
 
-/-- `Sprintf("%s" + f, x, ...)` begins with `x`. -/
-theorem SprintfOut.str_prefix [go.IntoValInj GoString] (x f : GoString)
-    (args : List GoInterface) (out : GoString)
-    (h : SprintfOut (go!"%s" ++ f) (interface.mkOk go.string #x :: args) out) : x <+: out := by
-  have hfmt : go!"%s" ++ f = W8 37 :: W8 115 :: f := rfl
-  rw [hfmt] at h
-  generalize hF : (W8 37 :: W8 115 :: f) = F at h
-  generalize hA : (interface.mkOk go.string #x :: args) = A at h
-  cases h with
-  | done => cases hF
-  | extra => cases hF
-  | byte c _ _ _ hc _ =>
-    simp only [List.cons.injEq] at hF
-    exact absurd hF.1.symm hc
-  | percent =>
-    simp only [List.cons.injEq] at hF
-    exact absurd hF.2.1 (by decide)
-  | str y _ _ out' _ =>
-    simp only [List.cons.injEq, GoInterface.ok.injEq, GoInterfaceOk.mk.injEq, true_and] at hA
-    rw [go.intoVal_inj hA.1]
-    exact ⟨out', rfl⟩
-  | strV =>
-    simp only [List.cons.injEq] at hF
-    exact absurd hF.2.1 (by decide)
-  | int f' _ _ _ _ _ _ hp =>
-    simp only [List.cons.injEq] at hF
-    obtain ⟨-, rfl⟩ := hF
-    simp [parseIntVerb] at hp
-  | hex =>
-    simp only [List.cons.injEq] at hF
-    exact absurd hF.2.1 (by decide)
-  | other _ _ _ hnot =>
-    simp only [List.cons.injEq] at hF
-    obtain ⟨-, rfl⟩ := hF
-    subst hA
-    exact absurd (Or.inr (Or.inl ⟨Or.inl rfl, _, _, rfl, rfl⟩)) hnot
-
-/-- `Sprintf("%s%x", x, n)` begins with `x` (whatever the second argument). -/
-theorem SprintfOut.str_x_prefix [go.IntoValInj GoString] (x : GoString)
-    (args : List GoInterface) (out : GoString)
-    (h : SprintfOut go!"%s%x" (interface.mkOk go.string #x :: args) out) : x <+: out :=
-  SprintfOut.str_prefix x go!"%x" args out h
-
 /-! `ArgsWf` of argument lists. -/
 
 theorem IntArgValue.isIntArgType {ii : GoInterfaceOk} {z : Int} (h : IntArgValue ii z) :
@@ -609,6 +585,29 @@ theorem not_isIntArgType_string [go.string ↓u go.string] : ¬ IsIntArgType go.
   rintro (h | ⟨h, -⟩)
   · exact not_isIntType_string h
   · rw [go.is_underlying] at h; exact not_isIntType_string h
+
+/-- A string type is not an integer type (`string` is its own underlying type). -/
+theorem IsStrArgType.not_isIntArgType [go.string ↓u go.string] {t : go.GoType}
+    (h : IsStrArgType t) : ¬ IsIntArgType t := by
+  rcases h with rfl | ⟨hni, hu, -⟩
+  · exact not_isIntArgType_string
+  · rintro (h | ⟨h, -⟩)
+    · exact hni h
+    · rw [hu] at h; exact not_isIntType_string h
+
+theorem StrArgValue.string (x : GoString) : StrArgValue (interface.mk go.string #x) x :=
+  ⟨Or.inl rfl, rfl⟩
+
+/-- An argument of a named type `t` whose underlying type is `string` and that has no formatting
+method (`type UID string`) holds its string. -/
+theorem StrArgValue.named (t : go.GoType) (x : GoString) (ht : ¬ IsIntType t)
+    (hu : underlying t = go.string) (hm : NoFmtMethods t) :
+    StrArgValue (interface.mk t #x) x :=
+  ⟨Or.inr ⟨ht, hu, hm⟩, rfl⟩
+
+theorem StrArgValue.uniq [go.IntoValInj GoString] {ii : GoInterfaceOk} {x y : GoString}
+    (hx : StrArgValue ii x) (hy : StrArgValue ii y) : x = y :=
+  go.intoVal_inj (hx.2.symm.trans hy.2)
 
 theorem ArgsWf.nil : ArgsWf ([] : List GoInterface) := by
   intro ii h; simp at h
@@ -627,12 +626,26 @@ theorem ArgsWf.cons_int [go.string ↓u go.string] (ii : GoInterfaceOk) (z : Int
   intro ii' hmem
   rcases List.mem_cons.mp hmem with heq | hmem
   · cases heq
-    refine ⟨fun hs => ?_, fun _ => ⟨z, hz⟩, Or.inr hz.isIntArgType⟩
+    refine ⟨fun hs => ?_, fun _ => ⟨z, hz⟩, Or.inr (Or.inl hz.isIntArgType)⟩
     exfalso
     have := hz.isIntArgType
     rw [hs] at this
     exact not_isIntArgType_string this
   · exact h ii' hmem
+
+/-- A named string type without formatting methods (`type UID string`) holding a string. -/
+theorem ArgsWf.cons_named_string (t : go.GoType) (x : GoString) (args : List GoInterface)
+    (hs : t ≠ go.string) (ht : ¬ IsIntType t) (hu : underlying t = go.string)
+    (hm : NoFmtMethods t) (h : ArgsWf args) : ArgsWf (interface.mkOk t #x :: args) := by
+  intro ii hmem
+  rcases List.mem_cons.mp hmem with heq | hmem
+  · cases heq
+    refine ⟨fun h' => absurd h' hs, fun hi => ?_, Or.inr (Or.inr ⟨Or.inr ⟨ht, hu, hm⟩, x, rfl⟩)⟩
+    exfalso
+    rcases hi with hi | ⟨hi, -⟩
+    · exact ht hi
+    · rw [hu] at hi; exact not_isIntType_string hi
+  · exact h ii hmem
 
 theorem ArgsWf.cons_other (t : go.GoType) (v : val) (args : List GoInterface)
     (hs : t ≠ go.string) (hi : ¬ IsIntArgType t) (hb : IsBasicType t) (h : ArgsWf args) :
@@ -676,82 +689,76 @@ theorem SprintfOut.byte_inv {c : w8} {f : GoString} {args : List GoInterface} {o
   | hex => simp only [List.cons.injEq] at hF; exact absurd hF.1 hc
   | other => simp only [List.cons.injEq] at hF; exact absurd hF.1 hc
 
-theorem SprintfOut.str_inv [go.IntoValInj GoString] {x f : GoString} {args : List GoInterface}
-    {out : GoString}
-    (h : SprintfOut (W8 37 :: W8 115 :: f) (interface.mkOk go.string #x :: args) out) :
+/-- `%s` or `%v` of an interface holding the string `x` (`StrArgValue`) gives `x`. Under `%v`,
+the argument must not be an integer argument as well (`IsStrArgType.not_isIntArgType`). -/
+theorem SprintfOut.strArg_inv [go.IntoValInj GoString] {c : w8} {ii : GoInterfaceOk}
+    {x f : GoString} {args : List GoInterface} {out : GoString}
+    (hc : c = W8 115 ∨ c = W8 118) (hx : StrArgValue ii x)
+    (hni : c = W8 118 → ¬ IsIntArgType ii.ty)
+    (h : SprintfOut (W8 37 :: c :: f) (interface.ok ii :: args) out) :
     ∃ out', out = x ++ out' ∧ SprintfOut f args out' := by
-  generalize hF : W8 37 :: W8 115 :: f = F at h
-  generalize hA : interface.mkOk go.string #x :: args = A at h
+  generalize hF : W8 37 :: c :: f = F at h
+  generalize hA : interface.ok ii :: args = A at h
   cases h with
   | done => cases hF
   | extra => cases hF
-  | byte _ _ _ _ hc _ =>
-    simp only [List.cons.injEq] at hF
-    exact absurd hF.1.symm hc
+  | byte _ _ _ _ hc' _ =>
+    exact absurd (List.cons.inj hF).1.symm hc'
   | percent =>
-    simp only [List.cons.injEq] at hF
-    exact absurd hF.2.1 (by decide)
-  | str y f' args' out' h' =>
-    simp only [List.cons.injEq] at hF hA
-    obtain ⟨-, -, rfl⟩ := hF
-    simp only [GoInterface.ok.injEq, GoInterfaceOk.mk.injEq, true_and] at hA
-    obtain ⟨hxy, rfl⟩ := hA
-    rw [go.intoVal_inj hxy]
+    have h2 := (List.cons.inj (List.cons.inj hF).2).1
+    rcases hc with rfl | rfl <;> exact absurd h2 (by decide)
+  | str ii' y f' args' out' hy h' | strV ii' y f' args' out' hy h' =>
+    obtain ⟨-, hF2⟩ := List.cons.inj hF
+    obtain ⟨-, rfl⟩ := List.cons.inj hF2
+    obtain ⟨hii, rfl⟩ := List.cons.inj hA
+    cases hii
+    rw [hx.uniq hy]
     exact ⟨out', rfl, h'⟩
-  | strV =>
-    simp only [List.cons.injEq] at hF
-    exact absurd hF.2.1 (by decide)
-  | int f' _ _ _ _ _ _ hp =>
-    simp only [List.cons.injEq] at hF
-    obtain ⟨-, rfl⟩ := hF
-    simp [parseIntVerb] at hp
+  | int f'' rest' w' ii' z' args' out' hp hz h' =>
+    obtain ⟨-, hf⟩ := List.cons.inj hF
+    subst hf
+    obtain ⟨hii, -⟩ := List.cons.inj hA
+    cases hii
+    rcases hc with rfl | rfl
+    · simp [parseIntVerb] at hp
+    · exact absurd hz.isIntArgType (hni rfl)
   | hex =>
-    simp only [List.cons.injEq] at hF
-    exact absurd hF.2.1 (by decide)
+    have h2 := (List.cons.inj (List.cons.inj hF).2).1
+    rcases hc with rfl | rfl <;> exact absurd h2 (by decide)
   | other _ _ _ hnot =>
-    simp only [List.cons.injEq] at hF
-    obtain ⟨-, rfl⟩ := hF
+    obtain ⟨-, hf⟩ := List.cons.inj hF
+    subst hf
     subst hA
-    exact absurd (Or.inr (Or.inl ⟨Or.inl rfl, _, _, rfl, rfl⟩)) hnot
+    exact absurd (Or.inr (Or.inl ⟨hc, _, _, rfl, hx.1⟩)) hnot
+
+theorem SprintfOut.str_inv [go.IntoValInj GoString] {x f : GoString} {args : List GoInterface}
+    {out : GoString}
+    (h : SprintfOut (W8 37 :: W8 115 :: f) (interface.mkOk go.string #x :: args) out) :
+    ∃ out', out = x ++ out' ∧ SprintfOut f args out' :=
+  SprintfOut.strArg_inv (.inl rfl) (StrArgValue.string x) (fun h => absurd h (by decide)) h
 
 /-- `%v` of an interface holding the string `x` gives `x`, as `%s` does. -/
 theorem SprintfOut.strV_inv [go.IntoValInj GoString] [go.string ↓u go.string] {x f : GoString}
     {args : List GoInterface} {out : GoString}
     (h : SprintfOut (W8 37 :: W8 118 :: f) (interface.mkOk go.string #x :: args) out) :
-    ∃ out', out = x ++ out' ∧ SprintfOut f args out' := by
-  generalize hF : W8 37 :: W8 118 :: f = F at h
-  generalize hA : interface.mkOk go.string #x :: args = A at h
-  cases h with
-  | done => cases hF
-  | extra => cases hF
-  | byte _ _ _ _ hc _ =>
-    simp only [List.cons.injEq] at hF
-    exact absurd hF.1.symm hc
-  | percent =>
-    simp only [List.cons.injEq] at hF
-    exact absurd hF.2.1 (by decide)
-  | str =>
-    simp only [List.cons.injEq] at hF
-    exact absurd hF.2.1 (by decide)
-  | strV y f' args' out' h' =>
-    simp only [List.cons.injEq] at hF hA
-    obtain ⟨-, -, rfl⟩ := hF
-    simp only [GoInterface.ok.injEq, GoInterfaceOk.mk.injEq, true_and] at hA
-    obtain ⟨hxy, rfl⟩ := hA
-    rw [go.intoVal_inj hxy]
-    exact ⟨out', rfl, h'⟩
-  | int f' _ _ ii' _ _ _ _ hz' =>
-    obtain ⟨hii, -⟩ := List.cons.inj hA
-    cases hii
-    exact absurd hz'.isIntArgType not_isIntArgType_string
-  | hex =>
-    simp only [List.cons.injEq] at hF
-    exact absurd hF.2.1 (by decide)
-  | other _ _ _ hnot =>
-    simp only [List.cons.injEq] at hF
-    obtain ⟨-, rfl⟩ := hF
-    subst hA
-    exact absurd (Or.inr (Or.inl ⟨Or.inr rfl, _, _, rfl, rfl⟩)) hnot
+    ∃ out', out = x ++ out' ∧ SprintfOut f args out' :=
+  SprintfOut.strArg_inv (.inr rfl) (StrArgValue.string x)
+    (fun _ => not_isIntArgType_string) h
+
+/-- `Sprintf("%s" + f, x, ...)` begins with `x`. -/
+theorem SprintfOut.str_prefix [go.IntoValInj GoString] (x f : GoString)
+    (args : List GoInterface) (out : GoString)
+    (h : SprintfOut (go!"%s" ++ f) (interface.mkOk go.string #x :: args) out) : x <+: out := by
+  have hfmt : go!"%s" ++ f = W8 37 :: W8 115 :: f := rfl
+  rw [hfmt] at h
+  obtain ⟨out', rfl, -⟩ := SprintfOut.str_inv h
+  exact ⟨out', rfl⟩
+
+/-- `Sprintf("%s%x", x, n)` begins with `x` (whatever the second argument). -/
+theorem SprintfOut.str_x_prefix [go.IntoValInj GoString] (x : GoString)
+    (args : List GoInterface) (out : GoString)
+    (h : SprintfOut go!"%s%x" (interface.mkOk go.string #x :: args) out) : x <+: out :=
+  SprintfOut.str_prefix x go!"%x" args out h
 
 theorem SprintfOut.int_inv [go.string ↓u go.string] {f rest : GoString} {w : Nat} {ii : GoInterfaceOk} {z : Int}
     {args : List GoInterface} {out : GoString}
@@ -771,14 +778,14 @@ theorem SprintfOut.int_inv [go.string ↓u go.string] {f rest : GoString} {w : N
     simp only [List.cons.injEq] at hF
     obtain ⟨-, rfl⟩ := hF
     simp [parseIntVerb] at hp
-  | str y f' =>
+  | str ii' y f' =>
     simp only [List.cons.injEq] at hF
     obtain ⟨-, rfl⟩ := hF
     simp [parseIntVerb] at hp
-  | strV y f' args' out' =>
+  | strV ii' y f' args' out' hy =>
     obtain ⟨hii, -⟩ := List.cons.inj hA
     cases hii
-    exact absurd hz.isIntArgType not_isIntArgType_string
+    exact absurd hz.isIntArgType hy.1.not_isIntArgType
   | int f' rest' w' ii' z' args' out' hp' hz' h' =>
     simp only [List.cons.injEq] at hF hA
     obtain ⟨-, rfl⟩ := hF
@@ -917,6 +924,17 @@ theorem SprintfOut.v_string [go.IntoValInj GoString] [go.string ↓u go.string] 
   have hfmt : go!"%v" = W8 37 :: [W8 118] := rfl
   rw [hfmt] at h
   obtain ⟨o1, rfl, h1⟩ := SprintfOut.strV_inv h
+  rw [SprintfOut.done_inv h1]
+  simp
+
+/-- `Sprintf("%v", u)` for an argument `u` holding the string `x` (a `string`, or a named string
+type without formatting methods, `StrArgValue.named`) is exactly `x`. -/
+theorem SprintfOut.v_str [go.IntoValInj GoString] [go.string ↓u go.string] {ii : GoInterfaceOk}
+    {x : GoString} (hx : StrArgValue ii x) (out : GoString)
+    (h : SprintfOut go!"%v" [interface.ok ii] out) : out = x := by
+  have hfmt : go!"%v" = W8 37 :: [W8 118] := rfl
+  rw [hfmt] at h
+  obtain ⟨o1, rfl, h1⟩ := SprintfOut.strArg_inv (.inr rfl) hx (fun _ => hx.1.not_isIntArgType) h
   rw [SprintfOut.done_inv h1]
   simp
 
