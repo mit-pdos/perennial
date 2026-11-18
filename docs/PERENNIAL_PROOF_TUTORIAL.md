@@ -93,7 +93,10 @@ imports = ["!*"]
   package variable `X`, the model is its whole initialization `X.init : val`
   (allocation included), called where Go runs the initializer;
 * every other declaration is *axiomatized*: its name and type are emitted,
-  without a body. (`sync.toml` also has an `axiomatize = [...]` list; goose does
+  without a body, as an `opaque` constant (not an `axiom`: Lean checks that
+  its type is inhabited, so it cannot make the logic inconsistent). A type `T`
+  is the carrier of an opaque `T.nonempty_type : NonemptyType`, and its zero
+  value `T.zero_val` an opaque element of it. (`sync.toml` also has an `axiomatize = [...]` list; goose does
   not read that key, it documents the intent.)
 * `trust_proofgen = true` makes proofgen emit admitted (`sorry`) instances.
 

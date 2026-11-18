@@ -139,7 +139,8 @@ w(f"  - in generated modules: {sum(generated(r['module']) for r in roots.values(
 w(f"- Lean `axiom`s in Perennial: {len(lean_axioms)} "
   f"({sum(generated(a['module']) for a in lean_axioms)} in generated modules)")
 w(f"- Lean `opaque` constants in Perennial: {len(all_opaques)} "
-  f"({len(all_opaques) - len(lean_opaques)} from `partial def`/`initialize`; {len(lean_opaques)} explicit)")
+  f"({len(all_opaques) - len(lean_opaques)} from `partial def`/`initialize`; {len(lean_opaques)} explicit, "
+  f"{sum(generated(a['module']) for a in lean_opaques)} of them in generated modules)")
 w(f"- Non-standard axioms from outside Perennial reached by Perennial: "
   + (", ".join(f"`{a['name']}` ({a['module']})" for a in nonstd_ext) or "none"))
 w(f"- `sorry`s outside Perennial (iris-lean etc.) reached by Perennial: "
@@ -163,11 +164,13 @@ for a in sorted((a for a in lean_axioms if not generated(a["module"])), key=lamb
     w(f"| `{a['name']}` | {lloc(a['module'], a['line'])} |")
 w("")
 
-w("## Lean explicit `opaque` constants\n")
+w("## Lean explicit `opaque` constants (hand-written)\n")
 w("Not axioms (an `opaque` needs an `Inhabited` witness, so it cannot introduce "
-  "inconsistency), but it hides the definition: listed for review.\n")
+  "inconsistency), but it hides the definition: listed for review. "
+  f"{sum(generated(a['module']) for a in lean_opaques)} more are in generated modules "
+  "(goose's untranslated declarations) and are not listed.\n")
 w("| Lean opaque | Lean source | axioms |\n|---|---|---|")
-for a in sorted(lean_opaques, key=lambda a: (a["module"], a["line"])):
+for a in sorted((a for a in lean_opaques if not generated(a["module"])), key=lambda a: (a["module"], a["line"])):
     w(f"| `{a['name']}` | {lloc(a['module'], a['line'])} | {', '.join(a['axioms']) or '-'} |")
 w("")
 
