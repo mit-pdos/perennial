@@ -29,11 +29,11 @@ noncomputable def NumError.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] NumError.ty
 
-axiom IntSize [GooseExts] [GoGlobalContext] : val
+opaque IntSize [GooseExts] [GoGlobalContext] : val
 
-axiom lowerhex [GooseExts] [GoGlobalContext] : val
+opaque lowerhex [GooseExts] [GoGlobalContext] : val
 
-axiom upperhex [GooseExts] [GoGlobalContext] : val
+opaque upperhex [GooseExts] [GoGlobalContext] : val
 
 noncomputable def isPrint16 [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.isPrint16"
@@ -440,7 +440,7 @@ noncomputable def bitSizeError.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.strconv where
   pkgImportedPkgs := [pkg_id.errors, pkg_id.internal.strconv, pkg_id.internal.stringslite]
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon

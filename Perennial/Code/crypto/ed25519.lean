@@ -36,15 +36,15 @@ noncomputable def Options.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Options.ty
 
-axiom Options.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque Options.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom PublicKeySize [GooseExts] [GoGlobalContext] : val
+opaque PublicKeySize [GooseExts] [GoGlobalContext] : val
 
-axiom PrivateKeySize [GooseExts] [GoGlobalContext] : val
+opaque PrivateKeySize [GooseExts] [GoGlobalContext] : val
 
-axiom SignatureSize [GooseExts] [GoGlobalContext] : val
+opaque SignatureSize [GooseExts] [GoGlobalContext] : val
 
-axiom SeedSize [GooseExts] [GoGlobalContext] : val
+opaque SeedSize [GooseExts] [GoGlobalContext] : val
 
 noncomputable def privateKeyCache [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.privateKeyCache"
@@ -76,7 +76,7 @@ noncomputable def VerifyWithOptions [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable instance info' : PkgInfo pkg_id.crypto.ed25519 where
   pkgImportedPkgs := []
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -113,8 +113,10 @@ attribute [instance] PrivateKey.TypeAssumptions.underlying
   PrivateKey.TypeAssumptions.method_set
   PrivateKey.TypeAssumptions.ptr_method_set
 
-axiom Options : Type
-axiom Options.zero_val : ZeroVal Options
+opaque Options.nonempty_type : NonemptyType.{0}
+def Options : Type := Options.nonempty_type.type
+instance Options.nonempty : Nonempty Options := Options.nonempty_type.property
+opaque Options.zero_val : ZeroVal Options := ⟨Classical.ofNonempty⟩
 attribute [instance] Options.zero_val
 
 class Options.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

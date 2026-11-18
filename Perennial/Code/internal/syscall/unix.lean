@@ -36,83 +36,83 @@ noncomputable def siErrnoCode.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] siErrnoCode.ty
 
-axiom unlinkatTrap [GooseExts] [GoGlobalContext] : val
+opaque unlinkatTrap [GooseExts] [GoGlobalContext] : val
 
-axiom openatTrap [GooseExts] [GoGlobalContext] : val
+opaque openatTrap [GooseExts] [GoGlobalContext] : val
 
-axiom readlinkatTrap [GooseExts] [GoGlobalContext] : val
+opaque readlinkatTrap [GooseExts] [GoGlobalContext] : val
 
-axiom mkdiratTrap [GooseExts] [GoGlobalContext] : val
+opaque mkdiratTrap [GooseExts] [GoGlobalContext] : val
 
-axiom fchmodatTrap [GooseExts] [GoGlobalContext] : val
+opaque fchmodatTrap [GooseExts] [GoGlobalContext] : val
 
-axiom fchownatTrap [GooseExts] [GoGlobalContext] : val
+opaque fchownatTrap [GooseExts] [GoGlobalContext] : val
 
-axiom linkatTrap [GooseExts] [GoGlobalContext] : val
+opaque linkatTrap [GooseExts] [GoGlobalContext] : val
 
-axiom symlinkatTrap [GooseExts] [GoGlobalContext] : val
+opaque symlinkatTrap [GooseExts] [GoGlobalContext] : val
 
-axiom AT_EACCESS [GooseExts] [GoGlobalContext] : val
+opaque AT_EACCESS [GooseExts] [GoGlobalContext] : val
 
-axiom AT_FDCWD [GooseExts] [GoGlobalContext] : val
+opaque AT_FDCWD [GooseExts] [GoGlobalContext] : val
 
-axiom AT_REMOVEDIR [GooseExts] [GoGlobalContext] : val
+opaque AT_REMOVEDIR [GooseExts] [GoGlobalContext] : val
 
-axiom AT_SYMLINK_NOFOLLOW [GooseExts] [GoGlobalContext] : val
+opaque AT_SYMLINK_NOFOLLOW [GooseExts] [GoGlobalContext] : val
 
-axiom UTIME_OMIT [GooseExts] [GoGlobalContext] : val
+opaque UTIME_OMIT [GooseExts] [GoGlobalContext] : val
 
-axiom fstatatTrap [GooseExts] [GoGlobalContext] : val
+opaque fstatatTrap [GooseExts] [GoGlobalContext] : val
 
-axiom R_OK [GooseExts] [GoGlobalContext] : val
+opaque R_OK [GooseExts] [GoGlobalContext] : val
 
-axiom W_OK [GooseExts] [GoGlobalContext] : val
+opaque W_OK [GooseExts] [GoGlobalContext] : val
 
-axiom X_OK [GooseExts] [GoGlobalContext] : val
+opaque X_OK [GooseExts] [GoGlobalContext] : val
 
-axiom NoFollowErrno [GooseExts] [GoGlobalContext] : val
+opaque NoFollowErrno [GooseExts] [GoGlobalContext] : val
 
-axiom GRND_NONBLOCK [GooseExts] [GoGlobalContext] : val
+opaque GRND_NONBLOCK [GooseExts] [GoGlobalContext] : val
 
-axiom GRND_RANDOM [GooseExts] [GoGlobalContext] : val
+opaque GRND_RANDOM [GooseExts] [GoGlobalContext] : val
 
-axiom noFollowErrno [GooseExts] [GoGlobalContext] : val
+opaque noFollowErrno [GooseExts] [GoGlobalContext] : val
 
-axiom renameatTrap [GooseExts] [GoGlobalContext] : val
+opaque renameatTrap [GooseExts] [GoGlobalContext] : val
 
-axiom is64bit [GooseExts] [GoGlobalContext] : val
+opaque is64bit [GooseExts] [GoGlobalContext] : val
 
-axiom _CLD_EXITED [GooseExts] [GoGlobalContext] : val
+opaque _CLD_EXITED [GooseExts] [GoGlobalContext] : val
 
-axiom _CLD_KILLED [GooseExts] [GoGlobalContext] : val
+opaque _CLD_KILLED [GooseExts] [GoGlobalContext] : val
 
-axiom _CLD_DUMPED [GooseExts] [GoGlobalContext] : val
+opaque _CLD_DUMPED [GooseExts] [GoGlobalContext] : val
 
-axiom _CLD_TRAPPED [GooseExts] [GoGlobalContext] : val
+opaque _CLD_TRAPPED [GooseExts] [GoGlobalContext] : val
 
-axiom _CLD_STOPPED [GooseExts] [GoGlobalContext] : val
+opaque _CLD_STOPPED [GooseExts] [GoGlobalContext] : val
 
-axiom _CLD_CONTINUED [GooseExts] [GoGlobalContext] : val
+opaque _CLD_CONTINUED [GooseExts] [GoGlobalContext] : val
 
-axiom core [GooseExts] [GoGlobalContext] : val
+opaque core [GooseExts] [GoGlobalContext] : val
 
-axiom stopped [GooseExts] [GoGlobalContext] : val
+opaque stopped [GooseExts] [GoGlobalContext] : val
 
-axiom continued [GooseExts] [GoGlobalContext] : val
+opaque continued [GooseExts] [GoGlobalContext] : val
 
-axiom getrandomTrap [GooseExts] [GoGlobalContext] : val
+opaque getrandomTrap [GooseExts] [GoGlobalContext] : val
 
-axiom copyFileRangeTrap [GooseExts] [GoGlobalContext] : val
+opaque copyFileRangeTrap [GooseExts] [GoGlobalContext] : val
 
-axiom pidfdSendSignalTrap [GooseExts] [GoGlobalContext] : val
+opaque pidfdSendSignalTrap [GooseExts] [GoGlobalContext] : val
 
-axiom pidfdOpenTrap [GooseExts] [GoGlobalContext] : val
+opaque pidfdOpenTrap [GooseExts] [GoGlobalContext] : val
 
-axiom openat2Trap [GooseExts] [GoGlobalContext] : val
+opaque openat2Trap [GooseExts] [GoGlobalContext] : val
 
-axiom P_PID [GooseExts] [GoGlobalContext] : val
+opaque P_PID [GooseExts] [GoGlobalContext] : val
 
-axiom P_PIDFD [GooseExts] [GoGlobalContext] : val
+opaque P_PIDFD [GooseExts] [GoGlobalContext] : val
 
 noncomputable def faccessat [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/syscall/unix.faccessat"

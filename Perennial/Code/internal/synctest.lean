@@ -31,11 +31,11 @@ noncomputable def Bubble.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Bubble.ty
 
-axiom Unbubbled [GooseExts] [GoGlobalContext] : val
+opaque Unbubbled [GooseExts] [GoGlobalContext] : val
 
-axiom CurrentBubble [GooseExts] [GoGlobalContext] : val
+opaque CurrentBubble [GooseExts] [GoGlobalContext] : val
 
-axiom OtherBubble [GooseExts] [GoGlobalContext] : val
+opaque OtherBubble [GooseExts] [GoGlobalContext] : val
 
 noncomputable def Run [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/synctest.Run"
@@ -79,7 +79,7 @@ noncomputable def Acquire [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable instance info' : PkgInfo pkg_id.internal.synctest where
   pkgImportedPkgs := []
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon

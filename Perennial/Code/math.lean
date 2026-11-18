@@ -21,55 +21,55 @@ end pkg_id
 
 namespace math
 
-axiom uvnan [GooseExts] [GoGlobalContext] : val
+opaque uvnan [GooseExts] [GoGlobalContext] : val
 
-axiom uvinf [GooseExts] [GoGlobalContext] : val
+opaque uvinf [GooseExts] [GoGlobalContext] : val
 
-axiom uvneginf [GooseExts] [GoGlobalContext] : val
+opaque uvneginf [GooseExts] [GoGlobalContext] : val
 
-axiom uvone [GooseExts] [GoGlobalContext] : val
+opaque uvone [GooseExts] [GoGlobalContext] : val
 
-axiom mask [GooseExts] [GoGlobalContext] : val
+opaque mask [GooseExts] [GoGlobalContext] : val
 
-axiom shift [GooseExts] [GoGlobalContext] : val
+opaque shift [GooseExts] [GoGlobalContext] : val
 
-axiom bias [GooseExts] [GoGlobalContext] : val
+opaque bias [GooseExts] [GoGlobalContext] : val
 
-axiom signMask [GooseExts] [GoGlobalContext] : val
+opaque signMask [GooseExts] [GoGlobalContext] : val
 
-axiom fracMask [GooseExts] [GoGlobalContext] : val
+opaque fracMask [GooseExts] [GoGlobalContext] : val
 
-axiom E [GooseExts] [GoGlobalContext] : val
+opaque E [GooseExts] [GoGlobalContext] : val
 
-axiom Pi [GooseExts] [GoGlobalContext] : val
+opaque Pi [GooseExts] [GoGlobalContext] : val
 
-axiom Phi [GooseExts] [GoGlobalContext] : val
+opaque Phi [GooseExts] [GoGlobalContext] : val
 
-axiom Sqrt2 [GooseExts] [GoGlobalContext] : val
+opaque Sqrt2 [GooseExts] [GoGlobalContext] : val
 
-axiom SqrtE [GooseExts] [GoGlobalContext] : val
+opaque SqrtE [GooseExts] [GoGlobalContext] : val
 
-axiom SqrtPi [GooseExts] [GoGlobalContext] : val
+opaque SqrtPi [GooseExts] [GoGlobalContext] : val
 
-axiom SqrtPhi [GooseExts] [GoGlobalContext] : val
+opaque SqrtPhi [GooseExts] [GoGlobalContext] : val
 
-axiom Ln2 [GooseExts] [GoGlobalContext] : val
+opaque Ln2 [GooseExts] [GoGlobalContext] : val
 
-axiom Log2E [GooseExts] [GoGlobalContext] : val
+opaque Log2E [GooseExts] [GoGlobalContext] : val
 
-axiom Ln10 [GooseExts] [GoGlobalContext] : val
+opaque Ln10 [GooseExts] [GoGlobalContext] : val
 
-axiom Log10E [GooseExts] [GoGlobalContext] : val
+opaque Log10E [GooseExts] [GoGlobalContext] : val
 
-axiom MaxFloat32 [GooseExts] [GoGlobalContext] : val
+opaque MaxFloat32 [GooseExts] [GoGlobalContext] : val
 
-axiom SmallestNonzeroFloat32 [GooseExts] [GoGlobalContext] : val
+opaque SmallestNonzeroFloat32 [GooseExts] [GoGlobalContext] : val
 
-axiom MaxFloat64 [GooseExts] [GoGlobalContext] : val
+opaque MaxFloat64 [GooseExts] [GoGlobalContext] : val
 
-axiom SmallestNonzeroFloat64 [GooseExts] [GoGlobalContext] : val
+opaque SmallestNonzeroFloat64 [GooseExts] [GoGlobalContext] : val
 
-axiom intSize [GooseExts] [GoGlobalContext] : val
+opaque intSize [GooseExts] [GoGlobalContext] : val
 
 /-- MaxInt32 or MaxInt64 depending on intSize. -/
 @[reducible] noncomputable def MaxInt [GooseExts] [GoGlobalContext] : val :=
@@ -79,313 +79,313 @@ axiom intSize [GooseExts] [GoGlobalContext] : val
 @[reducible] noncomputable def MinInt [GooseExts] [GoGlobalContext] : val :=
   #(-9223372036854775808 : Int)
 
-axiom MaxInt8 [GooseExts] [GoGlobalContext] : val
+opaque MaxInt8 [GooseExts] [GoGlobalContext] : val
 
-axiom MinInt8 [GooseExts] [GoGlobalContext] : val
+opaque MinInt8 [GooseExts] [GoGlobalContext] : val
 
-axiom MaxInt16 [GooseExts] [GoGlobalContext] : val
+opaque MaxInt16 [GooseExts] [GoGlobalContext] : val
 
-axiom MinInt16 [GooseExts] [GoGlobalContext] : val
+opaque MinInt16 [GooseExts] [GoGlobalContext] : val
 
-axiom MaxInt32 [GooseExts] [GoGlobalContext] : val
+opaque MaxInt32 [GooseExts] [GoGlobalContext] : val
 
-axiom MinInt32 [GooseExts] [GoGlobalContext] : val
+opaque MinInt32 [GooseExts] [GoGlobalContext] : val
 
 /-- 9223372036854775807 -/
 @[reducible] noncomputable def MaxInt64 [GooseExts] [GoGlobalContext] : val :=
   #(9223372036854775807 : Int)
 
-axiom MinInt64 [GooseExts] [GoGlobalContext] : val
+opaque MinInt64 [GooseExts] [GoGlobalContext] : val
 
-axiom MaxUint [GooseExts] [GoGlobalContext] : val
+opaque MaxUint [GooseExts] [GoGlobalContext] : val
 
-axiom MaxUint8 [GooseExts] [GoGlobalContext] : val
+opaque MaxUint8 [GooseExts] [GoGlobalContext] : val
 
-axiom MaxUint16 [GooseExts] [GoGlobalContext] : val
+opaque MaxUint16 [GooseExts] [GoGlobalContext] : val
 
-axiom MaxUint32 [GooseExts] [GoGlobalContext] : val
+opaque MaxUint32 [GooseExts] [GoGlobalContext] : val
 
 /-- 18446744073709551615 -/
 @[reducible] noncomputable def MaxUint64 [GooseExts] [GoGlobalContext] : val :=
   #(18446744073709551615 : Int)
 
-axiom haveArchMax [GooseExts] [GoGlobalContext] : val
+opaque haveArchMax [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchMin [GooseExts] [GoGlobalContext] : val
+opaque haveArchMin [GooseExts] [GoGlobalContext] : val
 
-axiom erx [GooseExts] [GoGlobalContext] : val
+opaque erx [GooseExts] [GoGlobalContext] : val
 
-axiom efx [GooseExts] [GoGlobalContext] : val
+opaque efx [GooseExts] [GoGlobalContext] : val
 
-axiom efx8 [GooseExts] [GoGlobalContext] : val
+opaque efx8 [GooseExts] [GoGlobalContext] : val
 
-axiom pp0 [GooseExts] [GoGlobalContext] : val
+opaque pp0 [GooseExts] [GoGlobalContext] : val
 
-axiom pp1 [GooseExts] [GoGlobalContext] : val
+opaque pp1 [GooseExts] [GoGlobalContext] : val
 
-axiom pp2 [GooseExts] [GoGlobalContext] : val
+opaque pp2 [GooseExts] [GoGlobalContext] : val
 
-axiom pp3 [GooseExts] [GoGlobalContext] : val
+opaque pp3 [GooseExts] [GoGlobalContext] : val
 
-axiom pp4 [GooseExts] [GoGlobalContext] : val
+opaque pp4 [GooseExts] [GoGlobalContext] : val
 
-axiom qq1 [GooseExts] [GoGlobalContext] : val
+opaque qq1 [GooseExts] [GoGlobalContext] : val
 
-axiom qq2 [GooseExts] [GoGlobalContext] : val
+opaque qq2 [GooseExts] [GoGlobalContext] : val
 
-axiom qq3 [GooseExts] [GoGlobalContext] : val
+opaque qq3 [GooseExts] [GoGlobalContext] : val
 
-axiom qq4 [GooseExts] [GoGlobalContext] : val
+opaque qq4 [GooseExts] [GoGlobalContext] : val
 
-axiom qq5 [GooseExts] [GoGlobalContext] : val
+opaque qq5 [GooseExts] [GoGlobalContext] : val
 
-axiom pa0 [GooseExts] [GoGlobalContext] : val
+opaque pa0 [GooseExts] [GoGlobalContext] : val
 
-axiom pa1 [GooseExts] [GoGlobalContext] : val
+opaque pa1 [GooseExts] [GoGlobalContext] : val
 
-axiom pa2 [GooseExts] [GoGlobalContext] : val
+opaque pa2 [GooseExts] [GoGlobalContext] : val
 
-axiom pa3 [GooseExts] [GoGlobalContext] : val
+opaque pa3 [GooseExts] [GoGlobalContext] : val
 
-axiom pa4 [GooseExts] [GoGlobalContext] : val
+opaque pa4 [GooseExts] [GoGlobalContext] : val
 
-axiom pa5 [GooseExts] [GoGlobalContext] : val
+opaque pa5 [GooseExts] [GoGlobalContext] : val
 
-axiom pa6 [GooseExts] [GoGlobalContext] : val
+opaque pa6 [GooseExts] [GoGlobalContext] : val
 
-axiom qa1 [GooseExts] [GoGlobalContext] : val
+opaque qa1 [GooseExts] [GoGlobalContext] : val
 
-axiom qa2 [GooseExts] [GoGlobalContext] : val
+opaque qa2 [GooseExts] [GoGlobalContext] : val
 
-axiom qa3 [GooseExts] [GoGlobalContext] : val
+opaque qa3 [GooseExts] [GoGlobalContext] : val
 
-axiom qa4 [GooseExts] [GoGlobalContext] : val
+opaque qa4 [GooseExts] [GoGlobalContext] : val
 
-axiom qa5 [GooseExts] [GoGlobalContext] : val
+opaque qa5 [GooseExts] [GoGlobalContext] : val
 
-axiom qa6 [GooseExts] [GoGlobalContext] : val
+opaque qa6 [GooseExts] [GoGlobalContext] : val
 
-axiom ra0 [GooseExts] [GoGlobalContext] : val
+opaque ra0 [GooseExts] [GoGlobalContext] : val
 
-axiom ra1 [GooseExts] [GoGlobalContext] : val
+opaque ra1 [GooseExts] [GoGlobalContext] : val
 
-axiom ra2 [GooseExts] [GoGlobalContext] : val
+opaque ra2 [GooseExts] [GoGlobalContext] : val
 
-axiom ra3 [GooseExts] [GoGlobalContext] : val
+opaque ra3 [GooseExts] [GoGlobalContext] : val
 
-axiom ra4 [GooseExts] [GoGlobalContext] : val
+opaque ra4 [GooseExts] [GoGlobalContext] : val
 
-axiom ra5 [GooseExts] [GoGlobalContext] : val
+opaque ra5 [GooseExts] [GoGlobalContext] : val
 
-axiom ra6 [GooseExts] [GoGlobalContext] : val
+opaque ra6 [GooseExts] [GoGlobalContext] : val
 
-axiom ra7 [GooseExts] [GoGlobalContext] : val
+opaque ra7 [GooseExts] [GoGlobalContext] : val
 
-axiom sa1 [GooseExts] [GoGlobalContext] : val
+opaque sa1 [GooseExts] [GoGlobalContext] : val
 
-axiom sa2 [GooseExts] [GoGlobalContext] : val
+opaque sa2 [GooseExts] [GoGlobalContext] : val
 
-axiom sa3 [GooseExts] [GoGlobalContext] : val
+opaque sa3 [GooseExts] [GoGlobalContext] : val
 
-axiom sa4 [GooseExts] [GoGlobalContext] : val
+opaque sa4 [GooseExts] [GoGlobalContext] : val
 
-axiom sa5 [GooseExts] [GoGlobalContext] : val
+opaque sa5 [GooseExts] [GoGlobalContext] : val
 
-axiom sa6 [GooseExts] [GoGlobalContext] : val
+opaque sa6 [GooseExts] [GoGlobalContext] : val
 
-axiom sa7 [GooseExts] [GoGlobalContext] : val
+opaque sa7 [GooseExts] [GoGlobalContext] : val
 
-axiom sa8 [GooseExts] [GoGlobalContext] : val
+opaque sa8 [GooseExts] [GoGlobalContext] : val
 
-axiom rb0 [GooseExts] [GoGlobalContext] : val
+opaque rb0 [GooseExts] [GoGlobalContext] : val
 
-axiom rb1 [GooseExts] [GoGlobalContext] : val
+opaque rb1 [GooseExts] [GoGlobalContext] : val
 
-axiom rb2 [GooseExts] [GoGlobalContext] : val
+opaque rb2 [GooseExts] [GoGlobalContext] : val
 
-axiom rb3 [GooseExts] [GoGlobalContext] : val
+opaque rb3 [GooseExts] [GoGlobalContext] : val
 
-axiom rb4 [GooseExts] [GoGlobalContext] : val
+opaque rb4 [GooseExts] [GoGlobalContext] : val
 
-axiom rb5 [GooseExts] [GoGlobalContext] : val
+opaque rb5 [GooseExts] [GoGlobalContext] : val
 
-axiom rb6 [GooseExts] [GoGlobalContext] : val
+opaque rb6 [GooseExts] [GoGlobalContext] : val
 
-axiom sb1 [GooseExts] [GoGlobalContext] : val
+opaque sb1 [GooseExts] [GoGlobalContext] : val
 
-axiom sb2 [GooseExts] [GoGlobalContext] : val
+opaque sb2 [GooseExts] [GoGlobalContext] : val
 
-axiom sb3 [GooseExts] [GoGlobalContext] : val
+opaque sb3 [GooseExts] [GoGlobalContext] : val
 
-axiom sb4 [GooseExts] [GoGlobalContext] : val
+opaque sb4 [GooseExts] [GoGlobalContext] : val
 
-axiom sb5 [GooseExts] [GoGlobalContext] : val
+opaque sb5 [GooseExts] [GoGlobalContext] : val
 
-axiom sb6 [GooseExts] [GoGlobalContext] : val
+opaque sb6 [GooseExts] [GoGlobalContext] : val
 
-axiom sb7 [GooseExts] [GoGlobalContext] : val
+opaque sb7 [GooseExts] [GoGlobalContext] : val
 
-axiom a0 [GooseExts] [GoGlobalContext] : val
+opaque a0 [GooseExts] [GoGlobalContext] : val
 
-axiom a1 [GooseExts] [GoGlobalContext] : val
+opaque a1 [GooseExts] [GoGlobalContext] : val
 
-axiom a2 [GooseExts] [GoGlobalContext] : val
+opaque a2 [GooseExts] [GoGlobalContext] : val
 
-axiom a3 [GooseExts] [GoGlobalContext] : val
+opaque a3 [GooseExts] [GoGlobalContext] : val
 
-axiom a4 [GooseExts] [GoGlobalContext] : val
+opaque a4 [GooseExts] [GoGlobalContext] : val
 
-axiom a5 [GooseExts] [GoGlobalContext] : val
+opaque a5 [GooseExts] [GoGlobalContext] : val
 
-axiom a6 [GooseExts] [GoGlobalContext] : val
+opaque a6 [GooseExts] [GoGlobalContext] : val
 
-axiom a7 [GooseExts] [GoGlobalContext] : val
+opaque a7 [GooseExts] [GoGlobalContext] : val
 
-axiom b0 [GooseExts] [GoGlobalContext] : val
+opaque b0 [GooseExts] [GoGlobalContext] : val
 
-axiom b1 [GooseExts] [GoGlobalContext] : val
+opaque b1 [GooseExts] [GoGlobalContext] : val
 
-axiom b2 [GooseExts] [GoGlobalContext] : val
+opaque b2 [GooseExts] [GoGlobalContext] : val
 
-axiom b3 [GooseExts] [GoGlobalContext] : val
+opaque b3 [GooseExts] [GoGlobalContext] : val
 
-axiom b4 [GooseExts] [GoGlobalContext] : val
+opaque b4 [GooseExts] [GoGlobalContext] : val
 
-axiom b5 [GooseExts] [GoGlobalContext] : val
+opaque b5 [GooseExts] [GoGlobalContext] : val
 
-axiom b6 [GooseExts] [GoGlobalContext] : val
+opaque b6 [GooseExts] [GoGlobalContext] : val
 
-axiom b7 [GooseExts] [GoGlobalContext] : val
+opaque b7 [GooseExts] [GoGlobalContext] : val
 
-axiom c0 [GooseExts] [GoGlobalContext] : val
+opaque c0 [GooseExts] [GoGlobalContext] : val
 
-axiom c1 [GooseExts] [GoGlobalContext] : val
+opaque c1 [GooseExts] [GoGlobalContext] : val
 
-axiom c2 [GooseExts] [GoGlobalContext] : val
+opaque c2 [GooseExts] [GoGlobalContext] : val
 
-axiom c3 [GooseExts] [GoGlobalContext] : val
+opaque c3 [GooseExts] [GoGlobalContext] : val
 
-axiom c4 [GooseExts] [GoGlobalContext] : val
+opaque c4 [GooseExts] [GoGlobalContext] : val
 
-axiom c5 [GooseExts] [GoGlobalContext] : val
+opaque c5 [GooseExts] [GoGlobalContext] : val
 
-axiom c6 [GooseExts] [GoGlobalContext] : val
+opaque c6 [GooseExts] [GoGlobalContext] : val
 
-axiom c7 [GooseExts] [GoGlobalContext] : val
+opaque c7 [GooseExts] [GoGlobalContext] : val
 
-axiom d0 [GooseExts] [GoGlobalContext] : val
+opaque d0 [GooseExts] [GoGlobalContext] : val
 
-axiom d1 [GooseExts] [GoGlobalContext] : val
+opaque d1 [GooseExts] [GoGlobalContext] : val
 
-axiom d2 [GooseExts] [GoGlobalContext] : val
+opaque d2 [GooseExts] [GoGlobalContext] : val
 
-axiom d3 [GooseExts] [GoGlobalContext] : val
+opaque d3 [GooseExts] [GoGlobalContext] : val
 
-axiom d4 [GooseExts] [GoGlobalContext] : val
+opaque d4 [GooseExts] [GoGlobalContext] : val
 
-axiom d5 [GooseExts] [GoGlobalContext] : val
+opaque d5 [GooseExts] [GoGlobalContext] : val
 
-axiom d6 [GooseExts] [GoGlobalContext] : val
+opaque d6 [GooseExts] [GoGlobalContext] : val
 
-axiom d7 [GooseExts] [GoGlobalContext] : val
+opaque d7 [GooseExts] [GoGlobalContext] : val
 
-axiom e0 [GooseExts] [GoGlobalContext] : val
+opaque e0 [GooseExts] [GoGlobalContext] : val
 
-axiom e1 [GooseExts] [GoGlobalContext] : val
+opaque e1 [GooseExts] [GoGlobalContext] : val
 
-axiom e2 [GooseExts] [GoGlobalContext] : val
+opaque e2 [GooseExts] [GoGlobalContext] : val
 
-axiom e3 [GooseExts] [GoGlobalContext] : val
+opaque e3 [GooseExts] [GoGlobalContext] : val
 
-axiom e4 [GooseExts] [GoGlobalContext] : val
+opaque e4 [GooseExts] [GoGlobalContext] : val
 
-axiom e5 [GooseExts] [GoGlobalContext] : val
+opaque e5 [GooseExts] [GoGlobalContext] : val
 
-axiom e6 [GooseExts] [GoGlobalContext] : val
+opaque e6 [GooseExts] [GoGlobalContext] : val
 
-axiom e7 [GooseExts] [GoGlobalContext] : val
+opaque e7 [GooseExts] [GoGlobalContext] : val
 
-axiom f0 [GooseExts] [GoGlobalContext] : val
+opaque f0 [GooseExts] [GoGlobalContext] : val
 
-axiom f1 [GooseExts] [GoGlobalContext] : val
+opaque f1 [GooseExts] [GoGlobalContext] : val
 
-axiom f2 [GooseExts] [GoGlobalContext] : val
+opaque f2 [GooseExts] [GoGlobalContext] : val
 
-axiom f3 [GooseExts] [GoGlobalContext] : val
+opaque f3 [GooseExts] [GoGlobalContext] : val
 
-axiom f4 [GooseExts] [GoGlobalContext] : val
+opaque f4 [GooseExts] [GoGlobalContext] : val
 
-axiom f5 [GooseExts] [GoGlobalContext] : val
+opaque f5 [GooseExts] [GoGlobalContext] : val
 
-axiom f6 [GooseExts] [GoGlobalContext] : val
+opaque f6 [GooseExts] [GoGlobalContext] : val
 
-axiom f7 [GooseExts] [GoGlobalContext] : val
+opaque f7 [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchExp2 [GooseExts] [GoGlobalContext] : val
+opaque haveArchExp2 [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchExp [GooseExts] [GoGlobalContext] : val
+opaque haveArchExp [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchFloor [GooseExts] [GoGlobalContext] : val
+opaque haveArchFloor [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchCeil [GooseExts] [GoGlobalContext] : val
+opaque haveArchCeil [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchTrunc [GooseExts] [GoGlobalContext] : val
+opaque haveArchTrunc [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchHypot [GooseExts] [GoGlobalContext] : val
+opaque haveArchHypot [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchLog [GooseExts] [GoGlobalContext] : val
+opaque haveArchLog [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchAcos [GooseExts] [GoGlobalContext] : val
+opaque haveArchAcos [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchAcosh [GooseExts] [GoGlobalContext] : val
+opaque haveArchAcosh [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchAsin [GooseExts] [GoGlobalContext] : val
+opaque haveArchAsin [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchAsinh [GooseExts] [GoGlobalContext] : val
+opaque haveArchAsinh [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchAtan [GooseExts] [GoGlobalContext] : val
+opaque haveArchAtan [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchAtan2 [GooseExts] [GoGlobalContext] : val
+opaque haveArchAtan2 [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchAtanh [GooseExts] [GoGlobalContext] : val
+opaque haveArchAtanh [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchCbrt [GooseExts] [GoGlobalContext] : val
+opaque haveArchCbrt [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchCos [GooseExts] [GoGlobalContext] : val
+opaque haveArchCos [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchCosh [GooseExts] [GoGlobalContext] : val
+opaque haveArchCosh [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchErf [GooseExts] [GoGlobalContext] : val
+opaque haveArchErf [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchErfc [GooseExts] [GoGlobalContext] : val
+opaque haveArchErfc [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchExpm1 [GooseExts] [GoGlobalContext] : val
+opaque haveArchExpm1 [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchFrexp [GooseExts] [GoGlobalContext] : val
+opaque haveArchFrexp [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchLdexp [GooseExts] [GoGlobalContext] : val
+opaque haveArchLdexp [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchLog10 [GooseExts] [GoGlobalContext] : val
+opaque haveArchLog10 [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchLog2 [GooseExts] [GoGlobalContext] : val
+opaque haveArchLog2 [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchLog1p [GooseExts] [GoGlobalContext] : val
+opaque haveArchLog1p [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchMod [GooseExts] [GoGlobalContext] : val
+opaque haveArchMod [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchPow [GooseExts] [GoGlobalContext] : val
+opaque haveArchPow [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchRemainder [GooseExts] [GoGlobalContext] : val
+opaque haveArchRemainder [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchSin [GooseExts] [GoGlobalContext] : val
+opaque haveArchSin [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchSinh [GooseExts] [GoGlobalContext] : val
+opaque haveArchSinh [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchTan [GooseExts] [GoGlobalContext] : val
+opaque haveArchTan [GooseExts] [GoGlobalContext] : val
 
-axiom haveArchTanh [GooseExts] [GoGlobalContext] : val
+opaque haveArchTanh [GooseExts] [GoGlobalContext] : val
 
-axiom reduceThreshold [GooseExts] [GoGlobalContext] : val
+opaque reduceThreshold [GooseExts] [GoGlobalContext] : val
 
 noncomputable def useFMA [GooseExts] [GoGlobalContext] : GoString :=
   go!"math.useFMA"
@@ -1020,7 +1020,7 @@ noncomputable def Float64frombits [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable instance info' : PkgInfo pkg_id.math where
   pkgImportedPkgs := []
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon

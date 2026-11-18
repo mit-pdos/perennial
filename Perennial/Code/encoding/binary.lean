@@ -65,11 +65,11 @@ noncomputable def nativeEndian.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] nativeEndian.ty
 
-axiom MaxVarintLen16 [GooseExts] [GoGlobalContext] : val
+opaque MaxVarintLen16 [GooseExts] [GoGlobalContext] : val
 
-axiom MaxVarintLen32 [GooseExts] [GoGlobalContext] : val
+opaque MaxVarintLen32 [GooseExts] [GoGlobalContext] : val
 
-axiom MaxVarintLen64 [GooseExts] [GoGlobalContext] : val
+opaque MaxVarintLen64 [GooseExts] [GoGlobalContext] : val
 
 noncomputable def errBufferTooSmall [GooseExts] [GoGlobalContext] : GoString :=
   go!"encoding/binary.errBufferTooSmall"
@@ -690,7 +690,7 @@ noncomputable def bigEndian.GoString.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.encoding.binary where
   pkgImportedPkgs := [pkg_id.errors, pkg_id.io, pkg_id.math, pkg_id.slices, pkg_id.sync]
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon

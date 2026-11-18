@@ -202,11 +202,11 @@ noncomputable def PipeWriter.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] PipeWriter.ty
 
-axiom SeekStart [GooseExts] [GoGlobalContext] : val
+opaque SeekStart [GooseExts] [GoGlobalContext] : val
 
-axiom SeekCurrent [GooseExts] [GoGlobalContext] : val
+opaque SeekCurrent [GooseExts] [GoGlobalContext] : val
 
-axiom SeekEnd [GooseExts] [GoGlobalContext] : val
+opaque SeekEnd [GooseExts] [GoGlobalContext] : val
 
 noncomputable def ErrShortWrite [GooseExts] [GoGlobalContext] : GoString :=
   go!"io.ErrShortWrite"

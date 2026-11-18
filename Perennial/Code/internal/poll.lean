@@ -69,43 +69,43 @@ noncomputable def splicePipe.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] splicePipe.ty
 
-axiom splicePipe.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque splicePipe.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom maxCopyFileRangeRound [GooseExts] [GoGlobalContext] : val
+opaque maxCopyFileRangeRound [GooseExts] [GoGlobalContext] : val
 
-axiom mutexClosed [GooseExts] [GoGlobalContext] : val
+opaque mutexClosed [GooseExts] [GoGlobalContext] : val
 
-axiom mutexRLock [GooseExts] [GoGlobalContext] : val
+opaque mutexRLock [GooseExts] [GoGlobalContext] : val
 
-axiom mutexWLock [GooseExts] [GoGlobalContext] : val
+opaque mutexWLock [GooseExts] [GoGlobalContext] : val
 
-axiom mutexRef [GooseExts] [GoGlobalContext] : val
+opaque mutexRef [GooseExts] [GoGlobalContext] : val
 
-axiom mutexRefMask [GooseExts] [GoGlobalContext] : val
+opaque mutexRefMask [GooseExts] [GoGlobalContext] : val
 
-axiom mutexRWait [GooseExts] [GoGlobalContext] : val
+opaque mutexRWait [GooseExts] [GoGlobalContext] : val
 
-axiom mutexRMask [GooseExts] [GoGlobalContext] : val
+opaque mutexRMask [GooseExts] [GoGlobalContext] : val
 
-axiom mutexWWait [GooseExts] [GoGlobalContext] : val
+opaque mutexWWait [GooseExts] [GoGlobalContext] : val
 
-axiom mutexWMask [GooseExts] [GoGlobalContext] : val
+opaque mutexWMask [GooseExts] [GoGlobalContext] : val
 
-axiom overflowMsg [GooseExts] [GoGlobalContext] : val
+opaque overflowMsg [GooseExts] [GoGlobalContext] : val
 
-axiom pollNoError [GooseExts] [GoGlobalContext] : val
+opaque pollNoError [GooseExts] [GoGlobalContext] : val
 
-axiom pollErrClosing [GooseExts] [GoGlobalContext] : val
+opaque pollErrClosing [GooseExts] [GoGlobalContext] : val
 
-axiom pollErrTimeout [GooseExts] [GoGlobalContext] : val
+opaque pollErrTimeout [GooseExts] [GoGlobalContext] : val
 
-axiom pollErrNotPollable [GooseExts] [GoGlobalContext] : val
+opaque pollErrNotPollable [GooseExts] [GoGlobalContext] : val
 
-axiom maxRW [GooseExts] [GoGlobalContext] : val
+opaque maxRW [GooseExts] [GoGlobalContext] : val
 
-axiom spliceNonblock [GooseExts] [GoGlobalContext] : val
+opaque spliceNonblock [GooseExts] [GoGlobalContext] : val
 
-axiom maxSpliceSize [GooseExts] [GoGlobalContext] : val
+opaque maxSpliceSize [GooseExts] [GoGlobalContext] : val
 
 noncomputable def supportCopyFileRange [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/poll.supportCopyFileRange"
@@ -760,8 +760,10 @@ attribute [instance] splicePipeFields.TypeAssumptions.type_repr
   splicePipeFields.TypeAssumptions.method_set
   splicePipeFields.TypeAssumptions.ptr_method_set
 
-axiom splicePipe : Type
-axiom splicePipe.zero_val : ZeroVal splicePipe
+opaque splicePipe.nonempty_type : NonemptyType.{0}
+def splicePipe : Type := splicePipe.nonempty_type.type
+instance splicePipe.nonempty : Nonempty splicePipe := splicePipe.nonempty_type.property
+opaque splicePipe.zero_val : ZeroVal splicePipe := ⟨Classical.ofNonempty⟩
 attribute [instance] splicePipe.zero_val
 
 class splicePipe.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
