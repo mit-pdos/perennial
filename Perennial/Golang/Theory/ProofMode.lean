@@ -651,6 +651,24 @@ meta register_option goose.wp.unfoldSliceLiterals : Bool := {
 section tactics
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
+/-- Whether `e` has a free variable satisfying `p`: `Expr.hasAnyFVar`, but visiting each shared
+subterm once (`Expr.findExt?`). `hasAnyFVar` and `containsFVar` walk the expression as a tree,
+which is exponential in the nesting of shared subterms: a struct value updated field by field,
+`mk (p₁ v) … x … (pₙ v)` around `v` `k` times, is a tree of `n ^ k` nodes (34 fields and 5
+updates, as `etcd-grove`'s `genFrom`: half a second per `containsFVar`, and `wp_auto` makes one
+per hypothesis and local variable). -/
+meta def exprHasAnyFVar (e : Lean.Expr) (p : FVarId → Bool) : Bool :=
+  e.hasFVar && (e.findExt? fun x =>
+    if !x.hasFVar then .done
+    else match x with
+      | .fvar fv => if p fv then .found else .done
+      | _ => .visit).isSome
+
+/-- Whether `e` contains the free variable `fv`: `Expr.containsFVar`, visiting each shared
+subterm once (`exprHasAnyFVar`). -/
+meta def exprContainsFVar (e : Lean.Expr) (fv : FVarId) : Bool :=
+  exprHasAnyFVar e (· == fv)
+
 /-- Names of the binders of a (∀-)type, in order. -/
 private meta partial def binderNames : Lean.Expr → List Name
   | .forallE n _ b _ => n :: binderNames b
@@ -823,7 +841,7 @@ does not (so that it is well-scoped wherever `key` is). -/
 meta def pureWpCacheInsert (key : Lean.Expr) (r : Option (Lean.Expr × Lean.Expr × Lean.Expr)) : BaseIO Unit := do
   if let some (φ, e2, inst) := r then
     let ks := (collectFVars {} key).fvarSet
-    if [φ, e2, inst].any (·.hasAnyFVar (!ks.contains ·)) then return
+    if [φ, e2, inst].any (exprHasAnyFVar · (!ks.contains ·)) then return
   pureWpCache.modify fun c => (if c.size > 10000 then {} else c).insert key r
 
 /-- The scope of the caches of `needsGooseSimp` and `synthPureWp` on this thread:

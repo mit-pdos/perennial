@@ -362,16 +362,16 @@ meta def unusedPointsto {u} {prop : Q(Type u)} {bi : Q(BI $prop)} {ehyps : Q($pr
     let some ldecl := (← getLCtx).find? lid | continue
     unless ldecl.userName.eraseMacroScopes.toString.endsWith "_ptr" do continue
     -- `l` must not occur in the goal, in other hypotheses, or in the Lean context
-    if goal.containsFVar lid then continue
+    if exprContainsFVar goal lid then continue
     let mut used := false
     for (_, ivar', _, ty') in hs do
-      if ivar' != ivar && (← instantiateMVars ty').containsFVar lid then used := true
-    if (ty.getArg! 4).containsFVar lid || (ty.getArg! 5).containsFVar lid then used := true
+      if ivar' != ivar && exprContainsFVar (← instantiateMVars ty') lid then used := true
+    if exprContainsFVar (ty.getArg! 4) lid || exprContainsFVar (ty.getArg! 5) lid then used := true
     for decl in ← getLCtx do
       if decl.fvarId != lid && !decl.isImplementationDetail then
-        if (← instantiateMVars decl.type).containsFVar lid then used := true
+        if exprContainsFVar (← instantiateMVars decl.type) lid then used := true
         if let some v := decl.value? then
-          if v.containsFVar lid then used := true
+          if exprContainsFVar v lid then used := true
     if (res.map (·.2)).contains lid then used := true
     unless used do res := (ivar, lid) :: res
   return res
@@ -945,7 +945,7 @@ elab "wp_if_subst_closed " h:ident : tactic => withMainContext do
   let some d := (← getLCtx).findFromUserName? h.getId | return
   let ty ← instantiateMVars d.type
   let some (_, a, b) := ty.eq? | return
-  let ok (x c : Lean.Expr) := x.isFVar && !c.isFVar && !c.containsFVar x.fvarId! && !c.hasMVar
+  let ok (x c : Lean.Expr) := x.isFVar && !c.isFVar && !exprContainsFVar c x.fvarId! && !c.hasMVar
   if ok a b || ok b a then
     liftMetaTactic fun g => do
       let some r ← observing? (Lean.Meta.subst g d.fvarId) | return [g]
