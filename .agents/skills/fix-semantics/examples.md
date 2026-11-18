@@ -1144,3 +1144,28 @@ switch indexes its cases from 1 correctly; no other loop over `X[1:]` uses its i
 
 **Sign-off.** The user signed off the plan as written (2026-11-08, relayed by etcd-grove-81). Found by
 etcd-grove while writing the `ctx-value` design.
+
+## Case 36 — ACCEPTED: `TypeAssertUnderlying2` reads `string` underlying types too (branch `sprintf-named-string`)
+
+**Symptom.** Incomplete. `TypeAssertUnderlying2 t` (`reflect.ValueOf(x)` read at `t`'s kind, used
+only by the model of `fmt.Sprintf`) had a step rule only for an integer underlying type
+(`[IsInteger t_under]`), so the model could not read the string a value of a named string type
+holds, and `Sprintf("%v", types.UID(s))` was arbitrary where Go gives `s`.
+
+**Witness.** `type UID string; fmt.Sprintf("%v", UID("a"))` is `"a"` in Go; the model's output
+was arbitrary (no rule to read the value at `go.string`).
+
+**Taken.** The rule's premise `[IsInteger t_under]` becomes `[IsIntegerOrString t_under]`, a class
+inductive with the integer types and `string` (no new rule: the same rule at one more underlying
+type). In the model, a helper `strArg` (goose's translation of Go: no `Format`/`String`/`Error`
+method, then `underlyingAs[string]`, edited to the instruction, as `namedIntArg`), called by
+`formatArg` for `%s` and `%v`. Cost: 0 goose branches, 0 new rules, 1 widened premise, about 90
+lines of translated model. The restriction to integer types (struct field names differ between
+Lean and Go) does not apply to `string`, a predeclared type.
+
+**Not taken.** A `reflect` model (`ValueOf`, `Kind`, `String`): a larger trusted surface for the
+same fact, as in the integer case.
+
+**Why.** The user approved extending the rule to string underlying types (2026-11-17, relayed by
+etcd-grove-03), so that method-less named string types (`types.UID`) format as Go formats them; a
+type with a formatting method stays arbitrary (the model calls no methods).

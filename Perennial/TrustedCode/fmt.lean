@@ -1024,16 +1024,150 @@ noncomputable def formatHex : val :=
   (Val #()))))))))
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
 
+/-- The string an argument holds, if its dynamic type is `string` or a type whose underlying type
+is `string` (a named string type, `type UID string`) and that implements none of `fmt.Formatter`,
+`fmt.Stringer` and `error`: Go's `printArg` formats a `string` with `fmtString`, and a value of a
+named string type falls to `handleMethods`, which finds no method to call, and `printValue`
+formats `reflect.ValueOf(x)` by its kind, `String`, with `fmtString` of `Value.String()`, its
+string. (A `string` has no methods, so the checks below are false for it. `fmt.GoStringer` is
+consulted only by `%#v`, which the model does not format.) Goose's translation (by the goose of
+this revision) of
+
+```go
+func strArg(x any) (string, bool) {
+	if _, ok := x.(interface{ Format(State, rune) }); ok {
+		return "", false
+	}
+	if _, ok := x.(interface{ String() string }); ok {
+		return "", false
+	}
+	if _, ok := x.(error); ok {
+		return "", false
+	}
+	return underlyingAs[string](x)
+}
+```
+
+with the two edits of `namedIntArg`: goose's call `FuncResolve underlyingAs [go.string] #()` is
+replaced by the instruction `TypeAssertUnderlying2 go.string` (`reflect.ValueOf(x).String()` for a
+value of kind `String`), and the scratch package's `State.ty` by
+`go.GoType.Named go!"fmt.State" []`. -/
+noncomputable def strArg : val :=
+  (LamV "x"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (Var "x"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
+  (App (Val (GoInstruction (TypeAssertUnderlying2 go.string))) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))))))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.error))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
+  (Let "$r0" (Val #(go!""))
+  (Let "$r1" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (Var "$r0"))))))))))))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"String" (go.signature.Signature [] false [go.string]))])))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
+  (Let "$r0" (Val #(go!""))
+  (Let "$r1" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (Var "$r0"))))))))))))
+  (Let "__p" (App (Val (GoInstruction (TypeAssert2 (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Format" (go.signature.Signature [(go.GoType.Named go!"fmt.State" []), go.rune] false []))])))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
+  (Let "$r0" (Val #(go!""))
+  (Let "$r1" (Val #false)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (Var "$r0"))))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res1")))))))
+
 /-- At `format[i]`, a `%`: the directive's output for the argument `x` and the index after it, if
-the model formats it: `%s` of a `string`, `%x` of an integer (`anyIntArg`), or an integer
-directive (`intVerb`) of an integer. Goose's translation (by the goose of this revision, with its function
+the model formats it: `%s` or `%v` of a string (`strArg`: a `string`, or a named string type
+without formatting methods), `%x` of an integer (`anyIntArg`), or an integer directive (`intVerb`,
+which takes `%v` too) of an integer. Goose's translation (by the goose of this revision, with its function
 results in cells `$resI`) of
 
 ```go
 func formatArg(format string, i int, x any) (string, int, bool) {
 	if i+1 < len(format) && format[i+1] == 's' {
-		s, ok := x.(string)
+		s, ok := strArg(x)
 		return s, i + 2, ok
+	}
+	if i+1 < len(format) && format[i+1] == 'v' {
+		if s, ok := strArg(x); ok {
+			return s, i + 2, true
+		}
 	}
 	if i+1 < len(format) && format[i+1] == 'x' {
 		neg, mag, ok := anyIntArg(x)
@@ -1054,8 +1188,16 @@ func formatArg(format string, i int, x any) (string, int, bool) {
 }
 ```
 
-with the calls running `fmt.intVerb`, `fmt.anyIntArg`, `fmt.formatInt` and `fmt.formatHex` above
-(goose's `FuncResolve f [] #()` replaced by `f`, the only edit). -/
+with the calls running `fmt.strArg`, `fmt.intVerb`, `fmt.anyIntArg`, `fmt.formatInt` and
+`fmt.formatHex` above
+(goose's `FuncResolve f [] #()` replaced by `f`, the only edit). `%v` of a `string` is the string
+itself, as `%s` gives it: Go's `fmt` documents the default format `%v` of a string as `%s`, and
+`printArg` formats a `string` argument with `fmtString`, whose `'v'` case (without the `#` flag) is
+`fmtS`, the `'s'` case, which copies the bytes unchanged when there is no precision or width.
+`goose/model/fmt/sprintf_test.go` checks that `fmt.Sprintf` gives every string, byte for byte, for
+`%v` as for `%s` (the empty string, `%`, invalid UTF-8, NUL), and the same for a named string type
+without formatting methods; a named string type with a `String`, `Error` or `Format` method
+(whose call the model does not make) makes the rest of the output arbitrary. -/
 noncomputable def formatArg : val :=
   (LamV "format"
   (Lam "i"
@@ -1067,6 +1209,7 @@ noncomputable def formatArg : val :=
   (Let "x" (App (Val (GoInstruction (GoAlloc go.any))) (Var "x"))
   (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (Var "i"))
   (Let "format" (App (Val (GoInstruction (GoAlloc go.string))) (Var "format"))
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
@@ -1222,8 +1365,44 @@ noncomputable def formatArg : val :=
   (App (Val doExecute)
   (Val #()))))))
   (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "format")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))) (Val #(W8 118)))) (Val #false)))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
+  (App (Val strArg) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "$r1" (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 2))))
+  (Let "$r2" (Val #true)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res2") (Var "$r2")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Val #())))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "s") (Var "$r0"))))))))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (If (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))) (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "format"))
   (App (App (Val (GoInstruction (FuncResolve go.len [go.string]))) (Val #())) (Var "$a0"))))) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (Index go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "format")) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))) (Val #(W8 115)))) (Val #false)))
-  (Let "__p" (App (Val (GoInstruction (TypeAssert2 go.string))) (App (Val (GoInstruction (GoLoad go.any))) (Var "x")))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.any))) (Var "x"))
+  (App (Val strArg) (Var "$a0")))
   (Let "$ret0" (Fst (Var "__p"))
   (Let "$ret1" (Snd (Var "__p"))
   (Let "$r0" (Var "$ret0")
@@ -1254,8 +1433,8 @@ noncomputable def formatArg : val :=
   (Val #()))))))))
   (Pair (Pair (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.int))) (Var "$res1"))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res2"))))))))))
 
-/-- `Sprintf(format, a...)`: the formatted string. The model formats `%%`, `%s` of a `string`, and
-`%d`, `%v`, `%0Nd` and `%x` of an integer exactly, and over-approximates everything else by an
+/-- `Sprintf(format, a...)`: the formatted string. The model formats `%%`, `%s` and `%v` of a
+string, and `%d`, `%v`, `%0Nd` and `%x` of an integer exactly, and over-approximates everything else by an
 arbitrary string. It is goose's translation of
 
 ```go
@@ -1293,8 +1472,11 @@ func Sprintf(format string, a ...any) string {
 ```
 
 with the calls running `fmt.formatArg` and `fmt.arbitraryString` above. That is: bytes other than
-`%` are copied; `%%` gives `%`; `%s` (immediately, without flags, width or precision) whose next
-argument is an interface holding a `string` gives that string and consumes the argument; `%d` or
+`%` are copied; `%%` gives `%`; `%s` or `%v` (immediately, without flags, width or precision)
+whose next argument is an interface holding a `string`, or a value of a named type whose
+underlying type is `string` and that implements none of `fmt.Formatter`, `fmt.Stringer` and
+`error` (`strArg`), gives that string and consumes the argument (Go's `%v` of a string is `%s`,
+`formatArg`); `%d` or
 `%v` whose next argument holds an integer of one of Go's ten integer types (`int`, `int64`, ...,
 `uint8`) gives its decimal, with a `-` if negative; `%0Nd` (the `0` flag and a width `N` of one or
 more digits, at most `10^6`) gives the decimal with leading zeros up to width `N`, the sign before
@@ -1304,14 +1486,14 @@ without a `0x` prefix, with a `-` if negative (`Sprintf("%x", -255)` is `"-ff"`)
 may also be of a named type whose underlying type is one of those types and that implements none
 of `fmt.Formatter`, `fmt.Stringer` and `error` (`namedIntArg`): Go formats it as its underlying
 integer. At any other directive (another verb, other flags or widths (`%08x`, `%#x`), an argument
-index, a verb whose argument has another type (a named integer type with such a method, or a
-string or byte slice for `%x`, among them), a missing argument, or a trailing lone `%`) the rest
-of the output is an arbitrary string. At the end, if arguments remain unused (Go appends
+index, a verb whose argument has another type (a named integer or string type with such a
+method, or a string or byte slice for `%x`, among them), a missing argument, or a trailing lone
+`%`) the rest of the output is an arbitrary string. At the end, if arguments remain unused (Go appends
 `%!(EXTRA ...)`), an arbitrary string is appended. This over-approximates Go's output, except
 that the model does not call any method of the arguments (Go's formatting may call their
 `Error()`, `String()` or `Format` methods, with whatever effects they have, panics included):
 the specs (`fmt.ArgsWf`) admit only arguments of predeclared basic types, which have none, and of
-named integer types with no method named `Format`, `GoString`, `Error` or `String`, the only
+named integer and string types with no method named `Format`, `GoString`, `Error` or `String`, the only
 methods Go's formatting calls (`handleMethods`).
 
 `wp_Sprintf` (`Perennial/Proof/fmt/Sprintf.lean`) states the result with the relation

@@ -282,14 +282,25 @@ section tactics
 open Lean Elab Tactic Meta Qq Iris.ProofMode
 
 /-- A proof of `P ⊢ target`, where `target` is `isPkgInit pkg`, by unfolding
-`isPkgInit` hypotheses into their dependencies. -/
-meta partial def pkgInitChain (target P : Lean.Expr) (fuel : Nat := 200) : MetaM (Option Lean.Expr) := do
+`isPkgInit` hypotheses into their dependencies. `failed` holds the packages whose
+dependencies were already searched without reaching `target`: the packages form a DAG
+(every package reaches `fmt`, `errors`, `sync`, ...), and without it each path to a
+package searched its whole dependency graph again (3.5s a call in etcd's server, 45 of
+`EtcdServer.LeaseRenew`'s 220s). It only prunes searches that fail, so the proof found is
+the one found without it. -/
+meta partial def pkgInitChain (target P : Lean.Expr) (fuel : Nat := 200)
+    (failed : Option (IO.Ref (Std.HashSet Lean.Expr)) := none) : MetaM (Option Lean.Expr) := do
+  let failed ← match failed with
+    | some r => pure r
+    | none => IO.mkRef {}
   if fuel == 0 then return none
   let P ← instantiateMVars P
   if ← withReducible (isDefEq P target) then
     return some (← mkAppOptM ``BIBase.Entails.rfl #[none, none, some P])
   let P' ← whnfR P
   if P'.isAppOfArity ``isPkgInit 4 then
+    let key := P'.getArg! 2
+    if (← failed.get).contains key then return none
     -- unfold the instance (e.g. built by `define_is_pkg_init`) to `IsPkgInit.mk`
     -- and take its dependency field (`whnf` would also unfold the BI operations)
     let rec instFields (inst : Lean.Expr) (fuel : Nat) : MetaM (Option Lean.Expr) := do
@@ -299,20 +310,20 @@ meta partial def pkgInitChain (target P : Lean.Expr) (fuel : Nat := 200) : MetaM
       match ← unfoldDefinition? inst with
       | some i => instFields i (fuel - 1)
       | none => return none
-    let some deps ← instFields (P'.getArg! 3) 20 | return none
-    let some c ← pkgInitChain target deps (fuel - 1) | return none
+    let some deps ← instFields (P'.getArg! 3) 20 | failed.modify (·.insert key); return none
+    let some c ← pkgInitChain target deps (fuel - 1) failed | failed.modify (·.insert key); return none
     let pf1 ← mkAppOptM ``isPkgInit_unfold_deps #[none, none, some (P'.getArg! 2), some (P'.getArg! 3)]
     return some (← mkAppM ``BIBase.Entails.trans #[pf1, c])
   if P'.isAppOfArity ``BIBase.sep 4 then
-    if let some c ← pkgInitChain target (P'.getArg! 2) (fuel - 1) then
+    if let some c ← pkgInitChain target (P'.getArg! 2) (fuel - 1) failed then
       return some (← mkAppOptM ``pkg_init_sep_l
         #[none, none, none, some (P'.getArg! 2), some (P'.getArg! 3), none, some c])
-    if let some c ← pkgInitChain target (P'.getArg! 3) (fuel - 1) then
+    if let some c ← pkgInitChain target (P'.getArg! 3) (fuel - 1) failed then
       return some (← mkAppOptM ``pkg_init_sep_r
         #[none, none, none, some (P'.getArg! 2), some (P'.getArg! 3), none, some c])
     return none
   if P'.isAppOfArity ``BIBase.intuitionistically 3 then
-    if let some c ← pkgInitChain target (P'.getArg! 2) (fuel - 1) then
+    if let some c ← pkgInitChain target (P'.getArg! 2) (fuel - 1) failed then
       return some (← mkAppM ``pkg_init_intuitionistically #[c])
   return none
 
@@ -323,9 +334,10 @@ elab "solve_pkg_init" : tactic => do
     let target ← whnfR (← instantiateMVars goal)
     unless target.isAppOfArity ``isPkgInit 4 do
       throwIPMError "not an isPkgInit goal: {goal}"
+    let failed ← IO.mkRef ({} : Std.HashSet Lean.Expr)
     for (_, ivar, p, P) in hypsList hyps do
       unless isTrue p do continue
-      if let some c ← pkgInitChain target P then
+      if let some c ← pkgInitChain target P (failed := some failed) then
         let r := hyps.remove true ivar
         mvar.assign (← mkAppOptM ``pkg_init_from_hyp
           #[none, none, none, none, some r.e', some r.out', none, some r.p, some r.pf, some c])
