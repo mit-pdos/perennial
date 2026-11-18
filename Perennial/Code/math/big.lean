@@ -88,63 +88,63 @@ noncomputable def Rat.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Rat.ty
 
-axiom _Accuracy_name [GooseExts] [GoGlobalContext] : val
+opaque _Accuracy_name [GooseExts] [GoGlobalContext] : val
 
-axiom _S [GooseExts] [GoGlobalContext] : val
+opaque _S [GooseExts] [GoGlobalContext] : val
 
-axiom _W [GooseExts] [GoGlobalContext] : val
+opaque _W [GooseExts] [GoGlobalContext] : val
 
-axiom _B [GooseExts] [GoGlobalContext] : val
+opaque _B [GooseExts] [GoGlobalContext] : val
 
-axiom _M [GooseExts] [GoGlobalContext] : val
+opaque _M [GooseExts] [GoGlobalContext] : val
 
-axiom maxShift [GooseExts] [GoGlobalContext] : val
+opaque maxShift [GooseExts] [GoGlobalContext] : val
 
-axiom debugFloat [GooseExts] [GoGlobalContext] : val
+opaque debugFloat [GooseExts] [GoGlobalContext] : val
 
-axiom MaxExp [GooseExts] [GoGlobalContext] : val
+opaque MaxExp [GooseExts] [GoGlobalContext] : val
 
-axiom MinExp [GooseExts] [GoGlobalContext] : val
+opaque MinExp [GooseExts] [GoGlobalContext] : val
 
-axiom MaxPrec [GooseExts] [GoGlobalContext] : val
+opaque MaxPrec [GooseExts] [GoGlobalContext] : val
 
-axiom zero [GooseExts] [GoGlobalContext] : val
+opaque zero [GooseExts] [GoGlobalContext] : val
 
-axiom finite [GooseExts] [GoGlobalContext] : val
+opaque finite [GooseExts] [GoGlobalContext] : val
 
-axiom inf [GooseExts] [GoGlobalContext] : val
+opaque inf [GooseExts] [GoGlobalContext] : val
 
-axiom ToNearestEven [GooseExts] [GoGlobalContext] : val
+opaque ToNearestEven [GooseExts] [GoGlobalContext] : val
 
-axiom ToNearestAway [GooseExts] [GoGlobalContext] : val
+opaque ToNearestAway [GooseExts] [GoGlobalContext] : val
 
-axiom ToZero [GooseExts] [GoGlobalContext] : val
+opaque ToZero [GooseExts] [GoGlobalContext] : val
 
-axiom AwayFromZero [GooseExts] [GoGlobalContext] : val
+opaque AwayFromZero [GooseExts] [GoGlobalContext] : val
 
-axiom ToNegativeInf [GooseExts] [GoGlobalContext] : val
+opaque ToNegativeInf [GooseExts] [GoGlobalContext] : val
 
-axiom ToPositiveInf [GooseExts] [GoGlobalContext] : val
+opaque ToPositiveInf [GooseExts] [GoGlobalContext] : val
 
-axiom Below [GooseExts] [GoGlobalContext] : val
+opaque Below [GooseExts] [GoGlobalContext] : val
 
-axiom Exact [GooseExts] [GoGlobalContext] : val
+opaque Exact [GooseExts] [GoGlobalContext] : val
 
-axiom Above [GooseExts] [GoGlobalContext] : val
+opaque Above [GooseExts] [GoGlobalContext] : val
 
-axiom floatGobVersion [GooseExts] [GoGlobalContext] : val
+opaque floatGobVersion [GooseExts] [GoGlobalContext] : val
 
-axiom intGobVersion [GooseExts] [GoGlobalContext] : val
+opaque intGobVersion [GooseExts] [GoGlobalContext] : val
 
-axiom digits [GooseExts] [GoGlobalContext] : val
+opaque digits [GooseExts] [GoGlobalContext] : val
 
-axiom MaxBase [GooseExts] [GoGlobalContext] : val
+opaque MaxBase [GooseExts] [GoGlobalContext] : val
 
-axiom maxBaseSmall [GooseExts] [GoGlobalContext] : val
+opaque maxBaseSmall [GooseExts] [GoGlobalContext] : val
 
-axiom ratGobVersion [GooseExts] [GoGlobalContext] : val
+opaque ratGobVersion [GooseExts] [GoGlobalContext] : val
 
-axiom _RoundingMode_name [GooseExts] [GoGlobalContext] : val
+opaque _RoundingMode_name [GooseExts] [GoGlobalContext] : val
 
 noncomputable def _Accuracy_index [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/big._Accuracy_index"

@@ -165,11 +165,11 @@ attribute [irreducible] fileStat.ty
 @[reducible] noncomputable def syscallErrorType.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   _root_.Perennial.syscall.Errno.ty
 
-axiom Process.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque Process.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom processHandle.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque processHandle.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom file.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque file.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 @[reducible] noncomputable def sysfdType.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   go.int
@@ -180,107 +180,107 @@ axiom file.underlying [GooseExts] [GoGlobalContext] : go.GoType
 @[reducible] noncomputable def FileMode.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   _root_.Perennial.io.fs.FileMode.ty
 
-axiom fileStat.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque fileStat.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom readdirName [GooseExts] [GoGlobalContext] : val
+opaque readdirName [GooseExts] [GoGlobalContext] : val
 
-axiom readdirDirEntry [GooseExts] [GoGlobalContext] : val
+opaque readdirDirEntry [GooseExts] [GoGlobalContext] : val
 
-axiom readdirFileInfo [GooseExts] [GoGlobalContext] : val
+opaque readdirFileInfo [GooseExts] [GoGlobalContext] : val
 
-axiom blockSize [GooseExts] [GoGlobalContext] : val
+opaque blockSize [GooseExts] [GoGlobalContext] : val
 
-axiom errENOSYS [GooseExts] [GoGlobalContext] : val
+opaque errENOSYS [GooseExts] [GoGlobalContext] : val
 
-axiom errERANGE [GooseExts] [GoGlobalContext] : val
+opaque errERANGE [GooseExts] [GoGlobalContext] : val
 
-axiom errENOMEM [GooseExts] [GoGlobalContext] : val
+opaque errENOMEM [GooseExts] [GoGlobalContext] : val
 
-axiom statusOK [GooseExts] [GoGlobalContext] : val
+opaque statusOK [GooseExts] [GoGlobalContext] : val
 
-axiom statusDone [GooseExts] [GoGlobalContext] : val
+opaque statusDone [GooseExts] [GoGlobalContext] : val
 
-axiom statusReleased [GooseExts] [GoGlobalContext] : val
+opaque statusReleased [GooseExts] [GoGlobalContext] : val
 
-axiom pidUnset [GooseExts] [GoGlobalContext] : val
+opaque pidUnset [GooseExts] [GoGlobalContext] : val
 
-axiom pidReleased [GooseExts] [GoGlobalContext] : val
+opaque pidReleased [GooseExts] [GoGlobalContext] : val
 
-axiom O_RDONLY [GooseExts] [GoGlobalContext] : val
+opaque O_RDONLY [GooseExts] [GoGlobalContext] : val
 
-axiom O_WRONLY [GooseExts] [GoGlobalContext] : val
+opaque O_WRONLY [GooseExts] [GoGlobalContext] : val
 
-axiom O_RDWR [GooseExts] [GoGlobalContext] : val
+opaque O_RDWR [GooseExts] [GoGlobalContext] : val
 
-axiom O_APPEND [GooseExts] [GoGlobalContext] : val
+opaque O_APPEND [GooseExts] [GoGlobalContext] : val
 
-axiom O_CREATE [GooseExts] [GoGlobalContext] : val
+opaque O_CREATE [GooseExts] [GoGlobalContext] : val
 
-axiom O_EXCL [GooseExts] [GoGlobalContext] : val
+opaque O_EXCL [GooseExts] [GoGlobalContext] : val
 
-axiom O_SYNC [GooseExts] [GoGlobalContext] : val
+opaque O_SYNC [GooseExts] [GoGlobalContext] : val
 
-axiom O_TRUNC [GooseExts] [GoGlobalContext] : val
+opaque O_TRUNC [GooseExts] [GoGlobalContext] : val
 
-axiom SEEK_SET [GooseExts] [GoGlobalContext] : val
+opaque SEEK_SET [GooseExts] [GoGlobalContext] : val
 
-axiom SEEK_CUR [GooseExts] [GoGlobalContext] : val
+opaque SEEK_CUR [GooseExts] [GoGlobalContext] : val
 
-axiom SEEK_END [GooseExts] [GoGlobalContext] : val
+opaque SEEK_END [GooseExts] [GoGlobalContext] : val
 
-axiom _UTIME_OMIT [GooseExts] [GoGlobalContext] : val
+opaque _UTIME_OMIT [GooseExts] [GoGlobalContext] : val
 
-axiom kindNewFile [GooseExts] [GoGlobalContext] : val
+opaque kindNewFile [GooseExts] [GoGlobalContext] : val
 
-axiom kindOpenFile [GooseExts] [GoGlobalContext] : val
+opaque kindOpenFile [GooseExts] [GoGlobalContext] : val
 
-axiom kindPipe [GooseExts] [GoGlobalContext] : val
+opaque kindPipe [GooseExts] [GoGlobalContext] : val
 
-axiom kindSock [GooseExts] [GoGlobalContext] : val
+opaque kindSock [GooseExts] [GoGlobalContext] : val
 
-axiom kindNoPoll [GooseExts] [GoGlobalContext] : val
+opaque kindNoPoll [GooseExts] [GoGlobalContext] : val
 
-axiom DevNull [GooseExts] [GoGlobalContext] : val
+opaque DevNull [GooseExts] [GoGlobalContext] : val
 
-axiom PathSeparator [GooseExts] [GoGlobalContext] : val
+opaque PathSeparator [GooseExts] [GoGlobalContext] : val
 
-axiom PathListSeparator [GooseExts] [GoGlobalContext] : val
+opaque PathListSeparator [GooseExts] [GoGlobalContext] : val
 
-axiom rootMaxSymlinks [GooseExts] [GoGlobalContext] : val
+opaque rootMaxSymlinks [GooseExts] [GoGlobalContext] : val
 
-axiom supportsCreateWithStickyBit [GooseExts] [GoGlobalContext] : val
+opaque supportsCreateWithStickyBit [GooseExts] [GoGlobalContext] : val
 
-axiom supportsCloseOnExec [GooseExts] [GoGlobalContext] : val
+opaque supportsCloseOnExec [GooseExts] [GoGlobalContext] : val
 
-axiom ModeDir [GooseExts] [GoGlobalContext] : val
+opaque ModeDir [GooseExts] [GoGlobalContext] : val
 
-axiom ModeAppend [GooseExts] [GoGlobalContext] : val
+opaque ModeAppend [GooseExts] [GoGlobalContext] : val
 
-axiom ModeExclusive [GooseExts] [GoGlobalContext] : val
+opaque ModeExclusive [GooseExts] [GoGlobalContext] : val
 
-axiom ModeTemporary [GooseExts] [GoGlobalContext] : val
+opaque ModeTemporary [GooseExts] [GoGlobalContext] : val
 
-axiom ModeSymlink [GooseExts] [GoGlobalContext] : val
+opaque ModeSymlink [GooseExts] [GoGlobalContext] : val
 
-axiom ModeDevice [GooseExts] [GoGlobalContext] : val
+opaque ModeDevice [GooseExts] [GoGlobalContext] : val
 
-axiom ModeNamedPipe [GooseExts] [GoGlobalContext] : val
+opaque ModeNamedPipe [GooseExts] [GoGlobalContext] : val
 
-axiom ModeSocket [GooseExts] [GoGlobalContext] : val
+opaque ModeSocket [GooseExts] [GoGlobalContext] : val
 
-axiom ModeSetuid [GooseExts] [GoGlobalContext] : val
+opaque ModeSetuid [GooseExts] [GoGlobalContext] : val
 
-axiom ModeSetgid [GooseExts] [GoGlobalContext] : val
+opaque ModeSetgid [GooseExts] [GoGlobalContext] : val
 
-axiom ModeCharDevice [GooseExts] [GoGlobalContext] : val
+opaque ModeCharDevice [GooseExts] [GoGlobalContext] : val
 
-axiom ModeSticky [GooseExts] [GoGlobalContext] : val
+opaque ModeSticky [GooseExts] [GoGlobalContext] : val
 
-axiom ModeIrregular [GooseExts] [GoGlobalContext] : val
+opaque ModeIrregular [GooseExts] [GoGlobalContext] : val
 
-axiom ModeType [GooseExts] [GoGlobalContext] : val
+opaque ModeType [GooseExts] [GoGlobalContext] : val
 
-axiom ModePerm [GooseExts] [GoGlobalContext] : val
+opaque ModePerm [GooseExts] [GoGlobalContext] : val
 
 noncomputable def dirBufPool [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.dirBufPool"
@@ -1295,8 +1295,10 @@ attribute [instance] processStatus.TypeAssumptions.underlying
   processStatus.TypeAssumptions.method_set
   processStatus.TypeAssumptions.ptr_method_set
 
-axiom Process : Type
-axiom Process.zero_val : ZeroVal Process
+opaque Process.nonempty_type : NonemptyType.{0}
+def Process : Type := Process.nonempty_type.type
+instance Process.nonempty : Nonempty Process := Process.nonempty_type.property
+opaque Process.zero_val : ZeroVal Process := ⟨Classical.ofNonempty⟩
 attribute [instance] Process.zero_val
 
 class Process.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1312,8 +1314,10 @@ attribute [instance] Process.TypeAssumptions.type_repr
   Process.TypeAssumptions.method_set
   Process.TypeAssumptions.ptr_method_set
 
-axiom processHandle : Type
-axiom processHandle.zero_val : ZeroVal processHandle
+opaque processHandle.nonempty_type : NonemptyType.{0}
+def processHandle : Type := processHandle.nonempty_type.type
+instance processHandle.nonempty : Nonempty processHandle := processHandle.nonempty_type.property
+opaque processHandle.zero_val : ZeroVal processHandle := ⟨Classical.ofNonempty⟩
 attribute [instance] processHandle.zero_val
 
 class processHandle.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1652,8 +1656,10 @@ attribute [instance] dirFS.TypeAssumptions.underlying
   dirFS.TypeAssumptions.method_set
   dirFS.TypeAssumptions.ptr_method_set
 
-axiom file : Type
-axiom file.zero_val : ZeroVal file
+opaque file.nonempty_type : NonemptyType.{0}
+def file : Type := file.nonempty_type.type
+instance file.nonempty : Nonempty file := file.nonempty_type.property
+opaque file.zero_val : ZeroVal file := ⟨Classical.ofNonempty⟩
 attribute [instance] file.zero_val
 
 class file.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1928,8 +1934,10 @@ attribute [instance] File.TypeAssumptions.type_repr
   File.TypeAssumptions.method_set
   File.TypeAssumptions.ptr_method_set
 
-axiom fileStat : Type
-axiom fileStat.zero_val : ZeroVal fileStat
+opaque fileStat.nonempty_type : NonemptyType.{0}
+def fileStat : Type := fileStat.nonempty_type.type
+instance fileStat.nonempty : Nonempty fileStat := fileStat.nonempty_type.property
+opaque fileStat.zero_val : ZeroVal fileStat := ⟨Classical.ofNonempty⟩
 attribute [instance] fileStat.zero_val
 
 class fileStat.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -1237,7 +1237,7 @@ func (e VerbatimDecl) LeanDecl() string {
 }
 
 func (d AxiomDecl) LeanDecl() string {
-	return fmt.Sprintf("axiom %s %s : %s", LeanIdent(d.DeclName), leanDeclParams, d.Type.Lean(LeanTerm))
+	return fmt.Sprintf("opaque %s %s : %s", LeanIdent(d.DeclName), leanDeclParams, d.Type.Lean(LeanTerm))
 }
 
 func (decl ImportDecl) LeanDecl() string {

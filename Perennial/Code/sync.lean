@@ -170,13 +170,13 @@ noncomputable instance «equals_unfold_struct#3b550fdf» [GooseExts] [GoGlobalCo
 @[reducible] noncomputable def «struct#3b550fdf».underlying [GooseExts] [GoGlobalContext] (T1 : go.GoType) (T2 : go.GoType) : go.GoType :=
   (go.GoType.StructType («struct#3b550fdf».fields T1 T2))
 
-axiom Map.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque Map.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom poolChainElt.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque poolChainElt.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom dequeueBits [GooseExts] [GoGlobalContext] : val
+opaque dequeueBits [GooseExts] [GoGlobalContext] : val
 
-axiom dequeueLimit [GooseExts] [GoGlobalContext] : val
+opaque dequeueLimit [GooseExts] [GoGlobalContext] : val
 
 @[reducible] noncomputable def rwmutexMaxReaders [GooseExts] [GoGlobalContext] : val :=
   #(1073741824 : Int)
@@ -1526,7 +1526,7 @@ noncomputable def WaitGroup.Go.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.sync where
   pkgImportedPkgs := [pkg_id.sync.atomic, pkg_id.internal.race, pkg_id.internal.synctest]
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -1720,8 +1720,10 @@ attribute [instance] Cond.TypeAssumptions.type_repr
   Cond.TypeAssumptions.ptr_Signal_unfold
   Cond.TypeAssumptions.ptr_Wait_unfold
 
-axiom Map : Type
-axiom Map.zero_val : ZeroVal Map
+opaque Map.nonempty_type : NonemptyType.{0}
+def Map : Type := Map.nonempty_type.type
+instance Map.nonempty : Nonempty Map := Map.nonempty_type.property
+opaque Map.zero_val : ZeroVal Map := ⟨Classical.ofNonempty⟩
 attribute [instance] Map.zero_val
 
 class Map.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -1874,8 +1876,10 @@ attribute [instance] Pool.TypeAssumptions.type_repr
   Pool.TypeAssumptions.ptr_Get_unfold
   Pool.TypeAssumptions.ptr_Put_unfold
 
-axiom poolChainElt : Type
-axiom poolChainElt.zero_val : ZeroVal poolChainElt
+opaque poolChainElt.nonempty_type : NonemptyType.{0}
+def poolChainElt : Type := poolChainElt.nonempty_type.type
+instance poolChainElt.nonempty : Nonempty poolChainElt := poolChainElt.nonempty_type.property
+opaque poolChainElt.zero_val : ZeroVal poolChainElt := ⟨Classical.ofNonempty⟩
 attribute [instance] poolChainElt.zero_val
 
 class poolChainElt.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

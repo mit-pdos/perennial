@@ -42,23 +42,23 @@ noncomputable def Reader.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] Reader.ty
 
-axiom smallBufferSize [GooseExts] [GoGlobalContext] : val
+opaque smallBufferSize [GooseExts] [GoGlobalContext] : val
 
-axiom opRead [GooseExts] [GoGlobalContext] : val
+opaque opRead [GooseExts] [GoGlobalContext] : val
 
-axiom opInvalid [GooseExts] [GoGlobalContext] : val
+opaque opInvalid [GooseExts] [GoGlobalContext] : val
 
-axiom opReadRune1 [GooseExts] [GoGlobalContext] : val
+opaque opReadRune1 [GooseExts] [GoGlobalContext] : val
 
-axiom opReadRune2 [GooseExts] [GoGlobalContext] : val
+opaque opReadRune2 [GooseExts] [GoGlobalContext] : val
 
-axiom opReadRune3 [GooseExts] [GoGlobalContext] : val
+opaque opReadRune3 [GooseExts] [GoGlobalContext] : val
 
-axiom opReadRune4 [GooseExts] [GoGlobalContext] : val
+opaque opReadRune4 [GooseExts] [GoGlobalContext] : val
 
-axiom maxInt [GooseExts] [GoGlobalContext] : val
+opaque maxInt [GooseExts] [GoGlobalContext] : val
 
-axiom MinRead [GooseExts] [GoGlobalContext] : val
+opaque MinRead [GooseExts] [GoGlobalContext] : val
 
 noncomputable def ErrTooLarge [GooseExts] [GoGlobalContext] : GoString :=
   go!"bytes.ErrTooLarge"
@@ -353,7 +353,7 @@ noncomputable def Clone.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.bytes where
   pkgImportedPkgs := [pkg_id.errors]
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon

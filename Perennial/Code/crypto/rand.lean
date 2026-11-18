@@ -23,7 +23,7 @@ end pkg_id
 
 namespace crypto.rand
 
-axiom base32alphabet [GooseExts] [GoGlobalContext] : val
+opaque base32alphabet [GooseExts] [GoGlobalContext] : val
 
 noncomputable def Reader [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/rand.Reader"
@@ -46,7 +46,7 @@ noncomputable def Int' [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable instance info' : PkgInfo pkg_id.crypto.rand where
   pkgImportedPkgs := [pkg_id.io, pkg_id.math.big]
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon

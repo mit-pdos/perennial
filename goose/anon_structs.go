@@ -24,7 +24,7 @@ type anonStruct struct {
 	params []string // the type parameters it mentions (util.AnonStructParams)
 	fields glang.StructType
 	// goose cannot give its fields Lean types (util.ValueTypeReasons): its
-	// values' type is an axiom, as a defined type's that goose cannot translate
+	// values' type is opaque, as a defined type's that goose cannot translate
 	axiomatized bool
 	// its structure and TypeAssumptions class are emitted
 	emitted bool
@@ -106,7 +106,7 @@ func (ctx *Ctx) anonStructDecls(a *anonStruct) []glang.Decl {
 	n := ctx.anonStructPos(a)
 	ns := glang.LeanIdent(a.name)
 	if a.axiomatized {
-		decls = append(decls, glang.VerbatimDecl{Content: leanAxiomTypeDecl(ns, a.params)})
+		decls = append(decls, glang.VerbatimDecl{Content: leanOpaqueTypeDecl(ns, a.params)})
 	} else {
 		decls = append(decls, glang.VerbatimDecl{Content: ctx.leanStructureDecl(n, ns, a.params, a.t)})
 	}
@@ -162,7 +162,7 @@ type AnonStruct struct {
 	Name       string
 	Struct     *types.Struct
 	TypeParams []string
-	// its values' type is an axiom (see anonStruct)
+	// its values' type is opaque (see anonStruct)
 	Axiomatized bool
 }
 

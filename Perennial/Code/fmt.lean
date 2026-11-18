@@ -109,69 +109,69 @@ noncomputable def readRune.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] readRune.ty
 
-axiom pp.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque pp.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom readRune.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque readRune.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom ldigits [GooseExts] [GoGlobalContext] : val
+opaque ldigits [GooseExts] [GoGlobalContext] : val
 
-axiom udigits [GooseExts] [GoGlobalContext] : val
+opaque udigits [GooseExts] [GoGlobalContext] : val
 
-axiom signed [GooseExts] [GoGlobalContext] : val
+opaque signed [GooseExts] [GoGlobalContext] : val
 
-axiom unsigned [GooseExts] [GoGlobalContext] : val
+opaque unsigned [GooseExts] [GoGlobalContext] : val
 
-axiom commaSpaceString [GooseExts] [GoGlobalContext] : val
+opaque commaSpaceString [GooseExts] [GoGlobalContext] : val
 
-axiom nilAngleString [GooseExts] [GoGlobalContext] : val
+opaque nilAngleString [GooseExts] [GoGlobalContext] : val
 
-axiom nilParenString [GooseExts] [GoGlobalContext] : val
+opaque nilParenString [GooseExts] [GoGlobalContext] : val
 
-axiom nilString [GooseExts] [GoGlobalContext] : val
+opaque nilString [GooseExts] [GoGlobalContext] : val
 
-axiom mapString [GooseExts] [GoGlobalContext] : val
+opaque mapString [GooseExts] [GoGlobalContext] : val
 
-axiom percentBangString [GooseExts] [GoGlobalContext] : val
+opaque percentBangString [GooseExts] [GoGlobalContext] : val
 
-axiom missingString [GooseExts] [GoGlobalContext] : val
+opaque missingString [GooseExts] [GoGlobalContext] : val
 
-axiom badIndexString [GooseExts] [GoGlobalContext] : val
+opaque badIndexString [GooseExts] [GoGlobalContext] : val
 
-axiom panicString [GooseExts] [GoGlobalContext] : val
+opaque panicString [GooseExts] [GoGlobalContext] : val
 
-axiom extraString [GooseExts] [GoGlobalContext] : val
+opaque extraString [GooseExts] [GoGlobalContext] : val
 
-axiom badWidthString [GooseExts] [GoGlobalContext] : val
+opaque badWidthString [GooseExts] [GoGlobalContext] : val
 
-axiom badPrecString [GooseExts] [GoGlobalContext] : val
+opaque badPrecString [GooseExts] [GoGlobalContext] : val
 
-axiom noVerbString [GooseExts] [GoGlobalContext] : val
+opaque noVerbString [GooseExts] [GoGlobalContext] : val
 
-axiom invReflectString [GooseExts] [GoGlobalContext] : val
+opaque invReflectString [GooseExts] [GoGlobalContext] : val
 
-axiom eof [GooseExts] [GoGlobalContext] : val
+opaque eof [GooseExts] [GoGlobalContext] : val
 
-axiom binaryDigits [GooseExts] [GoGlobalContext] : val
+opaque binaryDigits [GooseExts] [GoGlobalContext] : val
 
-axiom octalDigits [GooseExts] [GoGlobalContext] : val
+opaque octalDigits [GooseExts] [GoGlobalContext] : val
 
-axiom decimalDigits [GooseExts] [GoGlobalContext] : val
+opaque decimalDigits [GooseExts] [GoGlobalContext] : val
 
-axiom hexadecimalDigits [GooseExts] [GoGlobalContext] : val
+opaque hexadecimalDigits [GooseExts] [GoGlobalContext] : val
 
-axiom sign [GooseExts] [GoGlobalContext] : val
+opaque sign [GooseExts] [GoGlobalContext] : val
 
-axiom period [GooseExts] [GoGlobalContext] : val
+opaque period [GooseExts] [GoGlobalContext] : val
 
-axiom exponent [GooseExts] [GoGlobalContext] : val
+opaque exponent [GooseExts] [GoGlobalContext] : val
 
-axiom floatVerbs [GooseExts] [GoGlobalContext] : val
+opaque floatVerbs [GooseExts] [GoGlobalContext] : val
 
-axiom hugeWid [GooseExts] [GoGlobalContext] : val
+opaque hugeWid [GooseExts] [GoGlobalContext] : val
 
-axiom intBits [GooseExts] [GoGlobalContext] : val
+opaque intBits [GooseExts] [GoGlobalContext] : val
 
-axiom uintptrBits [GooseExts] [GoGlobalContext] : val
+opaque uintptrBits [GooseExts] [GoGlobalContext] : val
 
 noncomputable def ppFree [GooseExts] [GoGlobalContext] : GoString :=
   go!"fmt.ppFree"
@@ -302,7 +302,7 @@ noncomputable def errorHandler [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable instance info' : PkgInfo pkg_id.fmt where
   pkgImportedPkgs := [pkg_id.errors, pkg_id.io, pkg_id.sync]
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -688,8 +688,10 @@ attribute [instance] buffer.TypeAssumptions.underlying
   buffer.TypeAssumptions.method_set
   buffer.TypeAssumptions.ptr_method_set
 
-axiom pp : Type
-axiom pp.zero_val : ZeroVal pp
+opaque pp.nonempty_type : NonemptyType.{0}
+def pp : Type := pp.nonempty_type.type
+instance pp.nonempty : Nonempty pp := pp.nonempty_type.property
+opaque pp.zero_val : ZeroVal pp := ⟨Classical.ofNonempty⟩
 attribute [instance] pp.zero_val
 
 class pp.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -906,8 +908,10 @@ attribute [instance] ss.TypeAssumptions.type_repr
   ss.TypeAssumptions.method_set
   ss.TypeAssumptions.ptr_method_set
 
-axiom readRune : Type
-axiom readRune.zero_val : ZeroVal readRune
+opaque readRune.nonempty_type : NonemptyType.{0}
+def readRune : Type := readRune.nonempty_type.type
+instance readRune.nonempty : Nonempty readRune := readRune.nonempty_type.property
+opaque readRune.zero_val : ZeroVal readRune := ⟨Classical.ofNonempty⟩
 attribute [instance] readRune.zero_val
 
 class readRune.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

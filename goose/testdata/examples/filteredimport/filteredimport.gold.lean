@@ -45,7 +45,7 @@ noncomputable def PlainCloser.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] PlainCloser.ty
 
-axiom withDep.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque withDep.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 noncomputable def IsWindows [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/filteredimport.IsWindows"
@@ -95,7 +95,7 @@ noncomputable def DepConsts.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.github_com.mit_pdos.perennial.goose.testdata.examples.filteredimport where
   pkgImportedPkgs := []
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -139,8 +139,10 @@ attribute [instance] T.TypeAssumptions.type_repr
   T.TypeAssumptions.method_set
   T.TypeAssumptions.ptr_method_set
 
-axiom withDep : Type
-axiom withDep.zero_val : ZeroVal withDep
+opaque withDep.nonempty_type : NonemptyType.{0}
+def withDep : Type := withDep.nonempty_type.type
+instance withDep.nonempty : Nonempty withDep := withDep.nonempty_type.property
+opaque withDep.zero_val : ZeroVal withDep := ⟨Classical.ofNonempty⟩
 attribute [instance] withDep.zero_val
 
 class withDep.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

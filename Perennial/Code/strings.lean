@@ -86,25 +86,25 @@ noncomputable def asciiSet.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] asciiSet.ty
 
-axiom Replacer.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque Replacer.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom replacer.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque replacer.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom stringWriter.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque stringWriter.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom countCutOff [GooseExts] [GoGlobalContext] : val
+opaque countCutOff [GooseExts] [GoGlobalContext] : val
 
-axiom maxInt [GooseExts] [GoGlobalContext] : val
+opaque maxInt [GooseExts] [GoGlobalContext] : val
 
-axiom repeatedSpaces [GooseExts] [GoGlobalContext] : val
+opaque repeatedSpaces [GooseExts] [GoGlobalContext] : val
 
-axiom repeatedDashes [GooseExts] [GoGlobalContext] : val
+opaque repeatedDashes [GooseExts] [GoGlobalContext] : val
 
-axiom repeatedZeroes [GooseExts] [GoGlobalContext] : val
+opaque repeatedZeroes [GooseExts] [GoGlobalContext] : val
 
-axiom repeatedEquals [GooseExts] [GoGlobalContext] : val
+opaque repeatedEquals [GooseExts] [GoGlobalContext] : val
 
-axiom repeatedTabs [GooseExts] [GoGlobalContext] : val
+opaque repeatedTabs [GooseExts] [GoGlobalContext] : val
 
 noncomputable def asciiSpace [GooseExts] [GoGlobalContext] : GoString :=
   go!"strings.asciiSpace"
@@ -337,7 +337,7 @@ noncomputable def CutSuffix [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable instance info' : PkgInfo pkg_id.strings where
   pkgImportedPkgs := []
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -444,8 +444,10 @@ attribute [instance] Reader.TypeAssumptions.type_repr
   Reader.TypeAssumptions.method_set
   Reader.TypeAssumptions.ptr_method_set
 
-axiom Replacer : Type
-axiom Replacer.zero_val : ZeroVal Replacer
+opaque Replacer.nonempty_type : NonemptyType.{0}
+def Replacer : Type := Replacer.nonempty_type.type
+instance Replacer.nonempty : Nonempty Replacer := Replacer.nonempty_type.property
+opaque Replacer.zero_val : ZeroVal Replacer := ⟨Classical.ofNonempty⟩
 attribute [instance] Replacer.zero_val
 
 class Replacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -461,8 +463,10 @@ attribute [instance] Replacer.TypeAssumptions.type_repr
   Replacer.TypeAssumptions.method_set
   Replacer.TypeAssumptions.ptr_method_set
 
-axiom replacer : Type
-axiom replacer.zero_val : ZeroVal replacer
+opaque replacer.nonempty_type : NonemptyType.{0}
+def replacer : Type := replacer.nonempty_type.type
+instance replacer.nonempty : Nonempty replacer := replacer.nonempty_type.property
+opaque replacer.zero_val : ZeroVal replacer := ⟨Classical.ofNonempty⟩
 attribute [instance] replacer.zero_val
 
 class replacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
@@ -598,8 +602,10 @@ attribute [instance] appendSliceWriter.TypeAssumptions.underlying
   appendSliceWriter.TypeAssumptions.method_set
   appendSliceWriter.TypeAssumptions.ptr_method_set
 
-axiom stringWriter : Type
-axiom stringWriter.zero_val : ZeroVal stringWriter
+opaque stringWriter.nonempty_type : NonemptyType.{0}
+def stringWriter : Type := stringWriter.nonempty_type.type
+instance stringWriter.nonempty : Nonempty stringWriter := stringWriter.nonempty_type.property
+opaque stringWriter.zero_val : ZeroVal stringWriter := ⟨Classical.ofNonempty⟩
 attribute [instance] stringWriter.zero_val
 
 class stringWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -30,48 +30,48 @@ noncomputable def NotInHeap.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] NotInHeap.ty
 
-axiom StackGuardMultiplier [GooseExts] [GoGlobalContext] : val
+opaque StackGuardMultiplier [GooseExts] [GoGlobalContext] : val
 
-axiom DefaultPhysPageSize [GooseExts] [GoGlobalContext] : val
+opaque DefaultPhysPageSize [GooseExts] [GoGlobalContext] : val
 
-axiom PCQuantum [GooseExts] [GoGlobalContext] : val
+opaque PCQuantum [GooseExts] [GoGlobalContext] : val
 
-axiom Int64Align [GooseExts] [GoGlobalContext] : val
+opaque Int64Align [GooseExts] [GoGlobalContext] : val
 
-axiom MinFrameSize [GooseExts] [GoGlobalContext] : val
+opaque MinFrameSize [GooseExts] [GoGlobalContext] : val
 
-axiom StackAlign [GooseExts] [GoGlobalContext] : val
+opaque StackAlign [GooseExts] [GoGlobalContext] : val
 
-axiom isRace [GooseExts] [GoGlobalContext] : val
+opaque isRace [GooseExts] [GoGlobalContext] : val
 
-axiom deBruijn32 [GooseExts] [GoGlobalContext] : val
+opaque deBruijn32 [GooseExts] [GoGlobalContext] : val
 
-axiom deBruijn64 [GooseExts] [GoGlobalContext] : val
+opaque deBruijn64 [GooseExts] [GoGlobalContext] : val
 
-axiom ntz8tab [GooseExts] [GoGlobalContext] : val
+opaque ntz8tab [GooseExts] [GoGlobalContext] : val
 
-axiom len8tab [GooseExts] [GoGlobalContext] : val
+opaque len8tab [GooseExts] [GoGlobalContext] : val
 
-axiom m0 [GooseExts] [GoGlobalContext] : val
+opaque m0 [GooseExts] [GoGlobalContext] : val
 
-axiom m1 [GooseExts] [GoGlobalContext] : val
+opaque m1 [GooseExts] [GoGlobalContext] : val
 
-axiom m2 [GooseExts] [GoGlobalContext] : val
+opaque m2 [GooseExts] [GoGlobalContext] : val
 
 noncomputable def deBruijn32tab [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.deBruijn32tab"
 
-axiom deBruijn32tab.init [GooseExts] [GoGlobalContext] : val
+opaque deBruijn32tab.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def deBruijn64tab [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.deBruijn64tab"
 
-axiom deBruijn64tab.init [GooseExts] [GoGlobalContext] : val
+opaque deBruijn64tab.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def DITSupported [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.DITSupported"
 
-axiom DITSupported.init [GooseExts] [GoGlobalContext] : val
+opaque DITSupported.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def TrailingZeros32 [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/runtime/sys.TrailingZeros32"
@@ -130,7 +130,7 @@ noncomputable def DisableDIT [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable instance info' : PkgInfo pkg_id.internal.runtime.sys where
   pkgImportedPkgs := []
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon

@@ -231,33 +231,33 @@ noncomputable instance «equals_unfold_struct#6419a40c» [GooseExts] [GoGlobalCo
 @[reducible] noncomputable def corpusEntry.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   «struct#b304a786».underlying
 
-axiom testDeps.underlying [GooseExts] [GoGlobalContext] : go.GoType
+opaque testDeps.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-axiom maxBenchPredictIters [GooseExts] [GoGlobalContext] : val
+opaque maxBenchPredictIters [GooseExts] [GoGlobalContext] : val
 
-axiom loopPoisonTimer [GooseExts] [GoGlobalContext] : val
+opaque loopPoisonTimer [GooseExts] [GoGlobalContext] : val
 
-axiom loopPoisonMask [GooseExts] [GoGlobalContext] : val
+opaque loopPoisonMask [GooseExts] [GoGlobalContext] : val
 
-axiom fuzzWorkerExitCode [GooseExts] [GoGlobalContext] : val
+opaque fuzzWorkerExitCode [GooseExts] [GoGlobalContext] : val
 
-axiom seedCorpusOnly [GooseExts] [GoGlobalContext] : val
+opaque seedCorpusOnly [GooseExts] [GoGlobalContext] : val
 
-axiom fuzzCoordinator [GooseExts] [GoGlobalContext] : val
+opaque fuzzCoordinator [GooseExts] [GoGlobalContext] : val
 
-axiom fuzzWorker [GooseExts] [GoGlobalContext] : val
+opaque fuzzWorker [GooseExts] [GoGlobalContext] : val
 
-axiom marker [GooseExts] [GoGlobalContext] : val
+opaque marker [GooseExts] [GoGlobalContext] : val
 
-axiom maxStackLen [GooseExts] [GoGlobalContext] : val
+opaque maxStackLen [GooseExts] [GoGlobalContext] : val
 
-axiom indent [GooseExts] [GoGlobalContext] : val
+opaque indent [GooseExts] [GoGlobalContext] : val
 
-axiom normalPanic [GooseExts] [GoGlobalContext] : val
+opaque normalPanic [GooseExts] [GoGlobalContext] : val
 
-axiom recoverAndReturnPanic [GooseExts] [GoGlobalContext] : val
+opaque recoverAndReturnPanic [GooseExts] [GoGlobalContext] : val
 
-axiom parallelConflict [GooseExts] [GoGlobalContext] : val
+opaque parallelConflict [GooseExts] [GoGlobalContext] : val
 
 noncomputable def matchBenchmarks [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.matchBenchmarks"
@@ -268,7 +268,7 @@ noncomputable def benchmarkMemory [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def benchTime [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.benchTime"
 
-axiom benchTime.init [GooseExts] [GoGlobalContext] : val
+opaque benchTime.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def benchmarkLock [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.benchmarkLock"
@@ -282,7 +282,7 @@ noncomputable def labelsOnce [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def hideStdoutForTesting [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.hideStdoutForTesting"
 
-axiom hideStdoutForTesting.init [GooseExts] [GoGlobalContext] : val
+opaque hideStdoutForTesting.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def matchFuzz [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.matchFuzz"
@@ -293,7 +293,7 @@ noncomputable def fuzzDuration [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def minimizeDuration [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.minimizeDuration"
 
-axiom minimizeDuration.init [GooseExts] [GoGlobalContext] : val
+opaque minimizeDuration.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def fuzzCacheDir [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.fuzzCacheDir"
@@ -304,12 +304,12 @@ noncomputable def isFuzzWorker [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def corpusDir [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.corpusDir"
 
-axiom corpusDir.init [GooseExts] [GoGlobalContext] : val
+opaque corpusDir.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def supportedTypes [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.supportedTypes"
 
-axiom supportedTypes.init [GooseExts] [GoGlobalContext] : val
+opaque supportedTypes.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def matchMutex [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.matchMutex"
@@ -425,17 +425,17 @@ noncomputable def running [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def testBinary [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.testBinary"
 
-axiom testBinary.init [GooseExts] [GoGlobalContext] : val
+opaque testBinary.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def errNilPanicOrGoexit [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.errNilPanicOrGoexit"
 
-axiom errNilPanicOrGoexit.init [GooseExts] [GoGlobalContext] : val
+opaque errNilPanicOrGoexit.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def errMain [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.errMain"
 
-axiom errMain.init [GooseExts] [GoGlobalContext] : val
+opaque errMain.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def testingTesting [GooseExts] [GoGlobalContext] : GoString :=
   go!"testing.testingTesting"
@@ -605,7 +605,7 @@ noncomputable def highPrecisionTimeSince [GooseExts] [GoGlobalContext] : GoStrin
 noncomputable instance info' : PkgInfo pkg_id.testing where
   pkgImportedPkgs := [pkg_id.context, pkg_id.io, pkg_id.sync, pkg_id.sync.atomic, pkg_id.time]
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -1783,8 +1783,10 @@ attribute [instance] fuzzCrashError.TypeAssumptions.underlying
   fuzzCrashError.TypeAssumptions.method_set
   fuzzCrashError.TypeAssumptions.ptr_method_set
 
-axiom testDeps : Type
-axiom testDeps.zero_val : ZeroVal testDeps
+opaque testDeps.nonempty_type : NonemptyType.{0}
+def testDeps : Type := testDeps.nonempty_type.type
+instance testDeps.nonempty : Nonempty testDeps := testDeps.nonempty_type.property
+opaque testDeps.zero_val : ZeroVal testDeps := ⟨Classical.ofNonempty⟩
 attribute [instance] testDeps.zero_val
 
 class testDeps.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

@@ -137,150 +137,150 @@ noncomputable def dataIO.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] dataIO.ty
 
-axiom Layout [GooseExts] [GoGlobalContext] : val
+opaque Layout [GooseExts] [GoGlobalContext] : val
 
-axiom ANSIC [GooseExts] [GoGlobalContext] : val
+opaque ANSIC [GooseExts] [GoGlobalContext] : val
 
-axiom UnixDate [GooseExts] [GoGlobalContext] : val
+opaque UnixDate [GooseExts] [GoGlobalContext] : val
 
-axiom RubyDate [GooseExts] [GoGlobalContext] : val
+opaque RubyDate [GooseExts] [GoGlobalContext] : val
 
-axiom RFC822 [GooseExts] [GoGlobalContext] : val
+opaque RFC822 [GooseExts] [GoGlobalContext] : val
 
-axiom RFC822Z [GooseExts] [GoGlobalContext] : val
+opaque RFC822Z [GooseExts] [GoGlobalContext] : val
 
-axiom RFC850 [GooseExts] [GoGlobalContext] : val
+opaque RFC850 [GooseExts] [GoGlobalContext] : val
 
-axiom RFC1123 [GooseExts] [GoGlobalContext] : val
+opaque RFC1123 [GooseExts] [GoGlobalContext] : val
 
-axiom RFC1123Z [GooseExts] [GoGlobalContext] : val
+opaque RFC1123Z [GooseExts] [GoGlobalContext] : val
 
-axiom RFC3339 [GooseExts] [GoGlobalContext] : val
+opaque RFC3339 [GooseExts] [GoGlobalContext] : val
 
-axiom RFC3339Nano [GooseExts] [GoGlobalContext] : val
+opaque RFC3339Nano [GooseExts] [GoGlobalContext] : val
 
-axiom Kitchen [GooseExts] [GoGlobalContext] : val
+opaque Kitchen [GooseExts] [GoGlobalContext] : val
 
-axiom Stamp [GooseExts] [GoGlobalContext] : val
+opaque Stamp [GooseExts] [GoGlobalContext] : val
 
-axiom StampMilli [GooseExts] [GoGlobalContext] : val
+opaque StampMilli [GooseExts] [GoGlobalContext] : val
 
-axiom StampMicro [GooseExts] [GoGlobalContext] : val
+opaque StampMicro [GooseExts] [GoGlobalContext] : val
 
-axiom StampNano [GooseExts] [GoGlobalContext] : val
+opaque StampNano [GooseExts] [GoGlobalContext] : val
 
-axiom DateTime [GooseExts] [GoGlobalContext] : val
+opaque DateTime [GooseExts] [GoGlobalContext] : val
 
-axiom DateOnly [GooseExts] [GoGlobalContext] : val
+opaque DateOnly [GooseExts] [GoGlobalContext] : val
 
-axiom TimeOnly [GooseExts] [GoGlobalContext] : val
+opaque TimeOnly [GooseExts] [GoGlobalContext] : val
 
-axiom stdLongMonth [GooseExts] [GoGlobalContext] : val
+opaque stdLongMonth [GooseExts] [GoGlobalContext] : val
 
-axiom stdMonth [GooseExts] [GoGlobalContext] : val
+opaque stdMonth [GooseExts] [GoGlobalContext] : val
 
-axiom stdNumMonth [GooseExts] [GoGlobalContext] : val
+opaque stdNumMonth [GooseExts] [GoGlobalContext] : val
 
 /-- "01" -/
 @[reducible] noncomputable def stdZeroMonth [GooseExts] [GoGlobalContext] : val :=
   #(260 : Int)
 
-axiom stdLongWeekDay [GooseExts] [GoGlobalContext] : val
+opaque stdLongWeekDay [GooseExts] [GoGlobalContext] : val
 
-axiom stdWeekDay [GooseExts] [GoGlobalContext] : val
+opaque stdWeekDay [GooseExts] [GoGlobalContext] : val
 
-axiom stdDay [GooseExts] [GoGlobalContext] : val
+opaque stdDay [GooseExts] [GoGlobalContext] : val
 
-axiom stdUnderDay [GooseExts] [GoGlobalContext] : val
+opaque stdUnderDay [GooseExts] [GoGlobalContext] : val
 
 /-- "02" -/
 @[reducible] noncomputable def stdZeroDay [GooseExts] [GoGlobalContext] : val :=
   #(265 : Int)
 
-axiom stdUnderYearDay [GooseExts] [GoGlobalContext] : val
+opaque stdUnderYearDay [GooseExts] [GoGlobalContext] : val
 
-axiom stdZeroYearDay [GooseExts] [GoGlobalContext] : val
+opaque stdZeroYearDay [GooseExts] [GoGlobalContext] : val
 
-axiom stdHour [GooseExts] [GoGlobalContext] : val
+opaque stdHour [GooseExts] [GoGlobalContext] : val
 
-axiom stdHour12 [GooseExts] [GoGlobalContext] : val
+opaque stdHour12 [GooseExts] [GoGlobalContext] : val
 
 /-- "03" -/
 @[reducible] noncomputable def stdZeroHour12 [GooseExts] [GoGlobalContext] : val :=
   #(1038 : Int)
 
-axiom stdMinute [GooseExts] [GoGlobalContext] : val
+opaque stdMinute [GooseExts] [GoGlobalContext] : val
 
 /-- "04" -/
 @[reducible] noncomputable def stdZeroMinute [GooseExts] [GoGlobalContext] : val :=
   #(1040 : Int)
 
-axiom stdSecond [GooseExts] [GoGlobalContext] : val
+opaque stdSecond [GooseExts] [GoGlobalContext] : val
 
 /-- "05" -/
 @[reducible] noncomputable def stdZeroSecond [GooseExts] [GoGlobalContext] : val :=
   #(1042 : Int)
 
-axiom stdLongYear [GooseExts] [GoGlobalContext] : val
+opaque stdLongYear [GooseExts] [GoGlobalContext] : val
 
 /-- "06" -/
 @[reducible] noncomputable def stdYear [GooseExts] [GoGlobalContext] : val :=
   #(276 : Int)
 
-axiom stdPM [GooseExts] [GoGlobalContext] : val
+opaque stdPM [GooseExts] [GoGlobalContext] : val
 
-axiom stdpm [GooseExts] [GoGlobalContext] : val
+opaque stdpm [GooseExts] [GoGlobalContext] : val
 
-axiom stdTZ [GooseExts] [GoGlobalContext] : val
+opaque stdTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdISO8601TZ [GooseExts] [GoGlobalContext] : val
+opaque stdISO8601TZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdISO8601SecondsTZ [GooseExts] [GoGlobalContext] : val
+opaque stdISO8601SecondsTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdISO8601ShortTZ [GooseExts] [GoGlobalContext] : val
+opaque stdISO8601ShortTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdISO8601ColonTZ [GooseExts] [GoGlobalContext] : val
+opaque stdISO8601ColonTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdISO8601ColonSecondsTZ [GooseExts] [GoGlobalContext] : val
+opaque stdISO8601ColonSecondsTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdNumTZ [GooseExts] [GoGlobalContext] : val
+opaque stdNumTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdNumSecondsTz [GooseExts] [GoGlobalContext] : val
+opaque stdNumSecondsTz [GooseExts] [GoGlobalContext] : val
 
-axiom stdNumShortTZ [GooseExts] [GoGlobalContext] : val
+opaque stdNumShortTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdNumColonTZ [GooseExts] [GoGlobalContext] : val
+opaque stdNumColonTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdNumColonSecondsTZ [GooseExts] [GoGlobalContext] : val
+opaque stdNumColonSecondsTZ [GooseExts] [GoGlobalContext] : val
 
-axiom stdFracSecond0 [GooseExts] [GoGlobalContext] : val
+opaque stdFracSecond0 [GooseExts] [GoGlobalContext] : val
 
-axiom stdFracSecond9 [GooseExts] [GoGlobalContext] : val
+opaque stdFracSecond9 [GooseExts] [GoGlobalContext] : val
 
-axiom stdNeedDate [GooseExts] [GoGlobalContext] : val
+opaque stdNeedDate [GooseExts] [GoGlobalContext] : val
 
-axiom stdNeedYday [GooseExts] [GoGlobalContext] : val
+opaque stdNeedYday [GooseExts] [GoGlobalContext] : val
 
-axiom stdNeedClock [GooseExts] [GoGlobalContext] : val
+opaque stdNeedClock [GooseExts] [GoGlobalContext] : val
 
-axiom stdArgShift [GooseExts] [GoGlobalContext] : val
+opaque stdArgShift [GooseExts] [GoGlobalContext] : val
 
-axiom stdSeparatorShift [GooseExts] [GoGlobalContext] : val
+opaque stdSeparatorShift [GooseExts] [GoGlobalContext] : val
 
-axiom stdMask [GooseExts] [GoGlobalContext] : val
+opaque stdMask [GooseExts] [GoGlobalContext] : val
 
-axiom lowerhex [GooseExts] [GoGlobalContext] : val
+opaque lowerhex [GooseExts] [GoGlobalContext] : val
 
-axiom runeSelf [GooseExts] [GoGlobalContext] : val
+opaque runeSelf [GooseExts] [GoGlobalContext] : val
 
-axiom runeError [GooseExts] [GoGlobalContext] : val
+opaque runeError [GooseExts] [GoGlobalContext] : val
 
 @[reducible] noncomputable def hasMonotonic [GooseExts] [GoGlobalContext] : val :=
   #(9223372036854775808 : Int)
 
-axiom maxWall [GooseExts] [GoGlobalContext] : val
+opaque maxWall [GooseExts] [GoGlobalContext] : val
 
-axiom minWall [GooseExts] [GoGlobalContext] : val
+opaque minWall [GooseExts] [GoGlobalContext] : val
 
 @[reducible] noncomputable def nsecMask [GooseExts] [GoGlobalContext] : val :=
   #(1073741823 : Int)
@@ -288,72 +288,72 @@ axiom minWall [GooseExts] [GoGlobalContext] : val
 @[reducible] noncomputable def nsecShift [GooseExts] [GoGlobalContext] : val :=
   #(30 : Int)
 
-axiom January [GooseExts] [GoGlobalContext] : val
+opaque January [GooseExts] [GoGlobalContext] : val
 
-axiom February [GooseExts] [GoGlobalContext] : val
+opaque February [GooseExts] [GoGlobalContext] : val
 
-axiom March [GooseExts] [GoGlobalContext] : val
+opaque March [GooseExts] [GoGlobalContext] : val
 
-axiom April [GooseExts] [GoGlobalContext] : val
+opaque April [GooseExts] [GoGlobalContext] : val
 
-axiom May [GooseExts] [GoGlobalContext] : val
+opaque May [GooseExts] [GoGlobalContext] : val
 
-axiom June [GooseExts] [GoGlobalContext] : val
+opaque June [GooseExts] [GoGlobalContext] : val
 
-axiom July [GooseExts] [GoGlobalContext] : val
+opaque July [GooseExts] [GoGlobalContext] : val
 
-axiom August [GooseExts] [GoGlobalContext] : val
+opaque August [GooseExts] [GoGlobalContext] : val
 
-axiom September [GooseExts] [GoGlobalContext] : val
+opaque September [GooseExts] [GoGlobalContext] : val
 
-axiom October [GooseExts] [GoGlobalContext] : val
+opaque October [GooseExts] [GoGlobalContext] : val
 
-axiom November [GooseExts] [GoGlobalContext] : val
+opaque November [GooseExts] [GoGlobalContext] : val
 
-axiom December [GooseExts] [GoGlobalContext] : val
+opaque December [GooseExts] [GoGlobalContext] : val
 
-axiom Sunday [GooseExts] [GoGlobalContext] : val
+opaque Sunday [GooseExts] [GoGlobalContext] : val
 
-axiom Monday [GooseExts] [GoGlobalContext] : val
+opaque Monday [GooseExts] [GoGlobalContext] : val
 
-axiom Tuesday [GooseExts] [GoGlobalContext] : val
+opaque Tuesday [GooseExts] [GoGlobalContext] : val
 
-axiom Wednesday [GooseExts] [GoGlobalContext] : val
+opaque Wednesday [GooseExts] [GoGlobalContext] : val
 
-axiom Thursday [GooseExts] [GoGlobalContext] : val
+opaque Thursday [GooseExts] [GoGlobalContext] : val
 
-axiom Friday [GooseExts] [GoGlobalContext] : val
+opaque Friday [GooseExts] [GoGlobalContext] : val
 
-axiom Saturday [GooseExts] [GoGlobalContext] : val
+opaque Saturday [GooseExts] [GoGlobalContext] : val
 
-axiom secondsPerMinute [GooseExts] [GoGlobalContext] : val
+opaque secondsPerMinute [GooseExts] [GoGlobalContext] : val
 
-axiom secondsPerHour [GooseExts] [GoGlobalContext] : val
+opaque secondsPerHour [GooseExts] [GoGlobalContext] : val
 
-axiom secondsPerDay [GooseExts] [GoGlobalContext] : val
+opaque secondsPerDay [GooseExts] [GoGlobalContext] : val
 
-axiom secondsPerWeek [GooseExts] [GoGlobalContext] : val
+opaque secondsPerWeek [GooseExts] [GoGlobalContext] : val
 
-axiom daysPer400Years [GooseExts] [GoGlobalContext] : val
+opaque daysPer400Years [GooseExts] [GoGlobalContext] : val
 
-axiom marchThruDecember [GooseExts] [GoGlobalContext] : val
+opaque marchThruDecember [GooseExts] [GoGlobalContext] : val
 
-axiom absoluteYears [GooseExts] [GoGlobalContext] : val
+opaque absoluteYears [GooseExts] [GoGlobalContext] : val
 
-axiom internalYear [GooseExts] [GoGlobalContext] : val
+opaque internalYear [GooseExts] [GoGlobalContext] : val
 
-axiom absoluteToInternal [GooseExts] [GoGlobalContext] : val
+opaque absoluteToInternal [GooseExts] [GoGlobalContext] : val
 
-axiom internalToAbsolute [GooseExts] [GoGlobalContext] : val
+opaque internalToAbsolute [GooseExts] [GoGlobalContext] : val
 
-axiom unixToInternal [GooseExts] [GoGlobalContext] : val
+opaque unixToInternal [GooseExts] [GoGlobalContext] : val
 
 @[reducible] noncomputable def internalToUnix [GooseExts] [GoGlobalContext] : val :=
   #(W64 (-62135596800))
 
-axiom absoluteToUnix [GooseExts] [GoGlobalContext] : val
+opaque absoluteToUnix [GooseExts] [GoGlobalContext] : val
 
-axiom unixToAbsolute [GooseExts] [GoGlobalContext] : val
+opaque unixToAbsolute [GooseExts] [GoGlobalContext] : val
 
 @[reducible] noncomputable def wallToInternal [GooseExts] [GoGlobalContext] : val :=
   #(W64 59453308800)
@@ -382,27 +382,27 @@ axiom unixToAbsolute [GooseExts] [GoGlobalContext] : val
 @[reducible] noncomputable def Hour [GooseExts] [GoGlobalContext] : val :=
   #(W64 3600000000000)
 
-axiom timeBinaryVersionV1 [GooseExts] [GoGlobalContext] : val
+opaque timeBinaryVersionV1 [GooseExts] [GoGlobalContext] : val
 
-axiom timeBinaryVersionV2 [GooseExts] [GoGlobalContext] : val
+opaque timeBinaryVersionV2 [GooseExts] [GoGlobalContext] : val
 
-axiom alpha [GooseExts] [GoGlobalContext] : val
+opaque alpha [GooseExts] [GoGlobalContext] : val
 
-axiom omega [GooseExts] [GoGlobalContext] : val
+opaque omega [GooseExts] [GoGlobalContext] : val
 
-axiom ruleJulian [GooseExts] [GoGlobalContext] : val
+opaque ruleJulian [GooseExts] [GoGlobalContext] : val
 
-axiom ruleDOY [GooseExts] [GoGlobalContext] : val
+opaque ruleDOY [GooseExts] [GoGlobalContext] : val
 
-axiom ruleMonthWeekDay [GooseExts] [GoGlobalContext] : val
+opaque ruleMonthWeekDay [GooseExts] [GoGlobalContext] : val
 
-axiom maxFileSize [GooseExts] [GoGlobalContext] : val
+opaque maxFileSize [GooseExts] [GoGlobalContext] : val
 
-axiom seekStart [GooseExts] [GoGlobalContext] : val
+opaque seekStart [GooseExts] [GoGlobalContext] : val
 
-axiom seekCurrent [GooseExts] [GoGlobalContext] : val
+opaque seekCurrent [GooseExts] [GoGlobalContext] : val
 
-axiom seekEnd [GooseExts] [GoGlobalContext] : val
+opaque seekEnd [GooseExts] [GoGlobalContext] : val
 
 noncomputable def std0x [GooseExts] [GoGlobalContext] : GoString :=
   go!"time.std0x"
@@ -1436,7 +1436,7 @@ noncomputable def Time.UnixNano.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.time where
   pkgImportedPkgs := [pkg_id.errors]
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon

@@ -51,7 +51,7 @@ noncomputable def uint128.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] uint128.ty
 
-axiom fnParseFloat [GooseExts] [GoGlobalContext] : val
+opaque fnParseFloat [GooseExts] [GoGlobalContext] : val
 
 @[reducible] noncomputable def ErrRange [GooseExts] [GoGlobalContext] : val :=
   #(W64 1)
@@ -71,13 +71,13 @@ axiom fnParseFloat [GooseExts] [GoGlobalContext] : val
 @[reducible] noncomputable def IntSize [GooseExts] [GoGlobalContext] : val :=
   #(64 : Int)
 
-axiom uintSize [GooseExts] [GoGlobalContext] : val
+opaque uintSize [GooseExts] [GoGlobalContext] : val
 
-axiom maxShift [GooseExts] [GoGlobalContext] : val
+opaque maxShift [GooseExts] [GoGlobalContext] : val
 
-axiom lowerhex [GooseExts] [GoGlobalContext] : val
+opaque lowerhex [GooseExts] [GoGlobalContext] : val
 
-axiom upperhex [GooseExts] [GoGlobalContext] : val
+opaque upperhex [GooseExts] [GoGlobalContext] : val
 
 @[reducible] noncomputable def float32MantBits [GooseExts] [GoGlobalContext] : val :=
   #(23 : Int)
@@ -97,24 +97,24 @@ axiom upperhex [GooseExts] [GoGlobalContext] : val
 @[reducible] noncomputable def float64Bias [GooseExts] [GoGlobalContext] : val :=
   #(-1023 : Int)
 
-axiom floatMantBits64 [GooseExts] [GoGlobalContext] : val
+opaque floatMantBits64 [GooseExts] [GoGlobalContext] : val
 
-axiom floatMantBits32 [GooseExts] [GoGlobalContext] : val
+opaque floatMantBits32 [GooseExts] [GoGlobalContext] : val
 
-axiom digits [GooseExts] [GoGlobalContext] : val
+opaque digits [GooseExts] [GoGlobalContext] : val
 
-axiom nSmalls [GooseExts] [GoGlobalContext] : val
+opaque nSmalls [GooseExts] [GoGlobalContext] : val
 
-axiom smalls [GooseExts] [GoGlobalContext] : val
+opaque smalls [GooseExts] [GoGlobalContext] : val
 
-axiom host64bit [GooseExts] [GoGlobalContext] : val
+opaque host64bit [GooseExts] [GoGlobalContext] : val
 
 @[reducible] noncomputable def maxUint64 [GooseExts] [GoGlobalContext] : val :=
   #(18446744073709551615 : Int)
 
-axiom pow10Min [GooseExts] [GoGlobalContext] : val
+opaque pow10Min [GooseExts] [GoGlobalContext] : val
 
-axiom pow10Max [GooseExts] [GoGlobalContext] : val
+opaque pow10Max [GooseExts] [GoGlobalContext] : val
 
 noncomputable def optimize [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/strconv.optimize"
@@ -845,7 +845,7 @@ noncomputable def underscoreOK.impl [GooseExts] [GoGlobalContext] : val :=
 noncomputable instance info' : PkgInfo pkg_id.internal.strconv where
   pkgImportedPkgs := []
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon

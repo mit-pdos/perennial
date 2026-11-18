@@ -3519,7 +3519,7 @@ noncomputable def rotateOrdered.impl [GooseExts] [GoGlobalContext] (E : go.GoTyp
 noncomputable instance info' : PkgInfo pkg_id.slices where
   pkgImportedPkgs := [pkg_id.cmp, pkg_id.math.bits]
 
-axiom «_».init [GooseExts] [GoGlobalContext] : val
+opaque «_».init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
