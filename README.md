@@ -101,8 +101,14 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   the client discharges the proof's premises about the bounds; the main
   thread's postcondition must exclude panics, see "Panics" below) and are about
   real executions of *fewer than `N` steps* along which *fewer than `T`
-  threads are live*, explicit hypotheses. See
-  `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts" and "Thread tokens".
+  threads are live*, explicit hypotheses. `goose_adequacy` states the thread
+  hypothesis over *every* execution of `n` steps (`RealThreadsBelow T n`);
+  `goose_adequacy_below`/`goose_invariance_below`
+  (`GooseLang/AdequacyAlong.lean`) state it of the one execution the theorem
+  concludes about (`RealNstepsBelow T n`: fewer than `T` threads in each of its
+  configurations), so that a program whose goroutine count is unbounded over
+  all schedules can still use a constant `T` without bounding the step count by
+  it. See `docs/PERENNIAL_PROOF_REFERENCE.md`, "Time receipts" and "Thread tokens".
 * **Iris substrate.** iris-lean provides the BI, proof mode, invariants,
   ghost maps, later credits and the WP. General-purpose libraries that iris-lean
   lacks (finite maps and sets, machine words, list lemmas) live in

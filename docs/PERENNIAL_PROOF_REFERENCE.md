@@ -1193,6 +1193,37 @@ that assumed `threadBound GF ≤ 2 ^ 31` takes `T = 2 ^ 31`
 (`ThreadTokensTest.lean`); as for `N`, there is nothing to gain from a smaller
 `T`.
 
+**Adequacy: the thread bound along the execution.** `RealThreadsBelow T n` is about
+every execution of at most `n` steps, not the one the theorem concludes about. For a
+program whose goroutine count an adversarial schedule can grow without limit (a ticker
+goroutine that keeps firing while the goroutines it spawns are never scheduled), the only
+way to discharge it is `T = n + 2` (`real_nsteps_threads`: each step forks at most one
+thread), which then bounds the step count by whatever constant the proof needs
+(`threadBound GF ≤ 2 ^ 31` gives `n + 2 ≤ 2 ^ 31`). `goose_adequacy_below`
+(`GooseLang/AdequacyAlong.lean`) takes the bound on the execution itself instead:
+
+```lean
+inductive RealNstepsBelow (T : Nat) :
+    Nat → List Expr × CfgState → List Observation → List Expr × CfgState → Prop
+  | refl (ρ) : ρ.2.1.threads < T → RealNstepsBelow T 0 ρ [] ρ
+  | cons : ρ₁.2.1.threads < T → Language.Step ρ₁ κ ρ₂ →
+      RealNstepsBelow T n ρ₂ κs ρ₃ → RealNstepsBelow T (n + 1) ρ₁ (κ ++ κs) ρ₃
+
+theorem goose_adequacy_below [hPre : GooseGpreS GF] (N T : Nat) (e σ g φ hφ Hinitg Hinit)
+    (Hwp : ...)  -- as goose_adequacy's
+    (n κs t2 σ2) (Hsteps : RealNstepsBelow T n ([e], (σ, g)) κs (t2, σ2))
+    (Hbound : n < N) (Hthreads : σ.threads = 1) : ...  -- goose_adequacy's conclusions
+```
+
+so the client takes `T = 2 ^ 31` and `N` from the receipts alone; the executions the
+theorem leaves out are exactly those in which `T` threads are live at once. The proof is
+`goose_adequacy`'s: the simulation into the bounded layer (`bounded_nsteps_of_real_below`)
+only ever used the thread bound along the given execution. `RealNstepsBelow.of_threadsBelow`
+gives the new hypothesis from the old one (so `goose_adequacy` follows,
+`goose_adequacy_of_below`), `.of_one` gives it at `T = n + 2` from one thread, `.mono`
+raises `T`, `.nsteps` forgets it. `goose_invariance_below` is the same for
+`goose_invariance`.
+
 ### Crashes
 
 Files: `Perennial/GooseLang/Lang.lean` (`Crash`, `ExtSemantics.crash`),
