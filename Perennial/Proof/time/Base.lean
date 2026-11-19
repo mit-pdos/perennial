@@ -9,8 +9,9 @@ Notes on the package's specs:
   `Time.wp_Before`, `Time.wp_Equal`, `wp_Since`, `wp_Until`, ...); the specs only say that
   these return some value (no panics; `Sub` saturates, the others wrap or fall back to the wall
   clock). `Since` and `Until` read the global `startNano`, so they take `isPkgInit`
-  (`isInit`); they call `Now`, whose spec `wp_Now` is an axiom (`Now` reads the clock through
-  the `go:linkname` `runtimeNow`). The model of `runtimeIsBubbled` (true only inside a
+  (`isInit`); they call `Now`, translated and proved over the trusted model of the `go:linkname`
+  `runtimeNow` (arbitrary clock readings, `TrustedCode/time.lean`); `Now` reads `startNano`
+  and `Local`, so it takes `isPkgInit` too. The model of `runtimeIsBubbled` (true only inside a
   `testing/synctest` bubble) is an arbitrary boolean (`TrustedCode/time.lean`).
 * The runtime's timers are modeled in `TrustedCode/time.lean`: its `newTimer` (used by the
   translated `AfterFunc`), `stopTimer` and `resetTimer` (used by the translated `Timer.Stop`
@@ -54,10 +55,14 @@ variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
 /-- The package invariant: the global `startNano` (`runtimeNano() - 1`, set by the package's
-initialization; Go never writes it afterwards) holds a fixed value. `Since` and `Until` read
-it. -/
+initialization; Go never writes it afterwards) holds a fixed value, which `Now`, `Since` and
+`Until` read; and so does the global `Local` (`&localLoc`, set by the initialization), which `Now`
+reads. Go programs may assign `time.Local`; this invariant hands out only a persistent
+read-only points-to of it, so a program that writes it cannot be verified (its proof would need
+the full points-to), while every read gets the value the initialization stored. -/
 abbrev isInit : IProp GF :=
-  iprop(∃ v : w64, globalAddr time.startNano ↦□ v)
+  iprop((∃ v : w64, globalAddr time.startNano ↦□ v) ∗
+    (∃ l : Loc, globalAddr time.Local ↦□ l))
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.time :=
   define_is_pkg_init isInit

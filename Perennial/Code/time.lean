@@ -280,7 +280,9 @@ opaque runeError [GooseExts] [GoGlobalContext] : val
 
 opaque maxWall [GooseExts] [GoGlobalContext] : val
 
-opaque minWall [GooseExts] [GoGlobalContext] : val
+/-- year 1885 -/
+@[reducible] noncomputable def minWall [GooseExts] [GoGlobalContext] : val :=
+  #(W64 59453308800)
 
 @[reducible] noncomputable def nsecMask [GooseExts] [GoGlobalContext] : val :=
   #(1073741823 : Int)
@@ -346,7 +348,8 @@ opaque absoluteToInternal [GooseExts] [GoGlobalContext] : val
 
 opaque internalToAbsolute [GooseExts] [GoGlobalContext] : val
 
-opaque unixToInternal [GooseExts] [GoGlobalContext] : val
+@[reducible] noncomputable def unixToInternal [GooseExts] [GoGlobalContext] : val :=
+  #(W64 62135596800)
 
 @[reducible] noncomputable def internalToUnix [GooseExts] [GoGlobalContext] : val :=
   #(W64 (-62135596800))
@@ -1188,6 +1191,91 @@ noncomputable def Time.Equal.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
 
+/-- Nanoseconds returns the duration as an integer nanosecond count.
+
+    go: time.go:1072:19 -/
+noncomputable def Duration.Nanoseconds.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "d"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "d" (App (Val (GoInstruction (GoAlloc Duration.ty))) (Var "d"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0"))))))
+
+/-- Microseconds returns the duration as an integer microsecond count.
+
+    go: time.go:1075:19 -/
+noncomputable def Duration.Microseconds.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "d"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "d" (App (Val (GoInstruction (GoAlloc Duration.ty))) (Var "d"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoDiv go.int64))) (Pair (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")) (Val #(W64 1000))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0"))))))
+
+/-- Milliseconds returns the duration as an integer millisecond count.
+
+    go: time.go:1078:19 -/
+noncomputable def Duration.Milliseconds.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "d"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "d" (App (Val (GoInstruction (GoAlloc Duration.ty))) (Var "d"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoDiv go.int64))) (Pair (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")) (Val #(W64 1000000))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0"))))))
+
+/-- Abs returns the absolute value of d.
+    As a special case, Duration([math.MinInt64]) is converted to Duration([math.MaxInt64]),
+    reducing its magnitude by 1 nanosecond.
+
+    go: time.go:1158:19 -/
+noncomputable def Duration.Abs.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "d"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Duration.ty))) (App (Val (GoInstruction (GoZeroVal Duration.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "d" (App (Val (GoInstruction (GoAlloc Duration.ty))) (Var "d"))
+  (Let "$sw" (Val #true)
+  (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (App (Val (GoInstruction (GoOp GoGe Duration.ty))) (Pair (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")) (Val #(W64 0))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "$res0") (Var "$r0"))))))
+  (If (App (Val (GoInstruction (GoOp GoEquals go.bool))) (Pair (Var "$sw") (App (Val (GoInstruction (GoOp GoEquals Duration.ty))) (Pair (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")) (Val minDuration)))))
+  (Let "$r0" (Val maxDuration)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "$res0") (Var "$r0"))))))
+  (Let "$r0" (App (Val (GoInstruction (GoUnOp GoNeg Duration.ty))) (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "d")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Duration.ty))) (Pair (Var "$res0") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$res0"))))))
+
 /-- Add returns the time t+d.
 
     go: time.go:1170:15 -/
@@ -1410,6 +1498,75 @@ noncomputable def Until.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #()))))))
   (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$res0")))))
+
+/-- Now returns the current local time.
+
+    go: time.go:1347:6 -/
+noncomputable def Now.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Time.ty))) (App (Val (GoInstruction (GoZeroVal Time.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "__p" (App (App (Val (GoInstruction (FuncResolve runtimeNow []))) (Val #())) (Val #()))
+  (Let "$ret0" (Fst (Fst (Var "__p")))
+  (Let "$ret1" (Snd (Fst (Var "__p")))
+  (Let "$ret2" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "$r2" (Var "$ret2")
+  (Let "mono" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Let "nsec" (App (Val (GoInstruction (GoAlloc go.int32))) (App (Val (GoInstruction (GoZeroVal go.int32))) (Val #())))
+  (Let "sec" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoOr go.uint64))) (Pair (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val hasMonotonic)) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int64 go.uint64))) (App (Val (GoInstruction (GoLoad go.int64))) (Var "sec"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val nsecShift)))))) (App (Val (GoInstruction (Convert go.int32 go.uint64))) (App (Val (GoInstruction (GoLoad go.int32))) (Var "nsec")))))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad go.int64))) (Var "mono"))
+  (Let "$v2" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Location.ty)))) (App (Val (GoInstruction (GlobalVarAddr Local))) (Val #())))
+  (App (Val (GoInstruction (CompositeLiteral Time.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.int64 (Var "$v1"))), (KeyedElement none (ElementExpression (go.GoType.PointerType Location.ty) (Var "$v2")))])))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Time.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoOp GoShiftr go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int64 go.uint64))) (App (Val (GoInstruction (GoLoad go.int64))) (Var "sec"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(33 : Int))))) (Val #(W64 0))))))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.int32 go.uint64))) (App (Val (GoInstruction (GoLoad go.int32))) (Var "nsec")))
+  (Let "$v1" (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "sec")) (Val minWall)))
+  (Let "$v2" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Location.ty)))) (App (Val (GoInstruction (GlobalVarAddr Local))) (Val #())))
+  (App (Val (GoInstruction (CompositeLiteral Time.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.int64 (Var "$v1"))), (KeyedElement none (ElementExpression (go.GoType.PointerType Location.ty) (Var "$v2")))])))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Time.ty))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "sec") (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "sec")) (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (Val unixToInternal) (Val minWall)))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "mono") (App (Val (GoInstruction (GoOp GoSub go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "mono")) (App (Val (GoInstruction (GoLoad go.int64))) (App (Val (GoInstruction (GlobalVarAddr startNano))) (Val #())))))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "mono")) (Val #(W64 0)))))
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (Convert go.int32 go.uint64))) (App (Val (GoInstruction (GoLoad go.int32))) (Var "nsec")))
+  (Let "$v1" (App (Val (GoInstruction (GoOp GoPlus go.int64))) (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "sec")) (Val unixToInternal)))
+  (Let "$v2" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Location.ty)))) (App (Val (GoInstruction (GlobalVarAddr Local))) (Val #())))
+  (App (Val (GoInstruction (CompositeLiteral Time.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.int64 (Var "$v1"))), (KeyedElement none (ElementExpression (go.GoType.PointerType Location.ty) (Var "$v2")))])))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Time.ty))) (Pair (Var "$res0") (Var "$r0"))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "mono") (Var "$r2")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int32))) (Pair (Var "nsec") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "sec") (Var "$r0"))))))))))))))))
+  (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$res0")))))
 
 /-- UnixNano returns t as a Unix time, the number of nanoseconds elapsed
     since January 1, 1970 UTC. The result is undefined if the Unix time
@@ -2059,10 +2216,30 @@ class Duration.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [G
   underlying : go.UnderlyingDirectedEq Duration.ty Duration.underlying
   method_set : go.MethodSetIs Duration.ty [(go!"Abs", (some (go.signature.Signature [] false [Duration.ty]))), (go!"Hours", (some (go.signature.Signature [] false [go.float64]))), (go!"Microseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Milliseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Minutes", (some (go.signature.Signature [] false [go.float64]))), (go!"Nanoseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Round", (some (go.signature.Signature [Duration.ty] false [Duration.ty]))), (go!"Seconds", (some (go.signature.Signature [] false [go.float64]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Truncate", (some (go.signature.Signature [Duration.ty] false [Duration.ty]))), (go!"time.format", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.ArrayType 32 go.byte))] false [go.int])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Duration.ty) [(go!"Abs", (some (go.signature.Signature [] false [Duration.ty]))), (go!"Hours", (some (go.signature.Signature [] false [go.float64]))), (go!"Microseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Milliseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Minutes", (some (go.signature.Signature [] false [go.float64]))), (go!"Nanoseconds", (some (go.signature.Signature [] false [go.int64]))), (go!"Round", (some (go.signature.Signature [Duration.ty] false [Duration.ty]))), (go!"Seconds", (some (go.signature.Signature [] false [go.float64]))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Truncate", (some (go.signature.Signature [Duration.ty] false [Duration.ty]))), (go!"time.format", (some (go.signature.Signature [(go.GoType.PointerType (go.GoType.ArrayType 32 go.byte))] false [go.int])))]
+  Abs_unfold : MethodUnfold Duration.ty go!"Abs" Duration.Abs.impl
+  Microseconds_unfold : MethodUnfold Duration.ty go!"Microseconds" Duration.Microseconds.impl
+  Milliseconds_unfold : MethodUnfold Duration.ty go!"Milliseconds" Duration.Milliseconds.impl
+  Nanoseconds_unfold : MethodUnfold Duration.ty go!"Nanoseconds" Duration.Nanoseconds.impl
+  ptr_Abs_unfold : MethodUnfold (go.GoType.PointerType Duration.ty) go!"Abs" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve Duration.ty go!"Abs"))) (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$r"))))
+  ptr_Microseconds_unfold : MethodUnfold (go.GoType.PointerType Duration.ty) go!"Microseconds" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve Duration.ty go!"Microseconds"))) (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$r"))))
+  ptr_Milliseconds_unfold : MethodUnfold (go.GoType.PointerType Duration.ty) go!"Milliseconds" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve Duration.ty go!"Milliseconds"))) (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$r"))))
+  ptr_Nanoseconds_unfold : MethodUnfold (go.GoType.PointerType Duration.ty) go!"Nanoseconds" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve Duration.ty go!"Nanoseconds"))) (App (Val (GoInstruction (GoLoad Duration.ty))) (Var "$r"))))
 
 attribute [instance] Duration.TypeAssumptions.underlying
   Duration.TypeAssumptions.method_set
   Duration.TypeAssumptions.ptr_method_set
+  Duration.TypeAssumptions.Abs_unfold
+  Duration.TypeAssumptions.Microseconds_unfold
+  Duration.TypeAssumptions.Milliseconds_unfold
+  Duration.TypeAssumptions.Nanoseconds_unfold
+  Duration.TypeAssumptions.ptr_Abs_unfold
+  Duration.TypeAssumptions.ptr_Microseconds_unfold
+  Duration.TypeAssumptions.ptr_Milliseconds_unfold
+  Duration.TypeAssumptions.ptr_Nanoseconds_unfold
 
 structure Location [GooseExts] where
   mk ::
@@ -2401,8 +2578,10 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   subMono_unfold : FuncUnfold subMono [] subMono.impl
   Since_unfold : FuncUnfold Since [] Since.impl
   Until_unfold : FuncUnfold Until [] Until.impl
+  runtimeNow_unfold : FuncUnfold runtimeNow [] runtimeNow.impl
   runtimeNano_unfold : FuncUnfold runtimeNano [] runtimeNano.impl
   runtimeIsBubbled_unfold : FuncUnfold runtimeIsBubbled [] runtimeIsBubbled.impl
+  Now_unfold : FuncUnfold Now [] Now.impl
   import_errors_Assumption : _root_.Perennial.errors.Assumptions
 
 attribute [instance] Assumptions.ParseError_instance
@@ -2442,8 +2621,10 @@ attribute [instance] Assumptions.ParseError_instance
   Assumptions.subMono_unfold
   Assumptions.Since_unfold
   Assumptions.Until_unfold
+  Assumptions.runtimeNow_unfold
   Assumptions.runtimeNano_unfold
   Assumptions.runtimeIsBubbled_unfold
+  Assumptions.Now_unfold
   Assumptions.import_errors_Assumption
 
 end time

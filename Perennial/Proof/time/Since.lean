@@ -36,7 +36,7 @@ theorem time.Since.wp_proof
   intro t
   wp_start
   ihave #Hi := isInit_access $$ Hpkg
-  icases Hi with ⟨%sn, #Hsn⟩
+  icases Hi with ⟨⟨%sn, #Hsn⟩, ⟨%loc, #Hloc⟩⟩
   wp_auto
   repeat' (first | wp_if_destruct |
     (wp_apply wp_runtimeIsBubbled as %b -; cases b <;> (try wp_auto)) |

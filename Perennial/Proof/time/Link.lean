@@ -8,6 +8,10 @@ module
 public import Perennial.Proof.errors.Link
 public import Perennial.Proof.time.After
 public import Perennial.Proof.time.AfterFunc
+public import Perennial.Proof.time.Duration__Abs
+public import Perennial.Proof.time.Duration__Microseconds
+public import Perennial.Proof.time.Duration__Milliseconds
+public import Perennial.Proof.time.Duration__Nanoseconds
 public import Perennial.Proof.time.NewTicker
 public import Perennial.Proof.time.NewTimer
 public import Perennial.Proof.time.Now
@@ -32,6 +36,7 @@ public import Perennial.Proof.time.Until
 public import Perennial.Proof.time.initialize
 public import Perennial.Proof.time.runtimeIsBubbled
 public import Perennial.Proof.time.runtimeNano
+public import Perennial.Proof.time.runtimeNow
 public import Perennial.Proof.time.subMono
 public import Perennial.Proof.time.when
 
@@ -78,6 +83,36 @@ theorem time.wp_when : time.when.spec (GF := GF) (hG := hG) :=
 theorem time.wp_AfterFunc : time.AfterFunc.spec (GF := GF) (hG := hG) :=
   time.AfterFunc.wp_proof time.wp_when
 
+end link
+
+section link
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem : time.Assumptions]
+
+theorem time.Duration.wp_Abs : time.Duration.Abs.spec (GF := GF) (hG := hG) :=
+  time.Duration.Abs.wp_proof
+
+theorem time.Duration.wp_Microseconds : time.Duration.Microseconds.spec (GF := GF) (hG := hG) :=
+  time.Duration.Microseconds.wp_proof
+
+theorem time.Duration.wp_Milliseconds : time.Duration.Milliseconds.spec (GF := GF) (hG := hG) :=
+  time.Duration.Milliseconds.wp_proof
+
+theorem time.Duration.wp_Nanoseconds : time.Duration.Nanoseconds.spec (GF := GF) (hG := hG) :=
+  time.Duration.Nanoseconds.wp_proof
+
+end link
+
+section link
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [go_gctx : GoGlobalContext]
+variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
+variable [sem : go.Semantics]
+variable [package_sem : time.Assumptions]
+
 theorem time.wp_NewTicker : time.NewTicker.spec (GF := GF) (hG := hG) :=
   time.NewTicker.wp_proof
 
@@ -93,8 +128,11 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
+theorem time.wp_runtimeNow : time.runtimeNow.spec (GF := GF) (hG := hG) :=
+  time.runtimeNow.wp_proof
+
 theorem time.wp_Now : time.Now.spec (GF := GF) (hG := hG) :=
-  time.Now.wp_proof
+  time.Now.wp_proof time.wp_runtimeNow
 
 theorem time.wp_runtimeIsBubbled : time.runtimeIsBubbled.spec (GF := GF) (hG := hG) :=
   time.runtimeIsBubbled.wp_proof

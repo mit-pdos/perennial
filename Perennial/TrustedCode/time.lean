@@ -71,6 +71,13 @@ def newTimer.impl : val :=
 def runtimeNano.impl : val :=
   λ: <>, ArbitraryInt
 
+/-- `runtimeNow` (a `go:linkname` into the runtime) reads the wall clock, as seconds and
+nanoseconds since the Unix epoch, and the monotonic clock; modeled as arbitrary values of its
+result types `(int64, int32, int64)`, which include every result of the runtime (there `nsec` is
+below 1e9, and `mono` is 0 on a platform without a monotonic clock). -/
+def runtimeNow.impl : val :=
+  λ: <>, Pair (Pair ArbitraryInt (Convert go.int64 go.int32 ArbitraryInt)) ArbitraryInt
+
 /-- `runtimeIsBubbled` (a `go:linkname` into the runtime) is true only inside a
 `testing/synctest` bubble; modeled as an arbitrary boolean. -/
 def runtimeIsBubbled.impl : val :=

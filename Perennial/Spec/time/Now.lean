@@ -20,9 +20,10 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
 
-/-- Spec of `time.Now` (axiom). -/
+/-- Spec of `time.Now`: some time. `Now` reads the globals `startNano` and `Local`, hence the
+package's `isPkgInit`. -/
 abbrev time.Now.spec : Prop :=
-    {{ (True : IProp GF) }}
+    {{ isPkgInit (PROP := IProp GF) pkg_id.time }}
       (App (Val (@! time.Now)) (Val #()))
     {{ (t : time.Time), RET #t; True }}
 

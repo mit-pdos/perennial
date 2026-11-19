@@ -41,6 +41,7 @@ theorem time.initialize'.wp_proof
     | wp_apply wp_GlobalAlloc (V := GoSlice) _ (go.SliceType go.string) as _
     | wp_apply wp_GlobalAlloc (V := GoInterface) _ go.error as _
     | wp_apply wp_GlobalAlloc (V := Loc) _ (go.MapType go.string go.uint64) as _
+    | wp_apply wp_GlobalAlloc (V := Loc) Local (go.PointerType Location.ty) as HLocal
     | wp_apply wp_GlobalAlloc (V := Loc) _ (go.PointerType Location.ty) as _
     | wp_apply wp_GlobalAlloc (V := Location) _ Location.ty as _)
   wp_apply wp_errors_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Herrors⟩
@@ -61,6 +62,8 @@ theorem time.initialize'.wp_proof
   -- startNano = runtimeNano() - 1; Go never writes it again
   wp_apply wp_runtimeNano as %t _
   ipersist Hstart
+  -- Local = &localLoc (set before startNano, in Go's order); read only from here on (`isInit`)
+  ipersist HLocal
   repeat (first
     | (wp_apply wp_New as %_ _)
     | (wp_apply wp_slice_literal (V := GoString) _
@@ -71,8 +74,11 @@ theorem time.initialize'.wp_proof
     | wp_auto)
   iframe Hown
   is_pkg_init_finish
-  iexists _
-  iexact Hstart
+  imodintro
+  unfold isInit
+  isplit
+  · iexists _; iexact Hstart
+  · iexists _; iexact HLocal
 
 end proof
 
