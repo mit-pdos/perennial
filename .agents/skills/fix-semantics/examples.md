@@ -1169,3 +1169,34 @@ same fact, as in the integer case.
 **Why.** The user approved extending the rule to string underlying types (2026-11-17, relayed by
 etcd-grove-03), so that method-less named string types (`types.UID`) format as Go formats them; a
 type with a formatting method stays arbitrary (the model calls no methods).
+
+## Case 37 — ACCEPTED: a SHA-256 extension; collision freedom an opt-in hypothesis over the hash step (branch `sha256-ext`)
+
+**Symptom.** Incomplete. `crypto/sha256` was not translated; a client (dsverify's SwiftPaxos
+harness) axiomatized an ideal hash (`is_hash`, `is_hash_inj`, `Sum256`'s spec), an axiom that
+removed the runs with a collision without saying so in any statement.
+
+**Witness.** `sha256.Sum256(b)` is stuck (names only).
+
+**Taken.** An extension over the `Ext.lean` scheme, `sha256Ext ok` (`GooseLang/Ext/Sha256`): global
+state the inputs hashed so far with their hashes; one operation `Sum` on a string, whose hash is
+an opaque function `sha256Hash` (32 bytes); the step records and returns the hash if the run's
+filter `ok` allows it, else `AngelicExit`. `Sum256` is a trusted model (convert the slice to a
+string, call the primitive); `init.0` a trusted no-op (it only registers with the untranslated
+`crypto`). `Sha256NoCollision ok` (a pure `Prop` over the filter, one unfolding: the step never
+returns for an input a hash recorded for a different input) is a hypothesis of `is_hash_inj` only;
+with `sha256NoFilter` the model removes nothing. Cost: 0 goose branches, 1 extension (1 step
+relation, 1 operation), 2 trusted bodies, about 90 trusted lines.
+
+**Not taken.** (1) The ideal hash in the semantics unconditionally (a model assumption that is
+reachable: R3 BLOCK). (2) A boolean flag `noCollision` in the extension (or its state), with
+`Sha256NoCollision := noCollision = true` or a ghost token: the assumption's meaning would live
+in the step's code, not in the hypothesis an auditor reads.
+
+**Why.** The user wants the assumption: "I definitely want to make this assumption for the hash
+semantics. Is there a way we can set it up so non-collision requires an extra assumption?";
+"our top-level theorem for swiftpaxos should have an explicit assumption about this; I want it
+to be as easy to audit this assumption as possible; I'd even be ok with exposing more details of
+the hash transition relation so that Sha256NoCollision could *directly* constrain the transition
+relation to avoid collisions"; "(noCollision = true might be a bit annoying to audit in
+comparison)" (2026-11-19, relayed by the coordinator of the dsverify axiom audit).

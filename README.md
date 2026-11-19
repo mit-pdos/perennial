@@ -167,6 +167,21 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   threadBound GF`, and the client assumes `threadBound GF ≤ 2^31` at adequacy
   time (`ProgramLogic/ThreadTokensTest.lean`, `docs/PERENNIAL_PROOF_REFERENCE.md`
   "Thread tokens").
+* **Model assumption (SHA-256 collisions), opt-in.** `crypto/sha256.Sum256` is a
+  trusted model over the SHA-256 extension (`GooseLang/Ext/Sha256/Impl.lean`): an
+  opaque function `sha256Hash` and a global state of every input hashed so far.
+  The extension takes a filter `ok` of the hash steps a run allows; a step `ok`
+  refuses is an `AngelicExit`. With `sha256NoFilter` (every step allowed) the
+  model removes no execution, and Go's collisions are executions of the model.
+  A theorem may instead assume `Sha256NoCollision ok`: `ok` allows the hash step
+  to return `h` for an input only if no other input hashed before has the hash
+  `h`. Such a theorem covers only the runs with no SHA-256 collision among the
+  inputs hashed during the run (instantiated with `sha256NoCollisionFilter`, it
+  covers exactly those). This is a cryptographic assumption, reachable in
+  principle and so not of the overflow kind above: it is never made by the
+  semantics, only by a top-level statement that names `Sha256NoCollision ok` as a
+  hypothesis (`GooseLang/Ext/Sha256/Adequacy.lean`). Only `crypto.sha256.is_hash_inj`
+  needs it.
 * **Panics.** A panic outcome is a value, `PanicV p`, that unwinds every
   evaluation frame but that of `Catch e h k` (`GooseLang/Lang.lean`); `panic(p)`
   steps to it, a function with `defer`s runs its body under a `Catch`
