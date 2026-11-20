@@ -27,6 +27,12 @@ changes neither the other nodes nor the global state (the network). The
 distributed crash adequacy theorem (`goose_dist_crash_adequacy`) is about these
 executions.
 
+`DistCrashNstepsBelow boots T` is such an execution along which every node keeps
+fewer than `T` live threads: a thread bound that is a fact of the one execution
+(as `RealNstepsBelow` is for one node, `AdequacyAlong.lean`), for statements whose
+thread bound is a premise about that execution alone, where the adequacy theorems'
+premise (`DistCrashThreadsBelow`) is about every execution of at most `n` steps.
+
 The rest of the file is the proof device behind that theorem: the same
 executions in the bounded semantics (`BoundedLang.lean`), in which the step
 fuel is global (time receipts bound the steps of all nodes together) and each
@@ -108,6 +114,23 @@ than `T` live threads. -/
 def DistCrashThreadsBelow (boots : List Expr) (T n : Nat) (c : DistCfg) : Prop :=
   ∀ k κs c', k ≤ n → DistCrashNsteps boots k c κs c' →
     ∀ (i : Nat) (tp : List Expr) (σ : state), c'.nodes[i]? = some (tp, σ) → σ.threads < T
+
+/-- Every node of the configuration `c` has fewer than `T` live threads. -/
+def DistCfgThreadsBelow (T : Nat) (c : DistCfg) : Prop :=
+  ∀ (i : Nat) (tp : List Expr) (σ : state), c.nodes[i]? = some (tp, σ) → σ.threads < T
+
+/-- `n` steps (crashes included) of a distributed system with boot programs `boots`, along
+which every configuration, the first and the last included, has fewer than `T` live threads on
+every node: the thread bound as a fact of this execution, where `DistCrashThreadsBelow` is one of
+every execution of at most `n` steps (`RealNstepsBelow`, `AdequacyAlong.lean`, is the same for
+one node without crashes). -/
+inductive DistCrashNstepsBelow (boots : List Expr) (T : Nat) :
+    Nat → DistCfg → List Observation → DistCfg → Prop
+  | refl (c : DistCfg) : DistCfgThreadsBelow T c → DistCrashNstepsBelow boots T 0 c [] c
+  | cons {n : Nat} {c₁ c₂ c₃ : DistCfg} {κ κs : List Observation} :
+      DistCfgThreadsBelow T c₁ → DistCrashStep boots c₁ κ c₂ →
+      DistCrashNstepsBelow boots T n c₂ κs c₃ →
+      DistCrashNstepsBelow boots T (n + 1) c₁ (κ ++ κs) c₃
 
 end real
 
@@ -235,6 +258,49 @@ theorem DistCrashThreadsBelow.of_single {boots : List Expr} {n : Nat} {c : DistC
   intro k κs c' hk h i tp σ hi
   have := h.threads_le (m := 1) (Nat.le_refl _) (fun i tp σ hi => Nat.le_of_eq (h1 i tp σ hi)) i tp σ hi
   omega
+
+namespace DistCrashNstepsBelow
+
+/-- The execution, forgetting the thread bound. -/
+theorem nsteps {boots : List Expr} {T n : Nat} {c c' : DistCfg} {κs : List Observation}
+    (h : DistCrashNstepsBelow boots T n c κs c') : DistCrashNsteps boots n c κs c' := by
+  induction h with
+  | refl c _ => exact .refl c
+  | cons _ hstep _ ih => exact .cons hstep ih
+
+/-- The first configuration has fewer than `T` threads on every node. -/
+theorem start {boots : List Expr} {T n : Nat} {c c' : DistCfg} {κs : List Observation}
+    (h : DistCrashNstepsBelow boots T n c κs c') : DistCfgThreadsBelow T c := by
+  cases h with
+  | refl _ h => exact h
+  | cons h _ _ => exact h
+
+/-- The distributed crash adequacy theorem's premise gives the new one: if every execution of at
+most `n` steps from `c` stays below `T` threads on every node, so does this one. -/
+theorem of_threadsBelow {boots : List Expr} {T n : Nat} {c c' : DistCfg} {κs : List Observation}
+    (h : DistCrashNsteps boots n c κs c') (hT : DistCrashThreadsBelow boots T n c) :
+    DistCrashNstepsBelow boots T n c κs c' := by
+  induction h with
+  | refl c => exact .refl c fun _ _ _ hi => hT.start hi
+  | cons hstep _ ih => exact .cons (fun _ _ _ hi => hT.start hi) hstep (ih (hT.step hstep))
+
+/-- From nodes with one thread each, an execution of `n` steps, crashes included, stays below
+`n + 2` threads on every node (a step forks at most one thread, a crash leaves one). -/
+theorem of_single {boots : List Expr} {n : Nat} {c c' : DistCfg} {κs : List Observation}
+    (h : DistCrashNsteps boots n c κs c')
+    (h1 : ∀ (i : Nat) (tp : List Expr) (σ : state), c.nodes[i]? = some (tp, σ) → σ.threads = 1) :
+    DistCrashNstepsBelow boots (n + 2) n c κs c' :=
+  of_threadsBelow h (DistCrashThreadsBelow.of_single h1)
+
+/-- A larger bound. -/
+theorem mono {boots : List Expr} {T T' n : Nat} {c c' : DistCfg} {κs : List Observation}
+    (h : DistCrashNstepsBelow boots T n c κs c') (hTT : T ≤ T') :
+    DistCrashNstepsBelow boots T' n c κs c' := by
+  induction h with
+  | refl c h => exact .refl c fun i tp σ hi => Nat.lt_of_lt_of_le (h i tp σ hi) hTT
+  | cons h hstep _ ih => exact .cons (fun i tp σ hi => Nat.lt_of_lt_of_le (h i tp σ hi) hTT) hstep ih
+
+end DistCrashNstepsBelow
 
 end real_facts
 
