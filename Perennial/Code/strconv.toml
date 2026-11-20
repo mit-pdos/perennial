@@ -2,6 +2,7 @@
 translate = [
   "ParseUint", "toError", "syntaxError", "rangeError", "baseError", "bitSizeError", "ErrRange",
   "ErrSyntax", "NumError", "NumError.Unwrap",
+  "ParseBool", "FormatBool",
 ]
 imports = ["!*", "errors", "internal/strconv", "internal/stringslite"]
 # the printable-rune tables, read only by `IsPrint`, `IsGraphic` and the quoting functions, which

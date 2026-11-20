@@ -2,6 +2,7 @@
 translate = [
   "ParseUint", "underscoreOK", "Error", "Error.Error", "ErrRange", "ErrSyntax", "ErrBase",
   "ErrBitSize", "intSize", "IntSize", "maxUint64",
+  "ParseBool", "FormatBool",
   # the package variables (tables of constants), so that the initializer is translated
   "optimize", "powtab", "float64pow10", "float32pow10", "leftcheats", "float32info", "float64info",
   "uint64pow10", "div5Tab",

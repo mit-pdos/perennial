@@ -1,5 +1,6 @@
 /-
-Shared definitions of the proofs of `internal/strconv`: its `isPkgInit`.
+Shared definitions of the proofs of `internal/strconv`: its `isPkgInit`, and the model of
+`ParseBool`.
 -/
 module
 
@@ -15,6 +16,13 @@ namespace Perennial
 open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 
 namespace internal.strconv
+
+/-- The boolean `ParseBool` reads from a string: `1`, `t`, `T`, `TRUE`, `true`, `True` are
+true, `0`, `f`, `F`, `FALSE`, `false`, `False` false; any other string is an error. -/
+def parseBool (s : GoString) : Option Bool :=
+  if s ∈ [go!"1", go!"t", go!"T", go!"true", go!"TRUE", go!"True"] then some true
+  else if s ∈ [go!"0", go!"f", go!"F", go!"false", go!"FALSE", go!"False"] then some false
+  else none
 
 section wps
 variable [GooseExts] [GooseSemantics] [GooseInterp]

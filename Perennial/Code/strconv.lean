@@ -206,6 +206,79 @@ noncomputable def IsGraphic [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def isInGraphicList [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.isInGraphicList"
 
+/-- ParseBool returns the boolean value represented by the string.
+    It accepts 1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False.
+    Any other value returns an error.
+
+    go: number.go:19:6 -/
+noncomputable def ParseBool.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "str"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "str" (App (Val (GoInstruction (GoAlloc go.string))) (Var "str"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "str"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.strconv.ParseBool []))) (Val #())) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "x"))
+  (Let "$r1" (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "x"))
+  (Let "$r1" (Let "$a0" (Val #(go!"ParseBool"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "str"))
+  (Let "$a2" (Val #(W64 0))
+  (Let "$a3" (Val #(W64 0))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve toError []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "x") (Var "$r0"))))))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1")))))))
+
+/-- FormatBool returns "true" or "false" according to the value of b.
+
+    go: number.go:28:6 -/
+noncomputable def FormatBool.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "b"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc go.bool))) (Var "b"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.bool))) (Var "b"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.strconv.FormatBool []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
+
 /-- ParseUint is like [ParseInt] but for unsigned numbers.
 
     A sign prefix is not permitted.
@@ -537,6 +610,8 @@ attribute [instance] NumError.TypeAssumptions.type_repr
 
 class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   NumError_instance : NumError.TypeAssumptions
+  ParseBool_unfold : FuncUnfold ParseBool [] ParseBool.impl
+  FormatBool_unfold : FuncUnfold FormatBool [] FormatBool.impl
   ParseUint_unfold : FuncUnfold ParseUint [] ParseUint.impl
   toError_unfold : FuncUnfold toError [] toError.impl
   syntaxError_unfold : FuncUnfold syntaxError [] syntaxError.impl
@@ -548,6 +623,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   import_stringslite_Assumption : _root_.Perennial.internal.stringslite.Assumptions
 
 attribute [instance] Assumptions.NumError_instance
+  Assumptions.ParseBool_unfold
+  Assumptions.FormatBool_unfold
   Assumptions.ParseUint_unfold
   Assumptions.toError_unfold
   Assumptions.syntaxError_unfold
