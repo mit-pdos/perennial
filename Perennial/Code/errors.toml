@@ -7,6 +7,7 @@ translate = [
   "errorString*",
   "ErrUnsupported",
   "is",
+  "Join",
 ]
 # `Is` calls `reflectlite.TypeOf(target).Comparable()` (`internal/reflectlite` is not
 # translated): a model in TrustedCode/errors.lean, with that call replaced by `true`

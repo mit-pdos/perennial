@@ -8,6 +8,7 @@ module
 public import Perennial.Proof.errors.As
 public import Perennial.Proof.errors.AsType
 public import Perennial.Proof.errors.Is
+public import Perennial.Proof.errors.Join
 public import Perennial.Proof.errors.New
 public import Perennial.Proof.errors.Unwrap
 public import Perennial.Proof.errors.asType_
@@ -41,6 +42,9 @@ theorem errors.wp_is : errors.is.spec (GF := GF) (hG := hG) :=
 
 theorem errors.wp_Is : errors.Is.spec (GF := GF) (hG := hG) :=
   errors.Is.wp_proof errors.wp_is
+
+theorem errors.wp_Join : errors.Join.spec (GF := GF) (hG := hG) :=
+  errors.Join.wp_proof
 
 theorem errors.wp_New : errors.New.spec (GF := GF) (hG := hG) :=
   errors.New.wp_proof
