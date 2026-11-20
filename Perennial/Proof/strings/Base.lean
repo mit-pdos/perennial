@@ -8,6 +8,7 @@ module
 public import Perennial.Proof.ProofPrelude
 public import Perennial.Code.strings
 public import Perennial.GeneratedProof.strings
+public import Perennial.Proof.internal.stringslite.Base
 
 @[expose] public section
 

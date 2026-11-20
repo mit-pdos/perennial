@@ -1,5 +1,5 @@
-translate = ["Builder", "asciiSpace"]
-imports = ["!*"]
+translate = ["Builder", "asciiSpace", "HasSuffix", "TrimSuffix"]
+imports = ["!*", "internal/stringslite"]
 trusted = ["Join", "HasPrefix", "Compare", "TrimPrefix", "Split"]
 
 # translate the definitions of all type declarations goose supports
