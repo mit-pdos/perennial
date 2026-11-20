@@ -1320,6 +1320,17 @@ through `extsCrashStart` (`fsNet_crashStart`: a crash keeps the files' and the
 address's ghost state). The bounds are as without crashes
 (`DistCrashThreadsBelow.of_single`); a crash counts as a step.
 
+The thread bound along one distributed execution: `DistCrashNstepsBelow boots T n
+c κs c'` is `DistCrashNsteps boots n c κs c'` with every configuration, the first
+and the last included, having fewer than `T` live threads on every node
+(`DistCfgThreadsBelow`); it is `RealNstepsBelow` for several nodes, with crashes.
+A statement whose thread bound is a premise about the execution it is about (a
+robustness statement: "fewer than `T` goroutines alive at once on any machine")
+quantifies over these, and its step bound need not be below its thread bound. No
+adequacy theorem takes it yet: `of_threadsBelow` turns `goose_dist_crash_adequacy`'s
+premise into it, `of_single` gives `n + 2` from one thread per node, `nsteps`
+forgets it, and `mono` raises `T`.
+
 The network (`netExt`): a node's local state is its address; the network maps
 each address to the set of messages sent to it, each with its sender's address.
 `wp_NetSend_atomic` adds `⟨netAddr, data⟩` to the messages of `to`
