@@ -14,6 +14,10 @@ public import Perennial.Proof.sort.Search
 public import Perennial.Proof.sort.SearchInts
 public import Perennial.Proof.sort.SearchStrings
 public import Perennial.Proof.sort.Sort
+public import Perennial.Proof.sort.StringSlice__Len
+public import Perennial.Proof.sort.StringSlice__Less
+public import Perennial.Proof.sort.StringSlice__Sort
+public import Perennial.Proof.sort.StringSlice__Swap
 public import Perennial.Proof.sort.Strings
 public import Perennial.Proof.sort.breakPatterns
 public import Perennial.Proof.sort.choosePivot
@@ -37,6 +41,7 @@ public import Perennial.Proof.sort.xorshift__Next
 namespace Perennial
 
 open Iris Iris.BI Iris.ProgramLogic Iris.Std
+open Iris Iris.BI Iris.ProgramLogic Iris.Std Iris.ProofMode
 open slices
 
 section link
@@ -61,8 +66,20 @@ theorem sort.wp_SearchInts : sort.SearchInts.spec (GF := GF) (hG := hG) :=
 theorem sort.wp_SearchStrings : sort.SearchStrings.spec (GF := GF) (hG := hG) :=
   sort.SearchStrings.wp_proof sort.wp_Search
 
-theorem sort.wp_Strings : sort.Strings.spec (GF := GF) (hG := hG) :=
-  sort.Strings.wp_proof slices.wp_Sort cmp.wp_Less
+theorem sort.StringSlice.wp_Len : sort.StringSlice.Len.spec (GF := GF) (hG := hG) :=
+  sort.StringSlice.Len.wp_proof
+
+theorem sort.StringSlice.wp_Less : sort.StringSlice.Less.spec (GF := GF) (hG := hG) :=
+  sort.StringSlice.Less.wp_proof
+
+theorem sort.wp_insertionSort : sort.insertionSort.spec (GF := GF) (hG := hG) :=
+  sort.insertionSort.wp_proof
+
+theorem sort.wp_siftDown : sort.siftDown.spec (GF := GF) (hG := hG) :=
+  sort.siftDown.wp_proof
+
+theorem sort.wp_heapSort : sort.heapSort.spec (GF := GF) (hG := hG) :=
+  sort.heapSort.wp_proof sort.wp_siftDown
 
 theorem sort.wp_nextPowerOfTwo : sort.nextPowerOfTwo.spec (GF := GF) (hG := hG) :=
   sort.nextPowerOfTwo.wp_proof math.bits.wp_Len
@@ -85,35 +102,35 @@ theorem sort.wp_medianAdjacent : sort.medianAdjacent.spec (GF := GF) (hG := hG) 
 theorem sort.wp_choosePivot : sort.choosePivot.spec (GF := GF) (hG := hG) :=
   sort.choosePivot.wp_proof sort.wp_medianAdjacent sort.wp_median
 
-theorem sort.wp_siftDown : sort.siftDown.spec (GF := GF) (hG := hG) :=
-  sort.siftDown.wp_proof
-
-theorem sort.wp_heapSort : sort.heapSort.spec (GF := GF) (hG := hG) :=
-  sort.heapSort.wp_proof sort.wp_siftDown
-
-theorem sort.wp_initialize' : sort.initialize'.spec (GF := GF) (hG := hG) :=
-  sort.initialize'.wp_proof math.bits.wp_initialize' slices.wp_initialize'
-
-theorem sort.wp_insertionSort : sort.insertionSort.spec (GF := GF) (hG := hG) :=
-  sort.insertionSort.wp_proof
+theorem sort.wp_reverseRange : sort.reverseRange.spec (GF := GF) (hG := hG) :=
+  sort.reverseRange.wp_proof
 
 theorem sort.wp_partialInsertionSort : sort.partialInsertionSort.spec (GF := GF) (hG := hG) :=
   sort.partialInsertionSort.wp_proof
 
-theorem sort.wp_partition : sort.partition.spec (GF := GF) (hG := hG) :=
-  sort.partition.wp_proof
-
 theorem sort.wp_partitionEqual : sort.partitionEqual.spec (GF := GF) (hG := hG) :=
   sort.partitionEqual.wp_proof
 
-theorem sort.wp_reverseRange : sort.reverseRange.spec (GF := GF) (hG := hG) :=
-  sort.reverseRange.wp_proof
+theorem sort.wp_partition : sort.partition.spec (GF := GF) (hG := hG) :=
+  sort.partition.wp_proof
 
 theorem sort.wp_pdqsort : sort.pdqsort.spec (GF := GF) (hG := hG) :=
   sort.pdqsort.wp_proof sort.wp_insertionSort sort.wp_heapSort sort.wp_breakPatterns sort.wp_choosePivot sort.wp_reverseRange sort.wp_partialInsertionSort sort.wp_partitionEqual sort.wp_partition
 
 theorem sort.wp_Sort : sort.«Sort».spec (GF := GF) (hG := hG) :=
   sort.«Sort».wp_proof sort.wp_pdqsort math.bits.wp_Len
+
+theorem sort.StringSlice.wp_Swap : sort.StringSlice.Swap.spec (GF := GF) (hG := hG) :=
+  sort.StringSlice.Swap.wp_proof
+
+theorem sort.StringSlice.wp_Sort : sort.StringSlice.Sort.spec (GF := GF) (hG := hG) :=
+  sort.StringSlice.Sort.wp_proof sort.wp_Sort sort.StringSlice.wp_Len sort.StringSlice.wp_Less sort.StringSlice.wp_Swap
+
+theorem sort.wp_Strings : sort.Strings.spec (GF := GF) (hG := hG) :=
+  sort.Strings.wp_proof slices.wp_Sort cmp.wp_Less
+
+theorem sort.wp_initialize' : sort.initialize'.spec (GF := GF) (hG := hG) :=
+  sort.initialize'.wp_proof math.bits.wp_initialize' slices.wp_initialize'
 
 end link
 
