@@ -68,6 +68,10 @@ translate = [
   "Duration.Microseconds",
   "Duration.Milliseconds",
   "Duration.Abs",
+  "Time.IsZero",
+  "Time.Unix",
+  "Unix",
+  "unixTime",
 
   # the package variables, all but `asynctimerchan`, and the constants `std0x` uses
   "std0x", "longDayNames", "shortDayNames", "shortMonthNames", "longMonthNames",

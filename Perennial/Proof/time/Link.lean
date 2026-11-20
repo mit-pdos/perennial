@@ -23,7 +23,9 @@ public import Perennial.Proof.time.Time__Add
 public import Perennial.Proof.time.Time__After
 public import Perennial.Proof.time.Time__Before
 public import Perennial.Proof.time.Time__Equal
+public import Perennial.Proof.time.Time__IsZero
 public import Perennial.Proof.time.Time__Sub
+public import Perennial.Proof.time.Time__Unix
 public import Perennial.Proof.time.Time__UnixNano
 public import Perennial.Proof.time.Time__addSec
 public import Perennial.Proof.time.Time__nsec
@@ -32,12 +34,14 @@ public import Perennial.Proof.time.Time__stripMono
 public import Perennial.Proof.time.Time__unixSec
 public import Perennial.Proof.time.Timer__Reset
 public import Perennial.Proof.time.Timer__Stop
+public import Perennial.Proof.time.Unix
 public import Perennial.Proof.time.Until
 public import Perennial.Proof.time.initialize
 public import Perennial.Proof.time.runtimeIsBubbled
 public import Perennial.Proof.time.runtimeNano
 public import Perennial.Proof.time.runtimeNow
 public import Perennial.Proof.time.subMono
+public import Perennial.Proof.time.unixTime
 public import Perennial.Proof.time.when
 
 @[expose] public section
@@ -197,8 +201,14 @@ variable [package_sem : time.Assumptions]
 theorem time.Time.wp_After : time.Time.After.spec (GF := GF) (hG := hG) :=
   time.Time.After.wp_proof time.Time.wp_sec time.Time.wp_nsec
 
+theorem time.Time.wp_IsZero : time.Time.IsZero.spec (GF := GF) (hG := hG) :=
+  time.Time.IsZero.wp_proof
+
 theorem time.Time.wp_unixSec : time.Time.unixSec.spec (GF := GF) (hG := hG) :=
   time.Time.unixSec.wp_proof time.Time.wp_sec
+
+theorem time.Time.wp_Unix : time.Time.Unix.spec (GF := GF) (hG := hG) :=
+  time.Time.Unix.wp_proof time.Time.wp_unixSec
 
 theorem time.Time.wp_UnixNano : time.Time.UnixNano.spec (GF := GF) (hG := hG) :=
   time.Time.UnixNano.wp_proof time.Time.wp_unixSec time.Time.wp_nsec
@@ -226,6 +236,12 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : time.Assumptions]
+
+theorem time.wp_unixTime : time.unixTime.spec (GF := GF) (hG := hG) :=
+  time.unixTime.wp_proof
+
+theorem time.wp_Unix : time.Unix.spec (GF := GF) (hG := hG) :=
+  time.Unix.wp_proof time.wp_unixTime
 
 theorem time.wp_Until : time.Until.spec (GF := GF) (hG := hG) :=
   time.Until.wp_proof time.wp_runtimeIsBubbled time.wp_runtimeNano time.wp_subMono time.wp_Now time.Time.wp_Sub
