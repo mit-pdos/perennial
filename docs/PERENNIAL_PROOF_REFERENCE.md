@@ -1224,6 +1224,35 @@ gives the new hypothesis from the old one (so `goose_adequacy` follows,
 raises `T`, `.nsteps` forgets it. `goose_invariance_below` is the same for
 `goose_invariance`.
 
+### Initial states of extensions
+
+Files: `Perennial/GooseLang/Lang.lean` (`ExtSemantics.initLocal`/`initGlobal`,
+`extsInitLocal`/`extsInitGlobal`), `GooseLang/Lifting.lean` (`ExtInitCompat`),
+`GooseLang/InitAdequacy.lean` (`goose_adequacy_init` and the others), and the
+example `Perennial/ProgramLogic/ExtInitTest.lean`.
+
+The states an execution starts from belong to the trusted semantics: each
+extension's `ExtSemantics` has `initLocal s g` (a state `s` of the extension on a
+machine before its process has taken a step, for the global state `g`) and
+`initGlobal g`, both `True` by default (no assumption, the strongest theorem). For
+the program, `extsInitLocal σ g` and `extsInitGlobal g` are their conjunctions over
+the extensions. A top-level theorem assumes these, never the ghost state's
+`ExtInterp.initP`/`initgP`, which are chosen with the proof (an interpretation
+with `initP := False` would make a theorem stated with it vacuous).
+
+The adequacy theorems still allocate the ghost state under `extsInitP`/`extsInitgP`;
+their `_init` versions (`goose_adequacy_init`, `goose_crash_adequacy_init`,
+`goose_dist_adequacy_init`, `goose_dist_crash_adequacy_init`) take the trusted
+predicates and `GooseInitCompat`: every extension's interpretation accepts its
+semantics' initial states (`ExtInitCompat E`, an instance next to the
+`ExtInterp`). For a closed list it is `⟨inferInstance, ..., trivial⟩`.
+
+The initial states constrain only the first start of a machine; a restart is in
+whatever state `crash` gives. When a restarted machine is meant to start afresh
+(a volatile state), `crash` should produce only initial states:
+`ExtSemantics.CrashRestartsInit E`, which an extension may prove and nothing
+requires (a durable state does not have it).
+
 ### Crashes
 
 Files: `Perennial/GooseLang/Lang.lean` (`Crash`, `ExtSemantics.crash`),

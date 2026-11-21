@@ -5,6 +5,9 @@ GooseLang is an adaptation of HeapLang with extensions to model Go. Its primitiv
 operations can be extended (a disk, a network, ...): a program runs against a
 closed list of extensions (`GooseExts`, see `Perennial/GooseLang/Ext.lean`).
 
+* Initial states: each extension says which of its states a machine, and the
+  machines' shared state, may start in (`ExtSemantics.initLocal`/`initGlobal`,
+  for the program `extsInitLocal`/`extsInitGlobal`, section "Initial states").
 * Crashes: `Crash σ σ'` relates the local state before a crash and restart to
   the one the restart begins with (section "Crashes").
 * The base step is an inductive relation (`base_step`). An extension's step
@@ -539,12 +542,37 @@ extension does not define has no step.
 
 `crash s s'` says that a crash and restart of the node can turn `E`'s local
 state `s` into `s'` (a durable disk keeps its contents, a volatile one may be
-arbitrary); a crash does not change the global state. -/
+arbitrary); a crash does not change the global state.
+
+`initLocal` and `initGlobal` are the initial states (see their docstrings): what a
+top-level theorem assumes of the states its execution starts from (`ExtsInitLocal`,
+`ExtsInitGlobal`). They belong to the trusted semantics, not to the ghost state
+(`ExtInterp`, `Lifting.lean`), which a proof chooses. -/
 class ExtSemantics (E : GooseExt) where
   step : ∀ [GooseExts] [GoGlobalContext], String → val →
     GMap Loc (NonAtomic val) → E.LocalState → E.GlobalState →
     Expr → GMap Loc (NonAtomic val) → E.LocalState → E.GlobalState → Prop
   crash : E.LocalState → E.LocalState → Prop
+  /-- `initLocal s g`: `s` is a possible state of `E` on a machine before its process
+  has taken any step (the machine is started for the first time), when `E`'s global
+  state is `g`. A theorem about executions from such states covers every machine
+  started in any of them, so a weaker predicate is a stronger theorem: the default,
+  `True`, makes no assumption. A state that a restart produces (`crash`) is not
+  constrained by it: a durable state need not be initial after a crash; when a
+  restarted machine is meant to start afresh, `crash` should produce only initial
+  states (`ExtSemantics.CrashRestartsInit`), which no theorem requires. -/
+  initLocal : E.LocalState → E.GlobalState → Prop := fun _ _ => True
+  /-- `initGlobal g`: `g` is a possible state of `E` shared by the machines before any
+  of them has taken a step. The default, `True`, makes no assumption. -/
+  initGlobal : E.GlobalState → Prop := fun _ => True
+
+/-- The crash relation of `E` restarts its local state in an initial state, whatever
+the global state: a property of a volatile state (one that a restarted machine sees
+afresh), which a durable state does not have. Nothing requires it; an extension that
+means its restarted state to be a fresh one can prove it, as a check of its `crash`
+against its `initLocal`. -/
+def ExtSemantics.CrashRestartsInit (E : GooseExt) [S : ExtSemantics E] : Prop :=
+  ∀ s s' g, S.crash s s' → S.initLocal s' g
 
 /-- The semantics of the extensions of the program: one `ExtSemantics` for each. -/
 class GooseSemantics [GooseExts] where
@@ -584,6 +612,36 @@ theorem extStep_threads {ext op : String} {v : val} {σg : CfgState} {e' : Expr}
   obtain ⟨_, _, _, _, _, _, rfl⟩ := h; rfl
 
 end ext_step
+
+/-! ## Initial states
+
+The states a machine and the machines' shared state start in, before any step:
+for each extension, its `ExtSemantics.initLocal` and `initGlobal`. -/
+
+/-- The initial local states of the extensions of `l` (`ExtSemantics.initLocal`),
+componentwise, for their global states `g`. -/
+def ExtsInitLocal : (l : List GooseExt) → ExtTuple ExtSemantics l → ExtsLocalState l →
+    ExtsGlobalState l → Prop
+  | [], _, _, _ => True
+  | _ :: l, Ss, w, g => Ss.1.initLocal w.1 g.1 ∧ ExtsInitLocal l Ss.2 w.2 g.2
+
+/-- The initial global states of the extensions of `l` (`ExtSemantics.initGlobal`),
+componentwise. -/
+def ExtsInitGlobal : (l : List GooseExt) → ExtTuple ExtSemantics l → ExtsGlobalState l → Prop
+  | [], _, _ => True
+  | _ :: l, Ss, g => Ss.1.initGlobal g.1 ∧ ExtsInitGlobal l Ss.2 g.2
+
+/-- The extensions of the program are in an initial state on a machine whose local
+state is `σ`, sharing the global state `g` (`ExtSemantics.initLocal`). Only the
+extensions' states are constrained: the heap, the Go runtime and the thread count are
+each theorem's own premises. -/
+abbrev extsInitLocal [GooseExts] [GooseSemantics] (σ : state) (g : GlobalState) : Prop :=
+  ExtsInitLocal exts GooseSemantics.sems σ.world g.globalWorld
+
+/-- The extensions of the program are in an initial global state
+(`ExtSemantics.initGlobal`). -/
+abbrev extsInitGlobal [GooseExts] [GooseSemantics] (g : GlobalState) : Prop :=
+  ExtsInitGlobal exts GooseSemantics.sems g.globalWorld
 
 /-! ## Crashes
 

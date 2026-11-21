@@ -83,6 +83,11 @@ instance fs_interp : ExtInterp fsExt where
     iapply bupd_intro; iexists (); isplitl [] <;> itrivial
   local_init _ hPre fs _ _ := fs_local_init hPre fs
 
+/-- The ghost state makes no assumption on the initial states. -/
+instance fs_init_compat : ExtInitCompat fsExt where
+  initgP_of_init _ _ := trivial
+  initP_of_init _ _ _ := trivial
+
 /-! ## Specs -/
 
 section lifting

@@ -169,6 +169,11 @@ instance sha256_interp (ok : Sha256Filter) : ExtInterp (sha256Ext ok) where
     iexists ()
     isplitl [] <;> itrivial
 
+/-- The ghost state is allocated for the semantics' initial state: nothing hashed. -/
+instance sha256_init_compat (ok : Sha256Filter) : ExtInitCompat (sha256Ext ok) where
+  initgP_of_init _ h := h
+  initP_of_init _ _ _ := trivial
+
 /-! ## Specs -/
 
 /-- The program's extensions include the SHA-256 extension, with the filter `ok` (an

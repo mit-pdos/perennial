@@ -15,6 +15,7 @@ global state is every input hashed so far, with its hash.
   `sha256NoFilter`, which allows every step, the model removes no execution.
   A theorem that assumes `Sha256NoCollision ok` covers only the runs in which
   no hash of the run equals the hash of a different input of the run.
+* Initial states (`ExtSemantics.initGlobal`): nothing hashed.
 -/
 module
 
@@ -81,8 +82,11 @@ def Sha256Step (ok : Sha256Filter) (op : String) (v : val) (h : GMap Loc (NonAto
 
 end sha256
 
+/-- The semantics of the hash, with the filter `ok`. A run starts with nothing hashed
+(`initGlobal`): the global state records the inputs hashed by the run. -/
 instance sha256_semantics (ok : Sha256Filter) : ExtSemantics (sha256Ext ok) where
   step := Sha256Step ok
   crash _ _ := True
+  initGlobal m := @Eq Sha256State m ∅
 
 end Perennial

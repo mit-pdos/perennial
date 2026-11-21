@@ -24,6 +24,8 @@ description of existing Go code.
 * Neither operation changes the heap or the node's address; addresses and data
   are passed and returned as Go values (`#to`, `#data`).
 * Crashes (`ExtSemantics.crash`): the address survives unchanged.
+* Initial states (`ExtSemantics.initLocal`/`initGlobal`): any (the default): a node
+  has any address and the network may hold any messages.
 -/
 module
 

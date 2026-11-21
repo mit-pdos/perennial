@@ -326,6 +326,12 @@ models, trust lists, `assume`s); the `review-trusted` skill
   no assumption, and `ElemExt E`/`HasExt E` (proofs about `E`) are
   propositions, proved by computation when a program is closed off. Goose knows
   nothing of extensions.
+* An extension's initial states are part of its trusted semantics
+  (`ExtSemantics.initLocal`/`initGlobal`, default `True`), not of its ghost
+  state: a top-level theorem assumes `extsInitLocal`/`extsInitGlobal`, through
+  the adequacy theorems' `_init` versions (`GooseLang/InitAdequacy.lean`),
+  which require each interpretation to accept them (`ExtInitCompat`). See
+  `docs/PERENNIAL_PROOF_REFERENCE.md`, "Initial states of extensions".
 * An extension (`GooseExt`) requires `Pos.Countable` of its `Val`, and
   `Loc`, `GoSlice`, `val`, `Expr`, `GoFunc`, `GoInterface`, `go.GoType`, ... are
   `Pos.Countable` (`Perennial/GooseLang/Countable.lean`, via an injection into
