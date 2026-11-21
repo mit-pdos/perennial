@@ -38,7 +38,7 @@ func (c *typeTranslatability) check(t types.Type, byValue bool, top bool) {
 	switch t := t.(type) {
 	case *types.Basic:
 		switch t.Name() {
-		case "uint64", "int64", "uint32", "int32", "uint16", "int16",
+		case "uint64", "int64", "uint32", "int32", "rune", "uint16", "int16",
 			"uint8", "int8", "byte", "uint", "int", "float64", "float32",
 			"bool", "string", "Pointer", "uintptr":
 		default:
