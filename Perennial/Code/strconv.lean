@@ -426,6 +426,60 @@ noncomputable def ParseInt.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "x") (Var "$r0")))))))))))))))
   (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1")))))))))))
 
+/-- Atoi is equivalent to ParseInt(s, 10, 0), converted to type int.
+
+    go: number.go:146:6 -/
+noncomputable def Atoi.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$res1" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.strconv.Atoi []))) (Val #())) (Var "$a0")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "x"))
+  (Let "$r1" (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "x"))
+  (Let "$r1" (Let "$a0" (Val #(go!"Atoi"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "$a2" (Val #(W64 0))
+  (Let "$a3" (Val #(W64 0))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve toError []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "x") (Var "$r0"))))))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1")))))))
+
 /-- FormatUint returns the string representation of i in the given base,
     for 2 <= base <= 36. The result uses the lower-case letters 'a' to 'z'
     for digit values >= 10.
@@ -760,6 +814,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   FormatBool_unfold : FuncUnfold FormatBool [] FormatBool.impl
   ParseUint_unfold : FuncUnfold ParseUint [] ParseUint.impl
   ParseInt_unfold : FuncUnfold ParseInt [] ParseInt.impl
+  Atoi_unfold : FuncUnfold Atoi [] Atoi.impl
   FormatUint_unfold : FuncUnfold FormatUint [] FormatUint.impl
   FormatInt_unfold : FuncUnfold FormatInt [] FormatInt.impl
   Itoa_unfold : FuncUnfold Itoa [] Itoa.impl
@@ -777,6 +832,7 @@ attribute [instance] Assumptions.NumError_instance
   Assumptions.FormatBool_unfold
   Assumptions.ParseUint_unfold
   Assumptions.ParseInt_unfold
+  Assumptions.Atoi_unfold
   Assumptions.FormatUint_unfold
   Assumptions.FormatInt_unfold
   Assumptions.Itoa_unfold

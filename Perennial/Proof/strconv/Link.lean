@@ -8,6 +8,7 @@ module
 public import Perennial.Proof.errors.Link
 public import Perennial.Proof.internal.strconv.Link
 public import Perennial.Proof.internal.stringslite.Link
+public import Perennial.Proof.strconv.Atoi
 public import Perennial.Proof.strconv.FormatBool
 public import Perennial.Proof.strconv.FormatInt
 public import Perennial.Proof.strconv.FormatUint
@@ -33,6 +34,18 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : strconv.Assumptions]
 
+theorem strconv.wp_syntaxError : strconv.syntaxError.spec (GF := GF) (hG := hG) :=
+  strconv.syntaxError.wp_proof internal.stringslite.wp_Clone
+
+theorem strconv.wp_rangeError : strconv.rangeError.spec (GF := GF) (hG := hG) :=
+  strconv.rangeError.wp_proof internal.stringslite.wp_Clone
+
+theorem strconv.wp_toError : strconv.toError.spec (GF := GF) (hG := hG) :=
+  strconv.toError.wp_proof strconv.wp_syntaxError strconv.wp_rangeError
+
+theorem strconv.wp_Atoi : strconv.Atoi.spec (GF := GF) (hG := hG) :=
+  strconv.Atoi.wp_proof internal.strconv.wp_Atoi strconv.wp_toError
+
 theorem strconv.wp_FormatBool : strconv.FormatBool.spec (GF := GF) (hG := hG) :=
   strconv.FormatBool.wp_proof internal.strconv.wp_FormatBool
 
@@ -44,15 +57,6 @@ theorem strconv.wp_FormatUint : strconv.FormatUint.spec (GF := GF) (hG := hG) :=
 
 theorem strconv.wp_Itoa : strconv.Itoa.spec (GF := GF) (hG := hG) :=
   strconv.Itoa.wp_proof internal.strconv.wp_Itoa
-
-theorem strconv.wp_syntaxError : strconv.syntaxError.spec (GF := GF) (hG := hG) :=
-  strconv.syntaxError.wp_proof internal.stringslite.wp_Clone
-
-theorem strconv.wp_rangeError : strconv.rangeError.spec (GF := GF) (hG := hG) :=
-  strconv.rangeError.wp_proof internal.stringslite.wp_Clone
-
-theorem strconv.wp_toError : strconv.toError.spec (GF := GF) (hG := hG) :=
-  strconv.toError.wp_proof strconv.wp_syntaxError strconv.wp_rangeError
 
 theorem strconv.wp_ParseBool : strconv.ParseBool.spec (GF := GF) (hG := hG) :=
   strconv.ParseBool.wp_proof internal.strconv.wp_ParseBool strconv.wp_toError
