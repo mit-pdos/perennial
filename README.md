@@ -252,6 +252,14 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   nondeterministic than gc's pools, victim cache and GC clearing. As with the
   channel and string models, the model's translation is part of `go.Semantics`
   (`pool_sem`).
+* **`sync.Mutex`.** `Lock`, `TryLock` and `Unlock` are trusted (`TrustedCode/sync.lean`; Go's
+  have data races that the `sync` package exempts from the race detector): the spin lock of
+  `Golang/Defn/Lock.lean`, compare-and-swapping the `bool` field `locked` of the mutex. As in
+  Go, `Mutex` is a struct whose zero value is unlocked; its underlying type is that of the Go
+  model `goose/model/mutex` (`struct { locked bool }`, part of `go.Semantics` as `mutex_sem`),
+  so `sync.Mutex{}` and `new(sync.Mutex)` are unlocked mutexes by the ordinary struct rules.
+  Go's `Mutex` is `struct { _ noCopy; mu internal/sync.Mutex }` (an `int32` state word and a
+  semaphore); the model keeps only whether it is locked.
 * **Method sets.** Whether a type implements an interface (`go.typeSetContains`, used by
   type assertions and conversions) is decided by `methodSet`, an uninterpreted function of
   the semantics constrained by `go.MethodSetIs t ms` facts (`Golang/Defn/MethodSet.lean`):

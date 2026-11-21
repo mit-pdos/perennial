@@ -57,6 +57,7 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinGeneric
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinMaxNamed
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinUint64
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMutexLiteral
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testNestedStructUpdates
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testNilDefault
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testNilVal
@@ -253,6 +254,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testM
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testMinUint64 : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinUint64.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMinUint64.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testMutexLiteral : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMutexLiteral.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testMutexLiteral.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testNestedStructUpdates : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testNestedStructUpdates.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testNestedStructUpdates.wp_proof

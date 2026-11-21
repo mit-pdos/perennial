@@ -10,3 +10,16 @@ func testsUseLocks() bool {
 	m.Unlock()
 	return true
 }
+
+type mutexHolder struct {
+	mu sync.Mutex
+	x  uint64
+}
+
+// A mutex from a composite literal is unlocked, alone or as a field of a
+// struct literal.
+func testMutexLiteral() bool {
+	m := sync.Mutex{}
+	h := mutexHolder{mu: sync.Mutex{}, x: 1}
+	return m.TryLock() && h.mu.TryLock()
+}
