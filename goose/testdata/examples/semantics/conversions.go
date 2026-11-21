@@ -31,3 +31,8 @@ func testByteSliceToString() bool {
 	x[2] = 67
 	return byteSliceToString(x) == "ABC"
 }
+
+func testByteToString() bool {
+	var a, c byte = 65, 200
+	return string(a) == "A" && string(c) == "\xc3\x88"
+}

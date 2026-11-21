@@ -65,7 +65,7 @@ class StringSemantics [GoSemanticsFunctions] : Prop where
      else Panic "slice bounds out of range")
 
   convert_byte_to_string (c : w8) :
-    ⟦Convert go.byte go.string, #c⟧ ⤳[under] #([c] : GoString)
+    ⟦Convert go.byte go.string, #c⟧ ⤳[under] #(go.runeString (uint.Z c))
 
   convert_bytes_to_string {from_ elem_type to : go.GoType}
     [from_ ↓u go.SliceType elem_type] [elem_type ↓u go.byte] [to ↓u go.string] (v : val) :

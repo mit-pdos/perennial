@@ -46,6 +46,15 @@ theorem github_com.mit_pdos.perennial.goose.model.strings.ByteSliceToString.wp_p
     · isplitl [Hsl]
       · iexact Hsl
       · ipureintro; exact Hc_lookup
+    generalize hL : (W8 0 :: _ : GoString) = L
+    have hfacts : L.length = 256 ∧ ∀ c : w8, (L.drop (uint.nat c)).take 1 = [c] := by
+      subst hL; decide +kernel
+    have h1 : sint.Z (W64 (uint.Z c')) = uint.Z c' := by word
+    have h2 : sint.Z (W64 (uint.Z c') + W64 1) = uint.Z c' + 1 := by word
+    rw [ite_eq_left (by rw [h1, h2, hfacts.1]; word),
+      show sint.nat (W64 (uint.Z c') + W64 1) - sint.nat (W64 (uint.Z c')) = 1 by word,
+      show sint.nat (W64 (uint.Z c')) = uint.nat c' by word, hfacts.2]
+    wp_auto
     wp_for_post
     iframe
     iexists (i + W64 1)

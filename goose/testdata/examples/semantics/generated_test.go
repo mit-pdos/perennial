@@ -183,6 +183,10 @@ func (suite *GoTestSuite) TestByteSliceToString() {
 	suite.Equal(true, testByteSliceToString())
 }
 
+func (suite *GoTestSuite) TestByteToString() {
+	suite.Equal(true, testByteToString())
+}
+
 func (suite *GoTestSuite) TestCopySimple() {
 	suite.Equal(true, testCopySimple())
 }

@@ -237,6 +237,12 @@ def shiftCount (t : go.GoType) : val :=
 
 end shift_count
 
+/-- `string(v)` of an integer `v`: the UTF-8 encoding of `v` if it is a valid Unicode code point,
+else that of U+FFFD. -/
+def runeString (v : Int) : GoString :=
+  (String.utf8EncodeChar (if 0 ≤ v ∧ v.toNat.isValidChar then Char.ofNat v.toNat else '\uFFFD')).map
+    (fun b => BitVec.ofNat 8 b.toNat)
+
 class UntypedIntSemantics [GoSemanticsFunctions] : Prop where
   underlying_untyped_int : go.untypedInt ↓u go.untypedInt
   neg_untyped_int (v : Int) : ⟦GoUnOp GoNeg go.untypedInt, #v⟧ ⤳ #(-v)
