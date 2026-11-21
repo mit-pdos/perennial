@@ -54,7 +54,7 @@ theorem pow2_nonneg (k : Int) : 0 ≤ pow2 k := by
       have : (0 : Nat) < 2 ^ (-k).toNat := Nat.two_pow_pos _
       exact_mod_cast this))
 
-/-- The data of a bit pattern with a clear sign bit: NaN, `+∞`, or a non-negative number. -/
+/-- The value of a bit pattern with a clear sign bit: NaN, `+∞`, or a non-negative number. -/
 theorem decode_of_msb_false (x : f.Bits) (h : x.msb = false) :
     f.decode x = .nan ∨ f.decode x = .inf false ∨ ∃ m, 0 ≤ m ∧ f.decode x = .finite false m := by
   unfold decode
@@ -122,13 +122,13 @@ theorem float32Eq_self (x : w32) : float32Eq x x = !float32IsNaN x := by
     Format.isNaNDef]
   cases binary32.decode x <;> simp
 
-/-- Every datum has an encoding (NaN has many). -/
-theorem float64Encodes_exists (d : Datum) : ∃ b, float64Encodes d b := by
+/-- Every value has an encoding (NaN has many). -/
+theorem float64Encodes_exists (d : FloatValue) : ∃ b, float64Encodes d b := by
   unfold float64Encodes Format.encodes
   cases h : binary64.encode d with
   | some b => exact ⟨b, rfl⟩
   | none => exact ⟨0x7FF8000000000000, by simp only; decide⟩
-theorem float32Encodes_exists (d : Datum) : ∃ b, float32Encodes d b := by
+theorem float32Encodes_exists (d : FloatValue) : ∃ b, float32Encodes d b := by
   unfold float32Encodes Format.encodes
   cases h : binary32.encode d with
   | some b => exact ⟨b, rfl⟩
@@ -178,7 +178,7 @@ theorem wp_go_step_rel {V : Type} (inj : V → val) (op : GoInstruction) (arg : 
   ipureintro; exact Hf
 
 /-! The arithmetic operations of `float64` and `float32` (and of the named types whose
-underlying type they are): the result `f` encodes IEEE 754's result datum (`float64Encodes`:
+underlying type they are): the result `f` encodes IEEE 754's result value (`float64Encodes`:
 its bit pattern, or any NaN if it is NaN). Use as `wp_apply wp_float64_add as %f Hf`. -/
 
 theorem wp_float64_add {t : go.GoType} [t ↓u go.float64] (v1 v2 : w64) :

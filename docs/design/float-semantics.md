@@ -27,22 +27,26 @@ encode the result**, where encoding is a relation that handles NaN.
 - `Format`: a binary interchange format given by its exponent width `w` and trailing
   significand width `t` (so `p = t + 1`, `emax = 2^(w-1) - 1`, `emin = 1 - emax`);
   `binary64 = ⟨11, 52⟩`, `binary32 = ⟨8, 23⟩`.
-- `Datum := nan | inf (neg : Bool) | finite (neg : Bool) (m : Rat)`: a floating-point datum,
-  with a finite number as a sign and an exact magnitude (`finite s 0` is `±0`).
-- `decode : Bits → Datum` (`±0`, subnormals `0.T × 2^emin`, normals `1.T × 2^(E - bias)`,
+- `FloatValue := nan | inf (neg : Bool) | finite (neg : Bool) (m : Rat)`: the exact value of
+  an operation's result: NaN, a signed infinity, or a sign and an exact rational magnitude
+  (`finite s 0` is `±0`). Roughly IEEE 754's level-2 "floating-point data", except that
+  `finite` may hold magnitudes the format cannot represent (only `decode` and `round`
+  results are representable), which is why `encode` is meaningful only on those.
+- `decode : Bits → FloatValue` (`±0`, subnormals `0.T × 2^emin`, normals `1.T × 2^(E - bias)`,
   `±∞`, NaN).
-- `round : Bool → Rat → Datum`: round to nearest, ties to even, on the subnormal grid below
+- `round : Bool → Rat → FloatValue`: round to nearest, ties to even, on the subnormal grid below
   `2^emin`; overflow to `±∞`; a result that rounds to zero keeps its sign. The only
   algorithmic part.
-- `add sub mul div : Bits → Bits → Datum`, `neg : Bits → Datum`: the standard's special cases
-  (NaN propagation; the invalid operations `∞ - ∞`, `0 × ∞`, `0 / 0`, `∞ / ∞`; `x / 0 = ±∞`;
-  signed zeros: an exact zero sum is `+0` except `(-0) + (-0) = -0`, so `x - x = +0`; the sign
+- `add sub mul div : Bits → Bits → FloatValue`, `neg : Bits → FloatValue`: the standard's
+  special cases (NaN propagation; the invalid operations `∞ - ∞`, `0 × ∞`, `0 / 0`, `∞ / ∞`;
+  `x / 0 = ±∞`; signed zeros: an exact zero sum is `+0` except `(-0) + (-0) = -0`, so `x - x = +0`; the sign
   of a product or quotient is the exclusive or), otherwise the rounding of the exact rational
-  result. `x - y` is `x + (-y)`; neg flips the sign. `ofInt : Int → Datum` rounds;
-  `convert g : Bits → Datum` rounds at format `g` (NaN stays NaN).
+  result. `x - y` is `x + (-y)`; neg flips the sign. `ofInt : Int → FloatValue` rounds;
+  `convert g : Bits → FloatValue` rounds at format `g` (NaN stays NaN).
 - `leb eq : Bits → Bits → Bool` compare decoded values (NaN unordered, `-0 == +0`).
-- `encode : Datum → Option Bits`: the unique bit pattern of a non-NaN datum (`none` for NaN);
-  `encodes : Datum → Bits → Prop`: `b` is that pattern, or any NaN for NaN.
+- `encode : FloatValue → Option Bits`: the unique bit pattern of a representable non-NaN value
+  (`none` for NaN); `encodes : FloatValue → Bits → Prop`: `b` is that pattern, or any NaN for
+  NaN.
 
 No NaN bit pattern appears in the operations. The definitions are computable (tested with
 `lean --run`) and written to be read, not to be fast. The operations are sealed
@@ -55,7 +59,7 @@ The sign and payload of a NaN result are architecture-dependent: amd64's default
 sign bit set, arm64's does not, and a constant-folded operation may differ from the same
 operation at run time. So the model says only that the result is *a* NaN. Mechanism: the
 arithmetic step rules are relations on `is_go_step_pure`, like `go_prealloc_step`, that encode
-the operation's datum:
+the operation's value:
 
 ```lean
 plus_float64 {t : go.GoType} [t ↓u go.float64] (v1 v2 : w64) :
@@ -74,10 +78,10 @@ through the wp lemmas below. Alternatives considered:
   folding, cross-compilation) and keeps an extra class in the trusted base;
 - operations returning bits with a placeholder NaN, which the step rule replaced by any NaN
   (an earlier version of this design, first with GooseLang code choosing the NaN): the
-  placeholder was meaningless; returning the datum avoids it.
+  placeholder was meaningless; returning the value avoids it.
 
 `FloatOps` is therefore removed: its fields are now plain definitions with the same names
-(`float64Add`, ...; the arithmetic ones now return a `Datum`), and nothing instantiates them.
+(`float64Add`, ...; the arithmetic ones now return a `FloatValue`), and nothing instantiates them.
 
 Which operations are nondeterministic: `+ - * /` and unary `-` (also of a NaN: IEEE 754 and gc
 on amd64 flip the sign bit of a NaN, but the Go spec does not promise it, and not every target
@@ -116,5 +120,5 @@ integer has a clear sign bit), from `Format.round_cases` (a rounding has the sig
 
 `docs/design/float/README.md`: Go prints vectors (edge cases and random bit patterns biased to
 rounding ties, cancellation, overflow and underflow), and `check.lean` checks the Lean
-definitions against them: Go's bits must encode the datum Lean computes (`encodes`), so Lean
+definitions against them: Go's bits must encode the value Lean computes (`encodes`), so Lean
 predicts a NaN exactly when Go produces one, and the exact bits otherwise.

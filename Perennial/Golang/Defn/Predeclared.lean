@@ -989,11 +989,11 @@ model:
   target's negation is non-arithmetic (pre-R6 MIPS `NEG.fmt`), so `-NaN` is treated as any
   other NaN result. So the arithmetic rules (`plus_float64`, ..., `neg_float32`) are
   relations on `is_go_step_pure`, like `go_prealloc_step`: the operation computes IEEE 754's
-  result as a datum `d` (`ieee754.Datum`) and steps to any `#f` that encodes it
-  (`float64Encodes d f`: `d`'s bit pattern, or any NaN if `d` is NaN). They are stated at every type `t`
-  whose underlying type is the float type, since `go_op_underlying` lifts only deterministic
-  rules to named types. Comparisons and integer-to-float conversions never produce a NaN, and
-  are deterministic (`⤳[under]` rules).
+  result as a value `d` (`ieee754.FloatValue`) and steps to any `#f` that encodes it
+  (`float64Encodes d f`: `d`'s bit pattern, or any NaN if `d` is NaN). They are stated at
+  every type `t` whose underlying type is the float type, since `go_op_underlying` lifts only
+  deterministic rules to named types. Comparisons and integer-to-float conversions never
+  produce a NaN, and are deterministic (`⤳[under]` rules).
 * **Fused multiply-add is not modelled (known limitation).** The Go spec ("Floating-point
   operators") allows an implementation to fuse operations, e.g. to compute `x*y + z` with a
   single rounding, as gc does on arm64 and other architectures with an FMA instruction; the
@@ -1007,8 +1007,9 @@ class UntypedFloatSemantics [GoSemanticsFunctions] : Prop where
   underlying_untyped_float : go.untypedFloat ↓u go.untypedFloat
   convert_untyped_float64 (v : w64) : ⟦Convert go.untypedFloat go.float64, #v⟧ ⤳[under] #v
   -- `float32(c)` of an untyped float constant `c`: the binary32 rounding of `v`, the
-  -- binary64 rounding of `c`. Deterministic: a constant is never a NaN (`float64ToFloat32`). (Go rounds `c`
-  -- directly; the two roundings can differ when `v` is halfway between two float32s.)
+  -- binary64 rounding of `c`. Deterministic: a constant is never a NaN (`float64ToFloat32`).
+  -- (Go rounds `c` directly; the two roundings can differ when `v` is halfway between two
+  -- float32s.)
   convert_untyped_float32 (v : w64) : ⟦Convert go.untypedFloat go.float32, #v⟧
     ⤳[under] #(float64ToFloat32 v)
   -- `-c` of an untyped float constant `c`, represented by the bits of its `float64` rounding:

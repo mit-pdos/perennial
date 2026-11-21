@@ -1,8 +1,8 @@
 /-
 The differential test of the IEEE 754 definitions (`Perennial/Golang/Defn/Float.lean`) against
-Go: reads the vectors printed by `gen/main.go` and checks that Go's result bits encode the datum
+Go: reads the vectors printed by `gen/main.go` and checks that Go's result bits encode the value
 that the Lean definitions compute (`Format.encodes`: its unique bit pattern, or any NaN if the
-datum is NaN), so Lean predicts a NaN exactly when Go produces one. See README.md.
+value is NaN), so Lean predicts a NaN exactly when Go produces one. See README.md.
 
 Usage: lake env lean --run docs/design/float/check.lean vectors.txt
 -/
@@ -19,10 +19,10 @@ def parseHex (s : String) : Option Nat :=
 /-- Whether Lean agrees with Go's `want` on `op args`: `none` for an unknown line. -/
 def check (op : String) (args : List Nat) (want : String) : Option Bool := do
   -- `float64Encodes d g`, decided
-  let h64 (d : Datum) : Option Bool := do
+  let h64 (d : FloatValue) : Option Bool := do
     let g : w64 := BitVec.ofNat 64 (← parseHex want)
     return match binary64.encode d with | some b => b == g | none => float64IsNaN g
-  let h32 (d : Datum) : Option Bool := do
+  let h32 (d : FloatValue) : Option Bool := do
     let g : w32 := BitVec.ofNat 32 (← parseHex want)
     return match binary32.encode d with | some b => b == g | none => float32IsNaN g
   -- the bits of a conversion that never yields NaN
