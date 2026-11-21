@@ -215,6 +215,11 @@ noncomputable def RecursiveEmbedded.ty [GooseExts] [GoGlobalContext] : go.GoType
 
 attribute [irreducible] RecursiveEmbedded.ty
 
+noncomputable def runeStruct.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.runeStruct" [])
+
+attribute [irreducible] runeStruct.ty
+
 noncomputable def SliceAlias.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.SliceAlias" [])
 
@@ -907,6 +912,9 @@ noncomputable def VoidImplicitReturnInBranch [GooseExts] [GoGlobalContext] : GoS
 
 noncomputable def useRuneOps [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.useRuneOps"
+
+noncomputable def useRuneStruct [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.useRuneStruct"
 
 noncomputable def sliceOps [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/unittest.sliceOps"
@@ -4851,6 +4859,20 @@ noncomputable def useRuneOps.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "r") (App (Val (GoInstruction (GoOp GoPlus go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "r")) (Val #(W32 1))))))))))
   (App (Val (GoInstruction (GoLoad go.rune))) (Var "$res0")))))
 
+/-- go: rune.go:18:6 -/
+noncomputable def useRuneStruct.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "s" (App (Val (GoInstruction (GoAlloc runeStruct.ty))) (Var "s"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (App (Val (GoInstruction (StructFieldRef runeStruct.ty go!"r"))) (Var "s"))) (App (Val (GoInstruction (GoLoad go.int32))) (App (Val (GoInstruction (StructFieldRef runeStruct.ty go!"n"))) (Var "s")))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.rune))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.rune))) (Var "$res0")))))
+
 /-- go: slices.go:5:6 -/
 noncomputable def sliceOps.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -7106,6 +7128,47 @@ attribute [instance] RecursiveEmbedded.TypeAssumptions.type_repr
   RecursiveEmbedded.TypeAssumptions.ptr_method_set
   RecursiveEmbedded.TypeAssumptions.ptr_recurEmbeddedMethod_unfold
 
+structure runeStruct [GooseExts] where
+  mk ::
+  r' : w32
+  n' : w32
+
+noncomputable instance runeStruct.zero_val [GooseExts] : ZeroVal runeStruct :=
+  ⟨runeStruct.mk zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def runeStruct.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"r" go.rune),
+(go.field_decl.FieldDecl go!"n" go.int32)]
+
+@[irreducible] noncomputable def runeStruct.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  runeStruct.fieldsUnsealed
+
+noncomputable instance equals_unfold_runeStruct [GooseExts] [GoGlobalContext] :
+    EqualsUnfold runeStruct.fields runeStruct.fieldsUnsealed :=
+  ⟨by unfold runeStruct.fields; rfl⟩
+
+@[reducible] noncomputable def runeStruct.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType runeStruct.fields)
+
+class runeStruct.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying runeStruct.underlying runeStruct
+  underlying : go.UnderlyingDirectedEq runeStruct.ty runeStruct.underlying
+  get_r : ∀ (x : runeStruct), go.IsGoStepPureDetTagged under (StructFieldGet runeStruct.underlying go!"r") #x (Val #(x.r'))
+  set_r : ∀ (x : runeStruct) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet runeStruct.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : runeStruct)))
+  get_n : ∀ (x : runeStruct), go.IsGoStepPureDetTagged under (StructFieldGet runeStruct.underlying go!"n") #x (Val #(x.n'))
+  set_n : ∀ (x : runeStruct) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet runeStruct.underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : runeStruct)))
+  method_set : go.MethodSetIs runeStruct.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType runeStruct.ty) []
+
+attribute [instance] runeStruct.TypeAssumptions.type_repr
+  runeStruct.TypeAssumptions.underlying
+  runeStruct.TypeAssumptions.get_r
+  runeStruct.TypeAssumptions.set_r
+  runeStruct.TypeAssumptions.get_n
+  runeStruct.TypeAssumptions.set_n
+  runeStruct.TypeAssumptions.method_set
+  runeStruct.TypeAssumptions.ptr_method_set
+
 abbrev SliceAlias [GooseExts] : Type := GoSlice
 
 @[reducible] noncomputable def SliceAlias.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
@@ -7535,6 +7598,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   R_instance : R.TypeAssumptions
   Other_instance : Other.TypeAssumptions
   RecursiveEmbedded_instance : RecursiveEmbedded.TypeAssumptions
+  runeStruct_instance : runeStruct.TypeAssumptions
   SliceAlias_instance : SliceAlias.TypeAssumptions
   thing_instance : thing.TypeAssumptions
   sliceOfThings_instance : sliceOfThings.TypeAssumptions
@@ -7715,6 +7779,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   VoidButEndsWithReturn_unfold : FuncUnfold VoidButEndsWithReturn [] VoidButEndsWithReturn.impl
   VoidImplicitReturnInBranch_unfold : FuncUnfold VoidImplicitReturnInBranch [] VoidImplicitReturnInBranch.impl
   useRuneOps_unfold : FuncUnfold useRuneOps [] useRuneOps.impl
+  useRuneStruct_unfold : FuncUnfold useRuneStruct [] useRuneStruct.impl
   sliceOps_unfold : FuncUnfold sliceOps [] sliceOps.impl
   makeSingletonSlice_unfold : FuncUnfold makeSingletonSlice [] makeSingletonSlice.impl
   makeAlias_unfold : FuncUnfold makeAlias [] makeAlias.impl
@@ -7799,6 +7864,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.R_instance
   Assumptions.Other_instance
   Assumptions.RecursiveEmbedded_instance
+  Assumptions.runeStruct_instance
   Assumptions.SliceAlias_instance
   Assumptions.thing_instance
   Assumptions.sliceOfThings_instance
@@ -7979,6 +8045,7 @@ attribute [instance] Assumptions.Foo_instance
   Assumptions.VoidButEndsWithReturn_unfold
   Assumptions.VoidImplicitReturnInBranch_unfold
   Assumptions.useRuneOps_unfold
+  Assumptions.useRuneStruct_unfold
   Assumptions.sliceOps_unfold
   Assumptions.makeSingletonSlice_unfold
   Assumptions.makeAlias_unfold
