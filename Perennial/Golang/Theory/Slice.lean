@@ -908,7 +908,7 @@ theorem wp_copyForward {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped
     (sl : GoSlice) (vs : List V) (sl2 : GoSlice) (vs' : List V) (dq : DFrac) :
     {{ (sl ↦* vs ∗ sl2 ↦*{dq} vs' : IProp GF) }}
       (App (App (Val (slice.copyForward st t)) (Val #sl)) (Val #sl2)) @ s; E
-    {{ (n : w64), RET #n; ⌜sint.nat n = min vs.length vs'.length⌝ ∗
+    {{ (n : w64), RET #n; ⌜sint.Z n = min vs.length vs'.length⌝ ∗
         sl ↦* (vs'.take vs.length ++ vs.drop vs'.length) ∗ sl2 ↦*{dq} vs' }} := by
   iintro %Φ ⟨Hs1, Hs2⟩ HΦ
   unfold slice.copyForward
@@ -1004,11 +1004,11 @@ theorem wp_slice_copy_of_len_zero {st t : go.GoType} [st ↓u go.SliceType t]
 
 /-- `copy(dst, src)` on separately owned slices (for overlapping ones, see
 `wp_slice_copy_within`). -/
-theorem wp_slice_copy {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
+theorem wp_slice_copy_int {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
     (sl : GoSlice) (vs : List V) (sl2 : GoSlice) (vs' : List V) (dq : DFrac) :
     {{ (sl ↦* vs ∗ sl2 ↦*{dq} vs' : IProp GF) }}
       (App (App (Val #(functions go.copy [st])) (Val #sl)) (Val #sl2)) @ s; E
-    {{ (n : w64), RET #n; ⌜sint.nat n = min vs.length vs'.length⌝ ∗
+    {{ (n : w64), RET #n; ⌜sint.Z n = min vs.length vs'.length⌝ ∗
         sl ↦* (vs'.take vs.length ++ vs.drop vs'.length) ∗ sl2 ↦*{dq} vs' }} := by
   wp_start as ⟨Hs1, Hs2⟩
   ihave %Hlen2 := ownSlice_len _ _ _ $$ Hs2
@@ -1026,6 +1026,20 @@ theorem wp_slice_copy {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped 
   iapply HΦ
   iframe
   ipureintro; exact Hn
+
+/-- `copy(dst, src)` on separately owned slices, with the count as a natural number (see
+`wp_slice_copy_int`, which also says it is not negative). -/
+theorem wp_slice_copy {st t : go.GoType} [st ↓u go.SliceType t] [IntoValTyped (GF := GF) V t]
+    (sl : GoSlice) (vs : List V) (sl2 : GoSlice) (vs' : List V) (dq : DFrac) :
+    {{ (sl ↦* vs ∗ sl2 ↦*{dq} vs' : IProp GF) }}
+      (App (App (Val #(functions go.copy [st])) (Val #sl)) (Val #sl2)) @ s; E
+    {{ (n : w64), RET #n; ⌜sint.nat n = min vs.length vs'.length⌝ ∗
+        sl ↦* (vs'.take vs.length ++ vs.drop vs'.length) ∗ sl2 ↦*{dq} vs' }} := by
+  iintro %Φ Hpre HΦ
+  wp_apply wp_slice_copy_int sl vs sl2 vs' dq $$ Hpre as %n ⟨%Hn, Hs1, Hs2⟩
+  iapply HΦ
+  iframe
+  ipureintro; rw [show sint.nat n = (sint.Z n).toNat from rfl, Hn]; simp
 
 theorem list_slice3 {A : Type} (l1 l2 l3 : List A) (a b : Nat) (h1 : l1.length = a)
     (h2 : l2.length = b - a) (hab : a ≤ b) :
@@ -1088,7 +1102,7 @@ theorem wp_slice_copy_within {st t : go.GoType} [st ↓u go.SliceType t]
     simp only [subslice, List.length_drop, List.length_take]; word
   rw [hla, hlc] at Hn ⊢
   isplitr
-  · ipureintro; exact Hn
+  · ipureintro; rw [show sint.nat n = (sint.Z n).toNat from rfl, Hn]; simp
   have hlt : (vs.take (sint.nat a)).length = sint.nat a := by
     simp only [List.length_take]; word
   have hmid : ((subslice (sint.nat c) (sint.nat d) vs).take (sint.nat b - sint.nat a) ++
