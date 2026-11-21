@@ -227,12 +227,14 @@ initialization; Go never writes it afterwards) holds a fixed value, which `Now`,
 `Until` read; and so does the global `Local` (`&localLoc`, set by the initialization), which `Now`
 reads. Go programs may assign `time.Local`; this invariant hands out only a persistent
 read-only points-to of it, so a program that writes it cannot be verified (its proof would need
-the full points-to), while every read gets the value the initialization stored. And the runtime
+the full points-to), while every read gets the value the initialization stored. The same holds of
+the global `UTC` (`&utcLoc`), which `Time.Location` reads. And the runtime
 clock, allocated by the initialization (`asynctimerchan`'s trusted initializer), is in place: a first
 bound `clockLb (-2^63)` (every `int64` is at least that), which carries the clock's invariant. -/
 abbrev isInit : IProp GF :=
   iprop((∃ v : w64, globalAddr time.startNano ↦□ v) ∗
     (∃ l : Loc, globalAddr time.Local ↦□ l) ∗
+    (∃ l : Loc, globalAddr time.UTC ↦□ l) ∗
     clockLb (-2 ^ 63))
 
 instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.time :=
@@ -248,7 +250,7 @@ theorem isInit_access :
 theorem isPkgInit_clockLb :
     isPkgInit (PROP := IProp GF) pkg_id.time ⊢ clockLb (GF := GF) (-2 ^ 63) := by
   iintro #H
-  ihave ⟨-, -, #Hlb⟩ := isInit_access $$ H
+  ihave ⟨-, -, -, #Hlb⟩ := isInit_access $$ H
   iexact Hlb
 
 set_option goose.wp.extras true in

@@ -24,6 +24,7 @@ public import Perennial.Proof.time.Time__After
 public import Perennial.Proof.time.Time__Before
 public import Perennial.Proof.time.Time__Equal
 public import Perennial.Proof.time.Time__IsZero
+public import Perennial.Proof.time.Time__Location
 public import Perennial.Proof.time.Time__Sub
 public import Perennial.Proof.time.Time__Unix
 public import Perennial.Proof.time.Time__UnixNano
@@ -203,6 +204,9 @@ theorem time.Time.wp_After : time.Time.After.spec (GF := GF) (hG := hG) :=
 
 theorem time.Time.wp_IsZero : time.Time.IsZero.spec (GF := GF) (hG := hG) :=
   time.Time.IsZero.wp_proof
+
+theorem time.Time.wp_Location : time.Time.Location.spec (GF := GF) (hG := hG) :=
+  time.Time.Location.wp_proof
 
 theorem time.Time.wp_unixSec : time.Time.unixSec.spec (GF := GF) (hG := hG) :=
   time.Time.unixSec.wp_proof time.Time.wp_sec
