@@ -1983,6 +1983,35 @@ noncomputable def unixTime.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore Time.ty))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$res0"))))))
 
+/-- Location returns the time zone information associated with t.
+
+    go: time.go:1393:15 -/
+noncomputable def Time.Location.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "t"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Location.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Location.ty)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "t" (App (Val (GoInstruction (GoAlloc Time.ty))) (Var "t"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Location.ty)))) (App (Val (GoInstruction (StructFieldRef Time.ty go!"loc"))) (Var "t")))
+  (Let "l" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Location.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Location.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Location.ty)))) (Var "l"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Location.ty)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.PointerType Location.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Location.ty)))) (Var "l")) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType Location.ty)))) (Val UntypedNil)))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Location.ty)))) (App (Val (GoInstruction (GlobalVarAddr UTC))) (Val #())))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Location.ty)))) (Pair (Var "l") (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Location.ty)))) (Pair (Var "l") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Location.ty)))) (Var "$res0"))))))
+
 /-- Unix returns t as a Unix time, the number of seconds elapsed
     since January 1, 1970 UTC. The result does not depend on the
     location associated with t.
@@ -2504,6 +2533,7 @@ class Time.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
   Before_unfold : MethodUnfold Time.ty go!"Before" Time.Before.impl
   Equal_unfold : MethodUnfold Time.ty go!"Equal" Time.Equal.impl
   IsZero_unfold : MethodUnfold Time.ty go!"IsZero" Time.IsZero.impl
+  Location_unfold : MethodUnfold Time.ty go!"Location" Time.Location.impl
   Sub_unfold : MethodUnfold Time.ty go!"Sub" Time.Sub.impl
   Unix_unfold : MethodUnfold Time.ty go!"Unix" Time.Unix.impl
   UnixNano_unfold : MethodUnfold Time.ty go!"UnixNano" Time.UnixNano.impl
@@ -2517,6 +2547,8 @@ class Time.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSem
 (App (Val (GoInstruction (MethodResolve Time.ty go!"Equal"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
   ptr_IsZero_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"IsZero" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Time.ty go!"IsZero"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
+  ptr_Location_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"Location" (LamV "$r"
+(App (Val (GoInstruction (MethodResolve Time.ty go!"Location"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
   ptr_Sub_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"Sub" (LamV "$r"
 (App (Val (GoInstruction (MethodResolve Time.ty go!"Sub"))) (App (Val (GoInstruction (GoLoad Time.ty))) (Var "$r"))))
   ptr_Unix_unfold : MethodUnfold (go.GoType.PointerType Time.ty) go!"Unix" (LamV "$r"
@@ -2544,6 +2576,7 @@ attribute [instance] Time.TypeAssumptions.type_repr
   Time.TypeAssumptions.Before_unfold
   Time.TypeAssumptions.Equal_unfold
   Time.TypeAssumptions.IsZero_unfold
+  Time.TypeAssumptions.Location_unfold
   Time.TypeAssumptions.Sub_unfold
   Time.TypeAssumptions.Unix_unfold
   Time.TypeAssumptions.UnixNano_unfold
@@ -2552,6 +2585,7 @@ attribute [instance] Time.TypeAssumptions.type_repr
   Time.TypeAssumptions.ptr_Before_unfold
   Time.TypeAssumptions.ptr_Equal_unfold
   Time.TypeAssumptions.ptr_IsZero_unfold
+  Time.TypeAssumptions.ptr_Location_unfold
   Time.TypeAssumptions.ptr_Sub_unfold
   Time.TypeAssumptions.ptr_Unix_unfold
   Time.TypeAssumptions.ptr_UnixNano_unfold

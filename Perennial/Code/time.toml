@@ -74,6 +74,7 @@ translate = [
   "fmtFrac",
   "fmtInt",
   "Time.IsZero",
+  "Time.Location",
   "Time.Unix",
   "Unix",
   "unixTime",
