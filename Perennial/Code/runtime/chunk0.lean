@@ -2034,7 +2034,7 @@ opaque m.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque _func.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque itab [GooseExts] [GoGlobalContext] : go.GoType
+opaque itab.ty [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque pcHeader.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
@@ -2050,33 +2050,33 @@ opaque traceWriter.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque traceMap.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque nameOff [GooseExts] [GoGlobalContext] : go.GoType
+opaque nameOff.ty [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque typeOff [GooseExts] [GoGlobalContext] : go.GoType
+opaque typeOff.ty [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque textOff [GooseExts] [GoGlobalContext] : go.GoType
+opaque textOff.ty [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque _type [GooseExts] [GoGlobalContext] : go.GoType
+opaque _type.ty [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque rtype.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque uncommontype [GooseExts] [GoGlobalContext] : go.GoType
+opaque uncommontype.ty [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque interfacetype [GooseExts] [GoGlobalContext] : go.GoType
+opaque interfacetype.ty [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque arraytype [GooseExts] [GoGlobalContext] : go.GoType
+opaque arraytype.ty [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque chantype [GooseExts] [GoGlobalContext] : go.GoType
+opaque chantype.ty [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque slicetype [GooseExts] [GoGlobalContext] : go.GoType
+opaque slicetype.ty [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque functype [GooseExts] [GoGlobalContext] : go.GoType
+opaque functype.ty [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque ptrtype [GooseExts] [GoGlobalContext] : go.GoType
+opaque ptrtype.ty [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque name [GooseExts] [GoGlobalContext] : go.GoType
+opaque name.ty [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque structtype [GooseExts] [GoGlobalContext] : go.GoType
+opaque structtype.ty [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque _typePair.underlying [GooseExts] [GoGlobalContext] : go.GoType
 

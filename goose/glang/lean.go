@@ -264,7 +264,7 @@ var leanRenames = map[string]string{
 // leanEncoded translates the suffix encodings of generated names, which the
 // translator uses internally, into Lean namespaces:
 // X'underlying -> X.underlying (see TypeImpl), X'fds -> X.fields,
-// X'fds_unsealed -> X.fieldsUnsealed, X'init -> X.init,
+// X'fds_unsealed -> X.fieldsUnsealed, X'init -> X.init, X'ty -> X.ty (see TypeDesc),
 // X_Assumptions -> X.TypeAssumptions (the per-type assumptions class; the
 // package-level class is `Assumptions`, and a type named like its package
 // would make `pkg.Assumptions` ambiguous). ok is false if s has none of these forms.
@@ -284,6 +284,8 @@ func leanEncoded(s string) (string, bool) {
 		comps = []string{q(strings.TrimSuffix(last, "'fds")), "fields"}
 	case strings.HasSuffix(last, "'init") && last != "'init":
 		comps = []string{q(strings.TrimSuffix(last, "'init")), "init"}
+	case strings.HasSuffix(last, "'ty") && last != "'ty":
+		comps = []string{q(strings.TrimSuffix(last, "'ty")), "ty"}
 	case strings.HasSuffix(last, "_Assumptions") && last != "_Assumptions":
 		comps = []string{q(strings.TrimSuffix(last, "_Assumptions")), "TypeAssumptions"}
 	default:
@@ -294,6 +296,12 @@ func leanEncoded(s string) (string, bool) {
 		r = LeanQuote(prefix) + "." + r
 	}
 	return r, true
+}
+
+// TypeDesc is the name of the descriptor (a go.GoType) of a Go type
+// declaration, X.ty, as an internal encoding (see leanEncoded).
+func TypeDesc(name string) string {
+	return name + "'ty"
 }
 
 // TypeImpl is the name of the definition of the underlying type of a Go named

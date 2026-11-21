@@ -226,25 +226,25 @@ opaque MapIter.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque Kind.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque uncommonType [GooseExts] [GoGlobalContext] : go.GoType
+opaque uncommonType.ty [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque common.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque rtype.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque aNameOff [GooseExts] [GoGlobalContext] : go.GoType
+opaque aNameOff.ty [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque aTypeOff [GooseExts] [GoGlobalContext] : go.GoType
+opaque aTypeOff.ty [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque aTextOff [GooseExts] [GoGlobalContext] : go.GoType
+opaque aTextOff.ty [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque ChanDir.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque arrayType [GooseExts] [GoGlobalContext] : go.GoType
+opaque arrayType.ty [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque chanType [GooseExts] [GoGlobalContext] : go.GoType
+opaque chanType.ty [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque funcType [GooseExts] [GoGlobalContext] : go.GoType
+opaque funcType.ty [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque interfaceType.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
@@ -252,7 +252,7 @@ opaque ptrType.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque sliceType.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque structField [GooseExts] [GoGlobalContext] : go.GoType
+opaque structField.ty [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque structType.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
