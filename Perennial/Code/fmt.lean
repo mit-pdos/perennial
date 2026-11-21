@@ -111,8 +111,6 @@ attribute [irreducible] readRune.ty
 
 opaque pp.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
-opaque readRune.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
 opaque ldigits [GooseExts] [GoGlobalContext] : val
 
 opaque udigits [GooseExts] [GoGlobalContext] : val
@@ -976,22 +974,62 @@ attribute [instance] ss.TypeAssumptions.type_repr
   ss.TypeAssumptions.method_set
   ss.TypeAssumptions.ptr_method_set
 
-opaque readRune.nonempty_type : NonemptyType.{0}
-def readRune : Type := readRune.nonempty_type.type
-instance readRune.nonempty : Nonempty readRune := readRune.nonempty_type.property
-opaque readRune.zero_val : ZeroVal readRune := ⟨Classical.ofNonempty⟩
-attribute [instance] readRune.zero_val
+structure readRune [GooseExts] where
+  mk ::
+  reader' : _root_.Perennial.io.Reader
+  buf' : (GoArray w8 4)
+  pending' : w64
+  pendBuf' : (GoArray w8 4)
+  peekRune' : w32
+
+noncomputable instance readRune.zero_val [GooseExts] : ZeroVal readRune :=
+  ⟨readRune.mk zeroValDef zeroValDef zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def readRune.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"reader" _root_.Perennial.io.Reader.ty),
+(go.field_decl.FieldDecl go!"buf" (go.GoType.ArrayType 4 go.byte)),
+(go.field_decl.FieldDecl go!"pending" go.int),
+(go.field_decl.FieldDecl go!"pendBuf" (go.GoType.ArrayType 4 go.byte)),
+(go.field_decl.FieldDecl go!"peekRune" go.rune)]
+
+@[irreducible] noncomputable def readRune.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  readRune.fieldsUnsealed
+
+noncomputable instance equals_unfold_readRune [GooseExts] [GoGlobalContext] :
+    EqualsUnfold readRune.fields readRune.fieldsUnsealed :=
+  ⟨by unfold readRune.fields; rfl⟩
+
+@[reducible] noncomputable def readRune.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType readRune.fields)
 
 class readRune.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying readRune.underlying readRune
   underlying : go.UnderlyingDirectedEq readRune.ty readRune.underlying
-  isUnderlying : go.IsUnderlying readRune.underlying readRune.underlying
+  get_reader : ∀ (x : readRune), go.IsGoStepPureDetTagged under (StructFieldGet readRune.underlying go!"reader") #x (Val #(x.reader'))
+  set_reader : ∀ (x : readRune) (y : _root_.Perennial.io.Reader), go.IsGoStepPureDetTagged under (StructFieldSet readRune.underlying go!"reader") (PairV #x #y) (Val #(({ x with reader' := y } : readRune)))
+  get_buf : ∀ (x : readRune), go.IsGoStepPureDetTagged under (StructFieldGet readRune.underlying go!"buf") #x (Val #(x.buf'))
+  set_buf : ∀ (x : readRune) (y : (GoArray w8 4)), go.IsGoStepPureDetTagged under (StructFieldSet readRune.underlying go!"buf") (PairV #x #y) (Val #(({ x with buf' := y } : readRune)))
+  get_pending : ∀ (x : readRune), go.IsGoStepPureDetTagged under (StructFieldGet readRune.underlying go!"pending") #x (Val #(x.pending'))
+  set_pending : ∀ (x : readRune) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet readRune.underlying go!"pending") (PairV #x #y) (Val #(({ x with pending' := y } : readRune)))
+  get_pendBuf : ∀ (x : readRune), go.IsGoStepPureDetTagged under (StructFieldGet readRune.underlying go!"pendBuf") #x (Val #(x.pendBuf'))
+  set_pendBuf : ∀ (x : readRune) (y : (GoArray w8 4)), go.IsGoStepPureDetTagged under (StructFieldSet readRune.underlying go!"pendBuf") (PairV #x #y) (Val #(({ x with pendBuf' := y } : readRune)))
+  get_peekRune : ∀ (x : readRune), go.IsGoStepPureDetTagged under (StructFieldGet readRune.underlying go!"peekRune") #x (Val #(x.peekRune'))
+  set_peekRune : ∀ (x : readRune) (y : w32), go.IsGoStepPureDetTagged under (StructFieldSet readRune.underlying go!"peekRune") (PairV #x #y) (Val #(({ x with peekRune' := y } : readRune)))
   method_set : go.MethodSetIs readRune.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType readRune.ty) [(go!"ReadRune", (some (go.signature.Signature [] false [go.rune, go.int, go.error]))), (go!"UnreadRune", (some (go.signature.Signature [] false [go.error]))), (go!"fmt.readByte", (some (go.signature.Signature [] false [go.byte, go.error])))]
 
 attribute [instance] readRune.TypeAssumptions.type_repr
   readRune.TypeAssumptions.underlying
-  readRune.TypeAssumptions.isUnderlying
+  readRune.TypeAssumptions.get_reader
+  readRune.TypeAssumptions.set_reader
+  readRune.TypeAssumptions.get_buf
+  readRune.TypeAssumptions.set_buf
+  readRune.TypeAssumptions.get_pending
+  readRune.TypeAssumptions.set_pending
+  readRune.TypeAssumptions.get_pendBuf
+  readRune.TypeAssumptions.set_pendBuf
+  readRune.TypeAssumptions.get_peekRune
+  readRune.TypeAssumptions.set_peekRune
   readRune.TypeAssumptions.method_set
   readRune.TypeAssumptions.ptr_method_set
 

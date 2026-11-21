@@ -719,12 +719,101 @@ variable [sem : go.Semantics]
 variable [package_sem' : fmt.Assumptions]
 
 noncomputable instance readRune_typed_pointsto :
-    TypedPointsto (GF := GF) fmt.readRune :=
-  sorry -- axiomatized type
+    TypedPointsto (GF := GF) fmt.readRune where
+  typedPointstoDef l v dq := iprop(
+    "reader" ∷ typedPointsto (structFieldRef fmt.readRune go!"reader" l) v.reader' dq ∗
+    "buf" ∷ typedPointsto (structFieldRef fmt.readRune go!"buf" l) v.buf' dq ∗
+    "pending" ∷ typedPointsto (structFieldRef fmt.readRune go!"pending" l) v.pending' dq ∗
+    "pendBuf" ∷ typedPointsto (structFieldRef fmt.readRune go!"pendBuf" l) v.pendBuf' dq ∗
+    "peekRune" ∷ typedPointsto (structFieldRef fmt.readRune go!"peekRune" l) v.peekRune' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance readRune_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) fmt.readRune fmt.readRune.underlying :=
-  sorry -- axiomatized type
+    IntoValTypedUnderlying (GF := GF) fmt.readRune fmt.readRune.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance readRune_access_load_reader (l : Loc) (v : fmt.readRune) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef fmt.readRune go!"reader" l) v.reader' dq)
+      (typedPointsto (structFieldRef fmt.readRune go!"reader" l) v.reader' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance readRune_access_store_reader (l : Loc) (v : fmt.readRune) (reader' : io.Reader) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef fmt.readRune go!"reader" l) v.reader' (DFrac.own 1))
+      (typedPointsto (structFieldRef fmt.readRune go!"reader" l) reader' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with reader' := reader' } : fmt.readRune) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance readRune_access_load_buf (l : Loc) (v : fmt.readRune) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef fmt.readRune go!"buf" l) v.buf' dq)
+      (typedPointsto (structFieldRef fmt.readRune go!"buf" l) v.buf' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance readRune_access_store_buf (l : Loc) (v : fmt.readRune) (buf' : (GoArray w8 4)) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef fmt.readRune go!"buf" l) v.buf' (DFrac.own 1))
+      (typedPointsto (structFieldRef fmt.readRune go!"buf" l) buf' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with buf' := buf' } : fmt.readRune) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance readRune_access_load_pending (l : Loc) (v : fmt.readRune) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef fmt.readRune go!"pending" l) v.pending' dq)
+      (typedPointsto (structFieldRef fmt.readRune go!"pending" l) v.pending' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance readRune_access_store_pending (l : Loc) (v : fmt.readRune) (pending' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef fmt.readRune go!"pending" l) v.pending' (DFrac.own 1))
+      (typedPointsto (structFieldRef fmt.readRune go!"pending" l) pending' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pending' := pending' } : fmt.readRune) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance readRune_access_load_pendBuf (l : Loc) (v : fmt.readRune) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef fmt.readRune go!"pendBuf" l) v.pendBuf' dq)
+      (typedPointsto (structFieldRef fmt.readRune go!"pendBuf" l) v.pendBuf' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance readRune_access_store_pendBuf (l : Loc) (v : fmt.readRune) (pendBuf' : (GoArray w8 4)) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef fmt.readRune go!"pendBuf" l) v.pendBuf' (DFrac.own 1))
+      (typedPointsto (structFieldRef fmt.readRune go!"pendBuf" l) pendBuf' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with pendBuf' := pendBuf' } : fmt.readRune) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance readRune_access_load_peekRune (l : Loc) (v : fmt.readRune) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef fmt.readRune go!"peekRune" l) v.peekRune' dq)
+      (typedPointsto (structFieldRef fmt.readRune go!"peekRune" l) v.peekRune' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance readRune_access_store_peekRune (l : Loc) (v : fmt.readRune) (peekRune' : w32) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef fmt.readRune go!"peekRune" l) v.peekRune' (DFrac.own 1))
+      (typedPointsto (structFieldRef fmt.readRune go!"peekRune" l) peekRune' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with peekRune' := peekRune' } : fmt.readRune) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end readRune
