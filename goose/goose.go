@@ -2724,10 +2724,16 @@ func (ctx *Ctx) constantLiteral(e ast.Expr) glang.Expr {
 			}
 		case types.Float64, types.UntypedFloat:
 			f, _ := constant.Float64Val(val)
+			if f == 0 {
+				f = 0
+			}
 			bits := math.Float64bits(f)
 			return glang.Int64Val{Value: glang.ZLiteral{Value: new(big.Int).SetUint64(bits)}}
 		case types.Float32:
 			f, _ := constant.Float32Val(val)
+			if f == 0 {
+				f = 0
+			}
 			bits := math.Float32bits(f)
 			return glang.Int32Val{Value: glang.ZLiteral{Value: new(big.Int).SetUint64(uint64(bits))}}
 		}
