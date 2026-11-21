@@ -1,0 +1,12 @@
+# The variables of skipvars.go that goose does not translate.
+[[skip]]
+names = ["X"]
+reason = "newX allocates a uint64 and returns its address: it terminates, cannot panic, and has no effect beyond X"
+
+[[skip]]
+names = ["a", "b", "Z"]
+reason = "pair returns two constants; Z has no initializer"
+
+[[skip]]
+names = ["_"]
+reason = "an interface check and a struct literal: no calls"

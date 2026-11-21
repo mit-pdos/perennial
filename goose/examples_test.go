@@ -191,6 +191,29 @@ type errorExpectation struct {
 	Error string
 }
 
+// hasExpectedError reports whether a directory of testdata/negative-tests is
+// a test: a package whose Go files have an ERROR comment. Other directories
+// are a test's helpers: a package it imports, or its goose configs.
+func hasExpectedError(pkgDir string) bool {
+	names, err := os.ReadDir(pkgDir)
+	if err != nil {
+		panic(err)
+	}
+	for _, name := range names {
+		if name.IsDir() || !strings.HasSuffix(name.Name(), ".go") {
+			continue
+		}
+		contents, err := os.ReadFile(path.Join(pkgDir, name.Name()))
+		if err != nil {
+			panic(err)
+		}
+		if regexp.MustCompile(`ERROR ?(.*)`).Match(contents) {
+			return true
+		}
+	}
+	return false
+}
+
 func getExpectedError(pkgDir string) *errorExpectation {
 	errRegex := regexp.MustCompile(`ERROR ?(.*)`)
 	f, err := os.Open(pkgDir)
@@ -246,7 +269,7 @@ func getFirstConversionError(err error) *goose.ConversionError {
 func TestNegativeExamples(testingT *testing.T) {
 	tests := loadTests("./testdata/negative-tests")
 	for _, t := range tests {
-		if !t.isDir() {
+		if !t.isDir() || !hasExpectedError(t.path) {
 			continue
 		}
 		testingT.Run(t.name, func(testingT *testing.T) {

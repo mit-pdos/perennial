@@ -245,6 +245,7 @@ def main():
             path.join(goose_dir, "testdata/examples"),
             "./filteredimport",
             "./skipinit/...",
+            "./skipvars",
             "./semantics",
             "./unittest/...",
             "./channel/...",
