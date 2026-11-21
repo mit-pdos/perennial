@@ -12,6 +12,9 @@ public import Perennial.Proof.time.Duration__Abs
 public import Perennial.Proof.time.Duration__Microseconds
 public import Perennial.Proof.time.Duration__Milliseconds
 public import Perennial.Proof.time.Duration__Nanoseconds
+public import Perennial.Proof.time.Duration__Seconds
+public import Perennial.Proof.time.Duration__String
+public import Perennial.Proof.time.Duration__format
 public import Perennial.Proof.time.NewTicker
 public import Perennial.Proof.time.NewTimer
 public import Perennial.Proof.time.Now
@@ -36,6 +39,8 @@ public import Perennial.Proof.time.Timer__Reset
 public import Perennial.Proof.time.Timer__Stop
 public import Perennial.Proof.time.Unix
 public import Perennial.Proof.time.Until
+public import Perennial.Proof.time.fmtFrac
+public import Perennial.Proof.time.fmtInt
 public import Perennial.Proof.time.initialize
 public import Perennial.Proof.time.runtimeIsBubbled
 public import Perennial.Proof.time.runtimeNano
@@ -107,6 +112,21 @@ theorem time.Duration.wp_Milliseconds : time.Duration.Milliseconds.spec (GF := G
 
 theorem time.Duration.wp_Nanoseconds : time.Duration.Nanoseconds.spec (GF := GF) (hG := hG) :=
   time.Duration.Nanoseconds.wp_proof
+
+theorem time.Duration.wp_Seconds : time.Duration.Seconds.spec (GF := GF) (hG := hG) :=
+  time.Duration.Seconds.wp_proof
+
+theorem time.wp_fmtFrac : time.fmtFrac.spec (GF := GF) (hG := hG) :=
+  time.fmtFrac.wp_proof
+
+theorem time.wp_fmtInt : time.fmtInt.spec (GF := GF) (hG := hG) :=
+  time.fmtInt.wp_proof
+
+theorem time.Duration.wp_format : time.Duration.format.spec (GF := GF) (hG := hG) :=
+  time.Duration.format.wp_proof time.wp_fmtFrac time.wp_fmtInt
+
+theorem time.Duration.wp_String : time.Duration.String.spec (GF := GF) (hG := hG) :=
+  time.Duration.String.wp_proof time.Duration.wp_format
 
 end link
 
