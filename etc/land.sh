@@ -8,8 +8,10 @@
 # Usage: etc/land.sh prepare [--no-build]
 #            merge origin/lean into the branch, check the proofs' layout
 #            (etc/gen-link.py --check) and the native tactic library's module
-#            list (etc/meta-lib.py --check), build the touched Lean modules,
-#            run goose's tests if goose changed
+#            list (etc/meta-lib.py --check), build the touched Lean modules
+#            (and, if framework files changed, Perennial and the regression
+#            tests Perennial/ProgramLogic/*Test.lean), run goose's tests if
+#            goose changed
 #        etc/land.sh mark-reviewed
 #            record that /review-trusted passed on the branch's current changes
 #            (the review skill runs this itself when its verdict is OK)
@@ -93,7 +95,15 @@ build_changed() {
     # Perennial.lean's closure is what CI builds; check the root still elaborates when framework files changed
     case " ${lean[*]} " in *" Perennial/Golang/"*|*" Perennial/GooseLang/"*|*" Perennial/Std/"*|*" Perennial/Algebra/"*|*" Perennial/Ghost/"*)
       echo "land: framework files changed; lake build Perennial"
-      lake build Perennial || die "lake build Perennial failed";;
+      lake build Perennial || die "lake build Perennial failed"
+      # the framework's regression tests (Perennial/ProgramLogic/*Test.lean) are
+      # outside Perennial.lean's closure, so nothing else rebuilds them when the
+      # framework under them changes
+      mapfile -t tests < <(ls Perennial/ProgramLogic/*Test.lean 2>/dev/null)
+      if [ ${#tests[@]} -gt 0 ]; then
+        echo "land: lake build ${#tests[@]} regression test(s) (Perennial/ProgramLogic/*Test.lean)"
+        lake build "${tests[@]}" || die "a regression test failed (Perennial/ProgramLogic/*Test.lean)"
+      fi;;
     esac
   fi
   if [ "$goose" = 1 ]; then
