@@ -221,18 +221,32 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `Catch`, so a verified program does not die of a panic within the step bound.
   Run-time panics of builtins (`Panic "msg"`) are stuck. See
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
+* **Skipped package variables.** A package variable listed in a `[[skip]]`
+  entry of its goose config (`names`, and a required `reason`) is not
+  translated at all: goose emits no Lean name, no `X.init`, no allocation and
+  no step in `initialize'`, and lists the skipped variables with their
+  reasons in the package's `skipped' : List go.SkippedVar`
+  (`Golang/Defn/Pkg.lean`). Translated code that names one (in its package or
+  one that imports it) is a goose error, and hand-written Lean cannot name it,
+  so that verified code never touches the variable holds by construction. The
+  trusted claim of each entry is its reason: *not running the variable's Go
+  initializer is unobservable* (it terminates, cannot panic, and has no effect
+  beyond the variable). `grep -A3 '\[\[skip\]\]' Perennial/Code` lists them;
+  the `review-trusted` rule R11 says how to check one.
 * **Trusted package-variable initializers.** A package variable listed in a
   goose config's `trusted` gets its initializer `X.init` (allocation included)
-  from `Perennial/TrustedCode`. An initializer that the model skips is
+  from `Perennial/TrustedCode`. An initializer that the model skips although
+  translated code is to read the variable is
   `def X.init : val := go.skipInit` (`Golang/Defn/Pkg.lean`): its trusted claim is
   that Go's initializer can be skipped; the variable is not allocated, so a load
   or store of it is stuck (taking its address steps), and `grep go.skipInit` lists
-  every such variable. **Accepted for now, to remove later:** five such
+  every such variable (`os.Stdout`, `log.std` and `math.useFMA`, until they
+  get real models: perennial#663). **Accepted for now, to remove later:** four such
   models are trusted although goose translates the real source, so the
   `review-trusted` rule R2 grades them REWORK; they were accepted (2026-10-19)
   to finish the standard library's init proofs, and later reviews and
   soundness work should translate them away:
-  `crypto/ed25519.cryptocustomrand` and `time.asynctimerchan` (no-ops; the fix
+  `time.asynctimerchan` (the fix
   translates `internal/godebug`, trusting its runtime hooks `setUpdate` and
   `setNewIncNonDefault`, with `internal/bisect` and `internal/godebugs`;
   `asynctimerchan`'s model also allocates the model's runtime clock, runtime
@@ -243,9 +257,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   another package's variable reaches an init proof: a program-logic gap), and
   `crypto/rand.Reader` (stores a value of Go's dynamic type with a placeholder
   inside; needs `crypto/internal/rand` and `drbg`, whose init runs a FIPS
-  self-test). The no-ops for `errors.errorType` (a reflection type
-  descriptor), `math.useFMA` and `math/big.hasADX` (CPU features the runtime
-  detects) model irreducible behaviour. Each model's docstring says why it is
+  self-test). (A fifth, `crypto/ed25519.cryptocustomrand`, is now a skip
+  entry: no translated code reads it.) The no-op for `math.useFMA` (a CPU
+  feature the runtime detects) models irreducible behaviour;
+  `errors.errorType` and `math/big.hasADX`, the same kind, are skip entries. Each model's docstring says why it is
   faithful.
 * **`sync.Pool`.** `Get` and `Put` are trusted (`TrustedCode/sync.lean`): the real
   ones rely on runtime pinning to a P, pointer arithmetic and `eface` layout

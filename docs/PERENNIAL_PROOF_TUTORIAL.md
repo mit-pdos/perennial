@@ -91,9 +91,28 @@ imports = ["!*"]
 * `trusted`: declarations with a hand-written model in `Perennial/TrustedCode`
   (`sync.toml` trusts `"Mutex", "Mutex.*"`, which really have data races); for a
   package variable `X`, the model is its whole initialization `X.init : val`
-  (allocation included), called where Go runs the initializer (an initializer
-  that can be skipped is `def X.init : val := go.skipInit`, which leaves `X`
-  unallocated: a load or store of it is stuck);
+  (allocation included), called where Go runs the initializer;
+* `[[skip]]` entries (`names = ["X", ...]`, exact package-variable names or
+  `"_"` for every blank `var _`, and a required `reason`): variables that are
+  not translated at all, with no name, allocation or initialization step, for
+  variables no verified code is to read. The reason is the trusted claim: not
+  running the initializer is unobservable (it terminates, cannot panic, and
+  has no effect beyond the variable). A skip overrides `translate`; a
+  reference to a skipped variable from translated code is a goose error, and
+  the translation lists the skips in `skipped'`:
+
+  ```toml
+  # Perennial/Code/math/big.toml
+  [[skip]]
+  names = ["hasADX"]
+  reason = """
+  `cpu.X86.HasADX && cpu.X86.HasBMI2`: reads two booleans the runtime sets ..."""
+  ```
+
+  (A variable that translated code is to read once it is modelled, but whose
+  initializer cannot be translated yet, is `trusted` with
+  `def X.init : val := go.skipInit`, which leaves `X` unallocated: a load or
+  store of it is stuck.)
 * every other declaration is *axiomatized*: its name and type are emitted,
   without a body, as an `opaque` constant (not an `axiom`: Lean checks that
   its type is inhabited, so it cannot make the logic inconsistent). A type `T`
@@ -109,6 +128,8 @@ imports = ["!*"]
   body `def F.impl : val` (methods are `T.m.impl`);
 * types (`def S.ty : go.GoType`), and the struct value types `S` with fields `a'`, `b'`, ...;
 * `initialize'`, the package initialization function;
+* `skipped' : List go.SkippedVar`, if the config skips variables: each one's
+  `pkg.X` and reason (informational; the variables themselves have no name);
 * `class Assumptions`: the facts a proof may assume about the package, such as
   `FuncUnfold F [] F.impl` (calling `F` runs its body) and the struct
   field-access semantics. Proofs take `[package_sem : <pkg>.Assumptions]`.
