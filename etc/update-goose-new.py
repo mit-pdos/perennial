@@ -244,6 +244,7 @@ def main():
         run_goose(
             path.join(goose_dir, "testdata/examples"),
             "./filteredimport",
+            "./xpkgalias/...",
             "./semantics",
             "./unittest/...",
             "./channel/...",

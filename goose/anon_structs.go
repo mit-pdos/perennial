@@ -62,7 +62,7 @@ func (ctx *Ctx) anonStructOf(n locatable, t *types.Struct) *anonStruct {
 	}
 	axiomatized := false
 	for i := range t.NumFields() {
-		if len(util.ValueTypeReasons(ctx.pkgPath, imported, t.Field(i).Type())) > 0 {
+		if len(util.ValueTypeReasons(ctx.pkgPath, imported, ctx.importedTypes, t.Field(i).Type())) > 0 {
 			axiomatized = true
 		}
 	}

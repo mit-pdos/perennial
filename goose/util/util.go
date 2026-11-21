@@ -136,7 +136,7 @@ func Translate(translatePkg PackageTranslator, pkgPatterns []string, outRootDir 
 		if err != nil {
 			panic(fmt.Sprintf("could not parse config for %s:\n%v", pkg.PkgPath, err))
 		}
-		filter := ExtendFilter(pkg, config, declfilter.New(config))
+		filter := ExtendFilter(pkg, config, declfilter.New(config), NewImportedTypes(pkg, configDir))
 
 		extra := translatePkg(w, pkg, config.Bootstrap.Enabled, filter)
 
