@@ -299,6 +299,66 @@ noncomputable def hexDigit [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def errorHandler [GooseExts] [GoGlobalContext] : GoString :=
   go!"fmt.errorHandler"
 
+/-- go: errors.go:75:21 -/
+noncomputable def wrapError.Error.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "e"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "e" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType wrapError.ty)))) (Var "e"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef wrapError.ty go!"msg"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType wrapError.ty)))) (Var "e"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
+
+/-- go: errors.go:79:21 -/
+noncomputable def wrapError.Unwrap.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "e"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "e" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType wrapError.ty)))) (Var "e"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (StructFieldRef wrapError.ty go!"err"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType wrapError.ty)))) (Var "e"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.error))) (Var "$res0"))))))
+
+/-- go: errors.go:88:22 -/
+noncomputable def wrapErrors.Error.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "e"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "e" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType wrapErrors.ty)))) (Var "e"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef wrapErrors.ty go!"msg"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType wrapErrors.ty)))) (Var "e"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
+
+/-- go: errors.go:92:22 -/
+noncomputable def wrapErrors.Unwrap.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "e"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.error)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.error)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "e" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType wrapErrors.ty)))) (Var "e"))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.error)))) (App (Val (GoInstruction (StructFieldRef wrapErrors.ty go!"errs"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType wrapErrors.ty)))) (Var "e"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.error)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.error)))) (Var "$res0"))))))
+
 noncomputable instance info' : PkgInfo pkg_id.fmt where
   pkgImportedPkgs := [pkg_id.errors, pkg_id.io, pkg_id.sync]
 
@@ -425,6 +485,8 @@ class wrapError.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [
   set_err : ∀ (x : wrapError) (y : GoError), go.IsGoStepPureDetTagged under (StructFieldSet wrapError.underlying go!"err") (PairV #x #y) (Val #(({ x with err' := y } : wrapError)))
   method_set : go.MethodSetIs wrapError.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType wrapError.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"Unwrap", (some (go.signature.Signature [] false [go.error])))]
+  ptr_Error_unfold : MethodUnfold (go.GoType.PointerType wrapError.ty) go!"Error" wrapError.Error.impl
+  ptr_Unwrap_unfold : MethodUnfold (go.GoType.PointerType wrapError.ty) go!"Unwrap" wrapError.Unwrap.impl
 
 attribute [instance] wrapError.TypeAssumptions.type_repr
   wrapError.TypeAssumptions.underlying
@@ -434,6 +496,8 @@ attribute [instance] wrapError.TypeAssumptions.type_repr
   wrapError.TypeAssumptions.set_err
   wrapError.TypeAssumptions.method_set
   wrapError.TypeAssumptions.ptr_method_set
+  wrapError.TypeAssumptions.ptr_Error_unfold
+  wrapError.TypeAssumptions.ptr_Unwrap_unfold
 
 structure wrapErrors [GooseExts] where
   mk ::
@@ -466,6 +530,8 @@ class wrapErrors.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] 
   set_errs : ∀ (x : wrapErrors) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet wrapErrors.underlying go!"errs") (PairV #x #y) (Val #(({ x with errs' := y } : wrapErrors)))
   method_set : go.MethodSetIs wrapErrors.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType wrapErrors.ty) [(go!"Error", (some (go.signature.Signature [] false [go.string]))), (go!"Unwrap", (some (go.signature.Signature [] false [(go.GoType.SliceType go.error)])))]
+  ptr_Error_unfold : MethodUnfold (go.GoType.PointerType wrapErrors.ty) go!"Error" wrapErrors.Error.impl
+  ptr_Unwrap_unfold : MethodUnfold (go.GoType.PointerType wrapErrors.ty) go!"Unwrap" wrapErrors.Unwrap.impl
 
 attribute [instance] wrapErrors.TypeAssumptions.type_repr
   wrapErrors.TypeAssumptions.underlying
@@ -475,6 +541,8 @@ attribute [instance] wrapErrors.TypeAssumptions.type_repr
   wrapErrors.TypeAssumptions.set_errs
   wrapErrors.TypeAssumptions.method_set
   wrapErrors.TypeAssumptions.ptr_method_set
+  wrapErrors.TypeAssumptions.ptr_Error_unfold
+  wrapErrors.TypeAssumptions.ptr_Unwrap_unfold
 
 structure fmtFlags [GooseExts] where
   mk ::

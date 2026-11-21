@@ -5,7 +5,7 @@ are not functions of package `fmt`: `arbitraryString`, `formatInt`, `formatHex`,
 -/
 module
 
-public import Perennial.Proof.fmt.Base
+public import Perennial.Proof.fmt.Directives
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.model.strings.Base
 
 @[expose] public section
@@ -1138,13 +1138,18 @@ theorem not_simpleDirective_nil (f : GoString) (h : f.head? ≠ some (W8 37)) :
 output of the directive for the argument `x` and the index after it, if the model formats it. -/
 theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
     (Hi : 0 ≤ sint.Z i ∧ sint.Z i < (format.length : Int))
-    (Hx : ∀ ii, x = interface.ok ii → ArgWf ii) :
+    (Hx : ((format.drop (sint.nat i + 1)).head? = some (W8 115) ∨
+        (format.drop (sint.nat i + 1)).head? = some (W8 118) ∨
+        (format.drop (sint.nat i + 1)).head? = some (W8 120) ∨
+        (parseIntVerb (format.drop (sint.nat i + 1))).isSome) →
+      ∀ ii, x = interface.ok ii → ArgWf ii) :
     {{ (True : IProp GF) }}
       (App (App (App (Val formatArg) (Val #format)) (Val #i)) (Val #x))
     {{ (s : GoString) (next : w64) (ok : Bool), RET (PairV (PairV #s #next) #ok);
         ⌜ok = true → sint.Z i < sint.Z next ∧ sint.Z next ≤ (format.length : Int) ∧
-          ∀ args r, SprintfOut (format.drop (sint.nat next)) args r →
-            SprintfOut (W8 37 :: format.drop (sint.nat i + 1)) (x :: args) (s ++ r)⌝ ∗
+          (∀ args r, SprintfOut (format.drop (sint.nat next)) args r →
+            SprintfOut (W8 37 :: format.drop (sint.nat i + 1)) (x :: args) (s ++ r)) ∧
+          AuxStep format (sint.nat i) (sint.nat next)⌝ ∗
         ⌜ok = false → (format.drop (sint.nat i + 1)).head? ≠ some (W8 37) →
           ∀ args, ¬ SimpleDirective (format.drop (sint.nat i + 1)) (x :: args)⌝ }} := by
   iintro %Φ - HΦ
@@ -1170,7 +1175,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
       have Hnx : (format.drop (sint.nat i + 1)).head? ≠ some (W8 120) := by
         rw [Hdrop]; simp only [List.head?_cons, ne_eq, Option.some.injEq]; decide
       wp_auto
-      wp_apply wp_strArg x Hx as %sx %oks ⟨%Hs1, %Hs2⟩
+      wp_apply wp_strArg x (Hx (.inl (by rw [Hdrop]; rfl))) as %sx %oks ⟨%Hs1, %Hs2⟩
       cases oks
       · iapply HΦ
         isplitl []
@@ -1181,7 +1186,8 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
         iapply HΦ
         isplitl []
         · ipureintro; intro _
-          refine ⟨by word, by word, fun args r hr => ?_⟩
+          refine ⟨by word, by word, fun args r hr => ?_,
+            auxStep_simple format _ _ (W8 115) (.inl rfl) (by rw [Hdrop, Hdrop2])⟩
           rw [Hdrop2] at hr
           rw [Hdrop]
           exact SprintfOut.str _ _ _ _ _ Hval hr
@@ -1199,7 +1205,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
       by_cases hv : c = W8 118
       · rw [decide_eq_true hv]
         wp_auto
-        wp_apply wp_strArg x Hx as %sx %oks ⟨%Hs1, %Hs2⟩
+        wp_apply wp_strArg x (Hx (.inr (.inl (by rw [Hdrop, hv]; rfl)))) as %sx %oks ⟨%Hs1, %Hs2⟩
         cases oks
         · wp_auto
           have H2 : ((format.drop (sint.nat i + 1)).head? ≠ some (W8 115) ∧
@@ -1218,7 +1224,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
             have Hnp : parseIntVerb (format.drop (sint.nat i + 1)) = none := by
               rw [Hdrop]; simp [parseIntVerb]
             wp_auto
-            wp_apply wp_anyIntArg _ Hx as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
+            wp_apply wp_anyIntArg _ (Hx (.inr (.inr (.inl (by rw [Hdrop]; rfl))))) as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
             cases ok2
             · wp_auto
               iapply HΦ
@@ -1233,7 +1239,8 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
               iapply HΦ
               isplitl []
               · ipureintro; intro _
-                refine ⟨by word, by word, fun args r hr => ?_⟩
+                refine ⟨by word, by word, fun args r hr => ?_,
+                  auxStep_simple format _ _ (W8 120) (.inr (.inr (.inl rfl))) (by rw [Hdrop, Hdrop2])⟩
                 rw [Hdrop2] at hr
                 rw [Hdrop]
                 exact SprintfOut.hex _ _ _ _ _ Hval hr
@@ -1252,7 +1259,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
                 exact not_simpleDirective _ _ _ hp H2 (.inl (Hv2 rfl)) (.inl Hnx)
             · obtain ⟨Hparse, Hw1, Hw2, Hn1, Hn2⟩ := Hv1 rfl
               wp_auto
-              wp_apply wp_anyIntArg _ Hx as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
+              wp_apply wp_anyIntArg _ (Hx (.inr (.inr (.inr (by rw [Hparse]; rfl))))) as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
               cases ok2
               · wp_auto
                 iapply HΦ
@@ -1267,14 +1274,16 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
                 iapply HΦ
                 isplitl []
                 · ipureintro; intro _
-                  exact ⟨Hn1, Hn2, fun args r hr => SprintfOut.int _ _ _ _ _ _ _ Hparse Hval hr⟩
+                  exact ⟨Hn1, Hn2, fun args r hr => SprintfOut.int _ _ _ _ _ _ _ Hparse Hval hr,
+                    auxStep_int format (sint.nat i) (sint.nat next) _ Hparse⟩
                 · ipureintro; intro h; cases h
         · obtain ⟨ii, rfl, Hval⟩ := Hs1 rfl
           wp_auto
           iapply HΦ
           isplitl []
           · ipureintro; intro _
-            refine ⟨by word, by word, fun args r hr => ?_⟩
+            refine ⟨by word, by word, fun args r hr => ?_,
+              auxStep_simple format _ _ (W8 118) (.inr (.inl rfl)) (by rw [Hdrop, Hdrop2, hv])⟩
             rw [Hdrop2] at hr
             rw [Hdrop, hv]
             exact SprintfOut.strV _ _ _ _ _ Hval hr
@@ -1297,7 +1306,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
           have Hnp : parseIntVerb (format.drop (sint.nat i + 1)) = none := by
             rw [Hdrop]; simp [parseIntVerb]
           wp_auto
-          wp_apply wp_anyIntArg _ Hx as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
+          wp_apply wp_anyIntArg _ (Hx (.inr (.inr (.inl (by rw [Hdrop]; rfl))))) as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
           cases ok2
           · wp_auto
             iapply HΦ
@@ -1312,7 +1321,8 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
             iapply HΦ
             isplitl []
             · ipureintro; intro _
-              refine ⟨by word, by word, fun args r hr => ?_⟩
+              refine ⟨by word, by word, fun args r hr => ?_,
+                auxStep_simple format _ _ (W8 120) (.inr (.inr (.inl rfl))) (by rw [Hdrop, Hdrop2])⟩
               rw [Hdrop2] at hr
               rw [Hdrop]
               exact SprintfOut.hex _ _ _ _ _ Hval hr
@@ -1331,7 +1341,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
               exact not_simpleDirective _ _ _ hp H2 (.inl (Hv2 rfl)) (.inl Hnx)
           · obtain ⟨Hparse, Hw1, Hw2, Hn1, Hn2⟩ := Hv1 rfl
             wp_auto
-            wp_apply wp_anyIntArg _ Hx as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
+            wp_apply wp_anyIntArg _ (Hx (.inr (.inr (.inr (by rw [Hparse]; rfl))))) as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
             cases ok2
             · wp_auto
               iapply HΦ
@@ -1346,7 +1356,8 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
               iapply HΦ
               isplitl []
               · ipureintro; intro _
-                exact ⟨Hn1, Hn2, fun args r hr => SprintfOut.int _ _ _ _ _ _ _ Hparse Hval hr⟩
+                exact ⟨Hn1, Hn2, fun args r hr => SprintfOut.int _ _ _ _ _ _ _ Hparse Hval hr,
+                    auxStep_int format (sint.nat i) (sint.nat next) _ Hparse⟩
               · ipureintro; intro h; cases h
 
   · (try wp_auto)
@@ -1372,7 +1383,7 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
         exact not_simpleDirective _ _ _ hp H2 (.inl (Hv2 rfl)) (.inl Hnx)
     · obtain ⟨Hparse, Hw1, Hw2, Hn1, Hn2⟩ := Hv1 rfl
       wp_auto
-      wp_apply wp_anyIntArg x Hx as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
+      wp_apply wp_anyIntArg x (Hx (.inr (.inr (.inr (by rw [Hparse]; rfl))))) as %neg %mag %ok2 ⟨%Ha1, %Ha2⟩
       cases ok2
       · wp_auto
         iapply HΦ
@@ -1387,7 +1398,8 @@ theorem wp_formatArg (format : GoString) (i : w64) (x : GoInterface)
         iapply HΦ
         isplitl []
         · ipureintro; intro _
-          exact ⟨Hn1, Hn2, fun args r hr => SprintfOut.int _ _ _ _ _ _ _ Hparse Hval hr⟩
+          exact ⟨Hn1, Hn2, fun args r hr => SprintfOut.int _ _ _ _ _ _ _ Hparse Hval hr,
+                    auxStep_int format (sint.nat i) (sint.nat next) _ Hparse⟩
         · ipureintro; intro h; cases h
 
 end wps
