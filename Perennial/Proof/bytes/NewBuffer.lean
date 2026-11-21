@@ -31,7 +31,6 @@ theorem bytes.NewBuffer.wp_proof :
   iexists _, bs
   iframe
   ipureintro
-  simp only [zero_val, ZeroVal.zeroValDef]
   refine ⟨by word, by word, ?_⟩
   rw [show sint.nat (0 : w64) = 0 from rfl, List.drop_zero]
 

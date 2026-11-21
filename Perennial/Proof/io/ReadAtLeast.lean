@@ -109,7 +109,7 @@ theorem io.ReadAtLeast.wp_proof :
     · -- `err != nil`: the loop ends
       wp_auto
       simp only [decide_eq_true_eq, ↓reduceIte]
-      rw [if_neg (by intro h; have := go.intoVal_inj h; simp at this)]
+      rw [ite_eq_right (by intro h; have := go.intoVal_inj h; simp at this)]
       try wp_auto
       wp_if_destruct
       · exfalso; word
@@ -139,7 +139,7 @@ theorem io.ReadAtLeast.wp_proof :
             have hne : ys ≠ [] := by
               intro h; subst h; simp at Hys; word
             refine ⟨Hmin, by word, by simp, fun _ => rfl, fun h => absurd ⟨?_, hne⟩ h⟩
-            simp only [interface.mkOk, Hif]
+            simp only [Hif]
           · iapply HΦ
             iexists ys
             iframe Hp HS
@@ -154,7 +154,7 @@ theorem io.ReadAtLeast.wp_proof :
             ipureintro
             refine ⟨Hmin, by word, by simp, fun h => absurd ?_ Hif, fun _ => rfl⟩
             obtain ⟨h1, -⟩ := h
-            simp only [interface.mkOk, GoInterface.ok.injEq, GoInterfaceOk.mk.injEq] at h1
+            simp only [GoInterface.ok.injEq, GoInterfaceOk.mk.injEq] at h1
             exact go.intoVal_inj h1.2
         · simp only [interface.mkOk, hty, ↓reduceIte]
           wp_auto
