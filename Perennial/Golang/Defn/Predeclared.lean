@@ -973,9 +973,56 @@ export UintptrSemantics (go_zero_val_uintptr comparable_uintptr underlying_uintp
   convert_uintptr_to_uint convert_uintptr_to_uint64 convert_uintptr_to_uint32
   convert_uintptr_to_uint16 convert_uintptr_to_uint8)
 
+/-! ### Floats
+
+A `float64` (`float32`) is its IEEE 754 binary64 (binary32) bit pattern, and its operations are
+IEEE 754's (`Perennial/Golang/Defn/Float.lean`, `docs/design/float-semantics.md`): the exact
+result, rounded to nearest with ties to even. Two departures from a deterministic IEEE 754
+model:
+
+* **NaN bits are arbitrary.** Where IEEE 754's result is a NaN, the operation steps to an
+  arbitrary NaN (`float64Result`, `float32Result`): the sign and payload of a NaN result are
+  architecture-dependent (amd64's default NaN has its sign bit set, arm64's does not), so the
+  model only says that the result is a NaN. This includes `-x` of a NaN: IEEE 754 makes
+  negation a sign-bit flip also of a NaN, and gc does that on amd64
+  (`docs/design/float/float_test.go`), but the Go spec does not promise it and not every
+  target's negation is non-arithmetic (pre-R6 MIPS `NEG.fmt`), so `-NaN` is treated as any
+  other NaN result. Comparisons and integer-to-float conversions never produce a NaN, and are
+  deterministic.
+* **Fused multiply-add is not modelled (known limitation).** The Go spec ("Floating-point
+  operators") allows an implementation to fuse operations, e.g. to compute `x*y + z` with a
+  single rounding, as gc does on arm64 and other architectures with an FMA instruction; the
+  result may differ from the model, which rounds every operation separately. Here the model is
+  more defined than Go: a proof about such an expression covers the unfused evaluation only.
+
+Not modelled (stuck): conversions between `float64` and `float32` of variables, integer to
+`float32` conversions, and the integer types narrower than 32 bits to floats. -/
+
+/-- `float64Result r`, where `r` is IEEE 754's result of a `float64` operation: `r`, or, if `r`
+is a NaN, an arbitrary NaN (`float64NaN` if the arbitrary bits are not a NaN, which `x == x`
+tells). -/
+def float64ResultDef (r : w64) : Expr :=
+  if float64IsNaN r then
+    gl(let: "x" := ArbitraryInt in if: "x" =⟨go.float64⟩ "x" then #float64NaN else "x")
+  else Val #r
+@[irreducible] def float64Result (r : w64) : Expr := float64ResultDef r
+theorem float64Result_unseal : float64Result = float64ResultDef := by with_unfolding_all rfl
+
+/-- `float32Result r`: `r`, or, if `r` is a NaN, an arbitrary NaN (as `float64Result`). -/
+def float32ResultDef (r : w32) : Expr :=
+  if float32IsNaN r then
+    gl(let: "x" := Convert go.uint64 go.uint32 ArbitraryInt in
+       if: "x" =⟨go.float32⟩ "x" then #float32NaN else "x")
+  else Val #r
+@[irreducible] def float32Result (r : w32) : Expr := float32ResultDef r
+theorem float32Result_unseal : float32Result = float32ResultDef := by with_unfolding_all rfl
+
 class UntypedFloatSemantics [GoSemanticsFunctions] : Prop where
   underlying_untyped_float : go.untypedFloat ↓u go.untypedFloat
   convert_untyped_float64 (v : w64) : ⟦Convert go.untypedFloat go.float64, #v⟧ ⤳[under] #v
+  -- `float32(c)` of an untyped float constant `c`: the binary32 rounding of `v`, the
+  -- binary64 rounding of `c`. Deterministic: a constant is never a NaN. (Go rounds `c`
+  -- directly; the two roundings can differ when `v` is halfway between two float32s.)
   convert_untyped_float32 (v : w64) : ⟦Convert go.untypedFloat go.float32, #v⟧
     ⤳[under] #(float64ToFloat32 v)
   -- `-c` of an untyped float constant `c`, represented by the bits of its `float64` rounding:
@@ -1002,16 +1049,20 @@ class Float64Semantics [GoSemanticsFunctions] : Prop where
   ge_float64 (v1 v2 : w64) : ⟦GoOp GoGe go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Leb v2 v1)
   gt_float64 (v1 v2 : w64) : ⟦GoOp GoGt go.float64, (#v1, #v2)⟧
     ⤳[under] #(float64Leb v2 v1 && !float64Eq v1 v2)
-  plus_float64 (v1 v2 : w64) : ⟦GoOp GoPlus go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Add v1 v2)
-  sub_float64 (v1 v2 : w64) : ⟦GoOp GoSub go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Sub v1 v2)
-  mul_float64 (v1 v2 : w64) : ⟦GoOp GoMul go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Mul v1 v2)
-  div_float64 (v1 v2 : w64) : ⟦GoOp GoDiv go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Div v1 v2)
-  neg_float64 (v : w64) : ⟦GoUnOp GoNeg go.float64, #v⟧ ⤳[under] #(float64Neg v)
+  plus_float64 (v1 v2 : w64) : ⟦GoOp GoPlus go.float64, (#v1, #v2)⟧
+    ⤳[under] float64Result (float64Add v1 v2)
+  sub_float64 (v1 v2 : w64) : ⟦GoOp GoSub go.float64, (#v1, #v2)⟧
+    ⤳[under] float64Result (float64Sub v1 v2)
+  mul_float64 (v1 v2 : w64) : ⟦GoOp GoMul go.float64, (#v1, #v2)⟧
+    ⤳[under] float64Result (float64Mul v1 v2)
+  div_float64 (v1 v2 : w64) : ⟦GoOp GoDiv go.float64, (#v1, #v2)⟧
+    ⤳[under] float64Result (float64Div v1 v2)
+  neg_float64 (v : w64) : ⟦GoUnOp GoNeg go.float64, #v⟧ ⤳[under] float64Result (float64Neg v)
   -- `T(x)` of a float to an integer type: some value of `T` (the Go spec leaves the
   -- result of an out-of-range conversion to the implementation)
   convert_float64_to_integer (t : go.GoType) [IsInteger t] (v : w64) :
     ⟦Convert go.float64 t, #v⟧ ⤳[under] App (Val (GoInstruction (Convert go.uint64 t))) ArbitraryInt
-  -- `float64(n)` of an integer: an uninterpreted function of the integer (`FloatOps`)
+  -- `float64(n)` of an integer: its rounding (never a NaN)
   convert_int_to_float64 (v : w64) : ⟦Convert go.int go.float64, #v⟧ ⤳[under] #(int64ToFloat64 v)
   convert_int64_to_float64 (v : w64) :
     ⟦Convert go.int64 go.float64, #v⟧ ⤳[under] #(int64ToFloat64 v)
@@ -1050,11 +1101,15 @@ class Float32Semantics [GoSemanticsFunctions] : Prop where
   ge_float32 (v1 v2 : w32) : ⟦GoOp GoGe go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Leb v2 v1)
   gt_float32 (v1 v2 : w32) : ⟦GoOp GoGt go.float32, (#v1, #v2)⟧
     ⤳[under] #(float32Leb v2 v1 && !float32Eq v1 v2)
-  plus_float32 (v1 v2 : w32) : ⟦GoOp GoPlus go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Add v1 v2)
-  sub_float32 (v1 v2 : w32) : ⟦GoOp GoSub go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Sub v1 v2)
-  mul_float32 (v1 v2 : w32) : ⟦GoOp GoMul go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Mul v1 v2)
-  div_float32 (v1 v2 : w32) : ⟦GoOp GoDiv go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Div v1 v2)
-  neg_float32 (v : w32) : ⟦GoUnOp GoNeg go.float32, #v⟧ ⤳[under] #(float32Neg v)
+  plus_float32 (v1 v2 : w32) : ⟦GoOp GoPlus go.float32, (#v1, #v2)⟧
+    ⤳[under] float32Result (float32Add v1 v2)
+  sub_float32 (v1 v2 : w32) : ⟦GoOp GoSub go.float32, (#v1, #v2)⟧
+    ⤳[under] float32Result (float32Sub v1 v2)
+  mul_float32 (v1 v2 : w32) : ⟦GoOp GoMul go.float32, (#v1, #v2)⟧
+    ⤳[under] float32Result (float32Mul v1 v2)
+  div_float32 (v1 v2 : w32) : ⟦GoOp GoDiv go.float32, (#v1, #v2)⟧
+    ⤳[under] float32Result (float32Div v1 v2)
+  neg_float32 (v : w32) : ⟦GoUnOp GoNeg go.float32, #v⟧ ⤳[under] float32Result (float32Neg v)
   -- `T(x)` of a float to an integer type: some value of `T` (the Go spec leaves the
   -- result of an out-of-range conversion to the implementation)
   convert_float32_to_integer (t : go.GoType) [IsInteger t] (v : w32) :

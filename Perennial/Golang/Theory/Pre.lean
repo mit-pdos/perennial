@@ -21,6 +21,7 @@ public import Perennial.Golang.Theory.Defer
 public import Perennial.Golang.Theory.Array
 public import Perennial.Golang.Theory.Slice
 public import Perennial.Golang.Theory.Map
+public import Perennial.Golang.Theory.Float
 
 @[expose] public section
 

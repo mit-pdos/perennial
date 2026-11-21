@@ -25,7 +25,10 @@ theorem time.Duration.Seconds.wp_proof :
   intro d
   wp_start
   repeat' (first | wp_if_destruct | wp_auto)
-  all_goals wp_end
+  all_goals
+    wp_apply wp_float64Result as %q _
+    wp_apply wp_float64Result as %f _
+    wp_end
 
 end proof
 
