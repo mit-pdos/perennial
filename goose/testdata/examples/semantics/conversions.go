@@ -31,3 +31,17 @@ func testByteSliceToString() bool {
 	x[2] = 67
 	return byteSliceToString(x) == "ABC"
 }
+
+func testByteToString() bool {
+	var a, c byte = 65, 200
+	return string(a) == "A" && string(c) == "\xc3\x88"
+}
+
+const slashRune = '/'
+
+func testUntypedRuneConst() bool {
+	var c byte = 'a'
+	return slashRune == '/' && c-('a'-'A') == 'A' &&
+		string(slashRune) == "/" && string('é') == "\xc3\xa9" &&
+		string(0xD800+0*slashRune) == "\xef\xbf\xbd" && string(-1+0*slashRune) == "\xef\xbf\xbd"
+}

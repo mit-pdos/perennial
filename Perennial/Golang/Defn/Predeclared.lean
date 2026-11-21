@@ -237,6 +237,12 @@ def shiftCount (t : go.GoType) : val :=
 
 end shift_count
 
+/-- `string(v)` of an integer `v`: the UTF-8 encoding of `v` if it is a valid Unicode code point,
+else that of U+FFFD. -/
+def runeString (v : Int) : GoString :=
+  (String.utf8EncodeChar (if 0 ≤ v ∧ v.toNat.isValidChar then Char.ofNat v.toNat else '\uFFFD')).map
+    (fun b => BitVec.ofNat 8 b.toNat)
+
 class UntypedIntSemantics [GoSemanticsFunctions] : Prop where
   underlying_untyped_int : go.untypedInt ↓u go.untypedInt
   neg_untyped_int (v : Int) : ⟦GoUnOp GoNeg go.untypedInt, #v⟧ ⤳ #(-v)
@@ -251,6 +257,8 @@ class UntypedIntSemantics [GoSemanticsFunctions] : Prop where
   convert_untyped_int_to_uint32 (v : Int) : ⟦Convert go.untypedInt go.uint32, #v⟧ ⤳[under] #(W32 v)
   convert_untyped_int_to_uint16 (v : Int) : ⟦Convert go.untypedInt go.uint16, #v⟧ ⤳[under] #(W16 v)
   convert_untyped_int_to_uint8 (v : Int) : ⟦Convert go.untypedInt go.uint8, #v⟧ ⤳[under] #(W8 v)
+  convert_untyped_int_to_string (v : Int) :
+    ⟦Convert go.untypedInt go.string, #v⟧ ⤳[under] #(go.runeString v)
 
 attribute [instance] UntypedIntSemantics.underlying_untyped_int UntypedIntSemantics.neg_untyped_int
   UntypedIntSemantics.convert_untyped_int_to_int UntypedIntSemantics.convert_untyped_int_to_int64
@@ -259,10 +267,12 @@ attribute [instance] UntypedIntSemantics.underlying_untyped_int UntypedIntSemant
   UntypedIntSemantics.convert_untyped_int_to_uint64
   UntypedIntSemantics.convert_untyped_int_to_uint32
   UntypedIntSemantics.convert_untyped_int_to_uint16 UntypedIntSemantics.convert_untyped_int_to_uint8
+  UntypedIntSemantics.convert_untyped_int_to_string
 export UntypedIntSemantics (underlying_untyped_int neg_untyped_int convert_untyped_int_to_int
   convert_untyped_int_to_int64 convert_untyped_int_to_int32 convert_untyped_int_to_int16
   convert_untyped_int_to_int8 convert_untyped_int_to_uint convert_untyped_int_to_uint64
-  convert_untyped_int_to_uint32 convert_untyped_int_to_uint16 convert_untyped_int_to_uint8)
+  convert_untyped_int_to_uint32 convert_untyped_int_to_uint16 convert_untyped_int_to_uint8
+  convert_untyped_int_to_string)
 
 class IntSemantics [GoSemanticsFunctions] : Prop where
   go_zero_val_int : TypeReprUnderlying go.int w64

@@ -748,7 +748,7 @@ func (ctx *Ctx) binExpr(e *ast.BinaryExpr) (expr glang.Expr) {
 
 	if t, ok := compType.(*types.Basic); ok {
 		switch t.Kind() {
-		case types.UntypedInt, types.UntypedString:
+		case types.UntypedInt, types.UntypedRune, types.UntypedString:
 			return ctx.constantLiteral(e)
 		}
 	}

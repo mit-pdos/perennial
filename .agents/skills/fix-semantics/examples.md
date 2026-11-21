@@ -1216,3 +1216,52 @@ Cost: two nil tests in existing definitions, zero new semantic rules, zero
 translator changes.
 
 **Decision.** “Yes, fix nil-map semantics.” (2026-11-20)
+
+## Case 39 — ACCEPTED: `string(b)` of a byte is the UTF-8 encoding of the code point `b` (branch `untyped-rune`)
+
+**Symptom.** Unsound. `convert_byte_to_string` stepped `string(c)` of a `byte` to the one byte
+`[c]`; Go gives the UTF-8 encoding of the code point `c`, two bytes from `0x80` on
+(`string(byte(200)) == "\xc3\x88"`). The rule's only user was the Go model `ByteSliceToString`
+(`s = s + string(c)` over the slice), which is not `string(a)` when run as Go, so the model was
+more defined than its own Go text.
+
+**Witness.** `var c byte = 200; len(string(c)) == 2` is true in Go; the rule proved it false.
+
+**Taken.** A pure `go.runeString (v : Int) : GoString` (Go's `string(v)` of an integer: the UTF-8
+encoding of `v` if it is a valid code point, else that of U+FFFD, through Lean's `String.utf8EncodeChar`, which the kernel evaluates);
+`convert_byte_to_string` steps to `#(go.runeString (uint.Z c))`. `ByteSliceToString` is rewritten
+as real Go that means `string(a)`: it appends `byteStrings[int(c):int(c)+1]` of a 256-byte constant
+table; `convert_test.go` checks it against `string(a)` on every byte, and the semantics test
+`testByteToString` checks `string(byte)` in Go and in the model (proved). Cost: 1 definition, 1 rule
+changed, 0 goose branches; the model's text changes. Evidence: `go.runeString` agrees with Go's
+`string(int64)` on every value in `[-16, 0x110010)` and at ±2^31, ±2^63, ±2^70 (one FNV hash of
+the encodings, compiled Lean vs Go 1.26).
+
+**Not taken.** Keeping `ByteSliceToString`'s text and the one-byte rule (a model whose Go text
+does not mean what it is trusted for).
+
+**Why.** Signed off by the user, 2026-11-21 (relayed by the coordinator etcd-grove-03), as the
+first of two items, before Case 40.
+
+## Case 40 — ACCEPTED: goose folds constant expressions of untyped runes; `string(v)` of an untyped integer constant (branch `untyped-rune`)
+
+**Symptom.** Incomplete. Goose folded binary expressions whose operands join to an untyped int or
+string constant (`constantLiteral`) but not to an untyped rune, so `sep == '/'` or `'a' + 'b'` became
+run-time `GoOp … go.untypedRune` operations with no rule; and `string(sep)` of an untyped rune
+constant (`Convert go.untypedRune go.string`, which goose emits for a conversion of a constant) had
+no rule. Go evaluates both at compile time.
+
+**Witness.** `const sep = '/'; sep == '/'` and `string(sep) == "/"` are stuck.
+
+**Taken.** `types.UntypedRune` joins `UntypedInt`/`UntypedString` in `binExpr`'s folding case (one
+token), and `UntypedIntSemantics` gains `convert_untyped_int_to_string (v : Int) : ⟦Convert
+go.untypedInt go.string, #v⟧ ⤳[under] #(go.runeString v)` (`go.untypedRune` is `go.untypedInt`),
+a sibling of the integer conversions, reusing Case 39's `go.runeString`. Semantics test
+`testUntypedRuneConst` (proved). Cost: 1 goose case label, 1 rule; three range-string tests' gold
+now holds the folded sums.
+
+**Not taken.** A hypothesis class of rune steps in the client (`UntypedRuneSemantics` of
+etcd-grove's WAL proofs: equality, and `string(c)` only for ASCII `c`), which put an unreviewed class
+into closed statements.
+
+**Why.** Signed off by the user, 2026-11-21 (relayed by the coordinator etcd-grove-03), after Case 39.
