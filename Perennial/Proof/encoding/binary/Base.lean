@@ -11,6 +11,7 @@ module
 public import Perennial.Proof.sync.Base
 public import Perennial.Proof.slices.Base
 public import Perennial.Proof.math.Base
+public import Perennial.Proof.reflect.Base
 public import Perennial.Proof.io.Base
 public import Perennial.Proof.errors.Base
 public import Perennial.Code.encoding.binary

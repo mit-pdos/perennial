@@ -1,2 +1,6 @@
-translate = ["!*", "Type"]
+translate = ["!*", "Type", "kindNames", "intArgRegs", "floatArgRegs", "floatRegSize"]
 imports = ["!*"]
+
+# `stringType`, `bytesType` and `uint8Type` hold runtime type descriptors
+# (`rtypeOf(x)`, `abi.TypeOf` through `unsafe`): TrustedCode/reflect.lean.
+trusted = ["stringType", "bytesType", "uint8Type"]

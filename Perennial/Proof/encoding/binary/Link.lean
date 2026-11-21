@@ -17,6 +17,7 @@ public import Perennial.Proof.encoding.binary.littleEndian__Uint64
 public import Perennial.Proof.errors.Link
 public import Perennial.Proof.io.Link
 public import Perennial.Proof.math.Link
+public import Perennial.Proof.reflect.Link
 public import Perennial.Proof.slices.Link
 public import Perennial.Proof.sync.Link
 
@@ -46,7 +47,7 @@ theorem encoding.binary.bigEndian.wp_Uint64 : encoding.binary.bigEndian.Uint64.s
   encoding.binary.bigEndian.Uint64.wp_proof
 
 theorem encoding.binary.wp_initialize' : encoding.binary.initialize'.spec (GF := GF) (hG := hG) :=
-  encoding.binary.initialize'.wp_proof sync.wp_initialize' slices.wp_initialize' math.wp_initialize' io.wp_initialize' errors.wp_initialize' errors.wp_New
+  encoding.binary.initialize'.wp_proof sync.wp_initialize' slices.wp_initialize' math.wp_initialize' reflect.wp_initialize' io.wp_initialize' errors.wp_initialize' errors.wp_New
 
 theorem encoding.binary.littleEndian.wp_PutUint32 : encoding.binary.littleEndian.PutUint32.spec (GF := GF) (hG := hG) :=
   encoding.binary.littleEndian.PutUint32.wp_proof

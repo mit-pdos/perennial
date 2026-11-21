@@ -7,6 +7,7 @@ public import Perennial.Spec.encoding.binary.initialize
 public import Perennial.Spec.sync.initialize
 public import Perennial.Spec.slices.initialize
 public import Perennial.Spec.math.initialize
+public import Perennial.Spec.reflect.initialize
 public import Perennial.Spec.io.initialize
 public import Perennial.Spec.errors.initialize
 public import Perennial.Spec.errors.New
@@ -32,6 +33,7 @@ theorem encoding.binary.initialize'.wp_proof
     (wp_sync_initialize : sync.initialize'.spec (GF := GF) (hG := hG))
     (wp_slices_initialize : slices.initialize'.spec (GF := GF) (hG := hG))
     (wp_math_initialize : math.initialize'.spec (GF := GF) (hG := hG))
+    (wp_reflect_initialize : reflect.initialize'.spec (GF := GF) (hG := hG))
     (wp_io_initialize : io.initialize'.spec (GF := GF) (hG := hG))
     (wp_errors_initialize : errors.initialize'.spec (GF := GF) (hG := hG))
     (wp_New : errors.New.spec (GF := GF) (hG := hG)) :
@@ -47,8 +49,9 @@ theorem encoding.binary.initialize'.wp_proof
   wp_apply wp_GlobalAlloc (V := littleEndian) LittleEndian littleEndian.ty as Hlit
   ipersist Hlit
   wp_apply wp_GlobalAlloc (V := GoInterface) errBufferTooSmall go.error as _
-  wp_apply wp_sync_initialize _ Hinit.2.2.2.2.2.1 $$ Hown as ⟨Hown, #H1⟩
-  wp_apply wp_slices_initialize _ Hinit.2.2.2.2.1 $$ Hown as ⟨Hown, #H2⟩
+  wp_apply wp_sync_initialize _ Hinit.2.2.2.2.2.2.1 $$ Hown as ⟨Hown, #H1⟩
+  wp_apply wp_slices_initialize _ Hinit.2.2.2.2.2.1 $$ Hown as ⟨Hown, #H2⟩
+  wp_apply wp_reflect_initialize _ Hinit.2.2.2.2.1 $$ Hown as ⟨Hown, #H6⟩
   wp_apply wp_math_initialize _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #H3⟩
   wp_apply wp_io_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #H4⟩
   wp_apply wp_errors_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #H5⟩

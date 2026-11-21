@@ -1,5 +1,6 @@
-translate = ["!*", "LittleEndian", "littleEndian*", "BigEndian", "bigEndian*", "err*"]
-imports = ["*", "!reflect"]
+translate = ["!*", "LittleEndian", "littleEndian*", "BigEndian", "bigEndian*", "err*",
+  "Read", "Write", "intDataSize", "decodeFast", "encodeFast"]
+imports = ["*"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

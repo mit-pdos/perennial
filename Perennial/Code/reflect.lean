@@ -2,6 +2,7 @@
 module
 
 public import Perennial.Golang.Defn
+public import Perennial.TrustedCode.reflect
 
 @[expose] public section
 
@@ -394,27 +395,17 @@ opaque SelectDefault [GooseExts] [GoGlobalContext] : val
 noncomputable def intArgRegs [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.intArgRegs"
 
-opaque intArgRegs.init [GooseExts] [GoGlobalContext] : val
-
 noncomputable def floatArgRegs [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.floatArgRegs"
-
-opaque floatArgRegs.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def floatRegSize [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.floatRegSize"
 
-opaque floatRegSize.init [GooseExts] [GoGlobalContext] : val
-
 noncomputable def stringType [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.stringType"
 
-opaque stringType.init [GooseExts] [GoGlobalContext] : val
-
 noncomputable def kindNames [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.kindNames"
-
-opaque kindNames.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def ptrMap [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.ptrMap"
@@ -440,15 +431,11 @@ noncomputable def layoutCache [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def bytesType [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.bytesType"
 
-opaque bytesType.init [GooseExts] [GoGlobalContext] : val
-
 noncomputable def callGC [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.callGC"
 
 noncomputable def uint8Type [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.uint8Type"
-
-opaque uint8Type.init [GooseExts] [GoGlobalContext] : val
 
 noncomputable def zeroVal [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.zeroVal"
@@ -1090,6 +1077,41 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 9))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 15))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 8))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(go!"invalid"))
+  (Let "$v1" (Val #(go!"bool"))
+  (Let "$v2" (Val #(go!"int"))
+  (Let "$v3" (Val #(go!"int8"))
+  (Let "$v4" (Val #(go!"int16"))
+  (Let "$v5" (Val #(go!"int32"))
+  (Let "$v6" (Val #(go!"int64"))
+  (Let "$v7" (Val #(go!"uint"))
+  (Let "$v8" (Val #(go!"uint8"))
+  (Let "$v9" (Val #(go!"uint16"))
+  (Let "$v10" (Val #(go!"uint32"))
+  (Let "$v11" (Val #(go!"uint64"))
+  (Let "$v12" (Val #(go!"uintptr"))
+  (Let "$v13" (Val #(go!"float32"))
+  (Let "$v14" (Val #(go!"float64"))
+  (Let "$v15" (Val #(go!"complex64"))
+  (Let "$v16" (Val #(go!"complex128"))
+  (Let "$v17" (Val #(go!"array"))
+  (Let "$v18" (Val #(go!"chan"))
+  (Let "$v19" (Val #(go!"func"))
+  (Let "$v20" (Val #(go!"interface"))
+  (Let "$v21" (Val #(go!"map"))
+  (Let "$v22" (Val #(go!"ptr"))
+  (Let "$v23" (Val #(go!"slice"))
+  (Let "$v24" (Val #(go!"string"))
+  (Let "$v25" (Val #(go!"struct"))
+  (Let "$v26" (Val #(go!"unsafe.Pointer"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.string)))) (LiteralValue [(KeyedElement (some (KeyInteger 0)) (ElementExpression go.string (Var "$v0"))), (KeyedElement (some (KeyInteger 1)) (ElementExpression go.string (Var "$v1"))), (KeyedElement (some (KeyInteger 2)) (ElementExpression go.string (Var "$v2"))), (KeyedElement (some (KeyInteger 3)) (ElementExpression go.string (Var "$v3"))), (KeyedElement (some (KeyInteger 4)) (ElementExpression go.string (Var "$v4"))), (KeyedElement (some (KeyInteger 5)) (ElementExpression go.string (Var "$v5"))), (KeyedElement (some (KeyInteger 6)) (ElementExpression go.string (Var "$v6"))), (KeyedElement (some (KeyInteger 7)) (ElementExpression go.string (Var "$v7"))), (KeyedElement (some (KeyInteger 8)) (ElementExpression go.string (Var "$v8"))), (KeyedElement (some (KeyInteger 9)) (ElementExpression go.string (Var "$v9"))), (KeyedElement (some (KeyInteger 10)) (ElementExpression go.string (Var "$v10"))), (KeyedElement (some (KeyInteger 11)) (ElementExpression go.string (Var "$v11"))), (KeyedElement (some (KeyInteger 12)) (ElementExpression go.string (Var "$v12"))), (KeyedElement (some (KeyInteger 13)) (ElementExpression go.string (Var "$v13"))), (KeyedElement (some (KeyInteger 14)) (ElementExpression go.string (Var "$v14"))), (KeyedElement (some (KeyInteger 15)) (ElementExpression go.string (Var "$v15"))), (KeyedElement (some (KeyInteger 16)) (ElementExpression go.string (Var "$v16"))), (KeyedElement (some (KeyInteger 17)) (ElementExpression go.string (Var "$v17"))), (KeyedElement (some (KeyInteger 18)) (ElementExpression go.string (Var "$v18"))), (KeyedElement (some (KeyInteger 19)) (ElementExpression go.string (Var "$v19"))), (KeyedElement (some (KeyInteger 20)) (ElementExpression go.string (Var "$v20"))), (KeyedElement (some (KeyInteger 21)) (ElementExpression go.string (Var "$v21"))), (KeyedElement (some (KeyInteger 22)) (ElementExpression go.string (Var "$v22"))), (KeyedElement (some (KeyInteger 23)) (ElementExpression go.string (Var "$v23"))), (KeyedElement (some (KeyInteger 24)) (ElementExpression go.string (Var "$v24"))), (KeyedElement (some (KeyInteger 25)) (ElementExpression go.string (Var "$v25"))), (KeyedElement (some (KeyInteger 26)) (ElementExpression go.string (Var "$v26")))])))))))))))))))))))))))))))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
@@ -1097,15 +1119,23 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val bytesType.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val kindNames.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (App (Val (GoInstruction (GlobalVarAddr kindNames))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val stringType.init) (Val #()))))))
   (App (Val doExecute)
-  (App (Val floatRegSize.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (App (Val (GoInstruction (GlobalVarAddr floatRegSize))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val floatArgRegs.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (GlobalVarAddr floatArgRegs))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
-  (App (Val intArgRegs.init) (Val #()))))))))
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (GlobalVarAddr intArgRegs))) (Val #())) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc intArgRegs go.int)) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc floatArgRegs go.int)) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc floatRegSize go.uintptr)) (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (go.GlobalAlloc kindNames (go.GoType.SliceType go.string))) (Val #()))))))))
 
 opaque abiStep.nonempty_type : NonemptyType.{0}
 def abiStep : Type := abiStep.nonempty_type.type
