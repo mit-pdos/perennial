@@ -2,6 +2,8 @@
 module
 
 public import Perennial.Code.internal.stringslite
+public import Perennial.Code.io
+public import Perennial.Code.sync
 public import Perennial.Golang.Defn
 public import Perennial.TrustedCode.strings
 
@@ -86,12 +88,6 @@ noncomputable def asciiSet.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"strings.asciiSet" [])
 
 attribute [irreducible] asciiSet.ty
-
-opaque Replacer.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque replacer.underlying [GooseExts] [GoGlobalContext] : go.GoType
-
-opaque stringWriter.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque countCutOff [GooseExts] [GoGlobalContext] : val
 
@@ -335,6 +331,38 @@ noncomputable def CutPrefix [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def CutSuffix [GooseExts] [GoGlobalContext] : GoString :=
   go!"strings.CutSuffix"
 
+/-- NewReplacer returns a new [Replacer] from a list of old, new string
+    pairs. Replacements are performed in the order they appear in the
+    target string, without overlapping matches. The old string
+    comparisons are done in argument order.
+
+    NewReplacer panics if given an odd number of arguments.
+
+    go: replace.go:32:6 -/
+noncomputable def NewReplacer.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "oldnew"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Replacer.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Replacer.ty)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "oldnew" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "oldnew"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc Replacer.ty))) (Let "$v0" (Let "$a0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.SliceType go.string)))) (Val UntypedNil))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "oldnew"))
+  (App (App (App (Val (GoInstruction (FuncResolve go.append [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (Val (GoInstruction (CompositeLiteral Replacer.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"oldnew")) (ElementExpression (go.GoType.SliceType go.string) (Var "$v0")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Replacer.ty)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoOp GoRemainder go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.string)))) (Var "oldnew"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.string)]))) (Val #())) (Var "$a0"))) (Val #(W64 2)))) (Val #(W64 1)))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Val #(go!"strings.NewReplacer: odd argument count")))
+  (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #())) (Var "$a0"))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Replacer.ty)))) (Var "$res0")))))
+
 /-- HasSuffix reports whether the string s ends with suffix.
 
     go: strings.go:525:6 -/
@@ -377,7 +405,7 @@ noncomputable def TrimSuffix.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
 
 noncomputable instance info' : PkgInfo pkg_id.strings where
-  pkgImportedPkgs := [pkg_id.internal.stringslite]
+  pkgImportedPkgs := [pkg_id.internal.stringslite, pkg_id.io, pkg_id.sync]
 
 opaque «_».init [GooseExts] [GoGlobalContext] : val
 
@@ -385,6 +413,8 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.strings)) (Lam BAnon
   (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$v0" (Val #(W8 1))
@@ -398,6 +428,10 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 256 go.uint8)))) (Pair (App (Val (GoInstruction (GlobalVarAddr asciiSpace))) (Val #())) (Var "$r0")))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.internal.stringslite.initialize') (Val #()))))))
+  (App (Val doExecute)
+  (App (Val _root_.Perennial.io.initialize') (Val #()))))))
+  (App (Val doExecute)
+  (App (Val _root_.Perennial.sync.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc asciiSpace (go.GoType.ArrayType 256 go.uint8))) (Val #()))))))))
 
@@ -476,7 +510,7 @@ class Reader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   get_prevRune : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"prevRune") #x (Val #(x.prevRune'))
   set_prevRune : ∀ (x : Reader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"prevRune") (PairV #x #y) (Val #(({ x with prevRune' := y } : Reader)))
   method_set : go.MethodSetIs Reader.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Reader.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"ReadByte", (some (go.signature.Signature [] false [go.byte, go.error]))), (go!"ReadRune", (some (go.signature.Signature [] false [go.rune, go.int, go.error]))), (go!"Reset", (some (go.signature.Signature [go.string] false []))), (go!"Seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"Size", (some (go.signature.Signature [] false [go.int64]))), (go!"UnreadByte", (some (go.signature.Signature [] false [go.error]))), (go!"UnreadRune", (some (go.signature.Signature [] false [go.error]))), (go!"WriteTo", (some (go.signature.Signature [(go.GoType.Named go!"io.Writer" [])] false [go.int64, go.error])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Reader.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"ReadByte", (some (go.signature.Signature [] false [go.byte, go.error]))), (go!"ReadRune", (some (go.signature.Signature [] false [go.rune, go.int, go.error]))), (go!"Reset", (some (go.signature.Signature [go.string] false []))), (go!"Seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"Size", (some (go.signature.Signature [] false [go.int64]))), (go!"UnreadByte", (some (go.signature.Signature [] false [go.error]))), (go!"UnreadRune", (some (go.signature.Signature [] false [go.error]))), (go!"WriteTo", (some (go.signature.Signature [_root_.Perennial.io.Writer.ty] false [go.int64, go.error])))]
 
 attribute [instance] Reader.TypeAssumptions.type_repr
   Reader.TypeAssumptions.underlying
@@ -489,43 +523,66 @@ attribute [instance] Reader.TypeAssumptions.type_repr
   Reader.TypeAssumptions.method_set
   Reader.TypeAssumptions.ptr_method_set
 
-opaque Replacer.nonempty_type : NonemptyType.{0}
-def Replacer : Type := Replacer.nonempty_type.type
-instance Replacer.nonempty : Nonempty Replacer := Replacer.nonempty_type.property
-opaque Replacer.zero_val : ZeroVal Replacer := ⟨Classical.ofNonempty⟩
-attribute [instance] Replacer.zero_val
+abbrev replacer [GooseExts] : Type := GoInterface
+
+@[reducible] noncomputable def replacer.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.InterfaceType [(go.InterfaceElem.MethodElem go!"Replace" (go.signature.Signature [go.string] false [go.string])), (go.InterfaceElem.MethodElem go!"WriteString" (go.signature.Signature [_root_.Perennial.io.Writer.ty, go.string] false [go.int, go.error]))])
+
+class replacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq replacer.ty replacer.underlying
+  method_set : go.MethodSetIs replacer.ty [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [_root_.Perennial.io.Writer.ty, go.string] false [go.int, go.error])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType replacer.ty) []
+
+attribute [instance] replacer.TypeAssumptions.underlying
+  replacer.TypeAssumptions.method_set
+  replacer.TypeAssumptions.ptr_method_set
+
+structure Replacer [GooseExts] where
+  mk ::
+  once' : _root_.Perennial.sync.Once
+  r' : replacer
+  oldnew' : GoSlice
+
+noncomputable instance Replacer.zero_val [GooseExts] : ZeroVal Replacer :=
+  ⟨Replacer.mk zeroValDef zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def Replacer.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"once" _root_.Perennial.sync.Once.ty),
+(go.field_decl.FieldDecl go!"r" replacer.ty),
+(go.field_decl.FieldDecl go!"oldnew" (go.GoType.SliceType go.string))]
+
+@[irreducible] noncomputable def Replacer.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  Replacer.fieldsUnsealed
+
+noncomputable instance equals_unfold_Replacer [GooseExts] [GoGlobalContext] :
+    EqualsUnfold Replacer.fields Replacer.fieldsUnsealed :=
+  ⟨by unfold Replacer.fields; rfl⟩
+
+@[reducible] noncomputable def Replacer.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Replacer.fields)
 
 class Replacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Replacer.underlying Replacer
   underlying : go.UnderlyingDirectedEq Replacer.ty Replacer.underlying
-  isUnderlying : go.IsUnderlying Replacer.underlying Replacer.underlying
+  get_once : ∀ (x : Replacer), go.IsGoStepPureDetTagged under (StructFieldGet Replacer.underlying go!"once") #x (Val #(x.once'))
+  set_once : ∀ (x : Replacer) (y : _root_.Perennial.sync.Once), go.IsGoStepPureDetTagged under (StructFieldSet Replacer.underlying go!"once") (PairV #x #y) (Val #(({ x with once' := y } : Replacer)))
+  get_r : ∀ (x : Replacer), go.IsGoStepPureDetTagged under (StructFieldGet Replacer.underlying go!"r") #x (Val #(x.r'))
+  set_r : ∀ (x : Replacer) (y : replacer), go.IsGoStepPureDetTagged under (StructFieldSet Replacer.underlying go!"r") (PairV #x #y) (Val #(({ x with r' := y } : Replacer)))
+  get_oldnew : ∀ (x : Replacer), go.IsGoStepPureDetTagged under (StructFieldGet Replacer.underlying go!"oldnew") #x (Val #(x.oldnew'))
+  set_oldnew : ∀ (x : Replacer) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet Replacer.underlying go!"oldnew") (PairV #x #y) (Val #(({ x with oldnew' := y } : Replacer)))
   method_set : go.MethodSetIs Replacer.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Replacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [(go.GoType.Named go!"io.Writer" []), go.string] false [go.int, go.error]))), (go!"strings.build", (some (go.signature.Signature [] false [replacer.ty]))), (go!"strings.buildOnce", (some (go.signature.Signature [] false [])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Replacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [_root_.Perennial.io.Writer.ty, go.string] false [go.int, go.error]))), (go!"strings.build", (some (go.signature.Signature [] false [replacer.ty]))), (go!"strings.buildOnce", (some (go.signature.Signature [] false [])))]
 
 attribute [instance] Replacer.TypeAssumptions.type_repr
   Replacer.TypeAssumptions.underlying
-  Replacer.TypeAssumptions.isUnderlying
+  Replacer.TypeAssumptions.get_once
+  Replacer.TypeAssumptions.set_once
+  Replacer.TypeAssumptions.get_r
+  Replacer.TypeAssumptions.set_r
+  Replacer.TypeAssumptions.get_oldnew
+  Replacer.TypeAssumptions.set_oldnew
   Replacer.TypeAssumptions.method_set
   Replacer.TypeAssumptions.ptr_method_set
-
-opaque replacer.nonempty_type : NonemptyType.{0}
-def replacer : Type := replacer.nonempty_type.type
-instance replacer.nonempty : Nonempty replacer := replacer.nonempty_type.property
-opaque replacer.zero_val : ZeroVal replacer := ⟨Classical.ofNonempty⟩
-attribute [instance] replacer.zero_val
-
-class replacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
-  type_repr : go.TypeReprUnderlying replacer.underlying replacer
-  underlying : go.UnderlyingDirectedEq replacer.ty replacer.underlying
-  isUnderlying : go.IsUnderlying replacer.underlying replacer.underlying
-  method_set : go.MethodSetIs replacer.ty [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [(go.GoType.Named go!"io.Writer" []), go.string] false [go.int, go.error])))]
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType replacer.ty) []
-
-attribute [instance] replacer.TypeAssumptions.type_repr
-  replacer.TypeAssumptions.underlying
-  replacer.TypeAssumptions.isUnderlying
-  replacer.TypeAssumptions.method_set
-  replacer.TypeAssumptions.ptr_method_set
 
 structure trieNode [GooseExts] where
   mk ::
@@ -620,7 +677,7 @@ class genericReplacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalCont
   get_mapping : ∀ (x : genericReplacer), go.IsGoStepPureDetTagged under (StructFieldGet genericReplacer.underlying go!"mapping") #x (Val #(x.mapping'))
   set_mapping : ∀ (x : genericReplacer) (y : (GoArray w8 256)), go.IsGoStepPureDetTagged under (StructFieldSet genericReplacer.underlying go!"mapping") (PairV #x #y) (Val #(({ x with mapping' := y } : genericReplacer)))
   method_set : go.MethodSetIs genericReplacer.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType genericReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [(go.GoType.Named go!"io.Writer" []), go.string] false [go.int, go.error]))), (go!"strings.lookup", (some (go.signature.Signature [go.string, go.bool] false [go.string, go.int, go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType genericReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [_root_.Perennial.io.Writer.ty, go.string] false [go.int, go.error]))), (go!"strings.lookup", (some (go.signature.Signature [go.string, go.bool] false [go.string, go.int, go.bool])))]
 
 attribute [instance] genericReplacer.TypeAssumptions.type_repr
   genericReplacer.TypeAssumptions.underlying
@@ -647,22 +704,38 @@ attribute [instance] appendSliceWriter.TypeAssumptions.underlying
   appendSliceWriter.TypeAssumptions.method_set
   appendSliceWriter.TypeAssumptions.ptr_method_set
 
-opaque stringWriter.nonempty_type : NonemptyType.{0}
-def stringWriter : Type := stringWriter.nonempty_type.type
-instance stringWriter.nonempty : Nonempty stringWriter := stringWriter.nonempty_type.property
-opaque stringWriter.zero_val : ZeroVal stringWriter := ⟨Classical.ofNonempty⟩
-attribute [instance] stringWriter.zero_val
+structure stringWriter [GooseExts] where
+  mk ::
+  w' : _root_.Perennial.io.Writer
+
+noncomputable instance stringWriter.zero_val [GooseExts] : ZeroVal stringWriter :=
+  ⟨stringWriter.mk zeroValDef⟩
+
+@[reducible] noncomputable def stringWriter.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"w" _root_.Perennial.io.Writer.ty)]
+
+@[irreducible] noncomputable def stringWriter.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  stringWriter.fieldsUnsealed
+
+noncomputable instance equals_unfold_stringWriter [GooseExts] [GoGlobalContext] :
+    EqualsUnfold stringWriter.fields stringWriter.fieldsUnsealed :=
+  ⟨by unfold stringWriter.fields; rfl⟩
+
+@[reducible] noncomputable def stringWriter.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType stringWriter.fields)
 
 class stringWriter.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying stringWriter.underlying stringWriter
   underlying : go.UnderlyingDirectedEq stringWriter.ty stringWriter.underlying
-  isUnderlying : go.IsUnderlying stringWriter.underlying stringWriter.underlying
+  get_w : ∀ (x : stringWriter), go.IsGoStepPureDetTagged under (StructFieldGet stringWriter.underlying go!"w") #x (Val #(x.w'))
+  set_w : ∀ (x : stringWriter) (y : _root_.Perennial.io.Writer), go.IsGoStepPureDetTagged under (StructFieldSet stringWriter.underlying go!"w") (PairV #x #y) (Val #(({ x with w' := y } : stringWriter)))
   method_set : go.MethodSetIs stringWriter.ty [(go!"WriteString", (some (go.signature.Signature [go.string] false [go.int, go.error])))]
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType stringWriter.ty) [(go!"WriteString", (some (go.signature.Signature [go.string] false [go.int, go.error])))]
 
 attribute [instance] stringWriter.TypeAssumptions.type_repr
   stringWriter.TypeAssumptions.underlying
-  stringWriter.TypeAssumptions.isUnderlying
+  stringWriter.TypeAssumptions.get_w
+  stringWriter.TypeAssumptions.set_w
   stringWriter.TypeAssumptions.method_set
   stringWriter.TypeAssumptions.ptr_method_set
 
@@ -696,7 +769,7 @@ class singleStringReplacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLoca
   get_value : ∀ (x : singleStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet singleStringReplacer.underlying go!"value") #x (Val #(x.value'))
   set_value : ∀ (x : singleStringReplacer) (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet singleStringReplacer.underlying go!"value") (PairV #x #y) (Val #(({ x with value' := y } : singleStringReplacer)))
   method_set : go.MethodSetIs singleStringReplacer.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType singleStringReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [(go.GoType.Named go!"io.Writer" []), go.string] false [go.int, go.error])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType singleStringReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [_root_.Perennial.io.Writer.ty, go.string] false [go.int, go.error])))]
 
 attribute [instance] singleStringReplacer.TypeAssumptions.type_repr
   singleStringReplacer.TypeAssumptions.underlying
@@ -715,7 +788,7 @@ abbrev byteReplacer [GooseExts] : Type := (GoArray w8 256)
 class byteReplacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   underlying : go.UnderlyingDirectedEq byteReplacer.ty byteReplacer.underlying
   method_set : go.MethodSetIs byteReplacer.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType byteReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [(go.GoType.Named go!"io.Writer" []), go.string] false [go.int, go.error])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType byteReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [_root_.Perennial.io.Writer.ty, go.string] false [go.int, go.error])))]
 
 attribute [instance] byteReplacer.TypeAssumptions.underlying
   byteReplacer.TypeAssumptions.method_set
@@ -751,7 +824,7 @@ class byteStringReplacer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalC
   get_toReplace : ∀ (x : byteStringReplacer), go.IsGoStepPureDetTagged under (StructFieldGet byteStringReplacer.underlying go!"toReplace") #x (Val #(x.toReplace'))
   set_toReplace : ∀ (x : byteStringReplacer) (y : GoSlice), go.IsGoStepPureDetTagged under (StructFieldSet byteStringReplacer.underlying go!"toReplace") (PairV #x #y) (Val #(({ x with toReplace' := y } : byteStringReplacer)))
   method_set : go.MethodSetIs byteStringReplacer.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType byteStringReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [(go.GoType.Named go!"io.Writer" []), go.string] false [go.int, go.error])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType byteStringReplacer.ty) [(go!"Replace", (some (go.signature.Signature [go.string] false [go.string]))), (go!"WriteString", (some (go.signature.Signature [_root_.Perennial.io.Writer.ty, go.string] false [go.int, go.error])))]
 
 attribute [instance] byteStringReplacer.TypeAssumptions.type_repr
   byteStringReplacer.TypeAssumptions.underlying
@@ -838,6 +911,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   stringFinder_instance : stringFinder.TypeAssumptions
   asciiSet_instance : asciiSet.TypeAssumptions
   Compare_unfold : FuncUnfold Compare [] Compare.impl
+  NewReplacer_unfold : FuncUnfold NewReplacer [] NewReplacer.impl
   Split_unfold : FuncUnfold Split [] Split.impl
   Join_unfold : FuncUnfold Join [] Join.impl
   HasPrefix_unfold : FuncUnfold HasPrefix [] HasPrefix.impl
@@ -845,6 +919,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   TrimPrefix_unfold : FuncUnfold TrimPrefix [] TrimPrefix.impl
   TrimSuffix_unfold : FuncUnfold TrimSuffix [] TrimSuffix.impl
   import_stringslite_Assumption : _root_.Perennial.internal.stringslite.Assumptions
+  import_io_Assumption : _root_.Perennial.io.Assumptions
+  import_sync_Assumption : _root_.Perennial.sync.Assumptions
 
 attribute [instance] Assumptions.Builder_instance
   Assumptions.Reader_instance
@@ -860,6 +936,7 @@ attribute [instance] Assumptions.Builder_instance
   Assumptions.stringFinder_instance
   Assumptions.asciiSet_instance
   Assumptions.Compare_unfold
+  Assumptions.NewReplacer_unfold
   Assumptions.Split_unfold
   Assumptions.Join_unfold
   Assumptions.HasPrefix_unfold
@@ -867,6 +944,8 @@ attribute [instance] Assumptions.Builder_instance
   Assumptions.TrimPrefix_unfold
   Assumptions.TrimSuffix_unfold
   Assumptions.import_stringslite_Assumption
+  Assumptions.import_io_Assumption
+  Assumptions.import_sync_Assumption
 
 end strings
 

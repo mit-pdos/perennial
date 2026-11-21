@@ -4,6 +4,8 @@ module
 public import Perennial.Proof.ProofPrelude
 public import Perennial.ManualProof.strings
 public import Perennial.GeneratedProof.internal.stringslite
+public import Perennial.GeneratedProof.io
+public import Perennial.GeneratedProof.sync
 public import Perennial.Golang.Theory
 public import Perennial.Code.strings
 
@@ -158,34 +160,70 @@ variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
 noncomputable instance Replacer_typed_pointsto :
-    TypedPointsto (GF := GF) strings.Replacer :=
-  sorry -- axiomatized type
+    TypedPointsto (GF := GF) strings.Replacer where
+  typedPointstoDef l v dq := iprop(
+    "once" ∷ typedPointsto (structFieldRef strings.Replacer go!"once" l) v.once' dq ∗
+    "r" ∷ typedPointsto (structFieldRef strings.Replacer go!"r" l) v.r' dq ∗
+    "oldnew" ∷ typedPointsto (structFieldRef strings.Replacer go!"oldnew" l) v.oldnew' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance Replacer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.Replacer strings.Replacer.underlying :=
-  sorry -- axiomatized type
+    IntoValTypedUnderlying (GF := GF) strings.Replacer strings.Replacer.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance Replacer_access_load_once (l : Loc) (v : strings.Replacer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef strings.Replacer go!"once" l) v.once' dq)
+      (typedPointsto (structFieldRef strings.Replacer go!"once" l) v.once' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Replacer_access_store_once (l : Loc) (v : strings.Replacer) (once' : sync.Once) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef strings.Replacer go!"once" l) v.once' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.Replacer go!"once" l) once' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with once' := once' } : strings.Replacer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Replacer_access_load_r (l : Loc) (v : strings.Replacer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef strings.Replacer go!"r" l) v.r' dq)
+      (typedPointsto (structFieldRef strings.Replacer go!"r" l) v.r' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Replacer_access_store_r (l : Loc) (v : strings.Replacer) (r' : strings.replacer) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef strings.Replacer go!"r" l) v.r' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.Replacer go!"r" l) r' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with r' := r' } : strings.Replacer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Replacer_access_load_oldnew (l : Loc) (v : strings.Replacer) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef strings.Replacer go!"oldnew" l) v.oldnew' dq)
+      (typedPointsto (structFieldRef strings.Replacer go!"oldnew" l) v.oldnew' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance Replacer_access_store_oldnew (l : Loc) (v : strings.Replacer) (oldnew' : GoSlice) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef strings.Replacer go!"oldnew" l) v.oldnew' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.Replacer go!"oldnew" l) oldnew' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with oldnew' := oldnew' } : strings.Replacer) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end Replacer
-
-namespace replacer
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : strings.Assumptions]
-
-noncomputable instance replacer_typed_pointsto :
-    TypedPointsto (GF := GF) strings.replacer :=
-  sorry -- axiomatized type
-
-noncomputable instance replacer_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.replacer strings.replacer.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end replacer
 
 namespace trieNode
 section def_
@@ -378,12 +416,33 @@ variable [sem : go.Semantics]
 variable [package_sem' : strings.Assumptions]
 
 noncomputable instance stringWriter_typed_pointsto :
-    TypedPointsto (GF := GF) strings.stringWriter :=
-  sorry -- axiomatized type
+    TypedPointsto (GF := GF) strings.stringWriter where
+  typedPointstoDef l v dq := iprop(
+    "w" ∷ typedPointsto (structFieldRef strings.stringWriter go!"w" l) v.w' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
 
 noncomputable instance stringWriter_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) strings.stringWriter strings.stringWriter.underlying :=
-  sorry -- axiomatized type
+    IntoValTypedUnderlying (GF := GF) strings.stringWriter strings.stringWriter.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance stringWriter_access_load_w (l : Loc) (v : strings.stringWriter) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef strings.stringWriter go!"w" l) v.w' dq)
+      (typedPointsto (structFieldRef strings.stringWriter go!"w" l) v.w' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance stringWriter_access_store_w (l : Loc) (v : strings.stringWriter) (w' : io.Writer) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef strings.stringWriter go!"w" l) v.w' (DFrac.own 1))
+      (typedPointsto (structFieldRef strings.stringWriter go!"w" l) w' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with w' := w' } : strings.stringWriter) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
 
 end def_
 end stringWriter
