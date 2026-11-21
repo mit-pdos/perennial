@@ -57,7 +57,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `goose_dist_crash_adequacy` combines this with crash adequacy: each
   generation of each node is proved with the standard WP from a client-chosen
   precondition `P i L`, which it guarantees for the node's next generation, as
-  in `goose_crash_adequacy`. End-to-end example: the Go package
+  in `goose_crash_adequacy`. `goose_dist_mixed_crash_adequacy` is for systems
+  where only some nodes crash: the nodes `crashing ++ stable`, of which the
+  crashing ones owe that guarantee and the stable ones (which never crash) owe
+  only their WP, as without crashes (example: `ProgramLogic/MixedCrashTest.lean`). End-to-end example: the Go package
   `goose/testdata/examples/netfs`, three nodes on a toy network
   (`GooseLang/Ext/Net`, Go side `netfs/netext`, whose primitives are stubs: the
   extension is a specification of a network) and the toy filesystem, where a

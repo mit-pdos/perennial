@@ -1320,6 +1320,18 @@ through `extsCrashStart` (`fsNet_crashStart`: a crash keeps the files' and the
 address's ghost state). The bounds are as without crashes
 (`DistCrashThreadsBelow.of_single`); a crash counts as a step.
 
+Some nodes crashing, others not: `goose_dist_mixed_crash_adequacy N T crashing
+stable g φ ... P Hstart Hwp` is about the system `crashing ++ stable` with the
+boot programs `crashing.map Prod.fst` (`DistCrashNsteps` crashes only the nodes
+that have a boot program, so the stable nodes never crash). `Hwp` and `P` are as
+above, for the crashing nodes only; `Hstart` gives, after the global setup, every
+crashing node's first `P i` and every stable node's `nodeWp` (node
+`crashing.length + j` for `stable[j]`), as in `goose_dist_adequacy`: a stable
+node keeps what it owns for the whole execution, with nothing to re-establish
+after a crash. `goose_dist_crash_adequacy` is its case `stable = []`. Example:
+`Perennial/ProgramLogic/MixedCrashTest.lean`, which also shows that the
+stable node's obligation could not be met if it crashed.
+
 The thread bound along one distributed execution: `DistCrashNstepsBelow boots T n
 c κs c'` is `DistCrashNsteps boots n c κs c'` with every configuration, the first
 and the last included, having fewer than `T` live threads on every node
