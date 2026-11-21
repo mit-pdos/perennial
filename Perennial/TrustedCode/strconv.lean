@@ -26,21 +26,21 @@ var isNotPrint32 = []uint16{ /* constants */ }
 var isGraphic = []uint16{ /* constants */ }
 ```
 
-Each model does nothing, and the variable is not allocated. Go's initializers store constants, so
-they cannot panic and have no effect beyond their variables. Their only readers are `IsPrint` and
-`isInGraphicList` (`strconv/quote.go`), which `IsGraphic` and the quoting functions (`Quote`,
-`QuoteRune`, `AppendQuote`, ...) call, none of them translated; a translated reader could not load
-these variables (nothing gives a points-to for them). -/
+Each model skips the initializer (`go.skipInit`): the variable is not allocated. Go's initializers
+store constants, so they cannot panic and have no effect beyond their variables. Their only
+readers are `IsPrint` and `isInGraphicList` (`strconv/quote.go`), which `IsGraphic` and the
+quoting functions (`Quote`, `QuoteRune`, `AppendQuote`, ...) call, none of them translated; a
+translated reader could not load these variables (nothing gives a points-to for them). -/
 
-def isPrint16.init : val := λ: <>, #()
+def isPrint16.init : val := go.skipInit
 
-def isNotPrint16.init : val := λ: <>, #()
+def isNotPrint16.init : val := go.skipInit
 
-def isPrint32.init : val := λ: <>, #()
+def isPrint32.init : val := go.skipInit
 
-def isNotPrint32.init : val := λ: <>, #()
+def isNotPrint32.init : val := go.skipInit
 
-def isGraphic.init : val := λ: <>, #()
+def isGraphic.init : val := go.skipInit
 
 end code
 end strconv

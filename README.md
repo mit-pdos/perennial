@@ -223,7 +223,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
 * **Trusted package-variable initializers.** A package variable listed in a
   goose config's `trusted` gets its initializer `X.init` (allocation included)
-  from `Perennial/TrustedCode`. **Accepted for now, to remove later:** five such
+  from `Perennial/TrustedCode`. An initializer that the model skips is
+  `def X.init : val := go.skipInit` (`Golang/Defn/Pkg.lean`): its trusted claim is
+  that Go's initializer can be skipped; the variable is not allocated, so a load
+  or store of it is stuck (taking its address steps), and `grep go.skipInit` lists
+  every such variable. **Accepted for now, to remove later:** five such
   models are trusted although goose translates the real source, so the
   `review-trusted` rule R2 grades them REWORK; they were accepted (2026-10-19)
   to finish the standard library's init proofs, and later reviews and
