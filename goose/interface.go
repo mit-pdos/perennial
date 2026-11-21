@@ -91,6 +91,9 @@ func translatePackage(pkg *packages.Package, config declfilter.FilterConfig) (gl
 	}
 	ctx := NewPkgCtx(pkg, util.ExtendFilter(pkg, config, declfilter.New(config)))
 	f := ctx.initFile(pkg, config)
+	if errs := ctx.checkSkipConfig(pkg, config); len(errs) != 0 {
+		return f, errors.Wrap(MultipleErrors(errs), "conversion failed")
+	}
 	preDecls, decls, errs := ctx.files(pkg.Syntax)
 
 	f.PreHeaderDecls = preDecls
