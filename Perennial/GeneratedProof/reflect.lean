@@ -187,25 +187,6 @@ noncomputable instance MapIter_into_val_typed :
 end def_
 end MapIter
 
-namespace Type'
-section def_
-
-variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
-variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
-variable [sem : go.Semantics]
-variable [package_sem' : reflect.Assumptions]
-
-noncomputable instance Type'_typed_pointsto :
-    TypedPointsto (GF := GF) reflect.Type' :=
-  sorry -- axiomatized type
-
-noncomputable instance Type'_into_val_typed :
-    IntoValTypedUnderlying (GF := GF) reflect.Type' reflect.Type'.underlying :=
-  sorry -- axiomatized type
-
-end def_
-end Type'
-
 namespace Kind
 section def_
 
