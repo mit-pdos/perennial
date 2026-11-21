@@ -57,8 +57,18 @@ theorem time.initialize'.wp_proof
   -- unitMap
   wp_apply (wp_map_make1 (K := GoString) (V := w64)) as %m Hm
   repeat (wp_apply wp_mapInsert $$ Hm as Hm)
-  -- asynctimerchan: its trusted initializer does nothing
+  -- asynctimerchan: its trusted initializer allocates the runtime clock
   wp_call
+  unfold runtimeClockInit runtimeClockType
+  wp_call
+  wp_apply wp_GlobalAlloc (V := Loc) runtimeClock (go.PointerType go.int64) as Hclk
+  wp_apply wp_ArbitraryInt as %c0 -
+  wp_apply wp_alloc_untyped #c0 as %lc Hlc
+  try wp_auto
+  ipersist Hclk
+  imod mono_nat_own_alloc (GF := GF) (clockEnc (sint.Z c0)) with ⟨%γ, Hauth, #Hlb0⟩
+  imod inv_alloc clockN ⊤ (clockInv γ lc) $$ [Hlc Hauth] with #Hinv
+  · inext; iexists c0; iframe
   -- startNano = runtimeNano() - 1; Go never writes it again
   wp_apply wp_runtimeNano as %t _
   ipersist Hstart
@@ -76,9 +86,15 @@ theorem time.initialize'.wp_proof
   is_pkg_init_finish
   imodintro
   unfold isInit
-  isplit
+  isplitr
   · iexists _; iexact Hstart
+  isplitr
   · iexists _; iexact HLocal
+  unfold clockLb isRuntimeClock
+  iexists γ
+  isplitr
+  · iexists lc; iframe #
+  iapply monoNatLbOwn_le _ (by unfold clockEnc; omega) $$ Hlb0
 
 end proof
 

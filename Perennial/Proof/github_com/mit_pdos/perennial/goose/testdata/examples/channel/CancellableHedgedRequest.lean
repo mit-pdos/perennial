@@ -61,7 +61,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.Cancellabl
     · ipureintro; exact .inl rfl
     itrivial
   -- `time.After` gives a channel that fires after the hedge threshold
-  wp_apply +noauto wp_After
+  wp_apply +noauto (time.After.spec_pkgInit wp_After _)
   iintro %hedge_ch %γhedge #Hhedge
   wp_auto_lc 4
   -- first select: result on `c` | hedge threshold fires | `done` closes
