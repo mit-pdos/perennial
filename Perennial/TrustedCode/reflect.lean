@@ -26,7 +26,9 @@ The model does nothing, and `stringType` is not allocated. Its value is the runt
 descriptor of `string`, which the semantics cannot represent: `rtypeOf` is `abi.TypeOf`, which
 reads the descriptor out of an interface's memory through `unsafe` (`internal/abi/type.go`).
 Go's initializer reads a static descriptor and allocates nothing the program can see, so it
-cannot panic and has no other effect. Its readers (`Value.MapIndex`, `Value.SetMapIndex`) are
+cannot panic and has no other effect. (Translated, `rtypeOf` calls `abi.TypeOf`, whose body
+`*(*EmptyInterface)(unsafe.Pointer(&a))` loads an `any` cell as an `abi.EmptyInterface`: a layout
+reinterpretation, stuck in the semantics.) Its readers (`Value.MapIndex`, `Value.SetMapIndex`) are
 not translated; a translated reader could not load the variable (nothing gives a points-to for
 it). -/
 def stringType.init : val :=
