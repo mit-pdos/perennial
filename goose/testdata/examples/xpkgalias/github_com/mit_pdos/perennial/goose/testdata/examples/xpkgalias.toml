@@ -1,0 +1,3 @@
+# the struct types are translated where goose can (translate_types); useAliases has a body
+translate = ["!*", "useAliases"]
+translate_types = true

@@ -6,11 +6,13 @@ import (
 	"go/token"
 	"go/types"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
 
 	"github.com/mit-pdos/perennial/goose/declfilter"
+	"github.com/mit-pdos/perennial/goose/glang"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -23,7 +25,23 @@ type typeTranslatability struct {
 	reasons  map[string]bool
 	// same-package aliases referred to
 	aliasDeps map[string]bool
+	// the decisions of the translations of the packages it imports (nil: unknown)
+	deps ImportedTypes
 }
+
+// PkgTypes is what goose decides about the type declarations of a package's
+// translation: the packages it imports and its declaration filter, extended by
+// ExtendFilter.
+type PkgTypes struct {
+	pkgPath  string
+	imported map[string]bool
+	filter   declfilter.DeclFilter
+	deps     ImportedTypes
+}
+
+// ImportedTypes returns the PkgTypes of an imported package (by its path), or
+// nil if they are unknown.
+type ImportedTypes func(path string) *PkgTypes
 
 func (c *typeTranslatability) fail(format string, args ...any) {
 	c.reasons[fmt.Sprintf(format, args...)] = true
@@ -50,8 +68,22 @@ func (c *typeTranslatability) check(t types.Type, byValue bool, top bool) {
 		if p := t.Obj().Pkg(); p != nil && p.Path() == c.pkgPath {
 			c.aliasDeps[t.Obj().Name()] = true
 		} else if p != nil {
-			// we do not know if the alias is translated in its package
-			c.fail("alias from another package %s", p.Path())
+			// an alias its package translates denotes a type named there
+			var d *PkgTypes
+			if c.deps != nil {
+				d = c.deps(p.Path())
+			}
+			if d == nil || d.filter.GetAction(t.Obj().Name()) != declfilter.Translate {
+				c.fail("alias from another package %s", p.Path())
+			} else if args := t.TypeArgs(); args != nil && args.Len() > 0 {
+				c.fail("generic alias from another package %s", p.Path())
+			} else {
+				c.checkObj(t.Obj())
+				sub := &typeTranslatability{pkgPath: d.pkgPath, imported: d.imported,
+					reasons: c.reasons, aliasDeps: make(map[string]bool), deps: d.deps}
+				sub.check(types.Unalias(t), byValue, false)
+			}
+			return
 		}
 		c.checkObj(t.Obj())
 		if args := t.TypeArgs(); args != nil {
@@ -143,9 +175,9 @@ func (c *typeTranslatability) checkObj(obj types.Object) {
 // of t, a field type of a struct type of package pkgPath translating the
 // packages imported (as ExtendFilter decides for a defined struct type); nil if
 // it can.
-func ValueTypeReasons(pkgPath string, imported map[string]bool, t types.Type) []string {
+func ValueTypeReasons(pkgPath string, imported map[string]bool, deps ImportedTypes, t types.Type) []string {
 	c := &typeTranslatability{pkgPath: pkgPath, imported: imported,
-		reasons: make(map[string]bool), aliasDeps: make(map[string]bool)}
+		reasons: make(map[string]bool), aliasDeps: make(map[string]bool), deps: deps}
 	c.check(t, true, false)
 	var reasons []string
 	for r := range c.reasons {
@@ -196,11 +228,12 @@ func TypeDecls(n ast.Node) []*ast.GenDecl {
 	return decls
 }
 
-func ExtendFilter(pkg *packages.Package, config declfilter.FilterConfig, df declfilter.DeclFilter) declfilter.DeclFilter {
-	logFile := os.Getenv("GOOSE_TYPES_LOG")
-	if !config.TranslateTypes && logFile == "" {
-		return df
-	}
+func ExtendFilter(pkg *packages.Package, config declfilter.FilterConfig, df declfilter.DeclFilter, deps ImportedTypes) declfilter.DeclFilter {
+	return extendFilter(pkg, config, df, deps, os.Getenv("GOOSE_TYPES_LOG"))
+}
+
+// importedPaths are the import paths of pkg that df imports.
+func importedPaths(pkg *packages.Package, df declfilter.DeclFilter) map[string]bool {
 	imported := make(map[string]bool)
 	for _, f := range pkg.Syntax {
 		for _, imp := range f.Imports {
@@ -210,6 +243,53 @@ func ExtendFilter(pkg *packages.Package, config declfilter.FilterConfig, df decl
 			}
 		}
 	}
+	return imported
+}
+
+// NewImportedTypes resolves the packages pkg imports to the decisions of
+// their own translations: each with its configuration in configDir, extended
+// by ExtendFilter as goose extends it when it translates that package. A
+// package without a configuration file there is unknown (nil): goose may be
+// translating it with another configuration directory.
+func NewImportedTypes(pkg *packages.Package, configDir string) ImportedTypes {
+	var mu sync.Mutex
+	memo := make(map[string]*PkgTypes)
+	var resolve func(p *packages.Package) ImportedTypes
+	resolve = func(p *packages.Package) ImportedTypes {
+		return func(path string) *PkgTypes {
+			dep, ok := p.Imports[path]
+			if !ok || configDir == "" {
+				return nil
+			}
+			mu.Lock()
+			d, done := memo[path]
+			mu.Unlock()
+			if done {
+				return d
+			}
+			configPath := filepath.Join(configDir, glang.GoPathToIdentPath(path)+".toml")
+			if _, err := os.Stat(configPath); err == nil {
+				if config, err := ReadConfig(configDir, path); err == nil {
+					deps := resolve(dep)
+					df := declfilter.New(config)
+					d = &PkgTypes{pkgPath: path, imported: importedPaths(dep, df), deps: deps,
+						filter: extendFilter(dep, config, df, deps, "")}
+				}
+			}
+			mu.Lock()
+			memo[path] = d
+			mu.Unlock()
+			return d
+		}
+	}
+	return resolve(pkg)
+}
+
+func extendFilter(pkg *packages.Package, config declfilter.FilterConfig, df declfilter.DeclFilter, deps ImportedTypes, logFile string) declfilter.DeclFilter {
+	if !config.TranslateTypes && logFile == "" {
+		return df
+	}
+	imported := importedPaths(pkg, df)
 	type entry struct {
 		name      string
 		kind      string
@@ -231,7 +311,7 @@ func ExtendFilter(pkg *packages.Package, config declfilter.FilterConfig, df decl
 				}
 				obj := pkg.TypesInfo.Defs[spec.Name]
 				c := &typeTranslatability{pkgPath: pkg.PkgPath, imported: imported,
-					reasons: make(map[string]bool), aliasDeps: make(map[string]bool)}
+					reasons: make(map[string]bool), aliasDeps: make(map[string]bool), deps: deps}
 				// the definition as written: `type T other.U` refers to other.U
 				def := pkg.TypesInfo.TypeOf(spec.Type)
 				_, isStruct := def.(*types.Struct)

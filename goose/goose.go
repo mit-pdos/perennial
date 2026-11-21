@@ -103,6 +103,8 @@ type Ctx struct {
 	inAnonStructFields bool
 
 	importNames map[string]*types.PkgName
+	// the decisions of the translations of the imported packages (util.NewImportedTypes)
+	importedTypes util.ImportedTypes
 	// spellOut: glangType writes the types this translation cannot name
 	// (typeNameable) as what they denote (nameableSignature)
 	spellOut           bool
