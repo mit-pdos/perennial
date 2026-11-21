@@ -34,7 +34,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.lock.Lock.
   wp_start as #Hl
   unfold isLock
   wp_auto
-  wp_apply +noauto wp_After
+  wp_apply +noauto (time.After.spec_pkgInit wp_After _)
   iintro %after_ch %γafter #Hafter
   wp_auto_lc 2
   wp_apply_core chan.wp_select_blocking

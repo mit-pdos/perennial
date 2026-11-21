@@ -41,7 +41,7 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.channel.eliminatio
   irename s => s1
   iStructNamed s1
   wp_auto_lc 2
-  wp_apply wp_After (W64 10000) as %after_ch %γafter #Hafter
+  wp_apply (time.After.spec_pkgInit wp_After (W64 10000)) as %after_ch %γafter #Hafter
   wp_apply_core chan.wp_select_blocking
   iapply BigAndL.bigAndL_cons.2
   isplit

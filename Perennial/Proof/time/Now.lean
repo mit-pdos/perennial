@@ -26,7 +26,7 @@ theorem time.Now.wp_proof
     time.Now.spec (GF := GF) (hG := hG) := by
   wp_start
   ihave #Hi := isInit_access $$ Hpkg
-  icases Hi with ⟨⟨%sn, #Hsn⟩, ⟨%loc, #Hloc⟩⟩
+  icases Hi with ⟨⟨%sn, #Hsn⟩, ⟨%loc, #Hloc⟩, -⟩
   wp_auto
   wp_apply wp_runtimeNow as %sec %nsec %mono -
   repeat' (first | wp_if_destruct | wp_auto)
