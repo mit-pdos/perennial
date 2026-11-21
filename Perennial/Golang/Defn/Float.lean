@@ -21,9 +21,9 @@ tested against Go (`docs/design/float/`), not to be fast. See
 **NaN results are not specified here.** Where IEEE 754 produces a NaN, these
 functions return the fixed quiet NaN `Format.nan`, but its bits mean nothing: the
 sign and payload of a NaN result are architecture-dependent (amd64's default NaN
-has its sign bit set, arm64's does not), and the step rules replace every NaN
-result of an operation by an arbitrary NaN (`go.float64Result`,
-`go.float32Result`). Only "is a NaN" is meaningful.
+has its sign bit set, arm64's does not), and the step rules let an operation whose
+result is a NaN step to any NaN (`go.float64Results`, `go.float32Results`). Only
+"is a NaN" is meaningful.
 
 **Fused multiply-add is not modelled.** The Go spec allows an implementation to
 fuse operations, computing `x*y + z` with a single rounding (arm64, ppc64le,
@@ -252,8 +252,6 @@ def float64Div (x y : w64) : w64 := binary64.div x y
 def float64Leb (x y : w64) : Bool := binary64.leb x y
 def float64Eq (x y : w64) : Bool := binary64.eq x y
 def float64IsNaN (x : w64) : Bool := binary64.isNaN x
-/-- A NaN of type `float64` (that of Go's `math.NaN()`, `0x7FF8000000000001`). -/
-def float64NaN : w64 := 0x7FF8000000000001
 
 def float32Neg (x : w32) : w32 := binary32.neg x
 def float32Add (x y : w32) : w32 := binary32.add x y
@@ -263,8 +261,6 @@ def float32Div (x y : w32) : w32 := binary32.div x y
 def float32Leb (x y : w32) : Bool := binary32.leb x y
 def float32Eq (x y : w32) : Bool := binary32.eq x y
 def float32IsNaN (x : w32) : Bool := binary32.isNaN x
-/-- A NaN of type `float32` (`float32(math.NaN())`, `0x7FC00000`). -/
-def float32NaN : w32 := 0x7FC00000
 
 /-- `float32(x)` of a `float64`. -/
 def float64ToFloat32 (x : w64) : w32 := binary64.convert binary32 x

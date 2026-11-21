@@ -1,7 +1,7 @@
 /-
 The differential test of the IEEE 754 definitions (`Perennial/Golang/Defn/Float.lean`) against
 Go: reads the vectors printed by `gen/main.go` and checks that the Lean definitions agree, a NaN
-result agreeing with any NaN (the step rules allow any NaN, `go.float64Result`). See README.md.
+result agreeing with any NaN (the step rules allow any NaN, `go.float64Results`). See README.md.
 
 Usage: lake env lean --run docs/design/float/check.lean vectors.txt
 -/

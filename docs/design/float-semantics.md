@@ -41,31 +41,34 @@ The definitions are computable (tested with `#eval`/`lean --run`) and written to
 to be fast. The operations are sealed (`@[irreducible]` with `_unseal` lemmas), so automation
 does not unfold rounding in unrelated proofs.
 
-## NaN nondeterminism (`go.float64Result`, `go.float32Result`)
+## NaN nondeterminism (`go.float64Results`, `go.float32Results`)
 
 The sign and payload of a NaN result are architecture-dependent: amd64's default NaN has the
 sign bit set, arm64's does not, and a constant-folded operation may differ from the same
-operation at run time. So the model says only that the result is *a* NaN. Mechanism: the step
-rule of every arithmetic operation steps to `float64Result r`, where `r` is the IEEE 754
-result computed above:
+operation at run time. So the model says only that the result is *a* NaN. Mechanism: the
+NaN-producing step rules are relations on `is_go_step_pure`, like `go_prealloc_step`:
 
 ```lean
-def float64ResultDef (r : w64) : Expr :=
-  if float64IsNaN r then
-    gl(let: "x" := ArbitraryInt in if: "x" =⟨go.float64⟩ "x" then #float64NaN else "x")
-  else Val #r
+def float64Results (r f : w64) : Prop := if float64IsNaN r then float64IsNaN f else f = r
+
+plus_float64 {t : go.GoType} [t ↓u go.float64] (v1 v2 : w64) :
+  is_go_step_pure (GoOp GoPlus t) glv((#v1, #v2)) =
+    fun (e : Expr) => ∃ f, e = #f ∧ float64Results (float64Add v1 v2) f
 ```
 
-That is, `r` itself when it is not a NaN, and otherwise an arbitrary NaN: an arbitrary bit
-pattern (the existing `ArbitraryInt`, as for float-to-integer conversion), kept if it is a NaN
-(`x != x`) and replaced by a fixed NaN if not, so that every NaN, and only NaNs, can result.
-This needs no new primitive or Go instruction. (The fixed `Format.nan` that `Float.lean`
-returns for a NaN result is never observed.) Alternatives considered:
+That is, `x + y` steps to IEEE 754's result `r` when it is not a NaN, and to any NaN otherwise.
+(The fixed `Format.nan` that `Float.lean` returns for a NaN result is never observed.) The
+rules are stated at every type `t` whose underlying type is `float64` (`float32`), because
+`go_op_underlying`/`go_un_op_underlying` lift only deterministic (`⤳[under]`) rules to named
+types; `CoreSemantics` is unchanged. Being equations rather than instances, they are used
+through the wp lemmas below. Alternatives considered:
 
 - keep `FloatOps` as a class whose fields agree with IEEE 754 up to NaN: NaN bits would be a
   deterministic function of the operands, which is stronger than Go promises (constant
   folding, cross-compilation) and keeps an extra class in the trusted base;
-- a new internal Go instruction producing a NaN: a language change for no gain.
+- a deterministic step to GooseLang code choosing a NaN (`ArbitraryInt`, kept if `x != x`,
+  else a fixed NaN): an earlier version of this design; the relation says the same with less
+  trusted code and no distinguished NaN.
 
 `FloatOps` is therefore removed: its fields are now plain definitions with the same names
 (`float64Add`, ...), and nothing instantiates them.
@@ -73,12 +76,14 @@ returns for a NaN result is never observed.) Alternatives considered:
 Which operations are nondeterministic: `+ - * /` and unary `-` (also of a NaN: IEEE 754 and gc
 on amd64 flip the sign bit of a NaN, but the Go spec does not promise it, and not every target
 has a non-arithmetic negation). Comparisons (`==`, `<`, ...) and integer-to-float conversions
-never produce a NaN and stay deterministic, so automation steps them without a choice.
+never produce a NaN and stay deterministic `⤳[under]` rules, so automation steps them.
 `float32(c)` of an untyped constant is deterministic too (a constant is never a NaN).
 Float-to-integer conversion is unchanged (`ArbitraryInt`, implementation-defined in Go).
 
-In proofs, `wp_apply wp_float64Result as %f %Hf` takes the step, with
-`Hf : f = r ∨ (float64IsNaN r ∧ float64IsNaN f)` (see `Proof/time/Duration__Seconds.lean`).
+In proofs, each arithmetic operation takes one `wp_apply`: `wp_apply wp_float64_add as %f Hf`
+(likewise `_sub`, `_mul`, `_div`, `_neg` and the `float32` ones), with
+`Hf : float64Results (float64Add v1 v2) f` (see `Proof/time/Duration__Seconds.lean`). They are
+instances of `wp_go_step_rel`, the spec of any instruction with a relational pure step.
 
 ## Known limitations
 

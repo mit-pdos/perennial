@@ -17,7 +17,7 @@ var sink int64
 
 // neg_float64: -x runs on every float64 (no panic) and flips the sign bit, also of a zero, an
 // infinity and a NaN; the model flips the sign bit of a non-NaN and gives an arbitrary NaN for a
-// NaN (go.float64Result), which allows that.
+// NaN (go.float64Results), which allows that.
 func TestNeg(t *testing.T) {
 	zero := 0.0 // a variable: -0.0 as a constant is +0
 	cases := []float64{zero, math.Copysign(0, -1), 1.5, -2.25, math.Inf(1), math.Inf(-1), math.NaN(),

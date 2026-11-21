@@ -1,7 +1,7 @@
 /-
 Facts about the IEEE 754 float operations of the Go semantics
 (`Perennial/Golang/Defn/Float.lean`): signs of conversions and comparisons with zero, and the
-spec of `go.float64Result`/`go.float32Result` (an operation's result, any NaN if it is a NaN).
+specs of the arithmetic operations (IEEE 754's result, any NaN if it is a NaN).
 -/
 module
 
@@ -111,10 +111,10 @@ theorem float32Eq_self (x : w32) : float32Eq x x = !float32IsNaN x := by
     Format.isNaNDef]
   cases binary32.decode x <;> simp
 
-theorem float64IsNaN_float64NaN : float64IsNaN float64NaN = true := by
-  simp only [float64IsNaN, Format.isNaN_unseal, Format.isNaNDef]; decide
-theorem float32IsNaN_float32NaN : float32IsNaN float32NaN = true := by
-  simp only [float32IsNaN, Format.isNaN_unseal, Format.isNaNDef]; decide
+theorem float64Results_self (r : w64) : go.float64Results r r := by
+  unfold go.float64Results; split <;> simp_all
+theorem float32Results_self (r : w32) : go.float32Results r r := by
+  unfold go.float32Results; split <;> simp_all
 
 open Perennial.go in
 /-- `x < 0` of a `float64` `x` with a clear sign bit is `false`: the step of `x < 0`
@@ -133,58 +133,84 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [GoSemanticsFunctions] [go.PreSemantics]
 variable {s : Stuckness} {E : CoPset}
 
-/-- The result of a `float64` operation whose IEEE 754 result is `r`: `r`, or any NaN if `r`
-is a NaN. -/
-theorem wp_float64Result (r : w64) (Φ : val → IProp GF) :
-    (∀ f : w64, ⌜f = r ∨ (float64IsNaN r = true ∧ float64IsNaN f = true)⌝ -∗ Φ #f) ⊢
-      WP (go.float64Result r) @ s; E {{ Φ }} := by
-  iintro HΦ
-  rw [go.float64Result_unseal, go.float64ResultDef]
-  cases hr : float64IsNaN r
-  · simp only [Bool.false_eq_true, ↓reduceIte]
-    wp_pures
-    iapply HΦ
-    ipureintro
-    exact .inl rfl
-  · simp only [↓reduceIte]
-    wp_apply wp_ArbitraryInt as %x _
-    rw [float64Eq_self]
-    cases hx : float64IsNaN x
-    · wp_pures
-      iapply HΦ
-      ipureintro
-      simp [float64IsNaN_float64NaN]
-    · wp_pures
-      iapply HΦ
-      ipureintro
-      exact .inr ⟨trivial, hx⟩
+/-- A Go instruction whose pure step is a relation: `op` applied to `arg` steps to any
+`#(inj f)` with `P f` (and some `f0` satisfies `P`). The float arithmetic rules have this
+form (`go.plus_float64`, ...). -/
+theorem wp_go_step_rel {V : Type} (inj : V → val) (op : GoInstruction) (arg : val)
+    (P : V → Prop)
+    (hop : ∀ e gs gs', IsGoStep op arg e gs gs' ↔ is_go_step_pure op arg e ∧ gs = gs')
+    (hstep : is_go_step_pure op arg = fun e => ∃ f, e = Val (inj f) ∧ P f)
+    (f0 : V) (hf0 : P f0) (Harg : arg.isPanic = false := by simp) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction op)) (Val arg)) @ s; E
+    {{ (f : V), RET inj f; ⌜P f⌝ }} := by
+  iintro %Φ _ HΦ
+  iapply wp_GoInstruction' (s := s) (E := E) op arg Φ
+    (fun gs => ⟨Val (inj f0), gs, (hop _ _ _).mpr ⟨by rw [hstep]; exact ⟨f0, rfl, hf0⟩, rfl⟩⟩)
+    Harg
+  inext
+  iintro %e' %gs %gs' %Hstep _ Hctx
+  obtain ⟨Hp, rfl⟩ := (hop _ _ _).mp Hstep
+  rw [hstep] at Hp
+  obtain ⟨f, rfl, Hf⟩ := Hp
+  imodintro
+  iframe Hctx
+  iapply wp_value'
+  iapply HΦ
+  ipureintro; exact Hf
 
-/-- The result of a `float32` operation whose IEEE 754 result is `r`: `r`, or any NaN if `r`
-is a NaN. -/
-theorem wp_float32Result (r : w32) (Φ : val → IProp GF) :
-    (∀ f : w32, ⌜f = r ∨ (float32IsNaN r = true ∧ float32IsNaN f = true)⌝ -∗ Φ #f) ⊢
-      WP (go.float32Result r) @ s; E {{ Φ }} := by
-  iintro HΦ
-  rw [go.float32Result_unseal, go.float32ResultDef]
-  cases hr : float32IsNaN r
-  · simp only [Bool.false_eq_true, ↓reduceIte]
-    wp_pures
-    iapply HΦ
-    ipureintro
-    exact .inl rfl
-  · simp only [↓reduceIte]
-    wp_apply wp_ArbitraryInt as %x _
-    rw [float32Eq_self]
-    cases hx : float32IsNaN (W32 (uint.Z x))
-    · wp_pures
-      iapply HΦ
-      ipureintro
-      simp [float32IsNaN_float32NaN]
-    · wp_pures
-      iapply HΦ
-      ipureintro
-      exact .inr ⟨trivial, hx⟩
+/-! The arithmetic operations of `float64` and `float32` (and of the named types whose
+underlying type they are): the result `f` is IEEE 754's, or any NaN if that is a NaN
+(`go.float64Results`). Use as `wp_apply wp_float64_add as %f Hf`. -/
 
+theorem wp_float64_add {t : go.GoType} [t ↓u go.float64] (v1 v2 : w64) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction (GoOp GoPlus t))) (Val glv((#v1, #v2)))) @ s; E
+    {{ (f : w64), RET #f; ⌜go.float64Results (float64Add v1 v2) f⌝ }} :=
+  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.plus_float64 v1 v2) _ (float64Results_self _)
+
+theorem wp_float64_sub {t : go.GoType} [t ↓u go.float64] (v1 v2 : w64) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction (GoOp GoSub t))) (Val glv((#v1, #v2)))) @ s; E
+    {{ (f : w64), RET #f; ⌜go.float64Results (float64Sub v1 v2) f⌝ }} :=
+  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.sub_float64 v1 v2) _ (float64Results_self _)
+
+theorem wp_float64_mul {t : go.GoType} [t ↓u go.float64] (v1 v2 : w64) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction (GoOp GoMul t))) (Val glv((#v1, #v2)))) @ s; E
+    {{ (f : w64), RET #f; ⌜go.float64Results (float64Mul v1 v2) f⌝ }} :=
+  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.mul_float64 v1 v2) _ (float64Results_self _)
+
+theorem wp_float64_div {t : go.GoType} [t ↓u go.float64] (v1 v2 : w64) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction (GoOp GoDiv t))) (Val glv((#v1, #v2)))) @ s; E
+    {{ (f : w64), RET #f; ⌜go.float64Results (float64Div v1 v2) f⌝ }} :=
+  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.div_float64 v1 v2) _ (float64Results_self _)
+
+theorem wp_float64_neg {t : go.GoType} [t ↓u go.float64] (v : w64) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction (GoUnOp GoNeg t))) (Val #v)) @ s; E
+    {{ (f : w64), RET #f; ⌜go.float64Results (float64Neg v) f⌝ }} :=
+  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.neg_float64 v) _ (float64Results_self _)
+
+theorem wp_float32_add {t : go.GoType} [t ↓u go.float32] (v1 v2 : w32) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction (GoOp GoPlus t))) (Val glv((#v1, #v2)))) @ s; E
+    {{ (f : w32), RET #f; ⌜go.float32Results (float32Add v1 v2) f⌝ }} :=
+  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.plus_float32 v1 v2) _ (float32Results_self _)
+
+theorem wp_float32_sub {t : go.GoType} [t ↓u go.float32] (v1 v2 : w32) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction (GoOp GoSub t))) (Val glv((#v1, #v2)))) @ s; E
+    {{ (f : w32), RET #f; ⌜go.float32Results (float32Sub v1 v2) f⌝ }} :=
+  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.sub_float32 v1 v2) _ (float32Results_self _)
+
+theorem wp_float32_mul {t : go.GoType} [t ↓u go.float32] (v1 v2 : w32) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction (GoOp GoMul t))) (Val glv((#v1, #v2)))) @ s; E
+    {{ (f : w32), RET #f; ⌜go.float32Results (float32Mul v1 v2) f⌝ }} :=
+  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.mul_float32 v1 v2) _ (float32Results_self _)
+
+theorem wp_float32_div {t : go.GoType} [t ↓u go.float32] (v1 v2 : w32) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction (GoOp GoDiv t))) (Val glv((#v1, #v2)))) @ s; E
+    {{ (f : w32), RET #f; ⌜go.float32Results (float32Div v1 v2) f⌝ }} :=
+  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.div_float32 v1 v2) _ (float32Results_self _)
+
+theorem wp_float32_neg {t : go.GoType} [t ↓u go.float32] (v : w32) :
+    {{ (True : IProp GF) }} (App (Val (GoInstruction (GoUnOp GoNeg t))) (Val #v)) @ s; E
+    {{ (f : w32), RET #f; ⌜go.float32Results (float32Neg v) f⌝ }} :=
+  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.neg_float32 v) _ (float32Results_self _)
 
 end wp
 
