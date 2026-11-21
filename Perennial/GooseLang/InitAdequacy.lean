@@ -2,7 +2,8 @@
 The adequacy theorems, from the trusted initial states.
 
 The adequacy theorems (`goose_adequacy`, `goose_crash_adequacy`,
-`goose_dist_adequacy`, `goose_dist_crash_adequacy`) assume that the initial states
+`goose_dist_adequacy`, `goose_dist_crash_adequacy`, `goose_dist_mixed_crash_adequacy`)
+assume that the initial states
 satisfy the conditions of the extensions' ghost state (`extsInitgP`, `extsInitP`:
 `ExtInterp.initgP`/`initP`), under which they allocate it. Those conditions are part of
 the proof, chosen with the interpretation: a theorem stated with them is only as
@@ -184,6 +185,47 @@ theorem goose_dist_crash_adequacy_init [hPre : GooseGpreS GF] (Hcompat : GooseIn
       (∀ e, e ∈ tp → RealNotStuck e (σ, c.global)) ∧
       (∀ e, e ∈ tp → ¬ UnrecoveredPanic e) :=
   goose_dist_crash_adequacy N T es g φ hφ (extsInitgP_of_init Hcompat HinitG)
+    (fun n hn => extsInitP_of_init Hcompat (HinitL n hn)) P Hstart Hwp n κs c Hsteps Hbound
+    Hthreads Hlive
+
+
+/-- `goose_dist_mixed_crash_adequacy`, for a system whose shared state starts in an
+initial global state of the extensions' semantics (`extsInitGlobal`) and each of whose
+nodes, crashing or stable, first starts in an initial local state (`extsInitLocal`); a
+crashing node restarted after a crash is in whatever state the crash relations give. -/
+theorem goose_dist_mixed_crash_adequacy_init [hPre : GooseGpreS GF]
+    (Hcompat : GooseInitCompat) (N T : Nat)
+    (crashing stable : List (Expr × state)) (g : GlobalState) (φ : Nat → val → Prop)
+    (hφ : ∀ i p, ¬ φ i (PanicV p))
+    (HinitG : extsInitGlobal g)
+    (HinitL : ∀ n, n ∈ crashing ++ stable → extsInitLocal n.2 g)
+    (P : ∀ [GooseGlobalGS .hasLC GF], Nat → GooseLocalGS GF → IProp GF)
+    (Hstart : ∀ [GooseGlobalGS .hasLC GF],
+      receiptBound GF = N →
+      ⊢ extsGlobalStart (GF := GF) g.globalWorld ={⊤}=∗
+        ([∗list] i ↦ n ∈ crashing, nodeStart T n.2 (P i)) ∗
+        [∗list] j ↦ n ∈ stable, nodeWp T n.1 n.2 (φ (crashing.length + j)))
+    (Hwp : ∀ [hG : HeapGS .hasLC GF],
+      receiptBound GF = N →
+      threadBound GF = T →
+      ∀ (i : Nat) (e : Expr) (σ : state), crashing[i]? = some (e, σ) →
+      hG.goose_localGS.goose_go_local_context = σ.goState.goLctx →
+      ⊢ P i hG.goose_localGS -∗ threadTok ={⊤}=∗
+        WP e @ Stuckness.NotStuck; ⊤ {{ v, ⌜φ i v⌝ }} ∗
+        ∀ L' : GooseLocalGS GF, crashed (hC := hG.goose_localGS.goose_crashGS) -∗
+          extsCrashStart hG.goose_localGS L' -∗
+          ownGoState (hG := L'.goose_go_stateGS) ∅ ={⊤}=∗ P i L')
+    (n : Nat) (κs : List Observation) (c : DistCfg)
+    (Hsteps : DistCrashNsteps (crashing.map Prod.fst) n (distInit (crashing ++ stable) g) κs c)
+    (Hbound : n < N) (Hthreads : ∀ n, n ∈ crashing ++ stable → n.2.threads = 1)
+    (Hlive : DistCrashThreadsBelow (crashing.map Prod.fst) T n
+      (distInit (crashing ++ stable) g)) :
+    ∀ i tp σ, c.nodes[i]? = some (tp, σ) →
+      (∀ v tp', tp = Val v :: tp' → φ i v) ∧
+      (∀ e, e ∈ tp → RealNotStuck e (σ, c.global)) ∧
+      (∀ e, e ∈ tp → ¬ UnrecoveredPanic e) :=
+  goose_dist_mixed_crash_adequacy N T crashing stable g φ hφ
+    (extsInitgP_of_init Hcompat HinitG)
     (fun n hn => extsInitP_of_init Hcompat (HinitL n hn)) P Hstart Hwp n κs c Hsteps Hbound
     Hthreads Hlive
 

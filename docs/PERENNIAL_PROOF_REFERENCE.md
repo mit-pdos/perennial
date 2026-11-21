@@ -1242,7 +1242,8 @@ with `initP := False` would make a theorem stated with it vacuous).
 
 The adequacy theorems still allocate the ghost state under `extsInitP`/`extsInitgP`;
 their `_init` versions (`goose_adequacy_init`, `goose_crash_adequacy_init`,
-`goose_dist_adequacy_init`, `goose_dist_crash_adequacy_init`) take the trusted
+`goose_dist_adequacy_init`, `goose_dist_crash_adequacy_init`,
+`goose_dist_mixed_crash_adequacy_init`) take the trusted
 predicates and `GooseInitCompat`: every extension's interpretation accepts its
 semantics' initial states (`ExtInitCompat E`, an instance next to the
 `ExtInterp`). For a closed list it is `⟨inferInstance, ..., trivial⟩`.
