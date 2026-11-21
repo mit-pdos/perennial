@@ -458,7 +458,7 @@ func (ctx *Ctx) basicLeanType(n locatable, t *types.Basic) string {
 	switch t.Name() {
 	case "uint64", "int64":
 		return "w64"
-	case "uint32", "int32":
+	case "uint32", "int32", "rune":
 		return "w32"
 	case "uint16", "int16":
 		return "w16"

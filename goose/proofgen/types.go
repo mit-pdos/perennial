@@ -272,7 +272,7 @@ func (tr *typesTranslator) toLeanType(t types.Type) string {
 		switch t.Name() {
 		case "uint64", "int64", "uint", "int", "float64", "uintptr":
 			return "w64"
-		case "uint32", "int32", "float32":
+		case "uint32", "int32", "rune", "float32":
 			return "w32"
 		case "uint16", "int16":
 			return "w16"
