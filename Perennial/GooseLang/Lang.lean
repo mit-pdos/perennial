@@ -558,21 +558,27 @@ class ExtSemantics (E : GooseExt) where
   state is `g`. A theorem about executions from such states covers every machine
   started in any of them, so a weaker predicate is a stronger theorem: the default,
   `True`, makes no assumption. A state that a restart produces (`crash`) is not
-  constrained by it: a durable state need not be initial after a crash; when a
-  restarted machine is meant to start afresh, `crash` should produce only initial
-  states (`ExtSemantics.CrashRestartsInit`), which no theorem requires. -/
+  constrained by it: a durable state need not be initial after a crash.
+
+  A value other than the default is trusted, and is one of two things: an assumption
+  about the real machine, which every real start of a machine running the program must
+  satisfy (a resource not yet taken, an empty volatile buffer), or a constraint on
+  state that only the model has (sha256's global state, the inputs hashed so far by
+  the run, is empty at the start: no real state is assumed). Its docstring says which.
+  `initLocal` and `initGlobal` must be jointly satisfiable, `∃ g s, initGlobal g ∧
+  initLocal s g`: otherwise no execution starts from an initial state and every theorem
+  stated with them (the `_init` adequacy theorems, `InitAdequacy.lean`) is vacuous. An
+  extension that sets either one proves this next to its `ExtSemantics` instance (an
+  `example`, as sha256's, `Ext/Sha256/Impl.lean`). The extensions' states are
+  independent components, so one witness per extension makes the program's
+  `extsInitGlobal`/`extsInitLocal` satisfiable. -/
   initLocal : E.LocalState → E.GlobalState → Prop := fun _ _ => True
   /-- `initGlobal g`: `g` is a possible state of `E` shared by the machines before any
-  of them has taken a step. The default, `True`, makes no assumption. -/
+  of them has taken a step. The default, `True`, makes no assumption. A value other than
+  the default is an assumption about the real shared state or a constraint on
+  model-only state, and must be satisfiable together with `initLocal` (see
+  `initLocal`). -/
   initGlobal : E.GlobalState → Prop := fun _ => True
-
-/-- The crash relation of `E` restarts its local state in an initial state, whatever
-the global state: a property of a volatile state (one that a restarted machine sees
-afresh), which a durable state does not have. Nothing requires it; an extension that
-means its restarted state to be a fresh one can prove it, as a check of its `crash`
-against its `initLocal`. -/
-def ExtSemantics.CrashRestartsInit (E : GooseExt) [S : ExtSemantics E] : Prop :=
-  ∀ s s' g, S.crash s s' → S.initLocal s' g
 
 /-- The semantics of the extensions of the program: one `ExtSemantics` for each. -/
 class GooseSemantics [GooseExts] where

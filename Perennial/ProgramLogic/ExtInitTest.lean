@@ -55,6 +55,12 @@ instance once_semantics : ExtSemantics onceExt where
   crash _ s' := s' = false
   initLocal s _ := s = false
 
+/-- The initial states are satisfiable (`ExtSemantics.initLocal`): the resource not taken.
+The predicate is an assumption about the real machine (a node starts with a fresh
+resource). -/
+example : ∃ g s, once_semantics.initGlobal g ∧ once_semantics.initLocal s g :=
+  ⟨(), false, trivial, rfl⟩
+
 /-- A restarted node starts afresh. -/
 theorem once_crashRestartsInit : ExtSemantics.CrashRestartsInit onceExt :=
   fun _ _ _ h => h

@@ -19,7 +19,7 @@ Tiers (what the helper script reports):
 
 | tier | what | files |
 |---|---|---|
-| 0 | **semantics** (the model of Go) | `Perennial/GooseLang/{Lang,BoundedLang,Adequacy,Threads,Receipts,Locations,Ext}.lean`, `GooseLang/Ext/**`, `Perennial/Golang/Defn.lean`, `Perennial/Golang/Defn/**`, `GrovePrelude.lean` |
+| 0 | **semantics** (the model of Go) | `Perennial/GooseLang/{Lang,BoundedLang,Adequacy,Threads,Receipts,Locations,Ext,CrashLang,CrashAdequacy,DistLang,DistAdequacy,InitAdequacy}.lean`, `GooseLang/Ext/**`, `Perennial/Golang/Defn.lean`, `Perennial/Golang/Defn/**`, `GrovePrelude.lean` |
 | 0 | **translator** | `goose/**` (`*.go`), gold files `goose/testdata/**/*.gold.lean`, Go models `goose/model/**` |
 | 0 | **trusted models** | `Perennial/TrustedCode/**` |
 | 0 | **goose configuration** | `Perennial/Code/**/*.toml` (`trusted`, `translate`, `!p`, `trust_proofgen`) |
@@ -292,6 +292,13 @@ conclusion must still talk about `gooseRealEctxiLang`, not only the bounded
 layer; `README.md` and `docs/PERENNIAL_PROOF_REFERENCE.md` must describe the
 new hypothesis. Missing documentation is REWORK; a hypothesis the client
 cannot establish without trusting the logic is BLOCK.
+A new or changed non-default `ExtSemantics.initLocal`/`initGlobal` is a
+hypothesis of every `_init` theorem: its docstring must say whether it is an
+assumption every real machine start satisfies (then check that it is) or a
+constraint on model-only state, and a checked `example` of `∃ g s,
+initGlobal g ∧ initLocal s g` must sit next to the instance (unsatisfiable
+predicates make every `_init` theorem vacuous). A missing witness is REWORK; a
+predicate real starts can violate is BLOCK.
 
 **R7. Generated code is trusted only through goose.** Any hand edit of
 `Perennial/Code/**/*.lean` or `Perennial/GeneratedProof/**` is REWORK:

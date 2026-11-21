@@ -83,10 +83,18 @@ def Sha256Step (ok : Sha256Filter) (op : String) (v : val) (h : GMap Loc (NonAto
 end sha256
 
 /-- The semantics of the hash, with the filter `ok`. A run starts with nothing hashed
-(`initGlobal`): the global state records the inputs hashed by the run. -/
+(`initGlobal`): the global state records the inputs hashed by the run. It is state only
+the model has, so this constrains the model, not the real machines: no real state is
+assumed. -/
 instance sha256_semantics (ok : Sha256Filter) : ExtSemantics (sha256Ext ok) where
   step := Sha256Step ok
   crash _ _ := True
   initGlobal m := @Eq Sha256State m ∅
+
+/-- The initial states are satisfiable (`ExtSemantics.initLocal`): nothing hashed, and the
+local state, which is trivial. -/
+example (ok : Sha256Filter) :
+    ∃ g s, (sha256_semantics ok).initGlobal g ∧ (sha256_semantics ok).initLocal s g :=
+  ⟨(∅ : Sha256State), (), rfl, trivial⟩
 
 end Perennial

@@ -608,6 +608,14 @@ class ExtInitCompat (E : GooseExt) [S : ExtSemantics E] [I : ExtInterp E] : Prop
   initgP_of_init : ∀ g, S.initGlobal g → I.initgP g
   initP_of_init : ∀ σ g, S.initLocal σ g → I.initP σ g
 
+/-- The crash relation of `E` restarts its local state in an initial state, whatever
+the global state: a property of a volatile state (one that a restarted machine sees
+afresh), which a durable state does not have. No theorem requires it; an extension that
+means its restarted state to be a fresh one can prove it, as a check of its `crash`
+against its `initLocal`. -/
+def ExtSemantics.CrashRestartsInit (E : GooseExt) [S : ExtSemantics E] : Prop :=
+  ∀ s s' g, S.crash s s' → S.initLocal s' g
+
 namespace Exts
 
 /-- An `ExtInitCompat` for each extension of `l`. -/

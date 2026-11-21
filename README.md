@@ -192,6 +192,16 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   semantics, only by a top-level statement that names `Sha256NoCollision ok` as a
   hypothesis (`GooseLang/Ext/Sha256/Adequacy.lean`). Only `crypto.sha256.is_hash_inj`
   needs it.
+* **Model assumptions (initial states).** An extension's
+  `ExtSemantics.initLocal`/`initGlobal` (`GooseLang/Lang.lean`, default `True`)
+  are what a top-level theorem assumes of the states its execution starts from.
+  A value other than the default is either an assumption that every real start
+  of a machine satisfies, or a constraint on state only the model has (sha256's
+  `initGlobal`: nothing hashed yet); its docstring says which. The two must be
+  jointly satisfiable, or every `_init` adequacy theorem is vacuous: each
+  extension that sets one has a checked `example` of `∃ g s, initGlobal g ∧
+  initLocal s g` next to its instance (sha256's, `Ext/Sha256/Impl.lean`:
+  `⟨(∅ : Sha256State), (), rfl, trivial⟩`).
 * **Panics.** A panic outcome is a value, `PanicV p`, that unwinds every
   evaluation frame but that of `Catch e h k` (`GooseLang/Lang.lean`); `panic(p)`
   steps to it, a function with `defer`s runs its body under a `Catch`

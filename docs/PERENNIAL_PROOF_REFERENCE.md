@@ -1240,6 +1240,24 @@ the extensions. A top-level theorem assumes these, never the ghost state's
 `ExtInterp.initP`/`initgP`, which are chosen with the proof (an interpretation
 with `initP := False` would make a theorem stated with it vacuous).
 
+A value other than the default is trusted: either an assumption that every real start
+of a machine satisfies (`ExtInitTest`'s resource is not yet taken), or a constraint on
+state only the model has (sha256's `initGlobal`: nothing hashed yet, where the global
+state records the run's hashed inputs). The extension's docstring says which. The two
+predicates must be jointly satisfiable, or every `_init` theorem is vacuous: an
+extension that sets either proves `∃ g s, initGlobal g ∧ initLocal s g` next to its
+`ExtSemantics` instance (an `example`: sha256's in `Ext/Sha256/Impl.lean`, `onceExt`'s
+in the example file). The extensions' states are independent, so these witnesses
+together satisfy the program's `extsInitGlobal`/`extsInitLocal`.
+
+A top-level statement names its tuple of semantics explicitly, as the example's
+`onceSemantics` (`@[reducible] def`, made a local instance, with the theorem stated
+over the closed list), rather than leaving `[GooseSemantics]` or an extension's
+`ExtSemantics` to instance resolution at the use site: `extsInitLocal` and
+`extsInitGlobal` unfold through whatever instance is found, so a second
+`ExtSemantics E` instance in scope (one with a stronger `initLocal`, say) could
+otherwise silently change what the theorem assumes.
+
 The adequacy theorems still allocate the ghost state under `extsInitP`/`extsInitgP`;
 their `_init` versions (`goose_adequacy_init`, `goose_crash_adequacy_init`,
 `goose_dist_adequacy_init`, `goose_dist_crash_adequacy_init`,
@@ -1251,8 +1269,9 @@ semantics' initial states (`ExtInitCompat E`, an instance next to the
 The initial states constrain only the first start of a machine; a restart is in
 whatever state `crash` gives. When a restarted machine is meant to start afresh
 (a volatile state), `crash` should produce only initial states:
-`ExtSemantics.CrashRestartsInit E`, which an extension may prove and nothing
-requires (a durable state does not have it).
+`ExtSemantics.CrashRestartsInit E` (`Lifting.lean`, outside the trusted semantics),
+which an extension may prove as a check and no theorem requires (a durable state does
+not have it).
 
 ### Crashes
 
