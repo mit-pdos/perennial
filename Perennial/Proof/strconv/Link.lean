@@ -9,7 +9,11 @@ public import Perennial.Proof.errors.Link
 public import Perennial.Proof.internal.strconv.Link
 public import Perennial.Proof.internal.stringslite.Link
 public import Perennial.Proof.strconv.FormatBool
+public import Perennial.Proof.strconv.FormatInt
+public import Perennial.Proof.strconv.FormatUint
+public import Perennial.Proof.strconv.Itoa
 public import Perennial.Proof.strconv.ParseBool
+public import Perennial.Proof.strconv.ParseInt
 public import Perennial.Proof.strconv.ParseUint
 public import Perennial.Proof.strconv.initialize
 public import Perennial.Proof.strconv.rangeError
@@ -32,6 +36,15 @@ variable [package_sem : strconv.Assumptions]
 theorem strconv.wp_FormatBool : strconv.FormatBool.spec (GF := GF) (hG := hG) :=
   strconv.FormatBool.wp_proof internal.strconv.wp_FormatBool
 
+theorem strconv.wp_FormatInt : strconv.FormatInt.spec (GF := GF) (hG := hG) :=
+  strconv.FormatInt.wp_proof internal.strconv.wp_FormatInt
+
+theorem strconv.wp_FormatUint : strconv.FormatUint.spec (GF := GF) (hG := hG) :=
+  strconv.FormatUint.wp_proof internal.strconv.wp_FormatUint
+
+theorem strconv.wp_Itoa : strconv.Itoa.spec (GF := GF) (hG := hG) :=
+  strconv.Itoa.wp_proof internal.strconv.wp_Itoa
+
 theorem strconv.wp_syntaxError : strconv.syntaxError.spec (GF := GF) (hG := hG) :=
   strconv.syntaxError.wp_proof internal.stringslite.wp_Clone
 
@@ -43,6 +56,9 @@ theorem strconv.wp_toError : strconv.toError.spec (GF := GF) (hG := hG) :=
 
 theorem strconv.wp_ParseBool : strconv.ParseBool.spec (GF := GF) (hG := hG) :=
   strconv.ParseBool.wp_proof internal.strconv.wp_ParseBool strconv.wp_toError
+
+theorem strconv.wp_ParseInt : strconv.ParseInt.spec (GF := GF) (hG := hG) :=
+  strconv.ParseInt.wp_proof internal.strconv.wp_ParseInt strconv.wp_toError
 
 theorem strconv.wp_ParseUint : strconv.ParseUint.spec (GF := GF) (hG := hG) :=
   strconv.ParseUint.wp_proof internal.strconv.wp_ParseUint strconv.wp_toError

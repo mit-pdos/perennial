@@ -341,6 +341,152 @@ noncomputable def ParseUint.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "x") (Var "$r0"))))))))))))))))
   (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1")))))))))
 
+/-- ParseInt interprets a string s in the given base (0, 2 to 36) and
+    bit size (0 to 64) and returns the corresponding value i.
+
+    The string may begin with a leading sign: "+" or "-".
+
+    If the base argument is 0, the true base is implied by the string's
+    prefix following the sign (if present): 2 for "0b", 8 for "0" or "0o",
+    16 for "0x", and 10 otherwise. Also, for argument base 0 only,
+    underscore characters are permitted as defined by the Go syntax for
+    [integer literals].
+
+    The bitSize argument specifies the integer type
+    that the result must fit into. Bit sizes 0, 8, 16, 32, and 64
+    correspond to int, int8, int16, int32, and int64.
+    If bitSize is below 0 or above 64, an error is returned.
+
+    The errors that ParseInt returns have concrete type [*NumError]
+    and include err.Num = s. If s is empty or contains invalid
+    digits, err.Err = [ErrSyntax] and the returned value is 0;
+    if the value corresponding to s cannot be represented by a
+    signed integer of the given size, err.Err = [ErrRange] and the
+    returned value is the maximum magnitude integer of the
+    appropriate bitSize and sign.
+
+    [integer literals]: https://go.dev/ref/spec#Integer_literals
+
+    go: number.go:137:6 -/
+noncomputable def ParseInt.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "s"
+  (Lam "base"
+  (Lam "bitSize"
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (Let "$res0" (Var "i")
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Let "$res1" (Var "err")
+  (Seq (App (Val exceptionDo)
+  (Let "bitSize" (App (Val (GoInstruction (GoAlloc go.int))) (Var "bitSize"))
+  (Let "base" (App (Val (GoInstruction (GoAlloc go.int))) (Var "base"))
+  (Let "s" (App (Val (GoInstruction (GoAlloc go.string))) (Var "s"))
+  (Let "__p" (Let "$a0" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "base"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "bitSize"))
+  (App (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.strconv.ParseInt []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")))))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "x" (App (Val (GoInstruction (GoAlloc go.int64))) (App (Val (GoInstruction (GoZeroVal go.int64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int64))) (Var "x"))
+  (Let "$r1" (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.error))) (Pair (App (Val (GoInstruction (GoLoad go.error))) (Var "err")) (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))))))
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int64))) (Var "x"))
+  (Let "$r1" (Let "$a0" (Val #(go!"ParseInt"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.string))) (Var "s"))
+  (Let "$a2" (App (Val (GoInstruction (GoLoad go.int))) (Var "base"))
+  (Let "$a3" (App (Val (GoInstruction (GoLoad go.int))) (Var "bitSize"))
+  (Let "$a4" (App (Val (GoInstruction (GoLoad go.error))) (Var "err"))
+  (App (App (App (App (App (App (Val (GoInstruction (FuncResolve toError []))) (Val #())) (Var "$a0")) (Var "$a1")) (Var "$a2")) (Var "$a3")) (Var "$a4")))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "err") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "x") (Var "$r0")))))))))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1")))))))))))
+
+/-- FormatUint returns the string representation of i in the given base,
+    for 2 <= base <= 36. The result uses the lower-case letters 'a' to 'z'
+    for digit values >= 10.
+
+    go: number.go:202:6 -/
+noncomputable def FormatUint.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "i"
+  (Lam "base"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "base" (App (Val (GoInstruction (GoAlloc go.int))) (Var "base"))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.uint64))) (Var "i"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.uint64))) (Var "i"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "base"))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.strconv.FormatUint []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
+
+/-- FormatInt returns the string representation of i in the given base,
+    for 2 <= base <= 36. The result uses the lower-case letters 'a' to 'z'
+    for digit values >= 10.
+
+    go: number.go:209:6 -/
+noncomputable def FormatInt.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "i"
+  (Lam "base"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "base" (App (Val (GoInstruction (GoAlloc go.int))) (Var "base"))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int64))) (Var "i"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int64))) (Var "i"))
+  (Let "$a1" (App (Val (GoInstruction (GoLoad go.int))) (Var "base"))
+  (App (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.strconv.FormatInt []))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0"))))))
+
+/-- Itoa is equivalent to [FormatInt](int64(i), 10).
+
+    go: number.go:214:6 -/
+noncomputable def Itoa.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "i"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.string))) (App (Val (GoInstruction (GoZeroVal go.string))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (Var "i"))
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))
+  (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.internal.strconv.Itoa []))) (Val #())) (Var "$a0")))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.string))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.string))) (Var "$res0")))))
+
 /-- toError converts from internal/strconv.Error to the error guaranteed by this package's APIs.
 
     go: number.go:231:6 -/
@@ -613,6 +759,10 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   ParseBool_unfold : FuncUnfold ParseBool [] ParseBool.impl
   FormatBool_unfold : FuncUnfold FormatBool [] FormatBool.impl
   ParseUint_unfold : FuncUnfold ParseUint [] ParseUint.impl
+  ParseInt_unfold : FuncUnfold ParseInt [] ParseInt.impl
+  FormatUint_unfold : FuncUnfold FormatUint [] FormatUint.impl
+  FormatInt_unfold : FuncUnfold FormatInt [] FormatInt.impl
+  Itoa_unfold : FuncUnfold Itoa [] Itoa.impl
   toError_unfold : FuncUnfold toError [] toError.impl
   syntaxError_unfold : FuncUnfold syntaxError [] syntaxError.impl
   rangeError_unfold : FuncUnfold rangeError [] rangeError.impl
@@ -626,6 +776,10 @@ attribute [instance] Assumptions.NumError_instance
   Assumptions.ParseBool_unfold
   Assumptions.FormatBool_unfold
   Assumptions.ParseUint_unfold
+  Assumptions.ParseInt_unfold
+  Assumptions.FormatUint_unfold
+  Assumptions.FormatInt_unfold
+  Assumptions.Itoa_unfold
   Assumptions.toError_unfold
   Assumptions.syntaxError_unfold
   Assumptions.rangeError_unfold

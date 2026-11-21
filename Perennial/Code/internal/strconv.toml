@@ -3,6 +3,9 @@ translate = [
   "ParseUint", "underscoreOK", "Error", "Error.Error", "ErrRange", "ErrSyntax", "ErrBase",
   "ErrBitSize", "intSize", "IntSize", "maxUint64",
   "ParseBool", "FormatBool",
+  # FormatUint, FormatInt, Itoa and what they need
+  "FormatUint", "FormatInt", "Itoa", "ParseInt", "formatBits", "formatBase10", "small", "isPowerOfTwo",
+  "digits", "nSmalls", "smalls", "host64bit",
   # the package variables (tables of constants), so that the initializer is translated
   "optimize", "powtab", "float64pow10", "float32pow10", "leftcheats", "float32info", "float64info",
   "uint64pow10", "div5Tab",
@@ -10,7 +13,7 @@ translate = [
   "float32MantBits", "float32ExpBits", "float32Bias", "float64MantBits", "float64ExpBits",
   "float64Bias",
 ]
-imports = ["!*"]
+imports = ["!*", "math/bits"]
 # `pow10Tab`, a 696-entry table of 128-bit powers of ten read only by the float conversions,
 # which are not translated (TrustedCode/internal/strconv.lean)
 trusted = ["pow10Tab", "lower"]

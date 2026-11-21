@@ -6,6 +6,7 @@ module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.GeneratedProof.internal.strconv
+public import Perennial.Proof.math.bits.Base
 
 @[expose] public section
 

@@ -3,6 +3,7 @@ module
 
 public import Perennial.Proof.ProofPrelude
 public import Perennial.ManualProof.internal.strconv
+public import Perennial.GeneratedProof.math.bits
 public import Perennial.Golang.Theory
 public import Perennial.Code.internal.strconv
 
