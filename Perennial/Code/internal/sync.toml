@@ -1,0 +1,16 @@
+translate = ["!*"]
+
+imports = ["!*"]
+
+trusted = [
+  # The type and the methods sync.Mutex's translation calls. One cannot
+  # translate and verify these: they have data races (the race detector is
+  # disabled on the sync packages for this reason; e.g. lockSlow reads m.state
+  # with plain loads that race with the CompareAndSwapInt32s) and park on the
+  # runtime's semaphores (runtime_SemacquireMutex, runtime_Semrelease). They are
+  # modelled in TrustedCode/internal/sync.lean as a spin lock on a bool.
+  "Mutex",
+  "Mutex.Lock",
+  "Mutex.TryLock",
+  "Mutex.Unlock",
+]

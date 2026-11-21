@@ -5,6 +5,7 @@ module
 
 public import Perennial.Spec.sync.initialize
 public import Perennial.Spec.internal.race.initialize
+public import Perennial.Spec.internal.sync.initialize
 public import Perennial.Spec.internal.synctest.initialize
 public import Perennial.Spec.sync.atomic.initialize
 
@@ -28,6 +29,7 @@ variable [package_sem : sync.Assumptions]
 theorem sync.initialize'.wp_proof
     (wp_synctest_initialize : internal.synctest.initialize'.spec (GF := GF) (hG := hG))
     (wp_race_initialize : internal.race.initialize'.spec (GF := GF) (hG := hG))
+    (wp_isync_initialize : internal.sync.initialize'.spec (GF := GF) (hG := hG))
     (wp_atomic_initialize : sync.atomic.initialize'.spec (GF := GF) (hG := hG)) :
     sync.initialize'.spec (GF := GF) (hG := hG) := by
   intro get_is_pkg_init Hinit
@@ -36,8 +38,9 @@ theorem sync.initialize'.wp_proof
   iframe Hown
   iintro Hown
   wp_auto
-  wp_apply wp_synctest_initialize _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hsynctest⟩
-  wp_apply wp_race_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hrace⟩
+  wp_apply wp_synctest_initialize _ Hinit.2.2.2.2.1 $$ Hown as ⟨Hown, #Hsynctest⟩
+  wp_apply wp_race_initialize _ Hinit.2.2.2.1 $$ Hown as ⟨Hown, #Hrace⟩
+  wp_apply wp_isync_initialize _ Hinit.2.2.1 $$ Hown as ⟨Hown, #Hisync⟩
   wp_apply wp_atomic_initialize _ Hinit.2.1 $$ Hown as ⟨Hown, #Hatomic⟩
   -- init.0: runtime_registerPoolCleanup(poolCleanup)
   wp_func_call

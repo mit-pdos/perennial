@@ -1,5 +1,8 @@
 translate = [
   "!*",
+  # Mutex forwards to internal/sync.Mutex, whose methods are trusted
+  "Mutex",
+  "Mutex.*",
   "rwmutexMaxReaders",
   "RWMutex",
   "RWMutex.*",
@@ -26,19 +29,11 @@ translate = [
   "init.1",
 ]
 
-imports = ["sync/atomic", "internal/race", "internal/synctest"]
+imports = ["sync/atomic", "internal/race", "internal/synctest", "internal/sync"]
 
 axiomatize = ["notifyList"]
 
 trusted = [
-  # Unlike WaitGroup, one cannot translate and verify Mutex methods because they
-  # actually have data races (and the race detector is explicitly disabled on
-  # the sync package for these reasons).
-  # E.g. in Mutex.Lock:
-  # https://github.com/golang/go/blob/ff27d270c9f95178f9749bc8e1f15957b1c1d5b3/src/internal/sync/mutex.go#L100
-  "Mutex",
-  "Mutex.*",
-
   "runtime_notifyList*",
 
   # `copyChecker` is a `uintptr` holding its own address, and `check` converts

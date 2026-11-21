@@ -25,7 +25,8 @@ variable [sem : go.Semantics]
 variable [package_sem : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
 
 /-- `TryLock` on a zero `Mutex`, owned by the caller, locks it: the trusted `TryLock`
-compare-and-swaps the field `locked` of the struct from `false`. -/
+compare-and-swaps its field `mu`, an `internal/sync.Mutex` (a `bool` in the model), from
+`false`. -/
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_TryLock_zeroMutex
     (m : Loc) :
     {{ typedPointsto (GF := GF) m (zero_val sync.Mutex) (DFrac.own 1) }}
@@ -33,12 +34,14 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_TryLo
     {{ RET #true; True }} := by
   wp_start as Hm
   iStructNamed Hm
-  unfold lock.trylock
-  wp_call
-  wp_bind (CmpXchg _ _ _)
-  wp_apply_core wp_cmpxchg_suc _ false false true _ _ rfl $$ locked
-  iintro -
+  wp_auto
+  wp_method_call
+  unfold internal.sync.Mutex.TryLock.impl lock.trylock
   wp_pures
+  wp_bind (CmpXchg _ _ _)
+  wp_apply_core wp_cmpxchg_suc _ false false true _ _ rfl $$ mu
+  iintro -
+  wp_auto
   iapply HΦ
   itrivial
 

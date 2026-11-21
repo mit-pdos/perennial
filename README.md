@@ -252,14 +252,14 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   nondeterministic than gc's pools, victim cache and GC clearing. As with the
   channel and string models, the model's translation is part of `go.Semantics`
   (`pool_sem`).
-* **`sync.Mutex`.** `Lock`, `TryLock` and `Unlock` are trusted (`TrustedCode/sync.lean`; Go's
-  have data races that the `sync` package exempts from the race detector): the spin lock of
-  `Golang/Defn/Lock.lean`, compare-and-swapping the `bool` field `locked` of the mutex. As in
-  Go, `Mutex` is a struct whose zero value is unlocked; its underlying type is that of the Go
-  model `goose/model/mutex` (`struct { locked bool }`, part of `go.Semantics` as `mutex_sem`),
-  so `sync.Mutex{}` and `new(sync.Mutex)` are unlocked mutexes by the ordinary struct rules.
-  Go's `Mutex` is `struct { _ noCopy; mu internal/sync.Mutex }` (an `int32` state word and a
-  semaphore); the model keeps only whether it is locked.
+* **`sync.Mutex`.** Goose translates `sync.Mutex` (`struct { _ noCopy; mu isync.Mutex }`)
+  and its methods, which forward to `internal/sync.Mutex`. That `Mutex` and its `Lock`,
+  `TryLock` and `Unlock` are trusted (`TrustedCode/internal/sync.lean`): Go's have data races
+  (the race detector is disabled on the sync packages) and park on the runtime's semaphores.
+  The model is the spin lock of `Golang/Defn/Lock.lean` on a `bool` (`false` is unlocked),
+  more nondeterministic than Go's (no fairness or starvation mode); `Unlock` of an unlocked
+  mutex is stuck, where Go ends the program (`fatal`). `sync.Mutex{}` is a literal of the
+  translated struct, so it steps by the ordinary struct rules to a zero, unlocked mutex.
 * **Method sets.** Whether a type implements an interface (`go.typeSetContains`, used by
   type assertions and conversions) is decided by `methodSet`, an uninterpreted function of
   the semantics constrained by `go.MethodSetIs t ms` facts (`Golang/Defn/MethodSet.lean`):

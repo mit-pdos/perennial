@@ -2,6 +2,7 @@
 module
 
 public import Perennial.Code.sync.atomic
+public import Perennial.Code.internal.sync
 public import Perennial.Code.internal.race
 public import Perennial.Code.internal.synctest
 public import Perennial.Golang.Defn
@@ -169,8 +170,6 @@ noncomputable instance «equals_unfold_struct#3b550fdf» [GooseExts] [GoGlobalCo
 
 @[reducible] noncomputable def «struct#3b550fdf».underlying [GooseExts] [GoGlobalContext] (T1 : go.GoType) (T2 : go.GoType) : go.GoType :=
   (go.GoType.StructType («struct#3b550fdf».fields T1 T2))
-
-opaque Map.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
 opaque poolChainElt.underlying [GooseExts] [GoGlobalContext] : go.GoType
 
@@ -379,6 +378,58 @@ noncomputable def Cond.Broadcast.impl [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val (GoInstruction (FuncResolve runtime_notifyListNotifyAll []))) (Val #())) (Var "$a0"))))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType copyChecker.ty) go!"check"))) (App (Val (GoInstruction (StructFieldRef Cond.ty go!"checker"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Cond.ty)))) (Var "c")))) (Val #()))))))
+  (Val #()))))
+
+/-- Lock locks m.
+    If the lock is already in use, the calling goroutine
+    blocks until the mutex is available.
+
+    go: mutex.go:45:17 -/
+noncomputable def Mutex.Lock.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "m"
+  (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Mutex.ty)))) (Var "m"))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.internal.sync.Mutex.ty) go!"Lock"))) (App (Val (GoInstruction (StructFieldRef Mutex.ty go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Mutex.ty)))) (Var "m")))) (Val #())))))
+  (Val #()))))
+
+/-- TryLock tries to lock m and reports whether it succeeded.
+
+    Note that while correct uses of TryLock do exist, they are rare,
+    and use of TryLock is often a sign of a deeper problem
+    in a particular use of mutexes.
+
+    go: mutex.go:54:17 -/
+noncomputable def Mutex.TryLock.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "m"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Mutex.ty)))) (Var "m"))
+  (Let "$r0" (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.internal.sync.Mutex.ty) go!"TryLock"))) (App (Val (GoInstruction (StructFieldRef Mutex.ty go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Mutex.ty)))) (Var "m")))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
+
+/-- Unlock unlocks m.
+    It is a run-time error if m is not locked on entry to Unlock.
+
+    A locked [Mutex] is not associated with a particular goroutine.
+    It is allowed for one goroutine to lock a Mutex and then
+    arrange for another goroutine to unlock it.
+
+    go: mutex.go:64:17 -/
+noncomputable def Mutex.Unlock.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "m"
+  (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Mutex.ty)))) (Var "m"))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType _root_.Perennial.internal.sync.Mutex.ty) go!"Unlock"))) (App (Val (GoInstruction (StructFieldRef Mutex.ty go!"mu"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Mutex.ty)))) (Var "m")))) (Val #())))))
   (Val #()))))
 
 /-- Do calls the function f if and only if Do is being called for the
@@ -1524,7 +1575,7 @@ noncomputable def WaitGroup.Go.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))
 
 noncomputable instance info' : PkgInfo pkg_id.sync where
-  pkgImportedPkgs := [pkg_id.sync.atomic, pkg_id.internal.race, pkg_id.internal.synctest]
+  pkgImportedPkgs := [pkg_id.sync.atomic, pkg_id.internal.sync, pkg_id.internal.race, pkg_id.internal.synctest]
 
 opaque «_».init [GooseExts] [GoGlobalContext] : val
 
@@ -1536,12 +1587,15 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve init.«1» []))) (Val #())) (Val #())))))
   (App (Val doExecute)
   (App (App (Val (GoInstruction (FuncResolve init.«0» []))) (Val #())) (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.sync.atomic.initialize') (Val #()))))))
+  (App (Val doExecute)
+  (App (Val _root_.Perennial.internal.sync.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.internal.race.initialize') (Val #()))))))
   (App (Val doExecute)
@@ -1720,28 +1774,76 @@ attribute [instance] Cond.TypeAssumptions.type_repr
   Cond.TypeAssumptions.ptr_Signal_unfold
   Cond.TypeAssumptions.ptr_Wait_unfold
 
-opaque Map.nonempty_type : NonemptyType.{0}
-def Map : Type := Map.nonempty_type.type
-instance Map.nonempty : Nonempty Map := Map.nonempty_type.property
-opaque Map.zero_val : ZeroVal Map := ⟨Classical.ofNonempty⟩
-attribute [instance] Map.zero_val
+structure Map [GooseExts] where
+  mk ::
+  «_#0'» : noCopy
+  m' : (_root_.Perennial.internal.sync.HashTrieMap GoInterface GoInterface)
+
+noncomputable instance Map.zero_val [GooseExts] : ZeroVal Map :=
+  ⟨Map.mk zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def Map.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"_#0" noCopy.ty),
+(go.field_decl.FieldDecl go!"m" (_root_.Perennial.internal.sync.HashTrieMap.ty go.any go.any))]
+
+@[irreducible] noncomputable def Map.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  Map.fieldsUnsealed
+
+noncomputable instance equals_unfold_Map [GooseExts] [GoGlobalContext] :
+    EqualsUnfold Map.fields Map.fieldsUnsealed :=
+  ⟨by unfold Map.fields; rfl⟩
+
+@[reducible] noncomputable def Map.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Map.fields)
 
 class Map.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Map.underlying Map
   underlying : go.UnderlyingDirectedEq Map.ty Map.underlying
-  isUnderlying : go.IsUnderlying Map.underlying Map.underlying
+  «get__#0» : ∀ (x : Map), go.IsGoStepPureDetTagged under (StructFieldGet Map.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : Map) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Map.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Map)))
+  get_m : ∀ (x : Map), go.IsGoStepPureDetTagged under (StructFieldGet Map.underlying go!"m") #x (Val #(x.m'))
+  set_m : ∀ (x : Map) (y : (_root_.Perennial.internal.sync.HashTrieMap GoInterface GoInterface)), go.IsGoStepPureDetTagged under (StructFieldSet Map.underlying go!"m") (PairV #x #y) (Val #(({ x with m' := y } : Map)))
   method_set : go.MethodSetIs Map.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Map.ty) [(go!"Clear", (some (go.signature.Signature [] false []))), (go!"CompareAndDelete", (some (go.signature.Signature [go.any, go.any] false [go.bool]))), (go!"CompareAndSwap", (some (go.signature.Signature [go.any, go.any, go.any] false [go.bool]))), (go!"Delete", (some (go.signature.Signature [go.any] false []))), (go!"Load", (some (go.signature.Signature [go.any] false [go.any, go.bool]))), (go!"LoadAndDelete", (some (go.signature.Signature [go.any] false [go.any, go.bool]))), (go!"LoadOrStore", (some (go.signature.Signature [go.any, go.any] false [go.any, go.bool]))), (go!"Range", (some (go.signature.Signature [(go.GoType.FunctionType (go.signature.Signature [go.any, go.any] false [go.bool]))] false []))), (go!"Store", (some (go.signature.Signature [go.any, go.any] false []))), (go!"Swap", (some (go.signature.Signature [go.any, go.any] false [go.any, go.bool])))]
 
 attribute [instance] Map.TypeAssumptions.type_repr
   Map.TypeAssumptions.underlying
-  Map.TypeAssumptions.isUnderlying
+  Map.TypeAssumptions.«get__#0»
+  Map.TypeAssumptions.«set__#0»
+  Map.TypeAssumptions.get_m
+  Map.TypeAssumptions.set_m
   Map.TypeAssumptions.method_set
   Map.TypeAssumptions.ptr_method_set
+
+structure Mutex [GooseExts] where
+  mk ::
+  «_#0'» : noCopy
+  mu' : _root_.Perennial.internal.sync.Mutex
+
+noncomputable instance Mutex.zero_val [GooseExts] : ZeroVal Mutex :=
+  ⟨Mutex.mk zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def Mutex.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"_#0" noCopy.ty),
+(go.field_decl.FieldDecl go!"mu" _root_.Perennial.internal.sync.Mutex.ty)]
+
+@[irreducible] noncomputable def Mutex.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  Mutex.fieldsUnsealed
+
+noncomputable instance equals_unfold_Mutex [GooseExts] [GoGlobalContext] :
+    EqualsUnfold Mutex.fields Mutex.fieldsUnsealed :=
+  ⟨by unfold Mutex.fields; rfl⟩
+
+@[reducible] noncomputable def Mutex.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType Mutex.fields)
 
 class Mutex.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   type_repr : go.TypeReprUnderlying Mutex.underlying Mutex
   underlying : go.UnderlyingDirectedEq Mutex.ty Mutex.underlying
+  «get__#0» : ∀ (x : Mutex), go.IsGoStepPureDetTagged under (StructFieldGet Mutex.underlying go!"_#0") #x (Val #(x.«_#0'»))
+  «set__#0» : ∀ (x : Mutex) (y : noCopy), go.IsGoStepPureDetTagged under (StructFieldSet Mutex.underlying go!"_#0") (PairV #x #y) (Val #(({ x with «_#0'» := y } : Mutex)))
+  get_mu : ∀ (x : Mutex), go.IsGoStepPureDetTagged under (StructFieldGet Mutex.underlying go!"mu") #x (Val #(x.mu'))
+  set_mu : ∀ (x : Mutex) (y : _root_.Perennial.internal.sync.Mutex), go.IsGoStepPureDetTagged under (StructFieldSet Mutex.underlying go!"mu") (PairV #x #y) (Val #(({ x with mu' := y } : Mutex)))
   method_set : go.MethodSetIs Mutex.ty []
   ptr_method_set : go.MethodSetIs (go.GoType.PointerType Mutex.ty) [(go!"Lock", (some (go.signature.Signature [] false []))), (go!"TryLock", (some (go.signature.Signature [] false [go.bool]))), (go!"Unlock", (some (go.signature.Signature [] false [])))]
   ptr_Lock_unfold : MethodUnfold (go.GoType.PointerType Mutex.ty) go!"Lock" Mutex.Lock.impl
@@ -1750,6 +1852,10 @@ class Mutex.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSe
 
 attribute [instance] Mutex.TypeAssumptions.type_repr
   Mutex.TypeAssumptions.underlying
+  Mutex.TypeAssumptions.«get__#0»
+  Mutex.TypeAssumptions.«set__#0»
+  Mutex.TypeAssumptions.get_mu
+  Mutex.TypeAssumptions.set_mu
   Mutex.TypeAssumptions.method_set
   Mutex.TypeAssumptions.ptr_method_set
   Mutex.TypeAssumptions.ptr_Lock_unfold
@@ -2411,6 +2517,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   runtime_notifyListCheck_unfold : FuncUnfold runtime_notifyListCheck [] runtime_notifyListCheck.impl
   «init.1_unfold» : FuncUnfold init.«1» [] init.«1».impl
   import_atomic_Assumption : _root_.Perennial.sync.atomic.Assumptions
+  import_sync_Assumption : _root_.Perennial.internal.sync.Assumptions
   import_race_Assumption : _root_.Perennial.internal.race.Assumptions
   import_synctest_Assumption : _root_.Perennial.internal.synctest.Assumptions
 
@@ -2454,6 +2561,7 @@ attribute [instance] Assumptions.Cond_instance
   Assumptions.runtime_notifyListCheck_unfold
   Assumptions.«init.1_unfold»
   Assumptions.import_atomic_Assumption
+  Assumptions.import_sync_Assumption
   Assumptions.import_race_Assumption
   Assumptions.import_synctest_Assumption
 

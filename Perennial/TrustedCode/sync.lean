@@ -8,9 +8,7 @@ than axiomatized, which would leave `copyChecker.wp_check` unprovable). See
 module
 
 public import Perennial.Golang.Defn.Pre
-public import Perennial.Golang.Defn.Lock
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.model.pool
-public import Perennial.Code.github_com.mit_pdos.perennial.goose.model.mutex
 
 @[expose] public section
 
@@ -22,30 +20,6 @@ namespace sync
 
 section code
 variable [GooseExts] [GoGlobalContext]
-
-/-- `Mutex` is a struct, as in Go, with the underlying type of the Go model
-`github.com/mit-pdos/perennial/goose/model/mutex.Mutex`: `struct { locked bool }`, whose
-zero value is an unlocked mutex. Go's `sync.Mutex` is `struct { _ noCopy; mu isync.Mutex }`,
-with an `int32` state word and a semaphore in `internal/sync.Mutex`; the model keeps only
-whether the mutex is locked. Being a struct, `sync.Mutex{}` is its zero value by the
-semantics of struct literals. -/
-@[reducible] noncomputable def Mutex.underlying : go.GoType :=
-  github_com.mit_pdos.perennial.goose.model.mutex.Mutex.underlying
-
-/-! `Lock`, `TryLock` and `Unlock` are the spin lock of `Golang/Defn/Lock.lean` on the field
-`locked` of the mutex (see `Mutex.underlying`). -/
-
-noncomputable def Mutex.TryLock.impl : val :=
-  λ: "m" <>, lock.trylock
-    (StructFieldRef github_com.mit_pdos.perennial.goose.model.mutex.Mutex.ty go!"locked" "m")
-
-noncomputable def Mutex.Lock.impl : val :=
-  λ: "m" <>, lock.lock
-    (StructFieldRef github_com.mit_pdos.perennial.goose.model.mutex.Mutex.ty go!"locked" "m")
-
-noncomputable def Mutex.Unlock.impl : val :=
-  λ: "m" <>, lock.unlock
-    (StructFieldRef github_com.mit_pdos.perennial.goose.model.mutex.Mutex.ty go!"locked" "m")
 
 def runtime_notifyListAdd.impl : val :=
   λ: "l", Convert go.int go.uint32 ArbitraryInt
@@ -227,9 +201,6 @@ end code
 
 /-- See `copyChecker.underlying`. -/
 abbrev copyChecker := Loc
-
-/-- See `Mutex.underlying`. -/
-abbrev Mutex [GooseExts] := github_com.mit_pdos.perennial.goose.model.mutex.Mutex
 
 end sync
 

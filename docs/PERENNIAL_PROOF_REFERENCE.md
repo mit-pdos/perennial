@@ -137,7 +137,7 @@ is `l[i]?` and `<[i := v]> l` is `l.set i v`. `go!"abc"` is a `GoString` (a
 Sealed (opaque) definitions are written
 
 ```
-def isMutexDef (m : Loc) (R : IProp GF) : IProp GF := isLock (structFieldRef sync.Mutex go!"locked" m) R
+def isMutexDef (m : Loc) (R : IProp GF) : IProp GF := isLock (structFieldRef sync.Mutex go!"mu" m) R
 @[irreducible] def isMutex (m : Loc) (R : IProp GF) : IProp GF := isMutexDef m R
 theorem isMutex_unseal : @isMutex = @isMutexDef := by funext; with_unfolding_all rfl
 ```
