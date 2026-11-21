@@ -4,7 +4,7 @@ translate = [
   "ErrBitSize", "intSize", "IntSize", "maxUint64",
   "ParseBool", "FormatBool",
   # FormatUint, FormatInt, Itoa and what they need
-  "FormatUint", "FormatInt", "Itoa", "ParseInt", "formatBits", "formatBase10", "small", "isPowerOfTwo",
+  "FormatUint", "FormatInt", "Itoa", "ParseInt", "Atoi", "formatBits", "formatBase10", "small", "isPowerOfTwo",
   "digits", "nSmalls", "smalls", "host64bit",
   # the package variables (tables of constants), so that the initializer is translated
   "optimize", "powtab", "float64pow10", "float32pow10", "leftcheats", "float32info", "float64info",

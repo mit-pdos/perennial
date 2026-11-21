@@ -230,7 +230,10 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   soundness work should translate them away:
   `crypto/ed25519.cryptocustomrand` and `time.asynctimerchan` (no-ops; the fix
   translates `internal/godebug`, trusting its runtime hooks `setUpdate` and
-  `setNewIncNonDefault`, with `internal/bisect` and `internal/godebugs`),
+  `setNewIncNonDefault`, with `internal/bisect` and `internal/godebugs`;
+  `asynctimerchan`'s model also allocates the model's runtime clock, runtime
+  state no Go variable holds, so translating it needs another place for that,
+  such as a goose hook for a package's model-only initialization),
   `log.std` (no-op; needs `os.Stderr`, so `os`'s initialization), `log`'s
   `init` (no-op; it writes `log/internal.DefaultOutput`, and no ownership of
   another package's variable reaches an init proof: a program-logic gap), and

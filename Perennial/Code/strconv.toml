@@ -4,6 +4,8 @@ translate = [
   "ErrSyntax", "NumError", "NumError.Unwrap",
   "ParseBool", "FormatBool",
   "FormatUint", "FormatInt", "Itoa", "ParseInt",
+  # `Atoi`, over `internal/strconv`'s
+  "Atoi",
 ]
 imports = ["!*", "errors", "internal/strconv", "internal/stringslite"]
 # the printable-rune tables, read only by `IsPrint`, `IsGraphic` and the quoting functions, which

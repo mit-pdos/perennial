@@ -69,6 +69,7 @@ translate = [
   "Duration.Milliseconds",
   "Duration.Abs",
   "Time.IsZero",
+  "Time.Location",
   "Time.Unix",
   "Unix",
   "unixTime",

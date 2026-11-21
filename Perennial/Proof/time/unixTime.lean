@@ -25,7 +25,7 @@ theorem time.unixTime.wp_proof :
   intro sec nsec
   wp_start
   ihave #Hi := isInit_access $$ Hpkg
-  icases Hi with ⟨⟨%sn, #Hsn⟩, ⟨%loc, #Hloc⟩⟩
+  icases Hi with ⟨⟨%sn, #Hsn⟩, ⟨%loc, #Hloc⟩, -⟩
   wp_auto
   wp_end
 
