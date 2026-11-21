@@ -1,4 +1,4 @@
-translate = ["!*", "ppFree", "ssFree", "errBool", "errComplex", "space"]
+translate = ["!*", "ppFree", "ssFree", "errBool", "errComplex", "space", "wrapError.*", "wrapErrors.*"]
 imports = ["!*", "io", "errors", "sync"]
 trusted = ["Errorf", "Print", "Printf", "Sprintf"]
 

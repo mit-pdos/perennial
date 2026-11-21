@@ -73,6 +73,30 @@ theorem wp_New_errorString (msg : GoString) :
   wp_auto
   iexact HΦ
 
+/-- `errors.New(msg)`, with the exact type of what it returns and its `s` field, which holds `msg` for
+good (nothing writes it after `New`). -/
+theorem wp_New_errorString_cell (msg : GoString) :
+    {{ (True : IProp GF) }}
+      (App (Val (@! errors.New)) (Val #msg))
+    {{ (x : Loc), RET #(interface.mkOk (go.GoType.PointerType errorString.ty) #x);
+        x.[errorString, go!"s"] ↦□ msg ∗
+        □ ∀ Φ : val → IProp GF, ▷ Φ #msg -∗
+          WP (App (Val #(methods (go.GoType.PointerType errorString.ty) go!"Error" #x))
+            (Val #())) {{ Φ }} }} := by
+  wp_start
+  wp_auto
+  wp_alloc x as Hx
+  iStructNamed Hx
+  ipersist s
+  wp_auto
+  iapply HΦ
+  iframe s
+  imodintro
+  iintro %Φ HΦ
+  rw [method_unfold]
+  wp_auto
+  iexact HΦ
+
 end wps
 
 end errors

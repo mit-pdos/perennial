@@ -3,7 +3,7 @@
 -/
 module
 
-public import Perennial.Proof.fmt.Base
+public import Perennial.Proof.fmt.Args
 
 @[expose] public section
 
@@ -20,22 +20,20 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [package_sem : fmt.Assumptions]
 
-/-- `fmt.Errorf(format, args...)` returns a non-nil error whose `Error()` returns some string.
-The model of `Errorf` (`Perennial/TrustedCode/fmt.lean`) does not format: it is
-`errors.New(format)`, ignoring the arguments, so this follows from `errors.wp_New`. (The
-statement does not give back `args_sl ↦* args`, which the model never reads.) The arguments must
-be of predeclared basic types or named integer types without formatting methods (`ArgsWf`): Go's
-`Errorf` calls the `Error()`/`String()` methods of
-other arguments, which the model does not, so for them it could panic or have effects the model
-lacks. -/
+/-- `fmt.Errorf(format, args...)` returns a non-nil error `err` (`errorfErr`) whose `Error()` returns
+the formatted string `s`, with `SprintfOut format args s` (as `Sprintf`'s output; a `%w` of an error
+is formatted as `%v`, which `SprintfOut` leaves arbitrary): an `*errors.errorString` when the format
+has no `%w` directive with an argument, a `*fmt.wrapError` holding the argument as an `error` when
+it has one, a `*fmt.wrapErrors` when it has several, as Go's `errorf` returns (only the first two
+facts when the format has a directive `fmtDirectives` refuses). The arguments are `argsOk` the
+format under `Errorf`'s verbs (the method verbs and `w`); the arguments' slice comes back. -/
 abbrev fmt.Errorf.spec : Prop :=
-  ∀ (format : GoString) (args_sl : GoSlice) (args : List GoAny),
-  ArgsWf args →
-    {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ args_sl ↦* args }}
+  ∀ (format : GoString) (args_sl : GoSlice) (xs : List GoInterface) (dq : DFrac),
+    {{ isPkgInit (PROP := IProp GF) pkg_id.fmt ∗ args_sl ↦*{dq} xs ∗
+        fmt.argsOk fmt.errorfVerbs format xs }}
       (App (App (Val (@! Errorf)) (Val #format)) (Val #args_sl))
     {{ (err : GoInterfaceOk), RET #(interface.ok err);
-        □ ∀ Φ : val → IProp GF, ▷ (∀ str : GoString, Φ #str) -∗
-          WP (App (Val #(methods err.ty go!"Error" err.v)) (Val #())) {{ Φ }} }}
+        args_sl ↦*{dq} xs ∗ ∃ s : GoString, ⌜SprintfOut format xs s⌝ ∗ fmt.errorfErr format xs s err }}
 
 end spec
 
