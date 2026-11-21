@@ -321,9 +321,6 @@ noncomputable def Interrupt [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def Kill [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.Kill"
 
-noncomputable def Stdin [GooseExts] [GoGlobalContext] : GoString :=
-  go!"os.Stdin"
-
 noncomputable def Stdout [GooseExts] [GoGlobalContext] : GoString :=
   go!"os.Stdout"
 
@@ -949,6 +946,21 @@ noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))
   (Val #())))
 
+/-- The package variables goose does not translate (the `skip` entries of the package's
+goose config): no Lean name, allocation or initialization step, so no translated code names
+them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
+panic, and has no effect beyond the variable), for the reason given.
+
+- `Stdin`: `NewFile(uintptr(syscall.Stdin), "/dev/stdin")` (file.go): `newFileFromNewFile` wraps the
+descriptor in a new `*File` (`unix.IsNonblock`, an `fcntl` that cannot fail on a valid
+descriptor; `pfd.Init`, the runtime poller's `runtime_pollOpen`) and sets a finalizer: cannot
+panic, no effect beyond the new `File` and the variable (the descriptor is the process's, open
+before `main`). Not translated by the user's decision (fix-semantics Case 33). Not read by
+translated code.
+-/
+noncomputable def skipped' : List go.SkippedVar := [
+  ⟨"os.Stdin", "`NewFile(uintptr(syscall.Stdin), \"/dev/stdin\")` (file.go): `newFileFromNewFile` wraps the\ndescriptor in a new `*File` (`unix.IsNonblock`, an `fcntl` that cannot fail on a valid\ndescriptor; `pfd.Init`, the runtime poller's `runtime_pollOpen`) and sets a finalizer: cannot\npanic, no effect beyond the new `File` and the variable (the descriptor is the process's, open\nbefore `main`). Not translated by the user's decision (fix-semantics Case 33). Not read by\ntranslated code."⟩]
+
 noncomputable instance info' : PkgInfo pkg_id.os where
   pkgImportedPkgs := [pkg_id.io.fs, pkg_id.sync, pkg_id.syscall, pkg_id.internal.poll, pkg_id.errors]
 
@@ -1029,7 +1041,6 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"os: invalid use of WriteAt on file opened with O_APPEND"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -1076,8 +1087,6 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val Stderr.init) (Val #()))))))
   (App (Val doExecute)
   (App (Val Stdout.init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val Stdin.init) (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Signal.ty))) (Pair (App (Val (GoInstruction (GlobalVarAddr Kill))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)

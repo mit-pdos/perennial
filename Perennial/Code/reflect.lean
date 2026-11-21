@@ -2,7 +2,6 @@
 module
 
 public import Perennial.Golang.Defn
-public import Perennial.TrustedCode.reflect
 
 @[expose] public section
 
@@ -401,9 +400,6 @@ noncomputable def floatArgRegs [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def floatRegSize [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.floatRegSize"
 
-noncomputable def stringType [GooseExts] [GoGlobalContext] : GoString :=
-  go!"reflect.stringType"
-
 noncomputable def kindNames [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.kindNames"
 
@@ -428,14 +424,8 @@ noncomputable def structLookupCache [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def layoutCache [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.layoutCache"
 
-noncomputable def bytesType [GooseExts] [GoGlobalContext] : GoString :=
-  go!"reflect.bytesType"
-
 noncomputable def callGC [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.callGC"
-
-noncomputable def uint8Type [GooseExts] [GoGlobalContext] : GoString :=
-  go!"reflect.uint8Type"
 
 noncomputable def zeroVal [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.zeroVal"
@@ -1064,6 +1054,32 @@ noncomputable def contentEscapes [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def VisibleFields [GooseExts] [GoGlobalContext] : GoString :=
   go!"reflect.VisibleFields"
 
+/-- The package variables goose does not translate (the `skip` entries of the package's
+goose config): no Lean name, allocation or initialization step, so no translated code names
+them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
+panic, and has no effect beyond the variable), for the reason given.
+
+- `stringType`: `rtypeOf("")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the
+static runtime type descriptor of its argument's type (`abi.TypeOf`, which reinterprets an
+interface's memory through `unsafe`; the semantics cannot represent the descriptors); they
+allocate nothing the program can see, cannot panic and have no other effect. Read only by
+`Value.MapIndex`/`SetMapIndex`, `Value.Bytes` and `Value.Index`, which are not translated.
+- `bytesType`: `rtypeOf("")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the
+static runtime type descriptor of its argument's type (`abi.TypeOf`, which reinterprets an
+interface's memory through `unsafe`; the semantics cannot represent the descriptors); they
+allocate nothing the program can see, cannot panic and have no other effect. Read only by
+`Value.MapIndex`/`SetMapIndex`, `Value.Bytes` and `Value.Index`, which are not translated.
+- `uint8Type`: `rtypeOf("")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the
+static runtime type descriptor of its argument's type (`abi.TypeOf`, which reinterprets an
+interface's memory through `unsafe`; the semantics cannot represent the descriptors); they
+allocate nothing the program can see, cannot panic and have no other effect. Read only by
+`Value.MapIndex`/`SetMapIndex`, `Value.Bytes` and `Value.Index`, which are not translated.
+-/
+noncomputable def skipped' : List go.SkippedVar := [
+  ⟨"reflect.stringType", "`rtypeOf(\"\")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the\nstatic runtime type descriptor of its argument's type (`abi.TypeOf`, which reinterprets an\ninterface's memory through `unsafe`; the semantics cannot represent the descriptors); they\nallocate nothing the program can see, cannot panic and have no other effect. Read only by\n`Value.MapIndex`/`SetMapIndex`, `Value.Bytes` and `Value.Index`, which are not translated."⟩,
+  ⟨"reflect.bytesType", "`rtypeOf(\"\")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the\nstatic runtime type descriptor of its argument's type (`abi.TypeOf`, which reinterprets an\ninterface's memory through `unsafe`; the semantics cannot represent the descriptors); they\nallocate nothing the program can see, cannot panic and have no other effect. Read only by\n`Value.MapIndex`/`SetMapIndex`, `Value.Bytes` and `Value.Index`, which are not translated."⟩,
+  ⟨"reflect.uint8Type", "`rtypeOf(\"\")`, `rtypeOf(([]byte)(nil))`, `rtypeOf(uint8(0))` (map.go, value.go): each reads the\nstatic runtime type descriptor of its argument's type (`abi.TypeOf`, which reinterprets an\ninterface's memory through `unsafe`; the semantics cannot represent the descriptors); they\nallocate nothing the program can see, cannot panic and have no other effect. Read only by\n`Value.MapIndex`/`SetMapIndex`, `Value.Bytes` and `Value.Index`, which are not translated."⟩]
+
 noncomputable instance info' : PkgInfo pkg_id.reflect where
   pkgImportedPkgs := []
 
@@ -1082,7 +1098,6 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (Let "$r0" (Val #(W64 15))
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Val #(W64 8))
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$v0" (Val #(go!"invalid"))
   (Let "$v1" (Val #(go!"bool"))
@@ -1112,16 +1127,8 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (Let "$v25" (Val #(go!"struct"))
   (Let "$v26" (Val #(go!"unsafe.Pointer"))
   (App (Val (GoInstruction (CompositeLiteral (go.GoType.SliceType go.string)))) (LiteralValue [(KeyedElement (some (KeyInteger 0)) (ElementExpression go.string (Var "$v0"))), (KeyedElement (some (KeyInteger 1)) (ElementExpression go.string (Var "$v1"))), (KeyedElement (some (KeyInteger 2)) (ElementExpression go.string (Var "$v2"))), (KeyedElement (some (KeyInteger 3)) (ElementExpression go.string (Var "$v3"))), (KeyedElement (some (KeyInteger 4)) (ElementExpression go.string (Var "$v4"))), (KeyedElement (some (KeyInteger 5)) (ElementExpression go.string (Var "$v5"))), (KeyedElement (some (KeyInteger 6)) (ElementExpression go.string (Var "$v6"))), (KeyedElement (some (KeyInteger 7)) (ElementExpression go.string (Var "$v7"))), (KeyedElement (some (KeyInteger 8)) (ElementExpression go.string (Var "$v8"))), (KeyedElement (some (KeyInteger 9)) (ElementExpression go.string (Var "$v9"))), (KeyedElement (some (KeyInteger 10)) (ElementExpression go.string (Var "$v10"))), (KeyedElement (some (KeyInteger 11)) (ElementExpression go.string (Var "$v11"))), (KeyedElement (some (KeyInteger 12)) (ElementExpression go.string (Var "$v12"))), (KeyedElement (some (KeyInteger 13)) (ElementExpression go.string (Var "$v13"))), (KeyedElement (some (KeyInteger 14)) (ElementExpression go.string (Var "$v14"))), (KeyedElement (some (KeyInteger 15)) (ElementExpression go.string (Var "$v15"))), (KeyedElement (some (KeyInteger 16)) (ElementExpression go.string (Var "$v16"))), (KeyedElement (some (KeyInteger 17)) (ElementExpression go.string (Var "$v17"))), (KeyedElement (some (KeyInteger 18)) (ElementExpression go.string (Var "$v18"))), (KeyedElement (some (KeyInteger 19)) (ElementExpression go.string (Var "$v19"))), (KeyedElement (some (KeyInteger 20)) (ElementExpression go.string (Var "$v20"))), (KeyedElement (some (KeyInteger 21)) (ElementExpression go.string (Var "$v21"))), (KeyedElement (some (KeyInteger 22)) (ElementExpression go.string (Var "$v22"))), (KeyedElement (some (KeyInteger 23)) (ElementExpression go.string (Var "$v23"))), (KeyedElement (some (KeyInteger 24)) (ElementExpression go.string (Var "$v24"))), (KeyedElement (some (KeyInteger 25)) (ElementExpression go.string (Var "$v25"))), (KeyedElement (some (KeyInteger 26)) (ElementExpression go.string (Var "$v26")))])))))))))))))))))))))))))))))
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val uint8Type.init) (Val #())))))
-  (App (Val doExecute)
-  (App (Val bytesType.init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (App (Val (GoInstruction (GlobalVarAddr kindNames))) (Val #())) (Var "$r0"))))))))
-  (App (Val doExecute)
-  (App (Val stringType.init) (Val #()))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.string)))) (Pair (App (Val (GoInstruction (GlobalVarAddr kindNames))) (Val #())) (Var "$r0")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.uintptr))) (Pair (App (Val (GoInstruction (GlobalVarAddr floatRegSize))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)

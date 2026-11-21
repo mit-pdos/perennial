@@ -148,9 +148,6 @@ noncomputable def uint64pow10 [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def div5Tab [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/strconv.div5Tab"
 
-noncomputable def pow10Tab [GooseExts] [GoGlobalContext] : GoString :=
-  go!"internal/strconv.pow10Tab"
-
 noncomputable def ParseBool [GooseExts] [GoGlobalContext] : GoString :=
   go!"internal/strconv.ParseBool"
 
@@ -1730,6 +1727,18 @@ noncomputable def formatBase10.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))
   (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0"))))))
 
+/-- The package variables goose does not translate (the `skip` entries of the package's
+goose config): no Lean name, allocation or initialization step, so no translated code names
+them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
+panic, and has no effect beyond the variable), for the reason given.
+
+- `pow10Tab`: A 696-entry array literal of 128-bit powers of ten (pow10tab.go, generated): stores constants,
+cannot panic and has no effect beyond the variable. Read only by `pow10` (math.go), which only
+the float conversions (`ParseFloat`, `FormatFloat` and their helpers) call; none is translated.
+-/
+noncomputable def skipped' : List go.SkippedVar := [
+  ⟨"internal/strconv.pow10Tab", "A 696-entry array literal of 128-bit powers of ten (pow10tab.go, generated): stores constants,\ncannot panic and has no effect beyond the variable. Read only by `pow10` (math.go), which only\nthe float conversions (`ParseFloat`, `FormatFloat` and their helpers) call; none is translated."⟩]
+
 noncomputable instance info' : PkgInfo pkg_id.internal.strconv where
   pkgImportedPkgs := [pkg_id.math.bits]
 
@@ -2001,11 +2010,8 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (Let "$v42" (Val #(W64 5777689233668919161))
   (Let "$v43" (Val #(W64 7737))
   (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 22 (go.GoType.ArrayType 2 go.uint64))))) (LiteralValue [(KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v2"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v3")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v4"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v5")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v6"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v7")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v8"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v9")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v10"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v11")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v12"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v13")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v14"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v15")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v16"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v17")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v18"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v19")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v20"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v21")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v22"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v23")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v24"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v25")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v26"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v27")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v28"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v29")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v30"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v31")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v32"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v33")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v34"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v35")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v36"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v37")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v38"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v39")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v40"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v41")))])), (KeyedElement none (ElementLiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v42"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v43")))]))]))))))))))))))))))))))))))))))))))))))))))))))
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doExecute)
-  (App (Val pow10Tab.init) (Val #())))))
-  (App (Val doExecute)
-  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 22 (go.GoType.ArrayType 2 go.uint64))))) (Pair (App (Val (GoInstruction (GlobalVarAddr div5Tab))) (Val #())) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 22 (go.GoType.ArrayType 2 go.uint64))))) (Pair (App (Val (GoInstruction (GlobalVarAddr div5Tab))) (Val #())) (Var "$r0")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 20 go.uint64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr uint64pow10))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)

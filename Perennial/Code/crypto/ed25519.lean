@@ -2,7 +2,6 @@
 module
 
 public import Perennial.Golang.Defn
-public import Perennial.TrustedCode.crypto.ed25519
 
 @[expose] public section
 
@@ -49,9 +48,6 @@ opaque SeedSize [GooseExts] [GoGlobalContext] : val
 noncomputable def privateKeyCache [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.privateKeyCache"
 
-noncomputable def cryptocustomrand [GooseExts] [GoGlobalContext] : GoString :=
-  go!"crypto/ed25519.cryptocustomrand"
-
 noncomputable def GenerateKey [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.GenerateKey"
 
@@ -73,6 +69,18 @@ noncomputable def Verify [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def VerifyWithOptions [GooseExts] [GoGlobalContext] : GoString :=
   go!"crypto/ed25519.VerifyWithOptions"
 
+/-- The package variables goose does not translate (the `skip` entries of the package's
+goose config): no Lean name, allocation or initialization step, so no translated code names
+them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
+panic, and has no effect beyond the variable), for the reason given.
+
+- `cryptocustomrand`: `godebug.New("cryptocustomrand")` (ed25519.go): `internal/godebug`'s `New(name)` is
+`return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read
+only by `GenerateKey`, which is not translated.
+-/
+noncomputable def skipped' : List go.SkippedVar := [
+  ⟨"crypto/ed25519.cryptocustomrand", "`godebug.New(\"cryptocustomrand\")` (ed25519.go): `internal/godebug`'s `New(name)` is\n`return &Setting{name: name}`, an allocation: cannot panic, no effect beyond the variable. Read\nonly by `GenerateKey`, which is not translated."⟩]
+
 noncomputable instance info' : PkgInfo pkg_id.crypto.ed25519 where
   pkgImportedPkgs := []
 
@@ -83,7 +91,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val (package.init pkg_id.crypto.ed25519)) (Lam BAnon
   (App (Val exceptionDo)
   (App (Val doExecute)
-  (App (Val cryptocustomrand.init) (Val #())))))))
+  (Val #()))))))
 
 abbrev PublicKey [GooseExts] : Type := GoSlice
 

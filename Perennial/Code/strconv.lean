@@ -5,7 +5,6 @@ public import Perennial.Code.errors
 public import Perennial.Code.internal.strconv
 public import Perennial.Code.internal.stringslite
 public import Perennial.Golang.Defn
-public import Perennial.TrustedCode.strconv
 
 @[expose] public section
 
@@ -34,21 +33,6 @@ opaque IntSize [GooseExts] [GoGlobalContext] : val
 opaque lowerhex [GooseExts] [GoGlobalContext] : val
 
 opaque upperhex [GooseExts] [GoGlobalContext] : val
-
-noncomputable def isPrint16 [GooseExts] [GoGlobalContext] : GoString :=
-  go!"strconv.isPrint16"
-
-noncomputable def isNotPrint16 [GooseExts] [GoGlobalContext] : GoString :=
-  go!"strconv.isNotPrint16"
-
-noncomputable def isPrint32 [GooseExts] [GoGlobalContext] : GoString :=
-  go!"strconv.isPrint32"
-
-noncomputable def isNotPrint32 [GooseExts] [GoGlobalContext] : GoString :=
-  go!"strconv.isNotPrint32"
-
-noncomputable def isGraphic [GooseExts] [GoGlobalContext] : GoString :=
-  go!"strconv.isGraphic"
 
 noncomputable def ErrRange [GooseExts] [GoGlobalContext] : GoString :=
   go!"strconv.ErrRange"
@@ -710,6 +694,39 @@ noncomputable def bitSizeError.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType NumError.ty)))) (Pair (Var "$res0") (Var "$r0"))))))))))
   (App (Val (GoInstruction (GoLoad (go.GoType.PointerType NumError.ty)))) (Var "$res0")))))))
 
+/-- The package variables goose does not translate (the `skip` entries of the package's
+goose config): no Lean name, allocation or initialization step, so no translated code names
+them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
+panic, and has no effect beyond the variable), for the reason given.
+
+- `isPrint16`: The printable-rune tables (isprint.go): slice literals of constants, so the initializers
+allocate and store constants, cannot panic and have no effect beyond the variables. Read only by
+`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;
+none of them is translated.
+- `isNotPrint16`: The printable-rune tables (isprint.go): slice literals of constants, so the initializers
+allocate and store constants, cannot panic and have no effect beyond the variables. Read only by
+`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;
+none of them is translated.
+- `isPrint32`: The printable-rune tables (isprint.go): slice literals of constants, so the initializers
+allocate and store constants, cannot panic and have no effect beyond the variables. Read only by
+`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;
+none of them is translated.
+- `isNotPrint32`: The printable-rune tables (isprint.go): slice literals of constants, so the initializers
+allocate and store constants, cannot panic and have no effect beyond the variables. Read only by
+`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;
+none of them is translated.
+- `isGraphic`: The printable-rune tables (isprint.go): slice literals of constants, so the initializers
+allocate and store constants, cannot panic and have no effect beyond the variables. Read only by
+`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;
+none of them is translated.
+-/
+noncomputable def skipped' : List go.SkippedVar := [
+  ⟨"strconv.isPrint16", "The printable-rune tables (isprint.go): slice literals of constants, so the initializers\nallocate and store constants, cannot panic and have no effect beyond the variables. Read only by\n`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;\nnone of them is translated."⟩,
+  ⟨"strconv.isNotPrint16", "The printable-rune tables (isprint.go): slice literals of constants, so the initializers\nallocate and store constants, cannot panic and have no effect beyond the variables. Read only by\n`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;\nnone of them is translated."⟩,
+  ⟨"strconv.isPrint32", "The printable-rune tables (isprint.go): slice literals of constants, so the initializers\nallocate and store constants, cannot panic and have no effect beyond the variables. Read only by\n`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;\nnone of them is translated."⟩,
+  ⟨"strconv.isNotPrint32", "The printable-rune tables (isprint.go): slice literals of constants, so the initializers\nallocate and store constants, cannot panic and have no effect beyond the variables. Read only by\n`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;\nnone of them is translated."⟩,
+  ⟨"strconv.isGraphic", "The printable-rune tables (isprint.go): slice literals of constants, so the initializers\nallocate and store constants, cannot panic and have no effect beyond the variables. Read only by\n`IsPrint` and `isInGraphicList` (quote.go), which `IsGraphic` and the quoting functions call;\nnone of them is translated."⟩]
+
 noncomputable instance info' : PkgInfo pkg_id.strconv where
   pkgImportedPkgs := [pkg_id.errors, pkg_id.internal.strconv, pkg_id.internal.stringslite]
 
@@ -724,11 +741,6 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
-  (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$a0" (Val #(go!"value out of range"))
   (App (App (Val (GoInstruction (FuncResolve _root_.Perennial.errors.New []))) (Val #())) (Var "$a0")))
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -738,16 +750,6 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrSyntax))) (Val #())) (Var "$r0")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrRange))) (Val #())) (Var "$r0"))))))))
-  (App (Val doExecute)
-  (App (Val isGraphic.init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val isNotPrint32.init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val isPrint32.init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val isNotPrint16.init) (Val #()))))))
-  (App (Val doExecute)
-  (App (Val isPrint16.init) (Val #()))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.errors.initialize') (Val #()))))))
   (App (Val doExecute)

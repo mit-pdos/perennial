@@ -4,7 +4,6 @@ module
 public import Perennial.Code.fmt
 public import Perennial.Code.errors
 public import Perennial.Golang.Defn
-public import Perennial.TrustedCode.math.big
 
 @[expose] public section
 
@@ -148,9 +147,6 @@ opaque _RoundingMode_name [GooseExts] [GoGlobalContext] : val
 
 noncomputable def _Accuracy_index [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/big._Accuracy_index"
-
-noncomputable def hasADX [GooseExts] [GoGlobalContext] : GoString :=
-  go!"math/big.hasADX"
 
 noncomputable def floatZero [GooseExts] [GoGlobalContext] : GoString :=
   go!"math/big.floatZero"
@@ -541,6 +537,18 @@ noncomputable def Int.Int64.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.int64))) (Pair (Var "v") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad go.int64))) (Var "$res0"))))))
 
+/-- The package variables goose does not translate (the `skip` entries of the package's
+goose config): no Lean name, allocation or initialization step, so no translated code names
+them. Trusted: not running each one's Go initializer is unobservable (it terminates, cannot
+panic, and has no effect beyond the variable), for the reason given.
+
+- `hasADX`: `cpu.X86.HasADX && cpu.X86.HasBMI2` (arith_amd64.go): reads two booleans of `internal/cpu`,
+which the runtime sets before any package is initialized; cannot panic, no effect beyond the
+variable. Read only by the assembly of `addMulVVWW` (arith_amd64.s), which is not translated.
+-/
+noncomputable def skipped' : List go.SkippedVar := [
+  ⟨"math/big.hasADX", "`cpu.X86.HasADX && cpu.X86.HasBMI2` (arith_amd64.go): reads two booleans of `internal/cpu`,\nwhich the runtime sets before any package is initialized; cannot panic, no effect beyond the\nvariable. Read only by the assembly of `addMulVVWW` (arith_amd64.s), which is not translated."⟩]
+
 noncomputable instance info' : PkgInfo pkg_id.math.big where
   pkgImportedPkgs := [pkg_id.fmt, pkg_id.errors]
 
@@ -570,7 +578,6 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (Let "$v2" (Val #(W8 10))
   (Let "$v3" (Val #(W8 15))
   (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 4 go.uint8)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint8 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint8 (Var "$v1"))), (KeyedElement none (ElementExpression go.uint8 (Var "$v2"))), (KeyedElement none (ElementExpression go.uint8 (Var "$v3")))]))))))
-  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (Let "$r0" (Let "$v0" (Val #(W64 1))
   (Let "$v1" (Val #(W64 5))
@@ -675,8 +682,6 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore nat.ty))) (Pair (App (Val (GoInstruction (GlobalVarAddr natOne))) (Val #())) (Var "$r0"))))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 28 go.uint64)))) (Pair (App (Val (GoInstruction (GlobalVarAddr pow5tab))) (Val #())) (Var "$r0"))))))))
-  (App (Val doExecute)
-  (App (Val hasADX.init) (Val #()))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 4 go.uint8)))) (Pair (App (Val (GoInstruction (GlobalVarAddr _Accuracy_index))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)

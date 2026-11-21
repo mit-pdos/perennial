@@ -45,7 +45,13 @@ variable itself (no panic, no other variable written, nothing in the outside wor
 tracks); each use's docstring says why that holds.
 
 Reducible, so that `wp_call` (and `wp_auto`) step through `X.init` to the no-op;
-`grep go.skipInit` lists every skipped initializer. -/
+`grep go.skipInit` lists every such initializer.
+
+A variable that verified code is never to read is not translated at all instead: a `skip`
+entry of its package's goose config (`go.SkippedVar` below), which makes a reference to it a
+goose or elaboration error rather than a stuck access. `go.skipInit` remains for the variables
+that translated code is to read once they have a real model (perennial#663: `os.Stdout`,
+`log.std`, `math.useFMA`). -/
 @[reducible] def skipInit [GooseExts] [GoGlobalContext] : val := λ: <>, #()
 
 /-- A package variable that goose does not translate: an entry of a package's

@@ -43,17 +43,14 @@ system call), registers it with the runtime's poller (`runtime_pollServerInit`,
 trusted model that does nothing? This is conservative because it leaves Stdin, Stdout, Stderr as
 undefined, so any code relying on it will be unprovable. I do not want to follow the rule
 'translatable => *must* verify' in this case."). The models give a proof less than Go does,
-never more: -/
-
-/-- `Stdin`'s initializer. The model skips it (`go.skipInit`): the variable is not allocated, so
-code that loads `os.Stdin` is stuck (has no proof), where Go reads a `*File`. -/
-def Stdin.init : val := go.skipInit
+never more (`Stdin` is not translated at all: a `skip` entry of `Code/os.toml`): -/
 
 /-- `Stdout`'s initializer. The model skips it (`go.skipInit`): the variable is not allocated, so
-code that loads `os.Stdout` is stuck (has no proof), where Go reads a `*File`. -/
+code that loads `os.Stdout` is stuck (has no proof), where Go reads a `*File`. (Not a `skip`
+entry: it is to get a real model, perennial#663.) -/
 def Stdout.init : val := go.skipInit
 
-/-- `Stderr`'s initializer. Unlike `Stdin` and `Stdout`, the model allocates the variable,
+/-- `Stderr`'s initializer. Unlike `Stdout`, the model allocates the variable,
 because package initializers that only store `os.Stderr` (`log`'s standard logger in Go,
 raft's `defaultLogger`, `log.New(os.Stderr, ...)`) must be provable: it stores a fresh
 non-nil pointer to an untyped cell, which is not the memory of a `File`. So the variable holds a
