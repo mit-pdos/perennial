@@ -223,7 +223,11 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `docs/PERENNIAL_PROOF_REFERENCE.md`, "Panics".
 * **Trusted package-variable initializers.** A package variable listed in a
   goose config's `trusted` gets its initializer `X.init` (allocation included)
-  from `Perennial/TrustedCode`. **Accepted for now, to remove later:** five such
+  from `Perennial/TrustedCode`. An initializer that the model skips is
+  `def X.init : val := go.skipInit` (`Golang/Defn/Pkg.lean`): its trusted claim is
+  that Go's initializer can be skipped; the variable is not allocated, so a load
+  or store of it is stuck (taking its address steps), and `grep go.skipInit` lists
+  every such variable. **Accepted for now, to remove later:** five such
   models are trusted although goose translates the real source, so the
   `review-trusted` rule R2 grades them REWORK; they were accepted (2026-10-19)
   to finish the standard library's init proofs, and later reviews and
@@ -252,6 +256,15 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   nondeterministic than gc's pools, victim cache and GC clearing. As with the
   channel and string models, the model's translation is part of `go.Semantics`
   (`pool_sem`).
+* **`sync.Mutex`.** Goose translates `sync.Mutex` (`struct { _ noCopy; mu isync.Mutex }`)
+  and its methods, which forward to `internal/sync.Mutex`. That `Mutex` and its `Lock`,
+  `TryLock` and `Unlock` are trusted (`TrustedCode/internal/sync.lean`): Go's have data races
+  (the race detector is disabled on the sync packages) and park on the runtime's semaphores.
+  The model is the spin lock of `Golang/Defn/Lock.lean` on a `bool` (`false` is unlocked),
+  more nondeterministic than Go's (no fairness or starvation mode, and `TryLock` may fail on
+  an unlocked mutex, as Go's does in starvation mode or when its CAS loses to a waiter);
+  `Unlock` of an unlocked mutex is stuck, where Go ends the program (`fatal`). `sync.Mutex{}` is a literal of the
+  translated struct, so it steps by the ordinary struct rules to a zero, unlocked mutex.
 * **Method sets.** Whether a type implements an interface (`go.typeSetContains`, used by
   type assertions and conversions) is decided by `methodSet`, an uninterpreted function of
   the semantics constrained by `go.MethodSetIs t ms` facts (`Golang/Defn/MethodSet.lean`):

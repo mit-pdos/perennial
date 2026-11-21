@@ -1,7 +1,7 @@
 /-
 Shared definitions of the proofs of `sync`: its `isPkgInit`, the `rwmutex`/`WlockState`
 states of the `RWMutex` protocol, the predicates `isMutex`/`ownMutex` of `sync.Mutex` (a
-`lock`), and the `Locker` interface (`isLocker`, `isLockerWith`).
+`lock` on its field `mu`, an `internal/sync.Mutex`), and the `Locker` interface (`isLocker`, `isLockerWith`).
 
 The rest of the shared definitions: the runtime semaphore (`SemaDefs`), `Cond` (`CondDefs`),
 `Once` (`OnceDefs`), the low-level `RWMutex` protocol (`RWMutexDefs`, `sync.rwmutex.*`, meant
@@ -16,6 +16,7 @@ public import Perennial.GeneratedProof.sync
 public import Perennial.Proof.sync.atomic.Base
 public import Perennial.Proof.internal.race.Base
 public import Perennial.Proof.internal.synctest.Base
+public import Perennial.Proof.internal.sync.Base
 public import Perennial.Proof.TokSet
 public import Perennial.Algebra.AuthProp
 public import Perennial.Golang.Theory.Lock
@@ -54,12 +55,16 @@ instance isPkgInit_inst : IsPkgInit (IProp GF) pkg_id.sync :=
 instance get_isPkgInit_wf_inst : GetIsPkgInitWf (IProp GF) pkg_id.sync :=
   build_get_is_pkg_init_wf
 
-def isMutexDef (m : Loc) (R : IProp GF) : IProp GF := isLock m R
+/-- `isMutex m R` is a `lock` on the field `mu` of the mutex at `m`, an `internal/sync.Mutex`:
+the trusted spin lock (`TrustedCode/internal/sync.lean`) that `sync.Mutex`'s translated
+methods call. -/
+def isMutexDef (m : Loc) (R : IProp GF) : IProp GF :=
+  isLock (structFieldRef sync.Mutex go!"mu" m) R
 /-- This means `m` is a valid mutex with invariant `R` (sealed). -/
 @[irreducible] def isMutex (m : Loc) (R : IProp GF) : IProp GF := isMutexDef m R
 theorem isMutex_unseal : @isMutex = @isMutexDef := by funext; with_unfolding_all rfl
 
-def ownMutexDef (m : Loc) : IProp GF := ownLock m
+def ownMutexDef (m : Loc) : IProp GF := ownLock (structFieldRef sync.Mutex go!"mu" m)
 /-- This resource denotes ownership of the fact that the Mutex is currently
 locked (sealed). -/
 @[irreducible] def ownMutex (m : Loc) : IProp GF := ownMutexDef m
@@ -67,7 +72,7 @@ theorem ownMutex_unseal : @ownMutex = @ownMutexDef := by funext; with_unfolding_
 
 theorem ownMutex_exclusive (m : Loc) : ⊢ ownMutex (GF := GF) m -∗ ownMutex m -∗ False := by
   simp only [ownMutex_unseal, ownMutexDef]
-  exact ownLock_exclusive m
+  exact ownLock_exclusive (structFieldRef sync.Mutex go!"mu" m)
 
 instance isMutex_ne (m : Loc) : NonExpansive (isMutex (GF := GF) m) := by
   rw [isMutex_unseal]; unfold isMutexDef; infer_instance
@@ -78,11 +83,15 @@ instance isMutex_persistent (m : Loc) (R : IProp GF) : Persistent (isMutex m R) 
 instance locked_timeless (m : Loc) : Timeless (ownMutex (GF := GF) m) := by
   rw [ownMutex_unseal]; unfold ownMutexDef; infer_instance
 
+/-- A zero `Mutex` (such as `sync.Mutex{}`, or a `Mutex` field of a zero struct) is an
+unlocked mutex. -/
 theorem init_Mutex (R : IProp GF) (E : CoPset) (m : Loc) :
     ⊢ typedPointsto (GF := GF) m (zero_val sync.Mutex) (DFrac.own 1) -∗ ▷ R ={E}=∗
       isMutex m R := by
+  iintro Hm HR
+  iStructNamed Hm
   simp only [isMutex_unseal, isMutexDef]
-  exact init_lock R E m
+  iapply init_lock R E (structFieldRef sync.Mutex go!"mu" m) $$ mu HR
 
 /-- `i` implements `Locker` with `Lock` producing `P` and `Unlock` consuming it. -/
 def isLocker (i : GoInterfaceOk) (P : IProp GF) : IProp GF :=

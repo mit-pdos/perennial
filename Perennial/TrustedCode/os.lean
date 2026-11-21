@@ -45,15 +45,13 @@ undefined, so any code relying on it will be unprovable. I do not want to follow
 'translatable => *must* verify' in this case."). The models give a proof less than Go does,
 never more: -/
 
-/-- `Stdin`'s initializer. The model does nothing: the variable is not allocated, so code that
-loads `os.Stdin` is stuck (has no proof), where Go reads a `*File`. -/
-def Stdin.init : val :=
-  λ: <>, #()
+/-- `Stdin`'s initializer. The model skips it (`go.skipInit`): the variable is not allocated, so
+code that loads `os.Stdin` is stuck (has no proof), where Go reads a `*File`. -/
+def Stdin.init : val := go.skipInit
 
-/-- `Stdout`'s initializer. The model does nothing: the variable is not allocated, so code that
-loads `os.Stdout` is stuck (has no proof), where Go reads a `*File`. -/
-def Stdout.init : val :=
-  λ: <>, #()
+/-- `Stdout`'s initializer. The model skips it (`go.skipInit`): the variable is not allocated, so
+code that loads `os.Stdout` is stuck (has no proof), where Go reads a `*File`. -/
+def Stdout.init : val := go.skipInit
 
 /-- `Stderr`'s initializer. Unlike `Stdin` and `Stdout`, the model allocates the variable,
 because package initializers that only store `os.Stderr` (`log`'s standard logger in Go,

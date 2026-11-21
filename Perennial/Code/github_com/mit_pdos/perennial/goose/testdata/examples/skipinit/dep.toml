@@ -1,0 +1,4 @@
+# X's initializer is skipped: its trusted model is go.skipInit
+# (Perennial/TrustedCode/.../skipinit/dep.lean)
+translate = ["*", "!X"]
+trusted = ["X"]

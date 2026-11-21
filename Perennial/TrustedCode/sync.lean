@@ -8,7 +8,6 @@ than axiomatized, which would leave `copyChecker.wp_check` unprovable). See
 module
 
 public import Perennial.Golang.Defn.Pre
-public import Perennial.Golang.Defn.Lock
 public import Perennial.Code.github_com.mit_pdos.perennial.goose.model.pool
 
 @[expose] public section
@@ -21,17 +20,6 @@ namespace sync
 
 section code
 variable [GooseExts] [GoGlobalContext]
-
-@[reducible] def Mutex.underlying : go.GoType := go.bool
-
-def Mutex.TryLock.impl : val :=
-  λ: "m" <>, lock.trylock "m"
-
-def Mutex.Lock.impl : val :=
-  λ: "m" <>, lock.lock "m"
-
-def Mutex.Unlock.impl : val :=
-  λ: "m" <>, lock.unlock "m"
 
 def runtime_notifyListAdd.impl : val :=
   λ: "l", Convert go.int go.uint32 ArbitraryInt
@@ -213,8 +201,6 @@ end code
 
 /-- See `copyChecker.underlying`. -/
 abbrev copyChecker := Loc
-
-abbrev Mutex := Bool
 
 end sync
 

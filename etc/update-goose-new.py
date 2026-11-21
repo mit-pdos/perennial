@@ -244,6 +244,7 @@ def main():
         run_goose(
             path.join(goose_dir, "testdata/examples"),
             "./filteredimport",
+            "./skipinit/...",
             "./semantics",
             "./unittest/...",
             "./channel/...",
@@ -292,6 +293,7 @@ def main():
             "syscall",
             "internal/synctest",
             "internal/race",
+            "internal/sync",
             "time",
             "fmt",
             "log",

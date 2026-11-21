@@ -343,6 +343,10 @@ func (suite *GoTestSuite) TestsUseLocks() {
 	suite.Equal(true, testsUseLocks())
 }
 
+func (suite *GoTestSuite) TestMutexLiteral() {
+	suite.Equal(true, testMutexLiteral())
+}
+
 func (suite *GoTestSuite) TestStandardForLoop() {
 	suite.Equal(true, testStandardForLoop())
 }
