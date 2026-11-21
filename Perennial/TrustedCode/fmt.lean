@@ -88,8 +88,11 @@ func intVerb(format string, i int) (byte, int, int, bool) {
 ```
 
 That is, `%d` and `%v` (verb `'d'`, width 0), and `%0Nd` and `%0Nx` (verb `'d'` or `'x'`) with a
-decimal width `N` of one or more digits, at most `10^6` (Go's `fmt` refuses a larger one, stopping
-as this loop does). `%x` without a width is `formatArg`'s own case, not this one. -/
+decimal width `N` of one or more digits, at most `10^6`. The loop stops reading digits as Go's
+`parsenum` does, once the width read so far exceeds `10^6`, so the width cannot overflow; Go then
+gives up on a directive whose digits go on (`%!(NOVERB)`) but accepts a width up to `10^7 + 9` that
+ends there (`Sprintf("%01000001x", 255)` has 1000001 bytes), where this model returns false (less
+defined than Go). `%x` without a width is `formatArg`'s own case, not this one. -/
 noncomputable def intVerb : val :=
   (LamV "format"
   (Lam "i"
