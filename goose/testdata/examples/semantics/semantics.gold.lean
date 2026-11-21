@@ -407,6 +407,59 @@ noncomputable instance «equals_unfold_struct#6b601a4b» [GooseExts] [GoGlobalCo
 @[reducible] noncomputable def «struct#6b601a4b».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.StructType «struct#6b601a4b».fields)
 
+@[reducible] noncomputable def «struct#2cd0f2f3».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.TaggedField go!"Name" go.string go!"json:\"name\""),
+(go.field_decl.FieldDecl go!"n" go.int)]
+
+@[irreducible] noncomputable def «struct#2cd0f2f3».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  «struct#2cd0f2f3».fieldsUnsealed
+
+noncomputable instance «equals_unfold_struct#2cd0f2f3» [GooseExts] [GoGlobalContext] :
+    EqualsUnfold «struct#2cd0f2f3».fields «struct#2cd0f2f3».fieldsUnsealed :=
+  ⟨by unfold «struct#2cd0f2f3».fields; rfl⟩
+
+@[reducible] noncomputable def «struct#2cd0f2f3».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType «struct#2cd0f2f3».fields)
+
+@[reducible] noncomputable def «struct#fdd642b7».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.TaggedField go!"A" go.int go!"json:\"a\"")]
+
+@[irreducible] noncomputable def «struct#fdd642b7».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  «struct#fdd642b7».fieldsUnsealed
+
+noncomputable instance «equals_unfold_struct#fdd642b7» [GooseExts] [GoGlobalContext] :
+    EqualsUnfold «struct#fdd642b7».fields «struct#fdd642b7».fieldsUnsealed :=
+  ⟨by unfold «struct#fdd642b7».fields; rfl⟩
+
+@[reducible] noncomputable def «struct#fdd642b7».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType «struct#fdd642b7».fields)
+
+@[reducible] noncomputable def «struct#45c926a9».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.TaggedField go!"A" go.int go!"json:\"b\"")]
+
+@[irreducible] noncomputable def «struct#45c926a9».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  «struct#45c926a9».fieldsUnsealed
+
+noncomputable instance «equals_unfold_struct#45c926a9» [GooseExts] [GoGlobalContext] :
+    EqualsUnfold «struct#45c926a9».fields «struct#45c926a9».fieldsUnsealed :=
+  ⟨by unfold «struct#45c926a9».fields; rfl⟩
+
+@[reducible] noncomputable def «struct#45c926a9».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType «struct#45c926a9».fields)
+
+@[reducible] noncomputable def «struct#50e5a5ff».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"A" go.int)]
+
+@[irreducible] noncomputable def «struct#50e5a5ff».fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  «struct#50e5a5ff».fieldsUnsealed
+
+noncomputable instance «equals_unfold_struct#50e5a5ff» [GooseExts] [GoGlobalContext] :
+    EqualsUnfold «struct#50e5a5ff».fields «struct#50e5a5ff».fieldsUnsealed :=
+  ⟨by unfold «struct#50e5a5ff».fields; rfl⟩
+
+@[reducible] noncomputable def «struct#50e5a5ff».underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType «struct#50e5a5ff».fields)
+
 @[reducible] noncomputable def «struct#3e1ef20f».fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
   [(go.field_decl.FieldDecl go!"_0" go.int)]
 
@@ -502,6 +555,12 @@ noncomputable def testAnonStructNested [GooseExts] [GoGlobalContext] : GoString 
 
 noncomputable def testAnonStructArray [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAnonStructArray"
+
+noncomputable def testAnonStructTagged [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAnonStructTagged"
+
+noncomputable def testAnonStructTagTypesEqual [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testAnonStructTagTypesEqual"
 
 noncomputable def testRangeArray [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testRangeArray"
@@ -1775,6 +1834,46 @@ noncomputable def testAnonStructArray.impl [GooseExts] [GoGlobalContext] : val :
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#40520aa4».underlying go!"c"))) (App (Val (GoInstruction (IndexRef (go.GoType.ArrayType 2 «struct#40520aa4».underlying)))) (Pair (Var "a") (Val #(W64 1))))) (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- an unnamed struct type with field tags (the tags are part of its type)
+
+    go: anon_structs.go:76:6 -/
+noncomputable def testAnonStructTagged.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Let "$v0" (Val #(go!"a"))
+  (App (Val (GoInstruction (CompositeLiteral «struct#2cd0f2f3».underlying))) (LiteralValue [(KeyedElement (some (KeyField go!"Name")) (ElementExpression go.string (Var "$v0")))])))
+  (Let "d" (App (Val (GoInstruction (GoAlloc «struct#2cd0f2f3».underlying))) (App (Val (GoInstruction (GoZeroVal «struct#2cd0f2f3».underlying))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 2))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (GoLoad go.string))) (App (Val (GoInstruction (StructFieldRef «struct#2cd0f2f3».underlying go!"Name"))) (Var "d"))) (Val #(go!"a")))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef «struct#2cd0f2f3».underlying go!"n"))) (Var "d"))) (Val #(W64 2)))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef «struct#2cd0f2f3».underlying go!"n"))) (Var "d")) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore «struct#2cd0f2f3».underlying))) (Pair (Var "d") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- tags are part of an unnamed struct type's identity (Go spec, "Type identity")
+
+    go: anon_structs.go:86:6 -/
+noncomputable def testAnonStructTagTypesEqual.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (If (If (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [«struct#fdd642b7».underlying, «struct#50e5a5ff».underlying]))) (Val #())) (Val #()))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (App (Val (GoInstruction (FuncResolve TypesEqual [«struct#fdd642b7».underlying, «struct#45c926a9».underlying]))) (Val #())) (Val #()))) (Val #false)) (App (App (Val (GoInstruction (FuncResolve TypesEqual [«struct#fdd642b7».underlying, «struct#fdd642b7».underlying]))) (Val #())) (Val #())) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0")))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: arrays.go:5:6 -/
@@ -14005,6 +14104,75 @@ attribute [instance] «struct#b17138a7».TypeAssumptions.type_repr
   «struct#b17138a7».TypeAssumptions.get_n
   «struct#b17138a7».TypeAssumptions.set_n
 
+structure «struct#2cd0f2f3» [GooseExts] where
+  mk ::
+  Name' : GoString
+  n' : w64
+
+noncomputable instance «struct#2cd0f2f3».zero_val [GooseExts] : ZeroVal «struct#2cd0f2f3» :=
+  ⟨«struct#2cd0f2f3».mk zeroValDef zeroValDef⟩
+
+class «struct#2cd0f2f3».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#2cd0f2f3».underlying «struct#2cd0f2f3»
+  get_Name : ∀ (x : «struct#2cd0f2f3»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#2cd0f2f3».underlying go!"Name") #x (Val #(x.Name'))
+  set_Name : ∀ (x : «struct#2cd0f2f3») (y : GoString), go.IsGoStepPureDetTagged under (StructFieldSet «struct#2cd0f2f3».underlying go!"Name") (PairV #x #y) (Val #(({ x with Name' := y } : «struct#2cd0f2f3»)))
+  get_n : ∀ (x : «struct#2cd0f2f3»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#2cd0f2f3».underlying go!"n") #x (Val #(x.n'))
+  set_n : ∀ (x : «struct#2cd0f2f3») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#2cd0f2f3».underlying go!"n") (PairV #x #y) (Val #(({ x with n' := y } : «struct#2cd0f2f3»)))
+
+attribute [instance] «struct#2cd0f2f3».TypeAssumptions.type_repr
+  «struct#2cd0f2f3».TypeAssumptions.get_Name
+  «struct#2cd0f2f3».TypeAssumptions.set_Name
+  «struct#2cd0f2f3».TypeAssumptions.get_n
+  «struct#2cd0f2f3».TypeAssumptions.set_n
+
+structure «struct#fdd642b7» [GooseExts] where
+  mk ::
+  A' : w64
+
+noncomputable instance «struct#fdd642b7».zero_val [GooseExts] : ZeroVal «struct#fdd642b7» :=
+  ⟨«struct#fdd642b7».mk zeroValDef⟩
+
+class «struct#fdd642b7».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#fdd642b7».underlying «struct#fdd642b7»
+  get_A : ∀ (x : «struct#fdd642b7»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#fdd642b7».underlying go!"A") #x (Val #(x.A'))
+  set_A : ∀ (x : «struct#fdd642b7») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#fdd642b7».underlying go!"A") (PairV #x #y) (Val #(({ x with A' := y } : «struct#fdd642b7»)))
+
+attribute [instance] «struct#fdd642b7».TypeAssumptions.type_repr
+  «struct#fdd642b7».TypeAssumptions.get_A
+  «struct#fdd642b7».TypeAssumptions.set_A
+
+structure «struct#45c926a9» [GooseExts] where
+  mk ::
+  A' : w64
+
+noncomputable instance «struct#45c926a9».zero_val [GooseExts] : ZeroVal «struct#45c926a9» :=
+  ⟨«struct#45c926a9».mk zeroValDef⟩
+
+class «struct#45c926a9».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#45c926a9».underlying «struct#45c926a9»
+  get_A : ∀ (x : «struct#45c926a9»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#45c926a9».underlying go!"A") #x (Val #(x.A'))
+  set_A : ∀ (x : «struct#45c926a9») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#45c926a9».underlying go!"A") (PairV #x #y) (Val #(({ x with A' := y } : «struct#45c926a9»)))
+
+attribute [instance] «struct#45c926a9».TypeAssumptions.type_repr
+  «struct#45c926a9».TypeAssumptions.get_A
+  «struct#45c926a9».TypeAssumptions.set_A
+
+structure «struct#50e5a5ff» [GooseExts] where
+  mk ::
+  A' : w64
+
+noncomputable instance «struct#50e5a5ff».zero_val [GooseExts] : ZeroVal «struct#50e5a5ff» :=
+  ⟨«struct#50e5a5ff».mk zeroValDef⟩
+
+class «struct#50e5a5ff».TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying «struct#50e5a5ff».underlying «struct#50e5a5ff»
+  get_A : ∀ (x : «struct#50e5a5ff»), go.IsGoStepPureDetTagged under (StructFieldGet «struct#50e5a5ff».underlying go!"A") #x (Val #(x.A'))
+  set_A : ∀ (x : «struct#50e5a5ff») (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet «struct#50e5a5ff».underlying go!"A") (PairV #x #y) (Val #(({ x with A' := y } : «struct#50e5a5ff»)))
+
+attribute [instance] «struct#50e5a5ff».TypeAssumptions.type_repr
+  «struct#50e5a5ff».TypeAssumptions.get_A
+  «struct#50e5a5ff».TypeAssumptions.set_A
+
 structure «struct#3e1ef20f» [GooseExts] where
   mk ::
   _0' : w64
@@ -14122,6 +14290,10 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   «struct#b17138a7_instance» : «struct#b17138a7».TypeAssumptions
   «struct#40520aa4_instance» : «struct#40520aa4».TypeAssumptions
   «struct#6b601a4b_instance» : «struct#6b601a4b».TypeAssumptions
+  «struct#2cd0f2f3_instance» : «struct#2cd0f2f3».TypeAssumptions
+  «struct#fdd642b7_instance» : «struct#fdd642b7».TypeAssumptions
+  «struct#45c926a9_instance» : «struct#45c926a9».TypeAssumptions
+  «struct#50e5a5ff_instance» : «struct#50e5a5ff».TypeAssumptions
   «struct#3e1ef20f_instance» : «struct#3e1ef20f».TypeAssumptions
   «struct#448f9a0d_instance» : «struct#448f9a0d».TypeAssumptions
   «struct#568e4f73_instance» : «struct#568e4f73».TypeAssumptions
@@ -14138,6 +14310,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testAnonStructGeneric_unfold : FuncUnfold testAnonStructGeneric [] testAnonStructGeneric.impl
   testAnonStructNested_unfold : FuncUnfold testAnonStructNested [] testAnonStructNested.impl
   testAnonStructArray_unfold : FuncUnfold testAnonStructArray [] testAnonStructArray.impl
+  testAnonStructTagged_unfold : FuncUnfold testAnonStructTagged [] testAnonStructTagged.impl
+  testAnonStructTagTypesEqual_unfold : FuncUnfold testAnonStructTagTypesEqual [] testAnonStructTagTypesEqual.impl
   testRangeArray_unfold : FuncUnfold testRangeArray [] testRangeArray.impl
   testRangeArrayCopy_unfold : FuncUnfold testRangeArrayCopy [] testRangeArrayCopy.impl
   testRangeArrayPtr_unfold : FuncUnfold testRangeArrayPtr [] testRangeArrayPtr.impl
@@ -14501,6 +14675,10 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.«struct#b17138a7_instance»
   Assumptions.«struct#40520aa4_instance»
   Assumptions.«struct#6b601a4b_instance»
+  Assumptions.«struct#2cd0f2f3_instance»
+  Assumptions.«struct#fdd642b7_instance»
+  Assumptions.«struct#45c926a9_instance»
+  Assumptions.«struct#50e5a5ff_instance»
   Assumptions.«struct#3e1ef20f_instance»
   Assumptions.«struct#448f9a0d_instance»
   Assumptions.«struct#568e4f73_instance»
@@ -14517,6 +14695,8 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testAnonStructGeneric_unfold
   Assumptions.testAnonStructNested_unfold
   Assumptions.testAnonStructArray_unfold
+  Assumptions.testAnonStructTagged_unfold
+  Assumptions.testAnonStructTagTypesEqual_unfold
   Assumptions.testRangeArray_unfold
   Assumptions.testRangeArrayCopy_unfold
   Assumptions.testRangeArrayPtr_unfold

@@ -1038,10 +1038,14 @@ structure StructFieldDesc (V : Type) (T : go.GoType) where
 def fieldDeclName : go.field_decl → GoString
   | .FieldDecl n _ => n
   | .EmbeddedField n _ => n
+  | .TaggedField n _ _ => n
+  | .TaggedEmbeddedField n _ _ => n
 
 def fieldDeclType : go.field_decl → go.GoType
   | .FieldDecl _ t => t
   | .EmbeddedField _ t => t
+  | .TaggedField _ t _ => t
+  | .TaggedEmbeddedField _ t _ => t
 
 def FieldsMatch {V : Type} {T : go.GoType} :
     List go.field_decl → List (StructFieldDesc (GF := GF) V T) → Prop
@@ -1063,6 +1067,8 @@ def allocStructRaw (fds : List go.field_decl) (v : val) (fds_unsealed : List go.
                 let (field_name, field_type) := match fd with
                                                 | go.FieldDecl n t => (n, t)
                                                 | go.EmbeddedField n t => (n, t)
+                                                | go.TaggedField n t _ => (n, t)
+                                                | go.TaggedEmbeddedField n t _ => (n, t)
                 let field_addr := gl(StructFieldRef (go.StructType fds) field_name "l")
                 gl(let: "l_field" :=
                     GoAlloc field_type (StructFieldGet (go.StructType fds) field_name v) in
@@ -1089,6 +1095,8 @@ theorem allocStructRaw_eq (fds : List go.field_decl) (v : val) (fds_unsealed : L
                 let (field_name, field_type) := match fd with
                                                 | go.FieldDecl n t => (n, t)
                                                 | go.EmbeddedField n t => (n, t)
+                                                | go.TaggedField n t _ => (n, t)
+                                                | go.TaggedEmbeddedField n t _ => (n, t)
                 let field_addr := gl(StructFieldRef (go.StructType fds) field_name "l")
                 gl(let: "l_field" :=
                     GoAlloc field_type (StructFieldGet (go.StructType fds) field_name v) in
@@ -1221,6 +1229,8 @@ noncomputable def loadStructRaw (fds : List go.field_decl) (l : val) (fds_unseal
                 let (field_name, field_type) := match fd with
                                                 | go.FieldDecl n t => (n, t)
                                                 | go.EmbeddedField n t => (n, t)
+                                                | go.TaggedField n t _ => (n, t)
+                                                | go.TaggedEmbeddedField n t _ => (n, t)
                 let field_addr := gl(StructFieldRef (go.StructType fds) field_name l)
                 let field_val := gl(GoLoad field_type field_addr)
                 gl(StructFieldSet (go.StructType fds) field_name (struct_so_far, field_val))
@@ -1241,6 +1251,8 @@ theorem loadStructRaw_eq (fds : List go.field_decl) (l : val) (fds_unsealed : Li
                 let (field_name, field_type) := match fd with
                                                 | go.FieldDecl n t => (n, t)
                                                 | go.EmbeddedField n t => (n, t)
+                                                | go.TaggedField n t _ => (n, t)
+                                                | go.TaggedEmbeddedField n t _ => (n, t)
                 let field_addr := gl(StructFieldRef (go.StructType fds) field_name l)
                 let field_val := gl(GoLoad field_type field_addr)
                 gl(StructFieldSet (go.StructType fds) field_name (struct_so_far, field_val))) =
@@ -1391,6 +1403,8 @@ noncomputable def storeStructRaw (fds : List go.field_decl) (l v : val) (fds_uns
                   (let (field_name, field_type) := match fd with
                                                   | go.FieldDecl n t => (n, t)
                                                   | go.EmbeddedField n t => (n, t)
+                                                  | go.TaggedField n t _ => (n, t)
+                                                  | go.TaggedEmbeddedField n t _ => (n, t)
                    let field_addr := gl(StructFieldRef (go.StructType fds) field_name l)
                    let field_val := gl(StructFieldGet (go.StructType fds) field_name v)
                    gl(GoStore field_type (field_addr, field_val))))
@@ -1411,6 +1425,8 @@ theorem storeStructRaw_eq (fds : List go.field_decl) (l v : val)
                   (let (field_name, field_type) := match fd with
                                                   | go.FieldDecl n t => (n, t)
                                                   | go.EmbeddedField n t => (n, t)
+                                                  | go.TaggedField n t _ => (n, t)
+                                                  | go.TaggedEmbeddedField n t _ => (n, t)
                    let field_addr := gl(StructFieldRef (go.StructType fds) field_name l)
                    let field_val := gl(StructFieldGet (go.StructType fds) field_name v)
                    gl(GoStore field_type (field_addr, field_val))))) =
@@ -1600,8 +1616,10 @@ elab "solve_into_val_typed_struct_gen" : tactic => withMainContext do
     let mut elems := #[]
     for fd in fds do
       let fd ← whnfR fd
-      let n := fd.getAppArgs[fd.getAppNumArgs - 2]!
-      let ty := fd.getAppArgs[fd.getAppNumArgs - 1]!
+      -- a field's name and type are its constructor's first two arguments (a tagged
+      -- field's third is its tag)
+      let n := fd.getAppArgs[0]!
+      let ty := fd.getAppArgs[1]!
       elems := elems.push (← `(StructFieldDesc.mk (V := $(← Term.exprToSyntax V))
         (T := $(← Term.exprToSyntax T)) $(← Term.exprToSyntax n) $(← Term.exprToSyntax ty) _ _ _
         (fun _ => inferInstance) (fun _ _ => inferInstance)))

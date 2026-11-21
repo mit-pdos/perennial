@@ -34,9 +34,24 @@ inductive ChanDir where
   | sendonly
   | recvonly
 
+/-- A field of a struct type: its name, its type and, for a field with a non-empty tag
+(spec, "Struct types": "A field declaration may be followed by an optional string literal
+tag"), the tag. Tags are part of an unnamed struct type's identity (spec, "Type identity":
+"Two struct types are identical if they have the same sequence of fields, and if
+corresponding fields have the same names, and identical types, and identical tags"), so
+``struct{A int `json:"a"`}`` and `struct{A int}` are different `GoType`s, as they are in Go.
+A field without a tag is `FieldDecl`/`EmbeddedField`, one with a tag
+`TaggedField`/`TaggedEmbeddedField` (never with the empty tag: goose emits those only for a
+non-empty one). The semantics of field access, zero values, allocation, loads, stores and
+comparison look fields up by name and ignore the tag, as Go's do. The underlying type of a
+defined struct type is written without its tags: a defined type's identity is its name, and
+what the model does with its underlying type (field steps, conversions, which in Go ignore
+tags) does not depend on them. -/
 inductive field_decl where
   | FieldDecl : GoString → GoType → field_decl
   | EmbeddedField : GoString → GoType → field_decl
+  | TaggedField : GoString → GoType → GoString → field_decl
+  | TaggedEmbeddedField : GoString → GoType → GoString → field_decl
 
 inductive signature where
   | Signature : List GoType → Bool → List GoType → signature
@@ -62,7 +77,7 @@ instance : Inhabited GoType := ⟨.Named go!"any" []⟩
 export GoType (Named ArrayType StructType PointerType FunctionType InterfaceType SliceType MapType
   ChannelType UntypedType)
 export ChanDir (sendrecv sendonly recvonly)
-export field_decl (FieldDecl EmbeddedField)
+export field_decl (FieldDecl EmbeddedField TaggedField TaggedEmbeddedField)
 export signature (Signature)
 export InterfaceElem (MethodElem TypeElem)
 export type_term (TypeTerm TypeTermUnderlying)

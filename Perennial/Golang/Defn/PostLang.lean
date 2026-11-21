@@ -336,7 +336,8 @@ class CoreComparisonSemantics [GoSemanticsFunctions] : Prop where
 
   struct_is_comparable (fds : List go.field_decl)
     [TCForall (fun fd => ⟦CheckComparable (match fd with
-      | go.FieldDecl _ t | go.EmbeddedField _ t => t), #()⟧ ⤳[under] #()) fds] :
+      | go.FieldDecl _ t | go.EmbeddedField _ t
+      | go.TaggedField _ t _ | go.TaggedEmbeddedField _ t _ => t), #()⟧ ⤳[under] #()) fds] :
     ⟦CheckComparable (go.StructType fds), #()⟧ ⤳[under] #()
   go_eq_struct {fds fds_unsealed : List go.field_decl} [fds =→ fds_unsealed] (v1 v2 : val) :
     ⟦GoOp GoEquals (go.StructType fds), (v1, v2)⟧ ⤳[under]
@@ -345,6 +346,8 @@ class CoreComparisonSemantics [GoSemanticsFunctions] : Prop where
                match fd with
                | go.FieldDecl n t => (n, t)
                | go.EmbeddedField n t => (n, t)
+               | go.TaggedField n t _ => (n, t)
+               | go.TaggedEmbeddedField n t _ => (n, t)
              gl(if: cmp_so_far then
                 (StructFieldGet (go.StructType fds) field_name v1) =⟨field_type⟩
                 (StructFieldGet (go.StructType fds) field_name v2)
@@ -363,7 +366,9 @@ export CoreComparisonSemantics (go_op_go_equals_func_nil_l go_op_go_equals_func_
 def structFieldType (f : GoString) : List go.field_decl → go.GoType
   | [] => go.Named go!"field not found" []
   | go.FieldDecl f' t :: fds
-  | go.EmbeddedField f' t :: fds =>
+  | go.EmbeddedField f' t :: fds
+  | go.TaggedField f' t _ :: fds
+  | go.TaggedEmbeddedField f' t _ :: fds =>
       if f = f' then t
       else structFieldType f fds
 
@@ -500,7 +505,8 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
               List.foldl (fun v (fd, ke) =>
                        let (field_name, field_type) :=
                          match fd with
-                         | go.FieldDecl n t | go.EmbeddedField n t => (n, t)
+                         | go.FieldDecl n t | go.EmbeddedField n t
+                         | go.TaggedField n t _ | go.TaggedEmbeddedField n t _ => (n, t)
                        match ke with
                        | KeyedElement none (ElementExpression from_ e) =>
                            if go.isBlankField field_name then v else
@@ -534,6 +540,8 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
                 let (field_name, field_type) := match fd with
                                                 | go.FieldDecl n t => (n, t)
                                                 | go.EmbeddedField n t => (n, t)
+                                                | go.TaggedField n t _ => (n, t)
+                                                | go.TaggedEmbeddedField n t _ => (n, t)
                 let field_addr := gl(StructFieldRef (go.StructType fds) field_name "l")
                 gl(let: "l_field" :=
                     GoAlloc field_type (StructFieldGet (go.StructType fds) field_name v) in
@@ -554,6 +562,8 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
                 let (field_name, field_type) := match fd with
                                                 | go.FieldDecl n t => (n, t)
                                                 | go.EmbeddedField n t => (n, t)
+                                                | go.TaggedField n t _ => (n, t)
+                                                | go.TaggedEmbeddedField n t _ => (n, t)
                 let field_addr := gl(StructFieldRef (go.StructType fds) field_name l)
                 let field_val := gl(GoLoad field_type field_addr)
                 gl(StructFieldSet (go.StructType fds) field_name (struct_so_far, field_val))
@@ -569,6 +579,8 @@ class CoreSemantics [GoSemanticsFunctions] : Prop where
                   (let (field_name, field_type) := match fd with
                                                   | go.FieldDecl n t => (n, t)
                                                   | go.EmbeddedField n t => (n, t)
+                                                  | go.TaggedField n t _ => (n, t)
+                                                  | go.TaggedEmbeddedField n t _ => (n, t)
                    let field_addr := gl(StructFieldRef (go.StructType fds) field_name l)
                    let field_val := gl(StructFieldGet (go.StructType fds) field_name v)
                    gl(GoStore field_type (field_addr, field_val))))

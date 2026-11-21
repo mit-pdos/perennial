@@ -40,6 +40,7 @@ local macro "inj_ty " b:ident : tactic => `(tactic| inj_cases $b:ident [
     go.GoType.PointerType.injEq, go.GoType.FunctionType.injEq, go.GoType.InterfaceType.injEq,
     go.GoType.SliceType.injEq, go.GoType.MapType.injEq, go.GoType.ChannelType.injEq,
     go.GoType.UntypedType.injEq, go.field_decl.FieldDecl.injEq, go.field_decl.EmbeddedField.injEq,
+    go.field_decl.TaggedField.injEq, go.field_decl.TaggedEmbeddedField.injEq,
     go.signature.Signature.injEq, go.InterfaceElem.MethodElem.injEq,
     go.InterfaceElem.TypeElem.injEq, go.type_term.TypeTerm.injEq,
     go.type_term.TypeTermUnderlying.injEq])
@@ -65,6 +66,8 @@ def ChanDir.toTree : ChanDir → GenTree
 def field_decl.toTree : field_decl → GenTree
   | .FieldDecl n t => node 0 [of n, t.toTree]
   | .EmbeddedField n t => node 1 [of n, t.toTree]
+  | .TaggedField n t tag => node 2 [of n, t.toTree, of tag]
+  | .TaggedEmbeddedField n t tag => node 3 [of n, t.toTree, of tag]
 def signature.toTree : signature → GenTree
   | .Signature ps v rs => node 0 [typesToTree ps, of v, typesToTree rs]
 def InterfaceElem.toTree : InterfaceElem → GenTree
@@ -105,6 +108,9 @@ theorem ChanDir.toTree_inj : ∀ {a b : ChanDir}, a.toTree = b.toTree → a = b
 theorem field_decl.toTree_inj : ∀ {a b : field_decl}, a.toTree = b.toTree → a = b
   | .FieldDecl n t, b, h => by inj_ty b; exact ⟨h.1, GoType.toTree_inj h.2⟩
   | .EmbeddedField n t, b, h => by inj_ty b; exact ⟨h.1, GoType.toTree_inj h.2⟩
+  | .TaggedField n t tag, b, h => by inj_ty b; exact ⟨h.1, GoType.toTree_inj h.2.1, h.2.2⟩
+  | .TaggedEmbeddedField n t tag, b, h => by
+    inj_ty b; exact ⟨h.1, GoType.toTree_inj h.2.1, h.2.2⟩
 termination_by structural a _ _ => a
 theorem signature.toTree_inj : ∀ {a b : signature}, a.toTree = b.toTree → a = b
   | .Signature ps v rs, b, h => by

@@ -32,11 +32,15 @@ variable [GooseExts] [GoSemanticsFunctions]
 def fieldDeclName : go.field_decl → GoString
   | go.FieldDecl n _ => n
   | go.EmbeddedField n _ => n
+  | go.TaggedField n _ _ => n
+  | go.TaggedEmbeddedField n _ _ => n
 
 /-- The type of a field. -/
 def fieldDeclType : go.field_decl → go.GoType
   | go.FieldDecl _ t => t
   | go.EmbeddedField _ t => t
+  | go.TaggedField _ t _ => t
+  | go.TaggedEmbeddedField _ t _ => t
 
 mutual
 /-- `PlainLayout t size align`: `t` is plain, of `size` bytes and alignment `align`. -/
