@@ -1006,6 +1006,7 @@ class Float64Semantics [GoSemanticsFunctions] : Prop where
   sub_float64 (v1 v2 : w64) : ⟦GoOp GoSub go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Sub v1 v2)
   mul_float64 (v1 v2 : w64) : ⟦GoOp GoMul go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Mul v1 v2)
   div_float64 (v1 v2 : w64) : ⟦GoOp GoDiv go.float64, (#v1, #v2)⟧ ⤳[under] #(float64Div v1 v2)
+  neg_float64 (v : w64) : ⟦GoUnOp GoNeg go.float64, #v⟧ ⤳[under] #(float64Neg v)
   -- `T(x)` of a float to an integer type: some value of `T` (the Go spec leaves the
   -- result of an out-of-range conversion to the implementation)
   convert_float64_to_integer (t : go.GoType) [IsInteger t] (v : w64) :
@@ -1021,18 +1022,31 @@ class Float64Semantics [GoSemanticsFunctions] : Prop where
     ⟦Convert go.int32 go.float64, #v⟧ ⤳[under] #(int32ToFloat64 v)
   convert_uint32_to_float64 (v : w32) :
     ⟦Convert go.uint32 go.float64, #v⟧ ⤳[under] #(uint32ToFloat64 v)
+  -- IEEE 754 facts about the uninterpreted operations (not step rules). A float64 whose sign
+  -- bit is clear (`+0`, a positive number, `+Inf` or a NaN) is not below `+0` (`x < 0` is
+  -- `Leb && !Eq`, as `lt_float64` steps it); `float64(n)` of a non-negative integer rounds to
+  -- `+0` or a positive number, whose sign bit is clear.
+  lt_zero_false_of_sign_clear (x : w64) (h : 0 ≤ sint.Z x) :
+    (float64Leb x (W64 0) && !float64Eq x (W64 0)) = false
+  int64ToFloat64_sign_clear (n : w64) (h : 0 ≤ sint.Z n) : 0 ≤ sint.Z (int64ToFloat64 n)
+  uint64ToFloat64_sign_clear (n : w64) : 0 ≤ sint.Z (uint64ToFloat64 n)
+  int32ToFloat64_sign_clear (n : w32) (h : 0 ≤ sint.Z n) : 0 ≤ sint.Z (int32ToFloat64 n)
+  uint32ToFloat64_sign_clear (n : w32) : 0 ≤ sint.Z (uint32ToFloat64 n)
 
 attribute [instance] Float64Semantics.go_zero_val_float64 Float64Semantics.comparable_float64
   Float64Semantics.underlying_float64 Float64Semantics.eq_float64 Float64Semantics.le_float64
   Float64Semantics.lt_float64 Float64Semantics.ge_float64 Float64Semantics.gt_float64
   Float64Semantics.plus_float64 Float64Semantics.sub_float64 Float64Semantics.mul_float64
-  Float64Semantics.div_float64 Float64Semantics.convert_float64_to_integer Float64Semantics.convert_int_to_float64
+  Float64Semantics.div_float64 Float64Semantics.neg_float64
+  Float64Semantics.convert_float64_to_integer Float64Semantics.convert_int_to_float64
   Float64Semantics.convert_int64_to_float64 Float64Semantics.convert_uint_to_float64
   Float64Semantics.convert_uint64_to_float64 Float64Semantics.convert_int32_to_float64
   Float64Semantics.convert_uint32_to_float64
 export Float64Semantics (go_zero_val_float64 comparable_float64 underlying_float64 eq_float64
   le_float64 lt_float64 ge_float64 gt_float64 plus_float64 sub_float64 mul_float64 div_float64
-  convert_float64_to_integer
+  neg_float64
+  convert_float64_to_integer lt_zero_false_of_sign_clear int64ToFloat64_sign_clear
+  uint64ToFloat64_sign_clear int32ToFloat64_sign_clear uint32ToFloat64_sign_clear
   convert_int_to_float64 convert_int64_to_float64 convert_uint_to_float64
   convert_uint64_to_float64 convert_int32_to_float64 convert_uint32_to_float64)
 
@@ -1051,6 +1065,7 @@ class Float32Semantics [GoSemanticsFunctions] : Prop where
   sub_float32 (v1 v2 : w32) : ⟦GoOp GoSub go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Sub v1 v2)
   mul_float32 (v1 v2 : w32) : ⟦GoOp GoMul go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Mul v1 v2)
   div_float32 (v1 v2 : w32) : ⟦GoOp GoDiv go.float32, (#v1, #v2)⟧ ⤳[under] #(float32Div v1 v2)
+  neg_float32 (v : w32) : ⟦GoUnOp GoNeg go.float32, #v⟧ ⤳[under] #(float32Neg v)
   -- `T(x)` of a float to an integer type: some value of `T` (the Go spec leaves the
   -- result of an out-of-range conversion to the implementation)
   convert_float32_to_integer (t : go.GoType) [IsInteger t] (v : w32) :
@@ -1060,10 +1075,11 @@ attribute [instance] Float32Semantics.go_zero_val_float32 Float32Semantics.compa
   Float32Semantics.underlying_float32 Float32Semantics.eq_float32 Float32Semantics.le_float32
   Float32Semantics.lt_float32 Float32Semantics.ge_float32 Float32Semantics.gt_float32
   Float32Semantics.plus_float32 Float32Semantics.sub_float32 Float32Semantics.mul_float32
-  Float32Semantics.div_float32 Float32Semantics.convert_float32_to_integer
+  Float32Semantics.div_float32 Float32Semantics.neg_float32
+  Float32Semantics.convert_float32_to_integer
 export Float32Semantics (go_zero_val_float32 comparable_float32 underlying_float32 eq_float32
   le_float32 lt_float32 ge_float32 gt_float32 plus_float32 sub_float32 mul_float32 div_float32
-  convert_float32_to_integer)
+  neg_float32 convert_float32_to_integer)
 
 class PredeclaredSemantics [GoSemanticsFunctions] : Prop where
   alloc_predeclared (u : go.GoType) [H : IsPredeclared u] (v : val) :
