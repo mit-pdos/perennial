@@ -10,6 +10,7 @@ public import Perennial.Proof.bytes.Compare
 public import Perennial.Proof.bytes.Equal
 public import Perennial.Proof.bytes.initialize
 public import Perennial.Proof.errors.Link
+public import Perennial.Proof.io.Link
 
 @[expose] public section
 
@@ -34,7 +35,7 @@ theorem bytes.wp_Equal : bytes.Equal.spec (GF := GF) (hG := hG) :=
   bytes.Equal.wp_proof
 
 theorem bytes.wp_initialize' : bytes.initialize'.spec (GF := GF) (hG := hG) :=
-  bytes.initialize'.wp_proof errors.wp_initialize' errors.wp_New
+  bytes.initialize'.wp_proof errors.wp_initialize' io.wp_initialize' errors.wp_New
 
 end link
 

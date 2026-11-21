@@ -5,10 +5,16 @@ translate = [
   "errNegativeRead",
   "errUnreadByte",
   "asciiSpace",
+  "NewBuffer",
+  "Buffer.Read",
+  "Buffer.empty",
+  "Buffer.Reset",
+  "opInvalid",
+  "opRead",
 ]
 # `Compare` calls `internal/bytealg.Compare` (assembly): a model in TrustedCode/bytes.lean.
 trusted = ["Compare"]
-imports = ["!*", "errors"]
+imports = ["!*", "errors", "io"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

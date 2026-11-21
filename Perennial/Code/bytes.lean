@@ -2,6 +2,7 @@
 module
 
 public import Perennial.Code.errors
+public import Perennial.Code.io
 public import Perennial.Golang.Defn
 public import Perennial.TrustedCode.bytes
 
@@ -44,9 +45,13 @@ attribute [irreducible] Reader.ty
 
 opaque smallBufferSize [GooseExts] [GoGlobalContext] : val
 
-opaque opRead [GooseExts] [GoGlobalContext] : val
+/-- Any other read operation. -/
+@[reducible] noncomputable def opRead [GooseExts] [GoGlobalContext] : val :=
+  #(W8 (-1))
 
-opaque opInvalid [GooseExts] [GoGlobalContext] : val
+/-- Non-read operation. -/
+@[reducible] noncomputable def opInvalid [GooseExts] [GoGlobalContext] : val :=
+  #(W8 0)
 
 opaque opReadRune1 [GooseExts] [GoGlobalContext] : val
 
@@ -300,6 +305,154 @@ noncomputable def FieldsFuncSeq [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def NewReader [GooseExts] [GoGlobalContext] : GoString :=
   go!"bytes.NewReader"
 
+/-- empty reports whether the unread portion of the buffer is empty.
+
+    go: buffer.go:93:18 -/
+noncomputable def Buffer.empty.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "b"
+  (Lam BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Buffer.ty)))) (Var "b"))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoLe go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (StructFieldRef Buffer.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef Buffer.ty go!"off"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0"))))))
+
+/-- Reset resets the buffer to be empty,
+    but it retains the underlying storage for use by future writes.
+    Reset is the same as [Buffer.Truncate](0).
+
+    go: buffer.go:124:18 -/
+noncomputable def Buffer.Reset.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "b"
+  (Lam BAnon
+  (Seq (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Buffer.ty)))) (Var "b"))
+  (Let "$r0" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (StructFieldRef Buffer.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (Val #(W64 0))) (Val #(W64 0)))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 0))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val opInvalid)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore readOp.ty))) (Pair (App (Val (GoInstruction (StructFieldRef Buffer.ty go!"lastRead"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef Buffer.ty go!"off"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))) (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.byte)))) (Pair (App (Val (GoInstruction (StructFieldRef Buffer.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))) (Var "$r0"))))))))
+  (Val #()))))
+
+/-- Read reads the next len(p) bytes from the buffer or until the buffer
+    is drained. The return value n is the number of bytes read. If the
+    buffer has no data to return, err is [io.EOF] (unless len(p) is zero);
+    otherwise it is nil.
+
+    go: buffer.go:336:18 -/
+noncomputable def Buffer.Read.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "b"
+  (Lam "p"
+  (Let "n" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (Let "$res0" (Var "n")
+  (Let "err" (App (Val (GoInstruction (GoAlloc go.error))) (App (Val (GoInstruction (GoZeroVal go.error))) (Val #())))
+  (Let "$res1" (Var "err")
+  (Seq (App (Val exceptionDo)
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Buffer.ty)))) (Var "b"))
+  (Let "p" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "p"))
+  (Let "$r0" (Val opInvalid)
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (Let "$a1" (Let "$s" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (App (Val (GoInstruction (StructFieldRef Buffer.ty go!"buf"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))))
+  (App (Val (GoInstruction (Slice (go.GoType.SliceType go.byte)))) (Pair (Pair (Var "$s") (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef Buffer.ty go!"off"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))))) (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$s")))))
+  (App (App (App (Val (GoInstruction (FuncResolve go.copy [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0")) (Var "$a1"))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))
+  (Let "$r1" (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoGt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "n")) (Val #(W64 0)))))
+  (Let "$r0" (Val opRead)
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore readOp.ty))) (Pair (App (Val (GoInstruction (StructFieldRef Buffer.ty go!"lastRead"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))) (Var "$r0")))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (App (Val (GoInstruction (StructFieldRef Buffer.ty go!"off"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))) (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (App (Val (GoInstruction (StructFieldRef Buffer.ty go!"off"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b")))) (App (Val (GoInstruction (GoLoad go.int))) (Var "n"))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "n") (Var "$r0"))))))))
+  (If (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Buffer.ty) go!"empty"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))) (Val #()))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 0))
+  (Let "$r1" (App (Val (GoInstruction (GoLoad go.error))) (App (Val (GoInstruction (GlobalVarAddr _root_.Perennial.io.EOF))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (If (App (Val (GoInstruction (Convert go.untypedBool go.bool))) (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "p"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.SliceType go.byte)]))) (Val #())) (Var "$a0"))) (Val #(W64 0)))))
+  (Let "$r0" (Val #(W64 0))
+  (Let "$r1" (App (Val (GoInstruction (Convert go.untypedNil go.error))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.error))) (Pair (Var "$res1") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "$res0") (Var "$r0")))))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (App (Val (GoInstruction (MethodResolve (go.GoType.PointerType Buffer.ty) go!"Reset"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))) (Val #()))))
+  (App (Val doExecute)
+  (Val #()))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore readOp.ty))) (Pair (App (Val (GoInstruction (StructFieldRef Buffer.ty go!"lastRead"))) (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "b"))) (Var "$r0")))))))))
+  (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1"))))))))))
+
+/-- NewBuffer creates and initializes a new [Buffer] using buf as its
+    initial contents. The new [Buffer] takes ownership of buf, and the
+    caller should not use buf after this call. NewBuffer is intended to
+    prepare a [Buffer] to read existing data. It can also be used to set
+    the initial size of the internal buffer for writing. To do that,
+    buf should have the desired capacity but a length of zero.
+
+    In most cases, new([Buffer]) (or just declaring a [Buffer] variable) is
+    sufficient to initialize a [Buffer].
+
+    go: buffer.go:490:6 -/
+noncomputable def NewBuffer.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "buf"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType Buffer.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType Buffer.ty)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "buf" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.byte)))) (Var "buf"))
+  (Let "$r0" (App (Val (GoInstruction (GoAlloc Buffer.ty))) (Let "$v0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "buf"))
+  (App (Val (GoInstruction (CompositeLiteral Buffer.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"buf")) (ElementExpression (go.GoType.SliceType go.byte) (Var "$v0")))]))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType Buffer.ty)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType Buffer.ty)))) (Var "$res0")))))
+
 /-- Equal reports whether a and b
     are the same length and contain the same bytes.
     A nil argument is equivalent to an empty slice.
@@ -351,7 +504,7 @@ noncomputable def Clone.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.byte)))) (Var "$res0")))))
 
 noncomputable instance info' : PkgInfo pkg_id.bytes where
-  pkgImportedPkgs := [pkg_id.errors]
+  pkgImportedPkgs := [pkg_id.errors, pkg_id.io]
 
 opaque «_».init [GooseExts] [GoGlobalContext] : val
 
@@ -359,6 +512,7 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (App (Val (package.init pkg_id.bytes)) (Lam BAnon
   (App (Val exceptionDo)
+  (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (App (Val exceptionSeq) (Lam BAnon
@@ -390,6 +544,8 @@ noncomputable def initialize' [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.error))) (Pair (App (Val (GoInstruction (GlobalVarAddr ErrTooLarge))) (Val #())) (Var "$r0"))))))))
   (App (Val doExecute)
   (App (Val _root_.Perennial.errors.initialize') (Val #()))))))
+  (App (Val doExecute)
+  (App (Val _root_.Perennial.io.initialize') (Val #()))))))
   (App (Val doExecute)
   (App (Val (go.GlobalAlloc ErrTooLarge go.error)) (Val #()))))))
   (App (Val doExecute)
@@ -447,7 +603,10 @@ class Buffer.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   get_lastRead : ∀ (x : Buffer), go.IsGoStepPureDetTagged under (StructFieldGet Buffer.underlying go!"lastRead") #x (Val #(x.lastRead'))
   set_lastRead : ∀ (x : Buffer) (y : readOp), go.IsGoStepPureDetTagged under (StructFieldSet Buffer.underlying go!"lastRead") (PairV #x #y) (Val #(({ x with lastRead' := y } : Buffer)))
   method_set : go.MethodSetIs Buffer.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Buffer.ty) [(go!"Available", (some (go.signature.Signature [] false [go.int]))), (go!"AvailableBuffer", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Bytes", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Cap", (some (go.signature.Signature [] false [go.int]))), (go!"Grow", (some (go.signature.Signature [go.int] false []))), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Next", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType go.byte)]))), (go!"Peek", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadByte", (some (go.signature.Signature [] false [go.byte, go.error]))), (go!"ReadBytes", (some (go.signature.Signature [go.byte] false [(go.GoType.SliceType go.byte), go.error]))), (go!"ReadFrom", (some (go.signature.Signature [(go.GoType.Named go!"io.Reader" [])] false [go.int64, go.error]))), (go!"ReadRune", (some (go.signature.Signature [] false [go.rune, go.int, go.error]))), (go!"ReadString", (some (go.signature.Signature [go.byte] false [go.string, go.error]))), (go!"Reset", (some (go.signature.Signature [] false []))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Truncate", (some (go.signature.Signature [go.int] false []))), (go!"UnreadByte", (some (go.signature.Signature [] false [go.error]))), (go!"UnreadRune", (some (go.signature.Signature [] false [go.error]))), (go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"WriteByte", (some (go.signature.Signature [go.byte] false [go.error]))), (go!"WriteRune", (some (go.signature.Signature [go.rune] false [go.int, go.error]))), (go!"WriteString", (some (go.signature.Signature [go.string] false [go.int, go.error]))), (go!"WriteTo", (some (go.signature.Signature [(go.GoType.Named go!"io.Writer" [])] false [go.int64, go.error]))), (go!"bytes.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"bytes.grow", (some (go.signature.Signature [go.int] false [go.int]))), (go!"bytes.readSlice", (some (go.signature.Signature [go.byte] false [(go.GoType.SliceType go.byte), go.error]))), (go!"bytes.tryGrowByReslice", (some (go.signature.Signature [go.int] false [go.int, go.bool])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Buffer.ty) [(go!"Available", (some (go.signature.Signature [] false [go.int]))), (go!"AvailableBuffer", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Bytes", (some (go.signature.Signature [] false [(go.GoType.SliceType go.byte)]))), (go!"Cap", (some (go.signature.Signature [] false [go.int]))), (go!"Grow", (some (go.signature.Signature [go.int] false []))), (go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Next", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType go.byte)]))), (go!"Peek", (some (go.signature.Signature [go.int] false [(go.GoType.SliceType go.byte), go.error]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadByte", (some (go.signature.Signature [] false [go.byte, go.error]))), (go!"ReadBytes", (some (go.signature.Signature [go.byte] false [(go.GoType.SliceType go.byte), go.error]))), (go!"ReadFrom", (some (go.signature.Signature [_root_.Perennial.io.Reader.ty] false [go.int64, go.error]))), (go!"ReadRune", (some (go.signature.Signature [] false [go.rune, go.int, go.error]))), (go!"ReadString", (some (go.signature.Signature [go.byte] false [go.string, go.error]))), (go!"Reset", (some (go.signature.Signature [] false []))), (go!"String", (some (go.signature.Signature [] false [go.string]))), (go!"Truncate", (some (go.signature.Signature [go.int] false []))), (go!"UnreadByte", (some (go.signature.Signature [] false [go.error]))), (go!"UnreadRune", (some (go.signature.Signature [] false [go.error]))), (go!"Write", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"WriteByte", (some (go.signature.Signature [go.byte] false [go.error]))), (go!"WriteRune", (some (go.signature.Signature [go.rune] false [go.int, go.error]))), (go!"WriteString", (some (go.signature.Signature [go.string] false [go.int, go.error]))), (go!"WriteTo", (some (go.signature.Signature [_root_.Perennial.io.Writer.ty] false [go.int64, go.error]))), (go!"bytes.empty", (some (go.signature.Signature [] false [go.bool]))), (go!"bytes.grow", (some (go.signature.Signature [go.int] false [go.int]))), (go!"bytes.readSlice", (some (go.signature.Signature [go.byte] false [(go.GoType.SliceType go.byte), go.error]))), (go!"bytes.tryGrowByReslice", (some (go.signature.Signature [go.int] false [go.int, go.bool])))]
+  ptr_Read_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"Read" Buffer.Read.impl
+  ptr_Reset_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"Reset" Buffer.Reset.impl
+  ptr_empty_unfold : MethodUnfold (go.GoType.PointerType Buffer.ty) go!"empty" Buffer.empty.impl
 
 attribute [instance] Buffer.TypeAssumptions.type_repr
   Buffer.TypeAssumptions.underlying
@@ -459,6 +618,9 @@ attribute [instance] Buffer.TypeAssumptions.type_repr
   Buffer.TypeAssumptions.set_lastRead
   Buffer.TypeAssumptions.method_set
   Buffer.TypeAssumptions.ptr_method_set
+  Buffer.TypeAssumptions.ptr_Read_unfold
+  Buffer.TypeAssumptions.ptr_Reset_unfold
+  Buffer.TypeAssumptions.ptr_empty_unfold
 
 abbrev asciiSet [GooseExts] : Type := (GoArray w32 8)
 
@@ -508,7 +670,7 @@ class Reader.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoS
   get_prevRune : ∀ (x : Reader), go.IsGoStepPureDetTagged under (StructFieldGet Reader.underlying go!"prevRune") #x (Val #(x.prevRune'))
   set_prevRune : ∀ (x : Reader) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet Reader.underlying go!"prevRune") (PairV #x #y) (Val #(({ x with prevRune' := y } : Reader)))
   method_set : go.MethodSetIs Reader.ty []
-  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Reader.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"ReadByte", (some (go.signature.Signature [] false [go.byte, go.error]))), (go!"ReadRune", (some (go.signature.Signature [] false [go.rune, go.int, go.error]))), (go!"Reset", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false []))), (go!"Seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"Size", (some (go.signature.Signature [] false [go.int64]))), (go!"UnreadByte", (some (go.signature.Signature [] false [go.error]))), (go!"UnreadRune", (some (go.signature.Signature [] false [go.error]))), (go!"WriteTo", (some (go.signature.Signature [(go.GoType.Named go!"io.Writer" [])] false [go.int64, go.error])))]
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType Reader.ty) [(go!"Len", (some (go.signature.Signature [] false [go.int]))), (go!"Read", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false [go.int, go.error]))), (go!"ReadAt", (some (go.signature.Signature [(go.GoType.SliceType go.byte), go.int64] false [go.int, go.error]))), (go!"ReadByte", (some (go.signature.Signature [] false [go.byte, go.error]))), (go!"ReadRune", (some (go.signature.Signature [] false [go.rune, go.int, go.error]))), (go!"Reset", (some (go.signature.Signature [(go.GoType.SliceType go.byte)] false []))), (go!"Seek", (some (go.signature.Signature [go.int64, go.int] false [go.int64, go.error]))), (go!"Size", (some (go.signature.Signature [] false [go.int64]))), (go!"UnreadByte", (some (go.signature.Signature [] false [go.error]))), (go!"UnreadRune", (some (go.signature.Signature [] false [go.error]))), (go!"WriteTo", (some (go.signature.Signature [_root_.Perennial.io.Writer.ty] false [go.int64, go.error])))]
 
 attribute [instance] Reader.TypeAssumptions.type_repr
   Reader.TypeAssumptions.underlying
@@ -526,19 +688,23 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   readOp_instance : readOp.TypeAssumptions
   asciiSet_instance : asciiSet.TypeAssumptions
   Reader_instance : Reader.TypeAssumptions
+  NewBuffer_unfold : FuncUnfold NewBuffer [] NewBuffer.impl
   Equal_unfold : FuncUnfold Equal [] Equal.impl
   Compare_unfold : FuncUnfold Compare [] Compare.impl
   Clone_unfold : FuncUnfold Clone [] Clone.impl
   import_errors_Assumption : _root_.Perennial.errors.Assumptions
+  import_io_Assumption : _root_.Perennial.io.Assumptions
 
 attribute [instance] Assumptions.Buffer_instance
   Assumptions.readOp_instance
   Assumptions.asciiSet_instance
   Assumptions.Reader_instance
+  Assumptions.NewBuffer_unfold
   Assumptions.Equal_unfold
   Assumptions.Compare_unfold
   Assumptions.Clone_unfold
   Assumptions.import_errors_Assumption
+  Assumptions.import_io_Assumption
 
 end bytes
 
