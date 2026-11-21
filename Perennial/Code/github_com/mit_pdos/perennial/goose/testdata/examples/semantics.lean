@@ -458,6 +458,9 @@ noncomputable instance «equals_unfold_struct#568e4f73» [GooseExts] [GoGlobalCo
 @[reducible] noncomputable def DefinedStr2.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   DefinedStr.ty
 
+@[reducible] noncomputable def slashRune [GooseExts] [GoGlobalContext] : val :=
+  #(47 : Int)
+
 noncomputable def initOrder [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.initOrder"
 
@@ -628,6 +631,9 @@ noncomputable def testByteSliceToString [GooseExts] [GoGlobalContext] : GoString
 
 noncomputable def testByteToString [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testByteToString"
+
+noncomputable def testUntypedRuneConst [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testUntypedRuneConst"
 
 noncomputable def testCopySimple [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testCopySimple"
@@ -3181,6 +3187,24 @@ noncomputable def testByteToString.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "c") (Var "$r1")))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "a") (Var "$r0"))))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: conversions.go:42:6 -/
+noncomputable def testUntypedRuneConst.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Val #(W8 97))
+  (Let "c" (App (Val (GoInstruction (GoAlloc go.byte))) (App (Val (GoInstruction (GoZeroVal go.byte))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (If (If (If (Val #true) (App (Val (GoInstruction (GoOp GoEquals go.byte))) (Pair (App (Val (GoInstruction (GoOp GoSub go.byte))) (Pair (App (Val (GoInstruction (GoLoad go.byte))) (Var "c")) (Val #(W8 32)))) (Val #(W8 65)))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert go.untypedRune go.string))) (Val slashRune)) (Val #(go!"/")))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert go.untypedRune go.string))) (Val #(233 : Int))) (Val #(go!"é")))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert go.untypedRune go.string))) (Val #(55296 : Int))) (Val #(go!"�")))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals go.string))) (Pair (App (Val (GoInstruction (Convert go.untypedRune go.string))) (Val #(-1 : Int))) (Val #(go!"�")))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.byte))) (Pair (Var "c") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: copy.go:3:6 -/
@@ -9216,7 +9240,7 @@ noncomputable def testRangeStringASCII.impl [GooseExts] [GoGlobalContext] : val 
   (Let "keys" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
   (Let "sum" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "keys")) (Val #(W64 3)))) (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "sum")) (App (Val (GoInstruction (GoOp GoPlus go.untypedRune))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.untypedRune))) (Pair (Val #(97 : Int)) (Val #(98 : Int)))) (Val #(99 : Int)))))) (Val #false))
+  (Let "$r0" (If (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "keys")) (Val #(W64 3)))) (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "sum")) (Val #(W32 294)))) (Val #false))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -9417,7 +9441,7 @@ noncomputable def testRangeStringValuesOnly.impl [GooseExts] [GoGlobalContext] :
   (Seq (App (Val exceptionDo)
   (Let "sum" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "sum")) (App (Val (GoInstruction (GoOp GoPlus go.untypedRune))) (Pair (Val #(233 : Int)) (Val #(19990 : Int))))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "sum")) (Val #(W32 20223))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -9445,7 +9469,7 @@ noncomputable def testRangeStringBreakContinue.impl [GooseExts] [GoGlobalContext
   (Seq (App (Val exceptionDo)
   (Let "sum" (App (Val (GoInstruction (GoAlloc go.rune))) (App (Val (GoInstruction (GoZeroVal go.rune))) (Val #())))
   (App (App (Val exceptionSeq) (Lam BAnon
-  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "sum")) (App (Val (GoInstruction (GoOp GoPlus go.untypedRune))) (Pair (App (Val (GoInstruction (GoOp GoPlus go.untypedRune))) (Pair (Val #(97 : Int)) (Val #(99 : Int)))) (Val #(100 : Int))))))
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.rune))) (Pair (App (Val (GoInstruction (GoLoad go.rune))) (Var "sum")) (Val #(W32 296))))
   (App (App (Val exceptionSeq) (Lam BAnon
   (App (Val doReturn)
   (Val #()))))
@@ -14157,6 +14181,7 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   testStringToBytesEmptyNonNil_unfold : FuncUnfold testStringToBytesEmptyNonNil [] testStringToBytesEmptyNonNil.impl
   testByteSliceToString_unfold : FuncUnfold testByteSliceToString [] testByteSliceToString.impl
   testByteToString_unfold : FuncUnfold testByteToString [] testByteToString.impl
+  testUntypedRuneConst_unfold : FuncUnfold testUntypedRuneConst [] testUntypedRuneConst.impl
   testCopySimple_unfold : FuncUnfold testCopySimple [] testCopySimple.impl
   testCopyShorterDst_unfold : FuncUnfold testCopyShorterDst [] testCopyShorterDst.impl
   testCopyShorterSrc_unfold : FuncUnfold testCopyShorterSrc [] testCopyShorterSrc.impl
@@ -14535,6 +14560,7 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.testStringToBytesEmptyNonNil_unfold
   Assumptions.testByteSliceToString_unfold
   Assumptions.testByteToString_unfold
+  Assumptions.testUntypedRuneConst_unfold
   Assumptions.testCopySimple_unfold
   Assumptions.testCopyShorterDst_unfold
   Assumptions.testCopyShorterSrc_unfold

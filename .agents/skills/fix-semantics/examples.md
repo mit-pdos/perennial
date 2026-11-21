@@ -1242,3 +1242,26 @@ does not mean what it is trusted for).
 
 **Why.** Signed off by the user, 2026-11-21 (relayed by the coordinator etcd-grove-03), as the
 first of two items, before Case 40.
+
+## Case 40 — ACCEPTED: goose folds constant expressions of untyped runes; `string(v)` of an untyped integer constant (branch `untyped-rune`)
+
+**Symptom.** Incomplete. Goose folded binary expressions whose operands join to an untyped int or
+string constant (`constantLiteral`) but not to an untyped rune, so `sep == '/'` or `'a' + 'b'` became
+run-time `GoOp … go.untypedRune` operations with no rule; and `string(sep)` of an untyped rune
+constant (`Convert go.untypedRune go.string`, which goose emits for a conversion of a constant) had
+no rule. Go evaluates both at compile time.
+
+**Witness.** `const sep = '/'; sep == '/'` and `string(sep) == "/"` are stuck.
+
+**Taken.** `types.UntypedRune` joins `UntypedInt`/`UntypedString` in `binExpr`'s folding case (one
+token), and `UntypedIntSemantics` gains `convert_untyped_int_to_string (v : Int) : ⟦Convert
+go.untypedInt go.string, #v⟧ ⤳[under] #(go.runeString v)` (`go.untypedRune` is `go.untypedInt`),
+a sibling of the integer conversions, reusing Case 39's `go.runeString`. Semantics test
+`testUntypedRuneConst` (proved). Cost: 1 goose case label, 1 rule; three range-string tests' gold
+now holds the folded sums.
+
+**Not taken.** A hypothesis class of rune steps in the client (`UntypedRuneSemantics` of
+etcd-grove's WAL proofs: equality, and `string(c)` only for ASCII `c`), which put an unreviewed class
+into closed statements.
+
+**Why.** Signed off by the user, 2026-11-21 (relayed by the coordinator etcd-grove-03), after Case 39.
