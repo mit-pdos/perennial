@@ -212,3 +212,39 @@ func (ctx *Ctx) checkNotSkipped(n ast.Node, v *types.Var) {
 		"translate %s or do not translate %s",
 		name, reason, decl, filepath.Base(pos.Filename), pos.Line, v.Name(), decl)
 }
+
+// initAction classifies a package-variable initializer, one Go evaluation
+// that may assign several variables (`var a, b = f()`), as a unit: Skip if
+// all of its variables are skipped, Translate if all are translated, and
+// otherwise (each is trusted or axiomatized) Axiomatize, for an initializer
+// that runs the X.init of each of its variables. One initializer is never
+// split: an initializer only partly skipped is refused by checkSkipConfig,
+// and one whose variables are partly translated is refused here, as goose
+// cannot run the translated half of one evaluation (before, goose ran the
+// first non-translated variable's X.init only, dropping the others' X.init
+// and the translated variables' stores: perennial#657).
+func (ctx *Ctx) initAction(init *types.Initializer) declfilter.Action {
+	actions := make(map[declfilter.Action][]string)
+	for _, v := range init.Lhs {
+		a := ctx.filter.GetAction(v.Name())
+		if a == declfilter.Trust {
+			a = declfilter.Axiomatize
+		}
+		actions[a] = append(actions[a], v.Name())
+	}
+	if len(actions) == 1 {
+		for a := range actions {
+			return a
+		}
+	}
+	if _, ok := actions[declfilter.Skip]; ok {
+		// reported by checkSkipConfig
+		return declfilter.Skip
+	}
+	ctx.unsupported(init.Lhs[0],
+		"the initializer of %s is only partly translated (translated: %s; trusted or axiomatized: %s): "+
+			"translate all of its variables or none",
+		varNames(init.Lhs), strings.Join(actions[declfilter.Translate], ", "),
+		strings.Join(actions[declfilter.Axiomatize], ", "))
+	panic("unreachable")
+}

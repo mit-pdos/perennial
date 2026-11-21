@@ -3116,28 +3116,25 @@ func (ctx *Ctx) finalExtraDecls() {
 	}
 
 	// initialize all global vars
-InitLoop:
 	for i := range ctx.info.InitOrder {
 		init := ctx.info.InitOrder[len(ctx.info.InitOrder)-i-1]
 
-		// A skipped initializer has no step; the others keep Go's relative
-		// order. (checkSkipConfig has refused an initializer only partly
-		// skipped.)
-		if ctx.filter.GetAction(init.Lhs[0].Name()) == declfilter.Skip {
+		switch ctx.initAction(init) {
+		case declfilter.Skip:
+			// A skipped initializer has no step; the others keep Go's
+			// relative order.
+			continue
+		case declfilter.Axiomatize, declfilter.Trust:
+			// Not translated: the X.init of each of its variables, left to
+			// right (a blank variable's is the package's _.init).
+			for i := len(init.Lhs) - 1; i >= 0; i-- {
+				e = glang.NewDoSeq(
+					glang.NewCallExpr(ctx.termIdent(init.Lhs[i].Name()+"'init"), glang.Tt),
+					e)
+			}
 			continue
 		}
 		ctx.curDecl = "the initializer of " + varNames(init.Lhs)
-
-		// Check if any of the LHS variables should be treated as axiomatized
-		for i := 0; i < len(init.Lhs); i++ {
-			varName := init.Lhs[i].Name()
-			if ctx.filter.GetAction(varName) != declfilter.Translate {
-				e = glang.NewDoSeq(
-					glang.NewCallExpr(ctx.termIdent(varName+"'init"), glang.Tt),
-					e)
-				continue InitLoop
-			}
-		}
 		if n, msg, bad := modelcheck.PackageVar(ctx.info, init); bad {
 			ctx.unsupported(n, "%s", msg)
 		}
