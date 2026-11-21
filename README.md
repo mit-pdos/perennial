@@ -261,8 +261,9 @@ Guides: [`docs/PERENNIAL_PROOF_TUTORIAL.md`](docs/PERENNIAL_PROOF_TUTORIAL.md),
   `TryLock` and `Unlock` are trusted (`TrustedCode/internal/sync.lean`): Go's have data races
   (the race detector is disabled on the sync packages) and park on the runtime's semaphores.
   The model is the spin lock of `Golang/Defn/Lock.lean` on a `bool` (`false` is unlocked),
-  more nondeterministic than Go's (no fairness or starvation mode); `Unlock` of an unlocked
-  mutex is stuck, where Go ends the program (`fatal`). `sync.Mutex{}` is a literal of the
+  more nondeterministic than Go's (no fairness or starvation mode, and `TryLock` may fail on
+  an unlocked mutex, as Go's does in starvation mode or when its CAS loses to a waiter);
+  `Unlock` of an unlocked mutex is stuck, where Go ends the program (`fatal`). `sync.Mutex{}` is a literal of the
   translated struct, so it steps by the ordinary struct rules to a zero, unlocked mutex.
 * **Method sets.** Whether a type implements an interface (`go.typeSetContains`, used by
   type assertions and conversions) is decided by `methodSet`, an uninterpreted function of
