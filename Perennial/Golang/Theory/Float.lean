@@ -21,19 +21,30 @@ variable (f : Format)
 theorem msb_pack (s : Bool) (E T : Nat) : (f.pack s E T).msb = s := by
   simp [pack, BitVec.msb_append]
 
-theorem msb_round (s : Bool) (m : Rat) : (f.round s m).msb = s := by
+/-- A rounding has the sign it is given: it is `±∞` or a finite number of that sign. -/
+theorem round_cases (s : Bool) (m : Rat) :
+    f.round s m = .inf s ∨ ∃ r, f.round s m = .finite s r := by
   unfold round
   dsimp only
-  repeat' split
-  all_goals exact f.msb_pack ..
+  split
+  · exact .inr ⟨_, rfl⟩
+  · exact .inl rfl
 
-theorem msb_roundRat_of_nonneg (q : Rat) (h : 0 ≤ q) : (f.roundRat q).msb = false := by
-  have : ¬ q < 0 := fun h' => (Rat.not_le.mpr h') h
-  simp [roundRat, this, msb_round]
+/-- The bit pattern of a rounding has the rounding's sign. -/
+theorem msb_encode_round (s : Bool) (m : Rat) (b : f.Bits)
+    (h : f.encode (f.round s m) = some b) : b.msb = s := by
+  rcases f.round_cases s m with hr | ⟨r, hr⟩ <;> rw [hr] at h <;> simp only [encode] at h
+  · cases h; exact f.msb_pack ..
+  · split at h <;> (cases h; exact f.msb_pack ..)
 
-theorem msb_ofInt_of_nonneg (n : Int) (h : 0 ≤ n) : (f.ofInt n).msb = false := by
-  rw [ofInt_unseal, ofIntDef]
-  exact f.msb_roundRat_of_nonneg _ (by exact_mod_cast h)
+theorem msb_encode_ofInt_of_nonneg (n : Int) (h : 0 ≤ n) :
+    ((f.encode (f.ofInt n)).getD 0).msb = false := by
+  have : ¬ (n : Rat) < 0 := fun h' => (Rat.not_le.mpr h') (by exact_mod_cast h)
+  rw [ofInt_unseal, ofIntDef, roundRat]
+  simp only [this, decide_false, if_false]
+  cases hb : f.encode (f.round false n) with
+  | none => simp
+  | some b => exact f.msb_encode_round false _ b hb
 
 theorem pow2_nonneg (k : Int) : 0 ≤ pow2 k := by
   unfold pow2
@@ -73,13 +84,13 @@ non-negative integer has a clear sign bit (it is `+0` or positive), and a `float
 clear sign bit (`+0`, a positive number, `+∞` or a NaN) is not below `+0`. -/
 
 theorem int64ToFloat64_sign_clear (n : w64) (h : 0 ≤ sint.Z n) : 0 ≤ sint.Z (int64ToFloat64 n) :=
-  BitVec.toInt_nonneg_of_msb_false (binary64.msb_ofInt_of_nonneg _ h)
+  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofInt_of_nonneg _ h)
 theorem uint64ToFloat64_sign_clear (n : w64) : 0 ≤ sint.Z (uint64ToFloat64 n) :=
-  BitVec.toInt_nonneg_of_msb_false (binary64.msb_ofInt_of_nonneg _ (by omega))
+  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofInt_of_nonneg _ (by omega))
 theorem int32ToFloat64_sign_clear (n : w32) (h : 0 ≤ sint.Z n) : 0 ≤ sint.Z (int32ToFloat64 n) :=
-  BitVec.toInt_nonneg_of_msb_false (binary64.msb_ofInt_of_nonneg _ h)
+  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofInt_of_nonneg _ h)
 theorem uint32ToFloat64_sign_clear (n : w32) : 0 ≤ sint.Z (uint32ToFloat64 n) :=
-  BitVec.toInt_nonneg_of_msb_false (binary64.msb_ofInt_of_nonneg _ (by omega))
+  BitVec.toInt_nonneg_of_msb_false (binary64.msb_encode_ofInt_of_nonneg _ (by omega))
 
 private theorem decode_zero64 : binary64.decode (W64 0) = .finite false 0 := by
   simp [Format.decode, binary64]
@@ -111,10 +122,17 @@ theorem float32Eq_self (x : w32) : float32Eq x x = !float32IsNaN x := by
     Format.isNaNDef]
   cases binary32.decode x <;> simp
 
-theorem float64Results_self (r : w64) : go.float64Results r r := by
-  unfold go.float64Results; split <;> simp_all
-theorem float32Results_self (r : w32) : go.float32Results r r := by
-  unfold go.float32Results; split <;> simp_all
+/-- Every datum has an encoding (NaN has many). -/
+theorem float64Encodes_exists (d : Datum) : ∃ b, float64Encodes d b := by
+  unfold float64Encodes Format.encodes
+  cases h : binary64.encode d with
+  | some b => exact ⟨b, rfl⟩
+  | none => exact ⟨0x7FF8000000000000, by simp only; decide⟩
+theorem float32Encodes_exists (d : Datum) : ∃ b, float32Encodes d b := by
+  unfold float32Encodes Format.encodes
+  cases h : binary32.encode d with
+  | some b => exact ⟨b, rfl⟩
+  | none => exact ⟨0x7FC00000, by simp only; decide⟩
 
 open Perennial.go in
 /-- `x < 0` of a `float64` `x` with a clear sign bit is `false`: the step of `x < 0`
@@ -134,16 +152,17 @@ variable [GoSemanticsFunctions] [go.PreSemantics]
 variable {s : Stuckness} {E : CoPset}
 
 /-- A Go instruction whose pure step is a relation: `op` applied to `arg` steps to any
-`#(inj f)` with `P f` (and some `f0` satisfies `P`). The float arithmetic rules have this
+`#(inj f)` with `P f` (and some `f` satisfies `P`). The float arithmetic rules have this
 form (`go.plus_float64`, ...). -/
 theorem wp_go_step_rel {V : Type} (inj : V → val) (op : GoInstruction) (arg : val)
     (P : V → Prop)
     (hop : ∀ e gs gs', IsGoStep op arg e gs gs' ↔ is_go_step_pure op arg e ∧ gs = gs')
     (hstep : is_go_step_pure op arg = fun e => ∃ f, e = Val (inj f) ∧ P f)
-    (f0 : V) (hf0 : P f0) (Harg : arg.isPanic = false := by simp) :
+    (hP : ∃ f, P f) (Harg : arg.isPanic = false := by simp) :
     {{ (True : IProp GF) }} (App (Val (GoInstruction op)) (Val arg)) @ s; E
     {{ (f : V), RET inj f; ⌜P f⌝ }} := by
   iintro %Φ _ HΦ
+  obtain ⟨f0, hf0⟩ := hP
   iapply wp_GoInstruction' (s := s) (E := E) op arg Φ
     (fun gs => ⟨Val (inj f0), gs, (hop _ _ _).mpr ⟨by rw [hstep]; exact ⟨f0, rfl, hf0⟩, rfl⟩⟩)
     Harg
@@ -159,58 +178,68 @@ theorem wp_go_step_rel {V : Type} (inj : V → val) (op : GoInstruction) (arg : 
   ipureintro; exact Hf
 
 /-! The arithmetic operations of `float64` and `float32` (and of the named types whose
-underlying type they are): the result `f` is IEEE 754's, or any NaN if that is a NaN
-(`go.float64Results`). Use as `wp_apply wp_float64_add as %f Hf`. -/
+underlying type they are): the result `f` encodes IEEE 754's result datum (`float64Encodes`:
+its bit pattern, or any NaN if it is NaN). Use as `wp_apply wp_float64_add as %f Hf`. -/
 
 theorem wp_float64_add {t : go.GoType} [t ↓u go.float64] (v1 v2 : w64) :
     {{ (True : IProp GF) }} (App (Val (GoInstruction (GoOp GoPlus t))) (Val glv((#v1, #v2)))) @ s; E
-    {{ (f : w64), RET #f; ⌜go.float64Results (float64Add v1 v2) f⌝ }} :=
-  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.plus_float64 v1 v2) _ (float64Results_self _)
+    {{ (f : w64), RET #f; ⌜float64Encodes (float64Add v1 v2) f⌝ }} :=
+  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.plus_float64 v1 v2)
+    (float64Encodes_exists _)
 
 theorem wp_float64_sub {t : go.GoType} [t ↓u go.float64] (v1 v2 : w64) :
     {{ (True : IProp GF) }} (App (Val (GoInstruction (GoOp GoSub t))) (Val glv((#v1, #v2)))) @ s; E
-    {{ (f : w64), RET #f; ⌜go.float64Results (float64Sub v1 v2) f⌝ }} :=
-  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.sub_float64 v1 v2) _ (float64Results_self _)
+    {{ (f : w64), RET #f; ⌜float64Encodes (float64Sub v1 v2) f⌝ }} :=
+  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.sub_float64 v1 v2)
+    (float64Encodes_exists _)
 
 theorem wp_float64_mul {t : go.GoType} [t ↓u go.float64] (v1 v2 : w64) :
     {{ (True : IProp GF) }} (App (Val (GoInstruction (GoOp GoMul t))) (Val glv((#v1, #v2)))) @ s; E
-    {{ (f : w64), RET #f; ⌜go.float64Results (float64Mul v1 v2) f⌝ }} :=
-  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.mul_float64 v1 v2) _ (float64Results_self _)
+    {{ (f : w64), RET #f; ⌜float64Encodes (float64Mul v1 v2) f⌝ }} :=
+  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.mul_float64 v1 v2)
+    (float64Encodes_exists _)
 
 theorem wp_float64_div {t : go.GoType} [t ↓u go.float64] (v1 v2 : w64) :
     {{ (True : IProp GF) }} (App (Val (GoInstruction (GoOp GoDiv t))) (Val glv((#v1, #v2)))) @ s; E
-    {{ (f : w64), RET #f; ⌜go.float64Results (float64Div v1 v2) f⌝ }} :=
-  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.div_float64 v1 v2) _ (float64Results_self _)
+    {{ (f : w64), RET #f; ⌜float64Encodes (float64Div v1 v2) f⌝ }} :=
+  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.div_float64 v1 v2)
+    (float64Encodes_exists _)
 
 theorem wp_float64_neg {t : go.GoType} [t ↓u go.float64] (v : w64) :
     {{ (True : IProp GF) }} (App (Val (GoInstruction (GoUnOp GoNeg t))) (Val #v)) @ s; E
-    {{ (f : w64), RET #f; ⌜go.float64Results (float64Neg v) f⌝ }} :=
-  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.neg_float64 v) _ (float64Results_self _)
+    {{ (f : w64), RET #f; ⌜float64Encodes (float64Neg v) f⌝ }} :=
+  wp_go_step_rel (fun f : w64 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.neg_float64 v)
+    (float64Encodes_exists _)
 
 theorem wp_float32_add {t : go.GoType} [t ↓u go.float32] (v1 v2 : w32) :
     {{ (True : IProp GF) }} (App (Val (GoInstruction (GoOp GoPlus t))) (Val glv((#v1, #v2)))) @ s; E
-    {{ (f : w32), RET #f; ⌜go.float32Results (float32Add v1 v2) f⌝ }} :=
-  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.plus_float32 v1 v2) _ (float32Results_self _)
+    {{ (f : w32), RET #f; ⌜float32Encodes (float32Add v1 v2) f⌝ }} :=
+  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.plus_float32 v1 v2)
+    (float32Encodes_exists _)
 
 theorem wp_float32_sub {t : go.GoType} [t ↓u go.float32] (v1 v2 : w32) :
     {{ (True : IProp GF) }} (App (Val (GoInstruction (GoOp GoSub t))) (Val glv((#v1, #v2)))) @ s; E
-    {{ (f : w32), RET #f; ⌜go.float32Results (float32Sub v1 v2) f⌝ }} :=
-  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.sub_float32 v1 v2) _ (float32Results_self _)
+    {{ (f : w32), RET #f; ⌜float32Encodes (float32Sub v1 v2) f⌝ }} :=
+  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.sub_float32 v1 v2)
+    (float32Encodes_exists _)
 
 theorem wp_float32_mul {t : go.GoType} [t ↓u go.float32] (v1 v2 : w32) :
     {{ (True : IProp GF) }} (App (Val (GoInstruction (GoOp GoMul t))) (Val glv((#v1, #v2)))) @ s; E
-    {{ (f : w32), RET #f; ⌜go.float32Results (float32Mul v1 v2) f⌝ }} :=
-  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.mul_float32 v1 v2) _ (float32Results_self _)
+    {{ (f : w32), RET #f; ⌜float32Encodes (float32Mul v1 v2) f⌝ }} :=
+  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.mul_float32 v1 v2)
+    (float32Encodes_exists _)
 
 theorem wp_float32_div {t : go.GoType} [t ↓u go.float32] (v1 v2 : w32) :
     {{ (True : IProp GF) }} (App (Val (GoInstruction (GoOp GoDiv t))) (Val glv((#v1, #v2)))) @ s; E
-    {{ (f : w32), RET #f; ⌜go.float32Results (float32Div v1 v2) f⌝ }} :=
-  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.div_float32 v1 v2) _ (float32Results_self _)
+    {{ (f : w32), RET #f; ⌜float32Encodes (float32Div v1 v2) f⌝ }} :=
+  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.div_float32 v1 v2)
+    (float32Encodes_exists _)
 
 theorem wp_float32_neg {t : go.GoType} [t ↓u go.float32] (v : w32) :
     {{ (True : IProp GF) }} (App (Val (GoInstruction (GoUnOp GoNeg t))) (Val #v)) @ s; E
-    {{ (f : w32), RET #f; ⌜go.float32Results (float32Neg v) f⌝ }} :=
-  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.neg_float32 v) _ (float32Results_self _)
+    {{ (f : w32), RET #f; ⌜float32Encodes (float32Neg v) f⌝ }} :=
+  wp_go_step_rel (fun f : w32 => #f) _ _ _ (fun _ _ _ => Iff.rfl) (go.neg_float32 v)
+    (float32Encodes_exists _)
 
 end wp
 

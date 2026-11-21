@@ -981,15 +981,16 @@ result, rounded to nearest with ties to even. Two departures from a deterministi
 model:
 
 * **NaN bits are arbitrary.** Where IEEE 754's result is a NaN, the operation steps to an
-  arbitrary NaN (`float64Results`, `float32Results`): the sign and payload of a NaN result are
+  arbitrary NaN (`float64Encodes`, `float32Encodes`): the sign and payload of a NaN result are
   architecture-dependent (amd64's default NaN has its sign bit set, arm64's does not), so the
   model only says that the result is a NaN. This includes `-x` of a NaN: IEEE 754 makes
   negation a sign-bit flip also of a NaN, and gc does that on amd64
   (`docs/design/float/float_test.go`), but the Go spec does not promise it and not every
   target's negation is non-arithmetic (pre-R6 MIPS `NEG.fmt`), so `-NaN` is treated as any
   other NaN result. So the arithmetic rules (`plus_float64`, ..., `neg_float32`) are
-  relations on `is_go_step_pure`, like `go_prealloc_step`: the operation steps to any `#f`
-  with `float64Results r f`, `r` being IEEE 754's result. They are stated at every type `t`
+  relations on `is_go_step_pure`, like `go_prealloc_step`: the operation computes IEEE 754's
+  result as a datum `d` (`ieee754.Datum`) and steps to any `#f` that encodes it
+  (`float64Encodes d f`: `d`'s bit pattern, or any NaN if `d` is NaN). They are stated at every type `t`
   whose underlying type is the float type, since `go_op_underlying` lifts only deterministic
   rules to named types. Comparisons and integer-to-float conversions never produce a NaN, and
   are deterministic (`⤳[under]` rules).
@@ -1002,18 +1003,11 @@ model:
 Not modelled (stuck): conversions between `float64` and `float32` of variables, integer to
 `float32` conversions, and the integer types narrower than 32 bits to floats. -/
 
-/-- `float64Results r f`: `f` is a possible result of a `float64` operation whose IEEE 754 result
-is `r`: `r` itself, or any NaN if `r` is a NaN. -/
-def float64Results (r f : w64) : Prop := if float64IsNaN r then float64IsNaN f else f = r
-
-/-- `float32Results r f`: `r` itself, or any NaN if `r` is a NaN (as `float64Results`). -/
-def float32Results (r f : w32) : Prop := if float32IsNaN r then float32IsNaN f else f = r
-
 class UntypedFloatSemantics [GoSemanticsFunctions] : Prop where
   underlying_untyped_float : go.untypedFloat ↓u go.untypedFloat
   convert_untyped_float64 (v : w64) : ⟦Convert go.untypedFloat go.float64, #v⟧ ⤳[under] #v
   -- `float32(c)` of an untyped float constant `c`: the binary32 rounding of `v`, the
-  -- binary64 rounding of `c`. Deterministic: a constant is never a NaN. (Go rounds `c`
+  -- binary64 rounding of `c`. Deterministic: a constant is never a NaN (`float64ToFloat32`). (Go rounds `c`
   -- directly; the two roundings can differ when `v` is halfway between two float32s.)
   convert_untyped_float32 (v : w64) : ⟦Convert go.untypedFloat go.float32, #v⟧
     ⤳[under] #(float64ToFloat32 v)
@@ -1043,19 +1037,19 @@ class Float64Semantics [GoSemanticsFunctions] : Prop where
     ⤳[under] #(float64Leb v2 v1 && !float64Eq v1 v2)
   plus_float64 {t : go.GoType} [t ↓u go.float64] (v1 v2 : w64) :
     is_go_step_pure (GoOp GoPlus t) glv((#v1, #v2)) =
-      fun (e : Expr) => ∃ f, e = #f ∧ float64Results (float64Add v1 v2) f
+      fun (e : Expr) => ∃ f, e = #f ∧ float64Encodes (float64Add v1 v2) f
   sub_float64 {t : go.GoType} [t ↓u go.float64] (v1 v2 : w64) :
     is_go_step_pure (GoOp GoSub t) glv((#v1, #v2)) =
-      fun (e : Expr) => ∃ f, e = #f ∧ float64Results (float64Sub v1 v2) f
+      fun (e : Expr) => ∃ f, e = #f ∧ float64Encodes (float64Sub v1 v2) f
   mul_float64 {t : go.GoType} [t ↓u go.float64] (v1 v2 : w64) :
     is_go_step_pure (GoOp GoMul t) glv((#v1, #v2)) =
-      fun (e : Expr) => ∃ f, e = #f ∧ float64Results (float64Mul v1 v2) f
+      fun (e : Expr) => ∃ f, e = #f ∧ float64Encodes (float64Mul v1 v2) f
   div_float64 {t : go.GoType} [t ↓u go.float64] (v1 v2 : w64) :
     is_go_step_pure (GoOp GoDiv t) glv((#v1, #v2)) =
-      fun (e : Expr) => ∃ f, e = #f ∧ float64Results (float64Div v1 v2) f
+      fun (e : Expr) => ∃ f, e = #f ∧ float64Encodes (float64Div v1 v2) f
   neg_float64 {t : go.GoType} [t ↓u go.float64] (v : w64) :
     is_go_step_pure (GoUnOp GoNeg t) #v =
-      fun (e : Expr) => ∃ f, e = #f ∧ float64Results (float64Neg v) f
+      fun (e : Expr) => ∃ f, e = #f ∧ float64Encodes (float64Neg v) f
   -- `T(x)` of a float to an integer type: some value of `T` (the Go spec leaves the
   -- result of an out-of-range conversion to the implementation)
   convert_float64_to_integer (t : go.GoType) [IsInteger t] (v : w64) :
@@ -1099,19 +1093,19 @@ class Float32Semantics [GoSemanticsFunctions] : Prop where
     ⤳[under] #(float32Leb v2 v1 && !float32Eq v1 v2)
   plus_float32 {t : go.GoType} [t ↓u go.float32] (v1 v2 : w32) :
     is_go_step_pure (GoOp GoPlus t) glv((#v1, #v2)) =
-      fun (e : Expr) => ∃ f, e = #f ∧ float32Results (float32Add v1 v2) f
+      fun (e : Expr) => ∃ f, e = #f ∧ float32Encodes (float32Add v1 v2) f
   sub_float32 {t : go.GoType} [t ↓u go.float32] (v1 v2 : w32) :
     is_go_step_pure (GoOp GoSub t) glv((#v1, #v2)) =
-      fun (e : Expr) => ∃ f, e = #f ∧ float32Results (float32Sub v1 v2) f
+      fun (e : Expr) => ∃ f, e = #f ∧ float32Encodes (float32Sub v1 v2) f
   mul_float32 {t : go.GoType} [t ↓u go.float32] (v1 v2 : w32) :
     is_go_step_pure (GoOp GoMul t) glv((#v1, #v2)) =
-      fun (e : Expr) => ∃ f, e = #f ∧ float32Results (float32Mul v1 v2) f
+      fun (e : Expr) => ∃ f, e = #f ∧ float32Encodes (float32Mul v1 v2) f
   div_float32 {t : go.GoType} [t ↓u go.float32] (v1 v2 : w32) :
     is_go_step_pure (GoOp GoDiv t) glv((#v1, #v2)) =
-      fun (e : Expr) => ∃ f, e = #f ∧ float32Results (float32Div v1 v2) f
+      fun (e : Expr) => ∃ f, e = #f ∧ float32Encodes (float32Div v1 v2) f
   neg_float32 {t : go.GoType} [t ↓u go.float32] (v : w32) :
     is_go_step_pure (GoUnOp GoNeg t) #v =
-      fun (e : Expr) => ∃ f, e = #f ∧ float32Results (float32Neg v) f
+      fun (e : Expr) => ∃ f, e = #f ∧ float32Encodes (float32Neg v) f
   -- `T(x)` of a float to an integer type: some value of `T` (the Go spec leaves the
   -- result of an out-of-range conversion to the implementation)
   convert_float32_to_integer (t : go.GoType) [IsInteger t] (v : w32) :

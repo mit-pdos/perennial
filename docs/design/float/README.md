@@ -10,8 +10,9 @@
   halfway points of float32), special integers, and `-n` random cases per group (uniform bits;
   sparse significands, which make exact ties; nearby exponents, for cancellation; tiny values,
   for subnormal results; integers of 53–64 bits for conversions). `check.lean` evaluates the
-  Lean definitions on them; two NaN results agree whatever their bits, since the semantics
-  allows any NaN.
+  Lean definitions on them and checks that Go's bits encode the datum Lean computes
+  (`Format.encodes`: its unique bit pattern, or any NaN if the datum is NaN, since the
+  semantics allows any NaN), so Lean must predict a NaN exactly when Go produces one.
 
 Operations: float64 and float32 `+ - * / <= ==` and unary `-`, float64 `<` (as the semantics
 encodes it, `Leb && !Eq`), `float32(x)` of a float64, and `float64(n)` of int64, uint64, int32

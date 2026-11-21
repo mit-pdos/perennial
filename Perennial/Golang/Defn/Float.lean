@@ -7,28 +7,29 @@ IEEE 754 binary floating-point arithmetic, the semantics of Go's `float64` and
 The definitions follow the standard's own terms (IEEE 754-2019): an operation
 is computed "as if it first produced an intermediate result correct to infinite
 precision and with unbounded range, and then rounded that intermediate result"
-(§4.3). So each operation decodes its operands to an exact rational (or an
-infinity, or NaN), applies the special cases of §6–§7 (NaN, infinities, signed
+(§4.3). So an operation works on *data* (`Datum`: NaN, `±∞`, or a finite number
+as a sign and an exact rational magnitude), not on bits: it decodes its operands
+(`Format.decode`), applies the special cases of §6–§7 (NaN, infinities, signed
 zeros, invalid operations, division by zero), and otherwise rounds the exact
-rational result with `Format.round`: round to nearest, ties to even (§4.3.1),
-on the subnormal grid below `2 ^ emin`, overflowing to an infinity (§7.4).
-`round` is the only algorithmic part.
+rational result (`Format.round`: round to nearest, ties to even (§4.3.1), on the
+subnormal grid below `2 ^ emin`, overflowing to an infinity (§7.4)). Its result
+is a datum. Encoding a datum as bits is a separate step (`Format.encode`,
+`Format.encodes`).
 
 The definitions are written to be read and are computable, so that they can be
 tested against Go (`docs/design/float/`), not to be fast. See
 `docs/design/float-semantics.md` for the design.
 
-**NaN results are not specified here.** Where IEEE 754 produces a NaN, these
-functions return the fixed quiet NaN `Format.nan`, but its bits mean nothing: the
-sign and payload of a NaN result are architecture-dependent (amd64's default NaN
-has its sign bit set, arm64's does not), and the step rules let an operation whose
-result is a NaN step to any NaN (`go.float64Results`, `go.float32Results`). Only
-"is a NaN" is meaningful.
+**A NaN has no particular encoding.** Every datum but NaN has exactly one bit
+pattern (`encode`); NaN has many, and `encodes .nan b` holds of every NaN `b`.
+The sign and payload of a NaN result are architecture-dependent (amd64's default
+NaN has its sign bit set, arm64's does not), so the step rules let an operation
+whose result is NaN step to any NaN (`float64Encodes`, `float32Encodes`).
 
 **Fused multiply-add is not modelled.** The Go spec allows an implementation to
-fuse operations, computing `x*y + z` with a single rounding (arm64, ppc64le,
-s390x and riscv64 do), which can give a different result from the two
-roundings here. Proofs about such code are about the unfused evaluation only.
+fuse operations, computing `x*y + z` with a single rounding (gc does on arm64),
+which can give a different result from the two roundings here. Proofs about such
+code are about the unfused evaluation only.
 
 The operations are sealed (`@[irreducible]`, `foo_unseal`) so that automation
 does not unfold rounding in unrelated proofs.
@@ -58,13 +59,13 @@ def roundHalfEven (x : Rat) : Nat :=
   let r := x - n
   (if r < 1/2 ∨ (r = 1/2 ∧ n % 2 = 0) then n else n + 1).toNat
 
-/-- A floating-point datum (§3.2, level 2), the value of a bit pattern: NaN, an infinity, or a
-finite number `±m` given by its sign (`neg`) and its exact magnitude `m ≥ 0` (a zero is
-`finite neg 0`: `+0` and `-0`). -/
+/-- A floating-point datum (§3.2, level 2): NaN, an infinity, or a finite number `±m` given by
+its sign (`neg`) and its exact magnitude `m ≥ 0` (a zero is `finite neg 0`: `+0` and `-0`). -/
 inductive Datum where
   | nan
   | inf (neg : Bool)
   | finite (neg : Bool) (m : Rat)
+deriving DecidableEq
 
 namespace Datum
 /-- Negation: flips the sign (§5.5.1). -/
@@ -102,12 +103,6 @@ abbrev Bits := BitVec (1 + f.w + f.t)
 def pack (s : Bool) (E T : Nat) : f.Bits :=
   BitVec.ofBool s ++ BitVec.ofNat f.w E ++ BitVec.ofNat f.t T
 
-def zero (s : Bool) : f.Bits := f.pack s 0 0
-def inf (s : Bool) : f.Bits := f.pack s (2 ^ f.w - 1) 0
-/-- A (quiet) NaN, returned where IEEE 754 produces a NaN; which one is immaterial (see the
-module docstring). -/
-def nan : f.Bits := f.pack false (2 ^ f.w - 1) (2 ^ (f.t - 1))
-
 /-- The datum of a bit pattern (§3.4). -/
 def decode (x : f.Bits) : Datum :=
   let s := x.msb
@@ -120,67 +115,78 @@ def decode (x : f.Bits) : Datum :=
   else
     .finite s ((2 ^ f.t + T) * pow2 (E - f.bias - f.t))  -- normal numbers: 1.T × 2^(E - bias)
 
+/-- The bit pattern of a datum of the format (one that `decode` gives), the inverse of
+`decode`; NaN has many bit patterns, hence `none`. A finite `m` is `M × 2 ^ (e - t)` with an
+integer significand `M`, at the exponent `e` of `m` clamped to at least `emin`: subnormal (or
+zero) if `M < 2 ^ t`, normal otherwise. -/
+def encode : Datum → Option f.Bits
+  | .nan => none
+  | .inf s => some (f.pack s (2 ^ f.w - 1) 0)
+  | .finite s m =>
+    let e := max (floorLog2 m) f.emin
+    let M := (m * pow2 (f.t - e)).floor.toNat
+    if M < 2 ^ f.t then some (f.pack s 0 M)
+    else some (f.pack s (e + f.bias).toNat (M - 2 ^ f.t))
+
+/-- `b` encodes the datum `d`: `b` is `d`'s bit pattern, or any NaN if `d` is NaN. -/
+def encodes (d : Datum) (b : f.Bits) : Prop :=
+  match f.encode d with
+  | some b' => b = b'
+  | none => f.decode b = .nan
+
 /-- Rounding of the exact value `±m` (`m ≥ 0`, sign `s`) to the format: round to nearest, ties
-to even (§4.3.1). `m` is scaled to an integer significand `M` at the exponent of `m`, clamped to
-at least `emin` (below it, the subnormal grid of spacing `2 ^ (emin - t)`), and rounded;
-a significand that rounds up to `2 ^ p` moves to the next exponent, and an exponent above
-`emax` overflows to `±∞` (§7.4). A result that rounds to zero (`m = 0`, or underflow) is the
-zero of sign `s` (§6.3). -/
-def round (s : Bool) (m : Rat) : f.Bits :=
-  if m = 0 then f.zero s else
+to even (§4.3.1). `m` is scaled to an integer significand at the exponent of `m`, clamped to
+at least `emin` (below it, the subnormal grid of spacing `2 ^ (emin - t)`), and rounded; a
+magnitude that rounds to `2 ^ (emax + 1)` or more overflows to `±∞` (§7.4). A result that
+rounds to zero (`m = 0`, or underflow) is the zero of sign `s` (§6.3). -/
+def round (s : Bool) (m : Rat) : Datum :=
   let e := max (floorLog2 m) f.emin
-  let M := roundHalfEven (m * pow2 (f.t - e))   -- `m / 2 ^ (e - t)` rounded: `M ≤ 2 ^ (t + 1)`
-  if M < 2 ^ f.t then f.pack s 0 M             -- subnormal or zero (`e = emin`)
-  else if M = 2 ^ (f.t + 1) then               -- rounded up to `2 ^ (e + 1)`
-    if f.emax < e + 1 then f.inf s else f.pack s (e + 1 + f.bias).toNat 0
-  else if f.emax < e then f.inf s else f.pack s (e + f.bias).toNat (M - 2 ^ f.t)
+  let r := roundHalfEven (m * pow2 (f.t - e)) * pow2 (e - f.t)   -- the rounded magnitude
+  if r < pow2 (f.emax + 1) then .finite s r else .inf s
 
 /-- Rounding of a rational `q`; a zero `q` is `+0`. -/
-def roundRat (q : Rat) : f.Bits := f.round (decide (q < 0)) (if q < 0 then -q else q)
+def roundRat (q : Rat) : Datum := f.round (decide (q < 0)) (if q < 0 then -q else q)
 
 /-- Addition of two data (§5.4.1, §6.1–§6.3, §7.2). -/
-def addDatum : Datum → Datum → f.Bits
-  | .nan, _ | _, .nan => f.nan
-  | .inf s, .inf s' => if s = s' then f.inf s else f.nan     -- `∞ - ∞` is invalid
-  | .inf s, .finite .. | .finite .., .inf s => f.inf s
+def addDatum : Datum → Datum → Datum
+  | .nan, _ | _, .nan => .nan
+  | .inf s, .inf s' => if s = s' then .inf s else .nan      -- `∞ - ∞` is invalid
+  | .inf s, .finite .. | .finite .., .inf s => .inf s
   | .finite s m, .finite s' m' =>
     let r := signed s m + signed s' m'
     -- an exact zero sum is `+0` (in round to nearest), except `(-0) + (-0) = -0`
-    if r = 0 then f.zero (s && s') else f.roundRat r
+    if r = 0 then .finite (s && s') 0 else f.roundRat r
 
-def addDef (x y : f.Bits) : f.Bits := f.addDatum (f.decode x) (f.decode y)
+def addDef (x y : f.Bits) : Datum := f.addDatum (f.decode x) (f.decode y)
 
 /-- `x - y` is `x + (-y)` (§5.4.1). -/
-def subDef (x y : f.Bits) : f.Bits := f.addDatum (f.decode x) (f.decode y).neg
+def subDef (x y : f.Bits) : Datum := f.addDatum (f.decode x) (f.decode y).neg
 
 /-- Multiplication (§5.4.1, §6.1, §6.3, §7.2). The sign of a product is the exclusive or of
 the operands' signs, also for a zero or infinite product. -/
-def mulDef (x y : f.Bits) : f.Bits :=
+def mulDef (x y : f.Bits) : Datum :=
   match f.decode x, f.decode y with
-  | .nan, _ | _, .nan => f.nan
-  | .inf s, .inf s' => f.inf (s ^^ s')
+  | .nan, _ | _, .nan => .nan
+  | .inf s, .inf s' => .inf (s ^^ s')
   | .inf s, .finite s' m | .finite s' m, .inf s =>
-    if m = 0 then f.nan else f.inf (s ^^ s')                -- `0 × ∞` is invalid
+    if m = 0 then .nan else .inf (s ^^ s')                  -- `0 × ∞` is invalid
   | .finite s m, .finite s' m' => f.round (s ^^ s') (m * m')
 
 /-- Division (§5.4.1, §6.1, §6.3, §7.2, §7.3). The sign of a quotient is the exclusive or of
 the operands' signs. -/
-def divDef (x y : f.Bits) : f.Bits :=
+def divDef (x y : f.Bits) : Datum :=
   match f.decode x, f.decode y with
-  | .nan, _ | _, .nan => f.nan
-  | .inf _, .inf _ => f.nan                                -- `∞ / ∞` is invalid
-  | .inf s, .finite s' _ => f.inf (s ^^ s')
-  | .finite s _, .inf s' => f.zero (s ^^ s')
+  | .nan, _ | _, .nan => .nan
+  | .inf _, .inf _ => .nan                                 -- `∞ / ∞` is invalid
+  | .inf s, .finite s' _ => .inf (s ^^ s')
+  | .finite s _, .inf s' => .finite (s ^^ s') 0
   | .finite s m, .finite s' m' =>
     if m' = 0 then
-      if m = 0 then f.nan else f.inf (s ^^ s')           -- `0 / 0` is invalid; division by zero
+      if m = 0 then .nan else .inf (s ^^ s')             -- `0 / 0` is invalid; division by zero
     else f.round (s ^^ s') (m / m')
 
-/-- Negation flips the sign bit (§5.5.1); of a NaN, it is a NaN. -/
-def negDef (x : f.Bits) : f.Bits :=
-  match f.decode x with
-  | .nan => f.nan
-  | _ => x ^^^ BitVec.twoPow _ (f.w + f.t)
+/-- Negation flips the sign (§5.5.1); of a NaN, it is NaN. -/
+def negDef (x : f.Bits) : Datum := (f.decode x).neg
 
 /-- `x ≤ y` (§5.11): NaN is unordered with everything; `-0 = +0`. -/
 def lebDef (x y : f.Bits) : Bool :=
@@ -198,31 +204,27 @@ def eqDef (x y : f.Bits) : Bool :=
   | .finite s m, .finite s' m' => decide (signed s m = signed s' m')
   | _, _ => false
 
-def isNaNDef (x : f.Bits) : Bool :=
-  match f.decode x with
-  | .nan => true
-  | _ => false
+def isNaNDef (x : f.Bits) : Bool := f.decode x == .nan
 
 /-- The conversion of an integer (§5.4.1 convertFromInt): its rounding. -/
-def ofIntDef (n : Int) : f.Bits := f.roundRat n
+def ofIntDef (n : Int) : Datum := f.roundRat n
 
 /-- The conversion to format `g` (§5.4.1 formatOf-convertFormat): the rounding of the value. -/
-def convertDef (g : Format) (x : f.Bits) : g.Bits :=
+def convertDef (g : Format) (x : f.Bits) : Datum :=
   match f.decode x with
-  | .nan => g.nan
-  | .inf s => g.inf s
   | .finite s m => g.round s m
+  | d => d
 
-@[irreducible] def add (x y : f.Bits) : f.Bits := f.addDef x y
-@[irreducible] def sub (x y : f.Bits) : f.Bits := f.subDef x y
-@[irreducible] def mul (x y : f.Bits) : f.Bits := f.mulDef x y
-@[irreducible] def div (x y : f.Bits) : f.Bits := f.divDef x y
-@[irreducible] def neg (x : f.Bits) : f.Bits := f.negDef x
+@[irreducible] def add (x y : f.Bits) : Datum := f.addDef x y
+@[irreducible] def sub (x y : f.Bits) : Datum := f.subDef x y
+@[irreducible] def mul (x y : f.Bits) : Datum := f.mulDef x y
+@[irreducible] def div (x y : f.Bits) : Datum := f.divDef x y
+@[irreducible] def neg (x : f.Bits) : Datum := f.negDef x
 @[irreducible] def leb (x y : f.Bits) : Bool := f.lebDef x y
 @[irreducible] def eq (x y : f.Bits) : Bool := f.eqDef x y
 @[irreducible] def isNaN (x : f.Bits) : Bool := f.isNaNDef x
-@[irreducible] def ofInt (n : Int) : f.Bits := f.ofIntDef n
-@[irreducible] def convert (g : Format) (x : f.Bits) : g.Bits := f.convertDef g x
+@[irreducible] def ofInt (n : Int) : Datum := f.ofIntDef n
+@[irreducible] def convert (g : Format) (x : f.Bits) : Datum := f.convertDef g x
 
 theorem add_unseal : f.add = f.addDef := by with_unfolding_all rfl
 theorem sub_unseal : f.sub = f.subDef := by with_unfolding_all rfl
@@ -242,33 +244,43 @@ open ieee754
 
 /-! ## The operations of `float64` and `float32`
 
-A float is its bit pattern; `binary64.Bits` is `w64` and `binary32.Bits` is `w32`. -/
+A float is its bit pattern; `binary64.Bits` is `w64` and `binary32.Bits` is `w32`. An
+arithmetic operation's result is a datum (`ieee754.Datum`), which the step rules encode
+(`float64Encodes`): its bit pattern, or any NaN. -/
 
-def float64Neg (x : w64) : w64 := binary64.neg x
-def float64Add (x y : w64) : w64 := binary64.add x y
-def float64Sub (x y : w64) : w64 := binary64.sub x y
-def float64Mul (x y : w64) : w64 := binary64.mul x y
-def float64Div (x y : w64) : w64 := binary64.div x y
+/-- `b` encodes the `float64` datum `d`: its bit pattern, or any NaN if `d` is NaN. -/
+def float64Encodes (d : Datum) (b : w64) : Prop := binary64.encodes d b
+/-- `b` encodes the `float32` datum `d`: its bit pattern, or any NaN if `d` is NaN. -/
+def float32Encodes (d : Datum) (b : w32) : Prop := binary32.encodes d b
+
+def float64Neg (x : w64) : Datum := binary64.neg x
+def float64Add (x y : w64) : Datum := binary64.add x y
+def float64Sub (x y : w64) : Datum := binary64.sub x y
+def float64Mul (x y : w64) : Datum := binary64.mul x y
+def float64Div (x y : w64) : Datum := binary64.div x y
 def float64Leb (x y : w64) : Bool := binary64.leb x y
 def float64Eq (x y : w64) : Bool := binary64.eq x y
 def float64IsNaN (x : w64) : Bool := binary64.isNaN x
 
-def float32Neg (x : w32) : w32 := binary32.neg x
-def float32Add (x y : w32) : w32 := binary32.add x y
-def float32Sub (x y : w32) : w32 := binary32.sub x y
-def float32Mul (x y : w32) : w32 := binary32.mul x y
-def float32Div (x y : w32) : w32 := binary32.div x y
+def float32Neg (x : w32) : Datum := binary32.neg x
+def float32Add (x y : w32) : Datum := binary32.add x y
+def float32Sub (x y : w32) : Datum := binary32.sub x y
+def float32Mul (x y : w32) : Datum := binary32.mul x y
+def float32Div (x y : w32) : Datum := binary32.div x y
 def float32Leb (x y : w32) : Bool := binary32.leb x y
 def float32Eq (x y : w32) : Bool := binary32.eq x y
 def float32IsNaN (x : w32) : Bool := binary32.isNaN x
 
-/-- `float32(x)` of a `float64`. -/
-def float64ToFloat32 (x : w64) : w32 := binary64.convert binary32 x
+/-! Conversions that never produce a NaN, as bits. (`getD 0` is never used: a rounding is
+never NaN, and an untyped constant is never NaN.) -/
 
-/-- `float64(n)` of an integer (`int64`, `uint64`, `int32`, `uint32`). -/
-def int64ToFloat64 (n : w64) : w64 := binary64.ofInt n.toInt
-def uint64ToFloat64 (n : w64) : w64 := binary64.ofInt n.toNat
-def int32ToFloat64 (n : w32) : w64 := binary64.ofInt n.toInt
-def uint32ToFloat64 (n : w32) : w64 := binary64.ofInt n.toNat
+/-- `float32(c)` of a `float64` `x` that is not a NaN (the conversion of untyped constants). -/
+def float64ToFloat32 (x : w64) : w32 := (binary32.encode (binary64.convert binary32 x)).getD 0
+
+/-- `float64(n)` of an integer (`int64`, `uint64`, `int32`, `uint32`): its rounding. -/
+def int64ToFloat64 (n : w64) : w64 := (binary64.encode (binary64.ofInt n.toInt)).getD 0
+def uint64ToFloat64 (n : w64) : w64 := (binary64.encode (binary64.ofInt n.toNat)).getD 0
+def int32ToFloat64 (n : w32) : w64 := (binary64.encode (binary64.ofInt n.toInt)).getD 0
+def uint32ToFloat64 (n : w32) : w64 := (binary64.encode (binary64.ofInt n.toNat)).getD 0
 
 end Perennial
